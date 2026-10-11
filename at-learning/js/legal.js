@@ -1,0 +1,1 @@
+(function(){var L=window.SITE&&window.SITE.legal,p=document.body.dataset.legal,b=document.getElementById('legalbox');if(L&&p&&L[p]&&b)b.innerHTML=L[p]})();
