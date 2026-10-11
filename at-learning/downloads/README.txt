@@ -1,1 +1,1 @@
-Hier die PDFs/Formulare aus dem alten Webspace ablegen und in js/data.js bei links.groups[].items den Dateinamen als href eintragen.
+PDFs/Formulare hier ablegen und in js/data.js bei links.groups[].items als {t:"Titel",href:"downloads/datei.pdf"} eintragen.

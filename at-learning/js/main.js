@@ -25,21 +25,18 @@ $$('a',nav).forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('ope
 const cur0=location.pathname.split('/').pop()||'index.html';
 $$('a',nav).forEach(a=>{if(a.getAttribute('href')===cur0)a.classList.add('on')});
 const ft=$('#footer');
-if(ft){const c=S.contact;ft.innerHTML=`<footer><div class="wrap"><div><b>@-learning</b><br>${c.street}, ${c.city}<br><a href="tel:${c.phoneHref}">${c.phone}</a> · <a href="mailto:${c.email}">${c.email}</a><br>© ${new Date().getFullYear()} @Learning</div>
-<nav>${[['termine.html','Start neuer Kurse'],['leistungen.html','Leistungen'],['dozentensuche.html','Dozentensuche'],['zulassung.html','Zulassung'],['buchtipps.html','Buchtipps'],['aktionen.html','Sonderaktionen'],['links.html','Downloads & Links'],['kontakt.html','Kontakt'],['impressum.html','Impressum'],['datenschutz.html','Datenschutz']].map(l=>`<a href="${base}${l[0]}">${l[1]}</a>`).join('')}</nav></div></footer>`}
+if(ft){const c=S.contact;ft.innerHTML=`<footer><div class="wrap"><div><b>@-learning</b><br>${c.street}, ${c.city}<br><a href="tel:${c.phoneHref}">${c.phone}</a> · <a href="mailto:${c.email}">${c.email}</a><br>© ${new Date().getFullYear()} @Learning</div><nav>${[['termine.html','Start neuer Kurse'],['leistungen.html','Leistungen'],['dozentensuche.html','Dozentensuche'],['zulassung.html','Zulassung'],['buchtipps.html','Buchtipps'],['aktionen.html','Sonderaktionen'],['links.html','Downloads & Links'],['kontakt.html','Kontakt'],['impressum.html','Impressum'],['datenschutz.html','Datenschutz']].map(l=>`<a href="${base}${l[0]}">${l[1]}</a>`).join('')}</nav></div></footer>`}
 addEventListener('scroll',()=>{prog.style.width=scrollY/Math.max(1,root.scrollHeight-innerHeight)*100+'%'},{passive:true});
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
 window.observeRv=()=>$$('.rv:not(.in)').forEach(e=>io.observe(e));
 $$('[data-phone]').forEach(e=>{e.textContent=S.contact.phone;e.href='tel:'+S.contact.phoneHref});
 $$('[data-mail]').forEach(e=>{e.textContent=S.contact.email;e.href='mailto:'+S.contact.email});
 if(!home){observeRv();return}
-
 $('#facts').innerHTML=[['2006','Seit 2006 am Start, zertifiziert nach DIN EN ISO 9001:2015'],['75 %','der Kosten trägt im Regelfall der Staat (Meister-BAföG & KfW)'],['16–20','Teilnehmer pro Kurs, individuelle Betreuung'],['40','erfahrene, praxisorientierte Dozenten']].map(f=>`<div class="fact rv"><div class="n">${f[0]}</div><p>${f[1]}</p></div>`).join('');
 $('#steps').innerHTML=S.steps.map(s=>`<div class="step rv"><h3>${s.t}</h3><p>${s.d}</p></div>`).join('');
 $('#pillars').innerHTML=S.pillars.map(p=>`<div class="pillar rv"><h3>${p[0]}</h3><p>${p[1]}</p></div>`).join('');
 $('#faqlist').innerHTML=S.faq.map(f=>`<details class="rv"><summary>${f.q}</summary><p>${f.a}</p></details>`).join('');
 const sel=$('#fcourse');Object.values(S.courses).forEach(k=>sel.insertAdjacentHTML('beforeend',`<option>${k.name}</option>`));sel.insertAdjacentHTML('beforeend','<option>Allgemeine Beratung</option>');
-
 const book=$('#book'),n=S.categories.length;
 const list=c=>`<ul class="clist">${c.courses.map(id=>{const k=S.courses[id];return `<li><span class="ab">${k.ab}</span><b><a href="${base}kurs.html?k=${id}">${k.name}</a></b><span>${k.short}</span></li>`}).join('')}</ul>`;
 const textPage=(c,i)=>`<div class="ill-inline">${I[c.ill]}</div><div class="kicker">${c.kicker}</div><h3>${c.title}</h3><p>${c.intro}</p>${list(c)}<span class="pg">${i*2+1}</span>`;
@@ -66,7 +63,5 @@ const kick=()=>{if(!run){run=true;requestAnimationFrame(loop)}};
 $$('button',dots).forEach((b,k)=>b.onclick=()=>scrollTo({top:wrap.offsetTop+(k/F)*(wrap.offsetHeight-innerHeight)+2,behavior:'smooth'}));
 addEventListener('scroll',kick,{passive:true});addEventListener('resize',()=>{cur=target();render(cur)});render(cur);
 observeRv();
-$('#cform').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);
- const body=`Name: ${d.get('name')}\nTelefon: ${d.get('tel')||'-'}\nInteresse: ${d.get('course')}\n\n${d.get('msg')}`;
- location.href=`mailto:${S.contact.email}?subject=${encodeURIComponent('Anfrage Weiterbildung: '+d.get('course'))}&body=${encodeURIComponent(body)}`});
+$('#cform').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);const body=`Name: ${d.get('name')}\nTelefon: ${d.get('tel')||'-'}\nInteresse: ${d.get('course')}\n\n${d.get('msg')}`;location.href=`mailto:${S.contact.email}?subject=${encodeURIComponent('Anfrage Weiterbildung: '+d.get('course'))}&body=${encodeURIComponent(body)}`});
 })();
