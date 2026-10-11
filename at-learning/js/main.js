@@ -4,9 +4,9 @@ const root=document.documentElement,home=!!$('#book'),base=document.body.dataset
 let saved=null;try{saved=localStorage.getItem('theme')}catch(e){}
 root.dataset.theme=saved||'light';
 function setTheme(t){root.dataset.theme=t;try{localStorage.setItem('theme',t)}catch(e){}const l=$('.lamp');if(l){l.setAttribute('aria-checked',t==='dark');l.setAttribute('aria-label',t==='dark'?'Licht einschalten (Hell-Modus)':'Licht ausschalten (Dark-Modus)')}const m=$('meta[name=theme-color]');if(m)m.content=t==='dark'?'#0b1220':'#2563eb'}
-const links=[['#kurse','Kurse'],['#ablauf','Ablauf'],['#foerderung','Förderung'],['#faq','FAQ'],['#kontakt','Kontakt']];
+const links=[['index.html#kurse','Kurse'],['termine.html','Termine'],['leistungen.html','Leistungen'],['links.html','Downloads'],['kontakt.html','Kontakt']];
 const hdr=document.createElement('header');hdr.className='top';
-hdr.innerHTML=`<div class="wrap"><a class="brand" href="${base}index.html" aria-label="@-learning Startseite"><img src="${base}assets/logo.svg" alt=""><div><div><span>@</span>-learning</div><small>Weiterbildung</small></div></a><button class="burger" aria-label="Menü" aria-expanded="false">☰</button><nav><ul>${links.map(l=>`<li><a href="${base}index.html${l[0]}">${l[1]}</a></li>`).join('')}</ul></nav></div>`;
+hdr.innerHTML=`<div class="wrap"><a class="brand" href="${base}index.html" aria-label="@-learning Startseite"><img src="${base}assets/logo.svg" alt=""><div><div><span>@</span>-learning</div><small>Weiterbildung</small></div></a><button class="burger" aria-label="Menü" aria-expanded="false">☰</button><nav><ul>${links.map(l=>`<li><a href="${base}${l[0]}">${l[1]}</a></li>`).join('')}</ul></nav></div>`;
 document.body.prepend(hdr);
 const lamp=document.createElement('div');lamp.className='lamp';lamp.tabIndex=0;lamp.setAttribute('role','switch');
 lamp.innerHTML=`<div class="cone"></div><svg viewBox="0 0 64 120" aria-hidden="true"><line x1="32" y1="0" x2="32" y2="12" stroke="var(--mut)" stroke-width="2"/><path class="shade" d="M12 38L22 12H42L52 38Z"/><circle class="bulb" cx="32" cy="42" r="8"/><g class="cord"><line x1="32" y1="50" x2="32" y2="84" stroke="var(--mut)" stroke-width="2" stroke-dasharray="1.5 2"/><circle cx="32" cy="90" r="6" fill="var(--blue)" stroke="var(--ink)" stroke-width="1.5"/></g></svg><div class="lamp-hint">zieh mich →</div>`;
@@ -22,26 +22,33 @@ lamp.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDe
 const nav=$('nav',hdr),bur=$('.burger',hdr);
 bur.onclick=()=>{const o=nav.classList.toggle('open');bur.setAttribute('aria-expanded',o);bur.textContent=o?'✕':'☰'};
 $$('a',nav).forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');bur.textContent='☰'}));
-const ft=$('#footer');if(ft)ft.innerHTML=`<footer><div class="wrap"><span>© ${new Date().getFullYear()} @-learning · Industriemeister Weiterbildung Plochingen</span><span><a href="${base}impressum.html">Impressum</a><a href="${base}datenschutz.html">Datenschutz</a></span></div></footer>`;
+const cur0=location.pathname.split('/').pop()||'index.html';
+$$('a',nav).forEach(a=>{if(a.getAttribute('href')===cur0)a.classList.add('on')});
+const ft=$('#footer');
+if(ft){const c=S.contact;ft.innerHTML=`<footer><div class="wrap"><div><b>@-learning</b><br>${c.street}, ${c.city}<br><a href="tel:${c.phoneHref}">${c.phone}</a> · <a href="mailto:${c.email}">${c.email}</a><br>© ${new Date().getFullYear()} @Learning</div>
+<nav>${[['termine.html','Start neuer Kurse'],['leistungen.html','Leistungen'],['dozentensuche.html','Dozentensuche'],['zulassung.html','Zulassung'],['buchtipps.html','Buchtipps'],['aktionen.html','Sonderaktionen'],['links.html','Downloads & Links'],['kontakt.html','Kontakt'],['impressum.html','Impressum'],['datenschutz.html','Datenschutz']].map(l=>`<a href="${base}${l[0]}">${l[1]}</a>`).join('')}</nav></div></footer>`}
 addEventListener('scroll',()=>{prog.style.width=scrollY/Math.max(1,root.scrollHeight-innerHeight)*100+'%'},{passive:true});
-if(!home)return;
-
-$('#facts').innerHTML=[['2006','Seit 2006 am Start · zertifiziert nach DIN EN ISO 9001:2015'],['100 %','förderfähig über Meister-BAföG & KfW'],['1 Jahr','berufsbegleitend an Wochenenden'],['2 Orte','Präsenzunterricht in Plochingen & Reutlingen']].map(f=>`<div class="fact rv"><div class="n">${f[0]}</div><p>${f[1]}</p></div>`).join('');
-$('#steps').innerHTML=S.steps.map(s=>`<div class="step rv"><h3>${s.t}</h3><p>${s.d}</p></div>`).join('');
-$('#faqlist').innerHTML=S.faq.map(f=>`<details class="rv"><summary>${f.q}</summary><p>${f.a}</p></details>`).join('');
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.1});
+window.observeRv=()=>$$('.rv:not(.in)').forEach(e=>io.observe(e));
 $$('[data-phone]').forEach(e=>{e.textContent=S.contact.phone;e.href='tel:'+S.contact.phoneHref});
 $$('[data-mail]').forEach(e=>{e.textContent=S.contact.email;e.href='mailto:'+S.contact.email});
-const sel=$('#fcourse');S.categories.forEach(c=>c.courses.forEach(k=>sel.insertAdjacentHTML('beforeend',`<option>${k.name}</option>`)));
+if(!home){observeRv();return}
+
+$('#facts').innerHTML=[['2006','Seit 2006 am Start, zertifiziert nach DIN EN ISO 9001:2015'],['75 %','der Kosten trägt im Regelfall der Staat (Meister-BAföG & KfW)'],['16–20','Teilnehmer pro Kurs, individuelle Betreuung'],['40','erfahrene, praxisorientierte Dozenten']].map(f=>`<div class="fact rv"><div class="n">${f[0]}</div><p>${f[1]}</p></div>`).join('');
+$('#steps').innerHTML=S.steps.map(s=>`<div class="step rv"><h3>${s.t}</h3><p>${s.d}</p></div>`).join('');
+$('#pillars').innerHTML=S.pillars.map(p=>`<div class="pillar rv"><h3>${p[0]}</h3><p>${p[1]}</p></div>`).join('');
+$('#faqlist').innerHTML=S.faq.map(f=>`<details class="rv"><summary>${f.q}</summary><p>${f.a}</p></details>`).join('');
+const sel=$('#fcourse');Object.values(S.courses).forEach(k=>sel.insertAdjacentHTML('beforeend',`<option>${k.name}</option>`));sel.insertAdjacentHTML('beforeend','<option>Allgemeine Beratung</option>');
 
 const book=$('#book'),n=S.categories.length;
-const list=c=>`<ul class="clist">${c.courses.map(k=>`<li><span class="ab">${k.ab}</span><b>${k.name}</b><span>${k.desc}</span></li>`).join('')}</ul>`;
+const list=c=>`<ul class="clist">${c.courses.map(id=>{const k=S.courses[id];return `<li><span class="ab">${k.ab}</span><b><a href="${base}kurs.html?k=${id}">${k.name}</a></b><span>${k.short}</span></li>`}).join('')}</ul>`;
 const textPage=(c,i)=>`<div class="ill-inline">${I[c.ill]}</div><div class="kicker">${c.kicker}</div><h3>${c.title}</h3><p>${c.intro}</p>${list(c)}<span class="pg">${i*2+1}</span>`;
 const illPage=(key,i,cap)=>`<div class="ill">${I[key]}</div><div class="kicker" style="text-align:center">${cap}</div><span class="pg">${i*2}</span>`;
 const cl=S.closing;
 const leaves=[{f:`<div class="at">@</div><h3>learning</h3><small>Blättere durch unsere Kurse ↓</small>`,fc:'cover',b:illPage(S.categories[0].ill,1,S.categories[0].title)}];
 S.categories.forEach((c,i)=>leaves.push({f:textPage(c,i+1),fc:'lines',b:i+1<n?illPage(S.categories[i+1].ill,i+2,S.categories[i+1].title):illPage(cl.ill,i+2,cl.kicker)}));
-leaves.push({f:`<div class="ill-inline">${I[cl.ill]}</div><div class="kicker">${cl.kicker}</div><h3>${cl.title}</h3><p>${cl.text}</p><a class="btn" style="margin-top:auto;justify-content:center" href="#kontakt">Beratung anfragen</a>`,fc:'lines',b:''});
-book.innerHTML=`<div class="base-l"></div><div class="base-r"></div>`+leaves.map((l,i)=>`<div class="leaf"><div class="face front ${l.fc}">${l.f}</div><div class="face back lines">${l.b}</div></div>`).join('');
+leaves.push({f:`<div class="ill-inline">${I[cl.ill]}</div><div class="kicker">${cl.kicker}</div><h3>${cl.title}</h3><p>${cl.text}</p><a class="btn" style="margin-top:auto;justify-content:center" href="${base}kontakt.html">Beratung vereinbaren</a>`,fc:'lines',b:''});
+book.innerHTML=`<div class="base-l"></div><div class="base-r"></div>`+leaves.map(l=>`<div class="leaf"><div class="face front ${l.fc}">${l.f}</div><div class="face back lines">${l.b}</div></div>`).join('');
 const L=$$('.leaf',book),F=leaves.length-1,wrap=$('#bookwrap'),bl=$('.base-l',book);
 wrap.style.height=(F+1)*90+'vh';
 const dots=$('#dots');dots.innerHTML=Array.from({length:F+1},(_,k)=>`<button aria-label="Seite ${k+1}"></button>`).join('');
@@ -51,19 +58,14 @@ let cur=target(),run=false;
 function render(p){const m=mq.matches;
  L.forEach((el,i)=>{const t=Math.min(1,Math.max(0,p-i));
   el.style.transform=`rotateY(${-180*sm(t)}deg)`;el.style.zIndex=t<.5?L.length-i:i+1;el.style.setProperty('--s',Math.sin(Math.PI*t).toFixed(3));
-  el.style.opacity=m?Math.min(1,Math.max(0,(.62-t)/.22)):1;el.style.visibility=m&&t>=.84?'hidden':'visible';el.style.pointerEvents=t>=1?'none':'auto'});
+  el.style.opacity=m?Math.min(1,Math.max(0,(.62-t)/.22)):1;el.style.visibility=m&&t>=.84?'hidden':'visible';el.style.pointerEvents=(t>=1||(m&&t>.5))?'none':'auto'});
  const e=sm(Math.min(p,1));if(!m)book.style.transform=`translateX(${25*(1-e)}%)`;bl.style.opacity=e;
  const k=Math.round(p);$$('button',dots).forEach((b,j)=>b.classList.toggle('on',j===k))}
 function loop(){const t=target(),d=t-cur;cur+=d*.085;if(Math.abs(d)<.0008){cur=t;run=false}render(cur);if(run)requestAnimationFrame(loop)}
 const kick=()=>{if(!run){run=true;requestAnimationFrame(loop)}};
 $$('button',dots).forEach((b,k)=>b.onclick=()=>scrollTo({top:wrap.offsetTop+(k/F)*(wrap.offsetHeight-innerHeight)+2,behavior:'smooth'}));
 addEventListener('scroll',kick,{passive:true});addEventListener('resize',()=>{cur=target();render(cur)});render(cur);
-
-const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
-$$('.rv').forEach(e=>io.observe(e));
-const navA=$$('a',nav);
-const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)navA.forEach(a=>a.classList.toggle('on',a.getAttribute('href').endsWith('#'+e.target.id)))}),{rootMargin:'-45% 0px -50% 0px'});
-links.map(l=>$(l[0])).filter(Boolean).forEach(s=>io2.observe(s));
+observeRv();
 $('#cform').addEventListener('submit',e=>{e.preventDefault();const d=new FormData(e.target);
  const body=`Name: ${d.get('name')}\nTelefon: ${d.get('tel')||'-'}\nInteresse: ${d.get('course')}\n\n${d.get('msg')}`;
  location.href=`mailto:${S.contact.email}?subject=${encodeURIComponent('Anfrage Weiterbildung: '+d.get('course'))}&body=${encodeURIComponent(body)}`});
