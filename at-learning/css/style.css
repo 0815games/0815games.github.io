@@ -150,3 +150,9 @@ header.top .wrap{padding-right:74px;gap:8px}.brand{font-size:19px}.brand img{wid
 .tcard{grid-template-columns:1fr}.part .top{flex-direction:column;gap:2px}}
 @media(max-height:640px) and (max-width:760px){.ill-inline{display:none}}
 @media(prefers-reduced-motion:reduce){.bigat,.float,.cap{animation:none!important}}
+.door{display:inline-grid;place-items:center;color:var(--mut);opacity:.45;transition:.3s;align-self:flex-end;padding:6px}
+.door:hover,.door:focus-visible{opacity:1;color:var(--blue)}
+.door .panel{transform-origin:7px 20px;transition:transform .35s}
+.door:hover .panel,.door:focus-visible .panel{transform:scaleX(.45) skewY(-6deg)}
+.door .knob{transition:transform .35s;transform-origin:7px 22px}
+.door:hover .knob{transform:translateX(-9px)}
