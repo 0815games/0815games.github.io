@@ -1,19 +1,14 @@
 # CHANGELOG
 
-## [v0.0.8] - 2026-10-12 13:50 (Bugfix Monster-in-Wand & Visuelle Effekte für Truhen/Begegnung)
-- [BUGFIX] `WorldMap`: Kollisionsprüfung beim Spawnen von Monstern und Truhen implementiert (`findSafeFloorTile`). Koordinaten wie `[8, 3]` (Mauerecke der Grabkammer) und Säulenbereiche werden dynamisch abgewiesen, sodass Monster ausnahmslos auf freien Bodenkacheln stehen.
-- [FX] **Schatztruhen-Partikelexplosion (`triggerChestBurst`):** Beim Öffnen einer Truhe bricht ein Funkenregen aus Goldstaub hervor, die Truhe wechselt grafisch in einen geöffneten Zustand und blendet "✨ REICHTUM!" ein.
-- [FX] **Feindkontakt-Schock (`triggerEncounterSlash`):** Beim Zusammentreffen mit Monstern zuckt ein blutroter Klingenblitz über die betroffene Kachel, der Bildschirm wackelt (`.shake-canvas`) und eine rote Schock-Vignette pulsiert kurz auf.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.8 generiert.
+## [v0.0.9] - 2026-10-12 14:31 (Mehrere Verliesebenen, Roguelite und Steuerung)
+- [MAP] Treppenkachel und Wechsel zu endlos fortsetzbaren Verliesebenen implementiert. Gegnerwerte skalieren mit der Tiefe; jede Ebene erhält neue Gegner, Truhen, Karte und Treppenposition.
+- [BUGFIX] Monster-/Truhenpositionen werden nach Kartenaufbau und Spielstand-Laden gegen Wände, Säulen und andere Entitäten validiert. Fehlerhafte alte Spawns wandern zur nächsten freien Bodenkachel.
+- [CHESTS] Truhen öffnen sich sichtbar bei Betreten, zeigen Goldpartikel und verschwinden anschließend wie besiegte Monster von der Karte.
+- [ROGUELITE] Tod beendet den Run; Klassenwahl startet einen neuen Lauf. Dauerhaft bleiben angesammeltes Gold und höchste erreichte Ebene als Ordens-Meta-Fortschritt erhalten.
+- [INPUT] Untere alte Aktions-/D-Pad-Leiste entfernt. Tastatur (WASD/Pfeile), E/Leertaste für Interaktion und ein ausschließlich auf Touch-Geräten sichtbarer Touch-Joystick steuern Bewegung/Interaktion.
+- [UI] HUD zeigt aktuelle Ebene und Besttiefe; weiterhin eigene Dark-Fantasy-Dialoge statt Browser-Popups.
+- [BUILD] Vollständiges Update-ZIP v0.0.9 erstellt.
 
-## [v0.0.7] - 2026-10-12 13:45 (Web Audio API Soundeffekte & Sound-Toggle)
-- [AUDIO] `js/systems/audio.js` implementiert: Vollständig autarker Web-Audio-Synthesizer erzeugt prozedurale Soundeffekte ohne externe MP3s:
-  - Schwertschlag, Feuerball, Heiltrank, Schatztruhe, Verwundung, Schritte, Level-Up und Todesgong.
-- [UI] Sound-Umschalter `#btn-sound-toggle` (🔊 Ton: An / 🔇 Ton: Aus) direkt im oberen HUD verdrahtet.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.7 generiert.
-
-## [v0.0.6] - 2026-10-12 13:35 (Gothic-Dialoge, Todesbildschirm & Autonome Schadenszahlen)
-- [RENDER] `WorldRenderer`: Umstellung auf kontinuierliche 60fps-Animationsschleife (`requestAnimationFrame`). Schwebende Schadens-, Heil- und Goldzahlen bewegen sich selbstständig nach oben und verblassen sauber nach 1,2 Sekunden, ohne dass der Spieler sich bewegen muss.
-- [UI] **Todesbildschirm (#game-over-modal):** Vollwertiges Dark-Fantasy Game-Over-Fenster ersetzt natives `alert()`.
-- [UI] **Spieleigene Benachrichtigungen & Abfragen (`modalManager.js`):** Universelles Fantasy-Modal (#fantasy-modal) ersetzt alle Browser-Alerts und Confirms.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.6 generiert.
+## [v0.0.8] - 2026-10-12 13:50 (Spawn-Fix & Truhen-/Begegnungseffekte)
+- [BUGFIX] Monster-Spawns auf freie Bodenkacheln verlegt; gespeicherte Wandpositionen werden beim Start korrigiert.
+- [FX] Goldpartikel beim Öffnen von Truhen und roter Klingenblitz/Canvas-Shake beim Monsterkontakt.

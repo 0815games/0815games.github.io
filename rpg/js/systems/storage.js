@@ -1,72 +1,8 @@
-// [2026-10-12 13:50] - js/systems/storage.js: v0.0.8 Speicher-Engine
-import { state } from '../core/state.js';
-import { eventBus } from '../core/eventBus.js';
-import { modalManager } from '../ui/modalManager.js';
-
-const STORAGE_KEY = 'dark_fantasy_rpg_v004';
-
-export class StorageSystem {
-  saveGame(silent = false) {
-    try {
-      const data = {
-        version: '0.0.8',
-        timestamp: Date.now(),
-        player: state.player,
-        trader: state.trader,
-        quests: state.quests,
-        world: {
-          chests: state.world.chests,
-          monsters: state.world.monsters,
-          discovered: state.world.discovered
-        }
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      if (!silent) {
-        modalManager.showNotice('CHRONIK GESICHERT', 'Dein ruhmreicher Fortschritt wurde in den Annalen des Ordens verewigt.', '📜');
-      }
-      return true;
-    } catch (e) {
-      console.error('Speichern fehlgeschlagen:', e);
-      modalManager.showNotice('FEHLER', 'Das Siegel der Chronik konnte nicht beschrieben werden.', '⚠️');
-      return false;
-    }
-  }
-
-  loadGame() {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return false;
-
-      const data = JSON.parse(raw);
-      if (!data || !data.player) return false;
-
-      state.player = data.player;
-      if (data.trader) state.trader = data.trader;
-      if (data.quests) state.quests = data.quests;
-
-      if (data.world) {
-        if (data.world.chests) state.world.chests = data.world.chests;
-        if (data.world.monsters) state.world.monsters = data.world.monsters;
-        if (data.world.discovered) state.world.discovered = data.world.discovered;
-      }
-
-      eventBus.emit('log:message', '📜 Heldendaten aus der Chronik geladen!');
-      return true;
-    } catch (e) {
-      console.error('Laden fehlgeschlagen:', e);
-      return false;
-    }
-  }
-
-  resetGame() {
-    modalManager.showConfirm(
-      'NEUBEGINN WÄHLEN?',
-      'Möchtest du diese Heldenreise wirklich beenden? Alle gesammelten Relikte und Siegel gehen unwiederbringlich verloren.',
-      () => {
-        localStorage.removeItem(STORAGE_KEY);
-        location.reload();
-      },
-      '🔥'
-    );
-  }
+// [2026-10-12 14:31] - v0.0.9: LocalStorage save/load samt spielinterne Dialoge.
+import {state} from '../core/state.js';import {eventBus} from '../core/eventBus.js';import {modalManager} from '../ui/modalManager.js';
+const KEY='dark_fantasy_rpg_v009';
+export class StorageSystem{
+ saveGame(silent=false){try{const data={version:'0.0.9',player:state.player,trader:state.trader,quests:state.quests,world:{depth:state.world.depth,stairs:state.world.stairs,chests:state.world.chests,monsters:state.world.monsters,discovered:state.world.discovered}};localStorage.setItem(KEY,JSON.stringify(data));if(!silent)modalManager.showNotice('CHRONIK GESICHERT','Dein aktueller Run wurde in den Annalen des Ordens verewigt.','📜');return true;}catch(e){console.error(e);modalManager.showNotice('FEHLER','Der Spielstand konnte nicht gespeichert werden.','⚠️');return false;}}
+ loadGame(){try{const raw=localStorage.getItem(KEY);if(!raw)return false;const d=JSON.parse(raw);if(!d?.player)return false;Object.assign(state,{player:d.player,trader:d.trader||state.trader,quests:d.quests||state.quests});Object.assign(state.world,d.world||{});return true;}catch(e){console.error(e);return false;}}
+ resetGame(){modalManager.showConfirm('NEUBEGINN?','Der aktuelle Run wird beendet. Die permanente Ordenserinnerung bleibt erhalten.',()=>{localStorage.removeItem(KEY);eventBus.emit('run:new_request');},'🔥');}
 }
