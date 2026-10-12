@@ -1,0 +1,25 @@
+/* Buch-Bindung: Einband, Seitenstapel, Lochung und Ringe. Wird nur auf der Startseite geladen. */
+.book{isolation:isolate}
+.book .base-l,.book .base-r{width:auto;top:-16px;height:calc(100% + 32px);background:linear-gradient(135deg,var(--blue),var(--blue2));box-shadow:0 30px 60px -20px rgba(15,23,42,.6),inset 0 0 0 2px rgba(255,255,255,.18)}
+.book .base-r{left:calc(50% - 26px);right:-18px;border-radius:6px 20px 20px 6px}
+.book .base-l{left:-18px;right:calc(50% - 26px);border-radius:20px 6px 6px 20px}
+.book .base-l:before,.book .base-r:before{content:"";position:absolute;top:16px;bottom:16px;background:var(--paper2)}
+.book .base-r:before{left:26px;right:18px;border-radius:0 12px 12px 0;box-shadow:3px 3px 0 var(--paper),6px 6px 0 var(--paper2),8px 8px 0 rgba(0,0,0,.1)}
+.book .base-l:before{left:18px;right:26px;border-radius:12px 0 0 12px;box-shadow:-3px 3px 0 var(--paper),-6px 6px 0 var(--paper2),-8px 8px 0 rgba(0,0,0,.1)}
+.book .face.front{padding-left:clamp(40px,5vw,56px)}
+.book .face.back{padding-right:clamp(40px,5vw,56px)}
+.face:before{content:"";position:absolute;top:0;bottom:0;width:26px;pointer-events:none;z-index:2;background:radial-gradient(circle at 13px calc(var(--ph)/16),rgba(15,23,42,.45) 0 5px,rgba(15,23,42,.14) 6px,transparent 7.5px) 0 0/26px calc(var(--ph)/8) repeat-y}
+.face.front:before{left:8px}.face.back:before{right:8px;left:auto}
+.rings{position:absolute;left:50%;top:0;height:100%;width:0;z-index:50;pointer-events:none}
+.rings span{position:absolute;left:-22px;width:44px;height:16px;transform:translateY(-50%);border-radius:10px;border:4px solid;border-color:#eef1f6 #8a94a6 #5b6577 #8a94a6;box-shadow:0 4px 6px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.6)}
+.book .face.cover{box-shadow:inset 0 0 0 7px rgba(255,255,255,.14),inset 0 0 0 8px rgba(0,0,0,.14)}
+.cover .atlogo{width:150px;height:150px;color:inherit}
+.hero .bigat{font-size:0;line-height:0;width:min(86%,520px);filter:none}
+.hero .bigat svg{width:100%;height:auto;color:var(--blue);filter:drop-shadow(0 24px 30px color-mix(in srgb,var(--blue) 35%,transparent))}
+@media(max-width:760px){
+.book .base-r{left:-26px;right:-14px;border-radius:18px}
+.book .base-r:before{left:26px;right:14px;border-radius:6px 12px 12px 6px}
+.rings{left:0}
+.book .face.front{padding-left:46px}
+.cover .atlogo{width:110px;height:110px}
+}
