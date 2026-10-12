@@ -1,7 +1,4 @@
-// [2026-10-12 13:35] - js/systems/storage.js: v0.0.6 Speicher-Engine mit Spieleigenem Confirm-Modal
-// Änderungen:
-// - Ersetzt browserinternes `confirm()` durch das Gothic-Modal `modalManager.showConfirm`.
-
+// [2026-10-12 13:50] - js/systems/storage.js: v0.0.8 Speicher-Engine
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
 import { modalManager } from '../ui/modalManager.js';
@@ -12,7 +9,7 @@ export class StorageSystem {
   saveGame(silent = false) {
     try {
       const data = {
-        version: '0.0.6',
+        version: '0.0.8',
         timestamp: Date.now(),
         player: state.player,
         trader: state.trader,

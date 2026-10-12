@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/systems/shop.js: v0.0.6 Alchemie- & Rüstkammer
+// [2026-10-12 13:50] - js/systems/shop.js: v0.0.8 Alchemie- & Rüstkammer
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { eventBus } from '../core/eventBus.js';
@@ -48,6 +48,7 @@ export class ShopSystem {
     state.trader.caps += price;
     traderEntry.count--;
 
+    eventBus.emit('audio:chest');
     eventBus.emit('log:message', `Erworben: ${proto.name} für ${price} Gold.`);
     eventBus.emit('shop:updated');
     eventBus.emit('hud:updated');
@@ -82,6 +83,7 @@ export class ShopSystem {
       state.player.inventory.splice(slotIndex, 1);
     }
 
+    eventBus.emit('audio:chest');
     eventBus.emit('log:message', `Veräußert: ${proto.name} für +${sellPrice} Gold.`);
     eventBus.emit('shop:updated');
     eventBus.emit('hud:updated');

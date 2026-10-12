@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/core/input.js: v0.0.6 Eingabesteuerung
+// [2026-10-12 13:50] - js/core/input.js: v0.0.8 Eingabesteuerung
 import { state } from './state.js';
 import { eventBus } from './eventBus.js';
 

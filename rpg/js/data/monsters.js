@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/data/monsters.js: v0.0.6 Bestiarium
+// [2026-10-12 13:50] - js/data/monsters.js: v0.0.8 Bestiarium
 export const MONSTER_TYPES = {
   goblin: {
     typeId: 'goblin',

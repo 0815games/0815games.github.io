@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/data/items.js: v0.0.6 Reliquien- & Ausrüstungskatalog
+// [2026-10-12 13:50] - js/data/items.js: v0.0.8 Reliquien- & Ausrüstungskatalog
 export const ITEM_DATABASE = {
   health_potion: {
     id: 'health_potion',

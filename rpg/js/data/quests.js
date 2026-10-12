@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/data/quests.js: v0.0.6 Ordens-Quests
+// [2026-10-12 13:50] - js/data/quests.js: v0.0.8 Ordens-Quests
 export const QUEST_DATABASE = {
   q_goblin_slayer: {
     id: 'q_goblin_slayer',

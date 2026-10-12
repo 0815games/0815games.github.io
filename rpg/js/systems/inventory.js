@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/systems/inventory.js: v0.0.6 Inventarsystem
+// [2026-10-12 13:50] - js/systems/inventory.js: v0.0.8 Inventarsystem
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { eventBus } from '../core/eventBus.js';
@@ -42,6 +42,7 @@ export class InventorySystem {
         }
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + item.val);
         slot.count--;
+        eventBus.emit('audio:potion');
         eventBus.emit('log:message', `${item.name} getrunken (+${item.val} TP).`);
       } else if (item.effect === 'mana') {
         if (state.player.mp >= state.player.maxMp) {
@@ -50,10 +51,12 @@ export class InventorySystem {
         }
         state.player.mp = Math.min(state.player.maxMp, state.player.mp + item.val);
         slot.count--;
+        eventBus.emit('audio:potion');
         eventBus.emit('log:message', `${item.name} absorbiert (+${item.val} MP).`);
       }
     } else if (item.type === 'weapon') {
       state.player.equipped.weapon = item;
+      eventBus.emit('audio:sword');
       eventBus.emit('log:message', `${item.name} gezogen (+${item.val} Schlagkraft).`);
     } else if (item.type === 'armor') {
       state.player.equipped.armor = item;

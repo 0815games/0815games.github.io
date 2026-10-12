@@ -1,7 +1,4 @@
-// [2026-10-12 13:35] - js/systems/combat.js: v0.0.6 Kampfsystem mit nativem GameOver-Event
-// Änderungen:
-// - Entfernen von nativem alert() und Umstellung auf `player:death` Ereignis für den Dark Fantasy Todesbildschirm.
-
+// [2026-10-12 13:50] - js/systems/combat.js: v0.0.8 Kampfsystem mit Audio & Visual Feedback
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
 
@@ -32,9 +29,11 @@ export class CombatSystem {
       }
       state.player.mp -= 8;
       playerDmg = Math.max(8, (baseDmg * 2) - Math.floor(m.def * 0.5) + Math.floor(Math.random() * 4));
+      eventBus.emit('audio:fireball');
       eventBus.emit('combat:log', `🔥 FEUERBALL entfacht! ${m.name} verbrennt für ${playerDmg} Schaden!`);
     } else {
       playerDmg = Math.max(1, baseDmg - m.def + Math.floor(Math.random() * 4));
+      eventBus.emit('audio:sword');
       eventBus.emit('combat:log', `Du triffst ${m.name} für ${playerDmg} Schaden.`);
     }
 
@@ -46,9 +45,9 @@ export class CombatSystem {
       return;
     }
 
-    // Gegenangriff des Monsters
     const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef() + Math.floor(Math.random() * 3));
     state.player.hp = Math.max(0, state.player.hp - monDmg);
+    eventBus.emit('audio:hurt');
     eventBus.emit('combat:log', `${m.name} schlägt erbarmungslos zurück: -${monDmg} TP!`);
     eventBus.emit('fx:dmg', { text: `-${monDmg}`, x: state.player.x, y: state.player.y, color: '#d32f2f' });
 
@@ -71,12 +70,14 @@ export class CombatSystem {
     }
 
     this.invSys.useItem(potIdx);
+    eventBus.emit('audio:potion');
     eventBus.emit('combat:log', 'Heiltrank im Kampf getrunken!');
 
     if (state.activeMonster) {
       const m = state.activeMonster;
       const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
       state.player.hp = Math.max(0, state.player.hp - monDmg);
+      eventBus.emit('audio:hurt');
       eventBus.emit('combat:log', `${m.name} attackiert während des Trinkens: -${monDmg} TP.`);
       if (state.player.hp <= 0) {
         this.endCombat();
@@ -99,6 +100,7 @@ export class CombatSystem {
       const m = state.activeMonster;
       const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
       state.player.hp = Math.max(0, state.player.hp - monDmg);
+      eventBus.emit('audio:hurt');
       if (state.player.hp <= 0) {
         this.endCombat();
         eventBus.emit('player:death');
@@ -144,6 +146,7 @@ export class CombatSystem {
       state.player.mp = state.player.maxMp;
       state.player.baseAtk += 2;
       state.player.baseDef += 1;
+      eventBus.emit('audio:levelup');
       eventBus.emit('log:message', `⭐ LEVEL-UP! Du hast Heldenstufe ${state.player.level} erklommen!`);
     }
   }

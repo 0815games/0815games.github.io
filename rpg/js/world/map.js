@@ -1,4 +1,9 @@
-// [2026-10-12 13:35] - js/world/map.js: v0.0.6 Katakomben-Kartenaufbau
+// [2026-10-12 13:50] - js/world/map.js: v0.0.8 Bugfix für Monster-Wand-Spawns & Validiertes Layout
+// Änderungen:
+// - BUGFIX: Koordinaten für Monster und Truhen werden strikt gegen Wände geprüft (kein Spawn in Wänden oder Säulen mehr).
+// - Methode `findSafeFloorTile`: Garantiert freie Bodenkacheln für alle Entitäten.
+// - Event `fx:encounter` bei Kollision mit Monstern für Schock- und Ruckeleffekte.
+
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
 import { MONSTER_TYPES } from '../data/monsters.js';
@@ -34,35 +39,92 @@ export class WorldMap {
       if (needDiscInit) state.world.discovered.push(discRow);
     }
 
+    // Grabkammern platzieren
     this.createChamber(4, 3, 5, 4);
     this.createChamber(12, 7, 5, 4);
     this.createPillars();
 
+    // Validiere Truhenspawns (NUR auf TILE_FLOOR)
     if (!state.world.chests || state.world.chests.length === 0) {
       state.world.chests = [
-        { id: 'c1', x: 7, y: 5, opened: false, item: 'iron_sword', caps: 25 },
-        { id: 'c2', x: 15, y: 9, opened: false, item: 'chainmail', caps: 35 },
-        { id: 'c3', x: 17, y: 3, opened: false, item: 'health_potion', caps: 15 }
+        { id: 'c1', ...this.findSafeFloorTile(6, 5), opened: false, item: 'iron_sword', caps: 25 },
+        { id: 'c2', ...this.findSafeFloorTile(14, 9), opened: false, item: 'chainmail', caps: 35 },
+        { id: 'c3', ...this.findSafeFloorTile(17, 3), opened: false, item: 'health_potion', caps: 15 }
       ];
+    } else {
+      // Bestehende Kisten korrigieren, falls in Wand gespeichert
+      state.world.chests.forEach(c => {
+        if (this.isWall(c.x, c.y)) {
+          const safe = this.findSafeFloorTile(c.x, c.y);
+          c.x = safe.x;
+          c.y = safe.y;
+        }
+      });
     }
 
+    // Validiere Monsterspawns (NUR auf TILE_FLOOR)
     if (!state.world.monsters || state.world.monsters.length === 0) {
       state.world.monsters = [
-        { id: 'm1', ...MONSTER_TYPES.goblin, x: 5, y: 8, hp: 22 },
-        { id: 'm2', ...MONSTER_TYPES.goblin, x: 8, y: 3, hp: 22 },
-        { id: 'm3', ...MONSTER_TYPES.skeleton_warrior, x: 13, y: 4, hp: 38 },
-        { id: 'm4', ...MONSTER_TYPES.skeleton_warrior, x: 10, y: 12, hp: 38 },
-        { id: 'm5', ...MONSTER_TYPES.crypt_lord, x: 16, y: 11, hp: 65 }
+        { id: 'm1', ...MONSTER_TYPES.goblin, ...this.findSafeFloorTile(5, 8), hp: 22 },
+        { id: 'm2', ...MONSTER_TYPES.goblin, ...this.findSafeFloorTile(10, 3), hp: 22 },
+        { id: 'm3', ...MONSTER_TYPES.skeleton_warrior, ...this.findSafeFloorTile(14, 4), hp: 38 },
+        { id: 'm4', ...MONSTER_TYPES.skeleton_warrior, ...this.findSafeFloorTile(10, 12), hp: 38 },
+        { id: 'm5', ...MONSTER_TYPES.crypt_lord, ...this.findSafeFloorTile(16, 11), hp: 65 }
       ];
+    } else {
+      // Bereits gespeicherte Monster korrigieren, falls sie in Wänden standen!
+      state.world.monsters.forEach(m => {
+        if (this.isWall(m.x, m.y)) {
+          const safe = this.findSafeFloorTile(m.x, m.y);
+          m.x = safe.x;
+          m.y = safe.y;
+        }
+      });
     }
 
     this.revealTorchLight(state.player.x, state.player.y);
+  }
+
+  isWall(x, y) {
+    if (x <= 0 || x >= state.world.cols - 1 || y <= 0 || y >= state.world.rows - 1) return true;
+    const t = state.world.tiles[y][x];
+    return t === TILE_STONE_WALL || t === TILE_CRYPT_CHAMBER;
+  }
+
+  findSafeFloorTile(prefX, prefY) {
+    // Falls Wunschkoordinate frei ist
+    if (!this.isWall(prefX, prefY) && !this.isOccupied(prefX, prefY)) {
+      return { x: prefX, y: prefY };
+    }
+
+    // Spiralförmige Suche nach der nächsten freien Kachel
+    for (let r = 1; r < 8; r++) {
+      for (let dy = -r; dy <= r; dy++) {
+        for (let dx = -r; dx <= r; dx++) {
+          const testX = prefX + dx;
+          const testY = prefY + dy;
+          if (!this.isWall(testX, testY) && !this.isOccupied(testX, testY)) {
+            return { x: testX, y: testY };
+          }
+        }
+      }
+    }
+    return { x: 2, y: 2 };
+  }
+
+  isOccupied(x, y) {
+    if (x === state.player.x && y === state.player.y) return true;
+    if (x === state.trader.x && y === state.trader.y) return true;
+    if (state.world.chests && state.world.chests.some(c => c.x === x && c.y === y)) return true;
+    if (state.world.monsters && state.world.monsters.some(m => m.x === x && m.y === y)) return true;
+    return false;
   }
 
   createChamber(rx, ry, rw, rh) {
     for (let y = ry; y < ry + rh; y++) {
       for (let x = rx; x < rx + rw; x++) {
         if (x === rx || x === rx + rw - 1 || y === ry || y === ry + rh - 1) {
+          // Offener Durchgang
           if (!(x === rx + 2 && y === ry)) {
             state.world.tiles[y][x] = TILE_CRYPT_CHAMBER;
           }
@@ -100,8 +162,7 @@ export class WorldMap {
 
     if (newX < 0 || newX >= state.world.cols || newY < 0 || newY >= state.world.rows) return;
 
-    const tile = state.world.tiles[newY][newX];
-    if (tile === TILE_STONE_WALL || tile === TILE_CRYPT_CHAMBER) {
+    if (this.isWall(newX, newY)) {
       eventBus.emit('log:message', 'Eine massive Steinmauer versperrt den Pfad.');
       return;
     }
@@ -113,6 +174,8 @@ export class WorldMap {
 
     const mon = state.world.monsters.find(m => m.x === newX && m.y === newY);
     if (mon) {
+      // Schock-Effekt und Gefecht starten
+      eventBus.emit('fx:encounter', { x: newX, y: newY });
       eventBus.emit('combat:engage', mon);
       return;
     }

@@ -1,17 +1,16 @@
 <!--
-[2026-10-12 13:35] - index.html: v0.0.6 Gothic Dialoge, Todesbildschirm & Autonome Schadensanimationen
+[2026-10-12 13:50] - index.html: v0.0.8 Visuelle Effekte für Schatztruhen & Gefechtsbegegnungen
 Änderungen:
-- Vollständiger Ersatz aller Browser-Alerts/-Confirms durch Dark-Fantasy Dialog-Modale.
-- Eigener Todesbildschirm (#game-over-modal) im Gothic-Design mit Auferstehungs- und Neustart-Möglichkeiten.
-- Universelles Fantasy-Benachrichtigungs- und Bestätigungsfenster (#fantasy-modal).
-- Kontinuierliche Canvas-Animationsschleife für automatisch verblassende Kampfzahlen ohne Spielerbewegung.
+- Neuer Canvas-Effekt-Layer für Partikel (Goldstaub, Fackelfunken, Klingenblitze).
+- Bildschirm-Schockwellen & Klingen-Slash bei Monster-Begegnung.
+- Bereinigte Spawn-Logik: Keine Monster oder Truhen in Wänden.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chroniken der Schattengruft - v0.0.6</title>
+  <title>Chroniken der Schattengruft - v0.0.8</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -22,7 +21,7 @@
     <div class="boot-box">
       <div class="studio-emblem">⚔️ ᚱ ⚔️</div>
       <div class="studio-title">FORGE OF SHADOWS</div>
-      <div class="boot-subtitle">Initialisiere alte Siegel & Katakomben...</div>
+      <div class="boot-subtitle">Initialisiere alte Siegel & Partikeleffekte...</div>
       <div class="boot-progress-frame">
         <div id="boot-bar" class="boot-bar-fill"></div>
       </div>
@@ -44,7 +43,7 @@
         <span class="pulse-text">⚡ DRÜCKE [ENTER] ODER KLICKE ZUM STARTEN ⚡</span>
       </div>
 
-      <div class="title-footer-note">Version 0.0.6 • Speichert automatisch im Browser-Speicher</div>
+      <div class="title-footer-note">Version 0.0.8 • Dynamische Partikel- & Kampfeffekte</div>
     </div>
   </div>
 
@@ -103,7 +102,7 @@
     </div>
   </div>
 
-  <!-- TODES-BILDSCHIRM (CUSTOM DARK FANTASY GAME OVER) -->
+  <!-- TODES-BILDSCHIRM (GAME OVER) -->
   <div id="game-over-modal" class="overlay-screen hidden">
     <div class="death-box">
       <div class="death-skull">💀</div>
@@ -123,7 +122,7 @@
     </div>
   </div>
 
-  <!-- UNIVERSELLES FANTASY-MODAL (Ersetzt alert() und confirm()) -->
+  <!-- UNIVERSELLES FANTASY-MODAL -->
   <div id="fantasy-modal" class="overlay-screen hidden">
     <div class="fantasy-modal-box">
       <div id="fantasy-modal-icon" class="modal-icon">📜</div>
@@ -164,6 +163,7 @@
       </div>
 
       <div class="hud-group save-group">
+        <button id="btn-sound-toggle" class="btn btn-small" title="Ton stummschalten / aktivieren">🔊 Ton: An</button>
         <button id="btn-save-game" class="btn btn-small" title="Spielstand sichern">📜 Speichern</button>
         <button id="btn-reset-game" class="btn btn-small btn-danger" title="Neue Heldenreise">⚔️ Neubeginn</button>
       </div>
@@ -173,11 +173,12 @@
     <main id="viewport-container">
       <div id="canvas-wrapper">
         <canvas id="stage" width="640" height="480"></canvas>
-        <div id="map-overlay-tip">WASD / Pfeile zum Bewegen • 🔮 Alchemist Eldrin bei [X:3, Y:4]</div>
+        <!-- Begegnungs-Vignette (Flash) -->
+        <div id="encounter-flash" class="encounter-vignette hidden"></div>
+        <div id="map-overlay-tip">WASD / Pfeile zum Bewegen • 🔮 Alchemist bei [X:3, Y:4]</div>
       </div>
 
       <aside id="dashboard">
-        <!-- TABS -->
         <div class="tab-header">
           <button class="tab-btn active" data-tab="tab-inventory">Inventar</button>
           <button class="tab-btn" data-tab="tab-quests">Quests <span id="quest-badge" class="badge-count">0</span></button>
@@ -185,20 +186,17 @@
           <button class="tab-btn" data-tab="tab-logs">Chronik</button>
         </div>
 
-        <!-- TAB INVENTAR -->
         <div id="tab-inventory" class="tab-content active">
           <div class="panel-subtitle">Gürteltasche (<span id="inv-count">0</span> / 15 Plätze)</div>
           <div id="inventory-grid" class="item-grid"></div>
           <div id="item-details" class="item-details-box">Wähle einen Gegenstand für Runendetails.</div>
         </div>
 
-        <!-- TAB QUESTS -->
         <div id="tab-quests" class="tab-content">
           <div class="panel-subtitle">Aufgaben des Ordens</div>
           <div id="quest-list" class="quest-container"></div>
         </div>
 
-        <!-- TAB CHARAKTER -->
         <div id="tab-character" class="tab-content">
           <div class="panel-subtitle">Rüstzeug & Kampffähigkeiten</div>
           <div class="equipment-section">
@@ -213,7 +211,6 @@
           </div>
         </div>
 
-        <!-- TAB LOGS -->
         <div id="tab-logs" class="tab-content">
           <div class="panel-subtitle">Schlachten-Chronik</div>
           <div id="activity-log"></div>

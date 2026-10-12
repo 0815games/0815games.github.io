@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/systems/quest.js: v0.0.6 Quest-System des Ordens
+// [2026-10-12 13:50] - js/systems/quest.js: v0.0.8 Quest-System
 import { state } from '../core/state.js';
 import { QUEST_DATABASE } from '../data/quests.js';
 import { eventBus } from '../core/eventBus.js';
@@ -99,6 +99,7 @@ export class QuestSystem {
       this.invSys.addItem(proto.rewardItem, proto.rewardCount || 1);
     }
 
+    eventBus.emit('audio:levelup');
     eventBus.emit('log:message', `🏆 AUFGABE VOLLBRACHT: "${proto.title}"!`);
     eventBus.emit('log:message', `Lohn: +${proto.rewardCaps} Gold, +${proto.rewardExp} EP!`);
     eventBus.emit('fx:dmg', { text: 'QUEST ERFÜLLT!', x: state.player.x, y: state.player.y, color: '#ffd54f' });
@@ -124,6 +125,7 @@ export class QuestSystem {
       state.player.mp = state.player.maxMp;
       state.player.baseAtk += 2;
       state.player.baseDef += 1;
+      eventBus.emit('audio:levelup');
       eventBus.emit('log:message', `⭐ LEVEL-UP! Du hast Heldenstufe ${state.player.level} erklommen!`);
     }
   }

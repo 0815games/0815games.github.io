@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/ui/introFlow.js: v0.0.6 Intro- & Sequenz-Controller
+// [2026-10-12 13:50] - js/ui/introFlow.js: v0.0.8 Intro-Controller
 import { state, CLASS_PROFILES } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { eventBus } from '../core/eventBus.js';

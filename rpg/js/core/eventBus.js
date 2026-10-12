@@ -1,4 +1,4 @@
-// [2026-10-12 13:35] - js/core/eventBus.js: v0.0.6 Ereignisverwaltung
+// [2026-10-12 13:50] - js/core/eventBus.js: v0.0.8 Ereignisverwaltung
 class EventBus {
   constructor() {
     this.events = new Map();

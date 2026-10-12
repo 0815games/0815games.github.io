@@ -1,19 +1,16 @@
-// [2026-10-12 13:35] - js/ui/uiManager.js: v0.0.6 UI-Manager mit Todes-Modal Steuerung
-// Änderungen:
-// - Todesbildschirm mit Statistik-Rückblick und Auferstehungslogik.
-// - Vollständiger Verzicht auf native Alerts.
-
+// [2026-10-12 13:50] - js/ui/uiManager.js: v0.0.8 UI-Manager
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { QUEST_DATABASE } from '../data/quests.js';
 
 export class UIManager {
-  constructor(inventorySys, combatSys, shopSys, storageSys, questSys) {
+  constructor(inventorySys, combatSys, shopSys, storageSys, questSys, audioSys) {
     this.invSys = inventorySys;
     this.combatSys = combatSys;
     this.shopSys = shopSys;
     this.storageSys = storageSys;
     this.questSys = questSys;
+    this.audioSys = audioSys;
     this.shopMode = 'buy';
     this.selectedInvSlot = null;
 
@@ -22,6 +19,7 @@ export class UIManager {
     this.initShopEvents();
     this.initStorageButtons();
     this.initDeathScreen();
+    this.initSoundToggle();
   }
 
   initTabs() {
@@ -76,6 +74,16 @@ export class UIManager {
     if (resetBtn) resetBtn.addEventListener('click', () => this.storageSys.resetGame());
   }
 
+  initSoundToggle() {
+    const soundBtn = document.getElementById('btn-sound-toggle');
+    if (soundBtn && this.audioSys) {
+      soundBtn.addEventListener('click', () => {
+        const isAudible = this.audioSys.toggleMute();
+        soundBtn.innerText = isAudible ? '🔊 Ton: An' : '🔇 Ton: Aus';
+      });
+    }
+  }
+
   initDeathScreen() {
     const respawnBtn = document.getElementById('btn-respawn');
     const deathReloadBtn = document.getElementById('btn-death-reload');
@@ -83,7 +91,6 @@ export class UIManager {
 
     if (respawnBtn) {
       respawnBtn.addEventListener('click', () => {
-        // Am Startsektor mit 50% Leben & vollem Mana auferstehen
         state.player.hp = Math.floor(state.player.maxHp * 0.6);
         state.player.mp = state.player.maxMp;
         state.player.x = 2;

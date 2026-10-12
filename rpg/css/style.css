@@ -1,9 +1,8 @@
 /*
-[2026-10-12 13:35] - css/style.css: v0.0.6 Gothic Dialoge & Todesbildschirm Styling
+[2026-10-12 13:50] - css/style.css: v0.0.8 Begegnungs-Flash & Partikelstile
 Änderungen:
-- Todes-Modal (.death-box) mit finsterem Totenschädel-Effekt, roten Tiefenschatten und Statistik-Rückblick.
-- Universelles Fantasy-Modal (.fantasy-modal-box) für Benachrichtigungen und Bestätigungen im Spielstil.
-- Fließende Animationen für fliegende Schadens- und Heilschriften.
+- Animierte Vignette (.encounter-vignette) für blitzartigen Schock-Effekt bei Feindkontakt.
+- Visuelle Schockwellen (.shake-canvas) für Treffer- und Kisten-Feedback.
 */
 
 :root {
@@ -41,7 +40,6 @@ body {
   overflow-x: hidden;
 }
 
-/* OVERLAYS */
 .overlay-screen {
   position: fixed;
   top: 0;
@@ -56,7 +54,6 @@ body {
   padding: 20px;
 }
 
-/* 1. BOOT-SCREEN */
 .boot-box {
   text-align: center;
   display: flex;
@@ -108,7 +105,6 @@ body {
   margin-top: 10px;
 }
 
-/* 2. TITLE-SCREEN */
 .title-container {
   display: flex;
   flex-direction: column;
@@ -167,7 +163,6 @@ body {
   color: #636b80;
 }
 
-/* 3. CHARAKTER-AUSWAHL */
 .char-select-box {
   background: var(--bg-stone);
   border: 2px solid var(--border-gold);
@@ -292,7 +287,6 @@ body {
   background: var(--gold-glow);
 }
 
-/* 4. TODES-MODAL (DARK FANTASY GAME OVER) */
 .death-box {
   background: #110d10;
   border: 2px solid var(--ruby-red);
@@ -335,7 +329,6 @@ body {
   font-size: 12px;
 }
 
-/* 5. UNIVERSELLES FANTASY-MODAL (Alert/Confirm) */
 .fantasy-modal-box {
   background: var(--bg-stone);
   border: 2px solid var(--border-gold);
@@ -375,7 +368,6 @@ body {
   margin-top: 8px;
 }
 
-/* HAUPTSPIEL-CONTAINER */
 #game-app {
   width: 100%;
   max-width: 1040px;
@@ -389,7 +381,6 @@ body {
   border-radius: 4px;
 }
 
-/* HUD */
 #hud {
   display: flex;
   flex-wrap: wrap;
@@ -475,7 +466,6 @@ body {
   gap: 6px;
 }
 
-/* VIEWPORT CONTAINER */
 #viewport-container {
   display: flex;
   flex-wrap: wrap;
@@ -489,12 +479,30 @@ body {
   display: inline-block;
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95);
   border-radius: 3px;
+  overflow: hidden;
 }
 
 canvas#stage {
   display: block;
   background: #06070a;
   image-rendering: pixelated;
+  transition: transform 0.05s ease;
+}
+
+.shake-canvas {
+  animation: canvas-shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* ENCOUNTER FLASH VIGNETTE */
+.encounter-vignette {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(255, 30, 30, 0.4) 0%, rgba(200, 0, 0, 0.85) 80%, rgba(100, 0, 0, 0.95) 100%);
+  animation: flash-fade 0.45s ease-out forwards;
 }
 
 #map-overlay-tip {
@@ -507,9 +515,9 @@ canvas#stage {
   color: #c5cbd8;
   border: 1px solid var(--border-iron);
   border-radius: 2px;
+  z-index: 2;
 }
 
-/* DASHBOARD & TABS */
 #dashboard {
   flex: 1;
   min-width: 300px;
@@ -577,7 +585,6 @@ canvas#stage {
   padding-bottom: 4px;
 }
 
-/* INVENTAR */
 .item-grid {
   display: flex;
   flex-direction: column;
@@ -614,7 +621,6 @@ canvas#stage {
   color: #d1d5db;
 }
 
-/* QUESTS */
 .quest-container {
   display: flex;
   flex-direction: column;
@@ -661,7 +667,6 @@ canvas#stage {
   color: var(--gold-glow);
 }
 
-/* CHARAKTER TAB */
 .equipment-section {
   display: flex;
   flex-direction: column;
@@ -687,7 +692,6 @@ canvas#stage {
   border-radius: 2px;
 }
 
-/* LOGS */
 #activity-log {
   flex: 1;
   height: 320px;
@@ -702,7 +706,6 @@ canvas#stage {
   border-radius: 2px;
 }
 
-/* GEFECHTSPANEL */
 .combat-panel {
   position: absolute;
   top: 0;
@@ -778,7 +781,6 @@ canvas#stage {
   gap: 8px;
 }
 
-/* HÄNDLER PANEL */
 .shop-panel {
   position: absolute;
   top: 0;
@@ -866,7 +868,6 @@ canvas#stage {
   border-color: #64b5f6;
 }
 
-/* BUTTONS */
 .btn {
   background: #24293c;
   color: #fff;
@@ -912,7 +913,6 @@ canvas#stage {
   display: none !important;
 }
 
-/* MOBILE DPAD */
 #mobile-controls {
   display: flex;
   justify-content: center;
@@ -950,4 +950,16 @@ canvas#stage {
   0% { box-shadow: 0 0 25px rgba(211, 47, 47, 0.4); }
   50% { box-shadow: 0 0 45px rgba(211, 47, 47, 0.8); }
   100% { box-shadow: 0 0 25px rgba(211, 47, 47, 0.4); }
+}
+
+@keyframes flash-fade {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes canvas-shake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(3px, -1px, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 2px, 0); }
+  40%, 60% { transform: translate3d(3px, -2px, 0); }
 }

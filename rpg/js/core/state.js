@@ -1,7 +1,4 @@
-// [2026-10-12 13:35] - js/core/state.js: v0.0.6 Held & Weltzustand
-// Änderungen:
-// - Klassen-Profile und Spielzustand.
-
+// [2026-10-12 13:50] - js/core/state.js: v0.0.8 Held & Weltzustand
 export const CLASS_PROFILES = {
   warrior: {
     className: 'Eisenbrecher',

@@ -1,28 +1,19 @@
 # CHANGELOG
 
+## [v0.0.8] - 2026-10-12 13:50 (Bugfix Monster-in-Wand & Visuelle Effekte für Truhen/Begegnung)
+- [BUGFIX] `WorldMap`: Kollisionsprüfung beim Spawnen von Monstern und Truhen implementiert (`findSafeFloorTile`). Koordinaten wie `[8, 3]` (Mauerecke der Grabkammer) und Säulenbereiche werden dynamisch abgewiesen, sodass Monster ausnahmslos auf freien Bodenkacheln stehen.
+- [FX] **Schatztruhen-Partikelexplosion (`triggerChestBurst`):** Beim Öffnen einer Truhe bricht ein Funkenregen aus Goldstaub hervor, die Truhe wechselt grafisch in einen geöffneten Zustand und blendet "✨ REICHTUM!" ein.
+- [FX] **Feindkontakt-Schock (`triggerEncounterSlash`):** Beim Zusammentreffen mit Monstern zuckt ein blutroter Klingenblitz über die betroffene Kachel, der Bildschirm wackelt (`.shake-canvas`) und eine rote Schock-Vignette pulsiert kurz auf.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.8 generiert.
+
+## [v0.0.7] - 2026-10-12 13:45 (Web Audio API Soundeffekte & Sound-Toggle)
+- [AUDIO] `js/systems/audio.js` implementiert: Vollständig autarker Web-Audio-Synthesizer erzeugt prozedurale Soundeffekte ohne externe MP3s:
+  - Schwertschlag, Feuerball, Heiltrank, Schatztruhe, Verwundung, Schritte, Level-Up und Todesgong.
+- [UI] Sound-Umschalter `#btn-sound-toggle` (🔊 Ton: An / 🔇 Ton: Aus) direkt im oberen HUD verdrahtet.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.7 generiert.
+
 ## [v0.0.6] - 2026-10-12 13:35 (Gothic-Dialoge, Todesbildschirm & Autonome Schadenszahlen)
 - [RENDER] `WorldRenderer`: Umstellung auf kontinuierliche 60fps-Animationsschleife (`requestAnimationFrame`). Schwebende Schadens-, Heil- und Goldzahlen bewegen sich selbstständig nach oben und verblassen sauber nach 1,2 Sekunden, ohne dass der Spieler sich bewegen muss.
-- [UI] **Todesbildschirm (#game-over-modal):** Vollwertiges Dark-Fantasy Game-Over-Fenster ersetzt natives `alert()`. Bietet Statistik-Rückblick (Stufe, Gold, Räume) sowie zwei Optionen: "Am Siegel auferstehen" (Weiterspielen mit 60% Leben) oder "Neubeginn" (Zurücksetzen).
-- [UI] **Spieleigene Benachrichtigungen & Abfragen (`modalManager.js`):** Universelles Fantasy-Modal (#fantasy-modal) ersetzt alle Browser-Alerts und Confirms (z.B. beim Spielstand-Reset).
-- [ANIMATION] Flackernder Fackelschein läuft jetzt mit 60fps flüssig und realistisch im Hintergrund.
+- [UI] **Todesbildschirm (#game-over-modal):** Vollwertiges Dark-Fantasy Game-Over-Fenster ersetzt natives `alert()`.
+- [UI] **Spieleigene Benachrichtigungen & Abfragen (`modalManager.js`):** Universelles Fantasy-Modal (#fantasy-modal) ersetzt alle Browser-Alerts und Confirms.
 - [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.6 generiert.
-
-## [v0.0.5] - 2026-10-12 13:30 (Favicon, Boot-Animation, Titel- & Klassenwahl)
-- [ASSETS] `favicon.ico`: Echtes 32x32 Pixel-Art Favicon (Goldschwert & Rubinemblem) generiert und in `index.html` verlinkt.
-- [BOOT] Vollbild-Boot-Sequenz mit Studio-Logo ("Forge of Shadows"), Ladebalken und Runen-Initialisierung integriert (Klickbar zum Überspringen).
-- [TITLE] Stimmungsvoller Titelbildschirm mit dunklem Fantasy-Wappen ("CHRONIKEN DER SCHATTENGRUFT") und "DRÜCKE [ENTER] ODER KLICKE ZUM STARTEN".
-- [CHAR-SELECT] Klassenwahl mit 3 Archetypen implementiert (Eisenbrecher, Arkanist, Schattenläufer).
-- [UI] Neuer Controller `js/ui/introFlow.js` verbindet den Startablauf nahtlos mit dem Spielzustand.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.5 generiert.
-
-## [v0.0.4] - 2026-10-12 13:25 (Genre-Wechsel zu Dark Fantasy)
-- [THEME] Kompletter optischer und thematischer Wechsel von Wasteland/Pip-Boy auf Dark Fantasy Dungeon-Crawler ("Chroniken der Schattengruft").
-- [UI] Edles Gothic-Interface mit Schiefergrau, Eisenbeschlägen, Fackelakzenten, rubinroter Lebensleiste (TP) und saphirblauer Manaleiste (MP).
-- [COMBAT] Magie-Mechanik eingeführt: Zauber "Feuerball" (verbraucht 8 MP) für magischen Durchschlagsschaden im Kampf.
-- [RENDER] Dynamischer, flackernder Fackelschein um den Helden auf dunklen Schiefer- und Gruftkacheln.
-- [BESTIARIUM] Neue Gegner: Goblin-Plünderer, Skelettkrieger und Dunkler Gruftfürst (Boss).
-- [ITEMS] Neues Sortiment: Rubinrote Heiltränke, Manatränke, Langschwerter, Runenklingen, Kettenhemden, Zwergenharnische und Schattensplitter.
-- [NPC] Händler zu "Meister Eldrin (Alchemist)" umgestaltet mit Tränken, Rüstzeug und Goldwährung.
-- [QUESTS] Fantasy-Aufgabenreihe: "Schatten im Gemäuer", "Der Alchemist der Tiefe", "Seelensplitter-Ernte" und "Das Ende des Gruftfürsten".
-- [STORAGE] Neuer Persistenz-Schlüssel `dark_fantasy_rpg_v004` zur Speicherung aller Werte inklusive Manapunkte.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.4 generiert.

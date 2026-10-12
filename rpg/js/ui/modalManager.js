@@ -1,8 +1,4 @@
-// [2026-10-12 13:35] - js/ui/modalManager.js: v0.0.6 Gothic Modal- & Dialogverwaltung
-// Änderungen:
-// - Verwaltet Dark-Fantasy Bestätigungsdialoge und Benachrichtigungen im Spieleigenen Look.
-// - Schirmt alle Interaktionen ab und hebt Sperren nach Quittierung sauber auf.
-
+// [2026-10-12 13:50] - js/ui/modalManager.js: v0.0.8 Modal-Verwaltung
 import { state } from '../core/state.js';
 
 export class ModalManager {

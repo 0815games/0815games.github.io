@@ -1,7 +1,8 @@
-// [2026-10-12 13:35] - js/world/render.js: v0.0.6 Autonome Animationsschleife für Zahlen & Licht
+// [2026-10-12 13:50] - js/world/render.js: v0.0.8 Visuelle Effekte, Partikelexplosion & Kamera-Shake
 // Änderungen:
-// - `requestAnimationFrame`-Gameloop: Schwebende Schadens- und Heilzahlen bewegen sich und verblassen autonom ohne Spielerbewegung.
-// - Fackelschein pulsiert fließend im 60fps-Takt.
+// - Partikelsystem: Goldfunken-Explosion beim Plündern von Schatztruhen.
+// - Blutroter Klingenblitz & Schockwellen-Shader bei Monster-Begegnung.
+// - Aufsteigende Lichtsäule bei geöffneten Reliquientruhen.
 
 import { state } from '../core/state.js';
 import { TILE_STONE_WALL, TILE_CRYPT_CHAMBER } from './map.js';
@@ -12,6 +13,8 @@ export class WorldRenderer {
     this.ctx = this.canvas.getContext('2d');
     this.tileSize = 32;
     this.floatingTexts = [];
+    this.particles = [];
+    this.slashes = [];
     this.torchFlicker = 0;
     this.isRunning = false;
     this.lastTimestamp = performance.now();
@@ -41,22 +44,90 @@ export class WorldRenderer {
       y: y * this.tileSize,
       alpha: 1.0,
       color,
-      speed: 28 // Pixel pro Sekunde
+      speed: 28
     });
   }
 
+  // Partikelexplosion für Truhen
+  triggerChestBurst(tileX, tileY) {
+    const originX = tileX * this.tileSize + 16;
+    const originY = tileY * this.tileSize + 16;
+
+    for (let i = 0; i < 28; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 40 + Math.random() * 90;
+      this.particles.push({
+        x: originX,
+        y: originY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 20,
+        size: 2 + Math.random() * 3,
+        color: Math.random() > 0.3 ? '#ffd700' : '#ff9100',
+        alpha: 1.0,
+        decay: 1.2 + Math.random() * 0.8
+      });
+    }
+
+    // Goldene Lichtsäule
+    this.addFloatingText('✨ REICHTUM!', tileX, tileY - 0.5, '#ffe082');
+  }
+
+  // Monster-Begegnung Slash-Effekt
+  triggerEncounterSlash(tileX, tileY) {
+    const originX = tileX * this.tileSize + 16;
+    const originY = tileY * this.tileSize + 16;
+
+    this.slashes.push({
+      x: originX,
+      y: originY,
+      radius: 4,
+      maxRadius: 36,
+      alpha: 1.0
+    });
+
+    // Rüttel-Effekt am Canvas-Wrapper
+    const wrapper = document.getElementById('canvas-wrapper');
+    if (wrapper) {
+      wrapper.classList.remove('shake-canvas');
+      void wrapper.offsetWidth; // Trigger Reflow
+      wrapper.classList.add('shake-canvas');
+    }
+  }
+
   update(deltaTime) {
-    // 1. Schwebende Texte aktualisieren und verblassen lassen
+    // 1. Schwebende Texte
     for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
       const ft = this.floatingTexts[i];
       ft.y -= ft.speed * deltaTime;
-      ft.alpha -= 0.85 * deltaTime; // Verschwindet nach ca. 1.2 Sekunden
+      ft.alpha -= 0.85 * deltaTime;
       if (ft.alpha <= 0) {
         this.floatingTexts.splice(i, 1);
       }
     }
 
-    // 2. Fackelschein pulsieren
+    // 2. Partikel aktualisieren
+    for (let i = this.particles.length - 1; i >= 0; i--) {
+      const p = this.particles[i];
+      p.x += p.vx * deltaTime;
+      p.y += p.vy * deltaTime;
+      p.vy += 80 * deltaTime; // Schwerkraft
+      p.alpha -= p.decay * deltaTime;
+      if (p.alpha <= 0) {
+        this.particles.splice(i, 1);
+      }
+    }
+
+    // 3. Klingenblitze / Slashes
+    for (let i = this.slashes.length - 1; i >= 0; i--) {
+      const s = this.slashes[i];
+      s.radius += (s.maxRadius - s.radius) * 12 * deltaTime;
+      s.alpha -= 2.5 * deltaTime;
+      if (s.alpha <= 0) {
+        this.slashes.splice(i, 1);
+      }
+    }
+
+    // 4. Fackelschein
     this.torchFlicker = Math.sin(Date.now() / 180) * 2.5;
   }
 
@@ -108,10 +179,25 @@ export class WorldRenderer {
       if (discovered[c.y] && discovered[c.y][c.x]) {
         const sx = c.x * tileSize;
         const sy = c.y * tileSize;
-        ctx.fillStyle = c.opened ? '#3e2723' : '#ffb300';
-        ctx.fillRect(sx + 5, sy + 7, 22, 17);
-        ctx.fillStyle = '#212121';
-        ctx.fillRect(sx + 13, sy + 13, 6, 6);
+
+        if (c.opened) {
+          // Offene Truhe mit Heiligenschein
+          ctx.fillStyle = '#4e342e';
+          ctx.fillRect(sx + 5, sy + 10, 22, 14);
+          ctx.fillStyle = '#8d6e63';
+          ctx.fillRect(sx + 3, sy + 6, 26, 6);
+          ctx.fillStyle = '#ffd54f';
+          ctx.fillRect(sx + 10, sy + 12, 12, 4);
+        } else {
+          // Geschlossene, glänzende Goldtruhe
+          ctx.fillStyle = '#ffb300';
+          ctx.fillRect(sx + 5, sy + 7, 22, 17);
+          ctx.fillStyle = '#212121';
+          ctx.fillRect(sx + 13, sy + 13, 6, 6);
+          // Glanzlinie
+          ctx.fillStyle = '#fff8e1';
+          ctx.fillRect(sx + 7, sy + 9, 4, 2);
+        }
       }
     });
 
@@ -177,7 +263,32 @@ export class WorldRenderer {
     ctx.fillRect(px + 12, py + 11, 3, 2);
     ctx.fillRect(px + 17, py + 11, 3, 2);
 
-    // Schwebende Texte zeichnen
+    // Partikel rendern (Goldfunkeln)
+    this.particles.forEach(p => {
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+    });
+
+    // Klingenblitze rendern
+    this.slashes.forEach(s => {
+      ctx.strokeStyle = '#ff1744';
+      ctx.lineWidth = 3;
+      ctx.globalAlpha = Math.max(0, s.alpha);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Kreuzschnitt
+      ctx.beginPath();
+      ctx.moveTo(s.x - s.radius, s.y - s.radius);
+      ctx.lineTo(s.x + s.radius, s.y + s.radius);
+      ctx.moveTo(s.x + s.radius, s.y - s.radius);
+      ctx.lineTo(s.x - s.radius, s.y + s.radius);
+      ctx.stroke();
+    });
+
+    // Schwebende Texte
     this.floatingTexts.forEach(ft => {
       ctx.fillStyle = ft.color;
       ctx.globalAlpha = Math.max(0, ft.alpha);
