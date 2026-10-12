@@ -1,13 +1,161 @@
-// [2026-10-12 14:31] - v0.0.9: Rundenkampf, Run-Ende und dauerhafte Roguelite-Belohnung.
-import {state} from '../core/state.js';import {eventBus} from '../core/eventBus.js';
-export class CombatSystem{
- constructor(inv,storage,run){this.inv=inv;this.storage=storage;this.run=run;}
- startCombat(m){state.inCombat=true;state.activeMonster=m;eventBus.emit('combat:started',m);eventBus.emit('log:message',`${m.name} greift aus den Schatten an!`);}
- attack(spell=false){if(!state.inCombat||!state.activeMonster)return;const m=state.activeMonster;let dmg;if(spell){if(state.player.mp<8){eventBus.emit('combat:log','Nicht genügend Mana!');return;}state.player.mp-=8;dmg=Math.max(8,this.inv.getTotalAtk()*2-Math.floor(m.def*.5)+Math.floor(Math.random()*4));eventBus.emit('audio:fireball');}else{dmg=Math.max(1,this.inv.getTotalAtk()-m.def+Math.floor(Math.random()*4));eventBus.emit('audio:sword');}m.hp-=dmg;eventBus.emit('fx:dmg',{text:`-${dmg}`,x:m.x,y:m.y,color:'#ffb300'});if(m.hp<=0){this.win(m);return;}this.enemyTurn(m);}
- enemyTurn(m){const dmg=Math.max(1,m.atk-this.inv.getTotalDef()+Math.floor(Math.random()*3));state.player.hp=Math.max(0,state.player.hp-dmg);eventBus.emit('audio:hurt');eventBus.emit('fx:dmg',{text:`-${dmg}`,x:state.player.x,y:state.player.y,color:'#d32f2f'});if(state.player.hp<=0){this.end();this.run.finishRun();eventBus.emit('player:death');return;}eventBus.emit('combat:updated');eventBus.emit('hud:updated');}
- healInBattle(){const i=state.player.inventory.findIndex(x=>['health_potion','elixir_vitality'].includes(x.itemId));if(i<0){eventBus.emit('combat:log','Kein Heiltrank im Rucksack!');return;}this.inv.useItem(i);if(state.activeMonster)this.enemyTurn(state.activeMonster);}
- flee(){if(Math.random()>(state.player.classId==='rogue'?.3:.45)){this.end();eventBus.emit('log:message','Du entkommst in die Schatten.');}else this.enemyTurn(state.activeMonster);}
- win(m){state.player.caps+=Math.floor(Math.random()*(m.maxCaps-m.minCaps+1))+m.minCaps;state.player.exp+=m.exp;for(const l of m.loot||[])if(Math.random()<l.chance)this.inv.addItem(l.id);state.world.monsters=state.world.monsters.filter(x=>x.id!==m.id);eventBus.emit('monster:killed',m.typeId);this.levelUp();this.end();this.storage.saveGame(true);}
- levelUp(){if(state.player.exp>=state.player.nextExp){state.player.level++;state.player.exp-=state.player.nextExp;state.player.nextExp=Math.floor(state.player.nextExp*1.5);state.player.maxHp+=15;state.player.maxMp+=10;state.player.hp=state.player.maxHp;state.player.mp=state.player.maxMp;state.player.baseAtk+=2;state.player.baseDef++;eventBus.emit('audio:levelup');eventBus.emit('log:message',`LEVEL-UP: Stufe ${state.player.level}!`);}}
- end(){state.inCombat=false;state.activeMonster=null;eventBus.emit('combat:ended');eventBus.emit('hud:updated');}
+// [2026-10-12 18:55] - js/systems/combat.js: v0.0.9 Gefecht & Roguelite Run-Ende
+import { state } from '../core/state.js';
+import { eventBus } from '../core/eventBus.js';
+
+export class CombatSystem {
+  constructor(inventorySys, storageSys) {
+    this.invSys = inventorySys;
+    this.storageSys = storageSys;
+  }
+
+  startCombat(monster) {
+    state.inCombat = true;
+    state.activeMonster = monster;
+    eventBus.emit('combat:started', monster);
+    eventBus.emit('log:message', `Ein feindseliger ${monster.name} tritt aus den Schatten hervor!`);
+  }
+
+  attack(useSpell = false) {
+    if (!state.inCombat || !state.activeMonster) return;
+    const m = state.activeMonster;
+
+    let baseDmg = this.invSys.getTotalAtk();
+    let playerDmg = 0;
+
+    if (useSpell) {
+      if (state.player.mp < 8) {
+        eventBus.emit('combat:log', 'Nicht genügend Mana für einen Feuerball!');
+        return;
+      }
+      state.player.mp -= 8;
+      playerDmg = Math.max(8, (baseDmg * 2) - Math.floor(m.def * 0.5) + Math.floor(Math.random() * 4));
+      eventBus.emit('audio:fireball');
+      eventBus.emit('combat:log', `🔥 FEUERBALL entfacht! ${m.name} verbrennt für ${playerDmg} Schaden!`);
+    } else {
+      playerDmg = Math.max(1, baseDmg - m.def + Math.floor(Math.random() * 4));
+      eventBus.emit('audio:sword');
+      eventBus.emit('combat:log', `Du triffst ${m.name} für ${playerDmg} Schaden.`);
+    }
+
+    m.hp -= playerDmg;
+    eventBus.emit('fx:dmg', { text: `-${playerDmg}`, x: m.x, y: m.y, color: '#ffb300' });
+
+    if (m.hp <= 0) {
+      this.winCombat(m);
+      return;
+    }
+
+    // Gegenangriff
+    const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef() + Math.floor(Math.random() * 3));
+    state.player.hp = Math.max(0, state.player.hp - monDmg);
+    eventBus.emit('audio:hurt');
+    eventBus.emit('combat:log', `${m.name} schlägt erbarmungslos zurück: -${monDmg} TP!`);
+    eventBus.emit('fx:dmg', { text: `-${monDmg}`, x: state.player.x, y: state.player.y, color: '#d32f2f' });
+
+    if (state.player.hp <= 0) {
+      eventBus.emit('combat:log', 'Deine Lebenskraft ist erloschen...');
+      this.endCombat();
+      eventBus.emit('player:death');
+      return;
+    }
+
+    eventBus.emit('combat:updated');
+    eventBus.emit('hud:updated');
+  }
+
+  healInBattle() {
+    const potIdx = state.player.inventory.findIndex(i => (i.itemId === 'health_potion' || i.itemId === 'elixir_vitality') && i.count > 0);
+    if (potIdx === -1) {
+      eventBus.emit('combat:log', 'Kein Heiltrank im Rucksack!');
+      return;
+    }
+
+    this.invSys.useItem(potIdx);
+    eventBus.emit('audio:potion');
+    eventBus.emit('combat:log', 'Heiltrank im Kampf getrunken!');
+
+    if (state.activeMonster) {
+      const m = state.activeMonster;
+      const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
+      state.player.hp = Math.max(0, state.player.hp - monDmg);
+      eventBus.emit('audio:hurt');
+      eventBus.emit('combat:log', `${m.name} attackiert während des Trinkens: -${monDmg} TP.`);
+      if (state.player.hp <= 0) {
+        this.endCombat();
+        eventBus.emit('player:death');
+        return;
+      }
+    }
+
+    eventBus.emit('combat:updated');
+    eventBus.emit('hud:updated');
+  }
+
+  flee() {
+    const fleeThreshold = state.player.classId === 'rogue' ? 0.3 : 0.45;
+    if (Math.random() > fleeThreshold) {
+      eventBus.emit('log:message', 'Erfolgreich in den Schutz der Schatten geflohen!');
+      this.endCombat();
+    } else {
+      eventBus.emit('combat:log', 'Rückzug abgeschnitten!');
+      const m = state.activeMonster;
+      const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
+      state.player.hp = Math.max(0, state.player.hp - monDmg);
+      eventBus.emit('audio:hurt');
+      if (state.player.hp <= 0) {
+        this.endCombat();
+        eventBus.emit('player:death');
+        return;
+      }
+      eventBus.emit('combat:updated');
+      eventBus.emit('hud:updated');
+    }
+  }
+
+  winCombat(m) {
+    const goldEarned = Math.floor(Math.random() * (m.maxCaps - m.minCaps + 1)) + m.minCaps;
+    state.player.caps += goldEarned;
+    state.player.exp += m.exp;
+
+    if (m.loot) {
+      m.loot.forEach(l => {
+        if (Math.random() <= l.chance) {
+          this.invSys.addItem(l.id, 1);
+          eventBus.emit('log:message', `Beute geborgen: ${l.id}!`);
+        }
+      });
+    }
+
+    state.world.monsters = state.world.monsters.filter(entry => entry.id !== m.id);
+    eventBus.emit('log:message', `${m.name} bezwungen! +${goldEarned} Gold, +${m.exp} EP.`);
+
+    eventBus.emit('monster:killed', m.typeId);
+
+    this.checkLevelUp();
+    this.endCombat();
+    this.storageSys.saveGame(true);
+  }
+
+  checkLevelUp() {
+    if (state.player.exp >= state.player.nextExp) {
+      state.player.level++;
+      state.player.exp -= state.player.nextExp;
+      state.player.nextExp = Math.floor(state.player.nextExp * 1.5);
+      state.player.maxHp += 15;
+      state.player.maxMp += 10;
+      state.player.hp = state.player.maxHp;
+      state.player.mp = state.player.maxMp;
+      state.player.baseAtk += 2;
+      state.player.baseDef += 1;
+      eventBus.emit('audio:levelup');
+      eventBus.emit('log:message', `⭐ LEVEL-UP! Du hast Heldenstufe ${state.player.level} erklommen!`);
+    }
+  }
+
+  endCombat() {
+    state.inCombat = false;
+    state.activeMonster = null;
+    eventBus.emit('combat:ended');
+    eventBus.emit('hud:updated');
+  }
 }

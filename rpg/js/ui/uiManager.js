@@ -1,21 +1,399 @@
-// [2026-10-12 14:31] - v0.0.9: HUD, Inventar, Händler, Kampf, Roguelite-Todes- und Neustartfluss.
-import {state} from '../core/state.js';import {ITEM_DATABASE} from '../data/items.js';import {QUEST_DATABASE} from '../data/quests.js';import {eventBus} from '../core/eventBus.js';import {modalManager} from './modalManager.js';
-export class UIManager{
- constructor(inv,combat,shop,storage,quests,audio,run){Object.assign(this,{inv,combat,shop,storage,quests,audio,run});this.shopMode='buy';this.bindTabs();this.bindCombat();this.bindShop();this.bindButtons();this.bindDeath();this.bindAudio();}
- bindTabs(){document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.tab)?.classList.add('active');}));}
- bindCombat(){document.getElementById('act-attack').onclick=()=>this.combat.attack(false);document.getElementById('act-crit').onclick=()=>this.combat.attack(true);document.getElementById('act-heal').onclick=()=>this.combat.healInBattle();document.getElementById('act-flee').onclick=()=>this.combat.flee();}
- bindShop(){document.getElementById('shop-tab-buy').onclick=()=>{this.shopMode='buy';this.renderShop();};document.getElementById('shop-tab-sell').onclick=()=>{this.shopMode='sell';this.renderShop();};document.getElementById('shop-close-btn').onclick=()=>this.shop.closeShop();}
- bindButtons(){document.getElementById('btn-save-game').onclick=()=>this.storage.saveGame();document.getElementById('btn-reset-game').onclick=()=>this.storage.resetGame();}
- bindAudio(){document.getElementById('btn-sound-toggle').onclick=e=>{const on=this.audio.toggleMute();e.currentTarget.textContent=on?'🔊 Ton: An':'🔇 Ton: Aus';};}
- bindDeath(){document.getElementById('btn-respawn').onclick=()=>{document.getElementById('game-over-modal').classList.add('hidden');document.getElementById('char-select-screen').classList.remove('hidden');document.getElementById('game-app').classList.add('hidden');};}
- showDeath(){this.run.finishRun();document.getElementById('death-stat-lvl').textContent=state.player.level;document.getElementById('death-stat-gold').textContent=`${this.run.meta.gold} 🪙`;document.getElementById('death-stat-rooms').textContent=state.player.bestDepth;state.isInputLocked=true;document.getElementById('game-over-modal').classList.remove('hidden');}
- updateHUD(){const p=state.player;const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};set('stat-name',p.name);set('stat-level',p.level);set('stat-caps',`${p.caps} 🪙`);set('stat-hp-text',`${p.hp}/${p.maxHp}`);set('stat-mp-text',`${p.mp}/${p.maxMp}`);set('stat-xp-text',`${p.exp}/${p.nextExp}`);set('stat-depth',state.world.depth);set('stat-best-depth',this.run.meta.bestDepth);set('stat-class-name',p.className||'Krieger');set('equip-weapon',p.equipped.weapon?.name||'Keine');set('equip-armor',p.equipped.armor?.name||'Keine');set('stat-total-atk',this.inv.getTotalAtk());set('stat-total-def',this.inv.getTotalDef());set('stat-tiles-visited',p.tilesVisited);for(const [id,val] of [['hp-bar-fill',p.hp/p.maxHp],['mp-bar-fill',p.mp/p.maxMp],['xp-bar-fill',p.exp/p.nextExp]])document.getElementById(id).style.width=`${Math.max(0,Math.min(100,val*100))}%`;this.renderInventory();this.renderQuests();if(state.inShop)this.renderShop();}
- renderInventory(){const list=document.getElementById('inventory-grid');list.innerHTML='';document.getElementById('inv-count').textContent=state.player.inventory.reduce((n,x)=>n+x.count,0);state.player.inventory.forEach((s,i)=>{const p=ITEM_DATABASE[s.itemId];if(!p)return;const row=document.createElement('button');row.className='item-row';row.innerHTML=`<span>${p.name} x${s.count}</span><span>[Nutzen]</span>`;row.onclick=()=>{document.getElementById('item-details').innerHTML=`<strong>${p.name}</strong><br>${p.desc}`;this.inv.useItem(i);};list.append(row);});}
- renderQuests(){const list=document.getElementById('quest-list');list.innerHTML='';document.getElementById('quest-badge').textContent=state.quests.active.length;for(const q of state.quests.active){const p=QUEST_DATABASE[q.id];if(!p)continue;const el=document.createElement('div');el.className='quest-card';el.innerHTML=`<div class="quest-title-row"><span>${p.title}</span><span>${q.current}/${q.target}</span></div><div class="quest-desc">${p.desc}</div><div class="progress-bar"><div class="bar-fill quest-fill" style="width:${q.current/q.target*100}%"></div></div>`;list.append(el);}}
- renderShop(){const list=document.getElementById('shop-goods-list');list.innerHTML='';document.getElementById('shop-player-caps').textContent=state.player.caps;document.getElementById('shop-trader-caps').textContent=state.trader.caps;const entries=this.shopMode==='buy'?state.trader.inventory.filter(e=>e.count>0):state.player.inventory.map((s,i)=>({...s,index:i}));entries.forEach(e=>{const p=ITEM_DATABASE[e.itemId];if(!p)return;const row=document.createElement('button');row.className='shop-row';const price=this.shopMode==='buy'?(e.price||p.price):Math.max(1,Math.floor(p.price*.5));row.innerHTML=`<span>${p.name} x${e.count}</span><strong>${this.shopMode==='buy'?price:`+${price}`} 🪙</strong>`;row.onclick=()=>this.shopMode==='buy'?this.shop.buyItem(e.itemId):this.shop.sellItem(e.index);list.append(row);});}
- showCombat(m){document.getElementById('combat-box').classList.remove('hidden');document.getElementById('combat-mon-name').textContent=m.name;this.updateCombat();}
- updateCombat(){const p=state.player,m=state.activeMonster;if(!m)return;document.getElementById('combat-player-hp-val').textContent=`${p.hp}/${p.maxHp} TP`;document.getElementById('combat-mon-hp-val').textContent=`${m.hp}/${m.maxHp} TP`;document.getElementById('combat-player-hp-bar').style.width=`${p.hp/p.maxHp*100}%`;document.getElementById('combat-mon-hp-bar').style.width=`${m.hp/m.maxHp*100}%`;}
- hideCombat(){document.getElementById('combat-box').classList.add('hidden');}
- showShop(){document.getElementById('shop-box').classList.remove('hidden');this.renderShop();}hideShop(){document.getElementById('shop-box').classList.add('hidden');}
- logMessage(msg){const box=document.getElementById('activity-log'),line=document.createElement('div');line.textContent=`🗡️ ${msg}`;box.prepend(line);}combatLog(msg){document.getElementById('combat-log-text').textContent=msg;this.logMessage(msg);}
+// [2026-10-12 18:55] - js/ui/uiManager.js: v0.0.9 Roguelite UI-Manager & Dialogfluss
+import { state, CLASS_PROFILES, INITIAL_PLAYER, INITIAL_TRADER } from '../core/state.js';
+import { ITEM_DATABASE } from '../data/items.js';
+import { QUEST_DATABASE } from '../data/quests.js';
+import { eventBus } from '../core/eventBus.js';
+
+export class UIManager {
+  constructor(inventorySys, combatSys, shopSys, storageSys, questSys, audioSys, mapSys) {
+    this.invSys = inventorySys;
+    this.combatSys = combatSys;
+    this.shopSys = shopSys;
+    this.storageSys = storageSys;
+    this.questSys = questSys;
+    this.audioSys = audioSys;
+    this.mapSys = mapSys;
+
+    this.shopMode = 'buy';
+    this.selectedInvSlot = null;
+    this.selectedClass = 'warrior';
+
+    this.initTabs();
+    this.initCombatEvents();
+    this.initShopEvents();
+    this.initStorageButtons();
+    this.initDeathScreen();
+    this.initSoundToggle();
+    this.initCharSelectModal();
+  }
+
+  initTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const targetId = btn.getAttribute('data-tab');
+        const targetContent = document.getElementById(targetId);
+        if (targetContent) targetContent.classList.add('active');
+      });
+    });
+  }
+
+  initCombatEvents() {
+    document.getElementById('act-attack').addEventListener('click', () => this.combatSys.attack(false));
+    document.getElementById('act-crit').addEventListener('click', () => this.combatSys.attack(true));
+    document.getElementById('act-heal').addEventListener('click', () => this.combatSys.healInBattle());
+    document.getElementById('act-flee').addEventListener('click', () => this.combatSys.flee());
+  }
+
+  initShopEvents() {
+    const buyTab = document.getElementById('shop-tab-buy');
+    const sellTab = document.getElementById('shop-tab-sell');
+    const closeBtn = document.getElementById('shop-close-btn');
+
+    buyTab.addEventListener('click', () => {
+      this.shopMode = 'buy';
+      buyTab.classList.add('active');
+      sellTab.classList.remove('active');
+      this.renderShop();
+    });
+
+    sellTab.addEventListener('click', () => {
+      this.shopMode = 'sell';
+      sellTab.classList.add('active');
+      buyTab.classList.remove('active');
+      this.renderShop();
+    });
+
+    closeBtn.addEventListener('click', () => this.shopSys.closeShop());
+  }
+
+  initStorageButtons() {
+    const saveBtn = document.getElementById('btn-save-game');
+    const resetBtn = document.getElementById('btn-reset-game');
+
+    if (saveBtn) saveBtn.addEventListener('click', () => this.storageSys.saveGame(false));
+    if (resetBtn) resetBtn.addEventListener('click', () => this.storageSys.resetGame());
+  }
+
+  initSoundToggle() {
+    const soundBtn = document.getElementById('btn-sound-toggle');
+    if (soundBtn && this.audioSys) {
+      soundBtn.addEventListener('click', () => {
+        const isAudible = this.audioSys.toggleMute();
+        soundBtn.innerText = isAudible ? '🔊 Ton: An' : '🔇 Ton: Aus';
+      });
+    }
+  }
+
+  initDeathScreen() {
+    const newRunBtn = document.getElementById('btn-new-run');
+    if (newRunBtn) {
+      newRunBtn.addEventListener('click', () => {
+        document.getElementById('game-over-modal').classList.add('hidden');
+        this.openCharSelectModal();
+      });
+    }
+  }
+
+  initCharSelectModal() {
+    const cards = document.querySelectorAll('.hero-card');
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        cards.forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        this.selectedClass = card.getAttribute('data-class');
+      });
+    });
+
+    const startBtn = document.getElementById('btn-start-run');
+    if (startBtn) {
+      startBtn.addEventListener('click', () => {
+        const nameInput = document.getElementById('char-name-input');
+        const chosenName = nameInput && nameInput.value.trim() ? nameInput.value.trim() : 'Schattenjäger';
+        this.startNewRun(this.selectedClass, chosenName);
+        document.getElementById('char-select-modal').classList.add('hidden');
+        state.isInputLocked = false;
+      });
+    }
+  }
+
+  openCharSelectModal() {
+    state.isInputLocked = true;
+    const modal = document.getElementById('char-select-modal');
+    if (modal) modal.classList.remove('hidden');
+  }
+
+  startNewRun(classId, name) {
+    const profile = CLASS_PROFILES[classId] || CLASS_PROFILES.warrior;
+
+    // Status zurücksetzen für neuen Run
+    state.player.name = name;
+    state.player.classId = classId;
+    state.player.className = profile.className;
+    state.player.level = 1;
+    state.player.exp = 0;
+    state.player.nextExp = 100;
+    state.player.hp = profile.hp;
+    state.player.maxHp = profile.hp;
+    state.player.mp = profile.mp;
+    state.player.maxMp = profile.mp;
+    state.player.baseAtk = profile.baseAtk;
+    state.player.baseDef = profile.baseDef;
+    state.player.caps = 40;
+    state.player.x = 2;
+    state.player.y = 2;
+    state.player.inventory = [];
+
+    if (profile.startWeapon && ITEM_DATABASE[profile.startWeapon]) {
+      state.player.equipped.weapon = ITEM_DATABASE[profile.startWeapon];
+    }
+    if (profile.startArmor && ITEM_DATABASE[profile.startArmor]) {
+      state.player.equipped.armor = ITEM_DATABASE[profile.startArmor];
+    }
+
+    profile.startItems.forEach(i => {
+      state.player.inventory.push({ itemId: i.itemId, count: i.count });
+    });
+
+    state.trader = JSON.parse(JSON.stringify(INITIAL_TRADER));
+    state.world.depth = 1;
+    state.world.chests = [];
+    state.world.monsters = [];
+    state.world.discovered = [];
+
+    this.mapSys.initMap();
+    this.storageSys.saveGame(true);
+    this.updateHUD();
+    this.logMessage(`Ein neuer Run beginnt. Willkommen, ${state.player.name} (${state.player.className})!`);
+  }
+
+  showDeathModal() {
+    state.isInputLocked = true;
+    document.getElementById('death-stat-lvl').innerText = state.player.level;
+    document.getElementById('death-stat-depth').innerText = `Ebene ${state.world.depth || 1}`;
+    document.getElementById('death-stat-gold').innerText = `${state.player.caps} 🪙`;
+    document.getElementById('game-over-modal').classList.remove('hidden');
+  }
+
+  updateHUD() {
+    const p = state.player;
+    document.getElementById('stat-name').innerText = p.name;
+    document.getElementById('stat-level').innerText = p.level;
+    document.getElementById('stat-caps').innerText = `${p.caps} 🪙`;
+    document.getElementById('stat-hp-text').innerText = `${p.hp}/${p.maxHp}`;
+    document.getElementById('stat-mp-text').innerText = `${p.mp}/${p.maxMp}`;
+    document.getElementById('stat-xp-text').innerText = `${p.exp}/${p.nextExp}`;
+
+    const depthStr = `Ebene ${state.world.depth || 1}`;
+    document.getElementById('stat-depth').innerText = state.world.depth || 1;
+    const charDepth = document.getElementById('stat-char-depth');
+    if (charDepth) charDepth.innerText = depthStr;
+
+    const hpPercent = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
+    const mpPercent = Math.max(0, Math.min(100, (p.mp / p.maxMp) * 100));
+    const xpPercent = Math.max(0, Math.min(100, (p.exp / p.nextExp) * 100));
+    document.getElementById('hp-bar-fill').style.width = `${hpPercent}%`;
+    document.getElementById('mp-bar-fill').style.width = `${mpPercent}%`;
+    document.getElementById('xp-bar-fill').style.width = `${xpPercent}%`;
+
+    const classEl = document.getElementById('stat-class-name');
+    if (classEl) classEl.innerText = p.className || 'Krieger';
+
+    document.getElementById('equip-weapon').innerText = p.equipped.weapon ? p.equipped.weapon.name : 'Keine';
+    document.getElementById('equip-armor').innerText = p.equipped.armor ? p.equipped.armor.name : 'Keine';
+    document.getElementById('stat-total-atk').innerText = this.invSys.getTotalAtk();
+    document.getElementById('stat-total-def').innerText = this.invSys.getTotalDef();
+    document.getElementById('stat-tiles-visited').innerText = p.tilesVisited;
+
+    this.renderInventory();
+    this.renderQuests();
+    if (state.inShop) this.renderShop();
+  }
+
+  renderInventory() {
+    const grid = document.getElementById('inventory-grid');
+    grid.innerHTML = '';
+    const totalItems = state.player.inventory.reduce((sum, item) => sum + item.count, 0);
+    document.getElementById('inv-count').innerText = totalItems;
+
+    state.player.inventory.forEach((slot, idx) => {
+      const item = ITEM_DATABASE[slot.itemId];
+      if (!item) return;
+
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      if (this.selectedInvSlot === idx) row.classList.add('selected');
+
+      row.innerHTML = `<span>${item.name} x${slot.count}</span><span>[Nutzen]</span>`;
+      row.addEventListener('click', () => {
+        this.selectedInvSlot = idx;
+        this.showItemDetails(item);
+        this.invSys.useItem(idx);
+      });
+
+      grid.appendChild(row);
+    });
+  }
+
+  renderQuests() {
+    const list = document.getElementById('quest-list');
+    const badge = document.getElementById('quest-badge');
+    if (!list) return;
+
+    list.innerHTML = '';
+    const activeCount = state.quests ? state.quests.active.length : 0;
+    if (badge) badge.innerText = activeCount;
+
+    if (state.quests && state.quests.active.length > 0) {
+      state.quests.active.forEach(q => {
+        const proto = QUEST_DATABASE[q.id];
+        if (!proto) return;
+
+        const card = document.createElement('div');
+        card.className = 'quest-card';
+        const progressPct = Math.min(100, Math.round((q.current / q.target) * 100));
+
+        card.innerHTML = `
+          <div class="quest-title-row">
+            <span>${proto.title}</span>
+            <span>${q.current} / ${q.target}</span>
+          </div>
+          <div class="quest-desc">${proto.desc}</div>
+          <div class="progress-bar">
+            <div class="bar-fill quest-fill" style="width: ${progressPct}%;"></div>
+          </div>
+          <div class="quest-reward">Lohn: ${proto.rewardCaps} Gold, ${proto.rewardExp} EP ${proto.rewardItem ? '+ ' + proto.rewardItem : ''}</div>
+        `;
+        list.appendChild(card);
+      });
+    } else {
+      const emptyNote = document.createElement('div');
+      emptyNote.className = 'small-text';
+      emptyNote.innerText = 'Keine unvollendeten Aufträge in der Chronik.';
+      list.appendChild(emptyNote);
+    }
+
+    if (state.quests && state.quests.completed.length > 0) {
+      const completedHeader = document.createElement('div');
+      completedHeader.className = 'panel-subtitle';
+      completedHeader.style.marginTop = '10px';
+      completedHeader.innerText = `Erfüllt (${state.quests.completed.length})`;
+      list.appendChild(completedHeader);
+
+      state.quests.completed.forEach(qid => {
+        const proto = QUEST_DATABASE[qid];
+        if (!proto) return;
+
+        const card = document.createElement('div');
+        card.className = 'quest-card completed';
+        card.innerHTML = `
+          <div class="quest-title-row">
+            <span>✓ ${proto.title}</span>
+            <span>VOLLENDET</span>
+          </div>
+          <div class="quest-desc">${proto.desc}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+  }
+
+  showItemDetails(item) {
+    const box = document.getElementById('item-details');
+    box.innerHTML = `<strong>${item.name}</strong> (${item.type})<br>${item.desc}<br>Handelswert: ${item.price} Gold`;
+  }
+
+  showShop() {
+    document.getElementById('shop-box').classList.remove('hidden');
+    this.renderShop();
+  }
+
+  hideShop() {
+    document.getElementById('shop-box').classList.add('hidden');
+  }
+
+  renderShop() {
+    const list = document.getElementById('shop-goods-list');
+    list.innerHTML = '';
+
+    document.getElementById('shop-player-caps').innerText = `${state.player.caps} 🪙`;
+    document.getElementById('shop-trader-caps').innerText = `${state.trader.caps} 🪙`;
+
+    if (this.shopMode === 'buy') {
+      state.trader.inventory.forEach(entry => {
+        if (entry.count <= 0) return;
+        const proto = ITEM_DATABASE[entry.itemId];
+        if (!proto) return;
+
+        const row = document.createElement('div');
+        row.className = 'shop-row';
+        row.innerHTML = `<span>${proto.name} (Vorrat: ${entry.count})</span><strong>${entry.price} 🪙 [Kauf]</strong>`;
+        row.addEventListener('click', () => {
+          this.showShopItemInfo(proto, entry.price, 'buy');
+          this.shopSys.buyItem(entry.itemId);
+        });
+        list.appendChild(row);
+      });
+    } else {
+      state.player.inventory.forEach((slot, idx) => {
+        const proto = ITEM_DATABASE[slot.itemId];
+        if (!proto) return;
+        const sellPrice = Math.max(1, Math.floor(proto.price * 0.5));
+
+        const row = document.createElement('div');
+        row.className = 'shop-row';
+        row.innerHTML = `<span>${proto.name} x${slot.count}</span><strong>+${sellPrice} 🪙 [Verkauf]</strong>`;
+        row.addEventListener('click', () => {
+          this.showShopItemInfo(proto, sellPrice, 'sell');
+          this.shopSys.sellItem(idx);
+        });
+        list.appendChild(row);
+      });
+    }
+  }
+
+  showShopItemInfo(proto, price, mode) {
+    const box = document.getElementById('shop-item-info');
+    box.innerHTML = `<strong>${proto.name}</strong> (${proto.type})<br>${proto.desc}<br><strong>${mode === 'buy' ? 'Kaufpreis' : 'Verkaufswert'}:</strong> ${price} Gold`;
+  }
+
+  showCombat(monster) {
+    document.getElementById('combat-box').classList.remove('hidden');
+    document.getElementById('combat-mon-name').innerText = monster.name;
+    this.updateCombatView();
+  }
+
+  updateCombatView() {
+    const p = state.player;
+    const m = state.activeMonster;
+    if (!m) return;
+
+    document.getElementById('combat-player-hp-val').innerText = `${p.hp} / ${p.maxHp} TP`;
+    document.getElementById('combat-mon-hp-val').innerText = `${m.hp} / ${m.maxHp} TP`;
+
+    const pHpPct = Math.max(0, (p.hp / p.maxHp) * 100);
+    const mHpPct = Math.max(0, (m.hp / m.maxHp) * 100);
+    document.getElementById('combat-player-hp-bar').style.width = `${pHpPct}%`;
+    document.getElementById('combat-mon-hp-bar').style.width = `${mHpPct}%`;
+  }
+
+  hideCombat() {
+    document.getElementById('combat-box').classList.add('hidden');
+  }
+
+  logMessage(text) {
+    const box = document.getElementById('activity-log');
+    const line = document.createElement('div');
+    line.innerText = `🗡️ ${text}`;
+    box.prepend(line);
+  }
+
+  combatLog(text) {
+    document.getElementById('combat-log-text').innerText = text;
+    this.logMessage(`[SCHLACHT] ${text}`);
+  }
 }

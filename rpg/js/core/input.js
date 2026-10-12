@@ -1,7 +1,72 @@
-// [2026-10-12 14:31] - v0.0.9: Tastatur- und Touch-Joysticksteuerung; untere Aktionsleiste entfernt.
-import {state} from './state.js';import {eventBus} from './eventBus.js';
-export function initInput(){let lastMove=0;function move(dx,dy){if(state.isInputLocked||state.inCombat||state.inShop)return;const now=performance.now();if(now-lastMove<105)return;lastMove=now;eventBus.emit('player:move',{dx,dy});}
- window.addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(k==='escape'&&state.inShop){eventBus.emit('shop:close_request');return;}if(k==='e'||k===' '){if(state.isInputLocked||state.inCombat||state.inShop)return;e.preventDefault();eventBus.emit('player:interact');return;}const dirs={w:[0,-1],arrowup:[0,-1],s:[0,1],arrowdown:[0,1],a:[-1,0],arrowleft:[-1,0],d:[1,0],arrowright:[1,0]};if(dirs[k]){e.preventDefault();move(...dirs[k]);}});
- document.querySelectorAll('.touch-key[data-dx]').forEach(btn=>{const press=e=>{e.preventDefault();move(Number(btn.dataset.dx),Number(btn.dataset.dy));};btn.addEventListener('pointerdown',press);btn.addEventListener('contextmenu',e=>e.preventDefault());});
- const action=document.querySelector('.touch-key[data-action="interact"]');action?.addEventListener('pointerdown',e=>{e.preventDefault();eventBus.emit('player:interact');});
+// [2026-10-12 18:55] - js/core/input.js: v0.0.9 Tastatur- & Touch-Steuerung
+// Änderungen:
+// - Alte Action-Buttons komplett entfernt.
+// - Tastatur: WASD / Pfeile für Schritte; [E] oder [Leertaste] für Interaktionen (Treppe / Händler).
+// - Touch: Eleganter On-Screen-Joystick (#touch-controls) mit 4 Richtungen und Aktionsknopf (✦).
+
+import { state } from './state.js';
+import { eventBus } from './eventBus.js';
+
+export function initInput() {
+  let lastMoveTime = 0;
+
+  function doMove(dx, dy) {
+    if (state.isInputLocked || state.inCombat || state.inShop) return;
+    const now = performance.now();
+    if (now - lastMoveTime < 100) return; // Debounce gegen Mehrfachtasten
+    lastMoveTime = now;
+    eventBus.emit('player:move', { dx, dy });
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (state.inShop) {
+        eventBus.emit('shop:close_request');
+        return;
+      }
+    }
+
+    if (state.isInputLocked || state.inCombat || state.inShop) return;
+
+    const key = e.key.toLowerCase();
+
+    if (key === 'e' || key === ' ') {
+      e.preventDefault();
+      eventBus.emit('player:interact');
+      return;
+    }
+
+    let dx = 0;
+    let dy = 0;
+
+    if (key === 'w' || key === 'arrowup') dy = -1;
+    if (key === 's' || key === 'arrowdown') dy = 1;
+    if (key === 'a' || key === 'arrowleft') dx = -1;
+    if (key === 'd' || key === 'arrowright') dx = 1;
+
+    if (dx !== 0 || dy !== 0) {
+      e.preventDefault();
+      doMove(dx, dy);
+    }
+  });
+
+  // Touch-Controls (Joystick)
+  document.querySelectorAll('.touch-key[data-dx]').forEach(btn => {
+    const handlePress = (e) => {
+      e.preventDefault();
+      const dx = parseInt(btn.getAttribute('data-dx'), 10) || 0;
+      const dy = parseInt(btn.getAttribute('data-dy'), 10) || 0;
+      doMove(dx, dy);
+    };
+    btn.addEventListener('pointerdown', handlePress);
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+  });
+
+  const centerActionBtn = document.querySelector('.touch-key[data-action="interact"]');
+  if (centerActionBtn) {
+    centerActionBtn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      eventBus.emit('player:interact');
+    });
+  }
 }

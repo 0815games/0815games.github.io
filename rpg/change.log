@@ -1,14 +1,13 @@
 # CHANGELOG
 
-## [v0.0.9] - 2026-10-12 14:31 (Mehrere Verliesebenen, Roguelite und Steuerung)
-- [MAP] Treppenkachel und Wechsel zu endlos fortsetzbaren Verliesebenen implementiert. Gegnerwerte skalieren mit der Tiefe; jede Ebene erhält neue Gegner, Truhen, Karte und Treppenposition.
-- [BUGFIX] Monster-/Truhenpositionen werden nach Kartenaufbau und Spielstand-Laden gegen Wände, Säulen und andere Entitäten validiert. Fehlerhafte alte Spawns wandern zur nächsten freien Bodenkachel.
-- [CHESTS] Truhen öffnen sich sichtbar bei Betreten, zeigen Goldpartikel und verschwinden anschließend wie besiegte Monster von der Karte.
-- [ROGUELITE] Tod beendet den Run; Klassenwahl startet einen neuen Lauf. Dauerhaft bleiben angesammeltes Gold und höchste erreichte Ebene als Ordens-Meta-Fortschritt erhalten.
-- [INPUT] Untere alte Aktions-/D-Pad-Leiste entfernt. Tastatur (WASD/Pfeile), E/Leertaste für Interaktion und ein ausschließlich auf Touch-Geräten sichtbarer Touch-Joystick steuern Bewegung/Interaktion.
-- [UI] HUD zeigt aktuelle Ebene und Besttiefe; weiterhin eigene Dark-Fantasy-Dialoge statt Browser-Popups.
-- [BUILD] Vollständiges Update-ZIP v0.0.9 erstellt.
+## [v0.0.9] - 2026-10-12 18:55 (Verliesebenen, Roguelite-Zyklus, Truhen-Auflösung & Steuerungs-Polish)
+- [BUGFIX] **Schwarzer Bildschirm behoben:** Fehlerhafte DOM-Timing-Blocker und asynchrone Boot-Sperren wurden entfernt. Das Spiel initialisiert und rendert direkt ab Aufruf.
+- [DUNGEON] **Verlies-Ebenen:** Treppenabgang (`stairs`) implementiert. Mit `[E]`, `[Leertaste]` oder `[✦]` steigt der Spieler tiefer hinab. Jede Ebene skaliert Monsterwerte (Leben, Angriff, Gold) und generiert frische Kisten und Nebel.
+- [ITEMS] **Truhen-Mechanik überarbeitet:** Beim Berühren öffnet sich die Truhe sichtbar, entfesselt einen Goldpartikel-Burst und löst sich nach 0,8s vollständig auf (wie besiegte Monster).
+- [ROGUELITE] **Run-Struktur:** Tod beendet den aktuellen Run und zeigt den Run-Rückblick (erreichte Stufe, Ebene, Gold). Ein Klick öffnet die Klassenwahl (Krieger, Magier, Schurke) für den nächsten Lauf.
+- [INPUT] **Steuerung bereinigt:** Alte untere Buttons restlos entfernt. Die Steuerung erfolgt rein über Tastatur (WASD/Pfeile/E/Space) oder über den Touch-Joystick für mobile Endgeräte.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.9 generiert.
 
-## [v0.0.8] - 2026-10-12 13:50 (Spawn-Fix & Truhen-/Begegnungseffekte)
-- [BUGFIX] Monster-Spawns auf freie Bodenkacheln verlegt; gespeicherte Wandpositionen werden beim Start korrigiert.
-- [FX] Goldpartikel beim Öffnen von Truhen und roter Klingenblitz/Canvas-Shake beim Monsterkontakt.
+## [v0.0.8] - 2026-10-12 13:50 (Bugfix Monster-in-Wand & Visuelle Effekte für Truhen/Begegnung)
+- [BUGFIX] `WorldMap`: Kollisionsprüfung beim Spawnen von Monstern und Truhen implementiert (`findSafeFloorTile`).
+- [FX] Schatztruhen-Partikelexplosion und Feindkontakt-Slash mit Canvas-Shake.
