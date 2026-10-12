@@ -43,8 +43,7 @@ nav a:hover,nav a.on{background:var(--sky);color:var(--blue)}
 .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
 .badge{background:var(--card);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:14px;font-weight:600;color:var(--mut)}.badge b{color:var(--blue)}
 .hero-art{position:relative;aspect-ratio:1;display:grid;place-items:center}
-.bigat{font-size:clamp(220px,38vw,520px);font-weight:900;line-height:.8;color:var(--blue);filter:drop-shadow(0 30px 40px color-mix(in srgb,var(--blue) 35%,transparent));animation:fl 6s ease-in-out infinite;user-select:none}
-.hero-art .cap{position:absolute;top:2%;left:50%;width:38%;transform:translateX(-50%) rotate(-8deg);animation:flc 6s -1s ease-in-out infinite}
+.bigat{font-size:clamp(220px,38vw,520px);font-weight:900;line-height:1;padding:.04em .1em .22em;color:var(--blue);filter:drop-shadow(0 30px 40px color-mix(in srgb,var(--blue) 35%,transparent));animation:fl 6s ease-in-out infinite;user-select:none}.hero-art .cap{position:absolute;top:2%;left:50%;width:38%;transform:translateX(-50%) rotate(-8deg);animation:flc 6s -1s ease-in-out infinite}
 .float{position:absolute;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;box-shadow:var(--sh);font-weight:700;font-size:14px;animation:fl 5s ease-in-out infinite}
 .float.a{left:-2%;top:30%;animation-delay:-2s}.float.b{right:-2%;top:56%;animation-delay:-3s}.float.c{left:8%;bottom:6%}
 @keyframes fl{50%{transform:translateY(-14px)}}@keyframes flc{50%{transform:translateX(-50%) rotate(-4deg) translateY(-12px)}}
