@@ -1,0 +1,21 @@
+# CHANGELOG
+
+## [v0.0.2] - 2026-10-12 13:15 (Händlersystem & LocalStorage)
+- [STORAGE] `js/systems/storage.js` integriert: Automatisches und manuelles Speichern von Spielstand, Spielerposition, Inventar, Ausrüstung, besiegten Monstern und Kisten in `localStorage`.
+- [STORAGE] Schnellspeichern- (`btn-save-game`) und Zurücksetzen-Button (`btn-reset-game`) im HUD implementiert.
+- [SHOP] `js/systems/shop.js` implementiert: Interaktiver Handelsposten bei [X:3, Y:4] mit Kaufen- und Verkaufen-Tabs.
+- [SHOP] Begrenzte Händler-Korken (250 Startbudget), Slot-Prüfung (max. 15 Slots) und Wiederverkaufslogik (50% Wert).
+- [INPUT] Strikte Verriegelung (`isInputLocked` / `inShop`): Spielerbewegung auf der Karte während geöffnetem Händler- oder Gefechtsfenster komplett blockiert. Schließen mit ESC oder X.
+- [RENDER] Händlerstand grafisch auf der Canvas-Karte dargestellt (Markise, Kiosk und '$'-Symbol).
+- [ITEMS] Neue Gegenstände: Jagdgewehr, Metallrüstung und Militär-Stimpak in den Katalog eingepflegt.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.2 erstellt.
+
+## [v0.0.1] - 2026-10-12 13:05 (Projekt-Start & Grundgerüst)
+- [CORE] Projektstart mit modularer ES6-Architektur und EventBus-Muster.
+- [MAP] Prozedurale 20x15 Weltkarte mit Ruinenmauern, Schatztruhen und Fog of War (Sichtweiten-Nebel).
+- [RENDER] 2D-Canvas-Renderer mit prozeduralen Texturen, Spielerglow, Gegnern und schwebenden Schadenszahlen.
+- [ITEMS] Vollwertiges Inventarsystem inklusive Stacking, Benutzen, Ausrüsten und Waffen-/Rüstungswerten.
+- [COMBAT] Rundenbasiertes Gefechtssystem mit Normalangriff, Gezieltem Schuss (Krit-Chance), Stimpak-Heilung und Flucht.
+- [PROGRESSION] EP-System mit automatischem Level-Up, TP-Steigerung und Attributsboni.
+- [INPUT] Duale Eingabe via Tastatur (WASD/Pfeile) und On-Screen D-Pad für mobile Endgeräte.
+- [BUILD] Automatisierte Bereitstellung des vollständigen Updates als ZIP-Archiv.
