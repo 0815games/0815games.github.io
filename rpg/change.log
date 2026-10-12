@@ -1,13 +1,9 @@
 # CHANGELOG
 
-## [v0.0.9] - 2026-10-12 18:55 (Verliesebenen, Roguelite-Zyklus, Truhen-Auflösung & Steuerungs-Polish)
-- [BUGFIX] **Schwarzer Bildschirm behoben:** Fehlerhafte DOM-Timing-Blocker und asynchrone Boot-Sperren wurden entfernt. Das Spiel initialisiert und rendert direkt ab Aufruf.
-- [DUNGEON] **Verlies-Ebenen:** Treppenabgang (`stairs`) implementiert. Mit `[E]`, `[Leertaste]` oder `[✦]` steigt der Spieler tiefer hinab. Jede Ebene skaliert Monsterwerte (Leben, Angriff, Gold) und generiert frische Kisten und Nebel.
-- [ITEMS] **Truhen-Mechanik überarbeitet:** Beim Berühren öffnet sich die Truhe sichtbar, entfesselt einen Goldpartikel-Burst und löst sich nach 0,8s vollständig auf (wie besiegte Monster).
-- [ROGUELITE] **Run-Struktur:** Tod beendet den aktuellen Run und zeigt den Run-Rückblick (erreichte Stufe, Ebene, Gold). Ein Klick öffnet die Klassenwahl (Krieger, Magier, Schurke) für den nächsten Lauf.
-- [INPUT] **Steuerung bereinigt:** Alte untere Buttons restlos entfernt. Die Steuerung erfolgt rein über Tastatur (WASD/Pfeile/E/Space) oder über den Touch-Joystick für mobile Endgeräte.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.9 generiert.
-
-## [v0.0.8] - 2026-10-12 13:50 (Bugfix Monster-in-Wand & Visuelle Effekte für Truhen/Begegnung)
-- [BUGFIX] `WorldMap`: Kollisionsprüfung beim Spawnen von Monstern und Truhen implementiert (`findSafeFloorTile`).
-- [FX] Schatztruhen-Partikelexplosion und Feindkontakt-Slash mit Canvas-Shake.
+## [v0.1.0] - 2026-10-12 19:15 (Firebase Cloud-Save & Epischer Loginscreen)
+- [LOGIN] Epischer Dark-Fantasy Loginscreen mit animiertem Glutpartikel-Canvas, Wappen und Monsterauren.
+- [FIREBASE] Firebase Authentication (Email/Passwort) und Realtime Database (`dark_rpg/saves/{uid}`) integriert.
+- [FALLBACK] Nahtlose Gast- und Offline-Option (`dark_rpg_local`), falls Firebase nicht erreichbar ist.
+- [DUNGEON] Verliesebenen mit skalierenden Monstern und Abstiegstreppe (`Ebene 1, 2, 3...`).
+- [CHESTS] Schatztruhen öffnen sich bei Berührung und lösen sich nach 0,8 Sekunden auf.
+- [INPUT] Reine Tastatur- (WASD/Pfeile/E) und mobile Touch-Steuerung.
