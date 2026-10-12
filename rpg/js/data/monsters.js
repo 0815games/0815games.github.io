@@ -1,50 +1,51 @@
-// [2026-10-12 13:15] - js/data/monsters.js: v0.0.2 Bestiarium & Beutetabellen
+// [2026-10-12 13:25] - js/data/monsters.js: v0.0.4 Dark Fantasy Bestiarium
 // Änderungen:
-// - Belohnungen an das Händlersystem angepasst (Korken- und Item-Werte synchronisiert).
+// - Fantasy-Kreaturen: Goblin-Plünderer, Skelettkrieger und Dunkler Gruftfürst (Boss).
+// - Individuelle Farbgebungen, Attribute und Seelenstein-Loot hinterlegt.
 
 export const MONSTER_TYPES = {
-  rad_roach: {
-    typeId: 'rad_roach',
-    name: 'Rad-Kakerlake',
-    maxHp: 20,
-    atk: 5,
+  goblin: {
+    typeId: 'goblin',
+    name: 'Goblin-Plünderer',
+    maxHp: 22,
+    atk: 6,
     def: 1,
-    exp: 18,
-    minCaps: 4,
-    maxCaps: 10,
-    color: '#a36829',
+    exp: 20,
+    minCaps: 5,
+    maxCaps: 12,
+    color: '#4caf50',
     loot: [
-      { id: 'scrap_metal', chance: 0.7 }
+      { id: 'soul_shard', chance: 0.7 }
     ]
   },
-  mutant_dog: {
-    typeId: 'mutant_dog',
-    name: 'Mutierter Hund',
-    maxHp: 35,
-    atk: 8,
-    def: 2,
-    exp: 35,
-    minCaps: 10,
-    maxCaps: 22,
-    color: '#8b4513',
+  skeleton_warrior: {
+    typeId: 'skeleton_warrior',
+    name: 'Skelettkrieger',
+    maxHp: 38,
+    atk: 10,
+    def: 3,
+    exp: 40,
+    minCaps: 12,
+    maxCaps: 24,
+    color: '#e0e0e0',
     loot: [
-      { id: 'stimpack', chance: 0.35 },
-      { id: 'scrap_metal', chance: 0.6 }
+      { id: 'health_potion', chance: 0.4 },
+      { id: 'soul_shard', chance: 0.8 }
     ]
   },
-  raider: {
-    typeId: 'raider',
-    name: 'Raider Plünderer',
-    maxHp: 55,
-    atk: 12,
-    def: 4,
-    exp: 65,
-    minCaps: 25,
-    maxCaps: 50,
-    color: '#c0392b',
+  crypt_lord: {
+    typeId: 'crypt_lord',
+    name: 'Dunkler Gruftfürst',
+    maxHp: 65,
+    atk: 15,
+    def: 5,
+    exp: 90,
+    minCaps: 35,
+    maxCaps: 70,
+    color: '#9c27b0',
     loot: [
-      { id: 'pipe_pistol', chance: 0.3 },
-      { id: 'stimpack', chance: 0.75 }
+      { id: 'runic_blade', chance: 0.35 },
+      { id: 'elixir_vitality', chance: 0.8 }
     ]
   }
 };

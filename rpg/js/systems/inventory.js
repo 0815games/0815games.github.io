@@ -1,6 +1,6 @@
-// [2026-10-12 13:15] - js/systems/inventory.js: v0.0.2 Inventarsystem
+// [2026-10-12 13:25] - js/systems/inventory.js: v0.0.4 Inventar & Tränkelogik
 // Änderungen:
-// - Boni für neue Rüstungs- und Waffentypen korrekt eingepflegt.
+// - Unterstützung für Manatränke (`effect === 'mana'`) und Elixiere hinzugefügt.
 
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
@@ -21,7 +21,7 @@ export class InventorySystem {
     }
 
     if (state.player.inventory.length >= 15) {
-      eventBus.emit('log:message', 'Dein Rucksack ist voll!');
+      eventBus.emit('log:message', 'Dein Rucksack fasst keine weiteren Relikte!');
       return false;
     }
 
@@ -38,21 +38,29 @@ export class InventorySystem {
     if (!item) return;
 
     if (item.type === 'consumable') {
-      if (item.effect === 'heal') {
+      if (item.effect === 'heal' || item.effect === 'heal_max') {
         if (state.player.hp >= state.player.maxHp) {
-          eventBus.emit('log:message', 'Gesundheit ist bereits voll.');
+          eventBus.emit('log:message', 'Deine Trefferpunkte sind bereits vollständig.');
           return;
         }
         state.player.hp = Math.min(state.player.maxHp, state.player.hp + item.val);
         slot.count--;
-        eventBus.emit('log:message', `${item.name} benutzt (+${item.val} TP).`);
+        eventBus.emit('log:message', `${item.name} getrunken (+${item.val} TP).`);
+      } else if (item.effect === 'mana') {
+        if (state.player.mp >= state.player.maxMp) {
+          eventBus.emit('log:message', 'Dein Mana ist bereits vollkommen erfüllt.');
+          return;
+        }
+        state.player.mp = Math.min(state.player.maxMp, state.player.mp + item.val);
+        slot.count--;
+        eventBus.emit('log:message', `${item.name} absorbiert (+${item.val} MP).`);
       }
     } else if (item.type === 'weapon') {
       state.player.equipped.weapon = item;
-      eventBus.emit('log:message', `${item.name} angelegt (+${item.val} ATK).`);
+      eventBus.emit('log:message', `${item.name} gezogen (+${item.val} Schlagkraft).`);
     } else if (item.type === 'armor') {
       state.player.equipped.armor = item;
-      eventBus.emit('log:message', `${item.name} angelegt (+${item.val} DEF).`);
+      eventBus.emit('log:message', `${item.name} angelegt (+${item.val} Schutz).`);
     }
 
     if (slot.count <= 0) {

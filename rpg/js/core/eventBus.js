@@ -1,6 +1,6 @@
-// [2026-10-12 13:15] - js/core/eventBus.js: v0.0.2 Zentrale Ereignisverwaltung
+// [2026-10-12 13:25] - js/core/eventBus.js: v0.0.4 Ereignisverwaltung
 // Änderungen:
-// - Unterstützung für Speicher- und Handelsereignisse (shop:open, shop:close, storage:save, storage:loaded).
+// - Zentrale Ereigniskommunikation für Fantasy-Kampf, Quests und Alchemist.
 
 class EventBus {
   constructor() {

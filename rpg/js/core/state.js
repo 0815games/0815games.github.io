@@ -1,18 +1,20 @@
-// [2026-10-12 13:15] - js/core/state.js: v0.0.2 Spielzustand mit Händler- und Speicherkontext
+// [2026-10-12 13:25] - js/core/state.js: v0.0.4 Held & Weltzustand
 // Änderungen:
-// - Händler-Status (Position, Budget, Warenbestand) im Weltzustand abgebildet.
-// - Initialisierungs-Standardwerte gekapselt für reproduzierbare Resets.
+// - Held um Manapunkte (MP / MaxMP) und Zauberwerte erweitert.
+// - Händler zu Meister Eldrin dem Alchemisten umbenannt und mit Zauberwaren bestückt.
 
 export const INITIAL_PLAYER = {
-  name: 'Vault-Bewohner',
+  name: 'Schattenjäger',
   x: 2,
   y: 2,
   level: 1,
-  hp: 50,
-  maxHp: 50,
-  baseAtk: 6,
-  baseDef: 1,
-  caps: 35,
+  hp: 60,
+  maxHp: 60,
+  mp: 30,
+  maxMp: 30,
+  baseAtk: 7,
+  baseDef: 2,
+  caps: 40,
   exp: 0,
   nextExp: 100,
   tilesVisited: 1,
@@ -21,24 +23,24 @@ export const INITIAL_PLAYER = {
     armor: null
   },
   inventory: [
-    { itemId: 'stimpack', count: 3 },
-    { itemId: 'purified_water', count: 2 },
-    { itemId: 'machete', count: 1 }
+    { itemId: 'health_potion', count: 3 },
+    { itemId: 'mana_potion', count: 2 },
+    { itemId: 'dagger', count: 1 }
   ]
 };
 
 export const INITIAL_TRADER = {
-  name: 'Krämer Gus',
+  name: 'Meister Eldrin (Alchemist)',
   x: 3,
   y: 4,
-  caps: 250,
+  caps: 300,
   inventory: [
-    { itemId: 'stimpack', count: 5, price: 25 },
-    { itemId: 'stimpack_super', count: 2, price: 55 },
-    { itemId: 'purified_water', count: 6, price: 10 },
-    { itemId: 'hunting_rifle', count: 1, price: 110 },
-    { itemId: 'metal_armor', count: 1, price: 95 },
-    { itemId: 'scrap_metal', count: 15, price: 6 }
+    { itemId: 'health_potion', count: 6, price: 25 },
+    { itemId: 'mana_potion', count: 5, price: 30 },
+    { itemId: 'elixir_vitality', count: 2, price: 65 },
+    { itemId: 'iron_sword', count: 1, price: 50 },
+    { itemId: 'chainmail', count: 1, price: 45 },
+    { itemId: 'soul_shard', count: 8, price: 8 }
   ]
 };
 
@@ -49,8 +51,12 @@ export const state = {
   activeMonster: null,
 
   player: JSON.parse(JSON.stringify(INITIAL_PLAYER)),
-
   trader: JSON.parse(JSON.stringify(INITIAL_TRADER)),
+
+  quests: {
+    active: [],
+    completed: []
+  },
 
   world: {
     cols: 20,

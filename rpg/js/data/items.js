@@ -1,91 +1,91 @@
-// [2026-10-12 13:15] - js/data/items.js: v0.0.2 Item-Katalog mit Einkauf- und Verkaufswerten
+// [2026-10-12 13:25] - js/data/items.js: v0.0.4 Dark Fantasy Reliquien & Ausrüstungskatalog
 // Änderungen:
-// - Neue Items: Jagdgewehr, Metallrüstung und Militär-Stimpak hinzugefügt.
-// - Definition einheitlicher An- und Verkaufspreise.
+// - Überarbeitung aller Gegenstände: Tränke, Klingen, Stäbe, Rüstungen und Seelensteine.
+// - Mana- und Heilwerte für Dark-Fantasy-Zauber und Gefechte integriert.
 
 export const ITEM_DATABASE = {
-  stimpack: {
-    id: 'stimpack',
-    name: 'Stimpak',
+  health_potion: {
+    id: 'health_potion',
+    name: 'Rubinroter Heiltrank',
     type: 'consumable',
     effect: 'heal',
-    val: 30,
+    val: 35,
     price: 25,
     stackable: true,
-    desc: 'Heilt 30 Trefferpunkte im Handumdrehen.'
+    desc: 'Regeneriert 35 Trefferpunkte durch elbische Kräuter.'
   },
-  stimpack_super: {
-    id: 'stimpack_super',
-    name: 'Militär-Stimpak',
+  mana_potion: {
+    id: 'mana_potion',
+    name: 'Saphirblauer Manatrank',
     type: 'consumable',
-    effect: 'heal',
-    val: 60,
-    price: 55,
+    effect: 'mana',
+    val: 25,
+    price: 30,
     stackable: true,
-    desc: 'Hochentwickelter Heilinjektor für schwere Blessuren (+60 TP).'
+    desc: 'Stellt 25 Manapunkte für arkane Zauber wieder her.'
   },
-  purified_water: {
-    id: 'purified_water',
-    name: 'Aufbereitetes Wasser',
+  elixir_vitality: {
+    id: 'elixir_vitality',
+    name: 'Elixier der Vitalität',
     type: 'consumable',
-    effect: 'heal',
-    val: 15,
-    price: 10,
+    effect: 'heal_max',
+    val: 70,
+    price: 65,
     stackable: true,
-    desc: 'Erfrischt und heilt 15 TP ohne Strahlenschäden.'
+    desc: 'Mächtiges Gebräu, das 70 Trefferpunkte augenblicklich heilt.'
   },
-  pipe_pistol: {
-    id: 'pipe_pistol',
-    name: '10mm Rohrpistole',
+  iron_sword: {
+    id: 'iron_sword',
+    name: 'Geschmiedetes Langschwert',
     type: 'weapon',
-    val: 8,
-    price: 45,
+    val: 9,
+    price: 50,
     stackable: false,
-    desc: 'Zuverlässige Schusswaffe aus Sanitärrohren (+8 ATK).'
+    desc: 'Scharfe Stahlklinge eines gefallenen Ritters (+9 Schlagkraft).'
   },
-  hunting_rifle: {
-    id: 'hunting_rifle',
-    name: 'Jagdgewehr .308',
+  runic_blade: {
+    id: 'runic_blade',
+    name: 'Runenklinge des Lichts',
     type: 'weapon',
-    val: 16,
-    price: 110,
+    val: 18,
+    price: 130,
     stackable: false,
-    desc: 'Präzises Kalibergewehr mit verheerender Durchschlagskraft (+16 ATK).'
+    desc: 'Mit heiligen Glyphen graviert; durchdringt dicke Schattenrüstungen (+18 Schlagkraft).'
   },
-  machete: {
-    id: 'machete',
-    name: 'Rostige Machete',
+  dagger: {
+    id: 'dagger',
+    name: 'Katakomben-Dolch',
     type: 'weapon',
     val: 5,
-    price: 25,
+    price: 20,
     stackable: false,
-    desc: 'Scharfe Klinge für den schnellen Nahkampf (+5 ATK).'
+    desc: 'Leichte Klinge für schnelle Hinterhalte (+5 Schlagkraft).'
   },
-  leather_armor: {
-    id: 'leather_armor',
-    name: 'Ödland-Lederrüstung',
+  chainmail: {
+    id: 'chainmail',
+    name: 'Geschwärztes Kettenhemd',
     type: 'armor',
-    val: 4,
-    price: 40,
+    val: 5,
+    price: 45,
     stackable: false,
-    desc: 'Gegerbtes Brahmin-Leder für Basisschutz (+4 DEF).'
+    desc: 'Schützt vitale Organe vor Klauen und Pfeilen (+5 Rüstungsschutz).'
   },
-  metal_armor: {
-    id: 'metal_armor',
-    name: 'Verstärkte Metallrüstung',
+  knight_armor: {
+    id: 'knight_armor',
+    name: 'Ritterharnisch der Tempelwache',
     type: 'armor',
-    val: 9,
-    price: 95,
+    val: 11,
+    price: 115,
     stackable: false,
-    desc: 'Zusammengeschweißte Stahlplatten gegen schweres Feuer (+9 DEF).'
+    desc: 'Massiver Plattenpanzer aus gehärtetem Zwergenstahl (+11 Rüstungsschutz).'
   },
-  scrap_metal: {
-    id: 'scrap_metal',
-    name: 'Schrottmetall',
+  soul_shard: {
+    id: 'soul_shard',
+    name: 'Schattensplitter',
     type: 'material',
     val: 0,
-    price: 6,
+    price: 8,
     stackable: true,
-    desc: 'Essentielles Rohmaterial zum Craften und Handeln.'
+    desc: 'Glühendes Relikt besiegter Gruftkreaturen; begehrt bei Alchemisten.'
   }
 };

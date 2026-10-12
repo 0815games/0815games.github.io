@@ -1,5 +1,25 @@
 # CHANGELOG
 
+## [v0.0.4] - 2026-10-12 13:25 (Genre-Wechsel zu Dark Fantasy)
+- [THEME] Kompletter optischer und thematischer Wechsel von Wasteland/Pip-Boy auf Dark Fantasy Dungeon-Crawler ("Chroniken der Schattengruft").
+- [UI] Edles Gothic-Interface mit Schiefergrau, Eisenbeschlägen, Fackelakzenten, rubinroter Lebensleiste (TP) und saphirblauer Manaleiste (MP).
+- [COMBAT] Magie-Mechanik eingeführt: Zauber "Feuerball" (verbraucht 8 MP) für magischen Durchschlagsschaden im Kampf.
+- [RENDER] Dynamischer, flackernder Fackelschein um den Helden auf dunklen Schiefer- und Gruftkacheln.
+- [BESTIARIUM] Neue Gegner: Goblin-Plünderer, Skelettkrieger und Dunkler Gruftfürst (Boss).
+- [ITEMS] Neues Sortiment: Rubinrote Heiltränke, Manatränke, Langschwerter, Runenklingen, Kettenhemden, Zwergenharnische und Schattensplitter.
+- [NPC] Händler zu "Meister Eldrin (Alchemist)" umgestaltet mit Tränken, Rüstzeug und Goldwährung.
+- [QUESTS] Fantasy-Aufgabenreihe: "Schatten im Gemäuer", "Der Alchemist der Tiefe", "Seelensplitter-Ernte" und "Das Ende des Gruftfürsten".
+- [STORAGE] Neuer Persistenz-Schlüssel `dark_fantasy_rpg_v004` zur Speicherung aller Werte inklusive Manapunkte.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.4 generiert.
+
+## [v0.0.3] - 2026-10-12 13:20 (Quest-System & Missions-Dashboard)
+- [QUESTS] `js/systems/quest.js` & `js/data/quests.js` integriert: 4 zusammenhängende Quests (Kakerlaken-Jagd, Händler-Besuch, Schrottsammlung, Raider-Jagd).
+- [UI] Neuer Dashboard-Tab "Quests" mit Zähler-Badge, Missionsfortschrittsbalken und Anzeige abgeschlossener Aufgaben.
+- [GAMEPLAY] Automatische Belohnungsausschüttung (Korken, EP und Ausrüstung) sowie schwebendes "QUEST ERFÜLLT!" Banner.
+- [STORAGE] Vollständige Persistenz des Quest-Zustands in `localStorage` (`wasteland_rpg_v003`).
+- [EVENTS] Reaktivität: Monster-Kills, Beute und Händler-Interaktionen aktualisieren Quest-Ziele in Echtzeit.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.3 generiert.
+
 ## [v0.0.2] - 2026-10-12 13:15 (Händlersystem & LocalStorage)
 - [STORAGE] `js/systems/storage.js` integriert: Automatisches und manuelles Speichern von Spielstand, Spielerposition, Inventar, Ausrüstung, besiegten Monstern und Kisten in `localStorage`.
 - [STORAGE] Schnellspeichern- (`btn-save-game`) und Zurücksetzen-Button (`btn-reset-game`) im HUD implementiert.

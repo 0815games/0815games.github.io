@@ -1,7 +1,6 @@
-// [2026-10-12 13:15] - js/core/input.js: v0.0.2 Eingabesteuerung mit Modal-Sperre
+// [2026-10-12 13:25] - js/core/input.js: v0.0.4 Eingabesteuerung
 // Änderungen:
-// - Strikte Verriegelung von Tastatur & Touch während aktivem Händler (`inShop`) oder Gefecht (`inCombat`).
-// - ESC-Taste schließt geöffnete Händler- und Hilfefenster.
+// - Zuverlässige Tastenverriegelung bei offenen Dialogen & Escape-Abbruch.
 
 import { state } from './state.js';
 import { eventBus } from './eventBus.js';
@@ -49,7 +48,6 @@ export function initInput() {
   const actBtn = document.getElementById('dpad-action');
   if (actBtn) {
     actBtn.addEventListener('click', () => {
-      // Wenn Spieler neben Händler steht
       const tr = state.trader;
       const dist = Math.hypot(state.player.x - tr.x, state.player.y - tr.y);
       if (dist <= 1.5) {

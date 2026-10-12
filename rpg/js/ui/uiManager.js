@@ -1,18 +1,19 @@
-// [2026-10-12 13:15] - js/ui/uiManager.js: v0.0.2 Benutzeroberfläche mit Händlermenü
+// [2026-10-12 13:25] - js/ui/uiManager.js: v0.0.4 Fantasy UI-Manager
 // Änderungen:
-// - Vollständige Steuerung des Händler-Modals (Kaufen-Tab, Verkaufen-Tab, Budget-Anzeige).
-// - Schaltflächen für Schnellspeichern und Reset im HUD verdrahtet.
+// - Anzeige von Leben (Rubinrot), Mana (Saphirblau), Goldmünzen und Zauberaktionsschaltflächen.
 
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
+import { QUEST_DATABASE } from '../data/quests.js';
 
 export class UIManager {
-  constructor(inventorySys, combatSys, shopSys, storageSys) {
+  constructor(inventorySys, combatSys, shopSys, storageSys, questSys) {
     this.invSys = inventorySys;
     this.combatSys = combatSys;
     this.shopSys = shopSys;
     this.storageSys = storageSys;
-    this.shopMode = 'buy'; // 'buy' oder 'sell'
+    this.questSys = questSys;
+    this.shopMode = 'buy';
     this.selectedInvSlot = null;
 
     this.initTabs();
@@ -38,7 +39,7 @@ export class UIManager {
 
   initCombatEvents() {
     document.getElementById('act-attack').addEventListener('click', () => this.combatSys.attack(false));
-    document.getElementById('act-crit').addEventListener('click', () => this.combatSys.attack(true));
+    document.getElementById('act-crit').addEventListener('click', () => this.combatSys.attack(true)); // Feuerball
     document.getElementById('act-heal').addEventListener('click', () => this.combatSys.healInBattle());
     document.getElementById('act-flee').addEventListener('click', () => this.combatSys.flee());
   }
@@ -76,13 +77,16 @@ export class UIManager {
   updateHUD() {
     const p = state.player;
     document.getElementById('stat-level').innerText = p.level;
-    document.getElementById('stat-caps').innerText = `${p.caps} 🪙`;
+    document.getElementById('stat-caps').innerText = `${p.caps} 🪙 Gold`;
     document.getElementById('stat-hp-text').innerText = `${p.hp}/${p.maxHp}`;
+    document.getElementById('stat-mp-text').innerText = `${p.mp}/${p.maxMp}`;
     document.getElementById('stat-xp-text').innerText = `${p.exp}/${p.nextExp}`;
 
     const hpPercent = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
+    const mpPercent = Math.max(0, Math.min(100, (p.mp / p.maxMp) * 100));
     const xpPercent = Math.max(0, Math.min(100, (p.exp / p.nextExp) * 100));
     document.getElementById('hp-bar-fill').style.width = `${hpPercent}%`;
+    document.getElementById('mp-bar-fill').style.width = `${mpPercent}%`;
     document.getElementById('xp-bar-fill').style.width = `${xpPercent}%`;
 
     document.getElementById('equip-weapon').innerText = p.equipped.weapon ? p.equipped.weapon.name : 'Keine';
@@ -92,6 +96,7 @@ export class UIManager {
     document.getElementById('stat-tiles-visited').innerText = p.tilesVisited;
 
     this.renderInventory();
+    this.renderQuests();
     if (state.inShop) this.renderShop();
   }
 
@@ -109,7 +114,7 @@ export class UIManager {
       row.className = 'item-row';
       if (this.selectedInvSlot === idx) row.classList.add('selected');
 
-      row.innerHTML = `<span>${item.name} x${slot.count}</span><span>[Benutzen]</span>`;
+      row.innerHTML = `<span>${item.name} x${slot.count}</span><span>[Nutzen]</span>`;
       row.addEventListener('click', () => {
         this.selectedInvSlot = idx;
         this.showItemDetails(item);
@@ -120,9 +125,73 @@ export class UIManager {
     });
   }
 
+  renderQuests() {
+    const list = document.getElementById('quest-list');
+    const badge = document.getElementById('quest-badge');
+    if (!list) return;
+
+    list.innerHTML = '';
+    const activeCount = state.quests ? state.quests.active.length : 0;
+    if (badge) badge.innerText = activeCount;
+
+    if (state.quests && state.quests.active.length > 0) {
+      state.quests.active.forEach(q => {
+        const proto = QUEST_DATABASE[q.id];
+        if (!proto) return;
+
+        const card = document.createElement('div');
+        card.className = 'quest-card';
+
+        const progressPct = Math.min(100, Math.round((q.current / q.target) * 100));
+
+        card.innerHTML = `
+          <div class="quest-title-row">
+            <span>${proto.title}</span>
+            <span>${q.current} / ${q.target}</span>
+          </div>
+          <div class="quest-desc">${proto.desc}</div>
+          <div class="progress-bar">
+            <div class="bar-fill quest-fill" style="width: ${progressPct}%;"></div>
+          </div>
+          <div class="quest-reward">Lohn: ${proto.rewardCaps} Gold, ${proto.rewardExp} EP ${proto.rewardItem ? '+ ' + proto.rewardItem : ''}</div>
+        `;
+        list.appendChild(card);
+      });
+    } else {
+      const emptyNote = document.createElement('div');
+      emptyNote.className = 'small-text';
+      emptyNote.innerText = 'Keine unvollendeten Aufträge in der Chronik.';
+      list.appendChild(emptyNote);
+    }
+
+    if (state.quests && state.quests.completed.length > 0) {
+      const completedHeader = document.createElement('div');
+      completedHeader.className = 'panel-subtitle';
+      completedHeader.style.marginTop = '10px';
+      completedHeader.innerText = `Erfüllt (${state.quests.completed.length})`;
+      list.appendChild(completedHeader);
+
+      state.quests.completed.forEach(qid => {
+        const proto = QUEST_DATABASE[qid];
+        if (!proto) return;
+
+        const card = document.createElement('div');
+        card.className = 'quest-card completed';
+        card.innerHTML = `
+          <div class="quest-title-row">
+            <span>✓ ${proto.title}</span>
+            <span>VOLLENDET</span>
+          </div>
+          <div class="quest-desc">${proto.desc}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+  }
+
   showItemDetails(item) {
     const box = document.getElementById('item-details');
-    box.innerHTML = `<strong>${item.name}</strong> (${item.type})<br>${item.desc}<br>Wert: ${item.price} Korken`;
+    box.innerHTML = `<strong>${item.name}</strong> (${item.type})<br>${item.desc}<br>Handelswert: ${item.price} Gold`;
   }
 
   showShop() {
@@ -157,7 +226,6 @@ export class UIManager {
         list.appendChild(row);
       });
     } else {
-      // Verkaufs-Modus
       state.player.inventory.forEach((slot, idx) => {
         const proto = ITEM_DATABASE[slot.itemId];
         if (!proto) return;
@@ -177,7 +245,7 @@ export class UIManager {
 
   showShopItemInfo(proto, price, mode) {
     const box = document.getElementById('shop-item-info');
-    box.innerHTML = `<strong>${proto.name}</strong> (${proto.type})<br>${proto.desc}<br><strong>${mode === 'buy' ? 'Kaufpreis' : 'Verkaufswert'}:</strong> ${price} Korken`;
+    box.innerHTML = `<strong>${proto.name}</strong> (${proto.type})<br>${proto.desc}<br><strong>${mode === 'buy' ? 'Kaufpreis' : 'Verkaufswert'}:</strong> ${price} Gold`;
   }
 
   showCombat(monster) {
@@ -207,12 +275,12 @@ export class UIManager {
   logMessage(text) {
     const box = document.getElementById('activity-log');
     const line = document.createElement('div');
-    line.innerText = `> ${text}`;
+    line.innerText = `🗡️ ${text}`;
     box.prepend(line);
   }
 
   combatLog(text) {
     document.getElementById('combat-log-text').innerText = text;
-    this.logMessage(`[GEFECHT] ${text}`);
+    this.logMessage(`[SCHLACHT] ${text}`);
   }
 }

@@ -1,22 +1,21 @@
-// [2026-10-12 13:15] - js/systems/storage.js: v0.0.2 LocalStorage Persistenz-Engine
+// [2026-10-12 13:25] - js/systems/storage.js: v0.0.4 Dark Fantasy Speicher-Engine
 // Änderungen:
-// - Spielstand-Serialisierung und Wiederherstellung via localStorage ('wasteland_rpg_v002').
-// - Speichert Spielerwerte, Inventar, Ausrüstung, entdeckte Kartenkacheln, Truhen, Händler und verbleibende Monster.
-// - Saubere Reset-Funktion mit Bestätigungsabfrage.
+// - Speichert MP und Fantasy-Zustände unter dem Schlüssel 'dark_fantasy_rpg_v004'.
 
-import { state, INITIAL_PLAYER, INITIAL_TRADER } from '../core/state.js';
+import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
 
-const STORAGE_KEY = 'wasteland_rpg_v002';
+const STORAGE_KEY = 'dark_fantasy_rpg_v004';
 
 export class StorageSystem {
   saveGame(silent = false) {
     try {
       const data = {
-        version: '0.0.2',
+        version: '0.0.4',
         timestamp: Date.now(),
         player: state.player,
         trader: state.trader,
+        quests: state.quests,
         world: {
           chests: state.world.chests,
           monsters: state.world.monsters,
@@ -25,12 +24,12 @@ export class StorageSystem {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       if (!silent) {
-        eventBus.emit('log:message', '💾 Spielstand erfolgreich lokal gespeichert!');
+        eventBus.emit('log:message', '📜 Dein Fortschritt wurde in der Ordens-Chronik festgehalten!');
       }
       return true;
     } catch (e) {
       console.error('Speichern fehlgeschlagen:', e);
-      eventBus.emit('log:message', 'Fehler beim Speichern in LocalStorage!');
+      eventBus.emit('log:message', 'Fehler beim Speichern des Spielstands!');
       return false;
     }
   }
@@ -45,6 +44,7 @@ export class StorageSystem {
 
       state.player = data.player;
       if (data.trader) state.trader = data.trader;
+      if (data.quests) state.quests = data.quests;
 
       if (data.world) {
         if (data.world.chests) state.world.chests = data.world.chests;
@@ -52,7 +52,7 @@ export class StorageSystem {
         if (data.world.discovered) state.world.discovered = data.world.discovered;
       }
 
-      eventBus.emit('log:message', '💾 Vorheriger Spielstand aus LocalStorage geladen!');
+      eventBus.emit('log:message', '📜 Heldendaten aus der Chronik geladen!');
       return true;
     } catch (e) {
       console.error('Laden fehlgeschlagen:', e);
@@ -61,7 +61,7 @@ export class StorageSystem {
   }
 
   resetGame() {
-    if (confirm('Möchtest du den Spielstand wirklich zurücksetzen? Alle Fortschritte gehen verloren.')) {
+    if (confirm('Möchtest du diese Heldenreise beenden und neu beginnen?')) {
       localStorage.removeItem(STORAGE_KEY);
       location.reload();
     }

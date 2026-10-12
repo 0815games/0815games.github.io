@@ -1,8 +1,6 @@
-// [2026-10-12 13:15] - js/systems/shop.js: v0.0.2 Handelslogik (Kauf & Verkauf)
+// [2026-10-12 13:25] - js/systems/shop.js: v0.0.4 Alchemie- & Rüstkammer
 // Änderungen:
-// - Überprüfung von Korken-Budget (Spieler und Händler) und Slot-Limits (max 15 Slots).
-// - Dynamische Verkaufspreise (50% des Katalogwerts).
-// - Übertragung von Waren zwischen Händler- und Spieler-Inventar.
+// - Goldtransaktionen bei Alchemist Eldrin mit Slot-Prüfung und 50%-Verkaufswert.
 
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
@@ -16,7 +14,7 @@ export class ShopSystem {
 
   openShop() {
     state.inShop = true;
-    state.isInputLocked = true; // Bewegung verbieten solange Händler aktiv ist
+    state.isInputLocked = true;
     eventBus.emit('shop:opened');
   }
 
@@ -33,19 +31,19 @@ export class ShopSystem {
 
     const traderEntry = state.trader.inventory.find(i => i.itemId === itemId && i.count > 0);
     if (!traderEntry) {
-      eventBus.emit('log:message', 'Händler hat diesen Gegenstand nicht mehr auf Lager.');
+      eventBus.emit('log:message', 'Der Alchemist führt dieses Gut momentan nicht.');
       return;
     }
 
     const price = traderEntry.price || proto.price;
     if (state.player.caps < price) {
-      eventBus.emit('log:message', 'Nicht genügend Korken für diesen Kauf!');
+      eventBus.emit('log:message', 'Nicht genügend Goldmünzen in deinem Beutel!');
       return;
     }
 
     const added = this.invSys.addItem(itemId, 1);
     if (!added) {
-      eventBus.emit('log:message', 'Kauf abgebrochen: Dein Rucksack ist voll!');
+      eventBus.emit('log:message', 'Erwerb gescheitert: Deine Tasche ist voll!');
       return;
     }
 
@@ -53,7 +51,7 @@ export class ShopSystem {
     state.trader.caps += price;
     traderEntry.count--;
 
-    eventBus.emit('log:message', `Gekauft: ${proto.name} für ${price} Korken.`);
+    eventBus.emit('log:message', `Erworben: ${proto.name} für ${price} Gold.`);
     eventBus.emit('shop:updated');
     eventBus.emit('hud:updated');
   }
@@ -65,20 +63,17 @@ export class ShopSystem {
     const proto = ITEM_DATABASE[slot.itemId];
     if (!proto) return;
 
-    // Verkaufspreis beträgt 50% des Grundwerts (mindestens 1 Korken)
     const sellPrice = Math.max(1, Math.floor(proto.price * 0.5));
 
     if (state.trader.caps < sellPrice) {
-      eventBus.emit('log:message', 'Der Händler hat nicht mehr genügend Korken!');
+      eventBus.emit('log:message', 'Der Alchemist hat nicht mehr genügend Gold!');
       return;
     }
 
-    // Übergabe
     state.player.caps += sellPrice;
     state.trader.caps -= sellPrice;
     slot.count--;
 
-    // Ins Händler-Inventar zurückstellen
     const traderEntry = state.trader.inventory.find(i => i.itemId === slot.itemId);
     if (traderEntry) {
       traderEntry.count++;
@@ -90,7 +85,7 @@ export class ShopSystem {
       state.player.inventory.splice(slotIndex, 1);
     }
 
-    eventBus.emit('log:message', `Verkauft: ${proto.name} für +${sellPrice} Korken.`);
+    eventBus.emit('log:message', `Veräußert: ${proto.name} für +${sellPrice} Gold.`);
     eventBus.emit('shop:updated');
     eventBus.emit('hud:updated');
     eventBus.emit('inventory:updated');

@@ -1,132 +1,145 @@
 <!--
-[2026-10-12 13:15] - index.html: v0.0.2 Händlersystem & LocalStorage Integration
+[2026-10-12 13:25] - index.html: v0.0.4 Dark Fantasy UI & Dungeon-Layout
 Änderungen:
-- Neuer Händler-Dialog (Kaufen/Verkaufen-Tabs, Korken-Gegenüberstellung, Artikelübersicht).
-- HUD erweitert um Schnellspeicher- und Reset-Buttons für LocalStorage.
-- Speicherstatus-Anzeige im HUD integriert.
-- Eingabesperre bei modalen Fenstern visuell verstärkt.
+- Vollständiger thematischer Umbau von Ödland/Pip-Boy auf Dark Fantasy Dungeon-Crawler.
+- Neues Gothic/Fantasy-HUD: Rubinrote Lebensleiste, saphirblaue Manaleiste, Goldmünzen & Heldengrad.
+- Zaubermenü im Gefechts-Overlay (Feuerball, Frostpfeil, Segnung) integriert.
+- Fackelbeleuchtetes Canvas mit Katakomben-Atmosphäre und Dungeon-Navigation.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ödland 2D RPG - v0.0.2</title>
+  <title>Chroniken der Schattengruft - v0.0.4</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div id="game-app">
-    <!-- OBERES HUD -->
+    <!-- FANTASY TOP-HUD -->
     <header id="hud">
       <div class="hud-group">
-        <span class="hud-label">STATUS:</span>
-        <span id="stat-name" class="hud-value">Vault-Bewohner</span>
-        <span class="hud-badge">LVL <span id="stat-level">1</span></span>
+        <span class="hud-label">HELD:</span>
+        <span id="stat-name" class="hud-value">Schattenjäger</span>
+        <span class="hud-badge">STUFE <span id="stat-level">1</span></span>
       </div>
 
       <div class="hud-group bar-group">
         <div class="bar-wrapper">
-          <div class="bar-label">TP: <span id="stat-hp-text">50/50</span></div>
+          <div class="bar-label">LEBEN: <span id="stat-hp-text">60/60</span></div>
           <div class="progress-bar"><div id="hp-bar-fill" class="bar-fill hp-fill" style="width: 100%;"></div></div>
         </div>
         <div class="bar-wrapper">
-          <div class="bar-label">EP: <span id="stat-xp-text">0/100</span></div>
+          <div class="bar-label">MANA: <span id="stat-mp-text">30/30</span></div>
+          <div class="progress-bar"><div id="mp-bar-fill" class="bar-fill mp-fill" style="width: 100%;"></div></div>
+        </div>
+        <div class="bar-wrapper">
+          <div class="bar-label">ERFAHRUNG: <span id="stat-xp-text">0/100</span></div>
           <div class="progress-bar"><div id="xp-bar-fill" class="bar-fill xp-fill" style="width: 0%;"></div></div>
         </div>
       </div>
 
       <div class="hud-group">
-        <span class="hud-label">KORKEN:</span>
-        <span id="stat-caps" class="hud-value gold-text">25 🪙</span>
+        <span class="hud-label">SCHATZ:</span>
+        <span id="stat-caps" class="hud-value gold-text">40 🪙 Gold</span>
       </div>
 
       <div class="hud-group save-group">
-        <button id="btn-save-game" class="btn btn-small" title="Spielstand lokal sichern">💾 Speichern</button>
-        <button id="btn-reset-game" class="btn btn-small btn-danger" title="Neuen Spielstand beginnen">🔄 Neustart</button>
+        <button id="btn-save-game" class="btn btn-small" title="Spielstand sichern">📜 Speichern</button>
+        <button id="btn-reset-game" class="btn btn-small btn-danger" title="Neue Heldenreise">⚔️ Neubeginn</button>
       </div>
     </header>
 
-    <!-- HAUPTBEREICH: CANVAS & DASHBOARD -->
+    <!-- HAUPTBEREICH: DUNGEON-BÜHNE & KODEX-DASHBOARD -->
     <main id="viewport-container">
       <div id="canvas-wrapper">
         <canvas id="stage" width="640" height="480"></canvas>
-        <div id="map-overlay-tip">WASD / Pfeile zum Bewegen • 🏪 Händler bei [X:3, Y:4]</div>
+        <div id="map-overlay-tip">WASD / Pfeile zum Bewegen • 🔮 Alchemist Eldrin bei [X:3, Y:4]</div>
       </div>
 
       <aside id="dashboard">
         <!-- TABS -->
         <div class="tab-header">
           <button class="tab-btn active" data-tab="tab-inventory">Inventar</button>
-          <button class="tab-btn" data-tab="tab-character">Charakter</button>
-          <button class="tab-btn" data-tab="tab-logs">Logbuch</button>
+          <button class="tab-btn" data-tab="tab-quests">Quests <span id="quest-badge" class="badge-count">0</span></button>
+          <button class="tab-btn" data-tab="tab-character">Attribute</button>
+          <button class="tab-btn" data-tab="tab-logs">Chronik</button>
         </div>
 
-        <!-- TAB INHALTE -->
+        <!-- TAB INVENTAR -->
         <div id="tab-inventory" class="tab-content active">
-          <div class="panel-subtitle">Rucksack (<span id="inv-count">0</span> / 15 Slots)</div>
+          <div class="panel-subtitle">Gürteltasche (<span id="inv-count">0</span> / 15 Plätze)</div>
           <div id="inventory-grid" class="item-grid"></div>
-          <div id="item-details" class="item-details-box">Klicke auf ein Item für Details.</div>
+          <div id="item-details" class="item-details-box">Wähle einen Gegenstand für Runendetails.</div>
         </div>
 
+        <!-- TAB QUESTS -->
+        <div id="tab-quests" class="tab-content">
+          <div class="panel-subtitle">Aufgaben des Ordens</div>
+          <div id="quest-list" class="quest-container"></div>
+        </div>
+
+        <!-- TAB CHARAKTER -->
         <div id="tab-character" class="tab-content">
-          <div class="panel-subtitle">Ausrüstung & Attribute</div>
+          <div class="panel-subtitle">Rüstzeug & Kampffähigkeiten</div>
           <div class="equipment-section">
             <div class="equip-slot"><strong>Waffe:</strong> <span id="equip-weapon">Keine</span></div>
             <div class="equip-slot"><strong>Rüstung:</strong> <span id="equip-armor">Keine</span></div>
           </div>
           <div class="stats-list">
-            <div>Angriffskraft: <span id="stat-total-atk">6</span></div>
-            <div>Verteidigung: <span id="stat-total-def">1</span></div>
-            <div>Erkundete Sektoren: <span id="stat-tiles-visited">1</span></div>
+            <div>Schlagkraft: <span id="stat-total-atk">7</span></div>
+            <div>Rüstungsschutz: <span id="stat-total-def">2</span></div>
+            <div>Erkundete Grabkammern: <span id="stat-tiles-visited">1</span></div>
           </div>
         </div>
 
+        <!-- TAB LOGS -->
         <div id="tab-logs" class="tab-content">
-          <div class="panel-subtitle">System-Meldungen</div>
+          <div class="panel-subtitle">Schlachten-Chronik</div>
           <div id="activity-log"></div>
         </div>
 
-        <!-- GEFECHT-MODAL -->
+        <!-- GEFECHT-MODAL (DARK FANTASY BATTLE) -->
         <div id="combat-box" class="combat-panel hidden">
-          <div class="combat-header">GEFECHT ENTBRANNT!</div>
+          <div class="combat-header">KAMPF IN DEN SCHATTEN!</div>
           <div class="combat-arena">
             <div class="combatant">
-              <div class="combat-name" id="combat-player-name">Du</div>
+              <div class="combat-name" id="combat-player-name">Held</div>
               <div class="progress-bar"><div id="combat-player-hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
-              <div id="combat-player-hp-val" class="small-text">50 / 50 TP</div>
+              <div id="combat-player-hp-val" class="small-text">60 / 60 TP</div>
             </div>
-            <div class="combat-vs">VS</div>
+            <div class="combat-vs">⚔️</div>
             <div class="combatant">
-              <div class="combat-name" id="combat-mon-name">Monster</div>
+              <div class="combat-name" id="combat-mon-name">Kreatur</div>
               <div class="progress-bar"><div id="combat-mon-hp-bar" class="bar-fill mon-fill" style="width: 100%;"></div></div>
               <div id="combat-mon-hp-val" class="small-text">0 / 0 TP</div>
             </div>
           </div>
-          <div id="combat-log-text">Wähle deine Aktion...</div>
+          <div id="combat-log-text">Wähle deine Kampfführung...</div>
           <div class="action-row">
-            <button id="act-attack" class="btn btn-attack">⚔️ Angriff</button>
-            <button id="act-crit" class="btn btn-crit">🎯 Gezielter Schuss</button>
-            <button id="act-heal" class="btn btn-heal">🧪 Stimpak</button>
-            <button id="act-flee" class="btn btn-flee">🏃 Flucht</button>
+            <button id="act-attack" class="btn btn-attack">🗡️ Schwerthieb</button>
+            <button id="act-crit" class="btn btn-crit">🔥 Feuerball (8 MP)</button>
+            <button id="act-heal" class="btn btn-heal">🧪 Heiltrank</button>
+            <button id="act-flee" class="btn btn-flee">💨 Rückzug</button>
           </div>
         </div>
 
-        <!-- HÄNDLER-MODAL -->
+        <!-- ALCHEMIST / HÄNDLER-MODAL -->
         <div id="shop-box" class="shop-panel hidden">
           <div class="shop-header">
-            <span>🏪 ÖDLAND-HANDELSPOSTEN</span>
-            <button id="shop-close-btn" class="btn btn-small">✖ Schließen</button>
+            <span>🔮 ALCHEMIE- & RÜSTKAMMER</span>
+            <button id="shop-close-btn" class="btn btn-small">✖ Verlassen</button>
           </div>
           <div class="shop-tabs">
-            <button class="shop-tab-btn active" id="shop-tab-buy">Ware Kaufen</button>
-            <button class="shop-tab-btn" id="shop-tab-sell">Beute Verkaufen</button>
+            <button class="shop-tab-btn active" id="shop-tab-buy">Kaufangebote</button>
+            <button class="shop-tab-btn" id="shop-tab-sell">Beute Veräußern</button>
           </div>
           <div class="shop-budget-info">
-            <span>Deine Korken: <strong id="shop-player-caps" class="gold-text">0 🪙</strong></span>
-            <span>Händler-Budget: <strong id="shop-trader-caps" class="gold-text">250 🪙</strong></span>
+            <span>Dein Gold: <strong id="shop-player-caps" class="gold-text">0 🪙</strong></span>
+            <span>Händlerkasse: <strong id="shop-trader-caps" class="gold-text">300 🪙</strong></span>
           </div>
           <div id="shop-goods-list" class="shop-list"></div>
-          <div id="shop-item-info" class="item-details-box">Wähle ein Angebot aus.</div>
+          <div id="shop-item-info" class="item-details-box">Wähle eine Reliquie oder Ausrüstung.</div>
         </div>
       </aside>
     </main>
@@ -137,7 +150,7 @@
         <button class="btn dpad-btn" id="dpad-up">▲</button>
         <div class="dpad-mid">
           <button class="btn dpad-btn" id="dpad-left">◄</button>
-          <button class="btn dpad-btn" id="dpad-action">ACTION</button>
+          <button class="btn dpad-btn" id="dpad-action">AKTION</button>
           <button class="btn dpad-btn" id="dpad-right">►</button>
         </div>
         <button class="btn dpad-btn" id="dpad-down">▼</button>
