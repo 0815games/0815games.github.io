@@ -1,409 +1,257 @@
+<!--
+[2026-10-12 13:30] - index.html: v0.0.5 Intro-Sequenz, Titelbildschirm & Charakterauswahl
+Änderungen:
+- Einbindung des 'favicon.ico' im Head.
+- Atmosphärische Boot-Animation (Studio-Logo, Runen-Initialisierung, Fortschrittsbalken).
+- Titelbildschirm mit Dark-Fantasy Emblem, Untertitel und "Drücke ENTER / Klicke zum Starten".
+- Auswahlschirm für 3 Heldenklassen (Eisenbrecher-Krieger, Arkanist-Magier, Schattenläufer-Schurke) mit Attributen und Wappensymbolen.
+- Nahtloser Übergang in das Hauptspiel nach Klassenwahl.
+-->
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pip-Boy 3003</title>
-    
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23000%22/><text x=%2250%25%22 y=%2250%25%22 font-size=%2280%22 font-family=%22monospace%22 font-weight=%22bold%22 fill=%22%231aff1a%22 dy=%22.35em%22 text-anchor=%22middle%22>P</text></svg>">
-    
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-    
-    <script>document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');</script>
-    
-    <style>
-        @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-        @keyframes scan-line { 0% { top: 0%; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-        .animate-spin-reverse { animation: spin-reverse 3s linear infinite; }
-        .animate-scan-vertical { animation: scan-line 2s linear infinite; }
-        .reactor-glow { box-shadow: 0 0 15px #39ff14, inset 0 0 10px #39ff14; }
-        
-        /* Debug Styles */
-        .debug-overlay { user-select: text !important; -webkit-user-select: text !important; }
-        .selectable { user-select: text; -webkit-user-select: text; cursor: text; }
-    </style>
-    
-    <script>
-        // --- GLOBAL ERROR CAPTURE ---
-        window.logBuffer = [];
-        
-        function captureLog(type, msg) {
-            const line = `[${new Date().toLocaleTimeString()}] [${type}] ${msg}`;
-            window.logBuffer.push(line);
-            console.log(line);
-        }
-
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            const errorDetails = {
-                msg: msg,
-                url: url,
-                line: lineNo,
-                col: columnNo,
-                stack: error ? error.stack : 'N/A'
-            };
-            showCrashReport("RUNTIME_ERROR", errorDetails);
-            return false;
-        };
-
-        window.onunhandledrejection = function(event) {
-            showCrashReport("PROMISE_ERROR", {
-                msg: event.reason ? (event.reason.message || event.reason) : "Unknown Promise Error",
-                stack: event.reason ? event.reason.stack : 'N/A'
-            });
-        };
-
-        function showCrashReport(type, details) {
-            const overlay = document.getElementById('crash-overlay');
-            const reportBox = document.getElementById('crash-report-text');
-            const bootScreen = document.getElementById('boot-sequence');
-            
-            if(bootScreen) bootScreen.style.display = 'none';
-            if(overlay) overlay.style.display = 'flex';
-
-            const fullReport = `
-=== PIP-BOY 3003 CRASH REPORT ===
-TIMESTAMP: ${new Date().toISOString()}
-TYPE: ${type}
-USER_AGENT: ${navigator.userAgent}
-SCREEN: ${window.innerWidth}x${window.innerHeight}
-
-ERROR MESSAGE:
-${details.msg}
-
-LOCATION:
-${details.url || 'Internal'} : ${details.line || '?'}:${details.col || '?'}
-
-STACK TRACE:
-${details.stack}
-
-=== LOG BUFFER (LAST 10) ===
-${window.logBuffer.slice(-10).join('\n')}
-            `.trim();
-
-            if(reportBox) reportBox.value = fullReport;
-        }
-
-        function copyCrashReport() {
-            const text = document.getElementById('crash-report-text');
-            text.select();
-            document.execCommand('copy');
-            alert("Bericht in Zwischenablage kopiert!");
-        }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chroniken der Schattengruft - v0.0.5</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div id="pipboy-case">
-    <div class="scanline"></div>
-    <div class="absolute inset-0 pointer-events-none crt-flicker z-[1001]" style="background: rgba(0,255,0,0.02);"></div>
 
-    <div id="crash-overlay" class="absolute inset-0 z-[9999] bg-black/95 flex-col items-center justify-center p-4 hidden debug-overlay">
-        <h1 class="text-4xl text-red-600 font-bold mb-2 blink-red border-b-2 border-red-600 pb-2">FATAL SYSTEM ERROR</h1>
-        <p class="text-red-400 mb-4 text-center">Das System ist abgestürzt. Bitte kopiere diesen Bericht:</p>
-        <textarea id="crash-report-text" class="w-full h-64 bg-[#110000] border-2 border-red-600 text-red-300 font-mono text-xs p-2 mb-4 selectable" readonly></textarea>
-        <div class="flex gap-4 w-full max-w-md">
-            <button onclick="copyCrashReport()" class="flex-1 bg-red-900/50 border border-red-500 text-white py-3 font-bold hover:bg-red-600">BERICHT KOPIEREN</button>
-            <button onclick="location.reload()" class="flex-1 border border-gray-500 text-gray-400 py-3 hover:text-white">NEUSTART</button>
-        </div>
+  <!-- BOOT / SPLASH ANIMATION -->
+  <div id="boot-screen" class="overlay-screen">
+    <div class="boot-box">
+      <div class="studio-emblem">⚔️ ᚱ ⚔️</div>
+      <div class="studio-title">FORGE OF SHADOWS</div>
+      <div class="boot-subtitle">Initialisiere alte Siegel & Katakomben...</div>
+      <div class="boot-progress-frame">
+        <div id="boot-bar" class="boot-bar-fill"></div>
+      </div>
+      <div class="boot-tip">Tippe auf den Bildschirm, um das Intro zu überspringen</div>
     </div>
+  </div>
 
-    <div id="login-screen" class="hex-bg">
-        <div class="login-box crt-effect-container">
-            <div id="boot-sequence">
-                
-                <div class="relative w-32 h-32 mb-6 mx-auto flex items-center justify-center">
-                    <div class="absolute inset-0 border-2 border-green-900 rounded-full"></div>
-                    <div class="absolute inset-0 w-full h-full rounded-full border-[6px] border-transparent border-t-[#39ff14] border-b-[#39ff14] opacity-60 animate-spin"></div>
-                    <div class="absolute inset-4 rounded-full border-2 border-dashed border-yellow-500/50 animate-spin-reverse"></div>
-                    <div class="relative w-16 h-16 rounded-full bg-[#001100] border border-[#39ff14] reactor-glow flex items-center justify-center overflow-hidden z-10">
-                        <div class="w-8 h-8 bg-[#39ff14] rounded-full animate-pulse shadow-[0_0_20px_#39ff14]"></div>
-                        <div class="absolute left-0 w-full h-[2px] bg-[#ccffcc] shadow-[0_0_5px_white] animate-scan-vertical"></div>
-                    </div>
-                    <div class="absolute -left-4 top-1/2 w-4 h-[1px] bg-green-700"></div>
-                    <div class="absolute -right-4 top-1/2 w-4 h-[1px] bg-green-700"></div>
-                </div>
-                
-                <div class="text-xl font-bold text-yellow-400 mb-2 animate-pulse tracking-widest text-center">SYSTEM BOOT</div>
-                <div id="boot-log" class="w-full text-left pl-4 border-l-2 border-green-800 mt-2 h-32 overflow-hidden flex flex-col justify-end bg-black/40 p-2 font-mono text-xs md:text-sm transition-all duration-300"></div>
-            </div>
+  <!-- TITELBILDSCHIRM / LOGIN-SCREEN -->
+  <div id="title-screen" class="overlay-screen hidden">
+    <div class="title-container">
+      <div class="game-logo">
+        <div class="logo-crest">🛡️</div>
+        <h1 class="logo-main">CHRONIKEN</h1>
+        <h2 class="logo-sub">DER SCHATTENGRUFT</h2>
+        <div class="logo-tagline">Ein Dark Fantasy Dungeon-Crawler</div>
+      </div>
 
-            <div id="login-content" class="hidden w-full flex-col items-center">
-                <h1 class="text-5xl md:text-6xl font-bold glow-text mb-2">PIP-BOY 3003</h1>
-                <div id="login-title" class="text-xl mb-4 opacity-80 animate-pulse">AUTHENTICATION REQUIRED</div>
-                <form id="login-form" onsubmit="event.preventDefault();" autocomplete="off" class="w-full">
-                    <input type="email" id="login-email" class="login-input" placeholder="E-MAIL" autofocus autocomplete="username">
-                    <input type="password" id="login-pass" class="login-input mt-2" placeholder="PASSWORT" autocomplete="current-password">
-                </form>
-                <button id="btn-login" class="action-button w-full py-3 font-bold text-xl mb-2 mt-4">LOGIN</button>
-                <button id="btn-toggle-register" class="text-sm text-yellow-400 hover:text-yellow-200 cursor-pointer mb-4 underline bg-transparent border-none">Noch kein Account? Hier registrieren</button>
-                <div class="flex gap-2 w-full">
-                    <button id="btn-manual-login" class="action-button flex-1 py-2 font-bold text-lg border-yellow-400 text-yellow-400" onclick="UI.showManualOverlay()">ANLEITUNG</button>
-                    <button id="btn-changelog" class="action-button flex-1 py-2 font-bold text-lg border-blue-400 text-blue-400" onclick="UI.showChangelogOverlay()">LOGS</button>
-                </div>
-                
-                <button onclick="window.location.href='admin.html'" class="mt-2 text-[10px] text-gray-600 hover:text-red-500 border border-transparent hover:border-red-900 px-2 py-1 transition-colors uppercase tracking-widest cursor-pointer bg-transparent">
-                    [ ADMIN TERMINAL ACCESS ]
-                </button>
+      <div class="title-press-prompt" id="prompt-enter">
+        <span class="pulse-text">⚡ DRÜCKE [ENTER] ODER KLICKE ZUM STARTEN ⚡</span>
+      </div>
 
-                <div id="login-status" class="mt-4 text-yellow-400 min-h-[1.5em] text-sm font-mono break-words"></div>
-                <div class="mt-4 text-xs text-[#1aff1a] opacity-50 border-t border-[#1aff1a]/30 pt-2 w-full">VERSION <span id="login-version-display">LOADING...</span></div>
-            </div>
-        </div>
+      <div class="title-footer-note">Version 0.0.5 • Speichert automatisch im Browser-Speicher</div>
     </div>
+  </div>
 
-    <div id="char-select-screen" style="display: none;">
-        <div class="login-box crt-effect-container w-full max-w-lg flex flex-col" style="overflow: hidden !important; padding: 0 !important; max-height: 90vh; min-height: 500px;">
-            <div class="flex-1 w-full overflow-y-auto custom-scroll bg-[#050505] p-6">
-                <div class="mb-6">
-                    <h1 class="text-4xl font-bold text-yellow-400 mb-2 border-b border-yellow-400 pb-2 uppercase">Charakter Wahl</h1>
-                    <div class="text-sm text-green-300 font-mono leading-tight opacity-80">Tippe auf einen Slot zum Starten / Erstellen.</div>
-                </div>
-                <div id="char-slots-list" class="flex flex-col gap-2 w-full"></div>
-            </div>
-            <div class="flex-shrink-0 p-6 pt-4 bg-black/95 border-t border-green-900 z-20 shadow-[0_-5px_15px_rgba(0,0,0,0.5)]">
-                <div class="flex flex-col gap-2 w-full">
-                    <div class="flex gap-2 w-full">
-                        <button id="btn-char-delete-action" class="action-button flex-1 font-bold border-red-500 text-red-500 py-3 hover:bg-red-900/30" disabled>LÖSCHEN</button>
-                        <button id="btn-char-back" class="action-button flex-1 border-gray-500 text-gray-500 py-3 hover:text-white hover:border-white">ZURÜCK</button>
-                    </div>
-                </div>
-            </div>
+  <!-- CHARAKTER-AUSWAHL -->
+  <div id="char-select-screen" class="overlay-screen hidden">
+    <div class="char-select-box">
+      <h2 class="select-title">WÄHLE DEINEN HEILIGEN PFAD</h2>
+      <p class="select-desc">Jede Klasse besitzt einzigartige Attribute, Waffen und Überlebensstrategien in den Tiefen der Gruft.</p>
+
+      <div class="hero-cards-grid">
+        <!-- KRIEGER -->
+        <div class="hero-card active" data-class="warrior">
+          <div class="hero-icon">🛡️</div>
+          <div class="hero-title">Eisenbrecher</div>
+          <div class="hero-role">Krieger (Tank / Nahkampf)</div>
+          <div class="hero-stats">
+            <div>Leben: <strong>75 TP</strong></div>
+            <div>Mana: <strong>15 MP</strong></div>
+            <div>Schlagkraft: <strong>9 ATK</strong></div>
+            <div>Rüstungsschutz: <strong>4 DEF</strong></div>
+          </div>
+          <div class="hero-gear">Start: Geschmiedetes Langschwert & Kettenhemd</div>
         </div>
-    </div>
 
-    <div id="delete-confirm-overlay" style="display: none;">
-        <div class="login-box crt-effect-container border-red-500" style="box-shadow: 0 0 30px red;">
-            <h2 class="text-3xl font-bold text-red-600 mb-2">WARNUNG</h2>
-            <p class="text-red-400 mb-4">Charakter unwiderruflich löschen?<br>Tippe den Namen zur Bestätigung:</p>
-            <div id="delete-target-name" class="font-bold text-white mb-2 text-xl bg-red-900/50 p-2 border border-red-500">???</div>
-            <input type="text" id="delete-input" class="login-input border-red-500 text-red-500 mb-4" placeholder="NAME EINGEBEN" autocomplete="off">
-            <div class="flex gap-2 w-full">
-                <button id="btn-delete-confirm" class="action-button flex-1 border-red-500 text-red-500 font-bold" disabled>LÖSCHEN</button>
-                <button id="btn-delete-cancel" class="action-button flex-1 border-green-500 text-green-500">ABBRECHEN</button>
-            </div>
+        <!-- MAGIER -->
+        <div class="hero-card" data-class="mage">
+          <div class="hero-icon">🔮</div>
+          <div class="hero-title">Arkanist</div>
+          <div class="hero-role">Magier (Elementar / Burst)</div>
+          <div class="hero-stats">
+            <div>Leben: <strong>50 TP</strong></div>
+            <div>Mana: <strong>50 MP</strong></div>
+            <div>Schlagkraft: <strong>6 ATK</strong></div>
+            <div>Rüstungsschutz: <strong>1 DEF</strong></div>
+          </div>
+          <div class="hero-gear">Start: Feuerball-Rune & 4x Manatrank</div>
         </div>
-    </div>
-    
-    <div id="new-char-overlay" class="absolute inset-0 z-[1000] bg-black/95 flex flex-col justify-center items-center hidden">
-        <div class="login-box crt-effect-container border-yellow-400">
-            <h2 class="text-3xl font-bold text-yellow-400 mb-2">NEUE IDENTITÄT</h2>
-            <p class="text-green-300 mb-4">Wie soll dein neuer Charakter heißen?</p>
-            <input type="text" id="new-char-name" class="login-input mb-4 text-yellow-400 border-yellow-400" placeholder="NAME" maxlength="15">
-            <div class="flex gap-2 w-full">
-                <button id="btn-create-char" class="action-button flex-1 border-yellow-400 text-yellow-400 font-bold">ERSTELLEN</button>
-                <button onclick="document.getElementById('new-char-overlay').classList.add('hidden')" class="action-button flex-1">ABBRUCH</button>
-            </div>
+
+        <!-- SCHURKE -->
+        <div class="hero-card" data-class="rogue">
+          <div class="hero-icon">🗡️</div>
+          <div class="hero-title">Schattenläufer</div>
+          <div class="hero-role">Schurke (Krit / Agilität)</div>
+          <div class="hero-stats">
+            <div>Leben: <strong>60 TP</strong></div>
+            <div>Mana: <strong>25 MP</strong></div>
+            <div>Schlagkraft: <strong>8 ATK</strong></div>
+            <div>Rüstungsschutz: <strong>2 DEF</strong></div>
+          </div>
+          <div class="hero-gear">Start: Doppel-Dolch & hohe Fluchtchance</div>
         </div>
+      </div>
+
+      <div class="char-name-group">
+        <label for="char-name-input">Name deines Recken:</label>
+        <input type="text" id="char-name-input" value="Schattenjäger" maxlength="16">
+        <button id="btn-confirm-char" class="btn btn-gold">IN DIE TIEFEN HERABSTEIGEN</button>
+      </div>
     </div>
+  </div>
 
-    <div id="manual-overlay" class="hidden z-[1000] bg-black/95" style="display: none;"><div class="border-2 border-yellow-400 w-full max-w-2xl h-[90vh] bg-[#111] flex flex-col p-4 shadow-[0_0_30px_#aa0]"><div class="flex justify-between items-center border-b border-yellow-400 pb-2 mb-2"><h2 class="text-2xl font-bold text-yellow-400">HANDBUCH v1.0</h2><button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="document.getElementById('manual-overlay').classList.add('hidden'); document.getElementById('manual-overlay').style.display='none';">X</button></div><div id="manual-content" class="flex-grow overflow-y-auto text-green-300 font-mono space-y-4 pr-2"></div></div></div>
-    <div id="changelog-overlay" class="hidden z-[1000] bg-black/95" style="display: none;"><div class="border-2 border-blue-400 w-full max-w-2xl h-[90vh] bg-[#050510] flex flex-col p-4 shadow-[0_0_30px_#00a]"><div class="flex justify-between items-center border-b border-blue-400 pb-2 mb-2"><h2 class="text-2xl font-bold text-blue-400">PATCH NOTES</h2><button class="text-red-500 font-bold text-xl px-2 border border-red-500 hover:bg-red-900" onclick="document.getElementById('changelog-overlay').classList.add('hidden'); document.getElementById('changelog-overlay').style.display='none';">X</button></div><div id="changelog-content" class="flex-grow overflow-y-auto text-blue-200 font-mono text-sm leading-relaxed whitespace-pre-wrap pr-2"></div></div></div>
-    <div id="spawn-screen" style="display: none;"><div class="login-box crt-effect-container"><h1 class="text-3xl md:text-4xl font-bold glow-text mb-4">NEUER CHARAKTER</h1><div id="spawn-msg" class="text-sm mb-4 text-red-400 font-bold"></div><div id="spawn-list" class="flex flex-col gap-2 max-h-[250px] overflow-y-auto mb-4 border border-green-900 p-2 text-left"></div><button id="btn-spawn-random" class="action-button w-full mb-2">ZUFALLS-START</button><button class="action-button w-full border-red-500 text-red-500" onclick="location.reload()">ABBRUCH</button></div></div>
-    <div id="reset-overlay" style="display: none;"><div class="login-box crt-effect-container border-red-500" style="box-shadow: 0 0 20px #500;"><h1 class="text-4xl font-bold text-red-500 mb-4 animate-pulse">ACHTUNG!</h1><div class="text-lg mb-8 text-red-400 font-bold">CHARAKTER LÖSCHEN?<br>ALLES GEHT VERLOREN!</div><div class="flex flex-col gap-2 w-full"><button id="btn-confirm-reset" class="action-button w-full border-red-500 text-red-500 font-bold hover:bg-red-900">JA, LÖSCHEN</button><button id="btn-cancel-reset" class="action-button w-full border-green-500 text-green-500">ABBRECHEN</button></div></div></div>
-    <div id="game-over-screen" class="absolute inset-0 z-50 bg-black/95 flex flex-col justify-center items-center hidden">
-        <h1 class="text-6xl text-red-600 font-bold border-4 border-red-600 p-6 mb-2 blink-red tracking-widest">CRITICAL FAILURE</h1>
-        <div class="text-red-400 text-xl font-mono mb-8 uppercase tracking-widest">Systemfehler: Du bist gestorben. Dein Charakter wurde gelöscht.</div>
-        <button id="btn-restart" onclick="UI.logout('PERMADEATH: CHARAKTER GELÖSCHT')" class="border-2 border-red-500 text-red-500 px-8 py-3 hover:bg-red-900 text-xl font-bold uppercase cursor-pointer">ZURÜCK ZUM LOGIN</button>
-    </div>
- 
-    <div id="player-list-overlay"><div class="font-bold border-b border-green-500 mb-2 pb-1 text-center">SIGNALE</div><div id="player-list-content" class="text-sm space-y-1"></div><button class="action-button w-full mt-2 text-xs" onclick="UI.togglePlayerList()">SCHLIESSEN</button></div>
+  <!-- HAUPT-SPIEL -->
+  <div id="game-app" class="hidden">
+    <!-- FANTASY TOP-HUD -->
+    <header id="hud">
+      <div class="hud-group">
+        <span class="hud-label">HELD:</span>
+        <span id="stat-name" class="hud-value">Schattenjäger</span>
+        <span class="hud-badge">STUFE <span id="stat-level">1</span></span>
+      </div>
 
-    <div id="game-screen" class="hidden opacity-0 transition-opacity duration-1000 bg-[#000]">
-        <header class="flex flex-col w-full z-30 shrink-0 relative bg-[#001100] border-b-2 border-[#39ff14]">
-            <div class="flex items-center justify-between p-2 gap-2 h-16 w-full">
-                <div id="header-char-info" class="flex flex-col justify-center cursor-pointer hover:bg-green-900/30 px-2 rounded transition-colors group">
-                    <span id="val-name" class="text-xl font-bold text-cyan-400 uppercase tracking-wide truncate group-hover:text-yellow-400 transition-colors">PLAYER</span>
-                    <span class="text-yellow-400 font-bold text-sm leading-none">LVL <span id="val-lvl">1</span></span>
-                </div>
-                <div class="flex flex-col items-end justify-center gap-0 leading-tight min-w-[60px]">
-                    <span class="text-yellow-400 font-bold text-sm whitespace-nowrap"><span id="val-caps" class="text-lg">0</span> KK</span>
-                    <span class="text-yellow-400 font-bold text-sm whitespace-nowrap"><span id="val-ammo" class="text-lg">0</span> MUN</span>
-                </div>
-                <div class="flex-grow h-8 bg-gray-900 border border-[#39ff14] relative overflow-hidden mx-2 max-w-lg">
-                    <div id="bar-hp" class="absolute top-0 left-0 h-full bg-[#1aff1a] transition-all duration-300 z-0" style="background: transparent; width: 100%"></div>
-                    <div id="bar-rads" class="absolute top-0 right-0 h-full bg-red-600/90 transition-all duration-300 border-l border-red-400 z-10" style="width: 0%"></div>
-                    <div id="val-hp" class="absolute inset-0 text-3xl tracking-widest flex items-center justify-center font-bold leading-none z-20 text-black" style="color: black !important;">TP 100/100</div>
-                </div>
-                <button id="btn-menu-toggle" class="header-btn border-[#39ff14] text-3xl h-full aspect-square flex items-center justify-center p-0" title="Menü">☰</button>
-            </div>
-            <div class="w-full h-2 bg-gray-900 border-t border-yellow-500 relative">
-                 <div id="bar-exp-top" class="absolute top-0 left-0 h-full bg-yellow-500 transition-all duration-300" style="width: 0%"></div>
-                 <div class="absolute inset-0 text-[8px] flex items-center justify-center text-black font-bold leading-none opacity-50"><span id="val-xp-txt">0</span>% XP</div>
-            </div>
-        </header>
-
-   <div id="main-nav" class="hidden absolute top-20 right-0 z-[1000] flex-col bg-black border-2 border-[#39ff14] p-2 gap-2 shadow-[0_5px_15px_#000] w-56 max-h-[calc(100vh-6rem)] overflow-y-auto custom-scroll">
-            <button id="btn-inv" class="action-button w-full text-left">INVENTAR</button>
-            <button id="btn-char" class="action-button w-full text-left">CHARAKTER</button>
-            <button id="btn-map" class="action-button w-full text-left">WELT</button>
-            <button id="btn-quests" class="action-button w-full text-left">AUFGABEN</button>
-            <button id="btn-highscores-game" class="action-button w-full text-left" onclick="UI.showHighscoreBoard()">VAULT LEGENDS</button>
-            <button id="btn-wiki" class="action-button w-full text-left">WIKI</button>
-            <button id="btn-manual-game" class="action-button w-full text-left text-yellow-400 border-yellow-400" onclick="UI.showManualOverlay()">HANDBUCH</button>
-            <button id="btn-bug-report" class="action-button w-full text-left border-red-500 text-red-400 hover:bg-red-900/20">BUG MELDEN 🐞</button>
-            <div class="border-t border-green-900 my-1"></div>
-            <button id="btn-menu-save" class="action-button w-full text-left border-yellow-400 text-yellow-400">SPEICHERN</button>
-            <button id="btn-logout" class="action-button w-full text-left text-red-400 border-red-500">LOGOUT</button>
-            <div class="text-[10px] text-center text-white opacity-80 mt-1 flex justify-between px-2">
-                <span>v<span id="version-display">...</span></span>
-                <span id="val-players">? USER</span>
-            </div>
+      <div class="hud-group bar-group">
+        <div class="bar-wrapper">
+          <div class="bar-label">LEBEN: <span id="stat-hp-text">60/60</span></div>
+          <div class="progress-bar"><div id="hp-bar-fill" class="bar-fill hp-fill" style="width: 100%;"></div></div>
         </div>
-        
-        <div id="main-content">
-            <div id="main-panel">
-                <div id="view-container" class="crt-effect-container w-full h-full relative">
-                    <button id="btn-toggle-dpad" class="hidden">🎮</button>
-                    <div id="overlay-controls"></div>
-                    <div id="dialog-overlay"></div>
-                    <div id="dice-overlay" class="hidden"></div>
-                </div>
-            </div>
+        <div class="bar-wrapper">
+          <div class="bar-label">MANA: <span id="stat-mp-text">30/30</span></div>
+          <div class="progress-bar"><div id="mp-bar-fill" class="bar-fill mp-fill" style="width: 100%;"></div></div>
         </div>
-    </div>
+        <div class="bar-wrapper">
+          <div class="bar-label">ERFAHRUNG: <span id="stat-xp-text">0/100</span></div>
+          <div class="progress-bar"><div id="xp-bar-fill" class="bar-fill xp-fill" style="width: 0%;"></div></div>
+        </div>
+      </div>
 
-    <div id="game-toast-container" class="absolute top-24 right-4 z-[3000] flex flex-col gap-2 pointer-events-none w-auto items-end max-w-full md:max-w-[400px]"></div>
+      <div class="hud-group">
+        <span class="hud-label">SCHATZ:</span>
+        <span id="stat-caps" class="hud-value gold-text">40 🪙 Gold</span>
+      </div>
 
-</div>
+      <div class="hud-group save-group">
+        <button id="btn-save-game" class="btn btn-small" title="Spielstand sichern">📜 Speichern</button>
+        <button id="btn-reset-game" class="btn btn-small btn-danger" title="Neue Heldenreise">⚔️ Neubeginn</button>
+      </div>
+    </header>
 
-<script>
-    // --- LOAD SCRIPT MIT ERROR HANDLING ---
-    function loadScript(src) { 
-        return new Promise((resolve, reject) => { 
-            captureLog("LOADER", `Loading ${src}...`);
-            const s = document.createElement('script'); 
-            s.src = src; 
-            s.onload = resolve; 
-            s.onerror = (e) => reject({src: src, evt: e, message: "Script failed to load"}); 
-            document.body.appendChild(s); 
-        }); 
-    }
-    
-    let scriptsLoaded = false;
+    <!-- HAUPTBEREICH: DUNGEON-BÜHNE & KODEX-DASHBOARD -->
+    <main id="viewport-container">
+      <div id="canvas-wrapper">
+        <canvas id="stage" width="640" height="480"></canvas>
+        <div id="map-overlay-tip">WASD / Pfeile zum Bewegen • 🔮 Alchemist Eldrin bei [X:3, Y:4]</div>
+      </div>
 
-    function addBootLine(text, color = "boot-line") {
-        const log = document.getElementById('boot-log');
-        const div = document.createElement('div');
-        div.className = color;
-        div.textContent = "> " + text;
-        log.appendChild(div);
-    }
+      <aside id="dashboard">
+        <!-- TABS -->
+        <div class="tab-header">
+          <button class="tab-btn active" data-tab="tab-inventory">Inventar</button>
+          <button class="tab-btn" data-tab="tab-quests">Quests <span id="quest-badge" class="badge-count">0</span></button>
+          <button class="tab-btn" data-tab="tab-character">Attribute</button>
+          <button class="tab-btn" data-tab="tab-logs">Chronik</button>
+        </div>
 
-    async function runBootSequence(ver) {
-        const log = document.getElementById('boot-log');
-        const bootSeq = document.getElementById('boot-sequence');
-        const loginContent = document.getElementById('login-content');
-        
-        const initialLines = [
-            "ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM",
-            "COPYRIGHT 2075-2077 ROBCO INDUSTRIES",
-            "SERVER: ONLINE",
-            `LOADING SYSTEM VERSION ${ver || 'DETECTING...'}`,
-            "MEMORY: 64KB OK"
-        ];
+        <!-- TAB INVENTAR -->
+        <div id="tab-inventory" class="tab-content active">
+          <div class="panel-subtitle">Gürteltasche (<span id="inv-count">0</span> / 15 Plätze)</div>
+          <div id="inventory-grid" class="item-grid"></div>
+          <div id="item-details" class="item-details-box">Wähle einen Gegenstand für Runendetails.</div>
+        </div>
 
-        for (let line of initialLines) {
-            addBootLine(line);
-            await new Promise(r => setTimeout(r, 200)); // Schnellerer Boot
-        }
+        <!-- TAB QUESTS -->
+        <div id="tab-quests" class="tab-content">
+          <div class="panel-subtitle">Aufgaben des Ordens</div>
+          <div id="quest-list" class="quest-container"></div>
+        </div>
 
-        addBootLine("INITIALIZING PIP-BOY 3003 INTERFACE...");
+        <!-- TAB CHARAKTER -->
+        <div id="tab-character" class="tab-content">
+          <div class="panel-subtitle">Rüstzeug & Kampffähigkeiten</div>
+          <div class="equipment-section">
+            <div class="equip-slot"><strong>Waffe:</strong> <span id="equip-weapon">Keine</span></div>
+            <div class="equip-slot"><strong>Rüstung:</strong> <span id="equip-armor">Keine</span></div>
+          </div>
+          <div class="stats-list">
+            <div>Klasse: <span id="stat-class-name">Krieger</span></div>
+            <div>Schlagkraft: <span id="stat-total-atk">7</span></div>
+            <div>Rüstungsschutz: <span id="stat-total-def">2</span></div>
+            <div>Erkundete Grabkammern: <span id="stat-tiles-visited">1</span></div>
+          </div>
+        </div>
 
-        const checkReady = setInterval(() => {
-            if (scriptsLoaded) {
-                clearInterval(checkReady);
-                finishBoot();
-            }
-        }, 500);
+        <!-- TAB LOGS -->
+        <div id="tab-logs" class="tab-content">
+          <div class="panel-subtitle">Schlachten-Chronik</div>
+          <div id="activity-log"></div>
+        </div>
 
-        function finishBoot() {
-            const log = document.getElementById('boot-log');
-            log.innerHTML = ''; // Clear for dramatic effect
-            
-            setTimeout(() => {
-                addBootLine("SYSTEM READY.", "text-green-400 font-bold animate-pulse text-lg");
-                
-                setTimeout(() => {
-                    bootSeq.style.display = 'none';
-                    loginContent.classList.remove('hidden');
-                    loginContent.classList.add('flex');
-                    
-                    if(typeof UI !== 'undefined') {
-                        UI.isSystemReady = true; 
-                        console.log("Boot finished. System is now ready for interaction.");
-                    }
-                }, 1000); 
-            }, 300);
-        }
-    }
+        <!-- GEFECHT-MODAL -->
+        <div id="combat-box" class="combat-panel hidden">
+          <div class="combat-header">KAMPF IN DEN SCHATTEN!</div>
+          <div class="combat-arena">
+            <div class="combatant">
+              <div class="combat-name" id="combat-player-name">Held</div>
+              <div class="progress-bar"><div id="combat-player-hp-bar" class="bar-fill hp-fill" style="width: 100%;"></div></div>
+              <div id="combat-player-hp-val" class="small-text">60 / 60 TP</div>
+            </div>
+            <div class="combat-vs">⚔️</div>
+            <div class="combatant">
+              <div class="combat-name" id="combat-mon-name">Kreatur</div>
+              <div class="progress-bar"><div id="combat-mon-hp-bar" class="bar-fill mon-fill" style="width: 100%;"></div></div>
+              <div id="combat-mon-hp-val" class="small-text">0 / 0 TP</div>
+            </div>
+          </div>
+          <div id="combat-log-text">Wähle deine Kampfführung...</div>
+          <div class="action-row">
+            <button id="act-attack" class="btn btn-attack">🗡️ Schwerthieb</button>
+            <button id="act-crit" class="btn btn-crit">🔥 Feuerball (8 MP)</button>
+            <button id="act-heal" class="btn btn-heal">🧪 Heiltrank</button>
+            <button id="act-flee" class="btn btn-flee">💨 Rückzug</button>
+          </div>
+        </div>
 
-    window.onload = function() {
-        const verDisplay = document.getElementById('version-display');
-        const loginVerDisplay = document.getElementById('login-version-display'); 
-        const devVer = Date.now();
+        <!-- ALCHEMIST / HÄNDLER-MODAL -->
+        <div id="shop-box" class="shop-panel hidden">
+          <div class="shop-header">
+            <span>🔮 ALCHEMIE- & RÜSTKAMMER</span>
+            <button id="shop-close-btn" class="btn btn-small">✖ Verlassen</button>
+          </div>
+          <div class="shop-tabs">
+            <button class="shop-tab-btn active" id="shop-tab-buy">Kaufangebote</button>
+            <button class="shop-tab-btn" id="shop-tab-sell">Beute Veräußern</button>
+          </div>
+          <div class="shop-budget-info">
+            <span>Dein Gold: <strong id="shop-player-caps" class="gold-text">0 🪙</strong></span>
+            <span>Händlerkasse: <strong id="shop-trader-caps" class="gold-text">300 🪙</strong></span>
+          </div>
+          <div id="shop-goods-list" class="shop-list"></div>
+          <div id="shop-item-info" class="item-details-box">Wähle eine Reliquie oder Ausrüstung.</div>
+        </div>
+      </aside>
+    </main>
 
-        fetch('Version?t=' + devVer)
-            .then(res => res.text())
-            .then(v => {
-                const displayVer = v.trim(); 
-                runBootSequence(displayVer);
+    <!-- TOUCH / MOBILE NAVIGATION -->
+    <footer id="mobile-controls">
+      <div class="dpad-grid">
+        <button class="btn dpad-btn" id="dpad-up">▲</button>
+        <div class="dpad-mid">
+          <button class="btn dpad-btn" id="dpad-left">◄</button>
+          <button class="btn dpad-btn" id="dpad-action">AKTION</button>
+          <button class="btn dpad-btn" id="dpad-right">►</button>
+        </div>
+        <button class="btn dpad-btn" id="dpad-down">▼</button>
+      </div>
+    </footer>
+  </div>
 
-                if(verDisplay) verDisplay.textContent = displayVer;
-                if(loginVerDisplay) loginVerDisplay.textContent = displayVer;
-                
-                // Laden der Scripts (Reihenfolge ist wichtig!)
-                loadScript('data/data_core.js?v=' + devVer)
-                    .then(() => loadScript('data/data_items.js?v=' + devVer))
-                    .then(() => loadScript('data/data_recipes.js?v=' + devVer))
-                    .then(() => loadScript('data/data_monsters.js?v=' + devVer))
-                    .then(() => loadScript('data/data_minigames.js?v=' + devVer))
-                    .then(() => loadScript('network.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_core.js?v=' + devVer)) 
-                    .then(() => loadScript('game/game_core.js?v=' + devVer))
-                    .then(() => loadScript('game/game_map.js?v=' + devVer))
-                    .then(() => loadScript('game/game_render.js?v=' + devVer))
-                    .then(() => loadScript('game/game_world_gen.js?v=' + devVer))
-                    .then(() => loadScript('game/game_inv_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_world_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_char_logic.js?v=' + devVer))
-                    .then(() => loadScript('game/game_combat.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_combat.js?v=' + devVer)) 
-                    .then(() => loadScript('ui/ui_input.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_inv.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_world.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_town.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_journal.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_view_camp.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_core.js?v=' + devVer)) 
-                    .then(() => loadScript('ui/ui_render_views.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_minigames.js?v=' + devVer))
-                    .then(() => loadScript('ui/ui_render_overlays.js?v=' + devVer))
-                    .then(() => { 
-                        if(typeof UI !== 'undefined') UI.init(); 
-                        scriptsLoaded = true; 
-                        console.log("All Scripts Loaded & UI Initialized."); 
-                    })
-                    .catch(err => {
-                        // Catch Error in Script Loading
-                        showCrashReport("SCRIPT_LOAD_ERROR", {
-                            msg: "Failed to load a script file. Check internet connection or file path.",
-                            url: err.src || "Unknown Script",
-                            line: 0, col: 0,
-                            stack: JSON.stringify(err)
-                        });
-                    });
-            })
-            .catch(err => {
-                showCrashReport("VERSION_CHECK_FAILED", {
-                    msg: "Could not fetch version file. Server might be offline.",
-                    stack: err.stack || err
-                });
-            });
-    };
-</script>
-
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
