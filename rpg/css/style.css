@@ -1,8 +1,5 @@
 /*
-[2026-10-12 19:45] - css/style.css: v0.1.1 Bereinigte Interaktions-Schichten & Login-Design
-Änderungen:
-- Pointer-Events auf Hintergrundcanvas und Monster deaktiviert (keine Klickblockaden mehr).
-- Formular- und Eingabefelder mit klarem Fokus, Kontrast und Fehlermeldungsbox (.auth-error-box).
+[2026-10-12 19:40] - css/style.css: v0.1.1 Fehleranzeige & Gothic Styling
 */
 * { box-sizing: border-box; }
 body {
@@ -10,9 +7,8 @@ body {
   background: #08090e;
   color: #e8e4d9;
   font-family: Georgia, serif;
-  user-select: none;
 }
-button, input { font: inherit; user-select: auto; }
+button, input { font: inherit; }
 .hidden { display: none !important; }
 
 .screen {
@@ -22,8 +18,6 @@ button, input { font: inherit; user-select: auto; }
   display: grid;
   place-items: center;
   background: radial-gradient(circle, #1e1724, #07080d 72%);
-  overflow-y: auto;
-  padding: 16px;
 }
 
 #login-canvas {
@@ -32,81 +26,74 @@ button, input { font: inherit; user-select: auto; }
   width: 100%;
   height: 100%;
   opacity: .55;
-  pointer-events: none; /* Verhindert Klick-Blockaden */
+  pointer-events: none;
 }
-
-.monster {
-  position: absolute;
-  font-size: min(28vw, 240px);
-  color: #6b1426;
-  opacity: .22;
-  bottom: 5%;
-  text-shadow: 0 0 40px #9a102b;
-  pointer-events: none; /* Verhindert Klick-Blockaden */
-}
-.monster.left { left: 2%; }
-.monster.right { right: 2%; transform: scaleX(-1); }
 
 .login-card, .class-card, .death-card {
   position: relative;
-  z-index: 10;
-  width: min(480px, 94vw);
-  padding: 26px;
-  background: #111420f2;
+  z-index: 1;
+  width: min(480px, 92vw);
+  padding: 30px;
+  background: #10121bd9;
   border: 2px solid #c99c42;
-  box-shadow: 0 0 50px #000, 0 0 25px rgba(201, 156, 66, 0.4);
+  box-shadow: 0 0 50px #000, 0 0 22px #c99c4266;
   text-align: center;
-  border-radius: 4px;
-}
-
-.crest {
-  font-size: 38px;
-  color: #e2bd67;
-}
-.crest span {
-  font-size: 48px;
-  margin: 0 8px;
 }
 
 .login-card h1 {
   margin: 4px;
   font-size: 38px;
-  letter-spacing: 7px;
-  color: #fff;
+  letter-spacing: 8px;
 }
 .login-card h2 {
   margin: 0;
   color: #d4a94d;
-  letter-spacing: 4px;
+  letter-spacing: 5px;
   font-size: 20px;
 }
-.tagline {
+
+.crest {
+  font-size: 42px;
+  color: #e2bd67;
+}
+.crest span {
+  font-size: 54px;
+  margin: 0 8px;
+}
+
+.tagline, small {
   color: #9ca3b5;
   font-size: 11px;
-  margin-top: 6px;
-  letter-spacing: 1px;
 }
+
+.monster {
+  position: absolute;
+  font-size: min(30vw, 260px);
+  color: #6b1426;
+  opacity: .25;
+  bottom: 5%;
+  text-shadow: 0 0 40px #9a102b;
+  pointer-events: none;
+}
+.monster.left { left: 3%; }
+.monster.right { right: 3%; transform: scaleX(-1); }
 
 .cloud {
   font-size: 12px;
   border: 1px solid #34534b;
-  padding: 5px 12px;
-  margin: 14px auto;
+  padding: 6px;
+  margin: 16px auto;
   width: max-content;
   color: #7fe0b4;
-  background: #091310;
-  border-radius: 3px;
 }
 .cloud.offline {
   color: #ffbf6b;
   border-color: #744b26;
-  background: #18110b;
 }
 
 .auth-tabs {
   display: flex;
-  margin-top: 14px;
-  gap: 4px;
+  margin-top: 12px;
 }
 .auth-tab {
   flex: 1;
@@ -115,7 +102,6 @@ button, input { font: inherit; user-select: auto; }
   border: 1px solid #3b4258;
   color: #b6bac6;
   cursor: pointer;
-  font-size: 12px;
   font-weight: bold;
 }
 .auth-tab.active {
@@ -137,34 +123,27 @@ button, input { font: inherit; user-select: auto; }
 }
 .field input, .class-action input {
   width: 100%;
-  padding: 11px 12px;
-  background: #080a11;
-  border: 1px solid #4a546f;
+  padding: 10px 12px;
+  background: #090b12;
+  border: 1px solid #555f7a;
   color: #fff;
-  border-radius: 3px;
-  font-size: 14px;
-}
-.field input:focus, .class-action input:focus {
-  outline: none;
-  border-color: #c99c42;
-  box-shadow: 0 0 8px rgba(201, 156, 66, 0.4);
+  border-radius: 2px;
 }
 
 .auth-error-box {
-  background: #2a0b10;
-  border: 1px solid #ff4d4d;
-  color: #ffb3b3;
+  background: #2b0d12;
+  border: 1px solid #d32f2f;
+  color: #ff8a80;
   padding: 8px 12px;
-  font-size: 12px;
   margin: 10px 0;
+  font-size: 12px;
   text-align: left;
   line-height: 1.4;
-  border-radius: 3px;
 }
 
 .wide {
   width: 100%;
-  margin-top: 10px;
+  margin-top: 12px;
 }
 .gold {
   padding: 11px 16px;
@@ -173,37 +152,26 @@ button, input { font: inherit; user-select: auto; }
   color: #16120a;
   font-weight: bold;
   cursor: pointer;
-  border-radius: 3px;
 }
 .gold:hover {
-  background: #ffc857;
+  background: #ffd54f;
 }
 .dark {
   padding: 10px 16px;
-  border: 1px solid #4f566b;
-  background: #1e2233;
-  color: #d1d5db;
+  border: 1px solid #6b7280;
+  background: #24293c;
+  color: #e5e7eb;
   cursor: pointer;
-  border-radius: 3px;
-  font-size: 12px;
 }
 .dark:hover {
-  background: #2a3047;
-  color: #fff;
+  background: #374151;
 }
 .divide {
   margin: 14px;
-  color: #6d7589;
+  color: #747d91;
   font-size: 11px;
-}
-small {
-  display: block;
-  color: #838a9d;
-  font-size: 11px;
-  margin-top: 10px;
 }
 
-/* Klassenwahl */
 .classes {
   display: flex;
   gap: 10px;
@@ -217,7 +185,6 @@ small {
   border: 1px solid #3b4258;
   padding: 14px;
   cursor: pointer;
-  border-radius: 3px;
 }
 .class b, .class span, .class small {
   display: block;
@@ -226,26 +193,15 @@ small {
 .class b { color: #e7bd62; }
 .class.active {
   border-color: #c99c42;
-  box-shadow: 0 0 14px rgba(201, 156, 66, 0.4);
-  background: #24293c;
+  box-shadow: 0 0 12px #c99c4244;
 }
 .class-action { display: flex; gap: 8px; }
 .class-action input { flex: 1; }
 
 .death-card { border-color: #c52e3f; }
-.death-card > div:first-child { font-size: 54px; }
-.death-card h2 { color: #ff6b76; font-size: 20px; }
-#death-stats {
-  display: flex;
-  justify-content: space-around;
-  background: #180d12;
-  border: 1px solid #4a1922;
-  padding: 12px;
-  margin: 16px 0;
-  font-size: 13px;
-}
+.death-card > div:first-child { font-size: 58px; }
+.death-card h2 { color: #ff6b76; }
 
-/* Hauptspiel Layout */
 #game {
   max-width: 1120px;
   margin: auto;
@@ -289,7 +245,6 @@ header span, .right b {
   display: block;
   background: #c8323b;
   border: 0;
-  transition: width 0.2s;
 }
 .bars i .mana { background: #2879cf; }
 .bars i .xp { background: #8e24aa; }
@@ -304,9 +259,8 @@ header span, .right b {
   background: #24293c;
   border: 1px solid #c99c42;
   color: #fff;
-  padding: 5px 8px;
+  padding: 6px 9px;
   cursor: pointer;
-  border-radius: 2px;
 }
 
 #layout {
@@ -318,7 +272,6 @@ header span, .right b {
   position: relative;
   border: 2px solid #3b4258;
   line-height: 0;
-  background: #000;
 }
 canvas#stage {
   background: #06070a;
@@ -332,8 +285,8 @@ canvas#stage {
   left: 6px;
   line-height: normal;
   font-size: 10px;
-  padding: 4px 8px;
-  background: #0a0b10e6;
+  padding: 4px 6px;
+  background: #0a0b10d9;
   border: 1px solid #3b4258;
   color: #c1c6d2;
 }
@@ -353,14 +306,13 @@ nav button {
   background: #181b28;
   color: #aab1c0;
   border: 1px solid #3b4258;
-  padding: 8px 4px;
-  font-size: 11px;
+  padding: 7px 3px;
+  font-size: 10px;
   cursor: pointer;
 }
 nav button.active {
   color: #ffd36c;
   border-color: #c99c42;
-  background: #222739;
 }
 
 .panel {
@@ -413,7 +365,7 @@ nav button.active {
   inset: 0;
   z-index: 4;
   padding: 16px;
-  background: #100b10fa;
+  background: #100b10f7;
   border: 2px solid #c8323b;
 }
 #combat h2 {
@@ -424,8 +376,8 @@ nav button.active {
 #combat-info {
   display: flex;
   justify-content: space-around;
-  margin: 16px 0;
-  padding: 12px;
+  margin: 20px 0;
+  padding: 10px;
   background: #1b1017;
   border: 1px solid #693040;
 }
