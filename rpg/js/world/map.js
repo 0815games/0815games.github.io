@@ -1,12 +1,11 @@
-// [2026-10-12 19:15] - map.js: Verliesebenen, sich auflösende Truhen & sichere Spawns
-import {state} from '../core/state.js';import {MONSTERS} from '../data/monsters.js';import {sound} from '../systems/audio.js';
+import {state} from '../core/state.js';import {MONSTERS} from '../data/monsters.js';
 export class WorldMap{
  constructor(){this.cols=20;this.rows=15;}
  generate(depth=1){
   state.world.depth=depth;state.world.tiles=[];state.world.discovered=[];state.world.chests=[];state.world.monsters=[];
-  for(let y=0;y<this.rows;y++){const r=[];const d=[];for(let x=0;x<this.cols;x++){r.push((x===0||y===0||x===this.cols-1||y===this.rows-1)?1:0);d.push(false);}state.world.tiles.push(r);state.world.discovered.push(d);}
-  for(let y=3;y<=6;y++)for(let x=4;x<=8;x++)if(x===4||x===8||y===3||y===6)if(!(x===6&&y===3))state.world.tiles[y][x]=2;
-  for(let y=8;y<=11;y++)for(let x=12;x<=16;x++)if(x===12||x===16||y===8||y===11)if(!(x===14&&y===8))state.world.tiles[y][x]=2;
+  for(let y=0;y<this.rows;y++){const r=[],d=[];for(let x=0;x<this.cols;x++){r.push((x===0||y===0||x===this.cols-1||y===this.rows-1)?1:0);d.push(false);}state.world.tiles.push(r);state.world.discovered.push(d);}
+  for(let y=3;y<=6;y++)for(let x=4;x<=8;x++)if((x===4||x===8||y===3||y===6)&&!(x===6&&y===3))state.world.tiles[y][x]=2;
+  for(let y=8;y<=11;y++)for(let x=12;x<=16;x++)if((x===12||x===16||y===8||y===11)&&!(x===14&&y===8))state.world.tiles[y][x]=2;
   [{x:8,y:7},{x:8,y:8},{x:9,y:8},{x:14,y:2}].forEach(p=>state.world.tiles[p.y][p.x]=1);
   state.player.x=2;state.player.y=2;
   const safe=this.getSafeSpot.bind(this);

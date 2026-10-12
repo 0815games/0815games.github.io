@@ -1,4 +1,3 @@
-// [2026-10-12 19:15] - render.js: Dunkle Dungeon-Atmosphäre, Partikel & Kistenöffnung
 import {state} from '../core/state.js';
 export class Renderer{
  constructor(id){this.cv=document.getElementById(id);this.ctx=this.cv.getContext('2d');this.tile=32;this.particles=[];this.texts=[];this.loop();}

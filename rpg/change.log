@@ -1,9 +1,7 @@
 # CHANGELOG
 
-## [v0.1.0] - 2026-10-12 19:15 (Firebase Cloud-Save & Epischer Loginscreen)
-- [LOGIN] Epischer Dark-Fantasy Loginscreen mit animiertem Glutpartikel-Canvas, Wappen und Monsterauren.
-- [FIREBASE] Firebase Authentication (Email/Passwort) und Realtime Database (`dark_rpg/saves/{uid}`) integriert.
-- [FALLBACK] Nahtlose Gast- und Offline-Option (`dark_rpg_local`), falls Firebase nicht erreichbar ist.
-- [DUNGEON] Verliesebenen mit skalierenden Monstern und Abstiegstreppe (`Ebene 1, 2, 3...`).
-- [CHESTS] Schatztruhen öffnen sich bei Berührung und lösen sich nach 0,8 Sekunden auf.
-- [INPUT] Reine Tastatur- (WASD/Pfeile/E) und mobile Touch-Steuerung.
+## [v0.1.1] - 2026-10-12 19:45 (Bereinigter Loginscreen & Robuste Account-Verwaltung)
+- [LOGIN] Heldenname-Feld aus dem Login- und Registrierungsdialog entfernt (Konto benötigt ausschließlich E-Mail & Passwort). Heldenname wird nun direkt im Klassenwahl-Screen festgelegt.
+- [FIX] Klick- und Touch-Blockaden behoben: Canvas-Partikel und Monster-Deko mit `pointer-events: none` versehen, sodass Formularfelder und Buttons ungehindert erreichbar sind.
+- [AUTH] Formular-Verhalten optimiert: Enter-Taste löst die Anmeldung aus; strukturierte deutsche Fehlerbeschreibungen (`auth-error-box`) statt kryptischer Codes.
+- [FALLBACK] Lokale Kontenspeicherung garantiert Funktion auch auf `file:///` oder bei blockiertem Firebase.

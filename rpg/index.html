@@ -1,8 +1,177 @@
-<!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Chroniken der Schattengruft</title><link rel="icon" href="favicon.ico"><link rel="stylesheet" href="css/style.css"><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script><script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script></head><body>
-<div id="login-screen" class="screen"><canvas id="login-canvas"></canvas><div class="monster left">♜</div><div class="monster right">♞</div><main class="login-card"><div class="crest">⚔️<span>🛡️</span>⚔️</div><h1>CHRONIKEN</h1><h2>DER SCHATTENGRUFT</h2><p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p><div id="cloud-status" class="cloud ok">● ORDENSARCHIV BEREIT</div><div class="auth-tabs"><button class="auth-tab active" data-mode="login">ANMELDEN</button><button class="auth-tab" data-mode="register">NEUE WEIHE</button></div><div id="name-wrap" class="field hidden"><label>HELDENNAME</label><input id="auth-name" maxlength="16" placeholder="Schattenjäger"></div><div class="field"><label>ORDENS-EMAIL</label><input id="auth-email" type="email" placeholder="held@schattengruft.de"></div><div class="field"><label>RUNEN-PASSWORT</label><input id="auth-password" type="password" placeholder="mindestens 6 Zeichen"></div><p id="auth-error"></p><button id="auth-submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button><div class="divide">ODER</div><button id="guest-btn" class="dark wide">🚪 ALS GASTREISENDER SPIELEN</button><small>Cloud-Saves nutzen Firebase Auth. Gäste speichern ausschließlich lokal.</small></main></div>
-<div id="class-screen" class="screen hidden"><main class="class-card"><h2>WÄHLE DEINEN HEILIGEN PFAD</h2><p>Jeder neue Run beginnt in Ebene 1. Nur dein Ordenserbe bleibt dauerhaft.</p><div class="classes"><button class="class active" data-class="warrior"><b>🛡️ EISENBRECHER</b><span>Krieger</span><small>75 TP · 15 MP · 9 ATK · 4 DEF</small></button><button class="class" data-class="mage"><b>🔮 ARKANIST</b><span>Magier</span><small>50 TP · 50 MP · 6 ATK · 1 DEF</small></button><button class="class" data-class="rogue"><b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span><small>60 TP · 25 MP · 8 ATK · 2 DEF</small></button></div><div class="class-action"><input id="run-name" maxlength="16" value="Schattenjäger"><button id="start-run" class="gold">NEUEN RUN BEGINNEN</button></div></main></div>
-<div id="death-screen" class="screen hidden"><main class="death-card"><div>💀</div><h2>DEINE SEELE WURDE VERSCHLUNGEN</h2><p>Der Run ist beendet. Das Gold wird dem Orden vermacht.</p><div id="death-stats"></div><button id="new-run" class="gold">✨ NEUEN RUN STARTEN</button></main></div>
-<div id="modal" class="screen hidden"><main class="modal-card"><div id="modal-icon">📜</div><h3 id="modal-title"></h3><p id="modal-text"></p><div id="modal-buttons"></div></main></div>
-<div id="game"><header><div><b id="hero-name">Schattenjäger</b> <em id="hero-class">Eisenbrecher</em> <span>LVL <b id="level">1</b></span></div><div class="bars"><label>TP <i><i id="hp"></i></i><small id="hptext"></small></label><label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label><label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label></div><div class="right"><b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b><button id="sound">🔊</button><button id="save">☁️</button><button id="logout">🚪</button></div></header><main id="layout"><section id="mapbox"><canvas id="stage" width="640" height="480"></canvas><div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion</div></section><aside><nav><button class="tab active" data-tab="inv">INVENTAR</button><button class="tab" data-tab="quest">QUESTS</button><button class="tab" data-tab="char">HELD</button><button class="tab" data-tab="log">CHRONIK</button></nav><section id="inv" class="panel active"><h3>GÜRTELTASCHE <span id="slots"></span></h3><div id="items"></div><div id="iteminfo">Wähle einen Gegenstand.</div></section><section id="quest" class="panel"><h3>AUFGABEN DES ORDENS</h3><div id="quests"></div></section><section id="char" class="panel"><h3>RÜSTZEUG</h3><div id="stats"></div></section><section id="log" class="panel"><h3>SCHLACHTEN-CHRONIK</h3><div id="logs"></div></section><section id="combat" class="hidden"><h2>⚔️ KAMPF IN DEN SCHATTEN ⚔️</h2><div id="combat-info"></div><p id="combat-log"></p><div class="combat-buttons"><button id="attack">🗡️ HIEB</button><button id="fire">🔥 FEUERBALL</button><button id="heal">🧪 HEILTRANK</button><button id="flee">💨 FLUCHT</button></div></section><section id="shop" class="hidden"><h2>🔮 ELD RINS RÜSTKAMMER</h2><button id="shop-close">SCHLIESSEN</button><div id="shop-items"></div></section></aside></main><div id="touch"><button data-m="up">▲</button><button data-m="left">◀</button><button data-m="act">✦</button><button data-m="right">▶</button><button data-m="down">▼</button></div></div>
-<script type="module" src="js/main.js"></script></body></html>
+<!--
+[2026-10-12 19:45] - index.html: v0.1.1 Bereinigter Loginscreen & Robuste Account-Verwaltung
+Änderungen:
+- Heldenname aus der Account-Erstellung entfernt (nur E-Mail und Passwort).
+- Klick-Blockaden durch Hintergrund-Canvas und Monster-Overlays behoben (pointer-events: none).
+- Formular-Struktur mit Enter-Taste und klarer Fehleranzeige integriert.
+- Lokaler Fallback-Account-Speicher garantiert Funktion auch auf file:// oder ohne Internet.
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chroniken der Schattengruft - v0.1.1</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Firebase SDK v8 (Compat) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body>
+
+  <!-- EPISCHER FANTASY LOGIN- & PORTAL-BILDSCHIRM -->
+  <div id="login-screen" class="screen">
+    <canvas id="login-canvas"></canvas>
+    <div class="monster left">♜</div>
+    <div class="monster right">♞</div>
+
+    <main class="login-card">
+      <div class="crest">⚔️<span>🛡️</span>⚔️</div>
+      <h1>CHRONIKEN</h1>
+      <h2>DER SCHATTENGRUFT</h2>
+      <p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p>
+
+      <div id="cloud-status" class="cloud ok">● ORDENSARCHIV BEREIT</div>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-mode="login">ANMELDEN</button>
+        <button type="button" class="auth-tab" data-mode="register">NEUE WEIHE (KONTO ERSTELLEN)</button>
+      </div>
+
+      <form id="auth-form" onsubmit="return false;">
+        <div class="field">
+          <label for="auth-email">ORDENS-EMAIL</label>
+          <input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label for="auth-password">RUNEN-PASSWORT</label>
+          <input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password" required minlength="6">
+        </div>
+
+        <div id="auth-error" class="auth-error-box hidden"></div>
+
+        <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
+      </form>
+
+      <div class="divide">ODER OHNE KONTO</div>
+      <button id="guest-btn" type="button" class="dark wide">🚪 ALS GASTREISENDER STARTEN (LOKAL)</button>
+      <small>Cloud-Saves synchronisieren via Firebase. Gäste speichern lokal im Browser.</small>
+    </main>
+  </div>
+
+  <!-- CHARAKTER- & RUN-AUSWAHL (MODAL) -->
+  <div id="class-screen" class="screen hidden">
+    <main class="class-card">
+      <h2>WÄHLE DEINEN HEILIGEN PFAD</h2>
+      <p>Jeder neue Run beginnt in Ebene 1. Wähle Klasse und Namen deines Recken.</p>
+
+      <div class="classes">
+        <button type="button" class="class active" data-class="warrior">
+          <b>🛡️ EISENBRECHER</b><span>Krieger</span>
+          <small>75 TP · 15 MP · 9 ATK · 4 DEF</small>
+        </button>
+        <button type="button" class="class" data-class="mage">
+          <b>🔮 ARKANIST</b><span>Magier</span>
+          <small>50 TP · 50 MP · 6 ATK · 1 DEF</small>
+        </button>
+        <button type="button" class="class" data-class="rogue">
+          <b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span>
+          <small>60 TP · 25 MP · 8 ATK · 2 DEF</small>
+        </button>
+      </div>
+
+      <div class="class-action">
+        <input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname">
+        <button id="start-run" type="button" class="gold">NEUEN RUN BEGINNEN</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- TODES-BILDSCHIRM (ROGUELITE RUN OVER) -->
+  <div id="death-screen" class="screen hidden">
+    <main class="death-card">
+      <div>💀</div>
+      <h2>DEINE SEELE WURDE VERSCHLUNGEN</h2>
+      <p>Der Run ist beendet. Dein gesammeltes Gold wird dem Orden vermacht.</p>
+      <div id="death-stats"></div>
+      <button id="new-run" type="button" class="gold">✨ NEUEN RUN STARTEN</button>
+    </main>
+  </div>
+
+  <!-- HAUPT-SPIEL -->
+  <div id="game" class="hidden">
+    <header>
+      <div><b id="hero-name">Schattenjäger</b> <em id="hero-class">Eisenbrecher</em> <span>LVL <b id="level">1</b></span></div>
+      <div class="bars">
+        <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
+        <label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label>
+        <label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label>
+      </div>
+      <div class="right">
+        <b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b>
+        <button id="sound" type="button">🔊</button>
+        <button id="save" type="button" title="In Cloud & lokal sichern">☁️</button>
+        <button id="logout" type="button" title="Abmelden / Zum Portal">🚪</button>
+      </div>
+    </header>
+
+    <main id="layout">
+      <section id="mapbox">
+        <canvas id="stage" width="640" height="480"></canvas>
+        <div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion (Treppe / Kiste)</div>
+      </section>
+
+      <aside>
+        <nav>
+          <button type="button" class="tab active" data-tab="inv">INVENTAR</button>
+          <button type="button" class="tab" data-tab="char">HELD</button>
+          <button type="button" class="tab" data-tab="log">CHRONIK</button>
+        </nav>
+
+        <section id="inv" class="panel active">
+          <h3>GÜRTELTASCHE <span id="slots"></span></h3>
+          <div id="items"></div>
+          <div id="iteminfo">Wähle einen Gegenstand.</div>
+        </section>
+
+        <section id="char" class="panel">
+          <h3>RÜSTZEUG & ATTRIBUTE</h3>
+          <div id="stats"></div>
+        </section>
+
+        <section id="log" class="panel">
+          <h3>SCHLACHTEN-CHRONIK</h3>
+          <div id="logs"></div>
+        </section>
+
+        <section id="combat" class="hidden">
+          <h2>⚔️ KAMPF IN DEN SCHATTEN ⚔️</h2>
+          <div id="combat-info"></div>
+          <p id="combat-log"></p>
+          <div class="combat-buttons">
+            <button id="attack" type="button">🗡️ HIEB</button>
+            <button id="fire" type="button">🔥 FEUERBALL</button>
+            <button id="heal" type="button">🧪 HEILTRANK</button>
+            <button id="flee" type="button">💨 FLUCHT</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- TOUCH JOYSTICK (nur auf Touch/Mobile eingeblendet) -->
+    <div id="touch">
+      <button type="button" data-m="up">▲</button>
+      <button type="button" data-m="left">◀</button>
+      <button type="button" data-m="act" title="Aktion / Treppe">✦</button>
+      <button type="button" data-m="right">▶</button>
+      <button type="button" data-m="down">▼</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
