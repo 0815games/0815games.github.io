@@ -1,8 +1,4 @@
-// [2026-10-12 20:15] - js/main.js: v0.1.3 Tastatur-Fokus-Fix für Text- und Passworteingaben
-// Änderungen:
-// - BUGFIX: `window.onkeydown` prüft nun ob der Fokus in einem Textfeld (`INPUT`, `TEXTAREA`) liegt oder das Spiel noch verborgen ist.
-//   Verhindert das Verschlucken der Tasten W, A, S, D, E beim Tippen von E-Mail ("baum@wald.de") oder Passwörtern.
-
+// [2026-10-12 20:30] - js/main.js: v0.1.4 4-Slot Recken-Auswahl & Game Loop
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -15,6 +11,8 @@ window.addEventListener('DOMContentLoaded', () => {
   const gfx = new Renderer('stage');
   let selectedClass = 'warrior';
   let authMode = 'login';
+  let targetSlotIndex = 0;
+  let allSlots = [null, null, null, null];
 
   const el = id => document.getElementById(id);
 
@@ -56,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
     el('cloud-status').textContent = '● OFFLINE-MODUS (LOKAL)';
   }
 
-  // Umschaltung Anmelden / Registrieren (OHNE Heldenname!)
+  // Umschaltung Anmelden / Registrieren
   document.querySelectorAll('.auth-tab').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
@@ -75,7 +73,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Formular-Submit (Enter-Taste oder Button-Klick)
+  // Formular-Submit
   el('auth-form').onsubmit = async (e) => {
     e.preventDefault();
     const email = el('auth-email').value.trim();
@@ -101,31 +99,109 @@ window.addEventListener('DOMContentLoaded', () => {
         state.user = await cloud.register(email, pw);
         state.isGuest = false;
       }
-      await proceedIntoGame();
+      await openSlotScreen();
     } catch (err) {
       showError(err.message || 'Fehler beim Authentifizieren.');
       el('auth-submit').textContent = authMode === 'login' ? '⚔️ IN DIE GRUFT HERABSTEIGEN' : '🛡️ NEUES KONTO ERSTELLEN';
     }
   };
 
-  // Gastreisender starten (funktioniert immer)
+  // Gastreisender starten
   el('guest-btn').onclick = async () => {
     state.isGuest = true;
     state.user = null;
-    await proceedIntoGame();
+    await openSlotScreen();
   };
 
-  async function proceedIntoGame() {
+  // 4 SLOTS ANZEIGEN
+  async function openSlotScreen() {
     el('login-screen').classList.add('hidden');
-    const saved = await cloud.load();
-    if (saved && saved.player && saved.player.hp > 0 && saved.world) {
-      Object.assign(state, saved);
-      map.ensureValid();
-      openGame();
-    } else {
-      el('class-screen').classList.remove('hidden');
+    el('class-screen').classList.add('hidden');
+    el('death-screen').classList.add('hidden');
+    el('game').classList.add('hidden');
+    el('slot-screen').classList.remove('hidden');
+
+    allSlots = await cloud.loadAllSlots();
+    renderSlots();
+  }
+
+  function renderSlots() {
+    const grid = el('slots-grid');
+    grid.innerHTML = '';
+
+    for (let i = 0; i < 4; i++) {
+      const slotData = allSlots[i];
+      const box = document.createElement('div');
+
+      if (!slotData || !slotData.player) {
+        // Leerer Slot
+        box.className = 'slot-box empty';
+        box.innerHTML = `
+          <div class="slot-num">SLOT ${i + 1}</div>
+          <div class="empty-label">➕ FREIER RECKENPLATZ</div>
+          <small>Hier klicken zum Erschaffen</small>
+        `;
+        box.onclick = () => {
+          targetSlotIndex = i;
+          openClassCreator(i);
+        };
+      } else {
+        // Belegter Slot
+        box.className = 'slot-box';
+        const p = slotData.player;
+        const cTitle = CLASSES[p.heroClass]?.title || 'Krieger';
+        const depth = slotData.world?.depth || 1;
+
+        box.innerHTML = `
+          <div>
+            <div class="slot-header">
+              <span class="slot-num">SLOT ${i + 1}</span>
+              <span class="slot-class">${cTitle}</span>
+            </div>
+            <div class="slot-hero-name">${p.name}</div>
+            <div class="slot-meta">
+              Stufe ${p.level} • Verlies-Ebene ${depth}<br>
+              ${p.gold || 0} 🪙 Gold • ${p.hp}/${p.maxHp} TP
+            </div>
+          </div>
+          <div class="slot-buttons">
+            <button type="button" class="btn-slot-play">⚔️ SPIELEN</button>
+            <button type="button" class="btn-slot-del" title="Diesen Recken löschen">🗑️</button>
+          </div>
+        `;
+
+        box.querySelector('.btn-slot-play').onclick = (ev) => {
+          ev.stopPropagation();
+          loadAndLaunchSlot(i, slotData);
+        };
+
+        box.querySelector('.btn-slot-del').onclick = async (ev) => {
+          ev.stopPropagation();
+          if (confirm(`Möchtest du den Recken "${p.name}" (Slot ${i + 1}) wirklich endgültig löschen?`)) {
+            await cloud.deleteSlot(i);
+            allSlots[i] = null;
+            renderSlots();
+          }
+        };
+      }
+
+      grid.appendChild(box);
     }
   }
+
+  function openClassCreator(slotIdx) {
+    el('slot-screen').classList.add('hidden');
+    el('class-screen').classList.remove('hidden');
+    el('class-screen-title').textContent = `RECKEN FÜR SLOT ${slotIdx + 1} WEIHEN`;
+  }
+
+  el('cancel-create').onclick = () => {
+    openSlotScreen();
+  };
+
+  el('btn-slot-logout').onclick = () => {
+    location.reload();
+  };
 
   // Klassenwahl
   document.querySelectorAll('.class').forEach(btn => {
@@ -138,12 +214,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
   el('start-run').onclick = () => {
     const name = el('run-name').value.trim() || 'Schattenjäger';
-    newRun(selectedClass, name);
+    createAndLaunchSlot(targetSlotIndex, selectedClass, name);
     el('class-screen').classList.add('hidden');
-    openGame();
   };
 
-  function newRun(cId, name) {
+  function createAndLaunchSlot(slotIdx, cId, name) {
+    state.currentSlot = slotIdx;
     const c = CLASSES[cId] || CLASSES.warrior;
     state.player.name = name;
     state.player.heroClass = cId;
@@ -159,13 +235,31 @@ window.addEventListener('DOMContentLoaded', () => {
     state.player.equipped.weapon = c.weapon ? c.weapon : null;
     state.player.equipped.armor = c.armor ? c.armor : null;
     map.generate(1);
-    cloud.save(state);
+
+    cloud.saveSlot(slotIdx, state);
+    openGame();
+  }
+
+  function loadAndLaunchSlot(slotIdx, slotData) {
+    state.currentSlot = slotIdx;
+    Object.assign(state, slotData);
+    map.ensureValid();
+    el('slot-screen').classList.add('hidden');
+    openGame();
   }
 
   function openGame() {
+    el('slot-screen').classList.add('hidden');
+    el('class-screen').classList.add('hidden');
     el('game').classList.remove('hidden');
+    el('hud-slot-name').textContent = `SLOT ${state.currentSlot + 1}`;
     hud();
     log(`Du betrittst Ebene ${state.world.depth} der Schattengruft.`);
+  }
+
+  function saveCurrentSlot() {
+    cloud.saveSlot(state.currentSlot, state);
+    log(`Slot ${state.currentSlot + 1} (${state.player.name}) gesichert.`);
   }
 
   function hud() {
@@ -224,7 +318,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const p = state.player;
     const w = ITEMS[p.equipped.weapon];
     const a = ITEMS[p.equipped.armor];
-    el('stats').textContent = `Waffe: ${w ? w.name : 'Keine'}\nRüstung: ${a ? a.name : 'Keine'}\nSchlagkraft: ${p.atk + (w ? w.val : 0)}\nSchutz: ${p.def + (a ? a.val : 0)}\nTiefe: Ebene ${state.world.depth}\nMeta-Gold: ${state.meta.gold} 🪙`;
+    el('stats').textContent = `Slot: Slot ${state.currentSlot + 1}\nWaffe: ${w ? w.name : 'Keine'}\nRüstung: ${a ? a.name : 'Keine'}\nSchlagkraft: ${p.atk + (w ? w.val : 0)}\nSchutz: ${p.def + (a ? a.val : 0)}\nTiefe: Ebene ${state.world.depth}\nMeta-Gold: ${state.meta.gold} 🪙`;
   }
 
   function log(msg) {
@@ -291,7 +385,7 @@ window.addEventListener('DOMContentLoaded', () => {
       state.meta.bestDepth = Math.max(state.meta.bestDepth, state.world.depth);
       log(`Du steigst hinab auf Ebene ${state.world.depth}. Die Kreaturen erstarken.`);
       hud();
-      cloud.save(state);
+      saveCurrentSlot();
     }
   }
 
@@ -391,7 +485,7 @@ window.addEventListener('DOMContentLoaded', () => {
       log(`LEVEL UP! Stufe ${state.player.level}!`);
     }
     hud();
-    cloud.save(state);
+    saveCurrentSlot();
   }
 
   function die() {
@@ -402,12 +496,26 @@ window.addEventListener('DOMContentLoaded', () => {
     state.meta.bestDepth = Math.max(state.meta.bestDepth, state.world.depth);
     el('death-stats').innerHTML = `<div>Ebene: <b>${state.world.depth}</b></div><div>Gold im Run: <b>${state.player.gold}</b></div><div>Ordensschatz: <b>${state.meta.gold} 🪙</b></div>`;
     el('death-screen').classList.remove('hidden');
-    cloud.save(null);
+
+    state.player.hp = state.player.maxHp;
+    state.world.depth = 1;
+    map.generate(1);
+    saveCurrentSlot();
   }
 
-  el('new-run').onclick = () => {
+  el('btn-revive').onclick = () => {
     el('death-screen').classList.add('hidden');
-    el('class-screen').classList.remove('hidden');
+    openGame();
+  };
+
+  el('btn-back-to-slots').onclick = () => {
+    el('death-screen').classList.add('hidden');
+    openSlotScreen();
+  };
+
+  el('btn-chars').onclick = () => {
+    saveCurrentSlot();
+    openSlotScreen();
   };
 
   el('sound').onclick = (e) => {
@@ -416,8 +524,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   el('save').onclick = () => {
-    cloud.save(state);
-    log('Spielstand gesichert (Cloud/Lokal).');
+    saveCurrentSlot();
   };
 
   el('logout').onclick = async () => {
@@ -425,12 +532,9 @@ window.addEventListener('DOMContentLoaded', () => {
     location.reload();
   };
 
-  // Tastatursteuerung mit Eingabefeld-Schutz
+  // Tastatursteuerung mit Fokus-Schutz
   window.onkeydown = (e) => {
-    // Wenn der Fokus in einem Textfeld liegt (Email, Passwort, Name): NICHT als Spielbewegung abfangen!
     if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
-
-    // Nur im laufenden Spiel aktiv
     if (el('game').classList.contains('hidden')) return;
 
     const k = e.key.toLowerCase();

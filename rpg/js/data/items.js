@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/data/items.js: v0.1.3 Items
+// [2026-10-12 20:30] - js/data/items.js: v0.1.4 Items
 export const ITEMS = {
   health_potion: { name: 'Rubinroter Heiltrank', type: 'potion', effect: 'hp', val: 35, price: 25, desc: 'Heilt 35 Lebenspunkte.' },
   mana_potion: { name: 'Saphirblauer Manatrank', type: 'potion', effect: 'mp', val: 25, price: 30, desc: 'Stellt 25 Mana wieder her.' },

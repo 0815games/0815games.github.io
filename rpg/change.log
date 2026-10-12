@@ -1,4 +1,7 @@
 # CHANGELOG
 
-## [v0.1.3] - 2026-10-12 20:15 (Tastatur-Fokus-Fix für Text- und Passworteingaben)
-- [BUGFIX] **Tastatur-Eingaben in Textfeldern repariert:** Der globale `window.onkeydown`-Listener fing zuvor `w`, `a`, `s`, `d` und `e` mit `e.preventDefault()` ab, wodurch diese Buchstaben beim Tippen von E-Mail ("baum@wald.de" -> "bum@l.") oder Passwort blockiert wurden. Textfelder (`INPUT`, `TEXTAREA`) sowie alle aktiven Menüs ignorieren nun globale Steuerungsbefehle.
+## [v0.1.4] - 2026-10-12 20:30 (4-Slot Recken-Verwaltung)
+- [SLOTS] Neue 4-Slot Recken-Auswahl (#slot-screen) implementiert. Jeder Spieler kann bis zu 4 unabhängige Charaktere verwalten, spielen oder löschen.
+- [UI] Slot-Karten zeigen Heldendetails (Name, Klasse, Stufe, Tiefe, Gold, TP) oder "➕ Freier Reckenplatz".
+- [PERSISTENZ] `loadAllSlots`, `saveSlot(index)` und `deleteSlot(index)` in `firebase.js` sichern jeden Slot dediziert sowohl in Firebase (`saves/{uid}/slot_{index}`) als auch lokal.
+- [NAVIGATION] Im Header führt der Button "👥 Recken" jederzeit zurück zur Slot-Auswahl.

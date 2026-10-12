@@ -1,14 +1,17 @@
 <!--
-[2026-10-12 20:15] - index.html: v0.1.3 Tastatur-Fokus-Fix für Text- und Passworteingaben
+[2026-10-12 20:30] - index.html: v0.1.4 Charakter-Verwaltung mit 4 Speicher-Slots
 Änderungen:
-- BUGFIX: Tastatureingaben in Eingabefeldern (Email/Passwort/Name) werden nicht mehr durch globale WASD/E-Spielerbewegungs-Handler verschluckt.
+- Neuer Slot-Auswahlschirm (#slot-screen) für bis zu 4 unabhängige Charaktere.
+- Anzeige von Charakter-Status (Name, Klasse, Stufe, Ebene, Gold, TP/MP) oder "Freier Reckenplatz".
+- Erstellen, Spielen und Löschen einzelner Recken-Plätze.
+- Cloud- und lokale Synchronisation pro Slot via Firebase.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft - v0.1.3</title>
+  <title>Chroniken der Schattengruft - v0.1.4</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 
@@ -60,11 +63,27 @@
     </main>
   </div>
 
-  <!-- KLASSEN- & RUN-AUSWAHL -->
+  <!-- 4-SLOT CHARAKTER-AUSWAHL -->
+  <div id="slot-screen" class="screen hidden">
+    <main class="slot-card">
+      <h2>RECKEN DES ORDENS</h2>
+      <p>Wähle einen deiner 4 Helden oder erschaffe einen neuen Krieger.</p>
+
+      <div id="slots-grid" class="slots-grid">
+        <!-- Werden dynamisch via JS mit Slots 1-4 gefüllt -->
+      </div>
+
+      <div class="slot-footer">
+        <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- KLASSEN- & RUN-NEUERSTELLUNG -->
   <div id="class-screen" class="screen hidden">
     <main class="class-card">
-      <h2>WÄHLE DEINEN HEILIGEN PFAD</h2>
-      <p>Jeder neue Run beginnt in Ebene 1. Wähle Klasse und Namen deines Recken.</p>
+      <h2 id="class-screen-title">NEUEN RECKEN WEIHEN</h2>
+      <p>Wähle Klasse und Namen für diesen Speicher-Platz.</p>
 
       <div class="classes">
         <button type="button" class="class active" data-class="warrior">
@@ -83,7 +102,8 @@
 
       <div class="class-action">
         <input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname">
-        <button id="start-run" type="button" class="gold">NEUEN RUN BEGINNEN</button>
+        <button id="start-run" type="button" class="gold">HELD ERSCHAFFEN</button>
+        <button id="cancel-create" type="button" class="dark">ZURÜCK</button>
       </div>
     </main>
   </div>
@@ -95,23 +115,34 @@
       <h2>DEINE SEELE WURDE VERSCHLUNGEN</h2>
       <p>Der Run ist beendet. Dein gesammeltes Gold wird dem Orden vermacht.</p>
       <div id="death-stats"></div>
-      <button id="new-run" type="button" class="gold">✨ NEUEN RUN STARTEN</button>
+      <div class="death-actions">
+        <button id="btn-revive" type="button" class="gold">✨ RUN NEU STARTEN (EBENE 1)</button>
+        <button id="btn-back-to-slots" type="button" class="dark">📋 ZUR RECKEN-AUSWAHL</button>
+      </div>
     </main>
   </div>
 
   <!-- HAUPT-SPIEL -->
   <div id="game" class="hidden">
     <header>
-      <div><b id="hero-name">Schattenjäger</b> <em id="hero-class">Eisenbrecher</em> <span>LVL <b id="level">1</b></span></div>
+      <div>
+        <b id="hero-name">Schattenjäger</b> 
+        <em id="hero-class">Eisenbrecher</em> 
+        <span>LVL <b id="level">1</b></span>
+        <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
+      </div>
+
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
         <label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label>
         <label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label>
       </div>
+
       <div class="right">
         <b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b>
-        <button id="sound" type="button">🔊</button>
-        <button id="save" type="button" title="In Cloud & lokal sichern">☁️</button>
+        <button id="sound" type="button" title="Ton umschalten">🔊</button>
+        <button id="save" type="button" title="Diesen Slot sichern (Cloud & lokal)">💾</button>
+        <button id="btn-chars" type="button" title="Zur Recken-Auswahl">👥 Recken</button>
         <button id="logout" type="button" title="Abmelden / Zum Portal">🚪</button>
       </div>
     </header>

@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/world/map.js: v0.1.3 Sichere Verliesebenen & Discovered-Reparatur
+// [2026-10-12 20:30] - js/world/map.js: v0.1.4 Kartengenerierung & Validierung
 import { state } from '../core/state.js';
 import { MONSTERS } from '../data/monsters.js';
 

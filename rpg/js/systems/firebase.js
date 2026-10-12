@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/systems/firebase.js: v0.1.3 Firebase
+// [2026-10-12 20:30] - js/systems/firebase.js: v0.1.4 4-Slot Speicherverwaltung
 import { state } from '../core/state.js';
 
 const CFG = {
@@ -68,28 +68,69 @@ class Cloud {
     }
   }
 
-  async save(data) {
-    localStorage.setItem('dark_rpg_local', JSON.stringify(data));
+  async loadAllSlots() {
+    let slots = [null, null, null, null];
+    try {
+      const local = localStorage.getItem('dark_rpg_slots');
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed)) slots = parsed;
+      }
+    } catch (e) { console.warn(e); }
+
     if (this.ready && state.user && !state.isGuest) {
       try {
-        await this.db.ref(`dark_rpg/saves/${state.user.uid}`).set(data);
+        const snap = await this.db.ref(`dark_rpg/saves/${state.user.uid}`).once('value');
+        if (snap.exists()) {
+          const cloudData = snap.val();
+          for (let i = 0; i < 4; i++) {
+            if (cloudData[`slot_${i}`]) {
+              slots[i] = cloudData[`slot_${i}`];
+            }
+          }
+        }
       } catch (e) {
-        console.warn("Cloud Save Warn:", e);
+        console.warn("Cloud loadAllSlots:", e);
+      }
+    }
+
+    return slots;
+  }
+
+  async saveSlot(slotIndex, data) {
+    let slots = [null, null, null, null];
+    try {
+      const local = localStorage.getItem('dark_rpg_slots');
+      if (local) slots = JSON.parse(local);
+    } catch (e) {}
+    slots[slotIndex] = data;
+    localStorage.setItem('dark_rpg_slots', JSON.stringify(slots));
+
+    if (this.ready && state.user && !state.isGuest) {
+      try {
+        await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(data);
+      } catch (e) {
+        console.warn("Cloud saveSlot:", e);
       }
     }
   }
 
-  async load() {
+  async deleteSlot(slotIndex) {
+    let slots = [null, null, null, null];
     try {
-      if (this.ready && state.user && !state.isGuest) {
-        const snap = await this.db.ref(`dark_rpg/saves/${state.user.uid}`).once('value');
-        if (snap.exists()) return snap.val();
+      const local = localStorage.getItem('dark_rpg_slots');
+      if (local) slots = JSON.parse(local);
+    } catch (e) {}
+    slots[slotIndex] = null;
+    localStorage.setItem('dark_rpg_slots', JSON.stringify(slots));
+
+    if (this.ready && state.user && !state.isGuest) {
+      try {
+        await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).remove();
+      } catch (e) {
+        console.warn("Cloud deleteSlot:", e);
       }
-    } catch (e) {
-      console.warn("Cloud Load Warn:", e);
     }
-    const local = localStorage.getItem('dark_rpg_local');
-    return local ? JSON.parse(local) : null;
   }
 }
 

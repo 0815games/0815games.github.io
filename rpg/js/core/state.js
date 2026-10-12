@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/core/state.js: v0.1.3 Held, Welt & Metaprogress
+// [2026-10-12 20:30] - js/core/state.js: v0.1.4 4 Slots & Heldenstatus
 export const CLASSES = {
   warrior: {
     title: 'Eisenbrecher',
@@ -23,6 +23,7 @@ export const CLASSES = {
 export const state = {
   user: null,
   isGuest: true,
+  currentSlot: 0,
   inCombat: false,
   activeMonster: null,
   player: {

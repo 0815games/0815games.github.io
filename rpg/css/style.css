@@ -1,5 +1,5 @@
 /*
-[2026-10-12 20:15] - css/style.css: v0.1.3 Bereinigte Layer & Klickbarkeit
+[2026-10-12 20:30] - css/style.css: v0.1.4 4-Slot Recken-Auswahl & Dark Fantasy UI
 */
 * { box-sizing: border-box; }
 body {
@@ -44,16 +44,20 @@ button, input { font: inherit; user-select: auto; }
 .monster.left { left: 2%; }
 .monster.right { right: 2%; transform: scaleX(-1); }
 
-.login-card, .class-card, .death-card {
+.login-card, .class-card, .death-card, .slot-card {
   position: relative;
   z-index: 10;
-  width: min(480px, 94vw);
+  width: min(540px, 95vw);
   padding: 26px;
   background: #111420f2;
   border: 2px solid #c99c42;
   box-shadow: 0 0 50px #000, 0 0 25px rgba(201, 156, 66, 0.4);
   text-align: center;
   border-radius: 4px;
+}
+
+.slot-card {
+  width: min(680px, 95vw);
 }
 
 .crest {
@@ -71,7 +75,7 @@ button, input { font: inherit; user-select: auto; }
   letter-spacing: 7px;
   color: #fff;
 }
-.login-card h2 {
+.login-card h2, .slot-card h2 {
   margin: 0;
   color: #d4a94d;
   letter-spacing: 4px;
@@ -200,6 +204,103 @@ small {
   margin-top: 10px;
 }
 
+/* 4-SLOT AUSWAHL */
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 18px 0;
+}
+@media(max-width: 600px) {
+  .slots-grid { grid-template-columns: 1fr; }
+}
+
+.slot-box {
+  background: #161a29;
+  border: 2px solid #373f55;
+  padding: 14px;
+  border-radius: 4px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 140px;
+  position: relative;
+  transition: all 0.15s ease;
+}
+.slot-box:hover {
+  border-color: #c99c42;
+  box-shadow: 0 0 12px rgba(201, 156, 66, 0.3);
+}
+.slot-box.empty {
+  border-style: dashed;
+  background: #0f121d;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.slot-box.empty:hover {
+  background: #191e30;
+}
+.slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #282f42;
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+}
+.slot-num {
+  font-size: 11px;
+  color: #c99c42;
+  font-weight: bold;
+}
+.slot-hero-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+}
+.slot-class {
+  font-size: 12px;
+  color: #d4a94d;
+}
+.slot-meta {
+  font-size: 11px;
+  color: #aab1c0;
+  margin: 6px 0;
+  line-height: 1.4;
+}
+.slot-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.btn-slot-play {
+  flex: 1;
+  background: #c99c42;
+  color: #000;
+  font-weight: bold;
+  border: 1px solid #ffe082;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 12px;
+}
+.btn-slot-del {
+  background: #3b181d;
+  color: #ff7b88;
+  border: 1px solid #6b222c;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 2px;
+  font-size: 12px;
+}
+.empty-label {
+  font-size: 14px;
+  color: #8c95aa;
+  font-weight: bold;
+}
+
 /* Klassenwahl */
 .classes {
   display: flex;
@@ -241,6 +342,11 @@ small {
   margin: 16px 0;
   font-size: 13px;
 }
+.death-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
 
 #game {
   max-width: 1120px;
@@ -265,6 +371,14 @@ header em {
 header span, .right b {
   margin-left: 8px;
   font-size: 12px;
+}
+.slot-badge {
+  background: #24293c;
+  border: 1px solid #c99c42;
+  color: #ffd36c;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
 }
 
 .bars { display: flex; gap: 10px; }

@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/world/render.js: v0.1.3 Canvas-Renderer
+// [2026-10-12 20:30] - js/world/render.js: v0.1.4 Canvas-Renderer
 import { state } from '../core/state.js';
 
 export class Renderer {

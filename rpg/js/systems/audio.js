@@ -1,4 +1,4 @@
-// [2026-10-12 20:15] - js/systems/audio.js: v0.1.3 Web Audio API
+// [2026-10-12 20:30] - js/systems/audio.js: v0.1.4 Web Audio API
 export class AudioSystem {
   constructor() {
     const C = window.AudioContext || window.webkitAudioContext;
