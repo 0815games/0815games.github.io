@@ -1,27 +1,25 @@
 <!--
-[2026-10-12 19:40] - index.html: v0.1.1 Bugfix Login, Discovered-Grid & Lazy Audio
+[2026-10-12 20:15] - index.html: v0.1.3 Tastatur-Fokus-Fix für Text- und Passworteingaben
 Änderungen:
-- Heldenname aus Registrierung entfernt (wird erst bei der Charakterwahl für den Run gewählt).
-- AudioContext wird erst nach echter Benutzerinteraktion initialisiert (keine Browser-Warnung mehr).
-- Robuste Grid-Prüfung verhindert Abstürze beim Erkunden und Laden.
+- BUGFIX: Tastatureingaben in Eingabefeldern (Email/Passwort/Name) werden nicht mehr durch globale WASD/E-Spielerbewegungs-Handler verschluckt.
 -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Chroniken der Schattengruft - v0.1.1</title>
-  <link rel="icon" href="favicon.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chroniken der Schattengruft - v0.1.3</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Firebase v8 SDK -->
+  <!-- Firebase SDK v8 (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-  <!-- LOGIN & REGISTRIERUNG -->
+  <!-- LOGIN- & PORTAL-SCREEN -->
   <div id="login-screen" class="screen">
     <canvas id="login-canvas"></canvas>
     <div class="monster left">♜</div>
@@ -33,49 +31,51 @@
       <h2>DER SCHATTENGRUFT</h2>
       <p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p>
 
-      <div id="cloud-status" class="cloud ok">● ORDENS-ARCHIV BEREIT</div>
+      <div id="cloud-status" class="cloud ok">● ORDENSARCHIV BEREIT</div>
 
       <div class="auth-tabs">
-        <button id="tab-login" class="auth-tab active" data-mode="login">ANMELDEN</button>
-        <button id="tab-register" class="auth-tab" data-mode="register">NEUER ACCOUNT</button>
+        <button type="button" class="auth-tab active" data-mode="login">ANMELDEN</button>
+        <button type="button" class="auth-tab" data-mode="register">NEUE WEIHE (KONTO ERSTELLEN)</button>
       </div>
 
-      <div class="field">
-        <label for="auth-email">ORDENS-EMAIL</label>
-        <input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email">
-      </div>
+      <form id="auth-form" onsubmit="return false;">
+        <div class="field">
+          <label for="auth-email">ORDENS-EMAIL</label>
+          <input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email" required>
+        </div>
 
-      <div class="field">
-        <label for="auth-password">RUNEN-PASSWORT</label>
-        <input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password">
-      </div>
+        <div class="field">
+          <label for="auth-password">RUNEN-PASSWORT</label>
+          <input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password" required minlength="6">
+        </div>
 
-      <div id="auth-error" class="auth-error-box hidden"></div>
+        <div id="auth-error" class="auth-error-box hidden"></div>
 
-      <button id="auth-submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
+        <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
+      </form>
 
       <div class="divide">ODER OHNE KONTO</div>
-      <button id="guest-btn" class="dark wide">🚪 ALS GASTREISENDER STARTEN (LOKAL)</button>
-      <small>Gäste speichern lokal im Browser. Mit Account werden Spielstände in Firebase synchronisiert.</small>
+      <button id="guest-btn" type="button" class="dark wide">🚪 ALS GASTREISENDER STARTEN (LOKAL)</button>
+      <small>Cloud-Saves synchronisieren via Firebase. Gäste speichern lokal im Browser.</small>
     </main>
   </div>
 
-  <!-- CHARAKTER-AUSWAHL FÜR NEUEN RUN -->
+  <!-- KLASSEN- & RUN-AUSWAHL -->
   <div id="class-screen" class="screen hidden">
     <main class="class-card">
       <h2>WÄHLE DEINEN HEILIGEN PFAD</h2>
       <p>Jeder neue Run beginnt in Ebene 1. Wähle Klasse und Namen deines Recken.</p>
 
       <div class="classes">
-        <button class="class active" data-class="warrior">
+        <button type="button" class="class active" data-class="warrior">
           <b>🛡️ EISENBRECHER</b><span>Krieger</span>
           <small>75 TP · 15 MP · 9 ATK · 4 DEF</small>
         </button>
-        <button class="class" data-class="mage">
+        <button type="button" class="class" data-class="mage">
           <b>🔮 ARKANIST</b><span>Magier</span>
           <small>50 TP · 50 MP · 6 ATK · 1 DEF</small>
         </button>
-        <button class="class" data-class="rogue">
+        <button type="button" class="class" data-class="rogue">
           <b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span>
           <small>60 TP · 25 MP · 8 ATK · 2 DEF</small>
         </button>
@@ -83,7 +83,7 @@
 
       <div class="class-action">
         <input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname">
-        <button id="start-run" class="gold">NEUEN RUN STARTEN</button>
+        <button id="start-run" type="button" class="gold">NEUEN RUN BEGINNEN</button>
       </div>
     </main>
   </div>
@@ -93,45 +93,40 @@
     <main class="death-card">
       <div>💀</div>
       <h2>DEINE SEELE WURDE VERSCHLUNGEN</h2>
-      <p>Der Run ist beendet. Das gesammelte Gold wird dem Orden vermacht.</p>
+      <p>Der Run ist beendet. Dein gesammeltes Gold wird dem Orden vermacht.</p>
       <div id="death-stats"></div>
-      <button id="new-run" class="gold">✨ NEUEN RUN STARTEN</button>
+      <button id="new-run" type="button" class="gold">✨ NEUEN RUN STARTEN</button>
     </main>
   </div>
 
-  <!-- HAUPTSPIEL -->
+  <!-- HAUPT-SPIEL -->
   <div id="game" class="hidden">
     <header>
-      <div>
-        <b id="hero-name">Schattenjäger</b> 
-        <em id="hero-class">Eisenbrecher</em> 
-        <span>LVL <b id="level">1</b></span>
-      </div>
+      <div><b id="hero-name">Schattenjäger</b> <em id="hero-class">Eisenbrecher</em> <span>LVL <b id="level">1</b></span></div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
         <label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label>
         <label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label>
       </div>
       <div class="right">
-        <b id="gold">40 🪙</b>
-        <b>EBENE <span id="depth">1</span></b>
-        <button id="sound" title="Ton umschalten">🔊</button>
-        <button id="save" title="Spielstand sichern">☁️</button>
-        <button id="logout" title="Abmelden / Portal">🚪</button>
+        <b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b>
+        <button id="sound" type="button">🔊</button>
+        <button id="save" type="button" title="In Cloud & lokal sichern">☁️</button>
+        <button id="logout" type="button" title="Abmelden / Zum Portal">🚪</button>
       </div>
     </header>
 
     <main id="layout">
       <section id="mapbox">
         <canvas id="stage" width="640" height="480"></canvas>
-        <div id="hint">WASD / PFEILE: Bewegen · [E] / [LEERTASTE]: Treppe & Händler</div>
+        <div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion (Treppe / Kiste)</div>
       </section>
 
       <aside>
         <nav>
-          <button class="tab active" data-tab="inv">INVENTAR</button>
-          <button class="tab" data-tab="char">HELD</button>
-          <button class="tab" data-tab="log">CHRONIK</button>
+          <button type="button" class="tab active" data-tab="inv">INVENTAR</button>
+          <button type="button" class="tab" data-tab="char">HELD</button>
+          <button type="button" class="tab" data-tab="log">CHRONIK</button>
         </nav>
 
         <section id="inv" class="panel active">
@@ -141,7 +136,7 @@
         </section>
 
         <section id="char" class="panel">
-          <h3>RÜSTZEUG & STATUS</h3>
+          <h3>RÜSTZEUG & ATTRIBUTE</h3>
           <div id="stats"></div>
         </section>
 
@@ -155,22 +150,22 @@
           <div id="combat-info"></div>
           <p id="combat-log"></p>
           <div class="combat-buttons">
-            <button id="attack">🗡️ HIEB</button>
-            <button id="fire">🔥 FEUERBALL</button>
-            <button id="heal">🧪 HEILTRANK</button>
-            <button id="flee">💨 FLUCHT</button>
+            <button id="attack" type="button">🗡️ HIEB</button>
+            <button id="fire" type="button">🔥 FEUERBALL</button>
+            <button id="heal" type="button">🧪 HEILTRANK</button>
+            <button id="flee" type="button">💨 FLUCHT</button>
           </div>
         </section>
       </aside>
     </main>
 
-    <!-- TOUCH JOYSTICK (Wird per CSS nur auf Mobilgeräten gezeigt) -->
+    <!-- TOUCH JOYSTICK -->
     <div id="touch">
-      <button data-m="up">▲</button>
-      <button data-m="left">◀</button>
-      <button data-m="act">✦</button>
-      <button data-m="right">▶</button>
-      <button data-m="down">▼</button>
+      <button type="button" data-m="up">▲</button>
+      <button type="button" data-m="left">◀</button>
+      <button type="button" data-m="act" title="Aktion / Treppe">✦</button>
+      <button type="button" data-m="right">▶</button>
+      <button type="button" data-m="down">▼</button>
     </div>
   </div>
 

@@ -1,15 +1,4 @@
 # CHANGELOG
 
-## [v0.1.1] - 2026-10-12 19:40 (Bugfix Discovered-Grid, Auth-Feedback & Lazy-Audio)
-- [BUGFIX] `WorldMap`: `reveal()` und `Renderer.draw()` schützen das `discovered`-Array strikt vor `undefined`-Zugriffen. Alte Spielstände in LocalStorage können die Karte nicht mehr zum Absturz bringen.
-- [AUDIO] AudioContext wird jetzt sauber erst bei der ersten Nutzerinteraktion instanziiert (`ensureContext()`), wodurch die Browser-Autoplay-Warnung behoben wurde.
-- [AUTH] Das Heldenname-Feld wurde aus dem Registrierungsformular entfernt. Accounts werden rein mit Email und Passwort angelegt; der Heldenname wird erst bei der anschließenden Charakterwahl gewählt.
-- [AUTH] Klare deutsche Fehlermeldungen bei falschen Anmeldedaten oder bestehenden Accounts über ein dediziertes `#auth-error` Element.
-- [BUILD] Vollständiges Update-ZIP für v0.1.1 bereitgestellt.
-
-## [v0.1.0] - 2026-10-12 19:15 (Firebase Cloud-Save & Epischer Loginscreen)
-- [LOGIN] Epischer Dark-Fantasy Loginscreen mit animiertem Glutpartikel-Canvas, Wappen und Monsterauren.
-- [FIREBASE] Firebase Authentication (Email/Passwort) und Realtime Database (`dark_rpg/saves/{uid}`) integriert.
-- [DUNGEON] Verliesebenen mit skalierenden Monstern und Abstiegstreppe (`Ebene 1, 2, 3...`).
-- [CHESTS] Schatztruhen öffnen sich bei Berührung und lösen sich nach 0,8 Sekunden auf.
-- [INPUT] Reine Tastatur- (WASD/Pfeile/E) und mobile Touch-Steuerung.
+## [v0.1.3] - 2026-10-12 20:15 (Tastatur-Fokus-Fix für Text- und Passworteingaben)
+- [BUGFIX] **Tastatur-Eingaben in Textfeldern repariert:** Der globale `window.onkeydown`-Listener fing zuvor `w`, `a`, `s`, `d` und `e` mit `e.preventDefault()` ab, wodurch diese Buchstaben beim Tippen von E-Mail ("baum@wald.de" -> "bum@l.") oder Passwort blockiert wurden. Textfelder (`INPUT`, `TEXTAREA`) sowie alle aktiven Menüs ignorieren nun globale Steuerungsbefehle.

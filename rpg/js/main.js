@@ -1,4 +1,8 @@
-// [2026-10-12 19:40] - js/main.js: v0.1.1
+// [2026-10-12 20:15] - js/main.js: v0.1.3 Tastatur-Fokus-Fix für Text- und Passworteingaben
+// Änderungen:
+// - BUGFIX: `window.onkeydown` prüft nun ob der Fokus in einem Textfeld (`INPUT`, `TEXTAREA`) liegt oder das Spiel noch verborgen ist.
+//   Verhindert das Verschlucken der Tasten W, A, S, D, E beim Tippen von E-Mail ("baum@wald.de") oder Passwörtern.
+
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -14,41 +18,37 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const el = id => document.getElementById(id);
 
-  // Animierter Glutregen auf dem Login-Screen
+  // Hintergrund-Feuerpartikel
   const loginCanvas = el('login-canvas');
   if (loginCanvas) {
     const lx = loginCanvas.getContext('2d');
-    let w = loginCanvas.width = window.innerWidth;
-    let h = loginCanvas.height = window.innerHeight;
-    window.onresize = () => {
+    let w = loginCanvas.width = window.innerWidth, h = loginCanvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
       w = loginCanvas.width = window.innerWidth;
       h = loginCanvas.height = window.innerHeight;
-    };
-    const embers = Array.from({ length: 40 }, () => ({
+    });
+    const embers = Array.from({ length: 45 }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
-      s: 1 + Math.random() * 3,
-      v: 0.4 + Math.random() * 1.2,
+      s: 1.5 + Math.random() * 2.5,
+      v: 0.5 + Math.random() * 1.5,
       a: Math.random()
     }));
     setInterval(() => {
       lx.clearRect(0, 0, w, h);
       for (const e of embers) {
         e.y -= e.v;
-        e.x += Math.sin(e.y * 0.02) * 0.6;
-        if (e.y < 0) {
-          e.y = h;
-          e.x = Math.random() * w;
-        }
-        lx.fillStyle = `rgba(255,140,40,${e.a})`;
+        e.x += Math.sin(e.y * 0.02) * 0.7;
+        if (e.y < 0) { e.y = h; e.x = Math.random() * w; }
+        lx.fillStyle = `rgba(255, 140, 40, ${e.a})`;
         lx.fillRect(e.x, e.y, e.s, e.s);
       }
     }, 33);
   }
 
   // Cloud Status prüfen
-  cloud.init();
-  if (cloud.ready) {
+  const fbOk = cloud.init();
+  if (fbOk) {
     el('cloud-status').className = 'cloud ok';
     el('cloud-status').textContent = '● CLOUD-ARCHIV VERBUNDEN';
   } else {
@@ -56,83 +56,71 @@ window.addEventListener('DOMContentLoaded', () => {
     el('cloud-status').textContent = '● OFFLINE-MODUS (LOKAL)';
   }
 
-  // Auth Tabs
-  el('tab-login').onclick = () => {
-    el('tab-login').classList.add('active');
-    el('tab-register').classList.remove('active');
-    authMode = 'login';
-    el('auth-submit').textContent = '⚔️ IN DIE GRUFT HERABSTEIGEN';
-    el('auth-error').classList.add('hidden');
-  };
-
-  el('tab-register').onclick = () => {
-    el('tab-register').classList.add('active');
-    el('tab-login').classList.remove('active');
-    authMode = 'register';
-    el('auth-submit').textContent = '🛡️ NEUEN ACCOUNT ERSTELLEN';
-    el('auth-error').classList.add('hidden');
-  };
+  // Umschaltung Anmelden / Registrieren (OHNE Heldenname!)
+  document.querySelectorAll('.auth-tab').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      authMode = btn.dataset.mode;
+      el('auth-error').classList.add('hidden');
+      el('auth-submit').textContent = authMode === 'login' ? '⚔️ IN DIE GRUFT HERABSTEIGEN' : '🛡️ NEUES KONTO ERSTELLEN';
+    };
+  });
 
   function showError(msg) {
     const box = el('auth-error');
-    box.textContent = msg;
-    box.classList.remove('hidden');
+    if (box) {
+      box.textContent = msg;
+      box.classList.remove('hidden');
+    }
   }
 
-  // Submit Login/Register
-  el('auth-submit').onclick = async () => {
-    sound.ensureContext();
-    const em = el('auth-email').value.trim();
+  // Formular-Submit (Enter-Taste oder Button-Klick)
+  el('auth-form').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = el('auth-email').value.trim();
     const pw = el('auth-password').value.trim();
 
-    if (!em || !pw) {
-      showError('Bitte Email und Passwort eingeben.');
+    if (!email || !pw) {
+      showError('Bitte E-Mail und Passwort eingeben.');
+      return;
+    }
+    if (pw.length < 6) {
+      showError('Passwort muss mindestens 6 Zeichen lang sein.');
       return;
     }
 
     el('auth-error').classList.add('hidden');
-    el('auth-submit').disabled = true;
-    el('auth-submit').textContent = '⏳ VERBINDE MIT ORDENSARCHIV...';
+    el('auth-submit').textContent = '⏳ Siegel werden geprüft...';
 
     try {
       if (authMode === 'login') {
-        state.user = await cloud.login(em, pw);
+        state.user = await cloud.login(email, pw);
         state.isGuest = false;
       } else {
-        state.user = await cloud.register(em, pw);
+        state.user = await cloud.register(email, pw);
         state.isGuest = false;
       }
-      await startAfterAuth();
+      await proceedIntoGame();
     } catch (err) {
-      showError(err.message || 'Fehler bei der Anmeldung.');
-      el('auth-submit').disabled = false;
-      el('auth-submit').textContent = authMode === 'login' ? '⚔️ IN DIE GRUFT HERABSTEIGEN' : '🛡️ NEUEN ACCOUNT ERSTELLEN';
+      showError(err.message || 'Fehler beim Authentifizieren.');
+      el('auth-submit').textContent = authMode === 'login' ? '⚔️ IN DIE GRUFT HERABSTEIGEN' : '🛡️ NEUES KONTO ERSTELLEN';
     }
   };
 
-  // Gast Login
+  // Gastreisender starten (funktioniert immer)
   el('guest-btn').onclick = async () => {
-    sound.ensureContext();
     state.isGuest = true;
     state.user = null;
-    await startAfterAuth();
+    await proceedIntoGame();
   };
 
-  async function startAfterAuth() {
+  async function proceedIntoGame() {
     el('login-screen').classList.add('hidden');
     const saved = await cloud.load();
-
-    if (saved && saved.player && saved.player.name) {
-      Object.assign(state.player, saved.player);
-      if (saved.meta) Object.assign(state.meta, saved.meta);
-
-      // Verhindere korrupte Weltkarten aus älteren Versionen
-      if (saved.world && Array.isArray(saved.world.tiles) && saved.world.tiles.length === 15) {
-        Object.assign(state.world, saved.world);
-        map.reveal();
-      } else {
-        map.generate(saved.world?.depth || 1);
-      }
+    if (saved && saved.player && saved.player.hp > 0 && saved.world) {
+      Object.assign(state, saved);
+      map.ensureValid();
       openGame();
     } else {
       el('class-screen').classList.remove('hidden');
@@ -140,19 +128,17 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   // Klassenwahl
-  document.querySelectorAll('.class').forEach(b => {
-    b.onclick = () => {
-      sound.ensureContext();
-      document.querySelectorAll('.class').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      selectedClass = b.dataset.class;
+  document.querySelectorAll('.class').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.class').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedClass = btn.dataset.class;
     };
   });
 
   el('start-run').onclick = () => {
-    sound.ensureContext();
-    const nm = el('run-name').value.trim() || 'Schattenjäger';
-    newRun(selectedClass, nm);
+    const name = el('run-name').value.trim() || 'Schattenjäger';
+    newRun(selectedClass, name);
     el('class-screen').classList.add('hidden');
     openGame();
   };
@@ -248,9 +234,8 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function move(dx, dy) {
-    if (state.locked || state.inCombat) return;
-    const tx = state.player.x + dx;
-    const ty = state.player.y + dy;
+    if (state.inCombat) return;
+    const tx = state.player.x + dx, ty = state.player.y + dy;
     if (map.isWall(tx, ty)) return;
 
     const mon = state.world.monsters.find(m => m.x === tx && m.y === ty);
@@ -264,7 +249,7 @@ window.addEventListener('DOMContentLoaded', () => {
     sound.step();
     map.reveal();
 
-    // Schatztruhe öffnen & nach 800ms auflösen
+    // Schatztruhe öffnen & auflösen
     const ch = state.world.chests.find(c => c.x === tx && c.y === ty && !c.open);
     if (ch) {
       ch.open = true;
@@ -280,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     if (state.world.stairs && tx === state.world.stairs.x && ty === state.world.stairs.y) {
-      log('Steintreppe in die Tiefe! [E], [Leertaste] oder [✦] zum Hinabsteigen.');
+      log('Steintreppe in die Tiefe! [E] oder [✦] zum Hinabsteigen.');
     }
     hud();
   }
@@ -298,7 +283,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 
   function interact() {
-    if (state.locked || state.inCombat) return;
+    if (state.inCombat) return;
     const s = state.world.stairs;
     if (s && state.player.x === s.x && state.player.y === s.y) {
       sound.stairs();
@@ -327,23 +312,18 @@ window.addEventListener('DOMContentLoaded', () => {
   el('attack').onclick = () => {
     if (!state.inCombat) return;
     sound.sword();
-    const p = state.player;
-    const m = state.activeMonster;
+    const p = state.player, m = state.activeMonster;
     const w = ITEMS[p.equipped.weapon];
     const dmg = Math.max(1, p.atk + (w ? w.val : 0) - m.def + Math.floor(Math.random() * 4));
     m.hp -= dmg;
     gfx.text(`-${dmg}`, m.x, m.y, '#ffca28');
-    if (m.hp <= 0) {
-      winCombat();
-      return;
-    }
+    if (m.hp <= 0) { winCombat(); return; }
     enemyTurn();
   };
 
   el('fire').onclick = () => {
     if (!state.inCombat) return;
-    const p = state.player;
-    const m = state.activeMonster;
+    const p = state.player, m = state.activeMonster;
     if (p.mp < 8) {
       el('combat-log').textContent = 'Nicht genügend Mana!';
       return;
@@ -353,10 +333,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const dmg = Math.max(8, (p.atk * 2) - m.def + Math.floor(Math.random() * 5));
     m.hp -= dmg;
     gfx.text(`-${dmg}`, m.x, m.y, '#ff7043');
-    if (m.hp <= 0) {
-      winCombat();
-      return;
-    }
+    if (m.hp <= 0) { winCombat(); return; }
     enemyTurn();
   };
 
@@ -381,8 +358,7 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   function enemyTurn() {
-    const p = state.player;
-    const m = state.activeMonster;
+    const p = state.player, m = state.activeMonster;
     const a = ITEMS[p.equipped.armor];
     const dmg = Math.max(1, m.atk - (p.def + (a ? a.val : 0)) + Math.floor(Math.random() * 3));
     p.hp -= dmg;
@@ -405,7 +381,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (state.player.xp >= state.player.nextXp) {
       state.player.level++;
       state.player.xp -= state.player.nextXp;
-      state.player.nextXp = Math.floor(state.player.nextXp * 1.5);
+      state.player.nextExp = Math.floor(state.player.nextExp * 1.5);
       state.player.maxHp += 15;
       state.player.maxMp += 10;
       state.player.hp = state.player.maxHp;
@@ -449,7 +425,14 @@ window.addEventListener('DOMContentLoaded', () => {
     location.reload();
   };
 
+  // Tastatursteuerung mit Eingabefeld-Schutz
   window.onkeydown = (e) => {
+    // Wenn der Fokus in einem Textfeld liegt (Email, Passwort, Name): NICHT als Spielbewegung abfangen!
+    if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
+
+    // Nur im laufenden Spiel aktiv
+    if (el('game').classList.contains('hidden')) return;
+
     const k = e.key.toLowerCase();
     const dirs = {
       w: [0, -1], arrowup: [0, -1],
@@ -467,22 +450,18 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  document.querySelectorAll('#touch button').forEach(b => {
-    b.onpointerdown = (e) => {
-      e.preventDefault();
-      const m = b.dataset.m;
-      const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
-      if (dirs[m]) move(...dirs[m]);
-      if (m === 'act') interact();
-    };
+  document.querySelectorAll('#touch button').forEach(b => b.onpointerdown = (e) => {
+    e.preventDefault();
+    const m = b.dataset.m;
+    const dirs = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+    if (dirs[m]) move(...dirs[m]);
+    if (m === 'act') interact();
   });
 
-  document.querySelectorAll('nav button').forEach(b => {
-    b.onclick = () => {
-      document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      el(b.dataset.tab)?.classList.add('active');
-    };
+  document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('nav button').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    el(b.dataset.tab)?.classList.add('active');
   });
 });

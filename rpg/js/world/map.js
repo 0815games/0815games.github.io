@@ -1,4 +1,4 @@
-// [2026-10-12 19:40] - js/world/map.js: v0.1.1 Sichere Kartengenerierung & Discovered-Grid-Schutz
+// [2026-10-12 20:15] - js/world/map.js: v0.1.3 Sichere Verliesebenen & Discovered-Reparatur
 import { state } from '../core/state.js';
 import { MONSTERS } from '../data/monsters.js';
 
@@ -8,6 +8,30 @@ export class WorldMap {
     this.rows = 15;
   }
 
+  ensureValid() {
+    if (!Array.isArray(state.world.tiles) || state.world.tiles.length !== this.rows) {
+      this.generate(state.world.depth || 1);
+      return;
+    }
+    if (!Array.isArray(state.world.discovered) || state.world.discovered.length !== this.rows) {
+      state.world.discovered = Array.from({ length: this.rows }, () => Array(this.cols).fill(false));
+    }
+    for (let y = 0; y < this.rows; y++) {
+      if (!Array.isArray(state.world.discovered[y]) || state.world.discovered[y].length !== this.cols) {
+        state.world.discovered[y] = Array(this.cols).fill(false);
+      }
+    }
+    if (!state.world.stairs || this.isWall(state.world.stairs.x, state.world.stairs.y)) {
+      state.world.stairs = this.getSafeSpot(17, 12);
+    }
+    if (this.isWall(state.player.x, state.player.y)) {
+      const safe = this.getSafeSpot(state.player.x, state.player.y);
+      state.player.x = safe.x;
+      state.player.y = safe.y;
+    }
+    this.reveal();
+  }
+
   generate(depth = 1) {
     state.world.depth = depth;
     state.world.tiles = [];
@@ -15,7 +39,6 @@ export class WorldMap {
     state.world.chests = [];
     state.world.monsters = [];
 
-    // Sauberes 20x15 Raster
     for (let y = 0; y < this.rows; y++) {
       const r = [];
       const d = [];
@@ -27,7 +50,6 @@ export class WorldMap {
       state.world.discovered.push(d);
     }
 
-    // Grabkammern
     for (let y = 3; y <= 6; y++) {
       for (let x = 4; x <= 8; x++) {
         if (x === 4 || x === 8 || y === 3 || y === 6) {
@@ -45,7 +67,7 @@ export class WorldMap {
     }
 
     [{ x: 8, y: 7 }, { x: 8, y: 8 }, { x: 9, y: 8 }, { x: 14, y: 2 }].forEach(p => {
-      state.world.tiles[p.y][p.x] = 1;
+      if (state.world.tiles[p.y]) state.world.tiles[p.y][p.x] = 1;
     });
 
     state.player.x = 2;
@@ -73,8 +95,9 @@ export class WorldMap {
   }
 
   isWall(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return true;
     if (x <= 0 || x >= this.cols - 1 || y <= 0 || y >= this.rows - 1) return true;
-    return state.world.tiles[y]?.[x] > 0;
+    return (state.world.tiles[y]?.[x] || 0) > 0;
   }
 
   getSafeSpot(x, y) {
@@ -90,13 +113,12 @@ export class WorldMap {
   }
 
   reveal() {
-    const px = state.player.x;
-    const py = state.player.y;
-
-    // Sicherstellen, dass discovered existiert und intakt ist
     if (!Array.isArray(state.world.discovered) || state.world.discovered.length !== this.rows) {
       state.world.discovered = Array.from({ length: this.rows }, () => Array(this.cols).fill(false));
     }
+
+    const px = Number.isFinite(state.player.x) ? state.player.x : 2;
+    const py = Number.isFinite(state.player.y) ? state.player.y : 2;
 
     for (let y = 0; y < this.rows; y++) {
       if (!Array.isArray(state.world.discovered[y])) {

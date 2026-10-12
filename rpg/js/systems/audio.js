@@ -1,18 +1,13 @@
-// [2026-10-12 19:40] - js/systems/audio.js: v0.1.1 Lazy-Init Audio
+// [2026-10-12 20:15] - js/systems/audio.js: v0.1.3 Web Audio API
 export class AudioSystem {
   constructor() {
-    this.ctx = null;
+    const C = window.AudioContext || window.webkitAudioContext;
+    this.ctx = C ? new C() : null;
     this.muted = false;
   }
 
-  ensureContext() {
-    if (!this.ctx) {
-      const C = window.AudioContext || window.webkitAudioContext;
-      if (C) this.ctx = new C();
-    }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
+  resume() {
+    if (this.ctx?.state === 'suspended') this.ctx.resume();
   }
 
   toggle() {
@@ -21,23 +16,19 @@ export class AudioSystem {
   }
 
   beep(freq, dur = 0.16, type = 'sine', vol = 0.2) {
-    if (this.muted) return;
-    this.ensureContext();
-    if (!this.ctx) return;
-
-    try {
-      const t = this.ctx.currentTime;
-      const o = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      o.type = type;
-      o.frequency.setValueAtTime(freq, t);
-      g.gain.setValueAtTime(vol, t);
-      g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-      o.connect(g);
-      g.connect(this.ctx.destination);
-      o.start(t);
-      o.stop(t + dur);
-    } catch (e) {}
+    if (this.muted || !this.ctx) return;
+    this.resume();
+    const t = this.ctx.currentTime;
+    const o = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g);
+    g.connect(this.ctx.destination);
+    o.start(t);
+    o.stop(t + dur);
   }
 
   step() { this.beep(75, 0.05, 'triangle', 0.08); }

@@ -1,4 +1,4 @@
-// [2026-10-12 19:40] - js/world/render.js: v0.1.1
+// [2026-10-12 20:15] - js/world/render.js: v0.1.3 Canvas-Renderer
 import { state } from '../core/state.js';
 
 export class Renderer {
@@ -57,14 +57,13 @@ export class Renderer {
 
     for (let y = 0; y < w.rows; y++) {
       for (let x = 0; x < w.cols; x++) {
-        const seen = w.discovered && w.discovered[y] ? w.discovered[y][x] : false;
+        const seen = w.discovered?.[y]?.[x];
         if (!seen) {
           c.fillStyle = '#06070a';
           c.fillRect(x * t, y * t, t, t);
           continue;
         }
-
-        const tile = w.tiles[y][x];
+        const tile = w.tiles[y]?.[x] || 0;
         if (tile === 1) {
           c.fillStyle = '#1c202c';
           c.fillRect(x * t, y * t, t, t);
@@ -84,7 +83,7 @@ export class Renderer {
       }
     }
 
-    if (w.stairs && w.discovered && w.discovered[w.stairs.y] && w.discovered[w.stairs.y][w.stairs.x]) {
+    if (w.stairs && w.discovered?.[w.stairs.y]?.[w.stairs.x]) {
       const sx = w.stairs.x * t;
       const sy = w.stairs.y * t;
       c.fillStyle = '#c99c42';
@@ -98,7 +97,7 @@ export class Renderer {
 
     if (w.chests) {
       for (const ch of w.chests) {
-        if (!w.discovered || !w.discovered[ch.y] || !w.discovered[ch.y][ch.x]) continue;
+        if (!w.discovered?.[ch.y]?.[ch.x]) continue;
         const sx = ch.x * t;
         const sy = ch.y * t;
         if (ch.open) {
@@ -119,7 +118,7 @@ export class Renderer {
 
     if (w.monsters) {
       for (const m of w.monsters) {
-        if (!w.discovered || !w.discovered[m.y] || !w.discovered[m.y][m.x]) continue;
+        if (!w.discovered?.[m.y]?.[m.x]) continue;
         const sx = m.x * t;
         const sy = m.y * t;
         c.fillStyle = m.color || '#e53935';
@@ -136,8 +135,9 @@ export class Renderer {
       }
     }
 
-    const px = state.player.x * t;
-    const py = state.player.y * t;
+    const px = (Number.isFinite(state.player.x) ? state.player.x : 2) * t;
+    const py = (Number.isFinite(state.player.y) ? state.player.y : 2) * t;
+
     const g = c.createRadialGradient(px + 16, py + 16, 8, px + 16, py + 16, 45);
     g.addColorStop(0, '#ffb30066');
     g.addColorStop(1, '#00000000');
