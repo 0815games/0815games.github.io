@@ -1,8 +1,4 @@
-// [2026-10-12 13:25] - js/data/items.js: v0.0.4 Dark Fantasy Reliquien & Ausrüstungskatalog
-// Änderungen:
-// - Überarbeitung aller Gegenstände: Tränke, Klingen, Stäbe, Rüstungen und Seelensteine.
-// - Mana- und Heilwerte für Dark-Fantasy-Zauber und Gefechte integriert.
-
+// [2026-10-12 13:35] - js/data/items.js: v0.0.6 Reliquien- & Ausrüstungskatalog
 export const ITEM_DATABASE = {
   health_potion: {
     id: 'health_potion',

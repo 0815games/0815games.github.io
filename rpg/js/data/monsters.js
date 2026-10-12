@@ -1,8 +1,4 @@
-// [2026-10-12 13:25] - js/data/monsters.js: v0.0.4 Dark Fantasy Bestiarium
-// Änderungen:
-// - Fantasy-Kreaturen: Goblin-Plünderer, Skelettkrieger und Dunkler Gruftfürst (Boss).
-// - Individuelle Farbgebungen, Attribute und Seelenstein-Loot hinterlegt.
-
+// [2026-10-12 13:35] - js/data/monsters.js: v0.0.6 Bestiarium
 export const MONSTER_TYPES = {
   goblin: {
     typeId: 'goblin',

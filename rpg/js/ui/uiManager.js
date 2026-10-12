@@ -1,6 +1,7 @@
-// [2026-10-12 13:25] - js/ui/uiManager.js: v0.0.4 Fantasy UI-Manager
+// [2026-10-12 13:35] - js/ui/uiManager.js: v0.0.6 UI-Manager mit Todes-Modal Steuerung
 // Änderungen:
-// - Anzeige von Leben (Rubinrot), Mana (Saphirblau), Goldmünzen und Zauberaktionsschaltflächen.
+// - Todesbildschirm mit Statistik-Rückblick und Auferstehungslogik.
+// - Vollständiger Verzicht auf native Alerts.
 
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
@@ -20,6 +21,7 @@ export class UIManager {
     this.initCombatEvents();
     this.initShopEvents();
     this.initStorageButtons();
+    this.initDeathScreen();
   }
 
   initTabs() {
@@ -39,7 +41,7 @@ export class UIManager {
 
   initCombatEvents() {
     document.getElementById('act-attack').addEventListener('click', () => this.combatSys.attack(false));
-    document.getElementById('act-crit').addEventListener('click', () => this.combatSys.attack(true)); // Feuerball
+    document.getElementById('act-crit').addEventListener('click', () => this.combatSys.attack(true));
     document.getElementById('act-heal').addEventListener('click', () => this.combatSys.healInBattle());
     document.getElementById('act-flee').addEventListener('click', () => this.combatSys.flee());
   }
@@ -74,8 +76,44 @@ export class UIManager {
     if (resetBtn) resetBtn.addEventListener('click', () => this.storageSys.resetGame());
   }
 
+  initDeathScreen() {
+    const respawnBtn = document.getElementById('btn-respawn');
+    const deathReloadBtn = document.getElementById('btn-death-reload');
+    const deathModal = document.getElementById('game-over-modal');
+
+    if (respawnBtn) {
+      respawnBtn.addEventListener('click', () => {
+        // Am Startsektor mit 50% Leben & vollem Mana auferstehen
+        state.player.hp = Math.floor(state.player.maxHp * 0.6);
+        state.player.mp = state.player.maxMp;
+        state.player.x = 2;
+        state.player.y = 2;
+        deathModal.classList.add('hidden');
+        state.isInputLocked = false;
+        this.updateHUD();
+        this.logMessage('Du erwachst geschwächt am Portal der Schattengruft.');
+      });
+    }
+
+    if (deathReloadBtn) {
+      deathReloadBtn.addEventListener('click', () => {
+        localStorage.removeItem('dark_fantasy_rpg_v004');
+        location.reload();
+      });
+    }
+  }
+
+  showDeathModal() {
+    state.isInputLocked = true;
+    document.getElementById('death-stat-lvl').innerText = state.player.level;
+    document.getElementById('death-stat-gold').innerText = `${state.player.caps} 🪙`;
+    document.getElementById('death-stat-rooms').innerText = state.player.tilesVisited;
+    document.getElementById('game-over-modal').classList.remove('hidden');
+  }
+
   updateHUD() {
     const p = state.player;
+    document.getElementById('stat-name').innerText = p.name;
     document.getElementById('stat-level').innerText = p.level;
     document.getElementById('stat-caps').innerText = `${p.caps} 🪙 Gold`;
     document.getElementById('stat-hp-text').innerText = `${p.hp}/${p.maxHp}`;
@@ -88,6 +126,9 @@ export class UIManager {
     document.getElementById('hp-bar-fill').style.width = `${hpPercent}%`;
     document.getElementById('mp-bar-fill').style.width = `${mpPercent}%`;
     document.getElementById('xp-bar-fill').style.width = `${xpPercent}%`;
+
+    const classEl = document.getElementById('stat-class-name');
+    if (classEl) classEl.innerText = p.className || 'Krieger';
 
     document.getElementById('equip-weapon').innerText = p.equipped.weapon ? p.equipped.weapon.name : 'Keine';
     document.getElementById('equip-armor').innerText = p.equipped.armor ? p.equipped.armor.name : 'Keine';
@@ -141,7 +182,6 @@ export class UIManager {
 
         const card = document.createElement('div');
         card.className = 'quest-card';
-
         const progressPct = Math.min(100, Math.round((q.current / q.target) * 100));
 
         card.innerHTML = `

@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/systems/inventory.js: v0.0.4 Inventar & Tränkelogik
-// Änderungen:
-// - Unterstützung für Manatränke (`effect === 'mana'`) und Elixiere hinzugefügt.
-
+// [2026-10-12 13:35] - js/systems/inventory.js: v0.0.6 Inventarsystem
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { eventBus } from '../core/eventBus.js';

@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/core/eventBus.js: v0.0.4 Ereignisverwaltung
-// Änderungen:
-// - Zentrale Ereigniskommunikation für Fantasy-Kampf, Quests und Alchemist.
-
+// [2026-10-12 13:35] - js/core/eventBus.js: v0.0.6 Ereignisverwaltung
 class EventBus {
   constructor() {
     this.events = new Map();

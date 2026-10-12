@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/systems/shop.js: v0.0.4 Alchemie- & Rüstkammer
-// Änderungen:
-// - Goldtransaktionen bei Alchemist Eldrin mit Slot-Prüfung und 50%-Verkaufswert.
-
+// [2026-10-12 13:35] - js/systems/shop.js: v0.0.6 Alchemie- & Rüstkammer
 import { state } from '../core/state.js';
 import { ITEM_DATABASE } from '../data/items.js';
 import { eventBus } from '../core/eventBus.js';

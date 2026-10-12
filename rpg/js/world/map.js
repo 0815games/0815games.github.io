@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/world/map.js: v0.0.4 Katakomben-Kartenaufbau
-// Änderungen:
-// - Gruft-Struktur: Säulen, Grabkammern, Reliquientruhen und Goblins/Skelette initialisiert.
-
+// [2026-10-12 13:35] - js/world/map.js: v0.0.6 Katakomben-Kartenaufbau
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
 import { MONSTER_TYPES } from '../data/monsters.js';
@@ -129,7 +126,6 @@ export class WorldMap {
       eventBus.emit('chest:opened', chest);
     }
 
-    eventBus.emit('world:updated');
     eventBus.emit('hud:updated');
     eventBus.emit('storage:autosave');
   }

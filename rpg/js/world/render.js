@@ -1,8 +1,7 @@
-// [2026-10-12 13:25] - js/world/render.js: v0.0.4 Dark Fantasy Katakomben-Renderer
+// [2026-10-12 13:35] - js/world/render.js: v0.0.6 Autonome Animationsschleife für Zahlen & Licht
 // Änderungen:
-// - Dynamischer Fackelschein: Warmes, flackerndes Licht um den Spieler statt simpler Kreis.
-// - Dunkle Steinpflaster-Texturen und verzierte Gruftmauern.
-// - Fantasy-Sprites für Held (Ritter-Silhouette), Goblins (grün), Skelette (weiß/silber) und den Alchemisten (blaue Fackel/Runenstand).
+// - `requestAnimationFrame`-Gameloop: Schwebende Schadens- und Heilzahlen bewegen sich und verblassen autonom ohne Spielerbewegung.
+// - Fackelschein pulsiert fließend im 60fps-Takt.
 
 import { state } from '../core/state.js';
 import { TILE_STONE_WALL, TILE_CRYPT_CHAMBER } from './map.js';
@@ -14,6 +13,25 @@ export class WorldRenderer {
     this.tileSize = 32;
     this.floatingTexts = [];
     this.torchFlicker = 0;
+    this.isRunning = false;
+    this.lastTimestamp = performance.now();
+
+    this.startLoop();
+  }
+
+  startLoop() {
+    this.isRunning = true;
+    const loop = (timestamp) => {
+      if (!this.isRunning) return;
+      const deltaTime = (timestamp - this.lastTimestamp) / 1000;
+      this.lastTimestamp = timestamp;
+
+      this.update(deltaTime);
+      this.render();
+
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
   }
 
   addFloatingText(text, x, y, color = '#ff5252') {
@@ -22,8 +40,24 @@ export class WorldRenderer {
       x: x * this.tileSize + 16,
       y: y * this.tileSize,
       alpha: 1.0,
-      color
+      color,
+      speed: 28 // Pixel pro Sekunde
     });
+  }
+
+  update(deltaTime) {
+    // 1. Schwebende Texte aktualisieren und verblassen lassen
+    for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
+      const ft = this.floatingTexts[i];
+      ft.y -= ft.speed * deltaTime;
+      ft.alpha -= 0.85 * deltaTime; // Verschwindet nach ca. 1.2 Sekunden
+      if (ft.alpha <= 0) {
+        this.floatingTexts.splice(i, 1);
+      }
+    }
+
+    // 2. Fackelschein pulsieren
+    this.torchFlicker = Math.sin(Date.now() / 180) * 2.5;
   }
 
   render() {
@@ -31,8 +65,6 @@ export class WorldRenderer {
     const { cols, rows, tiles, discovered, chests, monsters } = state.world;
 
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    this.torchFlicker = (Math.sin(Date.now() / 200) * 2);
 
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
@@ -48,19 +80,16 @@ export class WorldRenderer {
 
         const t = tiles[y][x];
         if (t === TILE_STONE_WALL) {
-          // Zyklopen-Mauerwerk
           ctx.fillStyle = '#1c202c';
           ctx.fillRect(screenX, screenY, tileSize, tileSize);
           ctx.strokeStyle = '#2d3345';
           ctx.strokeRect(screenX + 1, screenY + 1, tileSize - 2, tileSize - 2);
         } else if (t === TILE_CRYPT_CHAMBER) {
-          // Antike Grabmauer
           ctx.fillStyle = '#261a20';
           ctx.fillRect(screenX, screenY, tileSize, tileSize);
           ctx.fillStyle = '#3a2732';
           ctx.fillRect(screenX + 4, screenY + 4, tileSize - 8, tileSize - 8);
         } else {
-          // Schieferboden
           ctx.fillStyle = '#10121a';
           ctx.fillRect(screenX, screenY, tileSize, tileSize);
           if ((x + y) % 2 === 0) {
@@ -74,7 +103,7 @@ export class WorldRenderer {
       }
     }
 
-    // Schatztruhen (Holz mit Eisenbeschlag / Gold)
+    // Schatztruhen
     chests.forEach(c => {
       if (discovered[c.y] && discovered[c.y][c.x]) {
         const sx = c.x * tileSize;
@@ -86,7 +115,7 @@ export class WorldRenderer {
       }
     });
 
-    // Alchemist Eldrin (Blaue Magiefackel & Alchemiestand)
+    // Alchemist Eldrin
     const tr = state.trader;
     if (discovered[tr.y] && discovered[tr.y][tr.x]) {
       const tx = tr.x * tileSize;
@@ -100,12 +129,11 @@ export class WorldRenderer {
       ctx.font = 'bold 12px serif';
       ctx.fillText('🔮', tx + 8, ty + 20);
 
-      // Fackeldach
       ctx.fillStyle = '#ffd54f';
       ctx.fillRect(tx + 2, ty + 3, 28, 4);
     }
 
-    // Monster (Goblins, Skelette, Gruftfürst)
+    // Monster
     monsters.forEach(m => {
       if (discovered[m.y] && discovered[m.y][m.x]) {
         const sx = m.x * tileSize;
@@ -116,12 +144,10 @@ export class WorldRenderer {
         ctx.arc(sx + 16, sy + 16, 11, 0, Math.PI * 2);
         ctx.fill();
 
-        // Glühende Augen
         ctx.fillStyle = '#ff1744';
         ctx.fillRect(sx + 11, sy + 12, 3, 3);
         ctx.fillRect(sx + 18, sy + 12, 3, 3);
 
-        // HP-Balken
         const barW = 24;
         const hpPct = Math.max(0, m.hp / m.maxHp);
         ctx.fillStyle = '#370000';
@@ -131,20 +157,18 @@ export class WorldRenderer {
       }
     });
 
-    // Held: Schattenjäger mit flackerndem Fackelschein
+    // Held
     const px = state.player.x * tileSize;
     const py = state.player.y * tileSize;
 
-    // Fackellicht-Atmosphäre
     const torchRadius = 38 + this.torchFlicker;
-    const gradient = ctx.createRadialGradient(px + 16, py + 16, 6, px + 16, py + 16, torchRadius);
+    const gradient = ctx.createRadialGradient(px + 16, py + 16, 6, px + 16, py + 16, Math.max(10, torchRadius));
     gradient.addColorStop(0, 'rgba(255, 179, 0, 0.45)');
     gradient.addColorStop(0.7, 'rgba(255, 87, 34, 0.15)');
     gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
     ctx.fillStyle = gradient;
     ctx.fillRect(px - 32, py - 32, 96, 96);
 
-    // Helden-Sprite (Krieger mit Kapuze und Schwert)
     ctx.fillStyle = '#c99c42';
     ctx.fillRect(px + 6, py + 6, 20, 20);
     ctx.fillStyle = '#1c1f2e';
@@ -153,19 +177,15 @@ export class WorldRenderer {
     ctx.fillRect(px + 12, py + 11, 3, 2);
     ctx.fillRect(px + 17, py + 11, 3, 2);
 
-    // Fliegende Zahlen
-    for (let i = this.floatingTexts.length - 1; i >= 0; i--) {
-      const ft = this.floatingTexts[i];
+    // Schwebende Texte zeichnen
+    this.floatingTexts.forEach(ft => {
       ctx.fillStyle = ft.color;
-      ctx.globalAlpha = ft.alpha;
+      ctx.globalAlpha = Math.max(0, ft.alpha);
       ctx.font = 'bold 12px serif';
+      ctx.textAlign = 'center';
       ctx.fillText(ft.text, ft.x, ft.y);
-      ft.y -= 0.6;
-      ft.alpha -= 0.02;
-      if (ft.alpha <= 0) {
-        this.floatingTexts.splice(i, 1);
-      }
-    }
+    });
+    ctx.textAlign = 'start';
     ctx.globalAlpha = 1.0;
   }
 }

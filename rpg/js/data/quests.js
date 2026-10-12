@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/data/quests.js: v0.0.4 Fantasy-Quests des Ordens
-// Änderungen:
-// - Neue Quest-Reihe: Säuberung der Krypta, Besuch des Alchemisten, Seelensammlung und Gruftfürst-Bannung.
-
+// [2026-10-12 13:35] - js/data/quests.js: v0.0.6 Ordens-Quests
 export const QUEST_DATABASE = {
   q_goblin_slayer: {
     id: 'q_goblin_slayer',

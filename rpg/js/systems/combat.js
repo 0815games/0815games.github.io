@@ -1,7 +1,6 @@
-// [2026-10-12 13:25] - js/systems/combat.js: v0.0.4 Fantasy-Kampfsystem mit Magie
+// [2026-10-12 13:35] - js/systems/combat.js: v0.0.6 Kampfsystem mit nativem GameOver-Event
 // Änderungen:
-// - Zauberangriff "Feuerball" eingeführt (verbraucht 8 MP für garantierten Durchschlagsschaden).
-// - TP & MP Ressourcenverwaltung im Kampf integriert.
+// - Entfernen von nativem alert() und Umstellung auf `player:death` Ereignis für den Dark Fantasy Todesbildschirm.
 
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
@@ -55,10 +54,9 @@ export class CombatSystem {
 
     if (state.player.hp <= 0) {
       eventBus.emit('combat:log', 'Deine Lebenskraft ist erloschen...');
-      setTimeout(() => {
-        alert('💀 DU BIST IN DEN KATAKOMBEN GEFALLEN! 💀');
-        location.reload();
-      }, 500);
+      this.endCombat();
+      eventBus.emit('player:death');
+      return;
     }
 
     eventBus.emit('combat:updated');
@@ -80,6 +78,11 @@ export class CombatSystem {
       const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
       state.player.hp = Math.max(0, state.player.hp - monDmg);
       eventBus.emit('combat:log', `${m.name} attackiert während des Trinkens: -${monDmg} TP.`);
+      if (state.player.hp <= 0) {
+        this.endCombat();
+        eventBus.emit('player:death');
+        return;
+      }
     }
 
     eventBus.emit('combat:updated');
@@ -87,7 +90,8 @@ export class CombatSystem {
   }
 
   flee() {
-    if (Math.random() > 0.45) {
+    const fleeThreshold = state.player.classId === 'rogue' ? 0.3 : 0.45;
+    if (Math.random() > fleeThreshold) {
       eventBus.emit('log:message', 'Erfolgreich in den Schutz der Schatten geflohen!');
       this.endCombat();
     } else {
@@ -95,6 +99,11 @@ export class CombatSystem {
       const m = state.activeMonster;
       const monDmg = Math.max(1, m.atk - this.invSys.getTotalDef());
       state.player.hp = Math.max(0, state.player.hp - monDmg);
+      if (state.player.hp <= 0) {
+        this.endCombat();
+        eventBus.emit('player:death');
+        return;
+      }
       eventBus.emit('combat:updated');
       eventBus.emit('hud:updated');
     }

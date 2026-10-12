@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/core/input.js: v0.0.4 Eingabesteuerung
-// Änderungen:
-// - Zuverlässige Tastenverriegelung bei offenen Dialogen & Escape-Abbruch.
-
+// [2026-10-12 13:35] - js/core/input.js: v0.0.6 Eingabesteuerung
 import { state } from './state.js';
 import { eventBus } from './eventBus.js';
 

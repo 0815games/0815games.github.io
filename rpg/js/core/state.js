@@ -1,19 +1,67 @@
-// [2026-10-12 13:25] - js/core/state.js: v0.0.4 Held & Weltzustand
+// [2026-10-12 13:35] - js/core/state.js: v0.0.6 Held & Weltzustand
 // Änderungen:
-// - Held um Manapunkte (MP / MaxMP) und Zauberwerte erweitert.
-// - Händler zu Meister Eldrin dem Alchemisten umbenannt und mit Zauberwaren bestückt.
+// - Klassen-Profile und Spielzustand.
+
+export const CLASS_PROFILES = {
+  warrior: {
+    className: 'Eisenbrecher',
+    hp: 75,
+    maxHp: 75,
+    mp: 15,
+    maxMp: 15,
+    baseAtk: 9,
+    baseDef: 4,
+    startWeapon: 'iron_sword',
+    startArmor: 'chainmail',
+    startItems: [
+      { itemId: 'health_potion', count: 3 }
+    ]
+  },
+  mage: {
+    className: 'Arkanist',
+    hp: 50,
+    maxHp: 50,
+    mp: 50,
+    maxMp: 50,
+    baseAtk: 6,
+    baseDef: 1,
+    startWeapon: 'dagger',
+    startArmor: null,
+    startItems: [
+      { itemId: 'health_potion', count: 2 },
+      { itemId: 'mana_potion', count: 4 }
+    ]
+  },
+  rogue: {
+    className: 'Schattenläufer',
+    hp: 60,
+    maxHp: 60,
+    mp: 25,
+    maxMp: 25,
+    baseAtk: 8,
+    baseDef: 2,
+    startWeapon: 'dagger',
+    startArmor: null,
+    startItems: [
+      { itemId: 'health_potion', count: 3 },
+      { itemId: 'mana_potion', count: 2 }
+    ]
+  }
+};
 
 export const INITIAL_PLAYER = {
   name: 'Schattenjäger',
+  classId: 'warrior',
+  className: 'Eisenbrecher',
   x: 2,
   y: 2,
   level: 1,
-  hp: 60,
-  maxHp: 60,
-  mp: 30,
-  maxMp: 30,
-  baseAtk: 7,
-  baseDef: 2,
+  hp: 75,
+  maxHp: 75,
+  mp: 15,
+  maxMp: 15,
+  baseAtk: 9,
+  baseDef: 4,
   caps: 40,
   exp: 0,
   nextExp: 100,
@@ -22,11 +70,7 @@ export const INITIAL_PLAYER = {
     weapon: null,
     armor: null
   },
-  inventory: [
-    { itemId: 'health_potion', count: 3 },
-    { itemId: 'mana_potion', count: 2 },
-    { itemId: 'dagger', count: 1 }
-  ]
+  inventory: []
 };
 
 export const INITIAL_TRADER = {

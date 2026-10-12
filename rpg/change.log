@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## [v0.0.6] - 2026-10-12 13:35 (Gothic-Dialoge, Todesbildschirm & Autonome Schadenszahlen)
+- [RENDER] `WorldRenderer`: Umstellung auf kontinuierliche 60fps-Animationsschleife (`requestAnimationFrame`). Schwebende Schadens-, Heil- und Goldzahlen bewegen sich selbstständig nach oben und verblassen sauber nach 1,2 Sekunden, ohne dass der Spieler sich bewegen muss.
+- [UI] **Todesbildschirm (#game-over-modal):** Vollwertiges Dark-Fantasy Game-Over-Fenster ersetzt natives `alert()`. Bietet Statistik-Rückblick (Stufe, Gold, Räume) sowie zwei Optionen: "Am Siegel auferstehen" (Weiterspielen mit 60% Leben) oder "Neubeginn" (Zurücksetzen).
+- [UI] **Spieleigene Benachrichtigungen & Abfragen (`modalManager.js`):** Universelles Fantasy-Modal (#fantasy-modal) ersetzt alle Browser-Alerts und Confirms (z.B. beim Spielstand-Reset).
+- [ANIMATION] Flackernder Fackelschein läuft jetzt mit 60fps flüssig und realistisch im Hintergrund.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.6 generiert.
+
+## [v0.0.5] - 2026-10-12 13:30 (Favicon, Boot-Animation, Titel- & Klassenwahl)
+- [ASSETS] `favicon.ico`: Echtes 32x32 Pixel-Art Favicon (Goldschwert & Rubinemblem) generiert und in `index.html` verlinkt.
+- [BOOT] Vollbild-Boot-Sequenz mit Studio-Logo ("Forge of Shadows"), Ladebalken und Runen-Initialisierung integriert (Klickbar zum Überspringen).
+- [TITLE] Stimmungsvoller Titelbildschirm mit dunklem Fantasy-Wappen ("CHRONIKEN DER SCHATTENGRUFT") und "DRÜCKE [ENTER] ODER KLICKE ZUM STARTEN".
+- [CHAR-SELECT] Klassenwahl mit 3 Archetypen implementiert (Eisenbrecher, Arkanist, Schattenläufer).
+- [UI] Neuer Controller `js/ui/introFlow.js` verbindet den Startablauf nahtlos mit dem Spielzustand.
+- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.5 generiert.
+
 ## [v0.0.4] - 2026-10-12 13:25 (Genre-Wechsel zu Dark Fantasy)
 - [THEME] Kompletter optischer und thematischer Wechsel von Wasteland/Pip-Boy auf Dark Fantasy Dungeon-Crawler ("Chroniken der Schattengruft").
 - [UI] Edles Gothic-Interface mit Schiefergrau, Eisenbeschlägen, Fackelakzenten, rubinroter Lebensleiste (TP) und saphirblauer Manaleiste (MP).
@@ -11,31 +26,3 @@
 - [QUESTS] Fantasy-Aufgabenreihe: "Schatten im Gemäuer", "Der Alchemist der Tiefe", "Seelensplitter-Ernte" und "Das Ende des Gruftfürsten".
 - [STORAGE] Neuer Persistenz-Schlüssel `dark_fantasy_rpg_v004` zur Speicherung aller Werte inklusive Manapunkte.
 - [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.4 generiert.
-
-## [v0.0.3] - 2026-10-12 13:20 (Quest-System & Missions-Dashboard)
-- [QUESTS] `js/systems/quest.js` & `js/data/quests.js` integriert: 4 zusammenhängende Quests (Kakerlaken-Jagd, Händler-Besuch, Schrottsammlung, Raider-Jagd).
-- [UI] Neuer Dashboard-Tab "Quests" mit Zähler-Badge, Missionsfortschrittsbalken und Anzeige abgeschlossener Aufgaben.
-- [GAMEPLAY] Automatische Belohnungsausschüttung (Korken, EP und Ausrüstung) sowie schwebendes "QUEST ERFÜLLT!" Banner.
-- [STORAGE] Vollständige Persistenz des Quest-Zustands in `localStorage` (`wasteland_rpg_v003`).
-- [EVENTS] Reaktivität: Monster-Kills, Beute und Händler-Interaktionen aktualisieren Quest-Ziele in Echtzeit.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.3 generiert.
-
-## [v0.0.2] - 2026-10-12 13:15 (Händlersystem & LocalStorage)
-- [STORAGE] `js/systems/storage.js` integriert: Automatisches und manuelles Speichern von Spielstand, Spielerposition, Inventar, Ausrüstung, besiegten Monstern und Kisten in `localStorage`.
-- [STORAGE] Schnellspeichern- (`btn-save-game`) und Zurücksetzen-Button (`btn-reset-game`) im HUD implementiert.
-- [SHOP] `js/systems/shop.js` implementiert: Interaktiver Handelsposten bei [X:3, Y:4] mit Kaufen- und Verkaufen-Tabs.
-- [SHOP] Begrenzte Händler-Korken (250 Startbudget), Slot-Prüfung (max. 15 Slots) und Wiederverkaufslogik (50% Wert).
-- [INPUT] Strikte Verriegelung (`isInputLocked` / `inShop`): Spielerbewegung auf der Karte während geöffnetem Händler- oder Gefechtsfenster komplett blockiert. Schließen mit ESC oder X.
-- [RENDER] Händlerstand grafisch auf der Canvas-Karte dargestellt (Markise, Kiosk und '$'-Symbol).
-- [ITEMS] Neue Gegenstände: Jagdgewehr, Metallrüstung und Militär-Stimpak in den Katalog eingepflegt.
-- [BUILD] Vollständiges ZIP-Update-Archiv für v0.0.2 erstellt.
-
-## [v0.0.1] - 2026-10-12 13:05 (Projekt-Start & Grundgerüst)
-- [CORE] Projektstart mit modularer ES6-Architektur und EventBus-Muster.
-- [MAP] Prozedurale 20x15 Weltkarte mit Ruinenmauern, Schatztruhen und Fog of War (Sichtweiten-Nebel).
-- [RENDER] 2D-Canvas-Renderer mit prozeduralen Texturen, Spielerglow, Gegnern und schwebenden Schadenszahlen.
-- [ITEMS] Vollwertiges Inventarsystem inklusive Stacking, Benutzen, Ausrüsten und Waffen-/Rüstungswerten.
-- [COMBAT] Rundenbasiertes Gefechtssystem mit Normalangriff, Gezieltem Schuss (Krit-Chance), Stimpak-Heilung und Flucht.
-- [PROGRESSION] EP-System mit automatischem Level-Up, TP-Steigerung und Attributsboni.
-- [INPUT] Duale Eingabe via Tastatur (WASD/Pfeile) und On-Screen D-Pad für mobile Endgeräte.
-- [BUILD] Automatisierte Bereitstellung des vollständigen Updates als ZIP-Archiv.

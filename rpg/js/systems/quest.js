@@ -1,7 +1,4 @@
-// [2026-10-12 13:25] - js/systems/quest.js: v0.0.4 Quest-System des Ordens
-// Änderungen:
-// - Fantasy-Questkette (Goblins, Alchemist, Seelensplitter, Gruftfürst).
-
+// [2026-10-12 13:35] - js/systems/quest.js: v0.0.6 Quest-System des Ordens
 import { state } from '../core/state.js';
 import { QUEST_DATABASE } from '../data/quests.js';
 import { eventBus } from '../core/eventBus.js';

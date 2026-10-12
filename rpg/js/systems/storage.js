@@ -1,9 +1,10 @@
-// [2026-10-12 13:25] - js/systems/storage.js: v0.0.4 Dark Fantasy Speicher-Engine
+// [2026-10-12 13:35] - js/systems/storage.js: v0.0.6 Speicher-Engine mit Spieleigenem Confirm-Modal
 // Änderungen:
-// - Speichert MP und Fantasy-Zustände unter dem Schlüssel 'dark_fantasy_rpg_v004'.
+// - Ersetzt browserinternes `confirm()` durch das Gothic-Modal `modalManager.showConfirm`.
 
 import { state } from '../core/state.js';
 import { eventBus } from '../core/eventBus.js';
+import { modalManager } from '../ui/modalManager.js';
 
 const STORAGE_KEY = 'dark_fantasy_rpg_v004';
 
@@ -11,7 +12,7 @@ export class StorageSystem {
   saveGame(silent = false) {
     try {
       const data = {
-        version: '0.0.4',
+        version: '0.0.6',
         timestamp: Date.now(),
         player: state.player,
         trader: state.trader,
@@ -24,12 +25,12 @@ export class StorageSystem {
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       if (!silent) {
-        eventBus.emit('log:message', '📜 Dein Fortschritt wurde in der Ordens-Chronik festgehalten!');
+        modalManager.showNotice('CHRONIK GESICHERT', 'Dein ruhmreicher Fortschritt wurde in den Annalen des Ordens verewigt.', '📜');
       }
       return true;
     } catch (e) {
       console.error('Speichern fehlgeschlagen:', e);
-      eventBus.emit('log:message', 'Fehler beim Speichern des Spielstands!');
+      modalManager.showNotice('FEHLER', 'Das Siegel der Chronik konnte nicht beschrieben werden.', '⚠️');
       return false;
     }
   }
@@ -61,9 +62,14 @@ export class StorageSystem {
   }
 
   resetGame() {
-    if (confirm('Möchtest du diese Heldenreise beenden und neu beginnen?')) {
-      localStorage.removeItem(STORAGE_KEY);
-      location.reload();
-    }
+    modalManager.showConfirm(
+      'NEUBEGINN WÄHLEN?',
+      'Möchtest du diese Heldenreise wirklich beenden? Alle gesammelten Relikte und Siegel gehen unwiederbringlich verloren.',
+      () => {
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      },
+      '🔥'
+    );
   }
 }

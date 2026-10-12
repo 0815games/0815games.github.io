@@ -1,17 +1,16 @@
 /*
-[2026-10-12 13:25] - css/style.css: v0.0.4 Dark Fantasy Gothic Design
+[2026-10-12 13:35] - css/style.css: v0.0.6 Gothic Dialoge & Todesbildschirm Styling
 Änderungen:
-- Abkehr von Monochrom-Grün: Schiefergrau, Antikes Gold, Fackelorange, Rubinrot & Saphirblau.
-- Strukturierte Stein-/Eisenrahmen mit weichen Tiefenschatten.
-- Farbcodierte Lebens- (Rot), Mana- (Blau) und Erfahrungsleisten (Violett).
-- Stilvolles Fantasy-Interface mit mittelalterlicher Ästhetik.
+- Todes-Modal (.death-box) mit finsterem Totenschädel-Effekt, roten Tiefenschatten und Statistik-Rückblick.
+- Universelles Fantasy-Modal (.fantasy-modal-box) für Benachrichtigungen und Bestätigungen im Spielstil.
+- Fließende Animationen für fliegende Schadens- und Heilschriften.
 */
 
 :root {
-  --bg-abyss: #0c0d12;
-  --bg-stone: #151722;
-  --bg-card: #1c1f2e;
-  --border-iron: #3b4258;
+  --bg-abyss: #0a0b10;
+  --bg-stone: #13151f;
+  --bg-card: #1b1e2c;
+  --border-iron: #373e52;
   --border-gold: #c99c42;
   --gold-glow: #ffc857;
   --ruby-red: #d32f2f;
@@ -19,7 +18,7 @@
   --mystic-purple: #8e24aa;
   --emerald-green: #2e7d32;
   --text-silver: #d1d5db;
-  --text-dim: #8b92a5;
+  --text-dim: #8890a4;
   --font-family: 'Cinzel', 'Palatino Linotype', 'Book Antiqua', Palatino, serif, monospace;
 }
 
@@ -38,9 +37,345 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  padding: 12px;
+  padding: 10px;
+  overflow-x: hidden;
 }
 
+/* OVERLAYS */
+.overlay-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at center, #181b29 0%, #0a0b10 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+/* 1. BOOT-SCREEN */
+.boot-box {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 440px;
+}
+
+.studio-emblem {
+  font-size: 38px;
+  color: var(--gold-glow);
+  text-shadow: 0 0 15px rgba(255, 200, 87, 0.6);
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.studio-title {
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #fff;
+}
+
+.boot-subtitle {
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+.boot-progress-frame {
+  width: 280px;
+  height: 8px;
+  background: #06070a;
+  border: 1px solid var(--border-iron);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.boot-bar-fill {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, #b45309, var(--gold-glow));
+  transition: width 0.05s linear;
+}
+
+.boot-tip {
+  font-size: 11px;
+  color: #636b80;
+  margin-top: 10px;
+}
+
+/* 2. TITLE-SCREEN */
+.title-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 28px;
+  max-width: 600px;
+  cursor: pointer;
+}
+
+.logo-crest {
+  font-size: 48px;
+  filter: drop-shadow(0 0 10px rgba(201, 156, 66, 0.5));
+}
+
+.logo-main {
+  font-size: 44px;
+  letter-spacing: 8px;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.logo-sub {
+  font-size: 26px;
+  letter-spacing: 6px;
+  color: var(--border-gold);
+  text-shadow: 0 0 12px rgba(201, 156, 66, 0.6);
+  margin-top: -8px;
+}
+
+.logo-tagline {
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-top: 6px;
+}
+
+.title-press-prompt {
+  background: rgba(27, 30, 44, 0.7);
+  border: 1px solid var(--border-gold);
+  padding: 14px 24px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(201, 156, 66, 0.3);
+}
+
+.pulse-text {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--gold-glow);
+  letter-spacing: 1px;
+  animation: pulse-glow 1.5s infinite ease-in-out;
+}
+
+.title-footer-note {
+  font-size: 11px;
+  color: #636b80;
+}
+
+/* 3. CHARAKTER-AUSWAHL */
+.char-select-box {
+  background: var(--bg-stone);
+  border: 2px solid var(--border-gold);
+  padding: 24px;
+  max-width: 860px;
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+.select-title {
+  color: var(--gold-glow);
+  letter-spacing: 3px;
+  font-size: 20px;
+}
+
+.select-desc {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.hero-cards-grid {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.hero-card {
+  flex: 1;
+  min-width: 220px;
+  max-width: 260px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-iron);
+  padding: 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.hero-card:hover, .hero-card.active {
+  border-color: var(--border-gold);
+  background: #252a3d;
+  box-shadow: 0 0 15px rgba(201, 156, 66, 0.3);
+  transform: translateY(-2px);
+}
+
+.hero-icon {
+  font-size: 32px;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--gold-glow);
+  text-align: center;
+}
+
+.hero-role {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.hero-stats {
+  font-size: 11px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: #11131b;
+  padding: 6px 8px;
+  border-radius: 2px;
+}
+
+.hero-gear {
+  font-size: 11px;
+  color: #a8b0c5;
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.char-name-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.char-name-group input {
+  background: #0d0f17;
+  border: 1px solid var(--border-gold);
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 3px;
+  outline: none;
+}
+
+.btn-gold {
+  background: var(--border-gold);
+  color: #000;
+  border: 1px solid #ffe082;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 9px 18px;
+}
+
+.btn-gold:hover {
+  background: var(--gold-glow);
+}
+
+/* 4. TODES-MODAL (DARK FANTASY GAME OVER) */
+.death-box {
+  background: #110d10;
+  border: 2px solid var(--ruby-red);
+  padding: 26px;
+  max-width: 520px;
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 0 35px rgba(211, 47, 47, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+  animation: pulse-death 3s infinite ease-in-out;
+}
+
+.death-skull {
+  font-size: 52px;
+  filter: drop-shadow(0 0 10px rgba(211, 47, 47, 0.8));
+}
+
+.death-title {
+  color: #ff5252;
+  font-size: 20px;
+  letter-spacing: 3px;
+}
+
+.death-text {
+  font-size: 13px;
+  color: #d1b4b4;
+  line-height: 1.4;
+}
+
+.death-stats {
+  display: flex;
+  justify-content: space-around;
+  background: #1a0f12;
+  border: 1px solid #5a1a1f;
+  padding: 10px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+/* 5. UNIVERSELLES FANTASY-MODAL (Alert/Confirm) */
+.fantasy-modal-box {
+  background: var(--bg-stone);
+  border: 2px solid var(--border-gold);
+  padding: 22px;
+  max-width: 480px;
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: center;
+}
+
+.modal-icon {
+  font-size: 34px;
+}
+
+.modal-title {
+  color: var(--gold-glow);
+  font-size: 17px;
+  letter-spacing: 2px;
+  border-bottom: 1px solid var(--border-iron);
+  padding-bottom: 6px;
+}
+
+.modal-msg {
+  font-size: 13px;
+  color: var(--text-silver);
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* HAUPTSPIEL-CONTAINER */
 #game-app {
   width: 100%;
   max-width: 1040px;
@@ -107,7 +442,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 100px;
+  min-width: 95px;
 }
 
 .bar-label {
@@ -367,7 +702,7 @@ canvas#stage {
   border-radius: 2px;
 }
 
-/* GEFECHTSPANEL (DARK FANTASY) */
+/* GEFECHTSPANEL */
 .combat-panel {
   position: absolute;
   top: 0;
@@ -443,7 +778,7 @@ canvas#stage {
   gap: 8px;
 }
 
-/* HÄNDLER PANEL (ALCHEMIST) */
+/* HÄNDLER PANEL */
 .shop-panel {
   position: absolute;
   top: 0;
@@ -603,4 +938,16 @@ canvas#stage {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 0.85; }
+}
+
+@keyframes pulse-death {
+  0% { box-shadow: 0 0 25px rgba(211, 47, 47, 0.4); }
+  50% { box-shadow: 0 0 45px rgba(211, 47, 47, 0.8); }
+  100% { box-shadow: 0 0 25px rgba(211, 47, 47, 0.4); }
 }
