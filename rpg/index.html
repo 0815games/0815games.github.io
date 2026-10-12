@@ -1,1 +1,65 @@
+<!--
+[2026-10-12 08:13] - index.html: Modulare Strukturierung
+Änderungen:
+- Umstellung auf ES-Module (<script type="module">).
+- Saubere Trennung von UI-Containern, HUD und Spielfeld-Canvas.
+- Barrierefreie Steuerungspanels für mobile Browser.
+-->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2D Wasteland RPG - Modular</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game-app">
+    <header id="hud">
+      <div>SPIELER: <span id="stat-name">Überlebender</span></div>
+      <div>STUFE: <span id="stat-level">1</span></div>
+      <div>TP: <span id="stat-hp">50 / 50</span></div>
+      <div>KORKEN: <span id="stat-gold">20</span></div>
+    </header>
 
+    <main id="viewport-container">
+      <canvas id="stage" width="480" height="480"></canvas>
+
+      <aside id="dashboard">
+        <section class="card">
+          <div class="card-head">INVENTAR (<span id="inv-capacity">0</span>/15)</div>
+          <div id="inventory-grid" class="item-grid"></div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">SYSTEM-LOG</div>
+          <div id="activity-log"></div>
+        </section>
+
+        <section id="combat-box" class="card battle-panel hidden">
+          <div class="card-head alert">GEFECHT</div>
+          <div id="combat-narrative">Feindkontakt registriert!</div>
+          <div class="action-row">
+            <button id="act-attack" class="btn">Angreifen</button>
+            <button id="act-heal" class="btn">Heilen</button>
+            <button id="act-flee" class="btn">Flucht</button>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer id="mobile-dpad" class="card">
+      <div class="dpad-grid">
+        <button class="btn" id="dpad-up">▲</button>
+        <div class="dpad-mid">
+          <button class="btn" id="dpad-left">◄</button>
+          <button class="btn" id="dpad-down">▼</button>
+          <button class="btn" id="dpad-right">►</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

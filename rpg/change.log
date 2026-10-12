@@ -1,0 +1,7 @@
+# CHANGELOG
+
+## [2026-10-12 08:13] - Modularisierung & ZIP-Export
+- [BUILD] Automatisierte Paketierung des gesamten Projekts in ein entpackbares Update-Archiv eingerichtet.
+- [CORE] Trennung in modulare ES6-Pakete (Core, Data, World, Systems, UI).
+- [INPUT] Globale Eingabesperre `isInputLocked` für Menüs und Dialoge integriert.
+- [ITEMS] Datenbankgestützte Gegenstandslogik inklusive Stacking-Support eingebaut.
