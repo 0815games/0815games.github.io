@@ -1,4 +1,4 @@
-// [2026-10-12 20:30] - js/systems/firebase.js: v0.1.4 4-Slot Speicherverwaltung
+// [2026-10-12 20:45] - js/systems/firebase.js: v0.1.5 Cloud & Local Slots
 import { state } from '../core/state.js';
 
 const CFG = {

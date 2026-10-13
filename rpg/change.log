@@ -1,7 +1,6 @@
 # CHANGELOG
 
-## [v0.1.4] - 2026-10-12 20:30 (4-Slot Recken-Verwaltung)
-- [SLOTS] Neue 4-Slot Recken-Auswahl (#slot-screen) implementiert. Jeder Spieler kann bis zu 4 unabhängige Charaktere verwalten, spielen oder löschen.
-- [UI] Slot-Karten zeigen Heldendetails (Name, Klasse, Stufe, Tiefe, Gold, TP) oder "➕ Freier Reckenplatz".
-- [PERSISTENZ] `loadAllSlots`, `saveSlot(index)` und `deleteSlot(index)` in `firebase.js` sichern jeden Slot dediziert sowohl in Firebase (`saves/{uid}/slot_{index}`) als auch lokal.
-- [NAVIGATION] Im Header führt der Button "👥 Recken" jederzeit zurück zur Slot-Auswahl.
+## [v0.1.5] - 2026-10-12 20:45 (Interaktives Ausrüstungs-Menü mit Paper-Doll)
+- [EQUIP] Interaktives 6-Slot Ausrüstungs-Menü implementiert: Kopf, Brust, Waffe (Haupthand), Schild (Nebenhand), Füße und Reliquienring.
+- [LOGIC] Anlegen (`equipItemFromInv`) und Ablegen (`unequipSlot`) mit Rückführung ins Inventar und sofortiger Neuberechnung der Kampfattribut-Boni (ATK & DEF).
+- [STATS] Dynamische Berechnung von Waffen- und Rüstungsboni im Gefecht und im Charakterblatt.

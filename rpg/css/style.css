@@ -1,5 +1,5 @@
 /*
-[2026-10-12 20:30] - css/style.css: v0.1.4 4-Slot Recken-Auswahl & Dark Fantasy UI
+[2026-10-12 20:45] - css/style.css: v0.1.5 Ausrüstungs-Menü & Paper-Doll Design
 */
 * { box-sizing: border-box; }
 body {
@@ -56,18 +56,10 @@ button, input { font: inherit; user-select: auto; }
   border-radius: 4px;
 }
 
-.slot-card {
-  width: min(680px, 95vw);
-}
+.slot-card { width: min(680px, 95vw); }
 
-.crest {
-  font-size: 38px;
-  color: #e2bd67;
-}
-.crest span {
-  font-size: 48px;
-  margin: 0 8px;
-}
+.crest { font-size: 38px; color: #e2bd67; }
+.crest span { font-size: 48px; margin: 0 8px; }
 
 .login-card h1 {
   margin: 4px;
@@ -104,11 +96,7 @@ button, input { font: inherit; user-select: auto; }
   background: #18110b;
 }
 
-.auth-tabs {
-  display: flex;
-  margin-top: 14px;
-  gap: 4px;
-}
+.auth-tabs { display: flex; margin-top: 14px; gap: 4px; }
 .auth-tab {
   flex: 1;
   padding: 10px;
@@ -125,10 +113,7 @@ button, input { font: inherit; user-select: auto; }
   background: #252b40;
 }
 
-.field {
-  text-align: left;
-  margin: 12px 0;
-}
+.field { text-align: left; margin: 12px 0; }
 .field label {
   display: block;
   font-size: 11px;
@@ -163,10 +148,7 @@ button, input { font: inherit; user-select: auto; }
   border-radius: 3px;
 }
 
-.wide {
-  width: 100%;
-  margin-top: 10px;
-}
+.wide { width: 100%; margin-top: 10px; }
 .gold {
   padding: 11px 16px;
   border: 1px solid #ffe082;
@@ -176,9 +158,7 @@ button, input { font: inherit; user-select: auto; }
   cursor: pointer;
   border-radius: 3px;
 }
-.gold:hover {
-  background: #ffc857;
-}
+.gold:hover { background: #ffc857; }
 .dark {
   padding: 10px 16px;
   border: 1px solid #4f566b;
@@ -188,23 +168,11 @@ button, input { font: inherit; user-select: auto; }
   border-radius: 3px;
   font-size: 12px;
 }
-.dark:hover {
-  background: #2a3047;
-  color: #fff;
-}
-.divide {
-  margin: 14px;
-  color: #6d7589;
-  font-size: 11px;
-}
-small {
-  display: block;
-  color: #838a9d;
-  font-size: 11px;
-  margin-top: 10px;
-}
+.dark:hover { background: #2a3047; color: #fff; }
+.divide { margin: 14px; color: #6d7589; font-size: 11px; }
+small { display: block; color: #838a9d; font-size: 11px; margin-top: 10px; }
 
-/* 4-SLOT AUSWAHL */
+/* 4-SLOT GRID */
 .slots-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -225,7 +193,6 @@ small {
   flex-direction: column;
   justify-content: space-between;
   min-height: 140px;
-  position: relative;
   transition: all 0.15s ease;
 }
 .slot-box:hover {
@@ -239,9 +206,7 @@ small {
   justify-content: center;
   cursor: pointer;
 }
-.slot-box.empty:hover {
-  background: #191e30;
-}
+.slot-box.empty:hover { background: #191e30; }
 .slot-header {
   display: flex;
   justify-content: space-between;
@@ -250,31 +215,11 @@ small {
   padding-bottom: 5px;
   margin-bottom: 6px;
 }
-.slot-num {
-  font-size: 11px;
-  color: #c99c42;
-  font-weight: bold;
-}
-.slot-hero-name {
-  font-size: 16px;
-  font-weight: bold;
-  color: #fff;
-}
-.slot-class {
-  font-size: 12px;
-  color: #d4a94d;
-}
-.slot-meta {
-  font-size: 11px;
-  color: #aab1c0;
-  margin: 6px 0;
-  line-height: 1.4;
-}
-.slot-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
+.slot-num { font-size: 11px; color: #c99c42; font-weight: bold; }
+.slot-hero-name { font-size: 16px; font-weight: bold; color: #fff; }
+.slot-class { font-size: 12px; color: #d4a94d; }
+.slot-meta { font-size: 11px; color: #aab1c0; margin: 6px 0; line-height: 1.4; }
+.slot-buttons { display: flex; gap: 6px; margin-top: 8px; }
 .btn-slot-play {
   flex: 1;
   background: #c99c42;
@@ -295,18 +240,10 @@ small {
   border-radius: 2px;
   font-size: 12px;
 }
-.empty-label {
-  font-size: 14px;
-  color: #8c95aa;
-  font-weight: bold;
-}
+.empty-label { font-size: 14px; color: #8c95aa; font-weight: bold; }
 
-/* Klassenwahl */
-.classes {
-  display: flex;
-  gap: 10px;
-  margin: 18px 0;
-}
+/* KLASSENWAHL */
+.classes { display: flex; gap: 10px; margin: 18px 0; }
 .class {
   flex: 1;
   text-align: left;
@@ -317,10 +254,7 @@ small {
   cursor: pointer;
   border-radius: 3px;
 }
-.class b, .class span, .class small {
-  display: block;
-  margin-bottom: 6px;
-}
+.class b, .class span, .class small { display: block; margin-bottom: 6px; }
 .class b { color: #e7bd62; }
 .class.active {
   border-color: #c99c42;
@@ -342,17 +276,10 @@ small {
   margin: 16px 0;
   font-size: 13px;
 }
-.death-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
+.death-actions { display: flex; gap: 10px; justify-content: center; }
 
-#game {
-  max-width: 1120px;
-  margin: auto;
-  padding: 10px;
-}
+/* HAUPTSPIEL */
+#game { max-width: 1120px; margin: auto; padding: 10px; }
 header {
   display: flex;
   align-items: center;
@@ -363,15 +290,8 @@ header {
   border: 1px solid #3b4258;
   padding: 10px 14px;
 }
-header em {
-  color: #d4a94d;
-  font-size: 12px;
-  margin-left: 5px;
-}
-header span, .right b {
-  margin-left: 8px;
-  font-size: 12px;
-}
+header em { color: #d4a94d; font-size: 12px; margin-left: 5px; }
+header span, .right b { margin-left: 8px; font-size: 12px; }
 .slot-badge {
   background: #24293c;
   border: 1px solid #c99c42;
@@ -382,10 +302,7 @@ header span, .right b {
 }
 
 .bars { display: flex; gap: 10px; }
-.bars label {
-  font-size: 10px;
-  color: #aab1c0;
-}
+.bars label { font-size: 10px; color: #aab1c0; }
 .bars i {
   display: block;
   width: 90px;
@@ -405,11 +322,7 @@ header span, .right b {
 .bars i .xp { background: #8e24aa; }
 .bars small { font-size: 9px; }
 
-.right {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.right { display: flex; align-items: center; gap: 6px; }
 .right button {
   background: #24293c;
   border: 1px solid #c99c42;
@@ -419,11 +332,7 @@ header span, .right b {
   border-radius: 2px;
 }
 
-#layout {
-  display: flex;
-  gap: 12px;
-  margin-top: 12px;
-}
+#layout { display: flex; gap: 12px; margin-top: 12px; }
 #mapbox {
   position: relative;
   border: 2px solid #3b4258;
@@ -450,7 +359,7 @@ canvas#stage {
 
 aside {
   position: relative;
-  min-width: 300px;
+  min-width: 310px;
   flex: 1;
   background: #11131b;
   border: 1px solid #3b4258;
@@ -473,16 +382,81 @@ nav button.active {
   background: #222739;
 }
 
-.panel {
-  display: none;
-  margin-top: 10px;
-}
+.panel { display: none; margin-top: 10px; }
 .panel.active { display: block; }
 .panel h3 {
   font-size: 12px;
   color: #d4a94d;
   border-bottom: 1px dashed #3b4258;
   padding-bottom: 5px;
+}
+
+/* NEUES AUSRÜSTUNGS-MENÜ (PAPER-DOLL GRID) */
+.equip-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.equip-slot-box {
+  background: #161a28;
+  border: 1px solid #373f55;
+  padding: 8px;
+  border-radius: 3px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 52px;
+}
+.equip-slot-box.equipped {
+  border-color: #c99c42;
+  background: #1f2538;
+}
+.slot-label {
+  font-size: 10px;
+  color: #c99c42;
+  font-weight: bold;
+}
+.slot-item-name {
+  font-size: 12px;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+.btn-unequip {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #3b181d;
+  border: 1px solid #6b222c;
+  color: #ff7b88;
+  font-size: 10px;
+  width: 18px;
+  height: 18px;
+  line-height: 14px;
+  text-align: center;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 2px;
+}
+.btn-unequip:hover {
+  background: #d32f2f;
+  color: #fff;
+}
+
+.stats-box {
+  margin-top: 10px;
+  padding: 10px;
+  background: #0c0e15;
+  border: 1px solid #3b4258;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+  color: #d1d5db;
 }
 
 #items, #logs {
@@ -493,6 +467,7 @@ nav button.active {
 .item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 8px;
   padding: 8px;
   margin-bottom: 5px;
@@ -503,20 +478,16 @@ nav button.active {
 }
 .item:hover { border-color: #c99c42; }
 
-#iteminfo, #stats {
+#iteminfo {
   margin-top: 10px;
   padding: 8px;
   background: #0c0e15;
   border: 1px solid #3b4258;
   font-size: 12px;
-  min-height: 65px;
-  white-space: pre-line;
+  min-height: 55px;
+  line-height: 1.4;
 }
-#logs {
-  font-size: 11px;
-  line-height: 1.45;
-  max-height: 370px;
-}
+#logs { font-size: 11px; line-height: 1.45; max-height: 370px; }
 
 #combat {
   position: absolute;
@@ -526,11 +497,7 @@ nav button.active {
   background: #100b10fa;
   border: 2px solid #c8323b;
 }
-#combat h2 {
-  text-align: center;
-  color: #ff8790;
-  font-size: 15px;
-}
+#combat h2 { text-align: center; color: #ff8790; font-size: 15px; }
 #combat-info {
   display: flex;
   justify-content: space-around;

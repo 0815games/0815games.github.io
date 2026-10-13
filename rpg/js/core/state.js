@@ -1,4 +1,4 @@
-// [2026-10-12 20:30] - js/core/state.js: v0.1.4 4 Slots & Heldenstatus
+// [2026-10-12 20:45] - js/core/state.js: v0.1.5 Ausrüstungs-Slots & Heldenstatus
 export const CLASSES = {
   warrior: {
     title: 'Eisenbrecher',
@@ -36,7 +36,15 @@ export const state = {
     gold: 40,
     xp: 0, nextXp: 100,
     x: 2, y: 2,
-    equipped: { weapon: null, armor: null },
+    // Erweiterte Ausrüstungs-Slots
+    equipped: {
+      head: null,
+      body: null,
+      mainhand: null,
+      offhand: null,
+      feet: null,
+      ring: null
+    },
     inventory: []
   },
   world: {

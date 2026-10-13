@@ -1,4 +1,4 @@
-// [2026-10-12 20:30] - js/world/map.js: v0.1.4 Kartengenerierung & Validierung
+// [2026-10-12 20:45] - js/world/map.js: v0.1.5 Map
 import { state } from '../core/state.js';
 import { MONSTERS } from '../data/monsters.js';
 

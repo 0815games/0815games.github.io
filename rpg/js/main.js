@@ -1,4 +1,4 @@
-// [2026-10-12 20:30] - js/main.js: v0.1.4 4-Slot Recken-Auswahl & Game Loop
+// [2026-10-12 20:45] - js/main.js: v0.1.5 Interaktives Ausrüstungs-Menü
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -134,7 +134,6 @@ window.addEventListener('DOMContentLoaded', () => {
       const box = document.createElement('div');
 
       if (!slotData || !slotData.player) {
-        // Leerer Slot
         box.className = 'slot-box empty';
         box.innerHTML = `
           <div class="slot-num">SLOT ${i + 1}</div>
@@ -146,7 +145,6 @@ window.addEventListener('DOMContentLoaded', () => {
           openClassCreator(i);
         };
       } else {
-        // Belegter Slot
         box.className = 'slot-box';
         const p = slotData.player;
         const cTitle = CLASSES[p.heroClass]?.title || 'Krieger';
@@ -195,13 +193,8 @@ window.addEventListener('DOMContentLoaded', () => {
     el('class-screen-title').textContent = `RECKEN FÜR SLOT ${slotIdx + 1} WEIHEN`;
   }
 
-  el('cancel-create').onclick = () => {
-    openSlotScreen();
-  };
-
-  el('btn-slot-logout').onclick = () => {
-    location.reload();
-  };
+  el('cancel-create').onclick = () => { openSlotScreen(); };
+  el('btn-slot-logout').onclick = () => { location.reload(); };
 
   // Klassenwahl
   document.querySelectorAll('.class').forEach(btn => {
@@ -232,10 +225,18 @@ window.addEventListener('DOMContentLoaded', () => {
     state.player.def = c.def;
     state.player.gold = 40;
     state.player.inventory = c.items.map(x => ({ ...x }));
-    state.player.equipped.weapon = c.weapon ? c.weapon : null;
-    state.player.equipped.armor = c.armor ? c.armor : null;
-    map.generate(1);
 
+    // Ausrüstung initialisieren
+    state.player.equipped = {
+      head: null,
+      body: c.armor || null,
+      mainhand: c.weapon || null,
+      offhand: null,
+      feet: null,
+      ring: null
+    };
+
+    map.generate(1);
     cloud.saveSlot(slotIdx, state);
     openGame();
   }
@@ -243,6 +244,9 @@ window.addEventListener('DOMContentLoaded', () => {
   function loadAndLaunchSlot(slotIdx, slotData) {
     state.currentSlot = slotIdx;
     Object.assign(state, slotData);
+    if (!state.player.equipped) {
+      state.player.equipped = { head: null, body: null, mainhand: null, offhand: null, feet: null, ring: null };
+    }
     map.ensureValid();
     el('slot-screen').classList.add('hidden');
     openGame();
@@ -262,6 +266,70 @@ window.addEventListener('DOMContentLoaded', () => {
     log(`Slot ${state.currentSlot + 1} (${state.player.name}) gesichert.`);
   }
 
+  // --- AUSRÜSTUNGS-LOGIK (EQUIP / UNEQUIP) ---
+  function equipItemFromInv(invIndex) {
+    const s = state.player.inventory[invIndex];
+    if (!s) return;
+    const it = ITEMS[s.id];
+    if (!it || !it.slot) return;
+
+    const targetSlot = it.slot;
+    const currentEquippedId = state.player.equipped[targetSlot];
+
+    // Vorheriges Item ins Inventar zurücklegen
+    if (currentEquippedId) {
+      addItem(currentEquippedId);
+    }
+
+    // Neues Item anlegen
+    state.player.equipped[targetSlot] = s.id;
+    sound.sword();
+    log(`${it.name} ausgerüstet (${targetSlot}).`);
+
+    // Aus Inventar verbrauchen
+    s.count--;
+    if (s.count <= 0) state.player.inventory.splice(invIndex, 1);
+
+    hud();
+  }
+
+  function unequipSlot(slotKey) {
+    const itemId = state.player.equipped[slotKey];
+    if (!itemId) return;
+
+    if (state.player.inventory.length >= 15) {
+      log('Gürteltasche ist voll! Kann Item nicht ablegen.');
+      return;
+    }
+
+    addItem(itemId);
+    state.player.equipped[slotKey] = null;
+    sound.sword();
+    log(`Ausrüstung abgelegt: ${ITEMS[itemId]?.name || slotKey}.`);
+    hud();
+  }
+
+  function calculateCombatStats() {
+    const p = state.player;
+    let totalAtk = p.atk;
+    let totalDef = p.def;
+
+    for (const [sKey, itemId] of Object.entries(p.equipped)) {
+      if (!itemId) continue;
+      const it = ITEMS[itemId];
+      if (!it) continue;
+
+      if (it.type === 'weapon' || (it.stat === 'atk')) {
+        totalAtk += it.val || 0;
+      } else if (it.type === 'armor' || it.type === 'shield' || it.type === 'helmet' || it.type === 'boots') {
+        totalDef += it.val || 0;
+      }
+    }
+
+    return { totalAtk, totalDef };
+  }
+
+  // UI Aktualisieren
   function hud() {
     const p = state.player;
     el('hero-name').textContent = p.name;
@@ -275,8 +343,9 @@ window.addEventListener('DOMContentLoaded', () => {
     el('mptext').textContent = `${p.mp}/${p.maxMp}`;
     el('xp').style.width = `${Math.max(0, p.xp / p.nextXp * 100)}%`;
     el('xptext').textContent = `${p.xp}/${p.nextXp}`;
+
     renderInv();
-    renderStats();
+    renderEquipmentMenu();
   }
 
   function renderInv() {
@@ -288,10 +357,57 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!it) return;
       const d = document.createElement('div');
       d.className = 'item';
-      d.innerHTML = `<span>${it.name} x${s.count}</span><span>[Nutzen]</span>`;
-      d.onclick = () => { useItem(idx); };
+
+      const actionLabel = it.slot ? '[Ausrüsten]' : '[Nutzen]';
+      d.innerHTML = `<span>${it.name} x${s.count}</span><span>${actionLabel}</span>`;
+
+      d.onclick = () => {
+        el('iteminfo').innerHTML = `<strong>${it.name}</strong> (${it.type})<br>${it.desc}`;
+        if (it.slot) {
+          equipItemFromInv(idx);
+        } else {
+          useItem(idx);
+        }
+      };
       box.append(d);
     });
+  }
+
+  function renderEquipmentMenu() {
+    const p = state.player;
+    const stats = calculateCombatStats();
+
+    // Slots belegen
+    const slots = ['head', 'body', 'mainhand', 'offhand', 'feet', 'ring'];
+    slots.forEach(slotKey => {
+      const itemId = p.equipped[slotKey];
+      const nameEl = el(`slot-item-${slotKey}`);
+      const parentBox = nameEl.closest('.equip-slot-box');
+      const unequipBtn = parentBox.querySelector('.btn-unequip');
+
+      if (itemId && ITEMS[itemId]) {
+        nameEl.textContent = ITEMS[itemId].name;
+        parentBox.classList.add('equipped');
+        unequipBtn.classList.remove('hidden');
+        unequipBtn.onclick = (e) => {
+          e.stopPropagation();
+          unequipSlot(slotKey);
+        };
+      } else {
+        nameEl.textContent = 'Leer';
+        parentBox.classList.remove('equipped');
+        unequipBtn.classList.add('hidden');
+      }
+    });
+
+    el('stats').innerHTML = `
+      <strong>KAMPFWERTE:</strong><br>
+      🗡️ Effektive Schlagkraft: <span style="color:#ffe082;">${stats.totalAtk}</span> (Basis ${p.atk})<br>
+      🛡️ Effektiver Schutz: <span style="color:#90caf9;">${stats.totalDef}</span> (Basis ${p.def})<br>
+      ❤️ Max. Lebenskraft: ${p.maxHp} TP<br>
+      🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>
+      🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}
+    `;
   }
 
   function useItem(idx) {
@@ -305,20 +421,8 @@ window.addEventListener('DOMContentLoaded', () => {
       s.count--;
       if (s.count <= 0) state.player.inventory.splice(idx, 1);
       log(`${it.name} getrunken.`);
-    } else if (it.type === 'weapon') {
-      state.player.equipped.weapon = s.id;
-      sound.sword();
-    } else if (it.type === 'armor') {
-      state.player.equipped.armor = s.id;
     }
     hud();
-  }
-
-  function renderStats() {
-    const p = state.player;
-    const w = ITEMS[p.equipped.weapon];
-    const a = ITEMS[p.equipped.armor];
-    el('stats').textContent = `Slot: Slot ${state.currentSlot + 1}\nWaffe: ${w ? w.name : 'Keine'}\nRüstung: ${a ? a.name : 'Keine'}\nSchlagkraft: ${p.atk + (w ? w.val : 0)}\nSchutz: ${p.def + (a ? a.val : 0)}\nTiefe: Ebene ${state.world.depth}\nMeta-Gold: ${state.meta.gold} 🪙`;
   }
 
   function log(msg) {
@@ -343,7 +447,6 @@ window.addEventListener('DOMContentLoaded', () => {
     sound.step();
     map.reveal();
 
-    // Schatztruhe öffnen & auflösen
     const ch = state.world.chests.find(c => c.x === tx && c.y === ty && !c.open);
     if (ch) {
       ch.open = true;
@@ -407,8 +510,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!state.inCombat) return;
     sound.sword();
     const p = state.player, m = state.activeMonster;
-    const w = ITEMS[p.equipped.weapon];
-    const dmg = Math.max(1, p.atk + (w ? w.val : 0) - m.def + Math.floor(Math.random() * 4));
+    const stats = calculateCombatStats();
+    const dmg = Math.max(1, stats.totalAtk - m.def + Math.floor(Math.random() * 4));
     m.hp -= dmg;
     gfx.text(`-${dmg}`, m.x, m.y, '#ffca28');
     if (m.hp <= 0) { winCombat(); return; }
@@ -424,7 +527,8 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     p.mp -= 8;
     sound.fire();
-    const dmg = Math.max(8, (p.atk * 2) - m.def + Math.floor(Math.random() * 5));
+    const stats = calculateCombatStats();
+    const dmg = Math.max(8, (stats.totalAtk * 2) - m.def + Math.floor(Math.random() * 5));
     m.hp -= dmg;
     gfx.text(`-${dmg}`, m.x, m.y, '#ff7043');
     if (m.hp <= 0) { winCombat(); return; }
@@ -453,8 +557,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function enemyTurn() {
     const p = state.player, m = state.activeMonster;
-    const a = ITEMS[p.equipped.armor];
-    const dmg = Math.max(1, m.atk - (p.def + (a ? a.val : 0)) + Math.floor(Math.random() * 3));
+    const stats = calculateCombatStats();
+    const dmg = Math.max(1, m.atk - stats.totalDef + Math.floor(Math.random() * 3));
     p.hp -= dmg;
     sound.hurt();
     gfx.text(`-${dmg}`, p.x, p.y, '#f44336');
@@ -532,7 +636,6 @@ window.addEventListener('DOMContentLoaded', () => {
     location.reload();
   };
 
-  // Tastatursteuerung mit Fokus-Schutz
   window.onkeydown = (e) => {
     if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
     if (el('game').classList.contains('hidden')) return;

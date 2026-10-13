@@ -1,17 +1,16 @@
 <!--
-[2026-10-12 20:30] - index.html: v0.1.4 Charakter-Verwaltung mit 4 Speicher-Slots
+[2026-10-12 20:45] - index.html: v0.1.5 Interaktives Ausrüstungs-Menü (Paper-Doll)
 Änderungen:
-- Neuer Slot-Auswahlschirm (#slot-screen) für bis zu 4 unabhängige Charaktere.
-- Anzeige von Charakter-Status (Name, Klasse, Stufe, Ebene, Gold, TP/MP) oder "Freier Reckenplatz".
-- Erstellen, Spielen und Löschen einzelner Recken-Plätze.
-- Cloud- und lokale Synchronisation pro Slot via Firebase.
+- Neuer Ausrüstungs-Bereich mit Kachel-Slots: Kopf, Waffe, Schild, Rüstung, Stiefel & Ring.
+- Klickbare Ausrüstungs-Slots zum gezielten Ablegen und Anlegen von Rüstzeug.
+- Live-Vergleich der Kampfattribut-Boni (ATK, DEF, TP, MP).
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft - v0.1.4</title>
+  <title>Chroniken der Schattengruft - v0.1.5</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 
@@ -69,9 +68,7 @@
       <h2>RECKEN DES ORDENS</h2>
       <p>Wähle einen deiner 4 Helden oder erschaffe einen neuen Krieger.</p>
 
-      <div id="slots-grid" class="slots-grid">
-        <!-- Werden dynamisch via JS mit Slots 1-4 gefüllt -->
-      </div>
+      <div id="slots-grid" class="slots-grid"></div>
 
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
@@ -156,19 +153,53 @@
       <aside>
         <nav>
           <button type="button" class="tab active" data-tab="inv">INVENTAR</button>
-          <button type="button" class="tab" data-tab="char">HELD</button>
+          <button type="button" class="tab" data-tab="char">AUSRÜSTUNG</button>
           <button type="button" class="tab" data-tab="log">CHRONIK</button>
         </nav>
 
         <section id="inv" class="panel active">
           <h3>GÜRTELTASCHE <span id="slots"></span></h3>
           <div id="items"></div>
-          <div id="iteminfo">Wähle einen Gegenstand.</div>
+          <div id="iteminfo">Wähle einen Gegenstand aus dem Rucksack.</div>
         </section>
 
+        <!-- NEUES INTERAKTIVES AUSRÜSTUNGS-MENÜ -->
         <section id="char" class="panel">
-          <h3>RÜSTZEUG & ATTRIBUTE</h3>
-          <div id="stats"></div>
+          <h3>RÜSTKAMMER DES RECKEN</h3>
+          <div class="equip-grid">
+            <div class="equip-slot-box" data-slot="head">
+              <span class="slot-label">KOPF</span>
+              <div class="slot-item-name" id="slot-item-head">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="head">✖</button>
+            </div>
+            <div class="equip-slot-box" data-slot="body">
+              <span class="slot-label">BRUST</span>
+              <div class="slot-item-name" id="slot-item-body">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="body">✖</button>
+            </div>
+            <div class="equip-slot-box" data-slot="mainhand">
+              <span class="slot-label">WAFFE</span>
+              <div class="slot-item-name" id="slot-item-mainhand">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="mainhand">✖</button>
+            </div>
+            <div class="equip-slot-box" data-slot="offhand">
+              <span class="slot-label">SCHILD</span>
+              <div class="slot-item-name" id="slot-item-offhand">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="offhand">✖</button>
+            </div>
+            <div class="equip-slot-box" data-slot="feet">
+              <span class="slot-label">FÜSSE</span>
+              <div class="slot-item-name" id="slot-item-feet">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="feet">✖</button>
+            </div>
+            <div class="equip-slot-box" data-slot="ring">
+              <span class="slot-label">RELIQUIE</span>
+              <div class="slot-item-name" id="slot-item-ring">Leer</div>
+              <button type="button" class="btn-unequip hidden" data-unequip="ring">✖</button>
+            </div>
+          </div>
+
+          <div id="stats" class="stats-box"></div>
         </section>
 
         <section id="log" class="panel">
