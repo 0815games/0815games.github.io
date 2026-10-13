@@ -1,4 +1,4 @@
-// [2026-10-13 08:05] - js/main.js: v0.2.3 Musik-Steuerung & Audio-Regler
+// [2026-10-13 08:25] - js/main.js: v0.2.5 Sanftere Musik, Slot-Funken & Save-Fix
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -22,6 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
     node.textContent = VERSION_LABEL;
   });
 
+  // Intro
   const intro = el('intro-screen');
   const introBar = el('intro-bar');
   const loginScreen = el('login-screen');
@@ -40,6 +41,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (introFinished) return;
     introFinished = true;
     introBar.style.width = '100%';
+    sound.resume();
     sound.startMusic();
     setTimeout(() => {
       intro.classList.add('hidden');
@@ -105,6 +107,35 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // Funkenflug im Recken-Auswahl-Menü
+  const slotCanvas = el('slot-canvas');
+  if (slotCanvas) {
+    const sx = slotCanvas.getContext('2d');
+    let sw = slotCanvas.width = window.innerWidth;
+    let sh = slotCanvas.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+      sw = slotCanvas.width = window.innerWidth;
+      sh = slotCanvas.height = window.innerHeight;
+    });
+    const slotEmbers = Array.from({ length: 60 }, () => ({
+      x: Math.random() * sw,
+      y: Math.random() * sh,
+      s: 1.2 + Math.random() * 2.2,
+      v: 0.4 + Math.random() * 1.2,
+      a: Math.random()
+    }));
+    setInterval(() => {
+      sx.clearRect(0, 0, sw, sh);
+      for (const e of slotEmbers) {
+        e.y -= e.v;
+        e.x += Math.sin(e.y * 0.02) * 0.6;
+        if (e.y < 0) { e.y = sh; e.x = Math.random() * sw; }
+        sx.fillStyle = `rgba(255, 140, 40, ${e.a})`;
+        sx.fillRect(e.x, e.y, e.s, e.s);
+      }
+    }, 40);
+  }
+
   const loginCanvas = el('login-canvas');
   if (loginCanvas) {
     const lx = loginCanvas.getContext('2d');
@@ -162,7 +193,6 @@ window.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const email = el('auth-email').value.trim();
     const pw = el('auth-password').value.trim();
-
     if (!email || !pw) {
       showError('Bitte E-Mail und Passwort eingeben.');
       return;
@@ -171,10 +201,8 @@ window.addEventListener('DOMContentLoaded', () => {
       showError('Passwort muss mindestens 6 Zeichen lang sein.');
       return;
     }
-
     el('auth-error').classList.add('hidden');
     el('auth-submit').textContent = '⏳ Siegel werden geprüft...';
-
     try {
       if (authMode === 'login') {
         state.user = await cloud.login(email, pw);
@@ -251,13 +279,13 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   });
 
-  el('start-run').onclick = () => {
+  el('start-run').onclick = async () => {
     const name = el('run-name').value.trim() || 'Schattenjäger';
-    createAndLaunchSlot(targetSlotIndex, selectedClass, name);
+    await createAndLaunchSlot(targetSlotIndex, selectedClass, name);
     el('class-screen').classList.add('hidden');
   };
 
-  function createAndLaunchSlot(slotIdx, cId, name) {
+  async function createAndLaunchSlot(slotIdx, cId, name) {
     state.currentSlot = slotIdx;
     const c = CLASSES[cId] || CLASSES.warrior;
     state.player.name = name;
@@ -280,8 +308,11 @@ window.addEventListener('DOMContentLoaded', () => {
       ring: null
     };
     map.generate(1);
-    cloud.saveSlot(slotIdx, state);
+    const ok = await cloud.saveSlot(slotIdx, state);
     openGame();
+    if (!ok) {
+      log('⚠️ Speichern im Ordensarchiv fehlgeschlagen. Bitte Internet/Regeln prüfen.');
+    }
   }
 
   function loadAndLaunchSlot(slotIdx, slotData) {
@@ -310,9 +341,13 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function saveCurrentSlot() {
-    cloud.saveSlot(state.currentSlot, state);
-    log(`Slot ${state.currentSlot + 1} (${state.player.name}) im Ordensarchiv gesichert.`);
+  async function saveCurrentSlot() {
+    const ok = await cloud.saveSlot(state.currentSlot, state);
+    if (ok) {
+      log(`Slot ${state.currentSlot + 1} (${state.player.name}) im Ordensarchiv gesichert.`);
+    } else {
+      log('⚠️ Speichern im Ordensarchiv fehlgeschlagen.');
+    }
   }
 
   function equipItemFromInv(invIndex) {

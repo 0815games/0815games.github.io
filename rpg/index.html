@@ -1,15 +1,15 @@
 <!--
-[2026-10-13 08:00] - index.html: v0.2.3 Epische Musik & Audio-Regler
+[2026-10-13 08:25] - index.html: v0.2.5 Sanftere Musik & Funkenflug in der Recken-Auswahl
 Änderungen:
-- Musik-Stummschalter für Intro und Login ergänzt.
-- Separate Musik- und SFX-Regler von 0 bis 100 Prozent im Hauptspiel.
+- Musik-Startlautstärke auf 35 % reduziert.
+- Funkenflug im Recken-Auswahl-Menü ergänzt.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.2.3</title>
+  <title>Chroniken der Schattengruft – v0.2.5</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
   <style>
@@ -29,6 +29,9 @@
     .audio-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:#cfc3a5;}
     .audio-row input[type=range]{flex:1;accent-color:#ffb300;}
     .audio-row output{min-width:42px;text-align:right;color:#ffd54f;}
+    #slot-screen{position:relative;}
+    #slot-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    .slot-card{position:relative;z-index:1;}
   </style>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -43,7 +46,7 @@
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.2.3</span>
+      <span class="version-badge" data-version>v0.2.5</span>
     </div>
   </div>
 
@@ -69,18 +72,19 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.2.3</span></div>
+      <div><span class="version-badge" data-version>v0.2.5</span></div>
     </main>
   </div>
 
   <div id="slot-screen" class="screen hidden">
+    <canvas id="slot-canvas"></canvas>
     <main class="slot-card">
       <h2>RECKEN DES ORDENS</h2>
       <p>Wähle einen deiner 4 Helden oder erschaffe einen neuen Krieger.</p>
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.2.3</span>
+        <span class="version-badge" data-version>v0.2.5</span>
       </div>
     </main>
   </div>
@@ -122,7 +126,7 @@
         <em id="hero-class">Eisenbrecher</em>
         <span>LVL <b id="level">1</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.2.3</span>
+        <span class="hud-version" data-version>v0.2.5</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -145,7 +149,7 @@
       <aside>
         <div class="audio-panel">
           <h4>🎧 AUDIO</h4>
-          <div class="audio-row"><span>🎵 Musik</span><input id="music-volume" type="range" min="0" max="100" value="70"><output id="music-volume-value">70%</output></div>
+          <div class="audio-row"><span>🎵 Musik</span><input id="music-volume" type="range" min="0" max="100" value="35"><output id="music-volume-value">35%</output></div>
           <div class="audio-row"><span>⚔️ SFX</span><input id="sfx-volume" type="range" min="0" max="100" value="80"><output id="sfx-volume-value">80%</output></div>
         </div>
         <nav>
