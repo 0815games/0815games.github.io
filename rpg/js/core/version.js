@@ -1,3 +1,2 @@
-// Zentrale Versionsverwaltung – wird bei jedem Update erhöht.
-export const GAME_VERSION = '0.3.7';
-export const VERSION_LABEL = `v${GAME_VERSION}`;
+// v0.3.8
+export const VERSION_LABEL = 'v0.3.8';

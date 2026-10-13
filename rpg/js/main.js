@@ -1,7 +1,4 @@
-// v0.3.7 – Vollständige main.js
-// Enthält: Login, Recken-Slots, Level-Design, bewegbare Welt, Kampf, Level-Up,
-// Ebenenwechsel, Zufallsname, AFK-Logout, Speicher-Toast und Firebase.
-
+// v0.3.8 – Vollständige main.js mit Skilltree
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -9,6 +6,7 @@ import { sound } from './systems/audio.js';
 import { WorldMap } from './world/map.js';
 import { Renderer } from './world/render.js';
 import { VERSION_LABEL } from './core/version.js';
+import { SKILL_TREE, getSkillRank, canLearnSkill, learnSkill } from './systems/skilltree.js';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -478,6 +476,8 @@ window.addEventListener('DOMContentLoaded', () => {
     state.player.atk = c.atk;
     state.player.def = c.def;
     state.player.gold = 40;
+    state.player.skillTree = {};
+    state.player.skillPoints = 0;
     state.player.inventory = c.items.map((x) => ({ ...x }));
 
     state.player.equipped = {
@@ -517,6 +517,14 @@ window.addEventListener('DOMContentLoaded', () => {
         feet: null,
         ring: null
       };
+    }
+
+    if (!state.player.skillTree) {
+      state.player.skillTree = {};
+    }
+
+    if (typeof state.player.skillPoints !== 'number') {
+      state.player.skillPoints = 0;
     }
 
     map.ensureValid();
@@ -655,6 +663,60 @@ window.addEventListener('DOMContentLoaded', () => {
 
     renderInv();
     renderEquipmentMenu();
+    renderSkillTree();
+  }
+
+  function renderSkillTree() {
+    const box = el('skill-tree');
+
+    if (!box) return;
+
+    const points = state.player.skillPoints || 0;
+    const pointsEl = el('skill-points');
+
+    if (pointsEl) {
+      pointsEl.textContent = points;
+    }
+
+    box.innerHTML = '';
+
+    Object.entries(SKILL_TREE).forEach(([id, node]) => {
+      const rank = getSkillRank(state, id);
+      const canLearn = canLearnSkill(state, id);
+      const card = document.createElement('div');
+
+      card.className = 'skill-node';
+
+      if (rank > 0) card.classList.add('learned');
+      if (canLearn) card.classList.add('available');
+      if (!canLearn && rank < node.maxRank) card.classList.add('locked');
+
+      card.innerHTML = `
+        <div class="skill-head">
+          <span>${node.icon} ${node.name}</span>
+          <span>${rank}/${node.maxRank}</span>
+        </div>
+        <p>${node.desc}</p>
+        <small>${node.req.length ? `Benötigt: ${node.req.join(', ')}` : 'Keine Voraussetzung'}</small>
+      `;
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-learn';
+      btn.textContent = rank >= node.maxRank ? 'MAX' : 'LERNEN';
+      btn.disabled = !canLearn;
+
+      btn.onclick = () => {
+        if (learnSkill(state, id)) {
+          log(`${node.name} auf Rang ${getSkillRank(state, id)} gelernt.`);
+          hud();
+          saveCurrentSlot();
+        }
+      };
+
+      card.appendChild(btn);
+      box.appendChild(card);
+    });
   }
 
   function showExpPopup(x, y, amount) {
@@ -783,6 +845,7 @@ window.addEventListener('DOMContentLoaded', () => {
       ❤️ Max. Lebenskraft: ${p.maxHp} TP<br>
       🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>
       ✨ Erfahrung: ${p.xp} / ${p.nextXp} EP<br>
+      ✨ Skillpunkte: ${p.skillPoints || 0}<br>
       🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}
     `;
   }
@@ -795,7 +858,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     if (it.type === 'potion') {
       if (it.effect === 'hp') {
-        state.player.hp = Math.min(state.player.maxHp, state.player.hp + it.val);
+        const healRank = getSkillRank(state, 'healing_lore');
+        const healAmount = Math.floor(it.val * (1 + 0.20 * healRank));
+
+        state.player.hp = Math.min(state.player.maxHp, state.player.hp + healAmount);
       }
 
       if (it.effect === 'mp') {
@@ -849,10 +915,13 @@ window.addEventListener('DOMContentLoaded', () => {
       gfx.burst(tx, ty);
       gfx.text('✨ REICHTUM!', tx, ty);
 
-      state.player.gold += ch.caps;
+      const chestRank = getSkillRank(state, 'master_thief');
+      const goldGain = Math.floor(ch.caps * (1 + 0.25 * chestRank));
+
+      state.player.gold += goldGain;
       addItem(ch.item);
 
-      log(`Reliquientruhe geborgen: +${ch.caps} Gold.`);
+      log(`Reliquientruhe geborgen: +${goldGain} Gold.`);
 
       setTimeout(() => {
         state.world.chests = state.world.chests.filter((c) => c.id !== ch.id);
@@ -930,10 +999,17 @@ window.addEventListener('DOMContentLoaded', () => {
     const p = state.player;
     const m = state.activeMonster;
     const stats = calculateCombatStats();
-    const dmg = Math.max(1, stats.totalAtk - m.def + Math.floor(Math.random() * 4));
+    const critChance = getSkillRank(state, 'precision') * 5;
+    const isCrit = Math.random() * 100 < critChance;
+
+    let dmg = Math.max(1, stats.totalAtk - m.def + Math.floor(Math.random() * 4));
+
+    if (isCrit) {
+      dmg = Math.floor(dmg * 1.5);
+    }
 
     m.hp -= dmg;
-    gfx.text(`-${dmg}`, m.x, m.y, '#ffca28');
+    gfx.text(isCrit ? `KRIT -${dmg}` : `-${dmg}`, m.x, m.y, isCrit ? '#ffab91' : '#ffca28');
 
     if (m.hp <= 0) {
       winCombat();
@@ -958,7 +1034,8 @@ window.addEventListener('DOMContentLoaded', () => {
     sound.fire();
 
     const stats = calculateCombatStats();
-    const dmg = Math.max(8, stats.totalAtk * 2 - m.def + Math.floor(Math.random() * 5));
+    const fireRank = getSkillRank(state, 'fire_master');
+    const dmg = Math.max(8, Math.floor((stats.totalAtk * 2 - m.def + Math.floor(Math.random() * 5)) * (1 + 0.12 * fireRank)));
 
     m.hp -= dmg;
     gfx.text(`-${dmg}`, m.x, m.y, '#ff7043');
@@ -996,6 +1073,13 @@ window.addEventListener('DOMContentLoaded', () => {
     const p = state.player;
     const m = state.activeMonster;
     const stats = calculateCombatStats();
+    const dodgeChance = getSkillRank(state, 'shadowstep') * 4;
+
+    if (Math.random() * 100 < dodgeChance) {
+      el('combat-log').textContent = 'Du weichst dem Angriff aus!';
+      return;
+    }
+
     const dmg = Math.max(1, m.atk - stats.totalDef + Math.floor(Math.random() * 3));
 
     p.hp -= dmg;
@@ -1014,8 +1098,10 @@ window.addEventListener('DOMContentLoaded', () => {
   function winCombat() {
     const m = state.activeMonster;
     const gainedExp = m.xp;
+    const goldRank = getSkillRank(state, 'gold_luck');
+    const goldGain = Math.floor(m.gold * (1 + 0.10 * goldRank));
 
-    state.player.gold += m.gold;
+    state.player.gold += goldGain;
     state.player.xp += m.xp;
     state.world.monsters = state.world.monsters.filter((x) => x.id !== m.id);
     state.inCombat = false;
@@ -1023,7 +1109,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     showExpPopup(m.x, m.y, gainedExp);
     gfx.text(`+${gainedExp} EP`, m.x, m.y, '#a5d6a7');
-    log(`${m.name} bezwungen! +${m.gold} Gold, +${gainedExp} EP.`);
+    log(`${m.name} bezwungen! +${goldGain} Gold, +${gainedExp} EP.`);
 
     if (m.id === 'boss') {
       state.meta.gold += 50;
@@ -1044,6 +1130,18 @@ window.addEventListener('DOMContentLoaded', () => {
       log(`🔒 Runensiegel aktiv – ${state.world.monsters.length} Gegner verbleiben.`);
     }
 
+    if (getSkillRank(state, 'bloodlust') > 0) {
+      const heal = Math.floor(state.player.maxHp * 0.05);
+
+      state.player.hp = Math.min(state.player.maxHp, state.player.hp + heal);
+      log(`Blutrausch heilt ${heal} TP.`);
+    }
+
+    if (getSkillRank(state, 'arcane_return') > 0) {
+      state.player.mp = Math.min(state.player.maxMp, state.player.mp + 3);
+      log('Arkanwiederkehr stellt 3 MP wieder her.');
+    }
+
     if (state.player.xp >= state.player.nextXp) {
       state.player.level++;
       state.player.xp -= state.player.nextXp;
@@ -1054,9 +1152,10 @@ window.addEventListener('DOMContentLoaded', () => {
       state.player.mp = state.player.maxMp;
       state.player.atk += 2;
       state.player.def++;
+      state.player.skillPoints = (state.player.skillPoints || 0) + 1;
 
       showLevelUpAnimation(state.player.level);
-      log(`LEVEL UP! Stufe ${state.player.level}!`);
+      log(`LEVEL UP! Stufe ${state.player.level}! +1 Skillpunkt.`);
     }
 
     hud();

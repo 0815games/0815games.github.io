@@ -1,4 +1,4 @@
-// [2026-10-12 20:45] - js/core/state.js: v0.1.5 Ausrüstungs-Slots & Heldenstatus
+// v0.3.8 – Skilltree & Heldenstatus
 export const CLASSES = {
   warrior: {
     title: 'Eisenbrecher',
@@ -36,7 +36,8 @@ export const state = {
     gold: 40,
     xp: 0, nextXp: 100,
     x: 2, y: 2,
-    // Erweiterte Ausrüstungs-Slots
+    skillTree: {},
+    skillPoints: 0,
     equipped: {
       head: null,
       body: null,
