@@ -1,0 +1,74 @@
+/* v0.4.1 – iPhone intro layout hotfix */
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+#intro-screen {
+  display: block;
+  overflow: hidden;
+  padding: 0;
+}
+
+.intro-box {
+  position: absolute;
+  inset: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  width: auto;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+
+.intro-box > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.intro-title {
+  width: 100%;
+  font-size: clamp(24px, 8vw, 58px);
+  line-height: 1.12;
+  letter-spacing: 0.05em;
+  overflow-wrap: anywhere;
+}
+
+.intro-sub {
+  font-size: clamp(11px, 3.2vw, 18px);
+  line-height: 1.45;
+  letter-spacing: 0.12em;
+}
+
+.intro-lore {
+  max-width: 100%;
+  margin: 18px auto;
+  line-height: 1.62;
+}
+
+.intro-bar {
+  width: 100%;
+  max-width: 420px;
+}
+
+.intro-hint {
+  letter-spacing: 0.08em;
+  line-height: 1.45;
+}
+
+@media (max-width: 390px) {
+  .intro-box { padding: 16px 12px; }
+  .intro-title { font-size: clamp(22px, 7.4vw, 38px); letter-spacing: 0.035em; }
+  .intro-crest { font-size: 30px; }
+  .intro-crest span { font-size: 38px; }
+}
+
+@media (max-height: 620px) {
+  .intro-box { padding-top: 12px; padding-bottom: 12px; }
+  .intro-lore { margin: 10px auto; }
+  .intro-lore p { margin: 3px 0; }
+}
