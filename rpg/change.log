@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v0.2.4] - 2026-10-13 08:10 (Recken-Auswahl & Musik-Fix)
+- [FIX] Recken-Auswahl bleibt jetzt immer bedienbar, auch wenn Firebase-Slots nicht geladen werden können.
+- [FIX] Fehlende oder fehlerhafte Cloud-Slots erzeugen keinen leeren, unbedienbaren Bildschirm mehr.
+- [AUDIO] Musik im Intro/Login deutlich hörbarer gemacht und AudioContext zuverlässiger nach Nutzerinteraktion aktiviert.
+- [AUDIO] Musik- und SFX-Lautstärken getrennt; Musik-Regler wirkt jetzt sofort.
+- [RELEASE] Version auf v0.2.4 erhöht.
+
 ## [v0.2.3] - 2026-10-13 08:00 (Epische Musik & Audio-Regler)
 - [AUDIO] Epische prozedurale Musik für Intro, Login und Hauptspiel ergänzt.
 - [AUDIO] Musik im Intro und Login-Screen über einen eigenen Stummschalter steuerbar.

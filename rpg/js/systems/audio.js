@@ -1,4 +1,4 @@
-// [2026-10-13 07:55] - js/systems/audio.js: v0.2.3 Epische Musik & getrennte Lautstärken
+// [2026-10-13 08:10] - js/systems/audio.js: v0.2.4 Hörbare Musik & sichere SFX
 export class AudioSystem {
   constructor() {
     const C = window.AudioContext || window.webkitAudioContext;
@@ -27,8 +27,8 @@ export class AudioSystem {
 
   applyVolumes() {
     if (!this.ctx) return;
-    this.musicGain.gain.value = this.musicMuted ? 0 : (this.musicVolume / 100) * 0.22;
-    this.sfxGain.gain.value = (this.sfxVolume / 100) * 0.55;
+    this.musicGain.gain.value = this.musicMuted ? 0 : (this.musicVolume / 100) * 0.5;
+    this.sfxGain.gain.value = (this.sfxVolume / 100) * 0.8;
   }
 
   setMusicVolume(value) {
@@ -50,7 +50,9 @@ export class AudioSystem {
   }
 
   tone(freq, dur = 0.16, type = 'sine', vol = 0.2, destination = this.sfxGain, delay = 0) {
-    if (!this.ctx || destination === this.sfxGain && this.sfxVolume <= 0) return;
+    if (!this.ctx) return;
+    if (destination === this.sfxGain && this.sfxVolume <= 0) return;
+    if (destination === this.musicGain && (this.musicMuted || this.musicVolume <= 0)) return;
     this.resume();
     const t = this.ctx.currentTime + delay;
     const o = this.ctx.createOscillator();
@@ -58,7 +60,7 @@ export class AudioSystem {
     o.type = type;
     o.frequency.setValueAtTime(freq, t);
     g.gain.setValueAtTime(0.0001, t);
-    g.gain.exponentialRampToValueAtTime(vol, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), t + 0.03);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g);
     g.connect(destination);
@@ -92,18 +94,15 @@ export class AudioSystem {
     ];
     const chord = chords[this.musicStep % chords.length];
     this.musicStep++;
-
     chord.forEach((freq, i) => {
-      this.tone(freq, 4.4, i === 0 ? 'sawtooth' : 'triangle', i === 0 ? 0.16 : 0.09, this.musicGain, i * 0.08);
+      this.tone(freq, 4.4, i === 0 ? 'sawtooth' : 'triangle', i === 0 ? 0.22 : 0.14, this.musicGain, i * 0.08);
     });
-
     for (let beat = 0; beat < 8; beat++) {
-      this.tone(55, 0.22, 'sine', beat % 2 === 0 ? 0.30 : 0.16, this.musicGain, beat * 0.6);
+      this.tone(55, 0.22, 'sine', beat % 2 === 0 ? 0.4 : 0.22, this.musicGain, beat * 0.6);
     }
-
     const melody = [440, 523.25, 659.25, 587.33, 523.25, 440, 392, 440];
     melody.forEach((freq, i) => {
-      this.tone(freq, 0.45, 'triangle', 0.10, this.musicGain, i * 0.6 + 0.15);
+      this.tone(freq, 0.45, 'triangle', 0.16, this.musicGain, i * 0.6 + 0.15);
     });
   }
 

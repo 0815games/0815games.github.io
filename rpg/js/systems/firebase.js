@@ -1,4 +1,4 @@
-// [2026-10-13 07:50] - js/systems/firebase.js: v0.2.2 Firebase-Only Speicherung
+// [2026-10-13 08:10] - js/systems/firebase.js: v0.2.4 Robuste Cloud-Slots
 import { state } from '../core/state.js';
 
 const CFG = {
@@ -73,8 +73,11 @@ class Cloud {
   }
 
   async loadAllSlots() {
-    this.requireReady();
     const slots = [null, null, null, null];
+    if (!this.ready || !state.user?.uid) {
+      console.warn("Cloud loadAllSlots: Keine gültige Firebase-Sitzung.");
+      return slots;
+    }
     try {
       const snap = await this.db.ref(`dark_rpg/saves/${state.user.uid}`).once('value');
       if (snap.exists()) {
@@ -87,28 +90,35 @@ class Cloud {
       }
     } catch (e) {
       console.warn("Cloud loadAllSlots:", e);
-      throw new Error("Recken konnten nicht aus dem Ordensarchiv geladen werden.");
     }
     return slots;
   }
 
   async saveSlot(slotIndex, data) {
-    this.requireReady();
+    if (!this.ready || !state.user?.uid) {
+      console.warn("Cloud saveSlot: Keine gültige Firebase-Sitzung.");
+      return false;
+    }
     try {
       await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(data);
+      return true;
     } catch (e) {
       console.warn("Cloud saveSlot:", e);
-      throw new Error("Speichern im Ordensarchiv fehlgeschlagen.");
+      return false;
     }
   }
 
   async deleteSlot(slotIndex) {
-    this.requireReady();
+    if (!this.ready || !state.user?.uid) {
+      console.warn("Cloud deleteSlot: Keine gültige Firebase-Sitzung.");
+      return false;
+    }
     try {
       await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).remove();
+      return true;
     } catch (e) {
       console.warn("Cloud deleteSlot:", e);
-      throw new Error("Recken konnte nicht aus dem Ordensarchiv entfernt werden.");
+      return false;
     }
   }
 }
