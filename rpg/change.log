@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [v0.3.1] - 2026-10-13 08:40 (Level-Up-Animation)
+- [UI] Animierte Level-Up-Einblendung mit Goldpartikeln ergänzt.
+- [UI] Neue Stufe wird beim Level-Up groß und sichtbar angezeigt.
+- [RELEASE] Version auf v0.3.1 erhöht.
+
 ## [v0.3.0] - 2026-10-13 09:20 (EXP-Anzeige)
 - [UI] Klare EXP-Anzeige im HUD ergänzt: aktuelle EP, benötigte EP und Fortschrittsbalken.
 - [COMBAT] Erhaltene EP werden nach jedem Sieg als Pop-up über dem besiegten Gegner angezeigt.
