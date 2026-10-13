@@ -1,4 +1,4 @@
-// [2026-10-13 07:45] - js/main.js: v0.2.1 Intro-Rückkehr & Versionsanzeige
+// [2026-10-13 07:50] - js/main.js: v0.2.2 Doppel-Funkenflug & Firebase-Only
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -62,7 +62,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Hintergrund-Feuerpartikel
+  // v0.2.2: Doppel-Funkenflug im Login-Screen
   const loginCanvas = el('login-canvas');
   if (loginCanvas) {
     const lx = loginCanvas.getContext('2d');
@@ -70,7 +70,7 @@ window.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', () => {
       w = loginCanvas.width = window.innerWidth, h = loginCanvas.height = window.innerHeight;
     });
-    const embers = Array.from({ length: 45 }, () => ({
+    const embers = Array.from({ length: 90 }, () => ({
       x: Math.random() * w,
       y: Math.random() * h,
       s: 1.5 + Math.random() * 2.5,
@@ -96,7 +96,7 @@ window.addEventListener('DOMContentLoaded', () => {
     el('cloud-status').textContent = '● CLOUD-ARCHIV VERBUNDEN';
   } else {
     el('cloud-status').className = 'cloud offline';
-    el('cloud-status').textContent = '● OFFLINE-MODUS (LOKAL)';
+    el('cloud-status').textContent = '● ORDENSARCHIV NICHT VERBUNDEN';
   }
 
   // Umschaltung Anmelden / Registrieren
@@ -118,7 +118,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Formular-Submit
   el('auth-form').onsubmit = async (e) => {
     e.preventDefault();
     const email = el('auth-email').value.trim();
@@ -139,10 +138,8 @@ window.addEventListener('DOMContentLoaded', () => {
     try {
       if (authMode === 'login') {
         state.user = await cloud.login(email, pw);
-        state.isGuest = false;
       } else {
         state.user = await cloud.register(email, pw);
-        state.isGuest = false;
       }
       await openSlotScreen();
     } catch (err) {
@@ -151,14 +148,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Gastreisender starten
-  el('guest-btn').onclick = async () => {
-    state.isGuest = true;
-    state.user = null;
-    await openSlotScreen();
-  };
-
-  // 4 SLOTS ANZEIGEN
   async function openSlotScreen() {
     el('login-screen').classList.add('hidden');
     el('class-screen').classList.add('hidden');
@@ -241,7 +230,6 @@ window.addEventListener('DOMContentLoaded', () => {
   el('cancel-create').onclick = () => { openSlotScreen(); };
   el('btn-slot-logout').onclick = () => { location.reload(); };
 
-  // Klassenwahl
   document.querySelectorAll('.class').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.class').forEach(b => b.classList.remove('active'));
@@ -312,7 +300,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function saveCurrentSlot() {
     cloud.saveSlot(state.currentSlot, state);
-    log(`Slot ${state.currentSlot + 1} (${state.player.name}) gesichert.`);
+    log(`Slot ${state.currentSlot + 1} (${state.player.name}) im Ordensarchiv gesichert.`);
   }
 
   function equipItemFromInv(invIndex) {

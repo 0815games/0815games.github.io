@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v0.2.2] - 2026-10-13 07:50 (Doppel-Funkenflug & Firebase-Only)
+- [VISUAL] Funkenflug im Login-Screen von 45 auf 90 Partikel verdoppelt.
+- [STORAGE] Lokale Speicherung und Gastmodus vollständig entfernt.
+- [CLOUD] Firebase ist jetzt die einzige Lösung für Konten, Recken-Slots und Fortschritte.
+- [UI] Hinweis auf lokale Gäste-Speicherung entfernt; Firebase-Hinweis ergänzt.
+- [RELEASE] Version auf v0.2.2 erhöht.
+
 ## [v0.2.1] - 2026-10-13 07:45 (Intro-Rückkehr & Versionsanzeige)
 - [INTRO] Animiertes Intro vor dem Login wiederhergestellt: Titel, Ladebalken und Klick-/Enter-Freischaltung.
 - [VERSION] Zentrale Versionsdatei `js/core/version.js` eingeführt.

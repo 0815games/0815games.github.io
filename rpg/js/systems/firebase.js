@@ -1,4 +1,4 @@
-// [2026-10-12 20:45] - js/systems/firebase.js: v0.1.5 Cloud & Local Slots
+// [2026-10-13 07:50] - js/systems/firebase.js: v0.2.2 Firebase-Only Speicherung
 import { state } from '../core/state.js';
 
 const CFG = {
@@ -21,7 +21,7 @@ const mapError = (e) => {
     "auth/weak-password": "Passwort zu schwach (mindestens 6 Zeichen).",
     "auth/operation-not-allowed": "E-Mail/Passwort-Anmeldung ist in der Firebase-Konsole noch nicht aktiviert.",
     "auth/network-request-failed": "Netzwerkfehler zum Ordensarchiv. Bitte Internet oder Adblocker prüfen.",
-    "auth/unauthorized-domain": "Diese Domain ist nicht autorisiert. (Lokale Tests bitte als Gastreisender starten)."
+    "auth/unauthorized-domain": "Diese Domain ist nicht autorisiert. Bitte über die freigegebene GitHub-Seite spielen."
   };
   return errMap[code] || e.message || "Authentifizierungsfehler aufgetreten.";
 };
@@ -45,8 +45,12 @@ class Cloud {
     }
   }
 
+  requireReady() {
+    if (!this.ready) throw new Error("Das Ordensarchiv ist nicht verbunden. Bitte Seite neu laden und Internet prüfen.");
+  }
+
   async login(email, password) {
-    if (!this.ready) throw new Error("Firebase ist offline. Bitte als Gast starten.");
+    this.requireReady();
     try {
       const cred = await this.auth.signInWithEmailAndPassword(email, password);
       return cred.user;
@@ -56,10 +60,10 @@ class Cloud {
   }
 
   async register(email, password) {
+    this.requireReady();
     if (password.length < 6) {
       throw new Error("Das Passwort muss mindestens 6 Zeichen lang sein.");
     }
-    if (!this.ready) throw new Error("Firebase ist offline. Bitte als Gast starten.");
     try {
       const cred = await this.auth.createUserWithEmailAndPassword(email, password);
       return cred.user;
@@ -69,67 +73,42 @@ class Cloud {
   }
 
   async loadAllSlots() {
-    let slots = [null, null, null, null];
+    this.requireReady();
+    const slots = [null, null, null, null];
     try {
-      const local = localStorage.getItem('dark_rpg_slots');
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) slots = parsed;
-      }
-    } catch (e) { console.warn(e); }
-
-    if (this.ready && state.user && !state.isGuest) {
-      try {
-        const snap = await this.db.ref(`dark_rpg/saves/${state.user.uid}`).once('value');
-        if (snap.exists()) {
-          const cloudData = snap.val();
-          for (let i = 0; i < 4; i++) {
-            if (cloudData[`slot_${i}`]) {
-              slots[i] = cloudData[`slot_${i}`];
-            }
+      const snap = await this.db.ref(`dark_rpg/saves/${state.user.uid}`).once('value');
+      if (snap.exists()) {
+        const cloudData = snap.val();
+        for (let i = 0; i < 4; i++) {
+          if (cloudData[`slot_${i}`]) {
+            slots[i] = cloudData[`slot_${i}`];
           }
         }
-      } catch (e) {
-        console.warn("Cloud loadAllSlots:", e);
       }
+    } catch (e) {
+      console.warn("Cloud loadAllSlots:", e);
+      throw new Error("Recken konnten nicht aus dem Ordensarchiv geladen werden.");
     }
-
     return slots;
   }
 
   async saveSlot(slotIndex, data) {
-    let slots = [null, null, null, null];
+    this.requireReady();
     try {
-      const local = localStorage.getItem('dark_rpg_slots');
-      if (local) slots = JSON.parse(local);
-    } catch (e) {}
-    slots[slotIndex] = data;
-    localStorage.setItem('dark_rpg_slots', JSON.stringify(slots));
-
-    if (this.ready && state.user && !state.isGuest) {
-      try {
-        await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(data);
-      } catch (e) {
-        console.warn("Cloud saveSlot:", e);
-      }
+      await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(data);
+    } catch (e) {
+      console.warn("Cloud saveSlot:", e);
+      throw new Error("Speichern im Ordensarchiv fehlgeschlagen.");
     }
   }
 
   async deleteSlot(slotIndex) {
-    let slots = [null, null, null, null];
+    this.requireReady();
     try {
-      const local = localStorage.getItem('dark_rpg_slots');
-      if (local) slots = JSON.parse(local);
-    } catch (e) {}
-    slots[slotIndex] = null;
-    localStorage.setItem('dark_rpg_slots', JSON.stringify(slots));
-
-    if (this.ready && state.user && !state.isGuest) {
-      try {
-        await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).remove();
-      } catch (e) {
-        console.warn("Cloud deleteSlot:", e);
-      }
+      await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).remove();
+    } catch (e) {
+      console.warn("Cloud deleteSlot:", e);
+      throw new Error("Recken konnte nicht aus dem Ordensarchiv entfernt werden.");
     }
   }
 }
