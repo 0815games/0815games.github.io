@@ -1,17 +1,17 @@
 <!--
-[2026-10-13 08:25] - index.html: v0.2.5 Sanftere Musik & Funkenflug in der Recken-Auswahl
+[2026-10-13 08:40] - index.html: v0.2.7 Always-Fresh
 Änderungen:
-- Musik-Startlautstärke auf 35 % reduziert.
-- Funkenflug im Recken-Auswahl-Menü ergänzt.
+- CSS und JS mit Versions-Query geladen.
+- Service Worker für Network-First-Updates registriert.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.2.5</title>
+  <title>Chroniken der Schattengruft – v0.2.7</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=0.2.7">
   <style>
     #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
     #intro-screen.hidden{display:none;}
@@ -46,7 +46,7 @@
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.2.5</span>
+      <span class="version-badge" data-version>v0.2.7</span>
     </div>
   </div>
 
@@ -72,7 +72,7 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.2.5</span></div>
+      <div><span class="version-badge" data-version>v0.2.7</span></div>
     </main>
   </div>
 
@@ -84,7 +84,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.2.5</span>
+        <span class="version-badge" data-version>v0.2.7</span>
       </div>
     </main>
   </div>
@@ -126,7 +126,7 @@
         <em id="hero-class">Eisenbrecher</em>
         <span>LVL <b id="level">1</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.2.5</span>
+        <span class="hud-version" data-version>v0.2.7</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -199,6 +199,6 @@
       <button type="button" data-m="down">▼</button>
     </div>
   </div>
-  <script type="module" src="js/main.js"></script>
+  <script type="module" src="js/main.js?v=0.2.7"></script>
 </body>
 </html>

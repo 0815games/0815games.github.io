@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.2.7] - 2026-10-13 08:40 (Always Fresh: Neueste Version bei F5)
+- [UPDATE] Service Worker mit Network-First-Strategie ergänzt.
+- [UPDATE] CSS und JS erhalten versionsabhängige Cache-Busting-URLs.
+- [UPDATE] F5 lädt HTML, CSS und JS grundsätzlich zuerst aus dem Netz.
+- [RELEASE] Version auf v0.2.7 erhöht.
+
 ## [v0.2.6] - 2026-10-13 08:35 (Firebase-Speicher-Fix & Musik-Geste)
 - [FIX] Charakter-Speicherung speichert nur noch sichere Spieldaten (player, world, meta, currentSlot).
 - [FIX] Firebase-Fehler durch undefined-Werte im Login-Objekt behoben.
