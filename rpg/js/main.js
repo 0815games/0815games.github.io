@@ -1,4 +1,4 @@
-// [2026-10-13 07:50] - js/main.js: v0.2.2 Doppel-Funkenflug & Firebase-Only
+// [2026-10-13 08:05] - js/main.js: v0.2.3 Musik-Steuerung & Audio-Regler
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -17,23 +17,30 @@ window.addEventListener('DOMContentLoaded', () => {
 
   const el = id => document.getElementById(id);
 
-  // v0.2.1: Zentrale Versionsanzeige
   document.title = `Chroniken der Schattengruft – ${VERSION_LABEL}`;
   document.querySelectorAll('[data-version]').forEach(node => {
     node.textContent = VERSION_LABEL;
   });
 
-  // v0.2.1: Intro vor dem Login
   const intro = el('intro-screen');
   const introBar = el('intro-bar');
   const loginScreen = el('login-screen');
   let introProgress = 0;
   let introFinished = false;
 
+  function updateMusicButtons() {
+    document.querySelectorAll('[data-music-toggle]').forEach(btn => {
+      btn.textContent = sound.musicMuted ? '🔇' : '🎵';
+    });
+    const hudBtn = el('sound');
+    if (hudBtn) hudBtn.textContent = sound.musicMuted ? '🔇' : '🎵';
+  }
+
   function finishIntro() {
     if (introFinished) return;
     introFinished = true;
     introBar.style.width = '100%';
+    sound.startMusic();
     setTimeout(() => {
       intro.classList.add('hidden');
       loginScreen.classList.remove('hidden');
@@ -62,7 +69,42 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // v0.2.2: Doppel-Funkenflug im Login-Screen
+  document.querySelectorAll('[data-music-toggle]').forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      sound.toggleMusic();
+      updateMusicButtons();
+    };
+  });
+
+  const musicSlider = el('music-volume');
+  const sfxSlider = el('sfx-volume');
+  const musicValue = el('music-volume-value');
+  const sfxValue = el('sfx-volume-value');
+
+  if (musicSlider) {
+    musicSlider.value = sound.musicVolume;
+    musicValue.textContent = `${sound.musicVolume}%`;
+    musicSlider.oninput = () => {
+      sound.setMusicVolume(musicSlider.value);
+      musicValue.textContent = `${sound.musicVolume}%`;
+      if (sound.musicMuted && sound.musicVolume > 0) {
+        sound.musicMuted = false;
+        sound.startMusic();
+        updateMusicButtons();
+      }
+    };
+  }
+
+  if (sfxSlider) {
+    sfxSlider.value = sound.sfxVolume;
+    sfxValue.textContent = `${sound.sfxVolume}%`;
+    sfxSlider.oninput = () => {
+      sound.setSfxVolume(sfxSlider.value);
+      sfxValue.textContent = `${sound.sfxVolume}%`;
+    };
+  }
+
   const loginCanvas = el('login-canvas');
   if (loginCanvas) {
     const lx = loginCanvas.getContext('2d');
@@ -89,7 +131,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 33);
   }
 
-  // Cloud Status prüfen
   const fbOk = cloud.init();
   if (fbOk) {
     el('cloud-status').className = 'cloud ok';
@@ -99,7 +140,6 @@ window.addEventListener('DOMContentLoaded', () => {
     el('cloud-status').textContent = '● ORDENSARCHIV NICHT VERBUNDEN';
   }
 
-  // Umschaltung Anmelden / Registrieren
   document.querySelectorAll('.auth-tab').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('.auth-tab').forEach(b => b.classList.remove('active'));
@@ -154,7 +194,6 @@ window.addEventListener('DOMContentLoaded', () => {
     el('death-screen').classList.add('hidden');
     el('game').classList.add('hidden');
     el('slot-screen').classList.remove('hidden');
-
     allSlots = await cloud.loadAllSlots();
     renderSlots();
   }
@@ -162,18 +201,12 @@ window.addEventListener('DOMContentLoaded', () => {
   function renderSlots() {
     const grid = el('slots-grid');
     grid.innerHTML = '';
-
     for (let i = 0; i < 4; i++) {
       const slotData = allSlots[i];
       const box = document.createElement('div');
-
       if (!slotData || !slotData.player) {
         box.className = 'slot-box empty';
-        box.innerHTML = `
-          <div class="slot-num">SLOT ${i + 1}</div>
-          <div class="empty-label">➕ FREIER RECKENPLATZ</div>
-          <small>Hier klicken zum Erschaffen</small>
-        `;
+        box.innerHTML = `<div class="slot-num">SLOT ${i + 1}</div><div class="empty-label">➕ FREIER RECKENPLATZ</div><small>Hier klicken zum Erschaffen</small>`;
         box.onclick = () => {
           targetSlotIndex = i;
           openClassCreator(i);
@@ -183,30 +216,11 @@ window.addEventListener('DOMContentLoaded', () => {
         const p = slotData.player;
         const cTitle = CLASSES[p.heroClass]?.title || 'Krieger';
         const depth = slotData.world?.depth || 1;
-
-        box.innerHTML = `
-          <div>
-            <div class="slot-header">
-              <span class="slot-num">SLOT ${i + 1}</span>
-              <span class="slot-class">${cTitle}</span>
-            </div>
-            <div class="slot-hero-name">${p.name}</div>
-            <div class="slot-meta">
-              Stufe ${p.level} • Verlies-Ebene ${depth}<br>
-              ${p.gold || 0} 🪙 Gold • ${p.hp}/${p.maxHp} TP
-            </div>
-          </div>
-          <div class="slot-buttons">
-            <button type="button" class="btn-slot-play">⚔️ SPIELEN</button>
-            <button type="button" class="btn-slot-del" title="Diesen Recken löschen">🗑️</button>
-          </div>
-        `;
-
+        box.innerHTML = `<div><div class="slot-header"><span class="slot-num">SLOT ${i + 1}</span><span class="slot-class">${cTitle}</span></div><div class="slot-hero-name">${p.name}</div><div class="slot-meta">Stufe ${p.level} • Verlies-Ebene ${depth}<br>${p.gold || 0} 🪙 Gold • ${p.hp}/${p.maxHp} TP</div></div><div class="slot-buttons"><button type="button" class="btn-slot-play">⚔️ SPIELEN</button><button type="button" class="btn-slot-del" title="Diesen Recken löschen">🗑️</button></div>`;
         box.querySelector('.btn-slot-play').onclick = (ev) => {
           ev.stopPropagation();
           loadAndLaunchSlot(i, slotData);
         };
-
         box.querySelector('.btn-slot-del').onclick = async (ev) => {
           ev.stopPropagation();
           if (confirm(`Möchtest du den Recken "${p.name}" (Slot ${i + 1}) wirklich endgültig löschen?`)) {
@@ -216,7 +230,6 @@ window.addEventListener('DOMContentLoaded', () => {
           }
         };
       }
-
       grid.appendChild(box);
     }
   }
@@ -258,7 +271,6 @@ window.addEventListener('DOMContentLoaded', () => {
     state.player.def = c.def;
     state.player.gold = 40;
     state.player.inventory = c.items.map(x => ({ ...x }));
-
     state.player.equipped = {
       head: null,
       body: c.armor || null,
@@ -267,7 +279,6 @@ window.addEventListener('DOMContentLoaded', () => {
       feet: null,
       ring: null
     };
-
     map.generate(1);
     cloud.saveSlot(slotIdx, state);
     openGame();
@@ -290,6 +301,7 @@ window.addEventListener('DOMContentLoaded', () => {
     el('game').classList.remove('hidden');
     el('hud-slot-name').textContent = `SLOT ${state.currentSlot + 1}`;
     hud();
+    sound.startMusic();
     log(`Du betrittst Ebene ${state.world.depth} der Schattengruft.`);
     if (state.world.isBossFloor) {
       log('⚠️ BOSS-EBENE: Besiege den Wächter, um das Runensiegel zu brechen!');
@@ -308,33 +320,26 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!s) return;
     const it = ITEMS[s.id];
     if (!it || !it.slot) return;
-
     const targetSlot = it.slot;
     const currentEquippedId = state.player.equipped[targetSlot];
-
     if (currentEquippedId) {
       addItem(currentEquippedId);
     }
-
     state.player.equipped[targetSlot] = s.id;
     sound.sword();
     log(`${it.name} ausgerüstet (${targetSlot}).`);
-
     s.count--;
     if (s.count <= 0) state.player.inventory.splice(invIndex, 1);
-
     hud();
   }
 
   function unequipSlot(slotKey) {
     const itemId = state.player.equipped[slotKey];
     if (!itemId) return;
-
     if (state.player.inventory.length >= 15) {
       log('Gürteltasche ist voll! Kann Item nicht ablegen.');
       return;
     }
-
     addItem(itemId);
     state.player.equipped[slotKey] = null;
     sound.sword();
@@ -346,19 +351,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const p = state.player;
     let totalAtk = p.atk;
     let totalDef = p.def;
-
     for (const [sKey, itemId] of Object.entries(p.equipped)) {
       if (!itemId) continue;
       const it = ITEMS[itemId];
       if (!it) continue;
-
       if (it.type === 'weapon' || (it.stat === 'atk')) {
         totalAtk += it.val || 0;
       } else if (it.type === 'armor' || it.type === 'shield' || it.type === 'helmet' || it.type === 'boots') {
         totalDef += it.val || 0;
       }
     }
-
     return { totalAtk, totalDef };
   }
 
@@ -375,7 +377,6 @@ window.addEventListener('DOMContentLoaded', () => {
     el('mptext').textContent = `${p.mp}/${p.maxMp}`;
     el('xp').style.width = `${Math.max(0, p.xp / p.nextXp * 100)}%`;
     el('xptext').textContent = `${p.xp}/${p.nextXp}`;
-
     renderInv();
     renderEquipmentMenu();
   }
@@ -389,10 +390,8 @@ window.addEventListener('DOMContentLoaded', () => {
       if (!it) return;
       const d = document.createElement('div');
       d.className = 'item';
-
       const actionLabel = it.slot ? '[Ausrüsten]' : '[Nutzen]';
       d.innerHTML = `<span>${it.name} x${s.count}</span><span>${actionLabel}</span>`;
-
       d.onclick = () => {
         el('iteminfo').innerHTML = `<strong>${it.name}</strong> (${it.type})<br>${it.desc}`;
         if (it.slot) {
@@ -408,14 +407,12 @@ window.addEventListener('DOMContentLoaded', () => {
   function renderEquipmentMenu() {
     const p = state.player;
     const stats = calculateCombatStats();
-
     const slots = ['head', 'body', 'mainhand', 'offhand', 'feet', 'ring'];
     slots.forEach(slotKey => {
       const itemId = p.equipped[slotKey];
       const nameEl = el(`slot-item-${slotKey}`);
       const parentBox = nameEl.closest('.equip-slot-box');
       const unequipBtn = parentBox.querySelector('.btn-unequip');
-
       if (itemId && ITEMS[itemId]) {
         nameEl.textContent = ITEMS[itemId].name;
         parentBox.classList.add('equipped');
@@ -430,15 +427,7 @@ window.addEventListener('DOMContentLoaded', () => {
         unequipBtn.classList.add('hidden');
       }
     });
-
-    el('stats').innerHTML = `
-      <strong>KAMPFWERTE:</strong><br>
-      🗡️ Effektive Schlagkraft: <span style="color:#ffe082;">${stats.totalAtk}</span> (Basis ${p.atk})<br>
-      🛡️ Effektiver Schutz: <span style="color:#90caf9;">${stats.totalDef}</span> (Basis ${p.def})<br>
-      ❤️ Max. Lebenskraft: ${p.maxHp} TP<br>
-      🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>
-      🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}
-    `;
+    el('stats').innerHTML = `<strong>KAMPFWERTE:</strong><br>🗡️ Effektive Schlagkraft: <span style="color:#ffe082;">${stats.totalAtk}</span> (Basis ${p.atk})<br>🛡️ Effektiver Schutz: <span style="color:#90caf9;">${stats.totalDef}</span> (Basis ${p.def})<br>❤️ Max. Lebenskraft: ${p.maxHp} TP<br>🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}`;
   }
 
   function useItem(idx) {
@@ -466,18 +455,15 @@ window.addEventListener('DOMContentLoaded', () => {
     if (state.inCombat) return;
     const tx = state.player.x + dx, ty = state.player.y + dy;
     if (map.isWall(tx, ty)) return;
-
     const mon = state.world.monsters.find(m => m.x === tx && m.y === ty);
     if (mon) {
       startCombat(mon);
       return;
     }
-
     state.player.x = tx;
     state.player.y = ty;
     sound.step();
     map.reveal();
-
     const ch = state.world.chests.find(c => c.x === tx && c.y === ty && !c.open);
     if (ch) {
       ch.open = true;
@@ -491,7 +477,6 @@ window.addEventListener('DOMContentLoaded', () => {
         state.world.chests = state.world.chests.filter(c => c.id !== ch.id);
       }, 800);
     }
-
     if (state.world.stairs && tx === state.world.stairs.x && ty === state.world.stairs.y) {
       log('Steintreppe in die Tiefe! [E] oder [✦] zum Hinabsteigen.');
     }
@@ -606,16 +591,13 @@ window.addEventListener('DOMContentLoaded', () => {
     state.world.monsters = state.world.monsters.filter(x => x.id !== m.id);
     state.inCombat = false;
     el('combat').classList.add('hidden');
-
     log(`${m.name} bezwungen! +${m.gold} Gold, +${m.xp} EP.`);
-
     if (m.id === 'boss') {
       state.meta.gold += 50;
       gfx.burst(m.x, m.y);
       gfx.text('👑 BOSS BESIEGT!', m.x, m.y, '#e1bee7');
       log('👑 Der Schattenfürst ist gefallen! +50 Ordensgold.');
     }
-
     if (state.world.monsters.length === 0) {
       const stairs = map.spawnStairsAfterClear();
       gfx.burst(stairs.x, stairs.y);
@@ -626,7 +608,6 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
       log(`🔒 Runensiegel aktiv – ${state.world.monsters.length} Gegner verbleiben.`);
     }
-
     if (state.player.xp >= state.player.nextXp) {
       state.player.level++;
       state.player.xp -= state.player.nextXp;
@@ -651,7 +632,6 @@ window.addEventListener('DOMContentLoaded', () => {
     state.meta.bestDepth = Math.max(state.meta.bestDepth, state.world.depth);
     el('death-stats').innerHTML = `<div>Ebene: <b>${state.world.depth}</b></div><div>Gold im Run: <b>${state.player.gold}</b></div><div>Ordensschatz: <b>${state.meta.gold} 🪙</b></div>`;
     el('death-screen').classList.remove('hidden');
-
     state.player.hp = state.player.maxHp;
     state.world.depth = 1;
     map.generate(1);
@@ -673,9 +653,9 @@ window.addEventListener('DOMContentLoaded', () => {
     openSlotScreen();
   };
 
-  el('sound').onclick = (e) => {
-    const on = sound.toggle();
-    e.currentTarget.textContent = on ? '🔊' : '🔇';
+  el('sound').onclick = () => {
+    sound.toggleMusic();
+    updateMusicButtons();
   };
 
   el('save').onclick = () => {
@@ -690,7 +670,6 @@ window.addEventListener('DOMContentLoaded', () => {
   window.onkeydown = (e) => {
     if (['INPUT', 'TEXTAREA'].includes(e.target?.tagName)) return;
     if (el('game').classList.contains('hidden')) return;
-
     const k = e.key.toLowerCase();
     const dirs = {
       w: [0, -1], arrowup: [0, -1],
@@ -722,4 +701,6 @@ window.addEventListener('DOMContentLoaded', () => {
     b.classList.add('active');
     el(b.dataset.tab)?.classList.add('active');
   });
+
+  updateMusicButtons();
 });
