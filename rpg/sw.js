@@ -1,11 +1,11 @@
-// [2026-10-13 08:55] - sw.js: v0.2.8 Force-Fresh Reload
-const CACHE = 'schattengruft-v0.2.8';
+// [2026-10-13 09:00] - sw.js: v0.2.9 Neue Firebase-Datenbank
+const CACHE = 'schattengruft-v0.2.9';
 const ASSETS = [
   './',
   './index.html',
-  './css/style.css?v=0.2.8',
-  './js/main.js?v=0.2.8',
-  './js/core/version.js?v=0.2.8',
+  './css/style.css?v=0.2.9',
+  './js/main.js?v=0.2.9',
+  './js/core/version.js?v=0.2.9',
   './favicon.ico'
 ];
 
@@ -30,7 +30,6 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.hostname.includes('firebaseio.com') || url.hostname.includes('gstatic.com')) return;
 
-  // F5 / Navigation: Immer die wirklich aktuelle Seite vom Server anfordern.
   const options = request.mode === 'navigate'
     ? { cache: 'reload' }
     : { cache: 'no-cache' };

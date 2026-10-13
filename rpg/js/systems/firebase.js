@@ -1,14 +1,15 @@
-// [2026-10-13 08:35] - js/systems/firebase.js: v0.2.6 Save-Fix & sichere Slots
+// [2026-10-13 09:00] - js/systems/firebase.js: v0.2.9 Neue Firebase-Datenbank
 import { state } from '../core/state.js';
 
 const CFG = {
-  apiKey: "AIzaSyCgSK4nJ3QOVMBd7m9RSmURflSRWN4ejBY",
-  authDomain: "pipboy-rpg.firebaseapp.com",
-  databaseURL: "https://pipboy-rpg-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "pipboy-rpg",
-  storageBucket: "pipboy-rpg.firebasestorage.app",
-  messagingSenderId: "1023458799306",
-  appId: "1:1023458799306:web:2d8c1abc23b02beac14e33"
+  apiKey: "AIzaSyBbYbswfsuyXhgK-t_Whz7sGven7J2fT2w",
+  authDomain: "rpg01-793eb.firebaseapp.com",
+  databaseURL: "https://rpg01-793eb-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "rpg01-793eb",
+  storageBucket: "rpg01-793eb.firebasestorage.app",
+  messagingSenderId: "381934095221",
+  appId: "1:381934095221:web:71007bb26d223de0a7213c",
+  measurementId: "G-4GCT9YCJJ8"
 };
 
 const mapError = (e) => {

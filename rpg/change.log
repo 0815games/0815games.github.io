@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [v0.2.9] - 2026-10-13 09:00 (Neue Firebase-Datenbank)
+- [CLOUD] Neue Firebase-Datenbank `rpg01-793eb` eingebunden.
+- [CLOUD] `databaseURL`, Projekt-ID, API-Key und App-ID auf die neue Datenbank umgestellt.
+- [RELEASE] Version auf v0.2.9 erhöht.
+
 ## [v0.2.8] - 2026-10-13 08:55 (Force-Fresh Reload)
 - [UPDATE] F5 lädt die Seite jetzt immer direkt vom Server statt aus dem Browser-Cache.
 - [UPDATE] Service Worker umgeht den HTTP-Cache für Navigationen mit `cache: reload`.
