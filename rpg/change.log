@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v0.2.3] - 2026-10-13 08:00 (Epische Musik & Audio-Regler)
+- [AUDIO] Epische prozedurale Musik für Intro, Login und Hauptspiel ergänzt.
+- [AUDIO] Musik im Intro und Login-Screen über einen eigenen Stummschalter steuerbar.
+- [AUDIO] Im Hauptspiel separate Regler für Musik und SFX von 0 bis 100 Prozent.
+- [UI] Musik-Schalter auf Intro und Login; Audio-Panel mit zwei Reglern im Hauptspiel.
+- [RELEASE] Version auf v0.2.3 erhöht.
+
 ## [v0.2.2] - 2026-10-13 07:50 (Doppel-Funkenflug & Firebase-Only)
 - [VISUAL] Funkenflug im Login-Screen von 45 auf 90 Partikel verdoppelt.
 - [STORAGE] Lokale Speicherung und Gastmodus vollständig entfernt.

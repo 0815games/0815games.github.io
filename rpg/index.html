@@ -1,19 +1,17 @@
 <!--
-[2026-10-13 07:50] - index.html: v0.2.2 Doppel-Funkenflug & Firebase-Only
+[2026-10-13 08:00] - index.html: v0.2.3 Epische Musik & Audio-Regler
 Änderungen:
-- Funkenflug im Login-Screen verdoppelt (90 Partikel).
-- Gastmodus und lokale Speicherung entfernt.
-- Firebase ist jetzt die einzige Speicher- und Konto-Lösung.
+- Musik-Stummschalter für Intro und Login ergänzt.
+- Separate Musik- und SFX-Regler von 0 bis 100 Prozent im Hauptspiel.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.2.2</title>
+  <title>Chroniken der Schattengruft – v0.2.3</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
-
   <style>
     #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
     #intro-screen.hidden{display:none;}
@@ -25,61 +23,53 @@
     .intro-hint{margin-top:16px;font-size:12px;color:#8d7f6a;letter-spacing:.2em;}
     .version-badge{display:inline-block;margin-top:18px;padding:3px 10px;border:1px solid #6d5427;border-radius:999px;font-size:11px;color:#ffd54f;background:#00000055;letter-spacing:.12em;}
     .hud-version{margin-left:10px;font-size:11px;color:#ffd54f;opacity:.85;}
+    .music-toggle{position:absolute;top:18px;right:18px;z-index:10000;background:#00000088;border:1px solid #6d5427;color:#ffd54f;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:16px;}
+    .audio-panel{margin:10px 0 16px;padding:12px;border:1px solid #3a2f1b;border-radius:10px;background:#0d0f16;}
+    .audio-panel h4{margin:0 0 10px;color:#ffd54f;font-size:12px;letter-spacing:.18em;}
+    .audio-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:#cfc3a5;}
+    .audio-row input[type=range]{flex:1;accent-color:#ffb300;}
+    .audio-row output{min-width:42px;text-align:right;color:#ffd54f;}
   </style>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-
   <div id="intro-screen">
+    <button type="button" class="music-toggle" data-music-toggle title="Musik stummschalten / aktivieren">🎵</button>
     <div class="intro-box">
       <div class="crest">⚔️<span>🛡️</span>⚔️</div>
       <h1 class="intro-title">CHRONIKEN</h1>
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.2.2</span>
+      <span class="version-badge" data-version>v0.2.3</span>
     </div>
   </div>
 
   <div id="login-screen" class="screen hidden">
+    <button type="button" class="music-toggle" data-music-toggle title="Musik stummschalten / aktivieren">🎵</button>
     <canvas id="login-canvas"></canvas>
     <div class="monster left">♜</div>
     <div class="monster right">♞</div>
-
     <main class="login-card">
       <div class="crest">⚔️<span>🛡️</span>⚔️</div>
       <h1>CHRONIKEN</h1>
       <h2>DER SCHATTENGRUFT</h2>
       <p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p>
-
       <div id="cloud-status" class="cloud ok">● ORDENSARCHIV BEREIT</div>
-
       <div class="auth-tabs">
         <button type="button" class="auth-tab active" data-mode="login">ANMELDEN</button>
         <button type="button" class="auth-tab" data-mode="register">NEUE WEIHE (KONTO ERSTELLEN)</button>
       </div>
-
       <form id="auth-form" onsubmit="return false;">
-        <div class="field">
-          <label for="auth-email">ORDENS-EMAIL</label>
-          <input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email" required>
-        </div>
-
-        <div class="field">
-          <label for="auth-password">RUNEN-PASSWORT</label>
-          <input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password" required minlength="6">
-        </div>
-
+        <div class="field"><label for="auth-email">ORDENS-EMAIL</label><input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email" required></div>
+        <div class="field"><label for="auth-password">RUNEN-PASSWORT</label><input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password" required minlength="6"></div>
         <div id="auth-error" class="auth-error-box hidden"></div>
-
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
-
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.2.2</span></div>
+      <div><span class="version-badge" data-version>v0.2.3</span></div>
     </main>
   </div>
 
@@ -90,7 +80,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.2.2</span>
+        <span class="version-badge" data-version>v0.2.3</span>
       </div>
     </main>
   </div>
@@ -100,18 +90,9 @@
       <h2 id="class-screen-title">NEUEN RECKEN WEIHEN</h2>
       <p>Wähle Klasse und Namen für diesen Speicher-Platz.</p>
       <div class="classes">
-        <button type="button" class="class active" data-class="warrior">
-          <b>🛡️ EISENBRECHER</b><span>Krieger</span>
-          <small>75 TP · 15 MP · 9 ATK · 4 DEF</small>
-        </button>
-        <button type="button" class="class" data-class="mage">
-          <b>🔮 ARKANIST</b><span>Magier</span>
-          <small>50 TP · 50 MP · 6 ATK · 1 DEF</small>
-        </button>
-        <button type="button" class="class" data-class="rogue">
-          <b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span>
-          <small>60 TP · 25 MP · 8 ATK · 2 DEF</small>
-        </button>
+        <button type="button" class="class active" data-class="warrior"><b>🛡️ EISENBRECHER</b><span>Krieger</span><small>75 TP · 15 MP · 9 ATK · 4 DEF</small></button>
+        <button type="button" class="class" data-class="mage"><b>🔮 ARKANIST</b><span>Magier</span><small>50 TP · 50 MP · 6 ATK · 1 DEF</small></button>
+        <button type="button" class="class" data-class="rogue"><b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span><small>60 TP · 25 MP · 8 ATK · 2 DEF</small></button>
       </div>
       <div class="class-action">
         <input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname">
@@ -141,7 +122,7 @@
         <em id="hero-class">Eisenbrecher</em>
         <span>LVL <b id="level">1</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.2.2</span>
+        <span class="hud-version" data-version>v0.2.3</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -150,19 +131,23 @@
       </div>
       <div class="right">
         <b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b>
-        <button id="sound" type="button" title="Ton umschalten">🔊</button>
+        <button id="sound" type="button" title="Musik stummschalten / aktivieren">🎵</button>
         <button id="save" type="button" title="Diesen Slot im Ordensarchiv sichern">💾</button>
         <button id="btn-chars" type="button" title="Zur Recken-Auswahl">👥 Recken</button>
         <button id="logout" type="button" title="Abmelden / Zum Portal">🚪</button>
       </div>
     </header>
-
     <main id="layout">
       <section id="mapbox">
         <canvas id="stage" width="640" height="480"></canvas>
         <div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion (Treppe / Kiste)</div>
       </section>
       <aside>
+        <div class="audio-panel">
+          <h4>🎧 AUDIO</h4>
+          <div class="audio-row"><span>🎵 Musik</span><input id="music-volume" type="range" min="0" max="100" value="70"><output id="music-volume-value">70%</output></div>
+          <div class="audio-row"><span>⚔️ SFX</span><input id="sfx-volume" type="range" min="0" max="100" value="80"><output id="sfx-volume-value">80%</output></div>
+        </div>
         <nav>
           <button type="button" class="tab active" data-tab="inv">INVENTAR</button>
           <button type="button" class="tab" data-tab="char">AUSRÜSTUNG</button>
@@ -202,7 +187,6 @@
         </section>
       </aside>
     </main>
-
     <div id="touch">
       <button type="button" data-m="up">▲</button>
       <button type="button" data-m="left">◀</button>
@@ -211,7 +195,6 @@
       <button type="button" data-m="down">▼</button>
     </div>
   </div>
-
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
