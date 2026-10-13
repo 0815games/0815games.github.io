@@ -1,24 +1,80 @@
-// [2026-10-12 20:45] - js/world/render.js: v0.1.5 Canvas-Renderer
+// v0.3.7 – Bewegbare Kamera und unterschiedliche Ebenen-Optiken
 import { state } from '../core/state.js';
+
+const THEMES = {
+  katakomben: {
+    floorA: '#141722',
+    floorB: '#10121a',
+    wall: '#1c202c',
+    wallLine: '#2e364a',
+    accent: '#271b23',
+    accentInner: '#392734',
+    fog: '#05060a'
+  },
+  pilzwald: {
+    floorA: '#10241a',
+    floorB: '#0d1d16',
+    wall: '#173024',
+    wallLine: '#224634',
+    accent: '#1f4030',
+    accentLine: '#2f5c44',
+    fog: '#040a07'
+  },
+  frostgruft: {
+    floorA: '#101a26',
+    floorB: '#0d1620',
+    wall: '#1b2c3d',
+    wallLine: '#2c455c',
+    accent: '#24455c',
+    accentLine: '#356a8a',
+    fog: '#04070c'
+  },
+  feuershrein: {
+    floorA: '#241a14',
+    floorB: '#1d1410',
+    wall: '#38160f',
+    wallLine: '#5c241a',
+    accent: '#4a1a10',
+    accentLine: '#7a2c18',
+    fog: '#0a0403'
+  },
+  schattenarena: {
+    floorA: '#131320',
+    floorB: '#0f0f1a',
+    wall: '#232338',
+    wallLine: '#383858',
+    accent: '#2e2e48',
+    accentLine: '#454569',
+    fog: '#04040a'
+  }
+};
 
 export class Renderer {
   constructor(id) {
     this.cv = document.getElementById(id);
     this.ctx = this.cv.getContext('2d');
     this.tile = 32;
+    this.camera = { x: 0, y: 0 };
     this.particles = [];
     this.texts = [];
     this.loop();
   }
 
   text(txt, x, y, c = '#ffd54f') {
-    this.texts.push({ txt, x: x * this.tile + 16, y: y * this.tile, c, a: 1 });
+    this.texts.push({
+      txt,
+      x: x * this.tile + 16,
+      y: y * this.tile,
+      c,
+      a: 1
+    });
   }
 
   burst(x, y) {
     for (let i = 0; i < 24; i++) {
       const a = Math.random() * 6.28;
       const s = 30 + Math.random() * 80;
+
       this.particles.push({
         x: x * this.tile + 16,
         y: y * this.tile + 16,
@@ -32,53 +88,111 @@ export class Renderer {
 
   loop() {
     let last = performance.now();
-    const f = (t) => {
+
+    const frame = (t) => {
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
       this.update(dt);
       this.draw();
-      requestAnimationFrame(f);
+      requestAnimationFrame(frame);
     };
-    requestAnimationFrame(f);
+
+    requestAnimationFrame(frame);
   }
 
   update(dt) {
-    this.texts = this.texts.filter(t => (t.y -= 25 * dt, t.a -= dt * 0.9, t.a > 0));
-    this.particles = this.particles.filter(p => (p.x += p.vx * dt, p.y += p.vy * dt, p.vy += 80 * dt, p.a -= dt * 1.2, p.a > 0));
+    this.texts = this.texts.filter((t) => {
+      t.y -= 25 * dt;
+      t.a -= dt * 0.9;
+      return t.a > 0;
+    });
+
+    this.particles = this.particles.filter((p) => {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 80 * dt;
+      p.a -= dt * 1.2;
+      return p.a > 0;
+    });
+  }
+
+  getTheme() {
+    return THEMES[state.world.theme] || THEMES.katakomben;
+  }
+
+  updateCamera(cols, rows) {
+    const t = this.tile;
+    const viewW = this.cv.width;
+    const viewH = this.cv.height;
+    const worldW = cols * t;
+    const worldH = rows * t;
+
+    const px = (Number.isFinite(state.player.x) ? state.player.x : 2) * t + t / 2;
+    const py = (Number.isFinite(state.player.y) ? state.player.y : 2) * t + t / 2;
+
+    let camX = px - viewW / 2;
+    let camY = py - viewH / 2;
+
+    camX = worldW > viewW ? Math.max(0, Math.min(camX, worldW - viewW)) : (worldW - viewW) / 2;
+    camY = worldH > viewH ? Math.max(0, Math.min(camY, worldH - viewH)) : (worldH - viewH) / 2;
+
+    this.camera.x = camX;
+    this.camera.y = camY;
   }
 
   draw() {
     const c = this.ctx;
     const t = this.tile;
     const w = state.world;
+
     if (!w.tiles || !w.tiles.length) return;
 
-    c.clearRect(0, 0, 640, 480);
+    const cols = w.cols || 20;
+    const rows = w.rows || 15;
+    const theme = this.getTheme();
 
-    for (let y = 0; y < w.rows; y++) {
-      for (let x = 0; x < w.cols; x++) {
+    this.updateCamera(cols, rows);
+    c.clearRect(0, 0, this.cv.width, this.cv.height);
+    c.fillStyle = theme.fog;
+    c.fillRect(0, 0, this.cv.width, this.cv.height);
+
+    c.save();
+    c.translate(-this.camera.x, -this.camera.y);
+
+    const x0 = Math.max(0, Math.floor(this.camera.x / t));
+    const y0 = Math.max(0, Math.floor(this.camera.y / t));
+    const x1 = Math.min(cols, Math.ceil((this.camera.x + this.cv.width) / t));
+    const y1 = Math.min(rows, Math.ceil((this.camera.y + this.cv.height) / t));
+
+    for (let y = y0; y < y1; y++) {
+      for (let x = x0; x < x1; x++) {
         const seen = w.discovered?.[y]?.[x];
+        const sx = x * t;
+        const sy = y * t;
+
         if (!seen) {
           c.fillStyle = '#06070a';
-          c.fillRect(x * t, y * t, t, t);
+          c.fillRect(sx, sy, t, t);
           continue;
         }
+
         const tile = w.tiles[y]?.[x] || 0;
+
         if (tile === 1) {
-          c.fillStyle = '#1c202c';
-          c.fillRect(x * t, y * t, t, t);
-          c.strokeStyle = '#2e364a';
-          c.strokeRect(x * t + 1, y * t + 1, t - 2, t - 2);
+          c.fillStyle = theme.wall;
+          c.fillRect(sx, sy, t, t);
+          c.strokeStyle = theme.wallLine;
+          c.strokeRect(sx + 1, sy + 1, t - 2, t - 2);
         } else if (tile === 2) {
-          c.fillStyle = '#271b23';
-          c.fillRect(x * t, y * t, t, t);
-          c.fillStyle = '#392734';
-          c.fillRect(x * t + 3, y * t + 3, t - 6, t - 6);
+          c.fillStyle = theme.accent;
+          c.fillRect(sx, sy, t, t);
+          c.fillStyle = theme.accentLine;
+          c.fillRect(sx + 3, sy + 3, t - 6, t - 6);
         } else {
-          c.fillStyle = (x + y) % 2 ? '#10121a' : '#141722';
-          c.fillRect(x * t, y * t, t, t);
+          c.fillStyle = (x + y) % 2 ? theme.floorA : theme.floorB;
+          c.fillRect(sx, sy, t, t);
           c.strokeStyle = '#ffffff07';
-          c.strokeRect(x * t, y * t, t, t);
+          c.strokeRect(sx, sy, t, t);
         }
       }
     }
@@ -86,6 +200,7 @@ export class Renderer {
     if (w.stairs && w.discovered?.[w.stairs.y]?.[w.stairs.x]) {
       const sx = w.stairs.x * t;
       const sy = w.stairs.y * t;
+
       c.fillStyle = '#c99c42';
       c.fillRect(sx + 6, sy + 6, 20, 20);
       c.fillStyle = '#0a0c10';
@@ -98,8 +213,10 @@ export class Renderer {
     if (w.chests) {
       for (const ch of w.chests) {
         if (!w.discovered?.[ch.y]?.[ch.x]) continue;
+
         const sx = ch.x * t;
         const sy = ch.y * t;
+
         if (ch.open) {
           c.fillStyle = '#5d4037';
           c.fillRect(sx + 6, sy + 12, 20, 12);
@@ -119,17 +236,22 @@ export class Renderer {
     if (w.monsters) {
       for (const m of w.monsters) {
         if (!w.discovered?.[m.y]?.[m.x]) continue;
+
         const sx = m.x * t;
         const sy = m.y * t;
+
         c.fillStyle = m.color || '#e53935';
         c.beginPath();
         c.arc(sx + 16, sy + 16, 11, 0, 6.28);
         c.fill();
+
         c.fillStyle = '#ff1744';
         c.fillRect(sx + 11, sy + 12, 3, 3);
         c.fillRect(sx + 18, sy + 12, 3, 3);
+
         c.fillStyle = '#440000';
         c.fillRect(sx + 4, sy + 2, 24, 3);
+
         c.fillStyle = '#f44336';
         c.fillRect(sx + 4, sy + 2, 24 * Math.max(0, m.hp / m.maxHp), 3);
       }
@@ -138,11 +260,12 @@ export class Renderer {
     const px = (Number.isFinite(state.player.x) ? state.player.x : 2) * t;
     const py = (Number.isFinite(state.player.y) ? state.player.y : 2) * t;
 
-    const g = c.createRadialGradient(px + 16, py + 16, 8, px + 16, py + 16, 45);
-    g.addColorStop(0, '#ffb30066');
-    g.addColorStop(1, '#00000000');
-    c.fillStyle = g;
-    c.fillRect(px - 35, py - 35, 102, 102);
+    const glow = c.createRadialGradient(px + 16, py + 16, 8, px + 16, py + 16, 55);
+    glow.addColorStop(0, '#ffb30066');
+    glow.addColorStop(1, '#00000000');
+
+    c.fillStyle = glow;
+    c.fillRect(px - 45, py - 45, 122, 122);
 
     c.fillStyle = '#d4a94d';
     c.fillRect(px + 6, py + 6, 20, 20);
@@ -157,12 +280,15 @@ export class Renderer {
       c.fillStyle = p.c;
       c.fillRect(p.x, p.y, 3, 3);
     }
+
     for (const tx of this.texts) {
       c.globalAlpha = tx.a;
       c.fillStyle = tx.c;
       c.font = 'bold 12px serif';
       c.fillText(tx.txt, tx.x - 10, tx.y);
     }
+
     c.globalAlpha = 1;
+    c.restore();
   }
 }

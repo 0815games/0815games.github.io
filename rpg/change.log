@@ -1,12 +1,9 @@
 # CHANGELOG
 
-## [v0.3.6] - 2026-10-13 09:55 (Zufallsname & AFK-Logout)
-- [UI] Dark-Fantasy-Zufallsnamensgenerator beim Erstellen von Recken ergänzt.
-- [SECURITY] Automatischer Logout nach 10 Minuten Inaktivität mit vorherigem Speichern.
-- [UI] Speicher-Benachrichtigung als Erfolgs- oder Fehlermeldung ergänzt.
-- [RELEASE] Version auf v0.3.6 erhöht.
-
-## [v0.3.5] - 2026-10-13 09:50 (Speicher-Meldung & Login-Fehler)
-- [UI] Sichtbare Erfolgs- und Fehlermeldung beim Speichern ergänzt.
-- [AUTH] Deutliche Fehlermeldungen für falsches Passwort, unbekanntes Konto, ungültige E-Mail, zu viele Versuche und Netzwerkfehler.
-- [RELEASE] Version auf v0.3.5 erhöht.
+## [v0.3.7] - 2026-10-13 09:30 (Level-Design & bewegbare Welt)
+- [LEVEL] Jede Ebene erhält ein anderes Design: Katakomben, Pilzwald, Frostgruft, Feuershrein und Schattenarena.
+- [LEVEL] Größere, prozedural erzeugte Karten mit mehreren Räumen und Korridoren.
+- [CAMERA] Die Welt bewegt sich nun mit dem Helden; das Sichtfeld bleibt auf den Bildschirm begrenzt.
+- [VISUAL] Eigene Farbpaletten und Effekte für jedes Ebenen-Design.
+- [FIX] Vollständige main.js mit allen Spiel-Funktionen wiederhergestellt.
+- [RELEASE] Version auf v0.3.7 erhöht.
