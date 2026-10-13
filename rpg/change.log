@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [v0.3.4] - 2026-10-13 09:30 (Ebenenwechsel-Animation)
+- [UI] Dramatische Ebenenwechsel-Animation mit großer Ebenen-Schrift ergänzt.
+- [UI] Beim Hinabsteigen erscheinen nun Ebenennummer, Untertitel und Lichtlinie.
+- [RELEASE] Version auf v0.3.4 erhöht.
+
 ## [v0.3.3] - 2026-10-13 09:20 (Aufwendigere Animationen)
 - [UI] Intro, Login, Recken-Auswahl, Kampf, Inventar, Ausrüstung, Tod und Level-Up visuell überarbeitet.
 - [UI] Einheitlicher hochwertiger Animationsstil mit Glow, Sheen, Hover, Pop- und Shake-Effekten.
