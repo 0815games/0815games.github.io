@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.2.5] - 2026-10-13 08:20 (Sanftere Musik & Funkenflug in der Recken-Auswahl)
+- [AUDIO] Musik startet jetzt mit halber Lautstärke (35 % statt 70 %).
+- [VISUAL] Funkenflug auch im Recken-Auswahl-Menü ergänzt.
+- [SAVE] Charakter-Speicherung wird jetzt abgewartet; bei Fehlschlag erscheint eine klare Warnung.
+- [RELEASE] Version auf v0.2.5 erhöht.
+
 ## [v0.2.4] - 2026-10-13 08:10 (Recken-Auswahl & Musik-Fix)
 - [FIX] Recken-Auswahl bleibt jetzt immer bedienbar, auch wenn Firebase-Slots nicht geladen werden können.
 - [FIX] Fehlende oder fehlerhafte Cloud-Slots erzeugen keinen leeren, unbedienbaren Bildschirm mehr.

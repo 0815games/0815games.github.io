@@ -1,15 +1,14 @@
-// [2026-10-13 08:10] - js/systems/audio.js: v0.2.4 Hörbare Musik & sichere SFX
+// [2026-10-13 08:20] - js/systems/audio.js: v0.2.5 Halbe Musik-Startlautstärke
 export class AudioSystem {
   constructor() {
     const C = window.AudioContext || window.webkitAudioContext;
     this.ctx = C ? new C() : null;
-    this.musicVolume = 70;
+    this.musicVolume = 35;
     this.sfxVolume = 80;
     this.musicMuted = false;
     this.musicPlaying = false;
     this.musicTimer = null;
     this.musicStep = 0;
-
     if (this.ctx) {
       this.master = this.ctx.createGain();
       this.musicGain = this.ctx.createGain();
@@ -20,27 +19,22 @@ export class AudioSystem {
       this.applyVolumes();
     }
   }
-
   resume() {
     if (this.ctx?.state === 'suspended') this.ctx.resume();
   }
-
   applyVolumes() {
     if (!this.ctx) return;
     this.musicGain.gain.value = this.musicMuted ? 0 : (this.musicVolume / 100) * 0.5;
     this.sfxGain.gain.value = (this.sfxVolume / 100) * 0.8;
   }
-
   setMusicVolume(value) {
     this.musicVolume = Math.max(0, Math.min(100, Number(value) || 0));
     this.applyVolumes();
   }
-
   setSfxVolume(value) {
     this.sfxVolume = Math.max(0, Math.min(100, Number(value) || 0));
     this.applyVolumes();
   }
-
   toggleMusic() {
     this.musicMuted = !this.musicMuted;
     this.applyVolumes();
@@ -48,7 +42,6 @@ export class AudioSystem {
     else this.startMusic();
     return !this.musicMuted;
   }
-
   tone(freq, dur = 0.16, type = 'sine', vol = 0.2, destination = this.sfxGain, delay = 0) {
     if (!this.ctx) return;
     if (destination === this.sfxGain && this.sfxVolume <= 0) return;
@@ -67,7 +60,6 @@ export class AudioSystem {
     o.start(t);
     o.stop(t + dur + 0.05);
   }
-
   startMusic() {
     if (!this.ctx || this.musicPlaying || this.musicMuted || this.musicVolume <= 0) return;
     this.resume();
@@ -75,7 +67,6 @@ export class AudioSystem {
     this.playMusicBar();
     this.musicTimer = setInterval(() => this.playMusicBar(), 4800);
   }
-
   stopMusic() {
     this.musicPlaying = false;
     if (this.musicTimer) {
@@ -83,7 +74,6 @@ export class AudioSystem {
       this.musicTimer = null;
     }
   }
-
   playMusicBar() {
     if (!this.ctx || this.musicMuted || this.musicVolume <= 0) return;
     const chords = [
@@ -105,7 +95,6 @@ export class AudioSystem {
       this.tone(freq, 0.45, 'triangle', 0.16, this.musicGain, i * 0.6 + 0.15);
     });
   }
-
   step() { this.tone(75, 0.05, 'triangle', 0.08); }
   sword() {
     this.tone(420, 0.18, 'sawtooth', 0.22);
@@ -127,5 +116,4 @@ export class AudioSystem {
   }
   death() { this.tone(65, 1.4, 'sawtooth', 0.4); }
 }
-
 export const sound = new AudioSystem();
