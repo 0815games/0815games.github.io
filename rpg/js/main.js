@@ -1,5 +1,5 @@
-// [2026-10-13 09:10] - js/main.js: v0.3.2 Aufwendige Level-Up-Animation
-// Vollständige main.js mit EXP-Anzeige, EP-Pop-up, Level-Up-Overlay, Partikeln, Bildschirmwackeln und Sound.
+// [2026-10-13 09:35] - js/main.js: v0.3.4 Ebenenwechsel-Animation
+// Vollständige main.js mit Ebenenwechsel-Overlay, EXP-Anzeige, Level-Up-Animation und Firebase.
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -439,7 +439,6 @@ window.addEventListener('DOMContentLoaded', () => {
     if (!overlay || !levelText) return;
     levelText.textContent = level;
     overlay.classList.remove('hidden');
-
     for (let i = 0; i < 36; i++) {
       const particle = document.createElement('span');
       particle.className = 'levelup-particle';
@@ -451,11 +450,19 @@ window.addEventListener('DOMContentLoaded', () => {
       overlay.appendChild(particle);
       setTimeout(() => particle.remove(), 1700);
     }
-
     document.body.classList.add('screen-shake');
     setTimeout(() => document.body.classList.remove('screen-shake'), 550);
     sound.levelUp();
     setTimeout(() => overlay.classList.add('hidden'), 1800);
+  }
+
+  function showFloorTransition(depth) {
+    const overlay = el('floor-overlay');
+    const title = el('floor-title');
+    if (!overlay || !title) return;
+    title.textContent = `EBENE ${depth}`;
+    overlay.classList.remove('hidden');
+    setTimeout(() => overlay.classList.add('hidden'), 1700);
   }
 
   function renderInv() {
@@ -579,6 +586,7 @@ window.addEventListener('DOMContentLoaded', () => {
       sound.stairs();
       map.generate(state.world.depth + 1);
       state.meta.bestDepth = Math.max(state.meta.bestDepth, state.world.depth);
+      showFloorTransition(state.world.depth);
       log(`Du steigst hinab auf Ebene ${state.world.depth}. Die Kreaturen erstarken.`);
       hud();
       saveCurrentSlot();
