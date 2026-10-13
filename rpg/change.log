@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.2.1] - 2026-10-13 07:45 (Intro-Rückkehr & Versionsanzeige)
+- [INTRO] Animiertes Intro vor dem Login wiederhergestellt: Titel, Ladebalken und Klick-/Enter-Freischaltung.
+- [VERSION] Zentrale Versionsdatei `js/core/version.js` eingeführt.
+- [UI] Versionsanzeige auf Intro, Login, Recken-Auswahl und im Hauptspiel-HUD ergänzt.
+- [RELEASE] Künftige Updates erhöhen die Version zentral in `version.js` und dokumentieren sie im Changelog.
+
 ## [v0.2.0] - 2026-10-13 07:37 (Sealbreaker & Boss-Ebenen)
 - [PROGRESSION] Treppe wird beim Ebenenstart nicht mehr erzeugt; der Abstieg ist zunächst durch ein Runensiegel versiegelt.
 - [SPAWN] Die Treppe erscheint erst nach dem Sieg über alle Gegner und wird zufällig auf einem garantiert freien Bodenfeld platziert.

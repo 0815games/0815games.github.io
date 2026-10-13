@@ -1,18 +1,25 @@
-<!--
-[2026-10-12 20:45] - index.html: v0.1.5 Interaktives Ausrüstungs-Menü (Paper-Doll)
-Änderungen:
-- Neuer Ausrüstungs-Bereich mit Kachel-Slots: Kopf, Waffe, Schild, Rüstung, Stiefel & Ring.
-- Klickbare Ausrüstungs-Slots zum gezielten Ablegen und Anlegen von Rüstzeug.
-- Live-Vergleich der Kampfattribut-Boni (ATK, DEF, TP, MP).
--->
+<!--\n[2026-10-13 07:45] - index.html: v0.2.1 Intro-Rückkehr & Versionsanzeige\nÄnderungen:\n- Animiertes Intro vor dem Login wiederhergestellt.\n- Zentrale Versionsanzeige auf Login, Recken-Auswahl und im Hauptspiel.\n-->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft - v0.1.5</title>
+  <title>Chroniken der Schattengruft – v0.2.1</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
+
+  <style>
+    #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
+    #intro-screen.hidden{display:none;}
+    .intro-box{text-align:center;color:#e8d9a0;font-family:serif;}
+    .intro-title{font-size:clamp(32px,7vw,72px);letter-spacing:.18em;margin:0;color:#ffd54f;text-shadow:0 0 24px #ff980088;}
+    .intro-sub{margin:10px 0 34px;letter-spacing:.35em;font-size:clamp(10px,2vw,15px);color:#bcaaa4;}
+    .intro-bar{width:min(420px,72vw);height:8px;margin:0 auto;border:1px solid #6d5427;background:#0b0d14;}
+    .intro-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9800,#ffd54f);transition:width .2s linear;}
+    .intro-hint{margin-top:16px;font-size:12px;color:#8d7f6a;letter-spacing:.2em;}
+    .version-badge{display:inline-block;margin-top:18px;padding:3px 10px;border:1px solid #6d5427;border-radius:999px;font-size:11px;color:#ffd54f;background:#00000055;letter-spacing:.12em;}
+    .hud-version{margin-left:10px;font-size:11px;color:#ffd54f;opacity:.85;}
+  </style>
 
   <!-- Firebase SDK v8 (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -21,8 +28,20 @@
 </head>
 <body>
 
+  <!-- INTRO / BOOT-SEQUENZ -->
+  <div id="intro-screen">
+    <div class="intro-box">
+      <div class="crest">⚔️<span>🛡️</span>⚔️</div>
+      <h1 class="intro-title">CHRONIKEN</h1>
+      <p class="intro-sub">DER SCHATTENGRUFT</p>
+      <div class="intro-bar"><i id="intro-bar"></i></div>
+      <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
+      <span class="version-badge" data-version>v0.2.1</span>
+    </div>
+  </div>
+
   <!-- LOGIN- & PORTAL-SCREEN -->
-  <div id="login-screen" class="screen">
+  <div id="login-screen" class="screen hidden">
     <canvas id="login-canvas"></canvas>
     <div class="monster left">♜</div>
     <div class="monster right">♞</div>
@@ -59,6 +78,7 @@
       <div class="divide">ODER OHNE KONTO</div>
       <button id="guest-btn" type="button" class="dark wide">🚪 ALS GASTREISENDER STARTEN (LOKAL)</button>
       <small>Cloud-Saves synchronisieren via Firebase. Gäste speichern lokal im Browser.</small>
+      <div><span class="version-badge" data-version>v0.2.1</span></div>
     </main>
   </div>
 
@@ -72,6 +92,7 @@
 
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
+        <span class="version-badge" data-version>v0.2.1</span>
       </div>
     </main>
   </div>
@@ -127,6 +148,7 @@
         <em id="hero-class">Eisenbrecher</em> 
         <span>LVL <b id="level">1</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
+        <span class="hud-version" data-version>v0.2.1</span>
       </div>
 
       <div class="bars">
@@ -163,7 +185,6 @@
           <div id="iteminfo">Wähle einen Gegenstand aus dem Rucksack.</div>
         </section>
 
-        <!-- NEUES INTERAKTIVES AUSRÜSTUNGS-MENÜ -->
         <section id="char" class="panel">
           <h3>RÜSTKAMMER DES RECKEN</h3>
           <div class="equip-grid">

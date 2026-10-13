@@ -1,10 +1,11 @@
-// [2026-10-13 07:37] - js/main.js: v0.2.0 Sealbreaker & Boss-Ebenen
+// [2026-10-13 07:45] - js/main.js: v0.2.1 Intro-Rückkehr & Versionsanzeige
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
 import { sound } from './systems/audio.js';
 import { WorldMap } from './world/map.js';
 import { Renderer } from './world/render.js';
+import { VERSION_LABEL } from './core/version.js';
 
 window.addEventListener('DOMContentLoaded', () => {
   const map = new WorldMap();
@@ -15,6 +16,51 @@ window.addEventListener('DOMContentLoaded', () => {
   let allSlots = [null, null, null, null];
 
   const el = id => document.getElementById(id);
+
+  // v0.2.1: Zentrale Versionsanzeige
+  document.title = `Chroniken der Schattengruft – ${VERSION_LABEL}`;
+  document.querySelectorAll('[data-version]').forEach(node => {
+    node.textContent = VERSION_LABEL;
+  });
+
+  // v0.2.1: Intro vor dem Login
+  const intro = el('intro-screen');
+  const introBar = el('intro-bar');
+  const loginScreen = el('login-screen');
+  let introProgress = 0;
+  let introFinished = false;
+
+  function finishIntro() {
+    if (introFinished) return;
+    introFinished = true;
+    introBar.style.width = '100%';
+    setTimeout(() => {
+      intro.classList.add('hidden');
+      loginScreen.classList.remove('hidden');
+    }, 250);
+  }
+
+  const introTimer = setInterval(() => {
+    introProgress = Math.min(100, introProgress + 5);
+    introBar.style.width = `${introProgress}%`;
+    if (introProgress >= 100) {
+      clearInterval(introTimer);
+      finishIntro();
+    }
+  }, 45);
+
+  intro.addEventListener('click', () => {
+    clearInterval(introTimer);
+    finishIntro();
+  }, { once: true });
+
+  window.addEventListener('keydown', function introKey(e) {
+    if (e.key === 'Enter' && !introFinished) {
+      clearInterval(introTimer);
+      finishIntro();
+      window.removeEventListener('keydown', introKey);
+    }
+  });
 
   // Hintergrund-Feuerpartikel
   const loginCanvas = el('login-canvas');
@@ -225,7 +271,6 @@ window.addEventListener('DOMContentLoaded', () => {
     state.player.gold = 40;
     state.player.inventory = c.items.map(x => ({ ...x }));
 
-    // Ausrüstung initialisieren
     state.player.equipped = {
       head: null,
       body: c.armor || null,
@@ -270,7 +315,6 @@ window.addEventListener('DOMContentLoaded', () => {
     log(`Slot ${state.currentSlot + 1} (${state.player.name}) gesichert.`);
   }
 
-  // --- AUSRÜSTUNGS-LOGIK (EQUIP / UNEQUIP) ---
   function equipItemFromInv(invIndex) {
     const s = state.player.inventory[invIndex];
     if (!s) return;
@@ -280,17 +324,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const targetSlot = it.slot;
     const currentEquippedId = state.player.equipped[targetSlot];
 
-    // Vorheriges Item ins Inventar zurücklegen
     if (currentEquippedId) {
       addItem(currentEquippedId);
     }
 
-    // Neues Item anlegen
     state.player.equipped[targetSlot] = s.id;
     sound.sword();
     log(`${it.name} ausgerüstet (${targetSlot}).`);
 
-    // Aus Inventar verbrauchen
     s.count--;
     if (s.count <= 0) state.player.inventory.splice(invIndex, 1);
 
@@ -333,7 +374,6 @@ window.addEventListener('DOMContentLoaded', () => {
     return { totalAtk, totalDef };
   }
 
-  // UI Aktualisieren
   function hud() {
     const p = state.player;
     el('hero-name').textContent = p.name;
@@ -381,7 +421,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const p = state.player;
     const stats = calculateCombatStats();
 
-    // Slots belegen
     const slots = ['head', 'body', 'mainhand', 'offhand', 'feet', 'ring'];
     slots.forEach(slotKey => {
       const itemId = p.equipped[slotKey];
@@ -582,7 +621,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
     log(`${m.name} bezwungen! +${m.gold} Gold, +${m.xp} EP.`);
 
-    // v0.2.0: Boss-Sieg gewährt zusätzlichen Ordensschatz.
     if (m.id === 'boss') {
       state.meta.gold += 50;
       gfx.burst(m.x, m.y);
@@ -590,7 +628,6 @@ window.addEventListener('DOMContentLoaded', () => {
       log('👑 Der Schattenfürst ist gefallen! +50 Ordensgold.');
     }
 
-    // v0.2.0: Treppe erscheint erst, wenn alle Gegner besiegt wurden.
     if (state.world.monsters.length === 0) {
       const stairs = map.spawnStairsAfterClear();
       gfx.burst(stairs.x, stairs.y);
