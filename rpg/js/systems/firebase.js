@@ -1,4 +1,4 @@
-// [2026-10-13 09:00] - js/systems/firebase.js: v0.2.9 Neue Firebase-Datenbank
+// [2026-10-13 09:50] - js/systems/firebase.js: v0.3.5 Klare Anmelde-Fehler
 import { state } from '../core/state.js';
 
 const CFG = {
@@ -15,11 +15,16 @@ const CFG = {
 const mapError = (e) => {
   const code = e.code || "";
   const errMap = {
-    "auth/invalid-email": "Ungültiges E-Mail-Format.",
-    "auth/user-not-found": "Kein Ordenskonto mit dieser E-Mail gefunden.",
+    "auth/invalid-email": "Ungültiges E-Mail-Format. Bitte prüfe deine E-Mail-Adresse.",
+    "auth/user-not-found": "Kein Ordenskonto mit dieser E-Mail gefunden. Bitte registriere dich zuerst.",
     "auth/wrong-password": "Das eingegebene Runen-Passwort ist falsch.",
-    "auth/email-already-in-use": "Diese E-Mail ist bereits registriert. Bitte anmelden.",
-    "auth/weak-password": "Passwort zu schwach (mindestens 6 Zeichen).",
+    "auth/invalid-credential": "E-Mail oder Passwort ist falsch. Bitte prüfe beide Angaben.",
+    "auth/invalid-login-credentials": "E-Mail oder Passwort ist falsch. Bitte prüfe beide Angaben.",
+    "auth/missing-password": "Bitte gib dein Runen-Passwort ein.",
+    "auth/email-already-in-use": "Diese E-Mail ist bereits registriert. Bitte melde dich an.",
+    "auth/weak-password": "Das Passwort ist zu schwach. Verwende mindestens 6 Zeichen.",
+    "auth/user-disabled": "Dieses Ordenskonto wurde deaktiviert.",
+    "auth/too-many-requests": "Zu viele Anmeldeversuche. Bitte warte kurz und versuche es erneut.",
     "auth/operation-not-allowed": "E-Mail/Passwort-Anmeldung ist in der Firebase-Konsole noch nicht aktiviert.",
     "auth/network-request-failed": "Netzwerkfehler zum Ordensarchiv. Bitte Internet oder Adblocker prüfen.",
     "auth/unauthorized-domain": "Diese Domain ist nicht autorisiert. Bitte über die freigegebene GitHub-Seite spielen."

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [v0.3.5] - 2026-10-13 09:50 (Speicher-Meldung & Login-Fehler)
+- [UI] Sichtbare Erfolgs- und Fehlermeldung beim Speichern ergänzt.
+- [AUTH] Deutliche Fehlermeldungen für falsches Passwort, unbekanntes Konto, ungültige E-Mail, zu viele Versuche und Netzwerkfehler.
+- [RELEASE] Version auf v0.3.5 erhöht.
+
 ## [v0.3.4] - 2026-10-13 09:30 (Ebenenwechsel-Animation)
 - [UI] Dramatische Ebenenwechsel-Animation mit großer Ebenen-Schrift ergänzt.
 - [UI] Beim Hinabsteigen erscheinen nun Ebenennummer, Untertitel und Lichtlinie.
