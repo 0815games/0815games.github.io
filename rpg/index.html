@@ -1,17 +1,17 @@
 <!--
-[2026-10-13 09:00] - index.html: v0.2.9 Neue Firebase-Datenbank
+[2026-10-13 09:20] - index.html: v0.3.0 EXP-Anzeige
 Änderungen:
-- Neue Firebase-Datenbank rpg01-793eb eingebunden.
-- Asset-Versionen auf v0.2.9 aktualisiert.
+- Klare EXP-Anzeige mit aktuellem Fortschritt und benötigter EP-Menge ergänzt.
+- EP-Gewinn wird im Kampf und in der Chronik angezeigt.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.2.9</title>
+  <title>Chroniken der Schattengruft – v0.3.0</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css?v=0.2.9">
+  <link rel="stylesheet" href="css/style.css?v=0.3.0">
   <style>
     #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
     #intro-screen.hidden{display:none;}
@@ -32,6 +32,9 @@
     #slot-screen{position:relative;}
     #slot-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
     .slot-card{position:relative;z-index:1;}
+    .exp-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:3px 8px;border:1px solid #4b6b3a;border-radius:999px;background:#0f1a10;color:#a5d6a7;font-size:11px;}
+    .exp-popup{position:fixed;z-index:10001;pointer-events:none;color:#a5d6a7;font-weight:bold;text-shadow:0 0 8px #000;animation:expFloat 1.2s ease-out forwards;}
+    @keyframes expFloat{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-40px);}}
   </style>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -46,7 +49,7 @@
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.2.9</span>
+      <span class="version-badge" data-version>v0.3.0</span>
     </div>
   </div>
 
@@ -72,7 +75,7 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.2.9</span></div>
+      <div><span class="version-badge" data-version>v0.3.0</span></div>
     </main>
   </div>
 
@@ -84,7 +87,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.2.9</span>
+        <span class="version-badge" data-version>v0.3.0</span>
       </div>
     </main>
   </div>
@@ -125,8 +128,9 @@
         <b id="hero-name">Schattenjäger</b>
         <em id="hero-class">Eisenbrecher</em>
         <span>LVL <b id="level">1</b></span>
+        <span class="exp-badge">✨ EXP <b id="exp-text">0 / 100</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.2.9</span>
+        <span class="hud-version" data-version>v0.3.0</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -199,6 +203,6 @@
       <button type="button" data-m="down">▼</button>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=0.2.9"></script>
+  <script type="module" src="js/main.js?v=0.3.0"></script>
 </body>
 </html>

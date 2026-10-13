@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.3.0] - 2026-10-13 09:20 (EXP-Anzeige)
+- [UI] Klare EXP-Anzeige im HUD ergänzt: aktuelle EP, benötigte EP und Fortschrittsbalken.
+- [COMBAT] Erhaltene EP werden nach jedem Sieg als Pop-up über dem besiegten Gegner angezeigt.
+- [COMBAT] EP-Gewinn wird zusätzlich in der Chronik dokumentiert.
+- [RELEASE] Version auf v0.3.0 erhöht.
+
 ## [v0.2.9] - 2026-10-13 09:00 (Neue Firebase-Datenbank)
 - [CLOUD] Neue Firebase-Datenbank `rpg01-793eb` eingebunden.
 - [CLOUD] `databaseURL`, Projekt-ID, API-Key und App-ID auf die neue Datenbank umgestellt.
