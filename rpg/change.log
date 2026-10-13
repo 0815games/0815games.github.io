@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.3.3] - 2026-10-13 09:20 (Aufwendigere Animationen)
+- [UI] Intro, Login, Recken-Auswahl, Kampf, Inventar, Ausrüstung, Tod und Level-Up visuell überarbeitet.
+- [UI] Einheitlicher hochwertiger Animationsstil mit Glow, Sheen, Hover, Pop- und Shake-Effekten.
+- [UI] Künftige Animationen sollen diesem Stil folgen.
+- [RELEASE] Version auf v0.3.3 erhöht.
+
 ## [v0.3.2] - 2026-10-13 09:00 (Aufwendigere Level-Up-Animation)
 - [UI] Level-Up erhält Lichtstrahlen, expandierende Ringe, Goldpartikel und Bildschirmwackeln.
 - [AUDIO] Eigener aufsteigender Level-Up-Sound ergänzt.

@@ -1,53 +1,114 @@
 <!--
-[2026-10-13 09:00] - index.html: v0.3.2 Aufwendigere Level-Up-Animation
+[2026-10-13 09:20] - index.html: v0.3.3 Aufwendigere Animationen
 Änderungen:
-- Level-Up mit Lichtkreis, Strahlen, Partikeln und Bildschirmwackeln ergänzt.
+- Intro, Login, Recken-Auswahl, Kampf, Truhen, Treppe, Tod und Level-Up visuell verbessert.
+- Einheitlicher hochwertiger Animationsstil für künftige Updates.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.3.2</title>
+  <title>Chroniken der Schattengruft – v0.3.3</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css?v=0.3.2">
+  <link rel="stylesheet" href="css/style.css?v=0.3.3">
   <style>
-    #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
+    :root{--gold:#ffd54f;--ember:#ff9800;--danger:#ff5252;--mana:#4fc3f7;--xp:#a5d6a7;}
+    *{box-sizing:border-box;}
+    body{margin:0;background:#05060a;color:#e8e2d0;font-family:serif;overflow-x:hidden;}
+    .screen{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .screen.hidden{display:none;}
+    #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;overflow:hidden;}
     #intro-screen.hidden{display:none;}
-    .intro-box{text-align:center;color:#e8d9a0;font-family:serif;}
-    .intro-title{font-size:clamp(32px,7vw,72px);letter-spacing:.18em;margin:0;color:#ffd54f;text-shadow:0 0 24px #ff980088;}
-    .intro-sub{margin:10px 0 34px;letter-spacing:.35em;font-size:clamp(10px,2vw,15px);color:#bcaaa4;}
-    .intro-bar{width:min(420px,72vw);height:8px;margin:0 auto;border:1px solid #6d5427;background:#0b0d14;}
-    .intro-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9800,#ffd54f);transition:width .2s linear;}
-    .intro-hint{margin-top:16px;font-size:12px;color:#8d7f6a;letter-spacing:.2em;}
-    .version-badge{display:inline-block;margin-top:18px;padding:3px 10px;border:1px solid #6d5427;border-radius:999px;font-size:11px;color:#ffd54f;background:#00000055;letter-spacing:.12em;}
-    .hud-version{margin-left:10px;font-size:11px;color:#ffd54f;opacity:.85;}
-    .music-toggle{position:absolute;top:18px;right:18px;z-index:10000;background:#00000088;border:1px solid #6d5427;color:#ffd54f;border-radius:8px;padding:8px 12px;cursor:pointer;font-size:16px;}
-    .audio-panel{margin:10px 0 16px;padding:12px;border:1px solid #3a2f1b;border-radius:10px;background:#0d0f16;}
-    .audio-panel h4{margin:0 0 10px;color:#ffd54f;font-size:12px;letter-spacing:.18em;}
-    .audio-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;color:#cfc3a5;}
-    .audio-row input[type=range]{flex:1;accent-color:#ffb300;}
-    .audio-row output{min-width:42px;text-align:right;color:#ffd54f;}
-    #slot-screen{position:relative;}
-    #slot-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
-    .slot-card{position:relative;z-index:1;}
-    .exp-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:3px 8px;border:1px solid #4b6b3a;border-radius:999px;background:#0f1a10;color:#a5d6a7;font-size:11px;}
-    .exp-popup{position:fixed;z-index:10001;pointer-events:none;color:#a5d6a7;font-weight:bold;text-shadow:0 0 8px #000;animation:expFloat 1.2s ease-out forwards;}
-    @keyframes expFloat{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-40px);}}
+    #intro-screen::before{content:'';position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 18deg,#ff980033 18deg 30deg,transparent 30deg 72deg,#ffd54f22 72deg 84deg,transparent 84deg 360deg);animation:introSpin 18s linear infinite;}
+    #intro-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,transparent 30%,#000000cc 75%);}
+    .intro-box{position:relative;z-index:2;text-align:center;color:#e8d9a0;font-family:serif;}
+    .intro-title{font-size:clamp(34px,8vw,84px);letter-spacing:.2em;margin:0;color:var(--gold);text-shadow:0 0 28px #ff9800aa;animation:introTitle 2.4s ease-out both;}
+    .intro-sub{margin:12px 0 38px;letter-spacing:.4em;font-size:clamp(10px,2vw,16px);color:#bcaaa4;animation:introRise 1.8s .3s ease-out both;}
+    .intro-bar{width:min(440px,74vw);height:10px;margin:0 auto;border:1px solid #6d5427;background:#0b0d14;overflow:hidden;}
+    .intro-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ember),var(--gold),#fff8e1);box-shadow:0 0 18px var(--ember);transition:width .18s linear;}
+    .intro-hint{margin-top:18px;font-size:12px;color:#8d7f6a;letter-spacing:.25em;animation:introPulse 2.2s ease-in-out infinite;}
+    .version-badge{display:inline-block;margin-top:20px;padding:4px 12px;border:1px solid #6d5427;border-radius:999px;font-size:11px;color:var(--gold);background:#00000066;letter-spacing:.14em;}
+    .hud-version{margin-left:10px;font-size:11px;color:var(--gold);opacity:.85;}
+    .music-toggle{position:absolute;top:18px;right:18px;z-index:10000;background:#00000088;border:1px solid #6d5427;color:var(--gold);border-radius:10px;padding:9px 13px;cursor:pointer;font-size:17px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+    .music-toggle:hover{transform:scale(1.08);box-shadow:0 0 18px #ff980066;}
+    .login-card,.slot-card,.class-card,.death-card{position:relative;z-index:2;width:min(520px,94vw);padding:28px;border:1px solid #3b2f1b;border-radius:18px;background:linear-gradient(160deg,#12141f,#0a0b11);box-shadow:0 24px 70px #000c,inset 0 0 0 1px #ffffff08;animation:cardEnter .55s cubic-bezier(.2,1.2,.3,1) both;}
+    .login-card::before,.slot-card::before,.class-card::before,.death-card::before{content:'';position:absolute;inset:0;border-radius:18px;background:linear-gradient(120deg,transparent 30%,#ffd54f14 50%,transparent 70%);background-size:250% 100%;animation:cardSheen 5s linear infinite;pointer-events:none;}
+    .login-canvas,#slot-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+    .monster{position:absolute;top:24%;font-size:54px;color:#7b1f1f;opacity:.55;animation:monsterFloat 4.5s ease-in-out infinite;}
+    .monster.left{left:6%;}
+    .monster.right{right:6%;animation-delay:.8s;}
+    .auth-tab{background:#151824;border:1px solid #3a2f1b;color:#cfc3a5;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .25s ease;}
+    .auth-tab.active{color:#0b0c10;background:linear-gradient(180deg,var(--gold),#e0a92c);border-color:#ffe082;box-shadow:0 0 18px #ff980055;transform:translateY(-2px);}
+    .field input{width:100%;padding:12px;border:1px solid #3b2f1b;border-radius:10px;background:#0b0d14;color:#fff;transition:border-color .25s,box-shadow .25s,transform .2s;}
+    .field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px #ffd54f22;transform:translateY(-2px);}
+    button{font-family:inherit;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;}
+    button:hover{transform:translateY(-2px);}
+    button:active{transform:translateY(1px) scale(.98);}
+    .gold{background:linear-gradient(180deg,var(--gold),#d19a17);color:#191100;border:none;border-radius:10px;padding:12px 16px;font-weight:bold;cursor:pointer;box-shadow:0 8px 22px #ff980033;}
+    .gold:hover{box-shadow:0 10px 30px #ff980066;filter:brightness(1.08);}
+    .dark{background:#171923;color:#d8cba9;border:1px solid #3b2f1b;border-radius:10px;padding:12px 16px;cursor:pointer;}
+    .dark:hover{border-color:var(--gold);box-shadow:0 0 18px #ffd54f22;}
+    .slot-box{position:relative;overflow:hidden;border:1px solid #3b2f1b;border-radius:14px;padding:16px;background:#0d0f16;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;}
+    .slot-box:hover{transform:translateY(-5px) scale(1.02);border-color:var(--gold);box-shadow:0 14px 32px #000a,0 0 24px #ff980033;}
+    .slot-box::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 35%,#ffd54f14 50%,transparent 65%);transform:translateX(-120%);transition:transform .7s ease;}
+    .slot-box:hover::after{transform:translateX(120%);}
+    .slot-box.empty{border-style:dashed;}
+    .slot-box.empty:hover{border-color:var(--xp);box-shadow:0 0 24px #a5d6a733;}
+    .btn-slot-play{background:linear-gradient(180deg,var(--gold),#d19a17);border:none;color:#191100;font-weight:bold;border-radius:8px;padding:8px 12px;cursor:pointer;}
+    .btn-slot-del{background:#2a1216;border:1px solid #5c2222;color:#ff8a80;border-radius:8px;padding:8px 10px;cursor:pointer;}
+    .class{display:block;width:100%;text-align:left;padding:14px;margin-bottom:12px;border:1px solid #3b2f1b;border-radius:12px;background:#0d0f16;color:#e8e2d0;cursor:pointer;transition:all .25s ease;}
+    .class.active{border-color:var(--gold);background:#181206;box-shadow:0 0 22px #ff980033;transform:translateX(6px);}
+    .class:hover{border-color:#a97f2b;transform:translateX(4px);}
+    #game{position:relative;}
+    header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;border-bottom:1px solid #2a2318;background:#0a0b11;}
+    .bars label{display:block;margin-bottom:6px;font-size:11px;color:#b7ab8d;}
+    .bars i{display:block;position:relative;height:10px;border:1px solid #3b2f1b;background:#0b0d14;}
+    .bars i i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ef5350,#ff8a80);transition:width .45s cubic-bezier(.2,1,.3,1);}
+    .bars i i.mana{background:linear-gradient(90deg,#29b6f6,#81d4fa);}
+    .bars i i.xp{background:linear-gradient(90deg,#66bb6a,#c5e1a5);}
+    .exp-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:4px 10px;border:1px solid #4b6b3a;border-radius:999px;background:#0f1a10;color:var(--xp);font-size:11px;box-shadow:0 0 14px #a5d6a722;}
+    .exp-popup{position:fixed;z-index:10001;pointer-events:none;color:var(--xp);font-weight:bold;text-shadow:0 0 10px #000;animation:expFloat 1.25s cubic-bezier(.2,1,.3,1) forwards;}
+    @keyframes expFloat{0%{opacity:0;transform:translateY(8px) scale(.7);}20%{opacity:1;transform:translateY(-6px) scale(1.1);}100%{opacity:0;transform:translateY(-48px) scale(1);}}
+    #stage{display:block;width:100%;max-width:640px;border:1px solid #2a231b;border-radius:12px;background:#05060a;box-shadow:0 18px 45px #000a;}
+    #combat{padding:16px;border:1px solid #5c2222;border-radius:12px;background:linear-gradient(160deg,#1b0b0b,#0a0b11);animation:combatEnter .35s cubic-bezier(.2,1.2,.3,1);}
+    #combat.hidden{display:none;}
+    .combat-buttons button{min-width:110px;margin:4px;padding:11px;border-radius:10px;border:1px solid #3b2f1b;background:#12141d;color:#e8e2d0;cursor:pointer;}
+    .combat-buttons button:hover{border-color:var(--gold);box-shadow:0 0 18px #ff980033;transform:translateY(-2px);}
+    .item{display:flex;justify-content:space-between;gap:8px;padding:9px;border:1px solid #2a231b;border-radius:9px;background:#0c0e15;margin-bottom:7px;cursor:pointer;transition:all .2s ease;}
+    .item:hover{border-color:var(--gold);transform:translateX(5px);box-shadow:0 0 16px #ff980022;}
+    .equip-slot-box{position:relative;padding:10px;border:1px solid #2a231b;border-radius:10px;background:#0b0d14;transition:all .25s ease;}
+    .equip-slot-box.equipped{border-color:#6d5427;box-shadow:inset 0 0 18px #ffd54f11;}
+    .equip-slot-box:hover{transform:translateY(-3px);border-color:var(--gold);}
+    .btn-unequip{position:absolute;top:6px;right:6px;background:#2a1216;color:#ff8a80;border:1px solid #5c2222;border-radius:6px;width:24px;height:24px;cursor:pointer;}
+    .btn-unequip:hover{background:#411a1a;transform:rotate(90deg);}
+    #death-screen{background:radial-gradient(circle at center,#2b0808,#05060a 70%);}
+    .death-card{border-color:#5c2222;animation:deathEnter .8s ease-out both;}
+    .death-card>div:first-child{font-size:64px;animation:deathPulse 2s ease-in-out infinite;}
     #levelup-overlay{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#ffd54f33,#000000e0);overflow:hidden;animation:levelupFade .3s ease-out;}
     #levelup-overlay.hidden{display:none;}
-    .levelup-box{position:relative;z-index:3;text-align:center;color:#ffd54f;font-family:serif;text-shadow:0 0 30px #ff9800;animation:levelupPop .8s cubic-bezier(.2,1.5,.3,1);}
+    .levelup-box{position:relative;z-index:3;text-align:center;color:var(--gold);font-family:serif;text-shadow:0 0 30px var(--ember);animation:levelupPop .8s cubic-bezier(.2,1.5,.3,1);}
     .levelup-box h2{margin:0;font-size:clamp(40px,10vw,96px);letter-spacing:.22em;}
     .levelup-box p{margin:10px 0 0;color:#fff3c4;letter-spacing:.3em;}
     .levelup-ring{position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px 0 0 -110px;border:3px solid #ffd54f88;border-radius:50%;animation:levelupRing 1.6s ease-out forwards;}
     .levelup-ring:nth-child(2){width:340px;height:340px;margin:-170px 0 0 -170px;border-color:#ff980066;animation-delay:.12s;}
     .levelup-ring:nth-child(3){width:480px;height:480px;margin:-240px 0 0 -240px;border-color:#ffffff33;animation-delay:.24s;}
     .levelup-rays{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;background:conic-gradient(from 0deg,#ffd54f22 0deg 12deg,transparent 12deg 45deg,#ff980033 45deg 57deg,transparent 57deg 90deg);animation:levelupSpin 2.4s linear forwards;}
-    .levelup-particle{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#ffd54f;box-shadow:0 0 12px #ff9800;animation:levelupParticle 1.5s ease-out forwards;}
-    body.screen-shake #game{animation:screenShake .5s ease-in-out;}
+    .levelup-particle{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--gold);box-shadow:0 0 12px var(--ember);animation:levelupParticle 1.5s ease-out forwards;}
+    body.screen-shake #game{animation:screenShake .55s ease-in-out;}
+    @keyframes introSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
+    @keyframes introTitle{0%{opacity:0;transform:scale(.75);filter:blur(10px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
+    @keyframes introRise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+    @keyframes introPulse{0%,100%{opacity:.55;}50%{opacity:1;}}
+    @keyframes cardEnter{from{opacity:0;transform:translateY(35px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
+    @keyframes cardSheen{0%{background-position:120% 0;}100%{background-position:-120% 0;}}
+    @keyframes monsterFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-16px) rotate(3deg);}}
+    @keyframes combatEnter{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+    @keyframes deathEnter{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+    @keyframes deathPulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.12);}}
     @keyframes levelupFade{from{opacity:0;}to{opacity:1;}}
     @keyframes levelupPop{0%{opacity:0;transform:scale(.3);}55%{opacity:1;transform:scale(1.18);}100%{opacity:1;transform:scale(1);}}
-    @keyframes levelupSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+    @keyframes levelupSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
     @keyframes levelupParticle{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2);}}
     @keyframes screenShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-6px,4px);}40%{transform:translate(5px,-5px);}60%{transform:translate(-4px,-3px);}80%{transform:translate(3px,3px);}}
   </style>
@@ -75,7 +136,7 @@
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.3.2</span>
+      <span class="version-badge" data-version>v0.3.3</span>
     </div>
   </div>
 
@@ -101,7 +162,7 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.3.2</span></div>
+      <div><span class="version-badge" data-version>v0.3.3</span></div>
     </main>
   </div>
 
@@ -113,7 +174,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.3.2</span>
+        <span class="version-badge" data-version>v0.3.3</span>
       </div>
     </main>
   </div>
@@ -156,7 +217,7 @@
         <span>LVL <b id="level">1</b></span>
         <span class="exp-badge">✨ EXP <b id="exp-text">0 / 100</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.3.2</span>
+        <span class="hud-version" data-version>v0.3.3</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -229,6 +290,6 @@
       <button type="button" data-m="down">▼</button>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=0.3.2"></script>
+  <script type="module" src="js/main.js?v=0.3.3"></script>
 </body>
 </html>
