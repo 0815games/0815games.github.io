@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.2.6] - 2026-10-13 08:35 (Firebase-Speicher-Fix & Musik-Geste)
+- [FIX] Charakter-Speicherung speichert nur noch sichere Spieldaten (player, world, meta, currentSlot).
+- [FIX] Firebase-Fehler durch undefined-Werte im Login-Objekt behoben.
+- [AUDIO] Musik startet jetzt ausschließlich nach Nutzerinteraktion (Klick oder Enter), um Browser-Autoplay zu respektieren.
+- [RELEASE] Version auf v0.2.6 erhöht.
+
 ## [v0.2.5] - 2026-10-13 08:20 (Sanftere Musik & Funkenflug in der Recken-Auswahl)
 - [AUDIO] Musik startet jetzt mit halber Lautstärke (35 % statt 70 %).
 - [VISUAL] Funkenflug auch im Recken-Auswahl-Menü ergänzt.

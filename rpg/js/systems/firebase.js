@@ -1,4 +1,4 @@
-// [2026-10-13 08:10] - js/systems/firebase.js: v0.2.4 Robuste Cloud-Slots
+// [2026-10-13 08:35] - js/systems/firebase.js: v0.2.6 Save-Fix & sichere Slots
 import { state } from '../core/state.js';
 
 const CFG = {
@@ -100,7 +100,13 @@ class Cloud {
       return false;
     }
     try {
-      await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(data);
+      const clean = JSON.parse(JSON.stringify({
+        player: data.player,
+        world: data.world,
+        meta: data.meta,
+        currentSlot: data.currentSlot
+      }));
+      await this.db.ref(`dark_rpg/saves/${state.user.uid}/slot_${slotIndex}`).set(clean);
       return true;
     } catch (e) {
       console.warn("Cloud saveSlot:", e);
