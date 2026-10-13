@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## [v0.2.8] - 2026-10-13 08:55 (Force-Fresh Reload)
+- [UPDATE] F5 lädt die Seite jetzt immer direkt vom Server statt aus dem Browser-Cache.
+- [UPDATE] Service Worker umgeht den HTTP-Cache für Navigationen mit `cache: reload`.
+- [UPDATE] CSS- und JS-Anfragen verwenden `no-cache`, damit immer die aktuelle Version geprüft wird.
+- [RELEASE] Version auf v0.2.8 erhöht.
+
 ## [v0.2.7] - 2026-10-13 08:40 (Always Fresh: Neueste Version bei F5)
 - [UPDATE] Service Worker mit Network-First-Strategie ergänzt.
 - [UPDATE] CSS und JS erhalten versionsabhängige Cache-Busting-URLs.
