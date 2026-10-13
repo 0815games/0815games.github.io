@@ -1,4 +1,4 @@
-// [2026-10-12 20:45] - js/main.js: v0.1.5 Interaktives Ausrüstungs-Menü
+// [2026-10-13 07:37] - js/main.js: v0.2.0 Sealbreaker & Boss-Ebenen
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -22,8 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const lx = loginCanvas.getContext('2d');
     let w = loginCanvas.width = window.innerWidth, h = loginCanvas.height = window.innerHeight;
     window.addEventListener('resize', () => {
-      w = loginCanvas.width = window.innerWidth;
-      h = loginCanvas.height = window.innerHeight;
+      w = loginCanvas.width = window.innerWidth, h = loginCanvas.height = window.innerHeight;
     });
     const embers = Array.from({ length: 45 }, () => ({
       x: Math.random() * w,
@@ -259,6 +258,11 @@ window.addEventListener('DOMContentLoaded', () => {
     el('hud-slot-name').textContent = `SLOT ${state.currentSlot + 1}`;
     hud();
     log(`Du betrittst Ebene ${state.world.depth} der Schattengruft.`);
+    if (state.world.isBossFloor) {
+      log('⚠️ BOSS-EBENE: Besiege den Wächter, um das Runensiegel zu brechen!');
+    } else {
+      log('🔒 Das Runensiegel versiegelt den Abstieg. Besiege alle Kreaturen!');
+    }
   }
 
   function saveCurrentSlot() {
@@ -575,11 +579,33 @@ window.addEventListener('DOMContentLoaded', () => {
     state.world.monsters = state.world.monsters.filter(x => x.id !== m.id);
     state.inCombat = false;
     el('combat').classList.add('hidden');
+
     log(`${m.name} bezwungen! +${m.gold} Gold, +${m.xp} EP.`);
+
+    // v0.2.0: Boss-Sieg gewährt zusätzlichen Ordensschatz.
+    if (m.id === 'boss') {
+      state.meta.gold += 50;
+      gfx.burst(m.x, m.y);
+      gfx.text('👑 BOSS BESIEGT!', m.x, m.y, '#e1bee7');
+      log('👑 Der Schattenfürst ist gefallen! +50 Ordensgold.');
+    }
+
+    // v0.2.0: Treppe erscheint erst, wenn alle Gegner besiegt wurden.
+    if (state.world.monsters.length === 0) {
+      const stairs = map.spawnStairsAfterClear();
+      gfx.burst(stairs.x, stairs.y);
+      gfx.text('⬇️ TREPPE!', stairs.x, stairs.y, '#ffd54f');
+      log(state.world.isBossFloor
+        ? '✨ DER BOSS IST GEFALLEN – Das Runensiegel bricht und der Abstieg ist frei!'
+        : '✨ DAS RUNENSIEGEL BRICHT – Die Treppe erscheint in der Gruft!');
+    } else {
+      log(`🔒 Runensiegel aktiv – ${state.world.monsters.length} Gegner verbleiben.`);
+    }
+
     if (state.player.xp >= state.player.nextXp) {
       state.player.level++;
       state.player.xp -= state.player.nextXp;
-      state.player.nextExp = Math.floor(state.player.nextExp * 1.5);
+      state.player.nextXp = Math.floor(state.player.nextXp * 1.5);
       state.player.maxHp += 15;
       state.player.maxMp += 10;
       state.player.hp = state.player.maxHp;

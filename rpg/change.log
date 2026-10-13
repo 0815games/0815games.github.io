@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [v0.2.0] - 2026-10-13 07:37 (Sealbreaker & Boss-Ebenen)
+- [PROGRESSION] Treppe wird beim Ebenenstart nicht mehr erzeugt; der Abstieg ist zunächst durch ein Runensiegel versiegelt.
+- [SPAWN] Die Treppe erscheint erst nach dem Sieg über alle Gegner und wird zufällig auf einem garantiert freien Bodenfeld platziert.
+- [BOSS] Jede fünfte Ebene ist eine Boss-Ebene mit einem skalierenden Schattenfürsten.
+- [BOSS] Der Boss-Sieg bricht das Runensiegel, schaltet die Treppe frei und gewährt zusätzliche 50 Ordensgold.
+- [COMPAT] Alte Speicherstände mit bereits vorhandener Treppe bleiben kompatibel.
+
 ## [v0.1.5] - 2026-10-12 20:45 (Interaktives Ausrüstungs-Menü mit Paper-Doll)
 - [EQUIP] Interaktives 6-Slot Ausrüstungs-Menü implementiert: Kopf, Brust, Waffe (Haupthand), Schild (Nebenhand), Füße und Reliquienring.
 - [LOGIC] Anlegen (`equipItemFromInv`) und Ablegen (`unequipSlot`) mit Rückführung ins Inventar und sofortiger Neuberechnung der Kampfattribut-Boni (ATK & DEF).

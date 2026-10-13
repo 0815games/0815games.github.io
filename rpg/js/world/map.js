@@ -1,4 +1,4 @@
-// [2026-10-12 20:45] - js/world/map.js: v0.1.5 Map
+// [2026-10-13 07:37] - js/world/map.js: v0.2.0 Sealbreaker & Boss-Ebenen
 import { state } from '../core/state.js';
 import { MONSTERS } from '../data/monsters.js';
 
@@ -21,9 +21,12 @@ export class WorldMap {
         state.world.discovered[y] = Array(this.cols).fill(false);
       }
     }
-    if (!state.world.stairs || this.isWall(state.world.stairs.x, state.world.stairs.y)) {
-      state.world.stairs = this.getSafeSpot(17, 12);
+
+    // v0.2.0: Alte Speicherstände mit bereits vorhandener Treppe bleiben spielbar.
+    if (state.world.stairs && this.isWall(state.world.stairs.x, state.world.stairs.y)) {
+      state.world.stairs = this.getSafeSpot(state.world.stairs.x, state.world.stairs.y);
     }
+
     if (this.isWall(state.player.x, state.player.y)) {
       const safe = this.getSafeSpot(state.player.x, state.player.y);
       state.player.x = safe.x;
@@ -38,6 +41,11 @@ export class WorldMap {
     state.world.discovered = [];
     state.world.chests = [];
     state.world.monsters = [];
+
+    // v0.2.0: Die Treppe ist beim Ebenenstart versiegelt und existiert noch nicht.
+    state.world.stairs = null;
+    state.world.sealBroken = false;
+    state.world.isBossFloor = depth % 5 === 0;
 
     for (let y = 0; y < this.rows; y++) {
       const r = [];
@@ -74,7 +82,6 @@ export class WorldMap {
     state.player.y = 2;
 
     const safe = this.getSafeSpot.bind(this);
-    state.world.stairs = safe(17, 12);
 
     const scale = 1 + (depth - 1) * 0.2;
     state.world.chests = [
@@ -83,13 +90,33 @@ export class WorldMap {
       { id: 'c3', ...safe(17, 3), caps: 15 + depth * 10, item: 'health_potion', open: false }
     ];
 
-    state.world.monsters = [
-      { id: 'm1', key: 'goblin', ...MONSTERS.goblin, ...safe(5, 8), hp: Math.round(22 * scale), maxHp: Math.round(22 * scale), atk: Math.round(6 * scale) },
-      { id: 'm2', key: 'goblin', ...MONSTERS.goblin, ...safe(10, 3), hp: Math.round(22 * scale), maxHp: Math.round(22 * scale), atk: Math.round(6 * scale) },
-      { id: 'm3', key: 'skeleton', ...MONSTERS.skeleton, ...safe(13, 4), hp: Math.round(38 * scale), maxHp: Math.round(38 * scale), atk: Math.round(10 * scale) },
-      { id: 'm4', key: 'skeleton', ...MONSTERS.skeleton, ...safe(10, 12), hp: Math.round(38 * scale), maxHp: Math.round(38 * scale), atk: Math.round(10 * scale) },
-      { id: 'm5', key: 'lord', ...MONSTERS.lord, ...safe(16, 11), hp: Math.round(65 * scale), maxHp: Math.round(65 * scale), atk: Math.round(15 * scale) }
-    ];
+    if (state.world.isBossFloor) {
+      const bossScale = 1 + (depth - 1) * 0.35;
+      const boss = safe(16, 11);
+      state.world.monsters = [
+        {
+          id: 'boss',
+          key: 'lord',
+          name: `Schattenfürst der Tiefe ${depth}`,
+          color: '#9c27b0',
+          gold: Math.round(120 * bossScale),
+          xp: Math.round(180 * bossScale),
+          ...boss,
+          hp: Math.round(140 * bossScale),
+          maxHp: Math.round(140 * bossScale),
+          atk: Math.round(20 * bossScale),
+          def: Math.round(8 * bossScale)
+        }
+      ];
+    } else {
+      state.world.monsters = [
+        { id: 'm1', key: 'goblin', ...MONSTERS.goblin, ...safe(5, 8), hp: Math.round(22 * scale), maxHp: Math.round(22 * scale), atk: Math.round(6 * scale) },
+        { id: 'm2', key: 'goblin', ...MONSTERS.goblin, ...safe(10, 3), hp: Math.round(22 * scale), maxHp: Math.round(22 * scale), atk: Math.round(6 * scale) },
+        { id: 'm3', key: 'skeleton', ...MONSTERS.skeleton, ...safe(13, 4), hp: Math.round(38 * scale), maxHp: Math.round(38 * scale), atk: Math.round(10 * scale) },
+        { id: 'm4', key: 'skeleton', ...MONSTERS.skeleton, ...safe(10, 12), hp: Math.round(38 * scale), maxHp: Math.round(38 * scale), atk: Math.round(10 * scale) },
+        { id: 'm5', key: 'lord', ...MONSTERS.lord, ...safe(16, 11), hp: Math.round(65 * scale), maxHp: Math.round(65 * scale), atk: Math.round(15 * scale) }
+      ];
+    }
 
     this.reveal();
   }
@@ -110,6 +137,32 @@ export class WorldMap {
       }
     }
     return { x: 2, y: 2 };
+  }
+
+  // v0.2.0: Erschafft die Treppe erst, wenn alle Gegner besiegt wurden.
+  // Der Spawn erfolgt zufällig, jedoch ausschließlich auf einem freien Bodenfeld.
+  spawnStairsAfterClear() {
+    if (state.world.stairs) return state.world.stairs;
+
+    const freeTiles = [];
+    for (let y = 1; y < this.rows - 1; y++) {
+      for (let x = 1; x < this.cols - 1; x++) {
+        if (this.isWall(x, y)) continue;
+        if (state.player.x === x && state.player.y === y) continue;
+        if (state.world.chests.some(c => c.x === x && c.y === y)) continue;
+        if (state.world.monsters.some(m => m.x === x && m.y === y)) continue;
+        freeTiles.push({ x, y });
+      }
+    }
+
+    const spot = freeTiles.length
+      ? freeTiles[Math.floor(Math.random() * freeTiles.length)]
+      : this.getSafeSpot(17, 12);
+
+    state.world.stairs = { x: spot.x, y: spot.y };
+    state.world.sealBroken = true;
+    this.reveal();
+    return state.world.stairs;
   }
 
   reveal() {
