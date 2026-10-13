@@ -1,307 +1,51 @@
-<!--
-[2026-10-13 09:30] - index.html: v0.3.4 Ebenenwechsel-Animation
-Änderungen:
-- Dramatische Ebenenwechsel-Animation mit großer Schrift ergänzt.
--->
+<!-- v0.3.6: Zufallsname, AFK-Logout, Speicher-Toast -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.3.4</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chroniken der Schattengruft – v0.3.6</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css?v=0.3.4">
+  <link rel="stylesheet" href="css/style.css?v=0.3.6">
   <style>
-    #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;overflow:hidden;}
-    #intro-screen.hidden{display:none;}
-    #intro-screen::before{content:'';position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 18deg,#ff980033 18deg 30deg,transparent 30deg 72deg,#ffd54f22 72deg 84deg,transparent 84deg 360deg);animation:introSpin 18s linear infinite;}
-    #intro-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 55%,transparent 30%,#000000cc 75%);}
-    .intro-box{position:relative;z-index:2;text-align:center;color:#e8d9a0;font-family:serif;}
-    .intro-title{font-size:clamp(34px,8vw,84px);letter-spacing:.2em;margin:0;color:#ffd54f;text-shadow:0 0 28px #ff9800aa;animation:introTitle 2.4s ease-out both;}
-    .intro-sub{margin:12px 0 38px;letter-spacing:.4em;font-size:clamp(10px,2vw,16px);color:#bcaaa4;animation:introRise 1.8s .3s ease-out both;}
-    .intro-bar{width:min(440px,74vw);height:10px;margin:0 auto;border:1px solid #6d5427;background:#0b0d14;overflow:hidden;}
-    .intro-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9800,#ffd54f,#fff8e1);box-shadow:0 0 18px #ff9800;transition:width .18s linear;}
-    .intro-hint{margin-top:18px;font-size:12px;color:#8d7f6a;letter-spacing:.25em;animation:introPulse 2.2s ease-in-out infinite;}
-    .version-badge{display:inline-block;margin-top:20px;padding:4px 12px;border:1px solid #6d5427;border-radius:999px;font-size:11px;color:#ffd54f;background:#00000066;letter-spacing:.14em;}
-    .hud-version{margin-left:10px;font-size:11px;color:#ffd54f;opacity:.85;}
-    .music-toggle{position:absolute;top:18px;right:18px;z-index:10000;background:#00000088;border:1px solid #6d5427;color:#ffd54f;border-radius:10px;padding:9px 13px;cursor:pointer;font-size:17px;transition:transform .2s,box-shadow .2s,border-color .2s;}
-    .music-toggle:hover{transform:scale(1.08);box-shadow:0 0 18px #ff980066;}
-    .login-card,.slot-card,.class-card,.death-card{position:relative;z-index:2;width:min(520px,94vw);padding:28px;border:1px solid #3b2f1b;border-radius:18px;background:linear-gradient(160deg,#12141f,#0a0b11);box-shadow:0 24px 70px #000c,inset 0 0 0 1px #ffffff08;animation:cardEnter .55s cubic-bezier(.2,1.2,.3,1) both;}
-    .login-card::before,.slot-card::before,.class-card::before,.death-card::before{content:'';position:absolute;inset:0;border-radius:18px;background:linear-gradient(120deg,transparent 30%,#ffd54f14 50%,transparent 70%);background-size:250% 100%;animation:cardSheen 5s linear infinite;pointer-events:none;}
-    .login-canvas,#slot-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
-    .monster{position:absolute;top:24%;font-size:54px;color:#7b1f1f;opacity:.55;animation:monsterFloat 4.5s ease-in-out infinite;}
-    .monster.left{left:6%;}
-    .monster.right{right:6%;animation-delay:.8s;}
-    .auth-tab{background:#151824;border:1px solid #3a2f1b;color:#cfc3a5;padding:10px 14px;border-radius:10px;cursor:pointer;transition:all .25s ease;}
-    .auth-tab.active{color:#0b0c10;background:linear-gradient(180deg,#ffd54f,#e0a92c);border-color:#ffe082;box-shadow:0 0 18px #ff980055;transform:translateY(-2px);}
-    .field input{width:100%;padding:12px;border:1px solid #3b2f1b;border-radius:10px;background:#0b0d14;color:#fff;transition:border-color .25s,box-shadow .25s,transform .2s;}
-    .field input:focus{outline:none;border-color:#ffd54f;box-shadow:0 0 0 3px #ffd54f22;transform:translateY(-2px);}
-    button{font-family:inherit;transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;}
-    button:hover{transform:translateY(-2px);}
-    button:active{transform:translateY(1px) scale(.98);}
-    .gold{background:linear-gradient(180deg,#ffd54f,#d19a17);color:#191100;border:none;border-radius:10px;padding:12px 16px;font-weight:bold;cursor:pointer;box-shadow:0 8px 22px #ff980033;}
-    .gold:hover{box-shadow:0 10px 30px #ff980066;filter:brightness(1.08);}
-    .dark{background:#171923;color:#d8cba9;border:1px solid #3b2f1b;border-radius:10px;padding:12px 16px;cursor:pointer;}
-    .dark:hover{border-color:#ffd54f;box-shadow:0 0 18px #ffd54f22;}
-    .slot-box{position:relative;overflow:hidden;border:1px solid #3b2f1b;border-radius:14px;padding:16px;background:#0d0f16;cursor:pointer;transition:transform .25s,box-shadow .25s,border-color .25s;}
-    .slot-box:hover{transform:translateY(-5px) scale(1.02);border-color:#ffd54f;box-shadow:0 14px 32px #000a,0 0 24px #ff980033;}
-    .slot-box::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 35%,#ffd54f14 50%,transparent 65%);transform:translateX(-120%);transition:transform .7s ease;}
-    .slot-box:hover::after{transform:translateX(120%);}
-    .slot-box.empty{border-style:dashed;}
-    .slot-box.empty:hover{border-color:#a5d6a7;box-shadow:0 0 24px #a5d6a733;}
-    .btn-slot-play{background:linear-gradient(180deg,#ffd54f,#d19a17);border:none;color:#191100;font-weight:bold;border-radius:8px;padding:8px 12px;cursor:pointer;}
-    .btn-slot-del{background:#2a1216;border:1px solid #5c2222;color:#ff8a80;border-radius:8px;padding:8px 10px;cursor:pointer;}
-    .class{display:block;width:100%;text-align:left;padding:14px;margin-bottom:12px;border:1px solid #3b2f1b;border-radius:12px;background:#0d0f16;color:#e8e2d0;cursor:pointer;transition:all .25s ease;}
-    .class.active{border-color:#ffd54f;background:#181206;box-shadow:0 0 22px #ff980033;transform:translateX(6px);}
-    .class:hover{border-color:#a97f2b;transform:translateX(4px);}
-    #game{position:relative;}
-    header{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 16px;border-bottom:1px solid #2a2318;background:#0a0b11;}
-    .bars label{display:block;margin-bottom:6px;font-size:11px;color:#b7ab8d;}
-    .bars i{display:block;position:relative;height:10px;border:1px solid #3b2f1b;background:#0b0d14;}
-    .bars i i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ef5350,#ff8a80);transition:width .45s cubic-bezier(.2,1,.3,1);}
-    .bars i i.mana{background:linear-gradient(90deg,#29b6f6,#81d4fa);}
-    .bars i i.xp{background:linear-gradient(90deg,#66bb6a,#c5e1a5);}
-    .exp-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:4px 10px;border:1px solid #4b6b3a;border-radius:999px;background:#0f1a10;color:#a5d6a7;font-size:11px;box-shadow:0 0 14px #a5d6a722;}
-    .exp-popup{position:fixed;z-index:10001;pointer-events:none;color:#a5d6a7;font-weight:bold;text-shadow:0 0 10px #000;animation:expFloat 1.25s cubic-bezier(.2,1,.3,1) forwards;}
-    @keyframes expFloat{0%{opacity:0;transform:translateY(8px) scale(.7);}20%{opacity:1;transform:translateY(-6px) scale(1.1);}100%{opacity:0;transform:translateY(-48px) scale(1);}}
-    #stage{display:block;width:100%;max-width:640px;border:1px solid #2a231b;border-radius:12px;background:#05060a;box-shadow:0 18px 45px #000a;}
-    #combat{padding:16px;border:1px solid #5c2222;border-radius:12px;background:linear-gradient(160deg,#1b0b0b,#0a0b11);animation:combatEnter .35s cubic-bezier(.2,1.2,.3,1);}
-    #combat.hidden{display:none;}
-    .combat-buttons button{min-width:110px;margin:4px;padding:11px;border-radius:10px;border:1px solid #3b2f1b;background:#12141d;color:#e8e2d0;cursor:pointer;}
-    .combat-buttons button:hover{border-color:#ffd54f;box-shadow:0 0 18px #ff980033;transform:translateY(-2px);}
-    .item{display:flex;justify-content:space-between;gap:8px;padding:9px;border:1px solid #2a231b;border-radius:9px;background:#0c0e15;margin-bottom:7px;cursor:pointer;transition:all .2s ease;}
-    .item:hover{border-color:#ffd54f;transform:translateX(5px);box-shadow:0 0 16px #ff980022;}
-    .equip-slot-box{position:relative;padding:10px;border:1px solid #2a231b;border-radius:10px;background:#0b0d14;transition:all .25s ease;}
-    .equip-slot-box.equipped{border-color:#6d5427;box-shadow:inset 0 0 18px #ffd54f11;}
-    .equip-slot-box:hover{transform:translateY(-3px);border-color:#ffd54f;}
-    .btn-unequip{position:absolute;top:6px;right:6px;background:#2a1216;color:#ff8a80;border:1px solid #5c2222;border-radius:6px;width:24px;height:24px;cursor:pointer;}
-    .btn-unequip:hover{background:#411a1a;transform:rotate(90deg);}
-    #death-screen{background:radial-gradient(circle at center,#2b0808,#05060a 70%);}
-    .death-card{border-color:#5c2222;animation:deathEnter .8s ease-out both;}
-    .death-card>div:first-child{font-size:64px;animation:deathPulse 2s ease-in-out infinite;}
-    #levelup-overlay{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#ffd54f33,#000000e0);overflow:hidden;animation:levelupFade .3s ease-out;}
-    #levelup-overlay.hidden{display:none;}
-    .levelup-box{position:relative;z-index:3;text-align:center;color:#ffd54f;font-family:serif;text-shadow:0 0 30px #ff9800;animation:levelupPop .8s cubic-bezier(.2,1.5,.3,1);}
-    .levelup-box h2{margin:0;font-size:clamp(40px,10vw,96px);letter-spacing:.22em;}
-    .levelup-box p{margin:10px 0 0;color:#fff3c4;letter-spacing:.3em;}
-    .levelup-ring{position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px 0 0 -110px;border:3px solid #ffd54f88;border-radius:50%;animation:levelupRing 1.6s ease-out forwards;}
-    .levelup-ring:nth-child(2){width:340px;height:340px;margin:-170px 0 0 -170px;border-color:#ff980066;animation-delay:.12s;}
-    .levelup-ring:nth-child(3){width:480px;height:480px;margin:-240px 0 0 -240px;border-color:#ffffff33;animation-delay:.24s;}
-    .levelup-rays{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;background:conic-gradient(from 0deg,#ffd54f22 0deg 12deg,transparent 12deg 45deg,#ff980033 45deg 57deg,transparent 57deg 90deg);animation:levelupSpin 2.4s linear forwards;}
-    .levelup-particle{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#ffd54f;box-shadow:0 0 12px #ff9800;animation:levelupParticle 1.5s ease-out forwards;}
-    body.screen-shake #game{animation:screenShake .55s ease-in-out;}
-    #floor-overlay{position:fixed;inset:0;z-index:10003;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#0b0d14f2,#000000f8);backdrop-filter:blur(3px);animation:floorFade .45s ease-out;}
-    #floor-overlay.hidden{display:none;}
-    .floor-box{text-align:center;color:#ffd54f;font-family:serif;}
-    .floor-title{font-size:clamp(38px,10vw,100px);letter-spacing:.24em;margin:0;text-shadow:0 0 34px #ff9800;animation:floorTitle 1.5s cubic-bezier(.2,1.4,.3,1) both;}
-    .floor-sub{margin:14px 0 0;letter-spacing:.35em;color:#d8cba9;animation:floorSub 1.5s .15s ease-out both;}
-    .floor-line{width:min(420px,70vw);height:2px;margin:22px auto 0;background:linear-gradient(90deg,transparent,#ffd54f,transparent);animation:floorLine 1.5s ease-out both;}
-    @keyframes floorFade{from{opacity:0;}to{opacity:1;}}
-    @keyframes floorTitle{0%{opacity:0;transform:scale(.55);filter:blur(14px);}55%{opacity:1;transform:scale(1.08);filter:blur(0);}100%{opacity:1;transform:scale(1);}}
-    @keyframes floorSub{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes floorLine{from{transform:scaleX(0);opacity:0;}to{transform:scaleX(1);opacity:1;}}
-    @keyframes introSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
-    @keyframes introTitle{0%{opacity:0;transform:scale(.75);filter:blur(10px);}100%{opacity:1;transform:scale(1);filter:blur(0);}}
-    @keyframes introRise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes introPulse{0%,100%{opacity:.55;}50%{opacity:1;}}
-    @keyframes cardEnter{from{opacity:0;transform:translateY(35px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}
-    @keyframes cardSheen{0%{background-position:120% 0;}100%{background-position:-120% 0;}}
-    @keyframes monsterFloat{0%,100%{transform:translateY(0) rotate(-3deg);}50%{transform:translateY(-16px) rotate(3deg);}}
-    @keyframes combatEnter{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
-    @keyframes deathEnter{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
-    @keyframes deathPulse{0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.12);}}
-    @keyframes levelupFade{from{opacity:0;}to{opacity:1;}}
-    @keyframes levelupPop{0%{opacity:0;transform:scale(.3);}55%{opacity:1;transform:scale(1.18);}100%{opacity:1;transform:scale(1);}}
-    @keyframes levelupSpin{from{transform:rotate(0);}to{transform:rotate(360deg);}}
-    @keyframes levelupParticle{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2);}}
-    @keyframes screenShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-6px,4px);}40%{transform:translate(5px,-5px);}60%{transform:translate(-4px,-3px);}80%{transform:translate(3px,3px);}}
+    #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:10010;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+    .toast{padding:12px 18px;border-radius:12px;font-size:14px;box-shadow:0 12px 32px #000a;animation:toastIn .35s cubic-bezier(.2,1.3,.3,1);}
+    .toast.success{background:#102416;border:1px solid #3d7a4a;color:#a5d6a7;}
+    .toast.error{background:#2b1111;border:1px solid #8b3a3a;color:#ff8a80;}
+    @keyframes toastIn{from{opacity:0;transform:translateY(-18px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+    .name-row{display:flex;gap:8px;align-items:center;}
+    .name-row input{flex:1;}
+    .btn-name{background:#171923;border:1px solid #3b2f1b;color:#ffd54f;border-radius:10px;padding:12px;cursor:pointer;}
+    .btn-name:hover{border-color:#ffd54f;box-shadow:0 0 18px #ffd54f22;}
   </style>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-  <div id="floor-overlay" class="hidden">
-    <div class="floor-box">
-      <h1 class="floor-title" id="floor-title">EBENE 2</h1>
-      <p class="floor-sub">DIE KATAKOMBEN WERDEN TIEFER</p>
-      <div class="floor-line"></div>
-    </div>
-  </div>
-
-  <div id="levelup-overlay" class="hidden">
-    <div class="levelup-rays"></div>
-    <div class="levelup-ring"></div>
-    <div class="levelup-ring"></div>
-    <div class="levelup-ring"></div>
-    <div class="levelup-box">
-      <h2>LEVEL UP!</h2>
-      <p>STUFE <span id="levelup-level">2</span> ERREICHT</p>
-    </div>
-  </div>
-
+  <div id="toast"></div>
+  <div id="floor-overlay" class="hidden"><div class="floor-box"><h1 class="floor-title" id="floor-title">EBENE 2</h1><p class="floor-sub">DIE KATAKOMBEN WERDEN TIEFER</p><div class="floor-line"></div></div></div>
+  <div id="levelup-overlay" class="hidden"><div class="levelup-rays"></div><div class="levelup-ring"></div><div class="levelup-ring"></div><div class="levelup-ring"></div><div class="levelup-box"><h2>LEVEL UP!</h2><p>STUFE <span id="levelup-level">2</span> ERREICHT</p></div></div>
   <div id="intro-screen">
-    <button type="button" class="music-toggle" data-music-toggle title="Musik stummschalten / aktivieren">🎵</button>
-    <div class="intro-box">
-      <div class="crest">⚔️<span>🛡️</span>⚔️</div>
-      <h1 class="intro-title">CHRONIKEN</h1>
-      <p class="intro-sub">DER SCHATTENGRUFT</p>
-      <div class="intro-bar"><i id="intro-bar"></i></div>
-      <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.3.4</span>
-    </div>
+    <button type="button" class="music-toggle" data-music-toggle>🎵</button>
+    <div class="intro-box"><div class="crest">⚔️<span>🛡️</span>⚔️</div><h1 class="intro-title">CHRONIKEN</h1><p class="intro-sub">DER SCHATTENGRUFT</p><div class="intro-bar"><i id="intro-bar"></i></div><p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p><span class="version-badge" data-version>v0.3.6</span></div>
   </div>
-
   <div id="login-screen" class="screen hidden">
-    <button type="button" class="music-toggle" data-music-toggle title="Musik stummschalten / aktivieren">🎵</button>
+    <button type="button" class="music-toggle" data-music-toggle>🎵</button>
     <canvas id="login-canvas"></canvas>
-    <div class="monster left">♜</div>
-    <div class="monster right">♞</div>
+    <div class="monster left">♜</div><div class="monster right">♞</div>
     <main class="login-card">
-      <div class="crest">⚔️<span>🛡️</span>⚔️</div>
-      <h1>CHRONIKEN</h1>
-      <h2>DER SCHATTENGRUFT</h2>
-      <p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p>
+      <div class="crest">⚔️<span>🛡️</span>⚔️</div><h1>CHRONIKEN</h1><h2>DER SCHATTENGRUFT</h2><p class="tagline">DIE PFORTE ZU DEN ENDLOSEN KATAKOMBEN</p>
       <div id="cloud-status" class="cloud ok">● ORDENSARCHIV BEREIT</div>
-      <div class="auth-tabs">
-        <button type="button" class="auth-tab active" data-mode="login">ANMELDEN</button>
-        <button type="button" class="auth-tab" data-mode="register">NEUE WEIHE (KONTO ERSTELLEN)</button>
-      </div>
-      <form id="auth-form" onsubmit="return false;">
-        <div class="field"><label for="auth-email">ORDENS-EMAIL</label><input id="auth-email" type="email" placeholder="recke@schattengruft.de" autocomplete="email" required></div>
-        <div class="field"><label for="auth-password">RUNEN-PASSWORT</label><input id="auth-password" type="password" placeholder="mindestens 6 Zeichen" autocomplete="current-password" required minlength="6"></div>
-        <div id="auth-error" class="auth-error-box hidden"></div>
-        <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
-      </form>
-      <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.3.4</span></div>
+      <div class="auth-tabs"><button type="button" class="auth-tab active" data-mode="login">ANMELDEN</button><button type="button" class="auth-tab" data-mode="register">NEUE WEIHE (KONTO ERSTELLEN)</button></div>
+      <form id="auth-form" onsubmit="return false;"><div class="field"><label for="auth-email">ORDENS-EMAIL</label><input id="auth-email" type="email" required></div><div class="field"><label for="auth-password">RUNEN-PASSWORT</label><input id="auth-password" type="password" required minlength="6"></div><div id="auth-error" class="auth-error-box hidden"></div><button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button></form>
+      <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small><div><span class="version-badge" data-version>v0.3.6</span></div>
     </main>
   </div>
-
-  <div id="slot-screen" class="screen hidden">
-    <canvas id="slot-canvas"></canvas>
-    <main class="slot-card">
-      <h2>RECKEN DES ORDENS</h2>
-      <p>Wähle einen deiner 4 Helden oder erschaffe einen neuen Krieger.</p>
-      <div id="slots-grid" class="slots-grid"></div>
-      <div class="slot-footer">
-        <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.3.4</span>
-      </div>
-    </main>
-  </div>
-
-  <div id="class-screen" class="screen hidden">
-    <main class="class-card">
-      <h2 id="class-screen-title">NEUEN RECKEN WEIHEN</h2>
-      <p>Wähle Klasse und Namen für diesen Speicher-Platz.</p>
-      <div class="classes">
-        <button type="button" class="class active" data-class="warrior"><b>🛡️ EISENBRECHER</b><span>Krieger</span><small>75 TP · 15 MP · 9 ATK · 4 DEF</small></button>
-        <button type="button" class="class" data-class="mage"><b>🔮 ARKANIST</b><span>Magier</span><small>50 TP · 50 MP · 6 ATK · 1 DEF</small></button>
-        <button type="button" class="class" data-class="rogue"><b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span><small>60 TP · 25 MP · 8 ATK · 2 DEF</small></button>
-      </div>
-      <div class="class-action">
-        <input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname">
-        <button id="start-run" type="button" class="gold">HELD ERSCHAFFEN</button>
-        <button id="cancel-create" type="button" class="dark">ZURÜCK</button>
-      </div>
-    </main>
-  </div>
-
-  <div id="death-screen" class="screen hidden">
-    <main class="death-card">
-      <div>💀</div>
-      <h2>DEINE SEELE WURDE VERSCHLUNGEN</h2>
-      <p>Der Run ist beendet. Dein gesammeltes Gold wird dem Orden vermacht.</p>
-      <div id="death-stats"></div>
-      <div class="death-actions">
-        <button id="btn-revive" type="button" class="gold">✨ RUN NEU STARTEN (EBENE 1)</button>
-        <button id="btn-back-to-slots" type="button" class="dark">📋 ZUR RECKEN-AUSWAHL</button>
-      </div>
-    </main>
-  </div>
-
-  <div id="game" class="hidden">
-    <header>
-      <div>
-        <b id="hero-name">Schattenjäger</b>
-        <em id="hero-class">Eisenbrecher</em>
-        <span>LVL <b id="level">1</b></span>
-        <span class="exp-badge">✨ EXP <b id="exp-text">0 / 100</b></span>
-        <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.3.4</span>
-      </div>
-      <div class="bars">
-        <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
-        <label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label>
-        <label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label>
-      </div>
-      <div class="right">
-        <b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b>
-        <button id="sound" type="button" title="Musik stummschalten / aktivieren">🎵</button>
-        <button id="save" type="button" title="Diesen Slot im Ordensarchiv sichern">💾</button>
-        <button id="btn-chars" type="button" title="Zur Recken-Auswahl">👥 Recken</button>
-        <button id="logout" type="button" title="Abmelden / Zum Portal">🚪</button>
-      </div>
-    </header>
-    <main id="layout">
-      <section id="mapbox">
-        <canvas id="stage" width="640" height="480"></canvas>
-        <div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion (Treppe / Kiste)</div>
-      </section>
-      <aside>
-        <div class="audio-panel">
-          <h4>🎧 AUDIO</h4>
-          <div class="audio-row"><span>🎵 Musik</span><input id="music-volume" type="range" min="0" max="100" value="35"><output id="music-volume-value">35%</output></div>
-          <div class="audio-row"><span>⚔️ SFX</span><input id="sfx-volume" type="range" min="0" max="100" value="80"><output id="sfx-volume-value">80%</output></div>
-        </div>
-        <nav>
-          <button type="button" class="tab active" data-tab="inv">INVENTAR</button>
-          <button type="button" class="tab" data-tab="char">AUSRÜSTUNG</button>
-          <button type="button" class="tab" data-tab="log">CHRONIK</button>
-        </nav>
-        <section id="inv" class="panel active">
-          <h3>GÜRTELTASCHE <span id="slots"></span></h3>
-          <div id="items"></div>
-          <div id="iteminfo">Wähle einen Gegenstand aus dem Rucksack.</div>
-        </section>
-        <section id="char" class="panel">
-          <h3>RÜSTKAMMER DES RECKEN</h3>
-          <div class="equip-grid">
-            <div class="equip-slot-box" data-slot="head"><span class="slot-label">KOPF</span><div class="slot-item-name" id="slot-item-head">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="head">✖</button></div>
-            <div class="equip-slot-box" data-slot="body"><span class="slot-label">BRUST</span><div class="slot-item-name" id="slot-item-body">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="body">✖</button></div>
-            <div class="equip-slot-box" data-slot="mainhand"><span class="slot-label">WAFFE</span><div class="slot-item-name" id="slot-item-mainhand">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="mainhand">✖</button></div>
-            <div class="equip-slot-box" data-slot="offhand"><span class="slot-label">SCHILD</span><div class="slot-item-name" id="slot-item-offhand">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="offhand">✖</button></div>
-            <div class="equip-slot-box" data-slot="feet"><span class="slot-label">FÜSSE</span><div class="slot-item-name" id="slot-item-feet">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="feet">✖</button></div>
-            <div class="equip-slot-box" data-slot="ring"><span class="slot-label">RELIQUIE</span><div class="slot-item-name" id="slot-item-ring">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="ring">✖</button></div>
-          </div>
-          <div id="stats" class="stats-box"></div>
-        </section>
-        <section id="log" class="panel">
-          <h3>SCHLACHTEN-CHRONIK</h3>
-          <div id="logs"></div>
-        </section>
-        <section id="combat" class="hidden">
-          <h2>⚔️ KAMPF IN DEN SCHATTEN ⚔️</h2>
-          <div id="combat-info"></div>
-          <p id="combat-log"></p>
-          <div class="combat-buttons">
-            <button id="attack" type="button">🗡️ HIEB</button>
-            <button id="fire" type="button">🔥 FEUERBALL</button>
-            <button id="heal" type="button">🧪 HEILTRANK</button>
-            <button id="flee" type="button">💨 FLUCHT</button>
-          </div>
-        </section>
-      </aside>
-    </main>
-    <div id="touch">
-      <button type="button" data-m="up">▲</button>
-      <button type="button" data-m="left">◀</button>
-      <button type="button" data-m="act" title="Aktion / Treppe">✦</button>
-      <button type="button" data-m="right">▶</button>
-      <button type="button" data-m="down">▼</button>
-    </div>
-  </div>
-  <script type="module" src="js/main.js?v=0.3.4"></script>
+  <div id="slot-screen" class="screen hidden"><canvas id="slot-canvas"></canvas><main class="slot-card"><h2>RECKEN DES ORDENS</h2><p>Wähle einen deiner 4 Helden oder erschaffe einen neuen Krieger.</p><div id="slots-grid" class="slots-grid"></div><div class="slot-footer"><button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button><span class="version-badge" data-version>v0.3.6</span></div></main></div>
+  <div id="class-screen" class="screen hidden"><main class="class-card"><h2 id="class-screen-title">NEUEN RECKEN WEIHEN</h2><p>Wähle Klasse und Namen für diesen Speicher-Platz.</p><div class="classes"><button type="button" class="class active" data-class="warrior"><b>🛡️ EISENBRECHER</b><span>Krieger</span><small>75 TP · 15 MP · 9 ATK · 4 DEF</small></button><button type="button" class="class" data-class="mage"><b>🔮 ARKANIST</b><span>Magier</span><small>50 TP · 50 MP · 6 ATK · 1 DEF</small></button><button type="button" class="class" data-class="rogue"><b>🗡️ SCHATTENLÄUFER</b><span>Schurke</span><small>60 TP · 25 MP · 8 ATK · 2 DEF</small></button></div><div class="class-action"><div class="name-row"><input id="run-name" maxlength="16" value="Schattenjäger" placeholder="Heldenname"><button id="random-name" type="button" class="btn-name" title="Zufälligen Dark-Fantasy-Namen erzeugen">🎲</button></div><button id="start-run" type="button" class="gold">HELD ERSCHAFFEN</button><button id="cancel-create" type="button" class="dark">ZURÜCK</button></div></main></div>
+  <div id="death-screen" class="screen hidden"><main class="death-card"><div>💀</div><h2>DEINE SEELE WURDE VERSCHLUNGEN</h2><p>Der Run ist beendet. Dein gesammeltes Gold wird dem Orden vermacht.</p><div id="death-stats"></div><div class="death-actions"><button id="btn-revive" type="button" class="gold">✨ RUN NEU STARTEN (EBENE 1)</button><button id="btn-back-to-slots" type="button" class="dark">📋 ZUR RECKEN-AUSWAHL</button></div></main></div>
+  <div id="game" class="hidden"><header><div><b id="hero-name">Schattenjäger</b><em id="hero-class">Eisenbrecher</em><span>LVL <b id="level">1</b></span><span class="exp-badge">✨ EXP <b id="exp-text">0 / 100</b></span><span class="slot-badge" id="hud-slot-name">SLOT 1</span><span class="hud-version" data-version>v0.3.6</span></div><div class="bars"><label>TP <i><i id="hp"></i></i><small id="hptext"></small></label><label>MP <i><i id="mp" class="mana"></i></i><small id="mptext"></small></label><label>EP <i><i id="xp" class="xp"></i></i><small id="xptext"></small></label></div><div class="right"><b id="gold">40 🪙</b><b>EBENE <span id="depth">1</span></b><button id="sound" type="button">🎵</button><button id="save" type="button">💾</button><button id="btn-chars" type="button">👥 Recken</button><button id="logout" type="button">🚪</button></div></header><main id="layout"><section id="mapbox"><canvas id="stage" width="640" height="480"></canvas><div id="hint">WASD / PFEILE: Bewegen · E / LEERTASTE: Interaktion</div></section><aside><div class="audio-panel"><h4>🎧 AUDIO</h4><div class="audio-row"><span>🎵 Musik</span><input id="music-volume" type="range" min="0" max="100" value="35"><output id="music-volume-value">35%</output></div><div class="audio-row"><span>⚔️ SFX</span><input id="sfx-volume" type="range" min="0" max="100" value="80"><output id="sfx-volume-value">80%</output></div></div><nav><button type="button" class="tab active" data-tab="inv">INVENTAR</button><button type="button" class="tab" data-tab="char">AUSRÜSTUNG</button><button type="button" class="tab" data-tab="log">CHRONIK</button></nav><section id="inv" class="panel active"><h3>GÜRTELTASCHE <span id="slots"></span></h3><div id="items"></div><div id="iteminfo">Wähle einen Gegenstand aus dem Rucksack.</div></section><section id="char" class="panel"><h3>RÜSTKAMMER DES RECKEN</h3><div class="equip-grid"><div class="equip-slot-box" data-slot="head"><span class="slot-label">KOPF</span><div class="slot-item-name" id="slot-item-head">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="head">✖</button></div><div class="equip-slot-box" data-slot="body"><span class="slot-label">BRUST</span><div class="slot-item-name" id="slot-item-body">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="body">✖</button></div><div class="equip-slot-box" data-slot="mainhand"><span class="slot-label">WAFFE</span><div class="slot-item-name" id="slot-item-mainhand">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="mainhand">✖</button></div><div class="equip-slot-box" data-slot="offhand"><span class="slot-label">SCHILD</span><div class="slot-item-name" id="slot-item-offhand">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="offhand">✖</button></div><div class="equip-slot-box" data-slot="feet"><span class="slot-label">FÜSSE</span><div class="slot-item-name" id="slot-item-feet">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="feet">✖</button></div><div class="equip-slot-box" data-slot="ring"><span class="slot-label">RELIQUIE</span><div class="slot-item-name" id="slot-item-ring">Leer</div><button type="button" class="btn-unequip hidden" data-unequip="ring">✖</button></div></div><div id="stats" class="stats-box"></div></section><section id="log" class="panel"><h3>SCHLACHTEN-CHRONIK</h3><div id="logs"></div></section><section id="combat" class="hidden"><h2>⚔️ KAMPF IN DEN SCHATTEN ⚔️</h2><div id="combat-info"></div><p id="combat-log"></p><div class="combat-buttons"><button id="attack" type="button">🗡️ HIEB</button><button id="fire" type="button">🔥 FEUERBALL</button><button id="heal" type="button">🧪 HEILTRANK</button><button id="flee" type="button">💨 FLUCHT</button></div></section></aside></main><div id="touch"><button type="button" data-m="up">▲</button><button type="button" data-m="left">◀</button><button type="button" data-m="act">✦</button><button type="button" data-m="right">▶</button><button type="button" data-m="down">▼</button></div></div>
+  <script type="module" src="js/main.js?v=0.3.6"></script>
 </body>
 </html>
