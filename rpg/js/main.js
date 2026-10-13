@@ -1,4 +1,4 @@
-// [2026-10-13 08:45] - js/main.js: v0.2.7 Always-Fresh Service Worker
+// [2026-10-13 09:25] - js/main.js: v0.3.0 EXP-Anzeige & EP-Pop-up
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -416,8 +416,20 @@ window.addEventListener('DOMContentLoaded', () => {
     el('mptext').textContent = `${p.mp}/${p.maxMp}`;
     el('xp').style.width = `${Math.max(0, p.xp / p.nextXp * 100)}%`;
     el('xptext').textContent = `${p.xp}/${p.nextXp}`;
+    const expText = el('exp-text');
+    if (expText) expText.textContent = `${p.xp} / ${p.nextXp}`;
     renderInv();
     renderEquipmentMenu();
+  }
+
+  function showExpPopup(x, y, amount) {
+    const popup = document.createElement('div');
+    popup.className = 'exp-popup';
+    popup.textContent = `+${amount} EXP`;
+    popup.style.left = `${x * 32 + 8}px`;
+    popup.style.top = `${y * 32 - 10}px`;
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 1200);
   }
 
   function renderInv() {
@@ -466,7 +478,7 @@ window.addEventListener('DOMContentLoaded', () => {
         unequipBtn.classList.add('hidden');
       }
     });
-    el('stats').innerHTML = `<strong>KAMPFWERTE:</strong><br>🗡️ Effektive Schlagkraft: <span style="color:#ffe082;">${stats.totalAtk}</span> (Basis ${p.atk})<br>🛡️ Effektiver Schutz: <span style="color:#90caf9;">${stats.totalDef}</span> (Basis ${p.def})<br>❤️ Max. Lebenskraft: ${p.maxHp} TP<br>🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}`;
+    el('stats').innerHTML = `<strong>KAMPFWERTE:</strong><br>🗡️ Effektive Schlagkraft: <span style="color:#ffe082;">${stats.totalAtk}</span> (Basis ${p.atk})<br>🛡️ Effektiver Schutz: <span style="color:#90caf9;">${stats.totalDef}</span> (Basis ${p.def})<br>❤️ Max. Lebenskraft: ${p.maxHp} TP<br>🔮 Max. Arkane Kraft: ${p.maxMp} MP<br>✨ Erfahrung: ${p.xp} / ${p.nextXp} EP<br>🏆 Tiefste Ebene im Run: Ebene ${state.world.depth}`;
   }
 
   function useItem(idx) {
@@ -625,18 +637,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
   function winCombat() {
     const m = state.activeMonster;
+    const gainedExp = m.xp;
     state.player.gold += m.gold;
     state.player.xp += m.xp;
     state.world.monsters = state.world.monsters.filter(x => x.id !== m.id);
     state.inCombat = false;
     el('combat').classList.add('hidden');
-    log(`${m.name} bezwungen! +${m.gold} Gold, +${m.xp} EP.`);
+
+    showExpPopup(m.x, m.y, gainedExp);
+    gfx.text(`+${gainedExp} EP`, m.x, m.y, '#a5d6a7');
+    log(`${m.name} bezwungen! +${m.gold} Gold, +${gainedExp} EP.`);
+
     if (m.id === 'boss') {
       state.meta.gold += 50;
       gfx.burst(m.x, m.y);
       gfx.text('👑 BOSS BESIEGT!', m.x, m.y, '#e1bee7');
       log('👑 Der Schattenfürst ist gefallen! +50 Ordensgold.');
     }
+
     if (state.world.monsters.length === 0) {
       const stairs = map.spawnStairsAfterClear();
       gfx.burst(stairs.x, stairs.y);
@@ -647,6 +665,7 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
       log(`🔒 Runensiegel aktiv – ${state.world.monsters.length} Gegner verbleiben.`);
     }
+
     if (state.player.xp >= state.player.nextXp) {
       state.player.level++;
       state.player.xp -= state.player.nextXp;
