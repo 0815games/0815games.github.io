@@ -1,4 +1,4 @@
-// [2026-10-13 08:25] - js/main.js: v0.2.5 Sanftere Musik, Slot-Funken & Save-Fix
+// [2026-10-13 08:45] - js/main.js: v0.2.7 Always-Fresh Service Worker
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
 import { cloud } from './systems/firebase.js';
@@ -6,6 +6,12 @@ import { sound } from './systems/audio.js';
 import { WorldMap } from './world/map.js';
 import { Renderer } from './world/render.js';
 import { VERSION_LABEL } from './core/version.js';
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch((err) => console.warn('Service Worker:', err));
+  });
+}
 
 window.addEventListener('DOMContentLoaded', () => {
   const map = new WorldMap();
@@ -22,7 +28,6 @@ window.addEventListener('DOMContentLoaded', () => {
     node.textContent = VERSION_LABEL;
   });
 
-  // Intro
   const intro = el('intro-screen');
   const introBar = el('intro-bar');
   const loginScreen = el('login-screen');
@@ -107,7 +112,6 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // Funkenflug im Recken-Auswahl-Menü
   const slotCanvas = el('slot-canvas');
   if (slotCanvas) {
     const sx = slotCanvas.getContext('2d');
