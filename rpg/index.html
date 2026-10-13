@@ -1,17 +1,16 @@
 <!--
-[2026-10-13 08:40] - index.html: v0.3.1 Level-Up-Animation
+[2026-10-13 09:00] - index.html: v0.3.2 Aufwendigere Level-Up-Animation
 Änderungen:
-- Animierte Level-Up-Einblendung mit Goldpartikeln ergänzt.
-- Wird beim Erreichen einer neuen Stufe automatisch angezeigt.
+- Level-Up mit Lichtkreis, Strahlen, Partikeln und Bildschirmwackeln ergänzt.
 -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Chroniken der Schattengruft – v0.3.1</title>
+  <title>Chroniken der Schattengruft – v0.3.2</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css?v=0.3.1">
+  <link rel="stylesheet" href="css/style.css?v=0.3.2">
   <style>
     #intro-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%,#1a1030,#05060a 70%);cursor:pointer;}
     #intro-screen.hidden{display:none;}
@@ -35,13 +34,22 @@
     .exp-badge{display:inline-flex;align-items:center;gap:6px;margin-left:10px;padding:3px 8px;border:1px solid #4b6b3a;border-radius:999px;background:#0f1a10;color:#a5d6a7;font-size:11px;}
     .exp-popup{position:fixed;z-index:10001;pointer-events:none;color:#a5d6a7;font-weight:bold;text-shadow:0 0 8px #000;animation:expFloat 1.2s ease-out forwards;}
     @keyframes expFloat{from{opacity:1;transform:translateY(0);}to{opacity:0;transform:translateY(-40px);}}
-    #levelup-overlay{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#ffd54f22,#000000cc);backdrop-filter:blur(2px);animation:levelupFade .35s ease-out;}
+    #levelup-overlay{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,#ffd54f33,#000000e0);overflow:hidden;animation:levelupFade .3s ease-out;}
     #levelup-overlay.hidden{display:none;}
-    .levelup-box{text-align:center;color:#ffd54f;font-family:serif;text-shadow:0 0 24px #ff9800;animation:levelupPop .7s cubic-bezier(.2,1.4,.3,1);}
-    .levelup-box h2{margin:0;font-size:clamp(34px,8vw,80px);letter-spacing:.2em;}
-    .levelup-box p{margin:8px 0 0;color:#fff3c4;letter-spacing:.25em;}
+    .levelup-box{position:relative;z-index:3;text-align:center;color:#ffd54f;font-family:serif;text-shadow:0 0 30px #ff9800;animation:levelupPop .8s cubic-bezier(.2,1.5,.3,1);}
+    .levelup-box h2{margin:0;font-size:clamp(40px,10vw,96px);letter-spacing:.22em;}
+    .levelup-box p{margin:10px 0 0;color:#fff3c4;letter-spacing:.3em;}
+    .levelup-ring{position:absolute;left:50%;top:50%;width:220px;height:220px;margin:-110px 0 0 -110px;border:3px solid #ffd54f88;border-radius:50%;animation:levelupRing 1.6s ease-out forwards;}
+    .levelup-ring:nth-child(2){width:340px;height:340px;margin:-170px 0 0 -170px;border-color:#ff980066;animation-delay:.12s;}
+    .levelup-ring:nth-child(3){width:480px;height:480px;margin:-240px 0 0 -240px;border-color:#ffffff33;animation-delay:.24s;}
+    .levelup-rays{position:absolute;left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;background:conic-gradient(from 0deg,#ffd54f22 0deg 12deg,transparent 12deg 45deg,#ff980033 45deg 57deg,transparent 57deg 90deg);animation:levelupSpin 2.4s linear forwards;}
+    .levelup-particle{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#ffd54f;box-shadow:0 0 12px #ff9800;animation:levelupParticle 1.5s ease-out forwards;}
+    body.screen-shake #game{animation:screenShake .5s ease-in-out;}
     @keyframes levelupFade{from{opacity:0;}to{opacity:1;}}
-    @keyframes levelupPop{0%{opacity:0;transform:scale(.4);}60%{opacity:1;transform:scale(1.12);}100%{opacity:1;transform:scale(1);}}
+    @keyframes levelupPop{0%{opacity:0;transform:scale(.3);}55%{opacity:1;transform:scale(1.18);}100%{opacity:1;transform:scale(1);}}
+    @keyframes levelupSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+    @keyframes levelupParticle{0%{opacity:1;transform:translate(0,0) scale(1);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.2);}}
+    @keyframes screenShake{0%,100%{transform:translate(0,0);}20%{transform:translate(-6px,4px);}40%{transform:translate(5px,-5px);}60%{transform:translate(-4px,-3px);}80%{transform:translate(3px,3px);}}
   </style>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -49,6 +57,10 @@
 </head>
 <body>
   <div id="levelup-overlay" class="hidden">
+    <div class="levelup-rays"></div>
+    <div class="levelup-ring"></div>
+    <div class="levelup-ring"></div>
+    <div class="levelup-ring"></div>
     <div class="levelup-box">
       <h2>LEVEL UP!</h2>
       <p>STUFE <span id="levelup-level">2</span> ERREICHT</p>
@@ -63,7 +75,7 @@
       <p class="intro-sub">DER SCHATTENGRUFT</p>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <span class="version-badge" data-version>v0.3.1</span>
+      <span class="version-badge" data-version>v0.3.2</span>
     </div>
   </div>
 
@@ -89,7 +101,7 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden ausschließlich im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.3.1</span></div>
+      <div><span class="version-badge" data-version>v0.3.2</span></div>
     </main>
   </div>
 
@@ -101,7 +113,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ZUM PORTAL / ABMELDEN</button>
-        <span class="version-badge" data-version>v0.3.1</span>
+        <span class="version-badge" data-version>v0.3.2</span>
       </div>
     </main>
   </div>
@@ -144,7 +156,7 @@
         <span>LVL <b id="level">1</b></span>
         <span class="exp-badge">✨ EXP <b id="exp-text">0 / 100</b></span>
         <span class="slot-badge" id="hud-slot-name">SLOT 1</span>
-        <span class="hud-version" data-version>v0.3.1</span>
+        <span class="hud-version" data-version>v0.3.2</span>
       </div>
       <div class="bars">
         <label>TP <i><i id="hp"></i></i><small id="hptext"></small></label>
@@ -217,6 +229,6 @@
       <button type="button" data-m="down">▼</button>
     </div>
   </div>
-  <script type="module" src="js/main.js?v=0.3.1"></script>
+  <script type="module" src="js/main.js?v=0.3.2"></script>
 </body>
 </html>

@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## [v0.3.2] - 2026-10-13 09:00 (Aufwendigere Level-Up-Animation)
+- [UI] Level-Up erhält Lichtstrahlen, expandierende Ringe, Goldpartikel und Bildschirmwackeln.
+- [AUDIO] Eigener aufsteigender Level-Up-Sound ergänzt.
+- [RELEASE] Version auf v0.3.2 erhöht.
+
 ## [v0.3.1] - 2026-10-13 08:40 (Level-Up-Animation)
 - [UI] Animierte Level-Up-Einblendung mit Goldpartikeln ergänzt.
 - [UI] Neue Stufe wird beim Level-Up groß und sichtbar angezeigt.
