@@ -10,4 +10,5 @@ import '../systems/character-ui.js?v=0.4.3';
 import '../systems/tutorial.js?v=0.4.10';
 import '../systems/keyboard.js?v=0.4.9';
 import '../systems/inventory.js?v=0.1.0';
-export const VERSION_LABEL = 'v0.4.14';
+import '../systems/abilities.js?v=0.1.0';
+export const VERSION_LABEL = 'v0.4.15';
