@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.0 – 2026-10-14 – Service-Worker-Stabilitätsfix
+- Response wird sofort im Netzwerk-Callback geklont, bevor sie an den Browser zurückgegeben wird; kein verzögertes clone() nach caches.open().
+- Hintergrundspeicherung über synchron registriertes event.waitUntil(); Cachefehler beeinflussen erfolgreiche Netzwerkanfragen nicht.
+- Netzwerkfehler erhalten Cache-Fallback oder explizite Offline-503-Antwort.
+- Cache auf gleichoriginige statische Dateien im Spiel-Scope begrenzt; keine Firebase-/Drittanbieteranfragen. Neuer Cache schattengruft-v0.5.0; alte Spiele-Caches bei Aktivierung bereinigt.
+- Laufzeit-Version v0.5.0, bestehende Spielmodule unverändert. Loginproblem ausdrücklich noch nicht geändert; kommt im nächsten Schritt. Canvas-ReferenceError, Audio-Autoplay und HTML-Metadaten sind nicht Teil dieses isolierten Patches.
+- Grenzen: kein realer Browser-/Handy-/Offline-Test. Cachezugriffe können durch Browserpolitik weiterhin scheitern und werden als Warnung gemeldet. Externe Firebase-SDK-Dateien werden nicht offline gecacht; kein vollständiger Offline-Start garantiert. HTML-Fallback weiterhin v0.4.0.
+
 ## v0.4.19 – 2026-10-14 – Rangliste
 - Ranglisten-Reiter ausschließlich in der Rüstkammer nach dem Tod: Platz, Name, Klasse, Level und höchste Ebene.
 - Top 50 nach bestDepth; gleiche Ebenen erhalten gleichen Rang, eigene Charaktere markiert.
