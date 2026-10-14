@@ -1,4 +1,4 @@
-// v0.3.7 – Abwechslungsreiches Level-Design mit größeren, bewegbaren Ebenen
+// v0.4.11 – Abwechslungsreiches Spawn-System mit gewichteter Monsterauswahl
 import { state } from '../core/state.js';
 import { MONSTERS } from '../data/monsters.js';
 
@@ -8,43 +8,34 @@ function mulberry32(seed) {
     a |= 0;
     a = (a + 0x6D2B79F5) | 0;
     let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    t = Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
 
 const THEMES = [
-  {
-    name: 'katakomben',
-    cols: 42,
-    rows: 30,
-    enemies: ['skeleton', 'goblin']
-  },
-  {
-    name: 'pilzwald',
-    cols: 46,
-    rows: 32,
-    enemies: ['goblin', 'skeleton']
-  },
-  {
-    name: 'frostgruft',
-    cols: 40,
-    rows: 30,
-    enemies: ['skeleton', 'goblin']
-  },
-  {
-    name: 'feuershrein',
-    cols: 44,
-    rows: 31,
-    enemies: ['goblin', 'skeleton']
-  },
-  {
-    name: 'schattenarena',
-    cols: 36,
-    rows: 28,
-    enemies: ['skeleton', 'goblin']
-  }
+  { name: 'katakomben', cols: 42, rows: 30, enemies: ['rat', 'bat', 'slime', 'spider', 'goblin', 'skeleton'] },
+  { name: 'pilzwald', cols: 46, rows: 32, enemies: ['slime', 'spider', 'goblin', 'zombie', 'wraith'] },
+  { name: 'frostgruft', cols: 40, rows: 30, enemies: ['bat', 'skeleton', 'zombie', 'wraith', 'golem'] },
+  { name: 'feuershrein', cols: 44, rows: 31, enemies: ['goblin', 'imp', 'demon', 'golem', 'skeleton'] },
+  { name: 'schattenarena', cols: 36, rows: 28, enemies: ['wraith', 'demon', 'golem', 'imp', 'skeleton'] }
 ];
+
+function availableMonsters(theme, depth) {
+  return theme.enemies
+    .map(key => ({ key, base: MONSTERS[key] }))
+    .filter(entry => entry.base && depth >= (entry.base.minDepth || 1) && (entry.base.weight || 0) > 0);
+}
+
+function pickWeighted(entries, rnd) {
+  const total = entries.reduce((sum, entry) => sum + entry.base.weight, 0);
+  let roll = rnd() * total;
+  for (const entry of entries) {
+    roll -= entry.base.weight;
+    if (roll <= 0) return entry.key;
+  }
+  return entries[entries.length - 1].key;
+}
 
 export class WorldMap {
   constructor() {
@@ -145,8 +136,6 @@ export class WorldMap {
         cy: y + Math.floor(h / 2)
       };
 
-      for (let ry = y; y + h > 0 && y + h > 0, 0; 0);
-
       for (let cy = y; cy < y + h; cy++) {
         for (let cx = x; cx < x + w; cx++) {
           state.world.tiles[cy][cx] = 0;
@@ -245,13 +234,23 @@ export class WorldMap {
         }
       ];
     } else {
-      const enemyTypes = theme.enemies;
-      const enemyCount = Math.min(14, 6 + Math.floor(depth * 0.8));
+      const pool = availableMonsters(theme, depth);
+      const enemyCount = Math.min(16, 6 + Math.floor(depth * 0.8));
       const monsterRooms = rooms.slice(1);
+      const usedInRoom = new Map();
 
       for (let i = 0; i < enemyCount; i++) {
         const room = monsterRooms[Math.floor(rnd() * monsterRooms.length)] || start;
-        const key = enemyTypes[i % enemyTypes.length];
+        const roomKey = `${room.x},${room.y}`;
+        const roomTypes = usedInRoom.get(roomKey) || new Set();
+
+        let choices = pool.filter(entry => !roomTypes.has(entry.key));
+        if (!choices.length) choices = pool;
+
+        const key = pickWeighted(choices, rnd);
+        roomTypes.add(key);
+        usedInRoom.set(roomKey, roomTypes);
+
         const spot = safe(
           room.x + 1 + Math.floor(rnd() * Math.max(1, room.w - 2)),
           room.y + 1 + Math.floor(rnd() * Math.max(1, room.h - 2))
