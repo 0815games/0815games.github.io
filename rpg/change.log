@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.5 – 2026-10-14 – HUD und Wischen-und-Halten
+- Großes Audiofeld im aktiven Spiel durch kompakten 44px-Einstellungszugang im HUD beziehungsweise Kampf ersetzt. Bestehender Audiodialog erhalten; außerhalb des Spiels bisheriger Audiozugang. Doppelten Musikbutton und Slot-Badge im Spiel dauerhaft ausgeblendet.
+- TP/MP/EP über volle verfügbare HUD-Breite in drei gleich großen Spalten, 12px hohe Balken und lesbare Werte; Füllstandsberechnung unverändert.
+- Wischen ab 12px gibt Richtung vor; Finger halten läuft alle 180ms weiter, Richtung anpassbar. Keine D-Pad-/Ziel-/Click-to-move-Steuerung. Alte Karten-Pointer-/Touch-/Klickhandler abgefangen, um doppelte Schritte zu verhindern.
+- Stop bei Loslassen, Pointer-/Touch-Abbruch, Erfassungsverlust, Kartenrand, Wand, Kampf, Dialog, Sitzungspause, Offline-Ereignis, Hintergrund, Fokusverlust und Resize. Lauf an Konto, Slot, Ebene und Kartenidentität gebunden; Menüs weiterhin scrollbar.
+- journey-ui und stair-audio nicht mehr statisch vor Spielinitialisierung importiert. Neuer Bootstrap wartet auf fertige Spiel-API und lädt beide Module in Reihenfolge; Haltebewegung erst danach freigegeben. Fehlende API nach begrenzten Wiederholungen beziehungsweise Importfehler lassen die Bewegung deaktiviert statt ungeprüft weiterzulaufen.
+- JavaScript-Syntaxprüfung und zehn lokale Richtungstests bestanden. Kein echter Safari-/Handy-/Desktop-/Firebase-End-to-End-Test; HUD, Ereignisreihenfolge und Treppenintegration im Browser noch zu prüfen. Boss-Beuteauswahl weiterhin nicht implementiert.
+
 ## v0.5.4 – 2026-10-14 – Treppen-Soundeffekte
 - Kurzer heller Zweiklang beim Öffnen der Treppenabfrage; nur beim Übergang geschlossen zu offen.
 - Vorhandenen Abstiegssound durch vier dunklere absteigende Töne ersetzt; bestehender Abstiegshandler löst ihn aus, kein zweiter Button-Sound.
