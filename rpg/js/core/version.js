@@ -15,4 +15,5 @@ import '../systems/keyboard.js?v=0.4.9';
 import '../systems/inventory.js?v=0.1.0';
 import '../systems/abilities.js?v=0.1.0';
 import '../systems/responsive-ui.js?v=0.5.2';
-export const VERSION_LABEL='v0.5.2';
+import '../systems/journey-ui.js?v=0.5.3';
+export const VERSION_LABEL='v0.5.3';

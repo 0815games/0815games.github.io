@@ -1,5 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.3 – 2026-10-14 – Namen, Spielrahmen und Treppenabfrage
+- Vorhandenen Zufallsnamengenerator beim Öffnen der Charaktererstellung auslösen; leeres Namensfeld vor Erstellen ebenfalls zufällig füllen. Manuelle Bearbeitung und Würfeln bleiben möglich.
+- Goldener Rahmen um Spielansicht und Kampf mit Safe-Area-Abständen; HUD, Karte und scrollbare Menüs innerhalb der Spielansicht. Mindesthöhe der Desktopkarte aufgehoben, damit sie in den Rahmen passt.
+- Dauerhaftes Steuerungsfenster #hint ausgeblendet; Tutorial und Hilfe erhalten.
+- Betreten einer freigegebenen Treppe öffnet Ingame-Abfrage mit dynamischer nächster Ebene, Hier bleiben und Hinabsteigen. Abbruch erst nach Verlassen/erneutem Betreten wieder anbieten.
+- Bewegungs-/Interaktions-API ergänzt; DOM-Aktualisierungen erkennen auch Bewegungen über bestehende Eingabepfade. Bestätigter Abstieg verwendet vorhandenen sitzungsgeprüften Interaktionshandler samt Ebenen-/Speicherlogik. Keine neue separate Speicherung.
+- Vor Bestätigung Konto, Slot, Position, Ebene und Kartenidentität prüfen; kein Abstieg bei Gegnern, Kampf, Tod, Vorbereitung oder anderen offenen Dialogen. Bewegung/Tastatur im Dialog gesperrt, Tab-Fokus und Esc-Abbruch. Sitzungspause schließt die Treppenabfrage.
+- JavaScript-Syntaxprüfung und neun lokale Treppenbedingungstests bestanden. Kein echter Browser-/iPhone-/Firebase-End-to-End-Test; CSS, Namens- und Dialogintegration noch nicht im echten Browser getestet. Bestehende Speicher-/Netzwerkgrenzen bleiben bestehen.
+
 ## v0.5.2 – 2026-10-14 – Mobile Ausrüstung, Reckenwahl und Texte
 - Charakterkarten mit inhaltsabhängiger Höhe, kompakter Vorschau und eigener Aktionszeile. Bestehende Spielen-/Löschen-Handler unverändert; Reckenliste scrollt statt Aktionen abzuschneiden.
 - Ablegen-Schaltflächen in eigener 44px-Spalte, zentriertes ×, zugängliche Beschriftung und umbrechende Gegenstandsnamen. Unter 360px einspaltige Ausrüstung.
