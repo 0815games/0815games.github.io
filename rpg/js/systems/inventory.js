@@ -1,83 +1,43 @@
-// [2026-10-12 18:55] - js/systems/inventory.js: v0.0.9 Inventarsystem
-import { state } from '../core/state.js';
-import { ITEM_DATABASE } from '../data/items.js';
-import { eventBus } from '../core/eventBus.js';
-
-export class InventorySystem {
-  addItem(itemId, amount = 1) {
-    const proto = ITEM_DATABASE[itemId];
-    if (!proto) return false;
-
-    if (proto.stackable) {
-      const found = state.player.inventory.find(i => i.itemId === itemId);
-      if (found) {
-        found.count += amount;
-        eventBus.emit('inventory:updated');
-        return true;
-      }
+// [2026-10-14] - js/systems/inventory.js: v0.1.0 Inventar-Logik
+import { ITEMS } from '../data/items.js';
+export const INVENTORY_LIMIT = 15;
+export function addItem(inv, id, count = 1) {
+  const item = ITEMS[id];
+  if (!item) return false;
+  const max = item.stack || 1;
+  let remaining = count;
+  if (max > 1) {
+    let slot = inv.find(s => s.id === id && s.count < max);
+    while (slot && remaining > 0) {
+      const space = max - slot.count;
+      const add = Math.min(space, remaining);
+      slot.count += add;
+      remaining -= add;
+      if (remaining > 0) slot = inv.find(s => s.id === id && s.count < max);
     }
-
-    if (state.player.inventory.length >= 15) {
-      eventBus.emit('log:message', 'Dein Rucksack fasst keine weiteren Relikte!');
-      return false;
-    }
-
-    state.player.inventory.push({ itemId, count: amount });
-    eventBus.emit('inventory:updated');
-    return true;
   }
-
-  useItem(slotIndex) {
-    const slot = state.player.inventory[slotIndex];
-    if (!slot) return;
-
-    const item = ITEM_DATABASE[slot.itemId];
-    if (!item) return;
-
-    if (item.type === 'consumable') {
-      if (item.effect === 'heal' || item.effect === 'heal_max') {
-        if (state.player.hp >= state.player.maxHp) {
-          eventBus.emit('log:message', 'Deine Trefferpunkte sind bereits voll.');
-          return;
-        }
-        state.player.hp = Math.min(state.player.maxHp, state.player.hp + item.val);
-        slot.count--;
-        eventBus.emit('audio:potion');
-        eventBus.emit('log:message', `${item.name} getrunken (+${item.val} TP).`);
-      } else if (item.effect === 'mana') {
-        if (state.player.mp >= state.player.maxMp) {
-          eventBus.emit('log:message', 'Dein Mana ist bereits vollkommen erfüllt.');
-          return;
-        }
-        state.player.mp = Math.min(state.player.maxMp, state.player.mp + item.val);
-        slot.count--;
-        eventBus.emit('audio:potion');
-        eventBus.emit('log:message', `${item.name} absorbiert (+${item.val} MP).`);
-      }
-    } else if (item.type === 'weapon') {
-      state.player.equipped.weapon = item;
-      eventBus.emit('audio:sword');
-      eventBus.emit('log:message', `${item.name} gezogen (+${item.val} Schlagkraft).`);
-    } else if (item.type === 'armor') {
-      state.player.equipped.armor = item;
-      eventBus.emit('log:message', `${item.name} angelegt (+${item.val} Schutz).`);
-    }
-
-    if (slot.count <= 0) {
-      state.player.inventory.splice(slotIndex, 1);
-    }
-
-    eventBus.emit('inventory:updated');
-    eventBus.emit('hud:updated');
+  while (remaining > 0 && inv.length < INVENTORY_LIMIT) {
+    const add = Math.min(max, remaining);
+    inv.push({ id, count: add });
+    remaining -= add;
   }
-
-  getTotalAtk() {
-    const wBonus = state.player.equipped.weapon ? state.player.equipped.weapon.val : 0;
-    return state.player.baseAtk + wBonus;
+  return remaining === 0;
+}
+export function removeItem(inv, id, count = 1) {
+  let remaining = count;
+  for (let i = inv.length - 1; i >= 0 && remaining > 0; i--) {
+    if (inv[i].id !== id) continue;
+    const take = Math.min(inv[i].count, remaining);
+    inv[i].count -= take;
+    remaining -= take;
+    if (inv[i].count <= 0) inv.splice(i, 1);
   }
-
-  getTotalDef() {
-    const aBonus = state.player.equipped.armor ? state.player.equipped.armor.val : 0;
-    return state.player.baseDef + aBonus;
-  }
+  return remaining === 0;
+}
+export function countItem(inv, id) {
+  return inv.filter(s => s.id === id).reduce((sum, s) => sum + s.count, 0);
+}
+export function sortInventory(inv) {
+  const order = { potion: 0, weapon: 1, armor: 2, shield: 3, helmet: 4, boots: 5, ring: 6, loot: 7 };
+  inv.sort((a, b) => (order[ITEMS[a.id]?.type] ?? 9) - (order[ITEMS[b.id]?.type] ?? 9) || a.id.localeCompare(b.id));
 }
