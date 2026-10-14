@@ -1,4 +1,4 @@
-import '../systems/combat-effects.js?v=0.4.8';
+import '../systems/combat-effects.js?v=0.4.12';
 import '../systems/audio-settings.js?v=0.4.7';
 import '../systems/slot-layout.js?v=0.4.9';
 import '../systems/floor-progress.js?v=0.4.6';
@@ -9,4 +9,4 @@ import '../systems/mobile-ui.js?v=0.4.9';
 import '../systems/character-ui.js?v=0.4.3';
 import '../systems/tutorial.js?v=0.4.10';
 import '../systems/keyboard.js?v=0.4.9';
-export const VERSION_LABEL = 'v0.4.11';
+export const VERSION_LABEL = 'v0.4.12';
