@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.2 – 2026-10-14 – Mobile Ausrüstung, Reckenwahl und Texte
+- Charakterkarten mit inhaltsabhängiger Höhe, kompakter Vorschau und eigener Aktionszeile. Bestehende Spielen-/Löschen-Handler unverändert; Reckenliste scrollt statt Aktionen abzuschneiden.
+- Ablegen-Schaltflächen in eigener 44px-Spalte, zentriertes ×, zugängliche Beschriftung und umbrechende Gegenstandsnamen. Unter 360px einspaltige Ausrüstung.
+- Touch entfernt nur Kampf-Tastenkürzel; Mana, Trankanzahl und andere Werte bleiben erhalten. Tastatur-/Mausmodus zeigt 1–4.
+- Bestehende Tutorial-/Hilfetexte und Intro-/Reckenlistenhinweise für Touch angepasst; Originaltexte beim Wechsel zurück zur Tastatur erhalten. Dynamische Kampftexte werden erneut angepasst.
+- Neues Integrationsmodul; Spiel-, Login-, Speicher- und Löschlogik unverändert. Keine Änderung von Firebase-Regeln oder Service-Worker.
+- JavaScript-Syntaxprüfung und sechs lokale Beschriftungstests bestanden. Kein realer iPhone-/Safari-/Desktop-Layout- oder End-to-End-Test. Textadapter an bestehende Textvorlagen gebunden; neue Vorlagen müssen ergänzt werden.
+
 ## v0.5.1 – 2026-10-14 – Login und Sitzungsprüfung
 - Sitzung vor Erwerb/Verlängerung geladen; aktiver Value-Listener hält den Sitzungspfad im lokalen Cache.
 - Transaktionsabbruch wird durch erneutes Lesen von echter fehlender/fremder/abgelaufener Sitzung unterschieden.
