@@ -1,5 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.4 – 2026-10-14 – Treppen-Soundeffekte
+- Kurzer heller Zweiklang beim Öffnen der Treppenabfrage; nur beim Übergang geschlossen zu offen.
+- Vorhandenen Abstiegssound durch vier dunklere absteigende Töne ersetzt; bestehender Abstiegshandler löst ihn aus, kein zweiter Button-Sound.
+- Beide Effekte nutzen sfxGain und vorhandene Effektlautstärke; Effektlautstärke null bleibt stumm. Musik-Stummschaltung unabhängig. Keine Audiodateien oder Downloads.
+- AudioContext gegebenenfalls fortsetzen und vor Wiedergabe erneut prüfen; Audiofehler abfangen, ohne Spielablauf zu blockieren.
+- JavaScript-Syntaxprüfung und elf lokale Assertions mit gemocktem Audiosystem bestanden. Kein echter Hör-/Safari-/Handy-/Browser-Test; Browser-Audiobeschränkungen können Wiedergabe weiterhin verhindern. Namens-, Rahmen- und Treppenlogik unverändert.
+
 ## v0.5.3 – 2026-10-14 – Namen, Spielrahmen und Treppenabfrage
 - Vorhandenen Zufallsnamengenerator beim Öffnen der Charaktererstellung auslösen; leeres Namensfeld vor Erstellen ebenfalls zufällig füllen. Manuelle Bearbeitung und Würfeln bleiben möglich.
 - Goldener Rahmen um Spielansicht und Kampf mit Safe-Area-Abständen; HUD, Karte und scrollbare Menüs innerhalb der Spielansicht. Mindesthöhe der Desktopkarte aufgehoben, damit sie in den Rahmen passt.
