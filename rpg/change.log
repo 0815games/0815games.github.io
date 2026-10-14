@@ -1,7 +1,20 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.4.18 – 2026-10-14 – Roguelite-Tod und Rüstkammer
+- Beim Tod gehen Ausrüstung, Ersatzitems, Tränke und Materialien verloren. Level, EP, Skills, Skillpunkte und permanente Basiswerte bleiben erhalten.
+- Vorhandene Todes-Goldübertragung ins persönliche meta.gold wird genutzt; Run-Gold danach auf null gesetzt. Kein zweites Auszahlen beim Öffnen des Shops.
+- TP/MP vollständig aufgefüllt, temporäre Buffs und Cooldowns zurückgesetzt; Neustart auf Ebene 1.
+- Vorbereitungsshop mit Waffen, Rüstung, Reliquie und Vorräten; levelabhängige Stufen alle fünf Level, maximal 20 Stufen.
+- Basis- und Ausrüstungswerte im Vergleich. Eine gekaufte Startausrüstung je Slot und maximal drei Tränke je Sorte.
+- Käufe mit Bestätigung; Speicherung vor Übernahme, Rücknahme im Arbeitsspeicher bei fehlgeschlagenem Speichern. Vorbereitungsstatus wird mit dem Helden gespeichert.
+- Kostenlose Notwaffe mit +2 ATK, wenn keine Startwaffe gekauft wurde. Ungenutztes Ordensgold bleibt erhalten; keine Goldkäufe permanenter Stats.
+- Mobile-first Shop mit scrollbarer Liste, fester Fußleiste und großen Buttons; Tastatur-Fokus begrenzt.
+- Kompatibilitätsfix: vorhandene combat-buttons-Klasse erhält die von der Fähigkeitenleiste erwartete ID.
+- Neue Helden setzen Ordensgold und Vorbereitungsstatus zurück. Nur zentrales Changelog; alte Einzeldateien wurden gelöscht.
+- Grenzen: kein echter Browser-/Handy-/Firebase-End-to-End-Test. Gold und Vorbereitung verwenden bestehende Slot-Speicherung, keine serverseitige Wirtschaftstransaktion. Bei Netzwerkverlust bleiben die Grenzen der bisherigen Sitzungsspeicherung bestehen. Schwierigkeitsskalierung früher Ebenen wird erst nach Spieltests abgestimmt. Bestehende Hauptlogik wird über ein Integrationsmodul ergänzt, nicht vollständig migriert.
+
 ## Pflegevorgabe
-Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden hier oben unter einer Versionsüberschrift ergänzt. Keine neuen CHANGELOG-v*.md-Dateien anlegen. Historische Einträge nicht überschreiben. Die bisherigen Einzeldateien bleiben vorerst als Archiv erhalten; ihre Inhalte sind hier zusammengefasst, nicht wortgleich übernommen. Eine reine Dokumentationsänderung erhöht die Spielversion nicht.
+Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden hier oben unter einer Versionsüberschrift ergänzt. Keine neuen CHANGELOG-v*.md-Dateien anlegen. Historische Einträge nicht überschreiben. Die bisherigen Einzeldateien wurden nach der Zusammenfassung gelöscht; ihre Inhalte sind hier zusammengefasst, nicht wortgleich übernommen. Eine reine Dokumentationsänderung erhöht die Spielversion nicht.
 
 ## Projektvorgaben
 - Mobile-first, danach Desktop-Browser.
