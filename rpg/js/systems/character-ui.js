@@ -8,9 +8,9 @@ cloud.loadAllSlots=async function(...args){const result=await load.apply(this,ar
 function setup(){
  const intro=document.getElementById('intro-screen'),login=document.getElementById('login-screen');
  let entered=false,gesture=null;
- const keep=()=>{if(!entered){intro.classList.remove('hidden');login.classList.add('hidden');}};
- new MutationObserver(keep).observe(intro,{attributes:true,attributeFilter:['class']});
- const enter=()=>{if(entered)return;entered=true;intro.classList.add('hidden');login.classList.remove('hidden');sound.resume();sound.startMusic();};
+ const keep=()=>{if(!entered){if(intro.classList.contains('hidden'))intro.classList.remove('hidden');if(!login.classList.contains('hidden'))login.classList.add('hidden');}};
+ const observer=new MutationObserver(keep);observer.observe(intro,{attributes:true,attributeFilter:['class']});
+ const enter=()=>{if(entered)return;entered=true;observer.disconnect();intro.classList.add('hidden');login.classList.remove('hidden');sound.resume();sound.startMusic();document.getElementById('auth-email')?.focus();};
  intro.addEventListener('pointerdown',e=>{if(e.isPrimary)gesture={x:e.clientX,y:e.clientY,id:e.pointerId};});
  intro.addEventListener('pointercancel',()=>gesture=null);
  intro.addEventListener('pointerup',e=>{if(gesture&&gesture.id===e.pointerId&&Math.hypot(e.clientX-gesture.x,e.clientY-gesture.y)<12)enter();gesture=null;});
@@ -21,7 +21,6 @@ function setup(){
  const grid=document.getElementById('slots-grid');
  const render=()=>{Array.from(grid.children).forEach((box,i)=>{if(!box.classList.contains('empty')&&!box.querySelector('.hero-preview')&&slots[i]?.player)preview(box,slots[i].player);});};
  new MutationObserver(render).observe(grid,{childList:true});
- document.querySelectorAll('.class').forEach(button=>{const id=button.dataset.class,c=CLASSES[id];if(c)preview(button,{heroClass:id,equipped:{body:c.armor,mainhand:c.weapon}});});
- render();keep();
+ document.querySelectorAll('.class').forEach(button=>{const id=button.dataset.class,c=CLASSES[id];if(c)preview(button,{heroClass:id,equipped:{body:c.armor,mainhand:c.weapon}});});render();keep();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',setup,{once:true});else setup();
