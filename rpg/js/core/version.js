@@ -1,4 +1,4 @@
-import '../systems/session-integration.js?v=0.4.17';
+import '../systems/session-integration.js?v=0.5.1';
 import '../systems/preparation-shop.js?v=0.4.18';
 import '../systems/leaderboard.js?v=0.4.19';
 import '../systems/combat-effects.js?v=0.4.12';
@@ -14,4 +14,4 @@ import '../systems/tutorial.js?v=0.4.10';
 import '../systems/keyboard.js?v=0.4.9';
 import '../systems/inventory.js?v=0.1.0';
 import '../systems/abilities.js?v=0.1.0';
-export const VERSION_LABEL='v0.5.0';
+export const VERSION_LABEL='v0.5.1';

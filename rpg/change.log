@@ -1,5 +1,15 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.1 – 2026-10-14 – Login und Sitzungsprüfung
+- Sitzung vor Erwerb/Verlängerung geladen; aktiver Value-Listener hält den Sitzungspfad im lokalen Cache.
+- Transaktionsabbruch wird durch erneutes Lesen von echter fehlender/fremder/abgelaufener Sitzung unterschieden.
+- Warten auf Serververbindung und Zeitausgleich vor Erwerb; konkurrierende echte Sitzungen bleiben gesperrt.
+- Fehler beim Laden der Charaktere werden weitergegeben statt als leere Slots ausgegeben.
+- Fehlgeschlagener Loginabschluss gibt nur die eigene Sperre frei, meldet die tabisolierte Authentifizierung ab und stellt Loginoberfläche/Eingaben wieder her.
+- Sitzung bereits beim erfolgreichen Erwerb state.user zugewiesen; Heartbeat überspringt laufenden Login und Abmeldung. Wartende Speicherungen an Sitzungsgeneration gebunden.
+- Manuelle Speicher-Fehlermeldungen werden nicht mehr vom Autosave-Filter entfernt. Touch-Capture-Handler explizit nicht passiv.
+- Sechs lokale Cache-/Transaktionsmodelltests bestanden; kein echter Firebase-/Browser-/Handy-End-to-End-Test. Alte Sperren geschlossener Fenster können weiterhin bis zu zwei Minuten bestehen. Keine Änderung der Firebase-Regeln erforderlich; Grenzen der clientseitigen Sitzungssperre bleiben erhalten. Canvas-/Audio-/Metadatenfix weiterhin separat.
+
 ## v0.5.0 – 2026-10-14 – Service-Worker-Stabilitätsfix
 - Response wird sofort im Netzwerk-Callback geklont, bevor sie an den Browser zurückgegeben wird; kein verzögertes clone() nach caches.open().
 - Hintergrundspeicherung über synchron registriertes event.waitUntil(); Cachefehler beeinflussen erfolgreiche Netzwerkanfragen nicht.
