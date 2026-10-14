@@ -1,7 +1,9 @@
+import '../systems/floor-progress.js?v=0.4.6';
+import '../systems/intro-embers.js?v=0.4.6';
 import '../systems/delete-dialog.js?v=0.4.5';
 import '../systems/staff.js?v=0.4.3';
 import '../systems/mobile-ui.js?v=0.4.1';
 import '../systems/character-ui.js?v=0.4.3';
 import '../systems/tutorial.js?v=0.4.4';
 import '../systems/keyboard.js?v=0.4.3';
-export const VERSION_LABEL = 'v0.4.5';
+export const VERSION_LABEL = 'v0.4.6';
