@@ -1,5 +1,15 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.4.19 – 2026-10-14 – Rangliste
+- Ranglisten-Reiter ausschließlich in der Rüstkammer nach dem Tod: Platz, Name, Klasse, Level und höchste Ebene.
+- Top 50 nach bestDepth; gleiche Ebenen erhalten gleichen Rang, eigene Charaktere markiert.
+- Separater Firebase-Bereich; Veröffentlichung erst nach erfolgreichem Speichern. Bestehende Charaktere werden beim Laden ihrer Slots abgeglichen. Keine öffentlichen privaten Spielstände.
+- Charakter und zugehöriger Ranglisteneintrag werden über ein gemeinsames Firebase-Multipath-Update gelöscht. Scheitert die Ranglisten-Vorbereitung, bleibt der Charakter erhalten.
+- Löschvorgänge warten auf laufende Speicher-/Ranglistenoperationen; neue Speicherungen des betroffenen Slots währenddessen gesperrt. Neue Charaktere ersetzen den alten Slot-Eintrag mit ihren eigenen Werten.
+- Korrektur des Rüstkammer-Neustarts: Todesbildschirm wird für die synchrone Speicheraufnahme ausgeblendet, damit Startkäufe nicht erneut gelöscht werden.
+- Mobile-first scrollbare Rangkarten, Aktualisieren-Button, Lade-/Leer-/Fehlerzustände.
+- Grenzen: keine Cloud Functions, kein vollständiger Anti-Cheat-Schutz. Ranglisten-Update separat vom Speichern; Fehler blockieren das Speichern nicht und werden bei späterem Abgleich erneut versucht. Andere Nutzer müssen ihre Charaktere erst mit der neuen Version laden/speichern. Regeln müssen den leaderboard-Bereich einschließlich level erlauben. Kein echter Browser-/Handy-/Firebase-Test. Backend-Leserechte sind nicht auf den Todeszustand beschränkt, nur die Spieloberfläche.
+
 ## v0.4.18 – 2026-10-14 – Roguelite-Tod und Rüstkammer
 - Beim Tod gehen Ausrüstung, Ersatzitems, Tränke und Materialien verloren. Level, EP, Skills, Skillpunkte und permanente Basiswerte bleiben erhalten.
 - Vorhandene Todes-Goldübertragung ins persönliche meta.gold wird genutzt; Run-Gold danach auf null gesetzt. Kein zweites Auszahlen beim Öffnen des Shops.
