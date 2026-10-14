@@ -1,9 +1,161 @@
-# CHANGELOG
+# CHANGELOG – Chroniken der Schattengruft
 
-## [v0.3.7] - 2026-10-13 09:30 (Level-Design & bewegbare Welt)
-- [LEVEL] Jede Ebene erhält ein anderes Design: Katakomben, Pilzwald, Frostgruft, Feuershrein und Schattenarena.
-- [LEVEL] Größere, prozedural erzeugte Karten mit mehreren Räumen und Korridoren.
-- [CAMERA] Die Welt bewegt sich nun mit dem Helden; das Sichtfeld bleibt auf den Bildschirm begrenzt.
-- [VISUAL] Eigene Farbpaletten und Effekte für jedes Ebenen-Design.
-- [FIX] Vollständige main.js mit allen Spiel-Funktionen wiederhergestellt.
-- [RELEASE] Version auf v0.3.7 erhöht.
+## Pflegevorgabe
+Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden hier oben unter einer Versionsüberschrift ergänzt. Keine neuen CHANGELOG-v*.md-Dateien anlegen. Historische Einträge nicht überschreiben. Die bisherigen Einzeldateien bleiben vorerst als Archiv erhalten; ihre Inhalte sind hier zusammengefasst, nicht wortgleich übernommen. Eine reine Dokumentationsänderung erhöht die Spielversion nicht.
+
+## Projektvorgaben
+- Mobile-first, danach Desktop-Browser.
+- Touch, kleine Bildschirme, Tastatur, Hintergrund/Rückkehr und Verbindungsabbrüche berücksichtigen.
+- Implementiert und getestet klar unterscheiden; keine ungetesteten Funktionsgarantien.
+
+## Dokumentationsänderung – 2026-10-14
+- Historie aus change.log und CHANGELOG-v0.4.1.md bis CHANGELOG-v0.4.17.md zentral zusammengefasst.
+- Künftige Änderungen ausschließlich in dieser Datei dokumentieren.
+
+## v0.4.17 – Sitzungsintegration
+- Sitzungssperre ohne Functions auf dark_rpg/sessions/uid; 120 Sekunden Laufzeit, Verlängerung alle 25 Sekunden.
+- Tab-isolierte Authentifizierung; zweite normale Spielsitzung wird abgewiesen.
+- Prüfung vor Laden, Speichern und Löschen; eigene Spielstandpfade.
+- Pause bei Verbindungsverlust und Rückkehr aus dem Hintergrund.
+- Mittigen Login-Mute-Button entfernt; Cloud-Status ausgeblendet.
+- Manuelle Speicher-Rückmeldung; automatische Meldungen werden im Kompatibilitätsadapter ausgefiltert.
+- Reguläre Abmeldung gibt Sitzung frei; AFK-Abmeldung wird spätestens nach 25 Sekunden erkannt.
+- Grenzen: kein atomarer serverseitiger Sitzungsschutz; kein Schutz gegen manipulierte oder alte Clients. Offline gepufferte Schreibvorgänge können später übertragen werden. Anmeldung nicht persistent; Neuladen kann bis zum Ablauf der Sperre blockieren. Bestehende main.js und ihre unabhängigen Fehler bleiben unverändert. Passende Firebase-Regeln erforderlich. Kein echter Browser-/Handy-/Firebase-Test.
+
+## v0.4.16 – Mobile Charakterauswahl
+- Dialogausrichtung angepasst, um Abschneiden zu vermeiden.
+- Scrollbare Karte mit angepasster Bildschirmhöhe.
+- Sticky-Aktionsbereich für Name und HELD ERSCHAFFEN; kompaktere Klassenkarten.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.15 – Kampf-Fähigkeiten
+- Klassenfähigkeiten mit Mana-Kosten und Abklingzeiten.
+- Krieger: Mächtiger Schlag, Schildwall, Schlachtruf.
+- Magier: Frostblitz, Arkanschild, Manawelle.
+- Schurke: Meucheln, Giftklinge, Rauchbombe.
+- Schadensreduktion, Block, sicheres Ausweichen und Gift-Schaden.
+- Abklingzeiten sinken nach Gegnerzügen; Buttons werden aktualisiert.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.14 – Inventarsystem
+- Modul zum Hinzufügen, Entfernen, Zählen und Sortieren von Items.
+- Stapellimits; Ausrüstung bleibt einzeln.
+- Symbole, Kategorien, Platzanzeige und Itemdetails mit Beschreibung, Wert und Stapelinformation.
+- Trankverbrauch, Ausrüsten und Ablegen nutzen das Inventarmodul.
+- Automatische Sortierung vor der Anzeige.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.13 – Level-Up-System
+- Automatisch ein Skillpunkt je Aufstieg.
+- Wahl eines von drei zufälligen Angeboten aus vier dauerhaften Boni: +20 Maximal-TP, +10 Maximal-MP, +2 Angriff, +2 Verteidigung.
+- Mittiges Auswahlfenster; Speichern nach Auswahl; steigende EP-Schwelle.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.12 – Kampf-UI
+- HP-Balken mit aktuellen und maximalen Lebenspunkten für Held und Gegner.
+- Typbezogenes, farblich abgestimmtes Gegnerporträt; sichtbare ATK-/DEF-Werte.
+- Größere Porträts, klarere Balken und responsive Anpassung.
+- Bestehende Kampfanimationen, Zahlen, Tastatur und Spawns erhalten.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.11 – Monster-Spawn-System
+- Zwölf Monstertypen mit Werten, Farben, Spawn-Gewichten und Mindestebenen.
+- Gewichtete, themenbezogene Spawn-Pools und Variation pro Raum.
+- Darstellungen für Ratte, Fledermaus, Schleim, Spinne, Goblin, Skelett, Zombie, Wraith, Imp, Golem, Dämon und Boss.
+- Boss auf jeder fünften Ebene; bestehende Kampf- und Oberflächenmodule erhalten.
+- Grenzen: keine Monster-Spezialfähigkeiten; kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.10 – Tutorial und Bewegung
+- Mittige Tutorial-Modals mit dunklem Hintergrund und goldenem Rahmen.
+- Bestätigung über Verstanden, Enter, Leertaste oder Esc.
+- Klick-to-move entfernt; Bewegung per WASD/Pfeiltasten oder Wischen.
+- Tipp-Texte angepasst; Kampfvisualisierung und Tastatur erhalten.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.9 – Tastatur und adaptive Oberfläche
+- Tab/Shift+Tab, Enter/Leertaste, Esc und Pfeiltasten für Auswahl und Bedienung.
+- Recken- und Klassenwahl per Pfeiltasten; Enter bestätigt.
+- Name, Zufallsname, Erstellen und Zurück per Tab erreichbar.
+- Kampf über 1–4, Tab und Enter.
+- Adaptive Spaltenzahl, Kartengröße, Schrift und Kampf-HUD; Animationen erhalten.
+- Grenzen: Touch unverändert; kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.8 – Kampfvisualisierung
+- Stabile TP-/MP-Balkenelemente statt überschreibbarer Text-HUD.
+- Heldenausrüstung und Gegnerdarstellung im Kampffenster.
+- Treffer-, Krit- und Heilungszahlen; tatsächliche Trankheilung.
+- Hieb, Stabimpuls, Feuerprojektil, Trefferblitz, Heilung, Ausweichen und Fluchtstaub.
+- Effekte für Blutrausch und Arkanwiederkehr; kurzzeitige Aktionssperre.
+- Reduzierte Bewegung berücksichtigt.
+- Grenzen: Kampfberechnung synchron; Animationen nachträglich, keine vollständig gestaffelte Gegner-KI. Passive Zahlen bei gleichzeitigem Level-Up sind Näherungen. Kein realer Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.7 – Audio und Reckenrahmen
+- Musik-/Effektlautstärke und Musik-Stummschaltung lokal gespeichert und vor main.js wiederhergestellt.
+- Gemeinsames Audiofenster in Intro, Login, Auswahl und Spiel.
+- Synchronisierte Regler und Buttons; Regler heben Stummschaltung nicht automatisch auf.
+- Audioeinstellungen zwischen Tabs synchronisiert.
+- Safe-Area-Reckenrahmen mit fester Überschrift/Fußleiste und scrollbarer Liste.
+- Tastaturfokus scrollt Reckenaktionen in die Ansicht.
+- Grenzen: Einstellungen pro Browser/Gerät, nicht Firebase. Kein Browser-/Safari-Test; main.js, HTML-Fallback und Service-Worker-Cachename unverändert. Audio kann Benutzerinteraktion benötigen.
+
+## v0.4.6 – Funkenflug und Ebenenfortschritt
+- Canvas-Funkenflug mit Pause bei verstecktem Intro/Tab und reduzierter Bewegung.
+- Treppen auf erreichbaren Feldern nahe dem Helden, bevorzugt zwei bis fünf Schritte entfernt.
+- Treppenfeld und Umgebung aufgedeckt; erreichbare vorhandene Treppen erhalten.
+- Leere Ebenen ohne Treppe beim Laden repariert.
+- enemyTotal im world-Objekt; HUD mit Gegnerfortschritt, Siegelstatus und Treppenkoordinaten.
+- Alte Spielstände ohne Gesamtzahl zeigen verbleibende Gegner statt erfundener Gesamtwerte.
+- Grenzen: kein zusätzlicher Treppen-Partikeleffekt; alter Fortschritt nicht rekonstruiert. Kein Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.5 – Ingame-Löschdialog
+- Fantasy-Dialog statt window.confirm für Recken-Löschbuttons.
+- ModalManager mit Name/Slot, Warnung und Fehleranzeige.
+- Abbrechen vorausgewählt; Tab-Fokus, Esc und Fokus-Rückgabe.
+- Async-Löschen mit deaktivierten Buttons; Fehler erhalten den Recken.
+- Erfolgreiches Löschen aktualisiert die Auswahl; Kontoidentität vorher geprüft.
+- Grenzen: Capture-Interception statt Änderung an main.js. Andere Altsysteme nicht vollständig migriert. Kein realer Browser-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.4 – Tutorial und Hilfe
+- Begrüßung mit Starten/Überspringen; kontextbezogene Bewegung-, Kampf-, Ausrüstungs-, Skill- und Treppenhinweise.
+- Kompakte Hinweise mit Verstanden; Hilfe als Modal.
+- HUD-Hilfe, H außerhalb Texteingaben und Esc im Kampf.
+- Tutorial erneut startbar; lokaler Status je Konto und Browser, kein Firebase-Schreiben.
+- Dialogtastatur erreicht Spielsteuerung nicht.
+- Grenzen: kein Spotlight, spätere Schritte warten auf Bestätigung. Kein Browser-/Safari-/Firebase-Test; main.js, HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.3 – Zauberstab und Tastatur
+- arcane_staff mit 5 ATK als Arkanisten-Startwaffe; gespeicherte Waffen nicht automatisch ersetzt.
+- Zauberstabdarstellung mit Holzschaft und Kristall.
+- Kampf per 1–4, Tab, Enter und Leertaste; Esc öffnet Hilfe ohne Spielzug.
+- I Inventar, C Ausrüstung, K Skills, L Chronik, P Speichern, Esc zurück zur Karte.
+- Leere Slots und Inventareinträge fokussierbar; Fokusrahmen und Bildschirm-Fokuswechsel.
+- Intro-Observer korrigiert gegen Endlosschleifen; bestehender main.js-Ladetimer bleibt.
+- Grenzen: kein Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+
+## v0.4.2 – Recken und Klassenoptik
+- Gemeinsamer Canvas-Charakterrenderer; eigene Silhouetten für Eisenbrecher, Arkanist und Schattenläufer.
+- Sichtbare Ausrüstungslayer für Rüstung, Helm, Stiefel, Waffen, Schild und Rubinring.
+- Recken-Auswahl nutzt geladene Spieler ohne zusätzliche Datenbankabfragen.
+- Klassenwahl zeigt Startausrüstung.
+- Intro wartet auf Tap/Klick/Enter; Scrollen öffnet es nicht.
+- Kompatibilitäts-Observer verhindert automatischen Wechsel; vorhandener Ladetimer bleibt.
+- Grenzen: prozedurale Figuren, keine Sprite-Sheets oder Laufanimation. Kein realer Safari-/Firebase-Test.
+
+## v0.4.1 – Mobile Hotfix aktiviert
+- mobile-hotfix-v041.css über version.js/mobile-ui.js geladen; index.html unverändert.
+- Intro mit begrenzter Breite, Safe-Area und vertikalem Scrollen.
+- Kampf aus Seitenleiste in Body verschoben; TP/MP, Gegner-TP, effektive Werte und Trankbestand.
+- Werte nach Aktionen einschließlich Ausweichen aktualisiert.
+- Canvas-Seitenverhältnis und Feldgröße angepasst.
+- Touch-Wegfindung auf entdeckten Feldern ohne andere Gegner; neue Eingabe unterbricht Auto-Lauf.
+- Bewegung bei Tod, Übergang, Level-Up und verstecktem Spiel gesperrt.
+- Veralteten Service-Worker-Cache ersetzt, Bereinigung auf Spiele-Caches begrenzt.
+- Bestehende main.js und Skilltree erhalten.
+- Grenzen: kein realer Browser-/iPhone-/Firebase-Test. Initial kann altes CSS sichtbar sein. HTML-Fallback v0.4.0; Offline-Start ohne zuvor geladene Dateien nicht garantiert.
+
+## v0.3.7 – 2026-10-13 09:30 – Level-Design und bewegbare Welt
+- Ebenendesigns: Katakomben, Pilzwald, Frostgruft, Feuershrein und Schattenarena.
+- Größere prozedurale Karten mit mehreren Räumen und Korridoren.
+- Kamera folgt dem Helden; Sichtfeld auf Bildschirm begrenzt.
+- Eigene Farbpaletten und Effekte je Design.
+- Vollständige main.js mit Spiel-Funktionen wiederhergestellt; Version v0.3.7.
