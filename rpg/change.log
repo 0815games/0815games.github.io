@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.6 – 2026-10-14 – Boss-Beuteauswahl
+- Bei neuen Boss-Siegen drei feste Angebote: Klassen-/Levelwaffe, Heil- oder Manatränke und zusätzliches Run-Gold. Genau eine Auswahl; bestehende Bossbelohnungen unverändert.
+- Angebote und gewählte Belohnung unter world.bossLoot im bestehenden Firebase-Slot speichern; kein LocalStorage und keine Functions. Kein nachträgliches Erzeugen für alte bereits geleerte Boss-Ebenen.
+- Vergabe auf einer Spielerkopie, Übernahme erst nach erfolgreichem Speichern; lokaler Mehrfachklickschutz und Claim-Marker. Kein serverseitiger Anti-Cheat-/Transaktionsschutz gegen manipulierte Clients; bestehende Sitzungssperren und Netzwerkgrenzen bleiben erhalten.
+- Kein teilweise gefülltes Inventar bei fehlender Kapazität; Inventarprüfung mit Rückkehrbutton, Goldangebot weiterhin wählbar. Neue Gegenstände nicht automatisch ausrüsten. Inventardarstellung spätestens bei nächster regulärer HUD-Aktualisierung; optionale vorhandene hud()-API wird genutzt.
+- Goldener responsiver Ingame-Dialog, Tastaturbedienung und Bewegungssperre bis zur Auswahl. Andere Dialoge, etwa Level-Up, haben Vorrang.
+- Syntaxprüfung und 14 lokale Tests der Angebots-/Kopierlogik mit nachgebildeter Inventarkapazität bestanden. Kein echter Firebase-/Safari-/Browser-End-to-End-Test; Async-, Dialog- und Claimintegration noch zu testen.
+
 ## v0.5.5 – 2026-10-14 – HUD und Wischen-und-Halten
 - Großes Audiofeld im aktiven Spiel durch kompakten 44px-Einstellungszugang im HUD beziehungsweise Kampf ersetzt. Bestehender Audiodialog erhalten; außerhalb des Spiels bisheriger Audiozugang. Doppelten Musikbutton und Slot-Badge im Spiel dauerhaft ausgeblendet.
 - TP/MP/EP über volle verfügbare HUD-Breite in drei gleich großen Spalten, 12px hohe Balken und lesbare Werte; Füllstandsberechnung unverändert.

@@ -16,4 +16,5 @@ import '../systems/inventory.js?v=0.1.0';
 import '../systems/abilities.js?v=0.1.0';
 import '../systems/responsive-ui.js?v=0.5.2';
 import '../systems/mobile-play.js?v=0.5.5';
-export const VERSION_LABEL='v0.5.5';
+import '../systems/boss-loot.js?v=0.5.6';
+export const VERSION_LABEL='v0.5.6';
