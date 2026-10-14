@@ -4,12 +4,12 @@ function setup(){
  stage.tabIndex=0;stage.setAttribute('aria-label','Karte: WASD oder Pfeile bewegen, E interagiert. I Inventar, C Ausrüstung, K Skills, L Chronik, P speichern.');
  let menu=false;
  const visible=n=>n&&!n.closest('.hidden')&&n.getClientRects().length>0;
- const focusables=root=>Array.from(root.querySelectorAll('button,input,select,textarea,[tabindex="0"]')).filter(n=>!n.disabled&&visible(n));
+ const focusables=root=>Array.from(root.querySelectorAll('button,input,select,textarea,[tabindex="0"],[role="button"]')).filter(n=>!n.disabled&&visible(n));
  const first=root=>focusables(root)[0]?.focus();
- const decorate=()=>{document.querySelectorAll('.slot-box.empty,.item').forEach(n=>{n.tabIndex=0;n.setAttribute('role','button');});};
+ const decorate=()=>{document.querySelectorAll('.slot-box.empty,.item,.slot-box').forEach(n=>{n.tabIndex=0;n.setAttribute('role','button');});};
  decorate();new MutationObserver(decorate).observe(el('slots-grid'),{childList:true});new MutationObserver(decorate).observe(el('items'),{childList:true});
  const css=document.createElement('style');css.textContent=':focus-visible{outline:3px solid #ffe082!important;outline-offset:3px}.keyboard-help{color:#fff;background:#111420;border:2px solid #c99c42;border-radius:14px;max-width:90vw;padding:20px}.keyboard-help::backdrop{background:#000b}';document.head.append(css);
- const help=document.createElement('dialog');help.className='keyboard-help';help.innerHTML='<h2>Tastatur</h2><p>Kampf: 1 Angriff, 2 Feuerball, 3 Heiltrank, 4 Flucht.</p><p>Tab / Shift+Tab: Auswahl. Enter / Leertaste: Bestätigen.</p><p>Erkundung: WASD / Pfeile, E Interaktion. I Inventar, C Ausrüstung, K Skills, L Chronik, P Speichern.</p><p>Esc schließt Menüs. Im Kampf öffnet Esc diese Hilfe ohne Flucht oder Spielzug.</p><button type="button">Zurück</button>';document.body.append(help);help.querySelector('button').onclick=()=>help.close();
+ const help=document.createElement('dialog');help.className='keyboard-help';help.innerHTML='<h2>Tastatur</h2><p>Kampf: 1 Angriff, 2 Feuerball, 3 Heiltrank, 4 Flucht.</p><p>Charakterauswahl: Pfeiltasten wählen, Enter bestätigt. Im Klassendialog: Pfeiltasten wählen die Klasse, Tab wechselt zu Name und Aktionen.</p><p>Tab / Shift+Tab: Auswahl. Enter / Leertaste: Bestätigen.</p><p>Erkundung: WASD / Pfeile, E Interaktion. I Inventar, C Ausrüstung, K Skills, L Chronik, P Speichern.</p><p>Esc schließt Menüs. Im Kampf öffnet Esc diese Hilfe ohne Flucht oder Spielzug.</p><button type="button">Zurück</button>';document.body.append(help);help.querySelector('button').onclick=()=>help.close();
  const labels={attack:'[1] Angriff',fire:'[2] Feuerball',heal:'[3] Heiltrank',flee:'[4] Flucht'};
  function labelButtons(){for(const[id,text]of Object.entries(labels)){const b=el(id);b.setAttribute('aria-keyshortcuts',id==='attack'?'1':id==='fire'?'2':id==='heal'?'3':'4');if(!b.textContent.startsWith('['))b.textContent=text+(id==='fire'?' · 8 MP':id==='heal'?` · ${(state.player.inventory||[]).filter(x=>x.id==='health_potion').reduce((a,x)=>a+x.count,0)}`:'');}}
  combat.addEventListener('click',()=>queueMicrotask(labelButtons),true);
@@ -19,9 +19,19 @@ function setup(){
  function openPanel(tab){menu=true;document.querySelector(`nav button[data-tab="${tab}"]`)?.click();first(el(tab));}
  document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>{menu=true;first(el(b.dataset.tab));}));
  document.addEventListener('click',e=>{if(e.target.closest('.item')){const index=Array.from(el('items').children).indexOf(e.target.closest('.item'));queueMicrotask(()=>{if(menu){const items=Array.from(el('items').children);items[Math.min(index,items.length-1)]?.focus();}});}},true);
+ function moveFocus(list,dx,dy,columns=1){
+  if(!list.length)return;
+  const index=list.indexOf(document.activeElement);
+  if(index<0){list[0]?.focus();return;}
+  let next=index;
+  if(dx)next=index+dx;
+  if(dy)next=index+dy*columns;
+  next=Math.max(0,Math.min(list.length-1,next));
+  list[next]?.focus();list[next]?.scrollIntoView({block:'nearest',inline:'nearest'});
+ }
  window.addEventListener('keydown',e=>{
   if(help.open)return;
-  if(visible(el('intro-screen')))return;
+  if(visible(el('intro-screen'))){if(e.key==='Enter'||e.key===' '){consume(e);if(!e.repeat)document.querySelector('#intro-screen')?.click();}return;}
   const editing=e.target.matches('input,textarea,select')||e.target.isContentEditable;
   if(state.inCombat&&visible(combat)){
    const list=focusables(combat);
@@ -33,8 +43,20 @@ function setup(){
    if(['w','a','s','d','e','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){consume(e);return;}
    return;
   }
+  if(visible(el('slot-screen'))){
+   const grid=el('slots-grid'),boxes=Array.from(grid.children).filter(visible);
+   if(boxes.includes(document.activeElement)){
+    if(['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(e.key)){consume(e);moveFocus(boxes,e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0,e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0,2);return;}
+    if(e.key==='Enter'||e.key===' '){consume(e);if(!e.repeat)document.activeElement.click();return;}
+   }
+  }
+  if(visible(el('class-screen'))&&!editing){
+   const classes=Array.from(document.querySelectorAll('.class')).filter(visible);
+   if(classes.includes(document.activeElement)&&['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(e.key)){consume(e);moveFocus(classes,e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0,e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0,1);return;}
+   if(!classes.includes(document.activeElement)&&['ArrowUp','ArrowDown'].includes(e.key)){consume(e);classes[0]?.focus();return;}
+  }
   if(editing)return;
-  if(e.target.matches('.item,.slot-box.empty')&&(e.key==='Enter'||e.key===' ')){consume(e);if(!e.repeat)e.target.click();return;}
+  if(e.target.matches('.item,.slot-box.empty,.slot-box')&&(e.key==='Enter'||e.key===' ')){consume(e);if(!e.repeat)e.target.click();return;}
   if(!visible(el('game'))||visible(el('death-screen')))return;
   if(visible(el('floor-overlay'))||visible(el('levelup-overlay'))){consume(e);return;}
   const k=e.key.toLowerCase();
