@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.9 – 2026-10-15 – Lebendige Welt, Grafikpaket 1
+- Renderer mit fünf thematischen Materialpaletten und zwischengespeicherten Boden-/Wand-/Säulentexturen ersetzt; Risse, Steinstruktur, Moos/Eisränder und kleine Schuttstellen. Dekoration rein optisch, keine Karten- oder Kollisionsänderungen.
+- Stilisierte Fackeln an passenden Wandkanten, maximal sechs Umgebungslichtquellen im sichtbaren Bereich; Leuchten von Säulen/Kristallen, Held und Treppe. Kontakt-/Bodenschatten und dunklere Wandunterkanten, keine echte Lichtabschattung oder Raytracing.
+- Glanzeffekte und Objekte auf aufgedeckte sichtbare Kacheln begrenzt. Verborgene Gegner/Truhen nicht gezeichnet. Spielstand wird vom Zeichnen nicht verändert.
+- Dezente Ruhebewegung von Held, Fledermäusen/Geistern und Schleimen, sichtbare Truhendeckelöffnung; maximal 18 atmosphärische Partikel. Bestehende Monster- und Charaktergrafiken erhalten, keine neuen Sprite-Sheets oder interpolierte Laufanimation in diesem Paket.
+- Zeichnen/Partikelupdate pausieren bei verborgenem Spiel oder Tab. Zeichentakt auf 30 FPS, bei reduzierter Bewegung 15 FPS begrenzt; Umgebungsbewegung bei reduzierter Bewegung abgeschaltet. Tatsächliche Handyperformance nicht gemessen.
+- JavaScript-Syntaxprüfung und 133 lokale Smoke-/Cache-/Strukturprüfungen mit nachgebildetem Canvas bestanden. Kein echter Pixel-, Browser-, Safari-, Geräte- oder Firebase-Test. Kollisionen, Beute, Schwierigkeit, Steuerung und goldener UI-Rahmen unverändert.
+
 ## v0.5.8 – 2026-10-15 – Gegner-/Boss-Balanceteststand
 - Entwurf C übernommen: Ratte 24 TP/10 ATK, Fledermaus 26/10, Schleim 32/11, Goblin 34/12, Skelett 42/12. DEF, EP, Gold und Spawngewichte unverändert. Bestehende Tiefenskalierung der normalen Gegner bleibt erhalten; übrige normale Gegnertypen unverändert.
 - Tatsächlich erzeugte Bosse auf jeder fünften Ebene mit eigener Kurve. Bossstufe n=max(1,floor(Ebene/5)): TP=round(220*n^1.2), ATK=round(20*n^1.1), DEF=4+2*n. Ebene 5: 220/20/6; Ebene 10: 505/43/8; Ebene 15: 822/67/10; Ebene 20: 1161/92/12. Bisherige Bossbelohnungen und Beuteauswahl unverändert.
