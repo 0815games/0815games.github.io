@@ -1,29 +1,13 @@
-<!-- Diagnose D1: eigenständige Startbeobachtung; Spielcode bleibt v0.5.7. -->
 <!DOCTYPE html>
-<html lang="de" data-rpg-build="0.5.7-d1">
+<html lang="de" data-rpg-build="0.5.9">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#08090e">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Chroniken der Schattengruft – v0.5.7 – Diagnose D1</title>
-  <script>
-(function(){
-if(window.__rpgDiag)return;
-var errors=[],moduleState='ausstehend',timedOut=false,panel=null,heading=null,details=null,timer;
-function path(value){try{return new URL(value,location.href).pathname;}catch{return String(value||'unbekannt').slice(0,120);}}
-function record(message){message=String(message).slice(0,400);if(errors.indexOf(message)<0&&errors.length<8)errors.push(message);check();}
-function inspect(){var sdk=window.firebase,handlers=['start-run','attack','save','logout'].map(function(id){var node=document.getElementById(id);return !!node&&typeof node.onclick==='function';}),form=document.getElementById('auth-form'),badge=document.querySelector('[data-version]'),bar=document.getElementById('intro-bar');return{diagnose:'D1',documentState:document.readyState,sdkApp:!!sdk&&typeof sdk.initializeApp==='function',sdkAuth:!!sdk&&typeof sdk.auth==='function',sdkDatabase:!!sdk&&typeof sdk.database==='function',mainModule:moduleState,coreHandlers:handlers.every(Boolean)&&!!form&&typeof form.onsubmit==='function',visibleVersion:badge?badge.textContent:'nicht vorhanden',introBar:bar?bar.style.width:'nicht vorhanden',gameApi:typeof window.__rpg,timeout:timedOut,errors:errors.slice()};}
-function show(){if(panel)return;panel=document.createElement('div');panel.id='rpg-diag-panel';panel.setAttribute('role','region');panel.setAttribute('aria-label','Startdiagnose D1');panel.style.cssText='position:fixed;left:12px;right:12px;bottom:12px;max-width:620px;max-height:45vh;overflow:auto;z-index:10000;background:#111420;color:#fff;border:2px solid #c99c42;border-radius:12px;padding:14px;font:14px sans-serif;user-select:text';heading=document.createElement('p');details=document.createElement('pre');details.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;user-select:text';var reload=document.createElement('button');reload.type='button';reload.textContent='Seite neu laden';reload.style.cssText='min-height:44px;padding:8px;background:#24293c;color:white;border:1px solid #c99c42;border-radius:8px';reload.onclick=function(){location.reload();};panel.append(heading,details,reload);(document.body||document.documentElement).append(panel);}
-function check(){var s=inspect(),ready=s.mainModule==='geladen'&&s.sdkApp&&s.sdkAuth&&s.sdkDatabase&&s.coreHandlers,status=document.getElementById('rpg-start-status'),label=ready?'D1: Kern-Handler eingerichtet. Kein Nachweis eines erfolgreichen Logins.':s.mainModule==='fehlgeschlagen'?'D1: Hauptmodul/Importkette konnte nicht geladen werden.':timedOut?'D1: Start nach 20 Sekunden nicht abgeschlossen.':s.mainModule==='geladen'?'D1: Hauptmodul ausgewertet; Kern-Handler noch nicht vollständig eingerichtet.':'D1: HTML da; SDKs und Spielmodule werden geladen.';if(errors.length)label='D1: JavaScript-/Ladefehler erfasst. '+label;if(status)status.textContent=label;if(errors.length||timedOut)show();if(panel){heading.textContent=label;details.textContent=JSON.stringify(s,null,2);}if(ready&&!errors.length&&!timedOut)clearInterval(timer);return s;}
-window.__rpgDiag={inspect:inspect,refresh:check,module:function(ok){moduleState=ok?'geladen':'fehlgeschlagen';if(!ok)record('Hauptmodul oder eine seiner Abhängigkeiten nicht geladen.');else check();}};
-window.addEventListener('error',function(e){if(e.message){record('JavaScript: '+e.message+' | '+path(e.filename)+':'+(e.lineno||'?'));return;}var node=e.target,url=node&&(node.src||node.href);if(url&&(node.tagName==='SCRIPT'||node.tagName==='LINK')){var u=new URL(url,location.href);if(u.origin===location.origin||u.hostname==='www.gstatic.com')record('Ressource nicht geladen: '+path(url));}},true);
-window.addEventListener('unhandledrejection',function(e){record('Promise: '+(e.reason&&e.reason.message?e.reason.message:'Unbehandelte Ablehnung, Details nicht automatisch erfasst.'));});
-document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterval(check,250);setTimeout(function(){var s=inspect();if(!(s.mainModule==='geladen'&&s.sdkApp&&s.sdkAuth&&s.sdkDatabase&&s.coreHandlers)){timedOut=true;check();}},20000);
-})();
-  </script>
+  <title>Chroniken der Schattengruft – v0.5.9</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="stylesheet" href="css/style.css?v=0.5.7-d1">
+  <link rel="stylesheet" href="css/style.css?v=0.5.9">
   <style>
     #toast{position:fixed;top:max(18px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:min(92vw,420px);}
     .toast{padding:12px 16px;border-radius:12px;font-size:14px;box-shadow:0 12px 32px #000a;animation:toastIn .35s cubic-bezier(.2,1.3,.3,1);}
@@ -36,7 +20,7 @@ document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterva
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
-  <noscript><div style="position:fixed;inset:12px;z-index:10001;background:#111420;color:white;border:2px solid #c99c42;padding:20px">Das Spiel benötigt JavaScript. JavaScript ist derzeit deaktiviert; die Startdiagnose kann nicht ausgeführt werden.</div></noscript>
+  <noscript><div style="position:fixed;inset:12px;z-index:10001;background:#111420;color:white;border:2px solid #c99c42;padding:20px">Das Spiel benötigt JavaScript. Bitte aktiviere JavaScript im Browser.</div></noscript>
   <div id="toast"></div>
 
   <div id="floor-overlay" class="hidden">
@@ -70,8 +54,7 @@ document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterva
       </div>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <p id="rpg-start-status" role="status" style="font:13px sans-serif;line-height:1.5;letter-spacing:normal;color:#ffe082;user-select:text">Diagnose D1: Noch kein JavaScript-Abschluss erkannt.</p>
-      <span class="version-badge" data-version>v0.5.7 · Start ausstehend</span>
+      <span class="version-badge" data-version>v0.5.9</span>
     </div>
   </div>
 
@@ -97,7 +80,7 @@ document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterva
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden im Firebase-Ordensarchiv gespeichert.</small>
-      <div><span class="version-badge" data-version>v0.5.7 · Start ausstehend</span></div>
+      <div><span class="version-badge" data-version>v0.5.9</span></div>
     </main>
   </div>
 
@@ -109,7 +92,7 @@ document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterva
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ABMELDEN</button>
-        <span class="version-badge" data-version>v0.5.7 · Start ausstehend</span>
+        <span class="version-badge" data-version>v0.5.9</span>
       </div>
     </main>
   </div>
@@ -229,7 +212,7 @@ document.addEventListener('DOMContentLoaded',check,{once:true});timer=setInterva
     </main>
   </div>
 
-  <script type="module" src="js/main.js?v=0.5.7-d1" onload="window.__rpgDiag &amp;&amp; window.__rpgDiag.module(true)" onerror="window.__rpgDiag &amp;&amp; window.__rpgDiag.module(false)"></script>
-  <script type="module" src="js/systems/mobile.js?v=0.5.7-d1"></script>
+  <script type="module" src="js/main.js?v=0.5.9"></script>
+  <script type="module" src="js/systems/mobile.js?v=0.5.9"></script>
 </body>
 </html>
