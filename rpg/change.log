@@ -1,5 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.7 – 2026-10-14 – Neue Truhen-Ausrüstung
+- Zwölf neue feste Item-IDs: Gruftklinge, Schwarzstahl-Schwert, Runenholzstab, Stab der Finsternis, Knochendolch, Nachtzahn, Knochenpanzer, Harnisch/Helm des Gruftwächters, Schattenstiefel, Runenschild und Obsidianring.
+- Neue Waffen je Klasse; Waffen/Obsidianring nutzen bestehendes ATK-System, Rüstung/Helm/Stiefel/Schild bestehendes DEF-System. Namen, Symbole, Preise, Beschreibungen und Stapellimit 1. Keine unimplementierten Spezialeffekte.
+- Bei frisch erzeugten Ebenen erhält jede bisherige Ausrüstungstruhe mit 65 Prozent Wahrscheinlichkeit ein zufälliges freigegebenes neues Item. Freigabe nach Klasse, Mindestebene und Charakterlevel; bei leerem Pool bisherige Beute erhalten. Regeln betreffen Drops, nicht zusätzliches Ausrüstungsverbot.
+- Tranktruhen, Goldbeträge, bereits gespeicherte Truhen, bestehende Item-IDs, Startshop und Bossangebote unverändert. Neue IDs beim Laden wieder registriert; vorhandene Slot-Speicherung nutzt die IDs ohne neue Datenbankpfade.
+- Syntaxprüfung und 48 lokale Schema-/Auswahl-/Serialisierungs-/Hook-Prüfungen bestanden. Karten-Hook mit nachgebildetem WorldMap getestet, kein realer Browser-/Safari-/Firebase-/Balance-Test. Keine neuen eigenen Sprites; bestehender Charakterrenderer wird verwendet.
+
 ## v0.5.6 – 2026-10-14 – Boss-Beuteauswahl
 - Bei neuen Boss-Siegen drei feste Angebote: Klassen-/Levelwaffe, Heil- oder Manatränke und zusätzliches Run-Gold. Genau eine Auswahl; bestehende Bossbelohnungen unverändert.
 - Angebote und gewählte Belohnung unter world.bossLoot im bestehenden Firebase-Slot speichern; kein LocalStorage und keine Functions. Kein nachträgliches Erzeugen für alte bereits geleerte Boss-Ebenen.
