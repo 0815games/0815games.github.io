@@ -1,3 +1,4 @@
+import '../systems/mobile-menu.js?v=0.5.11';
 import '../systems/session-integration.js?v=0.5.1';
 import '../systems/preparation-shop.js?v=0.4.18';
 import '../systems/leaderboard.js?v=0.4.19';
@@ -21,4 +22,4 @@ import '../systems/new-items.js?v=0.5.7';
 import '../systems/enemy-balance.js?v=0.5.8';
 import '../systems/living-world.js?v=0.5.9';
 import '../systems/preparation-shop-layout.js?v=0.5.10';
-export const VERSION_LABEL='v0.5.10';
+export const VERSION_LABEL='v0.5.11';
