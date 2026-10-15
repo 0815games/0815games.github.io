@@ -18,4 +18,6 @@ import '../systems/responsive-ui.js?v=0.5.2';
 import '../systems/mobile-play.js?v=0.5.5';
 import '../systems/boss-loot.js?v=0.5.6-freeze1';
 import '../systems/new-items.js?v=0.5.7';
-export const VERSION_LABEL='v0.5.7';
+import '../systems/enemy-balance.js?v=0.5.8';
+import '../systems/living-world.js?v=0.5.9';
+export const VERSION_LABEL='v0.5.9';
