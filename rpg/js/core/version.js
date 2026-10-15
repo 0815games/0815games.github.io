@@ -22,4 +22,5 @@ import '../systems/new-items.js?v=0.5.7';
 import '../systems/enemy-balance.js?v=0.5.8';
 import '../systems/living-world.js?v=0.5.12';
 import '../systems/preparation-shop-layout.js?v=0.5.10';
-export const VERSION_LABEL='v0.5.12';
+import '../systems/combat-layout.js?v=0.5.13';
+export const VERSION_LABEL='v0.5.13';
