@@ -1,5 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.8 – 2026-10-15 – Gegner-/Boss-Balanceteststand
+- Entwurf C übernommen: Ratte 24 TP/10 ATK, Fledermaus 26/10, Schleim 32/11, Goblin 34/12, Skelett 42/12. DEF, EP, Gold und Spawngewichte unverändert. Bestehende Tiefenskalierung der normalen Gegner bleibt erhalten; übrige normale Gegnertypen unverändert.
+- Tatsächlich erzeugte Bosse auf jeder fünften Ebene mit eigener Kurve. Bossstufe n=max(1,floor(Ebene/5)): TP=round(220*n^1.2), ATK=round(20*n^1.1), DEF=4+2*n. Ebene 5: 220/20/6; Ebene 10: 505/43/8; Ebene 15: 822/67/10; Ebene 20: 1161/92/12. Bisherige Bossbelohnungen und Beuteauswahl unverändert.
+- Neue Gegner bei Erzeugung und vorhandene Gegner beim Kartenvalidieren außerhalb eines laufenden Kampfes angepasst. Prozentual verbleibende TP erhalten, tote Gegner bleiben tot; Versionsmarkierung verhindert mehrfache Umrechnung. Keine Änderung von Gegner-ID, EP oder Gold.
+- Schadensformeln, Fähigkeiten, Startausrüstung, Heilung und permanente Charakterwerte nicht geändert. Dies ist kein abgeschlossenes Gesamtbalance-Update.
+- Syntaxprüfung und 23 lokale Tests: Bosskurve, HP-Anteil, tote Gegner, wiederholte Migration, unveränderte Belohnungen und Hooks bestanden.
+- Frühere 60000 Modellläufe für Ebene 1 verglichen aktuellen Stand und drei Gegnerentwürfe. Zusätzliche 30000 Boss-Snapshotkämpfe auf Ebene 5: je 5000 pro Klasse und Ausrüstungsprofil, Beginn mit 70 Prozent TP, vollen MP und freien Cooldowns. Vorbereitete Profile gewannen alle Stichproben, Startausrüstung mit nur einem Heiltrank verlor alle; dies ist keine vollständige Klassenbalance oder tatsächliche Spieler-Siegwahrscheinlichkeit.
+- Modellgrenzen: feste nicht optimale Aktionsstrategie, keine vollständigen Runs, Skills, defensive Fähigkeiten, Beute-/Level-Up-Progression oder Flucht. Höhere Bosse nur auf Wertewachstum geprüft, nicht in vollständigen Runs simuliert. Kein echter Browser-/Handy-/Firebase-End-to-End-Test. Ingame-Balancetest durch den Nutzer vorgesehen.
+
 ## v0.5.7 – 2026-10-14 – Neue Truhen-Ausrüstung
 - Zwölf neue feste Item-IDs: Gruftklinge, Schwarzstahl-Schwert, Runenholzstab, Stab der Finsternis, Knochendolch, Nachtzahn, Knochenpanzer, Harnisch/Helm des Gruftwächters, Schattenstiefel, Runenschild und Obsidianring.
 - Neue Waffen je Klasse; Waffen/Obsidianring nutzen bestehendes ATK-System, Rüstung/Helm/Stiefel/Schild bestehendes DEF-System. Namen, Symbole, Preise, Beschreibungen und Stapellimit 1. Keine unimplementierten Spezialeffekte.
