@@ -29,5 +29,5 @@ import '../systems/combat-reward-feedback.js?v=0.5.18';
 import '../systems/combat-number-feedback.js?v=0.5.19';
 import '../systems/preparation-potion-purchase.js?v=0.5.20';
 import '../systems/stair-confirm.js?v=0.5.23';
-import '../systems/changelog-viewer.js?v=0.5.24';
-export const VERSION_LABEL='v0.5.24';
+import '../systems/changelog-viewer.js?v=0.5.25';
+export const VERSION_LABEL='v0.5.25';

@@ -1,4 +1,4 @@
-import {VERSION_LABEL} from '../core/version.js';
+const VERSION_LABEL='v0.5.25';
 function install(){
  const game=document.getElementById('game');if(!game||document.getElementById('changelog-viewer'))return;
  const dialog=document.createElement('dialog');dialog.id='changelog-viewer';dialog.className='changelog-viewer';dialog.setAttribute('aria-labelledby','changelog-title');
@@ -29,7 +29,7 @@ function install(){
  dialog.addEventListener('cancel',event=>{event.preventDefault();close();});
  dialog.addEventListener('click',event=>{if(event.target===dialog)close();});
  document.querySelectorAll('[data-version]').forEach(badge=>{
-  badge.textContent=VERSION_LABEL;badge.classList.add('changelog-trigger');badge.setAttribute('role','button');badge.setAttribute('tabindex','0');badge.setAttribute('aria-haspopup','dialog');badge.setAttribute('aria-label',`${VERSION_LABEL}: Änderungen anzeigen`);
+  badge.textContent=VERSION_LABEL;badge.classList.add('changelog-trigger');badge.setAttribute('aria-haspopup','dialog');badge.setAttribute('aria-label',`${VERSION_LABEL}: Änderungen anzeigen`);
   badge.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();open();});
   badge.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();open();}});
  });
@@ -41,3 +41,4 @@ function install(){
  }
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+export {VERSION_LABEL};
