@@ -13,10 +13,10 @@ Stand: 2026-10-16. Entwurf: alle nachstehenden Punkte sind noch offen bzw. abzun
 ## Umgesetzt
 
 - [x] ~~T01 – Kaufbestätigung unterscheiden: Heil-/Manatränke direkt kaufen; bei Ausrüstung weiterhin bestätigen. Doppelkäufe während laufender Speicherung verhindern.~~ — umgesetzt am 2026-10-16 12:16 CEST in v0.5.20, Commit `40ab45c0085504b5a2c8a7c49bc659535ef1e186`. Code-Push und 66 lokale Modellprüfungen bestanden; echte Browser-/Firebase-Abnahme noch offen.
+- [x] ~~T02 – Treppendialog: Schaltflächen umgekehrt anordnen. Vor Umsetzung klären: Ist „Abstieg immer vorgewählt“ gewünscht oder der gemeldete Fehler? Zielreihenfolge und Standardfokus ausdrücklich festlegen.~~ — umgesetzt am 2026-10-16 12:25 CEST in v0.5.21, Commit `cb6a2b86450aecbf2eaad9799df4f4614aa838b0`. Entscheidung: Bestätigungsdialog mit „⬇️ Absteigen“ zuerst und vorausgewählt; „🚪 Hier bleiben“ bricht ab. Code-Push und 21 lokale Modellprüfungen bestanden; echte Browser-/Firebase-Abnahme noch offen.
 
 ## Aufgaben – einfachere zuerst
 
-- [ ] T02 – Treppendialog: Schaltflächen umgekehrt anordnen. Vor Umsetzung klären: Ist „Abstieg immer vorgewählt“ gewünscht oder der gemeldete Fehler? Zielreihenfolge und Standardfokus ausdrücklich festlegen.
 - [ ] T03 – Desktop-Kampffenster verkleinern: sinnvolle Maximalmaße, weniger Leerraum, lange Inhalte weiterhin erreichbar.
 - [ ] T04 – Helden-/Gegnerkarten im Begegnungsfenster dynamisch in der Höhe gestalten. Unnötiges Scrollen innerhalb dieses Bereichs vermeiden; lange Namen und kleine/querformatige Displays berücksichtigen. Problem anhand eines aktuellen Screenshots nachstellen.
 - [ ] T05 – Enter und Leertaste konsistent: fokussierte Aktionen bestätigen; normaler Angriff im passenden Kampfkontext auch per Leertaste. Fokus auf anderen Buttons und Texteingaben respektieren, keine Doppelaktion.
