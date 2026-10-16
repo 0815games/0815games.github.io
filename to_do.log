@@ -1,12 +1,1 @@
-? Bei Weltkarte ohne Funktion, soll die POI's aufrufen als kleines fenster. Fenster soll sich durch esc drücken oder X schließen lassen.
-Wichtig nur dieses Fenster schließen dann nicht die Weltkarte.
-- Items werden beim aufsammeln nicht immer richtig angezeigt
-- kein munitions verbrauch
-
-
-🐛 Aktuelle Bugs & Anpassungen:
-- Lock Picking auf Truhen in Dungeons legen (fertig?)
-- Sobald ein Menü geöffnet wird jeglicher art, oder sonstiges Popup tutorial what ever soll die Bewegung in der Spielmap komplett verboten werden. Ich möchte das Allgemein irgendwie einbauen
-- Neue und mehr Quest implemntieren, gerne 5 neue Quest. eine Anfänger quest z.b noch. Das erste mal Zelt aubauen, was braten + übernachten, sauber und logisch.
-- Tutorial einbauen um alle funktionen kennen zu lernen? Gerne eine abfolge von Anfängerquests o.ä?
-- Quest what ever, wie oben wegen Tutorial für Modding der Waffen etc.
+UPDATED_TO_DO
