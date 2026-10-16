@@ -27,4 +27,5 @@ import '../systems/ability-animations.js?v=0.5.15';
 import '../systems/combat-status-feedback.js?v=0.5.16';
 import '../systems/combat-reward-feedback.js?v=0.5.18';
 import '../systems/combat-number-feedback.js?v=0.5.19';
-export const VERSION_LABEL='v0.5.19';
+import '../systems/preparation-potion-purchase.js?v=0.5.20';
+export const VERSION_LABEL='v0.5.20';
