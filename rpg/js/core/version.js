@@ -24,4 +24,5 @@ import '../systems/living-world.js?v=0.5.12';
 import '../systems/preparation-shop-layout.js?v=0.5.10';
 import '../systems/combat-layout.js?v=0.5.13';
 import '../systems/ability-animations.js?v=0.5.15';
-export const VERSION_LABEL='v0.5.15';
+import '../systems/combat-status-feedback.js?v=0.5.16';
+export const VERSION_LABEL='v0.5.16';
