@@ -20,14 +20,17 @@ Stand: 2026-10-16. Zentrale Arbeitsplanung und Masterplan. Offene Punkte nicht m
 
 ### Ausgangspunkt und Rückkehrpunkt
 - Backup-Branch: `Backup`, gesicherter Commit `4bf3a5f49c15da972b2ddbe1b71f9936d116dfe5`. Nicht für laufende Entwicklung verwenden oder automatisch mit main überschreiben.
+- Zusätzliches Backup vor S01a: `Backup-vor-S01a-2026-10-16`, Commit `902410b88c7a2317cfbd7ef9e76b97f5d288a30c`.
 - Backup umfasst versionierte Repository-Dateien und erreichbare Git-Historie, keine externen Firebase-Spielstände.
-- Letzter hier berücksichtigter Spielcode-Fix: `d59d1b55175a0ce354c9d274f74807b6061456ab` (T02: alte Treppenimplementierung entfernt). Angezeigte Spielversion weiterhin v0.5.26; kein eindeutiger Build-Identifier implementiert.
+- Letzter hier berücksichtigter Spielcode-Fix: `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2` (S01b: Ausrüstungswechsel/Ablegen in main.js). Angezeigte Spielversion weiterhin v0.5.26; kein eindeutiger Build-Identifier implementiert.
 - Auditbefunde sind Arbeitsgrundlage, keine Behauptung einer vollständigen Prüfung aller Dateien oder echten Browser-/Firebase-Abnahme. Vor jedem Teilfix konkreten aktiven Aufrufpfad und Befund erneut prüfen.
 
 ### Sofortiger Arbeitsstand
-- [ ] Fehlende detaillierte Changelog-Einträge der letzten Änderungen nachtragen; vorhandene Historie unverändert erhalten. Insbesondere T02-Nachfixe, Changelog-Viewer, Startfehler/Syntaxkorrektur, schaltbare Diagnose, Bewegungsfix und Backup mit ihren tatsächlich belegten Prüfständen dokumentieren. Unbekannte Details offenlassen.
-- [ ] T02-Nutzerabnahme des letzten Fixes entgegennehmen: nur Symbol-Dialog, Abbrechen, erneutes Betreten, genau ein Ebenenwechsel, mobiles Layout. Bei weiterem Blocker eng begrenzten Reparaturbedarf einordnen.
-- Nächster regulärer Umsetzungsschritt: S01a. Zuvor aktuellen Code/Commit, betroffene Aufrufer und vorhandene Tests feststellen; Changelog-Blocker sichtbar halten.
+- [ ] Fehlende detaillierte Changelog-Einträge der letzten Änderungen nachtragen; vorhandene Historie unverändert erhalten. Insbesondere T02-Nachfixe, Changelog-Viewer, Startfehler/Syntaxkorrektur, schaltbare Diagnose, Bewegungsfix, S01a und Backup mit ihren tatsächlich belegten Prüfständen dokumentieren. Unbekannte Details offenlassen. Der S01b-Nachtrag ersetzt diese restliche Aufarbeitung nicht.
+- T02-Nutzerabnahme am 2026-10-16 um 16:41 CEST eingegangen: Fix und Abstieg auf dem iPhone problemlos. Zuvor drei Ebenen einschließlich Boss ohne bemerkte Probleme. Desktop/Tastatur sowie Abbruch-/Sonderfälle nicht pauschal abgenommen.
+- S01a ist veröffentlicht (`6370e26d1e62fb8e856457284591424e2978d2f8`); vollständige Aufruferprüfung, Dokumentation und spezielle Geräteabnahmen weiterhin offen.
+- S01b-Code und Dokumentation abgeschlossen; echte Geräte-/Speicherabnahme und Entscheidung zur unbeabsichtigten CSS-Abweichung offen, siehe S01b. Kein vollständiges Abnahmehäkchen.
+- Nächster Schritt: S01b-Handyprüfung voller/teilvoller Tasche und Speichern/Neuladen sowie CSS-Abweichung klären. Danach S01c-Regel für Truhen bei Platzmangel festlegen; vor weiterer Umsetzung offene S01a-/Dokumentationspunkte berücksichtigen.
 - Standardreihenfolge: S01 → S02 → S03 → S04 → S05 → S06 → S07. Kleine notwendige Vorarbeiten ausdrücklich im jeweiligen Paket dokumentieren, nicht unbemerkt mehrere Pakete zusammen umbauen.
 - T-Bugs bei sachlicher Überlappung im zugehörigen S-Paket mitprüfen; Wünsche/Erweiterungen erst nach den benötigten S-Abnahmen. S-Paketabschluss hakt verknüpfte T-Aufgaben nicht automatisch ab.
 
@@ -51,9 +54,16 @@ Stand: 2026-10-16. Zentrale Arbeitsplanung und Masterplan. Offene Punkte nicht m
 ## S-Aufgaben – Stabilisierung mit höherer Priorität
 
 ### S01 – Inventar, Ausrüstungswechsel und Truhen atomar absichern
-Status: offen. Keine andere funktionale S-Abhängigkeit; bestehende Daten und Aufrufer zuerst prüfen.
+Status: teilweise implementiert, nicht vollständig abgenommen. Keine andere funktionale S-Abhängigkeit; bestehende Daten und Aufrufer zuerst prüfen.
 - [ ] S01a – Inventarvertrag festlegen und absichern: positive ganzzahlige Mengen, bekannte Item-IDs, Stapel-/Platzgrenzen. Fehlgeschlagenes Hinzufügen/Entfernen darf keine Teiländerung hinterlassen; eindeutiges Ergebnis mit Fehlergrund. Sämtliche aktiven Aufrufer vor Vertragsänderung erfassen und kompatibel anpassen.
+  - Implementierung veröffentlicht: `6370e26d1e62fb8e856457284591424e2978d2f8`; atomare Einzeloperationen, boolesche Rückgaben erhalten, detaillierte try-Funktionen und wiederholbarer Node-Test. Lokale integrierte Suite: 1027 Prüfungen mit Item-Fixtures bestanden; frühere größere Vergleichssuite separat, nicht addieren oder als Browserprüfung ausgeben. Vollständige Aufrufer-/Geräteprüfung und eigener Changelog-Nachtrag offen.
 - [ ] S01b – Ausrüstungswechsel vollständig auf Kopie berechnen und erst als Ganzes übernehmen; volle Tasche und durch den Wechsel frei werdenden Slot berücksichtigen. Ablegen ebenso auf Erfolg prüfen. Kein verlorener oder duplizierter Gegenstand.
+  - Status: implementiert und dokumentiert – echte Abnahme offen. Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`, veröffentlicht am 2026-10-16 16:55:10 CEST laut Git. Kein neuer Versionsstand; weiterhin v0.5.26.
+  - Direkter Ersatz von equipItemFromInv()/unequipSlot() in rpg/js/main.js, keine neuen globalen Handler. Erst neue Ausrüstung auf Kopie entnehmen, dann bisherige zurücklegen; nur vollständiges Ergebnis übernehmen. Ablegen bei Fehler ohne Datenverlust abbrechen. Preise, Werte, Balance und Speicherablauf nicht geändert.
+  - Tests: 31 lokale Prüfungen mit tatsächlichen Ersatzfunktionen und hashgeprüftem S01a-Code, aber Item-/Sound-/Log-/HUD-Stubs bestanden. Syntaxprüfung des vorbereiteten Gesamtcodes bestanden. Testannahme zur konstanten Taschenbelegung korrigiert: ein zuvor leerer Ausrüstungsplatz darf die Taschenbelegung verringern. Kein echter Browser-/Firebase-/Speicher-/Neuladetest; Deployment nicht separat geprüft.
+  - Veröffentlichter Diff nachgelesen: zusätzlich unbeabsichtigt Fähigkeitenbutton-CSS in renderAbilities() von text-align:center auf text-align:left geändert. Tatsächlicher main.js-Blob `3a5ebae4bb457886048b9615f401bcd1deb1ea59`; vorher genannter Zielblob `14e7dfb4c1e52406a1fd38c85ec8b0c20528ee66` beschreibt nur den lokalen Zwei-Funktionen-Entwurf, nicht die veröffentlichte Gesamtdatei. AFK und Level-Up-Ausgabe unverändert. Rücknahme oder ausdrückliche Übernahme des CSS separat klären; keine versteckte Korrektur.
+  - Changelog: detaillierter Eintrag unter v0.5.26 / S01b in rpg/change.log mit diesem Dokumentationspaket. Andere historische Lücken bleiben offen.
+  - Noch erforderlich: bei voller Tasche tauschen, bei voller Tasche Ablegen ablehnen, mit Platz ablegen; Gegenstandsmengen und Werte prüfen, manuell speichern und neu laden; mobile-first, danach Desktop. Die frühere allgemeine Ingame-Rückmeldung des Nutzers liegt vor dem S01b-Push und zählt nicht als S01b-Abnahme.
 - [ ] S01c – Truhenbelohnung ohne Verlust: bei Platzmangel Item erreichbar erhalten. Vorher festlegen, ob Gold separat entnommen werden darf oder gesamte Entnahme atomar ist. Truhe nicht nach fehlgeschlagener Vergabe unbemerkt verbrauchen.
 Abnahme: leere/volle Tasche, Teilstapel, mehrere Stapel, Mengenfehler, unbekannte IDs, Ausrüstungstausch und Truhenentnahme; Fehlerzustand vor/nach Aktion unverändert, Erfolgsmengen exakt. Reale UI-Prüfung und Erhalt nach Speichern/Neuladen.
 Bezug: T10/T11; keine Preis- oder Balanceänderung.
@@ -122,13 +132,13 @@ Bezug: T04, T09, T14; T15-Grafikausbau erst danach und gesondert.
 - [x] ~~T01 – Kaufbestätigung unterscheiden: Heil-/Manatränke direkt kaufen; bei Ausrüstung weiterhin bestätigen. Doppelkäufe während laufender Speicherung verhindern.~~ — umgesetzt am 2026-10-16 12:16 CEST in v0.5.20, Commit `40ab45c0085504b5a2c8a7c49bc659535ef1e186`. Code-Push und 66 lokale Modellprüfungen bestanden; echte Browser-/Firebase-Abnahme noch offen.
 - [x] ~~T03 – Desktop-Kampffenster verkleinern: sinnvolle Maximalmaße, weniger Leerraum, lange Inhalte weiterhin erreichbar.~~ — umgesetzt am 2026-10-16 12:31 CEST in v0.5.22, Commit `dc3bcc99a8091b58b874258e6e6106672b683655`. Entscheidung: maximale Kampffensterbreite 900 px; Desktop-Padding 16 px, Figuren 112 px, Aktions-/Fähigkeitenleiste maximal 720 px. Mobile und kompakte Höhendarstellung unverändert. Code-Push und Syntaxprüfung bestanden; echte Browser-/Firebase-Abnahme noch offen.
 
-### T02 – erneut offen zur Abnahme, Historie erhalten
+### T02 – Handyabstieg bestätigt; weitere Abnahmen offen, Historie erhalten
 - [ ] T02 – Treppendialog: ausschließlich ein Fenster mit Symbolen. „⬇️ Absteigen“ zuerst und vorausgewählt, „🚪 Hier bleiben“ bricht ab. Alte symbollose Abfrage vollständig entfernen; mobiles Layout innerhalb des Sichtbereichs, keine rechts abgeschnittenen Inhalte. Ein bestätigter Abstieg löst genau einen Ebenenwechsel aus.
   - Ursprüngliche Aufgabe: Schaltflächen umgekehrt anordnen; vor Umsetzung klären, ob „Abstieg immer vorgewählt“ Wunsch oder Fehler ist. Entscheidung: Absteigen zuerst und vorausgewählt.
   - Historische Umsetzung 2026-10-16 12:25 CEST, v0.5.21, Commit `cb6a2b86450aecbf2eaad9799df4f4614aa838b0`; 21 lokale Modellprüfungen berichtet, echte Abnahme offen.
   - Historischer Nachfix 2026-10-16 12:45 CEST, v0.5.23, Commit `2a0d4ff5984ee04aaa6226654e156f34ed9c3fb1`. Damals dokumentierte Aussage „alte doppelte Treppenabfrage entfernt; nur der neue Dialog bleibt; mobiles Layout repariert“ wurde durch Nutzerprüfung widerlegt. Nicht als Erfolg weiterführen: alte Handler blieben aktiv, Entfernung im neuen Modul lag hinter vorzeitigem return.
   - Aktueller Codefix: Commit `d59d1b55175a0ce354c9d274f74807b6061456ab`. Alte Dialogerzeugung, Treppen-CSS und Handler aus journey-ui.js entfernt; alleiniger Symbol-Dialog und Ablauf in stair-confirm.js. Spielversion weiterhin v0.5.26.
-  - Prüfstand: Syntax beider Dateien und 17 lokale DOM/API-Modellprüfungen bestanden. Keine vollständige Simulation aller anderen Eingabemodule, kein echter Safari-/Firebase-/Layouttest. Nutzerabnahme und Tastaturintegration noch offen; Bezug S05.
+  - Prüfstand: Syntax beider Dateien und 17 lokale DOM/API-Modellprüfungen bestanden. Keine vollständige Simulation aller anderen Eingabemodule, kein echter automatisierter Safari-/Firebase-/Layouttest. Nutzer bestätigt am 2026-10-16 16:41 CEST den Fix und problemlosen Abstieg auf dem iPhone. Desktop-/Tastaturintegration und gesonderte Abbruch-/Sonderfälle bleiben offen; Bezug S05.
 
 ### Offene T-Aufgaben – innerhalb der Stufe einfachere zuerst
 - [ ] T04 – Helden-/Gegnerkarten im Begegnungsfenster dynamisch in der Höhe gestalten. Unnötiges Scrollen innerhalb dieses Bereichs vermeiden; lange Namen und kleine/querformatige Displays berücksichtigen. Problem anhand eines aktuellen Screenshots nachstellen.
@@ -158,12 +168,12 @@ Hier können neue Einträge manuell ergänzt und anschließend gemeinsam eingeor
 - Datum / Gerät und Browser / betroffener Bereich / Schritte / erwartet / tatsächlich / Screenshot oder Diagnose / zugehörige ID.
 
 ## Übergabe bei jeder Arbeitsunterbrechung
-- Aktiver Punkt und Teilaufgabe:
-- Zuletzt geprüfter Commit:
-- Gesicherter Befund und Ziel:
-- Bereits geändert/gepusht:
-- Lokale Tests und Grenzen:
-- Deploy / echte Abnahme:
-- Changelog-Status:
-- Blocker / offene Entscheidung:
-- Exakt nächster Schritt:
+- Aktiver Punkt und Teilaufgabe: S01b, implementiert und dokumentiert – Abnahme offen.
+- Zuletzt geprüfter Codecommit: `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`.
+- Gesicherter Befund und Ziel: verlustfreier Ausrüstungswechsel/Ablegen, insbesondere bei voller Tasche.
+- Bereits geändert/gepusht: S01a-Inventarmodul und S01b-Funktionen in main.js; kein S01c-Fix.
+- Lokale Tests und Grenzen: 31 S01b-Prüfungen mit tatsächlichem S01a-Code und Item/UI-Stubs; keine echte Geräte-/Firebase-/Speicherabnahme.
+- Deploy / echte Abnahme: Deploy nicht separat verifiziert; S01b-Abnahme ausstehend. T02-Handyabstieg vom Nutzer bestätigt.
+- Changelog-Status: S01b detailliert nachgetragen; ältere Lücken einschließlich S01a separat offen.
+- Blocker / offene Entscheidung: unbeabsichtigtes text-align:left der Fähigkeitenbuttons zurücknehmen oder ausdrücklich übernehmen; keine stillschweigende Korrektur.
+- Exakt nächster Schritt: S01b-Geräteprüfung und CSS-Entscheidung; anschließend S01c-Truhenregel abstimmen.

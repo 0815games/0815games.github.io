@@ -1,5 +1,19 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.5.26 – 2026-10-16 – S01b: atomarer Ausrüstungswechsel
+- Dokumentationsnachtrag zum Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2` (2026-10-16, 16:55:10 CEST laut Git-Commit). Angezeigte Spielversion bleibt v0.5.26; dieser Nachtrag erhöht die Version nicht.
+- Anlass: Ausrüsten legte den bisherigen Gegenstand vor Entnahme des neuen ins Inventar zurück und ignorierte fehlgeschlagenes Hinzufügen. Bei voller Tasche konnte dadurch Ausrüstung verloren gehen. Ablegen prüfte das Hinzufügen ebenfalls nicht zuverlässig.
+- In `rpg/js/main.js` die Funktionen `equipItemFromInv()` und `unequipSlot()` direkt ersetzt; keine neuen globalen Klickhandler oder zweite Ausrüstungsimplementierung.
+- Ausrüsten validiert Auswahl, Item-ID, Ausrüstungsplatz und bisherige Ausrüstung. Der vollständige Wechsel wird auf einer Inventarkopie berechnet: zuerst ein neues Item entnehmen, dann das bisher angelegte zurücklegen. Der dadurch frei werdende Platz wird berücksichtigt. Originalinventar und Ausrüstung werden erst nach erfolgreichem Abschluss beider Inventaroperationen synchron übernommen.
+- Ablegen berechnet die Aufnahme ebenfalls auf einer Kopie. Bei Platzmangel oder ungültigen Daten bleibt der Gegenstand angelegt; ursprüngliche Inventar-/Ausrüstungsdaten werden nicht verändert. Fehlermeldungen statt falscher Erfolgsmeldung; Sound und HUD-Aktualisierung erst nach erfolgreicher Übernahme.
+- Verwendet die veröffentlichten S01a-Inventarfunktionen aus Commit `6370e26d1e62fb8e856457284591424e2978d2f8` mit erhaltenen booleschen Rückgaben. Keine Änderung von Itemwerten, Preisen, Balance, Speicherrhythmus oder Firebase-Regeln; keine Wiederherstellung bereits früher verlorener Items.
+- Lokale Prüfungen: 31 Prüfungen der tatsächlichen Ersatzfunktionen zusammen mit dem hashgeprüften S01a-Inventarcode bestanden; Itemkatalog, Sound, Log und HUD waren Test-Stubs. Geprüft wurden unter anderem voller Rucksack, durch Entnahme frei werdender Platz, Ablegen mit/ohne Platz, leere Ausrüstungsplätze, gleiche Item-ID, ungültige Auswahl/Daten, wiederholte Aktionen und Gegenstandserhalt. Im ersten Lauf war eine Testannahme zur konstanten Taschenbelegung zu eng; beim Belegen eines zuvor leeren Ausrüstungsplatzes darf sie sinken. Test korrigiert, Gegenstandserhalt weiter geprüft. Keine Behauptung von 31 echten Browser- oder Firebase-Tests.
+- Vollständige main.js vor Vorbereitung aus vorhandener Dateianlage und belegtem Git-Diff rekonstruiert; Ausgangsblob `9e95cd0d6df6a40cf076504d22fb1885073ae69e` abgeglichen. Syntaxprüfung des vorbereiteten Codes bestanden. Tatsächlichen veröffentlichten Commit-Diff nach dem Push geprüft.
+- Abweichung: Der freigegebene und veröffentlichte Gesamtinhalt änderte zusätzlich in `renderAbilities()` die Fähigkeitenbutton-Beschriftung von `text-align:center` auf `text-align:left`. Das war unbeabsichtigt und gehört nicht zum fachlichen S01b-Ziel. Aussage „ausschließlich zwei Funktionen geändert“ war für den veröffentlichten Inhalt unzutreffend. Tatsächlicher Blob: `3a5ebae4bb457886048b9615f401bcd1deb1ea59`. Rücknahme oder ausdrückliche Übernahme dieser CSS-Abweichung ist offen; hier keine weitere Codeänderung.
+- Status: Implementierung veröffentlicht und dokumentiert; echte mobile/desktop UI-Abnahme sowie Erhalt nach manuellem Speichern und Neuladen noch offen. Deployment nicht separat verifiziert. S01b daher nicht als vollständig abgenommen markieren. S01c-Truhenvergabe ist ausdrücklich nicht Teil dieses Fixes.
+- Begleitender Statusnachtrag T02: Nutzer bestätigt am 2026-10-16 um 16:41 CEST den erfolgreichen Treppenfix und problemlosen Abstieg auf dem iPhone, nach zuvor drei gespielten Ebenen einschließlich Boss ohne bemerkte Probleme. Dies ist keine S01b-Abnahme; Desktop-/Tastatur- und spezielle Abbruchfälle bleiben gesondert offen.
+- Ältere Dokumentationslücken zwischen v0.5.9 und diesem Nachtrag sind damit nicht vollständig aufgearbeitet; separat nachtragen, keine erfundene lückenlose Historie behaupten.
+
 ## v0.5.9 – 2026-10-15 – Lebendige Welt, Grafikpaket 1
 - Renderer mit fünf thematischen Materialpaletten und zwischengespeicherten Boden-/Wand-/Säulentexturen ersetzt; Risse, Steinstruktur, Moos/Eisränder und kleine Schuttstellen. Dekoration rein optisch, keine Karten- oder Kollisionsänderungen.
 - Stilisierte Fackeln an passenden Wandkanten, maximal sechs Umgebungslichtquellen im sichtbaren Bereich; Leuchten von Säulen/Kristallen, Held und Treppe. Kontakt-/Bodenschatten und dunklere Wandunterkanten, keine echte Lichtabschattung oder Raytracing.
@@ -95,7 +109,7 @@
 ## v0.4.18 – 2026-10-14 – Roguelite-Tod und Rüstkammer
 - Beim Tod gehen Ausrüstung, Ersatzitems, Tränke und Materialien verloren. Level, EP, Skills, Skillpunkte und permanente Basiswerte bleiben erhalten.
 - Vorhandene Todes-Goldübertragung ins persönliche meta.gold wird genutzt; Run-Gold danach auf null gesetzt. Kein zweites Auszahlen beim Öffnen des Shops.
-- TP/MP vollständig aufgefüllt, temporäre Buffs und Cooldowns zurückgesetzt; Neustart auf Ebene 1.
+- TP/MP vollständig aufgefüllt, temporäre Buffs und Cooldowns zurückgesetzt; Neustartart auf Ebene 1.
 - Vorbereitungsshop mit Waffen, Rüstung, Reliquie und Vorräten; levelabhängige Stufen alle fünf Level, maximal 20 Stufen.
 - Basis- und Ausrüstungswerte im Vergleich. Eine gekaufte Startausrüstung je Slot und maximal drei Tränke je Sorte.
 - Käufe mit Bestätigung; Speicherung vor Übernahme, Rücknahme im Arbeitsspeicher bei fehlgeschlagenem Speichern. Vorbereitungsstatus wird mit dem Helden gespeichert.
