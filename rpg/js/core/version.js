@@ -25,4 +25,5 @@ import '../systems/preparation-shop-layout.js?v=0.5.10';
 import '../systems/combat-layout.js?v=0.5.13';
 import '../systems/ability-animations.js?v=0.5.15';
 import '../systems/combat-status-feedback.js?v=0.5.16';
-export const VERSION_LABEL='v0.5.17';
+import '../systems/combat-reward-feedback.js?v=0.5.18';
+export const VERSION_LABEL='v0.5.18';
