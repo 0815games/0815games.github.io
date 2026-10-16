@@ -1,3 +1,4 @@
+import { installDiscard } from './systems/discard-ui.js';
 // v0.4.0 – Vollständige main.js mit Mobile Edition, Skilltree und epischen Intro
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
@@ -85,5 +86,5 @@ function die(){state.inCombat=false;sound.death();el('combat').classList.add('hi
 el('btn-revive').onclick=()=>{el('death-screen').classList.add('hidden');openGame()};el('btn-back-to-slots').onclick=()=>{el('death-screen').classList.add('hidden');openSlotScreen()};el('btn-chars').onclick=()=>{saveCurrentSlot();openSlotScreen()};el('sound').onclick=()=>{sound.toggleMusic();updateMusicButtons()};el('save').onclick=saveCurrentSlot;el('logout').onclick=async()=>{if(window.firebase&&state.user)await firebase.auth().signOut();location.reload()};
 window.onkeydown=e=>{if(['INPUT','TEXTAREA'].includes(e.target?.tagName))return;if(el('game').classList.contains('hidden'))return;const k=e.key.toLowerCase();const dirs={w:[0,-1],arrowup:[0,-1],s:[0,1],arrowdown:[0,1],a:[-1,0],arrowleft:[-1,0],d:[1,0],arrowright:[1,0]};if(dirs[k]){e.preventDefault();move(...dirs[k])}if(k==='e'||k===' '){e.preventDefault();interact()}};
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));b.classList.add('active');el(b.dataset.tab)?.classList.add('active')});
-window.__rpg={move,interact,renderer:gfx};updateMusicButtons();
+window.__rpg={move,interact,renderer:gfx};installDiscard({state,cloud,ITEMS,removeItem,hud,log});updateMusicButtons();
 });
