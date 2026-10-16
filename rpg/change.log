@@ -1,20 +1,158 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## Geltungsbereich und Nachweis
+- Stand der nachgetragenen Historie: RPG-Änderungen auf main bis einschließlich `9b9f43f8dbaa01ca1cb93a98642c31a29dd1bcdf` vom 2026-10-16. Andere Projekte des Repositorys und nicht zusammengeführte Entwicklungsbranches sind nicht Bestandteil dieses RPG-Changelogs.
+- Grundlage: zwei Seiten der nach Pfad rpg gefilterten Git-Historie, bestehende Release-Dokumentation, geprüfte Dateistände/Diffs und ausdrücklich als solche bezeichnete Nutzerberichte. Commits derselben Veröffentlichung werden zusammengefasst, ihre Bezüge bleiben angegeben. Unspezifische frühe Uploads erhalten keine erfundenen Versionsnummern oder Funktionsgarantien.
+- Zeitangaben in diesem Dokument sind CEST, soweit nicht ausdrücklich UTC genannt. Git-Zeitstempel sind keine Deploy-Zeitstempel. Ein Push belegt weder erfolgreiches Deployment noch einen bestandenen Geräte-/Firebase-Test.
+- Historisch dokumentierte lokale Testzahlen werden als damalige Prüfstände übernommen; die Changelog-Vervollständigung führt diese Tests nicht erneut aus. Ohne gesonderten Nachweis sind sie keine Browser-/Safari-/Firebase-Abnahmen.
+- Aktuell angezeigte Spielversion: v0.5.26. Nachfolgende Reparaturen unter derselben Versionsanzeige sind durch Commit-IDs getrennt. Dokumentationsnachträge erhöhen die Spielversion nicht.
+- Die zuvor vermerkten Lücken werden hier historisch nachgetragen. Fachlich unbekannte Details früher Uploads bleiben als solche erkennbar; dies ist keine Behauptung eines vollständigen Codeaudits oder der Wiederherstellbarkeit externer Firebase-Daten.
+
 ## v0.5.26 – 2026-10-16 – S01b: atomarer Ausrüstungswechsel
-- Dokumentationsnachtrag zum Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2` (2026-10-16, 16:55:10 CEST laut Git-Commit). Angezeigte Spielversion bleibt v0.5.26; dieser Nachtrag erhöht die Version nicht.
+- Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`, Git-Zeit 16:55:10 CEST. Dokumentationscommit `9b9f43f8dbaa01ca1cb93a98642c31a29dd1bcdf`, Git-Zeit 17:05:47 CEST. Spielversion unverändert.
 - Anlass: Ausrüsten legte den bisherigen Gegenstand vor Entnahme des neuen ins Inventar zurück und ignorierte fehlgeschlagenes Hinzufügen. Bei voller Tasche konnte dadurch Ausrüstung verloren gehen. Ablegen prüfte das Hinzufügen ebenfalls nicht zuverlässig.
-- In `rpg/js/main.js` die Funktionen `equipItemFromInv()` und `unequipSlot()` direkt ersetzt; keine neuen globalen Klickhandler oder zweite Ausrüstungsimplementierung.
-- Ausrüsten validiert Auswahl, Item-ID, Ausrüstungsplatz und bisherige Ausrüstung. Der vollständige Wechsel wird auf einer Inventarkopie berechnet: zuerst ein neues Item entnehmen, dann das bisher angelegte zurücklegen. Der dadurch frei werdende Platz wird berücksichtigt. Originalinventar und Ausrüstung werden erst nach erfolgreichem Abschluss beider Inventaroperationen synchron übernommen.
-- Ablegen berechnet die Aufnahme ebenfalls auf einer Kopie. Bei Platzmangel oder ungültigen Daten bleibt der Gegenstand angelegt; ursprüngliche Inventar-/Ausrüstungsdaten werden nicht verändert. Fehlermeldungen statt falscher Erfolgsmeldung; Sound und HUD-Aktualisierung erst nach erfolgreicher Übernahme.
-- Verwendet die veröffentlichten S01a-Inventarfunktionen aus Commit `6370e26d1e62fb8e856457284591424e2978d2f8` mit erhaltenen booleschen Rückgaben. Keine Änderung von Itemwerten, Preisen, Balance, Speicherrhythmus oder Firebase-Regeln; keine Wiederherstellung bereits früher verlorener Items.
-- Lokale Prüfungen: 31 Prüfungen der tatsächlichen Ersatzfunktionen zusammen mit dem hashgeprüften S01a-Inventarcode bestanden; Itemkatalog, Sound, Log und HUD waren Test-Stubs. Geprüft wurden unter anderem voller Rucksack, durch Entnahme frei werdender Platz, Ablegen mit/ohne Platz, leere Ausrüstungsplätze, gleiche Item-ID, ungültige Auswahl/Daten, wiederholte Aktionen und Gegenstandserhalt. Im ersten Lauf war eine Testannahme zur konstanten Taschenbelegung zu eng; beim Belegen eines zuvor leeren Ausrüstungsplatzes darf sie sinken. Test korrigiert, Gegenstandserhalt weiter geprüft. Keine Behauptung von 31 echten Browser- oder Firebase-Tests.
-- Vollständige main.js vor Vorbereitung aus vorhandener Dateianlage und belegtem Git-Diff rekonstruiert; Ausgangsblob `9e95cd0d6df6a40cf076504d22fb1885073ae69e` abgeglichen. Syntaxprüfung des vorbereiteten Codes bestanden. Tatsächlichen veröffentlichten Commit-Diff nach dem Push geprüft.
-- Abweichung: Der freigegebene und veröffentlichte Gesamtinhalt änderte zusätzlich in `renderAbilities()` die Fähigkeitenbutton-Beschriftung von `text-align:center` auf `text-align:left`. Das war unbeabsichtigt und gehört nicht zum fachlichen S01b-Ziel. Aussage „ausschließlich zwei Funktionen geändert“ war für den veröffentlichten Inhalt unzutreffend. Tatsächlicher Blob: `3a5ebae4bb457886048b9615f401bcd1deb1ea59`. Rücknahme oder ausdrückliche Übernahme dieser CSS-Abweichung ist offen; hier keine weitere Codeänderung.
-- Status: Implementierung veröffentlicht und dokumentiert; echte mobile/desktop UI-Abnahme sowie Erhalt nach manuellem Speichern und Neuladen noch offen. Deployment nicht separat verifiziert. S01b daher nicht als vollständig abgenommen markieren. S01c-Truhenvergabe ist ausdrücklich nicht Teil dieses Fixes.
-- Begleitender Statusnachtrag T02: Nutzer bestätigt am 2026-10-16 um 16:41 CEST den erfolgreichen Treppenfix und problemlosen Abstieg auf dem iPhone, nach zuvor drei gespielten Ebenen einschließlich Boss ohne bemerkte Probleme. Dies ist keine S01b-Abnahme; Desktop-/Tastatur- und spezielle Abbruchfälle bleiben gesondert offen.
-- Ältere Dokumentationslücken zwischen v0.5.9 und diesem Nachtrag sind damit nicht vollständig aufgearbeitet; separat nachtragen, keine erfundene lückenlose Historie behaupten.
+- In rpg/js/main.js equipItemFromInv() und unequipSlot() direkt ersetzt; keine neuen globalen Klickhandler oder zweite Ausrüstungsimplementierung.
+- Auswahl, Item-ID, Ausrüstungsplatz und bisherige Ausrüstung prüfen. Wechsel vollständig auf einer Inventarkopie berechnen: zuerst ein neues Item entnehmen, dann das bisher angelegte zurücklegen. Der dadurch frei werdende Platz wird berücksichtigt. Originalinventar und Ausrüstung erst nach erfolgreichem Abschluss beider Operationen synchron übernehmen.
+- Ablegen ebenfalls auf einer Kopie. Bei Platzmangel oder ungültigen Daten bleibt der Gegenstand angelegt; ursprüngliche Inventar-/Ausrüstungsdaten bleiben erhalten. Fehlermeldung statt falscher Erfolgsmeldung; Sound und HUD-Aktualisierung erst nach erfolgreicher Übernahme.
+- Verwendet die veröffentlichten S01a-Inventarfunktionen aus `6370e26d1e62fb8e856457284591424e2978d2f8` mit booleschen Rückgaben. Keine Änderung von Itemwerten, Preisen, Balance, Speicherrhythmus oder Firebase-Regeln; keine Wiederherstellung bereits früher verlorener Items.
+- Lokale Prüfungen: 31 Prüfungen der tatsächlichen Ersatzfunktionen zusammen mit dem hashgeprüften S01a-Inventarcode bestanden; Itemkatalog, Sound, Log und HUD waren Test-Stubs. Geprüft: voller Rucksack, frei werdender Platz, Ablegen mit/ohne Platz, leere Ausrüstungsplätze, gleiche Item-ID, ungültige Auswahl/Daten, wiederholte Aktionen und Gegenstandserhalt. Im ersten Lauf war die Testannahme einer konstanten Taschenbelegung zu eng: ein zuvor leerer Ausrüstungsplatz darf die Taschenbelegung verringern. Test korrigiert, Gegenstandserhalt weiter geprüft.
+- Vollständige main.js aus vorhandener Dateianlage und belegtem Git-Diff rekonstruiert; Ausgangsblob `9e95cd0d6df6a40cf076504d22fb1885073ae69e` abgeglichen. Syntaxprüfung des vorbereiteten Gesamtcodes bestanden; veröffentlichten Commit-Diff nachgelesen.
+- Abweichung: Der freigegebene und veröffentlichte Gesamtinhalt änderte zusätzlich in renderAbilities() die Fähigkeitenbutton-Beschriftung von text-align:center auf text-align:left. Unbeabsichtigt und nicht Teil des fachlichen S01b-Ziels. Aussage „ausschließlich zwei Funktionen geändert“ war für den veröffentlichten Inhalt unzutreffend. Tatsächlicher Blob `3a5ebae4bb457886048b9615f401bcd1deb1ea59`; lokaler Zwei-Funktionen-Zielblob `14e7dfb4c1e52406a1fd38c85ec8b0c20528ee66` nicht mit veröffentlichtem Inhalt verwechseln. AFK-Timer und Level-Up-Ausgabe unverändert. Rücknahme oder ausdrückliche Übernahme der CSS-Abweichung offen.
+- Status: Implementiert und dokumentiert; echte mobile/desktop UI-Abnahme und Erhalt nach manuellem Speichern/Neuladen offen. Deployment nicht separat verifiziert. S01b nicht als vollständig abgenommen markieren. S01c-Truhenvergabe nicht Teil dieses Fixes.
+- Der Dokumentationscommit ergänzte ausschließlich change.log/to-do.md, einschließlich T02-Handyabnahme und verbleibender S01b-Prüfungen; keine zusätzliche Spielcodeänderung.
+
+## v0.5.26 – 2026-10-16 – S01a: atomare Inventaroperationen
+- Commit `6370e26d1e62fb8e856457284591424e2978d2f8`, Git-Zeit 16:29:35 CEST. rpg/js/systems/inventory.js ersetzt, rpg/tests/inventory-s01a.mjs hinzugefügt; bestehende Hauptcode-Imports verwenden das Modul.
+- Fehlerbild: addItem()/removeItem() konnten false zurückgeben, nachdem bereits Teile eines Stapels hinzugefügt oder entfernt waren. Fehler lokal nachgestellt.
+- Vor Änderung Arraystruktur, bekannte eigene Item-ID, positive sichere ganzzahlige Menge sowie vorhandene Einträge und Stapelgrenzen prüfen. Erst Kapazität/Menge prüfen, Änderungen auf Kopie berechnen und nur vollständige Ergebnisse übernehmen. Abgewiesene Operationen verändern Originaldaten nicht.
+- Bisherige boolesche addItem()/removeItem()-Schnittstellen erhalten; tryAddItem()/tryRemoveItem() ergänzen Fehlergründe: INVALID_INVENTORY, UNKNOWN_ITEM, INVALID_COUNT, INVALID_STACK_LIMIT, INVENTORY_FULL, INSUFFICIENT_ITEMS. Inventarlimit 15 unverändert. Zählen und Sortieren weiterhin vorhanden; dynamische Registrierung zusätzlicher Items berücksichtigt.
+- Vorbereitende lokale Tests: zuerst 427 Prüfungen mit Item-Fixtures; später getrennte Vergleichssuite mit 1238 Prüffällen, darunter zwei erfolgreiche Nachweise des alten Fehlerverhaltens, 1000 deterministische generierte Fälle und 200 Vergleiche gültiger erfolgreicher Altoperationen. Diese Zahlen sind verschiedene Läufe, nicht zu addieren.
+- Für die tatsächlich integrierte kompaktere Repository-Suite wurden 1027 lokale Prüfungen mit Item-Fixtures und Syntaxprüfungen bestanden. Ausführen mit node rpg/tests/inventory-s01a.mjs; im Repository liest die Suite die dortige Basis-Itemdatei. Der berichtete lokale Lauf war kein vollständiger Browser-/Produktionskatalogtest. Erste Vergleichs-Baseline war semantisch aus gelesener Quelle übertragen, nicht ein separat heruntergeladenes vollständiges Spiel.
+- Nach dem Push Inventarmodul am tatsächlichen Commit nachgelesen. Kein echter Safari-/Firebase-/vollständiger Aufrufertest. S01a-Abnahme offen. Ausrüstungs- und Truhen-Aufrufer damit noch nicht automatisch verlustfrei; S01b/S01c separat.
+
+## v0.5.26 – 2026-10-16 – endgültiger T02-Nachfix
+- Commit `d59d1b55175a0ce354c9d274f74807b6061456ab`, Git-Zeit 15:37:07 CEST; journey-ui.js und stair-confirm.js geändert. Versionsanzeige unverändert.
+- Alte Dialogerzeugung, altes Treppen-CSS, Treppen-API-Wrapper, Bestätigungs- und Tastaturhandler vollständig aus journey-ui.js entfernt. Allgemeiner Spielrahmen und Zufallsnamenlogik dort erhalten.
+- stair-confirm.js ist alleiniger Besitzer der Bestätigung: automatisches Öffnen bei freigegebener Treppe, „⬇️ Absteigen“ zuerst/fokussiert, „🚪 Hier bleiben“ als Abbruch; nach Abbruch erst nach Verlassen/erneutem Betreten erneut anbieten. Bestätigung an Konto/Slot, Ebene, Position und Kartenidentität gebunden. Keine neue eigenständige Speicherlogik; bisherigen Interaktionspfad verwenden.
+- Bei Gegnern, Kampf, Tod, Vorbereitung oder anderen blockierenden Anzeigen keinen Dialog öffnen/bestätigen. Gegen doppelte Bestätigung absichern; API-Bindung mit begrenztem Warten. Mobile Safe Areas, box-sizing:border-box, begrenzte Karte und einspaltige Buttons unter 480px; darüber zwei Spalten.
+- Syntax beider Dateien und 17 lokale DOM/API-Modellprüfungen bestanden: einmaliges Öffnen, Fokus, Bewegungssperre, Abbrechen, erneutes Betreten, Doppelklick, Slot-/Kartenwechsel sowie Gegner-/Kampf-/Vorbereitungs-/Todes-/Sichtbarkeitssperren. Kein vollständiges Zusammenspiel aller realen Eingabemodule oder visueller Browser-/Firebase-Test.
+- Nutzerbericht 16:40 CEST: drei Ebenen einschließlich Boss ohne bemerkte Probleme; Diagnose mit vorhandener Spiel-API und ohne erfasste Fehler. Um 16:41 CEST T02-Fix und problemloser Abstieg auf iPhone bestätigt. Keine pauschale Desktop-/Tastatur-/Abbruchsonderfall-Abnahme und keine spätere S01b-Abnahme daraus ableiten.
+
+## v0.5.26 – 2026-10-16 – Bewegungsfehler bei fehlenden Weltlisten
+- Commit `4bf3a5f49c15da972b2ddbe1b71f9936d116dfe5`, Git-Zeit 13:58:11 CEST; world-list-compat.js hinzugefügt, mobile-play.js angepasst.
+- iPhone-Diagnose belegte TypeError bei state.world.monsters.find in main.js während Wischen/Halten. Fehlende Listen wurden im bisherigen Lade-/Kartenvalidierungspfad nicht normalisiert; weitere Pointerbewegungen wiederholten den Fehler.
+- Kompatibilitätsmodul normalisiert fehlende/null/leere Gegner-/Truhenlisten; numerisch indizierte Objektlisten in Arrays überführen, gültige Einträge erhalten, null-Einträge herausfiltern. Ungültige nicht leere Listen/Einträge abweisen. Laden der Slots und WorldMap.ensureValid() einbinden; kein Erzeugen einer neuen Ebene oder gezielter Firebase-Schreibvorgang durch den Patch.
+- Vor mobilem Schritt Weltlisten prüfen. Bei Ausnahme Geste und Timer stoppen, Fehler an Diagnose übergeben; keine Wiederholungsschleife innerhalb derselben Geste.
+- 13 lokale Prüfungen und Syntaxprüfung berichtet; Mocks, kein echter Firebase-/iPhone-Test zum Pushzeitpunkt. Grenzen: keine vollständige Spielstandmigration, ungültiger Slot kann Laden aller Slots abbrechen; echte dünn besetzte Arrays erfordern weitere Prüfung in S02.
+
+## v0.5.26 – 2026-10-16 – nachgewiesener Syntaxfix des Changelog-Viewers
+- Commit `3f3a386da672208806b2b045bdc3cc24cb1cdd95`, Git-Zeit 13:30:01 CEST; nur changelog-viewer.js.
+- Diagnose: SyntaxError „Invalid character U+2212“ in Zeile 8, Spiel-API nicht vorhanden. Ursache waren ungeschützte einfache CSS-Anführungszeichen innerhalb eines einfach begrenzten JavaScript-Strings, insbesondere content:'+' und content:'−'. Nicht ein grundsätzlich unzulässiges Minuszeichen.
+- Äußeren CSS-String auf Backticks umgestellt. Fehlerhaftes Muster lokal reproduziert, korrigiertes Muster syntaktisch gültig. Verzögertes Installieren und try/catch konnten einen Parsefehler nicht abfangen; frühere Erfolgsaussagen zu diesen Versuchen waren zu sicher.
+- Nutzer bestätigt um 13:42 CEST: Seite lädt wieder, Changelog öffnet. Diagnose: Spiel-API vorhanden und keine erfassten Fehler in diesem Bericht. Das war keine vollständige Spielabnahme; danach trat der gesonderte Bewegungsfehler auf.
+
+## v0.5.26 – 2026-10-16 – dauerhaft verfügbare schaltbare Startdiagnose
+- Commit `9f337bba76a18519420bb91312e4fd2b73e6a88e`, Git-Zeit 13:15:43 CEST; startup-diagnostics.js hinzugefügt und index.html angepasst.
+- Klassisches Skript früh im head vor den Spielmodulen; unabhängiger Diagnosezugang in Shadow DOM, mobile Safe Areas und lesbarer Bericht. Standardmäßig keine Fehlererfassung; ?diagnose=1 aktiviert, ?diagnose=0 deaktiviert. Umschalten lädt die Seite nach Warnung vor ungespeichertem Fortschritt neu.
+- Erfasst bei Aktivierung error inklusive Ressourcenfehlern, unhandledrejection, DOMContentLoaded/load und Status nach 15s. Maximal 60 Einträge im Arbeitsspeicher, keine automatische Übertragung oder persistente Berichtsspeicherung, keine vollständige Konsolenaufzeichnung. URLs im Bericht ohne Query/Fragment; Meldungen vor Teilen prüfen. Browser können Fehlerdetails begrenzen.
+- Kopieren mit manuellem Markierungs-Fallback, Aktualisieren, Leeren, Zuklappen und Ausschalten. Zuklappen beendet Erfassung nicht.
+- Anmeldebutton im HTML wieder type=submit: vorher beim Cache-/HTML-Patch versehentlich auf type=button geändert. Diagnose allein behebt den Startfehler nicht. Spielversion unverändert.
+
+## v0.5.26 – 2026-10-16 – erfolgloser Intro-Hotfixversuch
+- Commit `eb3b6f469f8999e1df4b5786feb36bf4f56354a9`, Git-Zeit 13:07:09 CEST. index.html, sw.js, version.js und changelog-viewer.js auf Versions-/Cachebezug v0.5.26 angepasst.
+- Viewer-Installation per setTimeout nach DOMContentLoaded verschoben und mit try/catch umgeben. Versuch, Introinitialisierung gegen Viewer-Ausführungsfehler abzusichern.
+- Nutzer meldete weiterhin unbedienbares Intro, leeren Balken, unskalierte/abgeschnittene Überschrift sowie nicht reagierende Spiel-/Changelogzugänge. Hypothese eines blockierten DOMContentLoaded-Handlers nicht nachgewiesen. Der später belegte Parsefehler blieb vorhanden; diesen Patch nicht als erfolgreichen Startfix darstellen.
+
+## v0.5.25 – 2026-10-16 – HTML-/Cacheabgleich und eigenständiger Viewer
+- Commit `3b0e97bab345a590a1e45df3461559f1daec83f0`, Git-Zeit 13:01:22 CEST. Build-Marker, Titel, statische Versionsanzeigen und HTML-Asset-URLs auf v0.5.25; Versions-Badges als Buttons. Service-Worker-Cache auf schattengruft-v0.5.25, ältere Spielcaches bei Aktivierung entfernen.
+- Zirkulären version.js-Import des Changelog-Viewers entfernt, dort lokale Versionskonstante; version.js lädt Viewer mit neuem Versionsparameter.
+- Anmeldebutton dabei versehentlich zu type=button geändert; erst im Diagnosepatch wiederhergestellt. Im vorherigen Bericht war zusätzlich eine versionierte Service-Worker-Registrierungs-URL behauptet worden: main.js registrierte tatsächlich weiterhin ./sw.js; Cacheinhalt wurde in sw.js geändert.
+- Die Versionsanzeige allein war kein Beleg für gestartetes JavaScript, weil sie nun im HTML stand. Cache als alleinige Fehlerursache war nicht bewiesen. Nutzer meldete danach weiterhin blockierten Start; Syntaxfehler des Viewers blieb.
+
+## v0.5.24 – 2026-10-16 – Ingame-Changelog-Zugang
+- Commit `a3dc376d56c197c8d5738570f62136484b946f03`, Git-Zeit 12:50:21 CEST. changelog-viewer.js hinzugefügt, version.js bindet es ein; interner Versionsstand v0.5.24.
+- Versions-Badges sollen per Klick/Enter/Leertaste den Gold-/Dunkel-Dialog öffnen, zusätzlicher Button im Spielheader. Zentrale change.log laden, Versionsabschnitte mit details/summary anzeigen, ersten Abschnitt öffnen, Schließen/Esc/Außenklick und Ladefehleranzeige.
+- Der Viewer sortiert nicht eigenständig nach Version, sondern übernimmt die Dateireihenfolge. Vorhandene span-Badges wurden zunächst mit Rolle/Tabindex versehen, nicht tatsächlich durch native Buttons ersetzt; das erfolgte später im HTML-Patch.
+- Erstfassung enthielt CSS-Anführungszeichenfehler und Rückimport nach version.js; nicht als damals funktionierend abgenommen darstellen. Nutzer meldete weiterhin v0.5.9; später zeigte sich Startabbruch. Die Behauptungen „funktioniert“ und „zuverlässig kein Überlauf“ waren ohne echte Abnahme zu weitgehend.
+
+## v0.5.23 – 2026-10-16 – erfolgloser T02-Nachfix und Dokumentationskorrektur
+- Code `2a0d4ff5984ee04aaa6226654e156f34ed9c3fb1`, Git-Zeit 12:46:16 CEST; To-do-Nachtrag `35b52ae32e8101079db4ad1a46e7c366266f5427`, 12:48:21 CEST.
+- stair-confirm.js erhielt vermeintliche Entfernung eines Legacy-Elements und mobiles Dialog-CSS mit Sichtbereichsmaßen, Safe Areas, umbrechenden Texten und Buttons untereinander unter 480px.
+- Tatsächlicher Fehler: vorhandenes stair-confirm führte vorher bereits zum return; Entfernung danach bei vorhandenem Dialog unerreichbar. journey-ui.js erzeugte weiterhin das alte Fenster samt Handlern. Doppelabfrage blieb laut Nutzerbericht erhalten.
+- Historischer To-do-Eintrag nannte 12:45 CEST und behauptete vollständige Entfernung. Hier als widerlegt berichtigt; Git-Pushzeit 12:46:16 CEST ist der belegte Codezeitpunkt. Nur Syntax und einzelne Strukturassertionen, kein erfolgreicher Browserintegrationstest. Endgültige Korrektur siehe d59d1b5.
+
+## v0.5.22 – 2026-10-16 – T03 Desktop-Kampffenster
+- Code `dc3bcc99a8091b58b874258e6e6106672b683655`, 12:32:27 CEST; Statusnachtrag `b3bd36429b2d0962f7b7955921e7288bbcc0c43e`, 12:35:26 CEST.
+- Desktop-Kampffenster maximal 900px breit, Padding 16px, Figuren 112px, Aktions-/Fähigkeitenleiste maximal 720px; mobile und kompakte Höhendarstellung laut festgelegtem Umfang unverändert. Kein Balance-/Kampflogikziel.
+- Syntaxprüfung berichtet; reale Browser-/Firebase-Abnahme offen. In alter To-do-Notiz 12:31 als Umsetzungszeit genannt; nicht mit belegter Commitzeit gleichsetzen.
+
+## v0.5.21 – 2026-10-16 – T02 Symbol-Treppenbestätigung
+- Code `cb6a2b86450aecbf2eaad9799df4f4614aa838b0`, 12:25:35 CEST; Statusnachtrag `e1cd6fff1827ea5259bc0896adb85e73bb6bf85b`, 12:27:13 CEST.
+- Neuer Dialog „⬇️ TREPPE GEFUNDEN“ mit „⬇️ Absteigen“ zuerst und vorausgewählt; „🚪 Hier bleiben“ bricht ab. Ergänzung über stair-confirm.js und version.js.
+- 21 lokale Modellprüfungen berichtet, keine echte Browser-/Firebase-Abnahme. Alte Journey-Abfrage blieb parallel vorhanden; späterer Nutzerbericht belegt zwei nacheinander erscheinende Fenster. Keine vollständig erfolgreiche T02-Lösung zu diesem Zeitpunkt.
+
+## v0.5.20 – 2026-10-16 – T01 direkte Trankkäufe
+- Code `40ab45c0085504b5a2c8a7c49bc659535ef1e186`, 12:17:32 CEST; To-do-Status `809647c96d7f258197ca5152a342f25f8fe71700`, 12:21:24 CEST.
+- preparation-potion-purchase.js ergänzt direkte Heil-/Manatrankkäufe über vorhandenen Bestätigungs-/Speicherablauf. Ausrüstung weiter bestätigen; Klickschutz während Speicherung, Status-/Fokus- und zugängliche Beschriftungen. Preise, Limits und Speicherpfade nicht neu definieren.
+- 66 lokale Modellprüfungen berichtet; echter Browser-/Firebase-Test offen. Alte Planungsnotiz 12:16 ist kein genauer Git-Pushzeitstempel.
+
+## v0.5.19 – 2026-10-16 – Klassenkampfzahlen im Vordergrund
+- Commit `7cb1a2740501eed6092acf282ace68fc9330e15c`, Git-Zeit 11:16:23 CEST.
+- combat-number-feedback.js mit Versionsanbindung: Klassenkampfzahlen in den Vordergrund verlagern und passende Kartentexte zur Duplikatvermeidung unterdrücken. Bestehenden Aktionsablauf nicht als vollständige neue Kampflogik ausgeben.
+- Aus der Nachrecherche keine zusätzliche belastbare Testzahl oder neue Geräteabnahme ableiten. Visuelle Gesamtprüfung weiter T14/S07.
+
+## v0.5.18 – 2026-10-16 – bestätigte Kampf-EP im Vordergrund
+- Commit `8b399d8f5ec7cb5c72b95da135a61d67fa423582`, 09:52:58 CEST.
+- combat-reward-feedback.js: bestätigte Kampf-EP als Vordergrundrückmeldung und passende doppelte Karten-Popups unterdrücken. Sieg/Level-Up/Bossbeute weiterhin auf Zusammenspiel prüfen.
+- Keine nachträglich erfundene Geräteabnahme oder Testzahl.
+
+## v0.5.17 – 2026-10-16 – Kampfeffekte erst nach Aktionshandlern starten
+- Commit `7da831e01dbe529ad1ecfdefbfeadf944b7d4be7`, 09:41:36 CEST.
+- combat-effects-bootstrap.js wartet auf renderer und vorhandene onclick-Funktionen von attack/fire/heal/flee, startet dann dynamischen Import von combat-effects.js. Startversuche bei DOMContentLoaded/load, Fehler als Warnung.
+- Ziel ist Initialisierungsreihenfolge, kein Nachweis einer universellen Fehlerisolierung aller statisch importierten Systeme. Vollständige Browserintegration gesondert nötig.
+
+## v0.5.16 – 2026-10-16 – Statusfeedback und separater Canvasfix
+- Statusfeedback `78bf4931aa0a55c8b62fad77ec952792164e3559`, 08:04:03 CEST: combat-status-feedback.js für bestätigtes Blocken, Ausweichen und Gift; beabsichtigt Darstellung ohne Änderung der Spielregeln.
+- Canvasfix `7e8e2f29d488d4034f62431c4604667d40f15636`, 08:20:17 CEST: in main.js Reckenwahl-Funkenflug c.fillRect durch sx.fillRect ersetzt, damit der tatsächlich erzeugte Slot-Canvas-Kontext verwendet wird. Einzeiliger Fix getrennt von Statusfeedback.
+- Keine zusätzliche Geräteabnahme aus Commitnachrichten ableiten.
+
+## v0.5.15 – 2026-10-16 – Klassenfähigkeiten visuell aktivieren
+- Commit `b2e831b36b4c9c99a4366d2fe9da74f947b4358d`, 07:31:19 CEST; ability-animations.js und Versionsanbindung.
+- Eigene visuelle Aktivierungsrückmeldungen für Klassenfähigkeiten; als Darstellungsänderung vorgesehen, keine neue Fähigkeit oder absichtliche Balanceänderung. Vollständige Effekt-/Zuglogikprüfung nicht daraus ableiten.
+
+## v0.5.14 – 2026-10-16 – Standardkampfanimationen, Teil 2a
+- Commit `3307db347d340ad77170a626da6d3d39b890d533`, 06:34:57 CEST.
+- battle-fx.js und Kampfeffektintegration: Hiebe, Projektile, Trefferreaktion, Heilung, Flucht und Zahlen mit begrenztem Effektlebenszyklus. Effekte bei Kontextwechsel/Resize/Scroll/Hintergrund bereinigen; Darstellungsabschluss und temporäre Aktionssperre berücksichtigen.
+- Spätere Prüfung zeigt: combat-effects.js ersetzt Standardbutton-Handler, beeinflusst Sperren und Fensterlebenszyklus. Deshalb nicht pauschal als völlig von Bedienlogik isoliert beschreiben; Entkopplung weiter S06.
+
+## v0.5.13 – 2026-10-15 – Kampffenster neu gestalten
+- Commit `ba37a397bb3dc621802fbc9ce19a3c2ba10c45e2`, 16:42:34 CEST; combat-layout.js.
+- Kampfoberfläche neu gestalten, vorhandene Mechaniken und Animationen beibehalten. Keine abgeschlossene visuelle Gesamt-Abnahme daraus ableiten; spätere T03-Desktopverkleinerung gesondert.
+
+## v0.5.12 – 2026-10-15 – Atmosphäre der Ebenen
+- Commit `deb11e8783a2e73b2fd196dad3664ad76e156d24`, 15:50:38 CEST; living-world.js erweitert.
+- Zwischengespeicherter Bodennebel, thematische Details, Vignette und Treppenrunen-Atmosphäre. Grafische Ergänzung der lebendigen Welt; keine belegte neue Kollisions-/Beutelogik. Handyperformance und echte visuelle Abnahme nicht aus Titel ableiten.
+
+## v0.5.11 – 2026-10-15 – mobile Symbolnavigation und Dialogmenüs
+- Commit `397e006b68f72c9bb3f06d3f998103426927df08`, 15:34:29 CEST; mobile-menu.js.
+- Mobile Symbolleiste, vorhandene Panels als modale Menüs, Schließen/Fokus-Rückgabe und responsive Rückführung der Panels. Interne Logs erhalten.
+- Bisheriger Chronik-Reiter wird im Navigationsmodul zu Quests umgewidmet, Questpanel zunächst Platzhalter. Das ist kein fertig implementiertes neues Questsystem; Erreichbarkeit der Chronik über andere Bedienpfade gesondert klären.
+
+## v0.5.10 – 2026-10-15 – mobile-first Ordensrüstkammer
+- Commit `58039f9b72ebff792262c4cab16ea1794b1dc68c`, 13:56:11 CEST; preparation-shop-layout.js.
+- Isolierte Layout-/Kategoriedarstellung des Vorbereitungsshops. Bestehende Kauf-/Speicherregeln nicht als neue Wirtschaftsfunktion darstellen. Heldenvorschau, Angebotsvergleich und wechselnde Ausrüstung sind damit nicht automatisch vollständig; T10–T12 offen.
+
+## v0.5.9 – 2026-10-15 – Rollbacks, Startdiagnose und Wiederaktivierung
+- `94894c63b71a49801b3b7567b0e821d8daca1c7d`, 11:57:09 CEST: v0.5.9-Grafikaktivierung zurückgenommen, Laufzeit auf v0.5.8 zurückgeführt. Rücknahme der Aktivierung nicht mit Löschung aller Grafikdateien verwechseln.
+- `f87251588c25a96112c6ed840c6000ee613a7043`, 12:01:59 CEST: zusätzlich v0.5.8-Balanceaktivierung zurückgenommen, Laufzeit auf v0.5.7.
+- `961fef052fefb793b42a7125b1a914f025b15824`, 12:24:47 CEST: unabhängige Inline-Startdiagnose D1 ohne beabsichtigte Änderung der Spielregeln ergänzt.
+- `4fadae5f7ccdeeb577caca5e1e1aaf790381a1da`, 12:37:46 CEST: Rückkopplungsschleife des Bossbeute-Startbeobachters repariert und Modul-Cacheparameter geändert. Nicht einfach Grafik oder Balance als bewiesene Ursache des Starts einfrieren festschreiben.
+- `8793c5d65e71ef869af4c5dc0f4369461acef2bc`, 12:46:01 CEST: v0.5.8-Balance und v0.5.9-Grafik wieder aktiviert, Beobachterkorrektur erhalten.
+- `7f6a4da1d910bfc735805c912061ef47e8ffc17d`, 13:33:55 CEST: temporäre D1-Diagnose entfernt, HTML-Metadaten auf v0.5.9 abgeglichen. Spätere schaltbare Diagnose vom 16. Oktober ist ein anderer Patch.
+- Für diese nachgetragenen Schritte keine neuen Testzahlen oder pauschalen realen Geräteabnahmen behaupten.
 
 ## v0.5.9 – 2026-10-15 – Lebendige Welt, Grafikpaket 1
+- Commit `ce68efce1f0164e3be7fee8c11b4b144e5af4f96`.
 - Renderer mit fünf thematischen Materialpaletten und zwischengespeicherten Boden-/Wand-/Säulentexturen ersetzt; Risse, Steinstruktur, Moos/Eisränder und kleine Schuttstellen. Dekoration rein optisch, keine Karten- oder Kollisionsänderungen.
 - Stilisierte Fackeln an passenden Wandkanten, maximal sechs Umgebungslichtquellen im sichtbaren Bereich; Leuchten von Säulen/Kristallen, Held und Treppe. Kontakt-/Bodenschatten und dunklere Wandunterkanten, keine echte Lichtabschattung oder Raytracing.
 - Glanzeffekte und Objekte auf aufgedeckte sichtbare Kacheln begrenzt. Verborgene Gegner/Truhen nicht gezeichnet. Spielstand wird vom Zeichnen nicht verändert.
@@ -23,6 +161,7 @@
 - JavaScript-Syntaxprüfung und 133 lokale Smoke-/Cache-/Strukturprüfungen mit nachgebildetem Canvas bestanden. Kein echter Pixel-, Browser-, Safari-, Geräte- oder Firebase-Test. Kollisionen, Beute, Schwierigkeit, Steuerung und goldener UI-Rahmen unverändert.
 
 ## v0.5.8 – 2026-10-15 – Gegner-/Boss-Balanceteststand
+- Commit `cea96328402acb4a53d423d19508cbd0c143ea32`.
 - Entwurf C übernommen: Ratte 24 TP/10 ATK, Fledermaus 26/10, Schleim 32/11, Goblin 34/12, Skelett 42/12. DEF, EP, Gold und Spawngewichte unverändert. Bestehende Tiefenskalierung der normalen Gegner bleibt erhalten; übrige normale Gegnertypen unverändert.
 - Tatsächlich erzeugte Bosse auf jeder fünften Ebene mit eigener Kurve. Bossstufe n=max(1,floor(Ebene/5)): TP=round(220*n^1.2), ATK=round(20*n^1.1), DEF=4+2*n. Ebene 5: 220/20/6; Ebene 10: 505/43/8; Ebene 15: 822/67/10; Ebene 20: 1161/92/12. Bisherige Bossbelohnungen und Beuteauswahl unverändert.
 - Neue Gegner bei Erzeugung und vorhandene Gegner beim Kartenvalidieren außerhalb eines laufenden Kampfes angepasst. Prozentual verbleibende TP erhalten, tote Gegner bleiben tot; Versionsmarkierung verhindert mehrfache Umrechnung. Keine Änderung von Gegner-ID, EP oder Gold.
@@ -32,6 +171,7 @@
 - Modellgrenzen: feste nicht optimale Aktionsstrategie, keine vollständigen Runs, Skills, defensive Fähigkeiten, Beute-/Level-Up-Progression oder Flucht. Höhere Bosse nur auf Wertewachstum geprüft, nicht in vollständigen Runs simuliert. Kein echter Browser-/Handy-/Firebase-End-to-End-Test. Ingame-Balancetest durch den Nutzer vorgesehen.
 
 ## v0.5.7 – 2026-10-14 – Neue Truhen-Ausrüstung
+- Commit `2aca595b11bbfa383ad30e7f9f8f559404f1b565`.
 - Zwölf neue feste Item-IDs: Gruftklinge, Schwarzstahl-Schwert, Runenholzstab, Stab der Finsternis, Knochendolch, Nachtzahn, Knochenpanzer, Harnisch/Helm des Gruftwächters, Schattenstiefel, Runenschild und Obsidianring.
 - Neue Waffen je Klasse; Waffen/Obsidianring nutzen bestehendes ATK-System, Rüstung/Helm/Stiefel/Schild bestehendes DEF-System. Namen, Symbole, Preise, Beschreibungen und Stapellimit 1. Keine unimplementierten Spezialeffekte.
 - Bei frisch erzeugten Ebenen erhält jede bisherige Ausrüstungstruhe mit 65 Prozent Wahrscheinlichkeit ein zufälliges freigegebenes neues Item. Freigabe nach Klasse, Mindestebene und Charakterlevel; bei leerem Pool bisherige Beute erhalten. Regeln betreffen Drops, nicht zusätzliches Ausrüstungsverbot.
@@ -39,6 +179,7 @@
 - Syntaxprüfung und 48 lokale Schema-/Auswahl-/Serialisierungs-/Hook-Prüfungen bestanden. Karten-Hook mit nachgebildetem WorldMap getestet, kein realer Browser-/Safari-/Firebase-/Balance-Test. Keine neuen eigenen Sprites; bestehender Charakterrenderer wird verwendet.
 
 ## v0.5.6 – 2026-10-14 – Boss-Beuteauswahl
+- Commit `2d790ced30a3b073ec859501d5b0b1ef1cfa90f6`.
 - Bei neuen Boss-Siegen drei feste Angebote: Klassen-/Levelwaffe, Heil- oder Manatränke und zusätzliches Run-Gold. Genau eine Auswahl; bestehende Bossbelohnungen unverändert.
 - Angebote und gewählte Belohnung unter world.bossLoot im bestehenden Firebase-Slot speichern; kein LocalStorage und keine Functions. Kein nachträgliches Erzeugen für alte bereits geleerte Boss-Ebenen.
 - Vergabe auf einer Spielerkopie, Übernahme erst nach erfolgreichem Speichern; lokaler Mehrfachklickschutz und Claim-Marker. Kein serverseitiger Anti-Cheat-/Transaktionsschutz gegen manipulierte Clients; bestehende Sitzungssperren und Netzwerkgrenzen bleiben erhalten.
@@ -47,14 +188,16 @@
 - Syntaxprüfung und 14 lokale Tests der Angebots-/Kopierlogik mit nachgebildeter Inventarkapazität bestanden. Kein echter Firebase-/Safari-/Browser-End-to-End-Test; Async-, Dialog- und Claimintegration noch zu testen.
 
 ## v0.5.5 – 2026-10-14 – HUD und Wischen-und-Halten
+- Commit `4d5c09ecc4d4e4fea0993d13073cdd88155fb39d`.
 - Großes Audiofeld im aktiven Spiel durch kompakten 44px-Einstellungszugang im HUD beziehungsweise Kampf ersetzt. Bestehender Audiodialog erhalten; außerhalb des Spiels bisheriger Audiozugang. Doppelten Musikbutton und Slot-Badge im Spiel dauerhaft ausgeblendet.
 - TP/MP/EP über volle verfügbare HUD-Breite in drei gleich großen Spalten, 12px hohe Balken und lesbare Werte; Füllstandsberechnung unverändert.
 - Wischen ab 12px gibt Richtung vor; Finger halten läuft alle 180ms weiter, Richtung anpassbar. Keine D-Pad-/Ziel-/Click-to-move-Steuerung. Alte Karten-Pointer-/Touch-/Klickhandler abgefangen, um doppelte Schritte zu verhindern.
 - Stop bei Loslassen, Pointer-/Touch-Abbruch, Erfassungsverlust, Kartenrand, Wand, Kampf, Dialog, Sitzungspause, Offline-Ereignis, Hintergrund, Fokusverlust und Resize. Lauf an Konto, Slot, Ebene und Kartenidentität gebunden; Menüs weiterhin scrollbar.
 - journey-ui und stair-audio nicht mehr statisch vor Spielinitialisierung importiert. Neuer Bootstrap wartet auf fertige Spiel-API und lädt beide Module in Reihenfolge; Haltebewegung erst danach freigegeben. Fehlende API nach begrenzten Wiederholungen beziehungsweise Importfehler lassen die Bewegung deaktiviert statt ungeprüft weiterzulaufen.
-- JavaScript-Syntaxprüfung und zehn lokale Richtungstests bestanden. Kein echter Safari-/Handy-/Desktop-/Firebase-End-to-End-Test; HUD, Ereignisreihenfolge und Treppenintegration im Browser noch zu prüfen. Boss-Beuteauswahl weiterhin nicht implementiert.
+- JavaScript-Syntaxprüfung und zehn lokale Richtungstests bestanden. Kein echter Safari-/Handy-/Desktop-/Firebase-End-to-End-Test; HUD, Ereignisreihenfolge und Treppenintegration im Browser noch zu prüfen. Historische Notiz „Boss-Beuteauswahl weiterhin nicht implementiert“ galt zum damaligen Stand; Umsetzung folgt in v0.5.6.
 
 ## v0.5.4 – 2026-10-14 – Treppen-Soundeffekte
+- Commit `ea82450e01edb4be9f1c1d03ddb238fa0cea870a`.
 - Kurzer heller Zweiklang beim Öffnen der Treppenabfrage; nur beim Übergang geschlossen zu offen.
 - Vorhandenen Abstiegssound durch vier dunklere absteigende Töne ersetzt; bestehender Abstiegshandler löst ihn aus, kein zweiter Button-Sound.
 - Beide Effekte nutzen sfxGain und vorhandene Effektlautstärke; Effektlautstärke null bleibt stumm. Musik-Stummschaltung unabhängig. Keine Audiodateien oder Downloads.
@@ -62,6 +205,7 @@
 - JavaScript-Syntaxprüfung und elf lokale Assertions mit gemocktem Audiosystem bestanden. Kein echter Hör-/Safari-/Handy-/Browser-Test; Browser-Audiobeschränkungen können Wiedergabe weiterhin verhindern. Namens-, Rahmen- und Treppenlogik unverändert.
 
 ## v0.5.3 – 2026-10-14 – Namen, Spielrahmen und Treppenabfrage
+- Commit `73838f7134ca61c93db2b938f15f81ecb689313e`.
 - Vorhandenen Zufallsnamengenerator beim Öffnen der Charaktererstellung auslösen; leeres Namensfeld vor Erstellen ebenfalls zufällig füllen. Manuelle Bearbeitung und Würfeln bleiben möglich.
 - Goldener Rahmen um Spielansicht und Kampf mit Safe-Area-Abständen; HUD, Karte und scrollbare Menüs innerhalb der Spielansicht. Mindesthöhe der Desktopkarte aufgehoben, damit sie in den Rahmen passt.
 - Dauerhaftes Steuerungsfenster #hint ausgeblendet; Tutorial und Hilfe erhalten.
@@ -71,6 +215,7 @@
 - JavaScript-Syntaxprüfung und neun lokale Treppenbedingungstests bestanden. Kein echter Browser-/iPhone-/Firebase-End-to-End-Test; CSS, Namens- und Dialogintegration noch nicht im echten Browser getestet. Bestehende Speicher-/Netzwerkgrenzen bleiben bestehen.
 
 ## v0.5.2 – 2026-10-14 – Mobile Ausrüstung, Reckenwahl und Texte
+- Commit `c06ebc8799f92eb555907bc898e5efc88a4ce452`.
 - Charakterkarten mit inhaltsabhängiger Höhe, kompakter Vorschau und eigener Aktionszeile. Bestehende Spielen-/Löschen-Handler unverändert; Reckenliste scrollt statt Aktionen abzuschneiden.
 - Ablegen-Schaltflächen in eigener 44px-Spalte, zentriertes ×, zugängliche Beschriftung und umbrechende Gegenstandsnamen. Unter 360px einspaltige Ausrüstung.
 - Touch entfernt nur Kampf-Tastenkürzel; Mana, Trankanzahl und andere Werte bleiben erhalten. Tastatur-/Mausmodus zeigt 1–4.
@@ -79,6 +224,7 @@
 - JavaScript-Syntaxprüfung und sechs lokale Beschriftungstests bestanden. Kein realer iPhone-/Safari-/Desktop-Layout- oder End-to-End-Test. Textadapter an bestehende Textvorlagen gebunden; neue Vorlagen müssen ergänzt werden.
 
 ## v0.5.1 – 2026-10-14 – Login und Sitzungsprüfung
+- Commit `6b8bff22e3db72b53464c1f7d9481b9d394a9f23`.
 - Sitzung vor Erwerb/Verlängerung geladen; aktiver Value-Listener hält den Sitzungspfad im lokalen Cache.
 - Transaktionsabbruch wird durch erneutes Lesen von echter fehlender/fremder/abgelaufener Sitzung unterschieden.
 - Warten auf Serververbindung und Zeitausgleich vor Erwerb; konkurrierende echte Sitzungen bleiben gesperrt.
@@ -89,6 +235,7 @@
 - Sechs lokale Cache-/Transaktionsmodelltests bestanden; kein echter Firebase-/Browser-/Handy-End-to-End-Test. Alte Sperren geschlossener Fenster können weiterhin bis zu zwei Minuten bestehen. Keine Änderung der Firebase-Regeln erforderlich; Grenzen der clientseitigen Sitzungssperre bleiben erhalten. Canvas-/Audio-/Metadatenfix weiterhin separat.
 
 ## v0.5.0 – 2026-10-14 – Service-Worker-Stabilitätsfix
+- Commit `b293a659bccf00c00ca4a6646158cdcd60d45bb7`.
 - Response wird sofort im Netzwerk-Callback geklont, bevor sie an den Browser zurückgegeben wird; kein verzögertes clone() nach caches.open().
 - Hintergrundspeicherung über synchron registriertes event.waitUntil(); Cachefehler beeinflussen erfolgreiche Netzwerkanfragen nicht.
 - Netzwerkfehler erhalten Cache-Fallback oder explizite Offline-503-Antwort.
@@ -97,6 +244,7 @@
 - Grenzen: kein realer Browser-/Handy-/Offline-Test. Cachezugriffe können durch Browserpolitik weiterhin scheitern und werden als Warnung gemeldet. Externe Firebase-SDK-Dateien werden nicht offline gecacht; kein vollständiger Offline-Start garantiert. HTML-Fallback weiterhin v0.4.0.
 
 ## v0.4.19 – 2026-10-14 – Rangliste
+- Commit `7a477bca789ebc2521b4526db1ede24f260f9f8b`.
 - Ranglisten-Reiter ausschließlich in der Rüstkammer nach dem Tod: Platz, Name, Klasse, Level und höchste Ebene.
 - Top 50 nach bestDepth; gleiche Ebenen erhalten gleichen Rang, eigene Charaktere markiert.
 - Separater Firebase-Bereich; Veröffentlichung erst nach erfolgreichem Speichern. Bestehende Charaktere werden beim Laden ihrer Slots abgeglichen. Keine öffentlichen privaten Spielstände.
@@ -107,9 +255,10 @@
 - Grenzen: keine Cloud Functions, kein vollständiger Anti-Cheat-Schutz. Ranglisten-Update separat vom Speichern; Fehler blockieren das Speichern nicht und werden bei späterem Abgleich erneut versucht. Andere Nutzer müssen ihre Charaktere erst mit der neuen Version laden/speichern. Regeln müssen den leaderboard-Bereich einschließlich level erlauben. Kein echter Browser-/Handy-/Firebase-Test. Backend-Leserechte sind nicht auf den Todeszustand beschränkt, nur die Spieloberfläche.
 
 ## v0.4.18 – 2026-10-14 – Roguelite-Tod und Rüstkammer
+- Commit `d1e8c6b368d4a35c7ac25cc740fcc173f2a5fa06`.
 - Beim Tod gehen Ausrüstung, Ersatzitems, Tränke und Materialien verloren. Level, EP, Skills, Skillpunkte und permanente Basiswerte bleiben erhalten.
 - Vorhandene Todes-Goldübertragung ins persönliche meta.gold wird genutzt; Run-Gold danach auf null gesetzt. Kein zweites Auszahlen beim Öffnen des Shops.
-- TP/MP vollständig aufgefüllt, temporäre Buffs und Cooldowns zurückgesetzt; Neustartart auf Ebene 1.
+- TP/MP vollständig aufgefüllt, temporäre Buffs und Cooldowns zurückgesetzt; Neustart auf Ebene 1. Tippfehler „Neustartart“ des vorigen Dokumentationsstands berichtigt.
 - Vorbereitungsshop mit Waffen, Rüstung, Reliquie und Vorräten; levelabhängige Stufen alle fünf Level, maximal 20 Stufen.
 - Basis- und Ausrüstungswerte im Vergleich. Eine gekaufte Startausrüstung je Slot und maximal drei Tränke je Sorte.
 - Käufe mit Bestätigung; Speicherung vor Übernahme, Rücknahme im Arbeitsspeicher bei fehlgeschlagenem Speichern. Vorbereitungsstatus wird mit dem Helden gespeichert.
@@ -119,19 +268,8 @@
 - Neue Helden setzen Ordensgold und Vorbereitungsstatus zurück. Nur zentrales Changelog; alte Einzeldateien wurden gelöscht.
 - Grenzen: kein echter Browser-/Handy-/Firebase-End-to-End-Test. Gold und Vorbereitung verwenden bestehende Slot-Speicherung, keine serverseitige Wirtschaftstransaktion. Bei Netzwerkverlust bleiben die Grenzen der bisherigen Sitzungsspeicherung bestehen. Schwierigkeitsskalierung früher Ebenen wird erst nach Spieltests abgestimmt. Bestehende Hauptlogik wird über ein Integrationsmodul ergänzt, nicht vollständig migriert.
 
-## Pflegevorgabe
-Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden hier oben unter einer Versionsüberschrift ergänzt. Keine neuen CHANGELOG-v*.md-Dateien anlegen. Historische Einträge nicht überschreiben. Die bisherigen Einzeldateien wurden nach der Zusammenfassung gelöscht; ihre Inhalte sind hier zusammengefasst, nicht wortgleich übernommen. Eine reine Dokumentationsänderung erhöht die Spielversion nicht.
-
-## Projektvorgaben
-- Mobile-first, danach Desktop-Browser.
-- Touch, kleine Bildschirme, Tastatur, Hintergrund/Rückkehr und Verbindungsabbrüche berücksichtigen.
-- Implementiert und getestet klar unterscheiden; keine ungetesteten Funktionsgarantien.
-
-## Dokumentationsänderung – 2026-10-14
-- Historie aus change.log und CHANGELOG-v0.4.1.md bis CHANGELOG-v0.4.17.md zentral zusammengefasst.
-- Künftige Änderungen ausschließlich in dieser Datei dokumentieren.
-
-## v0.4.17 – Sitzungsintegration
+## v0.4.17 – 2026-10-14 – Sitzungsintegration
+- Commit `b03b137fe4fc636e2d1ddc0f9873353a7a6cf534`.
 - Sitzungssperre ohne Functions auf dark_rpg/sessions/uid; 120 Sekunden Laufzeit, Verlängerung alle 25 Sekunden.
 - Tab-isolierte Authentifizierung; zweite normale Spielsitzung wird abgewiesen.
 - Prüfung vor Laden, Speichern und Löschen; eigene Spielstandpfade.
@@ -141,13 +279,15 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Reguläre Abmeldung gibt Sitzung frei; AFK-Abmeldung wird spätestens nach 25 Sekunden erkannt.
 - Grenzen: kein atomarer serverseitiger Sitzungsschutz; kein Schutz gegen manipulierte oder alte Clients. Offline gepufferte Schreibvorgänge können später übertragen werden. Anmeldung nicht persistent; Neuladen kann bis zum Ablauf der Sperre blockieren. Bestehende main.js und ihre unabhängigen Fehler bleiben unverändert. Passende Firebase-Regeln erforderlich. Kein echter Browser-/Handy-/Firebase-Test.
 
-## v0.4.16 – Mobile Charakterauswahl
+## v0.4.16 – 2026-10-14 – Mobile Charakterauswahl
+- Commit `d281516644bc8028c085640e3d32809bf27afc9d`.
 - Dialogausrichtung angepasst, um Abschneiden zu vermeiden.
 - Scrollbare Karte mit angepasster Bildschirmhöhe.
 - Sticky-Aktionsbereich für Name und HELD ERSCHAFFEN; kompaktere Klassenkarten.
 - Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.15 – Kampf-Fähigkeiten
+## v0.4.15 – 2026-10-14 – Kampf-Fähigkeiten
+- Commit `c3df967c6ef83bbfe40f9b1e8338e6cda575eade`.
 - Klassenfähigkeiten mit Mana-Kosten und Abklingzeiten.
 - Krieger: Mächtiger Schlag, Schildwall, Schlachtruf.
 - Magier: Frostblitz, Arkanschild, Manawelle.
@@ -156,42 +296,48 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Abklingzeiten sinken nach Gegnerzügen; Buttons werden aktualisiert.
 - Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.14 – Inventarsystem
+## v0.4.14 – 2026-10-14 – Inventarsystem
+- Commit `05d963c1bda042d28a2ecff775f205efb9b4b071`.
 - Modul zum Hinzufügen, Entfernen, Zählen und Sortieren von Items.
 - Stapellimits; Ausrüstung bleibt einzeln.
 - Symbole, Kategorien, Platzanzeige und Itemdetails mit Beschreibung, Wert und Stapelinformation.
 - Trankverbrauch, Ausrüsten und Ablegen nutzen das Inventarmodul.
 - Automatische Sortierung vor der Anzeige.
-- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
+- Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert. Später in S01a behobene Teiländerungen waren damit noch nicht ausgeschlossen.
 
-## v0.4.13 – Level-Up-System
+## v0.4.13 – 2026-10-14 – Level-Up-System
+- Commit `c2f2dae7331ad4d5f3c4fc314daafad5d6e86676`.
 - Automatisch ein Skillpunkt je Aufstieg.
 - Wahl eines von drei zufälligen Angeboten aus vier dauerhaften Boni: +20 Maximal-TP, +10 Maximal-MP, +2 Angriff, +2 Verteidigung.
 - Mittiges Auswahlfenster; Speichern nach Auswahl; steigende EP-Schwelle.
 - Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.12 – Kampf-UI
+## v0.4.12 – 2026-10-14 – Kampf-UI
+- Commit `02c81d630f8c2dc5ce6c3f0661e611dd79160838`.
 - HP-Balken mit aktuellen und maximalen Lebenspunkten für Held und Gegner.
 - Typbezogenes, farblich abgestimmtes Gegnerporträt; sichtbare ATK-/DEF-Werte.
 - Größere Porträts, klarere Balken und responsive Anpassung.
 - Bestehende Kampfanimationen, Zahlen, Tastatur und Spawns erhalten.
 - Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.11 – Monster-Spawn-System
+## v0.4.11 – 2026-10-14 – Monster-Spawn-System
+- Commit `1ba4bd0c0e1c1657e10897cc77ff8e8416932896`.
 - Zwölf Monstertypen mit Werten, Farben, Spawn-Gewichten und Mindestebenen.
 - Gewichtete, themenbezogene Spawn-Pools und Variation pro Raum.
 - Darstellungen für Ratte, Fledermaus, Schleim, Spinne, Goblin, Skelett, Zombie, Wraith, Imp, Golem, Dämon und Boss.
 - Boss auf jeder fünften Ebene; bestehende Kampf- und Oberflächenmodule erhalten.
 - Grenzen: keine Monster-Spezialfähigkeiten; kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.10 – Tutorial und Bewegung
+## v0.4.10 – 2026-10-14 – Tutorial und Bewegung
+- Commit `1264adb0bc0ae8c6c5ee89adaeca989fd73fdc6d`.
 - Mittige Tutorial-Modals mit dunklem Hintergrund und goldenem Rahmen.
 - Bestätigung über Verstanden, Enter, Leertaste oder Esc.
 - Klick-to-move entfernt; Bewegung per WASD/Pfeiltasten oder Wischen.
 - Tipp-Texte angepasst; Kampfvisualisierung und Tastatur erhalten.
 - Grenzen: kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.9 – Tastatur und adaptive Oberfläche
+## v0.4.9 – 2026-10-14 – Tastatur und adaptive Oberfläche
+- Commit `32756ebfbe9e6565a6f8d7d5edd461978a5a8098`.
 - Tab/Shift+Tab, Enter/Leertaste, Esc und Pfeiltasten für Auswahl und Bedienung.
 - Recken- und Klassenwahl per Pfeiltasten; Enter bestätigt.
 - Name, Zufallsname, Erstellen und Zurück per Tab erreichbar.
@@ -199,7 +345,8 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Adaptive Spaltenzahl, Kartengröße, Schrift und Kampf-HUD; Animationen erhalten.
 - Grenzen: Touch unverändert; kein vollständiger Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.8 – Kampfvisualisierung
+## v0.4.8 – 2026-10-14 – Kampfvisualisierung
+- Commit `2aeb4d1f402467ecacd40c53e309912dea9aee44`.
 - Stabile TP-/MP-Balkenelemente statt überschreibbarer Text-HUD.
 - Heldenausrüstung und Gegnerdarstellung im Kampffenster.
 - Treffer-, Krit- und Heilungszahlen; tatsächliche Trankheilung.
@@ -208,7 +355,8 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Reduzierte Bewegung berücksichtigt.
 - Grenzen: Kampfberechnung synchron; Animationen nachträglich, keine vollständig gestaffelte Gegner-KI. Passive Zahlen bei gleichzeitigem Level-Up sind Näherungen. Kein realer Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.7 – Audio und Reckenrahmen
+## v0.4.7 – 2026-10-14 – Audio und Reckenrahmen
+- Commit `470692d7902aac41a0f03b505fcb957c9ec6c9c3`.
 - Musik-/Effektlautstärke und Musik-Stummschaltung lokal gespeichert und vor main.js wiederhergestellt.
 - Gemeinsames Audiofenster in Intro, Login, Auswahl und Spiel.
 - Synchronisierte Regler und Buttons; Regler heben Stummschaltung nicht automatisch auf.
@@ -217,7 +365,8 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Tastaturfokus scrollt Reckenaktionen in die Ansicht.
 - Grenzen: Einstellungen pro Browser/Gerät, nicht Firebase. Kein Browser-/Safari-Test; main.js, HTML-Fallback und Service-Worker-Cachename unverändert. Audio kann Benutzerinteraktion benötigen.
 
-## v0.4.6 – Funkenflug und Ebenenfortschritt
+## v0.4.6 – 2026-10-14 – Funkenflug und Ebenenfortschritt
+- Commit `1e86e0d7532a5d7c6d66f447d2decdd0510e639e`.
 - Canvas-Funkenflug mit Pause bei verstecktem Intro/Tab und reduzierter Bewegung.
 - Treppen auf erreichbaren Feldern nahe dem Helden, bevorzugt zwei bis fünf Schritte entfernt.
 - Treppenfeld und Umgebung aufgedeckt; erreichbare vorhandene Treppen erhalten.
@@ -226,7 +375,8 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Alte Spielstände ohne Gesamtzahl zeigen verbleibende Gegner statt erfundener Gesamtwerte.
 - Grenzen: kein zusätzlicher Treppen-Partikeleffekt; alter Fortschritt nicht rekonstruiert. Kein Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.5 – Ingame-Löschdialog
+## v0.4.5 – 2026-10-14 – Ingame-Löschdialog
+- Commit `f70b9231f0d4ba37a80a149ea7a3d6c3f1608849`.
 - Fantasy-Dialog statt window.confirm für Recken-Löschbuttons.
 - ModalManager mit Name/Slot, Warnung und Fehleranzeige.
 - Abbrechen vorausgewählt; Tab-Fokus, Esc und Fokus-Rückgabe.
@@ -234,15 +384,17 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Erfolgreiches Löschen aktualisiert die Auswahl; Kontoidentität vorher geprüft.
 - Grenzen: Capture-Interception statt Änderung an main.js. Andere Altsysteme nicht vollständig migriert. Kein realer Browser-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.4 – Tutorial und Hilfe
+## v0.4.4 – 2026-10-14 – Tutorial und Hilfe
+- Commit `4f6d5b60169a295f3a23e864bd9ca7d3b0956846`.
 - Begrüßung mit Starten/Überspringen; kontextbezogene Bewegung-, Kampf-, Ausrüstungs-, Skill- und Treppenhinweise.
 - Kompakte Hinweise mit Verstanden; Hilfe als Modal.
 - HUD-Hilfe, H außerhalb Texteingaben und Esc im Kampf.
 - Tutorial erneut startbar; lokaler Status je Konto und Browser, kein Firebase-Schreiben.
-- Dialogtastatur erreicht Spielsteuerung nicht.
+- Dialogtastatur erreicht Spielsteuerung nicht als beabsichtigte Regel; reale Konflikte anderer globaler Handler weiterhin separat prüfen.
 - Grenzen: kein Spotlight, spätere Schritte warten auf Bestätigung. Kein Browser-/Safari-/Firebase-Test; main.js, HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.3 – Zauberstab und Tastatur
+## v0.4.3 – 2026-10-14 – Zauberstab und Tastatur
+- Commit `ecb968a459a38d87e7c9434e97c609baf6c43d8e`.
 - arcane_staff mit 5 ATK als Arkanisten-Startwaffe; gespeicherte Waffen nicht automatisch ersetzt.
 - Zauberstabdarstellung mit Holzschaft und Kristall.
 - Kampf per 1–4, Tab, Enter und Leertaste; Esc öffnet Hilfe ohne Spielzug.
@@ -251,7 +403,8 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Intro-Observer korrigiert gegen Endlosschleifen; bestehender main.js-Ladetimer bleibt.
 - Grenzen: kein Browser-/Safari-/Firebase-Test; HTML-Fallback und Service-Worker-Cachename unverändert.
 
-## v0.4.2 – Recken und Klassenoptik
+## v0.4.2 – 2026-10-14 – Recken und Klassenoptik
+- Commit `6f6a7492f2b57691d37d8ea0bf1ffc5b921d7f32`.
 - Gemeinsamer Canvas-Charakterrenderer; eigene Silhouetten für Eisenbrecher, Arkanist und Schattenläufer.
 - Sichtbare Ausrüstungslayer für Rüstung, Helm, Stiefel, Waffen, Schild und Rubinring.
 - Recken-Auswahl nutzt geladene Spieler ohne zusätzliche Datenbankabfragen.
@@ -260,8 +413,9 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Kompatibilitäts-Observer verhindert automatischen Wechsel; vorhandener Ladetimer bleibt.
 - Grenzen: prozedurale Figuren, keine Sprite-Sheets oder Laufanimation. Kein realer Safari-/Firebase-Test.
 
-## v0.4.1 – Mobile Hotfix aktiviert
-- mobile-hotfix-v041.css über version.js/mobile-ui.js geladen; index.html unverändert.
+## v0.4.1 – 2026-10-13/14 – iPhone-CSS und Aktivierung des Mobile-Hotfixes
+- Vorbereitender CSS-Commit `cef1250d59601fc9d4e86a7b979206191c68dcf3` vom 13. Oktober; Aktivierung `432fe604d0d83231e7084d1362c63ebc351fbb10` vom 14. Oktober. Vorbereitung und tatsächliches Einbinden unterscheiden.
+- mobile-hotfix-v041.css über version.js/mobile-ui.js geladen; index.html beim Aktivierungspatch unverändert.
 - Intro mit begrenzter Breite, Safe-Area und vertikalem Scrollen.
 - Kampf aus Seitenleiste in Body verschoben; TP/MP, Gegner-TP, effektive Werte und Trankbestand.
 - Werte nach Aktionen einschließlich Ausweichen aktualisiert.
@@ -270,11 +424,132 @@ Diese Datei ist ab jetzt das einzige aktive Changelog. Neue Änderungen werden h
 - Bewegung bei Tod, Übergang, Level-Up und verstecktem Spiel gesperrt.
 - Veralteten Service-Worker-Cache ersetzt, Bereinigung auf Spiele-Caches begrenzt.
 - Bestehende main.js und Skilltree erhalten.
-- Grenzen: kein realer Browser-/iPhone-/Firebase-Test. Initial kann altes CSS sichtbar sein. HTML-Fallback v0.4.0; Offline-Start ohne zuvor geladene Dateien nicht garantiert.
+- Grenzen: kein realer Browser-/iPhone-/Firebase-Test. Initial kann altes CSS sichtbar sein. HTML-Fallback v0.4.0; Offline-Start ohne zuvor geladene Dateien nicht garantiert. Spätere v0.4.10-Steuerung entfernt Klick-to-move wieder.
 
-## v0.3.7 – 2026-10-13 09:30 – Level-Design und bewegbare Welt
+## v0.4.0 – 2026-10-13 – Mobile Edition und episches Intro
+- Commit `9d26f42e35afcabb7fc8ee3ec4eb96d910e3a70c`.
+- Fullscreen-Intro mit Lore und Gluteffekt; mobile-first Layout, größere Touchflächen und sichere Bildschirmrandabstände.
+- Virtuelles D-Pad entfernt; damalige Bewegung per Tap/Wischen und Auto-Lauf zu angetippten Zielen mit Wegfindung. Historischer Stand, nicht die heutige Steuerung.
+- Kampf als eigenes Fullscreen-Fenster, kompaktes HUD und Bottom-Sheet-Panels; Hauptcode wieder vollständig eingebunden. Version und damalige Dokumentation v0.4.0.
+- Kein neuer nachträglich belegter Geräte-/Firebase-Gesamttest.
+
+## v0.3.8 – 2026-10-13 – Skilltree und Roguelite-Builds
+- Commit `ca2356324b44e14334911d1ade03c96f92d00458`.
+- Zwölf Skills in drei Zweigen, ein Skillpunkt pro Level-Up, Lernen-UI und Skilltree-Tab. Effekte für TP/MP, ATK/DEF, Krit, Ausweichen, Feuer, Heilung und Gold.
+- Speicherung pro Recken und Ergänzung fehlender Skilldaten alter Speicherstände als Änderungsziel. Kein pauschaler Nachweis einer vollständigen Schema-Migration; spätere Prüfung weiterhin S02.
+
+## v0.3.7 – 2026-10-13 – Level-Design und bewegbare Welt
+- Commits `a8ba6c92011ca46e1fcda7555febb95ad04aae13`, `1e5dc935fd048063d416ad4007d9bb448b701da6`, `248240e6f98404ea288ceff1e47786eb6f1a5954`.
 - Ebenendesigns: Katakomben, Pilzwald, Frostgruft, Feuershrein und Schattenarena.
 - Größere prozedurale Karten mit mehreren Räumen und Korridoren.
 - Kamera folgt dem Helden; Sichtfeld auf Bildschirm begrenzt.
 - Eigene Farbpaletten und Effekte je Design.
-- Vollständige main.js mit Spiel-Funktionen wiederhergestellt; Version v0.3.7.
+- Vollständige main.js mit Spiel-Funktionen wiederhergestellt; Folgecommits mit vollständiger Spiellogik, Zufallsnamen, AFK-Abmeldung und Speicherbenachrichtigung. Version v0.3.7. Historische Überschrift nannte 09:30 CEST; exakte Commitzeiten aus Git maßgeblich.
+
+## v0.3.6 – 2026-10-13 – Zufallsnamen, AFK-Abmeldung und Wiederherstellung des Hauptcodes
+- Commits `0803740f1209a1f9293851ec11b7c4b5a3dd3df9`, `43de6717446a53b2ba701de7dcb365885058a43b`, `2566c036f28613c3f59f679bf3c2343bedbe119c`.
+- Dark-Fantasy-Zufallsnamengenerator, Abmeldung nach zehn Minuten Inaktivität und Speicherbenachrichtigung; Folgecommits zur Wiederherstellung vollständiger main.js. Nicht jeden „complete main“-Commit als eigenständiges neues Feature zählen.
+- `316a2b3ec858360a3958374df5a21fbd59d40eb4`: irreführender Titel „Update print statement from Hello to Goodbye“. Tatsächlicher Diff fügt umfangreiche Hauptlogik wieder ein: Intro/Audio, Auswahl, Speichern, Inventar/Ausrüstung, Bewegung, Kampf, Level-Up und Tod. Kein bloßer Printstatement-Wechsel; später durch weitere Hauptcode-Stände überarbeitet.
+- Frühere Erfolgsmeldung zur AFK-Sicherung ist keine Garantie bei false-Rückgabe des Speicherns; als offener Auditbefund in S04 zu behandeln.
+
+## v0.3.5 – 2026-10-13 – Speicherrückmeldung und Loginfehler
+- Commit `d525791ba6654c9a7cc14bb3f96c00a63955c94d`.
+- Erfolgs-/Fehlermeldung beim Speichern und verständlichere Firebase-Anmeldefehler ergänzt. Versions-/Dokumentationsstand v0.3.5; keine nachträgliche Gesamt-Abnahme behauptet.
+
+## v0.3.4 – 2026-10-13 – Ebenenwechsel-Animation
+- Commits `c0341ae87ecc06b588dbc8fa5ba6a3aff1c048ab`, `3fba1c535318f0e3ae82fe983a2102dc63dcd022`.
+- Gestaltung und anschließende Logikeinbindung eines automatisch verschwindenden Ebenenwechsel-Overlays mit großer Ebenenschrift und Untertitel. Beide Schritte gehören zum selben Versionsstand.
+
+## v0.3.3 – 2026-10-13 – aufwendigere Oberflächenanimationen
+- Commit `b706729a774a59ed713c7313feed1b21c3d5c10d`.
+- Visuelle Überarbeitung von Intro, Login, Reckenwahl, Kampf, Inventar, Ausrüstung und Tod. Historischer Gestaltungsanspruch, kein gemessener Qualitäts-/Performancenachweis.
+
+## v0.3.2 – 2026-10-13 – erweiterte Level-Up-Effekte
+- Commits `2ebb80f6c2a1be9b6745b2f9ffc9a4f965f33a28`, `42cdcc5a138375abb034181a76219243e22c320e`, `dd980b8465751831b24caa29ef996e9da9069a10`.
+- Lichtstrahlen, Ringe, Goldpartikel, Bildschirmwackeln und eigener aufsteigender Level-Up-Sound vorbereitet und eingebunden; Logik mit 36 Partikeln und Wiederherstellung vollständiger main.js.
+- Vorbereitung, Audio-/Partikellogik und Integration getrennte Commits, kein Nachweis vollständig getesteter mobiler Darstellung.
+
+## v0.3.1 – 2026-10-13 – erste Level-Up-Einblendung
+- Commits `e3f54a5908ad2c61953c7b408acb139917f05e1f`, `5fc097d26880b759188dbee60e09547a2370c563`, `d708d93fce41c6fc5adaf89e4f25eda57a73e029`.
+- Animierte Anzeige der neuen Stufe, zugehörige Anzeigelogik und Wiederherstellung vollständiger Hauptlogik. Damalige Ausblenddauer 1,6 Sekunden; spätere Versionen änderten Effekte/Ablauf.
+
+## v0.3.0 – 2026-10-13 – EP-/EXP-Fortschritt
+- Commits `2dd34a7e038e7ca9e0bc39a0da2fa4beda150445`, `302b4d949d9c1356a6cf6b6b32b94ddd28ff71cf`.
+- Klarer EXP-Fortschritt im HUD, EP-Gewinn über besiegten Gegnern und Chronikeintrag. Zwei Umsetzungsschritte desselben Versionsstands; spätere Vordergrundkorrektur v0.5.18 gesondert.
+
+## v0.2.9 – 2026-10-13 – Firebase-Projektwechsel
+- Commit `f1a8aed10473efc8b21ac4a53d5c2c1a129c16e2`.
+- Firebase-Konfiguration/databaseURL auf Projekt rpg01-793eb umgestellt. Kein dokumentierter Export/Import aller alten Daten oder Backup externer Spielstände; nicht als nachgewiesene vollständige Datenmigration darstellen.
+
+## v0.2.8 – 2026-10-13 – erneute Aktualisierungsstrategie
+- Commit `3196a22c8f5a5ea2b85b5b42a92bfad6624b7e9a`.
+- Navigationen bevorzugt vom Netzwerk anfordern, CSS/JS mit no-cache prüfen. Historischer Titel „Force-Fresh Reload“ beschreibt die Absicht, keine ausnahmslose Garantie bei Offlinezustand, Deployverzögerung oder veralteter Kombination.
+
+## v0.2.7 – 2026-10-13 – Network-first und Service-Worker-Registrierung
+- Commits `d7b0f015c7c38336db364a53c0fd9946123bc471`, `92ff0e293239abe8816873f4ea5472326e10843e`.
+- Network-first Service Worker und versionsabhängige CSS-/JS-URLs; anschließende Registrierung nach Seitenladung. „Always Fresh“ war historische Zielbeschreibung, nicht belegte Garantie. Spätere Response-/Cachekorrektur v0.5.0 beachten.
+
+## v0.2.6 – 2026-10-13 – sichere Speicherdaten und Audiogeste
+- Commit `5ea67c882daaf86bda769beb690bf60dadb577a9`.
+- Speicherung auf sichere Spieldaten begrenzen, undefined-Werte als Fehlerquelle behandeln; Musikstart an Nutzerinteraktion binden. Nicht mit serverseitiger Schema-/Rechtesicherheit gleichsetzen.
+
+## v0.2.5 – 2026-10-13 – leisere Musik und Auswahlfunken
+- Commits `0221d402479f73669f98668438e95519333bc1af`, `dbe11e2fd1340642268807e020379191d1e66a0e`.
+- Musikstart mit 35-Prozent-Einstellung, Funkenflug in Reckenwahl, Charakter-Speicherung abwarten und bei Fehlschlag warnen. Zwei Commits mit demselben Veröffentlichungstitel; keine erfundene zusätzliche Version.
+
+## v0.2.4 – 2026-10-13 – Auswahl- und Audiokorrekturen
+- Commit `b3f545efa1f81d5a4e2bf483fae59ffda105326c`.
+- Reckenwahl bei Firebase-Fehlern bedienbar halten und fehlende Slots behandeln; Intro-/Loginmusik und sofortige Wirkung der Musik-/Effektregler überarbeitet. Spätere strengere Sitzungs-/Ladefehlerbehandlung v0.5.1 beachten; historischen Ansatz nicht als heutige Fehlerstrategie darstellen.
+
+## v0.2.3 – 2026-10-13 – prozedurale Musik und getrennte Regler
+- Commits `01d6367b71688d8088e81989c234c0922fa97f15`, `0e08b4a923e6c200b87c20da02998588207cc5a3`, `2863e3c44a6851cbcc163e72fa415fbede130051`.
+- Prozedurale Musik für Intro, Login und Hauptspiel, Musik-Stummschalter und separate Musik-/SFX-Regler von 0 bis 100 Prozent. Folgecommits ergänzen Oberfläche/Dokumentation und verbinden die Regler im Hauptspiel. Keine heruntergeladenen Audiodateien aus diesen Titeln ableiten.
+
+## v0.2.2 – 2026-10-13 – Firebase-only und mehr Loginpartikel
+- Commit `ae8d88c89664220e5edfdc6655e47c12b8b4d0f5`.
+- Loginfunken von 45 auf 90 Partikel; lokale Spielstandspeicherung/Gastmodus aus dem damaligen Hauptablauf entfernt, Firebase als Konto-/Speicherlösung. Spätere lokale Audio-/Tutorialeinstellungen sind keine Wiedereinführung lokaler Spielstände. Alte Storage-Datei im Repository ist nicht allein Beleg für aktive Nutzung.
+
+## v0.2.1 – 2026-10-13 – Intro und Versionsanzeige
+- Commit `299c7d509dac576ca574700a7a852afe828dd035`.
+- Animiertes Intro vor Login, zentrale js/core/version.js sowie Versionsanzeigen in Intro/Login/Reckenwahl/Hauptspiel. Später mehrfach auseinanderlaufende HTML-/Laufzeitstände gesondert dokumentiert; ursprüngliche Zentralisierung war keine dauerhafte Konsistenzgarantie.
+
+## v0.2.0 – 2026-10-13 – Runensiegel und Boss-Ebenen
+- Commit `3189c7c9d554b375419863552e5e7155965015c1`.
+- Keine Treppe beim Ebenenstart; Freigabe erst nach allen Gegnern, zufälliger freier Boden als Spawnziel. Boss auf jeder fünften Ebene mit Skalierung; Boss-Sieg bricht Siegel und schaltet Abstieg frei.
+- Bossbelohnungen Gold/EP sowie zusätzliche Ordensgoldauszahlung. Spätere Auswahlbelohnung v0.5.6 und Balancekurve v0.5.8 sind separate Erweiterungen.
+
+## Frühhistorie – 2026-10-12/13 – Anlage, Uploads, Löschung und Wiederaufbau
+- Für diese generischen Uploads sind hier keine verlässlichen Release-Nummern angesetzt. Beschreibungen beruhen auf Git-Dateilisten/Änderungsumfang; exakte damalige Nutzerabnahmen und alle fachlichen Einzelabsichten sind nicht belegt. Sie bleiben technische historische Vorgänge, keine heutigen Funktionsgarantien.
+- `5983df2a75fd1cf01f8fbd62400dc2d408017902` (12. Oktober): erste einzeilige rpg/index.html angelegt.
+- `36bd0a3b0800ce20cae795b52e92a85da9c40d18`: erster flacher Dateisatz: change.log, combat, eventBus, input, inventory, items, main, map, monsters, render, state, style und uiManager; index erweitert.
+- `63d45053dca3354ec912d65f9bfd4aa2e322d209`: damaliges rpg-Verzeichnis samt Dateien gelöscht. Keine Aussage über Löschung externer Daten.
+- `ef8050005a1695f38e130e7f5a2547caea7ab349`: index.html erneut angelegt.
+- `313be82a5febafa0be39a6f2eb98e524399ff6bd`: modularer Wiederaufbau unter css/ und js/core,data,systems,ui,world; Kampf, Inventar, Shop, Storage, Karte und Renderer sowie Changelog/HTML.
+- `cacdb4e65d2eeef04a0719918eea52fde2288d57`: Queränderungen der bestehenden Module; data/quests.js und systems/quest.js hinzugefügt, Darstellung, Daten und Welt überarbeitet. Keine Behauptung, das heutige Questplatzhaltermenü sei damit fertig implementiert.
+- `7f98cc35a6d3e971f42116cdd1de17594a2e9140`: introFlow.js, modalManager.js und Favicon hinzugefügt, CSS/HTML, Zustand, UI und Renderer erweitert.
+- `caed0873fc028b8550cab4ff76047aa26f7f216e`: audio.js neu; Hauptlogik, Karte, Renderer und Oberflächen überarbeitet.
+- `deedc6d8601830ab015215cd6c483f09d011c4c4`: viele Dateien auf deutlich kompakteren Zwischenstand ersetzt, run.js hinzugefügt. Zeilenrückgang allein ist kein Beweis sämtlicher Funktionsverluste.
+- `f9e933070c3e29efa7863fea8dcbc6d3be358618`: zahlreiche Module/Styles/HTML wieder stark erweitert; Welt, Hauptlogik, Inventar, Audio und UI betroffen.
+- `cace9be65346b495b4cd341bd37c51b3f7c06593`: firebase.js hinzugefügt; großer weiterer Austausch von Styles, HTML, Daten, Hauptlogik und Weltdateien.
+- `5b701bb21508ff482094eed72a09137d71b60d97`: Hauptlogik, HTML und Styles erweitert, Firebase-/Audio-/Weltdaten angepasst, Favicon geändert.
+- `66134c6d01975d3333510e17bc84745f4f47d380`: breitere Hauptcode-, Firebase-, Audio-, Karten-/Renderer- und Zustandsänderungen.
+- `43ef908d16ffc7a02ebb576b57b3b55cb33f13dd`: weiterer Austausch an Hauptcode, Zustand, Firebase, Karte, Darstellung, HTML/CSS und Changelog.
+- `082df7e88743b586897cc2e19d6e840d65038ad6`: Hauptcode, Firebase, HTML/CSS und Changelog erweitert; kleinere Folgeänderungen weiterer Module.
+- `0cf8a32bb7e6c7277f3d6955e10894a29e53856d` (13. Oktober): Hauptcode/HTML/CSS, Zustand und Items sowie weitere Moduldateien und Changelog aktualisiert; letzter hier separat erfasster generischer Upload vor v0.2.0.
+
+## Dokumentations-, Planungs- und Sicherungsereignisse
+- `4d55b8bcc0db430b53da8db2086e55a591fb3aa3` (14. Oktober): vorhandene change.log und einzelne CHANGELOG-v0.4.1.md bis CHANGELOG-v0.4.17.md zentral zusammengefasst. Inhalte zusammengefasst, nicht wortgleich. Diese Datei als einzige aktive RPG-Historie festgelegt.
+- Anschließende Entfernung alter Einzeldateien: v0.4.1 `dfe2d3e06fef2a749d026abd833e98d03e93b996`; v0.4.2 `9c9019374ba3c67c8be8f2cf7729a7fee92ce74a`; v0.4.3 `f2881e16443cab80bce846693fdbae79b1e9294e`; v0.4.4 `2637a50126428a5191c3dec4edba8935d9279a4b`; v0.4.5 `a6039f1a3ca8568d3e8cf397838d0f3410f0cc82`; v0.4.6 `3fbb4093640db43e2fd6a92b2ad9b839b4594662`; v0.4.7 `faebcee4d38c88311c9f4ae49ab55e2057d00c8f`; v0.4.8 `c00cba02fc2561cb12bcab9da853b3cf3c2a9b00`; v0.4.9 `ba80fde9684a859abda29d4386cf3ef059528360`; v0.4.10 `9ad0266d64c36633a8b4b9b57e15fd197354411f`; v0.4.11 `41303c14381da24578d900ad8c4cbe1bb4cf1444`; v0.4.12 `9d3a5fd8b25fee49bb2c3bba9142eacebbf59c7e`; v0.4.13 `e6d04d18f5f8a7ca5467959c7cb19c1e0dc1b7b9`; v0.4.14 `afdd85146eb04a382e21d7ac6098ee1123cda0b4`; v0.4.15 `f144134ec21ea31682d50f150a3de0067e94b422`; v0.4.16 `a629969f93da0f1eb1e6a6bfa7f4129c854d6b27`; v0.4.17 `4cf13c8ae9c6282fa264c5dcf0441a3668f92a32`. Keine neuen Spielfunktionen; zentrale Historie bleibt.
+- `73303ffc15379ccbd4de23a9a4bc5979328149eb` (16. Oktober): zentrale Aufgabenliste nach rpg/to-do.md kopiert. Anschließend Root-Duplikat in `f3b87d376d9f41901a61a65daefb7580f640cc3a` entfernt; Root-Dateiänderung als zugehöriges Planungsereignis, nicht eigenständiges RPG-Feature.
+- T01-/T02-/T03-Statuscommits und widersprochener T02-Nachfixstatus siehe jeweilige Releases; nicht mit Codeveröffentlichung oder echter Abnahme gleichsetzen.
+- Erster bestätigter Sicherungsbranch Backup auf `4bf3a5f49c15da972b2ddbe1b71f9936d116dfe5` erstellt. Zweiter Sicherungsbranch Backup-vor-S01a-2026-10-16 auf `902410b88c7a2317cfbd7ef9e76b97f5d288a30c`. Branchanlage erzeugt keinen eigenen Codecommit; Sicherung des versionierten Repositoryzustands samt erreichbarer Historie, kein externes Firebase-Backup.
+- `902410b88c7a2317cfbd7ef9e76b97f5d288a30c`: Masterplan S01–S07 mit höheren Prioritäten als T-Bugs/Wünsche, Teilaufgaben/Abnahmen, Regressionstest-Matrix und Übergabevorlage. Historische T-IDs und widerlegte T02-Aussagen erhalten/berichtigt.
+- `9b9f43f8dbaa01ca1cb93a98642c31a29dd1bcdf`: S01b-Nachtrag und To-do-Status implementiert/dokumentiert, Abnahme offen; T02-iPhone-Rückmeldung aufgenommen. Darin bestehende Restlückennotiz ist durch die jetzige historische Ergänzung überholt, nicht durch erfundene Funktionsabnahmen.
+- Diese Vervollständigung ändert ausschließlich rpg/change.log, ergänzt fehlende Historie und Commitbezüge und berichtigt den historischen Tippfehler Neustartart. Kein neuer Gameplay-, Test-, Deploy- oder Backupvorgang. To-do-Datei wird hier nicht automatisch geändert.
+
+## Pflegevorgabe und offene Prüfgrenzen
+- Dies ist das einzige aktive RPG-Changelog. Änderungen hier mit Version oder unverändertem Versionsstand plus eindeutigem Commitbezug dokumentieren. Keine neuen CHANGELOG-v*.md-Dateien anlegen.
+- Mobile-first, danach Desktop; Touch, Tastatur, kleine Bildschirme, Hintergrund/Rückkehr und Verbindungsabbrüche berücksichtigen.
+- Pro Eintrag Anlass, tatsächlichen Umfang, betroffene Systeme/Dateien, Tests und Grenzen nennen. Widerlegte Aussagen ausdrücklich berichtigen, Rücknahmen und erfolglose Versuche nicht aus der Geschichte löschen.
+- Implementiert, lokal mit Fixtures/Mocks getestet, veröffentlicht, deployed und auf echtem Gerät abgenommen sind unterschiedliche Status. Ein Changelog-Nachtrag schließt keine offene Abnahme.
+- Die dokumentierte Historie ist kein lückenloses Audit aller Codezeilen und keine Garantie fehlerfreien Spiels. Insbesondere S01b-Geräte-/Speicherabnahme, Fähigkeiten-CSS-Abweichung, S01c-Truhenvergabe und weitere Masterplan-Aufgaben bleiben nach ihrem tatsächlichen Stand offen.
