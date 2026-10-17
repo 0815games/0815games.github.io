@@ -26,7 +26,7 @@ export async function persistDiscard(ticket,count,remove,save,valid){
  if(!valid())return {ok:false,reason:'CONTEXT_CHANGED_AFTER_SAVE',persisted:true};
  return {ok:true,inventory:plan.inventory};
 }
-export function installDiscard({state,cloud,ITEMS,removeItem,hud,log}){
+export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
  if(document.getElementById('discard-confirm'))return;
  const el=id=>document.getElementById(id),items=el('items'),game=el('game');if(!items||!game)return;
  const dialog=document.createElement('dialog');dialog.id='discard-confirm';dialog.setAttribute('aria-labelledby','discard-title');dialog.setAttribute('aria-describedby','discard-warning');
@@ -35,8 +35,13 @@ export function installDiscard({state,cloud,ITEMS,removeItem,hud,log}){
  const style=document.createElement('style');style.textContent=`
 #items>.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
 #items>.item>span{grid-column:1;min-width:0;overflow-wrap:anywhere}
-#items>.item>.discard-row-button{grid-column:2;grid-row:1 / span 2;min-height:44px;padding:8px;border:1px solid #b66d70;border-radius:9px;background:#34202a;color:#ffd9d9;font:inherit;font-size:12px;touch-action:manipulation}
-#items>.item>.discard-row-button:disabled{opacity:.5}
+#items>.item>.inventory-actions{grid-column:2;grid-row:1 / span 2;display:flex;align-items:center;gap:6px}
+#items .inventory-actions>button{min-height:44px;padding:8px;border-radius:9px;font:inherit;font-size:12px;touch-action:manipulation}
+#items .inventory-actions>.use-row-button{border:1px solid #6d9bb6;background:#20313a;color:#d9f1ff}
+#items .inventory-actions>.discard-row-button{border:1px solid #b66d70;background:#34202a;color:#ffd9d9}
+#items .inventory-actions>button:disabled{opacity:.5}
+#items .inventory-actions>button[hidden]{display:none}
+@media(max-width:480px){#items>.item>.inventory-actions{grid-column:1 / -1;grid-row:auto;justify-content:flex-end}}
 #discard-confirm,#discard-confirm *{box-sizing:border-box}
 #discard-confirm{position:fixed;inset:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;border:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#05060ae8;color:#eee;overflow:auto}
 #discard-confirm[open]{display:grid;place-items:center}#discard-confirm::backdrop{background:#000b}
@@ -61,7 +66,29 @@ export function installDiscard({state,cloud,ITEMS,removeItem,hud,log}){
  function open(index){if(busy||dialog.open||!allowed())return;const p=state.player,entry=p.inventory[index],item=entry&&ITEMS[entry.id];if(!item||!Number.isSafeInteger(entry.count)||entry.count<1)return;ticket={uid:state.user.uid,slot:state.currentSlot,player:p,inventory:p.inventory,equipped:p.equipped,world:state.world,tiles:state.world.tiles,depth:state.world.depth,meta:state.meta,index,entry,id:entry.id,originalCount:entry.count,menuOpen:!!el('mobile-game-menu')?.open};dialog.querySelector('#discard-name').textContent=`${item.icon||'📦'} ${item.name} · Bestand ${entry.count}`;quantity.max=String(entry.count);quantity.value='1';status.textContent='Die Entfernung wird vor Übernahme gespeichert.';update();dialog.showModal();cancelButton.focus({preventScroll:true});}
  cancelButton.onclick=cancel;quantity.addEventListener('input',update);dialog.addEventListener('cancel',e=>{e.preventDefault();cancel();});
  confirmButton.onclick=async()=>{if(busy)return;if(!valid()){status.textContent='Auswahl oder Sitzung geändert. Bitte abbrechen und erneut auswählen.';return;}const count=Number(quantity.value);if(!Number.isSafeInteger(count)||count<1||count>ticket.originalCount){status.textContent='Bitte eine gültige Menge eingeben.';return;}busy=true;update();const current=ticket;status.textContent='Wegwerfen wird gespeichert …';try{const result=await persistDiscard(current,count,removeItem,(slot,data)=>cloud.saveSlot(slot,data),valid);if(!result.ok){if(result.persisted){ticket=null;dialog.close();log('Wegwerfen gespeichert; Ansicht oder Sitzung hat sich geändert. Bitte den betreffenden Helden neu laden.');return;}status.textContent=result.reason==='SAVE_FAILED'?'Speichern fehlgeschlagen. Es wurde lokal nichts entfernt.':'Auswahl ungültig oder verändert. Es wurde nichts entfernt.';return;}if(!valid()){ticket=null;dialog.close();log('Wegwerfen gespeichert; bitte den betreffenden Helden neu laden.');return;}current.player.inventory=result.inventory;ticket=null;dialog.close();hud();el('iteminfo').textContent=`${count} × ${ITEMS[current.id].name} weggeworfen. Kein Gold erhalten.`;log(`${count} × ${ITEMS[current.id].name} weggeworfen.`);restoreMenu(current);}catch(error){status.textContent='Wegwerfen konnte nicht bestätigt werden. Lokal nichts entfernt; bei unklarem Netzwerkstatus Spielstand erneut prüfen.';console.warn('Wegwerfen:',error);}finally{busy=false;update();decorate();}};
- function decorate(){[...items.children].forEach((row,index)=>{if(!row.classList.contains('item'))return;let button=row.querySelector('.discard-row-button');if(!button){button=document.createElement('button');button.type='button';button.className='discard-row-button';button.textContent='Wegwerfen';button.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();open(index);});row.append(button);}const entry=state.player.inventory[index];button.disabled=busy||!allowed()||!entry;button.setAttribute('aria-label',`${ITEMS[entry?.id]?.name||'Gegenstand'} wegwerfen`);});}
+ function decorate(){[...items.children].forEach(row=>{
+  if(!row.classList.contains('item'))return;
+  const index=[...items.children].indexOf(row),entry=state.player?.inventory?.[index],item=entry&&ITEMS[entry.id];
+  let group=row.querySelector('.inventory-actions');
+  if(!group){
+   group=document.createElement('div');group.className='inventory-actions';
+   const use=document.createElement('button');use.type='button';use.className='use-row-button';use.textContent='Nutzen';
+   use.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();
+    const i=[...items.children].indexOf(row),current=state.player?.inventory?.[i];
+    if(busy||dialog.open||!allowed()||current!==entry||!current||ITEMS[current.id]?.slot)return;
+    if(typeof useItem==='function')useItem(i);else row.click();
+   });
+   const discard=document.createElement('button');discard.type='button';discard.className='discard-row-button';discard.textContent='Wegwerfen';
+   discard.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const i=[...items.children].indexOf(row);if(state.player?.inventory?.[i]!==entry)return;open(i);});
+   group.append(use,discard);row.append(group);
+  }
+  const use=group.querySelector('.use-row-button'),discard=group.querySelector('.discard-row-button');
+  use.hidden=!!item?.slot;
+  use.disabled=busy||dialog.open||!allowed()||!item||(typeof useItem!=='function'&&typeof row.onclick!=='function');
+  use.setAttribute('aria-label',`${item?.name||'Gegenstand'} nutzen`);
+  discard.disabled=busy||!allowed()||!entry;
+  discard.setAttribute('aria-label',`${item?.name||'Gegenstand'} wegwerfen`);
+ });}
  const hint=document.createElement('p');hint.id='discard-help';hint.textContent='Wegwerfen entfernt Taschengegenstände dauerhaft ohne Gold oder Bodenbeute. Bei Stapeln Menge wählen und bestätigen. Im Kampf gesperrt.';items.before(hint);
  new MutationObserver(decorate).observe(items,{childList:true});
  new MutationObserver(()=>{if(ticket&&!busy&&!valid())cancel();decorate();}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
