@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Dungeon-Tiefe, Textur-Prototyp
+
+- Erster Teil des geplanten Grafik-Updates, noch kein vollständiges Release 0.6.0; Versionsnummer unverändert.
+- Bestehenden living-world-Renderer erweitert: Wandkanten, Sockel und dezente Steinbeschädigungen; Bodenfugen, zusätzliche Risse und vereinzelte Feuchtstellen. Bestehende fünf Umgebungspaletten bleiben erhalten.
+- Details entstehen nur beim Aufbau der gecachten 32-Pixel-Texturen, nicht als zusätzliche Zeichenpassage je Frame. Keine neuen Assets, Imports oder Animationsschleifen.
+- Kacheltyp 2 bleibt unverändert. Kartenlayout, Kollisionen, Entdeckung, Licht/Nebel, Figuren, Kämpfe, Inventar, Käufe und Speicherung unverändert; noch keine neuen Säulen, Altäre oder Raumdekorationen.
+- 120 isolierte Painter-Testfälle erfolgreich: fünf Umgebungen, drei Kacheltypen, acht Varianten. Determinismus, Kachelgrenzen, Canvas-Zustandswiederherstellung, unveränderte Paletten und unangetasteter Typ 2 geprüft. Kein echter Browser-Sichttest oder iPhone-Leistungstest durchgeführt.
+- Nächster Prüfschritt: Sichtbarkeit der Wand-/Bodendetails, klare Laufwege und flüssige Bewegung auf dem iPhone; danach Umfang weiterer Dungeon-Dekoration festlegen.
+
 ## 2026-10-18 – Spieltests bestätigt: Datenbasis und Diagnose
 
 ### Behoben / vom Benutzer im Spiel bestätigt
