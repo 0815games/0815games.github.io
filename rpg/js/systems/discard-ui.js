@@ -26,22 +26,38 @@ export async function persistDiscard(ticket,count,remove,save,valid){
  if(!valid())return {ok:false,reason:'CONTEXT_CHANGED_AFTER_SAVE',persisted:true};
  return {ok:true,inventory:plan.inventory};
 }
-export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
+export function installDiscard({state,cloud,ITEMS,removeItem,useItem,equipItemFromInv,hud,log}){
  if(document.getElementById('discard-confirm'))return;
  const el=id=>document.getElementById(id),items=el('items'),game=el('game');if(!items||!game)return;
  const dialog=document.createElement('dialog');dialog.id='discard-confirm';dialog.setAttribute('aria-labelledby','discard-title');dialog.setAttribute('aria-describedby','discard-warning');
  dialog.innerHTML='<div class="discard-card"><h2 id="discard-title">Gegenstand wegwerfen</h2><p id="discard-name"></p><p id="discard-warning">Dauerhaft entfernen. Kein Gold, keine Bodenbeute. Angelegte Ausrüstung zuerst ablegen.</p><label for="discard-quantity">Menge</label><input id="discard-quantity" type="number" min="1" step="1" inputmode="numeric" value="1"><p id="discard-status" role="status" aria-live="polite"></p><div class="discard-actions"><button type="button" data-cancel>Abbrechen</button><button type="button" data-confirm>Endgültig wegwerfen</button></div></div>';
  document.body.append(dialog);
  const style=document.createElement('style');style.textContent=`
-#items>.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px}
+#items>.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:10px 12px;border:1px solid #514936;border-radius:11px;background:linear-gradient(135deg,#1b1d27,#13151d);box-shadow:inset 0 1px #ffffff08;transition:border-color .15s,background-color .15s}
+#items>.item:active{border-color:#c99c42;background:#21212a}
 #items>.item>span{grid-column:1;min-width:0;overflow-wrap:anywhere}
 #items>.item>.inventory-actions{grid-column:2;grid-row:1 / span 2;display:flex;align-items:center;gap:6px}
-#items .inventory-actions>button{min-height:44px;padding:8px;border-radius:9px;font:inherit;font-size:12px;touch-action:manipulation}
-#items .inventory-actions>.use-row-button{border:1px solid #6d9bb6;background:#20313a;color:#d9f1ff}
-#items .inventory-actions>.discard-row-button{border:1px solid #b66d70;background:#34202a;color:#ffd9d9}
-#items .inventory-actions>button:disabled{opacity:.5}
+#items .inventory-actions>button{min-height:44px;padding:8px 10px;border-radius:9px;font:inherit;font-size:12px;font-weight:650;touch-action:manipulation;transition:filter .15s,border-color .15s}
+#items .inventory-actions>.use-row-button,#items .inventory-actions>.equip-row-button{border:1px solid #6d9bb6;background:linear-gradient(#28404e,#1c2c37);color:#d9f1ff}
+#items .inventory-actions>.discard-row-button{border:1px solid #b66d70;background:linear-gradient(#46262c,#302027);color:#ffd9d9}
+#items .inventory-actions>button:disabled{opacity:.55;filter:saturate(.65)}
 #items .inventory-actions>button[hidden]{display:none}
-@media(max-width:480px){#items>.item>.inventory-actions{grid-column:1 / -1;grid-row:auto;justify-content:flex-end}}
+#iteminfo,.stats-box{border-color:#5b513d;background:linear-gradient(145deg,#11141d,#0b0d13);box-shadow:inset 0 1px #ffffff08}
+#iteminfo strong,.stats-box strong{color:#f1dfb5}
+.equip-slot-box{border-color:#514936;background:linear-gradient(145deg,#1b1d27,#13151d);transition:border-color .15s,background-color .15s}
+.equip-slot-box.equipped{border-color:#b99450;background:linear-gradient(145deg,#29251c,#171820)}
+.equip-slot-box .slot-label{color:#d8ba72}
+#skill-tree .skill-node{border-color:#454536;background:linear-gradient(145deg,#1a1c26,#10121a);box-shadow:inset 0 1px #ffffff08}
+#skill-tree .skill-node.learned{border-color:#527251}
+#skill-tree .skill-node.available{border-color:#b99450;background:linear-gradient(145deg,#27241c,#14151c)}
+#skill-tree .skill-node.locked{border-color:#333744}
+#skill-tree .skill-head{color:#eee2c7}
+#skill-tree .btn-learn{border-color:#615638;background:#201f20;color:#e7d39e}
+#skill-tree .skill-node.available .btn-learn{border-color:#e2bd67;color:#ffe3a0}
+#char .equip-grid{gap:8px}
+#char .equip-slot-box{min-height:62px;padding:10px}
+#items .inventory-actions>button:focus-visible,#char button:focus-visible,#skills button:focus-visible{outline:3px solid #ffe082;outline-offset:2px}
+@media(max-width:480px){#items>.item{grid-template-columns:minmax(0,1fr);gap:8px}#items>.item>.inventory-actions{grid-column:1 / -1;grid-row:auto;justify-content:flex-end}#items .inventory-actions>button{min-width:104px}}
 #discard-confirm,#discard-confirm *{box-sizing:border-box}
 #discard-confirm{position:fixed;inset:0;margin:0;width:100%;max-width:100%;height:100dvh;max-height:100dvh;border:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));background:#05060ae8;color:#eee;overflow:auto}
 #discard-confirm[open]{display:grid;place-items:center}#discard-confirm::backdrop{background:#000b}
@@ -74,8 +90,9 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
    group=document.createElement('div');group.className='inventory-actions';
    const use=document.createElement('button');use.type='button';use.className='use-row-button';use.textContent='Nutzen';
    use.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();
-    const i=[...items.children].indexOf(row),current=state.player?.inventory?.[i];
-    if(busy||dialog.open||!allowed()||current!==entry||!current||ITEMS[current.id]?.slot)return;
+    const i=[...items.children].indexOf(row),current=state.player?.inventory?.[i],currentItem=current&&ITEMS[current.id];
+    if(busy||dialog.open||!allowed()||current!==entry||!current||!currentItem)return;
+    if(currentItem.slot){if(typeof equipItemFromInv==='function')equipItemFromInv(i);else row.click();return;}
     if(typeof useItem==='function')useItem(i);else row.click();
    });
    const discard=document.createElement('button');discard.type='button';discard.className='discard-row-button';discard.textContent='Wegwerfen';
@@ -83,10 +100,13 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
    group.append(use,discard);row.append(group);
   }
   const use=group.querySelector('.use-row-button'),discard=group.querySelector('.discard-row-button');
-  const hideUse=!!item?.slot;
-  if(use.hidden!==hideUse)use.hidden=hideUse;
-  use.disabled=busy||dialog.open||!allowed()||!item||(typeof useItem!=='function'&&typeof row.onclick!=='function');
-  use.setAttribute('aria-label',`${item?.name||'Gegenstand'} nutzen`);
+  const isEquipment=!!item?.slot;
+  use.textContent=isEquipment?'Ausrüsten':'Nutzen';
+  use.classList.toggle('equip-row-button',isEquipment);
+  use.classList.toggle('use-row-button',!isEquipment);
+  use.hidden=false;
+  use.disabled=busy||dialog.open||!allowed()||!item||(isEquipment?typeof equipItemFromInv!=='function':typeof useItem!=='function'&&typeof row.onclick!=='function');
+  use.setAttribute('aria-label',`${item?.name||'Gegenstand'} ${isEquipment?'ausrüsten':'nutzen'}`);
   discard.disabled=busy||!allowed()||!entry;
   discard.setAttribute('aria-label',`${item?.name||'Gegenstand'} wegwerfen`);
  });}
