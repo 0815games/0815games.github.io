@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-10-18 – Spieltests bestätigt: Datenbasis und Diagnose
+
+### Behoben / vom Benutzer im Spiel bestätigt
+
+- Diagnose-Zugriff funktioniert nach Fix 1; Benutzer bestätigt anschließend auch Inventar und Speichern als funktionierend.
+- Fehlendes Inventar beim Laden: Fix 2 ergänzt fehlende Helden-Container. Der zuvor gemeldete Fehler bei inventory.length unterbrach HUD-Aktualisierungen bei Bewegung und Kampf.
+- Tod und Todesübergang funktionieren nach Fix 2 laut Benutzertest wieder. Dafür war bislang kein separater Umbau der Todeslogik erforderlich.
+- Gegenstände kaufen und den nächsten Run starten funktionieren nach Fix 2 laut Benutzertest wieder; kein zusätzlicher Kauf-Patch vorgenommen.
+- Keine weiteren akuten Fehler im zuletzt bestätigten Teststand gemeldet. Dies ist eine Benutzerbestätigung, keine vollständige Browser-/Cloud-Testabdeckung.
+
+### Offene Prüfpunkte / Grenzen
+
+- Sonderfälle wie Verbindungsabbruch während Kauf/Speichern, Diagnose bei Sitzungspause und parallele Sitzungen sind durch diese Rückmeldung nicht einzeln bestätigt. Keine nachgewiesenen neuen Fehler.
+- Bereits mit TP <= 0 gespeicherte Helden beim Laden sowie tatsächlich beschädigte statt nur fehlende Container bleiben gesonderte Prüffälle; Fix 2 ist keine vollständige Spielstandmigration oder Schema-Validierung.
+- Die historischen Hinweise auf ausstehende Tests in den Einträgen zu Fix 1 und Fix 2 dokumentieren deren damaligen Stand; obige Benutzerbestätigung ergänzt sie.
+- Grafik-Update 0.6.0 ist als nächstes Update vorgesehen, noch nicht implementiert oder veröffentlicht.
+
 ## 2026-10-18 – Fix 2: Datenbasis beim Laden von Helden
 
 - state.player wird bei vollständiger Neuzuweisung normalisiert; dies umfasst Object.assign(state, data) im bestehenden Ladeweg, ohne main.js zu ändern.
