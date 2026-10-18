@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – Fix: Zeichenreihenfolge der Wanddekoration
+
+- Codefix e587618b9fb412e2b2673e69cccaaed3343f1cba auf main: nachgelagerten draw-Wrapper entfernt; Installation ergänzt synchron nur noch Renderer.drawWallDecor. Keine verzögerte Neuzuweisung von draw und kein zusätzlicher Dekor-Aufruf nach der Vignette.
+- Aktiver living-world-Renderer ruft Wanddekor genau einmal nach der Kachelschleife und vor floorAtmosphere/Licht, Treppen, Truhen, Figuren, Partikeln, Texten und Vignette auf. Basisrenderer hat ebenfalls einen ausdrücklichen frühen Aufruf nach den Kacheln.
+- Bestehende Platzierung, Farben, Entdeckungsfilter, Viewport-Culling, Zeichenfunktion und Caches unverändert. Optionale Dekorfehler werden weiterhin einmalig gewarnt; übrige Zeichnung kann weiterlaufen.
+- Neun isolierte Szenarien und 100 wiederholte simulierte Bilder erfolgreich: unveränderte draw-Identität bei Installation, einmalige Installation, Reihenfolge in Basis-/aktivem Renderpfad, kein Doppelpass, verborgenes Spiel/Dokument sowie Fehlerisolation. Keine vollständige Browser-/Canvas-Integration oder iPhone-Sichtprüfung durchgeführt.
+- Geändert wurden ausschließlich living-world.js, render.js und wall-decor.js; dieser Dokumentationsnachtrag erfolgt separat. Steuerung, Spielwerte, Speicherformat und Versionsnummer unverändert.
+- Der ältere Wanddekor-Eintrag beschreibt den damaligen nachgelagerten Zeichenpass und wird durch diese Korrektur ergänzt. Ingame-Changelog-Quelle/Parser, weitere Grafikarbeiten und Release-Freigabe bleiben separat offen.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Feinschliff, Wanddekoration
 
 - Zerrissene Wandbanner und eingelassene Wandreliefs als separate Dekoration ergänzt, farblich an die fünf vorhandenen Themen angepasst. Keine interaktiven Altäre oder neuen Gegenstände.
