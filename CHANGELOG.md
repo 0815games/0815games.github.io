@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Umgebungsidentität, Teil 5
+
+- Die fünf vorhandenen Themen beibehalten und durch sparsame Wand-/Bodenmotive differenziert: Katakomben mit Grabnischen und flachen Steinplatten, Pilzwald mit Wurzeln/Moos, Frostgruft mit Eislinien, Feuerschrein mit Brand-/Aschespuren, Schattenarena mit geometrischen Runenmustern.
+- Motive in zwei von acht bestehenden Texturvarianten; zeichnen ausschließlich beim Aufbau gecachter 32-Pixel-Texturen. Keine neuen Assets, Imports oder Render-Schleifen. Kacheltyp 2 unverändert.
+- Bestehende Themen-IDs, Ebenenfolge, Kartenlayout, Kollisionen, Entdeckung, Licht/Nebel, Gegner, Kampfkulisse und Spielstände unverändert. Keine überfluteten Räume, neuen Biome, Fallen, Lava- oder Wassermechaniken; keine großen Raumobjekte.
+- 120 isolierte Zeichenfälle mit simuliertem Canvas erfolgreich: fünf Themen, drei Kacheltypen, acht Varianten. Determinismus, 32-Pixel-Grenzen, Canvas-Zustandswiederherstellung, sparsame Motivverteilung, unangetasteter Typ 2 und Katakomben-Fallback geprüft. Kein Browser-/iPhone-Sicht- oder Leistungstest durchgeführt.
+- Geändert: living-world.js und Changelog. Dies ist der Textur-/Motivschritt für Punkt 5, keine vollständige Raumgestaltung. Visuelle Abnahme und Release-Abschluss 0.6.0 stehen aus; Versionsnummer unverändert.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Gemeinsame Gegnergrafik, Teil 4b
 
 - Den älteren lokalen Gegner-Painter im Kampffenster durch drawMonsterPortrait aus dem gemeinsamen monster.js ersetzt. Karte und Kampf nutzen dieselben zwölf Gegnertypen und dieselbe Boss-/Key-Erkennung.

@@ -68,5 +68,29 @@ export function paintDungeonDepth(c,theme,type,variant,palette){
    c.fillStyle=theme==='frostgruft'?'#b8def018':'#a1bdca12';c.fillRect(12,21,8,1);c.fillRect(19,23,5,1);
   }
  }
+ paintThemeIdentity(c,theme,type,variant);
+ c.restore();
+}
+export function paintThemeIdentity(c,theme,type,variant){
+ if(type===2||variant%3!==2)return;
+ c.save();
+ const rect=(x,y,w,h,color)=>{c.fillStyle=color;c.fillRect(x,y,w,h);};
+ const line=(points,color)=>{c.beginPath();points.forEach(([x,y],i)=>i?c.lineTo(x,y):c.moveTo(x,y));c.strokeStyle=color;c.lineWidth=1;c.stroke();};
+ if(theme==='pilzwald'){
+  if(type===1){line([[6,5],[9,11],[7,17],[12,24]],'#95846770');line([[9,11],[16,9],[21,13]],'#95846755');rect(18,21,8,3,'#6b8c5750');}
+  else{rect(5,19,9,3,'#74995735');rect(14,22,11,2,'#74995728');line([[8,17],[7,22],[11,20]],'#9aaf6b55');}
+ }else if(theme==='frostgruft'){
+  if(type===1){line([[5,4],[7,13],[9,4]],'#bedfec70');line([[20,4],[22,17],[25,4]],'#bedfec65');}
+  else{line([[5,24],[14,14],[24,9]],'#9bcee858');line([[14,14],[12,7]],'#9bcee840');line([[14,14],[24,20]],'#9bcee840');rect(8,25,13,1,'#d9edf32c');}
+ }else if(theme==='feuershrein'){
+  rect(7,8,18,17,'#08080e38');
+  line(type===1?[[9,5],[13,11],[11,16],[18,23]]:[[7,24],[13,19],[12,12],[23,7]],'#b57b5540');
+  rect(19,22,5,1,'#a79c8828');
+ }else if(theme==='schattenarena'){
+  line([[16,7],[23,16],[16,25],[9,16],[16,7]],'#b6a0d355');line([[12,16],[20,16]],'#cdb9e344');line([[16,11],[16,21]],'#cdb9e344');
+ }else{
+  if(type===1){rect(8,6,16,18,'#79767538');rect(10,8,12,14,'#080a1260');rect(11,20,10,1,'#a5a08a40');line([[12,10],[20,10]],'#9f977f38');}
+  else{rect(8,6,16,20,'#a6a09218');line([[8,6],[24,6],[24,26],[8,26],[8,6]],'#0a0c1444');line([[16,10],[16,19]],'#bdb49b38');line([[12,13],[20,13]],'#bdb49b38');}
+ }
  c.restore();
 }
