@@ -27,6 +27,9 @@ export function drawWallDecor(renderer,world){
 }
 export function installWallDecor(Renderer,state){
  if(installed.has(Renderer))return;installed.add(Renderer);
- const apply=()=>{const original=Renderer.prototype.draw;let warned=false;Renderer.prototype.draw=function(...args){const result=original.apply(this,args);if(document.hidden||document.getElementById('game')?.classList.contains('hidden'))return result;try{drawWallDecor(this,state.world);}catch(error){if(!warned){warned=true;console.warn('Wanddekoration:',error);}}return result;};};
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else queueMicrotask(apply);
+ let warned=false;
+ Renderer.prototype.drawWallDecor=function(){
+  if(document.hidden||document.getElementById('game')?.classList.contains('hidden'))return;
+  try{drawWallDecor(this,state.world);}catch(error){if(!warned){warned=true;console.warn('Wanddekoration:',error);}}
+ };
 }

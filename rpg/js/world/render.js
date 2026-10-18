@@ -23,6 +23,7 @@ export class Renderer{
    const tile=w.tiles[y]?.[x]||0;rect(sx,sy,t,t,tile===1?theme.wall:tile===2?theme.accent:(x+y)%2?theme.floorA:theme.floorB);
    if(tile===2)rect(sx+3,sy+3,t-6,t-6,theme.accentLine);else{c.strokeStyle=tile===1?theme.wallLine:'#ffffff07';c.strokeRect(sx+1,sy+1,t-2,t-2);}
   }
+  this.drawWallDecor();
   if(w.stairs&&w.discovered?.[w.stairs.y]?.[w.stairs.x]){const x=w.stairs.x*t,y=w.stairs.y*t;rect(x+6,y+6,20,20,'#c99c42');rect(x+9,y+9,14,14,'#0a0c10');c.fillStyle='#ffd54f';c.font='11px serif';c.fillText('⬇️',x+10,y+21);}
   for(const ch of w.chests||[]){if(!w.discovered?.[ch.y]?.[ch.x])continue;const x=ch.x*t,y=ch.y*t;if(ch.open){rect(x+6,y+12,20,12,'#5d4037');rect(x+4,y+8,24,5,'#8d6e63');rect(x+10,y+13,12,3,'#ffe082');}else{rect(x+6,y+8,20,16,'#ffb300');rect(x+13,y+13,6,6,'#212121');}}
   for(const m of w.monsters||[]){if(!w.discovered?.[m.y]?.[m.x])continue;this.drawMonster(c,m,m.x*t,m.y*t);}
