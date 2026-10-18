@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Kampfkulisse, Teil 4a
+
+- Gemeinsame CSS-Kulisse hinter den beiden vorhandenen Kampfeinheiten: stilisiertes Mauerwerk, dunkle Bodenfläche, seitliche Lichtstimmungen und zentrales geometrisches Ornament. Fünf bestehende Umgebungsfarbstimmungen über data-battle-theme.
+- Bossbegegnungen mit stärkerem Ornament und goldener Einfassung; keine neuen Bossmechaniken. Porträtrahmen zurückgenommen, Anzeigen mit dunklem Hintergrundverlauf und Textschatten.
+- Vorhandene Canvas-Elemente, Effektziele, TP/MP-Anzeigen, Aktionsbuttons, kurze Bildschirmhöhen und Scrollmöglichkeiten bleiben erhalten. Dekorative Pseudoelemente sind nicht anklickbar; keine neuen Animationen oder Assets.
+- Ausschließlich CSS-Regeln in combat-layout.js ergänzt. Kampfablauf, Eingabesicherung, Effekt-Timing und Versionsnummer unverändert.
+- Statische Prüfung der 15 zusätzlichen CSS-Regeln erfolgreich: Parsing, auf den Kampfdialog begrenzte Selektoren, Umgebungsvarianten, nicht anklickbare Dekoration und keine neuen Ausblend-/Animationsregeln. Kein Browser-Layout-, Barrierefreiheits- oder iPhone-Leistungstest durchgeführt.
+- Teil 4 noch nicht vollständig: Kampf verwendet weiterhin den bisherigen eigenen Gegner-Painter; Vereinheitlichung mit den neuen Kartengegnern und weitere Inszenierung folgen separat. Bestehende Nahkampf-, Projektil-, Heilungs- und Treffer-Effekte nicht doppelt implementiert.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Heldenbewegung, Teil 3c
 
 - Rein visuelle Stand-/Schrittpose in drawCharacter ergänzt: dezente Körperbewegung und abwechselnder Bein-/Stiefelversatz nach einem benachbarten Feldwechsel; Schrittphase endet nach 180 ms. Keine Positionsinterpolation, Richtungs-Sprites oder neue Animationsschleife.
