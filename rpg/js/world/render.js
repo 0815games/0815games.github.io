@@ -1,6 +1,7 @@
 import { state } from '../core/state.js';
 import { drawCharacter } from './character.js';
 import { drawMonster as drawMonsterSprite } from './monster.js';
+import { installWallDecor } from './wall-decor.js';
 const THEMES={katakomben:['#141722','#10121a','#1c202c','#2e364a','#271b23','#392734','#05060a'],pilzwald:['#10241a','#0d1d16','#173024','#224634','#1f4030','#2f5c44','#040a07'],frostgruft:['#101a26','#0d1620','#1b2c3d','#2c455c','#24455c','#356a8a','#04070c'],feuershrein:['#241a14','#1d1410','#38160f','#5c241a','#4a1a10','#7a2c18','#0a0403'],schattenarena:['#131320','#0f0f1a','#232338','#383858','#2e2e48','#454569','#04040a']};
 export class Renderer{
  constructor(id){this.cv=document.getElementById(id);this.ctx=this.cv.getContext('2d');this.tile=32;this.camera={x:0,y:0};this.particles=[];this.texts=[];this.loop();}
@@ -33,3 +34,4 @@ export class Renderer{
   c.restore();
  }
 }
+installWallDecor(Renderer,state);

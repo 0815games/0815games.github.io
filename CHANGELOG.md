@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Feinschliff, Wanddekoration
+
+- Zerrissene Wandbanner und eingelassene Wandreliefs als separate Dekoration ergänzt, farblich an die fünf vorhandenen Themen angepasst. Keine interaktiven Altäre oder neuen Gegenstände.
+- Deterministische Platzierung anhand Karten-Seed und Wand-/Bodenstruktur: drei zusammenhängende Wandkacheln mit Boden davor, horizontaler Abstand über ein Vierer-Raster, bestehende Fackelplätze ausgeschlossen. Nicht jeder Raum erhält zwingend Dekoration.
+- Zeichnung vollständig innerhalb von Wandkacheln und erst nach Entdeckung des betreffenden Wand-/Bodenabschnitts; außerhalb des Bildausschnitts keine Zeichnung. Kandidaten je Kachelarray/Seed und bis zu zehn 32-Pixel-Dekorgrafiken werden gecacht.
+- Zusätzlicher statischer Zeichenpass nach dem aktiven Renderer, installiert zum DOM-Start; keine zweite requestAnimationFrame-Schleife. Bestehende Texturen, Licht-/Nebel- und Vignettenberechnung unverändert; Dekoration wird darüber gezeichnet. Optionale Dekorfehler einmalig als Warnung ausgegeben.
+- Geändert: neues wall-decor.js, Anbindung in render.js und Changelog. Kartenlayout, Laufwege, Kollisionen, Themen-IDs, Spielstände und Versionsnummer unverändert.
+- Isolierte Tests mit simuliertem DOM/Renderer erfolgreich: 100 Seeds mit 220 gültigen Platzierungen, deterministische Ausgabe, unveränderte Kacheln, Topologie/Fackelausschluss, Grafikcache, unentdeckte Bereiche, Viewport-Culling, ausgeglichene Canvas-save/restore-Aufrufe sowie einmalige Installation und Anbindung des zum DOM-Start aktiven Renderers. Kein Browser-/iPhone-Sicht- oder Leistungstest durchgeführt.
+- Visuelle Abnahme und Gesamtprüfung 0.6.0 weiter offen; kein Release-Abschluss und keine neue Benutzerbestätigung für vorangegangene Grafikschritte.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Umgebungsidentität, Teil 5
 
 - Die fünf vorhandenen Themen beibehalten und durch sparsame Wand-/Bodenmotive differenziert: Katakomben mit Grabnischen und flachen Steinplatten, Pilzwald mit Wurzeln/Moos, Frostgruft mit Eislinien, Feuerschrein mit Brand-/Aschespuren, Schattenarena mit geometrischen Runenmustern.
