@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Gegneridentität, Teil 3b
+
+- Eigenen Monster-Painter ergänzt und über Renderer.drawMonster angebunden; der aktive living-world-Renderer verwendet diese Methode bereits.
+- Zwölf bestehende Gegnertypen zeichnerisch differenziert: Ratte, Fledermaus, Schleim, Spinne, Goblin, Skelett, Zombie, Wraith, Imp, Golem, Dämon und Gruftfürst. Unterschiede über Körperformen und Details statt nur Farben.
+- Gruftfürst mit Krone, Robe und Stab; Boss-Erkennung auch über id="boss" oder key="lord", wenn shape im vorhandenen Spielstand fehlt.
+- Dezente zusätzliche Flügel-, Bein-, Arm- und Schwanzbewegungen innerhalb der bestehenden Render-Schleife; reduzierte Bewegung wird berücksichtigt. Bestehende Schwebe-/Schleimanimationen bleiben erhalten.
+- Optionales Elite-Abzeichen nur bei explizitem elite=true; keine neuen Elite-Spawns, Gegnerwerte oder Belohnungen. TP-Balken rein grafisch auf 0 bis 100 Prozent begrenzt, ohne TP zu verändern.
+- 130 isolierte Gegnerfälle mit simuliertem Canvas erfolgreich: zwölf Typen plus Fallback, unterschiedliche TP-Werte einschließlich NaN und negative TP, mit/ohne Elite-Abzeichen; zusätzlich Boss-/Key-Fallback und konstante Bewegung bei Reduced Motion geprüft. Kein Browser-Sichttest oder iPhone-Leistungstest durchgeführt.
+- Heldenbewegungen folgen separat als Teil 3c; Teil 3 und Release 0.6.0 sind noch nicht vollständig. Karte, Kollisionen, Kampfablauf, Gegenstandsdaten und Speicherung unverändert. Keine Benutzerbestätigung für Teil 2 oder 3a ergänzt.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Heldenidentität, Teil 3a
 
 - Gemeinsamen drawCharacter-Renderer für Karte und vorhandene Heldenvorschauen überarbeitet: Krieger mit breiteren Schultern, Arkanist mit längerer kontrastierter Robe, Schurke mit schmaler Silhouette, Mantel, Riemen und Maske.
