@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Gemeinsame Gegnergrafik, Teil 4b
+
+- Den älteren lokalen Gegner-Painter im Kampffenster durch drawMonsterPortrait aus dem gemeinsamen monster.js ersetzt. Karte und Kampf nutzen dieselben zwölf Gegnertypen und dieselbe Boss-/Key-Erkennung.
+- Kampfporträt auf dem bestehenden 112x112-Canvas mit 3-facher Skalierung und 8 Pixel Rand; Bildglättung beim Zeichnen deaktiviert, Canvas-Zustand anschließend wiederhergestellt.
+- Optionaler showHealth-Parameter im gemeinsamen Painter: Karten-TP-Balken standardmäßig weiterhin sichtbar, im Kampfporträt abgeschaltet. Bestehende TP-Anzeige unter dem Porträt bleibt erhalten.
+- Keine neue Render-Schleife: Kampfporträts bleiben ereignisbasiert mit fester Pose. Kartenanimationen, Canvas-Elemente, Effektziele, Buttons, Eingabesicherung, 850-ms-Freigabe und Kampfablauf unverändert.
+- 260 Vergleichsfälle mit simuliertem Canvas erfolgreich: zwölf Formen plus Fallback, fünf TP-Werte, mit/ohne Elite-Kennzeichnung und Reduced Motion. Gemeinsame Zeichenbefehle, fehlender Porträt-TP-Streifen, vorhandener Karten-TP-Streifen, Canvas-Zustand, unveränderte eingefrorene Gegnerdaten und Boss-/Key-Fallback geprüft. Kein Browser-/Kampf-End-to-End- oder iPhone-Sichttest durchgeführt.
+- Geändert: monster.js, combat-effects.js und Changelog. Kulisse aus Teil 4a, Heldenoptik, Gegenstandsdaten, Speicherformat und Versionsnummer unverändert. Teil 4/Release 0.6.0 noch nicht als vollständig getestet markiert.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Kampfkulisse, Teil 4a
 
 - Gemeinsame CSS-Kulisse hinter den beiden vorhandenen Kampfeinheiten: stilisiertes Mauerwerk, dunkle Bodenfläche, seitliche Lichtstimmungen und zentrales geometrisches Ornament. Fünf bestehende Umgebungsfarbstimmungen über data-battle-theme.

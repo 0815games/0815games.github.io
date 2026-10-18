@@ -1,7 +1,7 @@
 const preference=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
 const reducedMotion=()=>preference?.matches===true;
 export function monsterShape(m){return m.id==='boss'||m.key==='lord'?'lord':m.shape||m.key||'goblin';}
-export function drawMonster(c,m,x,y,time=0){
+export function drawMonster(c,m,x,y,time=0,showHealth=true){
  const shape=monsterShape(m),color=m.color||'#628d58',wave=reducedMotion()?0:Math.sin(time*4+(Number.isFinite(m.x)?m.x:0)),bone='#d4d7cc';
  c.save();c.translate(x,y);c.lineJoin='round';
  const rect=(x,y,w,h,fill)=>{c.fillStyle=fill;c.fillRect(x,y,w,h);};
@@ -41,6 +41,10 @@ export function drawMonster(c,m,x,y,time=0){
  }
  if(m.elite===true){poly([[5,5],[8,8],[5,11],[2,8]],'#e4bf73');}
  const ratio=Number.isFinite(m.hp)&&Number.isFinite(m.maxHp)&&m.maxHp>0?Math.max(0,Math.min(1,m.hp/m.maxHp)):0;
- rect(4,0,24,3,'#320e19');rect(4,0,24*ratio,3,'#d86260');
+ if(showHealth){rect(4,0,24,3,'#320e19');rect(4,0,24*ratio,3,'#d86260');}
  c.restore();
+}
+export function drawMonsterPortrait(c,m){
+ c.clearRect(0,0,112,112);c.save();
+ try{c.imageSmoothingEnabled=false;c.translate(8,8);c.scale(3,3);drawMonster(c,m,0,0,0,false);}finally{c.restore();}
 }
