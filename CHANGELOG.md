@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Heldenbewegung, Teil 3c
+
+- Rein visuelle Stand-/Schrittpose in drawCharacter ergänzt: dezente Körperbewegung und abwechselnder Bein-/Stiefelversatz nach einem benachbarten Feldwechsel; Schrittphase endet nach 180 ms. Keine Positionsinterpolation, Richtungs-Sprites oder neue Animationsschleife.
+- Animationszustand liegt in einer WeakMap je Canvas-Kontext, nicht in Spieler- oder Speicherdaten. Heldenwechsel, große Positionssprünge, längere Renderpausen und rückläufige Zeit setzen die Schrittphase zurück.
+- Neue Pose nur auf Canvas stage, mit gültigen Koordinaten und lebendem Helden. Heldenvorschauen bleiben statisch; bei Reduced Motion sind die neuen Versätze null. Bereits vorhandenes äußeres Wippen im living-world-Renderer bleibt unverändert.
+- Waffen-/Ausrüstungsoptik aus Teil 3a bleibt erhalten. Nur character.js und Changelog geändert; Gegner, Steuerung, Kollisionen, Laufgeschwindigkeit, Kämpfe, Kauf-/Speicherlogik und Versionsnummer unverändert.
+- Geprüft: 16 Szenarioprüfungen und 1000 Zeitstichproben der Pose-Logik erfolgreich, darunter Schrittwechsel/-ende, Sprünge, Renderpausen, Heldenwechsel, ungültige Zeit/Koordinaten, tote Helden, Vorschau und reduzierte Bewegung. Keine vollständige Canvas-/Browser-Integration oder iPhone-Sicht-/Leistungsprüfung durchgeführt.
+- Die geplanten Basisteile 3a/3b/3c sind damit implementiert; visuelle Abnahme steht aus. Release 0.6.0 bleibt in Vorbereitung. Frühere Hinweise auf noch ausstehende Heldenbewegungen dokumentieren den damaligen Stand.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Gegneridentität, Teil 3b
 
 - Eigenen Monster-Painter ergänzt und über Renderer.drawMonster angebunden; der aktive living-world-Renderer verwendet diese Methode bereits.

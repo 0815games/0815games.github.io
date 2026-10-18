@@ -1,3 +1,15 @@
+const motionPreference=typeof matchMedia==='function'?matchMedia('(prefers-reduced-motion: reduce)'):null;
+const motionTracks=new WeakMap();
+export function heroPose(context,player,time=performance.now()/1000,reduce=motionPreference?.matches===true){
+ const still={step:0,bob:0};
+ if(context.canvas?.id!=='stage'||reduce||player.hp<=0||!Number.isFinite(time)||!Number.isFinite(player.x)||!Number.isFinite(player.y)){motionTracks.delete(context);return still;}
+ let track=motionTracks.get(context);
+ if(!track||track.player!==player||time-track.seen>.5||time<track.seen){track={player,x:player.x,y:player.y,start:-Infinity,sign:1,seen:time};motionTracks.set(context,track);}
+ if(track.x!==player.x||track.y!==player.y){const distance=Math.abs(track.x-player.x)+Math.abs(track.y-player.y);track.start=distance===1?time:-Infinity;track.sign*=-1;track.x=player.x;track.y=player.y;}
+ track.seen=time;
+ const age=time-track.start,step=age>=0&&age<.18?(Math.sin(age/.18*Math.PI)*track.sign||0):0;
+ return {step,bob:step?-.5*Math.abs(step):Math.sin(time*2)*.2};
+}
 export function getWeaponVisual(id){
  if(!id)return 'none';
  if(['arcane_staff','runewood_staff','eclipse_staff','emergency_mage'].includes(id)||/^order_mage_(?:[1-9]|1\d|20)$/.test(id))return 'staff';
@@ -5,18 +17,20 @@ export function getWeaponVisual(id){
  return id==='runic_blade'?'runic':'sword';
 }
 export function drawCharacter(c,p,x,y,size=32){
+ const pose=heroPose(c,p),step=pose.step;
  const cls=['warrior','mage','rogue'].includes(p.heroClass)?p.heroClass:'warrior',e=p.equipped||{};
  c.save();c.translate(x,y);c.scale(size/32,size/32);c.lineJoin='round';
  const poly=(points,fill,stroke='#080b12')=>{c.beginPath();points.forEach(([a,b],i)=>i?c.lineTo(a,b):c.moveTo(a,b));c.closePath();c.fillStyle=fill;c.fill();c.strokeStyle=stroke;c.lineWidth=.8;c.stroke();};
  const rect=(a,b,w,h,color)=>{c.fillStyle=color;c.fillRect(a,b,w,h);};
  c.fillStyle='#0007';c.beginPath();c.ellipse(16,29,10,2,0,0,Math.PI*2);c.fill();
+ c.translate(0,pose.bob);
  const base=cls==='mage'?'#51438c':cls==='rogue'?'#253946':'#594238';
  if(cls==='warrior')poly([[8,11],[24,11],[25,24],[7,24]],'#392d30');
  else if(cls==='rogue')poly([[11,9],[21,9],[24,28],[17,25],[8,28]],'#111b28');
  else poly([[10,10],[22,10],[25,28],[7,28]],'#302b55');
- rect(11,23,4,6,'#242333');rect(18,23,4,6,'#242333');
- const boots=e.feet==='leather_boots'?'#99623c':e.feet?'#566473':'#3b3030';rect(10,27,6,3,boots);rect(18,27,6,3,boots);
- if(e.feet){rect(10,27,6,1,'#b6a27a');rect(18,27,6,1,'#b6a27a');}
+ rect(11,23+step,4,6,'#242333');rect(18,23-step,4,6,'#242333');
+ const boots=e.feet==='leather_boots'?'#99623c':e.feet?'#566473':'#3b3030';rect(10,27+step,6,3,boots);rect(18,27-step,6,3,boots);
+ if(e.feet){rect(10,27+step,6,1,'#b6a27a');rect(18,27-step,6,1,'#b6a27a');}
  if(cls==='mage'){
   poly([[12,11],[20,11],[23,27],[9,27]],'#7560b0');
   rect(14,13,2,12,'#a18bc9');rect(10,25,12,2,'#cfb77a');
