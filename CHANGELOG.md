@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Angreiferbewegungen, Teil 4c
+
+- Bestehende Kampfeffekte um dekorative Porträtbewegungen ergänzt: kurzer Heldenvorstoß beim normalen Nahkampf, ruhige Zaubergeste bei Projektilen und Heiltränken. Keine neuen Schadens-/Heilungsberechnungen.
+- Bei einer Trefferreaktion des Helden gegnerischen Vorstoß nach 450 ms und Heldenrückstoß nach 520 ms darstellen; neue Angreiferbewegungen dauern 180 ms, Rückstoß endet nach 740 ms. Unveränderte 850-ms-Eingabefreigabe in combat-effects.js; Schadenszahlen und Modellzustand nicht verschoben. Rein visuelle Nachinszenierung, keine neue Zugreihenfolge.
+- Bewegungen an vorhandenen Canvas-Elementen über die bestehende Web-Animations-/motions-Verwaltung. clear() bricht auch verzögert startende Bewegungen ab; bei Reduced Motion keine neuen Bewegungen. Fehlende oder fehlschlagende Animationsunterstützung blockiert nicht. Keine neue DOM-Ebene, Assets oder Render-Schleife.
+- Zwölf Szenarien und 100 wiederholte Aktionen mit simuliertem DOM, Timern und Web Animations erfolgreich: Angreiferzuordnung, Vorstoß/Zaubergeste, Gegenangriff, Dauergrenzen, Abbruch/Bereinigung, verborgenes Spiel/Dokument, fehlendes Porträt, fehlende/fehlschlagende Animation und Reduced-Motion-Wechsel. Zusätzlich Node-Syntaxprüfung. Kein echter Browser-/Kampf-End-to-End- oder iPhone-Sichttest durchgeführt.
+- Nur battle-fx.js und Changelog geändert. Eigene Klassenfähigkeits-Effekte in ability-animations.js, Kampfberechnung/-steuerung, Zeichenreihenfolge-Fix, Speicherformat und Versionsnummer unverändert. Visuelle Abnahme und Release-Freigabe 0.6.0 weiterhin offen.
+
 ## 2026-10-18 – Fix: Zeichenreihenfolge der Wanddekoration
 
 - Codefix e587618b9fb412e2b2673e69cccaaed3343f1cba auf main: nachgelagerten draw-Wrapper entfernt; Installation ergänzt synchron nur noch Renderer.drawWallDecor. Keine verzögerte Neuzuweisung von draw und kein zusätzlicher Dekor-Aufruf nach der Vignette.
