@@ -83,7 +83,8 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
    group.append(use,discard);row.append(group);
   }
   const use=group.querySelector('.use-row-button'),discard=group.querySelector('.discard-row-button');
-  use.hidden=!!item?.slot;
+  const hideUse=!!item?.slot;
+  if(use.hidden!==hideUse)use.hidden=hideUse;
   use.disabled=busy||dialog.open||!allowed()||!item||(typeof useItem!=='function'&&typeof row.onclick!=='function');
   use.setAttribute('aria-label',`${item?.name||'Gegenstand'} nutzen`);
   discard.disabled=busy||!allowed()||!entry;
@@ -91,6 +92,10 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
  });}
  const hint=document.createElement('p');hint.id='discard-help';hint.textContent='Wegwerfen entfernt Taschengegenstände dauerhaft ohne Gold oder Bodenbeute. Bei Stapeln Menge wählen und bestätigen. Im Kampf gesperrt.';items.before(hint);
  new MutationObserver(decorate).observe(items,{childList:true});
- new MutationObserver(()=>{if(ticket&&!busy&&!valid())cancel();decorate();}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
+ new MutationObserver(records=>{
+  if(records.every(({target})=>target.closest?.('.inventory-actions')))return;
+  if(ticket&&!busy&&!valid())cancel();
+  decorate();
+ }).observe(document.body,{subtree:true,attributes:true,attributeFilter:['class','hidden']});
  decorate();
 }

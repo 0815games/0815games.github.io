@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – Fix: Observer-Rückkopplung im Inventar
+
+- Wiederholtes Setzen von hidden im Nutzen-Button konnte den Seiten-Observer erneut auslösen und eine Endlosschleife verursachen.
+- hidden wird nur noch bei tatsächlicher Zustandsänderung gesetzt; der Seiten-Observer ignoriert Änderungen innerhalb der eigenen Button-Gruppe. Externe Menü- und Spielzustandsänderungen werden weiterhin verarbeitet.
+- main.js, Wegwerfen-Dialog, Button-Farben, planDiscard und persistDiscard bleiben unverändert.
+- Geprüft: Node-Syntaxprüfung sowie Regression im DOM-/Observer-Simulator. Alter Code läuft nach 30 Zustellungen weiter; Fix endet nach einer Zustellung. Zusätzlich 100 wiederholte Aktualisierungen, externe Sperrzustände, Ausrüstung, Nutzen, Wegwerfen-Auswahl und veraltete Auswahl geprüft.
+- Kein echter iPhone-/Safari- oder Cloud-End-to-End-Test durchgeführt; Bestätigung des gemeldeten Handy-Freeze nach Veröffentlichung steht noch aus.
+- to_do.log geprüft: kein passender Eintrag zu diesem Observer-Fehler, daher unverändert.
+
 ## 2026-10-18 – Inventar: Nutzen neben Wegwerfen
 
 - Blauer Nutzen-Button links neben dem roten Wegwerfen-Button ergänzt.
