@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Licht und Atmosphäre
+
+- Lichtprofile getrennt: warme bernsteinfarbene Fackeln, kühle blaue Runen-/Treppenlichtflächen und dezentes warmes Heldenlicht. Im Feuerschrein erhalten Runenlichtflächen einen gedämpften Rotton. Keine neuen Gefahrenmechaniken oder Sicherheitszonen.
+- Fackelfarbe bleibt unabhängig von der Umgebungspalette warm; Lichtflächen werden je Umgebung und Profil gecacht.
+- Lichtschwankung der bis zu sechs bestehenden Umgebungslichtquellen auf 0.74 bis 0.90 begrenzt und mit zwei Frequenzen gestaltet; bei reduzierter Bewegung konstant 0.82. Bestehende Schleife und Quellenauswahl bleiben erhalten.
+- Bodennebel dezenter (Zeichenalpha 0.35 statt 0.55); Heldenlicht schwächer (0.45 statt 0.60). Bestehende Entdeckungs-Clips, Dungeon-Tiefentexturen, Schatten, Partikelanzahl und Gameplay unverändert. Kein neues Wand-Occlusion-/Schattenwurfsystem.
+- Geprüft: 4000 numerische Lichtstichproben inklusive Reduced-Motion-Konstanz sowie 15 Lichtprofil-/Cache-Kombinationen mit simuliertem Canvas-Kontext, transparenten Rändern und Fallback-Umgebung. Kein Browser-Sichttest oder iPhone-Leistungstest durchgeführt.
+- Benutzer bestätigt den Dungeon-Tiefe-Prototyp aus dem vorherigen Schritt als optisch gut. 0.6.0 bleibt in Vorbereitung; Versionsnummer unverändert.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Dungeon-Tiefe, Textur-Prototyp
 
 - Erster Teil des geplanten Grafik-Updates, noch kein vollständiges Release 0.6.0; Versionsnummer unverändert.
