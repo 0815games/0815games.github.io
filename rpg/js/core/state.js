@@ -63,3 +63,34 @@ export const state = {
     bestDepth: 1
   }
 };
+
+// Normalize collections whenever a loaded save replaces state.player.
+export function normalizePlayer(player) {
+  const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  if (!isRecord(player)) throw new TypeError('Spielstand: Heldendaten fehlen oder sind ungültig.');
+  if (player.inventory != null && !Array.isArray(player.inventory)) {
+    throw new TypeError('Spielstand: Inventarformat ungültig; Daten wurden nicht ersetzt.');
+  }
+  for (const key of ['equipped', 'skillTree', 'buffs', 'cooldowns', 'preparationBought']) {
+    if (player[key] != null && !isRecord(player[key])) {
+      throw new TypeError(`Spielstand: ${key} ist ungültig; Daten wurden nicht ersetzt.`);
+    }
+  }
+  return {
+    ...player,
+    inventory: player.inventory ?? [],
+    equipped: {head: null, body: null, mainhand: null, offhand: null, feet: null, ring: null, ...player.equipped},
+    skillTree: {...player.skillTree},
+    buffs: {shield: 0, block: false, evade: false, ...player.buffs},
+    cooldowns: {...player.cooldowns},
+    preparationBought: {...player.preparationBought}
+  };
+}
+
+let currentPlayer = normalizePlayer(state.player);
+Object.defineProperty(state, 'player', {
+  enumerable: true,
+  configurable: false,
+  get() { return currentPlayer; },
+  set(player) { currentPlayer = normalizePlayer(player); }
+});

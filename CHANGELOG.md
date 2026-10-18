@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-10-18 – Fix 2: Datenbasis beim Laden von Helden
+
+- state.player wird bei vollständiger Neuzuweisung normalisiert; dies umfasst Object.assign(state, data) im bestehenden Ladeweg, ohne main.js zu ändern.
+- Fehlendes oder null-Inventar wird zu einem neuen leeren Array. Fehlende Ausrüstungsplätze sowie Skilltree, Buffs, Cooldowns und preparationBought werden ergänzt.
+- Vorhandene Inventare, Gegenstände, Ausrüstung, Skills, Kaufstatus und sonstige Heldenwerte bleiben erhalten; Eingabedaten werden nicht durch Ergänzungen verändert.
+- Unbekannte falsche Containerformate werden mit TypeError abgewiesen, statt Inhalte stillschweigend zu löschen; der bisherige state.player bleibt bei abgewiesener Zuweisung erhalten. Keine vollständige Spielstandvalidierung und keine Datenbankmigration.
+- 34 isolierte Node-Testfälle erfolgreich, darunter fehlende/null-Felder, Erhalt belegter Daten, Object.assign-Ladeweg, JSON-Serialisierung, getrennte leere Inventare und abgewiesene Formate; zusätzlich 100 wiederholte Normalisierungen ohne Inhaltsänderung. Kein Browser-/iPhone- oder Firebase-End-to-End-Test durchgeführt.
+- Kauf-, Speicher-, Diagnose- und Todeslogik unverändert. Negative TP werden nicht automatisch geheilt; Todesablauf und Käufe müssen nach diesem Datenbasis-Fix gesondert geprüft werden.
+- to_do.log geprüft: kein eindeutiger Eintrag zu fehlenden Helden-Containern; bestehende Aufgaben unverändert.
+
 ## 2026-10-18 – Fix 1: Diagnose-Zugriff bei Eingabesperren
 
 - Rüstkammer- und Sitzungs-Eingabehandler lassen Ereignisse aus dem vorhandenen startup-diagnostics-host passieren; composedPath berücksichtigt auch Bedienelemente im Shadow DOM.
