@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-10-18 – 0.6.0-Vorbereitung: Heldenidentität, Teil 3a
+
+- Gemeinsamen drawCharacter-Renderer für Karte und vorhandene Heldenvorschauen überarbeitet: Krieger mit breiteren Schultern, Arkanist mit längerer kontrastierter Robe, Schurke mit schmaler Silhouette, Mantel, Riemen und Maske.
+- Waffenoptik anhand vorhandener IDs zugeordnet: Kristall-/Runenholz-/Finsternisstäbe sowie alle Ordens- und Notstäbe als Stab; Knochen-/Nachtzahn-/Ordens-/Notdolche als Dolch statt Langschwert. Keine Waffe wird bei leerem Haupthandslot erfunden.
+- Vorhandene Ausrüstung besser sichtbar: Wächterharnisch, Knochenpanzer, Wächter-/Ordenshelme, Runen-/Ordensschilde, angelegte Stiefel und Obsidian-/Ordensringe. Keine individuellen Modelle für jede Gegenstandsstufe.
+- 70 Waffen-Zuordnungen und 176 deterministische Zeichentests mit simuliertem Canvas erfolgreich: Klassen/Fallback, leere und belegte Ausrüstung, Karten- und Vorschaugröße, endliche Koordinaten, Canvas-Zustandswiederherstellung und unveränderte eingefrorene Spielerdaten. Kein Browser-Sichttest oder iPhone-Leistungstest durchgeführt.
+- Nur character.js und Changelog geändert. Gegner, neue Laufanimationen, Kampfansicht, Gegenstandsdaten, Spielwerte, Speicherformat, Dungeon-Tiefe und Licht bleiben unverändert. Teil 3 ist damit noch nicht vollständig umgesetzt; Versionsnummer bleibt unverändert.
+- Sichtprüfung von Teil 2 (Licht/Atmosphäre) noch nicht ausdrücklich vom Benutzer bestätigt.
+
 ## 2026-10-18 – 0.6.0-Vorbereitung: Licht und Atmosphäre
 
 - Lichtprofile getrennt: warme bernsteinfarbene Fackeln, kühle blaue Runen-/Treppenlichtflächen und dezentes warmes Heldenlicht. Im Feuerschrein erhalten Runenlichtflächen einen gedämpften Rotton. Keine neuen Gefahrenmechaniken oder Sicherheitszonen.
