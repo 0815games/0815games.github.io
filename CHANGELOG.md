@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-10-18 – Fix 1: Diagnose-Zugriff bei Eingabesperren
+
+- Rüstkammer- und Sitzungs-Eingabehandler lassen Ereignisse aus dem vorhandenen startup-diagnostics-host passieren; composedPath berücksichtigt auch Bedienelemente im Shadow DOM.
+- Ausnahme gilt ausschließlich für den Diagnose-Host. Andere Eingaben bleiben entsprechend Rüstkammer- und Sitzungszustand gesperrt.
+- Kauf-, Gold-, Inventar-, Speicher- und Sitzungsprüfungslogik unverändert; Kaufreparatur folgt separat nach Benutzertest.
+- 146 Fälle der Handler-Simulation erfolgreich: Klick, Pointer, Touch und Tastatur; Diagnose-Host und Shadow-DOM-Pfad; reguläre Eingaben; gültige, getrennte und pausierte Sitzung; fehlender Host und fehlendes composedPath. Kein echter Browser-/iPhone- oder Firebase-End-to-End-Test durchgeführt.
+- to_do.log: kein passender Diagnose-Eintrag im zuletzt geprüften Stand; keine bestehenden Gameplay-Aufgaben als erledigt markiert.
+
 ## 2026-10-18 – Fix: Observer-Rückkopplung im Inventar
 
 - Wiederholtes Setzen von hidden im Nutzen-Button konnte den Seiten-Observer erneut auslösen und eine Endlosschleife verursachen.
