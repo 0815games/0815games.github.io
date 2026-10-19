@@ -1,4 +1,5 @@
 import { installDiscard } from './systems/discard-ui.js';
+import { renderItemDetails } from './systems/inventory-details.js';
 // v0.4.0 – Vollständige main.js mit Mobile Edition, Skilltree und epischen Intro
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
@@ -60,7 +61,35 @@ function showLevelUpChoices(level,onDone){
 }
 function levelUpHero(){const p=state.player;p.level++;p.xp-=p.nextXp;p.nextXp=Math.floor(p.nextXp*1.5);p.skillPoints=(p.skillPoints||0)+1;showLevelUpAnimation(p.level);log(`LEVEL UP! Stufe ${p.level} erreicht. +1 Skillpunkt.`);showLevelUpChoices(p.level,()=>{hud();saveCurrentSlot();});}
 function showFloorTransition(d){const o=el('floor-overlay'),t=el('floor-title');if(!o||!t)return;t.textContent=`EBENE ${d}`;o.classList.remove('hidden');setTimeout(()=>o.classList.add('hidden'),1700)}
-function renderInv(){const box=el('items');box.innerHTML='';el('slots').textContent=`(${state.player.inventory.length}/${INVENTORY_LIMIT})`;sortInventory(state.player.inventory);state.player.inventory.forEach((s,i)=>{const it=ITEMS[s.id];if(!it)return;const d=document.createElement('div');d.className='item';d.innerHTML=`<span>${it.icon||'📦'} ${it.name}${s.count>1?` x${s.count}`:''}</span><span>${it.slot?'[Ausrüsten]':'[Nutzen]'}</span>`;d.onclick=()=>{el('iteminfo').innerHTML=`<strong>${it.icon||'📦'} ${it.name}</strong><br><small>${it.category||it.type}</small><br>${it.desc}<br><small>Wert: ${it.price} 🪙 · Stapel: ${s.count}/${it.stack||1}</small>`;if(it.slot)equipItemFromInv(i);else useItem(i)};box.append(d)})}
+function renderInv(){
+ const box=el('items');box.innerHTML='';
+ el('slots').textContent=`(${state.player.inventory.length}/${INVENTORY_LIMIT})`;
+ sortInventory(state.player.inventory);
+ let expanded=null;
+ state.player.inventory.forEach((s,i)=>{
+  const it=ITEMS[s.id];if(!it)return;
+  const d=document.createElement('div');d.className='item';
+  const title=document.createElement('button');title.type='button';
+  title.className='inventory-detail-toggle';
+  title.textContent=`${it.icon||'📦'} ${it.name}${s.count>1?` x${s.count}`:''}`;
+  title.style.cssText='grid-column:1;min-width:0;min-height:44px;overflow-wrap:anywhere;text-align:left;font:inherit;color:inherit;background:transparent;border:0;padding:6px;cursor:pointer';
+  const details=document.createElement('div');details.id=`inventory-detail-${i}`;details.hidden=true;
+  details.style.cssText='grid-column:1 / -1;grid-row:3;min-width:0;overflow-wrap:anywhere;padding:8px;border-top:1px solid #c99c42';
+  title.setAttribute('aria-controls',details.id);title.setAttribute('aria-expanded','false');
+  const close=()=>{details.hidden=true;title.setAttribute('aria-expanded','false');};
+  const toggle=()=>{
+   if(state.player.inventory[i]!==s)return;
+   if(!details.hidden){close();expanded=null;return;}
+   if(expanded)expanded();
+   renderItemDetails(details,it,s,state.player.equipped,ITEMS);
+   details.hidden=false;title.setAttribute('aria-expanded','true');expanded=close;
+  };
+  title.onclick=e=>{e.preventDefault();e.stopPropagation();toggle();};
+  d.onclick=e=>{if(e.target!==d)return;toggle();};
+  d.inventoryEquipAction=()=>{if(state.player.inventory[i]===s)equipItemFromInv(i);};
+  d.append(title,details);box.append(d);
+ });
+}
 function renderEquipmentMenu(){const p=state.player,s=calculateCombatStats(),slots=['head','body','mainhand','offhand','feet','ring'];slots.forEach(k=>{const id=p.equipped[k],name=el(`slot-item-${k}`),box=name.closest('.equip-slot-box'),btn=box.querySelector('.btn-unequip');if(id&&ITEMS[id]){name.textContent=ITEMS[id].name;box.classList.add('equipped');btn.classList.remove('hidden');btn.onclick=e=>{e.stopPropagation();unequipSlot(k)}}else{name.textContent='Leer';box.classList.remove('equipped');btn.classList.add('hidden')}});el('stats').innerHTML=`<strong>KAMPFWERTE</strong><br>🗡️ ATK: ${s.totalAtk}<br>🛡️ DEF: ${s.totalDef}<br>❤️ TP: ${p.maxHp}<br>🔮 MP: ${p.maxMp}<br>✨ EP: ${p.xp}/${p.nextXp}<br>✨ Skillpunkte: ${p.skillPoints||0}<br>🏆 Ebene: ${state.world.depth}`}
 function useItem(i){const s=state.player.inventory[i],it=ITEMS[s?.id];if(!it)return;if(it.type==='potion'){if(it.effect==='hp'){const r=getSkillRank(state,'healing_lore'),h=Math.floor(it.val*(1+.2*r));state.player.hp=Math.min(state.player.maxHp,state.player.hp+h)}if(it.effect==='mp')state.player.mp=Math.min(state.player.maxMp,state.player.mp+it.val);sound.potion();removeItem(state.player.inventory,s.id,1);log(`${it.name} getrunken.`)}hud()}
 function log(m){const d=document.createElement('div');d.textContent=`🗡️ ${m}`;el('logs').prepend(d)}

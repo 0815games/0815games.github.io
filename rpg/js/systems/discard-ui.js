@@ -80,8 +80,8 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
     const i=[...items.children].indexOf(row),current=state.player?.inventory?.[i];
     if(busy||dialog.open||!allowed()||current!==entry||!current)return;
     if(ITEMS[current.id]?.slot){
-     if(typeof row.onclick==='function')row.click();
-    }else if(typeof useItem==='function')useItem(i);else row.click();
+     if(typeof row.inventoryEquipAction==='function')row.inventoryEquipAction();
+    }else if(typeof useItem==='function')useItem(i);
    });
    const discard=document.createElement('button');discard.type='button';discard.className='discard-row-button';discard.textContent='Wegwerfen';
    discard.addEventListener('click',e=>{e.preventDefault();e.stopImmediatePropagation();const i=[...items.children].indexOf(row);if(state.player?.inventory?.[i]!==entry)return;open(i);});
@@ -91,7 +91,7 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
   const action=item?.slot?'Ausrüsten':'Nutzen';
   if(use.hidden)use.hidden=false;
   if(use.textContent!==action)use.textContent=action;
-  const canAct=item?.slot?typeof row.onclick==='function':typeof useItem==='function'||typeof row.onclick==='function';
+  const canAct=item?.slot?typeof row.inventoryEquipAction==='function':typeof useItem==='function';
   use.disabled=busy||dialog.open||!allowed()||!item||!canAct;
   use.setAttribute('aria-label',`${item?.name||'Gegenstand'} ${item?.slot?'ausrüsten':'nutzen'}`);
   discard.disabled=busy||!allowed()||!entry;

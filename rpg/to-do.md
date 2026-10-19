@@ -1,5 +1,8 @@
 # To-do – Chroniken der Schattengruft
 
+## Inventarabschluss – Patch 2026-10-19
+- [ ] Inventardetails und Vergleich im Codespace implementiert: Antippen ohne Aktion, Ausrüsten/Nutzen separat, grün/rot/neutrale Differenzen zum gleichen Platz. 23 Assertions mit DOM-/Aktions-Mocks und 1027 bestehende Inventarprüfungen bestanden; Syntaxprüfungen der drei Module und Diff-Prüfung ohne Fehler. Push und Deploy zum Prüfzeitpunkt sowie echte Geräte-/Speicherabnahme offen. Danach bestehende Planung fortsetzen; keine anderen Aufgaben damit abhaken.
+
 Stand: 2026-10-16. Zentrale Arbeitsplanung und Masterplan. Offene Punkte nicht mit bestandener Geräteabnahme gleichsetzen.
 
 ## Arbeitsweise und Priorität

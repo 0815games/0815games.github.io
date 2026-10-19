@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Inventardetails und Ausrüstungsvergleich
+- Ausgangspunkt: Button-Fix 7c91e5d. Gegenstand antippen öffnet/schließt nur Details, maximal eine Zeile geöffnet; kein Ausrüsten oder Verbrauch durch den Detailklick.
+- Native Detailbuttons mit aria-expanded/aria-controls, sichere Textausgabe. Vergleich zum gleichen Ausrüstungsplatz anhand der vorhandenen Angriff-/Verteidigungslogik; grün/rot/neutral mit numerischen Differenzen. Leerer Platz als null Bonus, ungültige angelegte Ausrüstung ausdrücklich melden.
+- Ausrüsten mit explizitem Callback auf den vorhandenen Wechsel, Nutzen weiterhin über useItem. Bestehende Sperren und Wegwerfen erhalten; keine Balance-/Speicheränderung. Alte Aktionstexte werden nicht neu erzeugt.
+- Dateien: js/main.js, js/systems/discard-ui.js, js/systems/inventory-details.js, tests/inventory-details.mjs, change.log, to-do.md.
+- Prüfstand im Codespace: Patch auf Repository-Ausgangsstand 7c91e5d angewendet. 13 Vergleichs-/Renderassertionen, 10 Render-/Klickassertionen mit DOM-/Aktions-Mocks sowie 1027 bestehende S01a-Inventarprüfungen bestanden. Syntaxprüfung von main.js, discard-ui.js und inventory-details.js sowie git diff --check ohne Fehler. Diff der bestehenden Dateien kontrolliert. Kein echter Browser-/Geräte-/Firebase-/Speicher-Neuladetest. Push und Deploy zum Prüfzeitpunkt noch offen; Spielversion unverändert.
+- Historischer Nachtrag des vorherigen Button-Fixes bleibt separat offen.
+
 ## Geltungsbereich und Nachweis
 - Stand der nachgetragenen Historie: RPG-Änderungen auf main bis einschließlich `9b9f43f8dbaa01ca1cb93a98642c31a29dd1bcdf` vom 2026-10-16. Andere Projekte des Repositorys und nicht zusammengeführte Entwicklungsbranches sind nicht Bestandteil dieses RPG-Changelogs.
 - Grundlage: zwei Seiten der nach Pfad rpg gefilterten Git-Historie, bestehende Release-Dokumentation, geprüfte Dateistände/Diffs und ausdrücklich als solche bezeichnete Nutzerberichte. Commits derselben Veröffentlichung werden zusammengefasst, ihre Bezüge bleiben angegeben. Unspezifische frühe Uploads erhalten keine erfundenen Versionsnummern oder Funktionsgarantien.
