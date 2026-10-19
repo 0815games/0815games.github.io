@@ -1,5 +1,24 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Bossbeute: responsive Karten und getrennte Nebenaktionen
+- Anlass: Nutzer-Screenshot zeigt unruhige Button-Gestaltung, ungleichmäßige Titelumbrüche und direkt aneinanderliegende Nebenaktionen im Bossbeute-Dialog.
+- Veröffentlicht mit Commit `ea7d1504f6e2b6dbe4bb8b0c939babbf9d1ef598`.
+- Neue Datei `css/boss-loot.css`; in `index.html` nach dem bestehenden Hauptstylesheet über `css/boss-loot.css?rev=1` eingebunden. Bestehendes Hauptstylesheet unverändert.
+- Gestaltung auf den Bossbeute-Dialog begrenzt: einheitliche Systemschrift, abgestufte Titel-/Beschreibungstypografie, dunkle Karten mit goldenen Akzenten, gleichmäßige Innenabstände und gestreckte Karten innerhalb einer Zeile.
+- Belohnungen unter 800px einspaltig, ab 800px dreispaltig. Lange Gegenstandsnamen und Beschreibungen dürfen umbrechen.
+- Inventar- und Speicherbutton als separate Nebenaktionen mit Abstand und zurückhaltenderer Gestaltung. Unter 560px untereinander, ab 560px nebeneinander; Mindesthöhe 48px.
+- Dialogbreite und -höhe begrenzt; vh-Fallback, dvh und vertikale Safe Areas berücksichtigt. Gemeinsamer Dialog-Scrollbereich, Kompaktregeln für geringe Höhe.
+- Fokusrahmen ohne Layoutverschiebung, Hover nur auf geeigneten Geräten; reduzierte Bewegung und erzwungene Systemfarben berücksichtigt.
+- Keine Änderung an JavaScript, Auswahlablauf, Belohnungswerten, Inventarvergabe oder Speicherung. Spielversion weiterhin v0.5.26.
+- Prüfstand: Push erfolgreich. Keine automatisierten Layout-/Browserprüfungen für diesen CSS-Patch durchgeführt. Deployment und echte mobile/Desktop-Sichtprüfung offen.
+
+## 2026-10-19 – T13: manuelle Funktionsrückmeldung und Abgrenzung
+- Nutzer bestätigt um 12:16 CEST, dass die letzten Änderungen funktionieren; um 12:17 CEST folgt nach der manuellen Prüfliste die Rückmeldung „Passt soweit alles“.
+- Als allgemeine manuelle Funktionsbestätigung für den geprüften Kampfabschluss festgehalten. Gerät, Browser und einzelne Prüfszenarien wurden nicht separat protokolliert; daraus keine vollständige automatisierte Integration-, Firebase- oder Speicherabnahme ableiten.
+- Verbleibender Nutzerbefund: Bossbeute-Fenster optisch unsauber. Darstellung separat mit CSS-Patch `ea7d150` überarbeitet; diese neue Gestaltung ist durch die vorherige Rückmeldung noch nicht abgenommen.
+- Automatisierter Push-3-Nachweis bleibt begrenzt: drei bestandene Sequenzprüfungen für Kampfabschluss, 850-ms-Cleanup und Wiederherstellung des Renderer-Hooks. Dokumentationscommit `0aeb8a9`.
+- Keine nachträgliche Behauptung eines bestandenen kombinierten EP-/Level-Up-/Bossbeute-Integrationstests. Die frühere Verkleinerung des Testumfangs bleibt nachvollziehbar dokumentiert.
+
 ## 2026-10-19 – T13 Push 3: Kampfabschluss-Sequenz geprüft
 - Der vereinfachte Sequenztest prüft den tatsächlichen Kampfabschluss: tödlicher Angriff, Gegnerniederlage und 850-ms-Cleanup.
 - EP-, Level-Up- und Bossbeute-Interaktion bleiben davon getrennt und sind nicht als integriert geprüft dokumentiert.
