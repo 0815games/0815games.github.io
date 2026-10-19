@@ -1,5 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Inventar: mehr Listenplatz und gestaltete Scrollleiste
+- Auf Nutzerwunsch das alte Feld unter den Gegenständen mit dem Rucksack-Auswahlhinweis vollständig aus der Darstellung nehmen. `#iteminfo` bleibt nur als unsichtbares DOM-Ziel für bestehende Codezugriffe erhalten; kein Platzbedarf durch das Feld.
+- Neue `css/inventory-layout.css`, in `index.html` nach `potions.css` eingebunden. Gegenstandsliste statt altem 26dvh-Limit auf die verfügbare Höhe des Inventarbereichs ausdehnen: mobiles Menü und aktive Desktop-Tasche getrennt behandeln. Überschrift/Navigation bleiben außerhalb des Listen-Scrollbereichs; andere Menüs nicht auf Inventarlayout umstellen.
+- Schmale goldene Scrollleiste auf dunkler Schiene mit abgerundetem Griff und Hoverzustand; scrollbar-color/scrollbar-width sowie WebKit-Regeln, Systemfarben-Fallback und stabiler Scrollleistenplatz. Tatsächliche Sichtbarkeit und Darstellung sind browserabhängig.
+- Keine Änderung an Gegenstandsdetails, Tranknutzung, Ausrüsten, Wegwerfen, Kampfsperre oder Speicherung. Spielversion weiterhin v0.5.26.
+- Vorbereitung: CSS mit Parser einschließlich Deklarationen/Medienregeln ohne Fehler geprüft. Bestehende Node-Regressionen und Diff-Prüfung als Commit-Voraussetzung. Kein gerenderter Browser-/Geräte-/Firebase-Test; Deployment, kleine Höhen und mobile/Desktop-Sichtprüfung offen.
+
 ## 2026-10-19 – Planungsnachtrag: Waffen und Gegenstandsverfügbarkeit
 - In to-do.md offene Nutzerfragen zu Waffenlogik/stärkeren Waffen, möglichem Verbessern identischer Ausrüstung und tatsächlichen Ingame-/Shop-Bezugsquellen ergänzt.
 - Analyse und Konzeptklärung, keine Funktionszusage und keine Umsetzung eines Upgrade-Systems. Bestehende Aufgaben, Prioritäten, Spielcode und Spielversion v0.5.26 unverändert. Reiner Dokumentationsnachtrag; keine neuen Spieltests durchgeführt.

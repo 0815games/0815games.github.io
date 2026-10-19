@@ -1,0 +1,20 @@
+/* Inventory space and themed scrolling; no action logic changes. */
+html body #inv #iteminfo{display:none!important}
+html body #inv>h3{flex:0 0 auto;margin:0 0 8px;padding-bottom:8px}
+html body #inv #items{min-width:0;min-height:0;max-height:none;margin-top:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;scroll-padding:8px;padding:3px 4px 8px}
+html body #mobile-game-menu .mobile-menu-content:has(>#inv){display:flex;flex-direction:column;overflow:hidden}
+html body #mobile-game-menu .mobile-menu-content>#inv.panel.active{display:flex!important;flex-direction:column;flex:1 1 0%;min-height:0;overflow:hidden}
+html body #mobile-game-menu #inv #items{flex:1 1 0%;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto}
+@media(min-width:900px){
+html body #game:not([data-mobile-menu]) #layout>aside:has(>#inv.active){display:flex;flex-direction:column;min-height:0;height:calc(100vh - 120px);height:calc(100dvh - 120px);overflow:hidden}
+html body #game:not([data-mobile-menu]) #layout>aside:has(>#inv.active)>nav{flex:0 0 auto}
+html body #game:not([data-mobile-menu]) #layout>aside>#inv.active{display:flex;flex-direction:column;flex:1 1 0%;min-height:0;overflow:hidden}
+html body #game:not([data-mobile-menu]) #inv #items{flex:1 1 0%}
+}
+html body #inv #items{scrollbar-width:thin;scrollbar-color:#b89654 #0b0d15;scrollbar-gutter:stable}
+html body #inv #items::-webkit-scrollbar{width:10px;height:10px}
+html body #inv #items::-webkit-scrollbar-track{background:#0b0d15;border-radius:8px}
+html body #inv #items::-webkit-scrollbar-thumb{background:#b89654;border:2px solid #0b0d15;border-radius:8px}
+html body #inv #items::-webkit-scrollbar-thumb:hover{background:#e0bd73}
+html body #inv #items::-webkit-scrollbar-corner{background:#0b0d15}
+@media(forced-colors:active){html body #inv #items{scrollbar-color:auto}}
