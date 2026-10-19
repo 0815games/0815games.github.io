@@ -1,6 +1,7 @@
 import { installDiscard } from './systems/discard-ui.js';
 import { consumePotion, battlePotion } from './systems/potions.js';
 import { renderItemDetails } from './systems/inventory-details.js';
+import { renderArmory } from './systems/armory-preview.js';
 // v0.4.0 – Vollständige main.js mit Mobile Edition, Skilltree und epischen Intro
 import { state, CLASSES } from './core/state.js';
 import { ITEMS } from './data/items.js';
@@ -92,7 +93,7 @@ function renderInv(){
   d.append(title,details);box.append(d);
  });
 }
-function renderEquipmentMenu(){const p=state.player,s=calculateCombatStats(),slots=['head','body','mainhand','offhand','feet','ring'];slots.forEach(k=>{const id=p.equipped[k],name=el(`slot-item-${k}`),box=name.closest('.equip-slot-box'),btn=box.querySelector('.btn-unequip');if(id&&ITEMS[id]){name.textContent=ITEMS[id].name;box.classList.add('equipped');btn.classList.remove('hidden');btn.onclick=e=>{e.stopPropagation();unequipSlot(k)}}else{name.textContent='Leer';box.classList.remove('equipped');btn.classList.add('hidden')}});el('stats').innerHTML=`<strong>KAMPFWERTE</strong><br>🗡️ ATK: ${s.totalAtk}<br>🛡️ DEF: ${s.totalDef}<br>❤️ TP: ${p.maxHp}<br>🔮 MP: ${p.maxMp}<br>✨ EP: ${p.xp}/${p.nextXp}<br>✨ Skillpunkte: ${p.skillPoints||0}<br>🏆 Ebene: ${state.world.depth}`}
+function renderEquipmentMenu(){const p=state.player,s=calculateCombatStats(),slots=['head','body','mainhand','offhand','feet','ring'];slots.forEach(k=>{const id=p.equipped[k],name=el(`slot-item-${k}`),box=name.closest('.equip-slot-box'),btn=box.querySelector('.btn-unequip');if(id&&ITEMS[id]){name.textContent=ITEMS[id].name;box.classList.add('equipped');btn.classList.remove('hidden');btn.onclick=e=>{e.stopPropagation();unequipSlot(k)}}else{name.textContent='Leer';box.classList.remove('equipped');btn.classList.add('hidden')}});renderArmory(el('char'),p,s,state.world.depth,{classLabel:CLASSES[p.heroClass]?.title||'Recke'});}
 function useItem(i){const s=state.player.inventory[i],it=ITEMS[s?.id];if(!it||!consumePotion(state.player,i,ITEMS,removeItem,getSkillRank(state,'healing_lore')))return false;sound.potion();log(`${it.name} getrunken.`);hud();return true;}
 function log(m){const d=document.createElement('div');d.textContent=`🗡️ ${m}`;el('logs').prepend(d)}
 function move(dx,dy){if(state.inCombat)return;const tx=state.player.x+dx,ty=state.player.y+dy;if(map.isWall(tx,ty))return;const mon=state.world.monsters.find(m=>m.x===tx&&m.y===ty);if(mon)return startCombat(mon);state.player.x=tx;state.player.y=ty;sound.step();map.reveal();const ch=state.world.chests.find(c=>c.x===tx&&c.y===ty&&!c.open);if(ch){ch.open=true;sound.chest();gfx.burst(tx,ty);gfx.text('✨ REICHTUM!',tx,ty);const r=getSkillRank(state,'master_thief'),g=Math.floor(ch.caps*(1+.25*r));state.player.gold+=g;addItem(state.player.inventory,ch.item);log(`Truhe: +${g} Gold.`);setTimeout(()=>state.world.chests=state.world.chests.filter(c=>c.id!==ch.id),800)}if(state.world.stairs&&tx===state.world.stairs.x&&ty===state.world.stairs.y)log('Treppe gefunden. Erneut tippen zum Hinabsteigen.');hud()}

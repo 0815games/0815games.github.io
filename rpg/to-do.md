@@ -1,5 +1,11 @@
 # To-do – Chroniken der Schattengruft
 
+## T10 Ingame – visuelle Rüstkammer, 2026-10-19
+- [ ] Implementiert – Abnahme offen: Figur mit aktuell angelegter Ausrüstung im Reiter neben dem Inventar, responsive Slotkarten und getrennte Wertekarten. Bestehende Ablegen-Buttons und Berechnung erhalten; Vorbereitungs-Shop separat.
+- [ ] Mobile/Desktop prüfen: tatsächliche Ausrüstung nach Ausrüsten/Ablegen und Laden korrekt, keine doppelte Vorschau, leere Slots/long names/kleine Höhen, Fokus und Ablegen-Buttons erreichbar. Deploy und echte Geräte-/Speicherabnahme offen.
+- 14 vorbereitende Darstellungsprüfungen mit DOM-/Canvas-Doubles; Anbindung, Syntax und bestehende Regressionen als Commit-Voraussetzung. Kein vollständiger T10-/T14-Abschluss.
+- Nächstes getrenntes Funktionspaket: Klick auf leeren Slot bietet nur passende Inventargegenstände an; bestehende Ausrüstungsaktion und Kontext-/Kampfsperren verwenden. Diese Auswahl ist nicht Bestandteil des visuellen Pakets.
+
 ## T10 – Heldenübersicht der Vorbereitungs-Rüstkammer, 2026-10-19
 - [ ] Implementiert – Abnahme offen: Vorschau der tatsächlich angelegten Ausrüstung, Name/Klasse/Level, getrenntes Ordensgold und letzter Run sowie ATK/DEF mit Basiswerten. Vorhandene Shop-Berechnung und Kauf-/Speicherlogik erhalten.
 - [ ] Mobile/Desktop und geringe Höhe prüfen: Öffnen nach Tod ohne verlorene Ausrüstung, Vorschau/Werte nach erfolgreichem Kauf bzw. Speicherfehler korrekt, Kategorien/Bestätigung/Run-Start erreichbar. Kein vollständiger T10-/T14-Abschluss durch reine Helpertests.

@@ -1,5 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – T10 Ingame: visuelles Rüstkammer-Layout
+- Eigenes Teilpaket für den Ausrüstungsreiter neben dem Inventar, nicht für den Vorbereitungs-Shop. Bestehende sechs Slotkarten und Ablegen-Buttons samt IDs/Handlern erhalten; noch keine Auswahlfunktion für leere Slots ergänzt.
+- Heldenfigur aus dem vorhandenen drawCharacter-Renderer mit dem aktuellen Spieler und tatsächlich angelegter Ausrüstung. Vorschau bei jedem vorhandenen renderEquipmentMenu()-Aufruf aktualisieren; eine Figur pro Ansicht, keine Animationstimer. Fehlender Canvas wird als Vorschau-Fallback behandelt, Werte bleiben sichtbar.
+- Neue responsive Slotanordnung: in schmalen Bereichen Figur oberhalb der zweispaltigen Slotkarten; ab 520px tatsächlicher Panelbreite Slots links/rechts um die Figur über Container-Query. Sehr schmale Ansichten einspaltig, kleinere Figur bei geringer Fensterhöhe. Container-Query nicht unterstützt: Grundlayout bleibt zweispaltig.
+- Leere Slots dezent gestrichelt, angelegte Ausrüstung goldbetont; Namen umbrechen, vorhandene Ablegen-Aktion mit 44px Fläche erhalten. Keine funktionslosen Auswählen-Buttons vorwegnehmen.
+- Wertekarten für Run-Gold, Angriff/Verteidigung inklusive Basiswerten, maximale TP/MP, EP, Skillpunkte und Ebene. Bestehende calculateCombatStats()-Ergebnisse verwenden, keine zweite Werteberechnung; Ausrüsten/Ablegen und Tranknutzung auf unveränderte Quellabschnitte prüfen.
+- Neue systems/armory-preview.js, css/armory-layout.css und tests/armory-layout.mjs; gezielte Anbindung in main.js und index.html. Changelog/To-do ergänzt, Spielversion bleibt v0.5.26.
+- Vorbereitung: 14 Darstellungsprüfungen mit tatsächlichem Helfer und DOM-/Canvas-Doubles bestanden; CSS einschließlich Deklarationen und Container-/Medienregeln ohne Parsefehler. Runner prüft Anbindung, Syntax, alle bestehenden Node-Tests und Diff vor dem Codecommit. Keine gerenderte Browser-/Pixel-/Geräte-/Speicherabnahme. Deploy, Touch/Tastatur und kleine Höhen offen.
+
 ## 2026-10-19 – T10 Teilpaket: Heldenvorschau in der Rüstkammer
 - Neue Heldenübersicht im Vorbereitungs-Shop: vorhandener drawCharacter-Renderer erhält den aktuellen Spieler samt tatsächlich angelegter Ausrüstung. Keine Angebotsausrüstung oder verlorene Gegenstände als angelegt hinzufügen; statische Vorschau ohne Animationstimer.
 - Ordensgold und letzter Run getrennt darstellen; Angriff/Verteidigung übernehmen die vorhandene stats()-Berechnung, Basiswerte zusätzlich ausweisen. Namens-/Klassen-/Level-/Angebotsstufenanzeige mit Textknoten, keine HTML-Auswertung von Spielernamen.
