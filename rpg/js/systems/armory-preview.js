@@ -31,13 +31,13 @@ export function renderArmory(panel,player,stats,depth,options={}){
   ['Skillpunkte',number(player.skillPoints??0),''],
   ['Ebene',number(depth),'']
  ]){const card=make('div','armory-value');card.append(make('dt','',label),make('dd','',value));if(note)card.append(make('span','armory-value__base',note));values.append(card);}
- box.replaceChildren(values);bindEmptySlots(panel,player);return true;
+ box.replaceChildren(values);bindSlotChoices(panel,player);return true;
 }
 
 const slotNames={head:'Kopf',body:'Körper',mainhand:'Waffe',offhand:'Schild',feet:'Stiefel',ring:'Ring'};
 function showSlotChoices(panel,player,slot,trigger){
  const doc=panel.ownerDocument||document;
- if(state.player!==player||!state.user?.uid||state.inCombat||player.hp<=0||player.needsPreparation||player.equipped?.[slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return;
+ if(state.player!==player||!state.user?.uid||state.inCombat||player.hp<=0||player.needsPreparation||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return;
  if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return;
  panel.querySelector('.armory-slot-choices')?.remove();
  for(const button of panel.querySelectorAll('.armory-slot-open'))button.setAttribute('aria-expanded','false');
@@ -70,13 +70,12 @@ function showSlotChoices(panel,player,slot,trigger){
  close.type='button';close.textContent='Schließen';close.style.cssText='min-height:44px;padding:8px 12px;background:#24293c;color:#f1dfb5;border:1px solid #a68750;border-radius:9px';
  close.onclick=()=>{section.remove();trigger.setAttribute('aria-expanded','false');if(trigger.isConnected)trigger.focus();};section.append(close);panel.querySelector('.equip-grid').after(section);trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});section.scrollIntoView?.({block:'nearest'});
 }
-function bindEmptySlots(panel,player){
+function bindSlotChoices(panel,player){
  panel.querySelector('.armory-slot-choices')?.remove();
  for(const slot of Object.keys(slotNames)){
   const name=panel.querySelector('#slot-item-'+slot),card=name?.closest('.equip-slot-box');if(!card)continue;
-  if(player.equipped?.[slot]){card.onclick=null;card.style.cursor='';continue;}
   let trigger=name.querySelector('.armory-slot-open');
-  if(!trigger){trigger=(panel.ownerDocument||document).createElement('button');trigger.type='button';trigger.className='armory-slot-open';trigger.textContent='Leer · Auswahl öffnen';trigger.style.cssText='width:100%;min-height:44px;padding:0;border:0;background:transparent;color:#d9bf87;font:inherit;text-align:left;cursor:pointer';name.replaceChildren(trigger);}
+  if(!trigger){trigger=(panel.ownerDocument||document).createElement('button');trigger.type='button';trigger.className='armory-slot-open';trigger.textContent=player.equipped?.[slot]?'Belegt · Ersatz wählen':'Leer · Auswahl öffnen';trigger.style.cssText='width:100%;min-height:44px;padding:0;border:0;background:transparent;color:#d9bf87;font:inherit;text-align:left;cursor:pointer';name.replaceChildren(trigger);}
   trigger.setAttribute('aria-label',`${slotNames[slot]}: passende Gegenstände anzeigen`);trigger.setAttribute('aria-expanded','false');card.style.cursor='pointer';
   card.onclick=e=>{if(e.target.closest?.('.btn-unequip'))return;showSlotChoices(panel,player,slot,trigger);};
  }
@@ -85,7 +84,7 @@ function equipSlotChoice(ticket,item,doc){
  const p=ticket.player;
  if(ticket.busy||ticket.done||!ticket.section.isConnected)return false;
  if(state.player!==p||state.user?.uid!==ticket.uid||cloud.auth?.currentUser?.uid!==ticket.uid||state.currentSlot!==ticket.saveSlot||state.world!==ticket.world||state.world?.tiles!==ticket.tiles||p.inventory!==ticket.inventory||p.equipped!==ticket.equipped)return false;
- if(state.inCombat||p.hp<=0||p.needsPreparation||p.equipped?.[ticket.slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
+ if(state.inCombat||p.hp<=0||p.needsPreparation||!p.equipped?.[ticket.slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
  if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return false;
  const current=p.inventory[item.index];
  if(!Number.isInteger(item.index)||current!==item.entry||current?.id!==item.id||current?.count!==item.count||!Number.isSafeInteger(current?.count)||current.count<1||!Object.prototype.hasOwnProperty.call(ITEMS,item.id)||ITEMS[item.id]?.slot!==ticket.slot)return false;
