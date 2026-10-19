@@ -1,5 +1,5 @@
-name: Verify integrated combat finish sequence
-# rerun marker: 2026-10-19-1202
+name: Verify combat finish sequence
+# manual scope fix: combat finish only
 on:
   push:
     branches: [main]
@@ -32,35 +32,31 @@ jobs:
             echo "Running $f"
             node "$f"
           done
-      - name: Document verified sequence
+      - name: Document verified combat finish sequence
         shell: python
         run: |
           from pathlib import Path
           log = Path('rpg/change.log')
           s = log.read_text()
-          section = '''## 2026-10-19 – T13 Push 3: integrierte Abschlussreihenfolge geprüft
-          - Neuer Integrationstest `tests/combat-finish-sequence.mjs` prüft `combat-effects.js` und `combat-reward-feedback.js` gemeinsam: letzter Treffer, Gegnerniederlage, 850-ms-Cleanup, EP-Sieganzeige über Kampffenster- und Level-Up-Übergang, keine doppelte EP-Anzeige und keine nachlaufenden Kampfzahlen.
-          - Bossbeute-Übergang ist als Anzeigeplatz im Integrationstest berücksichtigt; kein vollständiger Boss-End-to-End-Lauf und keine Browser-/Geräte-/Firebase-Abnahme.
+          section = '''## 2026-10-19 – T13 Push 3: Kampfabschluss-Sequenz geprüft
+          - Der vereinfachte Sequenztest prüft den tatsächlichen Kampfabschluss: tödlicher Angriff, Gegnerniederlage und 850-ms-Cleanup.
+          - EP-, Level-Up- und Bossbeute-Interaktion bleiben davon getrennt und sind nicht als integriert geprüft dokumentiert.
           - Keine Spielcode-, Balance-, Speicher- oder Versionsänderung; Spielversion bleibt v0.5.26.
-          - Push 2 ist mit Commit `d15165e0f81b4fdc01bd8f981d97694fb2188679` veröffentlicht: Klassenfähigkeiten und Gift nutzen denselben 850-ms-Abschluss.
-          - T13 bleibt offen für echte mobile/Desktop-Abnahme, Deploy-Prüfung und vollständige Bossbeute-Reihenfolge.
+          - Push 2 bleibt mit Commit `d15165e0f81b4fdc01bd8f981d97694fb2188679` veröffentlicht.
+          - T13 bleibt offen für echte mobile/Desktop-Abnahme, Deploy-Prüfung und die gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge.
           '''
           section = '\n'.join(line.strip() for line in section.strip().splitlines()) + '\n'
           marker = '# CHANGELOG – Chroniken der Schattengruft\n\n'
           assert s.startswith(marker)
-          if 'T13 Push 3: integrierte Abschlussreihenfolge geprüft' not in s:
+          if 'T13 Push 3: Kampfabschluss-Sequenz geprüft' not in s:
               s = s.replace(marker, marker + section + '\n', 1)
           log.write_text(s)
           todo = Path('rpg/to-do.md')
           t = todo.read_text()
-          old2 = '- [ ] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden; noch nicht durch Push 1 umgesetzt.'
-          new2 = '- [x] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden. Codecommit `d15165e0f81b4fdc01bd8f981d97694fb2188679`; Integrationstest ergaenzt, echte Abnahme offen.'
-          if old2 in t:
-              t = t.replace(old2, new2)
-          old3 = '- [ ] Push 3: gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge und doppelte/nachlaufende Anzeigen integriert pruefen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.'
-          new3 = '- [ ] Push 3: integrierte Reihenfolge mit `tests/combat-finish-sequence.mjs` geprüft; echte mobile/Desktop-/Bossbeute-Abnahme und Deploy bleiben offen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.'
-          if old3 in t:
-              t = t.replace(old3, new3)
+          old = '- [ ] Push 3: gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge und doppelte/nachlaufende Anzeigen integriert pruefen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.'
+          new = '- [ ] Push 3: Kampfabschluss-Sequenz geprüft; EP-, Level-Up- und Bossbeute-Interaktion sowie echte mobile/Desktop-/Bossbeute-Abnahme und Deploy bleiben offen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.'
+          if old in t:
+              t = t.replace(old, new)
           todo.write_text(t)
       - name: Commit verification documentation
         run: |
@@ -70,6 +66,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "No documentation changes"
           else
-            git commit -m "docs: record integrated combat finish sequence verification"
+            git commit -m "docs: record combat finish sequence verification"
             git push
           fi
