@@ -3,7 +3,7 @@
 ## T13 Push 1 – Standardaktionen, 2026-10-19
 - [ ] Teilpatch: Standardangriff/Feuerball mit Besiegt-Kennzeichnung, letzter Schadenszahl pro Ereignis und 850-ms-Effektfenster. Prioritaetsdialoge/Kontextwechsel duerfen abbrechen. 29 lokale Node-VM-Pruefungen mit DOM-/Spielaktions-/FX-/Timer-Doubles bestanden; Runnerstatus, Deploy und echte Abnahme separat offen.
 - [ ] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden; noch nicht durch Push 1 umgesetzt.
-- [ ] Push 3: gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge und doppelte/nachlaufende Anzeigen integriert pruefen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.
+- [ ] Push 3: Kampfabschluss-Sequenz geprüft; EP-, Level-Up- und Bossbeute-Interaktion sowie echte mobile/Desktop-/Bossbeute-Abnahme und Deploy bleiben offen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.
 
 
 ## T13-Zwischenstand – EP-Anzeige, 2026-10-19

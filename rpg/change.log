@@ -1,5 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – T13 Push 3: Kampfabschluss-Sequenz geprüft
+- Der vereinfachte Sequenztest prüft den tatsächlichen Kampfabschluss: tödlicher Angriff, Gegnerniederlage und 850-ms-Cleanup.
+- EP-, Level-Up- und Bossbeute-Interaktion bleiben davon getrennt und sind nicht als integriert geprüft dokumentiert.
+- Keine Spielcode-, Balance-, Speicher- oder Versionsänderung; Spielversion bleibt v0.5.26.
+- Push 2 bleibt mit Commit `d15165e0f81b4fdc01bd8f981d97694fb2188679` veröffentlicht.
+- T13 bleibt offen für echte mobile/Desktop-Abnahme, Deploy-Prüfung und die gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge.
+
 ## 2026-10-19 – T13 Push 1: Standardaktionen, letzter Treffer und Gegnerniederlage
 - Standardangriff/Feuerball: bestaetigte Niederlage mit Besiegt-Kennzeichnung und entsaettigter Figur. Nur im passenden Aktionskontext, bei ausgeschiedenem Gegner und lebendem Helden; nicht bei Flucht oder nicht toedlichem Angriff.
 - COMBAT_FINISH_MS=850 eingefuehrt und im vorhandenen Effektfenster verwendet, keine zusaetzliche Abschlussphase. Bestehendes 850-ms-Timing fuer Heilung/Flucht erhalten.
