@@ -1,4 +1,7 @@
 import {drawCharacter} from '../world/character.js';
+import {state} from '../core/state.js';
+import {ITEMS} from '../data/items.js';
+import {equipmentCandidates} from './equipment-candidates.js';
 const views=new WeakMap();
 export function renderArmory(panel,player,stats,depth,options={}){
  if(!panel)return false;
@@ -27,5 +30,33 @@ export function renderArmory(panel,player,stats,depth,options={}){
   ['Skillpunkte',number(player.skillPoints??0),''],
   ['Ebene',number(depth),'']
  ]){const card=make('div','armory-value');card.append(make('dt','',label),make('dd','',value));if(note)card.append(make('span','armory-value__base',note));values.append(card);}
- box.replaceChildren(values);return true;
+ box.replaceChildren(values);bindEmptySlots(panel,player);return true;
+}
+
+const slotNames={head:'Kopf',body:'Körper',mainhand:'Waffe',offhand:'Schild',feet:'Stiefel',ring:'Ring'};
+function showSlotChoices(panel,player,slot,trigger){
+ const doc=panel.ownerDocument||document;
+ if(state.player!==player||!state.user?.uid||state.inCombat||player.hp<=0||player.needsPreparation||player.equipped?.[slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return;
+ if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return;
+ panel.querySelector('.armory-slot-choices')?.remove();
+ for(const button of panel.querySelectorAll('.armory-slot-open'))button.setAttribute('aria-expanded','false');
+ const section=doc.createElement('section'),heading=doc.createElement('h4'),list=doc.createElement('ul'),close=doc.createElement('button');
+ section.className='armory-slot-choices';section.setAttribute('role','region');section.setAttribute('aria-label',`Passende Gegenstände: ${slotNames[slot]}`);section.style.cssText='margin:12px 0;padding:12px;border:1px solid #b69960;border-radius:12px;background:#111520';
+ heading.textContent=`Passende Gegenstände · ${slotNames[slot]}`;heading.style.margin='0 0 10px';section.append(heading);
+ const matches=equipmentCandidates(player.inventory,slot,ITEMS);
+ if(matches.length){list.style.cssText='margin:0 0 12px;padding-left:20px';for(const item of matches){const row=doc.createElement('li');row.textContent=`${item.icon} ${item.name}${item.count>1?' ×'+item.count:''}`;list.append(row);}section.append(list);}
+ else{const message=doc.createElement('p');message.textContent='Kein passender Gegenstand im Rucksack.';section.append(message);}
+ close.type='button';close.textContent='Schließen';close.style.cssText='min-height:44px;padding:8px 12px;background:#24293c;color:#f1dfb5;border:1px solid #a68750;border-radius:9px';
+ close.onclick=()=>{section.remove();trigger.setAttribute('aria-expanded','false');if(trigger.isConnected)trigger.focus();};section.append(close);panel.querySelector('.equip-grid').after(section);trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});section.scrollIntoView?.({block:'nearest'});
+}
+function bindEmptySlots(panel,player){
+ panel.querySelector('.armory-slot-choices')?.remove();
+ for(const slot of Object.keys(slotNames)){
+  const name=panel.querySelector('#slot-item-'+slot),card=name?.closest('.equip-slot-box');if(!card)continue;
+  if(player.equipped?.[slot]){card.onclick=null;card.style.cursor='';continue;}
+  let trigger=name.querySelector('.armory-slot-open');
+  if(!trigger){trigger=(panel.ownerDocument||document).createElement('button');trigger.type='button';trigger.className='armory-slot-open';trigger.textContent='Leer · Auswahl öffnen';trigger.style.cssText='width:100%;min-height:44px;padding:0;border:0;background:transparent;color:#d9bf87;font:inherit;text-align:left;cursor:pointer';name.replaceChildren(trigger);}
+  trigger.setAttribute('aria-label',`${slotNames[slot]}: passende Gegenstände anzeigen`);trigger.setAttribute('aria-expanded','false');card.style.cursor='pointer';
+  card.onclick=e=>{if(e.target.closest?.('.btn-unequip'))return;showSlotChoices(panel,player,slot,trigger);};
+ }
 }
