@@ -1,5 +1,12 @@
 # To-do – Chroniken der Schattengruft
 
+## Aktueller T10-Ingame-Stand – Slot-Auswahl, 2026-10-19
+Dieser Nachtrag ersetzt ältere Angaben zur Slot-Auswahl als noch nicht implementiertem nächsten Schritt; die Historie bleibt erhalten.
+- [ ] Implementiert – Abnahme offen: passender Inventarfilter `0f323c0`, Öffnen/Schließen der Liste `962942b`, Ausrüsten über vorhandene Inventar-Aktion `5d19474`. Nur leere Slots; Ausrüstungstausch über belegte Slots nicht zusätzlich umgesetzt.
+- [ ] Öffnungs-/Adaptertests als wiederholbare Repository-Suites ergänzen und vollständige Regressionen ausführen. Lokale Prüfstände: Filter 14, Öffnung 10, Adapter 15; Test-Doubles, keine echte Gesamtintegration.
+- [ ] Deploy und mobile/Desktop-Abnahme: leeren Slot öffnen, nur passende Gegenstände, Leerzustand, Schließen, einmaliges Ausrüsten, korrekter Bestand sowie aktualisierte Figur/Werte. Ablegen und erneutes Ausrüsten, Tastaturfokus und Speichern/Neuladen prüfen.
+- [ ] Veraltete Auswahl, Doppelklick, Kampf-/Dialog-/Sitzungssperren und Konto-/Slotwechsel real mitprüfen. Kein vollständiger T10-/T14-Abschluss ohne Abnahme; Vorbereitungs-Shop und T11-Angebotsvergleich bleiben getrennt.
+
 ## T10 Ingame – visuelle Rüstkammer, 2026-10-19
 - [ ] Implementiert – Abnahme offen: Figur mit aktuell angelegter Ausrüstung im Reiter neben dem Inventar, responsive Slotkarten und getrennte Wertekarten. Bestehende Ablegen-Buttons und Berechnung erhalten; Vorbereitungs-Shop separat.
 - [ ] Mobile/Desktop prüfen: tatsächliche Ausrüstung nach Ausrüsten/Ablegen und Laden korrekt, keine doppelte Vorschau, leere Slots/long names/kleine Höhen, Fokus und Ablegen-Buttons erreichbar. Deploy und echte Geräte-/Speicherabnahme offen.
