@@ -1,0 +1,58 @@
+name: Document weapon and item questions
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/document-weapon-questions.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: document-weapon-questions
+  cancel-in-progress: false
+jobs:
+  document:
+    if: github.repository == 'pipboy3003/pipboy3003.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Add planning questions without replacing existing content
+        shell: python
+        run: |
+          from pathlib import Path
+          def prepend(path, header, entry):
+              p = Path(path)
+              original = p.read_bytes()
+              prefix = header.encode('utf-8')
+              addition = entry.encode('utf-8')
+              assert original.startswith(prefix), ('Unexpected heading', path)
+              if addition.splitlines()[0] not in original:
+                  result = prefix + addition + original[len(prefix):]
+                  assert result[len(prefix) + len(addition):] == original[len(prefix):]
+                  p.write_bytes(result)
+          todo = '''## Offene Fragen – Waffenprogression und Gegenstandsquellen (2026-10-19)
+          - [ ] Waffenlogik und stärkere Waffen: aktuellen Ablauf prüfen und erklären. Wie kommt der Spieler an stärkere Waffen? Tatsächliche Vergabewege, Werteentwicklung und gegebenenfalls Klassen-/Level-/Ebenenabhängigkeiten im aktiven Code nachvollziehen.
+          - [ ] Upgrade-Idee prüfen: Kann gleiche Ausrüstung mit gleicher Ausrüstung verbessert werden? Zuerst feststellen, ob bereits eine solche Funktion existiert; andernfalls als Konzept bewerten und Regeln, Kosten, Grenzen und Gegenstandserhalt vor einer Umsetzung abstimmen. Noch kein beschlossenes Upgrade-System.
+          - [ ] Gegenstandsverfügbarkeit prüfen: Sind alle definierten Gegenstände tatsächlich im Spiel erreichbar? Für jeden Gegenstand die aktiven Bezugsquellen erfassen und zwischen Fund-/Belohnungsgegenständen, ausschließlich im Shop erhältlichen Gegenständen und definierten, aber nicht erreichbaren Einträgen unterscheiden. Code-Definition allein gilt nicht als Nachweis der Ingame-Verfügbarkeit.
+          - Status: offene Analyse-/Konzeptfragen auf Nutzerwunsch. Keine neue Waffen-, Upgrade-, Loot- oder Shoplogik implementiert; bestehende Prioritäten und Aufgaben-IDs bleiben unverändert.
+          '''
+          todo = '\n'.join(line.strip() for line in todo.strip().splitlines()) + '\n\n'
+          prepend('rpg/to-do.md', '# To-do – Chroniken der Schattengruft\n\n', todo)
+          log = '''## 2026-10-19 – Planungsnachtrag: Waffen und Gegenstandsverfügbarkeit
+          - In to-do.md offene Nutzerfragen zu Waffenlogik/stärkeren Waffen, möglichem Verbessern identischer Ausrüstung und tatsächlichen Ingame-/Shop-Bezugsquellen ergänzt.
+          - Analyse und Konzeptklärung, keine Funktionszusage und keine Umsetzung eines Upgrade-Systems. Bestehende Aufgaben, Prioritäten, Spielcode und Spielversion v0.5.26 unverändert. Reiner Dokumentationsnachtrag; keine neuen Spieltests durchgeführt.
+          '''
+          log = '\n'.join(line.strip() for line in log.strip().splitlines()) + '\n\n'
+          prepend('rpg/change.log', '# CHANGELOG – Chroniken der Schattengruft\n\n', log)
+          Path('.github/workflows/document-weapon-questions.yml').unlink()
+      - name: Commit documentation and remove one-time workflow
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rpg/to-do.md rpg/change.log .github/workflows/document-weapon-questions.yml
+          git commit -m 'docs: add weapon progression upgrade and item source questions'
+          git push origin HEAD:main
