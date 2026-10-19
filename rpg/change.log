@@ -1,5 +1,10 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Inventar: platzraubenden Hilfstext entfernt
+- Auf Nutzerwunsch den Absatz „Ausrüsten oder Nutzen … Im Kampf gesperrt.“ unter der Gürteltaschen-Überschrift entfernt. In `js/systems/discard-ui.js` nur die Erzeugung und Einfügung von `#discard-help` gelöscht; kein Ersatztext oder unsichtbarer Platzhalter.
+- Gegenstandsdetails und Buttons für Ausrüsten, Nutzen und Wegwerfen bleiben unverändert. Tatsächliche Kampfsperre, Mengenbestätigung, Inventar- und Speicherlogik nicht geändert.
+- Spielversion weiterhin v0.5.26. Syntaxprüfung und bestehende Node-Regressionen als Commit-Voraussetzung; kein neuer Browser-/Geräte-/Firebase-Test. Deployment und Sichtprüfung separat offen.
+
 ## 2026-10-19 – Bossbeute: responsive Karten und getrennte Nebenaktionen
 - Anlass: Nutzer-Screenshot zeigt unruhige Button-Gestaltung, ungleichmäßige Titelumbrüche und direkt aneinanderliegende Nebenaktionen im Bossbeute-Dialog.
 - Veröffentlicht mit Commit `ea7d1504f6e2b6dbe4bb8b0c939babbf9d1ef598`.

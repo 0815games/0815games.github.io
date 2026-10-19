@@ -97,7 +97,6 @@ export function installDiscard({state,cloud,ITEMS,removeItem,useItem,hud,log}){
   discard.disabled=busy||!allowed()||!entry;
   discard.setAttribute('aria-label',`${item?.name||'Gegenstand'} wegwerfen`);
  });}
- const hint=document.createElement('p');hint.id='discard-help';hint.textContent='Ausrüsten oder Nutzen über den jeweiligen Button. Wegwerfen entfernt Taschengegenstände dauerhaft ohne Gold oder Bodenbeute. Bei Stapeln Menge wählen und bestätigen. Im Kampf gesperrt.';items.before(hint);
  new MutationObserver(decorate).observe(items,{childList:true});
  new MutationObserver(records=>{
   if(records.every(({target})=>target.closest?.('.inventory-actions')))return;
