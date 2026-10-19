@@ -22,7 +22,7 @@ import '../systems/new-items.js?v=0.5.7';
 import '../systems/enemy-balance.js?v=0.5.8';
 import '../systems/living-world.js?v=0.5.12';
 import '../systems/preparation-shop-layout.js?v=0.5.10';
-import '../systems/combat-layout.js?v=0.5.13';
+import '../systems/combat-layout.js?v=0.5.13&rev=layout-p1';
 import '../systems/ability-animations.js?v=0.5.15';
 import '../systems/combat-status-feedback.js?v=0.5.16';
 import '../systems/combat-reward-feedback.js?v=0.5.18';

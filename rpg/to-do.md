@@ -1,5 +1,11 @@
 # To-do – Chroniken der Schattengruft
 
+## Grafikpaket 1 – Kampfoberfläche, 2026-10-19
+- [ ] T04/T09-Teilpaket implementiert: inhaltsabhängige Kartenhöhen, gemeinsames Scrollen, Safe-Area-/Viewportgrenzen und schmale Buttonraster. 29 lokale CSS-/DOM-Doubled-Assertions, Syntax- und CSS-Parseprüfung bestanden. Runnerstatus, Deploy und echte Browser-/Geräteabnahme separat offen. Andere T04-/T09-Anforderungen nicht pauschal abschließen.
+- Tastaturpaket 05bda27: Nutzer bestätigt Funktion am 2026-10-19 um 08:28 CEST; Sonderfälle separat offen.
+- Danach übrige vereinbarte Grafikpakete; v0.6.0 erst nach Abschluss/Abnahme, anschließend S01c. S01b bleibt abgeschlossen.
+
+
 ## Tastaturpaket 2026-10-19 – Q/E/R
 - [ ] Implementiert: Q/E/R für Klassenfähigkeit 1/2/3; Enter/Leertaste für Karteninteraktion, E außerhalb Kampf abgefangen. Tutorial/Hilfe, Desktop-Labels und Touch-Textadapter angepasst. 32 lokale VM-/DOM-Doubled-Assertions bestanden; veröffentlichter Runnerstatus und echte Geräteabnahme gesondert offen. Kein Abschluss der übrigen T08-/S05-Anforderungen.
 - Reihenfolge unverändert: danach vereinbarten Grafikumfang fertigstellen/abnehmen, v0.6.0, danach S01c. S01b bleibt gemäß Nutzerentscheidung abgeschlossen.

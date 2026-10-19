@@ -1,5 +1,15 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Grafikpaket 1: Kampfoberfläche
+- Inhaltshöhen statt dehnbarer Figurenzeile; keine erzwungene Zweizeilenhöhe für Namen. Ein vertikaler Scrollbereich im Kampffenster statt zusätzlichem Figuren-/Log-Scrolling.
+- Fensterhöhe durch Viewport und Safe Areas begrenzt; vh-Fallback und dvh. Quadratische Figuren; Fähigkeiten unter 420px zweispaltig, unter 300px einspaltige Darstellung. Kompaktmodus bei geringer Höhe erhalten.
+- combat-layout.js: nur CSS geändert; bestehende Laufzeitlogik und Effekt-/Kampf-/Tastaturfunktionen unverändert. Neuer Test tests/combat-layout-package1.mjs. core/version.js erhält nur eine Importrevision, Spielversion weiterhin v0.5.26.
+- Ausgangsblob e6aa86dd42a6b0b378c7197baea6705a61206292 geprüft. 29 lokale CSS-Quellvertrags-/DOM-Doubled-Assertions, JavaScript-Syntaxprüfung und CSS-Parseprüfung bestanden; Patch-Anwendung auf verifizierte Layoutdatei und Dokumentationsfixtures geprüft. Keine echte Browser-/Pixel-/Safari-/Geräteabnahme.
+- Veröffentlichung über freigegebenen einmaligen Workflow: erneute Tests vor Commit/Push. Runnerstatus und Deploy gesondert verifizieren; kein Testsieg allein durch Anlegen des Workflows behauptet. Temporärer Workflow wird im erfolgreichen Codecommit entfernt.
+- Nutzer bestätigt am 2026-10-19 um 08:28 CEST die vorherige Tastaturänderung 05bda27 als funktionierend. Keine pauschale Abnahme aller Tastatursonderfälle.
+- T04/T09-Teilpaket bleibt bis echter Abnahme offen; keine Veröffentlichung von v0.6.0. Danach vereinbarte Grafikpakete fortsetzen, später S01c.
+
+
 ## 2026-10-19 – Desktop-Tastatur: Q/E/R und neue Interaktion
 - Q/E/R lösen Klassenfähigkeit 1/2/3 über die vorhandenen Fähigkeitenbuttons aus; keine zusätzliche Kampflogik. Deaktivierte/verborgene Buttons, wiederholte Eingaben, Modifikatortasten und Texteingaben werden nicht als Fähigkeitsaktion ausgeführt.
 - Enter/Leertaste interagieren auf der Karte; E wird außerhalb des Kampfes abgefangen, bevor der alte Hauptcode-Handler greifen kann. In Menüs und Dialogen bleibt Bestätigen kontextabhängig. Hauptcode-Fallback nicht entfernt; S05-Gesamtbereinigung bleibt offen.
