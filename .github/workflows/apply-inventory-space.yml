@@ -1,0 +1,94 @@
+name: Apply inventory space and scrollbar layout
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/apply-inventory-space.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: apply-inventory-space
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'pipboy3003/pipboy3003.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Add scoped CSS and changelog
+        shell: python
+        run: |
+          from pathlib import Path
+          css = '''/* Inventory space and themed scrolling; no action logic changes. */
+          html body #inv #iteminfo{display:none!important}
+          html body #inv>h3{flex:0 0 auto;margin:0 0 8px;padding-bottom:8px}
+          html body #inv #items{min-width:0;min-height:0;max-height:none;margin-top:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;scroll-padding:8px;padding:3px 4px 8px}
+          html body #mobile-game-menu .mobile-menu-content:has(>#inv){display:flex;flex-direction:column;overflow:hidden}
+          html body #mobile-game-menu .mobile-menu-content>#inv.panel.active{display:flex!important;flex-direction:column;flex:1 1 0%;min-height:0;overflow:hidden}
+          html body #mobile-game-menu #inv #items{flex:1 1 0%;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto}
+          @media(min-width:900px){
+           html body #game:not([data-mobile-menu]) #layout>aside:has(>#inv.active){display:flex;flex-direction:column;min-height:0;height:calc(100vh - 120px);height:calc(100dvh - 120px);overflow:hidden}
+           html body #game:not([data-mobile-menu]) #layout>aside:has(>#inv.active)>nav{flex:0 0 auto}
+           html body #game:not([data-mobile-menu]) #layout>aside>#inv.active{display:flex;flex-direction:column;flex:1 1 0%;min-height:0;overflow:hidden}
+           html body #game:not([data-mobile-menu]) #inv #items{flex:1 1 0%}
+          }
+          html body #inv #items{scrollbar-width:thin;scrollbar-color:#b89654 #0b0d15;scrollbar-gutter:stable}
+          html body #inv #items::-webkit-scrollbar{width:10px;height:10px}
+          html body #inv #items::-webkit-scrollbar-track{background:#0b0d15;border-radius:8px}
+          html body #inv #items::-webkit-scrollbar-thumb{background:#b89654;border:2px solid #0b0d15;border-radius:8px}
+          html body #inv #items::-webkit-scrollbar-thumb:hover{background:#e0bd73}
+          html body #inv #items::-webkit-scrollbar-corner{background:#0b0d15}
+          @media(forced-colors:active){html body #inv #items{scrollbar-color:auto}}
+          '''
+          css = '\n'.join(line.strip() for line in css.strip().splitlines()) + '\n'
+          target = Path('rpg/css/inventory-layout.css')
+          assert not target.exists(), 'Inventory stylesheet already exists; review instead of overwrite'
+          target.write_text(css, encoding='utf-8')
+          page = Path('rpg/index.html')
+          original = page.read_text(encoding='utf-8')
+          anchor = '  <link rel="stylesheet" href="css/potions.css?rev=1">'
+          assert original.count(anchor) == 1, 'Unexpected stylesheet binding'
+          link = '  <link rel="stylesheet" href="css/inventory-layout.css?rev=1">'
+          assert 'css/inventory-layout.css' not in original
+          updated = original.replace(anchor, anchor + '\n' + link, 1)
+          assert updated.replace('\n' + link, '', 1) == original
+          page.write_text(updated, encoding='utf-8')
+          log = Path('rpg/change.log')
+          previous = log.read_bytes()
+          header = '# CHANGELOG – Chroniken der Schattengruft\n\n'.encode('utf-8')
+          assert previous.startswith(header)
+          entry = '''## 2026-10-19 – Inventar: mehr Listenplatz und gestaltete Scrollleiste
+          - Auf Nutzerwunsch das alte Feld unter den Gegenständen mit dem Rucksack-Auswahlhinweis vollständig aus der Darstellung nehmen. `#iteminfo` bleibt nur als unsichtbares DOM-Ziel für bestehende Codezugriffe erhalten; kein Platzbedarf durch das Feld.
+          - Neue `css/inventory-layout.css`, in `index.html` nach `potions.css` eingebunden. Gegenstandsliste statt altem 26dvh-Limit auf die verfügbare Höhe des Inventarbereichs ausdehnen: mobiles Menü und aktive Desktop-Tasche getrennt behandeln. Überschrift/Navigation bleiben außerhalb des Listen-Scrollbereichs; andere Menüs nicht auf Inventarlayout umstellen.
+          - Schmale goldene Scrollleiste auf dunkler Schiene mit abgerundetem Griff und Hoverzustand; scrollbar-color/scrollbar-width sowie WebKit-Regeln, Systemfarben-Fallback und stabiler Scrollleistenplatz. Tatsächliche Sichtbarkeit und Darstellung sind browserabhängig.
+          - Keine Änderung an Gegenstandsdetails, Tranknutzung, Ausrüsten, Wegwerfen, Kampfsperre oder Speicherung. Spielversion weiterhin v0.5.26.
+          - Vorbereitung: CSS mit Parser einschließlich Deklarationen/Medienregeln ohne Fehler geprüft. Bestehende Node-Regressionen und Diff-Prüfung als Commit-Voraussetzung. Kein gerenderter Browser-/Geräte-/Firebase-Test; Deployment, kleine Höhen und mobile/Desktop-Sichtprüfung offen.
+          '''
+          entry = '\n'.join(line.strip() for line in entry.strip().splitlines()) + '\n\n'
+          assert entry.splitlines()[0].encode('utf-8') not in previous
+          result = header + entry.encode('utf-8') + previous[len(header):]
+          assert result[len(header) + len(entry.encode('utf-8')):] == previous[len(header):]
+          log.write_bytes(result)
+          Path('.github/workflows/apply-inventory-space.yml').unlink()
+      - name: Run existing regressions and diff check
+        run: |
+          set -euo pipefail
+          for f in rpg/tests/*.mjs; do
+            echo "Running $f"
+            node "$f"
+          done
+          git diff --check
+      - name: Commit UI patch and remove one-time workflow
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rpg/css/inventory-layout.css rpg/index.html rpg/change.log .github/workflows/apply-inventory-space.yml
+          git commit -m 'style: expand inventory list and theme its scrollbar'
+          git push origin HEAD:main
