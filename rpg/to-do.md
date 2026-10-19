@@ -1,5 +1,15 @@
 # To-do – Chroniken der Schattengruft
 
+## Arbeitsentscheidung 2026-10-19 – Abschluss S01b und weitere Reihenfolge
+Dieser aktuelle Nachtrag hat Vorrang vor älteren Angaben zum nächsten Arbeitsschritt. Historische Testangaben bleiben unverändert.
+- [x] S01b – vom Nutzer am 2026-10-19 um 07:29 CEST als abgeschlossen bestätigt. Keine zusätzlichen Einzeltests behauptet.
+- [ ] T08-Teilpaket: Q/E/R für Klassenfähigkeit 1/2/3; E-Interaktion durch Leertaste und Enter ersetzen. Bestehende Eingabepfade und Konflikte prüfen, gemeinsame Aktionssperren erhalten. Tutorial, Hilfe und Desktop-Hinweise aktualisieren; Tastaturtests und Geräteabnahme dokumentieren. Übrige T08-Anforderungen bleiben offen.
+- [ ] Danach Grafik-/Oberflächenabschluss: T04, T09, visuelle Teile T10/T11, T13, T15 und T14-Gesamtabnahme. Funktionale Restanforderungen nicht allein wegen einer visuellen Überarbeitung abhaken.
+- [ ] Erst nach abgeschlossenem vereinbartem Grafikumfang und Abnahme v0.6.0 veröffentlichen; Versionsanzeigen und Cache-/Buildbezüge gemeinsam prüfen.
+- [ ] Anschließend S01c: Truhenbelohnung bei Platzmangel ohne Verlust. Vor Umsetzung Regel für getrennte Goldentnahme oder gemeinsame Entnahme festlegen; danach übrige Stabilisierung fortsetzen.
+- Inventardetails ea341d3 sind auf main veröffentlicht. Geräte-/Speicherabnahme des Detailvergleichs bleibt separat offen.
+
+
 ## Inventarabschluss – Patch 2026-10-19
 - [ ] Inventardetails und Vergleich im Codespace implementiert: Antippen ohne Aktion, Ausrüsten/Nutzen separat, grün/rot/neutrale Differenzen zum gleichen Platz. 23 Assertions mit DOM-/Aktions-Mocks und 1027 bestehende Inventarprüfungen bestanden; Syntaxprüfungen der drei Module und Diff-Prüfung ohne Fehler. Push und Deploy zum Prüfzeitpunkt sowie echte Geräte-/Speicherabnahme offen. Danach bestehende Planung fortsetzen; keine anderen Aufgaben damit abhaken.
 
@@ -60,7 +70,7 @@ Stand: 2026-10-16. Zentrale Arbeitsplanung und Masterplan. Offene Punkte nicht m
 Status: teilweise implementiert, nicht vollständig abgenommen. Keine andere funktionale S-Abhängigkeit; bestehende Daten und Aufrufer zuerst prüfen.
 - [ ] S01a – Inventarvertrag festlegen und absichern: positive ganzzahlige Mengen, bekannte Item-IDs, Stapel-/Platzgrenzen. Fehlgeschlagenes Hinzufügen/Entfernen darf keine Teiländerung hinterlassen; eindeutiges Ergebnis mit Fehlergrund. Sämtliche aktiven Aufrufer vor Vertragsänderung erfassen und kompatibel anpassen.
   - Implementierung veröffentlicht: `6370e26d1e62fb8e856457284591424e2978d2f8`; atomare Einzeloperationen, boolesche Rückgaben erhalten, detaillierte try-Funktionen und wiederholbarer Node-Test. Lokale integrierte Suite: 1027 Prüfungen mit Item-Fixtures bestanden; frühere größere Vergleichssuite separat, nicht addieren oder als Browserprüfung ausgeben. Vollständige Aufrufer-/Geräteprüfung und eigener Changelog-Nachtrag offen.
-- [ ] S01b – Ausrüstungswechsel vollständig auf Kopie berechnen und erst als Ganzes übernehmen; volle Tasche und durch den Wechsel frei werdenden Slot berücksichtigen. Ablegen ebenso auf Erfolg prüfen. Kein verlorener oder duplizierter Gegenstand.
+- [x] S01b – Ausrüstungswechsel vollständig auf Kopie berechnen und erst als Ganzes übernehmen; volle Tasche und durch den Wechsel frei werdenden Slot berücksichtigen. Ablegen ebenso auf Erfolg prüfen. Kein verlorener oder duplizierter Gegenstand.
   - Status: implementiert und dokumentiert – echte Abnahme offen. Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`, veröffentlicht am 2026-10-16 16:55:10 CEST laut Git. Kein neuer Versionsstand; weiterhin v0.5.26.
   - Direkter Ersatz von equipItemFromInv()/unequipSlot() in rpg/js/main.js, keine neuen globalen Handler. Erst neue Ausrüstung auf Kopie entnehmen, dann bisherige zurücklegen; nur vollständiges Ergebnis übernehmen. Ablegen bei Fehler ohne Datenverlust abbrechen. Preise, Werte, Balance und Speicherablauf nicht geändert.
   - Tests: 31 lokale Prüfungen mit tatsächlichen Ersatzfunktionen und hashgeprüftem S01a-Code, aber Item-/Sound-/Log-/HUD-Stubs bestanden. Syntaxprüfung des vorbereiteten Gesamtcodes bestanden. Testannahme zur konstanten Taschenbelegung korrigiert: ein zuvor leerer Ausrüstungsplatz darf die Taschenbelegung verringern. Kein echter Browser-/Firebase-/Speicher-/Neuladetest; Deployment nicht separat geprüft.

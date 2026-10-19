@@ -1,5 +1,16 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## Arbeitsentscheidung 2026-10-19 – Abschluss S01b und weitere Reihenfolge
+- Nutzer bestätigt am 2026-10-19 um 07:29 CEST S01b als abgeschlossen. Diese Rückmeldung ersetzt den bisherigen offenen Abschlussstatus; keine nachträgliche Behauptung einzelner Geräte-, Firebase- oder Speicherprüfungen.
+- Reparaturnachtrag: main.js durch Codespace-Commit fe96ab2 und discard-ui.js durch 2921285 aus def0d29 wiederhergestellt. Die jeweiligen Blob-Vergleiche wurden vom Nutzer im Terminal gezeigt. Nutzer bestätigte anschließend, dass das Projekt wieder läuft. Zuvor vom Assistenten geschriebene Platzhalter waren fehlerhafte Schreibinhalte, kein nachgewiesener Connectorfehler.
+- Button-Fix 7c91e5d: vorhandenen Inventar-Aktionsbutton für Ausrüsten/Nutzen verwenden, alte Aktionstexte aus der Darstellung entfernen. Nutzerbericht: scheint zu funktionieren; keine vollständige Geräteabnahme daraus ableiten.
+- Inventardetails ea341d3: aufklappbare Details, Vergleich zum gleichen Ausrüstungsplatz, getrennte Aktionen. Push auf main durch Terminalausgabe bestätigt. 23 neue Mock-Assertions, 1027 Inventarprüfungen und Syntaxprüfungen bestanden. Echte Abnahme des neuen Detailvergleichs bleibt offen.
+- Neue vom Nutzer festgelegte Priorität: zuerst Dokumentation, dann Q/E/R für Klassenfähigkeiten. Interaktion von E auf Leertaste und Enter verlegen; Tutorial, Hilfe, sichtbare Hinweise und zugängliche Beschriftungen mitprüfen.
+- Danach vereinbarten Grafik-/Oberflächenumfang fertigstellen und abnehmen; erst anschließend Versionswechsel auf v0.6.0. Diese Dokumentationsänderung erhöht die Spielversion nicht.
+- Danach S01c und die bestehende Stabilisierung fortsetzen. Andere offene S-/T-Aufgaben werden durch diese Entscheidung nicht automatisch abgeschlossen.
+- Prüfstand dieses Eintrags: Dokumentationsnachtrag anhand Git-/Terminalnachweisen und Nutzerentscheidungen. Kein neuer Spielcode und keine neuen Spieltests. Ältere historische Aussagen bleiben als damaliger Stand erhalten.
+
+
 ## 2026-10-19 – Inventardetails und Ausrüstungsvergleich
 - Ausgangspunkt: Button-Fix 7c91e5d. Gegenstand antippen öffnet/schließt nur Details, maximal eine Zeile geöffnet; kein Ausrüsten oder Verbrauch durch den Detailklick.
 - Native Detailbuttons mit aria-expanded/aria-controls, sichere Textausgabe. Vergleich zum gleichen Ausrüstungsplatz anhand der vorhandenen Angriff-/Verteidigungslogik; grün/rot/neutral mit numerischen Differenzen. Leerer Platz als null Bonus, ungültige angelegte Ausrüstung ausdrücklich melden.
