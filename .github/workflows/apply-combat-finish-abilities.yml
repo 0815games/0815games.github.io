@@ -1,0 +1,124 @@
+name: Apply and test ability combat finish
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-combat-finish-abilities.yml'
+      - 'rpg/tests/combat-finish-abilities.mjs'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: apply-combat-finish-abilities
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'pipboy3003/pipboy3003.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Patch combat effects for ability finish
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('rpg/js/systems/combat-effects.js')
+          s = p.read_text()
+          anchor = 'paint();\n});}'
+          addition = """
+          combat.addEventListener('click', e => {
+            const button = e.target?.closest?.('.ability-btn');
+            if (!button || busy || !state.inCombat || !state.activeMonster || urgent()) return;
+            const original = button.onclick;
+            if (typeof original !== 'function') return;
+            e.stopImmediatePropagation();
+            const id = button.dataset.ability;
+            paint(); fx.clear();
+            const p = state.player, m = state.activeMonster;
+            const t = {player: p, monster: m, tiles: state.world.tiles, slot: state.currentSlot, uid: state.user?.uid};
+            const before = {hp: p.hp, mp: p.mp, mhp: m.hp, level: p.level};
+            const events = [];
+            busy = true; closing = false; ticket = t;
+            const gfx = window.__rpg?.renderer, oldText = gfx?.text;
+            const textHook = function(text, x, y, ...rest) {
+              if (/^(KRIT -|-)\\d+/.test(String(text))) {
+                const side = x === m.x && y === m.y ? 'enemy' : x === p.x && y === p.y ? 'hero' : null;
+                if (side) events.push({text: String(text), side});
+              }
+              return oldText.call(this, text, x, y, ...rest);
+            };
+            if (typeof oldText === 'function') gfx.text = textHook;
+            try { original.call(button, e); }
+            catch (error) { finish(t, true); throw error; }
+            finally { if (gfx?.text === textHook) gfx.text = oldText; }
+            if (!same(t) || urgent()) { finish(t, true); return; }
+            if (!state.inCombat && combat.classList.contains('hidden')) { closing = true; combat.classList.remove('hidden'); }
+            paint();
+            unlockTimer = setTimeout(() => finish(t), COMBAT_FINISH_MS);
+            try {
+              const hp = point(hero), mp = point(enemy);
+              const ranged = id === 'frost_bolt';
+              const healed = Math.max(0, p.hp - before.hp);
+              const mana = Math.max(0, p.mp - before.mp);
+              const heroDamage = Math.max(0, before.hp - p.hp - healed);
+              if (m.hp < before.mhp) {
+                if (ranged) fx.projectile(hp, mp, false); else fx.slash(mp);
+                if (!events.some(x => x.side === 'enemy')) events.push({text: `-${before.mhp - m.hp}`, side: 'enemy'});
+              }
+              if (healed > 0) events.push({text: `+${healed} TP`, side: 'hero', color: '#8ce5af'});
+              if (mana > 0) events.push({text: `+${mana} MP`, side: 'hero', color: '#83cfee'});
+              if (heroDamage > 0 && !events.some(x => x.side === 'hero' && String(x.text).startsWith('-'))) events.push({text: `-${heroDamage}`, side: 'hero'});
+              const won = !state.inCombat && p.hp > 0 && m.hp <= 0 && Array.isArray(state.world.monsters) && !state.world.monsters.includes(m);
+              const markDefeated = () => {
+                if (!won || ticket !== t || !same(t) || urgent()) return;
+                t.defeatReady = true; paint();
+              };
+              const impactDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 200;
+              let offset = 0;
+              for (const item of events) {
+                const isHero = item.side === 'hero', pos = isHero ? hp : mp;
+                const color = item.color || (isHero ? '#ff8b96' : '#f7d590');
+                const shift = offset++ * 6;
+                if (!isHero && ranged && won) {
+                  fx.later(() => {
+                    if (ticket !== t || !same(t) || urgent()) return;
+                    fx.number(item.text, pos, color, shift);
+                    fx.react(enemy); markDefeated();
+                  }, impactDelay);
+                } else {
+                  fx.number(item.text, pos, color, shift);
+                  if (!isHero && ranged) fx.later(() => { if (ticket === t && same(t) && !urgent()) fx.react(enemy); }, 200);
+                  else { fx.hit(pos, color); fx.react(isHero ? hero : enemy, isHero); }
+                }
+              }
+              if (won && !ranged) markDefeated();
+            } catch (error) { fx.clear(); console.warn('Kampfeffekte:', error); }
+          }, true);
+          """
+          assert s.count(anchor) == 1, 'anchor not unique'
+          s = s.replace(anchor, addition + '\n' + anchor)
+          p.write_text(s)
+      - name: Run regression tests
+        run: |
+          set -euo pipefail
+          for f in rpg/tests/*.mjs; do
+            echo "Running $f"
+            node "$f"
+          done
+      - name: Commit applied finish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rpg/js/systems/combat-effects.js
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "fix: extend 850ms combat finish to abilities and poison"
+            git push
+          fi
