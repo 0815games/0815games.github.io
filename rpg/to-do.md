@@ -1,5 +1,11 @@
 # To-do – Chroniken der Schattengruft
 
+## Offene Fragen – Waffenprogression und Gegenstandsquellen (2026-10-19)
+- [ ] Waffenlogik und stärkere Waffen: aktuellen Ablauf prüfen und erklären. Wie kommt der Spieler an stärkere Waffen? Tatsächliche Vergabewege, Werteentwicklung und gegebenenfalls Klassen-/Level-/Ebenenabhängigkeiten im aktiven Code nachvollziehen.
+- [ ] Upgrade-Idee prüfen: Kann gleiche Ausrüstung mit gleicher Ausrüstung verbessert werden? Zuerst feststellen, ob bereits eine solche Funktion existiert; andernfalls als Konzept bewerten und Regeln, Kosten, Grenzen und Gegenstandserhalt vor einer Umsetzung abstimmen. Noch kein beschlossenes Upgrade-System.
+- [ ] Gegenstandsverfügbarkeit prüfen: Sind alle definierten Gegenstände tatsächlich im Spiel erreichbar? Für jeden Gegenstand die aktiven Bezugsquellen erfassen und zwischen Fund-/Belohnungsgegenständen, ausschließlich im Shop erhältlichen Gegenständen und definierten, aber nicht erreichbaren Einträgen unterscheiden. Code-Definition allein gilt nicht als Nachweis der Ingame-Verfügbarkeit.
+- Status: offene Analyse-/Konzeptfragen auf Nutzerwunsch. Keine neue Waffen-, Upgrade-, Loot- oder Shoplogik implementiert; bestehende Prioritäten und Aufgaben-IDs bleiben unverändert.
+
 ## Trankpaket – 2026-10-19
 - [ ] T07 implementiert – Abnahme offen: geteilter Heil-/Mana-Kampfbutton; beide kosten einen Zug, leere Bestände keinen. Tastatur 3/5; kein Umgehen über Inventar.
 - [ ] Inventar-Nutzen für Heil-/Manatränke per Zeilen-Callback repariert. Ressourcen, Mengen, beide Buttonhälften, Tastatur, Doppelklick, 850-ms-Sperre und Gift-Kill real testen; mobile/Desktop, Deploy sowie Speichern/Neuladen offen.

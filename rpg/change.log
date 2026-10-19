@@ -1,5 +1,9 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Planungsnachtrag: Waffen und Gegenstandsverfügbarkeit
+- In to-do.md offene Nutzerfragen zu Waffenlogik/stärkeren Waffen, möglichem Verbessern identischer Ausrüstung und tatsächlichen Ingame-/Shop-Bezugsquellen ergänzt.
+- Analyse und Konzeptklärung, keine Funktionszusage und keine Umsetzung eines Upgrade-Systems. Bestehende Aufgaben, Prioritäten, Spielcode und Spielversion v0.5.26 unverändert. Reiner Dokumentationsnachtrag; keine neuen Spieltests durchgeführt.
+
 ## 2026-10-19 – Tränke: Inventar-Nutzen und geteilter Kampfbutton
 - Heil-/Manatränke im Inventar über einen gegen veraltete Zeilenauswahl geschützten Callback an die vorhandene Nutzen-Aktion anbinden; Sperren gegen Inventarnutzung im Kampf beibehalten. Entfernten Hilfstext nicht wiederherstellen.
 - Kampf: bisheriger Trankplatz mit zwei eigenständigen, gleich breiten Buttons. Links Heilung, rechts Mana; dunkelgrüne/-blaue Flächen mit goldener, visuell um 30 Grad zur Senkrechten geneigter Trennlinie. Klickflächen bleiben lückenlos und überschneidungsfrei rechteckig. Separate Bestände, Fokus- und Leerzustände.
