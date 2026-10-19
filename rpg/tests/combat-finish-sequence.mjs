@@ -15,12 +15,16 @@ function setup(){
  const flush=()=>{while(micro.length)micro.shift()();};
  function tick(ms){const end=now+ms;while(true){const ready=[...timers].filter(([,t])=>t.at<=end).sort((a,b)=>a[1].at-b[1].at);if(!ready.length)break;const [id,t]=ready[0];timers.delete(id);now=t.at;t.fn();flush();}now=end;}
  class Element{
-  constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.attrs={};this.listeners={};this.style={};this.className='';this.disabled=false;this.hidden=false;this.parts={};this.dataset={};this.parentElement=null;this.id='';this.classList={contains:n=>this.className.split(' ').includes(n),add:n=>{if(!this.classList.contains(n))this.className+=' '+n;},remove:n=>{this.className=this.className.split(' ').filter(x=>x!==n).join(' ');}};}
+  constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.attrs={};this.listeners={};this.style={};this.className='';this.disabled=false;this.hidden=false;this.parts={};this.dataset={};this.parentElement=null;this.id='';this.removed=false;this.classList={contains:n=>this.className.split(' ').includes(n),add:n=>{if(!this.classList.contains(n))this.className+=' '+n;},remove:n=>{this.className=this.className.split(' ').filter(x=>x!==n).join(' ');}};}
+  get parentNode(){return this.parentElement;}
+  get firstChild(){return this.children[0]||null;}
   setAttribute(k,v){this.attrs[k]=String(v);}getAttribute(k){return this.attrs[k]??null;}removeAttribute(k){delete this.attrs[k];}
   append(node){node.parentElement=this;this.children.push(node);bodyChildren.push(node);}
+  insertBefore(node,ref){node.parentElement=this;if(ref){const i=this.children.indexOf(ref);if(i>=0)this.children.splice(i,0,node);else this.children.push(node);}else this.children.push(node);bodyChildren.push(node);return node;}
+  remove(){if(this.parentElement){const i=this.parentElement.children.indexOf(this);if(i>=0)this.parentElement.children.splice(i,1);}this.parentElement=null;this.removed=true;}
   after(node){nodes[node.id]=node;}
   querySelector(selector){return this.parts[selector]||null;}
-  querySelectorAll(selector){if(selector==='.ability-btn')return this.abilityButtons||[];if(selector==='.exp-popup')return bodyChildren.filter(n=>n.className==='exp-popup');return [];}
+  querySelectorAll(selector){if(selector==='.ability-btn')return this.abilityButtons||[];if(selector==='.exp-popup')return bodyChildren.filter(n=>n.className==='exp-popup'&&!n.removed);return [];}
   addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);}
   contains(node){return this===node||this.children.some(n=>n.contains(node))||Object.values(this.parts).includes(node);}
   matches(selector){if(selector==='.ability-btn')return this.className.split(' ').includes('ability-btn');if(selector==='#boss-loot-dialog[open]')return this.id==='boss-loot-dialog'&&this.attrs.open==='true';return false;}
@@ -41,7 +45,7 @@ function setup(){
  const levelupBox=new Element('div');levelupBox.className='levelup-box';
  const levelupChoice=new Element('div');levelupChoice.className='levelup-choice';levelupChoice.append(levelupBox);
  const bossDialog=new Element('div');bossDialog.id='boss-loot-dialog';
- const document={readyState:'complete',hidden:false,body,head,getElementById:id=>nodes[id]||null,createElement:tag=>new Element(tag),querySelector:selector=>{if(selector==='.levelup-choice .levelup-box')return levelupBox;if(selector==='#boss-loot-dialog[open]')return bossDialog.attrs.open==='true'?bossDialog:null;return env.urgent?{}:null;},querySelectorAll:selector=>{if(selector==='.exp-popup')return bodyChildren.filter(n=>n.className==='exp-popup');return [];},addEventListener:(type,fn)=>{(docEvents[type]??=[]).push(fn);}};
+ const document={readyState:'complete',hidden:false,body,head,getElementById:id=>nodes[id]||null,createElement:tag=>new Element(tag),querySelector:selector=>{if(selector==='.levelup-choice .levelup-box')return levelupBox;if(selector==='#boss-loot-dialog[open]')return bossDialog.attrs.open==='true'?bossDialog:null;return env.urgent?{}:null;},querySelectorAll:selector=>{if(selector==='.exp-popup')return bodyChildren.filter(n=>n.className==='exp-popup'&&!n.removed);return [];},addEventListener:(type,fn)=>{(docEvents[type]??=[]).push(fn);}};
  nodes.attack.onclick=function(){env.calls++;monster.hp-=20;rendererInstance.text('-20',monster.x,monster.y);if(monster.hp<=0){state.inCombat=false;state.world.monsters=[];nodes.combat.classList.add('hidden');rendererInstance.text('+20 EP',monster.x,monster.y);}};
  const sandbox={state,ITEMS:{},sound:{potion(){}},drawCharacter(){},drawMonsterPortrait(){},createBattleFX:()=>fx,COMBAT_FINISH_MS,document,window,setTimeout:schedule,clearTimeout:cancel,queueMicrotask:fn=>micro.push(fn),MutationObserver:class{constructor(fn){this.fn=fn;}observe(node){observers.push({node,fn:this.fn});}},matchMedia:()=>({matches:false}),console,Renderer};
  vm.runInNewContext(effectsSource.replace(/^import .*;\n/gm,''),sandbox);flush();
@@ -51,7 +55,7 @@ function setup(){
  function click(id){const e=event(nodes[id]);for(const fn of nodes.combat.listeners.click||[]){fn(e);if(e.stopped)return e;}if(!nodes[id].disabled)nodes[id].onclick(e);flush();return e;}
  const enemy=()=>nodes['combat-display'].children[1];
  const numbers=()=>records.filter(r=>r.kind==='number');
- const rewards=()=>bodyChildren.filter(n=>n.id==='combat-reward-feedback');
+ const rewards=()=>bodyChildren.filter(n=>n.id==='combat-reward-feedback'&&!n.removed);
  return {state,player,monster,nodes,enemy,click,tick,notify,env,document,numbers,records,liveFX,rewards,levelupChoice,levelupBox,bossDialog,rendererInstance};
 }
 test('850ms constant',()=>assert.equal(COMBAT_FINISH_MS,850));
