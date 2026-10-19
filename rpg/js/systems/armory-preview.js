@@ -1,6 +1,7 @@
 import {drawCharacter} from '../world/character.js';
 import {state} from '../core/state.js';
 import {ITEMS} from '../data/items.js';
+import {cloud} from './firebase.js';
 import {equipmentCandidates} from './equipment-candidates.js';
 const views=new WeakMap();
 export function renderArmory(panel,player,stats,depth,options={}){
@@ -44,8 +45,28 @@ function showSlotChoices(panel,player,slot,trigger){
  section.className='armory-slot-choices';section.setAttribute('role','region');section.setAttribute('aria-label',`Passende Gegenstände: ${slotNames[slot]}`);section.style.cssText='margin:12px 0;padding:12px;border:1px solid #b69960;border-radius:12px;background:#111520';
  heading.textContent=`Passende Gegenstände · ${slotNames[slot]}`;heading.style.margin='0 0 10px';section.append(heading);
  const matches=equipmentCandidates(player.inventory,slot,ITEMS);
- if(matches.length){list.style.cssText='margin:0 0 12px;padding-left:20px';for(const item of matches){const row=doc.createElement('li');row.textContent=`${item.icon} ${item.name}${item.count>1?' ×'+item.count:''}`;list.append(row);}section.append(list);}
- else{const message=doc.createElement('p');message.textContent='Kein passender Gegenstand im Rucksack.';section.append(message);}
+ const status=doc.createElement('p');status.setAttribute('role','status');status.style.cssText='margin:8px 0;color:#efd194';
+ const ticket={player,slot,section,uid:state.user.uid,saveSlot:state.currentSlot,world:state.world,tiles:state.world?.tiles,inventory:player.inventory,equipped:player.equipped,busy:false,done:false};
+ if(matches.length){
+  list.style.cssText='margin:0 0 12px;padding-left:20px';
+  for(const item of matches){
+   const row=doc.createElement('li'),choose=doc.createElement('button');row.textContent=`${item.icon} ${item.name}${item.count>1?' ×'+item.count:''}`;row.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0;overflow-wrap:anywhere';
+   choose.type='button';choose.textContent='Ausrüsten';choose.setAttribute('aria-label',`${item.name} ausrüsten`);choose.style.cssText='min-height:44px;padding:8px 12px;background:#24293c;color:#f1dfb5;border:1px solid #a68750;border-radius:9px';
+   choose.onclick=()=>{
+    choose.disabled=true;
+    try{
+     if(equipSlotChoice(ticket,item,doc)){
+      section.remove();trigger.setAttribute('aria-expanded','false');
+      doc.getElementById('slot-item-'+slot)?.closest('.equip-slot-box')?.querySelector('.btn-unequip')?.focus();
+     }else status.textContent='Auswahl nicht mehr gültig oder Ausrüsten nicht möglich. Bitte die Auswahl erneut öffnen.';
+    }catch(error){status.textContent='Ausrüsten konnte nicht abgeschlossen werden. Bitte Inventar und Ausrüstung prüfen.';}
+    finally{if(section.isConnected)choose.disabled=false;}
+   };
+   row.append(choose);list.append(row);
+  }
+  section.append(list);
+ }else{const message=doc.createElement('p');message.textContent='Kein passender Gegenstand im Rucksack.';section.append(message);}
+ section.append(status);
  close.type='button';close.textContent='Schließen';close.style.cssText='min-height:44px;padding:8px 12px;background:#24293c;color:#f1dfb5;border:1px solid #a68750;border-radius:9px';
  close.onclick=()=>{section.remove();trigger.setAttribute('aria-expanded','false');if(trigger.isConnected)trigger.focus();};section.append(close);panel.querySelector('.equip-grid').after(section);trigger.setAttribute('aria-expanded','true');close.focus({preventScroll:true});section.scrollIntoView?.({block:'nearest'});
 }
@@ -59,4 +80,17 @@ function bindEmptySlots(panel,player){
   trigger.setAttribute('aria-label',`${slotNames[slot]}: passende Gegenstände anzeigen`);trigger.setAttribute('aria-expanded','false');card.style.cursor='pointer';
   card.onclick=e=>{if(e.target.closest?.('.btn-unequip'))return;showSlotChoices(panel,player,slot,trigger);};
  }
+}
+function equipSlotChoice(ticket,item,doc){
+ const p=ticket.player;
+ if(ticket.busy||ticket.done||!ticket.section.isConnected)return false;
+ if(state.player!==p||state.user?.uid!==ticket.uid||cloud.auth?.currentUser?.uid!==ticket.uid||state.currentSlot!==ticket.saveSlot||state.world!==ticket.world||state.world?.tiles!==ticket.tiles||p.inventory!==ticket.inventory||p.equipped!==ticket.equipped)return false;
+ if(state.inCombat||p.hp<=0||p.needsPreparation||p.equipped?.[ticket.slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
+ if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return false;
+ const current=p.inventory[item.index];
+ if(!Number.isInteger(item.index)||current!==item.entry||current?.id!==item.id||current?.count!==item.count||!Number.isSafeInteger(current?.count)||current.count<1||!Object.prototype.hasOwnProperty.call(ITEMS,item.id)||ITEMS[item.id]?.slot!==ticket.slot)return false;
+ const row=doc.getElementById(`inventory-detail-${item.index}`)?.closest('.item');
+ if(typeof row?.inventoryEquipAction!=='function')return false;
+ ticket.busy=true;
+ try{row.inventoryEquipAction();if(p.equipped?.[ticket.slot]!==item.id)return false;ticket.done=true;return true;}finally{ticket.busy=false;}
 }
