@@ -1,5 +1,10 @@
 # To-do – Chroniken der Schattengruft
 
+## T10 – Heldenübersicht der Vorbereitungs-Rüstkammer, 2026-10-19
+- [ ] Implementiert – Abnahme offen: Vorschau der tatsächlich angelegten Ausrüstung, Name/Klasse/Level, getrenntes Ordensgold und letzter Run sowie ATK/DEF mit Basiswerten. Vorhandene Shop-Berechnung und Kauf-/Speicherlogik erhalten.
+- [ ] Mobile/Desktop und geringe Höhe prüfen: Öffnen nach Tod ohne verlorene Ausrüstung, Vorschau/Werte nach erfolgreichem Kauf bzw. Speicherfehler korrekt, Kategorien/Bestätigung/Run-Start erreichbar. Kein vollständiger T10-/T14-Abschluss durch reine Helpertests.
+- 13 vorbereitende Darstellungsprüfungen mit DOM-/Canvas-Doubles; Anbindung/Statistik und bestehende Regressionen als Commit-Voraussetzung. Deploy und echte Abnahme offen. Danach T11-Vergleich und Bestätigung am Angebot; kein Versionssprung auf v0.6.0.
+
 ## Offene Fragen – Waffenprogression und Gegenstandsquellen (2026-10-19)
 - [ ] Waffenlogik und stärkere Waffen: aktuellen Ablauf prüfen und erklären. Wie kommt der Spieler an stärkere Waffen? Tatsächliche Vergabewege, Werteentwicklung und gegebenenfalls Klassen-/Level-/Ebenenabhängigkeiten im aktiven Code nachvollziehen.
 - [ ] Upgrade-Idee prüfen: Kann gleiche Ausrüstung mit gleicher Ausrüstung verbessert werden? Zuerst feststellen, ob bereits eine solche Funktion existiert; andernfalls als Konzept bewerten und Regeln, Kosten, Grenzen und Gegenstandserhalt vor einer Umsetzung abstimmen. Noch kein beschlossenes Upgrade-System.

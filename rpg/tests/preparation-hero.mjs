@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+const source=await readFile(new URL('../js/systems/preparation-hero.js',import.meta.url),'utf8');
+let checks=0;const test=(name,fn)=>{try{fn();checks++;}catch(e){e.message=name+': '+e.message;throw e;}};
+function setup(){const calls=[];let noCanvas=false;const doc={createElement:tag=>new Element(tag)};class Element{constructor(tag){this.tagName=tag.toUpperCase();this.ownerDocument=doc;this.children=[];this.attributes={};this.hidden=false;this.textContent='';}append(...nodes){this.children.push(...nodes);}replaceChildren(...nodes){this.children=nodes;}setAttribute(k,v){this.attributes[k]=v;}getContext(){return noCanvas?null:{clearRect(){}};}}const ctx={drawCharacter:(...args)=>calls.push(args),console};vm.runInNewContext(source.replace(/^import .*;\n/gm,'').replace('export function','function')+'\nthis.render=renderPreparationHero;',ctx);return {host:new Element('div'),render:ctx.render,calls,noCanvas:()=>{noCanvas=true;}};}
+const player=()=>({name:'Held',heroClass:'warrior',level:6,atk:8,def:4,gold:999,lastRunGold:80,equipped:{mainhand:'order_warrior_2',body:'order_body_2'}});
+const texts=n=>[n.textContent,...n.children.flatMap(texts)];
+test('distinct gold and combat cards',()=>{const h=setup();h.render(h.host,player(),{gold:240},{atk:18,def:9},{classLabel:'Eisenbrecher',tier:2});const values=texts(h.host);for(const text of ['Ordensgold','240','Letzter Run','+80','Angriff','18','Verteidigung','9','Basis 8','Basis 4'])assert.ok(values.includes(text),text);assert.ok(!values.includes('999'));});
+test('draws actual player and equipment',()=>{const h=setup(),p=player();h.render(h.host,p,{gold:0},{atk:18,def:9});assert.equal(h.calls.length,1);assert.equal(h.calls[0][1],p);assert.equal(h.calls[0][1].equipped,p.equipped);});
+test('rendering does not mutate state',()=>{const h=setup(),p=player(),m={gold:240},s={atk:18,def:9},before=JSON.stringify({p,m,s});h.render(h.host,p,m,s);assert.equal(JSON.stringify({p,m,s}),before);});
+test('rerender replaces rather than duplicates summary',()=>{const h=setup(),p=player();h.render(h.host,p,{gold:240},{atk:18,def:9});p.equipped.mainhand='order_warrior_3';h.render(h.host,p,{gold:170},{atk:20,def:9});assert.equal(h.host.children.length,1);assert.ok(texts(h.host).includes('170'));assert.ok(!texts(h.host).includes('240'));assert.equal(h.calls.length,2);});
+for(const cls of ['warrior','mage','rogue'])test('class '+cls,()=>{const h=setup(),p=player();p.heroClass=cls;h.render(h.host,p,{gold:0},{atk:8,def:4},{classLabel:cls,tier:1});assert.equal(h.calls[0][1].heroClass,cls);});
+test('empty equipment is not replaced with offered items',()=>{const h=setup(),p=player();p.equipped={mainhand:null,body:null};h.render(h.host,p,{gold:0},{atk:8,def:4},{tier:10});assert.equal(h.calls[0][1].equipped.mainhand,null);assert.equal(h.calls[0][1].equipped.body,null);});
+test('canvas has accessible label',()=>{const h=setup();const root=h.render(h.host,player(),{},{atk:8,def:4});assert.equal(root.children[0].attributes.role,'img');assert.match(root.children[0].attributes['aria-label'],/Held/);});
+test('names use text, not HTML',()=>{const h=setup(),p=player();p.name='<img src=x onerror=alert(1)>';h.render(h.host,p,{},{atk:8,def:4});assert.ok(texts(h.host).includes(p.name));assert.equal(h.host.children[0].children[1].children[0].children.length,0);});
+test('missing canvas keeps numbers available',()=>{const h=setup();h.noCanvas();const root=h.render(h.host,player(),{gold:15},{atk:18,def:9});assert.equal(root.children[0].hidden,true);assert.equal(root.children.at(-1).hidden,false);assert.ok(texts(h.host).includes('15'));});
+test('default missing run gold is zero',()=>{const h=setup(),p=player();delete p.lastRunGold;h.render(h.host,p,{},{});assert.ok(texts(h.host).includes('+0'));});
+test('no action controls added to summary',()=>{const h=setup();h.render(h.host,player(),{},{atk:8,def:4});const tags=n=>[n.tagName,...n.children.flatMap(tags)];assert.ok(!tags(h.host).includes('BUTTON'));});
+if(!process.argv.includes('--helper-only')){
+ const shop=await readFile(new URL('../js/systems/preparation-shop.js',import.meta.url),'utf8');
+ test('shop uses presentation helper with existing stats',()=>{assert.ok(shop.includes('renderPreparationHero(info,p,state.meta,s,'));assert.ok(shop.includes('<div class="shop-info"></div>'));});
+ test('actual shop stats retain equipment bonuses',()=>{const start=shop.indexOf('function stats()'),end=shop.indexOf('function render()',start);assert.ok(start>=0&&end>start);const state={player:player()},ITEMS={order_warrior_2:{type:'weapon',val:8},order_body_2:{type:'armor',val:4}};const context={state,ITEMS};vm.runInNewContext(shop.slice(start,end)+';this.result=stats();',context);assert.equal(context.result.atk,16);assert.equal(context.result.def,8);});
+}
+console.log(JSON.stringify({checks,passed:checks,scope:'Actual presentation helper with DOM/canvas doubles; shop bindings/stat function additionally checked in repository mode. No browser, pixel, purchase or Firebase test.'}));

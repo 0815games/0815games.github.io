@@ -1,0 +1,18 @@
+/* T10: presentation only, scoped to the preparation shop. */
+html body #preparation-shop[role="dialog"] .shop-info{padding:12px;white-space:normal;margin:0}
+html body #preparation-shop[role="dialog"] .shop-hero{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;align-items:center}
+html body #preparation-shop[role="dialog"] .shop-hero__preview{display:block;width:72px;height:72px;max-width:100%;margin:0;image-rendering:pixelated;background:radial-gradient(ellipse,#45395055,transparent 72%);border:1px solid #796747;border-radius:12px}
+html body #preparation-shop[role="dialog"] .shop-hero__identity{min-width:0}
+html body #preparation-shop[role="dialog"] .shop-hero__name{margin:0;font:700 17px/1.3 system-ui,sans-serif;color:#f1dfb5;overflow-wrap:anywhere}
+html body #preparation-shop[role="dialog"] .shop-hero__class,html body #preparation-shop[role="dialog"] .shop-hero__tier{margin:4px 0 0;font:400 12px/1.4 system-ui,sans-serif;overflow-wrap:anywhere}
+html body #preparation-shop[role="dialog"] .shop-hero__tier{color:#c6b58c}
+html body #preparation-shop[role="dialog"] .shop-hero__values{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0}
+html body #preparation-shop[role="dialog"] .shop-hero__stat{min-width:0;padding:8px 10px;border:1px solid #796747;border-radius:10px;background:#10121b}
+html body #preparation-shop[role="dialog"] .shop-hero__stat dt{font:400 11px/1.4 system-ui,sans-serif;color:#c9c3b5;overflow-wrap:anywhere}
+html body #preparation-shop[role="dialog"] .shop-hero__stat dd{margin:3px 0 0;font:750 20px/1.2 system-ui,sans-serif;color:#f3d593;overflow-wrap:anywhere}
+html body #preparation-shop[role="dialog"] .shop-hero__base{display:block;margin-top:4px;font:400 11px/1.3 system-ui,sans-serif;color:#b4bac9}
+html body #preparation-shop[role="dialog"] .shop-hero__fallback{grid-column:1/-1;margin:0;font-size:12px}
+html body #preparation-shop[role="dialog"]>header{max-height:none;overflow:visible}
+@media(min-width:960px){html body #preparation-shop[role="dialog"]>header{overflow:auto}html body #preparation-shop[role="dialog"] .shop-hero{grid-template-columns:minmax(0,1fr);text-align:center}html body #preparation-shop[role="dialog"] .shop-hero__preview{width:112px;height:112px;justify-self:center}}
+@media(max-height:640px){html body #preparation-shop[role="dialog"]>header{max-height:none;overflow:visible}html body #preparation-shop[role="dialog"] .shop-hero{grid-template-columns:56px minmax(0,1fr);text-align:left}html body #preparation-shop[role="dialog"] .shop-hero__preview{width:56px;height:56px;justify-self:start}html body #preparation-shop[role="dialog"] .shop-hero__values{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:479px){html body #preparation-shop[role="dialog"] .shop-hero__values{grid-template-columns:repeat(2,minmax(0,1fr))}}

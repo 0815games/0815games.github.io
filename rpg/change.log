@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – T10 Teilpaket: Heldenvorschau in der Rüstkammer
+- Neue Heldenübersicht im Vorbereitungs-Shop: vorhandener drawCharacter-Renderer erhält den aktuellen Spieler samt tatsächlich angelegter Ausrüstung. Keine Angebotsausrüstung oder verlorene Gegenstände als angelegt hinzufügen; statische Vorschau ohne Animationstimer.
+- Ordensgold und letzter Run getrennt darstellen; Angriff/Verteidigung übernehmen die vorhandene stats()-Berechnung, Basiswerte zusätzlich ausweisen. Namens-/Klassen-/Level-/Angebotsstufenanzeige mit Textknoten, keine HTML-Auswertung von Spielernamen.
+- Die Übersicht wird über den bestehenden render()-Pfad beim Öffnen, Kategorienwechsel und nach Kaufabschluss oder Rücknahme aktualisiert. Kauf-, Speicher-, Preis-, Limit-, Todes- und Neustartlogik unverändert; kritische Quellabschnitte vor Commit auf Gleichheit geprüft. T11-Angebotsvergleich und lokale Kaufbestätigung nicht enthalten.
+- Responsive Darstellung im vorhandenen Shoprahmen: mobil kompakte Vorschau über der Liste, Desktop links im bestehenden Headerbereich; kleinere Vorschau bei geringer Höhe und sichtbarer Fallback bei fehlendem Canvas. Keine Änderung der Zeichnungsregeln für Ausrüstung.
+- Neue systems/preparation-hero.js, css/preparation-hero.css und tests/preparation-hero.mjs; gezielte Anbindung in preparation-shop.js, index.html und Importrevision in core/version.js. Spielversion bleibt v0.5.26.
+- Vorbereitung: 13 Prüfungen des tatsächlichen Darstellungshelfers mit DOM-/Canvas-Doubles bestanden; CSS-Parseprüfung ohne Fehler. Repositorylauf ergänzt Anbindungs-/bestehende Statistikprüfung und führt sämtliche Node-Suites sowie Syntax-/Diffchecks vor dem Commit aus. Kein echter Browser-, Pixel-, Kauf-, Firebase- oder Geräte-Abnahmetest. Deploy und mobile/Desktop-Abnahme offen; T10 nicht pauschal abgeschlossen.
+
 ## 2026-10-19 – Inventar: mehr Listenplatz und gestaltete Scrollleiste
 - Auf Nutzerwunsch das alte Feld unter den Gegenständen mit dem Rucksack-Auswahlhinweis vollständig aus der Darstellung nehmen. `#iteminfo` bleibt nur als unsichtbares DOM-Ziel für bestehende Codezugriffe erhalten; kein Platzbedarf durch das Feld.
 - Neue `css/inventory-layout.css`, in `index.html` nach `potions.css` eingebunden. Gegenstandsliste statt altem 26dvh-Limit auf die verfügbare Höhe des Inventarbereichs ausdehnen: mobiles Menü und aktive Desktop-Tasche getrennt behandeln. Überschrift/Navigation bleiben außerhalb des Listen-Scrollbereichs; andere Menüs nicht auf Inventarlayout umstellen.

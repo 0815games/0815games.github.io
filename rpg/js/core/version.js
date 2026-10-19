@@ -1,6 +1,6 @@
 import '../systems/mobile-menu.js?v=0.5.11';
 import '../systems/session-integration.js?v=0.5.1';
-import '../systems/preparation-shop.js?v=0.4.18';
+import '../systems/preparation-shop.js?v=0.4.18&rev=t10hero1';
 import '../systems/leaderboard.js?v=0.4.19';
 import '../systems/combat-effects-bootstrap.js?v=0.5.17&rev=potions1';
 import '../systems/audio-settings.js?v=0.4.7';
