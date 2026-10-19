@@ -19,14 +19,14 @@ function create(){
   append(n){this.children.push(n);}
   prepend(n){this.children.unshift(n);}
   querySelector(sel){if(sel==='.ability-key-hint')return this.children.find(n=>n.className==='ability-key-hint')||null;if(sel==='button'){return this.button??=new Element('button');}return null;}
-  querySelectorAll(sel){if(this.id==='combat'){if(sel==='.ability-btn')return env.abilities;return [...env.abilities,nodes.attack,nodes.fire,nodes.heal,nodes.flee];}return [];}
+  querySelectorAll(sel){if(this.id==='combat'){if(sel==='.ability-btn')return env.abilities;return [...env.abilities,nodes.attack,nodes.fire,nodes.heal,nodes.mana,nodes.flee];}return [];}
   focus(){doc.activeElement=this;}
   click(){this.hits=(this.hits||0)+1;}
   showModal(){this.open=true;}
   close(){this.open=false;}
   scrollIntoView(){}
  }
- for(const id of ['combat','stage','slots-grid','items','login-screen','slot-screen','class-screen','death-screen','game','intro-screen','floor-overlay','levelup-overlay','attack','fire','heal','flee','save'])nodes[id]=new Element(['attack','fire','heal','flee','save'].includes(id)?'button':'div',id);
+ for(const id of ['combat','stage','slots-grid','items','login-screen','slot-screen','class-screen','death-screen','game','intro-screen','floor-overlay','levelup-overlay','attack','fire','heal','mana','flee','save'])nodes[id]=new Element(['attack','fire','heal','mana','flee','save'].includes(id)?'button':'div',id);
  for(const id of ['intro-screen','login-screen','slot-screen','class-screen','death-screen','floor-overlay','levelup-overlay'])nodes[id].hidden=true;
  env.abilities=[0,1,2].map(()=>new Element('button'));
  doc={readyState:'complete',hidden:false,activeElement:nodes.stage,head:new Element(),body:new Element(),getElementById:id=>nodes[id],createElement:tag=>new Element(tag),querySelectorAll:()=>[],querySelector:()=>env.blocked?{}:null,addEventListener(){}};
@@ -55,4 +55,7 @@ check(()=>{const h=create();h.doc.activeElement=h.env.abilities[2];h.press('Ente
 check(()=>{const h=create();h.press('1');assert.equal(h.nodes.attack.hits,1);});
 check(()=>{const h=create();assert.equal(h.env.abilities[1].attrs['aria-keyshortcuts'],'E');assert.equal(h.env.abilities[1].children[0].textContent,'[E] ');});
 check(()=>{const h=create();h.observers[2]();h.observers[2]();assert.equal(h.env.abilities[0].children.length,1);});
+check(()=>{const h=create();h.press('5');assert.equal(h.nodes.mana.hits,1);});
+check(()=>{const h=create();h.nodes.mana.disabled=true;h.press('5');assert.equal(h.nodes.mana.hits,undefined);});
+check(()=>{const h=create();h.press('5',{repeat:true});assert.equal(h.nodes.mana.hits,undefined);});
 console.log(JSON.stringify({checks,passed:checks,scope:'Actual keyboard.js setup/handler in VM with DOM/event/action doubles; no real browser or Firebase'}));

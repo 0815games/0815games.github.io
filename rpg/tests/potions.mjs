@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+const source=await readFile(new URL('../js/systems/potions.js',import.meta.url),'utf8');
+const {consumePotion,battlePotion}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+let checks=0;const test=(name,fn)=>{try{fn();checks++;}catch(e){e.message=name+': '+e.message;throw e;}};
+const items={health_potion:{type:'potion',effect:'hp',val:25},mana_potion:{type:'potion',effect:'mp',val:25}};
+const remove=(inv,id,n)=>{const i=inv.findIndex(x=>x.id===id);if(i<0||inv[i].count<n)return false;inv[i].count-=n;if(!inv[i].count)inv.splice(i,1);return true;};
+const player=()=>({hp:10,maxHp:50,mp:5,maxMp:30,inventory:[{id:'health_potion',count:2},{id:'mana_potion',count:2}]});
+for(const id of ['health_potion','mana_potion'])test('inventory '+id,()=>{const p=player(),i=p.inventory.findIndex(x=>x.id===id);assert.equal(consumePotion(p,i,items,remove),true);assert.equal(p.inventory[i].count,1);assert.equal(p[id==='health_potion'?'hp':'mp'],id==='health_potion'?35:30);});
+test('healing skill preserved',()=>{const p=player();consumePotion(p,0,items,remove,1);assert.equal(p.hp,40);});
+test('failed removal preserves resource and inventory',()=>{const p=player(),before=JSON.stringify(p);assert.equal(consumePotion(p,0,items,()=>false),false);assert.equal(JSON.stringify(p),before);});
+test('invalid index does nothing',()=>{const p=player(),before=JSON.stringify(p);assert.equal(consumePotion(p,-1,items,remove),false);assert.equal(JSON.stringify(p),before);});
+for(const id of ['health_potion','mana_potion'])test('battle '+id+' costs one turn',()=>{const p=player(),s={player:p,inCombat:true,activeMonster:{}},calls=[];assert.equal(battlePotion(s,id,i=>{calls.push('drink');return consumePotion(p,i,items,remove);},()=>calls.push('enemy')),true);assert.deepEqual(calls,['drink','enemy']);assert.equal(p.inventory.find(x=>x.id===id).count,1);});
+test('empty mana no turn',()=>{let turns=0;const p=player();p.inventory=p.inventory.filter(x=>x.id!=='mana_potion');assert.equal(battlePotion({player:p,inCombat:true,activeMonster:{}},'mana_potion',()=>assert.fail(),()=>turns++),false);assert.equal(turns,0);});
+test('outside combat blocked',()=>{assert.equal(battlePotion({player:player(),inCombat:false},'mana_potion',()=>assert.fail(),()=>assert.fail()),false);});
+test('failed use no enemy turn',()=>{assert.equal(battlePotion({player:player(),inCombat:true,activeMonster:{}},'mana_potion',()=>false,()=>assert.fail()),false);});
+test('cap and last potion removal',()=>{const p=player();p.hp=49;p.inventory[0].count=1;assert.equal(consumePotion(p,0,items,remove),true);assert.equal(p.hp,50);assert.equal(p.inventory.some(x=>x.id==='health_potion'),false);});
+console.log(JSON.stringify({checks,passed:checks,scope:'Actual potion helpers; item/removal/enemy-turn doubles. No browser or Firebase test.'}));

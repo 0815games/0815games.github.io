@@ -10,9 +10,9 @@ function setup(){
  const decorate=()=>{document.querySelectorAll('.slot-box.empty,.item,.slot-box').forEach(n=>{n.tabIndex=0;n.setAttribute('role','button');});};
  decorate();new MutationObserver(decorate).observe(el('slots-grid'),{childList:true});new MutationObserver(decorate).observe(el('items'),{childList:true});
  const css=document.createElement('style');css.textContent=':focus-visible{outline:3px solid #ffe082!important;outline-offset:3px}.keyboard-help{color:#fff;background:#111420;border:2px solid #c99c42;border-radius:14px;max-width:90vw;padding:20px}.keyboard-help::backdrop{background:#000b}';document.head.append(css);
- const help=document.createElement('dialog');help.className='keyboard-help';help.innerHTML='<h2>Tastatur</h2><p>Kampf: 1 Angriff, 2 Feuerball, 3 Heiltrank, 4 Flucht. Q / E / R: Klassenfähigkeiten 1 / 2 / 3.</p><p>Charakterauswahl: Pfeiltasten wählen, Enter bestätigt. Im Klassendialog: Pfeiltasten wählen die Klasse, Tab wechselt zu Name und Aktionen.</p><p>Tab / Shift+Tab: Auswahl. Enter / Leertaste: Bestätigen.</p><p>Erkundung: WASD / Pfeile, Enter / Leertaste: Interaktion auf der Karte. I Inventar, C Ausrüstung, K Skills, L Chronik, P Speichern.</p><p>Esc schließt Menüs. Im Kampf öffnet Esc diese Hilfe ohne Flucht oder Spielzug.</p><button type="button">Zurück</button>';document.body.append(help);help.querySelector('button').onclick=()=>help.close();
- const labels={attack:'[1] Angriff',fire:'[2] Feuerball',heal:'[3] Heiltrank',flee:'[4] Flucht'};
- function labelButtons(){for(const[id,text]of Object.entries(labels)){const b=el(id);b.setAttribute('aria-keyshortcuts',id==='attack'?'1':id==='fire'?'2':id==='heal'?'3':'4');if(!b.textContent.startsWith('['))b.textContent=text+(id==='fire'?' · 8 MP':id==='heal'?` · ${(state.player.inventory||[]).filter(x=>x.id==='health_potion').reduce((a,x)=>a+x.count,0)}`:'');}}
+ const help=document.createElement('dialog');help.className='keyboard-help';help.innerHTML='<h2>Tastatur</h2><p>Kampf: 1 Angriff, 2 Feuerball, 3 Heiltrank, 4 Flucht, 5 Manatrank. Q / E / R: Klassenfähigkeiten 1 / 2 / 3.</p><p>Charakterauswahl: Pfeiltasten wählen, Enter bestätigt. Im Klassendialog: Pfeiltasten wählen die Klasse, Tab wechselt zu Name und Aktionen.</p><p>Tab / Shift+Tab: Auswahl. Enter / Leertaste: Bestätigen.</p><p>Erkundung: WASD / Pfeile, Enter / Leertaste: Interaktion auf der Karte. I Inventar, C Ausrüstung, K Skills, L Chronik, P Speichern.</p><p>Esc schließt Menüs. Im Kampf öffnet Esc diese Hilfe ohne Flucht oder Spielzug.</p><button type="button">Zurück</button>';document.body.append(help);help.querySelector('button').onclick=()=>help.close();
+ const labels={attack:'[1] Angriff',fire:'[2] Feuerball',heal:'[3] Heiltrank',mana:'[5] Manatrank',flee:'[4] Flucht'};
+ function labelButtons(){for(const[id,text]of Object.entries(labels)){const b=el(id);if(!b)continue;if(id==='heal'||id==='mana'){const itemId=id==='heal'?'health_potion':'mana_potion',count=(state.player.inventory||[]).filter(x=>x?.id===itemId&&x.count>0).reduce((n,x)=>n+x.count,0);b.textContent=`${id==='heal'?'[3] Heil':'[5] Mana'} · ×${count}`;b.setAttribute('aria-keyshortcuts',id==='heal'?'3':'5');continue;}b.setAttribute('aria-keyshortcuts',id==='attack'?'1':id==='fire'?'2':id==='heal'?'3':'4');if(!b.textContent.startsWith('['))b.textContent=text+(id==='fire'?' · 8 MP':id==='heal'?` · ${(state.player.inventory||[]).filter(x=>x.id==='health_potion').reduce((a,x)=>a+x.count,0)}`:'');}}
  function labelAbilities(){
   [...combat.querySelectorAll('.ability-btn')].forEach((button,index)=>{
    const key=ABILITY_KEYS[index];if(!key)return;
@@ -55,8 +55,8 @@ function setup(){
    if(e.key==='Escape'){consume(e);if(!e.repeat)help.showModal();return;}
    const abilityButtons=[...combat.querySelectorAll('.ability-btn')],abilityIndex=ABILITY_KEYS.indexOf(e.key.toLowerCase());
    if(activateAbilityShortcut(e,abilityButtons,!!state.user?.uid&&state.player?.hp>0&&visible(abilityButtons[abilityIndex])))return;
-   const id={'1':'attack','2':'fire','3':'heal','4':'flee'}[e.key];
-   if(id){consume(e);if(!e.repeat&&!el(id).disabled)el(id).click();return;}
+   const id={'1':'attack','2':'fire','3':'heal','4':'flee','5':'mana'}[e.key];
+   if(id){consume(e);if(!e.repeat&&el(id)&&!el(id).disabled)el(id).click();return;}
    if(e.key==='Enter'||e.key===' '){consume(e);if(!e.repeat&&list.includes(document.activeElement))document.activeElement.click();return;}
    if(['w','a','s','d','e','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){consume(e);return;}
    return;

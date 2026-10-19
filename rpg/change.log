@@ -1,5 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Tränke: Inventar-Nutzen und geteilter Kampfbutton
+- Heil-/Manatränke im Inventar über einen gegen veraltete Zeilenauswahl geschützten Callback an die vorhandene Nutzen-Aktion anbinden; Sperren gegen Inventarnutzung im Kampf beibehalten. Entfernten Hilfstext nicht wiederherstellen.
+- Kampf: bisheriger Trankplatz mit zwei eigenständigen, gleich breiten Buttons. Links Heilung, rechts Mana; dunkelgrüne/-blaue Flächen mit goldener, visuell um 30 Grad zur Senkrechten geneigter Trennlinie. Klickflächen bleiben lückenlos und überschneidungsfrei rechteckig. Separate Bestände, Fokus- und Leerzustände.
+- Nutzerentscheidung 12:40 CEST: Manatrank kostet wie Heiltrank einen Zug. Nach erfolgreichem Verbrauch genau den vorhandenen Gegnerzug aufrufen; ohne Bestand/bei abgewiesener Nutzung kein Zug. Keine Änderung an Gift-, Gegner- oder Cooldownregeln.
+- Gemeinsame Trankfunktion: zunächst Verbrauch auf Inventarkopie prüfen, dann Ressourcen und Inventar übernehmen. Heilungsbonus und Maximalwerte erhalten. Bisheriges Verbrauchsverhalten bei bereits vollen Ressourcen beibehalten.
+- Mana in vorhandene 850-ms-Aktionssperre und tatsächliche MP-Wiederherstellungsanzeige integrieren. Tastatur: 3 Heilung, 5 Mana; 4 bleibt Flucht, Q/E/R unverändert. Hilfe/Touch-Texte und Importrevisionen angepasst.
+- Neue potions.js, css/potions.css und tests/potions.mjs; gezielte Anpassungen an main.js, discard-ui.js, combat-effects.js, keyboard.js, responsive-ui.js, tutorial.js, combat-effects-bootstrap.js, core/version.js und index.html.
+- Vorbereitung: 11 Prüfungen der tatsächlichen Trankhelfer mit Item-/Verbrauchs-/Gegnerzug-Doubles bestanden. Runner führt Syntaxchecks und alle Repository-Suites vor Commit erneut aus. Kein Browser-/Geräte-/Firebase-Test, keine pauschale Integrationstest-Abnahme. Deploy und mobile/Desktop-Sichtprüfung offen. Spielversion bleibt v0.5.26.
+
 ## 2026-10-19 – Inventar: platzraubenden Hilfstext entfernt
 - Auf Nutzerwunsch den Absatz „Ausrüsten oder Nutzen … Im Kampf gesperrt.“ unter der Gürteltaschen-Überschrift entfernt. In `js/systems/discard-ui.js` nur die Erzeugung und Einfügung von `#discard-help` gelöscht; kein Ersatztext oder unsichtbarer Platzhalter.
 - Gegenstandsdetails und Buttons für Ausrüsten, Nutzen und Wegwerfen bleiben unverändert. Tatsächliche Kampfsperre, Mengenbestätigung, Inventar- und Speicherlogik nicht geändert.

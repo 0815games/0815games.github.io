@@ -29,17 +29,18 @@ function setup(options={}){
   getContext(){return {clearRect(){}};}
   getBoundingClientRect(){const enemy=this.parentElement===nodes['combat-display']?.children[1];return {left:enemy?260:20,top:30,width:112,height:112};}
  }
- for(const id of ['combat','combat-info','game','stage','attack','fire','heal','flee']){const node=new Element(['attack','fire','heal','flee'].includes(id)?'button':'div');node.id=id;}
+ for(const id of ['combat','combat-info','game','stage','attack','fire','heal','mana','flee']){const node=new Element(['attack','fire','heal','mana','flee'].includes(id)?'button':'div');node.id=id;}
  const body=new Element('body'),head=new Element('head');
  const document={readyState:'complete',hidden:false,body,head,getElementById:id=>nodes[id]||null,createElement:tag=>new Element(tag),querySelector:()=>env.urgent?{}:null,querySelectorAll:()=>[],addEventListener:(type,fn)=>{(docEvents[type]??=[]).push(fn);}};
  const monster={id:'rat',name:'Ratte',hp:options.hp??10,maxHp:options.hp??10,x:2,y:1,xp:20,gold:5,atk:2,def:1};
- const player={name:'Held',hp:50,maxHp:50,mp:options.mp??30,maxMp:30,atk:10,def:3,level:1,xp:0,gold:0,inventory:options.emptyBag?[]:[{id:'health_potion',count:1}],equipped:{mainhand:options.staff?'staff':'sword'},x:1,y:1};
+ const player={name:'Held',hp:50,maxHp:50,mp:options.mp??30,maxMp:30,atk:10,def:3,level:1,xp:0,gold:0,inventory:options.emptyBag?[]:[{id:'health_potion',count:1},{id:'mana_potion',count:1}],equipped:{mainhand:options.staff?'staff':'sword'},x:1,y:1};
  const state={player,activeMonster:monster,world:{tiles:{},monsters:[monster]},currentSlot:0,user:{uid:'u'},inCombat:true};
  const renderer={text(){}};const oldText=renderer.text;
  const sound={potion(){}};const oldPotion=sound.potion;
- for(const id of ['attack','fire','heal','flee'])nodes[id].onclick=function(){
+ for(const id of ['attack','fire','heal','mana','flee'])nodes[id].onclick=function(){
   env.calls++;if(options.throwAction)throw new Error('action failed');
   if(id==='heal'){player.hp=Math.min(player.maxHp,player.hp+10);sound.potion();return;}
+  if(id==='mana'){player.mp=Math.min(player.maxMp,player.mp+25);sound.potion();return;}
   if(id==='flee'){state.inCombat=false;nodes.combat.classList.add('hidden');return;}
   if(id==='fire')player.mp-=8;
   const damage=options.damage??20;monster.hp-=damage;
@@ -90,4 +91,7 @@ test('missing renderer uses fallback',()=>{const h=setup({missingText:true});h.c
 test('flee is not defeat',()=>{const h=setup();h.click('flee');assert.equal(h.enemy().querySelector('.battle-defeat-label').hidden,true);assert.equal(h.player.xp,0);});
 test('no reward changes during timer',()=>{const h=setup();h.click('fire');const before=JSON.stringify(h.state);h.tick(850);assert.equal(JSON.stringify(h.state),before);});
 test('new encounter has no old defeat badge',()=>{const h=setup();h.click('attack');h.tick(850);h.state.activeMonster={...h.monster,hp:50};h.state.world.monsters=[h.state.activeMonster];h.state.inCombat=true;h.nodes.combat.classList.remove('hidden');h.notify(h.nodes.combat);assert.equal(h.enemy().querySelector('.battle-defeat-label').hidden,true);});
+test('mana feedback and action lock',()=>{const h=setup({mp:0});h.click('mana');assert.equal(h.player.mp,25);assert.deepEqual(h.numbers().map(n=>n.args[0]),['+25 MP']);h.click('attack');assert.equal(h.env.calls,1);h.tick(850);assert.equal(h.nodes.mana.disabled,false);});
+test('empty mana potion no turn',()=>{const h=setup({emptyBag:true,mp:0});h.click('mana');assert.equal(h.env.calls,0);});
+test('mana gain respects cap',()=>{const h=setup({mp:28});h.click('mana');assert.deepEqual(h.numbers().map(n=>n.args[0]),['+2 MP']);});
 console.log(JSON.stringify({checks,passed:checks,scope:'Actual combat-effects.js in VM; DOM, core actions, FX and clocks are test doubles. No browser/Firebase/end-to-end gameplay.'}));

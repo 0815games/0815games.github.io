@@ -1,5 +1,10 @@
 # To-do – Chroniken der Schattengruft
 
+## Trankpaket – 2026-10-19
+- [ ] T07 implementiert – Abnahme offen: geteilter Heil-/Mana-Kampfbutton; beide kosten einen Zug, leere Bestände keinen. Tastatur 3/5; kein Umgehen über Inventar.
+- [ ] Inventar-Nutzen für Heil-/Manatränke per Zeilen-Callback repariert. Ressourcen, Mengen, beide Buttonhälften, Tastatur, Doppelklick, 850-ms-Sperre und Gift-Kill real testen; mobile/Desktop, Deploy sowie Speichern/Neuladen offen.
+- 11 vorbereitende Helferprüfungen mit Doubles; bestehende Regressionen als Commit-Voraussetzung. Andere T08-/S06-Anforderungen nicht pauschal abschließen. Spielversion v0.5.26 unverändert.
+
 ## T13 Push 1 – Standardaktionen, 2026-10-19
 - [ ] Teilpatch: Standardangriff/Feuerball mit Besiegt-Kennzeichnung, letzter Schadenszahl pro Ereignis und 850-ms-Effektfenster. Prioritaetsdialoge/Kontextwechsel duerfen abbrechen. 29 lokale Node-VM-Pruefungen mit DOM-/Spielaktions-/FX-/Timer-Doubles bestanden; Runnerstatus, Deploy und echte Abnahme separat offen.
 - [ ] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden; noch nicht durch Push 1 umgesetzt.
