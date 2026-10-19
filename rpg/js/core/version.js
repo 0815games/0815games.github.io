@@ -2,7 +2,7 @@ import '../systems/mobile-menu.js?v=0.5.11';
 import '../systems/session-integration.js?v=0.5.1';
 import '../systems/preparation-shop.js?v=0.4.18';
 import '../systems/leaderboard.js?v=0.4.19';
-import '../systems/combat-effects-bootstrap.js?v=0.5.17';
+import '../systems/combat-effects-bootstrap.js?v=0.5.17&rev=finish-standard1';
 import '../systems/audio-settings.js?v=0.4.7';
 import '../systems/slot-layout.js?v=0.4.9';
 import '../systems/floor-progress.js?v=0.4.6';

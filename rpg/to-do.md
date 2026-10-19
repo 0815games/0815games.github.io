@@ -1,5 +1,11 @@
 # To-do – Chroniken der Schattengruft
 
+## T13 Push 1 – Standardaktionen, 2026-10-19
+- [ ] Teilpatch: Standardangriff/Feuerball mit Besiegt-Kennzeichnung, letzter Schadenszahl pro Ereignis und 850-ms-Effektfenster. Prioritaetsdialoge/Kontextwechsel duerfen abbrechen. 29 lokale Node-VM-Pruefungen mit DOM-/Spielaktions-/FX-/Timer-Doubles bestanden; Runnerstatus, Deploy und echte Abnahme separat offen.
+- [ ] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden; noch nicht durch Push 1 umgesetzt.
+- [ ] Push 3: gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge und doppelte/nachlaufende Anzeigen integriert pruefen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.
+
+
 ## T13-Zwischenstand – EP-Anzeige, 2026-10-19
 - [ ] Teilfix implementiert: bestätigte Sieganzeige über Kampffenster-/Level-Up-/Bossbeute-Übergänge erhalten; Dauer/Belohnungen unverändert. Baseline reproduziert und 14 lokale VM-/DOM-/Timer-Doubled-Prüfungen bestanden. Runnerstatus, Deploy und echte Abnahme separat offen.
 - T13 bleibt offen: letzter Treffer und Gegnerniederlage bei Standardaktionen, Klassenfähigkeiten und Gift; gesamte Reihenfolge bei Sieg, Level-Up und Bossbeute sowie doppelte/nachlaufende Zahlen prüfen. Kein vorzeitiger Versionssprung auf v0.6.0.

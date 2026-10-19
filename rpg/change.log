@@ -1,5 +1,15 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – T13 Push 1: Standardaktionen, letzter Treffer und Gegnerniederlage
+- Standardangriff/Feuerball: bestaetigte Niederlage mit Besiegt-Kennzeichnung und entsaettigter Figur. Nur im passenden Aktionskontext, bei ausgeschiedenem Gegner und lebendem Helden; nicht bei Flucht oder nicht toedlichem Angriff.
+- COMBAT_FINISH_MS=850 eingefuehrt und im vorhandenen Effektfenster verwendet, keine zusaetzliche Abschlussphase. Bestehendes 850-ms-Timing fuer Heilung/Flucht erhalten.
+- Toedliche Fernkampftreffer: Schadenszahl und Niederlage zum vorgesehenen Einschlag nach 200ms, bei reduzierter Bewegung ohne diese Verzoegerung. Nicht toedliche Zahlen behalten ihr Timing. TP spiegeln weiterhin den bereits berechneten Spielzustand.
+- Alle Standardeffekte am Phasenende bereinigen; verzoegerte Anzeigen kontextgebunden. Bestehende Klick-/Tastatursperren und Vorrang wichtiger Dialoge erhalten. Keine neue Schadens-, EP-, Gold-, Speicher- oder Bossbeuteberechnung. Vorheriger EP-Anzeige-Fix unveraendert.
+- Dateien: systems/combat-effects.js, neue systems/combat-timing.js, systems/combat-effects-bootstrap.js, core/version.js (nur Importrevision), neuer Test tests/combat-finish-standard.mjs und change.log/to-do.md. Spielversion weiterhin v0.5.26.
+- Lokale Vorbereitung: 29 Pruefungen am tatsaechlichen Effektmodul mit DOM-/Spielaktions-/FX-/Timer-Doubles, Syntax- und Patch-Pruefung bestanden. Baseline: toedliche Feuerballzahl sofort beim Abschuss, keine Besiegt-Kennzeichnung. Keine Browser-/Pixel-/Geraete-/Firebase-/End-to-End-Abnahme. Workflow fuehrt Baseline und Tests vor dem Codecommit erneut aus; Runnerstatus und Deploy separat pruefen.
+- T13 bleibt offen: Klassenfaehigkeiten/Gift in Push 2, vollstaendige Abschlussreihenfolge in Push 3. Kein Versionssprung auf v0.6.0. Temporaeren Workflow im erfolgreichen Codecommit entfernen.
+
+
 ## 2026-10-19 – T13-Zwischenstand: EP-Anzeige beim Kampfabschluss
 - Nur Anzeigeübergang korrigiert: bestätigte EP-Sieganzeige beim Schließen des Kampffensters neu platzieren statt vorzeitig löschen. Dieselbe Anzeige wechselt in Spielansicht, Level-Up-Auswahl oder Bossbeutedialog. Keine zweite EP-Vergabe oder neue Belohnungslogik.
 - Beobachtung direkter body-Kindänderungen ergänzt, damit Öffnen/Entfernen der Level-Up-Auswahl berücksichtigt wird. Bestehende Kontext-, Duplikat- und Abbruchsicherungen erhalten.
