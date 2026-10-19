@@ -1,5 +1,10 @@
 # To-do – Chroniken der Schattengruft
 
+## Tastaturpaket 2026-10-19 – Q/E/R
+- [ ] Implementiert: Q/E/R für Klassenfähigkeit 1/2/3; Enter/Leertaste für Karteninteraktion, E außerhalb Kampf abgefangen. Tutorial/Hilfe, Desktop-Labels und Touch-Textadapter angepasst. 32 lokale VM-/DOM-Doubled-Assertions bestanden; veröffentlichter Runnerstatus und echte Geräteabnahme gesondert offen. Kein Abschluss der übrigen T08-/S05-Anforderungen.
+- Reihenfolge unverändert: danach vereinbarten Grafikumfang fertigstellen/abnehmen, v0.6.0, danach S01c. S01b bleibt gemäß Nutzerentscheidung abgeschlossen.
+
+
 ## Arbeitsentscheidung 2026-10-19 – Abschluss S01b und weitere Reihenfolge
 Dieser aktuelle Nachtrag hat Vorrang vor älteren Angaben zum nächsten Arbeitsschritt. Historische Testangaben bleiben unverändert.
 - [x] S01b – vom Nutzer am 2026-10-19 um 07:29 CEST als abgeschlossen bestätigt. Keine zusätzlichen Einzeltests behauptet.

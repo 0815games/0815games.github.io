@@ -1,5 +1,14 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – Desktop-Tastatur: Q/E/R und neue Interaktion
+- Q/E/R lösen Klassenfähigkeit 1/2/3 über die vorhandenen Fähigkeitenbuttons aus; keine zusätzliche Kampflogik. Deaktivierte/verborgene Buttons, wiederholte Eingaben, Modifikatortasten und Texteingaben werden nicht als Fähigkeitsaktion ausgeführt.
+- Enter/Leertaste interagieren auf der Karte; E wird außerhalb des Kampfes abgefangen, bevor der alte Hauptcode-Handler greifen kann. In Menüs und Dialogen bleibt Bestätigen kontextabhängig. Hauptcode-Fallback nicht entfernt; S05-Gesamtbereinigung bleibt offen.
+- keyboard.js: gemeinsame Hilfsfunktionen, gezielte Desktop-Tastenhinweise und aria-keyshortcuts, Dialog-/Overlay-/Sichtbarkeitssperren. Offene Dialoge erhalten ihre eigene Eingabeverarbeitung.
+- Tutorial, Spielhilfe, Kartenbeschriftung und Touch-Textadapter aktualisiert; zusätzlich veraltete Inventar-Aktivierungstexte an die bereits veröffentlichte Detailansicht angepasst. Import-Revisionen der drei betroffenen Module in core/version.js geändert, Spielversion weiterhin v0.5.26.
+- Neue keyboard-actions.js und tests/keyboard-controls.mjs. 32 lokale Integrationsassertionen mit tatsächlichem keyboard.js in einer Node-VM und DOM-/Event-/Aktions-Doubles bestanden; keine echte Browser-/Safari-/Geräte-/Firebase-Abnahme. Syntaxchecks lokal und erneute Tests vor dem automatischen Commit vorgesehen. Runner-Ergebnis separat prüfen, nicht vorweg als bestanden behaupten.
+- Veröffentlichung über ausdrücklich freigegebenen einmaligen GitHub-Actions-Workflow: Original-Blobs prüfen, Änderungen auf vollständigem Checkout, Tests und Diffcheck, dann Commit/Push. Bei Fehler kein Spielcode-Push. Temporärer Workflow wird im erfolgreichen Codecommit entfernt. Andere S-/T-Punkte und Grafikabschluss bleiben offen.
+
+
 ## Arbeitsentscheidung 2026-10-19 – Abschluss S01b und weitere Reihenfolge
 - Nutzer bestätigt am 2026-10-19 um 07:29 CEST S01b als abgeschlossen. Diese Rückmeldung ersetzt den bisherigen offenen Abschlussstatus; keine nachträgliche Behauptung einzelner Geräte-, Firebase- oder Speicherprüfungen.
 - Reparaturnachtrag: main.js durch Codespace-Commit fe96ab2 und discard-ui.js durch 2921285 aus def0d29 wiederhergestellt. Die jeweiligen Blob-Vergleiche wurden vom Nutzer im Terminal gezeigt. Nutzer bestätigte anschließend, dass das Projekt wieder läuft. Zuvor vom Assistenten geschriebene Platzhalter waren fehlerhafte Schreibinhalte, kein nachgewiesener Connectorfehler.
