@@ -1,0 +1,68 @@
+name: Remove inventory help paragraph
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/remove-inventory-help.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: remove-inventory-help
+  cancel-in-progress: false
+jobs:
+  apply:
+    if: github.repository == 'pipboy3003/pipboy3003.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Remove only help paragraph and add changelog entry
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('rpg/js/systems/discard-ui.js')
+          text = p.read_text(encoding='utf-8')
+          line = " const hint=document.createElement('p');hint.id='discard-help';hint.textContent='Ausrüsten oder Nutzen über den jeweiligen Button. Wegwerfen entfernt Taschengegenstände dauerhaft ohne Gold oder Bodenbeute. Bei Stapeln Menge wählen und bestätigen. Im Kampf gesperrt.';items.before(hint);\n"
+          assert text.count(line) == 1, 'Expected hint line not unique; no patch applied'
+          updated = text.replace(line, '', 1)
+          assert 'discard-help' not in updated
+          p.write_text(updated, encoding='utf-8')
+          log = Path('rpg/change.log')
+          original = log.read_bytes()
+          header = '# CHANGELOG – Chroniken der Schattengruft\n\n'.encode('utf-8')
+          assert original.startswith(header), 'Unexpected changelog heading'
+          entry = '''## 2026-10-19 – Inventar: platzraubenden Hilfstext entfernt
+          - Auf Nutzerwunsch den Absatz „Ausrüsten oder Nutzen … Im Kampf gesperrt.“ unter der Gürteltaschen-Überschrift entfernt. In `js/systems/discard-ui.js` nur die Erzeugung und Einfügung von `#discard-help` gelöscht; kein Ersatztext oder unsichtbarer Platzhalter.
+          - Gegenstandsdetails und Buttons für Ausrüsten, Nutzen und Wegwerfen bleiben unverändert. Tatsächliche Kampfsperre, Mengenbestätigung, Inventar- und Speicherlogik nicht geändert.
+          - Spielversion weiterhin v0.5.26. Syntaxprüfung und bestehende Node-Regressionen als Commit-Voraussetzung; kein neuer Browser-/Geräte-/Firebase-Test. Deployment und Sichtprüfung separat offen.
+          
+          '''
+          entry = '\n'.join(line.strip() for line in entry.strip().splitlines()) + '\n\n'
+          assert entry.splitlines()[0].encode('utf-8') not in original, 'Entry already present'
+          result = header + entry.encode('utf-8') + original[len(header):]
+          assert result[len(header) + len(entry.encode('utf-8')):] == original[len(header):]
+          log.write_bytes(result)
+          Path('.github/workflows/remove-inventory-help.yml').unlink()
+      - name: Verify syntax and existing regression tests
+        run: |
+          set -euo pipefail
+          node --input-type=module --check < rpg/js/systems/discard-ui.js
+          for f in rpg/tests/*.mjs; do
+            echo "Running $f"
+            node "$f"
+          done
+          git diff --check
+      - name: Commit verified change and remove one-time workflow
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rpg/js/systems/discard-ui.js rpg/change.log .github/workflows/remove-inventory-help.yml
+          git commit -m 'fix: remove inventory help paragraph to free visible space'
+          git push origin HEAD:main
