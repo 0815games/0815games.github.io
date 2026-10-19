@@ -84,7 +84,7 @@ function equipSlotChoice(ticket,item,doc){
  const p=ticket.player;
  if(ticket.busy||ticket.done||!ticket.section.isConnected)return false;
  if(state.player!==p||state.user?.uid!==ticket.uid||cloud.auth?.currentUser?.uid!==ticket.uid||state.currentSlot!==ticket.saveSlot||state.world!==ticket.world||state.world?.tiles!==ticket.tiles||p.inventory!==ticket.inventory||p.equipped!==ticket.equipped)return false;
- if(state.inCombat||p.hp<=0||p.needsPreparation||!p.equipped?.[ticket.slot]||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
+ if(state.inCombat||p.hp<=0||p.needsPreparation||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
  if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return false;
  const current=p.inventory[item.index];
  if(!Number.isInteger(item.index)||current!==item.entry||current?.id!==item.id||current?.count!==item.count||!Number.isSafeInteger(current?.count)||current.count<1||!Object.prototype.hasOwnProperty.call(ITEMS,item.id)||ITEMS[item.id]?.slot!==ticket.slot)return false;
