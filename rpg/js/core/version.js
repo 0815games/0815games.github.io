@@ -25,7 +25,7 @@ import '../systems/preparation-shop-layout.js?v=0.5.10';
 import '../systems/combat-layout.js?v=0.5.13&rev=layout-p1';
 import '../systems/ability-animations.js?v=0.5.15';
 import '../systems/combat-status-feedback.js?v=0.5.16';
-import '../systems/combat-reward-feedback.js?v=0.5.18';
+import '../systems/combat-reward-feedback.js?v=0.5.18&rev=reward-transition1';
 import '../systems/combat-number-feedback.js?v=0.5.19';
 import '../systems/preparation-potion-purchase.js?v=0.5.20';
 import '../systems/stair-confirm.js?v=0.5.23';

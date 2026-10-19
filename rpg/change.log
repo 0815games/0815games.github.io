@@ -1,5 +1,13 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-19 – T13-Zwischenstand: EP-Anzeige beim Kampfabschluss
+- Nur Anzeigeübergang korrigiert: bestätigte EP-Sieganzeige beim Schließen des Kampffensters neu platzieren statt vorzeitig löschen. Dieselbe Anzeige wechselt in Spielansicht, Level-Up-Auswahl oder Bossbeutedialog. Keine zweite EP-Vergabe oder neue Belohnungslogik.
+- Beobachtung direkter body-Kindänderungen ergänzt, damit Öffnen/Entfernen der Level-Up-Auswahl berücksichtigt wird. Bestehende Kontext-, Duplikat- und Abbruchsicherungen erhalten.
+- Anzeigedauer bleibt 1250ms; Standard-Kampfeffekte mit 850ms unverändert. Baseline mit vorzeitigem Abbruch nach 850ms reproduziert; 14 lokale Prüfungen des tatsächlichen Moduls mit DOM-/Observer-/Timer-Doubles bestanden. Keine reale Browser-/Geräte-/Firebase-Abnahme.
+- Betroffen: systems/combat-reward-feedback.js, neuer Test tests/combat-reward-transition.mjs, Importrevision in core/version.js sowie change.log/to-do.md. Spielversion unverändert v0.5.26.
+- Freigegebener Zwischenstand, kein vollständiger T13-Abschluss. Letzter Treffer, Klassenfähigkeiten-/Gift-Kill, Gegnerniederlage und gesamte Sieg-/Level-Up-/Bossbeute-Reihenfolge bleiben weiter zu prüfen. Runner testet Baseline und Fix sowie bestehende Suites vor dem Code-Push; Runnerstatus und Deploy separat verifizieren. Temporären Workflow im erfolgreichen Codecommit entfernen.
+
+
 ## 2026-10-19 – Grafikpaket 1: Kampfoberfläche
 - Inhaltshöhen statt dehnbarer Figurenzeile; keine erzwungene Zweizeilenhöhe für Namen. Ein vertikaler Scrollbereich im Kampffenster statt zusätzlichem Figuren-/Log-Scrolling.
 - Fensterhöhe durch Viewport und Safe Areas begrenzt; vh-Fallback und dvh. Quadratische Figuren; Fähigkeiten unter 420px zweispaltig, unter 300px einspaltige Darstellung. Kompaktmodus bei geringer Höhe erhalten.

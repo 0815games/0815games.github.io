@@ -1,5 +1,10 @@
 # To-do – Chroniken der Schattengruft
 
+## T13-Zwischenstand – EP-Anzeige, 2026-10-19
+- [ ] Teilfix implementiert: bestätigte Sieganzeige über Kampffenster-/Level-Up-/Bossbeute-Übergänge erhalten; Dauer/Belohnungen unverändert. Baseline reproduziert und 14 lokale VM-/DOM-/Timer-Doubled-Prüfungen bestanden. Runnerstatus, Deploy und echte Abnahme separat offen.
+- T13 bleibt offen: letzter Treffer und Gegnerniederlage bei Standardaktionen, Klassenfähigkeiten und Gift; gesamte Reihenfolge bei Sieg, Level-Up und Bossbeute sowie doppelte/nachlaufende Zahlen prüfen. Kein vorzeitiger Versionssprung auf v0.6.0.
+
+
 ## Grafikpaket 1 – Kampfoberfläche, 2026-10-19
 - [ ] T04/T09-Teilpaket implementiert: inhaltsabhängige Kartenhöhen, gemeinsames Scrollen, Safe-Area-/Viewportgrenzen und schmale Buttonraster. 29 lokale CSS-/DOM-Doubled-Assertions, Syntax- und CSS-Parseprüfung bestanden. Runnerstatus, Deploy und echte Browser-/Geräteabnahme separat offen. Andere T04-/T09-Anforderungen nicht pauschal abschließen.
 - Tastaturpaket 05bda27: Nutzer bestätigt Funktion am 2026-10-19 um 08:28 CEST; Sonderfälle separat offen.
