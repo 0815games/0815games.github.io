@@ -1,3 +1,4 @@
+import {rollElite} from './elite-enemies.js';
 import {MONSTERS} from '../data/monsters.js';
 import {state} from '../core/state.js';
 import {WorldMap} from '../world/map.js';
@@ -55,6 +56,7 @@ const generate=WorldMap.prototype.generate;
 WorldMap.prototype.generate=function(...args){
  const result=generate.apply(this,args);
  applyEnemyBalance(state.world);
+ rollElite(state.world);
  return result;
 };
 

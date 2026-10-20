@@ -1817,3 +1817,13 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Blocken und Ausweichen verbrauchen den schweren Angriff ohne Treffer.
 - Vorbereitungszustand wird als Eigenschaft des Monsterobjekts gespeichert.
 - Kampf- und Speichertests stehen aus.
+
+## 2026-10-20 – v0.6.6 – Elitegegner und Elitebeute
+- Ab Ebene 3 erhalten neue normale Ebenen 30 % Chance auf einen Elitegegner.
+- Boss-Ebenen sind ausgeschlossen; höchstens ein neu ausgewählter Elitegegner pro Ebene.
+- Elitewerte: +40 % TP, +15 % Angriff, +50 % EP und Gold; Verteidigung unverändert.
+- Auswahl und Verstärkung erfolgen einmal bei der Kartengenerierung.
+- 30 % Chance auf zusätzliche, level- und klassenpassende Ausrüstungsbeute.
+- Elitebeute liegt als normale öffnungsfähige Truhe auf der aktuellen Ebene.
+- Bestehende Spezialangriffe bleiben erhalten.
+- Spiel-, Speicher- und Integrationstests stehen aus.
