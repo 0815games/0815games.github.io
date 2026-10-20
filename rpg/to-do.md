@@ -5,11 +5,6 @@ Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Än
 
 ## Stabilisierung
 
-### S01c – Truhenbelohnung ohne Verlust
-- [ ] Truhenbelohnung bei vollem Inventar so sichern, dass kein Gegenstand verloren geht.
-- [ ] Vor Umsetzung klären: Darf Gold separat entnommen werden, oder wird die gesamte Truhe atomar behandelt?
-- [ ] Truhe nicht unbemerkt verbrauchen, wenn die Belohnung wegen Platzmangel nicht vollständig vergeben werden kann.
-
 ### S02 – Spielstandschema, Migration und Laden
 - [ ] S02a: Persistente Daten, Laufzeit und UI trennen; Schema-Version und erlaubte Standardwerte definieren.
 - [ ] S02b: Spielstände validieren und alte Daten gezielt migrieren; fehlende, beschädigte oder unvollständige Daten sicher behandeln.
