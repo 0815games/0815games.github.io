@@ -1808,3 +1808,12 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Eigenschaften werden in den Gegenstandsbeschreibungen erklärt.
 - Bereits gespeicherte Gegenstände dieser IDs erhalten die Eigenschaften ebenfalls.
 - Kampf- und Integrationstests stehen aus.
+
+## 2026-10-20 – v0.6.5 – Angekündigte Monsterangriffe
+- Frostwache und Obsidianwächter: normaler Angriff, Vorbereitung, schwerer Angriff.
+- Vorbereitung verursacht keinen Angriffsschaden und verbraucht keine defensiven Buffs.
+- Schwerer Angriff verwendet 160 % Angriff vor Verteidigung.
+- Warnung im bestehenden Gegnerstatus bis zur Ausführung sichtbar.
+- Blocken und Ausweichen verbrauchen den schweren Angriff ohne Treffer.
+- Vorbereitungszustand wird als Eigenschaft des Monsterobjekts gespeichert.
+- Kampf- und Speichertests stehen aus.

@@ -1,3 +1,4 @@
+import { nextMonsterAction } from './systems/monster-intents.js';
 import { equippedEffects, effectiveDefense, applyLifeSteal } from './systems/equipment-effects.js';
 import { installDiscard } from './systems/discard-ui.js';
 import { consumePotion, battlePotion } from './systems/potions.js';
@@ -113,14 +114,67 @@ function useAbility(ab){const p=state.player,m=state.activeMonster;if(!state.inC
 function updateAbilityButtons(){document.querySelectorAll('.ability-btn').forEach(btn=>{const ab=(ABILITIES[state.player.heroClass]||[]).find(a=>a.id===btn.dataset.ability);if(!ab)return;const cd=getCooldown(state.player,ab.id);btn.disabled=cd>0||state.player.mp<ab.mana;btn.querySelector('small').textContent=`${ab.mana} MP · ${cd>0?`CD ${cd}`:'Bereit'}`;});}
 function updatePotionButtons(){for(const [id,itemId,label] of [['heal','health_potion','Heil'],['mana','mana_potion','Mana']]){const b=el(id);if(!b)continue;const count=(state.player.inventory||[]).filter(x=>x?.id===itemId&&Number.isSafeInteger(x.count)&&x.count>0).reduce((n,x)=>n+x.count,0);const shortcut=id==='heal'?'3':'4';b.textContent=`[${shortcut}] ${label} · ×${count}`;b.setAttribute('aria-keyshortcuts',shortcut);b.setAttribute('aria-label',`${label==='Heil'?'Heiltrank':'Manatrank'} benutzen, Bestand ${count}`);b.title=label==='Heil'?'Heiltrank: kostet einen Zug':'Manatrank: kostet einen Zug';b.disabled=!state.inCombat||state.player.hp<=0||count===0;}}
 el('attack').onclick=()=>{if(!state.inCombat)return;sound.sword();const p=state.player,m=state.activeMonster,s=calculateCombatStats(),crit=Math.random()*100<getSkillRank(state,'precision')*5;const hpBefore=m.hp;let d=Math.max(1,Math.floor(s.totalAtk-effectiveDefense(m,s)+Math.floor(Math.random()*4)));if(crit)d=Math.floor(d*1.5);m.hp-=d;applyLifeSteal(p,m,hpBefore,s);gfx.text(crit?`KRIT -${d}`:`-${d}`,m.x,m.y,crit?'#ffab91':'#ffca28');if(m.hp<=0)return winCombat();enemyTurn()};el('fire').onclick=()=>{if(!state.inCombat)return;const p=state.player,m=state.activeMonster;if(p.mp<8)return el('combat-log').textContent='Nicht genügend Mana!';p.mp-=8;sound.fire();const s=calculateCombatStats(),hpBefore=m.hp,r=getSkillRank(state,'fire_master'),d=Math.max(8,Math.floor((s.totalAtk*2-effectiveDefense(m,s)+Math.floor(Math.random()*5))*(1+.12*r)));m.hp-=d;applyLifeSteal(p,m,hpBefore,s);gfx.text(`-${d}`,m.x,m.y,'#ff7043');if(m.hp<=0)return winCombat();enemyTurn()};el('heal').onclick=()=>battlePotion(state,'health_potion',useItem,enemyTurn);el('mana').onclick=()=>battlePotion(state,'mana_potion',useItem,enemyTurn);el('flee').onclick=()=>{if(Math.random()>.4){state.inCombat=false;el('combat').classList.add('hidden');log('Du fliehst.')}else enemyTurn()};
-function enemyTurn(){const p=state.player,m=state.activeMonster,s=calculateCombatStats();ensureBuffs();
- if(m.dot&&m.dot.turns>0){m.hp-=m.dot.dmg;m.dot.turns--;gfx.text(`-${m.dot.dmg}`,m.x,m.y,'#8bc34a');if(m.hp<=0)return winCombat();}
- if(p.buffs.evade){p.buffs.evade=false;el('combat-log').textContent='Du weichst dem Angriff aus!';tickCooldowns(p);updateAbilityButtons();return;}
- if(p.buffs.block){p.buffs.block=false;el('combat-log').textContent='Arkanschild blockt den Angriff!';tickCooldowns(p);updateAbilityButtons();return;}
- if(Math.random()*100<getSkillRank(state,'shadowstep')*4){el('combat-log').textContent='Du weichst aus!';tickCooldowns(p);updateAbilityButtons();return;}
- let d=Math.max(1,m.atk-s.totalDef+Math.floor(Math.random()*3));
- if(p.buffs.shield>0){d=Math.floor(d/2);p.buffs.shield--;}
- p.hp-=d;sound.hurt();gfx.text(`-${d}`,p.x,p.y,'#f44336');el('combat-log').textContent=`${m.name} trifft dich für ${d}.`;combatInfo();hud();tickCooldowns(p);updateAbilityButtons();if(p.hp<=0)die();}
+function enemyTurn(){
+ if(!state.inCombat||!state.activeMonster)return;
+ const p=state.player,m=state.activeMonster,s=calculateCombatStats();
+ ensureBuffs();
+
+ if(m.dot&&m.dot.turns>0){
+  m.hp-=m.dot.dmg;
+  m.dot.turns--;
+  gfx.text(`-${m.dot.dmg}`,m.x,m.y,'#8bc34a');
+  if(m.hp<=0)return winCombat();
+ }
+
+ const action=nextMonsterAction(m);
+ const finishTurn=()=>{
+  combatInfo();
+  hud();
+  tickCooldowns(p);
+  updateAbilityButtons();
+ };
+
+ if(action.kind==='charge'){
+  el('combat-log').textContent=
+   `${m.name} bereitet einen schweren Angriff vor! Nächster Gegnerzug: 160 % Angriff.`;
+  finishTurn();
+  return;
+ }
+
+ if(p.buffs.evade){
+  p.buffs.evade=false;
+  el('combat-log').textContent='Du weichst dem Angriff aus!';
+  finishTurn();
+  return;
+ }
+ if(p.buffs.block){
+  p.buffs.block=false;
+  el('combat-log').textContent='Arkanschild blockt den Angriff!';
+  finishTurn();
+  return;
+ }
+ if(Math.random()*100<getSkillRank(state,'shadowstep')*4){
+  el('combat-log').textContent='Du weichst aus!';
+  finishTurn();
+  return;
+ }
+
+ let d=Math.max(1,
+  Math.floor(m.atk*action.multiplier)-s.totalDef+Math.floor(Math.random()*3)
+ );
+ if(p.buffs.shield>0){
+  d=Math.floor(d/2);
+  p.buffs.shield--;
+ }
+ p.hp=Math.max(0,p.hp-d);
+ sound.hurt();
+ gfx.text(`-${d}`,p.x,p.y,'#f44336');
+ el('combat-log').textContent=action.kind==='heavy'
+  ?`${m.name}: Schwerer Angriff trifft dich für ${d}.`
+  :`${m.name} trifft dich für ${d}.`;
+ finishTurn();
+ if(p.hp<=0)die();
+}
 function winCombat(){const m=state.activeMonster;if(!state.inCombat||!m||!state.world.monsters.includes(m))return;const xp=m.xp,gold=Math.floor(m.gold*(1+.10*getSkillRank(state,'gold_luck')));state.player.gold+=gold;state.player.xp+=m.xp;state.world.monsters=state.world.monsters.filter(x=>x.id!==m.id);state.inCombat=false;el('combat').classList.add('hidden');showExpPopup(m.x,m.y,xp);gfx.text(`+${xp} EP`,m.x,m.y,'#a5d6a7');log(`${m.name} besiegt. +${gold} Gold, +${xp} EP.`);if(m.id==='boss'){state.meta.gold+=50;gfx.burst(m.x,m.y);gfx.text('👑 BOSS!',m.x,m.y,'#e1bee7');log('👑 Boss besiegt! +50 Ordensgold.')}if(!state.world.monsters.length){const st=map.spawnStairsAfterClear();gfx.burst(st.x,st.y);setTimeout(()=>{const b=document.createElement('div');b.textContent='⬇️ TREPPE GEÖFFNET';b.style.cssText='position:fixed;left:50%;top:22%;transform:translate(-50%,-50%) scale(.9);z-index:9999;background:rgba(18,12,28,.94);border:2px solid #ffd54f;color:#ffd54f;padding:22px 42px;border-radius:16px;font-size:36px;font-weight:800;letter-spacing:.08em;text-shadow:0 0 18px rgba(255,213,79,.55);box-shadow:0 0 34px rgba(255,213,79,.35);pointer-events:none;opacity:0;transition:opacity .25s ease,transform .25s ease';document.body.appendChild(b);requestAnimationFrame(()=>{b.style.opacity='1';b.style.transform='translate(-50%,-50%) scale(1)'});setTimeout(()=>{b.style.opacity='0';b.style.transform='translate(-50%,-50%) scale(.95)';setTimeout(()=>b.remove(),300)},2300)},150);log('✨ Runensiegel gebrochen – Treppen in die nächste Ebene wurden geöffnet.')}else log(`🔒 ${state.world.monsters.length} Gegner verbleiben.`);if(getSkillRank(state,'bloodlust')>0){const h=Math.floor(state.player.maxHp*.05);state.player.hp=Math.min(state.player.maxHp,state.player.hp+h);log(`Blutrausch heilt ${h} TP.`)}if(getSkillRank(state,'arcane_return')>0){state.player.mp=Math.min(state.player.maxMp,state.player.mp+3);log('Arkanwiederkehr: +3 MP.')}if(state.player.xp>=state.player.nextXp){levelUpHero();return}hud();saveCurrentSlot()}
 function die(){if(phases.is(PHASES.DEATH))return;phases.transition(PHASES.DEATH);const deathKey='death:'+sessionState.id;if(claimedRewards.has(deathKey))return;claimedRewards.add(deathKey);state.inCombat=false;sound.death();el('combat').classList.add('hidden');state.meta.gold+=state.player.gold;state.meta.bestDepth=Math.max(state.meta.bestDepth,state.world.depth);el('death-stats').innerHTML=`<div>Ebene: <b>${state.world.depth}</b></div><div>Gold: <b>${state.player.gold}</b></div><div>Ordensschatz: <b>${state.meta.gold} 🪙</b></div>`;el('death-screen').classList.remove('hidden');state.player.hp=state.player.maxHp;state.world.depth=1;map.generate(1);saveCurrentSlot()}
 el('btn-revive').onclick=()=>{el('death-screen').classList.add('hidden');openGame()};el('btn-back-to-slots').onclick=()=>{el('death-screen').classList.add('hidden');openSlotScreen()};el('btn-chars').onclick=()=>{saveCurrentSlot();openSlotScreen()};el('sound').onclick=()=>{sound.toggleMusic();updateMusicButtons()};el('save').onclick=saveCurrentSlot;el('logout').onclick=async()=>{if(window.firebase&&state.user)await firebase.auth().signOut();location.reload()};
