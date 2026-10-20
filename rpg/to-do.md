@@ -13,7 +13,7 @@ Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Än
 ### S04 – Speichern und asynchrone Aktionen
 - [x] S04a: Speicherablauf bündeln: Snapshot, Validierung, Sitzungsprüfung, Schreibvorgang und eindeutiges Ergebnis.
 - [ ] S04b: Asynchrone Aktionen an Konto, Slot, Sitzung und Vorgang binden; verspätete Ergebnisse abweisen.
-- [ ] S04c: Fehlermeldungen und Wiederholungen vereinheitlichen; doppelte Käufe oder Belohnungen verhindern.
+- [x] S04c: Fehlermeldungen und Wiederholungen vereinheitlichen; doppelte Käufe oder Belohnungen verhindern.
 
 ### S05 – Dialoge und Eingaben
 - [ ] S05a: Zentralen Dialogbesitzer mit Priorität, Öffnen/Schließen und Fokus-Rückgabe umsetzen.

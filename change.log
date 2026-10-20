@@ -1762,3 +1762,10 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Ein `busy`-Flag verhindert parallele Saves; zusätzliche Aufrufe werden im Chronik-Log als übersprungen markiert.
 - Fehler beim Snapshot oder Cloud-Schreiben führen zu einer klaren Fehlermeldung, ohne den Spielzustand zu verändern.
 - Betroffen: rpg/js/main.js.
+
+## 2026-10-20 – S04c abgeschlossen: Belohnungsschutz und Fehlermeldungen
+- `244db5d`: Truhen-, Kampf-, Boss- und Todesbelohnungen sind gegen doppelte Vergabe geschützt.
+- Truhen erhalten eine einmalige Belohnungs-ID; Kampfbelohnungen werden pro Gegner-ID nur einmal vergeben.
+- Der Goldtransfer beim Tod erfolgt pro Sitzung nur einmal.
+- Die drei identischen Speicherfehlerstellen verwenden nun die einheitliche Funktion `notifyError()`.
+- S04c in rpg/to-do.md als erledigt markiert.
