@@ -1,253 +1,53 @@
 # To-do – Chroniken der Schattengruft
 
-## Aktueller T10-Ingame-Stand – belegte Slots und Tausch, 2026-10-20
-Dieser Nachtrag ergänzt die Slot-Auswahl um belegte Slots, Tausch, vereinheitlichten Adapter und Test; die Historie bleibt erhalten.
-- [x] Belegte Slots können über die vorhandene Inventar-Aktion getauscht werden (`14366d3`).
-- [x] Leere und belegte Slots nutzen denselben geprüften Adapter (`59df5f3`).
-- [x] Wiederholbarer Slot-Test liegt im Repository (`8a8f0da`).
-- [x] Veralteter Tausch wird durch `equippedId` abgewiesen; Test lokal 28/28 grün (`1d687f1`).
-- [ ] `node rpg/tests/armory-slot-choices.mjs` im Projekt ausführen und Ergebnis bestätigen.
-- [ ] Vollständige Regressionen, Deployment und mobile/Desktop-Abnahme durchführen: leeren Slot ausrüsten, belegten Slot tauschen, korrekter Bestand, aktualisierte Figur/Werte, Ablegen, Fokus, Speichern/Neuladen sowie Kampf-, Dialog- und Sitzungssperren.
-- [ ] Kein vollständiger T10-/T14-Abschluss ohne Abnahme; Vorbereitungs-Shop und T11-Angebotsvergleich bleiben getrennt.
+Stand: 2026-10-20 · Spielversion: v0.6.0  
+Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Änderungshistorie bleibt in `rpg/change.log`.
 
-## Aktueller T10-Ingame-Stand – Slot-Auswahl, 2026-10-19
-Dieser Nachtrag ersetzt ältere Angaben zur Slot-Auswahl als noch nicht implementiertem nächsten Schritt; die Historie bleibt erhalten.
-- [ ] Implementiert – Abnahme offen: passender Inventarfilter `0f323c0`, Öffnen/Schließen der Liste `962942b`, Ausrüsten über vorhandene Inventar-Aktion `5d19474`. Nur leere Slots; Ausrüstungstausch über belegte Slots nicht zusätzlich umgesetzt.
-- [ ] Öffnungs-/Adaptertests als wiederholbare Repository-Suites ergänzen und vollständige Regressionen ausführen. Lokale Prüfstände: Filter 14, Öffnung 10, Adapter 15; Test-Doubles, keine echte Gesamtintegration.
-- [ ] Deploy und mobile/Desktop-Abnahme: leeren Slot öffnen, nur passende Gegenstände, Leerzustand, Schließen, einmaliges Ausrüsten, korrekter Bestand sowie aktualisierte Figur/Werte. Ablegen und erneutes Ausrüsten, Tastaturfokus und Speichern/Neuladen prüfen.
-- [ ] Veraltete Auswahl, Doppelklick, Kampf-/Dialog-/Sitzungssperren und Konto-/Slotwechsel real mitprüfen. Kein vollständiger T10-/T14-Abschluss ohne Abnahme; Vorbereitungs-Shop und T11-Angebotsvergleich bleiben getrennt.
+## Stabilisierung
 
-## T10 Ingame – visuelle Rüstkammer, 2026-10-19
-- [ ] Implementiert – Abnahme offen: Figur mit aktuell angelegter Ausrüstung im Reiter neben dem Inventar, responsive Slotkarten und getrennte Wertekarten. Bestehende Ablegen-Buttons und Berechnung erhalten; Vorbereitungs-Shop separat.
-- [ ] Mobile/Desktop prüfen: tatsächliche Ausrüstung nach Ausrüsten/Ablegen und Laden korrekt, keine doppelte Vorschau, leere Slots/long names/kleine Höhen, Fokus und Ablegen-Buttons erreichbar. Deploy und echte Geräte-/Speicherabnahme offen.
-- 14 vorbereitende Darstellungsprüfungen mit DOM-/Canvas-Doubles; Anbindung, Syntax und bestehende Regressionen als Commit-Voraussetzung. Kein vollständiger T10-/T14-Abschluss.
-- Nächstes getrenntes Funktionspaket: Klick auf leeren Slot bietet nur passende Inventargegenstände an; bestehende Ausrüstungsaktion und Kontext-/Kampfsperren verwenden. Diese Auswahl ist nicht Bestandteil des visuellen Pakets.
+### S01c – Truhenbelohnung ohne Verlust
+- [ ] Truhenbelohnung bei vollem Inventar so sichern, dass kein Gegenstand verloren geht.
+- [ ] Vor Umsetzung klären: Darf Gold separat entnommen werden, oder wird die gesamte Truhe atomar behandelt?
+- [ ] Truhe nicht unbemerkt verbrauchen, wenn die Belohnung wegen Platzmangel nicht vollständig vergeben werden kann.
 
-## T10 – Heldenübersicht der Vorbereitungs-Rüstkammer, 2026-10-19
-- [ ] Implementiert – Abnahme offen: Vorschau der tatsächlich angelegten Ausrüstung, Name/Klasse/Level, getrenntes Ordensgold und letzter Run sowie ATK/DEF mit Basiswerten. Vorhandene Shop-Berechnung und Kauf-/Speicherlogik erhalten.
-- [ ] Mobile/Desktop und geringe Höhe prüfen: Öffnen nach Tod ohne verlorene Ausrüstung, Vorschau/Werte nach erfolgreichem Kauf bzw. Speicherfehler korrekt, Kategorien/Bestätigung/Run-Start erreichbar. Kein vollständiger T10-/T14-Abschluss durch reine Helpertests.
-- 13 vorbereitende Darstellungsprüfungen mit DOM-/Canvas-Doubles; Anbindung/Statistik und bestehende Regressionen als Commit-Voraussetzung. Deploy und echte Abnahme offen. Danach T11-Vergleich und Bestätigung am Angebot; kein Versionssprung auf v0.6.0.
+### S02 – Spielstandschema, Migration und Laden
+- [ ] S02a: Persistente Daten, Laufzeit und UI trennen; Schema-Version und erlaubte Standardwerte definieren.
+- [ ] S02b: Spielstände validieren und alte Daten gezielt migrieren; fehlende, beschädigte oder unvollständige Daten sicher behandeln.
+- [ ] S02c: Unkontrolliertes Überschreiben des Zustands ersetzen; Slotwechsel und defekte Slots sauber behandeln.
 
-## Offene Fragen – Waffenprogression und Gegenstandsquellen (2026-10-19)
-- [ ] Waffenlogik und stärkere Waffen: aktuellen Ablauf prüfen und erklären. Wie kommt der Spieler an stärkere Waffen? Tatsächliche Vergabewege, Werteentwicklung und gegebenenfalls Klassen-/Level-/Ebenenabhängigkeiten im aktiven Code nachvollziehen.
-- [ ] Upgrade-Idee prüfen: Kann gleiche Ausrüstung mit gleicher Ausrüstung verbessert werden? Zuerst feststellen, ob bereits eine solche Funktion existiert; andernfalls als Konzept bewerten und Regeln, Kosten, Grenzen und Gegenstandserhalt vor einer Umsetzung abstimmen. Noch kein beschlossenes Upgrade-System.
-- [ ] Gegenstandsverfügbarkeit prüfen: Sind alle definierten Gegenstände tatsächlich im Spiel erreichbar? Für jeden Gegenstand die aktiven Bezugsquellen erfassen und zwischen Fund-/Belohnungsgegenständen, ausschließlich im Shop erhältlichen Gegenständen und definierten, aber nicht erreichbaren Einträgen unterscheiden. Code-Definition allein gilt nicht als Nachweis der Ingame-Verfügbarkeit.
-- Status: offene Analyse-/Konzeptfragen auf Nutzerwunsch. Keine neue Waffen-, Upgrade-, Loot- oder Shoplogik implementiert; bestehende Prioritäten und Aufgaben-IDs bleiben unverändert.
+### S03 – Tod, Vorbereitung und Neustart
+- [ ] S03a: Spielphasen und Übergänge definieren.
+- [ ] S03b: Tod genau einmal verarbeiten; Goldtransfer, Ausrüstungsverlust und Rücksetzungen absichern.
+- [ ] S03c: Vorbereitung und Run-Start als eindeutigen Ablauf abschließen; Kauf- und Neustartregeln prüfen.
 
-## Trankpaket – 2026-10-19
-- [ ] T07 implementiert – Abnahme offen: geteilter Heil-/Mana-Kampfbutton; beide kosten einen Zug, leere Bestände keinen. Tastatur 3/5; kein Umgehen über Inventar.
-- [ ] Inventar-Nutzen für Heil-/Manatränke per Zeilen-Callback repariert. Ressourcen, Mengen, beide Buttonhälften, Tastatur, Doppelklick, 850-ms-Sperre und Gift-Kill real testen; mobile/Desktop, Deploy sowie Speichern/Neuladen offen.
-- 11 vorbereitende Helferprüfungen mit Doubles; bestehende Regressionen als Commit-Voraussetzung. Andere T08-/S06-Anforderungen nicht pauschal abschließen. Spielversion v0.5.26 unverändert.
+### S04 – Speichern und asynchrone Aktionen
+- [ ] S04a: Speicherablauf bündeln: Snapshot, Validierung, Sitzungsprüfung, Schreibvorgang und eindeutiges Ergebnis.
+- [ ] S04b: Asynchrone Aktionen an Konto, Slot, Sitzung und Vorgang binden; verspätete Ergebnisse abweisen.
+- [ ] S04c: Fehlermeldungen und Wiederholungen vereinheitlichen; doppelte Käufe oder Belohnungen verhindern.
 
-## T13 Push 1 – Standardaktionen, 2026-10-19
-- [ ] Teilpatch: Standardangriff/Feuerball mit Besiegt-Kennzeichnung, letzter Schadenszahl pro Ereignis und 850-ms-Effektfenster. Prioritaetsdialoge/Kontextwechsel duerfen abbrechen. 29 lokale Node-VM-Pruefungen mit DOM-/Spielaktions-/FX-/Timer-Doubles bestanden; Runnerstatus, Deploy und echte Abnahme separat offen.
-- [ ] Push 2: Klassenfaehigkeiten und Gift an denselben 850-ms-Standard anbinden; noch nicht durch Push 1 umgesetzt.
-- [ ] Push 3: Kampfabschluss-Sequenz geprüft; EP-, Level-Up- und Bossbeute-Interaktion sowie echte mobile/Desktop-/Bossbeute-Abnahme und Deploy bleiben offen. T13 bleibt offen. Grafik-/Ruestkammer-Restarbeiten, v0.6.0 und anschliessend S01c getrennt weiterfuehren; S01b bleibt abgeschlossen.
+### S05 – Dialoge und Eingaben
+- [ ] S05a: Zentralen Dialogbesitzer mit Priorität, Öffnen/Schließen und Fokus-Rückgabe umsetzen.
+- [ ] S05b: Touch und Tastatur auf dieselben fachlichen Aktionen führen; konkurrierende globale Handler bereinigen.
+- [ ] S05c: Treppe, Changelog, Hilfe, Audio, Bossbeute, Level-Up, Rüstkammer und mobile Menüs gemeinsam verwalten.
 
+### S06 – Kampf und Belohnungen
+- [ ] S06a: Gemeinsame Aktionsberechtigung für Angriff, Zauber, Tränke, Flucht und Klassenfähigkeiten.
+- [ ] S06b: Sieg, Tod, EP, Level-Up und Bossbeute in einem eindeutigen Ablauf koordinieren.
+- [ ] S06c: Tatsächliche Heil-/Manamengen melden; Buttons, Ressourcen, Cooldowns und Effekte aus einem Ergebnis aktualisieren.
 
-## T13-Zwischenstand – EP-Anzeige, 2026-10-19
-- [ ] Teilfix implementiert: bestätigte Sieganzeige über Kampffenster-/Level-Up-/Bossbeute-Übergänge erhalten; Dauer/Belohnungen unverändert. Baseline reproduziert und 14 lokale VM-/DOM-/Timer-Doubled-Prüfungen bestanden. Runnerstatus, Deploy und echte Abnahme separat offen.
-- T13 bleibt offen: letzter Treffer und Gegnerniederlage bei Standardaktionen, Klassenfähigkeiten und Gift; gesamte Reihenfolge bei Sieg, Level-Up und Bossbeute sowie doppelte/nachlaufende Zahlen prüfen. Kein vorzeitiger Versionssprung auf v0.6.0.
+### S07 – Aufräumen und Gesamtprüfung
+- [ ] S07a: Aktive Importe und Zuständigkeiten dokumentieren; Altmodule kennzeichnen und erst nach Prüfung entfernen.
+- [ ] S07b: Responsive Regeln, Scrollbereiche, Fokus und Pausierung versteckter Animationen bündeln.
+- [ ] S07c: Wiederholbare Integrationstests, Build-Kennung, Diagnose und Changelog-Pflege festigen.
 
+## Offene Produktfragen
 
-## Grafikpaket 1 – Kampfoberfläche, 2026-10-19
-- [ ] T04/T09-Teilpaket implementiert: inhaltsabhängige Kartenhöhen, gemeinsames Scrollen, Safe-Area-/Viewportgrenzen und schmale Buttonraster. 29 lokale CSS-/DOM-Doubled-Assertions, Syntax- und CSS-Parseprüfung bestanden. Runnerstatus, Deploy und echte Browser-/Geräteabnahme separat offen. Andere T04-/T09-Anforderungen nicht pauschal abschließen.
-- Tastaturpaket 05bda27: Nutzer bestätigt Funktion am 2026-10-19 um 08:28 CEST; Sonderfälle separat offen.
-- Danach übrige vereinbarte Grafikpakete; v0.6.0 erst nach Abschluss/Abnahme, anschließend S01c. S01b bleibt abgeschlossen.
+- [ ] Waffenprogression: Wie erhält der Spieler stärkere Waffen? Vergabewege, Werteentwicklung und Abhängigkeiten prüfen.
+- [ ] Ausrüstungs-Upgrade: Soll identische Ausrüstung verbesserbar sein? Konzept, Kosten, Grenzen und Gegenstandserhalt vor Umsetzung klären.
+- [ ] Gegenstandsverfügbarkeit: Prüfen, ob jeder definierte Gegenstand tatsächlich durch Fund, Belohnung oder Shop erreichbar ist.
 
+## Arbeitsregeln
 
-## Tastaturpaket 2026-10-19 – Q/E/R
-- [ ] Implementiert: Q/E/R für Klassenfähigkeit 1/2/3; Enter/Leertaste für Karteninteraktion, E außerhalb Kampf abgefangen. Tutorial/Hilfe, Desktop-Labels und Touch-Textadapter angepasst. 32 lokale VM-/DOM-Doubled-Assertions bestanden; veröffentlichter Runnerstatus und echte Geräteabnahme gesondert offen. Kein Abschluss der übrigen T08-/S05-Anforderungen.
-- Reihenfolge unverändert: danach vereinbarten Grafikumfang fertigstellen/abnehmen, v0.6.0, danach S01c. S01b bleibt gemäß Nutzerentscheidung abgeschlossen.
-
-
-## Arbeitsentscheidung 2026-10-19 – Abschluss S01b und weitere Reihenfolge
-Dieser aktuelle Nachtrag hat Vorrang vor älteren Angaben zum nächsten Arbeitsschritt. Historische Testangaben bleiben unverändert.
-- [x] S01b – vom Nutzer am 2026-10-19 um 07:29 CEST als abgeschlossen bestätigt. Keine zusätzlichen Einzeltests behauptet.
-- [ ] T08-Teilpaket: Q/E/R für Klassenfähigkeit 1/2/3; E-Interaktion durch Leertaste und Enter ersetzen. Bestehende Eingabepfade und Konflikte prüfen, gemeinsame Aktionssperren erhalten. Tutorial, Hilfe und Desktop-Hinweise aktualisieren; Tastaturtests und Geräteabnahme dokumentieren. Übrige T08-Anforderungen bleiben offen.
-- [ ] Danach Grafik-/Oberflächenabschluss: T04, T09, visuelle Teile T10/T11, T13, T15 und T14-Gesamtabnahme. Funktionale Restanforderungen nicht allein wegen einer visuellen Überarbeitung abhaken.
-- [ ] Erst nach abgeschlossenem vereinbartem Grafikumfang und Abnahme v0.6.0 veröffentlichen; Versionsanzeigen und Cache-/Buildbezüge gemeinsam prüfen.
-- [ ] Anschließend S01c: Truhenbelohnung bei Platzmangel ohne Verlust. Vor Umsetzung Regel für getrennte Goldentnahme oder gemeinsame Entnahme festlegen; danach übrige Stabilisierung fortsetzen.
-- Inventardetails ea341d3 sind auf main veröffentlicht. Geräte-/Speicherabnahme des Detailvergleichs bleibt separat offen.
-
-
-## Inventarabschluss – Patch 2026-10-19
-- [ ] Inventardetails und Vergleich im Codespace implementiert: Antippen ohne Aktion, Ausrüsten/Nutzen separat, grün/rot/neutrale Differenzen zum gleichen Platz. 23 Assertions mit DOM-/Aktions-Mocks und 1027 bestehende Inventarprüfungen bestanden; Syntaxprüfungen der drei Module und Diff-Prüfung ohne Fehler. Push und Deploy zum Prüfzeitpunkt sowie echte Geräte-/Speicherabnahme offen. Danach bestehende Planung fortsetzen; keine anderen Aufgaben damit abhaken.
-
-Stand: 2026-10-16. Zentrale Arbeitsplanung und Masterplan. Offene Punkte nicht mit bestandener Geräteabnahme gleichsetzen.
-
-## Arbeitsweise und Priorität
-- Bei Unklarheit über den nächsten Schritt zuerst diese Datei lesen und den aktuellen Repository-Stand prüfen.
-- S-Einträge = Stabilisierung; sie haben grundsätzlich höhere Priorität als T-Einträge.
-- T-Einträge = Bugs und Wünsche. Bestehende IDs T01–T15 beibehalten; nicht umnummerieren oder durch S-Einträge ersetzen.
-- Innerhalb einer Prioritätsstufe von einfach nach aufwendig arbeiten, soweit Abhängigkeiten und Datensicherheit dies zulassen. Schätzung vor Umsetzung am aktuellen Code prüfen; Abweichungen gemeinsam abstimmen.
-- Ein akuter Startblocker, drohender Datenverlust oder Sicherheitsfehler darf die Reihenfolge unterbrechen. Grund, Umfang und Wiederaufnahme hier festhalten; keine stillschweigende Umpriorisierung.
-- Pro Push ein klar begrenztes Thema; größere Aufgaben in a/b/c teilen. Kein Komplett-Neuschreiben auf Verdacht und keine pauschale Erfolgsgarantie.
-- Manuell ergänzte Bugs nicht löschen oder stillschweigend umdeuten; gemeinsam klären. Widerlegte Erfolgsaussagen sichtbar berichtigen, Historie erhalten.
-- Umsetzung, lokale Prüfung, Deploy und echte Browser-/Geräteabnahme unterscheiden. Nicht allein wegen eines Pushs abhaken.
-- Diese Datei plant Aufgaben. rpg/change.log bleibt die einzige aktive RPG-Änderungshistorie. Keine neuen Changelog-Einzeldateien anlegen.
-- Nach jeder Änderung, jedem Fix und Patch rpg/change.log detailliert ergänzen: Anlass, betroffene Dateien, tatsächliche Änderung, Version/Build bzw. Commitbezug, Tests und offene Grenzen. Keine erfundenen Tests oder Zeitstempel.
-- Bei abgeschnittenen Dateiinhalten niemals eine unvollständige Datei zurückschreiben. Vollständigen Inhalt beschaffen oder den Dokumentationsblocker ausdrücklich melden; fehlende Historie nicht erfinden.
-- Reine Planungs-/Dokumentationsänderungen erhöhen die Spielversion nicht. Dieser Masterplan setzt noch kein S-Paket um.
-
-## Masterplan – verbindlicher Einstieg
-
-### Ausgangspunkt und Rückkehrpunkt
-- Backup-Branch: `Backup`, gesicherter Commit `4bf3a5f49c15da972b2ddbe1b71f9936d116dfe5`. Nicht für laufende Entwicklung verwenden oder automatisch mit main überschreiben.
-- Zusätzliches Backup vor S01a: `Backup-vor-S01a-2026-10-16`, Commit `902410b88c7a2317cfbd7ef9e76b97f5d288a30c`.
-- Backup umfasst versionierte Repository-Dateien und erreichbare Git-Historie, keine externen Firebase-Spielstände.
-- Letzter hier berücksichtigter Spielcode-Fix: `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2` (S01b: Ausrüstungswechsel/Ablegen in main.js). Angezeigte Spielversion weiterhin v0.5.26; kein eindeutiger Build-Identifier implementiert.
-- Auditbefunde sind Arbeitsgrundlage, keine Behauptung einer vollständigen Prüfung aller Dateien oder echten Browser-/Firebase-Abnahme. Vor jedem Teilfix konkreten aktiven Aufrufpfad und Befund erneut prüfen.
-
-### Sofortiger Arbeitsstand
-- [ ] Fehlende detaillierte Changelog-Einträge der letzten Änderungen nachtragen; vorhandene Historie unverändert erhalten. Insbesondere T02-Nachfixe, Changelog-Viewer, Startfehler/Syntaxkorrektur, schaltbare Diagnose, Bewegungsfix, S01a und Backup mit ihren tatsächlich belegten Prüfständen dokumentieren. Unbekannte Details offenlassen. Der S01b-Nachtrag ersetzt diese restliche Aufarbeitung nicht.
-- T02-Nutzerabnahme am 2026-10-16 um 16:41 CEST eingegangen: Fix und Abstieg auf dem iPhone problemlos. Zuvor drei Ebenen einschließlich Boss ohne bemerkte Probleme. Desktop/Tastatur sowie Abbruch-/Sonderfälle nicht pauschal abgenommen.
-- S01a ist veröffentlicht (`6370e26d1e62fb8e856457284591424e2978d2f8`); vollständige Aufruferprüfung, Dokumentation und spezielle Geräteabnahmen weiterhin offen.
-- S01b-Code und Dokumentation abgeschlossen; echte Geräte-/Speicherabnahme und Entscheidung zur unbeabsichtigten CSS-Abweichung offen, siehe S01b. Kein vollständiges Abnahmehäkchen.
-- Nächster Schritt: S01b-Handyprüfung voller/teilvoller Tasche und Speichern/Neuladen sowie CSS-Abweichung klären. Danach S01c-Regel für Truhen bei Platzmangel festlegen; vor weiterer Umsetzung offene S01a-/Dokumentationspunkte berücksichtigen.
-- Standardreihenfolge: S01 → S02 → S03 → S04 → S05 → S06 → S07. Kleine notwendige Vorarbeiten ausdrücklich im jeweiligen Paket dokumentieren, nicht unbemerkt mehrere Pakete zusammen umbauen.
-- T-Bugs bei sachlicher Überlappung im zugehörigen S-Paket mitprüfen; Wünsche/Erweiterungen erst nach den benötigten S-Abnahmen. S-Paketabschluss hakt verknüpfte T-Aufgaben nicht automatisch ab.
-
-### Ablauf für jede Teilaufgabe
-1. Diese Datei und den aktuellen Stand lesen; Ziel, Fehlernachweis, Abhängigkeiten und Risiken festhalten.
-2. Engen Umfang und Abnahmekriterien bestimmen. Unklare Balance-, Speicher- oder Bedienregeln vorher abstimmen.
-3. Fehler mit Test nachstellen; dabei aktive Integration und Aufrufer untersuchen, nicht nur eine isolierte Hilfsfunktion.
-4. Kleinsten vollständigen Fix schreiben; keine konkurrierende zweite Implementierung daneben setzen. Ersetzte Altlogik samt Handlern wirklich entfernen.
-5. Syntax-, Funktions- und relevante Integrationstests durchführen. Tests mit Mocks ausdrücklich so benennen.
-6. Vollständigen konkreten Schreibumfang zur Freigabe vorlegen; erst nach Freigabe veröffentlichen.
-7. Gepushten Inhalt/Commit prüfen; Deploy davon getrennt beurteilen. Changelog detailliert ergänzen und Aufgabe mit Ergebnis/Commit/Prüfstatus aktualisieren; bei separatem Schreibvorgang gesonderte Freigabe beachten.
-8. Echte Abnahme mobile-first, danach Desktop. Bei fehlender Umgebung oder Gerätenutzung Grenzen nennen und Aufgabe als Abnahme offen führen.
-9. Bei Regression stoppen: reproduzieren, eng begrenzt korrigieren oder gezielten Rückweg abstimmen. Backup nicht überschreiben und keine Spielstände löschen.
-
-### Statusregeln
-- `[ ]` = offen, in Arbeit oder noch nicht vollständig abgenommen; Status zusätzlich in Worten festhalten.
-- `[x]` bei neuen S-Teilaufgaben erst nach erfüllten definierten Abnahmekriterien. Falls nur Code fertig: ausdrücklich `implementiert – Abnahme offen`, nicht als vollständig erledigt markieren.
-- Bestehende historische T01-/T03-Häkchen bedeuten nur den damals dokumentierten Umsetzungsstand; die dort genannten offenen Geräteabnahmen bleiben offen.
-- Pro Teilaufgabe dokumentieren: Status / aktueller Arbeitsschritt / Commit / lokale Tests / Deploy / Nutzerabnahme / Restfehler / nächster Schritt.
-
-## S-Aufgaben – Stabilisierung mit höherer Priorität
-
-### S01 – Inventar, Ausrüstungswechsel und Truhen atomar absichern
-Status: teilweise implementiert, nicht vollständig abgenommen. Keine andere funktionale S-Abhängigkeit; bestehende Daten und Aufrufer zuerst prüfen.
-- [ ] S01a – Inventarvertrag festlegen und absichern: positive ganzzahlige Mengen, bekannte Item-IDs, Stapel-/Platzgrenzen. Fehlgeschlagenes Hinzufügen/Entfernen darf keine Teiländerung hinterlassen; eindeutiges Ergebnis mit Fehlergrund. Sämtliche aktiven Aufrufer vor Vertragsänderung erfassen und kompatibel anpassen.
-  - Implementierung veröffentlicht: `6370e26d1e62fb8e856457284591424e2978d2f8`; atomare Einzeloperationen, boolesche Rückgaben erhalten, detaillierte try-Funktionen und wiederholbarer Node-Test. Lokale integrierte Suite: 1027 Prüfungen mit Item-Fixtures bestanden; frühere größere Vergleichssuite separat, nicht addieren oder als Browserprüfung ausgeben. Vollständige Aufrufer-/Geräteprüfung und eigener Changelog-Nachtrag offen.
-- [x] S01b – Ausrüstungswechsel vollständig auf Kopie berechnen und erst als Ganzes übernehmen; volle Tasche und durch den Wechsel frei werdenden Slot berücksichtigen. Ablegen ebenso auf Erfolg prüfen. Kein verlorener oder duplizierter Gegenstand.
-  - Status: implementiert und dokumentiert – echte Abnahme offen. Codecommit `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`, veröffentlicht am 2026-10-16 16:55:10 CEST laut Git. Kein neuer Versionsstand; weiterhin v0.5.26.
-  - Direkter Ersatz von equipItemFromInv()/unequipSlot() in rpg/js/main.js, keine neuen globalen Handler. Erst neue Ausrüstung auf Kopie entnehmen, dann bisherige zurücklegen; nur vollständiges Ergebnis übernehmen. Ablegen bei Fehler ohne Datenverlust abbrechen. Preise, Werte, Balance und Speicherablauf nicht geändert.
-  - Tests: 31 lokale Prüfungen mit tatsächlichen Ersatzfunktionen und hashgeprüftem S01a-Code, aber Item-/Sound-/Log-/HUD-Stubs bestanden. Syntaxprüfung des vorbereiteten Gesamtcodes bestanden. Testannahme zur konstanten Taschenbelegung korrigiert: ein zuvor leerer Ausrüstungsplatz darf die Taschenbelegung verringern. Kein echter Browser-/Firebase-/Speicher-/Neuladetest; Deployment nicht separat geprüft.
-  - Veröffentlichter Diff nachgelesen: zusätzlich unbeabsichtigt Fähigkeitenbutton-CSS in renderAbilities() von text-align:center auf text-align:left geändert. Tatsächlicher main.js-Blob `3a5ebae4bb457886048b9615f401bcd1deb1ea59`; vorher genannter Zielblob `14e7dfb4c1e52406a1fd38c85ec8b0c20528ee66` beschreibt nur den lokalen Zwei-Funktionen-Entwurf, nicht die veröffentlichte Gesamtdatei. AFK und Level-Up-Ausgabe unverändert. Rücknahme oder ausdrückliche Übernahme des CSS separat klären; keine versteckte Korrektur.
-  - Changelog: detaillierter Eintrag unter v0.5.26 / S01b in rpg/change.log mit diesem Dokumentationspaket. Andere historische Lücken bleiben offen.
-  - Noch erforderlich: bei voller Tasche tauschen, bei voller Tasche Ablegen ablehnen, mit Platz ablegen; Gegenstandsmengen und Werte prüfen, manuell speichern und neu laden; mobile-first, danach Desktop. Die frühere allgemeine Ingame-Rückmeldung des Nutzers liegt vor dem S01b-Push und zählt nicht als S01b-Abnahme.
-- [ ] S01c – Truhenbelohnung ohne Verlust: bei Platzmangel Item erreichbar erhalten. Vorher festlegen, ob Gold separat entnommen werden darf oder gesamte Entnahme atomar ist. Truhe nicht nach fehlgeschlagener Vergabe unbemerkt verbrauchen.
-Abnahme: leere/volle Tasche, Teilstapel, mehrere Stapel, Mengenfehler, unbekannte IDs, Ausrüstungstausch und Truhenentnahme; Fehlerzustand vor/nach Aktion unverändert, Erfolgsmengen exakt. Reale UI-Prüfung und Erhalt nach Speichern/Neuladen.
-Bezug: T10/T11; keine Preis- oder Balanceänderung.
-
-### S02 – Spielstandschema, Migration und kontrolliertes Laden
-Status: offen. Nach S01; reine Analyse/Fixtures bei Bedarf vorher möglich.
-- [ ] S02a – Persistente Daten, Laufzeit und UI trennen; Schema-Version und erlaubte Standardwerte definieren. Kampf-Speicherregel ausdrücklich klären, keine halb wiederherstellbaren Kämpfe.
-- [ ] S02b – Geladene Spieler-, Inventar-, Ausrüstungs- und Weltdaten validieren; bekannte Altstände gezielt migrieren. Fehlend, leer, numerisch indiziert, dünn besetzt und beschädigt unterscheiden. Ungültige nicht leere Daten nicht als besiegte Ebene behandeln. Keine automatische Neuerzeugung/Löschung bestehender Fortschritte ohne abgestimmte Regel.
-- [ ] S02c – Breites Object.assign(state, data) durch kontrollierten Aufbau ersetzen; Laufzeitreste bei Slotwechsel zurücksetzen. Defekten Slot verständlich sperren, übrige Slots weiter anzeigen. Unbekannte neuere Schemaversion nicht überschreiben.
-Abnahme: neue und alte gültige Spielstände, fehlende Listen, Objektlisten, echte Array-Lücken/null-Einträge, ungültige Werte, Slotwechsel aus verschiedenen Zuständen, beschädigter Einzelslot. Migrationswiederholung darf Daten nicht weiter verändern.
-Bezug: Bewegungsfix `4bf3a5f49c15da972b2ddbe1b71f9936d116dfe5`; Kompatibilitätswrapper erst entfernen, wenn sein Ersatz nachweislich greift.
-
-### S03 – Tod, Vorbereitung und Neustart als explizite Übergänge
-Status: offen. Benötigt S01/S02.
-- [ ] S03a – Erlaubte Phasen und Übergänge definieren: Auswahl, Erkundung, Kampf, Abschluss/Belohnung, Tod, Vorbereitung, Ebenenwechsel. Sitzung/Verbindung als übergeordnete Sperre berücksichtigen. UI zeigt Zustand nur an.
-- [ ] S03b – Todesverarbeitung aus Speicherwrapper/DOM-Sichtbarkeit lösen; Goldtransfer, Ausrüstungsverlust und Rücksetzungen genau einmal anwenden. Wiederholtes Speichern/Rendern darf Tod nicht erneut auslösen.
-- [ ] S03c – Vorbereitung und Run-Start explizit abschließen; laufende Käufe beachten. Kaufzähler und Resetregeln unabhängig vom bloßen Bestand definieren; Neuladen setzt Run-Limits nicht zurück. Fehler erhält wiederaufnehmbaren Zustand.
-Abnahme: Tod, Doppelauslösung, Abbruch/Neuladen während Vorbereitung, gespeicherter Kauf, Kauf-/Startfehler, Neustart ohne Kauf, Erhalt permanenter Werte, keine doppelte Goldübertragung.
-Bezug: T01, T06, T10–T12; gewünschte Limits nicht stillschweigend ändern.
-
-### S04 – Einheitlicher Speicherablauf und asynchrone Aktionskontexte
-Status: offen. Nach S03; Schnittstellen mit S02/S03 abstimmen.
-- [ ] S04a – Speicherzuständigkeit bündeln: definierter Snapshot, Validierung, Sitzungsprüfung, Schreiboperation, eindeutiges Ergebnis. Speichern erzeugt keine versteckten Spielaktionen. Wrapper schrittweise ersetzen, nicht blind löschen.
-- [ ] S04b – Asynchrone Aktionen an Konto, Slot, Sitzungsgeneration und Vorgangs-ID binden. Schreibziel/Snapshot vorab festlegen; verspätete Ergebnisse nicht in anderen Helden übernehmen. Ein ignoriertes Ergebnis bedeutet nicht, dass ein bereits erfolgter Serverschreibvorgang rückgängig ist.
-- [ ] S04c – Fehlermeldungen und Wiederholungen vereinheitlichen: Erfolg nur bei bestätigtem Erfolg, insbesondere AFK-Abmeldung. Käufe/Belohnungen vor doppelter Ausführung absichern; Firebase-Regeln und gegebenenfalls Transaktionen/atomare Updates für den konkreten RTDB-Pfad prüfen. Keine pauschale Anti-Cheat-Garantie.
-Abnahme: Offline/Timeout, verweigerter Schreibzugriff, erneute Anmeldung, Slotwechsel/Logout während Kauf oder Belohnung, doppelte Eingabe, Wiederholung, normale Speicherung und Abmeldung. Keine falsche Erfolgsmeldung oder falscher Empfänger.
-Bezug: Rangliste und Bossbeute als abhängige Abläufe; funktionierende Schutzmaßnahmen erhalten.
-
-### S05 – Zentrale Dialog- und Eingabeverwaltung
-Status: offen. Nach S04; akute Dialogblocker vorher eng begrenzt reparierbar.
-- [ ] S05a – Ein Dialogbesitzer mit eindeutiger Priorität, Öffnen/Schließen, Unterbrechung und Fokus-Rückgabe. Pro Vorgang ein Dialog; Inhalte und Ergebnisse von Zustand/Steuerung trennen.
-- [ ] S05b – Touch und Tastatur auf dieselben fachlichen Aktionen führen. Reihenfolge: Sitzungssperre → aktiver Dialog → Texteingabe → Menü → Kampf/Erkundung. Konkurrierende globale Handler schrittweise entfernen; kein Umgehen von Sperren über zweite Eingabepfade.
-- [ ] S05c – Treppe, Changelog, Hilfe, Audio, Bossbeute, Level-Up, Rüstkammer und mobile Menüs gemeinsam testen. Escape, Tab/Shift+Tab, Enter/Leertaste, Zahlen und Fokus eindeutig; Chronik-/Questnavigation fachlich klären.
-Abnahme: T02-Symbol-Dialog nur einmal, Abbrechen/erneutes Betreten, genau ein Ebenenwechsel, Changelog per Touch/Tastatur, Texteingaben ohne Spielaktion, keine Bewegung durch Dialoge, sichere Rückkehr zur Karte.
-Bezug: T02, T05, T08; T07/T08-Erweiterungen bleiben gesonderte Wünsche.
-
-### S06 – Kampfaktionen, Belohnungen und Darstellung entkoppeln
-Status: offen. Benötigt S01–S05.
-- [ ] S06a – Gemeinsame Aktionsberechtigung für Standardangriff, Zauber, Tränke, Flucht und Klassenfähigkeiten. Animationen dürfen keine unabhängige fachliche Zweitsperre erzeugen; ungültige Aktion kostet keinen Zug.
-- [ ] S06b – Sieg, Tod, EP, Mehrfach-Level-Up und Bossbeute in eindeutigem Ablauf koordinieren; Effekte beobachten Ergebnisse statt Kampfhandler mehrfach zu ersetzen. Vor Änderungen Cooldown-Zählweise, Zugkosten und Abschlussdauer abstimmen.
-- [ ] S06c – Tatsächliche statt nur theoretische Heil-/Manamengen melden; Buttons, Ressourcen, Cooldowns und Effekte aus demselben Ergebnis aktualisieren. Doppelklick und verspätete Effekte berücksichtigen.
-Abnahme: alle Klassen und Aktionen, fehlendes Mana/Tränke, voller TP-/MP-Stand, Gift-Kill, Flucht, letzter Treffer, Boss-Sieg mit Level-Up, Tod während Aktion, Hintergrund/Resize. Keine Doppelaktion, überdeckte Auswahl oder unbemerkte Balanceänderung.
-Bezug: T07, T08, T13; Manatrank-Zugkosten gesondert klären.
-
-### S07 – Altmodule, Layout und reproduzierbare Gesamtprüfung bereinigen
-Status: offen. Nach funktionaler Stabilisierung S01–S06; Inventarisierung vorher zulässig.
-- [ ] S07a – Aktiven Importgraphen und Zuständigkeiten dokumentieren; Altmodule mit anderem Schema kennzeichnen. Entfernen erst nach Referenzprüfung und Regressionstests. Keine unbeteiligten Projekte im Repository anfassen.
-- [ ] S07b – Responsive Regeln, Scrollbereiche und Fokusdarstellung bündeln; versteckte Animationen pausieren und große DOM-Beobachter durch gezielte Ereignisse ersetzen, wo ihr Ersatz abgesichert ist. Mobile-first, kleine Höhen und lange Texte.
-- [ ] S07c – Wiederholbare Integrationstests, eindeutige Build-Kennung zusätzlich zur Spielversion, schaltbare Diagnose und detaillierte Changelog-Pflege als feste Arbeitsgrundlage. Gesamtabnahme auf Handy und Desktop; fehlende Umgebungen offen ausweisen.
-Abnahme: reproduzierbarer Start, keine fehlenden Imports, Kernabläufe aus der Testmatrix, kein Verlust vorhandener Funktionen, nachvollziehbarer Build/Commit und keine behauptete Vollprüfung ununtersuchter Dateien.
-Bezug: T04, T09, T14; T15-Grafikausbau erst danach und gesondert.
-
-## Gemeinsame Regressionstest-Matrix
-- Neuer Held → speichern → neu laden; bestehender Held → bewegen → Kampf → speichern → neu laden.
-- Volle Tasche → Ausrüstung tauschen; volle Tasche → Truhe: kein Gegenstandsverlust.
-- Letzter Gegner → ein Treppendialog → eine Ebene; Hier bleiben → weggehen → erneut betreten.
-- Boss-Sieg mit Level-Up → genau eine korrekte Belohnung und alle Auswahlen erreichbar.
-- Tod → Vorbereitung → Kauf → Neustart → Neuladen: Gold, Ausrüstung und permanente Werte korrekt.
-- Netzwerkfehler beim Kauf/Speichern; Sitzungspause; Slotwechsel/Logout bei laufendem Vorgang.
-- Changelog/Hilfe/Menüs per Touch und Tastatur; kleine Höhe, lange Namen, Hoch-/Querformat.
-- Pro Paket relevante Zeilen durchführen; vollständige Matrix spätestens vor Abschluss S07/T14. Lokale Mocks, echter Browser, Firebase und Nutzergerät getrennt protokollieren.
-
-## T-Aufgaben – Bugs und Wünsche
-
-### Historisch umgesetzt, Geräteabnahme teilweise offen
-- [x] ~~T01 – Kaufbestätigung unterscheiden: Heil-/Manatränke direkt kaufen; bei Ausrüstung weiterhin bestätigen. Doppelkäufe während laufender Speicherung verhindern.~~ — umgesetzt am 2026-10-16 12:16 CEST in v0.5.20, Commit `40ab45c0085504b5a2c8a7c49bc659535ef1e186`. Code-Push und 66 lokale Modellprüfungen bestanden; echte Browser-/Firebase-Abnahme noch offen.
-- [x] ~~T03 – Desktop-Kampffenster verkleinern: sinnvolle Maximalmaße, weniger Leerraum, lange Inhalte weiterhin erreichbar.~~ — umgesetzt am 2026-10-16 12:31 CEST in v0.5.22, Commit `dc3bcc99a8091b58b874258e6e6106672b683655`. Entscheidung: maximale Kampffensterbreite 900 px; Desktop-Padding 16 px, Figuren 112 px, Aktions-/Fähigkeitenleiste maximal 720 px. Mobile und kompakte Höhendarstellung unverändert. Code-Push und Syntaxprüfung bestanden; echte Browser-/Firebase-Abnahme noch offen.
-
-### T02 – Handyabstieg bestätigt; weitere Abnahmen offen, Historie erhalten
-- [ ] T02 – Treppendialog: ausschließlich ein Fenster mit Symbolen. „⬇️ Absteigen“ zuerst und vorausgewählt, „🚪 Hier bleiben“ bricht ab. Alte symbollose Abfrage vollständig entfernen; mobiles Layout innerhalb des Sichtbereichs, keine rechts abgeschnittenen Inhalte. Ein bestätigter Abstieg löst genau einen Ebenenwechsel aus.
-  - Ursprüngliche Aufgabe: Schaltflächen umgekehrt anordnen; vor Umsetzung klären, ob „Abstieg immer vorgewählt“ Wunsch oder Fehler ist. Entscheidung: Absteigen zuerst und vorausgewählt.
-  - Historische Umsetzung 2026-10-16 12:25 CEST, v0.5.21, Commit `cb6a2b86450aecbf2eaad9799df4f4614aa838b0`; 21 lokale Modellprüfungen berichtet, echte Abnahme offen.
-  - Historischer Nachfix 2026-10-16 12:45 CEST, v0.5.23, Commit `2a0d4ff5984ee04aaa6226654e156f34ed9c3fb1`. Damals dokumentierte Aussage „alte doppelte Treppenabfrage entfernt; nur der neue Dialog bleibt; mobiles Layout repariert“ wurde durch Nutzerprüfung widerlegt. Nicht als Erfolg weiterführen: alte Handler blieben aktiv, Entfernung im neuen Modul lag hinter vorzeitigem return.
-  - Aktueller Codefix: Commit `d59d1b55175a0ce354c9d274f74807b6061456ab`. Alte Dialogerzeugung, Treppen-CSS und Handler aus journey-ui.js entfernt; alleiniger Symbol-Dialog und Ablauf in stair-confirm.js. Spielversion weiterhin v0.5.26.
-  - Prüfstand: Syntax beider Dateien und 17 lokale DOM/API-Modellprüfungen bestanden. Keine vollständige Simulation aller anderen Eingabemodule, kein echter automatisierter Safari-/Firebase-/Layouttest. Nutzer bestätigt am 2026-10-16 16:41 CEST den Fix und problemlosen Abstieg auf dem iPhone. Desktop-/Tastaturintegration und gesonderte Abbruch-/Sonderfälle bleiben offen; Bezug S05.
-
-### Offene T-Aufgaben – innerhalb der Stufe einfachere zuerst
-- [ ] T04 – Helden-/Gegnerkarten im Begegnungsfenster dynamisch in der Höhe gestalten. Unnötiges Scrollen innerhalb dieses Bereichs vermeiden; lange Namen und kleine/querformatige Displays berücksichtigen. Problem anhand eines aktuellen Screenshots nachstellen.
-- [ ] T05 – Enter und Leertaste konsistent: fokussierte Aktionen bestätigen; normaler Angriff im passenden Kampfkontext auch per Leertaste. Fokus auf anderen Buttons und Texteingaben respektieren, keine Doppelaktion.
-- [ ] T06 – Trankangebot je Run absichern: Heil- und Manatränke bleiben fest verfügbar, jeweils drei kaufbar pro Run/Vorbereitung. Beim neuen Run zurücksetzen, nicht beim Neuladen. Vorhandenes Limit und seine Speicherung prüfen.
-- [ ] T07 – Manatrank im Kampf ergänzen: eigener erreichbarer Zugang mit Bestand, tatsächlicher Mana-Wiederherstellung, Verbrauch und Leerzustand. An den Heiltrank-Ablauf anbinden; gewünschte Zugkosten vor Umsetzung festhalten.
-- [ ] T08 – Tastaturbedienung vereinheitlichen: alle Kampfaktionen einschließlich Manatrank und Klassenfähigkeiten per eindeutig zugeordneten Zahlen erreichbar machen; Pfeiltasten zum Auswählen, sichtbarer Fokus, Enter/Leertaste zum Auslösen. Bewegung, Menüs und Dialoge klar trennen; Escape und deaktivierte Aktionen sauber behandeln.
-- [ ] T09 – Fenster generell an Browsergröße anpassen: Resize, Zoom, Safe Areas, kleine Höhen und Hoch-/Querformat berücksichtigen. Keine abgeschnittenen Buttons; möglichst ein klarer Scrollbereich statt verschachtelter Scrollflächen.
-- [ ] T10 – Rüstkammer vervollständigen: Heldenvorschau mit tatsächlich angelegter Ausrüstung; Gold, Angriff und Verteidigung klar getrennt anzeigen.
-- [ ] T11 – Angebotsvergleich in der Rüstkammer: aktuelle und mögliche Werte vor dem Kauf zeigen; Bestätigung bei Ausrüstung direkt an der ausgewählten Karte. Gespeicherte Käufe, Fehler und Limits eindeutig darstellen.
-- [ ] T12 – Mehr und wechselnde Ausrüstung in der Rüstkammer: größere Auswahl passend zu Klasse, Level und Werten; gekaufte Angebote verschwinden, folgende Runs erhalten Variation. Vor Umsetzung klären: Entfernung nur aus dem aktuellen Angebot oder auch Ausschluss aus dem nächsten Pool? Gekaufte Ausrüstung nicht versehentlich vor der vorgesehenen Expedition löschen; Angebot gegen Neuwürfeln durch Neuladen absichern. Tränke bleiben davon ausgenommen (T06).
-- [ ] T13 – Kampfabschluss ausarbeiten: letzten Treffer, Gegner-Niederlage, EP und Sieg sauber zusammenführen. Keine nachlaufenden Kartenzahlen; Level-Up, Tod und Boss-Beute dürfen nicht überdeckt werden. Gewünschte Anzeigedauer vorab abstimmen, nicht unbemerkt den Kampftakt ändern.
-- [ ] T14 – Echte visuelle Gesamt-Abnahme: Kampfzahlen und Effekte im Vordergrund, keine Duplikate, korrekte Positionen beim Scrollen/Resize; anschließend Sieg, Tod, Level-Up, Boss-Beute, Rüstkammer und Neustart auf Handy und Desktop durchspielen.
-- [ ] T15 – Figurenanimationen ausbauen: gezielte Angriffs-, Ausweich- und Todesbewegungen für Helden/Gegner statt überwiegend zusätzlicher Effekt-Overlays. Eigenständiger Grafikausbau, getrennt von Fehlerkorrekturen.
-
-Die bisherigen offenen Punkte 1–4 bleiben enthalten: vollständige Rüstkammer (T10–T12), Kampfabschluss (T13), Figurenanimationen (T15) und echte visuelle Abnahme (T14).
-
-## Für jeden einzelnen S- und T-Punkt verpflichtend
-- Mobile-first, danach Desktop; Touch- und Tastaturdarstellung bewusst unterscheiden. Desktop-Tastenkürzel nicht ungeprüft auf dem Handy anzeigen.
-- Tutorial, Hilfe, sichtbare Tastenkürzel, Buttontexte und zugängliche Beschriftungen zusammen mit der jeweiligen Änderung aktualisieren.
-- Kleine Höhe, lange Texte, Fokus, leere Tränke, fehlendes Mana, Cooldowns und relevante Dialogwechsel prüfen.
-- Preise, Balance, Speicherung und Zuglogik nur ändern, wenn die jeweilige Aufgabe das ausdrücklich umfasst. Bestehende Fixes erhalten.
-- Pro Aufgabe Ergebnis/Commit und Prüfstatus hier ergänzen; Umsetzung und Test nicht gleichsetzen. Changelog-Pflege ist Teil des Abschlusses, kein optionaler Nachtrag.
-
-## Neue Bugs und Rückfragen
-Hier können neue Einträge manuell ergänzt und anschließend gemeinsam eingeordnet werden. T = Bug/Wunsch; notwendige Stabilisierung dem passenden S-Paket zuordnen und Bezug erhalten.
-- Datum / Gerät und Browser / betroffener Bereich / Schritte / erwartet / tatsächlich / Screenshot oder Diagnose / zugehörige ID.
-
-## Übergabe bei jeder Arbeitsunterbrechung
-- Aktiver Punkt und Teilaufgabe: S01b, implementiert und dokumentiert – Abnahme offen.
-- Zuletzt geprüfter Codecommit: `42f7b3979d10bdc39bb1c9a128a4b224ddb20fc2`.
-- Gesicherter Befund und Ziel: verlustfreier Ausrüstungswechsel/Ablegen, insbesondere bei voller Tasche.
-- Bereits geändert/gepusht: S01a-Inventarmodul und S01b-Funktionen in main.js; kein S01c-Fix.
-- Lokale Tests und Grenzen: 31 S01b-Prüfungen mit tatsächlichem S01a-Code und Item/UI-Stubs; keine echte Geräte-/Firebase-/Speicherabnahme.
-- Deploy / echte Abnahme: Deploy nicht separat verifiziert; S01b-Abnahme ausstehend. T02-Handyabstieg vom Nutzer bestätigt.
-- Changelog-Status: S01b detailliert nachgetragen; ältere Lücken einschließlich S01a separat offen.
-- Blocker / offene Entscheidung: unbeabsichtigtes text-align:left der Fähigkeitenbuttons zurücknehmen oder ausdrücklich übernehmen; keine stillschweigende Korrektur.
-- Exakt nächster Schritt: S01b-Geräteprüfung und CSS-Entscheidung; anschließend S01c-Truhenregel abstimmen.
+- S-Aufgaben haben Vorrang vor Produktwünschen; akute Datenverlust- oder Startblocker dürfen die Reihenfolge unterbrechen.
+- Nach jeder Änderung `rpg/change.log` ergänzen; keine unvollständige Datei zurückschreiben.
+- `[x]` erst nach abgeschlossener Umsetzung und Veröffentlichung setzen.
