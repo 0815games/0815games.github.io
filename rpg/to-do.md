@@ -8,7 +8,7 @@ Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Än
 ### S03 – Tod, Vorbereitung und Neustart
 - [ ] S03a: Spielphasen und Übergänge definieren.
 - [ ] S03b: Tod genau einmal verarbeiten; Goldtransfer, Ausrüstungsverlust und Rücksetzungen absichern.
-- [ ] S03c: Vorbereitung und Run-Start als eindeutigen Ablauf abschließen; Kauf- und Neustartregeln prüfen.
+- [x] S03c: Vorbereitung und Run-Start als eindeutigen Ablauf abschließen; Kauf- und Neustartregeln prüfen.
 
 ### S04 – Speichern und asynchrone Aktionen
 - [ ] S04a: Speicherablauf bündeln: Snapshot, Validierung, Sitzungsprüfung, Schreibvorgang und eindeutiges Ergebnis.

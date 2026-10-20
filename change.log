@@ -1748,3 +1748,9 @@ UPDATE: Todeskrallen selten.
 [v0.0.5f] - 2025-12-15 (Interactive Bugfix)
 
 FIX: Dialogfenster schließen nicht mehr sofort.
+
+## 2026-10-20 – S03c abgeschlossen: Vorbereitung, Käufe und Run-Start
+- S03c-Testplan erfolgreich durchgeführt: Vorbereitung, Kaufregeln, Run-Start, Speichern/Laden und Neustart nach Tod.
+- Keine doppelten Käufe, kein doppelter Run-Start und keine verlorenen Gegenstände oder Goldbeträge festgestellt.
+- Run-Fortschritt bleibt nach Speichern und Neuladen konsistent; nach dem Tod erfolgt der Neustart ohne Restwerte des vorherigen Runs.
+- S03c in rpg/to-do.md als erledigt markiert.
