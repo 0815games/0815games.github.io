@@ -1769,3 +1769,17 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Der Goldtransfer beim Tod erfolgt pro Sitzung nur einmal.
 - Die drei identischen Speicherfehlerstellen verwenden nun die einheitliche Funktion `notifyError()`.
 - S04c in rpg/to-do.md als erledigt markiert.
+
+## 2026-10-20 – v0.6.1 – Loot und Monsterprogression
+- Neue Truhenverteilung: 45 % Gold, 40 % Gold mit Trank, 15 % Gold mit Ausrüstung.
+- Doppelte Itemvergabe beim Öffnen von Truhen entfernt.
+- Itemtruhen bleiben bei voller Tasche erneut versuchbar.
+- Kampfbelohnungen nicht mehr global nach wiederkehrenden Gegner-IDs gesperrt.
+- Ausrüstungsprüfung um Level- und Klassenanforderungen ergänzt.
+- Anforderungen in den Gegenstandsdetails sichtbar gemacht.
+- Fundkatalog um 40 Ausrüstungsgegenstände erweitert.
+- Neue Fundauswahl berücksichtigt Slot, Klasse, Heldenlevel und Ebenentiefe.
+- Acht Gegnertypen und passende Themenpools ergänzt.
+- Tiefenskalierung für normale Gegner gebündelt; Bosskurve beibehalten.
+- Sichtbare Versionsanzeigen und Cache-Kennungen der geänderten Zusatzmodule aktualisiert.
+- Spielbalance und Integration müssen durch Spieltests bestätigt werden.

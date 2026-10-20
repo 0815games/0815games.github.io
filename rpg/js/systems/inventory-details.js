@@ -15,6 +15,12 @@ export function renderItemDetails(box,item,entry,equipped,items){
  box.replaceChildren();
  const add=(tag,text,parent=box)=>{const n=document.createElement(tag);n.textContent=text;parent.append(n);return n;};
  add('p',item.desc||'Keine Beschreibung vorhanden.');
+ if(item.slot){
+  const classNames={warrior:'Krieger',mage:'Magier',rogue:'Schurke'};
+  add('p',`Benötigtes Heldenlevel: ${item.minLevel??1}`);
+  if(item.heroClass)add('p',`Klasse: ${classNames[item.heroClass]||item.heroClass}`);
+  if(Number.isFinite(item.minDepth))add('p',`Als Truhenbeute ab Ebene ${item.minDepth}`);
+ }
  add('p',`Wert: ${item.price??0} Gold · Bestand: ${entry.count}`);
  const comparison=compareEquipment(item,equipped,items);
  if(!comparison)return;

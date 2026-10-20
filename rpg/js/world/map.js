@@ -14,11 +14,11 @@ function mulberry32(seed) {
 }
 
 const THEMES = [
-  { name: 'katakomben', cols: 42, rows: 30, enemies: ['rat', 'bat', 'slime', 'spider', 'goblin', 'skeleton'] },
-  { name: 'pilzwald', cols: 46, rows: 32, enemies: ['slime', 'spider', 'goblin', 'zombie', 'wraith'] },
-  { name: 'frostgruft', cols: 40, rows: 30, enemies: ['bat', 'skeleton', 'zombie', 'wraith', 'golem'] },
-  { name: 'feuershrein', cols: 44, rows: 31, enemies: ['goblin', 'imp', 'demon', 'golem', 'skeleton'] },
-  { name: 'schattenarena', cols: 36, rows: 28, enemies: ['wraith', 'demon', 'golem', 'imp', 'skeleton'] }
+  { name: 'katakomben', cols: 42, rows: 30, enemies: ['rat', 'bat', 'slime', 'spider', 'goblin', 'skeleton', 'bone_servant', 'crypt_raider', 'blood_ghoul'] },
+  { name: 'pilzwald', cols: 46, rows: 32, enemies: ['slime', 'spider', 'goblin', 'zombie', 'wraith', 'spore_carrier', 'blood_ghoul', 'night_hunter'] },
+  { name: 'frostgruft', cols: 40, rows: 30, enemies: ['bat', 'skeleton', 'zombie', 'wraith', 'golem', 'bone_servant', 'frost_guard', 'night_hunter'] },
+  { name: 'feuershrein', cols: 44, rows: 31, enemies: ['goblin', 'imp', 'demon', 'golem', 'skeleton', 'ash_cultist', 'obsidian_guard', 'crypt_raider'] },
+  { name: 'schattenarena', cols: 36, rows: 28, enemies: ['wraith', 'demon', 'golem', 'imp', 'skeleton', 'ash_cultist', 'obsidian_guard', 'night_hunter'] }
 ];
 
 function availableMonsters(theme, depth) {

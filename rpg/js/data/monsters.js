@@ -13,3 +13,39 @@ export const MONSTERS = {
   demon: { name: 'Abgrunddämon', hp: 60, atk: 18, def: 5, xp: 90, gold: 55, color: '#d32f2f', weight: 4, minDepth: 8, shape: 'demon' },
   lord: { name: 'Dunkler Gruftfürst', hp: 65, atk: 15, def: 5, xp: 95, gold: 55, color: '#ab47bc', weight: 0, minDepth: 5, shape: 'lord' }
 };
+
+// Weitere Gegner für unterschiedliche Tiefen und Rollen.
+Object.assign(MONSTERS, {
+ bone_servant: {
+  name:'Knochenknecht', hp:36, atk:11, def:3, xp:22, gold:10,
+  color:'#b7b0a2', weight:7, minDepth:2, shape:'skeleton'
+ },
+ spore_carrier: {
+  name:'Pilzträger', hp:55, atk:9, def:1, xp:28, gold:12,
+  color:'#bd79a8', weight:7, minDepth:3, shape:'zombie'
+ },
+ crypt_raider: {
+  name:'Gruftplünderer', hp:32, atk:16, def:1, xp:32, gold:18,
+  color:'#b1a65b', weight:6, minDepth:4, shape:'goblin'
+ },
+ frost_guard: {
+  name:'Frostwache', hp:52, atk:12, def:6, xp:42, gold:21,
+  color:'#a7dbe8', weight:6, minDepth:5, shape:'golem'
+ },
+ ash_cultist: {
+  name:'Aschenkultist', hp:33, atk:19, def:1, xp:45, gold:24,
+  color:'#ed9b64', weight:6, minDepth:6, shape:'wraith'
+ },
+ blood_ghoul: {
+  name:'Blutghul', hp:68, atk:17, def:3, xp:58, gold:29,
+  color:'#a54d64', weight:5, minDepth:8, shape:'zombie'
+ },
+ obsidian_guard: {
+  name:'Obsidianwächter', hp:90, atk:17, def:9, xp:75, gold:38,
+  color:'#665b79', weight:5, minDepth:10, shape:'golem'
+ },
+ night_hunter: {
+  name:'Nachtjäger', hp:48, atk:25, def:3, xp:80, gold:42,
+  color:'#8370c4', weight:5, minDepth:12, shape:'wraith'
+ }
+});
