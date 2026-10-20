@@ -5,11 +5,6 @@ Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Än
 
 ## Stabilisierung
 
-### S02 – Spielstandschema, Migration und Laden
-- [ ] S02a: Persistente Daten, Laufzeit und UI trennen; Schema-Version und erlaubte Standardwerte definieren.
-- [ ] S02b: Spielstände validieren und alte Daten gezielt migrieren; fehlende, beschädigte oder unvollständige Daten sicher behandeln.
-- [ ] S02c: Unkontrolliertes Überschreiben des Zustands ersetzen; Slotwechsel und defekte Slots sauber behandeln.
-
 ### S03 – Tod, Vorbereitung und Neustart
 - [ ] S03a: Spielphasen und Übergänge definieren.
 - [ ] S03b: Tod genau einmal verarbeiten; Goldtransfer, Ausrüstungsverlust und Rücksetzungen absichern.
