@@ -1792,3 +1792,10 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Levelanforderungen im Vorbereitungsangebot und bei Bosswaffen beschrieben.
 - Gegenstands-IDs und Kampfwerte unverändert; bereits angelegte Ausrüstung bleibt bestehen.
 - Spieltests für Anlegen, Vorbereitung und Bossbeute stehen aus.
+
+## 2026-10-20 – v0.6.3 – Kampftasten korrekt anzeigen
+- Heil- und Manatrank behalten ihre Tastennummern auch bei Bestands- und HUD-Aktualisierungen.
+- Tastaturbeschriftungen werden beim Aktualisieren korrigiert, statt vorhandene Präfixe unverändert zu lassen.
+- HTML-Grundbeschriftungen: 3 Heiltrank, 4 Manatrank, 5 Flucht.
+- Tastenbelegung und Kampfaktionen unverändert.
+- Spieltest der Anzeige steht aus.

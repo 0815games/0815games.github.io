@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#08090e">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <title>Chroniken der Schattengruft – v0.6.2</title>
+  <title>Chroniken der Schattengruft – v0.6.3</title>
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css?v=0.6.0">
   <link rel="stylesheet" href="css/boss-loot.css?rev=1">
@@ -60,7 +60,7 @@
       </div>
       <div class="intro-bar"><i id="intro-bar"></i></div>
       <p class="intro-hint">KLICKEN ODER [ENTER] ZUM BETRETEN</p>
-      <button type="button" class="version-badge" data-version>v0.6.2</button>
+      <button type="button" class="version-badge" data-version>v0.6.3</button>
     </div>
   </div>
 
@@ -86,7 +86,7 @@
         <button id="auth-submit" type="submit" class="gold wide">⚔️ IN DIE GRUFT HERABSTEIGEN</button>
       </form>
       <small>Alle Recken und Fortschritte werden im Firebase-Ordensarchiv gespeichert.</small>
-      <div><button type="button" class="version-badge" data-version>v0.6.2</button></div>
+      <div><button type="button" class="version-badge" data-version>v0.6.3</button></div>
     </main>
   </div>
 
@@ -98,7 +98,7 @@
       <div id="slots-grid" class="slots-grid"></div>
       <div class="slot-footer">
         <button id="btn-slot-logout" type="button" class="dark">🚪 ABMELDEN</button>
-        <button type="button" class="version-badge" data-version>v0.6.2</button>
+        <button type="button" class="version-badge" data-version>v0.6.3</button>
       </div>
     </main>
   </div>
@@ -210,8 +210,8 @@
           <div class="combat-buttons">
             <button id="attack" type="button">🗡️ ANGRIFF</button>
             <button id="fire" type="button">🔥 FEUERBALL</button>
-            <div class="potion-split" role="group" aria-label="Tränke: links Heilung, rechts Mana"><button id="heal" type="button">Heil · ×0</button><button id="mana" type="button">Mana · ×0</button></div>
-            <button id="flee" type="button">💨 FLUCHT</button>
+            <div class="potion-split" role="group" aria-label="Tränke: links Heilung, rechts Mana"><button id="heal" type="button" aria-keyshortcuts="3">[3] Heil · ×0</button><button id="mana" type="button" aria-keyshortcuts="4">[4] Mana · ×0</button></div>
+            <button id="flee" type="button" aria-keyshortcuts="5">[5] Flucht</button>
           </div>
         </section>
       </aside>
