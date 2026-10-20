@@ -46,7 +46,7 @@ function showSlotChoices(panel,player,slot,trigger){
  heading.textContent=`Passende Gegenstände · ${slotNames[slot]}`;heading.style.margin='0 0 10px';section.append(heading);
  const matches=equipmentCandidates(player.inventory,slot,ITEMS);
  const status=doc.createElement('p');status.setAttribute('role','status');status.style.cssText='margin:8px 0;color:#efd194';
- const ticket={player,slot,section,uid:state.user.uid,saveSlot:state.currentSlot,world:state.world,tiles:state.world?.tiles,inventory:player.inventory,equipped:player.equipped,busy:false,done:false};
+ const ticket={player,slot,section,uid:state.user.uid,saveSlot:state.currentSlot,world:state.world,tiles:state.world?.tiles,inventory:player.inventory,equipped:player.equipped,equippedId:player.equipped?.[slot]??null,busy:false,done:false};
  if(matches.length){
   list.style.cssText='margin:0 0 12px;padding-left:20px';
   for(const item of matches){
@@ -86,6 +86,7 @@ function equipSlotChoice(ticket,item,doc){
  if(state.player!==p||state.user?.uid!==ticket.uid||cloud.auth?.currentUser?.uid!==ticket.uid||state.currentSlot!==ticket.saveSlot||state.world!==ticket.world||state.world?.tiles!==ticket.tiles||p.inventory!==ticket.inventory||p.equipped!==ticket.equipped)return false;
  if(state.inCombat||p.hp<=0||p.needsPreparation||doc.hidden||doc.getElementById('game')?.classList.contains('hidden'))return false;
  if(doc.querySelector('dialog[open]:not(#mobile-game-menu),.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])'))return false;
+ if(p.equipped?.[ticket.slot]!==ticket.equippedId)return false;
  const current=p.inventory[item.index];
  if(!Number.isInteger(item.index)||current!==item.entry||current?.id!==item.id||current?.count!==item.count||!Number.isSafeInteger(current?.count)||current.count<1||!Object.prototype.hasOwnProperty.call(ITEMS,item.id)||ITEMS[item.id]?.slot!==ticket.slot)return false;
  const row=doc.getElementById(`inventory-detail-${item.index}`)?.closest('.item');
