@@ -1,5 +1,11 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-20 – S02c: Kontrollierte Spielstand-Übernahme
+- `3bde5f3`: loadAndLaunchSlot() ersetzt Object.assign(state, data) durch die kontrollierte Übernahme eines validierten Spielstands.
+- Spieler-, Welt- und Meta-Daten werden aus dem von normalizeSaveSlot() geprüften Snapshot übernommen.
+- state.user bleibt beim Laden unverändert; inCombat und activeMonster werden explizit zurückgesetzt.
+- Betroffen: rpg/js/main.js. Syntaxprüfung mit node --check bestanden; Rebase auf aktuellen main-Stand und Push erfolgreich.
+
 ## 2026-10-20 – S01c: Truhenbelohnung ohne Verlust
 - `6aabd19`: Truhen werden bei vollem Inventar atomar behandelt. Vor dem Öffnen wird mit tryAddItem geprüft, ob der Beutegegenstand aufgenommen werden kann.
 - Bei fehlendem Platz bleibt die Truhe geschlossen; es wird weder Gold vergeben noch die Truhe entfernt oder der Gegenstand verworfen.
