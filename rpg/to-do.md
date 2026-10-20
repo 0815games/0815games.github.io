@@ -11,7 +11,7 @@ Umgesetzte und veröffentlichte Funktionen sind nicht Teil dieser Liste. Die Än
 - [x] S03c: Vorbereitung und Run-Start als eindeutigen Ablauf abschließen; Kauf- und Neustartregeln prüfen.
 
 ### S04 – Speichern und asynchrone Aktionen
-- [ ] S04a: Speicherablauf bündeln: Snapshot, Validierung, Sitzungsprüfung, Schreibvorgang und eindeutiges Ergebnis.
+- [x] S04a: Speicherablauf bündeln: Snapshot, Validierung, Sitzungsprüfung, Schreibvorgang und eindeutiges Ergebnis.
 - [ ] S04b: Asynchrone Aktionen an Konto, Slot, Sitzung und Vorgang binden; verspätete Ergebnisse abweisen.
 - [ ] S04c: Fehlermeldungen und Wiederholungen vereinheitlichen; doppelte Käufe oder Belohnungen verhindern.
 
