@@ -1,5 +1,15 @@
 # To-do – Chroniken der Schattengruft
 
+## Aktueller T10-Ingame-Stand – belegte Slots und Tausch, 2026-10-20
+Dieser Nachtrag ergänzt die Slot-Auswahl um belegte Slots, Tausch, vereinheitlichten Adapter und Test; die Historie bleibt erhalten.
+- [x] Belegte Slots können über die vorhandene Inventar-Aktion getauscht werden (`14366d3`).
+- [x] Leere und belegte Slots nutzen denselben geprüften Adapter (`59df5f3`).
+- [x] Wiederholbarer Slot-Test liegt im Repository (`8a8f0da`).
+- [x] Veralteter Tausch wird durch `equippedId` abgewiesen; Test lokal 28/28 grün (`1d687f1`).
+- [ ] `node rpg/tests/armory-slot-choices.mjs` im Projekt ausführen und Ergebnis bestätigen.
+- [ ] Vollständige Regressionen, Deployment und mobile/Desktop-Abnahme durchführen: leeren Slot ausrüsten, belegten Slot tauschen, korrekter Bestand, aktualisierte Figur/Werte, Ablegen, Fokus, Speichern/Neuladen sowie Kampf-, Dialog- und Sitzungssperren.
+- [ ] Kein vollständiger T10-/T14-Abschluss ohne Abnahme; Vorbereitungs-Shop und T11-Angebotsvergleich bleiben getrennt.
+
 ## Aktueller T10-Ingame-Stand – Slot-Auswahl, 2026-10-19
 Dieser Nachtrag ersetzt ältere Angaben zur Slot-Auswahl als noch nicht implementiertem nächsten Schritt; die Historie bleibt erhalten.
 - [ ] Implementiert – Abnahme offen: passender Inventarfilter `0f323c0`, Öffnen/Schließen der Liste `962942b`, Ausrüsten über vorhandene Inventar-Aktion `5d19474`. Nur leere Slots; Ausrüstungstausch über belegte Slots nicht zusätzlich umgesetzt.

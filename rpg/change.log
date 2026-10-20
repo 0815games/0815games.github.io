@@ -1,5 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-20 – Ingame-Rüstkammer: belegte Slots, Tausch und vereinheitlichter Adapter
+- `14366d3`: Belegte Slots bieten jetzt ebenfalls passende Ersatzgegenstände an. Der Ausrüsten-Button nutzt weiterhin den vorhandenen inventoryEquipAction-Callback der zugehörigen Inventarzeile.
+- `59df5f3`: Leere und belegte Slots verwenden denselben geprüften Adapter. Ein leerer Slot wird belegt, ein belegter Slot wird getauscht; die bisherigen Schutzprüfungen bleiben erhalten.
+- `8a8f0da`: Neuer wiederholbarer Test `rpg/tests/armory-slot-choices.mjs` für Slot-Auswahl, Doppelklick, Kampf-/Sitzungssperren, verändertes Inventar, ungültige Gegenstände und Aktionsfehler.
+- `1d687f1`: Der Adapter speichert `equippedId` beim Öffnen der Liste und lehnt den Tausch ab, wenn der aktuell angelegte Gegenstand inzwischen gewechselt wurde. Der Test wurde korrigiert und lokal mit 28 von 28 Prüfungen bestanden.
+- Offen bleiben: Ausführung des neuen Tests im Projekt, vollständige Regressionen, Deployment sowie mobile/Desktop-Abnahme. T10/T14 bleiben dadurch offen; Spielversion bleibt v0.5.26.
+
 ## 2026-10-19 – Ingame-Rüstkammer: Slotliste und Ausrüsten in kleinen Schritten
 - `0f323c0`: neuer equipment-candidates.js-Filter und tests/equipment-candidates.mjs. Nur vorhandene Gegenstände mit passendem Ausrüstungsplatz und gültigem positivem Bestand anbieten; Inventar unverändert lassen.
 - `962942b`: leere Slots öffnen eine Liste passender Inventargegenstände. Leerzustand, Schließen und Fokus-Rückgabe ergänzt; allein dieser Schritt führte noch keine Ausrüstungsaktion aus.
