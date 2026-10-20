@@ -1,5 +1,16 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## v0.6.0 – 2026-10-20 – Kampfdarstellung, Todesanimationen und Rüstkammer
+
+- Kampfabschluss: Standardangriff und Feuerball zeigen die Niederlage des Gegners mit „Besiegt“, Entsättigung und bereinigten Effekten; `COMBAT_FINISH_MS = 850` steuert das Abschlussfenster.
+- Todesanimation: besiegte Gegner und gefallene Helden kippen, verblaszen und werden grau; bei reduzierter Bewegung erfolgt eine sofortige, ruhige Darstellung.
+- Klassenfähigkeiten: Fähigkeitenbuttons erhalten Angriffs-, Treffer-, Projektil- und Reaktionsdarstellung; Gift- und Fähigkeitstreffer sind in die Kampfeffekte integriert.
+- Rüstkammer: Heldenfigur, Werteübersicht, responsive Slotanordnung, Auswahl passender Ersatz- und Tauschgegenstände sowie ein gemeinsamer, geschützter Ausrüstungsadapter.
+- Tränke: Heil- und Manatränke sind im Inventar nutzbar; im Kampf gibt es getrennte Heil-/Mana-Buttons, beide verbrauchen einen Zug.
+- Steuerung: Q/E/R lösen Klassenfähigkeiten aus; Enter/Leertaste interagieren auf der Karte.
+- Oberfläche: Kampflayout, Bossbeute-Dialog, Inventarliste, Scrollleiste und Vorbereitungs-Heldenvorschau wurden überarbeitet.
+
+- Release: Spielversion, Cache und Importrevisionen auf v0.6.0 angehoben; veröffentlicht mit Commit `cf30a31`.
 ## 2026-10-20 – Ingame-Rüstkammer: belegte Slots, Tausch und vereinheitlichter Adapter
 - `14366d3`: Belegte Slots bieten jetzt ebenfalls passende Ersatzgegenstände an. Der Ausrüsten-Button nutzt weiterhin den vorhandenen inventoryEquipAction-Callback der zugehörigen Inventarzeile.
 - `59df5f3`: Leere und belegte Slots verwenden denselben geprüften Adapter. Ein leerer Slot wird belegt, ein belegter Slot wird getauscht; die bisherigen Schutzprüfungen bleiben erhalten.
