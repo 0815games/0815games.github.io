@@ -1827,3 +1827,12 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Elitebeute liegt als normale öffnungsfähige Truhe auf der aktuellen Ebene.
 - Bestehende Spezialangriffe bleiben erhalten.
 - Spiel-, Speicher- und Integrationstests stehen aus.
+
+## 2026-10-20 – v0.6.7 – Eliteauswahl pro Ebene korrigiert
+- Eliteauswahl wird bei jeder neu erzeugten Karte zurückgesetzt.
+- Eine frühe Ebene ohne zulässige Elitegegner blockiert spätere Ebenen nicht mehr.
+- Beim Laden einer bestehenden gültigen Karte wird nicht erneut gewürfelt.
+- Vorhandene Elitewerte und Belohnungen bleiben unverändert.
+- Bereits gespeicherte Karten erhalten keine nachträgliche Eliteauswahl; der Fix greift bei der nächsten Kartengenerierung.
+- Regressionstest für mehrere Ebenen mit demselben Weltobjekt vorgesehen.
+- Kein vollständiger Balance- oder Gesamtsystemabschluss.
