@@ -13,3 +13,20 @@ export const ITEMS = {
   ruby_ring: { name: 'Rubinring des Ordens', type: 'ring', category: 'Reliquie', icon: '💍', slot: 'ring', val: 5, stat: 'atk', price: 60, stack: 1, desc: '+5 Schlagkraft (Reliquie).' },
   soul_shard: { name: 'Schattensplitter', type: 'loot', category: 'Material', icon: '💎', val: 0, price: 8, stack: 99, desc: 'Glühendes Seelenfragment.' }
 };
+
+// Einheitliche Grundausrüstung: Anforderungen v0.6.2
+// Bestehende IDs und Kampfwerte bleiben erhalten.
+const BASE_REQUIREMENTS = {
+ iron_sword:{minLevel:3},
+ runic_blade:{minLevel:5},
+ dagger:{minLevel:1},
+ chainmail:{minLevel:1},
+ knight_armor:{minLevel:5},
+ iron_shield:{minLevel:1},
+ iron_helmet:{minLevel:1},
+ leather_boots:{minLevel:1},
+ ruby_ring:{minLevel:3}
+};
+for(const [id,requirements] of Object.entries(BASE_REQUIREMENTS)){
+ if(ITEMS[id])Object.assign(ITEMS[id],requirements);
+}

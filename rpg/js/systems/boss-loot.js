@@ -3,7 +3,7 @@ import {ITEMS} from '../data/items.js';
 import {cloud} from './firebase.js';
 import {addItem} from './inventory.js';
 import {WorldMap} from '../world/map.js';
-for(const cls of ['warrior','mage','rogue'])for(let tier=1;tier<=20;tier++){const name={warrior:'Fürstenklinge',mage:'Fürstenstab',rogue:'Schattendolch'}[cls],val=10+3*tier;ITEMS[`boss_${cls}_${tier}`]={name:`${name} Stufe ${tier}`,type:'weapon',slot:'mainhand',val,price:80+40*tier,stack:1,icon:cls==='mage'?'🔮':'🗡️',category:'Waffe',desc:`+${val} ATK. Bossbeute.`};}
+for(const cls of ['warrior','mage','rogue'])for(let tier=1;tier<=20;tier++){const name={warrior:'Fürstenklinge',mage:'Fürstenstab',rogue:'Schattendolch'}[cls],val=10+3*tier;ITEMS[`boss_${cls}_${tier}`]={name:`${name} Stufe ${tier}`,type:'weapon',slot:'mainhand',minLevel:1+(tier-1)*5,heroClass:cls,val,price:80+40*tier,stack:1,icon:cls==='mage'?'🔮':'🗡️',category:'Waffe',desc:`+${val} ATK. Bossbeute. Benötigt Level ${1+(tier-1)*5}; Klasse: ${{warrior:'Krieger',mage:'Magier',rogue:'Schurke'}[cls]}.`};}
 function offers(level,depth,cls,rnd=Math.random){const tier=Math.min(20,Math.max(1,1+Math.floor((level-1)/5))),hero=['warrior','mage','rogue'].includes(cls)?cls:'warrior';return[{kind:'item',id:`boss_${hero}_${tier}`,count:1},{kind:'item',id:rnd()<.5?'health_potion':'mana_potion',count:2+Math.min(3,Math.floor(depth/10))},{kind:'gold',count:60+10*depth+5*tier}];}
 function award(player,offer){const next=JSON.parse(JSON.stringify(player));if(offer.kind==='gold')next.gold=(next.gold||0)+offer.count;else if(!addItem(next.inventory,offer.id,offer.count))throw new Error('Nicht genug Platz. Prüfe dein Inventar oder wähle das Goldangebot.');return next;}
 const pending=()=>state.world.bossLoot?.status==='pending';

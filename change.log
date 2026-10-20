@@ -1783,3 +1783,12 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Tiefenskalierung für normale Gegner gebündelt; Bosskurve beibehalten.
 - Sichtbare Versionsanzeigen und Cache-Kennungen der geänderten Zusatzmodule aktualisiert.
 - Spielbalance und Integration müssen durch Spieltests bestätigt werden.
+
+## 2026-10-20 – v0.6.2 – Einheitliche Ausrüstungsanforderungen
+- Grundausrüstung mit ausdrücklichen Levelanforderungen versehen.
+- Vorbereitungs- und Bosswaffen an ihre Klasse gebunden.
+- Vorbereitungs- und Bossgegenstände erhalten Levelanforderungen passend zur bisherigen Stufenauswahl.
+- Level und gegebenenfalls Klasse in der Ausrüstungsauswahl angezeigt.
+- Levelanforderungen im Vorbereitungsangebot und bei Bosswaffen beschrieben.
+- Gegenstands-IDs und Kampfwerte unverändert; bereits angelegte Ausrüstung bleibt bestehen.
+- Spieltests für Anlegen, Vorbereitung und Bossbeute stehen aus.
