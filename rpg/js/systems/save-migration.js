@@ -1,10 +1,23 @@
 // S02b – Validierung, Migration und Laufzeit-Zurücksetzung geladener Spielstände
 import { normalizePlayer } from '../core/state.js';
-import { normalizeWorldLists } from './world-list-compat.js';
 
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const finiteNumber = (value, fallback, minimum = -Infinity) =>
   Number.isFinite(value) && value >= minimum ? value : fallback;
+
+function normalizeEntityList(value, label) {
+  if (value == null) return [];
+  if (Array.isArray(value)) return value.filter(entry => entry != null);
+  if (isRecord(value)) {
+    return Object.keys(value)
+      .map(key => Number(key))
+      .filter(Number.isInteger)
+      .sort((a, b) => a - b)
+      .map(key => value[key])
+      .filter(entry => entry != null);
+  }
+  throw new TypeError(`Spielstand: ${label} hat ein ungültiges Format.`);
+}
 
 function normalizeWorld(world) {
   const base = {
@@ -18,7 +31,6 @@ function normalizeWorld(world) {
     discovered: []
   };
   if (!isRecord(world)) return base;
-  normalizeWorldLists(world);
   return {
     ...base,
     ...world,
@@ -26,8 +38,8 @@ function normalizeWorld(world) {
     cols: finiteNumber(world.cols, 20, 1),
     rows: finiteNumber(world.rows, 15, 1),
     tiles: Array.isArray(world.tiles) ? world.tiles : [],
-    chests: Array.isArray(world.chests) ? world.chests : [],
-    monsters: Array.isArray(world.monsters) ? world.monsters : [],
+    chests: normalizeEntityList(world.chests, 'Truhenliste'),
+    monsters: normalizeEntityList(world.monsters, 'Gegnerliste'),
     discovered: Array.isArray(world.discovered) ? world.discovered : [],
     stairs: isRecord(world.stairs)
       && Number.isFinite(world.stairs.x)
