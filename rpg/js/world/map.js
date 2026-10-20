@@ -198,11 +198,25 @@ export class WorldMap {
         room.y + 1 + Math.floor(rnd() * Math.max(1, room.h - 2))
       );
 
-      const loot = i === 0
-        ? (depth > 1 ? 'runic_blade' : 'iron_sword')
-        : i === 1
-          ? (depth > 1 ? 'knight_armor' : 'chainmail')
-          : 'health_potion';
+      // Einmal bei der Generierung würfeln; Inhalt bleibt beim Laden erhalten.
+      const lootRoll = rnd();
+      let loot = null;
+
+      if (lootRoll >= 0.85) {
+        const slotRoll = rnd();
+        const weapon = depth >= 6
+          ? 'runic_blade'
+          : depth >= 3 ? 'iron_sword' : 'dagger';
+        const armor = depth >= 6 ? 'knight_armor' : 'chainmail';
+        const otherSlots = [
+          armor, 'iron_shield', 'iron_helmet', 'leather_boots', 'ruby_ring'
+        ];
+        loot = slotRoll < 0.25
+          ? weapon
+          : otherSlots[Math.min(4, Math.floor((slotRoll - 0.25) / 0.15))];
+      } else if (lootRoll >= 0.45) {
+        loot = rnd() < 0.60 ? 'health_potion' : 'mana_potion';
+      }
 
       state.world.chests.push({
         id: `chest_${depth}_${i}`,
