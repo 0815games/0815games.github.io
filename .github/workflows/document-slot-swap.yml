@@ -1,0 +1,62 @@
+name: Document armory slot swap
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/document-slot-swap.yml']
+permissions:
+  contents: write
+jobs:
+  document:
+    if: github.repository == 'pipboy3003/pipboy3003.github.io'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Preserve history and prepend documentation
+        shell: python
+        run: |
+          from pathlib import Path
+          entries = {
+              'rpg/change.log': ('# CHANGELOG – Chroniken der Schattengruft\n\n', '''## 2026-10-20 – Ingame-Rüstkammer: belegte Slots, Tausch und vereinheitlichter Adapter
+          - `14366d3`: Belegte Slots bieten jetzt ebenfalls passende Ersatzgegenstände an. Der Ausrüsten-Button nutzt weiterhin den vorhandenen inventoryEquipAction-Callback der zugehörigen Inventarzeile.
+          - `59df5f3`: Leere und belegte Slots verwenden denselben geprüften Adapter. Ein leerer Slot wird belegt, ein belegter Slot wird getauscht; die bisherigen Schutzprüfungen bleiben erhalten.
+          - `8a8f0da`: Neuer wiederholbarer Test `rpg/tests/armory-slot-choices.mjs` für Slot-Auswahl, Doppelklick, Kampf-/Sitzungssperren, verändertes Inventar, ungültige Gegenstände und Aktionsfehler.
+          - `1d687f1`: Der Adapter speichert `equippedId` beim Öffnen der Liste und lehnt den Tausch ab, wenn der aktuell angelegte Gegenstand inzwischen gewechselt wurde. Der Test wurde korrigiert und lokal mit 28 von 28 Prüfungen bestanden.
+          - Offen bleiben: Ausführung des neuen Tests im Projekt, vollständige Regressionen, Deployment sowie mobile/Desktop-Abnahme. T10/T14 bleiben dadurch offen; Spielversion bleibt v0.5.26.
+          '''),
+              'rpg/to-do.md': ('# To-do – Chroniken der Schattengruft\n\n', '''## Aktueller T10-Ingame-Stand – belegte Slots und Tausch, 2026-10-20
+          Dieser Nachtrag ergänzt die Slot-Auswahl um belegte Slots, Tausch, vereinheitlichten Adapter und Test; die Historie bleibt erhalten.
+          - [x] Belegte Slots können über die vorhandene Inventar-Aktion getauscht werden (`14366d3`).
+          - [x] Leere und belegte Slots nutzen denselben geprüften Adapter (`59df5f3`).
+          - [x] Wiederholbarer Slot-Test liegt im Repository (`8a8f0da`).
+          - [x] Veralteter Tausch wird durch `equippedId` abgewiesen; Test lokal 28/28 grün (`1d687f1`).
+          - [ ] `node rpg/tests/armory-slot-choices.mjs` im Projekt ausführen und Ergebnis bestätigen.
+          - [ ] Vollständige Regressionen, Deployment und mobile/Desktop-Abnahme durchführen: leeren Slot ausrüsten, belegten Slot tauschen, korrekter Bestand, aktualisierte Figur/Werte, Ablegen, Fokus, Speichern/Neuladen sowie Kampf-, Dialog- und Sitzungssperren.
+          - [ ] Kein vollständiger T10-/T14-Abschluss ohne Abnahme; Vorbereitungs-Shop und T11-Angebotsvergleich bleiben getrennt.
+          ''')
+          }
+          prepared = []
+          for path, (header, entry) in entries.items():
+              p = Path(path)
+              original = p.read_bytes()
+              prefix = header.encode('utf-8')
+              addition = ('\n'.join(line.strip() for line in entry.strip().splitlines()) + '\n\n').encode('utf-8')
+              assert original.startswith(prefix), ('Unexpected heading', path)
+              assert addition.splitlines()[0] not in original, ('Already documented', path)
+              result = prefix + addition + original[len(prefix):]
+              assert result[len(prefix) + len(addition):] == original[len(prefix):]
+              prepared.append((p, result))
+          for p, result in prepared:
+              p.write_bytes(result)
+          Path('.github/workflows/document-slot-swap.yml').unlink()
+      - name: Commit documentation only
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add rpg/change.log rpg/to-do.md .github/workflows/document-slot-swap.yml
+          git commit -m 'docs: record armory slot swap and unified adapter'
+          git push origin HEAD:main
