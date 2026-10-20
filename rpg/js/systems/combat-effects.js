@@ -16,29 +16,38 @@ function setup(){queueMicrotask(()=>{
 #combat #combat-display .battle-defeat-label{grid-column:1/-1;color:#ffe3a0;font-weight:700;text-align:center}
 #combat #combat-display .battle-defeat-label[hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){#combat #combat-display .battle-unit[data-defeated="true"] canvas{transition:none}}
+@keyframes battle-attack-right{0%{transform:translateX(0)}45%{transform:translateX(10px)}100%{transform:translateX(0)}}
+@keyframes battle-attack-left{0%{transform:translateX(0)}45%{transform:translateX(-10px)}100%{transform:translateX(0)}}
+@keyframes battle-hit{0%{transform:translateX(0);filter:none}25%{transform:translateX(-6px);filter:brightness(1.6) saturate(1.4) drop-shadow(0 0 6px #ff5a5a)}60%{transform:translateX(4px)}100%{transform:translateX(0);filter:none}}
+.battle-unit[data-anim="attack-right"] canvas{animation:battle-attack-right .22s ease}
+.battle-unit[data-anim="attack-left"] canvas{animation:battle-attack-left .22s ease}
+.battle-unit[data-anim="hit"] canvas{animation:battle-hit .22s ease}
+@media(prefers-reduced-motion:reduce){.battle-unit[data-anim] canvas{animation:none}}
 `;document.head.append(style);
  const display=document.createElement('div');display.id='combat-display';
  function unit(side){const box=document.createElement('div');box.className='battle-unit';box.innerHTML=`<h3></h3><canvas width="112" height="112" aria-hidden="true"></canvas><span class="battle-label hp-label"></span><div class="battle-meter"><span></span></div>${side==='hero'?'<span class="battle-label mp-label"></span><div class="battle-meter mana"><span></span></div>':''}<div class="battle-values"></div>${side==='enemy'?'<span class="battle-defeat-label" role="status" hidden>Besiegt</span>':''}`;display.append(box);return box;}
  const hero=unit('hero'),enemy=unit('enemy');el('combat-info').after(display);
- const fx=createBattleFX(combat);let busy=false,closing=false,shownMonster=null,ticket=null,unlockTimer=null;
+ const fx=createBattleFX(combat);let busy=false,closing=false,shownMonster=null,ticket=null,unlockTimer=null,animTimers=[];
+ function clearAnims(){for(const timer of animTimers)clearTimeout(timer);animTimers=[];for(const box of [hero,enemy])box.removeAttribute('data-anim');}
+ function animate(box,kind,delay=0){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const run=()=>{if(!box.isConnected)return;box.removeAttribute('data-anim');void box.offsetWidth;box.setAttribute('data-anim',kind);animTimers.push(setTimeout(()=>box.removeAttribute('data-anim'),240));};if(delay)animTimers.push(setTimeout(run,delay));else run();}
  function stats(p){let a=p.atk,d=p.def;for(const id of Object.values(p.equipped||{})){const it=ITEMS[id];if(!it)continue;if(it.type==='weapon'||it.stat==='atk')a+=it.val||0;else if(['armor','shield','helmet','boots'].includes(it.type))d+=it.val||0;}return{a,d};}
  function bar(box,v,max,kind){v=Math.max(0,Number(v)||0);max=Math.max(0,Number(max)||0);box.querySelector(`.${kind}-label`).innerHTML=`${kind==='hp'?'TP':'MP'}: <span class="battle-hp-text">${v}</span> / ${max}`;box.querySelector(kind==='hp'?'.battle-meter>span':'.battle-meter.mana>span').style.width=`${max?Math.min(100,v/max*100):0}%`;}
  function drawEnemy(c,m){drawMonsterPortrait(c,m);}
- function refresh(){const p=state.player,m=state.activeMonster||shownMonster;if(!m)return;if(state.inCombat)shownMonster=m;const s=stats(p);hero.querySelector('h3').textContent=`${p.name} · LVL ${p.level}`;enemy.querySelector('h3').textContent=m.name;bar(hero,p.hp,p.maxHp,'hp');bar(hero,p.mp,p.maxMp,'mp');bar(enemy,m.hp,m.maxHp,'hp');const defeated=!!(busy&&ticket?.defeatReady&&ticket.monster===m&&same(ticket)&&!state.inCombat&&p.hp>0&&m.hp<=0&&Array.isArray(state.world.monsters)&&!state.world.monsters.includes(m));if(enemy.getAttribute('data-defeated')!==String(defeated))enemy.setAttribute('data-defeated',String(defeated));enemy.querySelector('.battle-defeat-label').hidden=!defeated;hero.querySelector('.battle-values').textContent=`ATK ${s.a} · DEF ${s.d}`;enemy.querySelector('.battle-values').textContent=`ATK ${m.atk} · DEF ${m.def}`;const hc=hero.querySelector('canvas').getContext('2d');hc.clearRect(0,0,112,112);drawCharacter(hc,p,8,8,96);drawEnemy(enemy.querySelector('canvas').getContext('2d'),m);if(busy)for(const id of ['attack','fire','heal','mana','flee'].filter(id=>el(id)))el(id).disabled=true;}
+ function refresh(){const p=state.player,m=state.activeMonster||shownMonster;if(!m)return;if(state.inCombat)shownMonster=m;const s=stats(p);hero.querySelector('h3').textContent=`${p.name} · LVL ${p.level}`;enemy.querySelector('h3').textContent=m.name;bar(hero,p.hp,p.maxHp,'hp');bar(hero,p.mp,p.maxHp,'mp');bar(enemy,m.hp,m.maxHp,'hp');const defeated=!!(busy&&ticket?.defeatReady&&ticket.monster===m&&same(ticket)&&!state.inCombat&&p.hp>0&&m.hp<=0&&Array.isArray(state.world.monsters)&&!state.world.monsters.includes(m));if(enemy.getAttribute('data-defeated')!==String(defeated))enemy.setAttribute('data-defeated',String(defeated));enemy.querySelector('.battle-defeat-label').hidden=!defeated;hero.querySelector('.battle-values').textContent=`ATK ${s.a} · DEF ${s.d}`;enemy.querySelector('.battle-values').textContent=`ATK ${m.atk} · DEF ${m.def}`;const hc=hero.querySelector('canvas').getContext('2d');hc.clearRect(0,0,112,112);drawCharacter(hc,p,8,8,96);drawEnemy(enemy.querySelector('canvas').getContext('2d'),m);if(busy)for(const id of ['attack','fire','heal','mana','flee'].filter(id=>el(id)))el(id).disabled=true;}
  function paint(){try{refresh();}catch(error){console.warn('Kampfdarstellung:',error);}}
  function point(box){const r=box.querySelector('canvas').getBoundingClientRect();return{x:r.left+r.width/2,y:r.top+r.height/2};}
  const urgent=()=>document.hidden||el('game').classList.contains('hidden')||!!document.querySelector('dialog[open],.tutorial-modal:not(.hidden),.levelup-choice,#death-screen:not(.hidden),#floor-overlay:not(.hidden),#levelup-overlay:not(.hidden),#session-pause:not([hidden]),#preparation-shop:not([hidden])');
  const same=t=>t&&state.player===t.player&&state.world.tiles===t.tiles&&state.currentSlot===t.slot&&state.user?.uid===t.uid&&(!state.inCombat||state.activeMonster===t.monster);
- function finish(t,abort=false){if(ticket!==t)return;clearTimeout(unlockTimer);unlockTimer=null;const hide=el('game').classList.contains('hidden')||!state.inCombat||closing&&same(t);busy=false;closing=false;ticket=null;fx.clear();enemy.removeAttribute('data-defeated');enemy.querySelector('.battle-defeat-label').hidden=true;el('attack').disabled=false;el('flee').disabled=false;el('fire').disabled=state.player.mp<8;el('heal').disabled=!(state.player.inventory||[]).some(x=>x.id==='health_potion'&&x.count>0);if(el('mana'))el('mana').disabled=!(state.player.inventory||[]).some(x=>x.id==='mana_potion'&&x.count>0);if(hide)combat.classList.add('hidden');else paint();}
- function safety(){if(busy&&(!same(ticket)||urgent())){finish(ticket,true);return;}if(busy&&combat.classList.contains('hidden')){closing=true;combat.classList.remove('hidden');}else if(!busy&&combat.classList.contains('hidden')){fx.clear();shownMonster=null;}paint();}
+ function finish(t,abort=false){if(ticket!==t)return;clearTimeout(unlockTimer);unlockTimer=null;const hide=el('game').classList.contains('hidden')||!state.inCombat||closing&&same(t);busy=false;closing=false;ticket=null;fx.clear();clearAnims();enemy.removeAttribute('data-defeated');enemy.querySelector('.battle-defeat-label').hidden=true;el('attack').disabled=false;el('flee').disabled=false;el('fire').disabled=state.player.mp<8;el('heal').disabled=!(state.player.inventory||[]).some(x=>x.id==='health_potion'&&x.count>0);if(el('mana'))el('mana').disabled=!(state.player.inventory||[]).some(x=>x.id==='mana_potion'&&x.count>0);if(hide)combat.classList.add('hidden');else paint();}
+ function safety(){if(busy&&(!same(ticket)||urgent())){finish(ticket,true);return;}if(busy&&combat.classList.contains('hidden')){closing=true;combat.classList.remove('hidden');}else if(!busy&&combat.classList.contains('hidden')){fx.clear();clearAnims();shownMonster=null;}paint();}
  combat.addEventListener('click',e=>{if(busy&&!urgent()){e.preventDefault();e.stopImmediatePropagation();}},true);
  window.addEventListener('keydown',e=>{if(busy&&!urgent()&&(combat.contains(e.target)||e.target===document.body||e.target===el('stage'))){e.preventDefault();e.stopImmediatePropagation();}},true);
  new MutationObserver(safety).observe(combat,{attributes:true,attributeFilter:['class']});new MutationObserver(paint).observe(el('combat-info'),{childList:true});
  for(const node of [el('game'),...document.querySelectorAll('#login-screen,#slot-screen,#class-screen,#death-screen,#floor-overlay,#levelup-overlay,#session-pause,#preparation-shop,dialog,.tutorial-modal')].filter(Boolean))new MutationObserver(safety).observe(node,{attributes:true,attributeFilter:['class','hidden','open']});
- combat.addEventListener('scroll',()=>fx.clear(),true);window.addEventListener('resize',()=>fx.clear());window.addEventListener('blur',()=>fx.clear());document.addEventListener('visibilitychange',()=>{if(document.hidden){if(busy)finish(ticket,true);else fx.clear();}});
+ combat.addEventListener('scroll',()=>{fx.clear();clearAnims();},true);window.addEventListener('resize',()=>{fx.clear();clearAnims();});window.addEventListener('blur',()=>{fx.clear();clearAnims();});document.addEventListener('visibilitychange',()=>{if(document.hidden){if(busy)finish(ticket,true);else{fx.clear();clearAnims();}}});
  for(const id of ['attack','fire','heal','mana','flee'].filter(id=>el(id))){const button=el(id),original=button.onclick;button.onclick=function(e){
   if(busy||!state.inCombat||!state.activeMonster||typeof original!=='function'||urgent())return;if(id==='fire'&&state.player.mp<8)return;if(id==='heal'&&!(state.player.inventory||[]).some(x=>x.id==='health_potion'&&x.count>0))return;if(id==='mana'&&!(state.player.inventory||[]).some(x=>x.id==='mana_potion'&&x.count>0))return;
-  paint();fx.clear();const p=state.player,m=state.activeMonster,t={player:p,monster:m,tiles:state.world.tiles,slot:state.currentSlot,uid:state.user?.uid},before={hp:p.hp,mp:p.mp,mhp:m.hp,level:p.level},events=[];let healed=0,restored=0;
+  paint();fx.clear();clearAnims();const p=state.player,m=state.activeMonster,t={player:p,monster:m,tiles:state.world.tiles,slot:state.currentSlot,uid:state.user?.uid},before={hp:p.hp,mp:p.mp,mhp:m.hp,level:p.level},events=[];let healed=0,restored=0;
   busy=true;closing=false;ticket=t;const gfx=window.__rpg?.renderer,oldText=gfx?.text,oldPotion=sound.potion;
   const textHook=function(text,x,y,...rest){if(/^(KRIT -|-)\d+/.test(String(text))){const side=x===m.x&&y===m.y?'enemy':x===p.x&&y===p.y?'hero':null;if(side)events.push({text:String(text),side});}return oldText.call(this,text,x,y,...rest);};
   const potionHook=function(...args){healed+=Math.max(0,p.hp-before.hp);restored+=Math.max(0,p.mp-before.mp);return oldPotion.apply(this,args);};
@@ -46,7 +55,7 @@ function setup(){queueMicrotask(()=>{
   try{original.call(this,e);}catch(error){finish(t,true);throw error;}finally{if(gfx?.text===textHook)gfx.text=oldText;if(sound.potion===potionHook)sound.potion=oldPotion;}
   if(!same(t)||urgent()){finish(t,true);return;}if(!state.inCombat&&combat.classList.contains('hidden')){closing=true;combat.classList.remove('hidden');}paint();unlockTimer=setTimeout(()=>finish(t),COMBAT_FINISH_MS);
   try{const hp=point(hero),mp=point(enemy),weapon=p.equipped?.mainhand||'',staff=/staff|stab/i.test(weapon+' '+(ITEMS[weapon]?.name||'')),ranged=id==='fire'&&p.mp!==before.mp||id==='attack'&&staff&&m.hp<before.mhp;
-   if(m.hp<before.mhp){if(ranged)fx.projectile(hp,mp,id==='fire');else if(id==='attack')fx.slash(mp);if(!events.some(x=>x.side==='enemy'))events.push({text:`-${before.mhp-m.hp}`,side:'enemy'});}
+   if(m.hp<before.mhp){animate(hero,'attack-right');if(ranged)fx.projectile(hp,mp,id==='fire');else if(id==='attack')fx.slash(mp);if(!events.some(x=>x.side==='enemy'))events.push({text:`-${before.mhp-m.hp}`,side:'enemy'});}
    if(healed>0){fx.heal(hp);fx.number(`+${healed} TP`,hp,'#8ce5af',-10);}
    if(restored>0)fx.number(`+${restored} MP`,hp,'#83cfee',-10);
    if(!events.some(x=>x.side==='hero')&&state.inCombat&&p.level===before.level){const damage=before.hp+healed-p.hp;if(damage>0)events.push({text:`-${damage}`,side:'hero'});}
@@ -57,16 +66,16 @@ function setup(){queueMicrotask(()=>{
    for(const event of events){
     const isHero=event.side==='hero',pos=isHero?hp:mp,color=isHero?'#ff8b96':'#f7d590',shift=offset++*6;
     if(!isHero&&ranged&&won){
-     fx.later(()=>{if(ticket!==t||!same(t)||urgent())return;fx.number(event.text,pos,color,shift);fx.react(enemy);markDefeated();},impactDelay);
+     fx.later(()=>{if(ticket!==t||!same(t)||urgent())return;fx.number(event.text,pos,color,shift);animate(enemy,'hit');fx.react(enemy);markDefeated();},impactDelay);
     }else{
      fx.number(event.text,pos,color,shift);
-     if(!isHero&&ranged)fx.later(()=>{if(ticket===t&&same(t)&&!urgent())fx.react(enemy);},200);
-     else{fx.hit(pos,color);fx.react(isHero?hero:enemy,isHero);}
+     if(!isHero&&ranged)fx.later(()=>{if(ticket===t&&same(t)&&!urgent()){animate(enemy,'hit');fx.react(enemy);}},200);
+     else{fx.hit(pos,color);if(isHero){animate(enemy,'attack-left');animate(hero,'hit',220);}else animate(enemy,'hit',220);fx.react(isHero?hero:enemy,isHero);}
     }
    }
    if(won&&!ranged)markDefeated();
    if(id==='flee'){if(!state.inCombat&&p.hp>0)fx.escape(hp);else fx.number('FLUCHT GESCHEITERT',hp,'#e5c7b4');}
-  }catch(error){fx.clear();console.warn('Kampfeffekte:',error);}
+  }catch(error){fx.clear();clearAnims();console.warn('Kampfeffekte:',error);}
  };}
  
 combat.addEventListener('click', e => {
@@ -76,7 +85,7 @@ combat.addEventListener('click', e => {
   if (typeof original !== 'function') return;
   e.stopImmediatePropagation();
   const id = button.dataset.ability;
-  paint(); fx.clear();
+  paint(); fx.clear(); clearAnims();
   const p = state.player, m = state.activeMonster;
   const t = {player: p, monster: m, tiles: state.world.tiles, slot: state.currentSlot, uid: state.user?.uid};
   const before = {hp: p.hp, mp: p.mp, mhp: m.hp, level: p.level};
@@ -105,6 +114,7 @@ combat.addEventListener('click', e => {
     const mana = Math.max(0, p.mp - before.mp);
     const heroDamage = Math.max(0, before.hp - p.hp - healed);
     if (m.hp < before.mhp) {
+      animate(hero, 'attack-right');
       if (ranged) fx.projectile(hp, mp, false); else fx.slash(mp);
       if (!events.some(x => x.side === 'enemy')) events.push({text: `-${before.mhp - m.hp}`, side: 'enemy'});
     }
@@ -126,16 +136,16 @@ combat.addEventListener('click', e => {
         fx.later(() => {
           if (ticket !== t || !same(t) || urgent()) return;
           fx.number(item.text, pos, color, shift);
-          fx.react(enemy); markDefeated();
+          animate(enemy, 'hit'); fx.react(enemy); markDefeated();
         }, impactDelay);
       } else {
         fx.number(item.text, pos, color, shift);
-        if (!isHero && ranged) fx.later(() => { if (ticket === t && same(t) && !urgent()) fx.react(enemy); }, 200);
-        else { fx.hit(pos, color); fx.react(isHero ? hero : enemy, isHero); }
+        if (!isHero && ranged) fx.later(() => { if (ticket === t && same(t) && !urgent()) { animate(enemy, 'hit'); fx.react(enemy); } }, 200);
+        else { fx.hit(pos, color); if (isHero) { animate(enemy, 'attack-left'); animate(hero, 'hit', 220); } else animate(enemy, 'hit', 220); fx.react(isHero ? hero : enemy, isHero); }
       }
     }
     if (won && !ranged) markDefeated();
-  } catch (error) { fx.clear(); console.warn('Kampfeffekte:', error); }
+  } catch (error) { fx.clear(); clearAnims(); console.warn('Kampfeffekte:', error); }
 }, true);
 
 paint();
