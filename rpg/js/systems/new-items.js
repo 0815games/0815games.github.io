@@ -64,3 +64,17 @@ WorldMap.prototype.generate=function(...args){
  }
  return result;
 };
+
+// Ausgewählte Fundwaffen besitzen echte Kampf-Eigenschaften.
+const SPECIAL_WEAPON_EFFECTS = [
+ ['abyss',{lifeSteal:.08},'Lebensraub: heilt 8 % des tatsächlich verursachten direkten Schadens, abgerundet.'],
+ ['eclipse',{armorPen:.20},'Durchdringung: ignoriert 20 % der Gegnerverteidigung bei direkten Angriffen.']
+];
+for(const [tier,effects,description] of SPECIAL_WEAPON_EFFECTS){
+ for(const family of ['sword','staff','dagger']){
+  const item=ITEMS[`loot_${tier}_${family}`];
+  if(!item)throw new Error(`Fundwaffe fehlt: loot_${tier}_${family}`);
+  item.effects={...effects};
+  item.desc+=' '+description;
+ }
+}

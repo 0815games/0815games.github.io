@@ -1799,3 +1799,12 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - HTML-Grundbeschriftungen: 3 Heiltrank, 4 Manatrank, 5 Flucht.
 - Tastenbelegung und Kampfaktionen unverändert.
 - Spieltest der Anzeige steht aus.
+
+## 2026-10-20 – v0.6.4 – Besondere Fundwaffen
+- Abgrund-Fundwaffen erhalten 8 % Lebensraub.
+- Fundwaffen der ewigen Nacht erhalten 20 % Rüstungsdurchdringung.
+- Effekte wirken bei normalem Angriff, Feuerball und direkt schädigenden Klassenfähigkeiten.
+- Lebensraub zählt keinen Über-Schaden und wirkt nicht auf Giftschaden.
+- Eigenschaften werden in den Gegenstandsbeschreibungen erklärt.
+- Bereits gespeicherte Gegenstände dieser IDs erhalten die Eigenschaften ebenfalls.
+- Kampf- und Integrationstests stehen aus.
