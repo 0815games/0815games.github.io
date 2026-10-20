@@ -20,6 +20,40 @@ export const CLASSES = {
   }
 };
 
+// S02a – Spielstandschema und Laufzeit-Trennung
+// Persistente Daten: player, world und meta.
+// Laufzeitdaten: user, isGuest, currentSlot, inCombat und activeMonster.
+// Kampfregel: Ein laufender Kampf wird nicht gespeichert. Beim Laden gelten
+// später immer inCombat=false und activeMonster=null; TP/MP und Position des
+// Helden bleiben erhalten.
+export const SAVE_SCHEMA_VERSION = 1;
+
+export const RUNTIME_ONLY_KEYS = [
+  'user',
+  'isGuest',
+  'currentSlot',
+  'inCombat',
+  'activeMonster'
+];
+
+export function createSaveSnapshot(source = state) {
+  return {
+    schemaVersion: SAVE_SCHEMA_VERSION,
+    player: { ...source.player },
+    world: {
+      depth: source.world.depth,
+      cols: source.world.cols,
+      rows: source.world.rows,
+      tiles: source.world.tiles,
+      chests: source.world.chests,
+      monsters: source.world.monsters,
+      stairs: source.world.stairs,
+      discovered: source.world.discovered
+    },
+    meta: { ...source.meta }
+  };
+}
+
 export const state = {
   user: null,
   isGuest: true,
