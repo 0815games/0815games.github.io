@@ -1754,3 +1754,11 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Keine doppelten Käufe, kein doppelter Run-Start und keine verlorenen Gegenstände oder Goldbeträge festgestellt.
 - Run-Fortschritt bleibt nach Speichern und Neuladen konsistent; nach dem Tod erfolgt der Neustart ohne Restwerte des vorherigen Runs.
 - S03c in rpg/to-do.md als erledigt markiert.
+
+## 2026-10-20 – S04a: Speicherablauf gebündelt
+- `b2c49ef`: `saveCurrentSlot()` sichert jetzt zuerst einen unveränderlichen Snapshot des kompletten Spielzustands.
+- Vor dem Cloud-Schreiben werden gültiger Slot sowie `player`, `world` und `meta` validiert.
+- Ein Speicher-Token und die Prüfung des aktuellen Slots verhindern, dass veraltete Speichervorgänge fälschlich als erfolgreich gemeldet werden.
+- Ein `busy`-Flag verhindert parallele Saves; zusätzliche Aufrufe werden im Chronik-Log als übersprungen markiert.
+- Fehler beim Snapshot oder Cloud-Schreiben führen zu einer klaren Fehlermeldung, ohne den Spielzustand zu verändern.
+- Betroffen: rpg/js/main.js.
