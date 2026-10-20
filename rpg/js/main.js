@@ -3,7 +3,8 @@ import { consumePotion, battlePotion } from './systems/potions.js';
 import { renderItemDetails } from './systems/inventory-details.js';
 import { renderArmory } from './systems/armory-preview.js';
 // v0.4.0 – Vollständige main.js mit Mobile Edition, Skilltree und epischen Intro
-import { state, CLASSES, normalizeSaveSlot } from './core/state.js';
+import { state, CLASSES } from './core/state.js';
+import { normalizeSaveSlot } from './systems/save-migration.js';
 import { ITEMS } from './data/items.js';
 import { addItem, removeItem, countItem, sortInventory, tryAddItem, INVENTORY_LIMIT } from './systems/inventory.js';
 import { ABILITIES, getCooldown, setCooldown, tickCooldowns } from './systems/abilities.js';
