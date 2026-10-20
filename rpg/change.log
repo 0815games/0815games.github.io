@@ -1,16 +1,12 @@
 # CHANGELOG – Chroniken der Schattengruft
 
-## 2026-10-20 – S02c: Kontrollierte Spielstand-Übernahme
-- `3bde5f3`: loadAndLaunchSlot() ersetzt Object.assign(state, data) durch die kontrollierte Übernahme eines validierten Spielstands.
-- Spieler-, Welt- und Meta-Daten werden aus dem von normalizeSaveSlot() geprüften Snapshot übernommen.
-- state.user bleibt beim Laden unverändert; inCombat und activeMonster werden explizit zurückgesetzt.
-- Betroffen: rpg/js/main.js. Syntaxprüfung mit node --check bestanden; Rebase auf aktuellen main-Stand und Push erfolgreich.
+## 2026-10-20 – S02: Spielstandschema, Migration und kontrolliertes Laden
 
-## 2026-10-20 – S01c: Truhenbelohnung ohne Verlust
-- `6aabd19`: Truhen werden bei vollem Inventar atomar behandelt. Vor dem Öffnen wird mit tryAddItem geprüft, ob der Beutegegenstand aufgenommen werden kann.
-- Bei fehlendem Platz bleibt die Truhe geschlossen; es wird weder Gold vergeben noch die Truhe entfernt oder der Gegenstand verworfen.
-- Nach dem Aufräumen kann die Truhe erneut betreten und geöffnet werden. Erfolgreiche Öffnungen verhalten sich wie bisher.
-- Betroffen: rpg/js/main.js. Syntaxprüfung mit node --check bestanden; Push auf main erfolgreich.
+- S02a `ca45212`: Spielstandschema mit `SAVE_SCHEMA_VERSION = 1` definiert. Persistente Daten sind Spieler, Welt und Meta; Nutzer, Slot, Kampfstatus und aktiver Gegner sind Laufzeitdaten. `createSaveSnapshot()` erzeugt einen definierten Speicher-Snapshot. Kampfregel: laufende Kämpfe werden nicht gespeichert.
+- S02b `aeb5db4`: Neues `systems/save-migration.js` mit `normalizeSaveSlot()`. Firebase `loadAllSlots()` validiert und normalisiert jeden geladenen Slot. Alte Spielstände erhalten Schema-Version 1; fehlende Welt-, Karten-, Truhen-, Gegner-, Treppe-, Entdeckungs- und Meta-Daten erhalten definierte Standardwerte. `inCombat` wird beim Laden auf `false` und `activeMonster` auf `null` gesetzt. Ungültige Slots bleiben gesperrt und erzeugen eine Konsolenwarnung.
+- S02c `3bde5f3`: `loadAndLaunchSlot()` ersetzt `Object.assign(state, data)` durch die kontrollierte Übernahme des validierten Spielstands. Spieler-, Welt- und Meta-Daten werden aus dem geprüften Snapshot übernommen; `state.user` bleibt unverändert, Kampf- und Laufzeitwerte werden zurückgesetzt.
+- Betroffene Dateien: `rpg/js/core/state.js`, `rpg/js/systems/save-migration.js` (neu), `rpg/js/systems/firebase.js`, `rpg/js/main.js`.
+- Grenzen: Das Speichern schreibt weiterhin die bisherige Struktur; eine Umstellung des Schreibpfads auf `createSaveSnapshot()` ist nicht Teil von S02. Validierte Migration betrifft den Lade-Pfad; echte Browser-, Geräte- und Firebase-Abnahme bleiben separat.
 
 ## v0.6.0 – 2026-10-20 – Kampfdarstellung, Todesanimationen und Rüstkammer
 
