@@ -1,5 +1,11 @@
 # CHANGELOG – Chroniken der Schattengruft
 
+## 2026-10-20 – Tastatur: Tränke und Flucht neu belegt
+- `b90319d`: Kampf-Tastenkürzel geändert. Heiltrank ist jetzt `3`, Manatrank `4` und Flucht `5`.
+- Angriff (`1`), Feuerball (`2`) und Klassenfähigkeiten (`Q`/`E`/`R`) bleiben unverändert.
+- Button-Beschriftungen, ARIA-Kürzel und der Tastatur-Hilfedialog wurden angepasst.
+- Betroffen: rpg/js/systems/keyboard.js.
+
 ## 2026-10-20 – S02: Spielstandschema, Migration und kontrolliertes Laden
 
 - S02a `ca45212`: Spielstandschema mit `SAVE_SCHEMA_VERSION = 1` definiert. Persistente Daten sind Spieler, Welt und Meta; Nutzer, Slot, Kampfstatus und aktiver Gegner sind Laufzeitdaten. `createSaveSnapshot()` erzeugt einen definierten Speicher-Snapshot. Kampfregel: laufende Kämpfe werden nicht gespeichert.
