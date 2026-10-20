@@ -19,17 +19,20 @@ function setup(){queueMicrotask(()=>{
 @keyframes battle-attack-right{0%{transform:translateX(0)}45%{transform:translateX(10px)}100%{transform:translateX(0)}}
 @keyframes battle-attack-left{0%{transform:translateX(0)}45%{transform:translateX(-10px)}100%{transform:translateX(0)}}
 @keyframes battle-hit{0%{transform:translateX(0);filter:none}25%{transform:translateX(-6px);filter:brightness(1.6) saturate(1.4) drop-shadow(0 0 6px #ff5a5a)}60%{transform:translateX(4px)}100%{transform:translateX(0);filter:none}}
+@keyframes battle-death{0%{transform:rotate(0) translateY(0);opacity:1;filter:none}100%{transform:rotate(8deg) translateY(6px);opacity:.45;filter:grayscale(1)}}
 .battle-unit[data-anim="attack-right"] canvas{animation:battle-attack-right .22s ease}
 .battle-unit[data-anim="attack-left"] canvas{animation:battle-attack-left .22s ease}
 .battle-unit[data-anim="hit"] canvas{animation:battle-hit .22s ease}
-@media(prefers-reduced-motion:reduce){.battle-unit[data-anim] canvas{animation:none}}
+.battle-unit[data-anim="death"] canvas{animation:battle-death .45s ease forwards}
+@media(prefers-reduced-motion:reduce){.battle-unit[data-anim] canvas{animation:none}.battle-unit[data-anim="death"] canvas{filter:grayscale(1);opacity:.45;transition:none}}
 `;document.head.append(style);
  const display=document.createElement('div');display.id='combat-display';
  function unit(side){const box=document.createElement('div');box.className='battle-unit';box.innerHTML=`<h3></h3><canvas width="112" height="112" aria-hidden="true"></canvas><span class="battle-label hp-label"></span><div class="battle-meter"><span></span></div>${side==='hero'?'<span class="battle-label mp-label"></span><div class="battle-meter mana"><span></span></div>':''}<div class="battle-values"></div>${side==='enemy'?'<span class="battle-defeat-label" role="status" hidden>Besiegt</span>':''}`;display.append(box);return box;}
  const hero=unit('hero'),enemy=unit('enemy');el('combat-info').after(display);
  const fx=createBattleFX(combat);let busy=false,closing=false,shownMonster=null,ticket=null,unlockTimer=null,animTimers=[];
  function clearAnims(){for(const timer of animTimers)clearTimeout(timer);animTimers=[];for(const box of [hero,enemy])box.removeAttribute('data-anim');}
- function animate(box,kind,delay=0){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const run=()=>{if(!box.isConnected)return;box.removeAttribute('data-anim');void box.offsetWidth;box.setAttribute('data-anim',kind);animTimers.push(setTimeout(()=>box.removeAttribute('data-anim'),240));};if(delay)animTimers.push(setTimeout(run,delay));else run();}
+ function animate(box,kind,delay=0){if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;const run=()=>{if(!box.isConnected)return;box.removeAttribute('data-anim');void box.offsetWidth;box.setAttribute('data-anim',kind);if(kind!=='death')animTimers.push(setTimeout(()=>box.removeAttribute('data-anim'),240));};if(delay)animTimers.push(setTimeout(run,delay));else run();}
+ function animateDeath(box){if(!box.isConnected)return;box.removeAttribute('data-anim');void box.offsetWidth;box.setAttribute('data-anim','death');}
  function stats(p){let a=p.atk,d=p.def;for(const id of Object.values(p.equipped||{})){const it=ITEMS[id];if(!it)continue;if(it.type==='weapon'||it.stat==='atk')a+=it.val||0;else if(['armor','shield','helmet','boots'].includes(it.type))d+=it.val||0;}return{a,d};}
  function bar(box,v,max,kind){v=Math.max(0,Number(v)||0);max=Math.max(0,Number(max)||0);box.querySelector(`.${kind}-label`).innerHTML=`${kind==='hp'?'TP':'MP'}: <span class="battle-hp-text">${v}</span> / ${max}`;box.querySelector(kind==='hp'?'.battle-meter>span':'.battle-meter.mana>span').style.width=`${max?Math.min(100,v/max*100):0}%`;}
  function drawEnemy(c,m){drawMonsterPortrait(c,m);}
@@ -60,7 +63,7 @@ function setup(){queueMicrotask(()=>{
    if(restored>0)fx.number(`+${restored} MP`,hp,'#83cfee',-10);
    if(!events.some(x=>x.side==='hero')&&state.inCombat&&p.level===before.level){const damage=before.hp+healed-p.hp;if(damage>0)events.push({text:`-${damage}`,side:'hero'});}
    const won=!state.inCombat&&p.hp>0&&m.hp<=0&&Array.isArray(state.world.monsters)&&!state.world.monsters.includes(m);
-   const markDefeated=()=>{if(!won||ticket!==t||!same(t)||urgent())return;t.defeatReady=true;paint();};
+   const markDefeated=()=>{if(!won||ticket!==t||!same(t)||urgent())return;t.defeatReady=true;animateDeath(enemy);paint();};
    const impactDelay=matchMedia('(prefers-reduced-motion: reduce)').matches?0:200;
    let offset=0;
    for(const event of events){
@@ -74,6 +77,7 @@ function setup(){queueMicrotask(()=>{
     }
    }
    if(won&&!ranged)markDefeated();
+   if(p.hp<=0)animateDeath(hero);
    if(id==='flee'){if(!state.inCombat&&p.hp>0)fx.escape(hp);else fx.number('FLUCHT GESCHEITERT',hp,'#e5c7b4');}
   }catch(error){fx.clear();clearAnims();console.warn('Kampfeffekte:',error);}
  };}
@@ -124,7 +128,7 @@ combat.addEventListener('click', e => {
     const won = !state.inCombat && p.hp > 0 && m.hp <= 0 && Array.isArray(state.world.monsters) && !state.world.monsters.includes(m);
     const markDefeated = () => {
       if (!won || ticket !== t || !same(t) || urgent()) return;
-      t.defeatReady = true; paint();
+      t.defeatReady = true; animateDeath(enemy); paint();
     };
     const impactDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 200;
     let offset = 0;
@@ -145,6 +149,7 @@ combat.addEventListener('click', e => {
       }
     }
     if (won && !ranged) markDefeated();
+    if (p.hp <= 0) animateDeath(hero);
   } catch (error) { fx.clear(); clearAnims(); console.warn('Kampfeffekte:', error); }
 }, true);
 
