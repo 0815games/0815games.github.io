@@ -1,5 +1,6 @@
 // [2026-10-13 09:50] - js/systems/firebase.js: v0.3.5 Klare Anmelde-Fehler
 import { state } from '../core/state.js';
+import { normalizeSaveSlot } from './save-migration.js';
 
 const CFG = {
   apiKey: "AIzaSyBbYbswfsuyXhgK-t_Whz7sGven7J2fT2w",
@@ -8,7 +9,7 @@ const CFG = {
   projectId: "rpg01-793eb",
   storageBucket: "rpg01-793eb.firebasestorage.app",
   messagingSenderId: "381934095221",
-  appId: "1:381934095221:web:71007bb26d223de0a7213c",
+  appId: "1:237410077381:web:71007bb26d223de0a7213c",
   measurementId: "G-4GCT9YCJJ8"
 };
 
@@ -22,10 +23,9 @@ const mapError = (e) => {
     "auth/invalid-login-credentials": "E-Mail oder Passwort ist falsch. Bitte prüfe beide Angaben.",
     "auth/missing-password": "Bitte gib dein Runen-Passwort ein.",
     "auth/email-already-in-use": "Diese E-Mail ist bereits registriert. Bitte melde dich an.",
-    "auth/weak-password": "Das Passwort ist zu schwach. Verwende mindestens 6 Zeichen.",
+    "auth/weak-password": "Das Passwort muss mindestens 6 Zeichen lang sein.",
     "auth/user-disabled": "Dieses Ordenskonto wurde deaktiviert.",
-    "auth/too-many-requests": "Zu viele Anmeldeversuche. Bitte warte kurz und versuche es erneut.",
-    "auth/operation-not-allowed": "E-Mail/Passwort-Anmeldung ist in der Firebase-Konsole noch nicht aktiviert.",
+    "auth/too-many-requests": "Diese Anmeldung wurde zu oft versucht. Bitte warte kurz.",
     "auth/network-request-failed": "Netzwerkfehler zum Ordensarchiv. Bitte Internet oder Adblocker prüfen.",
     "auth/unauthorized-domain": "Diese Domain ist nicht autorisiert. Bitte über die freigegebene GitHub-Seite spielen."
   };
@@ -89,8 +89,12 @@ class Cloud {
       if (snap.exists()) {
         const cloudData = snap.val();
         for (let i = 0; i < 4; i++) {
-          if (cloudData[`slot_${i}`]) {
-            slots[i] = cloudData[`slot_${i}`];
+          const raw = cloudData[`slot_${i}`];
+          if (!raw) continue;
+          try {
+            slots[i] = normalizeSaveSlot(raw);
+          } catch (error) {
+            console.warn(`Cloud loadAllSlots: Slot ${i} ist ungültig und bleibt gesperrt.`, error);
           }
         }
       }
