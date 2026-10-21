@@ -467,25 +467,18 @@
   function vibrate(pattern) {
 
     if (
-      typeof navigator.vibrate !==
-      "function"
+      window.UFOGame &&
+      window.UFOGame.haptics &&
+      typeof window.UFOGame.haptics.vibrate === "function"
     ) {
-      return;
-    }
 
+      window.UFOGame.haptics.vibrate(
+        pattern
+      );
 
-    try {
-      navigator.vibrate(pattern);
-    }
-
-    catch (error) {
-      /*
-       * Haptik ist optional.
-       */
     }
 
   }
-
 
   function syncValues() {
 

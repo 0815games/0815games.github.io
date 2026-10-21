@@ -291,26 +291,16 @@
   function vibrateLaunch() {
 
     if (
-      navigator.vibrate &&
-      window.matchMedia(
-        "(pointer: coarse)"
-      ).matches
+      window.UFOGame &&
+      window.UFOGame.haptics &&
+      typeof window.UFOGame.haptics.launch === "function"
     ) {
 
-      navigator.vibrate(
-        [
-          18,
-          36,
-          28,
-          42,
-          65
-        ]
-      );
+      window.UFOGame.haptics.launch();
 
     }
 
   }
-
 
   function revealStartMenu(intro) {
 

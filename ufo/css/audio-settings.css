@@ -1,0 +1,241 @@
+/* ==========================================================
+   UFO-JAGD
+   AUDIO + HAPTIK SETTINGS
+   ========================================================== */
+
+.audioSettingsSection {
+  opacity: 1;
+}
+
+
+.audioSettingRow,
+.audioSliderRow {
+  margin-top: 11px;
+
+  padding:
+    10px 11px;
+
+  border:
+    1px solid
+    rgba(105, 210, 228, .12);
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(7, 28, 46, .76),
+      rgba(3, 14, 26, .72)
+    );
+}
+
+
+.audioSettingRow {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.audioSettingLabel {
+  flex: 1;
+
+  color: #beeef5;
+
+  font-size: 10px;
+  font-weight: 900;
+
+  letter-spacing: .8px;
+}
+
+
+.audioToggle {
+  min-width: 58px;
+  min-height: 32px;
+
+  padding:
+    6px 11px;
+
+  border:
+    1px solid
+    rgba(139, 177, 184, .23);
+
+  border-radius: 999px;
+
+  background:
+    rgba(26, 40, 47, .82);
+
+  color: #8ba4aa;
+
+  font-size: 9px;
+  font-weight: 1000;
+
+  letter-spacing: 1px;
+
+  box-shadow: none;
+}
+
+
+.audioToggle.active {
+  border-color:
+    rgba(105, 245, 255, .7);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 143, 163, .85),
+      rgba(6, 65, 88, .91)
+    );
+
+  color: #eeffff;
+
+  box-shadow:
+    0 0 13px
+    rgba(53, 222, 239, .18),
+    inset 0 1px
+    rgba(220, 255, 255, .15);
+}
+
+
+.audioSliderTop {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-bottom: 9px;
+}
+
+
+.audioSliderTop span {
+  flex: 1;
+
+  color: #9bc9d1;
+
+  font-size: 9px;
+  font-weight: 850;
+
+  letter-spacing: .55px;
+}
+
+
+.audioSliderTop strong {
+  color: #cfffff;
+
+  font-size: 9px;
+
+  text-shadow:
+    0 0 6px
+    rgba(69, 226, 243, .4);
+}
+
+
+.audioSliderRow input[type="range"] {
+  width: 100%;
+  height: 5px;
+
+  margin: 0;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border-radius: 999px;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(57, 214, 235, .83),
+      rgba(121, 246, 255, .44)
+    );
+
+  cursor: pointer;
+}
+
+
+.audioSliderRow input[type="range"]::-webkit-slider-thumb {
+  width: 19px;
+  height: 19px;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  border:
+    2px solid #cfffff;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #7ff4ff,
+      #1687ab
+    );
+
+  box-shadow:
+    0 0 10px
+    rgba(75, 228, 245, .55);
+}
+
+
+.audioSliderRow input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+
+  border:
+    2px solid #cfffff;
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      #7ff4ff,
+      #1687ab
+    );
+
+  box-shadow:
+    0 0 10px
+    rgba(75, 228, 245, .55);
+}
+
+
+.audioSliderRow input:disabled {
+  opacity: .28;
+
+  cursor: not-allowed;
+}
+
+
+@media
+  (max-width:700px),
+  (pointer:coarse) {
+
+  .audioSettingRow,
+  .audioSliderRow {
+    margin-top: 8px;
+
+    padding:
+      9px;
+  }
+
+
+  .audioToggle {
+    min-width: 62px;
+    min-height: 36px;
+  }
+
+
+  .audioSliderRow input[type="range"] {
+    height: 7px;
+  }
+
+
+  .audioSliderRow input[type="range"]::-webkit-slider-thumb {
+    width: 23px;
+    height: 23px;
+  }
+
+}
