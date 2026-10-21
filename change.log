@@ -1857,3 +1857,13 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Bei gemeldetem Speicherfehler bleibt der lokale Kaufzustand unverändert.
 - Keine geräteübergreifende Transaktion oder Exactly-once-Garantie bei unklarem Netzwerkstatus.
 - Browser- und Speichertests stehen aus.
+
+## 2026-10-21 – v0.6.10 – Persistente Speicher-Snapshots
+- Reguläre Speicher-Snapshots kopieren nur player, world, meta und currentSlot.
+- Firebase-Benutzerobjekt und andere Laufzeitdaten werden nicht mitkopiert.
+- Slotprüfung auf ganzzahlige Slots 0 bis 3 begrenzt.
+- Run-ID, Todesbeleg, Eliteinformationen und Monsterabsichten bleiben in den persistenten Daten enthalten.
+- Rückmeldungen regulärer Saves werden an Konto, Sitzung, Slot, Spieler, Welt und Run gebunden.
+- Veraltete Ergebnisse erzeugen keine Meldung im inzwischen anderen Spielkontext.
+- Bereits gestartete Cloud-Schreibvorgänge werden dadurch nicht abgebrochen.
+- Snapshot-Regressionstests und manueller Cloud-Test erforderlich.
