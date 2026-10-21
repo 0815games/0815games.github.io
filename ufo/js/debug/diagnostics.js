@@ -569,6 +569,14 @@
       createRow(
         "Frame",
         "diagFrameTime"
+      ),
+      createRow(
+        "Qualität",
+        "diagGraphicsQuality"
+      ),
+      createRow(
+        "Ziel-FPS",
+        "diagTargetFps"
       )
     ];
 
@@ -1160,6 +1168,28 @@
         : state.frameTime <= 34
           ? "warn"
           : "error"
+    );
+
+    var performanceSettings =
+      window.UFOGame &&
+      window.UFOGame.settings;
+
+    setValue(
+      "diagGraphicsQuality",
+      performanceSettings
+        ? performanceSettings
+            .getGraphics()
+            .toUpperCase()
+        : "–"
+    );
+
+    setValue(
+      "diagTargetFps",
+      performanceSettings &&
+      typeof performanceSettings.getTargetFps ===
+      "function"
+        ? performanceSettings.getTargetFps() + " FPS"
+        : "–"
     );
 
 

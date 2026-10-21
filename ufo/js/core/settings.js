@@ -19,6 +19,11 @@
         ? "mid"
         : "high",
 
+    targetFps:
+      isTouch
+        ? 30
+        : 60,
+
     /*
      * Für zukünftige Settings bereits vorgesehen.
      * Noch ohne Einfluss auf das aktuelle Spiel.
@@ -46,30 +51,57 @@
     low: {
       id: "low",
       label: "LOW",
+
       maxDpr: 1.0,
-      stars: 90,
-      meteors: 2,
-      sparkScale: 0.45,
+
+      stars: 70,
+      meteors: 1,
+
+      grass: 50,
+      dust: 12,
+      fireflies: 8,
+
+      sparkScale: 0.40,
+      shadowScale: 0.25,
+
       effects: "reduced"
     },
 
     mid: {
       id: "mid",
       label: "MID",
-      maxDpr: 1.5,
-      stars: 150,
-      meteors: 3,
-      sparkScale: 0.7,
+
+      maxDpr: 1.25,
+
+      stars: 120,
+      meteors: 2,
+
+      grass: 90,
+      dust: 25,
+      fireflies: 14,
+
+      sparkScale: 0.65,
+      shadowScale: 0.60,
+
       effects: "medium"
     },
 
     high: {
       id: "high",
       label: "HIGH",
-      maxDpr: 4,
-      stars: 220,
-      meteors: 5,
-      sparkScale: 1,
+
+      maxDpr: 1.75,
+
+      stars: 180,
+      meteors: 4,
+
+      grass: 140,
+      dust: 42,
+      fireflies: 24,
+
+      sparkScale: 0.85,
+      shadowScale: 0.85,
+
       effects: "full"
     }
 
@@ -273,6 +305,32 @@
 
     setGraphics:
       setGraphics,
+
+    setTargetFps:
+      function (value) {
+
+        value =
+          Number(value) === 30
+            ? 30
+            : 60;
+
+        return set(
+          "targetFps",
+          value
+        );
+
+      },
+
+    getTargetFps:
+      function () {
+
+        return (
+          Number(state.targetFps) === 30
+            ? 30
+            : 60
+        );
+
+      },
 
     getGraphics:
       function () {

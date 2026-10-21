@@ -1,0 +1,130 @@
+/* ==========================================================
+   UFO-JAGD
+   PERFORMANCE + FPS SETTINGS
+   ========================================================== */
+
+.performanceSettingsSection {
+  opacity: 1;
+}
+
+
+.fpsOptions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 7px;
+}
+
+
+.fpsOptions button {
+  min-width: 0;
+
+  padding:
+    13px 8px;
+
+  border:
+    1px solid
+    rgba(111, 211, 229, .2);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 46, 67, .88),
+      rgba(5, 20, 35, .92)
+    );
+
+  color: #c3eaf0;
+
+  box-shadow: none;
+}
+
+
+.fpsOptions button strong,
+.fpsOptions button span {
+  display: block;
+}
+
+
+.fpsOptions button strong {
+  font-size: 17px;
+  font-weight: 1000;
+}
+
+
+.fpsOptions button span {
+  margin-top: 4px;
+
+  color: #668f99;
+
+  font-size: 7px;
+  font-weight: 850;
+
+  letter-spacing: .9px;
+}
+
+
+.fpsOptions button.selected {
+  border-color:
+    rgba(115, 244, 255, .88);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 113, 138, .76),
+      rgba(5, 38, 59, .95)
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 0 17px
+    rgba(49, 220, 242, .2),
+    inset 0 1px
+    rgba(220, 255, 255, .15);
+}
+
+
+.fpsOptions button.selected span {
+  color: #a8eff6;
+}
+
+
+.fpsDescription {
+  min-height: 29px;
+
+  margin-top: 10px;
+
+  padding: 8px 9px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(1, 10, 19, .46);
+
+  color: #90bdc6;
+
+  font-size: 9px;
+
+  line-height: 1.4;
+}
+
+
+@media
+  (max-width:700px),
+  (pointer:coarse) {
+
+  .fpsOptions button {
+    min-height: 52px;
+
+    padding:
+      12px 6px;
+  }
+
+}
