@@ -300,30 +300,93 @@
   }
 
   function finishIntro(event) {
-    if (finished || !ready) return;
+
+    if (
+      finished ||
+      !ready
+    ) {
+      return;
+    }
+
 
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
 
+
     finished = true;
     enterButton.disabled = true;
 
+
+    /*
+     * Phase Übergang Intro -> Startmenü.
+     *
+     * Die eigentliche Sequenz lebt ab jetzt
+     * modular in js/intro/transition.js.
+     */
+
+    if (
+      window.UFOGame &&
+      window.UFOGame.introTransition &&
+      typeof window.UFOGame
+        .introTransition
+        .run === "function"
+    ) {
+
+      window.UFOGame
+        .introTransition
+        .run({
+          intro: intro
+        });
+
+      return;
+    }
+
+
+    /*
+     * Sicherheitsfallback, falls transition.js
+     * nicht geladen werden konnte.
+     */
+
     playIntroConfirmSound();
 
-    intro.classList.add("intro-leaving");
-    document.body.classList.remove("intro-active");
+    intro.classList.add(
+      "intro-leaving"
+    );
 
-    window.setTimeout(function () {
-      intro.remove();
+    document.body.classList.remove(
+      "intro-active"
+    );
 
-      var playerInput = document.getElementById("player");
 
-      if (playerInput && !isTouchDevice()) {
-        playerInput.focus({ preventScroll: true });
-      }
-    }, 920);
+    window.setTimeout(
+      function () {
+
+        intro.remove();
+
+
+        var playerInput =
+          document.getElementById(
+            "player"
+          );
+
+
+        if (
+          playerInput &&
+          !isTouchDevice()
+        ) {
+
+          playerInput.focus({
+            preventScroll: true
+          });
+
+        }
+
+      },
+      920
+    );
+
   }
 
   function handleIntroKey(event) {

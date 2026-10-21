@@ -1,0 +1,978 @@
+/* ==========================================================
+   UFO-JAGD
+   CINEMATIC INTRO -> GAME TRANSITION
+   ========================================================== */
+
+#ufoIntro {
+  --transition-progress: 0;
+}
+
+
+/* ----------------------------------------------------------
+   Übergang läuft
+   ---------------------------------------------------------- */
+
+#ufoIntro.intro-transition-running {
+  pointer-events: none;
+}
+
+
+/* Der normale alte Fade wird während des neuen Übergangs
+   unterdrückt. */
+
+#ufoIntro.intro-transition-running.intro-leaving {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* ----------------------------------------------------------
+   Text und Freigabeelemente ausblenden
+   ---------------------------------------------------------- */
+
+#ufoIntro.intro-transition-running
+.introContent {
+  animation:
+    ufoTransitionContentOut
+    .58s cubic-bezier(.4,0,.7,.2)
+    forwards;
+}
+
+
+#ufoIntro.intro-transition-running
+.cinematicSequenceText,
+#ufoIntro.intro-transition-running
+.cinematicWarning,
+#ufoIntro.intro-transition-running
+.cinematicReticle {
+  opacity: 0 !important;
+
+  transition:
+    opacity .25s ease !important;
+}
+
+
+#ufoIntro.intro-transition-running
+.introGate {
+  pointer-events: none;
+
+  animation:
+    ufoTransitionGateOut
+    .38s ease-in
+    forwards !important;
+}
+
+
+@keyframes ufoTransitionContentOut {
+
+  0% {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+    filter: blur(0);
+  }
+
+  42% {
+    opacity: .82;
+
+    transform:
+      translateY(7px)
+      scale(.985);
+
+    filter: blur(1px);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translateY(35px)
+      scale(.92);
+
+    filter: blur(10px);
+  }
+
+}
+
+
+@keyframes ufoTransitionGateOut {
+
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(.78);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Kino-Balken zurückziehen
+   ---------------------------------------------------------- */
+
+#ufoIntro.intro-transition-running
+.cinematicLetterbox.top {
+  animation:
+    ufoTransitionTopBarOut
+    .7s .15s
+    cubic-bezier(.22,.7,.2,1)
+    forwards;
+}
+
+
+#ufoIntro.intro-transition-running
+.cinematicLetterbox.bottom {
+  animation:
+    ufoTransitionBottomBarOut
+    .7s .15s
+    cubic-bezier(.22,.7,.2,1)
+    forwards;
+}
+
+
+@keyframes ufoTransitionTopBarOut {
+
+  to {
+    transform: translateY(-110%);
+  }
+
+}
+
+
+@keyframes ufoTransitionBottomBarOut {
+
+  to {
+    transform: translateY(110%);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Beam wird abgeschaltet
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-beam-off
+#introBeam,
+#ufoIntro.transition-beam-off
+.phase3BeamOuter,
+#ufoIntro.transition-beam-off
+.phase3BeamCore {
+  opacity: 0 !important;
+
+  transform:
+    translateX(-50%)
+    scaleY(.015) !important;
+
+  transform-origin:
+    top center !important;
+
+  transition:
+    opacity .28s ease,
+    transform .48s
+      cubic-bezier(.55,0,.8,.3) !important;
+}
+
+
+#ufoIntro.transition-beam-off
+.phase3BeamWaves,
+#ufoIntro.transition-beam-off
+.phase3BeamParticles,
+#ufoIntro.transition-beam-off
+.phase3BeamArc {
+  opacity: 0 !important;
+
+  transition:
+    opacity .2s ease !important;
+}
+
+
+#ufoIntro.transition-beam-off
+.phase3GroundGlow {
+  opacity: 0 !important;
+
+  transform:
+    translateX(-50%)
+    scale(.18) !important;
+
+  transition:
+    opacity .34s ease,
+    transform .44s ease !important;
+}
+
+
+#ufoIntro.transition-beam-off::after {
+  opacity: 0 !important;
+
+  transition:
+    opacity .42s ease !important;
+}
+
+
+/* ----------------------------------------------------------
+   Kuh fällt aus dem abgeschalteten Beam
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-cow-drop
+#introCow {
+  animation:
+    ufoTransitionCowDrop
+    .74s cubic-bezier(.45,.05,.85,.45)
+    forwards !important;
+}
+
+
+@keyframes ufoTransitionCowDrop {
+
+  0% {
+    opacity: .96;
+
+    transform:
+      translate(-50%, -68px)
+      rotate(-3deg);
+
+    filter:
+      drop-shadow(0 0 8px #d7ffff)
+      drop-shadow(0 0 18px rgba(77,230,255,.7));
+  }
+
+  42% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -20px)
+      rotate(7deg);
+
+    filter:
+      drop-shadow(0 0 5px rgba(130,245,255,.42));
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, 165px)
+      rotate(-17deg)
+      scale(.86);
+
+    filter: none;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   UFO lädt Energie auf
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-ufo-charge
+.phase3ReactorCore {
+  animation:
+    ufoTransitionReactorCharge
+    .66s cubic-bezier(.2,.8,.2,1)
+    forwards !important;
+}
+
+
+#ufoIntro.transition-ufo-charge
+.phase3ReactorOuter {
+  animation:
+    phase3ReactorRotate
+    .34s linear infinite !important;
+}
+
+
+#ufoIntro.transition-ufo-charge
+.phase3ReactorInner {
+  animation:
+    phase3ReactorCounter
+    .21s linear infinite !important;
+}
+
+
+#ufoIntro.transition-ufo-charge
+.phase3UfoHalo {
+  animation:
+    ufoTransitionHaloCharge
+    .66s ease-in forwards !important;
+}
+
+
+#ufoIntro.transition-ufo-charge
+.phase3PositionLights i {
+  animation:
+    ufoTransitionLightCharge
+    .14s steps(2,end)
+    infinite !important;
+}
+
+
+@keyframes ufoTransitionReactorCharge {
+
+  0% {
+    scale: 1;
+
+    filter:
+      brightness(1)
+      saturate(1);
+  }
+
+  60% {
+    scale: 1.45;
+
+    filter:
+      brightness(2.1)
+      saturate(1.7);
+  }
+
+  100% {
+    scale: 2.15;
+
+    filter:
+      brightness(3.2)
+      saturate(2);
+  }
+
+}
+
+
+@keyframes ufoTransitionHaloCharge {
+
+  from {
+    opacity: .65;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -50%)
+      scale(1.48);
+
+    filter: blur(20px);
+  }
+
+}
+
+
+@keyframes ufoTransitionLightCharge {
+
+  0% {
+    opacity: .25;
+  }
+
+  100% {
+    opacity: 1;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   UFO startet senkrecht
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-ufo-launch
+#introUfoScene {
+  animation:
+    ufoTransitionLaunch
+    1.03s cubic-bezier(.67,0,.85,.28)
+    forwards !important;
+}
+
+
+@keyframes ufoTransitionLaunch {
+
+  0% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, 0)
+      scale(1)
+      rotate(0);
+
+    filter:
+      brightness(1)
+      blur(0);
+  }
+
+  16% {
+    transform:
+      translate(-50%, 9px)
+      scale(1.035)
+      rotate(.4deg);
+
+    filter:
+      brightness(1.35)
+      blur(0);
+  }
+
+  29% {
+    transform:
+      translate(-50%, -3px)
+      scale(.99)
+      rotate(-.25deg);
+
+    filter:
+      brightness(1.7)
+      blur(0);
+  }
+
+  67% {
+    opacity: 1;
+
+    transform:
+      translate(-50%, -52vh)
+      scale(.68)
+      rotate(1deg);
+
+    filter:
+      brightness(2.25)
+      blur(1px);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate(-50%, -125vh)
+      scale(.19)
+      rotate(-2deg);
+
+    filter:
+      brightness(4)
+      blur(7px);
+  }
+
+}
+
+
+/* Schubspur unter dem UFO */
+
+#ufoIntro.transition-ufo-launch
+.introUfoScene::after {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+
+  left: 50%;
+  top: 24%;
+
+  width: 21%;
+  height: 110%;
+
+  transform:
+    translateX(-50%);
+
+  clip-path:
+    polygon(
+      41% 0,
+      59% 0,
+      100% 100%,
+      0 100%
+    );
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(237,255,255,.92),
+      rgba(77,232,255,.58) 24%,
+      rgba(37,146,255,.18) 68%,
+      transparent
+    );
+
+  filter:
+    blur(7px);
+
+  animation:
+    ufoTransitionTrail
+    .79s ease-out forwards;
+}
+
+
+@keyframes ufoTransitionTrail {
+
+  0% {
+    opacity: 0;
+    scale: .3 0;
+    transform-origin: top;
+  }
+
+  18% {
+    opacity: 1;
+    scale: 1 1;
+    transform-origin: top;
+  }
+
+  100% {
+    opacity: 0;
+    scale: .55 1.5;
+    transform-origin: top;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Kamera bewegt sich in die Landschaft
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-camera-dive
+#parallaxWorld {
+  animation:
+    ufoTransitionCameraDive
+    1.36s cubic-bezier(.16,.74,.19,1)
+    forwards;
+}
+
+
+#ufoIntro.transition-camera-dive
+.introStars {
+  animation:
+    ufoTransitionStarsDive
+    1.36s ease-in forwards;
+}
+
+
+#ufoIntro.transition-camera-dive
+.introMoon {
+  animation:
+    ufoTransitionMoonOut
+    1.05s ease-in forwards !important;
+}
+
+
+@keyframes ufoTransitionCameraDive {
+
+  0% {
+    opacity: 1;
+
+    transform:
+      translate3d(0,0,0)
+      scale(1);
+
+    filter:
+      blur(0)
+      brightness(1);
+  }
+
+  58% {
+    opacity: 1;
+
+    transform:
+      translate3d(0,-2.5%,80px)
+      scale(1.18);
+
+    filter:
+      blur(.3px)
+      brightness(1.11);
+  }
+
+  100% {
+    opacity: 0;
+
+    transform:
+      translate3d(0,-10%,260px)
+      scale(1.58);
+
+    filter:
+      blur(7px)
+      brightness(1.3);
+  }
+
+}
+
+
+@keyframes ufoTransitionStarsDive {
+
+  from {
+    opacity: .55;
+    transform: scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+
+}
+
+
+@keyframes ufoTransitionMoonOut {
+
+  to {
+    opacity: 0;
+    transform:
+      translateY(-22px)
+      scale(1.35);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Cyan-Blitz
+   ---------------------------------------------------------- */
+
+#introTransitionFlash {
+  position: absolute;
+  z-index: 10000;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      circle at 50% 26%,
+      #ffffff 0%,
+      #dfffff 8%,
+      #75efff 31%,
+      rgba(29,154,207,.62) 54%,
+      rgba(2,14,32,.1) 78%,
+      transparent 100%
+    );
+
+  mix-blend-mode: screen;
+}
+
+
+#ufoIntro.transition-flash
+#introTransitionFlash {
+  animation:
+    ufoTransitionFlash
+    .92s ease-out forwards;
+}
+
+
+@keyframes ufoTransitionFlash {
+
+  0% {
+    opacity: 0;
+  }
+
+  10% {
+    opacity: .23;
+  }
+
+  27% {
+    opacity: 1;
+  }
+
+  37% {
+    opacity: .78;
+  }
+
+  100% {
+    opacity: 0;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Übergangs-Scanline
+   ---------------------------------------------------------- */
+
+#introTransitionScan {
+  position: absolute;
+  z-index: 10001;
+
+  left: 0;
+  right: 0;
+  top: -8%;
+
+  height: 7%;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      transparent,
+      rgba(213,255,255,.78),
+      rgba(69,226,255,.24),
+      transparent
+    );
+
+  filter: blur(2px);
+}
+
+
+#ufoIntro.transition-flash
+#introTransitionScan {
+  animation:
+    ufoTransitionScan
+    .82s .13s ease-in forwards;
+}
+
+
+@keyframes ufoTransitionScan {
+
+  0% {
+    top: -8%;
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  100% {
+    top: 108%;
+    opacity: 0;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Letzter Gesamt-Fade
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-final-fade {
+  animation:
+    ufoTransitionFinalFade
+    .52s ease-in forwards !important;
+}
+
+
+@keyframes ufoTransitionFinalFade {
+
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Startmenü wird nach dem Übergang eingeblendet
+   ---------------------------------------------------------- */
+
+body.intro-transition-complete
+#message {
+  animation:
+    ufoStartMenuReveal
+    .72s cubic-bezier(.18,.72,.18,1)
+    both;
+}
+
+
+body.intro-transition-complete
+#message .card {
+  animation:
+    ufoStartCardReveal
+    .82s .08s
+    cubic-bezier(.16,.78,.16,1)
+    both;
+}
+
+
+@keyframes ufoStartMenuReveal {
+
+  from {
+    opacity: 0;
+
+    background:
+      radial-gradient(
+        circle,
+        rgba(58,230,255,.28),
+        rgba(1,3,11,.97) 58%
+      );
+  }
+
+  to {
+    opacity: 1;
+  }
+
+}
+
+
+@keyframes ufoStartCardReveal {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(32px)
+      scale(.91);
+
+    filter:
+      blur(10px)
+      brightness(1.7);
+  }
+
+  62% {
+    opacity: 1;
+
+    transform:
+      translateY(-4px)
+      scale(1.015);
+
+    filter:
+      blur(0)
+      brightness(1.08);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+    filter:
+      blur(0)
+      brightness(1);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Kamera-Shake beim Start
+   ---------------------------------------------------------- */
+
+#ufoIntro.transition-launch-impact {
+  animation:
+    ufoTransitionLaunchShake
+    .47s ease-out;
+}
+
+
+@keyframes ufoTransitionLaunchShake {
+
+  0% {
+    transform: translate3d(0,0,0);
+  }
+
+  14% {
+    transform:
+      translate3d(-9px,6px,0)
+      rotate(-.18deg);
+  }
+
+  29% {
+    transform:
+      translate3d(8px,-5px,0)
+      rotate(.16deg);
+  }
+
+  46% {
+    transform:
+      translate3d(-5px,3px,0);
+  }
+
+  64% {
+    transform:
+      translate3d(3px,-2px,0);
+  }
+
+  82% {
+    transform:
+      translate3d(-1px,1px,0);
+  }
+
+  100% {
+    transform:
+      translate3d(0,0,0);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Mobile
+   ---------------------------------------------------------- */
+
+@media (max-width:700px), (pointer:coarse) {
+
+  #ufoIntro.transition-ufo-launch
+  #introUfoScene {
+    animation-duration: .86s !important;
+  }
+
+
+  #ufoIntro.transition-camera-dive
+  #parallaxWorld {
+    animation-duration: 1.08s !important;
+  }
+
+
+  #ufoIntro.transition-cow-drop
+  #introCow {
+    animation-duration: .57s !important;
+  }
+
+
+  #ufoIntro.transition-ufo-launch
+  .introUfoScene::after {
+    width: 17%;
+
+    filter: blur(5px);
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   Reduced Motion
+   ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion:reduce) {
+
+  #ufoIntro.intro-transition-running
+  .introContent,
+
+  #ufoIntro.transition-beam-off
+  #introBeam,
+
+  #ufoIntro.transition-beam-off
+  .phase3BeamOuter,
+
+  #ufoIntro.transition-beam-off
+  .phase3BeamCore,
+
+  #ufoIntro.transition-cow-drop
+  #introCow,
+
+  #ufoIntro.transition-ufo-charge
+  .phase3ReactorCore,
+
+  #ufoIntro.transition-ufo-launch
+  #introUfoScene,
+
+  #ufoIntro.transition-camera-dive
+  #parallaxWorld {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+
+
+  #introTransitionScan {
+    display: none;
+  }
+
+}
