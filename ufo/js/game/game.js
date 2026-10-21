@@ -43,97 +43,69 @@ q.appendChild(li);
 }
 
 function showScores(){
-renderScores(high);
-
-if(window.ufoFirebase && window.ufoFirebase.ready){
-window.refreshUfoHighscores();
-}
-}
-
-window.refreshUfoHighscores=function(){
 
 if(
-!window.ufoFirebase ||
-!window.ufoFirebase.ready
+window.UfoHighscores &&
+typeof window.UfoHighscores.load==='function'
 ){
-return Promise.resolve([]);
-}
 
-return window.ufoFirebase.database
-.ref('ufoHighscores')
-.orderByChild('score')
-.limitToLast(10)
-.once('value')
-
-.then(function(snapshot){
-
-var cloudScores=[];
-
-snapshot.forEach(function(child){
-
-var value=child.val();
-
-if(
-value &&
-typeof value.name==='string' &&
-typeof value.score==='number'
-){
-cloudScores.push({
-id:child.key,
-name:value.name,
-score:value.score,
-createdAt:value.createdAt,
-uid:value.uid
-});
-}
-
-});
-
-cloudScores.sort(function(a,b){
-
-if(b.score!==a.score){
-return b.score-a.score;
-}
-
-return (a.createdAt||0)-(b.createdAt||0);
-
-});
-
-high=cloudScores.slice(0,10);
-
-renderScores(high);
-
-console.log(
-"🏆 Globale Highscores geladen:",
-high.length
-);
-
-return high;
-
-})
-
+window.UfoHighscores
+.load()
 .catch(function(error){
 
-console.error(
-'❌ Firebase-Highscores konnten nicht geladen werden:',
-error.code,
-error.message
+console.warn(
+'Globaler Highscore aktuell nicht erreichbar:',
+error
 );
 
-renderScores(high);
+/*
+ * Nur im Offline-Fall zeigen wir den alten
+ * lokalen Cache als Fallback.
+ */
+var q=document.getElementById('scores');
 
-return high;
+if(q){
+q.replaceChildren();
+
+if(!high.length){
+
+var empty=document.createElement('li');
+empty.textContent='Globaler Highscore offline';
+q.appendChild(empty);
+
+}else{
+
+high.forEach(function(v){
+
+var li=document.createElement('li');
+
+li.textContent=
+String(v.name||'Spieler')+
+' — '+
+Number(v.score||0).toLocaleString('de-DE')+
+' Punkte';
+
+q.appendChild(li);
+
 });
-};
 
+}
 
-function saveScore(){
+}
 
-if(score<=0 || recorded)return;
+});
+
+return;
+}
+
+}function saveScore(){
+
+if(score<=0||recorded)return;
 
 recorded=1;
 
-var cleanName=String(playerName||'Spieler')
+var cleanName=
+String(playerName||'Spieler')
 .trim()
 .replace(/\s+/g,' ')
 .slice(0,18);
@@ -142,30 +114,30 @@ if(!cleanName){
 cleanName='Spieler';
 }
 
-var cleanScore=Math.floor(Number(score));
+var cleanScore=
+Math.floor(Number(score));
 
 if(
-!Number.isFinite(cleanScore) ||
-cleanScore<=0 ||
+!Number.isFinite(cleanScore)||
+cleanScore<=0||
 cleanScore>10000000
 ){
 console.warn(
-'⚠️ Ungültiger Highscore:',
+'Ungültiger Highscore:',
 cleanScore
 );
 return;
 }
 
 
-/* Sofort lokal anzeigen */
+/*
+ * Lokaler Cache ist ab jetzt NUR ein
+ * Offline-Fallback.
+ */
 
 high.push({
 name:cleanName,
-score:cleanScore,
-uid:
-window.ufoFirebase &&
-window.ufoFirebase.user
-?window.ufoFirebase.user.uid:null
+score:cleanScore
 });
 
 high.sort(function(a,b){
@@ -179,102 +151,50 @@ localStorage.setItem(
 'ufoScores',
 JSON.stringify(high)
 );
-}catch(e){
-console.warn(
-'Lokaler Highscore konnte nicht gespeichert werden:',
-e
-);
-}
-
-renderScores(high);
+}catch(e){}
 
 
-/* Firebase verfügbar? */
+/*
+ * Primärer Speicherort ist Firebase.
+ *
+ * Der Service wartet automatisch auf
+ * Anonymous Authentication.
+ */
 
 if(
-!window.ufoFirebase ||
-!window.ufoFirebase.ready ||
-!window.ufoFirebase.user
+window.UfoHighscores &&
+typeof window.UfoHighscores.submit==='function'
 ){
 
-console.warn(
-'⚠️ Firebase noch nicht bereit. Score bleibt lokal gespeichert.'
-);
-
-return;
-}
-
-
-/* Doppeltes Absenden verhindern */
-
-var submissionKey=[
-window.ufoFirebase.user.uid,
+window.UfoHighscores
+.submit(
 cleanName,
 cleanScore
-].join(':');
-
-if(
-window.ufoFirebase.lastSubmittedScore===
-submissionKey
-){
-
-console.warn(
-'⚠️ Doppeltes Absenden verhindert.'
-);
-
-return;
-}
-
-window.ufoFirebase.lastSubmittedScore=
-submissionKey;
-
-
-/* Neuen Firebase-Datensatz erzeugen */
-
-var newScoreRef=
-window.ufoFirebase.database
-.ref('ufoHighscores')
-.push();
-
-
-newScoreRef.set({
-
-name:cleanName,
-
-score:cleanScore,
-
-createdAt:
-firebase.database.ServerValue.TIMESTAMP,
-
-uid:
-window.ufoFirebase.user.uid
-
-})
+)
 
 .then(function(){
 
-console.log(
-'✅ Highscore gespeichert:',
-cleanName,
-cleanScore
-);
-
-return window.refreshUfoHighscores();
+showScores();
 
 })
 
 .catch(function(error){
 
-window.ufoFirebase.lastSubmittedScore=null;
-
 console.error(
-'❌ Highscore konnte nicht gespeichert werden:',
-error.code,
-error.message
+'Globaler Highscore konnte nicht gespeichert werden:',
+error
 );
+
+showScores();
 
 });
 
+}else{
+
+console.error(
+'Globaler Highscore-Service ist nicht verfügbar.'
+);
+
 }
 
-function reset(){if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});var pi=document.getElementById('player');if(pi&&pi.value.trim())playerName=pi.value.trim();saveScore();recorded=0;sound('hit');lost=0;paused=0;document.getElementById('pause').textContent='PAUSE';objects=[];sparks=[];raiders=[];raidSpawn=0;stolen={};slowUntil=0;moonReady=0;score=0;level=1;hits=0;jetDown=0;spawn=0;run=1;box.style.display='none';c.focus();showScores();ui()}c.addEventListener('pointerdown',function(e){c.focus();if(!run)return;var r=c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,tap=e.pointerType==='touch'?1.65:1;for(var w=raiders.length-1;w>=0;w--){var a=raiders[w];if(Math.abs(px-a.x)<16*tap&&Math.abs(py-a.y)<28*tap){score+=350;if(a.carry)delete stolen[a.target];raiders.splice(w,1);for(var z=0;z<28;z++)sparks.push({x:a.x,y:a.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:'#75ff8b'});sound('hit');ui();return}}for(var i=objects.length-1;i>=0;i--){var d=objects[i],s=(d.jet?64:48)*d.z;if(Math.abs(px-d.x)<s*1.75*tap&&Math.abs(py-d.y)<s*tap){if(d.jet){score-=150;jetDown++;sound('jet');if(jetDown>=5&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast in diesem Level 5 Flugzeuge abgeschossen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}else{sound(d.steal?'ufo':'hit');if(d.steal)delete stolen[d.target];var reward=d.steal?500:Math.round((1.3-d.z)*500)*level;score+=reward;hits++}for(var q=0;q<44;q++)sparks.push({x:d.x,y:d.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:d.jet?'#ff674d':'#8efbff'});objects.splice(i,1);ui();break}}if(run){if(Math.abs(px-W*.8)<48*tap&&Math.abs(py-H*.15)<48*tap&&performance.now()>=moonReady){slowUntil=performance.now()+5000;moonReady=slowUntil+5000;sound('ufo')}else etHit(px,py)}});function showSheet(){document.getElementById('sheet').className='show'}function hideSheet(){document.getElementById('sheet').className='';if(paused){paused=0;last=performance.now();document.getElementById('pause').textContent='PAUSE'}}document.getElementById('start').onclick=reset;showScores();document.getElementById('closeSheet').onclick=hideSheet;function toggleSheet(){if(!run)return;if(!paused){paused=1;document.getElementById('pause').textContent='WEITER';showSheet()}else hideSheet()}function handleKey(e){var k=(e.key||'').toLowerCase();if((k==='a'||k==='p'||e.code==='KeyA'||e.code==='KeyP')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var a=document.activeElement;if(a&&/^(input|textarea|select)$/i.test(a.tagName))return;e.preventDefault();e.stopPropagation();toggleSheet()}}document.addEventListener('keydown',handleKey,true);document.getElementById('pause').onclick=function(){if(!run)return;paused=!paused;last=performance.now();this.textContent=paused?'WEITER':'PAUSE'};document.getElementById('quit').onclick=function(){if(!run)return;run=0;paused=0;objects=[];box.style.display='flex';box.innerHTML='<div class="card"><h1>SPIEL BEENDET</h1><p>Deine Mission wurde beendet.</p><button id="start">NEUE MISSION</button><button id="menu" style="margin-left:10px">ZUM STARTMENÜ</button></div>';document.getElementById('start').onclick=reset;document.getElementById('menu').onclick=function(){box.innerHTML='<div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>Einsatzbriefing</b><br>Verteidige die 10 Kühe gegen UFOs. Triff UFOs, rette Kühe aus roten Strahlen und meide die Jets. Der Mond löst Zeitlupe aus.</div><input id="player" class="name" maxlength="18" placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;showScores()}};ui();requestAnimationFrame(frame)})();
+}function reset(){if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});var pi=document.getElementById('player');if(pi&&pi.value.trim())playerName=pi.value.trim();saveScore();recorded=0;sound('hit');lost=0;paused=0;document.getElementById('pause').textContent='PAUSE';objects=[];sparks=[];raiders=[];raidSpawn=0;stolen={};slowUntil=0;moonReady=0;score=0;level=1;hits=0;jetDown=0;spawn=0;run=1;box.style.display='none';c.focus();showScores();ui()}c.addEventListener('pointerdown',function(e){c.focus();if(!run)return;var r=c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,tap=e.pointerType==='touch'?1.65:1;for(var w=raiders.length-1;w>=0;w--){var a=raiders[w];if(Math.abs(px-a.x)<16*tap&&Math.abs(py-a.y)<28*tap){score+=350;if(a.carry)delete stolen[a.target];raiders.splice(w,1);for(var z=0;z<28;z++)sparks.push({x:a.x,y:a.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:'#75ff8b'});sound('hit');ui();return}}for(var i=objects.length-1;i>=0;i--){var d=objects[i],s=(d.jet?64:48)*d.z;if(Math.abs(px-d.x)<s*1.75*tap&&Math.abs(py-d.y)<s*tap){if(d.jet){score-=150;jetDown++;sound('jet');if(jetDown>=5&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast in diesem Level 5 Flugzeuge abgeschossen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}else{sound(d.steal?'ufo':'hit');if(d.steal)delete stolen[d.target];var reward=d.steal?500:Math.round((1.3-d.z)*500)*level;score+=reward;hits++}for(var q=0;q<44;q++)sparks.push({x:d.x,y:d.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:d.jet?'#ff674d':'#8efbff'});objects.splice(i,1);ui();break}}if(run){if(Math.abs(px-W*.8)<48*tap&&Math.abs(py-H*.15)<48*tap&&performance.now()>=moonReady){slowUntil=performance.now()+5000;moonReady=slowUntil+5000;sound('ufo')}else etHit(px,py)}});function showSheet(){document.getElementById('sheet').className='show'}function hideSheet(){document.getElementById('sheet').className='';if(paused){paused=0;last=performance.now();document.getElementById('pause').textContent='PAUSE'}}document.getElementById('start').onclick=reset;showScores();document.getElementById('closeSheet').onclick=hideSheet;function toggleSheet(){if(!run)return;if(!paused){paused=1;document.getElementById('pause').textContent='WEITER';showSheet()}else hideSheet()}function handleKey(e){var k=(e.key||'').toLowerCase();if((k==='a'||k==='p'||e.code==='KeyA'||e.code==='KeyP')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var a=document.activeElement;if(a&&/^(input|textarea|select)$/i.test(a.tagName))return;e.preventDefault();e.stopPropagation();toggleSheet()}}document.addEventListener('keydown',handleKey,true);document.getElementById('pause').onclick=function(){if(!run)return;paused=!paused;last=performance.now();this.textContent=paused?'WEITER':'PAUSE'};document.getElementById('quit').onclick=function(){if(!run)return;run=0;paused=0;objects=[];box.style.display='flex';box.innerHTML='<div class="card"><h1>SPIEL BEENDET</h1><p>Deine Mission wurde beendet.</p><button id="start">NEUE MISSION</button><button id="menu" style="margin-left:10px">ZUM STARTMENÜ</button></div>';document.getElementById('start').onclick=reset;document.getElementById('menu').onclick=function(){box.innerHTML='<div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>Einsatzbriefing</b><br>Verteidige die 10 Kühe gegen UFOs. Triff UFOs, rette Kühe aus roten Strahlen und meide die Jets. Der Mond löst Zeitlupe aus.</div><input id="player" class="name" maxlength="18" placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;showScores()}};ui();requestAnimationFrame(frame)})();
