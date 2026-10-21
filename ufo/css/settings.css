@@ -1,0 +1,559 @@
+/* ==========================================================
+   UFO-JAGD SETTINGS
+   ========================================================== */
+
+.globalSettingsButton {
+  position: fixed;
+  z-index: 7000;
+
+  right:
+    max(
+      12px,
+      env(safe-area-inset-right, 0px)
+    );
+
+  bottom:
+    max(
+      12px,
+      env(safe-area-inset-bottom, 0px)
+    );
+
+  width: 45px;
+  height: 45px;
+
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    rgba(131, 239, 255, .55);
+
+  border-radius: 50%;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 65, 91, .94),
+      rgba(4, 17, 32, .96)
+    );
+
+  color: #cfffff;
+
+  font-size: 21px;
+
+  box-shadow:
+    0 6px 23px rgba(0,0,0,.45),
+    0 0 18px rgba(53,221,243,.15);
+
+  cursor: pointer;
+
+  touch-action: manipulation;
+}
+
+
+.globalSettingsButton:hover {
+  filter: brightness(1.25);
+
+  transform: rotate(20deg);
+}
+
+
+.ufoSettings {
+  position: fixed;
+  z-index: 25000;
+
+  inset: 0;
+
+  display: none;
+
+  align-items: center;
+  justify-content: center;
+
+  padding:
+    max(
+      12px,
+      env(safe-area-inset-top, 0px)
+    )
+    max(
+      12px,
+      env(safe-area-inset-right, 0px)
+    )
+    max(
+      12px,
+      env(safe-area-inset-bottom, 0px)
+    )
+    max(
+      12px,
+      env(safe-area-inset-left, 0px)
+    );
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(15, 57, 81, .42),
+      rgba(0, 3, 12, .92) 66%
+    );
+
+  backdrop-filter:
+    blur(12px);
+}
+
+
+.ufoSettings.show {
+  display: flex;
+}
+
+
+.ufoSettingsPanel {
+  width:
+    min(
+      510px,
+      100%
+    );
+
+  max-height:
+    calc(
+      100dvh -
+      24px
+    );
+
+  overflow-y: auto;
+
+  border:
+    1px solid
+    rgba(135, 240, 255, .58);
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      150deg,
+      rgba(11, 44, 70, .98),
+      rgba(2, 10, 23, .99)
+    );
+
+  box-shadow:
+    0 20px 70px rgba(0,0,0,.66),
+    0 0 38px rgba(39,213,239,.14),
+    inset 0 1px rgba(225,255,255,.12);
+}
+
+
+.ufoSettingsHeader {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding:
+    17px 18px;
+
+  border-bottom:
+    1px solid
+    rgba(114, 220, 239, .15);
+}
+
+
+.ufoSettingsHeader > div {
+  min-width: 0;
+
+  flex: 1;
+}
+
+
+.ufoSettingsHeader strong {
+  display: block;
+
+  color: #cfffff;
+
+  font-size: 14px;
+
+  font-weight: 1000;
+
+  letter-spacing: 1.6px;
+
+  text-shadow:
+    0 0 10px
+    rgba(65, 227, 247, .52);
+}
+
+
+.ufoSettingsHeader span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #6ea1ad;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+
+.ufoSettingsClose {
+  width: 37px;
+  height: 37px;
+
+  min-height: 0;
+
+  padding: 0;
+
+  border:
+    1px solid
+    rgba(128, 230, 246, .28);
+
+  border-radius: 10px;
+
+  background:
+    rgba(10, 38, 58, .8);
+
+  color: #d7fbff;
+
+  font-size: 23px;
+
+  box-shadow: none;
+}
+
+
+.ufoSettingsBody {
+  padding:
+    15px;
+}
+
+
+.ufoSettingsSection {
+  padding:
+    14px;
+
+  border:
+    1px solid
+    rgba(100, 208, 226, .14);
+
+  border-radius: 13px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(9, 32, 51, .75),
+      rgba(4, 15, 29, .7)
+    );
+}
+
+
+.ufoSettingsSection +
+.ufoSettingsSection {
+  margin-top: 10px;
+}
+
+
+.ufoSettingsSectionTitle {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.ufoSettingsSectionTitle span {
+  flex: 1;
+
+  color: #bdf8ff;
+
+  font-size: 11px;
+
+  font-weight: 1000;
+
+  letter-spacing: 1.2px;
+}
+
+
+.ufoSettingsSectionTitle small {
+  padding:
+    3px 7px;
+
+  border-radius: 999px;
+
+  background:
+    rgba(55, 213, 236, .1);
+
+  color: #73deeb;
+
+  font-size: 8px;
+
+  font-weight: 950;
+
+  letter-spacing: .7px;
+}
+
+
+.ufoSettingsSection p {
+  margin:
+    7px 0 12px;
+
+  color:
+    #7da9b3;
+
+  font-size:
+    10px;
+
+  line-height: 1.4;
+}
+
+
+.graphicsOptions {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 7px;
+}
+
+
+.graphicsOptions button {
+  min-width: 0;
+
+  padding:
+    13px 7px;
+
+  border:
+    1px solid
+    rgba(111, 211, 229, .2);
+
+  border-radius:
+    11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(12, 46, 67, .88),
+      rgba(5, 20, 35, .92)
+    );
+
+  color: #c3eaf0;
+
+  box-shadow: none;
+}
+
+
+.graphicsOptions button strong,
+.graphicsOptions button span {
+  display: block;
+}
+
+
+.graphicsOptions button strong {
+  font-size: 14px;
+
+  font-weight: 1000;
+}
+
+
+.graphicsOptions button span {
+  margin-top: 4px;
+
+  color: #668f99;
+
+  font-size: 7px;
+
+  font-weight: 850;
+
+  letter-spacing: .9px;
+}
+
+
+.graphicsOptions button.selected {
+  border-color:
+    rgba(115, 244, 255, .88);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 113, 138, .76),
+      rgba(5, 38, 59, .95)
+    );
+
+  color: #ffffff;
+
+  box-shadow:
+    0 0 17px
+    rgba(49, 220, 242, .2),
+    inset 0 1px
+    rgba(220, 255, 255, .15);
+}
+
+
+.graphicsOptions button.selected span {
+  color: #a8eff6;
+}
+
+
+.graphicsDescription {
+  min-height: 29px;
+
+  margin-top: 10px;
+
+  padding:
+    8px 9px;
+
+  border-radius: 8px;
+
+  background:
+    rgba(1, 10, 19, .46);
+
+  color: #90bdc6;
+
+  font-size: 9px;
+
+  line-height: 1.4;
+}
+
+
+.ufoSettingsFuture {
+  opacity: .52;
+}
+
+
+.futureSetting {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 10px;
+
+  padding:
+    9px 2px;
+
+  color: #9cbac0;
+
+  font-size: 10px;
+
+  font-weight: 800;
+}
+
+
+.futureSetting +
+.futureSetting {
+  border-top:
+    1px solid
+    rgba(111, 210, 227, .08);
+}
+
+
+.futureValue {
+  color: #75c6d2;
+}
+
+
+body.settings-open
+canvas#game {
+  pointer-events: none;
+}
+
+
+@media
+  (max-width:700px),
+  (pointer:coarse) {
+
+  .globalSettingsButton {
+    right:
+      max(
+        9px,
+        env(safe-area-inset-right, 0px)
+      );
+
+    bottom:
+      max(
+        9px,
+        env(safe-area-inset-bottom, 0px)
+      );
+
+    width: 43px;
+    height: 43px;
+  }
+
+
+  .ufoSettingsPanel {
+    border-radius:
+      16px;
+  }
+
+
+  .ufoSettingsBody {
+    padding: 11px;
+  }
+
+
+  .graphicsOptions {
+    gap: 5px;
+  }
+
+
+  .graphicsOptions button {
+    padding:
+      12px 4px;
+  }
+
+}
+
+
+/* ==========================================================
+   QUALITY PROFILE EFFECT REDUCTION
+   ========================================================== */
+
+body[data-graphics="low"]
+canvas#game {
+  filter:
+    contrast(1.06)
+    saturate(1.10)
+    brightness(1.02);
+}
+
+
+body[data-graphics="low"]
+.phase3BeamArc,
+
+body[data-graphics="low"]
+.parallaxFogTwo {
+  display: none !important;
+}
+
+
+body[data-graphics="low"]
+.phase3Particle:nth-child(n+11),
+
+body[data-graphics="low"]
+.phase2Firefly:nth-child(n+7) {
+  display: none !important;
+}
+
+
+body[data-graphics="low"]
+.cinematicNoise {
+  opacity: .08 !important;
+}
+
+
+body[data-graphics="mid"]
+.phase3Particle:nth-child(n+19),
+
+body[data-graphics="mid"]
+.phase2Firefly:nth-child(n+13) {
+  display: none !important;
+}
+
+
+body[data-graphics="mid"]
+.phase3BeamArc.arc3 {
+  display: none !important;
+}
