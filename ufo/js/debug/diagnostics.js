@@ -1715,7 +1715,30 @@
         frameTimeMs:
           Number(
             state.frameTime.toFixed(1)
-          )
+          ),
+
+        graphics:
+          window.UFOGame &&
+          window.UFOGame.settings
+            ? window.UFOGame.settings
+                .get("graphics")
+            : "unknown",
+
+        targetFps:
+          window.UFOGame &&
+          window.UFOGame.settings
+            ? window.UFOGame.settings
+                .get("targetFps")
+            : null,
+
+        performanceRecommendation:
+          window.UFOGame &&
+          window.UFOGame
+            .performanceRecommendation
+            ? window.UFOGame
+                .performanceRecommendation
+                .get()
+            : null
       },
 
       game: {
