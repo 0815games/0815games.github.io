@@ -1,3 +1,4 @@
+import { createRestartPlayer } from './run-lifecycle.js';
 import {state,CLASSES} from '../core/state.js';
 import {renderPreparationHero} from './preparation-hero.js';
 import {ITEMS} from '../data/items.js';
@@ -13,15 +14,11 @@ let panel,list,info,footer,status,category='weapon',pending=null,busy=false,read
 const el=id=>document.getElementById(id);
 const originalSave=cloud.saveSlot.bind(cloud);
 cloud.saveSlot=function(slot,data){
- const creating=!el('class-screen')?.classList.contains('hidden')&&data.player.level===1&&data.player.xp===0&&data.player.gold===40;
- if(creating){data.player.needsPreparation=false;data.player.preparationBought={};data.meta={gold:0,bestDepth:1};}
- if(el('death-screen')&&!el('death-screen').classList.contains('hidden')&&!data.player.needsPreparation){
-  const p=data.player;
-  p.lastRunGold=p.gold||0;p.gold=0;p.inventory=[];p.equipped=Object.fromEntries(slots.map(s=>[s,null]));p.mp=p.maxMp;p.hp=p.maxHp;p.buffs={};p.cooldowns={};p.needsPreparation=true;p.preparationBought={};
-  state.activeMonster=null;
+ // Speichern verändert keinen Spielzustand anhand sichtbarer Fenster.
+ const promise=Promise.resolve(originalSave(slot,data));
+ if(data.player.needsPreparation&&slot===state.currentSlot){
+  ready=promise;
  }
- const promise=originalSave(slot,data);
- if(data.player.needsPreparation&&!creating)ready=promise;
  return promise;
 };
 function eligible(){return state.user&&state.player.needsPreparation;}
@@ -35,8 +32,46 @@ function refreshSummary(){const box=el('death-stats');if(box&&eligible()){box.re
 function show(){if(!eligible())return;panel.hidden=false;pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;status.textContent='Käufe gelten für den nächsten Run und gehen beim nächsten Tod verloren. Ohne Kauf erhältst du eine Notwaffe.';render();footer.querySelector('[data-start]').focus();}
 async function buy(){if(busy||!pending||!eligible())return;const item=ITEMS[pending],p=state.player;if(!item||(state.meta.gold||0)<item.price)return;const count=p.inventory.filter(x=>x.id===pending).reduce((a,x)=>a+x.count,0);if(item.slot?p.preparationBought?.[item.slot]:count>=3)return;
  busy=true;render();const backup=JSON.parse(JSON.stringify({player:p,meta:state.meta}));const target=p,slot=state.currentSlot;
- try{if(ready&&!await ready)throw new Error('Todeszustand konnte nicht gespeichert werden.');state.meta.gold-=item.price;if(item.slot){p.equipped[item.slot]=pending;p.preparationBought[item.slot]=true;}else{const stack=p.inventory.find(x=>x.id===pending);if(stack)stack.count++;else p.inventory.push({id:pending,count:1});}if(!await cloud.saveSlot(slot,state))throw new Error('Kauf konnte nicht gespeichert werden.');status.textContent='Kauf für den nächsten Run übernommen.';}catch(e){if(state.player===target&&state.currentSlot===slot){Object.assign(target,backup.player);state.meta=backup.meta;}status.textContent=e.message+' Bitte Verbindung prüfen und erneut versuchen.';}finally{busy=false;pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;render();}}
-async function start(){if(busy||!eligible())return;busy=true;render();const p=state.player,previousWeapon=p.equipped.mainhand;try{if(ready&&!await ready){ready=cloud.saveSlot(state.currentSlot,state);if(!await ready)throw new Error('Neustart konnte nicht gespeichert werden.');}if(!p.equipped.mainhand)p.equipped.mainhand='emergency_'+(families[p.heroClass]?p.heroClass:'warrior');p.needsPreparation=false;p.hp=p.maxHp;p.mp=p.maxMp;p.buffs={};p.cooldowns={};if(!await cloud.saveSlot(state.currentSlot,state))throw new Error('Neustart konnte nicht gespeichert werden.');panel.hidden=true;ready=null;el('btn-revive').onclick();}catch(e){p.needsPreparation=true;p.equipped.mainhand=previousWeapon;status.textContent=e.message+' Bitte erneut versuchen.';}finally{busy=false;render();}}
+ try{if(ready&&!await ready){ready=cloud.saveSlot(slot,state);if(!await ready)throw new Error('Todeszustand konnte nicht gespeichert werden.');}state.meta.gold-=item.price;if(item.slot){p.equipped[item.slot]=pending;p.preparationBought[item.slot]=true;}else{const stack=p.inventory.find(x=>x.id===pending);if(stack)stack.count++;else p.inventory.push({id:pending,count:1});}if(!await cloud.saveSlot(slot,state))throw new Error('Kauf konnte nicht gespeichert werden.');status.textContent='Kauf für den nächsten Run übernommen.';}catch(e){if(state.player===target&&state.currentSlot===slot){Object.assign(target,backup.player);state.meta=backup.meta;}status.textContent=e.message+' Bitte Verbindung prüfen und erneut versuchen.';}finally{busy=false;pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;render();}}
+async function start(){
+ if(busy||!eligible())return;
+ busy=true;
+ render();
+ const player=state.player,world=state.world,slot=state.currentSlot;
+ const uid=state.user?.uid;
+ const current=()=>state.user?.uid===uid&&state.currentSlot===slot&&
+  state.player===player&&state.world===world;
+ try{
+  // Vor dem Start muss die Vorbereitung einschließlich Käufen gesichert sein.
+  if(ready&&!await ready){
+   if(!current())return;
+   ready=cloud.saveSlot(slot,{
+    player:structuredClone(player),world:structuredClone(world),
+    meta:structuredClone(state.meta),currentSlot:slot
+   });
+   if(!await ready)throw new Error('Vorbereitung konnte nicht gespeichert werden.');
+  }
+  if(!current())return;
+  const cls=families[player.heroClass]?player.heroClass:'warrior';
+  const next=createRestartPlayer(player,'emergency_'+cls);
+  const draft={
+   player:next,world:structuredClone(world),
+   meta:structuredClone(state.meta),currentSlot:slot
+  };
+  const ok=await cloud.saveSlot(slot,draft);
+  if(!current())return;
+  if(!ok)throw new Error('Neustart konnte nicht gespeichert werden.');
+  Object.assign(player,next);
+  panel.hidden=true;
+  ready=null;
+  el('btn-revive').onclick();
+ }catch(error){
+  if(current())status.textContent=error.message+' Bitte erneut versuchen.';
+ }finally{
+  busy=false;
+  render();
+ }
+}
 function setup(){const style=document.createElement('style');style.textContent='#preparation-shop{position:fixed;inset:0;z-index:220;background:#08090ef5;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));gap:10px}#preparation-shop[hidden]{display:none}#preparation-shop header,#preparation-shop footer{flex:none;display:block;padding:12px;background:#111420;border:1px solid #c99c42;border-radius:12px}#preparation-shop h2{margin:0;color:#ffd54f;font-size:20px}#preparation-shop .shop-info{white-space:pre-line;line-height:1.5;font-size:13px}#preparation-shop .shop-tabs{display:flex;gap:8px;flex-wrap:wrap}#preparation-shop button{min-height:48px;padding:10px;border:1px solid #c99c42;border-radius:10px;background:#24293c;color:#fff;font:inherit}#preparation-shop button:disabled{opacity:.5}#preparation-shop button:focus-visible{outline:3px solid #ffe082}#preparation-shop .shop-list{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:1fr;gap:10px;align-content:start}#preparation-shop article{padding:12px;background:#111420;border:1px solid #4a546f;border-radius:12px}#preparation-shop h3{font-size:16px;margin:0}#preparation-shop p{line-height:1.5}#preparation-shop footer button{margin:4px}#preparation-shop [data-start]{background:#c99c42;color:#111;font-weight:bold}@media(min-width:800px){#preparation-shop{padding-left:max(24px,calc((100vw - 1000px)/2));padding-right:max(24px,calc((100vw - 1000px)/2))}#preparation-shop .shop-list{grid-template-columns:repeat(2,minmax(0,1fr))}}';document.head.append(style);
  panel=document.createElement('section');panel.id='preparation-shop';panel.hidden=true;panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','Rüstkammer des Ordens');panel.innerHTML='<header><h2>RÜSTKAMMER DES ORDENS</h2><div class="shop-info"></div><div class="shop-tabs"><button data-category="weapon">Waffen</button><button data-category="armor">Rüstung</button><button data-category="supply">Vorräte</button></div></header><div class="shop-list"></div><footer><p role="status"></p><button data-confirm hidden>Kauf bestätigen</button><button data-cancel hidden>Abbrechen</button><button data-start>RUN STARTEN</button></footer>';document.body.append(panel);info=panel.querySelector('.shop-info');list=panel.querySelector('.shop-list');footer=panel.querySelector('footer');status=footer.querySelector('p');panel.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>{if(!busy){category=b.dataset.category;render();}});footer.querySelector('[data-confirm]').onclick=buy;footer.querySelector('[data-cancel]').onclick=()=>{pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;status.textContent='Kauf abgebrochen.';};footer.querySelector('[data-start]').onclick=start;
  el('btn-revive').addEventListener('click',e=>{if(eligible()){e.preventDefault();e.stopImmediatePropagation();show();}},true);

@@ -1836,3 +1836,13 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Bereits gespeicherte Karten erhalten keine nachträgliche Eliteauswahl; der Fix greift bei der nächsten Kartengenerierung.
 - Regressionstest für mehrere Ebenen mit demselben Weltobjekt vorgesehen.
 - Kein vollständiger Balance- oder Gesamtsystemabschluss.
+
+## 2026-10-21 – v0.6.8 – Tod und Neustart pro Run
+- Persistente Run-ID und Todesbeleg ersetzen den sitzungsgebundenen Todesschutz.
+- Goldtransfer und Gegenstandsverlust erfolgen direkt im Todesablauf.
+- Vorbereitungs-Speicherwrapper setzt keine Ausrüstung anhand sichtbarer Fenster zurück.
+- Neuer Run wird als Entwurf gespeichert und erst nach Erfolg übernommen.
+- Fehlgeschlagener Neustart lässt Vorbereitung und gekaufte Gegenstände unverändert.
+- Fehlgeschlagene Sicherung des Todeszustands kann vor Kauf oder Neustart erneut versucht werden.
+- Vorhandene Spielstände erhalten beim Laden eine Run-ID, falls sie fehlt.
+- Regressionstests und manuelle Cloud-/Neustarttests erforderlich.

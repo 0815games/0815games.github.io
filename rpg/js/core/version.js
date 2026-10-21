@@ -1,6 +1,6 @@
 import '../systems/mobile-menu.js?v=0.5.11';
 import '../systems/session-integration.js?v=0.5.1';
-import '../systems/preparation-shop.js?v=0.6.2';
+import '../systems/preparation-shop.js?v=0.6.8';
 import '../systems/leaderboard.js?v=0.4.19';
 import '../systems/combat-effects-bootstrap.js?v=0.6.0&rev=release1';
 import '../systems/audio-settings.js?v=0.4.7';
@@ -30,4 +30,4 @@ import '../systems/combat-number-feedback.js?v=0.5.19';
 import '../systems/preparation-potion-purchase.js?v=0.5.20';
 import '../systems/stair-confirm.js?v=0.5.23';
 import '../systems/changelog-viewer.js?v=0.6.0';
-export const VERSION_LABEL='v0.6.7';
+export const VERSION_LABEL='v0.6.8';
