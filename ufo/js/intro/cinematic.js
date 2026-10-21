@@ -389,7 +389,136 @@
 
   }
 
+  function skipIntroWithEscape(event) {
+
+    var diagnostics =
+      window.UFOGame &&
+      window.UFOGame.diagnostics;
+
+
+    /*
+     * Wenn die Diagnose geöffnet ist, gehört ESC
+     * der Diagnose und überspringt nicht zusätzlich
+     * das Intro.
+     */
+
+    if (
+      diagnostics &&
+      typeof diagnostics.isOpen === "function" &&
+      diagnostics.isOpen()
+    ) {
+      return false;
+    }
+
+
+    if (
+      event.key !== "Escape" &&
+      event.code !== "Escape"
+    ) {
+      return false;
+    }
+
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+
+    finished = true;
+    ready = true;
+
+
+    if (readyTimer) {
+      window.clearTimeout(
+        readyTimer
+      );
+    }
+
+
+    document.body.classList.remove(
+      "intro-active"
+    );
+
+
+    if (
+      intro &&
+      document.body.contains(intro)
+    ) {
+      intro.remove();
+    }
+
+
+    var message =
+      document.getElementById(
+        "message"
+      );
+
+
+    if (message) {
+      message.style.display = "flex";
+    }
+
+
+    if (
+      window.UfoHighscores &&
+      typeof window.UfoHighscores.load ===
+      "function"
+    ) {
+
+      window.UfoHighscores
+        .load()
+        .catch(
+          function () {}
+        );
+
+    }
+
+
+    var playerInput =
+      document.getElementById(
+        "player"
+      );
+
+
+    if (
+      playerInput &&
+      !isTouchDevice()
+    ) {
+
+      window.setTimeout(
+        function () {
+
+          playerInput.focus({
+            preventScroll: true
+          });
+
+        },
+        50
+      );
+
+    }
+
+
+    window.dispatchEvent(
+      new CustomEvent(
+        "ufo:intro-complete"
+      )
+    );
+
+
+    return true;
+
+  }
+
+
   function handleIntroKey(event) {
+
+    if (
+      skipIntroWithEscape(event)
+    ) {
+      return;
+    }
+
     if (finished) return;
 
     if (
