@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="72%">
+      <stop offset="0" stop-color="#123b68"/>
+      <stop offset=".58" stop-color="#04142b"/>
+      <stop offset="1" stop-color="#01030c"/>
+    </radialGradient>
+
+    <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#efffff"/>
+      <stop offset=".25" stop-color="#87efff"/>
+      <stop offset=".6" stop-color="#218dac"/>
+      <stop offset="1" stop-color="#082537"/>
+    </linearGradient>
+
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fffff" stop-opacity=".95"/>
+      <stop offset=".6" stop-color="#31dfff" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#31dfff" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="92" fill="url(#bg)"/>
+
+  <g fill="#c9f8ff">
+    <circle cx="66" cy="84" r="4"/>
+    <circle cx="422" cy="68" r="5"/>
+    <circle cx="454" cy="164" r="3"/>
+    <circle cx="101" cy="171" r="2.5"/>
+    <circle cx="369" cy="132" r="2.5"/>
+  </g>
+
+  <path
+    d="M177 236 L335 236 L405 455 L107 455 Z"
+    fill="url(#beam)"
+    opacity=".82"
+    filter="url(#glow)"
+  />
+
+  <g filter="url(#glow)">
+    <ellipse cx="256" cy="215" rx="173" ry="58" fill="url(#metal)"/>
+    <ellipse cx="256" cy="211" rx="139" ry="35" fill="#071520"/>
+    <path
+      d="M190 191 C199 111 313 104 326 191 Z"
+      fill="#51e9ff"
+      opacity=".92"
+    />
+    <path
+      d="M207 181 C220 127 294 123 312 181 Z"
+      fill="#d8ffff"
+      opacity=".35"
+    />
+    <ellipse
+      cx="256"
+      cy="223"
+      rx="151"
+      ry="27"
+      fill="none"
+      stroke="#a7fbff"
+      stroke-width="8"
+    />
+
+    <g fill="#caff75">
+      <circle cx="154" cy="223" r="10"/>
+      <circle cx="205" cy="239" r="10"/>
+      <circle cx="256" cy="244" r="10"/>
+      <circle cx="307" cy="239" r="10"/>
+      <circle cx="358" cy="223" r="10"/>
+    </g>
+  </g>
+
+  <g transform="translate(256 372)" fill="#071018">
+    <ellipse cx="0" cy="0" rx="54" ry="27"/>
+    <ellipse cx="48" cy="-15" rx="20" ry="19"/>
+    <rect x="-38" y="15" width="9" height="42" rx="4"/>
+    <rect x="20" y="15" width="9" height="42" rx="4"/>
+    <path d="M-51 -6 L-78 -32 L-65 -2 Z"/>
+    <path d="M43 -30 L52 -51 L59 -28 Z"/>
+    <path d="M28 -29 L34 -50 L43 -30 Z"/>
+  </g>
+
+  <rect
+    x="12"
+    y="12"
+    width="488"
+    height="488"
+    rx="82"
+    fill="none"
+    stroke="#84f4ff"
+    stroke-width="8"
+    opacity=".7"
+  />
+</svg>

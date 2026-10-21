@@ -1,4 +1,802 @@
-<!doctype html><html lang="de"><head><meta name="ms-sp-authoring-source" content="agent"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UFO-Jagd: Nachtangriff</title><style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;background:#01030c;font-family:system-ui,Arial,sans-serif;color:#eafaff}canvas{display:block;width:100%;height:100dvh;min-height:100dvh;cursor:crosshair;touch-action:manipulation;filter:contrast(1.08) saturate(1.12)}#hud{position:fixed;z-index:2;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:16px;padding:8px 16px;border:1px solid #83eaff88;border-radius:18px;background:linear-gradient(135deg,#061731df,#020915df);box-shadow:0 8px 30px #0009,0 0 28px #35d9ff28;font-weight:800;font-size:12px;letter-spacing:.6px;backdrop-filter:blur(8px)}.cyan{color:#93f9ff;text-shadow:0 0 12px #3ed8f1}#message{position:fixed;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#08224d55,#01030bdd 58%)}.card{max-width:560px;margin:20px;padding:38px;text-align:center;border:1px solid #86edff66;border-radius:28px;background:linear-gradient(145deg,#123562ef,#040a18f4);box-shadow:0 18px 70px #000b, inset 0 1px #d4ffff2e}.card h1{margin:0;color:#a2faff;font-size:clamp(36px,7vw,54px);letter-spacing:2px;text-shadow:0 0 24px #2dceee}.intro{margin:16px auto;padding:12px 15px;max-width:390px;border-left:3px solid #74efff;text-align:left;background:#07182c99;animation:brief .7s ease-out}.intro b{color:#9df8ff}@keyframes brief{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.card p{line-height:1.6;color:#d3eafa}button{border:0;border-radius:999px;padding:15px 31px;font-size:17px;font-weight:850;background:linear-gradient(135deg,#d7ffff,#4dd3f1);color:#06111b;cursor:pointer;box-shadow:0 8px 28px #2edcf088}button:hover{filter:brightness(1.14)}#levelUp{position:fixed;z-index:4;top:28%;left:50%;transform:translate(-50%,-20px) scale(.8);padding:18px 30px;border:1px solid #9ffcff;border-radius:18px;background:#07324be8;color:#d9ffff;font-size:clamp(24px,5vw,42px);font-weight:900;letter-spacing:2px;text-shadow:0 0 15px #4de5ff;opacity:0;pointer-events:none}.celebrate{animation:celebrate 1.7s ease-out}@keyframes celebrate{0%{opacity:0;transform:translate(-50%,-20px) scale(.8)}18%{opacity:1;transform:translate(-50%,0) scale(1.15)}70%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-15px) scale(.9)}}.scores{margin:16px auto 0;max-width:260px;padding:10px 16px;text-align:left;border:1px solid #76dcf044;border-radius:14px;background:#020b18aa}.scores ol{margin:6px 0 0;padding-left:24px;color:#aeeeff;font-weight:700}.scores li{padding:2px 0}.name{display:block;width:min(260px,100%);margin:14px auto 10px;padding:12px 16px;border:1px solid #76dcf088;border-radius:999px;background:#06182c;color:#eafaff;font-size:16px;text-align:center}.pause{padding:6px 12px;font-size:12px;letter-spacing:.5px;background:#153857;color:#c9f8ff;box-shadow:none;border:1px solid #76dcf088}.merz{display:none}.merz:before{content:'';display:none}.merz:after{content:'';position:absolute;left:4px;top:84px;width:96px;height:42px;border-radius:25px 25px 4px 4px;background:linear-gradient(90deg,#172231,#40546d,#172231);box-shadow:0 -10px 0 -5px #a7a4a0,0 -2px 0 0 #5b5d60,0 -29px 0 -13px #301416,0 -32px 0 -13px #f7f1e5}.alien{display:inline-block;font-size:58px;margin:3px 10px;animation:dance .55s ease-in-out infinite alternate;filter:drop-shadow(0 5px 8px #000)}@keyframes dance{from{transform:rotate(-12deg) translateY(3px)}to{transform:rotate(12deg) translateY(-6px)}}body:before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 42%,rgba(0,5,20,.22) 100%),repeating-linear-gradient(0deg,rgba(110,220,255,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen}.card{border-color:#a8f7ff99;box-shadow:0 22px 82px #000c,0 0 48px #35d9ff24,inset 0 1px #e5ffff46}.card h1{background:linear-gradient(180deg,#efffff,#69e8ff 62%,#35aee1);-webkit-background-clip:text;background-clip:text;color:transparent}.cyan{color:#c2fdff;text-shadow:0 0 7px #3ed8f1,0 0 20px #168eb3}#hud{border-color:#a8f7ffaa;background:linear-gradient(135deg,#0a2a4be8,#030819e8);box-shadow:0 10px 38px #000b,0 0 36px #35d9ff38}button{background:linear-gradient(135deg,#efffff,#66e7ff 52%,#36a9db);box-shadow:0 8px 28px #2edcf0aa,inset 0 1px #fff9}canvas{filter:contrast(1.13) saturate(1.28) brightness(1.06);image-rendering:auto}#sheet{display:none;position:fixed;z-index:5;inset:0;align-items:center;justify-content:center;background:#0078d7}.sheetBox{width:min(760px,90vw);padding:34px 28px;text-align:center;background:transparent;color:#fff;box-shadow:none}.sheetBox h2{margin:0 0 12px;font-size:clamp(24px,4vw,36px);font-weight:400}.sheetBox p{margin:12px 0 0;font-size:clamp(15px,2vw,20px);font-weight:400}.sheetBox table{width:100%;border-collapse:collapse;background:#fff}.sheetBox td,.sheetBox th{padding:9px;border:1px solid #a9cdb5;text-align:right}.sheetBox th{background:#dff3e5;color:#176b3f;text-align:center}.sheetBox button{display:none}.updatePc{position:relative;width:120px;height:120px;margin:8px auto 18px}.monitor{position:static;width:100%;height:100%;padding-top:10px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center;color:#fff;font-weight:400}.monitor:before,.monitor:after{display:none}.updateRing{width:92px;height:92px;margin:0 auto;border:9px dotted #fff;border-radius:50%;animation:spin 1.25s linear infinite}.updateText{display:none}@keyframes spin{to{transform:rotate(360deg)}}#sheet.show{display:flex}@media(max-width:700px),(pointer:coarse){#hud{top:5px;width:calc(100% - 10px);gap:4px 7px;padding:5px 7px;border-radius:10px;justify-content:center;flex-wrap:wrap;font-size:9px;letter-spacing:.2px}.pause{padding:5px 8px;font-size:9px;min-height:0}.card{max-height:calc(100dvh - 24px);overflow:auto;margin:12px;padding:24px 20px;border-radius:22px}.card h1{font-size:clamp(31px,11vw,46px)}.intro{font-size:14px;line-height:1.48}.name{font-size:16px;padding:14px 16px}button{min-height:48px;padding:13px 25px;touch-action:manipulation}#levelUp{width:calc(100% - 32px);text-align:center;font-size:clamp(21px,7vw,32px)}}</style></head><body><canvas id="game" tabindex="0" aria-label="UFO-Jagd"></canvas><div id="hud"><span>LEVEL <b id="level" class="cyan">1</b></span><span>PUNKTE <b id="score" class="cyan">0</b></span><span>UFOS <b id="targets" class="cyan">0/8</b></span><span>GETROFFEN <b id="ufoShot" class="cyan">0</b></span><span>JETS <b id="jetShot" class="cyan">0/5</b></span><span id="slowBox">ZEITLUPE <b id="slow" class="cyan">–</b></span><button id="pause" class="pause">PAUSE</button><button id="quit" class="pause">BEENDEN</button></div><div id="levelUp">LEVEL GESCHAFFT!</div><div id="sheet"><div class="sheetBox"><div class="updatePc" role="img" aria-label="Systemupdate wird installiert"><div class="monitor"><div class="updateRing"></div><div class="updateText"></div></div></div><h2>Updates werden ausgeführt</h2><p>Bitte lassen Sie den Computer eingeschaltet.</p><button id="closeSheet">Schließen</button></div></div><div id="message"><div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>ANLEITUNG</b><br><b>1. Zielen &amp; klicken:</b> Triff UFOs, um Punkte zu sammeln.<br><b>2. Kühe retten:</b> Schieße UFOs ab, die rote Strahlen einsetzen.<br><b>3. Vorsicht:</b> Jets kosten Punkte; nach 5 Treffern ist die Mission verloren.<br><b>4. Bonus:</b> Klicke auf den Mond für 5 Sekunden Zeitlupe.<br><b>5. Ziel:</b> Beschütze die 10 Kühe vor den UFOs.</div><input id="player" class="name" maxlength=18 placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div></div>
+<!doctype html><html lang="de"><head><meta name="ms-sp-authoring-source" content="agent"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UFO-Jagd: Nachtangriff</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.svg">
+<meta name="theme-color" content="#020817">
+<style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;background:#01030c;font-family:system-ui,Arial,sans-serif;color:#eafaff}canvas{display:block;width:100%;height:100dvh;min-height:100dvh;cursor:crosshair;touch-action:manipulation;filter:contrast(1.08) saturate(1.12)}#hud{position:fixed;z-index:2;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:16px;padding:8px 16px;border:1px solid #83eaff88;border-radius:18px;background:linear-gradient(135deg,#061731df,#020915df);box-shadow:0 8px 30px #0009,0 0 28px #35d9ff28;font-weight:800;font-size:12px;letter-spacing:.6px;backdrop-filter:blur(8px)}.cyan{color:#93f9ff;text-shadow:0 0 12px #3ed8f1}#message{position:fixed;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#08224d55,#01030bdd 58%)}.card{max-width:560px;margin:20px;padding:38px;text-align:center;border:1px solid #86edff66;border-radius:28px;background:linear-gradient(145deg,#123562ef,#040a18f4);box-shadow:0 18px 70px #000b, inset 0 1px #d4ffff2e}.card h1{margin:0;color:#a2faff;font-size:clamp(36px,7vw,54px);letter-spacing:2px;text-shadow:0 0 24px #2dceee}.intro{margin:16px auto;padding:12px 15px;max-width:390px;border-left:3px solid #74efff;text-align:left;background:#07182c99;animation:brief .7s ease-out}.intro b{color:#9df8ff}@keyframes brief{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.card p{line-height:1.6;color:#d3eafa}button{border:0;border-radius:999px;padding:15px 31px;font-size:17px;font-weight:850;background:linear-gradient(135deg,#d7ffff,#4dd3f1);color:#06111b;cursor:pointer;box-shadow:0 8px 28px #2edcf088}button:hover{filter:brightness(1.14)}#levelUp{position:fixed;z-index:4;top:28%;left:50%;transform:translate(-50%,-20px) scale(.8);padding:18px 30px;border:1px solid #9ffcff;border-radius:18px;background:#07324be8;color:#d9ffff;font-size:clamp(24px,5vw,42px);font-weight:900;letter-spacing:2px;text-shadow:0 0 15px #4de5ff;opacity:0;pointer-events:none}.celebrate{animation:celebrate 1.7s ease-out}@keyframes celebrate{0%{opacity:0;transform:translate(-50%,-20px) scale(.8)}18%{opacity:1;transform:translate(-50%,0) scale(1.15)}70%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-15px) scale(.9)}}.scores{margin:16px auto 0;max-width:260px;padding:10px 16px;text-align:left;border:1px solid #76dcf044;border-radius:14px;background:#020b18aa}.scores ol{margin:6px 0 0;padding-left:24px;color:#aeeeff;font-weight:700}.scores li{padding:2px 0}.name{display:block;width:min(260px,100%);margin:14px auto 10px;padding:12px 16px;border:1px solid #76dcf088;border-radius:999px;background:#06182c;color:#eafaff;font-size:16px;text-align:center}.pause{padding:6px 12px;font-size:12px;letter-spacing:.5px;background:#153857;color:#c9f8ff;box-shadow:none;border:1px solid #76dcf088}.merz{display:none}.merz:before{content:'';display:none}.merz:after{content:'';position:absolute;left:4px;top:84px;width:96px;height:42px;border-radius:25px 25px 4px 4px;background:linear-gradient(90deg,#172231,#40546d,#172231);box-shadow:0 -10px 0 -5px #a7a4a0,0 -2px 0 0 #5b5d60,0 -29px 0 -13px #301416,0 -32px 0 -13px #f7f1e5}.alien{display:inline-block;font-size:58px;margin:3px 10px;animation:dance .55s ease-in-out infinite alternate;filter:drop-shadow(0 5px 8px #000)}@keyframes dance{from{transform:rotate(-12deg) translateY(3px)}to{transform:rotate(12deg) translateY(-6px)}}body:before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 42%,rgba(0,5,20,.22) 100%),repeating-linear-gradient(0deg,rgba(110,220,255,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen}.card{border-color:#a8f7ff99;box-shadow:0 22px 82px #000c,0 0 48px #35d9ff24,inset 0 1px #e5ffff46}.card h1{background:linear-gradient(180deg,#efffff,#69e8ff 62%,#35aee1);-webkit-background-clip:text;background-clip:text;color:transparent}.cyan{color:#c2fdff;text-shadow:0 0 7px #3ed8f1,0 0 20px #168eb3}#hud{border-color:#a8f7ffaa;background:linear-gradient(135deg,#0a2a4be8,#030819e8);box-shadow:0 10px 38px #000b,0 0 36px #35d9ff38}button{background:linear-gradient(135deg,#efffff,#66e7ff 52%,#36a9db);box-shadow:0 8px 28px #2edcf0aa,inset 0 1px #fff9}canvas{filter:contrast(1.13) saturate(1.28) brightness(1.06);image-rendering:auto}#sheet{display:none;position:fixed;z-index:5;inset:0;align-items:center;justify-content:center;background:#0078d7}.sheetBox{width:min(760px,90vw);padding:34px 28px;text-align:center;background:transparent;color:#fff;box-shadow:none}.sheetBox h2{margin:0 0 12px;font-size:clamp(24px,4vw,36px);font-weight:400}.sheetBox p{margin:12px 0 0;font-size:clamp(15px,2vw,20px);font-weight:400}.sheetBox table{width:100%;border-collapse:collapse;background:#fff}.sheetBox td,.sheetBox th{padding:9px;border:1px solid #a9cdb5;text-align:right}.sheetBox th{background:#dff3e5;color:#176b3f;text-align:center}.sheetBox button{display:none}.updatePc{position:relative;width:120px;height:120px;margin:8px auto 18px}.monitor{position:static;width:100%;height:100%;padding-top:10px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center;color:#fff;font-weight:400}.monitor:before,.monitor:after{display:none}.updateRing{width:92px;height:92px;margin:0 auto;border:9px dotted #fff;border-radius:50%;animation:spin 1.25s linear infinite}.updateText{display:none}@keyframes spin{to{transform:rotate(360deg)}}#sheet.show{display:flex}@media(max-width:700px),(pointer:coarse){#hud{top:5px;width:calc(100% - 10px);gap:4px 7px;padding:5px 7px;border-radius:10px;justify-content:center;flex-wrap:wrap;font-size:9px;letter-spacing:.2px}.pause{padding:5px 8px;font-size:9px;min-height:0}.card{max-height:calc(100dvh - 24px);overflow:auto;margin:12px;padding:24px 20px;border-radius:22px}.card h1{font-size:clamp(31px,11vw,46px)}.intro{font-size:14px;line-height:1.48}.name{font-size:16px;padding:14px 16px}button{min-height:48px;padding:13px 25px;touch-action:manipulation}#levelUp{width:calc(100% - 32px);text-align:center;font-size:clamp(21px,7vw,32px)}}
+/* ===== UFO CINEMATIC INTRO ===== */
+
+body.intro-active {
+  overflow: hidden;
+}
+
+body.intro-active #hud,
+body.intro-active #message,
+body.intro-active #levelUp,
+body.intro-active #sheet {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#ufoIntro {
+  --intro-cyan: #85f8ff;
+  --intro-blue: #2dcdea;
+  --intro-dark: #01030d;
+
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 34%, #103565 0%, #05152f 27%, #01030d 70%),
+    #01030d;
+  color: #efffff;
+  font-family: system-ui, Arial, sans-serif;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity .9s ease,
+    visibility .9s step-end;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#ufoIntro.intro-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#ufoIntro::before {
+  content: "";
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(118, 226, 255, .035) 0,
+      rgba(118, 226, 255, .035) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 38%,
+      rgba(0, 2, 12, .84) 100%
+    );
+  mix-blend-mode: screen;
+}
+
+.introStars,
+.introStars::before,
+.introStars::after {
+  position: absolute;
+  inset: -30%;
+  content: "";
+  background-image:
+    radial-gradient(circle, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle, #84eaff 0 1px, transparent 1.6px);
+  background-position: 20px 30px, 90px 110px;
+  background-size: 137px 137px, 193px 193px;
+}
+
+.introStars {
+  opacity: .55;
+  animation: introStarDrift 18s linear infinite;
+}
+
+.introStars::before {
+  opacity: .35;
+  transform: rotate(27deg) scale(1.12);
+}
+
+.introStars::after {
+  opacity: .24;
+  transform: rotate(-18deg) scale(.88);
+}
+
+@keyframes introStarDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-80px, 55px, 0); }
+}
+
+.introMoon {
+  position: absolute;
+  top: 8%;
+  right: 10%;
+  width: clamp(80px, 12vw, 170px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 31%, #fff 0 4%, transparent 5%),
+    radial-gradient(circle at 68% 57%, #bdd0df 0 7%, transparent 8%),
+    radial-gradient(circle at 40% 72%, #c8d8e6 0 9%, transparent 10%),
+    radial-gradient(circle at 38% 35%, #fff, #d9ecf8 35%, #899cac 100%);
+  box-shadow:
+    0 0 28px #c8edff,
+    0 0 95px rgba(126, 202, 255, .42);
+  opacity: 0;
+  animation: introMoonIn 2.1s .5s ease forwards;
+}
+
+@keyframes introMoonIn {
+  from {
+    opacity: 0;
+    transform: translateY(-25px) scale(.8);
+  }
+  to {
+    opacity: .92;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.introCloud {
+  position: absolute;
+  width: 55vw;
+  height: 13vh;
+  min-height: 80px;
+  border-radius: 50%;
+  filter: blur(20px);
+  background: rgba(77, 119, 162, .17);
+}
+
+.introCloud.one {
+  top: 23%;
+  left: -20%;
+  animation: introCloudOne 15s linear infinite;
+}
+
+.introCloud.two {
+  top: 36%;
+  right: -24%;
+  opacity: .55;
+  animation: introCloudTwo 20s linear infinite;
+}
+
+@keyframes introCloudOne {
+  from { transform: translateX(0); }
+  to { transform: translateX(145vw); }
+}
+
+@keyframes introCloudTwo {
+  from { transform: translateX(0); }
+  to { transform: translateX(-145vw); }
+}
+
+.introGround {
+  position: absolute;
+  z-index: 2;
+  left: -5%;
+  right: -5%;
+  bottom: -2%;
+  height: 34%;
+  background:
+    radial-gradient(ellipse at 25% 110%, rgba(36, 103, 58, .48), transparent 47%),
+    linear-gradient(180deg, #092719 0%, #021008 62%, #010603 100%);
+  clip-path: polygon(
+    0 26%, 8% 19%, 16% 24%, 25% 10%, 35% 23%,
+    43% 17%, 52% 25%, 64% 12%, 74% 23%, 84% 13%,
+    92% 19%, 100% 10%, 100% 100%, 0 100%
+  );
+}
+
+.introTrees {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 21%;
+  height: 15%;
+  opacity: .94;
+  background:
+    linear-gradient(153deg, transparent 48%, #03120b 49% 53%, transparent 54%)
+      0 0 / 54px 100% repeat-x;
+}
+
+.introUfoScene {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 4%;
+  width: min(78vw, 790px);
+  height: min(52vh, 520px);
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: introUfoArrival 2.4s .35s cubic-bezier(.18,.75,.16,1) forwards;
+}
+
+@keyframes introUfoArrival {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -55%) scale(.18) rotate(-4deg);
+  }
+  48% {
+    opacity: 1;
+  }
+  72% {
+    transform: translate(-50%, 2%) scale(1.035) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1) rotate(0);
+  }
+}
+
+.introUfo {
+  position: absolute;
+  z-index: 5;
+  top: 13%;
+  left: 50%;
+  width: 74%;
+  height: 29%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 32%, #f4ffff 0 3%, #64f1ff 5% 14%, transparent 15%),
+    linear-gradient(180deg, #e5ffff 0%, #678a9c 24%, #112d3b 55%, #02080e 100%);
+  border: 2px solid rgba(202, 255, 255, .72);
+  box-shadow:
+    0 0 16px #8bfaff,
+    0 0 55px rgba(54, 221, 252, .62),
+    0 34px 75px rgba(0, 0, 0, .8);
+  animation: introUfoHover 2.8s ease-in-out infinite alternate;
+}
+
+.introUfo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 62%;
+  width: 35%;
+  height: 96%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 18% 18%;
+  background:
+    radial-gradient(circle at 42% 25%, #efffff, #59e8f5 13%, #17637a 52%, #041c2b 100%);
+  border: 2px solid rgba(192, 255, 255, .76);
+  box-shadow: inset 0 5px 16px rgba(255,255,255,.46);
+}
+
+.introUfo::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 40%;
+  height: 37%;
+  border-radius: 50%;
+  border: 4px solid #9cfbff;
+  box-shadow:
+    0 0 11px #75f3ff,
+    inset 0 0 18px rgba(110, 240, 255, .55);
+}
+
+@keyframes introUfoHover {
+  from { transform: translateX(-50%) translateY(-4px) rotate(-.35deg); }
+  to   { transform: translateX(-50%) translateY(8px) rotate(.35deg); }
+}
+
+.introLights {
+  position: absolute;
+  z-index: 8;
+  top: 29%;
+  left: 50%;
+  width: 58%;
+  display: flex;
+  justify-content: space-around;
+  transform: translateX(-50%);
+}
+
+.introLights i {
+  display: block;
+  width: clamp(7px, 1.2vw, 15px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #c8ff6d;
+  box-shadow:
+    0 0 8px #d8ff97,
+    0 0 22px #baff4f;
+  animation: introLightPulse .8s infinite alternate;
+}
+
+.introLights i:nth-child(2) { animation-delay: .12s; }
+.introLights i:nth-child(3) { animation-delay: .24s; }
+.introLights i:nth-child(4) { animation-delay: .36s; }
+.introLights i:nth-child(5) { animation-delay: .48s; }
+
+@keyframes introLightPulse {
+  from { opacity: .42; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1.18); }
+}
+
+.introBeam {
+  position: absolute;
+  z-index: 2;
+  top: 32%;
+  left: 50%;
+  width: 45%;
+  height: 68%;
+  transform: translateX(-50%);
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(84, 238, 255, .24) 18%,
+      rgba(199, 255, 255, .86) 50%,
+      rgba(84, 238, 255, .24) 82%,
+      transparent
+    );
+  filter: blur(3px);
+  opacity: 0;
+  animation: introBeamIn 1.2s 2s ease forwards;
+}
+
+@keyframes introBeamIn {
+  from { opacity: 0; transform: translateX(-50%) scaleY(.05); transform-origin: top; }
+  to { opacity: .85; transform: translateX(-50%) scaleY(1); transform-origin: top; }
+}
+
+.introCow {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 6%;
+  width: clamp(92px, 13vw, 155px);
+  transform: translateX(-50%);
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(122, 244, 255, .62));
+  animation: introCowLift 3s 2.15s ease-in-out forwards;
+}
+
+.introCowBody {
+  position: relative;
+  width: 100%;
+  height: 51px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 41%, #3a281f 0 14%, transparent 15%),
+    radial-gradient(ellipse at 66% 55%, #3a281f 0 12%, transparent 13%),
+    #eee8db;
+}
+
+.introCowBody::before {
+  content: "";
+  position: absolute;
+  right: -24%;
+  top: -10%;
+  width: 35%;
+  height: 64%;
+  border-radius: 48%;
+  background:
+    radial-gradient(circle at 67% 42%, #16110d 0 7%, transparent 8%),
+    #eee8db;
+}
+
+.introCowBody::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  top: 72%;
+  width: 8px;
+  height: 39px;
+  border-radius: 0 0 5px 5px;
+  background: #d7cebd;
+  box-shadow:
+    48px 0 #d7cebd,
+    79px -2px #d7cebd;
+}
+
+@keyframes introCowLift {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 86px) rotate(-5deg);
+  }
+  24% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -49px) rotate(5deg);
+  }
+  100% {
+    opacity: .88;
+    transform: translate(-50%, -70px) rotate(-3deg);
+  }
+}
+
+.introContent {
+  position: relative;
+  z-index: 15;
+  width: min(94vw, 900px);
+  margin-top: min(39vh, 340px);
+  padding: 17px;
+  text-align: center;
+}
+
+.introEyebrow {
+  margin-bottom: 4px;
+  color: #bafcff;
+  font-size: clamp(10px, 1.3vw, 14px);
+  font-weight: 800;
+  letter-spacing: clamp(4px, .8vw, 9px);
+  opacity: 0;
+  animation: introTextIn .8s 2.5s ease forwards;
+}
+
+.introTitle {
+  margin: 0;
+  font-size: clamp(43px, 9.3vw, 104px);
+  font-weight: 1000;
+  line-height: .94;
+  letter-spacing: clamp(1px, .5vw, 7px);
+  background:
+    linear-gradient(180deg, #fff, #8ff7ff 52%, #1884ae 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(0 0 8px rgba(138, 249, 255, .66))
+    drop-shadow(0 9px 0 rgba(0, 37, 61, .6));
+  opacity: 0;
+  animation: introTitleIn 1.05s 2.75s cubic-bezier(.15,.8,.22,1) forwards;
+}
+
+.introSubtitle {
+  margin: 11px 0 0;
+  color: #b9f9ff;
+  font-size: clamp(12px, 2vw, 21px);
+  font-weight: 800;
+  letter-spacing: clamp(5px, 1.3vw, 14px);
+  text-shadow: 0 0 14px #35dff6;
+  opacity: 0;
+  animation: introTextIn .8s 3.35s ease forwards;
+}
+
+.introMission {
+  margin: 13px 0 0;
+  color: rgba(225, 251, 255, .78);
+  font-size: clamp(9px, 1.3vw, 13px);
+  font-weight: 700;
+  letter-spacing: clamp(2px, .55vw, 6px);
+  opacity: 0;
+  animation: introTextIn .8s 3.8s ease forwards;
+}
+
+@keyframes introTitleIn {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+    letter-spacing: 20px;
+    filter: blur(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter:
+      drop-shadow(0 0 8px rgba(138, 249, 255, .66))
+      drop-shadow(0 9px 0 rgba(0, 37, 61, .6));
+  }
+}
+
+@keyframes introTextIn {
+  from { opacity: 0; transform: translateY(11px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.introGate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(88vw, 450px);
+  min-height: 67px;
+  margin-top: 24px;
+  padding: 13px 29px;
+  border: 1px solid rgba(157, 251, 255, .7);
+  border-radius: 17px;
+  background:
+    linear-gradient(180deg, rgba(10, 50, 76, .88), rgba(2, 15, 31, .92));
+  box-shadow:
+    0 0 14px rgba(92, 239, 255, .34),
+    0 0 42px rgba(28, 199, 230, .18),
+    inset 0 1px rgba(255, 255, 255, .25);
+  color: #dfffff;
+  font: inherit;
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(15px);
+  transition:
+    opacity .45s ease,
+    transform .45s ease,
+    filter .2s ease;
+}
+
+#ufoIntro.intro-ready .introGate {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translateY(0);
+  animation: introGatePulse 1.5s ease-in-out infinite alternate;
+}
+
+#ufoIntro.intro-ready .introGate:hover {
+  filter: brightness(1.2);
+}
+
+#ufoIntro.intro-ready .introGate:active {
+  transform: scale(.98);
+}
+
+.introGateText {
+  display: block;
+  font-size: clamp(14px, 2.1vw, 20px);
+  font-weight: 900;
+  letter-spacing: clamp(2px, .6vw, 6px);
+  text-shadow: 0 0 13px #5cefff;
+}
+
+.introGateHint {
+  display: block;
+  margin-top: 5px;
+  color: #8cd5e3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+@keyframes introGatePulse {
+  from {
+    box-shadow:
+      0 0 12px rgba(92, 239, 255, .28),
+      0 0 30px rgba(28, 199, 230, .12),
+      inset 0 1px rgba(255, 255, 255, .25);
+  }
+  to {
+    box-shadow:
+      0 0 22px rgba(92, 239, 255, .78),
+      0 0 58px rgba(28, 199, 230, .32),
+      inset 0 1px rgba(255, 255, 255, .4);
+  }
+}
+
+.introSkipStatus {
+  min-height: 17px;
+  margin-top: 9px;
+  color: rgba(194, 237, 244, .55);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.introFlash {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  pointer-events: none;
+  background: #dfffff;
+  opacity: 0;
+}
+
+#ufoIntro.intro-leaving .introFlash {
+  animation: introExitFlash .62s ease-out;
+}
+
+@keyframes introExitFlash {
+  0% { opacity: 0; }
+  18% { opacity: .94; }
+  100% { opacity: 0; }
+}
+
+/* Mobile */
+
+@media (max-width: 700px), (pointer: coarse) {
+  #ufoIntro {
+    min-height: 100dvh;
+  }
+
+  .introMoon {
+    top: 8%;
+    right: 7%;
+    width: clamp(68px, 20vw, 105px);
+  }
+
+  .introUfoScene {
+    top: 5%;
+    width: 118vw;
+    height: 48vh;
+  }
+
+  .introUfo {
+    width: 70%;
+    height: 25%;
+  }
+
+  .introBeam {
+    top: 27%;
+    width: 43%;
+    height: 76%;
+  }
+
+  .introCow {
+    width: 96px;
+    bottom: 11%;
+  }
+
+  .introContent {
+    width: 100%;
+    margin-top: 30vh;
+    padding: 14px;
+  }
+
+  .introTitle {
+    font-size: clamp(43px, 15vw, 69px);
+  }
+
+  .introSubtitle {
+    font-size: clamp(11px, 4vw, 17px);
+    letter-spacing: clamp(4px, 2vw, 8px);
+  }
+
+  .introMission {
+    max-width: 92%;
+    margin: 12px auto 0;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .introGate {
+    width: min(88vw, 390px);
+    min-height: 64px;
+    margin-top: 19px;
+  }
+
+  .introGateText {
+    font-size: 14px;
+  }
+
+  .introGateHint {
+    font-size: 9px;
+  }
+
+  .introGround {
+    height: 30%;
+  }
+
+  .introTrees {
+    bottom: 18%;
+  }
+}
+
+/* Sehr kleine oder niedrige Displays */
+
+@media (max-height: 650px) {
+  .introUfoScene {
+    top: 0;
+    height: 45vh;
+  }
+
+  .introContent {
+    margin-top: 27vh;
+  }
+
+  .introTitle {
+    font-size: clamp(38px, 10vh, 68px);
+  }
+
+  .introGate {
+    min-height: 54px;
+    margin-top: 13px;
+    padding: 8px 22px;
+  }
+
+  .introMission {
+    margin-top: 8px;
+  }
+}
+
+/* Bewegungen bei entsprechender Systemeinstellung reduzieren */
+
+@media (prefers-reduced-motion: reduce) {
+  #ufoIntro *,
+  #ufoIntro *::before,
+  #ufoIntro *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .introGate,
+  .introTitle,
+  .introSubtitle,
+  .introMission,
+  .introEyebrow,
+  .introMoon,
+  .introUfoScene,
+  .introCow,
+  .introBeam {
+    opacity: 1;
+  }
+}
+</style></head><body class="intro-active">
+<div
+  id="ufoIntro"
+  role="dialog"
+  aria-modal="true"
+  aria-label="UFO-Jagd Intro"
+>
+  <div class="introStars" aria-hidden="true"></div>
+  <div class="introMoon" aria-hidden="true"></div>
+  <div class="introCloud one" aria-hidden="true"></div>
+  <div class="introCloud two" aria-hidden="true"></div>
+
+  <div class="introUfoScene" aria-hidden="true">
+    <div class="introBeam"></div>
+    <div class="introUfo"></div>
+
+    <div class="introLights">
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+
+    <div class="introCow">
+      <div class="introCowBody"></div>
+    </div>
+  </div>
+
+  <div class="introGround" aria-hidden="true"></div>
+  <div class="introTrees" aria-hidden="true"></div>
+
+  <main class="introContent">
+    <div class="introEyebrow">EINSATZPROTOKOLL 51</div>
+
+    <h1 class="introTitle">UFO-JAGD</h1>
+
+    <div class="introSubtitle">NACHTANGRIFF</div>
+
+    <p class="introMission">
+      KÜHE RETTEN&nbsp;&nbsp;•&nbsp;&nbsp;
+      UFOS ABWEHREN&nbsp;&nbsp;•&nbsp;&nbsp;
+      DIE ERDE BESCHÜTZEN
+    </p>
+
+    <button
+      id="introEnter"
+      class="introGate"
+      type="button"
+      aria-label="Intro bestätigen und Startmenü öffnen"
+      disabled
+    >
+      <span>
+        <span id="introGateText" class="introGateText">
+          SYSTEM WIRD INITIALISIERT
+        </span>
+
+        <span id="introGateHint" class="introGateHint">
+          EINSATZDATEN WERDEN GELADEN
+        </span>
+      </span>
+    </button>
+
+    <div
+      id="introStatus"
+      class="introSkipStatus"
+      aria-live="polite"
+    >
+      VERBINDUNG ZUM VERTEIDIGUNGSNETZWERK
+    </div>
+  </main>
+
+  <div class="introFlash" aria-hidden="true"></div>
+</div>
+<canvas id="game" tabindex="0" aria-label="UFO-Jagd"></canvas><div id="hud"><span>LEVEL <b id="level" class="cyan">1</b></span><span>PUNKTE <b id="score" class="cyan">0</b></span><span>UFOS <b id="targets" class="cyan">0/8</b></span><span>GETROFFEN <b id="ufoShot" class="cyan">0</b></span><span>JETS <b id="jetShot" class="cyan">0/5</b></span><span id="slowBox">ZEITLUPE <b id="slow" class="cyan">–</b></span><button id="pause" class="pause">PAUSE</button><button id="quit" class="pause">BEENDEN</button></div><div id="levelUp">LEVEL GESCHAFFT!</div><div id="sheet"><div class="sheetBox"><div class="updatePc" role="img" aria-label="Systemupdate wird installiert"><div class="monitor"><div class="updateRing"></div><div class="updateText"></div></div></div><h2>Updates werden ausgeführt</h2><p>Bitte lassen Sie den Computer eingeschaltet.</p><button id="closeSheet">Schließen</button></div></div><div id="message"><div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>ANLEITUNG</b><br><b>1. Zielen &amp; klicken:</b> Triff UFOs, um Punkte zu sammeln.<br><b>2. Kühe retten:</b> Schieße UFOs ab, die rote Strahlen einsetzen.<br><b>3. Vorsicht:</b> Jets kosten Punkte; nach 5 Treffern ist die Mission verloren.<br><b>4. Bonus:</b> Klicke auf den Mond für 5 Sekunden Zeitlupe.<br><b>5. Ziel:</b> Beschütze die 10 Kühe vor den UFOs.</div><input id="player" class="name" maxlength=18 placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div></div>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database-compat.js"></script>
@@ -324,4 +1122,174 @@ error.message
 
 }
 
-function reset(){if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});var pi=document.getElementById('player');if(pi&&pi.value.trim())playerName=pi.value.trim();saveScore();recorded=0;sound('hit');lost=0;paused=0;document.getElementById('pause').textContent='PAUSE';objects=[];sparks=[];raiders=[];raidSpawn=0;stolen={};slowUntil=0;moonReady=0;score=0;level=1;hits=0;jetDown=0;spawn=0;run=1;box.style.display='none';c.focus();showScores();ui()}c.addEventListener('pointerdown',function(e){c.focus();if(!run)return;var r=c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,tap=e.pointerType==='touch'?1.65:1;for(var w=raiders.length-1;w>=0;w--){var a=raiders[w];if(Math.abs(px-a.x)<16*tap&&Math.abs(py-a.y)<28*tap){score+=350;if(a.carry)delete stolen[a.target];raiders.splice(w,1);for(var z=0;z<28;z++)sparks.push({x:a.x,y:a.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:'#75ff8b'});sound('hit');ui();return}}for(var i=objects.length-1;i>=0;i--){var d=objects[i],s=(d.jet?64:48)*d.z;if(Math.abs(px-d.x)<s*1.75*tap&&Math.abs(py-d.y)<s*tap){if(d.jet){score-=150;jetDown++;sound('jet');if(jetDown>=5&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast in diesem Level 5 Flugzeuge abgeschossen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}else{sound(d.steal?'ufo':'hit');if(d.steal)delete stolen[d.target];var reward=d.steal?500:Math.round((1.3-d.z)*500)*level;score+=reward;hits++}for(var q=0;q<44;q++)sparks.push({x:d.x,y:d.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:d.jet?'#ff674d':'#8efbff'});objects.splice(i,1);ui();break}}if(run){if(Math.abs(px-W*.8)<48*tap&&Math.abs(py-H*.15)<48*tap&&performance.now()>=moonReady){slowUntil=performance.now()+5000;moonReady=slowUntil+5000;sound('ufo')}else etHit(px,py)}});function showSheet(){document.getElementById('sheet').className='show'}function hideSheet(){document.getElementById('sheet').className='';if(paused){paused=0;last=performance.now();document.getElementById('pause').textContent='PAUSE'}}document.getElementById('start').onclick=reset;showScores();document.getElementById('closeSheet').onclick=hideSheet;function toggleSheet(){if(!run)return;if(!paused){paused=1;document.getElementById('pause').textContent='WEITER';showSheet()}else hideSheet()}function handleKey(e){var k=(e.key||'').toLowerCase();if((k==='a'||k==='p'||e.code==='KeyA'||e.code==='KeyP')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var a=document.activeElement;if(a&&/^(input|textarea|select)$/i.test(a.tagName))return;e.preventDefault();e.stopPropagation();toggleSheet()}}document.addEventListener('keydown',handleKey,true);document.getElementById('pause').onclick=function(){if(!run)return;paused=!paused;last=performance.now();this.textContent=paused?'WEITER':'PAUSE'};document.getElementById('quit').onclick=function(){if(!run)return;run=0;paused=0;objects=[];box.style.display='flex';box.innerHTML='<div class="card"><h1>SPIEL BEENDET</h1><p>Deine Mission wurde beendet.</p><button id="start">NEUE MISSION</button><button id="menu" style="margin-left:10px">ZUM STARTMENÜ</button></div>';document.getElementById('start').onclick=reset;document.getElementById('menu').onclick=function(){box.innerHTML='<div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>Einsatzbriefing</b><br>Verteidige die 10 Kühe gegen UFOs. Triff UFOs, rette Kühe aus roten Strahlen und meide die Jets. Der Mond löst Zeitlupe aus.</div><input id="player" class="name" maxlength="18" placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;showScores()}};ui();requestAnimationFrame(frame)})();</script></body></html>
+function reset(){if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});var pi=document.getElementById('player');if(pi&&pi.value.trim())playerName=pi.value.trim();saveScore();recorded=0;sound('hit');lost=0;paused=0;document.getElementById('pause').textContent='PAUSE';objects=[];sparks=[];raiders=[];raidSpawn=0;stolen={};slowUntil=0;moonReady=0;score=0;level=1;hits=0;jetDown=0;spawn=0;run=1;box.style.display='none';c.focus();showScores();ui()}c.addEventListener('pointerdown',function(e){c.focus();if(!run)return;var r=c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,tap=e.pointerType==='touch'?1.65:1;for(var w=raiders.length-1;w>=0;w--){var a=raiders[w];if(Math.abs(px-a.x)<16*tap&&Math.abs(py-a.y)<28*tap){score+=350;if(a.carry)delete stolen[a.target];raiders.splice(w,1);for(var z=0;z<28;z++)sparks.push({x:a.x,y:a.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:'#75ff8b'});sound('hit');ui();return}}for(var i=objects.length-1;i>=0;i--){var d=objects[i],s=(d.jet?64:48)*d.z;if(Math.abs(px-d.x)<s*1.75*tap&&Math.abs(py-d.y)<s*tap){if(d.jet){score-=150;jetDown++;sound('jet');if(jetDown>=5&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast in diesem Level 5 Flugzeuge abgeschossen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}else{sound(d.steal?'ufo':'hit');if(d.steal)delete stolen[d.target];var reward=d.steal?500:Math.round((1.3-d.z)*500)*level;score+=reward;hits++}for(var q=0;q<44;q++)sparks.push({x:d.x,y:d.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:d.jet?'#ff674d':'#8efbff'});objects.splice(i,1);ui();break}}if(run){if(Math.abs(px-W*.8)<48*tap&&Math.abs(py-H*.15)<48*tap&&performance.now()>=moonReady){slowUntil=performance.now()+5000;moonReady=slowUntil+5000;sound('ufo')}else etHit(px,py)}});function showSheet(){document.getElementById('sheet').className='show'}function hideSheet(){document.getElementById('sheet').className='';if(paused){paused=0;last=performance.now();document.getElementById('pause').textContent='PAUSE'}}document.getElementById('start').onclick=reset;showScores();document.getElementById('closeSheet').onclick=hideSheet;function toggleSheet(){if(!run)return;if(!paused){paused=1;document.getElementById('pause').textContent='WEITER';showSheet()}else hideSheet()}function handleKey(e){var k=(e.key||'').toLowerCase();if((k==='a'||k==='p'||e.code==='KeyA'||e.code==='KeyP')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var a=document.activeElement;if(a&&/^(input|textarea|select)$/i.test(a.tagName))return;e.preventDefault();e.stopPropagation();toggleSheet()}}document.addEventListener('keydown',handleKey,true);document.getElementById('pause').onclick=function(){if(!run)return;paused=!paused;last=performance.now();this.textContent=paused?'WEITER':'PAUSE'};document.getElementById('quit').onclick=function(){if(!run)return;run=0;paused=0;objects=[];box.style.display='flex';box.innerHTML='<div class="card"><h1>SPIEL BEENDET</h1><p>Deine Mission wurde beendet.</p><button id="start">NEUE MISSION</button><button id="menu" style="margin-left:10px">ZUM STARTMENÜ</button></div>';document.getElementById('start').onclick=reset;document.getElementById('menu').onclick=function(){box.innerHTML='<div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>Einsatzbriefing</b><br>Verteidige die 10 Kühe gegen UFOs. Triff UFOs, rette Kühe aus roten Strahlen und meide die Jets. Der Mond löst Zeitlupe aus.</div><input id="player" class="name" maxlength="18" placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;showScores()}};ui();requestAnimationFrame(frame)})();</script>
+<script>
+(function () {
+  "use strict";
+
+  var intro = document.getElementById("ufoIntro");
+  var enterButton = document.getElementById("introEnter");
+  var gateText = document.getElementById("introGateText");
+  var gateHint = document.getElementById("introGateHint");
+  var status = document.getElementById("introStatus");
+
+  var ready = false;
+  var finished = false;
+  var readyTimer = null;
+
+  if (!intro || !enterButton) {
+    document.body.classList.remove("intro-active");
+    return;
+  }
+
+  function isTouchDevice() {
+    return (
+      window.matchMedia("(pointer: coarse)").matches ||
+      "ontouchstart" in window
+    );
+  }
+
+  function playIntroConfirmSound() {
+    try {
+      var AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if (!AudioContextClass) return;
+
+      var context = new AudioContextClass();
+      var now = context.currentTime;
+      var master = context.createGain();
+
+      master.connect(context.destination);
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.13, now + 0.025);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+      [196, 294, 392, 588].forEach(function (frequency, index) {
+        var oscillator = context.createOscillator();
+        var gain = context.createGain();
+        var start = now + index * 0.065;
+
+        oscillator.type = index < 2 ? "sine" : "triangle";
+        oscillator.frequency.setValueAtTime(frequency, start);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          frequency * 1.18,
+          start + 0.25
+        );
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(
+          0.06 / (index + 1),
+          start + 0.025
+        );
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          start + 0.43
+        );
+
+        oscillator.connect(gain);
+        gain.connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + 0.48);
+      });
+
+      window.setTimeout(function () {
+        context.close().catch(function () {});
+      }, 1100);
+    } catch (error) {
+      console.warn("Intro-Sound konnte nicht abgespielt werden:", error);
+    }
+  }
+
+  function makeReady() {
+    if (ready || finished) return;
+
+    ready = true;
+    intro.classList.add("intro-ready");
+    enterButton.disabled = false;
+
+    if (isTouchDevice()) {
+      gateText.textContent = "ZUM STARTEN BERÜHREN";
+      gateHint.textContent = "TOUCH BESTÄTIGEN";
+      status.textContent = "EINSATZBEREITSCHAFT HERGESTELLT";
+    } else {
+      gateText.textContent = "ENTER DRÜCKEN";
+      gateHint.textContent = "ODER HIER KLICKEN";
+      status.textContent = "EINSATZBEREITSCHAFT HERGESTELLT";
+    }
+
+    enterButton.focus({ preventScroll: true });
+  }
+
+  function finishIntro(event) {
+    if (finished || !ready) return;
+
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    finished = true;
+    enterButton.disabled = true;
+
+    playIntroConfirmSound();
+
+    intro.classList.add("intro-leaving");
+    document.body.classList.remove("intro-active");
+
+    window.setTimeout(function () {
+      intro.remove();
+
+      var playerInput = document.getElementById("player");
+
+      if (playerInput && !isTouchDevice()) {
+        playerInput.focus({ preventScroll: true });
+      }
+    }, 920);
+  }
+
+  function handleIntroKey(event) {
+    if (finished) return;
+
+    if (
+      event.key === "Enter" ||
+      event.code === "Enter" ||
+      event.code === "NumpadEnter"
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (ready) {
+        finishIntro(event);
+      }
+    }
+  }
+
+  enterButton.addEventListener("click", finishIntro);
+  enterButton.addEventListener("pointerup", function (event) {
+    if (ready) {
+      finishIntro(event);
+    }
+  });
+
+  document.addEventListener("keydown", handleIntroKey, true);
+
+  window.addEventListener("pagehide", function () {
+    if (readyTimer) {
+      window.clearTimeout(readyTimer);
+    }
+
+    document.removeEventListener("keydown", handleIntroKey, true);
+  });
+
+  var reducedMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  readyTimer = window.setTimeout(
+    makeReady,
+    reducedMotion ? 250 : 5200
+  );
+})();
+</script>
+</body></html>
