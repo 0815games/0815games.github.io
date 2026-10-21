@@ -1,0 +1,5963 @@
+<!doctype html><html lang="de"><head><meta name="ms-sp-authoring-source" content="agent"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UFO-Jagd: Nachtangriff</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.svg">
+<meta name="theme-color" content="#020817">
+<style>:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;height:100%;height:100dvh;min-height:100dvh;overflow:hidden;background:#01030c;font-family:system-ui,Arial,sans-serif;color:#eafaff}canvas{display:block;width:100%;height:100dvh;min-height:100dvh;cursor:crosshair;touch-action:manipulation;filter:contrast(1.08) saturate(1.12)}#hud{position:fixed;z-index:2;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:16px;padding:8px 16px;border:1px solid #83eaff88;border-radius:18px;background:linear-gradient(135deg,#061731df,#020915df);box-shadow:0 8px 30px #0009,0 0 28px #35d9ff28;font-weight:800;font-size:12px;letter-spacing:.6px;backdrop-filter:blur(8px)}.cyan{color:#93f9ff;text-shadow:0 0 12px #3ed8f1}#message{position:fixed;z-index:3;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#08224d55,#01030bdd 58%)}.card{max-width:560px;margin:20px;padding:38px;text-align:center;border:1px solid #86edff66;border-radius:28px;background:linear-gradient(145deg,#123562ef,#040a18f4);box-shadow:0 18px 70px #000b, inset 0 1px #d4ffff2e}.card h1{margin:0;color:#a2faff;font-size:clamp(36px,7vw,54px);letter-spacing:2px;text-shadow:0 0 24px #2dceee}.intro{margin:16px auto;padding:12px 15px;max-width:390px;border-left:3px solid #74efff;text-align:left;background:#07182c99;animation:brief .7s ease-out}.intro b{color:#9df8ff}@keyframes brief{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}.card p{line-height:1.6;color:#d3eafa}button{border:0;border-radius:999px;padding:15px 31px;font-size:17px;font-weight:850;background:linear-gradient(135deg,#d7ffff,#4dd3f1);color:#06111b;cursor:pointer;box-shadow:0 8px 28px #2edcf088}button:hover{filter:brightness(1.14)}#levelUp{position:fixed;z-index:4;top:28%;left:50%;transform:translate(-50%,-20px) scale(.8);padding:18px 30px;border:1px solid #9ffcff;border-radius:18px;background:#07324be8;color:#d9ffff;font-size:clamp(24px,5vw,42px);font-weight:900;letter-spacing:2px;text-shadow:0 0 15px #4de5ff;opacity:0;pointer-events:none}.celebrate{animation:celebrate 1.7s ease-out}@keyframes celebrate{0%{opacity:0;transform:translate(-50%,-20px) scale(.8)}18%{opacity:1;transform:translate(-50%,0) scale(1.15)}70%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-15px) scale(.9)}}.scores{margin:16px auto 0;max-width:260px;padding:10px 16px;text-align:left;border:1px solid #76dcf044;border-radius:14px;background:#020b18aa}.scores ol{margin:6px 0 0;padding-left:24px;color:#aeeeff;font-weight:700}.scores li{padding:2px 0}.name{display:block;width:min(260px,100%);margin:14px auto 10px;padding:12px 16px;border:1px solid #76dcf088;border-radius:999px;background:#06182c;color:#eafaff;font-size:16px;text-align:center}.pause{padding:6px 12px;font-size:12px;letter-spacing:.5px;background:#153857;color:#c9f8ff;box-shadow:none;border:1px solid #76dcf088}.merz{display:none}.merz:before{content:'';display:none}.merz:after{content:'';position:absolute;left:4px;top:84px;width:96px;height:42px;border-radius:25px 25px 4px 4px;background:linear-gradient(90deg,#172231,#40546d,#172231);box-shadow:0 -10px 0 -5px #a7a4a0,0 -2px 0 0 #5b5d60,0 -29px 0 -13px #301416,0 -32px 0 -13px #f7f1e5}.alien{display:inline-block;font-size:58px;margin:3px 10px;animation:dance .55s ease-in-out infinite alternate;filter:drop-shadow(0 5px 8px #000)}@keyframes dance{from{transform:rotate(-12deg) translateY(3px)}to{transform:rotate(12deg) translateY(-6px)}}body:before{content:"";position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,transparent 42%,rgba(0,5,20,.22) 100%),repeating-linear-gradient(0deg,rgba(110,220,255,.025) 0 1px,transparent 1px 4px);mix-blend-mode:screen}.card{border-color:#a8f7ff99;box-shadow:0 22px 82px #000c,0 0 48px #35d9ff24,inset 0 1px #e5ffff46}.card h1{background:linear-gradient(180deg,#efffff,#69e8ff 62%,#35aee1);-webkit-background-clip:text;background-clip:text;color:transparent}.cyan{color:#c2fdff;text-shadow:0 0 7px #3ed8f1,0 0 20px #168eb3}#hud{border-color:#a8f7ffaa;background:linear-gradient(135deg,#0a2a4be8,#030819e8);box-shadow:0 10px 38px #000b,0 0 36px #35d9ff38}button{background:linear-gradient(135deg,#efffff,#66e7ff 52%,#36a9db);box-shadow:0 8px 28px #2edcf0aa,inset 0 1px #fff9}canvas{filter:contrast(1.13) saturate(1.28) brightness(1.06);image-rendering:auto}#sheet{display:none;position:fixed;z-index:5;inset:0;align-items:center;justify-content:center;background:#0078d7}.sheetBox{width:min(760px,90vw);padding:34px 28px;text-align:center;background:transparent;color:#fff;box-shadow:none}.sheetBox h2{margin:0 0 12px;font-size:clamp(24px,4vw,36px);font-weight:400}.sheetBox p{margin:12px 0 0;font-size:clamp(15px,2vw,20px);font-weight:400}.sheetBox table{width:100%;border-collapse:collapse;background:#fff}.sheetBox td,.sheetBox th{padding:9px;border:1px solid #a9cdb5;text-align:right}.sheetBox th{background:#dff3e5;color:#176b3f;text-align:center}.sheetBox button{display:none}.updatePc{position:relative;width:120px;height:120px;margin:8px auto 18px}.monitor{position:static;width:100%;height:100%;padding-top:10px;border:0;border-radius:0;background:transparent;box-shadow:none;text-align:center;color:#fff;font-weight:400}.monitor:before,.monitor:after{display:none}.updateRing{width:92px;height:92px;margin:0 auto;border:9px dotted #fff;border-radius:50%;animation:spin 1.25s linear infinite}.updateText{display:none}@keyframes spin{to{transform:rotate(360deg)}}#sheet.show{display:flex}@media(max-width:700px),(pointer:coarse){#hud{top:5px;width:calc(100% - 10px);gap:4px 7px;padding:5px 7px;border-radius:10px;justify-content:center;flex-wrap:wrap;font-size:9px;letter-spacing:.2px}.pause{padding:5px 8px;font-size:9px;min-height:0}.card{max-height:calc(100dvh - 24px);overflow:auto;margin:12px;padding:24px 20px;border-radius:22px}.card h1{font-size:clamp(31px,11vw,46px)}.intro{font-size:14px;line-height:1.48}.name{font-size:16px;padding:14px 16px}button{min-height:48px;padding:13px 25px;touch-action:manipulation}#levelUp{width:calc(100% - 32px);text-align:center;font-size:clamp(21px,7vw,32px)}}
+/* ===== UFO CINEMATIC INTRO ===== */
+
+body.intro-active {
+  overflow: hidden;
+}
+
+body.intro-active #hud,
+body.intro-active #message,
+body.intro-active #levelUp,
+body.intro-active #sheet {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+#ufoIntro {
+  --intro-cyan: #85f8ff;
+  --intro-blue: #2dcdea;
+  --intro-dark: #01030d;
+
+  position: fixed;
+  z-index: 9999;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 50% 34%, #103565 0%, #05152f 27%, #01030d 70%),
+    #01030d;
+  color: #efffff;
+  font-family: system-ui, Arial, sans-serif;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity .9s ease,
+    visibility .9s step-end;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#ufoIntro.intro-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#ufoIntro::before {
+  content: "";
+  position: absolute;
+  z-index: 20;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(118, 226, 255, .035) 0,
+      rgba(118, 226, 255, .035) 1px,
+      transparent 1px,
+      transparent 5px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 38%,
+      rgba(0, 2, 12, .84) 100%
+    );
+  mix-blend-mode: screen;
+}
+
+.introStars,
+.introStars::before,
+.introStars::after {
+  position: absolute;
+  inset: -30%;
+  content: "";
+  background-image:
+    radial-gradient(circle, #fff 0 1px, transparent 1.5px),
+    radial-gradient(circle, #84eaff 0 1px, transparent 1.6px);
+  background-position: 20px 30px, 90px 110px;
+  background-size: 137px 137px, 193px 193px;
+}
+
+.introStars {
+  opacity: .55;
+  animation: introStarDrift 18s linear infinite;
+}
+
+.introStars::before {
+  opacity: .35;
+  transform: rotate(27deg) scale(1.12);
+}
+
+.introStars::after {
+  opacity: .24;
+  transform: rotate(-18deg) scale(.88);
+}
+
+@keyframes introStarDrift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-80px, 55px, 0); }
+}
+
+.introMoon {
+  position: absolute;
+  top: 8%;
+  right: 10%;
+  width: clamp(80px, 12vw, 170px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 31%, #fff 0 4%, transparent 5%),
+    radial-gradient(circle at 68% 57%, #bdd0df 0 7%, transparent 8%),
+    radial-gradient(circle at 40% 72%, #c8d8e6 0 9%, transparent 10%),
+    radial-gradient(circle at 38% 35%, #fff, #d9ecf8 35%, #899cac 100%);
+  box-shadow:
+    0 0 28px #c8edff,
+    0 0 95px rgba(126, 202, 255, .42);
+  opacity: 0;
+  animation: introMoonIn 2.1s .5s ease forwards;
+}
+
+@keyframes introMoonIn {
+  from {
+    opacity: 0;
+    transform: translateY(-25px) scale(.8);
+  }
+  to {
+    opacity: .92;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.introCloud {
+  position: absolute;
+  width: 55vw;
+  height: 13vh;
+  min-height: 80px;
+  border-radius: 50%;
+  filter: blur(20px);
+  background: rgba(77, 119, 162, .17);
+}
+
+.introCloud.one {
+  top: 23%;
+  left: -20%;
+  animation: introCloudOne 15s linear infinite;
+}
+
+.introCloud.two {
+  top: 36%;
+  right: -24%;
+  opacity: .55;
+  animation: introCloudTwo 20s linear infinite;
+}
+
+@keyframes introCloudOne {
+  from { transform: translateX(0); }
+  to { transform: translateX(145vw); }
+}
+
+@keyframes introCloudTwo {
+  from { transform: translateX(0); }
+  to { transform: translateX(-145vw); }
+}
+
+.introGround {
+  position: absolute;
+  z-index: 2;
+  left: -5%;
+  right: -5%;
+  bottom: -2%;
+  height: 34%;
+  background:
+    radial-gradient(ellipse at 25% 110%, rgba(36, 103, 58, .48), transparent 47%),
+    linear-gradient(180deg, #092719 0%, #021008 62%, #010603 100%);
+  clip-path: polygon(
+    0 26%, 8% 19%, 16% 24%, 25% 10%, 35% 23%,
+    43% 17%, 52% 25%, 64% 12%, 74% 23%, 84% 13%,
+    92% 19%, 100% 10%, 100% 100%, 0 100%
+  );
+}
+
+.introTrees {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  bottom: 21%;
+  height: 15%;
+  opacity: .94;
+  background:
+    linear-gradient(153deg, transparent 48%, #03120b 49% 53%, transparent 54%)
+      0 0 / 54px 100% repeat-x;
+}
+
+.introUfoScene {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  top: 4%;
+  width: min(78vw, 790px);
+  height: min(52vh, 520px);
+  transform: translateX(-50%);
+  opacity: 0;
+  animation: introUfoArrival 2.4s .35s cubic-bezier(.18,.75,.16,1) forwards;
+}
+
+@keyframes introUfoArrival {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -55%) scale(.18) rotate(-4deg);
+  }
+  48% {
+    opacity: 1;
+  }
+  72% {
+    transform: translate(-50%, 2%) scale(1.035) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1) rotate(0);
+  }
+}
+
+.introUfo {
+  position: absolute;
+  z-index: 5;
+  top: 13%;
+  left: 50%;
+  width: 74%;
+  height: 29%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 32%, #f4ffff 0 3%, #64f1ff 5% 14%, transparent 15%),
+    linear-gradient(180deg, #e5ffff 0%, #678a9c 24%, #112d3b 55%, #02080e 100%);
+  border: 2px solid rgba(202, 255, 255, .72);
+  box-shadow:
+    0 0 16px #8bfaff,
+    0 0 55px rgba(54, 221, 252, .62),
+    0 34px 75px rgba(0, 0, 0, .8);
+  animation: introUfoHover 2.8s ease-in-out infinite alternate;
+}
+
+.introUfo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 62%;
+  width: 35%;
+  height: 96%;
+  transform: translateX(-50%);
+  border-radius: 50% 50% 18% 18%;
+  background:
+    radial-gradient(circle at 42% 25%, #efffff, #59e8f5 13%, #17637a 52%, #041c2b 100%);
+  border: 2px solid rgba(192, 255, 255, .76);
+  box-shadow: inset 0 5px 16px rgba(255,255,255,.46);
+}
+
+.introUfo::after {
+  content: "";
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 40%;
+  height: 37%;
+  border-radius: 50%;
+  border: 4px solid #9cfbff;
+  box-shadow:
+    0 0 11px #75f3ff,
+    inset 0 0 18px rgba(110, 240, 255, .55);
+}
+
+@keyframes introUfoHover {
+  from { transform: translateX(-50%) translateY(-4px) rotate(-.35deg); }
+  to   { transform: translateX(-50%) translateY(8px) rotate(.35deg); }
+}
+
+.introLights {
+  position: absolute;
+  z-index: 8;
+  top: 29%;
+  left: 50%;
+  width: 58%;
+  display: flex;
+  justify-content: space-around;
+  transform: translateX(-50%);
+}
+
+.introLights i {
+  display: block;
+  width: clamp(7px, 1.2vw, 15px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #c8ff6d;
+  box-shadow:
+    0 0 8px #d8ff97,
+    0 0 22px #baff4f;
+  animation: introLightPulse .8s infinite alternate;
+}
+
+.introLights i:nth-child(2) { animation-delay: .12s; }
+.introLights i:nth-child(3) { animation-delay: .24s; }
+.introLights i:nth-child(4) { animation-delay: .36s; }
+.introLights i:nth-child(5) { animation-delay: .48s; }
+
+@keyframes introLightPulse {
+  from { opacity: .42; transform: scale(.72); }
+  to   { opacity: 1; transform: scale(1.18); }
+}
+
+.introBeam {
+  position: absolute;
+  z-index: 2;
+  top: 32%;
+  left: 50%;
+  width: 45%;
+  height: 68%;
+  transform: translateX(-50%);
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(84, 238, 255, .24) 18%,
+      rgba(199, 255, 255, .86) 50%,
+      rgba(84, 238, 255, .24) 82%,
+      transparent
+    );
+  filter: blur(3px);
+  opacity: 0;
+  animation: introBeamIn 1.2s 2s ease forwards;
+}
+
+@keyframes introBeamIn {
+  from { opacity: 0; transform: translateX(-50%) scaleY(.05); transform-origin: top; }
+  to { opacity: .85; transform: translateX(-50%) scaleY(1); transform-origin: top; }
+}
+
+.introCow {
+  position: absolute;
+  z-index: 6;
+  left: 50%;
+  bottom: 6%;
+  width: clamp(92px, 13vw, 155px);
+  transform: translateX(-50%);
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(122, 244, 255, .62));
+  animation: introCowLift 3s 2.15s ease-in-out forwards;
+}
+
+.introCowBody {
+  position: relative;
+  width: 100%;
+  height: 51px;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 30% 41%, #3a281f 0 14%, transparent 15%),
+    radial-gradient(ellipse at 66% 55%, #3a281f 0 12%, transparent 13%),
+    #eee8db;
+}
+
+.introCowBody::before {
+  content: "";
+  position: absolute;
+  right: -24%;
+  top: -10%;
+  width: 35%;
+  height: 64%;
+  border-radius: 48%;
+  background:
+    radial-gradient(circle at 67% 42%, #16110d 0 7%, transparent 8%),
+    #eee8db;
+}
+
+.introCowBody::after {
+  content: "";
+  position: absolute;
+  left: 15%;
+  top: 72%;
+  width: 8px;
+  height: 39px;
+  border-radius: 0 0 5px 5px;
+  background: #d7cebd;
+  box-shadow:
+    48px 0 #d7cebd,
+    79px -2px #d7cebd;
+}
+
+@keyframes introCowLift {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 86px) rotate(-5deg);
+  }
+  24% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, -49px) rotate(5deg);
+  }
+  100% {
+    opacity: .88;
+    transform: translate(-50%, -70px) rotate(-3deg);
+  }
+}
+
+.introContent {
+  position: relative;
+  z-index: 15;
+  width: min(94vw, 900px);
+  margin-top: min(39vh, 340px);
+  padding: 17px;
+  text-align: center;
+}
+
+.introEyebrow {
+  margin-bottom: 4px;
+  color: #bafcff;
+  font-size: clamp(10px, 1.3vw, 14px);
+  font-weight: 800;
+  letter-spacing: clamp(4px, .8vw, 9px);
+  opacity: 0;
+  animation: introTextIn .8s 2.5s ease forwards;
+}
+
+.introTitle {
+  margin: 0;
+  font-size: clamp(43px, 9.3vw, 104px);
+  font-weight: 1000;
+  line-height: .94;
+  letter-spacing: clamp(1px, .5vw, 7px);
+  background:
+    linear-gradient(180deg, #fff, #8ff7ff 52%, #1884ae 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter:
+    drop-shadow(0 0 8px rgba(138, 249, 255, .66))
+    drop-shadow(0 9px 0 rgba(0, 37, 61, .6));
+  opacity: 0;
+  animation: introTitleIn 1.05s 2.75s cubic-bezier(.15,.8,.22,1) forwards;
+}
+
+.introSubtitle {
+  margin: 11px 0 0;
+  color: #b9f9ff;
+  font-size: clamp(12px, 2vw, 21px);
+  font-weight: 800;
+  letter-spacing: clamp(5px, 1.3vw, 14px);
+  text-shadow: 0 0 14px #35dff6;
+  opacity: 0;
+  animation: introTextIn .8s 3.35s ease forwards;
+}
+
+.introMission {
+  margin: 13px 0 0;
+  color: rgba(225, 251, 255, .78);
+  font-size: clamp(9px, 1.3vw, 13px);
+  font-weight: 700;
+  letter-spacing: clamp(2px, .55vw, 6px);
+  opacity: 0;
+  animation: introTextIn .8s 3.8s ease forwards;
+}
+
+@keyframes introTitleIn {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+    letter-spacing: 20px;
+    filter: blur(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter:
+      drop-shadow(0 0 8px rgba(138, 249, 255, .66))
+      drop-shadow(0 9px 0 rgba(0, 37, 61, .6));
+  }
+}
+
+@keyframes introTextIn {
+  from { opacity: 0; transform: translateY(11px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.introGate {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: min(88vw, 450px);
+  min-height: 67px;
+  margin-top: 24px;
+  padding: 13px 29px;
+  border: 1px solid rgba(157, 251, 255, .7);
+  border-radius: 17px;
+  background:
+    linear-gradient(180deg, rgba(10, 50, 76, .88), rgba(2, 15, 31, .92));
+  box-shadow:
+    0 0 14px rgba(92, 239, 255, .34),
+    0 0 42px rgba(28, 199, 230, .18),
+    inset 0 1px rgba(255, 255, 255, .25);
+  color: #dfffff;
+  font: inherit;
+  cursor: default;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(15px);
+  transition:
+    opacity .45s ease,
+    transform .45s ease,
+    filter .2s ease;
+}
+
+#ufoIntro.intro-ready .introGate {
+  opacity: 1;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translateY(0);
+  animation: introGatePulse 1.5s ease-in-out infinite alternate;
+}
+
+#ufoIntro.intro-ready .introGate:hover {
+  filter: brightness(1.2);
+}
+
+#ufoIntro.intro-ready .introGate:active {
+  transform: scale(.98);
+}
+
+.introGateText {
+  display: block;
+  font-size: clamp(14px, 2.1vw, 20px);
+  font-weight: 900;
+  letter-spacing: clamp(2px, .6vw, 6px);
+  text-shadow: 0 0 13px #5cefff;
+}
+
+.introGateHint {
+  display: block;
+  margin-top: 5px;
+  color: #8cd5e3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+@keyframes introGatePulse {
+  from {
+    box-shadow:
+      0 0 12px rgba(92, 239, 255, .28),
+      0 0 30px rgba(28, 199, 230, .12),
+      inset 0 1px rgba(255, 255, 255, .25);
+  }
+  to {
+    box-shadow:
+      0 0 22px rgba(92, 239, 255, .78),
+      0 0 58px rgba(28, 199, 230, .32),
+      inset 0 1px rgba(255, 255, 255, .4);
+  }
+}
+
+.introSkipStatus {
+  min-height: 17px;
+  margin-top: 9px;
+  color: rgba(194, 237, 244, .55);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.introFlash {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  pointer-events: none;
+  background: #dfffff;
+  opacity: 0;
+}
+
+#ufoIntro.intro-leaving .introFlash {
+  animation: introExitFlash .62s ease-out;
+}
+
+@keyframes introExitFlash {
+  0% { opacity: 0; }
+  18% { opacity: .94; }
+  100% { opacity: 0; }
+}
+
+/* Mobile */
+
+@media (max-width: 700px), (pointer: coarse) {
+  #ufoIntro {
+    min-height: 100dvh;
+  }
+
+  .introMoon {
+    top: 8%;
+    right: 7%;
+    width: clamp(68px, 20vw, 105px);
+  }
+
+  .introUfoScene {
+    top: 5%;
+    width: 118vw;
+    height: 48vh;
+  }
+
+  .introUfo {
+    width: 70%;
+    height: 25%;
+  }
+
+  .introBeam {
+    top: 27%;
+    width: 43%;
+    height: 76%;
+  }
+
+  .introCow {
+    width: 96px;
+    bottom: 11%;
+  }
+
+  .introContent {
+    width: 100%;
+    margin-top: 30vh;
+    padding: 14px;
+  }
+
+  .introTitle {
+    font-size: clamp(43px, 15vw, 69px);
+  }
+
+  .introSubtitle {
+    font-size: clamp(11px, 4vw, 17px);
+    letter-spacing: clamp(4px, 2vw, 8px);
+  }
+
+  .introMission {
+    max-width: 92%;
+    margin: 12px auto 0;
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .introGate {
+    width: min(88vw, 390px);
+    min-height: 64px;
+    margin-top: 19px;
+  }
+
+  .introGateText {
+    font-size: 14px;
+  }
+
+  .introGateHint {
+    font-size: 9px;
+  }
+
+  .introGround {
+    height: 30%;
+  }
+
+  .introTrees {
+    bottom: 18%;
+  }
+}
+
+/* Sehr kleine oder niedrige Displays */
+
+@media (max-height: 650px) {
+  .introUfoScene {
+    top: 0;
+    height: 45vh;
+  }
+
+  .introContent {
+    margin-top: 27vh;
+  }
+
+  .introTitle {
+    font-size: clamp(38px, 10vh, 68px);
+  }
+
+  .introGate {
+    min-height: 54px;
+    margin-top: 13px;
+    padding: 8px 22px;
+  }
+
+  .introMission {
+    margin-top: 8px;
+  }
+}
+
+/* Bewegungen bei entsprechender Systemeinstellung reduzieren */
+
+@media (prefers-reduced-motion: reduce) {
+  #ufoIntro *,
+  #ufoIntro *::before,
+  #ufoIntro *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .introGate,
+  .introTitle,
+  .introSubtitle,
+  .introMission,
+  .introEyebrow,
+  .introMoon,
+  .introUfoScene,
+  .introCow,
+  .introBeam {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================
+   PHASE 1: CINEMATIC INTRO SEQUENCING
+   ========================================================== */
+
+#ufoIntro {
+  perspective: 1100px;
+}
+
+/* Schwarzer Startvorhang */
+
+.cinematicBlackout {
+  position: absolute;
+  z-index: 100;
+  inset: 0;
+  pointer-events: none;
+  background: #000;
+  opacity: 1;
+  animation: cinematicBlackoutOpen 1.35s .18s ease forwards;
+}
+
+@keyframes cinematicBlackoutOpen {
+  0% {
+    opacity: 1;
+  }
+
+  55% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+
+/* Kino-Balken */
+
+.cinematicLetterbox {
+  position: absolute;
+  z-index: 82;
+  left: 0;
+  right: 0;
+  height: clamp(18px, 4.2vh, 58px);
+  pointer-events: none;
+  background: #000;
+  transition:
+    transform .9s cubic-bezier(.2,.75,.2,1),
+    opacity .6s ease;
+}
+
+.cinematicLetterbox.top {
+  top: 0;
+  transform: translateY(-105%);
+  animation: cinematicTopBarIn .7s .2s ease forwards;
+}
+
+.cinematicLetterbox.bottom {
+  bottom: 0;
+  transform: translateY(105%);
+  animation: cinematicBottomBarIn .7s .2s ease forwards;
+}
+
+#ufoIntro.intro-ready .cinematicLetterbox.top {
+  transform: translateY(-105%);
+}
+
+#ufoIntro.intro-ready .cinematicLetterbox.bottom {
+  transform: translateY(105%);
+}
+
+@keyframes cinematicTopBarIn {
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes cinematicBottomBarIn {
+  to {
+    transform: translateY(0);
+  }
+}
+
+
+/* Funk- und Statusmeldung */
+
+.cinematicSequenceText {
+  position: absolute;
+  z-index: 90;
+  top: clamp(68px, 10vh, 118px);
+  left: 50%;
+  width: min(92vw, 780px);
+  padding: 13px 18px;
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity .23s ease,
+    transform .23s ease,
+    filter .14s ease;
+}
+
+.cinematicSequenceText.visible {
+  opacity: 1;
+}
+
+.cinematicSequenceText.changing {
+  opacity: .12;
+  transform: translateX(-50%) scale(1.025);
+  filter: blur(4px);
+}
+
+.cinematicSequenceText.glitch {
+  animation: cinematicTextGlitch .52s steps(2, end);
+}
+
+.cinematicCode {
+  margin-bottom: 6px;
+  color: #68dff2;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: clamp(9px, 1.2vw, 12px);
+  font-weight: 800;
+  letter-spacing: clamp(3px, .65vw, 7px);
+  text-shadow: 0 0 9px #25c8de;
+}
+
+.cinematicMainText {
+  color: #e7ffff;
+  font-size: clamp(15px, 2.4vw, 27px);
+  font-weight: 950;
+  letter-spacing: clamp(2px, .6vw, 7px);
+  text-shadow:
+    0 0 8px #5deeff,
+    0 0 24px rgba(50, 214, 241, .75);
+}
+
+.cinematicSubText {
+  margin-top: 7px;
+  color: rgba(180, 235, 244, .62);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    monospace;
+  font-size: clamp(8px, 1.2vw, 11px);
+  font-weight: 700;
+  letter-spacing: clamp(2px, .55vw, 6px);
+}
+
+@keyframes cinematicTextGlitch {
+  0% {
+    transform: translateX(-50%);
+    text-shadow: none;
+  }
+
+  14% {
+    transform: translateX(calc(-50% - 8px)) skewX(8deg);
+    filter: hue-rotate(85deg);
+  }
+
+  28% {
+    transform: translateX(calc(-50% + 11px)) skewX(-11deg);
+    clip-path: inset(12% 0 57% 0);
+  }
+
+  42% {
+    transform: translateX(calc(-50% - 5px));
+    clip-path: inset(61% 0 9% 0);
+  }
+
+  58% {
+    transform: translateX(calc(-50% + 4px));
+    filter: hue-rotate(-60deg);
+  }
+
+  76% {
+    transform: translateX(calc(-50% - 2px));
+    clip-path: inset(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+    filter: none;
+  }
+}
+
+
+/* Scanner-Zielerfassung */
+
+.cinematicReticle {
+  position: absolute;
+  z-index: 72;
+  top: 18%;
+  left: 50%;
+  width: clamp(145px, 27vw, 320px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(122, 239, 255, .24);
+  border-radius: 50%;
+  transform: translateX(-50%) scale(1.5);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cinematicReticle::before,
+.cinematicReticle::after {
+  content: "";
+  position: absolute;
+  background: rgba(117, 237, 255, .32);
+}
+
+.cinematicReticle::before {
+  top: 50%;
+  left: -14%;
+  width: 128%;
+  height: 1px;
+}
+
+.cinematicReticle::after {
+  top: -14%;
+  left: 50%;
+  width: 1px;
+  height: 128%;
+}
+
+.cinematicReticle span {
+  position: absolute;
+  inset: 18%;
+  border:
+    clamp(1px, .22vw, 2px)
+    dashed
+    rgba(131, 245, 255, .55);
+  border-radius: 50%;
+}
+
+#ufoIntro.phase-signal .cinematicReticle {
+  animation: cinematicReticleAcquire 1.3s ease forwards;
+}
+
+#ufoIntro.phase-ufo .cinematicReticle,
+#ufoIntro.phase-beam .cinematicReticle {
+  opacity: .72;
+  transform: translateX(-50%) scale(1);
+  animation: cinematicReticleRotate 5s linear infinite;
+}
+
+#ufoIntro.phase-title .cinematicReticle,
+#ufoIntro.intro-ready .cinematicReticle {
+  opacity: 0;
+  transition: opacity .5s ease;
+}
+
+@keyframes cinematicReticleAcquire {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) scale(1.6);
+  }
+
+  35% {
+    opacity: .9;
+  }
+
+  100% {
+    opacity: .72;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes cinematicReticleRotate {
+  from {
+    transform: translateX(-50%) scale(1) rotate(0deg);
+  }
+
+  to {
+    transform: translateX(-50%) scale(1) rotate(360deg);
+  }
+}
+
+
+/* Warnmeldung */
+
+.cinematicWarning {
+  position: absolute;
+  z-index: 94;
+  top: 50%;
+  left: 50%;
+  width: min(88vw, 570px);
+  padding: 17px 24px;
+  transform: translate(-50%, -50%) scale(1.12);
+  border:
+    clamp(1px, .2vw, 2px)
+    solid
+    rgba(255, 79, 74, .78);
+  background:
+    linear-gradient(
+      90deg,
+      rgba(55, 3, 7, .2),
+      rgba(75, 7, 10, .82),
+      rgba(55, 3, 7, .2)
+    );
+  box-shadow:
+    0 0 18px rgba(255, 53, 53, .25),
+    inset 0 0 28px rgba(255, 53, 53, .11);
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.cinematicWarning strong,
+.cinematicWarning span {
+  display: block;
+}
+
+.cinematicWarning strong {
+  color: #ff746e;
+  font-size: clamp(12px, 1.8vw, 18px);
+  letter-spacing: clamp(4px, .8vw, 9px);
+  text-shadow: 0 0 13px #ff2828;
+}
+
+.cinematicWarning span {
+  margin-top: 5px;
+  font-size: clamp(17px, 3vw, 31px);
+  font-weight: 1000;
+  letter-spacing: clamp(2px, .55vw, 6px);
+}
+
+#ufoIntro.phase-warning .cinematicWarning {
+  animation: cinematicWarningShow 1.12s steps(2, end) forwards;
+}
+
+@keyframes cinematicWarningShow {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  25% {
+    opacity: .28;
+  }
+
+  37% {
+    opacity: 1;
+  }
+
+  74% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -54%) scale(.96);
+  }
+}
+
+
+/* Analoge Störung */
+
+.cinematicNoise {
+  position: absolute;
+  z-index: 88;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    repeating-radial-gradient(
+      circle at 30% 40%,
+      rgba(255,255,255,.08) 0 1px,
+      transparent 1px 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 9px,
+      rgba(67, 225, 255, .04) 9px 10px
+    );
+  mix-blend-mode: screen;
+}
+
+#ufoIntro.phase-signal .cinematicNoise,
+#ufoIntro.phase-warning .cinematicNoise {
+  animation: cinematicNoiseBurst .17s steps(2,end) infinite;
+}
+
+@keyframes cinematicNoiseBurst {
+  0% {
+    opacity: .07;
+    transform: translate(0, 0);
+  }
+
+  33% {
+    opacity: .22;
+    transform: translate(-2px, 1px);
+  }
+
+  66% {
+    opacity: .1;
+    transform: translate(2px, -1px);
+  }
+
+  100% {
+    opacity: .18;
+    transform: translate(0, 1px);
+  }
+}
+
+
+/* Phasensteuerung der vorhandenen Elemente */
+
+#ufoIntro #introMoon,
+#ufoIntro #introUfoScene,
+#ufoIntro #introContent {
+  animation: none;
+}
+
+#ufoIntro #introMoon {
+  opacity: 0;
+  transform: translateY(-20px) scale(.78);
+  transition:
+    opacity 1.15s ease,
+    transform 1.4s ease;
+}
+
+#ufoIntro.phase-landscape #introMoon,
+#ufoIntro.phase-signal #introMoon,
+#ufoIntro.phase-ufo #introMoon,
+#ufoIntro.phase-beam #introMoon,
+#ufoIntro.phase-warning #introMoon,
+#ufoIntro.phase-title #introMoon,
+#ufoIntro.intro-ready #introMoon {
+  opacity: .92;
+  transform: translateY(0) scale(1);
+}
+
+#ufoIntro #introUfoScene {
+  opacity: 0;
+  transform:
+    translate(-50%, -57%)
+    scale(.16)
+    rotate(-7deg);
+  transition:
+    opacity .35s ease,
+    transform 1.35s cubic-bezier(.12,.78,.12,1);
+}
+
+#ufoIntro.phase-ufo #introUfoScene,
+#ufoIntro.phase-beam #introUfoScene,
+#ufoIntro.phase-warning #introUfoScene,
+#ufoIntro.phase-title #introUfoScene,
+#ufoIntro.intro-ready #introUfoScene {
+  opacity: 1;
+  transform:
+    translate(-50%, 0)
+    scale(1)
+    rotate(0);
+}
+
+#ufoIntro #introBeam {
+  opacity: 0;
+  animation: none;
+  transform:
+    translateX(-50%)
+    scaleY(.03);
+  transform-origin: top center;
+  transition:
+    opacity .28s ease,
+    transform .74s cubic-bezier(.2,.8,.25,1);
+}
+
+#ufoIntro.phase-beam #introBeam,
+#ufoIntro.phase-warning #introBeam,
+#ufoIntro.phase-title #introBeam,
+#ufoIntro.intro-ready #introBeam {
+  opacity: .88;
+  transform:
+    translateX(-50%)
+    scaleY(1);
+}
+
+#ufoIntro #introCow {
+  opacity: 0;
+  animation: none;
+  transform:
+    translate(-50%, 90px)
+    rotate(-6deg);
+  transition:
+    opacity .32s ease,
+    transform 1.75s cubic-bezier(.3,.05,.25,1);
+}
+
+#ufoIntro.phase-beam #introCow,
+#ufoIntro.phase-warning #introCow,
+#ufoIntro.phase-title #introCow,
+#ufoIntro.intro-ready #introCow {
+  opacity: .94;
+  transform:
+    translate(-50%, -68px)
+    rotate(-3deg);
+}
+
+#ufoIntro #introContent {
+  opacity: 0;
+  transform:
+    translateY(27px)
+    scale(.96);
+  transition:
+    opacity .85s ease,
+    transform 1s cubic-bezier(.18,.75,.18,1);
+}
+
+#ufoIntro.phase-title #introContent,
+#ufoIntro.intro-ready #introContent {
+  opacity: 1;
+  transform:
+    translateY(0)
+    scale(1);
+}
+
+#ufoIntro .introEyebrow,
+#ufoIntro .introTitle,
+#ufoIntro .introSubtitle,
+#ufoIntro .introMission {
+  animation: none;
+  opacity: 0;
+}
+
+#ufoIntro.phase-title .introEyebrow,
+#ufoIntro.phase-title .introTitle,
+#ufoIntro.phase-title .introSubtitle,
+#ufoIntro.phase-title .introMission,
+#ufoIntro.intro-ready .introEyebrow,
+#ufoIntro.intro-ready .introTitle,
+#ufoIntro.intro-ready .introSubtitle,
+#ufoIntro.intro-ready .introMission {
+  opacity: 1;
+}
+
+#ufoIntro.phase-title .introEyebrow {
+  animation: cinematicElementReveal .45s .05s both;
+}
+
+#ufoIntro.phase-title .introTitle {
+  animation: cinematicTitleReveal .85s .18s both;
+}
+
+#ufoIntro.phase-title .introSubtitle {
+  animation: cinematicElementReveal .55s .7s both;
+}
+
+#ufoIntro.phase-title .introMission {
+  animation: cinematicElementReveal .55s .95s both;
+}
+
+@keyframes cinematicElementReveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+    filter: blur(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes cinematicTitleReveal {
+  0% {
+    opacity: 0;
+    transform: scale(1.4);
+    letter-spacing: 24px;
+    filter: blur(15px);
+  }
+
+  65% {
+    opacity: 1;
+    transform: scale(.985);
+    filter: blur(0);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* Kamera-Shake beim UFO-Abbremsen */
+
+#ufoIntro.camera-impact {
+  animation: cinematicCameraImpact .48s ease-out;
+}
+
+@keyframes cinematicCameraImpact {
+  0% {
+    transform: translate3d(0,0,0);
+  }
+
+  15% {
+    transform: translate3d(-8px,5px,0) rotate(-.2deg);
+  }
+
+  32% {
+    transform: translate3d(7px,-4px,0) rotate(.2deg);
+  }
+
+  48% {
+    transform: translate3d(-5px,2px,0);
+  }
+
+  66% {
+    transform: translate3d(3px,-2px,0);
+  }
+
+  82% {
+    transform: translate3d(-1px,1px,0);
+  }
+
+  100% {
+    transform: translate3d(0,0,0);
+  }
+}
+
+
+/* Heller Impuls beim Einschalten des Beams */
+
+#ufoIntro.beam-impact::after {
+  content: "";
+  position: absolute;
+  z-index: 76;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 50% 31%,
+      rgba(220,255,255,.95),
+      rgba(77,229,255,.42) 18%,
+      transparent 52%
+    );
+  animation: cinematicBeamFlash .7s ease-out forwards;
+}
+
+@keyframes cinematicBeamFlash {
+  0% {
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+
+/* Ende der Funkmeldung */
+
+#ufoIntro.phase-title .cinematicSequenceText,
+#ufoIntro.intro-ready .cinematicSequenceText {
+  opacity: 0;
+}
+
+
+/* Mobile-Anpassungen Phase 1 */
+
+@media (max-width: 700px), (pointer: coarse) {
+  .cinematicSequenceText {
+    top:
+      calc(
+        env(safe-area-inset-top, 0px) +
+        55px
+      );
+    width: 95vw;
+    padding: 10px 12px;
+  }
+
+  .cinematicMainText {
+    font-size: clamp(13px, 4.2vw, 20px);
+    line-height: 1.25;
+  }
+
+  .cinematicWarning {
+    top: 46%;
+    width: 92vw;
+    padding: 14px 12px;
+  }
+
+  .cinematicWarning span {
+    font-size: clamp(16px, 5.5vw, 25px);
+  }
+
+  .cinematicReticle {
+    top: 19%;
+    width: clamp(135px, 48vw, 235px);
+  }
+
+  .cinematicLetterbox {
+    height:
+      calc(
+        env(safe-area-inset-top, 0px) +
+        18px
+      );
+  }
+}
+
+
+/* Kleine Displayhöhen */
+
+@media (max-height: 650px) {
+  .cinematicSequenceText {
+    top: 38px;
+  }
+
+  .cinematicWarning {
+    top: 42%;
+  }
+
+  .cinematicReticle {
+    top: 12%;
+    width: 132px;
+  }
+}
+
+
+/* Reduced Motion */
+
+@media (prefers-reduced-motion: reduce) {
+  #ufoIntro.camera-impact,
+  #ufoIntro.beam-impact::after,
+  .cinematicNoise,
+  .cinematicReticle {
+    animation: none !important;
+  }
+
+  .cinematicLetterbox {
+    display: none;
+  }
+}
+
+
+
+/* ==========================================================
+   UFO-JAGD
+   PHASE 2 - PARALLAX LANDSCAPE
+   ========================================================== */
+
+.parallaxWorld {
+  --px: 0;
+  --py: 0;
+
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  perspective: 900px;
+  transform-style: preserve-3d;
+
+  opacity: 0;
+
+  transition:
+    opacity 1.5s ease;
+}
+
+
+/* Landschaft wird mit Phase 1 sichtbar */
+
+#ufoIntro.phase-landscape .parallaxWorld,
+#ufoIntro.phase-signal .parallaxWorld,
+#ufoIntro.phase-ufo .parallaxWorld,
+#ufoIntro.phase-beam .parallaxWorld,
+#ufoIntro.phase-warning .parallaxWorld,
+#ufoIntro.phase-title .parallaxWorld,
+#ufoIntro.intro-ready .parallaxWorld {
+  opacity: 1;
+}
+
+
+/* ----------------------------------------------------------
+   Alle Parallax Layer
+   ---------------------------------------------------------- */
+
+.parallaxLayer {
+  position: absolute;
+
+  left: -6%;
+  right: -6%;
+
+  width: 112%;
+
+  will-change: transform;
+
+  transform:
+    translate3d(
+      calc(var(--mx, 0px)),
+      calc(var(--my, 0px)),
+      0
+    );
+
+  transition:
+    transform .14s linear;
+}
+
+
+/* ----------------------------------------------------------
+   HIMMELSLEUCHTEN
+   ---------------------------------------------------------- */
+
+.parallaxSkyGlow {
+  inset: 0;
+
+  width: auto;
+
+  background:
+
+    radial-gradient(
+      ellipse at 22% 35%,
+      rgba(26, 113, 165, .17),
+      transparent 37%
+    ),
+
+    radial-gradient(
+      ellipse at 76% 23%,
+      rgba(86, 128, 228, .13),
+      transparent 38%
+    ),
+
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(43, 109, 137, .055) 62%,
+      rgba(30, 112, 90, .06) 100%
+    );
+
+  filter: blur(7px);
+}
+
+
+/* ----------------------------------------------------------
+   FERNE BERGE
+   ---------------------------------------------------------- */
+
+.parallaxMountainsFar {
+  z-index: 2;
+
+  bottom: 21%;
+
+  height: 29%;
+
+  opacity: .37;
+
+  background:
+    linear-gradient(
+      145deg,
+      transparent 0 43%,
+      #273f58 43.4% 55%,
+      transparent 55.4%
+    )
+    0 100% / 29% 100% repeat-x;
+
+  filter:
+    blur(.45px)
+    drop-shadow(
+      0 -8px 18px rgba(76, 140, 184, .08)
+    );
+}
+
+
+/* Schneekanten */
+
+.parallaxMountainsFar::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  opacity: .22;
+
+  background:
+    linear-gradient(
+      147deg,
+      transparent 0 46%,
+      rgba(194, 228, 238, .7) 46.4% 49%,
+      transparent 49.5%
+    )
+    3% 8% / 29% 100% repeat-x;
+}
+
+
+/* ----------------------------------------------------------
+   NAHE BERGE
+   ---------------------------------------------------------- */
+
+.parallaxMountainsNear {
+  z-index: 3;
+
+  bottom: 18%;
+
+  height: 27%;
+
+  opacity: .73;
+
+  background:
+
+    linear-gradient(
+      151deg,
+      transparent 0 42%,
+      #0e2530 42.5% 58%,
+      transparent 58.5%
+    )
+    -4% 100% / 34% 100% repeat-x;
+
+  filter:
+    drop-shadow(
+      0 -8px 16px rgba(0,0,0,.4)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   FERNER WALD
+   ---------------------------------------------------------- */
+
+.parallaxForestFar {
+  z-index: 4;
+
+  bottom: 16%;
+
+  height: 21%;
+
+  opacity: .8;
+
+  background:
+
+    linear-gradient(
+      153deg,
+      transparent 0 45%,
+      #06150f 45.5% 55%,
+      transparent 55.5%
+    )
+    0 100% / 47px 100% repeat-x;
+}
+
+
+/* Baumstämme andeuten */
+
+.parallaxForestFar::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 38%;
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 20px,
+      rgba(2, 12, 7, .85) 20px 24px,
+      transparent 24px 46px
+    );
+}
+
+
+/* ----------------------------------------------------------
+   NEBEL
+   ---------------------------------------------------------- */
+
+.parallaxFog {
+  z-index: 5;
+
+  height: 17%;
+
+  border-radius: 50%;
+
+  filter: blur(25px);
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(168, 213, 226, .18),
+      rgba(105, 171, 190, .07) 52%,
+      transparent 73%
+    );
+
+  mix-blend-mode: screen;
+}
+
+
+.parallaxFogOne {
+  bottom: 22%;
+
+  animation:
+    phase2FogOne 19s linear infinite;
+}
+
+
+.parallaxFogTwo {
+  bottom: 15%;
+
+  opacity: .58;
+
+  transform: scale(1.25);
+
+  animation:
+    phase2FogTwo 27s linear infinite;
+}
+
+
+@keyframes phase2FogOne {
+  from {
+    margin-left: -22%;
+  }
+
+  to {
+    margin-left: 22%;
+  }
+}
+
+
+@keyframes phase2FogTwo {
+  from {
+    margin-left: 27%;
+  }
+
+  to {
+    margin-left: -30%;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   FARM
+   ---------------------------------------------------------- */
+
+.parallaxFarmLayer {
+  z-index: 6;
+
+  bottom: 17%;
+
+  height: 22%;
+}
+
+
+.farmHouse {
+  position: absolute;
+
+  left: 10%;
+
+  bottom: 0;
+
+  width: clamp(115px, 15vw, 210px);
+
+  height: clamp(72px, 10vw, 132px);
+
+  filter:
+    drop-shadow(0 10px 17px rgba(0,0,0,.8));
+}
+
+
+.farmWall {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+
+  height: 58%;
+
+  border:
+    1px solid rgba(124, 91, 62, .45);
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      #20130f 0 9px,
+      #2c1912 9px 11px
+    );
+
+  box-shadow:
+    inset 0 -16px 30px rgba(0,0,0,.6);
+}
+
+
+.farmRoof {
+  position: absolute;
+
+  z-index: 3;
+
+  top: 1%;
+  left: 1%;
+
+  width: 98%;
+  height: 48%;
+
+  clip-path:
+    polygon(
+      0 100%,
+      49% 3%,
+      100% 100%
+    );
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      #17191b 0 8px,
+      #262b2d 8px 10px
+    );
+
+  filter:
+    drop-shadow(0 7px 5px rgba(0,0,0,.7));
+}
+
+
+.farmWindow {
+  position: absolute;
+
+  top: 23%;
+
+  width: 13%;
+  height: 27%;
+
+  border:
+    2px solid #3a2618;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffed9f,
+      #ffb840
+    );
+
+  box-shadow:
+
+    0 0 9px #ffc34c,
+
+    0 0 24px
+    rgba(255, 176, 62, .32);
+
+  animation:
+    phase2WindowFlicker
+    6s ease-in-out infinite;
+}
+
+
+.farmWindow.w1 {
+  left: 16%;
+}
+
+
+.farmWindow.w2 {
+  right: 16%;
+
+  animation-delay: 1.7s;
+}
+
+
+@keyframes phase2WindowFlicker {
+  0%,
+  88%,
+  100% {
+    opacity: .94;
+  }
+
+  91% {
+    opacity: .57;
+  }
+
+  94% {
+    opacity: 1;
+  }
+}
+
+
+.farmDoor {
+  position: absolute;
+
+  left: 44%;
+  bottom: 0;
+
+  width: 20%;
+  height: 48%;
+
+  border:
+    1px solid rgba(0,0,0,.8);
+
+  background: #100b08;
+}
+
+
+.farmChimney {
+  position: absolute;
+
+  z-index: 1;
+
+  top: 12%;
+  right: 21%;
+
+  width: 9%;
+  height: 39%;
+
+  background: #151312;
+}
+
+
+/* Rauch */
+
+.farmChimney::after {
+  content: "";
+
+  position: absolute;
+
+  left: -17px;
+  top: -30px;
+
+  width: 45px;
+  height: 39px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(113, 137, 149, .15);
+
+  filter: blur(10px);
+
+  animation:
+    phase2Smoke
+    5s ease-in-out infinite;
+}
+
+
+@keyframes phase2Smoke {
+  from {
+    transform:
+      translate(0, 0)
+      scale(.65);
+
+    opacity: 0;
+  }
+
+  20% {
+    opacity: .5;
+  }
+
+  to {
+    transform:
+      translate(27px, -41px)
+      scale(1.5);
+
+    opacity: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   WINDRAD
+   ---------------------------------------------------------- */
+
+.windmill {
+  position: absolute;
+
+  right: 11%;
+
+  bottom: 0;
+
+  width: clamp(70px, 9vw, 125px);
+
+  height: clamp(115px, 16vw, 210px);
+}
+
+
+.windmillTower {
+  position: absolute;
+
+  left: 48%;
+  bottom: 0;
+
+  width: 7%;
+
+  height: 72%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #171b1d,
+      #3c484c,
+      #111516
+    );
+
+  transform:
+    translateX(-50%)
+    perspective(200px)
+    rotateX(-3deg);
+}
+
+
+.windmillTower::before,
+.windmillTower::after {
+  content: "";
+
+  position: absolute;
+
+  bottom: 0;
+
+  width: 3px;
+  height: 105%;
+
+  background: #22282a;
+}
+
+
+.windmillTower::before {
+  transform:
+    rotate(12deg);
+
+  transform-origin: bottom;
+}
+
+
+.windmillTower::after {
+  right: 0;
+
+  transform:
+    rotate(-12deg);
+
+  transform-origin: bottom;
+}
+
+
+.windmillRotor {
+  position: absolute;
+
+  left: 50%;
+  top: 19%;
+
+  width: 58%;
+  aspect-ratio: 1;
+
+  transform:
+    translate(-50%, -50%);
+
+  border:
+    4px solid #242d30;
+
+  border-radius: 50%;
+
+  animation:
+    phase2Rotor
+    10s linear infinite;
+}
+
+
+.windmillRotor::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 12px;
+  height: 12px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #68777c;
+
+  box-shadow:
+    0 0 5px #000;
+}
+
+
+.windmillRotor i {
+  position: absolute;
+
+  left: 48%;
+  top: -29%;
+
+  width: 5%;
+  height: 80%;
+
+  background:
+    linear-gradient(
+      #526066,
+      #1c2427
+    );
+
+  transform-origin:
+    50% 100%;
+}
+
+
+.windmillRotor i:nth-child(2) {
+  transform: rotate(90deg);
+}
+
+
+.windmillRotor i:nth-child(3) {
+  transform: rotate(180deg);
+}
+
+
+.windmillRotor i:nth-child(4) {
+  transform: rotate(270deg);
+}
+
+
+@keyframes phase2Rotor {
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   VORDERER WALD
+   ---------------------------------------------------------- */
+
+.parallaxForestNear {
+  z-index: 7;
+
+  bottom: 8%;
+
+  height: 25%;
+
+  opacity: .94;
+
+  background:
+
+    linear-gradient(
+      151deg,
+      transparent 0 45%,
+      #020d08 45.5% 55%,
+      transparent 55.5%
+    )
+    -12px 100% / 63px 100% repeat-x;
+
+  filter:
+    drop-shadow(
+      0 -5px 6px rgba(0,0,0,.35)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   ZAUN
+   ---------------------------------------------------------- */
+
+.parallaxFence {
+  z-index: 8;
+
+  left: -3%;
+  right: -3%;
+
+  width: 106%;
+
+  bottom: 7%;
+
+  height: 14%;
+
+  opacity: .94;
+
+  background:
+
+    linear-gradient(
+      180deg,
+      transparent 31%,
+      #161513 32% 36%,
+      transparent 37% 62%,
+      #161513 63% 67%,
+      transparent 68%
+    ),
+
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 88px,
+      #161513 89px 96px,
+      transparent 97px 128px
+    );
+
+  filter:
+    drop-shadow(
+      0 4px 3px rgba(0,0,0,.65)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   VORDERGRUND-GRAS
+   ---------------------------------------------------------- */
+
+.parallaxGrass {
+  z-index: 9;
+
+  bottom: -4%;
+
+  height: 28%;
+
+  background:
+
+    repeating-linear-gradient(
+      78deg,
+      transparent 0 11px,
+      rgba(22, 66, 29, .92) 12px 14px,
+      transparent 15px 23px
+    ),
+
+    repeating-linear-gradient(
+      102deg,
+      transparent 0 17px,
+      rgba(13, 49, 22, .92) 18px 20px,
+      transparent 21px 31px
+    ),
+
+    linear-gradient(
+      180deg,
+      rgba(8, 33, 16, .18),
+      #020b05 87%
+    );
+
+  filter:
+    drop-shadow(
+      0 -8px 15px rgba(0,0,0,.25)
+    );
+
+  transform-origin: bottom;
+}
+
+
+/* Gras bewegt sich leicht */
+
+.parallaxGrass::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+
+    repeating-linear-gradient(
+      83deg,
+      transparent 0 23px,
+      rgba(74, 119, 55, .17) 24px 26px,
+      transparent 27px 38px
+    );
+
+  animation:
+    phase2GrassWind
+    5.5s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase2GrassWind {
+  from {
+    transform:
+      skewX(-.7deg)
+      translateX(-3px);
+  }
+
+  to {
+    transform:
+      skewX(1.2deg)
+      translateX(5px);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   GLÜHWÜRMCHEN
+   ---------------------------------------------------------- */
+
+.fireflyField {
+  z-index: 10;
+
+  bottom: 3%;
+
+  height: 28%;
+}
+
+
+.phase2Firefly {
+  position: absolute;
+
+  width: 3px;
+  height: 3px;
+
+  border-radius: 50%;
+
+  background: #d4ff89;
+
+  box-shadow:
+
+    0 0 5px #d4ff89,
+
+    0 0 12px
+    rgba(196, 255, 100, .75);
+
+  animation:
+    phase2FireflyFloat
+    var(--duration)
+    ease-in-out
+    var(--delay)
+    infinite alternate;
+}
+
+
+@keyframes phase2FireflyFloat {
+  0% {
+    opacity: .04;
+
+    transform:
+      translate(
+        0,
+        8px
+      )
+      scale(.6);
+  }
+
+  35% {
+    opacity: .9;
+  }
+
+  100% {
+    opacity: .15;
+
+    transform:
+      translate(
+        var(--fly-x),
+        -22px
+      )
+      scale(1.3);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   BEAM beeinflusst Landschaft
+   ---------------------------------------------------------- */
+
+#ufoIntro.phase-beam .parallaxGrass,
+#ufoIntro.phase-warning .parallaxGrass,
+#ufoIntro.phase-title .parallaxGrass,
+#ufoIntro.intro-ready .parallaxGrass {
+  filter:
+    brightness(1.17)
+    saturate(1.15)
+    drop-shadow(
+      0 -8px 15px rgba(20, 188, 189, .1)
+    );
+}
+
+
+#ufoIntro.phase-beam .parallaxFarmLayer,
+#ufoIntro.phase-warning .parallaxFarmLayer {
+  filter:
+    drop-shadow(
+      0 0 14px
+      rgba(70, 228, 255, .12)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   CAMERA PUSH
+   Während das UFO auftaucht fährt die Landschaft minimal
+   auf die Kamera zu.
+   ---------------------------------------------------------- */
+
+#ufoIntro.phase-ufo .parallaxMountainsNear,
+#ufoIntro.phase-beam .parallaxMountainsNear {
+  scale: 1.015;
+}
+
+
+#ufoIntro.phase-ufo .parallaxForestNear,
+#ufoIntro.phase-beam .parallaxForestNear {
+  scale: 1.025;
+}
+
+
+#ufoIntro.phase-ufo .parallaxGrass,
+#ufoIntro.phase-beam .parallaxGrass {
+  scale: 1.035;
+}
+
+
+/* ----------------------------------------------------------
+   MOBILE
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px), (pointer: coarse) {
+
+  .parallaxWorld {
+    perspective: 700px;
+  }
+
+
+  .parallaxLayer {
+    left: -10%;
+    right: -10%;
+    width: 120%;
+
+    transition:
+      transform .22s ease-out;
+  }
+
+
+  .parallaxMountainsFar {
+    bottom: 19%;
+    height: 24%;
+  }
+
+
+  .parallaxMountainsNear {
+    bottom: 17%;
+    height: 22%;
+  }
+
+
+  .parallaxForestFar {
+    bottom: 14%;
+    height: 18%;
+  }
+
+
+  .parallaxForestNear {
+    bottom: 7%;
+    height: 21%;
+  }
+
+
+  .farmHouse {
+    left: 5%;
+
+    width:
+      clamp(
+        94px,
+        27vw,
+        145px
+      );
+
+    height:
+      clamp(
+        62px,
+        18vw,
+        94px
+      );
+  }
+
+
+  .windmill {
+    right: 5%;
+
+    transform:
+      scale(.82);
+
+    transform-origin:
+      bottom right;
+  }
+
+
+  .parallaxFence {
+    bottom: 6%;
+    height: 12%;
+  }
+
+
+  .parallaxGrass {
+    height: 23%;
+  }
+
+
+  .phase2Firefly:nth-child(n+13) {
+    display: none;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   PORTRAIT MOBILE
+   Landschaft bewusst dichter und tiefer
+   ---------------------------------------------------------- */
+
+@media
+  (max-width: 700px)
+  and
+  (orientation: portrait) {
+
+  .parallaxMountainsFar {
+    height: 21%;
+  }
+
+
+  .parallaxMountainsNear {
+    height: 19%;
+  }
+
+
+  .parallaxFarmLayer {
+    bottom: 15%;
+  }
+
+
+  .parallaxForestNear {
+    height: 19%;
+  }
+
+
+  .farmHouse {
+    left: 3%;
+  }
+
+
+  .windmill {
+    right: 1%;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   REDUCED MOTION
+   ---------------------------------------------------------- */
+
+@media
+  (prefers-reduced-motion: reduce) {
+
+  .parallaxLayer {
+    transform:
+      none !important;
+
+    transition:
+      none !important;
+  }
+
+
+  .parallaxFog,
+  .farmChimney::after,
+  .windmillRotor,
+  .parallaxGrass::after,
+  .phase2Firefly {
+    animation:
+      none !important;
+  }
+
+}
+
+
+
+/* ==========================================================
+   PHASE 2.1 - PARALLAX FIXES AND GAME CROSSHAIR
+   ========================================================== */
+
+/* Alte Phase-1-Landschaft wird vollständig ersetzt. */
+
+#ufoIntro .introGround,
+#ufoIntro .introTrees {
+  display: none !important;
+}
+
+
+/* ----------------------------------------------------------
+   Parallax-Translation und Phasen-Zoom kombinieren
+   ---------------------------------------------------------- */
+
+.parallaxLayer {
+  --phase-scale: 1;
+
+  transform:
+    translate3d(
+      var(--mx, 0px),
+      var(--my, 0px),
+      0
+    )
+    scale(var(--phase-scale));
+
+  scale: 1;
+}
+
+
+/* Nebel behält jetzt den Parallax-Transform. */
+
+.parallaxFogTwo {
+  scale: 1;
+
+  transform:
+    translate3d(
+      var(--mx, 0px),
+      var(--my, 0px),
+      0
+    )
+    scale(1.25);
+}
+
+
+/* Cinematic Camera Push ohne Überschreiben des Transforms. */
+
+#ufoIntro.phase-ufo .parallaxMountainsNear,
+#ufoIntro.phase-beam .parallaxMountainsNear {
+  --phase-scale: 1.015;
+  scale: 1;
+}
+
+#ufoIntro.phase-ufo .parallaxForestNear,
+#ufoIntro.phase-beam .parallaxForestNear {
+  --phase-scale: 1.025;
+  scale: 1;
+}
+
+#ufoIntro.phase-ufo .parallaxGrass,
+#ufoIntro.phase-beam .parallaxGrass {
+  --phase-scale: 1.035;
+  scale: 1;
+}
+
+
+/* ----------------------------------------------------------
+   DESKTOP-FADENKREUZ
+   ---------------------------------------------------------- */
+
+@media (pointer: fine) {
+
+  body.game-crosshair-active,
+  body.game-crosshair-active canvas {
+    cursor: none !important;
+  }
+
+  #gameCrosshair {
+    --crosshair-color: #aafcff;
+    --crosshair-danger: #ff664f;
+
+    position: fixed;
+    z-index: 8500;
+
+    left: 0;
+    top: 0;
+
+    width: 46px;
+    height: 46px;
+
+    transform:
+      translate3d(
+        calc(var(--crosshair-x, -100px) - 23px),
+        calc(var(--crosshair-y, -100px) - 23px),
+        0
+      );
+
+    opacity: 0;
+    visibility: hidden;
+
+    pointer-events: none;
+
+    transition:
+      opacity .12s ease,
+      visibility .12s ease;
+
+    will-change: transform;
+  }
+
+  body.game-crosshair-active #gameCrosshair {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  #gameCrosshair::before,
+  #gameCrosshair::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    background: var(--crosshair-color);
+
+    box-shadow:
+      0 0 4px var(--crosshair-color),
+      0 0 11px rgba(86, 235, 255, .75);
+
+    transform: translate(-50%, -50%);
+  }
+
+  #gameCrosshair::before {
+    width: 2px;
+    height: 48px;
+
+    background:
+      linear-gradient(
+        180deg,
+        var(--crosshair-color) 0 30%,
+        transparent 30% 70%,
+        var(--crosshair-color) 70% 100%
+      );
+  }
+
+  #gameCrosshair::after {
+    width: 48px;
+    height: 2px;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--crosshair-color) 0 30%,
+        transparent 30% 70%,
+        var(--crosshair-color) 70% 100%
+      );
+  }
+
+  .gameCrosshairRing {
+    position: absolute;
+
+    inset: 8px;
+
+    border: 1px solid rgba(177, 253, 255, .88);
+    border-radius: 50%;
+
+    box-shadow:
+      0 0 7px rgba(74, 229, 255, .58),
+      inset 0 0 7px rgba(74, 229, 255, .2);
+
+    transition:
+      transform .1s ease,
+      border-color .1s ease;
+  }
+
+  .gameCrosshairRing::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 5px;
+
+    border:
+      1px dashed
+      rgba(133, 244, 255, .47);
+
+    border-radius: 50%;
+
+    animation:
+      gameCrosshairRotate
+      7s linear infinite;
+  }
+
+  .gameCrosshairDot {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 5px;
+    height: 5px;
+
+    transform:
+      translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    background: #eaffff;
+
+    box-shadow:
+      0 0 5px #ffffff,
+      0 0 12px #4deaff;
+  }
+
+  .gameCrosshairBrackets {
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: 50%;
+
+    border-top:
+      2px solid
+      rgba(151, 250, 255, .75);
+
+    border-bottom:
+      2px solid
+      rgba(151, 250, 255, .75);
+
+    animation:
+      gameCrosshairCounterRotate
+      5s linear infinite;
+  }
+
+  #gameCrosshair.crosshair-fire {
+    animation:
+      gameCrosshairFire
+      .2s ease-out;
+  }
+
+  #gameCrosshair.crosshair-fire
+  .gameCrosshairRing {
+    transform: scale(.67);
+
+    border-color:
+      var(--crosshair-danger);
+
+    box-shadow:
+      0 0 10px rgba(255, 94, 73, .85),
+      inset 0 0 9px rgba(255, 94, 73, .45);
+  }
+
+  #gameCrosshair.crosshair-fire::before,
+  #gameCrosshair.crosshair-fire::after {
+    background-color:
+      var(--crosshair-danger);
+
+    box-shadow:
+      0 0 5px var(--crosshair-danger),
+      0 0 15px rgba(255, 74, 52, .8);
+  }
+
+  #gameCrosshair.crosshair-hit {
+    animation:
+      gameCrosshairHit
+      .28s ease-out;
+  }
+
+  #gameCrosshair.crosshair-hit
+  .gameCrosshairRing {
+    border-color: #d7ff72;
+
+    box-shadow:
+      0 0 9px #caff62,
+      0 0 19px rgba(185, 255, 71, .65);
+  }
+
+  @keyframes gameCrosshairRotate {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes gameCrosshairCounterRotate {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  @keyframes gameCrosshairFire {
+    0% {
+      scale: 1;
+    }
+
+    42% {
+      scale: .83;
+    }
+
+    100% {
+      scale: 1;
+    }
+  }
+
+  @keyframes gameCrosshairHit {
+    0% {
+      filter: brightness(1);
+      scale: 1;
+    }
+
+    35% {
+      filter: brightness(2);
+      scale: 1.18;
+    }
+
+    100% {
+      filter: brightness(1);
+      scale: 1;
+    }
+  }
+}
+
+
+/* Auf Touch-Geräten wird kein Maus-Fadenkreuz angezeigt. */
+
+@media (pointer: coarse) {
+
+  #gameCrosshair {
+    display: none !important;
+  }
+
+  .phase2Firefly:nth-child(n+9) {
+    display: none !important;
+  }
+}
+
+
+/* Bei reduzierter Bewegung rotieren die Ringe nicht. */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .gameCrosshairRing::before,
+  .gameCrosshairBrackets {
+    animation: none !important;
+  }
+}
+
+
+
+/* ==========================================================
+   PHASE 3 - TRACTOR BEAM OVERHAUL
+   ========================================================== */
+
+
+/* ----------------------------------------------------------
+   UFO HALO
+   ---------------------------------------------------------- */
+
+.phase3UfoHalo {
+  position: absolute;
+  z-index: 3;
+
+  left: 50%;
+  top: 24%;
+
+  width: 69%;
+  height: 20%;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(157, 252, 255, .26) 0%,
+      rgba(73, 225, 249, .11) 35%,
+      transparent 72%
+    );
+
+  filter: blur(14px);
+
+  opacity: 0;
+
+  transition:
+    opacity .6s ease;
+}
+
+
+#ufoIntro.phase-ufo .phase3UfoHalo,
+#ufoIntro.phase-beam .phase3UfoHalo,
+#ufoIntro.phase-warning .phase3UfoHalo,
+#ufoIntro.phase-title .phase3UfoHalo,
+#ufoIntro.intro-ready .phase3UfoHalo {
+  opacity: 1;
+
+  animation:
+    phase3HaloPulse
+    2.1s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase3HaloPulse {
+  from {
+    transform:
+      translate(-50%, -50%)
+      scale(.94);
+
+    opacity: .40;
+  }
+
+  to {
+    transform:
+      translate(-50%, -50%)
+      scale(1.08);
+
+    opacity: .86;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   REAKTOR UNTER DEM UFO
+   ---------------------------------------------------------- */
+
+.phase3Reactor {
+  position: absolute;
+  z-index: 12;
+
+  left: 50%;
+  top: 29%;
+
+  width: clamp(65px, 12%, 110px);
+  aspect-ratio: 1;
+
+  transform:
+    translate(-50%, -50%);
+
+  opacity: 0;
+
+  transition:
+    opacity .4s ease;
+}
+
+
+#ufoIntro.phase-ufo .phase3Reactor,
+#ufoIntro.phase-beam .phase3Reactor,
+#ufoIntro.phase-warning .phase3Reactor,
+#ufoIntro.phase-title .phase3Reactor,
+#ufoIntro.intro-ready .phase3Reactor {
+  opacity: 1;
+}
+
+
+.phase3ReactorOuter,
+.phase3ReactorInner,
+.phase3ReactorCore {
+  position: absolute;
+
+  border-radius: 50%;
+}
+
+
+.phase3ReactorOuter {
+  inset: 0;
+
+  border:
+    2px dashed
+    rgba(126, 247, 255, .72);
+
+  box-shadow:
+    0 0 12px rgba(62, 231, 255, .75);
+
+  animation:
+    phase3ReactorRotate
+    3.7s linear infinite;
+}
+
+
+.phase3ReactorInner {
+  inset: 17%;
+
+  border:
+    2px solid
+    rgba(202, 255, 255, .85);
+
+  box-shadow:
+    0 0 11px #63ebff,
+    inset 0 0 12px rgba(74, 235, 255, .78);
+
+  border-left-color:
+    transparent;
+
+  animation:
+    phase3ReactorCounter
+    2.1s linear infinite;
+}
+
+
+.phase3ReactorCore {
+  inset: 34%;
+
+  background:
+    radial-gradient(
+      circle at 42% 36%,
+      white 0%,
+      #cfffff 18%,
+      #5be9ff 43%,
+      #087ea1 73%,
+      transparent 76%
+    );
+
+  box-shadow:
+    0 0 9px #dfffff,
+    0 0 25px #42e5ff,
+    0 0 45px rgba(63, 226, 255, .75);
+
+  animation:
+    phase3CorePulse
+    .82s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase3ReactorRotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+@keyframes phase3ReactorCounter {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+
+@keyframes phase3CorePulse {
+  from {
+    scale: .83;
+    filter: brightness(.88);
+  }
+
+  to {
+    scale: 1.12;
+    filter: brightness(1.42);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   ZUSÄTZLICHE POSITIONSLICHTER
+   ---------------------------------------------------------- */
+
+.phase3PositionLights {
+  position: absolute;
+  z-index: 14;
+
+  left: 50%;
+  top: 27%;
+
+  width: 57%;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+  justify-content: space-between;
+
+  opacity: 0;
+}
+
+
+#ufoIntro.phase-ufo .phase3PositionLights,
+#ufoIntro.phase-beam .phase3PositionLights,
+#ufoIntro.phase-warning .phase3PositionLights,
+#ufoIntro.phase-title .phase3PositionLights,
+#ufoIntro.intro-ready .phase3PositionLights {
+  opacity: 1;
+}
+
+
+.phase3PositionLights i {
+  display: block;
+
+  width: clamp(5px, .85vw, 10px);
+  aspect-ratio: 1;
+
+  border-radius: 50%;
+
+  background: #a5ffff;
+
+  box-shadow:
+    0 0 5px #dfffff,
+    0 0 13px #5eefff,
+    0 0 24px rgba(69, 225, 255, .67);
+
+  animation:
+    phase3PositionPulse
+    .78s ease-in-out infinite alternate;
+}
+
+
+.phase3PositionLights i:nth-child(2) {
+  animation-delay: -.12s;
+}
+
+.phase3PositionLights i:nth-child(3) {
+  animation-delay: -.24s;
+}
+
+.phase3PositionLights i:nth-child(4) {
+  background: #dfff8a;
+
+  box-shadow:
+    0 0 6px #eaffae,
+    0 0 18px #a9ff55;
+
+  animation-delay: -.36s;
+}
+
+.phase3PositionLights i:nth-child(5) {
+  animation-delay: -.48s;
+}
+
+.phase3PositionLights i:nth-child(6) {
+  animation-delay: -.60s;
+}
+
+.phase3PositionLights i:nth-child(7) {
+  animation-delay: -.72s;
+}
+
+
+@keyframes phase3PositionPulse {
+  from {
+    opacity: .33;
+    transform: scale(.72);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.22);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   ÄUSSERER TRACTOR BEAM
+   ---------------------------------------------------------- */
+
+.phase3BeamOuter {
+  position: absolute;
+  z-index: 1;
+
+  top: 29%;
+  left: 50%;
+
+  width: 54%;
+  height: 69%;
+
+  transform:
+    translateX(-50%)
+    scaleY(.02);
+
+  transform-origin:
+    top center;
+
+  clip-path:
+    polygon(
+      38% 0,
+      62% 0,
+      100% 100%,
+      0% 100%
+    );
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(51, 184, 222, .07) 8%,
+      rgba(100, 237, 255, .18) 27%,
+      rgba(202, 255, 255, .34) 49%,
+      rgba(100, 237, 255, .18) 73%,
+      rgba(51, 184, 222, .07) 92%,
+      transparent 100%
+    );
+
+  filter: blur(5px);
+
+  opacity: 0;
+
+  transition:
+    transform .8s cubic-bezier(.2,.82,.19,1),
+    opacity .28s ease;
+}
+
+
+#ufoIntro.phase-beam .phase3BeamOuter,
+#ufoIntro.phase-warning .phase3BeamOuter,
+#ufoIntro.phase-title .phase3BeamOuter,
+#ufoIntro.intro-ready .phase3BeamOuter {
+  opacity: .86;
+
+  transform:
+    translateX(-50%)
+    scaleY(1);
+}
+
+
+/* ----------------------------------------------------------
+   INNERER ENERGIEKERN
+   ---------------------------------------------------------- */
+
+.phase3BeamCore {
+  position: absolute;
+  z-index: 3;
+
+  top: 30%;
+  left: 50%;
+
+  width: 20%;
+  height: 66%;
+
+  transform:
+    translateX(-50%)
+    scaleY(.02);
+
+  transform-origin:
+    top center;
+
+  clip-path:
+    polygon(
+      43% 0,
+      57% 0,
+      100% 100%,
+      0% 100%
+    );
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      rgba(181, 255, 255, .15),
+      rgba(235, 255, 255, .76),
+      rgba(181, 255, 255, .15),
+      transparent
+    );
+
+  filter:
+    blur(2px)
+    drop-shadow(
+      0 0 11px #7af1ff
+    );
+
+  opacity: 0;
+
+  transition:
+    transform .65s .08s cubic-bezier(.2,.82,.19,1),
+    opacity .25s ease;
+}
+
+
+#ufoIntro.phase-beam .phase3BeamCore,
+#ufoIntro.phase-warning .phase3BeamCore,
+#ufoIntro.phase-title .phase3BeamCore,
+#ufoIntro.intro-ready .phase3BeamCore {
+  opacity: .92;
+
+  transform:
+    translateX(-50%)
+    scaleY(1);
+
+  animation:
+    phase3BeamCorePulse
+    .55s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase3BeamCorePulse {
+  from {
+    filter:
+      blur(2px)
+      brightness(.88)
+      drop-shadow(
+        0 0 8px #66e9ff
+      );
+  }
+
+  to {
+    filter:
+      blur(1px)
+      brightness(1.35)
+      drop-shadow(
+        0 0 18px #a7faff
+      );
+  }
+}
+
+
+/* ----------------------------------------------------------
+   ENERGIEWELLEN
+   ---------------------------------------------------------- */
+
+.phase3BeamWaves {
+  position: absolute;
+  z-index: 6;
+
+  top: 32%;
+  left: 50%;
+
+  width: 48%;
+  height: 62%;
+
+  transform:
+    translateX(-50%);
+
+  overflow: hidden;
+
+  opacity: 0;
+}
+
+
+#ufoIntro.phase-beam .phase3BeamWaves,
+#ufoIntro.phase-warning .phase3BeamWaves,
+#ufoIntro.phase-title .phase3BeamWaves,
+#ufoIntro.intro-ready .phase3BeamWaves {
+  opacity: 1;
+}
+
+
+.phase3BeamWaves i {
+  position: absolute;
+
+  left: 50%;
+  top: 4%;
+
+  width: 24%;
+  height: 7%;
+
+  transform:
+    translateX(-50%)
+    scale(.5);
+
+  border:
+    1px solid
+    rgba(187, 255, 255, .68);
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 0 7px rgba(104, 239, 255, .5);
+
+  opacity: 0;
+
+  animation:
+    phase3WaveFall
+    2.3s linear infinite;
+}
+
+
+.phase3BeamWaves i:nth-child(2) {
+  animation-delay: -.46s;
+}
+
+.phase3BeamWaves i:nth-child(3) {
+  animation-delay: -.92s;
+}
+
+.phase3BeamWaves i:nth-child(4) {
+  animation-delay: -1.38s;
+}
+
+.phase3BeamWaves i:nth-child(5) {
+  animation-delay: -1.84s;
+}
+
+
+@keyframes phase3WaveFall {
+  0% {
+    top: 2%;
+    width: 18%;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: .85;
+  }
+
+  80% {
+    opacity: .34;
+  }
+
+  100% {
+    top: 92%;
+    width: 92%;
+    opacity: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   BEAM-PARTIKEL
+   ---------------------------------------------------------- */
+
+.phase3BeamParticles {
+  position: absolute;
+  z-index: 7;
+
+  top: 31%;
+  left: 50%;
+
+  width: 43%;
+  height: 65%;
+
+  transform:
+    translateX(-50%);
+
+  overflow: hidden;
+
+  opacity: 0;
+
+  pointer-events: none;
+}
+
+
+#ufoIntro.phase-beam .phase3BeamParticles,
+#ufoIntro.phase-warning .phase3BeamParticles,
+#ufoIntro.phase-title .phase3BeamParticles,
+#ufoIntro.intro-ready .phase3BeamParticles {
+  opacity: 1;
+}
+
+
+.phase3Particle {
+  position: absolute;
+
+  left: var(--particle-x);
+  bottom: -8%;
+
+  width: var(--particle-size);
+  height: var(--particle-size);
+
+  border-radius: 50%;
+
+  background:
+    rgba(220, 255, 255, .9);
+
+  box-shadow:
+    0 0 5px #b9ffff,
+    0 0 10px rgba(82, 235, 255, .72);
+
+  opacity: 0;
+
+  animation:
+    phase3ParticleRise
+    var(--particle-duration)
+    linear
+    var(--particle-delay)
+    infinite;
+}
+
+
+@keyframes phase3ParticleRise {
+  0% {
+    transform:
+      translate(
+        0,
+        0
+      )
+      scale(.45);
+
+    opacity: 0;
+  }
+
+  12% {
+    opacity: .82;
+  }
+
+  65% {
+    opacity: .62;
+  }
+
+  100% {
+    transform:
+      translate(
+        var(--particle-drift),
+        -65vh
+      )
+      scale(1.2);
+
+    opacity: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   ELEKTRISCHE ENERGIEIMPULSE
+   ---------------------------------------------------------- */
+
+.phase3BeamArc {
+  position: absolute;
+  z-index: 9;
+
+  top: 52%;
+
+  left: 50%;
+
+  width: 21%;
+  height: 2px;
+
+  transform-origin: center;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #d9ffff,
+      #60eaff,
+      transparent
+    );
+
+  box-shadow:
+    0 0 7px #73efff;
+
+  opacity: 0;
+}
+
+
+#ufoIntro.phase-beam .phase3BeamArc,
+#ufoIntro.phase-warning .phase3BeamArc {
+  animation:
+    phase3ArcFlash
+    1.9s steps(2,end) infinite;
+}
+
+
+.phase3BeamArc.arc1 {
+  transform:
+    translateX(-50%)
+    rotate(9deg);
+
+  animation-delay: -.2s !important;
+}
+
+
+.phase3BeamArc.arc2 {
+  top: 64%;
+
+  width: 29%;
+
+  transform:
+    translateX(-50%)
+    rotate(-7deg);
+
+  animation-delay: -.85s !important;
+}
+
+
+.phase3BeamArc.arc3 {
+  top: 77%;
+
+  width: 35%;
+
+  transform:
+    translateX(-50%)
+    rotate(3deg);
+
+  animation-delay: -1.4s !important;
+}
+
+
+@keyframes phase3ArcFlash {
+  0%,
+  83%,
+  100% {
+    opacity: 0;
+  }
+
+  86% {
+    opacity: .85;
+  }
+
+  88% {
+    opacity: .15;
+  }
+
+  90% {
+    opacity: .93;
+  }
+
+  93% {
+    opacity: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   BODENRING
+   ---------------------------------------------------------- */
+
+.phase3GroundGlow {
+  position: absolute;
+  z-index: 8;
+
+  left: 50%;
+  bottom: 0;
+
+  width: 46%;
+  height: 13%;
+
+  transform:
+    translateX(-50%)
+    scale(.25);
+
+  border-radius: 50%;
+
+  opacity: 0;
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(207, 255, 255, .31),
+      rgba(58, 222, 245, .16) 35%,
+      transparent 70%
+    );
+
+  filter: blur(2px);
+
+  transition:
+    opacity .45s ease,
+    transform .85s ease;
+}
+
+
+.phase3GroundGlow::before,
+.phase3GroundGlow::after,
+.phase3GroundGlow i {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  border:
+    1px solid
+    rgba(149, 249, 255, .66);
+}
+
+
+.phase3GroundGlow::before {
+  width: 68%;
+  height: 42%;
+}
+
+
+.phase3GroundGlow::after {
+  width: 92%;
+  height: 65%;
+
+  border-color:
+    rgba(104, 231, 255, .31);
+}
+
+
+.phase3GroundGlow i {
+  width: 42%;
+  height: 25%;
+
+  box-shadow:
+    0 0 16px rgba(107, 240, 255, .7);
+}
+
+
+#ufoIntro.phase-beam .phase3GroundGlow,
+#ufoIntro.phase-warning .phase3GroundGlow,
+#ufoIntro.phase-title .phase3GroundGlow,
+#ufoIntro.intro-ready .phase3GroundGlow {
+  opacity: 1;
+
+  transform:
+    translateX(-50%)
+    scale(1);
+
+  animation:
+    phase3GroundPulse
+    1.35s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase3GroundPulse {
+  from {
+    filter:
+      blur(2px)
+      brightness(.82);
+  }
+
+  to {
+    filter:
+      blur(3px)
+      brightness(1.38);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   DIE KUH WIRD VOM BEAM BELEUCHTET
+   ---------------------------------------------------------- */
+
+#ufoIntro.phase-beam #introCow,
+#ufoIntro.phase-warning #introCow,
+#ufoIntro.phase-title #introCow,
+#ufoIntro.intro-ready #introCow {
+  filter:
+    drop-shadow(
+      0 0 7px #d7ffff
+    )
+    drop-shadow(
+      0 0 18px rgba(77, 230, 255, .72)
+    );
+
+  animation:
+    phase3CowFloat
+    2.4s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase3CowFloat {
+  from {
+    margin-top: -3px;
+    rotate: -2deg;
+  }
+
+  to {
+    margin-top: 8px;
+    rotate: 3deg;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   BEAM-LICHT AUF DER LANDSCHAFT
+   ---------------------------------------------------------- */
+
+#ufoIntro::after {
+  content: "";
+
+  position: absolute;
+  z-index: 4;
+
+  left: 50%;
+  bottom: -4%;
+
+  width: min(74vw, 720px);
+  height: 38%;
+
+  transform:
+    translateX(-50%);
+
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  background:
+    radial-gradient(
+      ellipse at center,
+      rgba(95, 240, 255, .16),
+      rgba(59, 197, 218, .055) 43%,
+      transparent 72%
+    );
+
+  opacity: 0;
+
+  transition:
+    opacity .5s ease;
+
+  mix-blend-mode: screen;
+}
+
+
+#ufoIntro.phase-beam::after,
+#ufoIntro.phase-warning::after,
+#ufoIntro.phase-title::after,
+#ufoIntro.intro-ready::after {
+  opacity: 1;
+}
+
+
+/* ----------------------------------------------------------
+   MOBILE
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px), (pointer: coarse) {
+
+  .phase3UfoHalo {
+    width: 65%;
+  }
+
+  .phase3Reactor {
+    width: 62px;
+  }
+
+  .phase3BeamOuter {
+    width: 47%;
+  }
+
+  .phase3BeamCore {
+    width: 17%;
+  }
+
+  .phase3BeamWaves {
+    width: 43%;
+  }
+
+  .phase3BeamParticles {
+    width: 39%;
+  }
+
+  .phase3GroundGlow {
+    width: 56%;
+  }
+
+  .phase3BeamArc {
+    display: none;
+  }
+
+  .phase3Particle:nth-child(n+17) {
+    display: none;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   REDUCED MOTION
+   ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .phase3UfoHalo,
+  .phase3ReactorOuter,
+  .phase3ReactorInner,
+  .phase3ReactorCore,
+  .phase3PositionLights i,
+  .phase3BeamCore,
+  .phase3BeamWaves i,
+  .phase3Particle,
+  .phase3BeamArc,
+  .phase3GroundGlow,
+  #introCow {
+    animation: none !important;
+  }
+
+}
+
+
+
+/* Phase-3-Energieimpuls */
+
+#ufoIntro.phase3-energy-impact {
+  animation:
+    phase3EnergyImpact
+    .58s ease-out;
+}
+
+
+#ufoIntro.phase3-energy-impact
+.phase3ReactorCore {
+  animation:
+    phase3CoreIgnition
+    .58s ease-out;
+}
+
+
+@keyframes phase3EnergyImpact {
+
+  0% {
+    filter: brightness(1);
+  }
+
+  13% {
+    filter:
+      brightness(1.75)
+      saturate(1.4);
+  }
+
+  28% {
+    filter:
+      brightness(.95)
+      saturate(1.05);
+  }
+
+  43% {
+    filter:
+      brightness(1.32);
+  }
+
+  100% {
+    filter: brightness(1);
+  }
+
+}
+
+
+@keyframes phase3CoreIgnition {
+
+  0% {
+    transform: scale(.25);
+  }
+
+  35% {
+    transform: scale(1.7);
+  }
+
+  62% {
+    transform: scale(.84);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+
+}
+
+</style></head><body class="intro-active">
+<div
+  id="ufoIntro"
+  role="dialog"
+  aria-modal="true"
+  aria-label="UFO-Jagd Intro"
+>
+  <div class="cinematicBlackout" aria-hidden="true"></div>
+
+  <div
+    id="cinematicSequenceText"
+    class="cinematicSequenceText"
+    aria-live="polite"
+  >
+    <div id="cinematicCode" class="cinematicCode">
+      SYSTEMSTART
+    </div>
+
+    <div id="cinematicMainText" class="cinematicMainText">
+      VERTEIDIGUNGSNETZWERK WIRD GESTARTET
+    </div>
+
+    <div id="cinematicSubText" class="cinematicSubText">
+      SEKTOR 51 // NACHTPROTOKOLL
+    </div>
+  </div>
+
+  <div class="cinematicReticle" aria-hidden="true">
+    <span></span>
+  </div>
+
+  <div class="cinematicWarning" aria-hidden="true">
+    <strong>WARNUNG</strong>
+    <span>VIEHBESTAND IN GEFAHR</span>
+  </div>
+
+  <div class="cinematicNoise" aria-hidden="true"></div>
+
+  <div class="cinematicLetterbox top" aria-hidden="true"></div>
+  <div class="cinematicLetterbox bottom" aria-hidden="true"></div>
+  <div class="introStars" aria-hidden="true"></div>
+
+  <!-- ==============================================
+       PHASE 2 - PARALLAX WORLD
+       ============================================== -->
+
+  <div
+    id="parallaxWorld"
+    class="parallaxWorld"
+    aria-hidden="true"
+  >
+
+    <div
+      class="parallaxLayer parallaxSkyGlow"
+      data-depth="0.04">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxMountainsFar"
+      data-depth="0.08">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxMountainsNear"
+      data-depth="0.13">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxForestFar"
+      data-depth="0.18">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFog parallaxFogOne"
+      data-depth="0.11">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFog parallaxFogTwo"
+      data-depth="0.16">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFarmLayer"
+      data-depth="0.24">
+
+      <div class="farmHouse">
+        <div class="farmRoof"></div>
+
+        <div class="farmWall">
+          <span class="farmWindow w1"></span>
+          <span class="farmWindow w2"></span>
+          <span class="farmDoor"></span>
+        </div>
+
+        <div class="farmChimney"></div>
+      </div>
+
+      <div class="windmill">
+        <div class="windmillTower"></div>
+
+        <div class="windmillRotor">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </div>
+      </div>
+
+    </div>
+
+    <div
+      class="parallaxLayer parallaxForestNear"
+      data-depth="0.31">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFence"
+      data-depth="0.39">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxGrass"
+      data-depth="0.47">
+    </div>
+
+    <div
+      id="fireflyField"
+      class="parallaxLayer fireflyField"
+      data-depth="0.34">
+    </div>
+
+  </div>
+  <div id="introMoon" class="introMoon" aria-hidden="true"></div>
+  <div class="introCloud one" aria-hidden="true"></div>
+  <div class="introCloud two" aria-hidden="true"></div>
+
+  <div id="introUfoScene" class="introUfoScene" aria-hidden="true">
+    <div id="introBeam" class="introBeam"></div>
+    
+<div class="introUfo"></div>
+
+<div class="phase3UfoHalo"></div>
+
+<div class="phase3Reactor">
+  <div class="phase3ReactorOuter"></div>
+  <div class="phase3ReactorInner"></div>
+  <div class="phase3ReactorCore"></div>
+</div>
+
+<div class="phase3PositionLights">
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+</div>
+
+<div class="phase3BeamOuter"></div>
+<div class="phase3BeamCore"></div>
+
+<div class="phase3BeamWaves">
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+</div>
+
+<div id="phase3BeamParticles" class="phase3BeamParticles"></div>
+
+<div class="phase3BeamArc arc1"></div>
+<div class="phase3BeamArc arc2"></div>
+<div class="phase3BeamArc arc3"></div>
+
+<div class="phase3GroundGlow">
+  <i></i>
+</div>
+
+
+    <div class="introLights">
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+
+    <div id="introCow" class="introCow">
+      <div class="introCowBody"></div>
+    </div>
+  </div>
+
+  <div class="introGround" aria-hidden="true"></div>
+  <div class="introTrees" aria-hidden="true"></div>
+
+  <main id="introContent" class="introContent">
+    <div class="introEyebrow">EINSATZPROTOKOLL 51</div>
+
+    <h1 class="introTitle">UFO-JAGD</h1>
+
+    <div class="introSubtitle">NACHTANGRIFF</div>
+
+    <p class="introMission">
+      KÜHE RETTEN&nbsp;&nbsp;•&nbsp;&nbsp;
+      UFOS ABWEHREN&nbsp;&nbsp;•&nbsp;&nbsp;
+      DIE ERDE BESCHÜTZEN
+    </p>
+
+    <button
+      id="introEnter"
+      class="introGate"
+      type="button"
+      aria-label="Intro bestätigen und Startmenü öffnen"
+      disabled
+    >
+      <span>
+        <span id="introGateText" class="introGateText">
+          SYSTEM WIRD INITIALISIERT
+        </span>
+
+        <span id="introGateHint" class="introGateHint">
+          EINSATZDATEN WERDEN GELADEN
+        </span>
+      </span>
+    </button>
+
+    <div
+      id="introStatus"
+      class="introSkipStatus"
+      aria-live="polite"
+    >
+      VERBINDUNG ZUM VERTEIDIGUNGSNETZWERK
+    </div>
+  </main>
+
+  <div class="introFlash" aria-hidden="true"></div>
+</div>
+<canvas id="game" tabindex="0" aria-label="UFO-Jagd"></canvas><div id="hud"><span>LEVEL <b id="level" class="cyan">1</b></span><span>PUNKTE <b id="score" class="cyan">0</b></span><span>UFOS <b id="targets" class="cyan">0/8</b></span><span>GETROFFEN <b id="ufoShot" class="cyan">0</b></span><span>JETS <b id="jetShot" class="cyan">0/5</b></span><span id="slowBox">ZEITLUPE <b id="slow" class="cyan">–</b></span><button id="pause" class="pause">PAUSE</button><button id="quit" class="pause">BEENDEN</button></div><div id="levelUp">LEVEL GESCHAFFT!</div><div id="sheet"><div class="sheetBox"><div class="updatePc" role="img" aria-label="Systemupdate wird installiert"><div class="monitor"><div class="updateRing"></div><div class="updateText"></div></div></div><h2>Updates werden ausgeführt</h2><p>Bitte lassen Sie den Computer eingeschaltet.</p><button id="closeSheet">Schließen</button></div></div><div id="message"><div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>ANLEITUNG</b><br><b>1. Zielen &amp; klicken:</b> Triff UFOs, um Punkte zu sammeln.<br><b>2. Kühe retten:</b> Schieße UFOs ab, die rote Strahlen einsetzen.<br><b>3. Vorsicht:</b> Jets kosten Punkte; nach 5 Treffern ist die Mission verloren.<br><b>4. Bonus:</b> Klicke auf den Mond für 5 Sekunden Zeitlupe.<br><b>5. Ziel:</b> Beschütze die 10 Kühe vor den UFOs.</div><input id="player" class="name" maxlength=18 placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB9zyEl5nzin1njLhJbGvDm98OvrcMxP-E",
+  authDomain: "entenjagd-7ca15.firebaseapp.com",
+  databaseURL: "https://entenjagd-7ca15-default-rtdb.firebaseio.com",
+  projectId: "entenjagd-7ca15",
+  storageBucket: "entenjagd-7ca15.firebasestorage.app",
+  messagingSenderId: "727931004273",
+  appId: "1:727931004273:web:c984f89c5b9c6f5f0882d0",
+  measurementId: "G-XS3C5MW3RY"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+window.ufoFirebase = {
+  auth: firebase.auth(),
+  database: firebase.database(),
+  ready: false,
+  user: null,
+  lastSubmittedScore: null
+};
+
+window.ufoFirebase.auth.signInAnonymously()
+  .then(function(credential) {
+    window.ufoFirebase.user = credential.user;
+    window.ufoFirebase.ready = true;
+
+    console.log("✅ Firebase anonym angemeldet:", credential.user.uid);
+
+    if (typeof window.refreshUfoHighscores === "function") {
+      window.refreshUfoHighscores();
+    }
+  })
+  .catch(function(error) {
+    console.error(
+      "❌ Firebase-Anmeldung fehlgeschlagen:",
+      error.code,
+      error.message
+    );
+  });
+</script>
+
+<script>(function(){var c=document.getElementById('game'),x=c.getContext('2d'),box=document.getElementById('message'),L=document.getElementById('level'),S=document.getElementById('score'),T=document.getElementById('targets'),U=document.getElementById('ufoShot'),J=document.getElementById('jetShot'),SL=document.getElementById('slow'),SB=document.getElementById('slowBox'),LU=document.getElementById('levelUp'),W,H,stars=[],meteors=[],objects=[],sparks=[],raiders=[],raidSpawn=0,stolen={},high=[],ac=null,paused=0,lost=0,jetDown=0,playerName='Spieler',recorded=0,slowUntil=0,moonReady=0,run=0,score=0,level=1,hits=0,spawn=0,last=0;function resize(){W=innerWidth;H=innerHeight;c.width=W*devicePixelRatio;c.height=H*devicePixelRatio;x.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);stars=[];for(var i=0;i<220;i++)stars.push({x:Math.random()*W,y:Math.random()*H*.63,r:Math.random()*1.5+.25,a:Math.random(),p:Math.random()*6.28});meteors=[];for(var m=0;m<5;m++)meteors.push({x:Math.random()*W,y:Math.random()*H*.42,p:Math.random()*24000})}addEventListener('resize',resize);resize();try{high=JSON.parse(localStorage.getItem('ufoScores')||'[]').map(function(v){return typeof v==='object'?v:{name:'Spieler',score:v}})}catch(e){high=[]}function cheer(){LU.className='';void LU.offsetWidth;LU.className='celebrate';sound('ufo')}function ui(){L.textContent=level;S.textContent=score;T.textContent=hits+'/'+(7+level);U.textContent=hits;J.textContent=jetDown+'/5'}function slowUi(t){var left=Math.max(0,slowUntil-t),cool=Math.max(0,moonReady-t);SL.textContent=left?Math.ceil(left/1000)+'s':cool?'bereit in '+Math.ceil(cool/1000)+'s':'bereit';SB.style.display='inline'}function sound(kind){try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();var o=ac.createOscillator(),g=ac.createGain(),n=ac.currentTime;o.connect(g);g.connect(ac.destination);if(kind==='jet'){o.type='sawtooth';o.frequency.setValueAtTime(120,n);o.frequency.exponentialRampToValueAtTime(55,n+.28);g.gain.setValueAtTime(.06,n);g.gain.exponentialRampToValueAtTime(.001,n+.3)}else if(kind==='ufo'){o.type='sine';o.frequency.setValueAtTime(260,n);o.frequency.exponentialRampToValueAtTime(680,n+.18);g.gain.setValueAtTime(.09,n);g.gain.exponentialRampToValueAtTime(.001,n+.34)}else{o.type='triangle';o.frequency.setValueAtTime(180,n);o.frequency.exponentialRampToValueAtTime(440,n+.08);g.gain.setValueAtTime(.05,n);g.gain.exponentialRampToValueAtTime(.001,n+.16)}o.start(n);o.stop(n+.38)}catch(z){}}function add(){var used={},free=[];for(var i=0;i<objects.length;i++)if(objects[i].steal&&objects[i].target!==null)used[objects[i].target]=1;for(var n=0;n<10;n++)if(!stolen[n]&&!used[n])free.push(n);var mobile=matchMedia('(pointer:coarse)').matches,jet=Math.random()<(mobile?.12:.19),steal=!jet&&free.length>0&&Math.random()<(mobile?.68:.42),z=.26+Math.random()*.54,s=64*z;objects.push({x:Math.random()>.5?-s:W+s,y:70+Math.random()*H*.42,z:z,v:(105+Math.random()*105+(level-1)*24)*(1+(score<20000?Math.floor(score/5000):4+Math.floor((score-20000)/100000))*.3)*(Math.random()>.5?1:-1),jet:jet,steal:steal,target:steal?free[Math.floor(Math.random()*free.length)]:null,born:performance.now(),beamAt:performance.now()+1800,p:Math.random()*7})}function ellipse(a,b,rx,ry,fill){x.fillStyle=fill;x.beginPath();x.ellipse(a,b,rx,ry,0,0,Math.PI*2);x.fill()}function jet(d,t){var s=64*d.z,dir=d.v>0?1:-1;x.save();x.translate(d.x,d.y+Math.sin(t/390+d.p)*s*.035);x.scale(dir,1);x.rotate(-.035);x.shadowColor='#6bcffa';x.shadowBlur=s*.18;var m=x.createLinearGradient(0,-s*.85,0,s*.5);m.addColorStop(0,'#e7f4f4');m.addColorStop(.25,'#91aab6');m.addColorStop(.65,'#425d6d');m.addColorStop(1,'#1b2c39');x.fillStyle=m;x.beginPath();x.moveTo(-s*1.75,0);x.lineTo(s*1.6,0);x.lineTo(s*.68,-s*.16);x.lineTo(s*.32,-s*.8);x.lineTo(-s*.12,-s*.76);x.lineTo(-s*.4,-s*.15);x.lineTo(-s*1.12,-s*.6);x.lineTo(-s*.92,-s*.08);x.closePath();x.fill();x.fillStyle='#263f50';x.beginPath();x.moveTo(-s*.36,-s*.68);x.quadraticCurveTo(s*.13,-s*.84,s*.42,-s*.17);x.lineTo(-s*.25,-s*.18);x.closePath();x.fill();x.fillStyle='#0c263b';x.beginPath();x.moveTo(-s*.84,-s*.13);x.lineTo(-s*.08,-s*.14);x.lineTo(-s*.52,s*.48);x.lineTo(-s*1.08,s*.15);x.closePath();x.fill();x.strokeStyle='#e6ffff88';x.lineWidth=Math.max(1,s*.025);x.beginPath();x.moveTo(-s*1.54,-s*.02);x.lineTo(s*1.43,-s*.02);x.stroke();x.fillStyle='#ff4f48';ellipse(-s*1.35,0,s*.1,s*.1,'#ff514b');x.fillStyle='#8fffff';ellipse(s*.27,-s*.35,s*.065,s*.065,'#8fffff');x.restore()}function ufo(d,t){var s=48*d.z,y=d.y+Math.sin(t/460+d.p)*s*.07;x.save();x.translate(d.x,y);if(d.steal&&d.target!==null&&t>d.beamAt){stolen[d.target]=1;var remaining=10-Object.keys(stolen).length;if(remaining<=0&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Loser! Die UFOs waren schneller.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}var places=[[.07,.755],[.11,.73],[.18,.745],[.25,.765],[.33,.75],[.43,.735],[.53,.765],[.64,.755],[.72,.735],[.76,.77],[.82,.755],[.88,.72],[.95,.75]],p0=places[d.target],ground=H*p0[1]-y,lift=Math.min(1,(t-d.beamAt)/(3500/(1+(score<20000?Math.floor(score/5000):4+Math.floor((score-20000)/100000))*.3)));if(lift>=1){var left=10-Object.keys(stolen).length;if(left<=0&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Loser! Die UFOs waren schneller.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}var ax=(W*p0[0]-d.x)*(1-lift),ay=ground*(1-lift)+s*.42*lift,red=x.createLinearGradient(0,s*.18,ax,ay);red.addColorStop(0,'rgba(255,244,210,.9)');red.addColorStop(.28,'rgba(255,75,55,.78)');red.addColorStop(1,'rgba(255,35,25,.06)');x.fillStyle=red;x.beginPath();x.moveTo(-s*.32,s*.2);x.lineTo(ax+s*.28,ay);x.lineTo(ax-s*.28,ay);x.lineTo(s*.32,s*.2);x.closePath();x.fill();x.strokeStyle='rgba(255,125,92,.95)';x.lineWidth=1;x.beginPath();x.moveTo(0,s*.16);x.lineTo(ax,ay);x.stroke();x.save();x.translate(ax,ay);x.globalAlpha=.92;x.shadowColor='#ff4538';x.shadowBlur=10;var cow=true;if(cow){ellipse(-s*.04,0,s*.48,s*.22,'#eee7d7');ellipse(s*.38,-s*.12,s*.15,s*.14,'#eee7d7');ellipse(-s*.14,0,s*.12,s*.08,'#573d2d');ellipse(s*.18,s*.06,s*.1,s*.065,'#573d2d')}else{ellipse(0,0,s*.4,s*.22,'#f3f0df');ellipse(s*.31,-s*.06,s*.13,s*.12,'#5c5549')}x.strokeStyle='#ded4bc';x.lineWidth=Math.max(1,s*.035);x.beginPath();x.moveTo(-s*.18,s*.1);x.lineTo(-s*.14,s*.34);x.moveTo(s*.1,s*.1);x.lineTo(s*.14,s*.34);x.stroke();x.restore();x.save();x.globalAlpha=.25+.12*Math.sin(t/130+d.p);x.strokeStyle='#c9ffff';x.lineWidth=Math.max(1,s*.018);x.beginPath();x.ellipse(0,s*.02,s*1.58,s*.44,0,0,7);x.stroke();x.restore()}var beam=x.createRadialGradient(0,s*.32,s*.05,0,s*.32,s*2.25);beam.addColorStop(0,'rgba(202,255,255,.8)');beam.addColorStop(.22,'rgba(67,221,255,.3)');beam.addColorStop(1,'rgba(42,130,255,0)');x.fillStyle=beam;x.beginPath();x.ellipse(0,s*.32,s*2.15,s*.94,0,0,7);x.fill();x.shadowColor='#55eaff';x.shadowBlur=s*.72;var hull=x.createLinearGradient(0,-s*.58,0,s*.54);hull.addColorStop(0,'#c5d6dd');hull.addColorStop(.14,'#718795');hull.addColorStop(.5,'#1b2934');hull.addColorStop(1,'#060d14');x.fillStyle=hull;x.beginPath();x.ellipse(0,0,s*1.68,s*.5,0,0,7);x.fill();x.save();x.globalAlpha=.22;x.fillStyle='#eaffff';for(var pl=-1;pl<=1;pl++){x.beginPath();x.ellipse(pl*s*.55,-s*.12,s*.24,s*.05,0,0,7);x.fill()}x.restore();x.fillStyle='#071019';x.beginPath();x.ellipse(0,-s*.07,s*1.4,s*.31,0,0,7);x.fill();var dome=x.createRadialGradient(-s*.2,-s*.5,s*.04,0,-s*.34,s*.75);dome.addColorStop(0,'#f0ffff');dome.addColorStop(.16,'#91eff5');dome.addColorStop(.56,'#236880');dome.addColorStop(1,'#092233');x.fillStyle=dome;x.beginPath();x.ellipse(0,-s*.34,s*.59,s*.36,0,Math.PI,0,true);x.fill();x.strokeStyle='#d7fbff88';x.lineWidth=Math.max(1,s*.028);x.beginPath();x.ellipse(0,0,s*1.55,s*.4,0,0,7);x.stroke();for(var i=-2;i<=2;i++){ellipse(i*s*.5,s*.22,s*.09,s*.075,i===0?'#ebff87':'#77edff')}x.restore()}function animals(t){var taken={};for(var n=0;n<objects.length;n++)if(objects[n].steal&&t>objects[n].beamAt)taken[objects[n].target]=1;var herd=[[W*.07,H*.755,.3,'cow'],[W*.11,H*.73,.48,'cow'],[W*.18,H*.745,.28,'cow'],[W*.25,H*.765,.34,'cow'],[W*.33,H*.75,.25,'cow'],[W*.43,H*.735,.42,'cow'],[W*.53,H*.765,.27,'cow'],[W*.64,H*.755,.32,'cow'],[W*.72,H*.735,.29,'cow'],[W*.76,H*.77,.25,'cow'],[W*.82,H*.755,.27,'sheep'],[W*.88,H*.72,.5,'cow'],[W*.95,H*.75,.27,'sheep'],[W*.04,H*.79,.22,'sheep'],[W*.15,H*.785,.21,'sheep'],[W*.22,H*.78,.24,'cow'],[W*.30,H*.79,.2,'sheep'],[W*.38,H*.775,.23,'cow'],[W*.48,H*.79,.2,'sheep'],[W*.57,H*.78,.24,'cow'],[W*.69,H*.79,.21,'sheep'],[W*.79,H*.79,.22,'cow'],[W*.91,H*.785,.2,'sheep']].slice(0,10);for(var i=0;i<herd.length;i++){if(taken[i]||stolen[i])continue;var a=herd[i],xx=a[0],yy=a[1],s=a[2]*38,bob=Math.sin(t/700+i)*s*.025;x.save();x.translate(xx,yy+bob);x.globalAlpha=.93;if(a[3]==='cow'){var fur=x.createLinearGradient(0,-s,0,s);fur.addColorStop(0,'#f3eee1');fur.addColorStop(1,'#cfc4ae');x.fillStyle=fur;x.beginPath();x.ellipse(-s*.12,0,s*1.12,s*.48,0,0,7);x.fill();x.fillStyle='#f4efe1';x.beginPath();x.ellipse(s*.88,-s*.2,s*.36,s*.34,0,0,7);x.fill();x.fillStyle='#503a2c';x.beginPath();x.ellipse(-s*.34,-s*.04,s*.28,s*.19,0,0,7);x.ellipse(s*.18,s*.13,s*.25,s*.15,0,0,7);x.ellipse(s*.84,-s*.18,s*.1,s*.09,0,0,7);x.fill();x.fillStyle='#35251d';x.beginPath();x.arc(s*.98,-s*.29,Math.max(1,s*.045),0,7);x.fill();x.strokeStyle='#594235';x.lineWidth=Math.max(1,s*.065);for(var q=-.62;q<.75;q+=.42){x.beginPath();x.moveTo(q*s,s*.27);x.lineTo(q*s,s*.75);x.stroke()}x.strokeStyle='#c9b290';x.lineWidth=Math.max(1,s*.045);x.beginPath();x.moveTo(s*1.03,-s*.42);x.lineTo(s*1.18,-s*.58);x.moveTo(s*.8,-s*.43);x.lineTo(s*.7,-s*.58);x.stroke()}else{var wool=x.createRadialGradient(-s*.2,-s*.2,s*.04,0,0,s*1.1);wool.addColorStop(0,'#fffdf0');wool.addColorStop(.68,'#e7e4d6');wool.addColorStop(1,'#b9b7aa');x.fillStyle=wool;for(var z=-.45;z<=.45;z+=.23){x.beginPath();x.arc(z*s,-s*.03,s*.34,0,7);x.fill()}x.fillStyle='#5a5a50';x.beginPath();x.ellipse(s*.78,-s*.07,s*.28,s*.25,0,0,7);x.fill();x.fillStyle='#1b1d1a';x.beginPath();x.arc(s*.88,-s*.14,Math.max(1,s*.035),0,7);x.fill();x.strokeStyle='#494a40';x.lineWidth=Math.max(1,s*.06);for(var r=-.35;r<.6;r+=.38){x.beginPath();x.moveTo(r*s,s*.25);x.lineTo(r*s,s*.65);x.stroke()}}x.restore()}}function pets(t){var phase=Math.floor(t/12000)%3;if(phase!==1)return;var p=(t%12000)/12000,xx=W*(.12+p*.72),yy=H*.775+Math.sin(p*18)*3;x.save();x.translate(xx,yy);x.globalAlpha=.94;var dog=p<.55,s=13;if(dog){x.fillStyle='#a97948';x.beginPath();x.ellipse(0,0,s*1.05,s*.45,0,0,7);x.fill();x.beginPath();x.ellipse(s*.88,-s*.25,s*.34,s*.3,0,0,7);x.fill();x.fillStyle='#4b3020';x.beginPath();x.moveTo(s*.8,-s*.43);x.lineTo(s*.95,-s*.7);x.lineTo(s*1.04,-s*.38);x.fill();x.strokeStyle='#563823';x.lineWidth=2;x.beginPath();x.moveTo(-s*.45,s*.25);x.lineTo(-s*.45,s*.65);x.moveTo(s*.3,s*.25);x.lineTo(s*.3,s*.65);x.stroke()}else{x.fillStyle='#9a9da5';x.beginPath();x.ellipse(0,0,s*.86,s*.4,0,0,7);x.fill();x.beginPath();x.ellipse(s*.72,-s*.2,s*.29,s*.26,0,0,7);x.fill();x.beginPath();x.moveTo(s*.55,-s*.35);x.lineTo(s*.62,-s*.66);x.lineTo(s*.78,-s*.36);x.lineTo(s*.9,-s*.66);x.lineTo(s*1.02,-s*.3);x.fill();x.strokeStyle='#747780';x.lineWidth=2;x.beginPath();x.moveTo(-s*.4,s*.2);x.lineTo(-s*.4,s*.57);x.moveTo(s*.28,s*.2);x.lineTo(s*.28,s*.57);x.stroke()}x.restore()}function walkers(t,dt){raidSpawn+=dt;if(raidSpawn>10+Math.random()*5&&raiders.length<1){var free=[];for(var n=0;n<10;n++)if(!stolen[n])free.push(n);if(free.length){var target=free[Math.floor(Math.random()*free.length)],side=Math.random()<.5?-1:1;raiders.push({x:side<0?-28:W+28,y:H*.78,target:target,dir:side<0?1:-1,speed:58+level*4,p:Math.random()*7,carry:false});raidSpawn=0}}for(var i=raiders.length-1;i>=0;i--){var a=raiders[i],tx=a.carry?(a.dir>0?W+42:-42):W*([.07,.11,.18,.25,.33,.43,.53,.64,.72,.76][a.target]);a.x+=Math.sign(tx-a.x)*a.speed*dt;if(!a.carry&&Math.abs(tx-a.x)<8){a.carry=true;stolen[a.target]=1;sound("ufo")}if(a.carry&&(a.x<-35||a.x>W+35)){raiders.splice(i,1);continue}x.save();x.translate(a.x,a.y+Math.sin(t*.018+a.p)*2);x.scale(a.dir,1);x.shadowColor="#74ff9a";x.shadowBlur=10;x.fillStyle="#75d95a";x.beginPath();x.ellipse(0,-13,8,10,0,0,7);x.fill();x.fillStyle="#142b24";x.beginPath();x.ellipse(-3,-14,2,3,0,0,7);x.ellipse(3,-14,2,3,0,0,7);x.fill();x.strokeStyle="#75d95a";x.lineWidth=3;x.lineCap="round";var k=Math.sin(t*.03+a.p)*5;x.beginPath();x.moveTo(0,-4);x.lineTo(0,7);x.moveTo(0,0);x.lineTo(k,-1);x.moveTo(0,0);x.lineTo(-k,-1);x.moveTo(0,7);x.lineTo(k,15);x.moveTo(0,7);x.lineTo(-k,15);x.stroke();if(a.carry){x.fillStyle="#eee7d7";x.beginPath();x.ellipse(13,-1,10,5,0,0,7);x.fill();x.fillStyle="#573d2d";x.beginPath();x.ellipse(17,-2,2.5,2,0,0,7);x.fill();x.strokeStyle="#ded4bc";x.lineWidth=1.5;x.beginPath();x.moveTo(7,2);x.lineTo(7,7);x.moveTo(15,2);x.lineTo(15,7);x.stroke()}x.restore()}}function etHit(px,py){var t=performance.now(),cycle=Math.floor(t/17000)%3;if(cycle!==0)return false;var p=(t%17000)/17000,ex=-70+p*(W+140),ey=H*.26+Math.sin(p*Math.PI)*34;if(Math.abs(px-ex)<28&&Math.abs(py-ey)<38&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast E.T. getroffen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores();return true}return false}function cyclist(t){var cycle=Math.floor(t/17000)%3;if(cycle!==0)return;var p=(t%17000)/17000,xx=-70+p*(W+140),yy=H*.26+Math.sin(p*Math.PI)*34,ss=.5;x.save();x.translate(xx,yy);x.scale(ss,ss);x.globalAlpha=.82;x.strokeStyle='#16150d';x.lineWidth=3;x.beginPath();x.arc(-14,13,11,0,7);x.arc(15,13,11,0,7);x.moveTo(-14,13);x.lineTo(-1,-3);x.lineTo(15,13);x.lineTo(-8,13);x.lineTo(5,3);x.lineTo(-1,-3);x.lineTo(11,-3);x.stroke();x.fillStyle='#866c4e';x.beginPath();x.ellipse(-2,-24,12,16,0,0,7);x.fill();x.fillStyle='#b89b74';x.beginPath();x.ellipse(8,-43,9,8,0,0,7);x.fill();x.strokeStyle='#b89b74';x.lineWidth=4;x.beginPath();x.moveTo(4,-16);x.lineTo(13,-3);x.stroke();x.restore()}function landscape(t){var sky=x.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#01020c');sky.addColorStop(.48,'#0a1c43');sky.addColorStop(.68,'#29436a');sky.addColorStop(.695,'#111b12');sky.addColorStop(1,'#010704');x.fillStyle=sky;x.fillRect(0,0,W,H);var glow=x.createRadialGradient(W*.8,H*.15,5,W*.8,H*.15,W*.34);glow.addColorStop(0,'rgba(173,222,255,.18)');glow.addColorStop(.35,'rgba(81,137,255,.07)');glow.addColorStop(1,'rgba(8,20,60,0)');x.fillStyle=glow;x.fillRect(0,0,W,H);var aur=x.createLinearGradient(0,H*.12,W,H*.48);aur.addColorStop(0,'rgba(36,255,186,0)');aur.addColorStop(.35,'rgba(48,224,190,.16)');aur.addColorStop(.62,'rgba(95,107,255,.14)');aur.addColorStop(1,'rgba(40,135,255,0)');x.fillStyle=aur;x.beginPath();x.moveTo(0,H*.18);x.bezierCurveTo(W*.24,H*.1,W*.34,H*.43,W*.58,H*.23);x.bezierCurveTo(W*.75,H*.05,W*.87,H*.32,W,H*.14);x.lineTo(W,H*.48);x.bezierCurveTo(W*.78,H*.38,W*.67,H*.6,W*.45,H*.4);x.bezierCurveTo(W*.2,H*.53,W*.14,H*.25,0,H*.43);x.closePath();x.fill();var cloud=x.createLinearGradient(0,H*.28,0,H*.48);cloud.addColorStop(0,'rgba(35,63,103,0)');cloud.addColorStop(.5,'rgba(95,142,184,.13)');cloud.addColorStop(1,'rgba(35,63,103,0)');x.fillStyle=cloud;for(var cl=0;cl<6;cl++){x.beginPath();x.ellipse((cl*W*.23+t*.006*(cl%2?1:-1))%W,H*(.31+(cl%3)*.06),W*.19,H*.035,0,0,7);x.fill()}x.fillStyle='rgba(158,197,255,.08)';for(var q=0;q<4;q++){x.beginPath();x.ellipse(W*(.12+q*.29),H*(.3+q%2*.06),W*.22,H*.035,0,0,7);x.fill()}for(var i=0;i<stars.length;i++){var z=stars[i],al=.35+.55*Math.abs(Math.sin(t/1200+z.p));x.fillStyle='rgba(230,246,255,'+al+')';x.fillRect(z.x,z.y,z.r,z.r)}for(var m=0;m<meteors.length;m++){var mt=meteors[m],q=(t+mt.p)%24000;if(q<850){var u=q/850,xx=(mt.x+u*W*.28)%W,yy=mt.y+u*H*.14;x.save();x.globalAlpha=1-u;x.strokeStyle='#b9efff';x.shadowColor='#68dfff';x.shadowBlur=12;x.lineWidth=2;x.beginPath();x.moveTo(xx-W*.055,yy-H*.028);x.lineTo(xx,yy);x.stroke();x.restore()}}x.save();x.shadowColor='#c7e9ff';x.shadowBlur=32;ellipse(W*.8,H*.15,38,38,'#ebf7ff');x.globalAlpha=.23;x.strokeStyle='#c7e9ff';x.lineWidth=2;for(var mr=1;mr<4;mr++){x.beginPath();x.arc(W*.8,H*.15,38+mr*9,0,7);x.stroke()}x.restore();x.fillStyle='rgba(166,205,226,.18)';x.beginPath();x.moveTo(W*.69,H*.67);x.lineTo(W*.77,H*.58);x.lineTo(W*.85,H*.67);x.closePath();x.fill();x.fillStyle='#09130e';x.fillRect(W*.735,H*.63,W*.07,H*.08);for(var tr=0;tr<18;tr++){var tx=(tr*97)%W,th=18+(tr%5)*11;x.fillStyle='rgba(3,13,8,.92)';x.beginPath();x.moveTo(tx-th*.8,H*.695);x.lineTo(tx,H*.695-th);x.lineTo(tx+th*.8,H*.695);x.closePath();x.fill();x.fillRect(tx-2,H*.695-th*.15,4,th*.4)}x.fillStyle='#10200e';x.beginPath();x.moveTo(0,H*.7);for(var j=0;j<=W;j+=32)x.lineTo(j,H*.65+Math.sin(j*.028)*18);x.lineTo(W,H);x.lineTo(0,H);x.fill();var fg=x.createLinearGradient(0,H*.69,0,H);fg.addColorStop(0,'#173615');fg.addColorStop(1,'#020904');x.fillStyle=fg;x.fillRect(0,H*.72,W,H*.28);var haze=x.createLinearGradient(0,H*.7,0,H*.86);haze.addColorStop(0,'rgba(160,220,255,.14)');haze.addColorStop(1,'rgba(160,220,255,0)');x.fillStyle=haze;x.fillRect(0,H*.7,W,H*.16);for(var g=0;g<180;g++){var gx=(g*83)%W,gy=H*.72+((g*47)%(H*.28));x.strokeStyle='rgba(93,149,58,'+(.1+(g%4)*.035)+')';x.lineWidth=1;x.beginPath();x.moveTo(gx,gy);x.lineTo(gx+(g%5-2)*3,gy-5-(g%7));x.stroke()}x.strokeStyle='rgba(44,75,33,.9)';x.lineWidth=3;x.beginPath();x.moveTo(0,H*.76);x.lineTo(W,H*.8);x.moveTo(0,H*.8);x.lineTo(W,H*.84);x.stroke();for(var f=0;f<28;f++){var fx=(f*151+t*.012*(f%3+1))%W,fy=H*.71+(f*31)%(H*.18);x.fillStyle='rgba(185,255,115,'+(.16+.16*Math.sin(t/500+f))+')';x.shadowColor='#baff73';x.shadowBlur=6;x.beginPath();x.arc(fx,fy,1.2,0,7);x.fill()}x.shadowBlur=0;for(var dust=0;dust<60;dust++){var dx=(dust*193+t*.004*(dust%4+1))%W,dy=H*.73+(dust*37)%(H*.24);x.fillStyle='rgba(155,201,125,'+(.03+(dust%5)*.012)+')';x.beginPath();x.arc(dx,dy,1+(dust%3)*.5,0,7);x.fill()}var vign=x.createRadialGradient(W*.5,H*.48,H*.25,W*.5,H*.48,Math.max(W,H)*.74);vign.addColorStop(.54,'rgba(0,0,0,0)');vign.addColorStop(1,'rgba(0,0,10,.38)');x.fillStyle=vign;x.fillRect(0,0,W,H);animals(t);pets(t);cyclist(t)}function particles(){for(var i=sparks.length-1;i>=0;i--){var p=sparks[i];p.life-=.025;if(p.life<=0){sparks.splice(i,1);continue}x.save();x.globalAlpha=p.life;x.fillStyle=p.col;x.shadowColor=p.col;x.shadowBlur=14;x.beginPath();x.arc(p.x+p.dx*(1-p.life)*40,p.y+p.dy*(1-p.life)*40,8*p.life,0,7);x.fill();x.restore()}}function frame(t){var dt=Math.min(.05,(t-last)/1000||0);if(slowUntil>t)dt*=.25;slowUi(t);if(paused){requestAnimationFrame(frame);return}last=t;landscape(t);if(run)walkers(t,dt);if(run&&!paused){spawn+=dt;var need=7+level;if(spawn>Math.max(.18,(.82-level*.04)*(1/(1+(score<20000?Math.floor(score/5000):4+Math.floor((score-20000)/100000))*.22)))&&hits<need){add();if(Math.random()<(matchMedia('(pointer:coarse)').matches?.68:.42))add();spawn=0}objects.forEach(function(d){d.x+=d.v*dt});for(var i=objects.length-1;i>=0;i--)if(objects[i].x<-170||objects[i].x>W+170)objects.splice(i,1);if(hits>=need&&objects.length===0){level++;hits=0;jetDown=0;cheer();ui()}}objects.sort(function(a,b){return a.z-b.z}).forEach(function(d){d.jet?jet(d,t):ufo(d,t)});particles();requestAnimationFrame(frame)}function renderScores(list){
+var q=document.getElementById('scores');
+if(!q)return;
+
+q.replaceChildren();
+
+if(!list||!list.length){
+var empty=document.createElement('li');
+empty.textContent='Noch kein Eintrag';
+q.appendChild(empty);
+return;
+}
+
+list.forEach(function(v,index){
+var li=document.createElement('li');
+
+var medal=
+index===0?'🥇 ':
+index===1?'🥈 ':
+index===2?'🥉 ':'';
+
+var points=Number(v.score||0).toLocaleString('de-DE');
+
+li.textContent=
+medal+
+String(v.name||'Spieler')+
+' — '+
+points+
+' Punkte';
+
+if(
+v.uid &&
+window.ufoFirebase &&
+window.ufoFirebase.user &&
+v.uid===window.ufoFirebase.user.uid
+){
+li.style.color='#ffffff';
+li.style.textShadow='0 0 10px #5deaff';
+}
+
+q.appendChild(li);
+});
+}
+
+function showScores(){
+renderScores(high);
+
+if(window.ufoFirebase && window.ufoFirebase.ready){
+window.refreshUfoHighscores();
+}
+}
+
+window.refreshUfoHighscores=function(){
+
+if(
+!window.ufoFirebase ||
+!window.ufoFirebase.ready
+){
+return Promise.resolve([]);
+}
+
+return window.ufoFirebase.database
+.ref('ufoHighscores')
+.orderByChild('score')
+.limitToLast(10)
+.once('value')
+
+.then(function(snapshot){
+
+var cloudScores=[];
+
+snapshot.forEach(function(child){
+
+var value=child.val();
+
+if(
+value &&
+typeof value.name==='string' &&
+typeof value.score==='number'
+){
+cloudScores.push({
+id:child.key,
+name:value.name,
+score:value.score,
+createdAt:value.createdAt,
+uid:value.uid
+});
+}
+
+});
+
+cloudScores.sort(function(a,b){
+
+if(b.score!==a.score){
+return b.score-a.score;
+}
+
+return (a.createdAt||0)-(b.createdAt||0);
+
+});
+
+high=cloudScores.slice(0,10);
+
+renderScores(high);
+
+console.log(
+"🏆 Globale Highscores geladen:",
+high.length
+);
+
+return high;
+
+})
+
+.catch(function(error){
+
+console.error(
+'❌ Firebase-Highscores konnten nicht geladen werden:',
+error.code,
+error.message
+);
+
+renderScores(high);
+
+return high;
+});
+};
+
+
+function saveScore(){
+
+if(score<=0 || recorded)return;
+
+recorded=1;
+
+var cleanName=String(playerName||'Spieler')
+.trim()
+.replace(/\s+/g,' ')
+.slice(0,18);
+
+if(!cleanName){
+cleanName='Spieler';
+}
+
+var cleanScore=Math.floor(Number(score));
+
+if(
+!Number.isFinite(cleanScore) ||
+cleanScore<=0 ||
+cleanScore>10000000
+){
+console.warn(
+'⚠️ Ungültiger Highscore:',
+cleanScore
+);
+return;
+}
+
+
+/* Sofort lokal anzeigen */
+
+high.push({
+name:cleanName,
+score:cleanScore,
+uid:
+window.ufoFirebase &&
+window.ufoFirebase.user
+?window.ufoFirebase.user.uid:null
+});
+
+high.sort(function(a,b){
+return b.score-a.score;
+});
+
+high=high.slice(0,10);
+
+try{
+localStorage.setItem(
+'ufoScores',
+JSON.stringify(high)
+);
+}catch(e){
+console.warn(
+'Lokaler Highscore konnte nicht gespeichert werden:',
+e
+);
+}
+
+renderScores(high);
+
+
+/* Firebase verfügbar? */
+
+if(
+!window.ufoFirebase ||
+!window.ufoFirebase.ready ||
+!window.ufoFirebase.user
+){
+
+console.warn(
+'⚠️ Firebase noch nicht bereit. Score bleibt lokal gespeichert.'
+);
+
+return;
+}
+
+
+/* Doppeltes Absenden verhindern */
+
+var submissionKey=[
+window.ufoFirebase.user.uid,
+cleanName,
+cleanScore
+].join(':');
+
+if(
+window.ufoFirebase.lastSubmittedScore===
+submissionKey
+){
+
+console.warn(
+'⚠️ Doppeltes Absenden verhindert.'
+);
+
+return;
+}
+
+window.ufoFirebase.lastSubmittedScore=
+submissionKey;
+
+
+/* Neuen Firebase-Datensatz erzeugen */
+
+var newScoreRef=
+window.ufoFirebase.database
+.ref('ufoHighscores')
+.push();
+
+
+newScoreRef.set({
+
+name:cleanName,
+
+score:cleanScore,
+
+createdAt:
+firebase.database.ServerValue.TIMESTAMP,
+
+uid:
+window.ufoFirebase.user.uid
+
+})
+
+.then(function(){
+
+console.log(
+'✅ Highscore gespeichert:',
+cleanName,
+cleanScore
+);
+
+return window.refreshUfoHighscores();
+
+})
+
+.catch(function(error){
+
+window.ufoFirebase.lastSubmittedScore=null;
+
+console.error(
+'❌ Highscore konnte nicht gespeichert werden:',
+error.code,
+error.message
+);
+
+});
+
+}
+
+function reset(){if(matchMedia('(pointer:coarse)').matches&&!document.fullscreenElement&&document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().catch(function(){});var pi=document.getElementById('player');if(pi&&pi.value.trim())playerName=pi.value.trim();saveScore();recorded=0;sound('hit');lost=0;paused=0;document.getElementById('pause').textContent='PAUSE';objects=[];sparks=[];raiders=[];raidSpawn=0;stolen={};slowUntil=0;moonReady=0;score=0;level=1;hits=0;jetDown=0;spawn=0;run=1;box.style.display='none';c.focus();showScores();ui()}c.addEventListener('pointerdown',function(e){c.focus();if(!run)return;var r=c.getBoundingClientRect(),px=e.clientX-r.left,py=e.clientY-r.top,tap=e.pointerType==='touch'?1.65:1;for(var w=raiders.length-1;w>=0;w--){var a=raiders[w];if(Math.abs(px-a.x)<16*tap&&Math.abs(py-a.y)<28*tap){score+=350;if(a.carry)delete stolen[a.target];raiders.splice(w,1);for(var z=0;z<28;z++)sparks.push({x:a.x,y:a.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:'#75ff8b'});sound('hit');ui();return}}for(var i=objects.length-1;i>=0;i--){var d=objects[i],s=(d.jet?64:48)*d.z;if(Math.abs(px-d.x)<s*1.75*tap&&Math.abs(py-d.y)<s*tap){if(d.jet){score-=150;jetDown++;sound('jet');if(jetDown>=5&&!lost){lost=1;run=0;box.style.display='flex';box.innerHTML='<div class="card"><div class="alien" aria-label="tanzendes Alien">👽</div><h1>MISSION VERLOREN</h1><p>Du hast in diesem Level 5 Flugzeuge abgeschossen.</p><button id="start">NOCH EINMAL</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;saveScore();showScores()}}else{sound(d.steal?'ufo':'hit');if(d.steal)delete stolen[d.target];var reward=d.steal?500:Math.round((1.3-d.z)*500)*level;score+=reward;hits++}for(var q=0;q<44;q++)sparks.push({x:d.x,y:d.y,dx:Math.random()*2-1,dy:Math.random()*2-1,life:1,col:d.jet?'#ff674d':'#8efbff'});objects.splice(i,1);ui();break}}if(run){if(Math.abs(px-W*.8)<48*tap&&Math.abs(py-H*.15)<48*tap&&performance.now()>=moonReady){slowUntil=performance.now()+5000;moonReady=slowUntil+5000;sound('ufo')}else etHit(px,py)}});function showSheet(){document.getElementById('sheet').className='show'}function hideSheet(){document.getElementById('sheet').className='';if(paused){paused=0;last=performance.now();document.getElementById('pause').textContent='PAUSE'}}document.getElementById('start').onclick=reset;showScores();document.getElementById('closeSheet').onclick=hideSheet;function toggleSheet(){if(!run)return;if(!paused){paused=1;document.getElementById('pause').textContent='WEITER';showSheet()}else hideSheet()}function handleKey(e){var k=(e.key||'').toLowerCase();if((k==='a'||k==='p'||e.code==='KeyA'||e.code==='KeyP')&&!e.ctrlKey&&!e.metaKey&&!e.altKey){var a=document.activeElement;if(a&&/^(input|textarea|select)$/i.test(a.tagName))return;e.preventDefault();e.stopPropagation();toggleSheet()}}document.addEventListener('keydown',handleKey,true);document.getElementById('pause').onclick=function(){if(!run)return;paused=!paused;last=performance.now();this.textContent=paused?'WEITER':'PAUSE'};document.getElementById('quit').onclick=function(){if(!run)return;run=0;paused=0;objects=[];box.style.display='flex';box.innerHTML='<div class="card"><h1>SPIEL BEENDET</h1><p>Deine Mission wurde beendet.</p><button id="start">NEUE MISSION</button><button id="menu" style="margin-left:10px">ZUM STARTMENÜ</button></div>';document.getElementById('start').onclick=reset;document.getElementById('menu').onclick=function(){box.innerHTML='<div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>Einsatzbriefing</b><br>Verteidige die 10 Kühe gegen UFOs. Triff UFOs, rette Kühe aus roten Strahlen und meide die Jets. Der Mond löst Zeitlupe aus.</div><input id="player" class="name" maxlength="18" placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div>';document.getElementById('start').onclick=reset;showScores()}};ui();requestAnimationFrame(frame)})();</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var intro = document.getElementById("ufoIntro");
+  var sequence = document.getElementById("cinematicSequenceText");
+  var code = document.getElementById("cinematicCode");
+  var main = document.getElementById("cinematicMainText");
+  var sub = document.getElementById("cinematicSubText");
+
+  if (!intro || !sequence || !code || !main || !sub) {
+    console.warn("Phase-1-Sequenz konnte nicht initialisiert werden.");
+    return;
+  }
+
+  var timers = [];
+  var reducedMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function schedule(callback, delay) {
+    var timer = window.setTimeout(callback, delay);
+    timers.push(timer);
+    return timer;
+  }
+
+  function clearPhaseClasses() {
+    [
+      "phase-boot",
+      "phase-landscape",
+      "phase-signal",
+      "phase-ufo",
+      "phase-beam",
+      "phase-warning",
+      "phase-title"
+    ].forEach(function (phase) {
+      intro.classList.remove(phase);
+    });
+  }
+
+  function setPhase(phase) {
+    clearPhaseClasses();
+    intro.classList.add(phase);
+  }
+
+  function setTransmission(newCode, newMain, newSub, useGlitch) {
+    sequence.classList.add("changing");
+
+    schedule(function () {
+      code.textContent = newCode;
+      main.textContent = newMain;
+      sub.textContent = newSub;
+
+      sequence.classList.remove("changing");
+      sequence.classList.add("visible");
+
+      if (useGlitch) {
+        sequence.classList.remove("glitch");
+        void sequence.offsetWidth;
+        sequence.classList.add("glitch");
+
+        schedule(function () {
+          sequence.classList.remove("glitch");
+        }, 570);
+      }
+    }, 145);
+  }
+
+  function impact() {
+    intro.classList.remove("camera-impact");
+    void intro.offsetWidth;
+    intro.classList.add("camera-impact");
+
+    schedule(function () {
+      intro.classList.remove("camera-impact");
+    }, 520);
+  }
+
+  function beamFlash() {
+    intro.classList.remove("beam-impact");
+    void intro.offsetWidth;
+    intro.classList.add("beam-impact");
+
+    schedule(function () {
+      intro.classList.remove("beam-impact");
+    }, 760);
+  }
+
+  function startReducedSequence() {
+    sequence.classList.add("visible");
+    setPhase("phase-title");
+
+    setTransmission(
+      "ABWEHRPROTOKOLL AKTIV",
+      "UFO-JAGD",
+      "NACHTANGRIFF // EINSATZBEREIT",
+      false
+    );
+  }
+
+  if (reducedMotion) {
+    sequence.classList.add("visible");
+    setPhase("phase-title");
+
+    code.textContent = "ABWEHRPROTOKOLL AKTIV";
+    main.textContent = "UFO-JAGD";
+    sub.textContent = "NACHTANGRIFF // EINSATZBEREIT";
+
+    return;
+  }
+
+  setPhase("phase-boot");
+
+  schedule(function () {
+    sequence.classList.add("visible");
+
+    setTransmission(
+      "SYSTEMSTART // 23:47",
+      "VERTEIDIGUNGSNETZWERK ONLINE",
+      "SEKTOR 51 // NACHTPROTOKOLL",
+      false
+    );
+  }, 760);
+
+  schedule(function () {
+    setPhase("phase-landscape");
+
+    setTransmission(
+      "LANGSTRECKENSCAN AKTIV",
+      "NACHTHIMMEL WIRD ANALYSIERT",
+      "RADARREICHWEITE 100 PROZENT",
+      false
+    );
+  }, 1650);
+
+  schedule(function () {
+    setPhase("phase-signal");
+
+    setTransmission(
+      "SIGNAL 7-ALPHA",
+      "UNIDENTIFIZIERTES SIGNAL ERFASST",
+      "FLUGBAHN UNBEKANNT // DISTANZ SINKT",
+      true
+    );
+  }, 2600);
+
+  schedule(function () {
+    setPhase("phase-ufo");
+
+    setTransmission(
+      "ALARMSTUFE CYAN",
+      "OBJEKT TRITT IN DEN SEKTOR EIN",
+      "VISUELLE IDENTIFIKATION LÄUFT",
+      true
+    );
+  }, 3700);
+
+  schedule(function () {
+    impact();
+  }, 4630);
+
+  schedule(function () {
+    setPhase("phase-beam");
+
+    setTransmission(
+      "ENERGIESIGNATUR KRITISCH",
+      "TRAKTORSTRAHL AKTIVIERT",
+      "ZIVILES ZIEL WIRD ERFASST",
+      true
+    );
+
+    beamFlash();
+  }, 5050);
+
+  schedule(function () {
+    setPhase("phase-warning");
+
+    setTransmission(
+      "NOTFALLPROTOKOLL",
+      "VIEHBESTAND IN GEFAHR",
+      "SOFORTIGE ABWEHR ERFORDERLICH",
+      true
+    );
+
+    impact();
+  }, 6150);
+
+  schedule(function () {
+    setPhase("phase-title");
+
+    setTransmission(
+      "ABWEHRPROTOKOLL AKTIV",
+      "MISSION WIRD FREIGEGEBEN",
+      "PILOTENSTATUS WIRD ERWARTET",
+      false
+    );
+  }, 7000);
+
+  window.addEventListener("pagehide", function () {
+    timers.forEach(function (timer) {
+      window.clearTimeout(timer);
+    });
+  });
+})();
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  var intro =
+    document.getElementById("ufoIntro");
+
+  var world =
+    document.getElementById("parallaxWorld");
+
+  var fireflyField =
+    document.getElementById("fireflyField");
+
+  if (!intro || !world) {
+    console.warn(
+      "Phase 2: Parallax-Welt konnte nicht initialisiert werden."
+    );
+    return;
+  }
+
+
+  var layers =
+    Array.prototype.slice.call(
+      world.querySelectorAll(
+        ".parallaxLayer[data-depth]"
+      )
+    );
+
+
+  var reducedMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+
+  var coarsePointer =
+    window.matchMedia(
+      "(pointer: coarse)"
+    ).matches;
+
+
+  var pointerX = 0;
+  var pointerY = 0;
+
+  var targetX = 0;
+  var targetY = 0;
+
+  var currentX = 0;
+  var currentY = 0;
+
+  var animationFrame = 0;
+
+  var autoCamera = 0;
+
+
+  /* --------------------------------------------------------
+     Glühwürmchen erzeugen
+     -------------------------------------------------------- */
+
+  function createFireflies() {
+
+    if (!fireflyField) {
+      return;
+    }
+
+    var count =
+      coarsePointer ? 12 : 24;
+
+    for (
+      var i = 0;
+      i < count;
+      i++
+    ) {
+
+      var fly =
+        document.createElement("i");
+
+      fly.className =
+        "phase2Firefly";
+
+      fly.style.left =
+        (
+          4 +
+          Math.random() * 92
+        ) + "%";
+
+      fly.style.top =
+        (
+          17 +
+          Math.random() * 72
+        ) + "%";
+
+      fly.style.setProperty(
+        "--duration",
+        (
+          2.8 +
+          Math.random() * 4
+        ) + "s"
+      );
+
+      fly.style.setProperty(
+        "--delay",
+        (
+          -Math.random() * 5
+        ) + "s"
+      );
+
+      fly.style.setProperty(
+        "--fly-x",
+        (
+          -15 +
+          Math.random() * 30
+        ) + "px"
+      );
+
+      fireflyField.appendChild(
+        fly
+      );
+    }
+  }
+
+
+  /* --------------------------------------------------------
+     Maussteuerung Desktop
+     -------------------------------------------------------- */
+
+  function pointerMove(event) {
+
+    if (
+      reducedMotion ||
+      coarsePointer
+    ) {
+      return;
+    }
+
+    pointerX =
+      (
+        event.clientX /
+        window.innerWidth
+      ) * 2 - 1;
+
+    pointerY =
+      (
+        event.clientY /
+        window.innerHeight
+      ) * 2 - 1;
+
+    targetX =
+      pointerX * 18;
+
+    targetY =
+      pointerY * 11;
+  }
+
+
+  /* --------------------------------------------------------
+     Mobile nutzt Neigung der Touchposition statt
+     DeviceOrientation-Permissions.
+     -------------------------------------------------------- */
+
+  function touchMove(event) {
+
+    if (
+      reducedMotion ||
+      coarsePointer ||
+      !event.touches ||
+      !event.touches.length
+    ) {
+      return;
+    }
+
+    var touch =
+      event.touches[0];
+
+    pointerX =
+      (
+        touch.clientX /
+        window.innerWidth
+      ) * 2 - 1;
+
+    pointerY =
+      (
+        touch.clientY /
+        window.innerHeight
+      ) * 2 - 1;
+
+    targetX =
+      pointerX * 7;
+
+    targetY =
+      pointerY * 4;
+  }
+
+
+  /* --------------------------------------------------------
+     Kamera neutralisieren
+     -------------------------------------------------------- */
+
+  function pointerLeave() {
+
+    targetX = 0;
+    targetY = 0;
+  }
+
+
+  /* --------------------------------------------------------
+     Phase-basierte automatische Kamerafahrt
+     -------------------------------------------------------- */
+
+  function calculateAutoCamera() {
+
+    if (
+      intro.classList.contains(
+        "phase-signal"
+      )
+    ) {
+      autoCamera = -10;
+    }
+
+    else if (
+      intro.classList.contains(
+        "phase-ufo"
+      )
+    ) {
+      autoCamera = 15;
+    }
+
+    else if (
+      intro.classList.contains(
+        "phase-beam"
+      )
+    ) {
+      autoCamera = 22;
+    }
+
+    else if (
+      intro.classList.contains(
+        "phase-warning"
+      )
+    ) {
+      autoCamera = 9;
+    }
+
+    else {
+      autoCamera *= .94;
+    }
+  }
+
+
+  /* --------------------------------------------------------
+     Render Loop
+     -------------------------------------------------------- */
+
+  function renderParallax() {
+
+    if (
+      !document.body.contains(
+        intro
+      )
+    ) {
+      cancelAnimationFrame(
+        animationFrame
+      );
+
+      return;
+    }
+
+
+    if (!reducedMotion) {
+
+      calculateAutoCamera();
+
+
+      /*
+       * Mobile verwendet einen ruhigen automatischen Drift.
+       * Dadurch konkurriert die Landschaft nicht mit der
+       * Touch-Bestätigung des Intros.
+       */
+      if (coarsePointer) {
+        var mobileDriftTime = performance.now() * 0.00032;
+
+        targetX =
+          Math.sin(mobileDriftTime) * 5.5;
+
+        targetY =
+          Math.cos(mobileDriftTime * 0.73) * 2.8;
+      }
+
+
+      currentX +=
+        (
+          targetX -
+          currentX
+        ) * .055;
+
+
+      currentY +=
+        (
+          targetY -
+          currentY
+        ) * .055;
+
+
+      layers.forEach(
+        function (layer) {
+
+          var depth =
+            Number(
+              layer.dataset.depth
+            ) || 0;
+
+
+          var x =
+            currentX *
+            depth *
+            5.2;
+
+
+          var y =
+            (
+              currentY *
+              depth *
+              4.2
+            ) +
+            (
+              autoCamera *
+              depth
+            );
+
+
+          layer.style.setProperty(
+            "--mx",
+            x.toFixed(2) + "px"
+          );
+
+
+          layer.style.setProperty(
+            "--my",
+            y.toFixed(2) + "px"
+          );
+
+        }
+      );
+    }
+
+
+    animationFrame =
+      requestAnimationFrame(
+        renderParallax
+      );
+  }
+
+
+  createFireflies();
+
+
+  window.addEventListener(
+    "pointermove",
+    pointerMove,
+    {
+      passive: true
+    }
+  );
+
+
+  window.addEventListener(
+    "pointerleave",
+    pointerLeave,
+    {
+      passive: true
+    }
+  );
+
+
+  intro.addEventListener(
+    "touchmove",
+    touchMove,
+    {
+      passive: true
+    }
+  );
+
+
+  intro.addEventListener(
+    "touchend",
+    pointerLeave,
+    {
+      passive: true
+    }
+  );
+
+
+  animationFrame =
+    requestAnimationFrame(
+      renderParallax
+    );
+
+
+  window.addEventListener(
+    "blur",
+    pointerLeave,
+    {
+      passive: true
+    }
+  );
+
+
+  window.addEventListener(
+    "pagehide",
+    function () {
+
+      cancelAnimationFrame(
+        animationFrame
+      );
+
+      window.removeEventListener(
+        "pointermove",
+        pointerMove
+      );
+
+      window.removeEventListener(
+        "pointerleave",
+        pointerLeave
+      );
+
+    }
+  );
+
+})();
+</script>
+
+
+<script>
+(function () {
+  "use strict";
+
+  var intro =
+    document.getElementById("ufoIntro");
+
+  var particleField =
+    document.getElementById(
+      "phase3BeamParticles"
+    );
+
+
+  if (!intro || !particleField) {
+    console.warn(
+      "Phase 3: Beam-Partikelsystem nicht initialisiert."
+    );
+    return;
+  }
+
+
+  var reducedMotion =
+    window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+
+  var mobile =
+    window.matchMedia(
+      "(pointer: coarse)"
+    ).matches;
+
+
+  if (reducedMotion) {
+    return;
+  }
+
+
+  /*
+   * Desktop bekommt mehr Beam-Partikel.
+   * Mobile bewusst weniger, um Compositing zu reduzieren.
+   */
+
+  var particleCount =
+    mobile ? 16 : 34;
+
+
+  for (
+    var i = 0;
+    i < particleCount;
+    i++
+  ) {
+
+    var particle =
+      document.createElement("i");
+
+
+    particle.className =
+      "phase3Particle";
+
+
+    particle.style.setProperty(
+      "--particle-x",
+      (
+        15 +
+        Math.random() * 70
+      ) + "%"
+    );
+
+
+    particle.style.setProperty(
+      "--particle-size",
+      (
+        1.3 +
+        Math.random() * 3.4
+      ).toFixed(2) + "px"
+    );
+
+
+    particle.style.setProperty(
+      "--particle-duration",
+      (
+        1.5 +
+        Math.random() * 2.5
+      ).toFixed(2) + "s"
+    );
+
+
+    particle.style.setProperty(
+      "--particle-delay",
+      (
+        -Math.random() * 4
+      ).toFixed(2) + "s"
+    );
+
+
+    particle.style.setProperty(
+      "--particle-drift",
+      (
+        -18 +
+        Math.random() * 36
+      ).toFixed(1) + "px"
+    );
+
+
+    particleField.appendChild(
+      particle
+    );
+  }
+
+
+  /*
+   * Kurzer Energieimpuls beim Einschalten
+   * des Tractor Beams.
+   */
+
+  var beamWasActive = false;
+
+
+  function monitorBeam() {
+
+    if (!document.body.contains(intro)) {
+      observer.disconnect();
+      return;
+    }
+
+
+    var active =
+      intro.classList.contains(
+        "phase-beam"
+      );
+
+
+    if (
+      active &&
+      !beamWasActive
+    ) {
+
+      intro.classList.add(
+        "phase3-energy-impact"
+      );
+
+
+      window.setTimeout(
+        function () {
+          intro.classList.remove(
+            "phase3-energy-impact"
+          );
+        },
+        650
+      );
+    }
+
+
+    beamWasActive = active;
+  }
+
+
+  var observer =
+    new MutationObserver(
+      monitorBeam
+    );
+
+
+  observer.observe(
+    intro,
+    {
+      attributes: true,
+      attributeFilter: [
+        "class"
+      ]
+    }
+  );
+
+
+  monitorBeam();
+
+
+  window.addEventListener(
+    "pagehide",
+    function () {
+      observer.disconnect();
+    }
+  );
+
+})();
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var intro = document.getElementById("ufoIntro");
+  var enterButton = document.getElementById("introEnter");
+  var gateText = document.getElementById("introGateText");
+  var gateHint = document.getElementById("introGateHint");
+  var status = document.getElementById("introStatus");
+
+  var ready = false;
+  var finished = false;
+  var readyTimer = null;
+
+  if (!intro || !enterButton) {
+    document.body.classList.remove("intro-active");
+    return;
+  }
+
+  function isTouchDevice() {
+    return (
+      window.matchMedia("(pointer: coarse)").matches ||
+      "ontouchstart" in window
+    );
+  }
+
+  function playIntroConfirmSound() {
+    try {
+      var AudioContextClass =
+        window.AudioContext ||
+        window.webkitAudioContext;
+
+      if (!AudioContextClass) return;
+
+      var context = new AudioContextClass();
+      var now = context.currentTime;
+      var master = context.createGain();
+
+      master.connect(context.destination);
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.13, now + 0.025);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+
+      [196, 294, 392, 588].forEach(function (frequency, index) {
+        var oscillator = context.createOscillator();
+        var gain = context.createGain();
+        var start = now + index * 0.065;
+
+        oscillator.type = index < 2 ? "sine" : "triangle";
+        oscillator.frequency.setValueAtTime(frequency, start);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          frequency * 1.18,
+          start + 0.25
+        );
+
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(
+          0.06 / (index + 1),
+          start + 0.025
+        );
+        gain.gain.exponentialRampToValueAtTime(
+          0.0001,
+          start + 0.43
+        );
+
+        oscillator.connect(gain);
+        gain.connect(master);
+        oscillator.start(start);
+        oscillator.stop(start + 0.48);
+      });
+
+      window.setTimeout(function () {
+        context.close().catch(function () {});
+      }, 1100);
+    } catch (error) {
+      console.warn("Intro-Sound konnte nicht abgespielt werden:", error);
+    }
+  }
+
+  function makeReady() {
+    if (ready || finished) return;
+
+    ready = true;
+    intro.classList.add("intro-ready");
+    enterButton.disabled = false;
+
+    if (isTouchDevice()) {
+      gateText.textContent = "ZUM STARTEN BERÜHREN";
+      gateHint.textContent = "TOUCH BESTÄTIGEN";
+      status.textContent = "EINSATZBEREITSCHAFT HERGESTELLT";
+    } else {
+      gateText.textContent = "ENTER DRÜCKEN";
+      gateHint.textContent = "ODER HIER KLICKEN";
+      status.textContent = "EINSATZBEREITSCHAFT HERGESTELLT";
+    }
+
+    enterButton.focus({ preventScroll: true });
+  }
+
+  function finishIntro(event) {
+    if (finished || !ready) return;
+
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    finished = true;
+    enterButton.disabled = true;
+
+    playIntroConfirmSound();
+
+    intro.classList.add("intro-leaving");
+    document.body.classList.remove("intro-active");
+
+    window.setTimeout(function () {
+      intro.remove();
+
+      var playerInput = document.getElementById("player");
+
+      if (playerInput && !isTouchDevice()) {
+        playerInput.focus({ preventScroll: true });
+      }
+    }, 920);
+  }
+
+  function handleIntroKey(event) {
+    if (finished) return;
+
+    if (
+      event.key === "Enter" ||
+      event.code === "Enter" ||
+      event.code === "NumpadEnter"
+    ) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (ready) {
+        finishIntro(event);
+      }
+    }
+  }
+
+  enterButton.addEventListener("click", finishIntro);
+  enterButton.addEventListener("pointerup", function (event) {
+    if (ready) {
+      finishIntro(event);
+    }
+  });
+
+  document.addEventListener("keydown", handleIntroKey, true);
+
+  window.addEventListener("pagehide", function () {
+    if (readyTimer) {
+      window.clearTimeout(readyTimer);
+    }
+
+    document.removeEventListener("keydown", handleIntroKey, true);
+  });
+
+  var reducedMotion =
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  readyTimer = window.setTimeout(
+    makeReady,
+    reducedMotion ? 350 : 7900
+  );
+})();
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var canvas =
+    document.getElementById("game");
+
+  var message =
+    document.getElementById("message");
+
+  var intro =
+    document.getElementById("ufoIntro");
+
+
+  if (!canvas) {
+    return;
+  }
+
+
+  var finePointer =
+    window.matchMedia(
+      "(pointer: fine)"
+    ).matches;
+
+
+  if (!finePointer) {
+    return;
+  }
+
+
+  var crosshair =
+    document.createElement("div");
+
+  crosshair.id =
+    "gameCrosshair";
+
+  crosshair.setAttribute(
+    "aria-hidden",
+    "true"
+  );
+
+  crosshair.innerHTML =
+    '<span class="gameCrosshairRing"></span>' +
+    '<span class="gameCrosshairBrackets"></span>' +
+    '<span class="gameCrosshairDot"></span>';
+
+  document.body.appendChild(
+    crosshair
+  );
+
+
+  var pointerX = -100;
+  var pointerY = -100;
+
+  var visible = false;
+  var fireTimer = 0;
+  var hitTimer = 0;
+
+
+  function menuIsVisible() {
+
+    if (!message) {
+      return false;
+    }
+
+    return (
+      window.getComputedStyle(message)
+        .display !== "none"
+    );
+  }
+
+
+  function introIsVisible() {
+
+    return Boolean(
+      intro &&
+      document.body.contains(intro)
+    );
+  }
+
+
+  function gameplayIsActive() {
+
+    return (
+      !introIsVisible() &&
+      !menuIsVisible()
+    );
+  }
+
+
+  function updateVisibility() {
+
+    var active =
+      visible &&
+      gameplayIsActive();
+
+    document.body.classList.toggle(
+      "game-crosshair-active",
+      active
+    );
+
+    if (!active) {
+      crosshair.style.setProperty(
+        "--crosshair-x",
+        "-100px"
+      );
+
+      crosshair.style.setProperty(
+        "--crosshair-y",
+        "-100px"
+      );
+    }
+  }
+
+
+  function moveCrosshair(event) {
+
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+
+    crosshair.style.setProperty(
+      "--crosshair-x",
+      pointerX + "px"
+    );
+
+    crosshair.style.setProperty(
+      "--crosshair-y",
+      pointerY + "px"
+    );
+
+    updateVisibility();
+  }
+
+
+  function showCrosshair(event) {
+
+    visible = true;
+
+    if (event) {
+      moveCrosshair(event);
+    }
+
+    updateVisibility();
+  }
+
+
+  function hideCrosshair() {
+
+    visible = false;
+    updateVisibility();
+  }
+
+
+  function fireCrosshair() {
+
+    if (!gameplayIsActive()) {
+      return;
+    }
+
+    window.clearTimeout(
+      fireTimer
+    );
+
+    crosshair.classList.remove(
+      "crosshair-fire"
+    );
+
+    void crosshair.offsetWidth;
+
+    crosshair.classList.add(
+      "crosshair-fire"
+    );
+
+    fireTimer =
+      window.setTimeout(
+        function () {
+          crosshair.classList.remove(
+            "crosshair-fire"
+          );
+        },
+        220
+      );
+  }
+
+
+  /*
+   * Trefferfeedback wird über die Änderung des Scores erkannt.
+   * Dadurch muss die bestehende Trefferlogik nicht umgebaut
+   * werden.
+   */
+  function detectPossibleHit() {
+
+    var scoreElement =
+      document.getElementById("score");
+
+    if (!scoreElement) {
+      return;
+    }
+
+    var before =
+      scoreElement.textContent;
+
+    window.setTimeout(
+      function () {
+
+        var after =
+          scoreElement.textContent;
+
+        if (
+          after !== before &&
+          gameplayIsActive()
+        ) {
+
+          window.clearTimeout(
+            hitTimer
+          );
+
+          crosshair.classList.remove(
+            "crosshair-hit"
+          );
+
+          void crosshair.offsetWidth;
+
+          crosshair.classList.add(
+            "crosshair-hit"
+          );
+
+          hitTimer =
+            window.setTimeout(
+              function () {
+                crosshair.classList.remove(
+                  "crosshair-hit"
+                );
+              },
+              300
+            );
+        }
+
+      },
+      30
+    );
+  }
+
+
+  canvas.addEventListener(
+    "pointerenter",
+    showCrosshair,
+    {
+      passive: true
+    }
+  );
+
+
+  canvas.addEventListener(
+    "pointermove",
+    moveCrosshair,
+    {
+      passive: true
+    }
+  );
+
+
+  canvas.addEventListener(
+    "pointerleave",
+    hideCrosshair,
+    {
+      passive: true
+    }
+  );
+
+
+  canvas.addEventListener(
+    "pointerdown",
+    function () {
+      fireCrosshair();
+      detectPossibleHit();
+    },
+    {
+      passive: true
+    }
+  );
+
+
+  window.addEventListener(
+    "blur",
+    hideCrosshair,
+    {
+      passive: true
+    }
+  );
+
+
+  document.addEventListener(
+    "visibilitychange",
+    function () {
+
+      if (document.hidden) {
+        hideCrosshair();
+      }
+
+    }
+  );
+
+
+  /*
+   * Menü, Game Over und Intro können den Zustand ändern,
+   * ohne dass sich die Maus bewegt. Daher wird die Sichtbarkeit
+   * zusätzlich über einen kleinen Observer aktualisiert.
+   */
+  var observer =
+    new MutationObserver(
+      updateVisibility
+    );
+
+
+  if (message) {
+    observer.observe(
+      message,
+      {
+        attributes: true,
+        attributeFilter: [
+          "style",
+          "class"
+        ],
+        childList: true,
+        subtree: false
+      }
+    );
+  }
+
+
+  if (intro) {
+    observer.observe(
+      document.body,
+      {
+        childList: true
+      }
+    );
+  }
+
+
+  window.addEventListener(
+    "pagehide",
+    function () {
+
+      observer.disconnect();
+
+      window.clearTimeout(
+        fireTimer
+      );
+
+      window.clearTimeout(
+        hitTimer
+      );
+
+    }
+  );
+
+})();
+</script>
+
+</body></html>

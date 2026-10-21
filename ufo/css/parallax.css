@@ -1,0 +1,1122 @@
+/* ==========================================================
+   UFO-JAGD
+   PHASE 2 - PARALLAX LANDSCAPE
+   ========================================================== */
+
+.parallaxWorld {
+  --px: 0;
+  --py: 0;
+
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+
+  perspective: 900px;
+  transform-style: preserve-3d;
+
+  opacity: 0;
+
+  transition:
+    opacity 1.5s ease;
+}
+
+
+/* Landschaft wird mit Phase 1 sichtbar */
+
+#ufoIntro.phase-landscape .parallaxWorld,
+#ufoIntro.phase-signal .parallaxWorld,
+#ufoIntro.phase-ufo .parallaxWorld,
+#ufoIntro.phase-beam .parallaxWorld,
+#ufoIntro.phase-warning .parallaxWorld,
+#ufoIntro.phase-title .parallaxWorld,
+#ufoIntro.intro-ready .parallaxWorld {
+  opacity: 1;
+}
+
+
+/* ----------------------------------------------------------
+   Alle Parallax Layer
+   ---------------------------------------------------------- */
+
+.parallaxLayer {
+  position: absolute;
+
+  left: -6%;
+  right: -6%;
+
+  width: 112%;
+
+  will-change: transform;
+
+  transform:
+    translate3d(
+      calc(var(--mx, 0px)),
+      calc(var(--my, 0px)),
+      0
+    );
+
+  transition:
+    transform .14s linear;
+}
+
+
+/* ----------------------------------------------------------
+   HIMMELSLEUCHTEN
+   ---------------------------------------------------------- */
+
+.parallaxSkyGlow {
+  inset: 0;
+
+  width: auto;
+
+  background:
+
+    radial-gradient(
+      ellipse at 22% 35%,
+      rgba(26, 113, 165, .17),
+      transparent 37%
+    ),
+
+    radial-gradient(
+      ellipse at 76% 23%,
+      rgba(86, 128, 228, .13),
+      transparent 38%
+    ),
+
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(43, 109, 137, .055) 62%,
+      rgba(30, 112, 90, .06) 100%
+    );
+
+  filter: blur(7px);
+}
+
+
+/* ----------------------------------------------------------
+   FERNE BERGE
+   ---------------------------------------------------------- */
+
+.parallaxMountainsFar {
+  z-index: 2;
+
+  bottom: 21%;
+
+  height: 29%;
+
+  opacity: .37;
+
+  background:
+    linear-gradient(
+      145deg,
+      transparent 0 43%,
+      #273f58 43.4% 55%,
+      transparent 55.4%
+    )
+    0 100% / 29% 100% repeat-x;
+
+  filter:
+    blur(.45px)
+    drop-shadow(
+      0 -8px 18px rgba(76, 140, 184, .08)
+    );
+}
+
+
+/* Schneekanten */
+
+.parallaxMountainsFar::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  opacity: .22;
+
+  background:
+    linear-gradient(
+      147deg,
+      transparent 0 46%,
+      rgba(194, 228, 238, .7) 46.4% 49%,
+      transparent 49.5%
+    )
+    3% 8% / 29% 100% repeat-x;
+}
+
+
+/* ----------------------------------------------------------
+   NAHE BERGE
+   ---------------------------------------------------------- */
+
+.parallaxMountainsNear {
+  z-index: 3;
+
+  bottom: 18%;
+
+  height: 27%;
+
+  opacity: .73;
+
+  background:
+
+    linear-gradient(
+      151deg,
+      transparent 0 42%,
+      #0e2530 42.5% 58%,
+      transparent 58.5%
+    )
+    -4% 100% / 34% 100% repeat-x;
+
+  filter:
+    drop-shadow(
+      0 -8px 16px rgba(0,0,0,.4)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   FERNER WALD
+   ---------------------------------------------------------- */
+
+.parallaxForestFar {
+  z-index: 4;
+
+  bottom: 16%;
+
+  height: 21%;
+
+  opacity: .8;
+
+  background:
+
+    linear-gradient(
+      153deg,
+      transparent 0 45%,
+      #06150f 45.5% 55%,
+      transparent 55.5%
+    )
+    0 100% / 47px 100% repeat-x;
+}
+
+
+/* Baumstämme andeuten */
+
+.parallaxForestFar::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 38%;
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 20px,
+      rgba(2, 12, 7, .85) 20px 24px,
+      transparent 24px 46px
+    );
+}
+
+
+/* ----------------------------------------------------------
+   NEBEL
+   ---------------------------------------------------------- */
+
+.parallaxFog {
+  z-index: 5;
+
+  height: 17%;
+
+  border-radius: 50%;
+
+  filter: blur(25px);
+
+  background:
+    radial-gradient(
+      ellipse,
+      rgba(168, 213, 226, .18),
+      rgba(105, 171, 190, .07) 52%,
+      transparent 73%
+    );
+
+  mix-blend-mode: screen;
+}
+
+
+.parallaxFogOne {
+  bottom: 22%;
+
+  animation:
+    phase2FogOne 19s linear infinite;
+}
+
+
+.parallaxFogTwo {
+  bottom: 15%;
+
+  opacity: .58;
+
+  transform: scale(1.25);
+
+  animation:
+    phase2FogTwo 27s linear infinite;
+}
+
+
+@keyframes phase2FogOne {
+  from {
+    margin-left: -22%;
+  }
+
+  to {
+    margin-left: 22%;
+  }
+}
+
+
+@keyframes phase2FogTwo {
+  from {
+    margin-left: 27%;
+  }
+
+  to {
+    margin-left: -30%;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   FARM
+   ---------------------------------------------------------- */
+
+.parallaxFarmLayer {
+  z-index: 6;
+
+  bottom: 17%;
+
+  height: 22%;
+}
+
+
+.farmHouse {
+  position: absolute;
+
+  left: 10%;
+
+  bottom: 0;
+
+  width: clamp(115px, 15vw, 210px);
+
+  height: clamp(72px, 10vw, 132px);
+
+  filter:
+    drop-shadow(0 10px 17px rgba(0,0,0,.8));
+}
+
+
+.farmWall {
+  position: absolute;
+
+  z-index: 2;
+
+  left: 8%;
+  right: 8%;
+  bottom: 0;
+
+  height: 58%;
+
+  border:
+    1px solid rgba(124, 91, 62, .45);
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      #20130f 0 9px,
+      #2c1912 9px 11px
+    );
+
+  box-shadow:
+    inset 0 -16px 30px rgba(0,0,0,.6);
+}
+
+
+.farmRoof {
+  position: absolute;
+
+  z-index: 3;
+
+  top: 1%;
+  left: 1%;
+
+  width: 98%;
+  height: 48%;
+
+  clip-path:
+    polygon(
+      0 100%,
+      49% 3%,
+      100% 100%
+    );
+
+  background:
+
+    repeating-linear-gradient(
+      90deg,
+      #17191b 0 8px,
+      #262b2d 8px 10px
+    );
+
+  filter:
+    drop-shadow(0 7px 5px rgba(0,0,0,.7));
+}
+
+
+.farmWindow {
+  position: absolute;
+
+  top: 23%;
+
+  width: 13%;
+  height: 27%;
+
+  border:
+    2px solid #3a2618;
+
+  background:
+    linear-gradient(
+      135deg,
+      #ffed9f,
+      #ffb840
+    );
+
+  box-shadow:
+
+    0 0 9px #ffc34c,
+
+    0 0 24px
+    rgba(255, 176, 62, .32);
+
+  animation:
+    phase2WindowFlicker
+    6s ease-in-out infinite;
+}
+
+
+.farmWindow.w1 {
+  left: 16%;
+}
+
+
+.farmWindow.w2 {
+  right: 16%;
+
+  animation-delay: 1.7s;
+}
+
+
+@keyframes phase2WindowFlicker {
+  0%,
+  88%,
+  100% {
+    opacity: .94;
+  }
+
+  91% {
+    opacity: .57;
+  }
+
+  94% {
+    opacity: 1;
+  }
+}
+
+
+.farmDoor {
+  position: absolute;
+
+  left: 44%;
+  bottom: 0;
+
+  width: 20%;
+  height: 48%;
+
+  border:
+    1px solid rgba(0,0,0,.8);
+
+  background: #100b08;
+}
+
+
+.farmChimney {
+  position: absolute;
+
+  z-index: 1;
+
+  top: 12%;
+  right: 21%;
+
+  width: 9%;
+  height: 39%;
+
+  background: #151312;
+}
+
+
+/* Rauch */
+
+.farmChimney::after {
+  content: "";
+
+  position: absolute;
+
+  left: -17px;
+  top: -30px;
+
+  width: 45px;
+  height: 39px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(113, 137, 149, .15);
+
+  filter: blur(10px);
+
+  animation:
+    phase2Smoke
+    5s ease-in-out infinite;
+}
+
+
+@keyframes phase2Smoke {
+  from {
+    transform:
+      translate(0, 0)
+      scale(.65);
+
+    opacity: 0;
+  }
+
+  20% {
+    opacity: .5;
+  }
+
+  to {
+    transform:
+      translate(27px, -41px)
+      scale(1.5);
+
+    opacity: 0;
+  }
+}
+
+
+/* ----------------------------------------------------------
+   WINDRAD
+   ---------------------------------------------------------- */
+
+.windmill {
+  position: absolute;
+
+  right: 11%;
+
+  bottom: 0;
+
+  width: clamp(70px, 9vw, 125px);
+
+  height: clamp(115px, 16vw, 210px);
+}
+
+
+.windmillTower {
+  position: absolute;
+
+  left: 48%;
+  bottom: 0;
+
+  width: 7%;
+
+  height: 72%;
+
+  background:
+    linear-gradient(
+      90deg,
+      #171b1d,
+      #3c484c,
+      #111516
+    );
+
+  transform:
+    translateX(-50%)
+    perspective(200px)
+    rotateX(-3deg);
+}
+
+
+.windmillTower::before,
+.windmillTower::after {
+  content: "";
+
+  position: absolute;
+
+  bottom: 0;
+
+  width: 3px;
+  height: 105%;
+
+  background: #22282a;
+}
+
+
+.windmillTower::before {
+  transform:
+    rotate(12deg);
+
+  transform-origin: bottom;
+}
+
+
+.windmillTower::after {
+  right: 0;
+
+  transform:
+    rotate(-12deg);
+
+  transform-origin: bottom;
+}
+
+
+.windmillRotor {
+  position: absolute;
+
+  left: 50%;
+  top: 19%;
+
+  width: 58%;
+  aspect-ratio: 1;
+
+  transform:
+    translate(-50%, -50%);
+
+  border:
+    4px solid #242d30;
+
+  border-radius: 50%;
+
+  animation:
+    phase2Rotor
+    10s linear infinite;
+}
+
+
+.windmillRotor::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 12px;
+  height: 12px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background: #68777c;
+
+  box-shadow:
+    0 0 5px #000;
+}
+
+
+.windmillRotor i {
+  position: absolute;
+
+  left: 48%;
+  top: -29%;
+
+  width: 5%;
+  height: 80%;
+
+  background:
+    linear-gradient(
+      #526066,
+      #1c2427
+    );
+
+  transform-origin:
+    50% 100%;
+}
+
+
+.windmillRotor i:nth-child(2) {
+  transform: rotate(90deg);
+}
+
+
+.windmillRotor i:nth-child(3) {
+  transform: rotate(180deg);
+}
+
+
+.windmillRotor i:nth-child(4) {
+  transform: rotate(270deg);
+}
+
+
+@keyframes phase2Rotor {
+  to {
+    transform:
+      translate(-50%, -50%)
+      rotate(360deg);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   VORDERER WALD
+   ---------------------------------------------------------- */
+
+.parallaxForestNear {
+  z-index: 7;
+
+  bottom: 8%;
+
+  height: 25%;
+
+  opacity: .94;
+
+  background:
+
+    linear-gradient(
+      151deg,
+      transparent 0 45%,
+      #020d08 45.5% 55%,
+      transparent 55.5%
+    )
+    -12px 100% / 63px 100% repeat-x;
+
+  filter:
+    drop-shadow(
+      0 -5px 6px rgba(0,0,0,.35)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   ZAUN
+   ---------------------------------------------------------- */
+
+.parallaxFence {
+  z-index: 8;
+
+  left: -3%;
+  right: -3%;
+
+  width: 106%;
+
+  bottom: 7%;
+
+  height: 14%;
+
+  opacity: .94;
+
+  background:
+
+    linear-gradient(
+      180deg,
+      transparent 31%,
+      #161513 32% 36%,
+      transparent 37% 62%,
+      #161513 63% 67%,
+      transparent 68%
+    ),
+
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 88px,
+      #161513 89px 96px,
+      transparent 97px 128px
+    );
+
+  filter:
+    drop-shadow(
+      0 4px 3px rgba(0,0,0,.65)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   VORDERGRUND-GRAS
+   ---------------------------------------------------------- */
+
+.parallaxGrass {
+  z-index: 9;
+
+  bottom: -4%;
+
+  height: 28%;
+
+  background:
+
+    repeating-linear-gradient(
+      78deg,
+      transparent 0 11px,
+      rgba(22, 66, 29, .92) 12px 14px,
+      transparent 15px 23px
+    ),
+
+    repeating-linear-gradient(
+      102deg,
+      transparent 0 17px,
+      rgba(13, 49, 22, .92) 18px 20px,
+      transparent 21px 31px
+    ),
+
+    linear-gradient(
+      180deg,
+      rgba(8, 33, 16, .18),
+      #020b05 87%
+    );
+
+  filter:
+    drop-shadow(
+      0 -8px 15px rgba(0,0,0,.25)
+    );
+
+  transform-origin: bottom;
+}
+
+
+/* Gras bewegt sich leicht */
+
+.parallaxGrass::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  background:
+
+    repeating-linear-gradient(
+      83deg,
+      transparent 0 23px,
+      rgba(74, 119, 55, .17) 24px 26px,
+      transparent 27px 38px
+    );
+
+  animation:
+    phase2GrassWind
+    5.5s ease-in-out infinite alternate;
+}
+
+
+@keyframes phase2GrassWind {
+  from {
+    transform:
+      skewX(-.7deg)
+      translateX(-3px);
+  }
+
+  to {
+    transform:
+      skewX(1.2deg)
+      translateX(5px);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   GLÜHWÜRMCHEN
+   ---------------------------------------------------------- */
+
+.fireflyField {
+  z-index: 10;
+
+  bottom: 3%;
+
+  height: 28%;
+}
+
+
+.phase2Firefly {
+  position: absolute;
+
+  width: 3px;
+  height: 3px;
+
+  border-radius: 50%;
+
+  background: #d4ff89;
+
+  box-shadow:
+
+    0 0 5px #d4ff89,
+
+    0 0 12px
+    rgba(196, 255, 100, .75);
+
+  animation:
+    phase2FireflyFloat
+    var(--duration)
+    ease-in-out
+    var(--delay)
+    infinite alternate;
+}
+
+
+@keyframes phase2FireflyFloat {
+  0% {
+    opacity: .04;
+
+    transform:
+      translate(
+        0,
+        8px
+      )
+      scale(.6);
+  }
+
+  35% {
+    opacity: .9;
+  }
+
+  100% {
+    opacity: .15;
+
+    transform:
+      translate(
+        var(--fly-x),
+        -22px
+      )
+      scale(1.3);
+  }
+}
+
+
+/* ----------------------------------------------------------
+   BEAM beeinflusst Landschaft
+   ---------------------------------------------------------- */
+
+#ufoIntro.phase-beam .parallaxGrass,
+#ufoIntro.phase-warning .parallaxGrass,
+#ufoIntro.phase-title .parallaxGrass,
+#ufoIntro.intro-ready .parallaxGrass {
+  filter:
+    brightness(1.17)
+    saturate(1.15)
+    drop-shadow(
+      0 -8px 15px rgba(20, 188, 189, .1)
+    );
+}
+
+
+#ufoIntro.phase-beam .parallaxFarmLayer,
+#ufoIntro.phase-warning .parallaxFarmLayer {
+  filter:
+    drop-shadow(
+      0 0 14px
+      rgba(70, 228, 255, .12)
+    );
+}
+
+
+/* ----------------------------------------------------------
+   CAMERA PUSH
+   Während das UFO auftaucht fährt die Landschaft minimal
+   auf die Kamera zu.
+   ---------------------------------------------------------- */
+
+#ufoIntro.phase-ufo .parallaxMountainsNear,
+#ufoIntro.phase-beam .parallaxMountainsNear {
+  scale: 1.015;
+}
+
+
+#ufoIntro.phase-ufo .parallaxForestNear,
+#ufoIntro.phase-beam .parallaxForestNear {
+  scale: 1.025;
+}
+
+
+#ufoIntro.phase-ufo .parallaxGrass,
+#ufoIntro.phase-beam .parallaxGrass {
+  scale: 1.035;
+}
+
+
+/* ----------------------------------------------------------
+   MOBILE
+   ---------------------------------------------------------- */
+
+@media (max-width: 700px), (pointer: coarse) {
+
+  .parallaxWorld {
+    perspective: 700px;
+  }
+
+
+  .parallaxLayer {
+    left: -10%;
+    right: -10%;
+    width: 120%;
+
+    transition:
+      transform .22s ease-out;
+  }
+
+
+  .parallaxMountainsFar {
+    bottom: 19%;
+    height: 24%;
+  }
+
+
+  .parallaxMountainsNear {
+    bottom: 17%;
+    height: 22%;
+  }
+
+
+  .parallaxForestFar {
+    bottom: 14%;
+    height: 18%;
+  }
+
+
+  .parallaxForestNear {
+    bottom: 7%;
+    height: 21%;
+  }
+
+
+  .farmHouse {
+    left: 5%;
+
+    width:
+      clamp(
+        94px,
+        27vw,
+        145px
+      );
+
+    height:
+      clamp(
+        62px,
+        18vw,
+        94px
+      );
+  }
+
+
+  .windmill {
+    right: 5%;
+
+    transform:
+      scale(.82);
+
+    transform-origin:
+      bottom right;
+  }
+
+
+  .parallaxFence {
+    bottom: 6%;
+    height: 12%;
+  }
+
+
+  .parallaxGrass {
+    height: 23%;
+  }
+
+
+  .phase2Firefly:nth-child(n+13) {
+    display: none;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   PORTRAIT MOBILE
+   Landschaft bewusst dichter und tiefer
+   ---------------------------------------------------------- */
+
+@media
+  (max-width: 700px)
+  and
+  (orientation: portrait) {
+
+  .parallaxMountainsFar {
+    height: 21%;
+  }
+
+
+  .parallaxMountainsNear {
+    height: 19%;
+  }
+
+
+  .parallaxFarmLayer {
+    bottom: 15%;
+  }
+
+
+  .parallaxForestNear {
+    height: 19%;
+  }
+
+
+  .farmHouse {
+    left: 3%;
+  }
+
+
+  .windmill {
+    right: 1%;
+  }
+
+}
+
+
+/* ----------------------------------------------------------
+   REDUCED MOTION
+   ---------------------------------------------------------- */
+
+@media
+  (prefers-reduced-motion: reduce) {
+
+  .parallaxLayer {
+    transform:
+      none !important;
+
+    transition:
+      none !important;
+  }
+
+
+  .parallaxFog,
+  .farmChimney::after,
+  .windmillRotor,
+  .parallaxGrass::after,
+  .phase2Firefly {
+    animation:
+      none !important;
+  }
+
+}
