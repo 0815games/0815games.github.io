@@ -1,3 +1,4 @@
+import {tryAddItem} from './inventory.js';
 import { createRestartPlayer } from './run-lifecycle.js';
 import {state,CLASSES} from '../core/state.js';
 import {renderPreparationHero} from './preparation-hero.js';
@@ -30,9 +31,105 @@ function render(){if(!panel)return;const p=state.player,tier=Math.min(20,1+Math.
 }
 function refreshSummary(){const box=el('death-stats');if(box&&eligible()){box.replaceChildren();for(const text of [`Run-Gold gesichert: ${state.player.lastRunGold||0}`,`Ordensgold: ${state.meta.gold||0}`,`Level ${state.player.level}, Skills und permanente Werte erhalten.`,`Alle Gegenstände verloren. TP und MP aufgefüllt.`]){const div=document.createElement('div');div.textContent=text;box.append(div);}}}
 function show(){if(!eligible())return;panel.hidden=false;pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;status.textContent='Käufe gelten für den nächsten Run und gehen beim nächsten Tod verloren. Ohne Kauf erhältst du eine Notwaffe.';render();footer.querySelector('[data-start]').focus();}
-async function buy(){if(busy||!pending||!eligible())return;const item=ITEMS[pending],p=state.player;if(!item||(state.meta.gold||0)<item.price)return;const count=p.inventory.filter(x=>x.id===pending).reduce((a,x)=>a+x.count,0);if(item.slot?p.preparationBought?.[item.slot]:count>=3)return;
- busy=true;render();const backup=JSON.parse(JSON.stringify({player:p,meta:state.meta}));const target=p,slot=state.currentSlot;
- try{if(ready&&!await ready){ready=cloud.saveSlot(slot,state);if(!await ready)throw new Error('Todeszustand konnte nicht gespeichert werden.');}state.meta.gold-=item.price;if(item.slot){p.equipped[item.slot]=pending;p.preparationBought[item.slot]=true;}else{const stack=p.inventory.find(x=>x.id===pending);if(stack)stack.count++;else p.inventory.push({id:pending,count:1});}if(!await cloud.saveSlot(slot,state))throw new Error('Kauf konnte nicht gespeichert werden.');status.textContent='Kauf für den nächsten Run übernommen.';}catch(e){if(state.player===target&&state.currentSlot===slot){Object.assign(target,backup.player);state.meta=backup.meta;}status.textContent=e.message+' Bitte Verbindung prüfen und erneut versuchen.';}finally{busy=false;pending=null;footer.querySelector('[data-confirm]').hidden=true;footer.querySelector('[data-cancel]').hidden=true;render();}}
+async function buy(){
+ if(busy||!pending||!eligible())return;
+
+ const itemId=pending;
+ const player=state.player,world=state.world,meta=state.meta;
+ const slot=state.currentSlot,uid=state.user?.uid,runId=player.runId;
+ const current=()=>state.user?.uid===uid&&state.currentSlot===slot&&
+  state.player===player&&state.world===world&&state.meta===meta&&
+  player.runId===runId&&player.needsPreparation===true;
+
+ busy=true;
+ render();
+
+ try{
+  if(ready&&!await ready){
+   if(!current())return;
+   ready=cloud.saveSlot(slot,{
+    player:structuredClone(player),
+    world:structuredClone(world),
+    meta:structuredClone(meta),
+    currentSlot:slot
+   });
+   if(!await ready)throw new Error('Vorbereitung konnte nicht gespeichert werden.');
+  }
+  if(!current())return;
+
+  const item=ITEMS[itemId];
+  if(!item)throw new Error('Gegenstand nicht mehr verfügbar.');
+  if(!Number.isFinite(item.price)||item.price<0){
+   throw new Error('Ungültiger Kaufpreis.');
+  }
+  if(!Number.isFinite(meta.gold)||meta.gold<item.price){
+   throw new Error('Nicht genügend Ordensgold.');
+  }
+  if((player.level||1)<(item.minLevel??1)){
+   throw new Error(`Benötigt Heldenlevel ${item.minLevel}.`);
+  }
+  if(item.heroClass&&item.heroClass!==player.heroClass){
+   throw new Error('Dieser Gegenstand ist für eine andere Klasse bestimmt.');
+  }
+
+  const draft={
+   player:structuredClone(player),
+   world:structuredClone(world),
+   meta:structuredClone(meta),
+   currentSlot:slot
+  };
+  const next=draft.player;
+  next.preparationBought=next.preparationBought||{};
+
+  if(item.slot){
+   if(!slots.includes(item.slot)){
+    throw new Error('Ungültiger Ausrüstungsplatz.');
+   }
+   if(next.preparationBought[item.slot]){
+    throw new Error('Für diesen Ausrüstungsplatz wurde bereits gekauft.');
+   }
+   next.equipped[item.slot]=itemId;
+   next.preparationBought[item.slot]=true;
+  }else{
+   if(!['health_potion','mana_potion'].includes(itemId)){
+    throw new Error('Dieser Vorrat wird hier nicht angeboten.');
+   }
+   const count=next.inventory
+    .filter(entry=>entry.id===itemId)
+    .reduce((sum,entry)=>sum+entry.count,0);
+   if(count>=3)throw new Error('Höchstens drei Tränke dieser Sorte pro Vorbereitung.');
+   const added=tryAddItem(next.inventory,itemId,1);
+   if(!added.ok){
+    throw new Error(added.reason==='INVENTORY_FULL'
+     ?'Kein Platz im Inventar.'
+     :'Inventar konnte nicht aktualisiert werden.');
+   }
+  }
+
+  draft.meta.gold-=item.price;
+  status.textContent=`${item.name}: Kauf wird gespeichert …`;
+
+  const ok=await cloud.saveSlot(slot,draft);
+  if(!current())return;
+  if(!ok)throw new Error('Kauf konnte nicht gespeichert werden.');
+
+  Object.assign(player,next);
+  Object.assign(meta,draft.meta);
+  status.textContent=`${item.name}: Kauf für den nächsten Run übernommen.`;
+  refreshSummary();
+ }catch(error){
+  if(current()){
+   status.textContent=error.message+' Der lokale Kaufzustand wurde nicht verändert.';
+  }
+  console.warn('Vorbereitungskauf:',error);
+ }finally{
+  busy=false;
+  pending=null;
+  footer.querySelector('[data-confirm]').hidden=true;
+  footer.querySelector('[data-cancel]').hidden=true;
+  render();
+ }
+}
 async function start(){
  if(busy||!eligible())return;
  busy=true;

@@ -1846,3 +1846,14 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Fehlgeschlagene Sicherung des Todeszustands kann vor Kauf oder Neustart erneut versucht werden.
 - Vorhandene Spielstände erhalten beim Laden eine Run-ID, falls sie fehlt.
 - Regressionstests und manuelle Cloud-/Neustarttests erforderlich.
+
+## 2026-10-21 – v0.6.9 – Vorbereitungskäufe als gespeicherter Entwurf
+- Käufe werden in einer Kopie vorbereitet und erst nach Speichererfolg lokal übernommen.
+- Preis, Ordensgold, Level, Klasse und Kauflimits werden vor dem Schreiben geprüft.
+- Tränke verwenden die zentrale Inventarfunktion einschließlich Platz- und Stapelprüfung.
+- Nach asynchronen Schritten werden Konto, Slot, Spieler, Welt, Metadaten und Run geprüft.
+- Verspätete Ergebnisse werden nicht auf einen inzwischen anderen Charakter angewendet.
+- Direkter Trankkauf und Bestätigung von Ausrüstungskäufen bleiben erhalten.
+- Bei gemeldetem Speicherfehler bleibt der lokale Kaufzustand unverändert.
+- Keine geräteübergreifende Transaktion oder Exactly-once-Garantie bei unklarem Netzwerkstatus.
+- Browser- und Speichertests stehen aus.
