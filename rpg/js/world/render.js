@@ -12,7 +12,7 @@ export class Renderer{
   this.flashEffect={color,strength,duration,elapsed:0};
  }
  shockwave(x,y,color='#ffd54f'){
-  this.waves.push({x:x*this.tile+16,y:y*this.tile+16,r:8,a:.9,color});
+  this.waves.push({x:x*this.tile+16,y:y*this.tile+16,r:10,a:1,color});
  }
  celebrate(x,y,{particles=110,colors=['#ffd54f','#ffca28','#ff9800','#fff8e1'],text='REICHTUM!'}={}){
   this.flash('#ffe082',.65,.65);
@@ -42,7 +42,7 @@ export class Renderer{
    return p.a>0;
   });
   this.waves=(this.waves||[]).filter(w=>{
-   w.r+=260*dt;w.a-=dt*1.6;return w.a>0;
+   w.r+=340*dt;w.a-=dt*1.1;return w.a>0;
   });
   if(this.flashEffect){
    this.flashEffect.elapsed+=dt;

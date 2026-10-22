@@ -1885,3 +1885,15 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Service-Worker-Cache-Schlüssel auf schattengruft-v0.6.11 erhöht.
 - Der alte Cache wird beim Aktivieren des Service Workers automatisch entfernt.
 - Keine Änderung an Spiellogik, Effekten oder Speicherablauf.
+
+## 2026-10-22 – v0.6.12 – Toast-Stil bereinigt und Übergänge verstärkt
+- Alten grünen Inline-Toast-Stil vollständig aus index.html entfernt.
+- Toast-Stil ausschließlich in css/toast.css zentralisiert.
+- Erfolgsmeldungen gold, Fehlermeldungen rot; keine konkurrierenden Styles mehr.
+- JavaScript injiziert keine Toast-Styles mehr.
+- Ebenenwechsel erhält Lichtblitz, zwei Schockwellen und 100 aufsteigende Funken.
+- Truhenöffnung erhält stärkeren Blitz, drei Schockwellen, 200 Funken und größeren Text.
+- Schockwellen sind größer, heller und sichtbar länger.
+- Version, Build-Metadatum, Modul-Cache-Parameter und Service-Worker-Cache auf 0.6.12 erhöht.
+- Keine Änderung an Loot, Gold, Kampfwerten oder Speicherlogik.
+- Aufräumarbeiten: v0611_patch.py, v0612_patch.py und ungewollte Arbeitsdateien bleiben unversioniert und werden nach Freigabe entfernt.

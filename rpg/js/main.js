@@ -34,22 +34,11 @@ const loginCanvas=el('login-canvas');if(loginCanvas){const lx=loginCanvas.getCon
 const fbOk=cloud.init();if(fbOk){el('cloud-status').className='cloud ok';el('cloud-status').textContent='● CLOUD-ARCHIV VERBUNDEN'}else{el('cloud-status').className='cloud offline';el('cloud-status').textContent='● ORDENSARCHIV NICHT VERBUNDEN'}
 document.querySelectorAll('.auth-tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.auth-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');authMode=b.dataset.mode;el('auth-error').classList.add('hidden');el('auth-submit').textContent=authMode==='login'?'⚔️ IN DIE GRUFT HERABSTEIGEN':'🛡️ ACCOUNT ERSTELLEN'});
 function showToast(message,type='success'){
- if(!document.getElementById('toast-center-style')){
-  const style=document.createElement('style');
-  style.id='toast-center-style';
-  style.textContent=`#toast{position:fixed;inset:0;pointer-events:none;z-index:260;display:flex;align-items:flex-start;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 16px 0}
-  #toast .toast{width:min(560px,calc(100vw - 32px));margin-top:0;padding:14px 18px;border:2px solid #c99c42;border-radius:14px;background:linear-gradient(180deg,#111420f2,#08090ef2);color:#ffe082;font:600 15px/1.4 system-ui,sans-serif;text-align:center;box-shadow:0 0 34px #000c,0 0 24px #c99c4233,0 10px 28px #000a;animation:toast-enter .35s cubic-bezier(.2,.9,.2,1),toast-exit .45s ease-in 3.15s forwards}
-  #toast .toast.success{border-color:#c99c42;color:#ffe082;text-shadow:0 0 12px #c99c4255}
-  #toast .toast.error{border-color:#b3543f;color:#ffb3a0;text-shadow:0 0 12px #b3543f55}
-  @keyframes toast-enter{from{opacity:0;transform:translateY(-18px) scale(.96)}to{opacity:1;transform:none}}
-  @keyframes toast-exit{to{opacity:0;transform:translateY(-14px) scale(.98)}}`;
-  document.head.append(style);
- }
  const box=document.createElement('div');
  box.className=`toast ${type}`;
  box.textContent=message;
  el('toast').appendChild(box);
- setTimeout(()=>box.remove(),3600);
+ setTimeout(()=>box.remove(),4200);
 }
 function showError(msg){const box=el('auth-error');if(box){box.textContent=msg;box.classList.remove('hidden')}}
 const nameParts={first:['Vael','Kael','Mor','Thal','Ser','Drav','Ny','Umb','Rav','Zar','Eld','Vor','Mal','Cal','Aer','Gor'],middle:['a','e','i','o','u','ae','ia','ora','eth','ar','yn','ys'],last:['thar','mor','vane','rion','dric','wyn','thas','gorn','vex','shade','grave','mourn','blight','ash','dusk','wraith']};
@@ -131,8 +120,45 @@ function renderInv(){
 function renderEquipmentMenu(){const p=state.player,s=calculateCombatStats(),slots=['head','body','mainhand','offhand','feet','ring'];slots.forEach(k=>{const id=p.equipped[k],name=el(`slot-item-${k}`),box=name.closest('.equip-slot-box'),btn=box.querySelector('.btn-unequip');if(id&&ITEMS[id]){name.textContent=ITEMS[id].name;box.classList.add('equipped');btn.classList.remove('hidden');btn.onclick=e=>{e.stopPropagation();unequipSlot(k)}}else{name.textContent='Leer';box.classList.remove('equipped');btn.classList.add('hidden')}});renderArmory(el('char'),p,s,state.world.depth,{classLabel:CLASSES[p.heroClass]?.title||'Recke'});}
 function useItem(i){const s=state.player.inventory[i],it=ITEMS[s?.id];if(!it||!consumePotion(state.player,i,ITEMS,removeItem,getSkillRank(state,'healing_lore')))return false;sound.potion();log(`${it.name} getrunken.`);hud();return true;}
 function log(m){const d=document.createElement('div');d.textContent=`🗡️ ${m}`;el('logs').prepend(d)}
-function move(dx,dy){if(state.inCombat)return;const tx=state.player.x+dx,ty=state.player.y+dy;if(map.isWall(tx,ty))return;const mon=state.world.monsters.find(m=>m.x===tx&&m.y===ty);if(mon)return startCombat(mon);state.player.x=tx;state.player.y=ty;sound.step();map.reveal();const ch=state.world.chests.find(c=>c.x===tx&&c.y===ty&&!c.open);if(ch){if(ch.item){const lootCheck=tryAddItem(state.player.inventory,ch.item,1);if(!lootCheck.ok){notifyError(lootCheck.reason==='INVENTORY_FULL'?'Kein Platz für die Truhenbeute. Schaffe Platz und versuche es erneut.':'Truhenbeute konnte nicht aufgenommen werden.');hud();return}}ch.open=true;sound.chest();gfx.celebrate(tx,ty,{particles:120,text:'✨ REICHTUM!'});document.body.classList.add('screen-shake');setTimeout(()=>document.body.classList.remove('screen-shake'),550);const r=getSkillRank(state,'master_thief'),g=Math.floor(ch.caps*(1+.25*r));state.player.gold+=g;log(`Truhe: +${g} Gold.${ch.item?' Gegenstand aufgenommen.':''}`);const chestWorld=state.world;setTimeout(()=>{if(state.world===chestWorld)chestWorld.chests=chestWorld.chests.filter(c=>c!==ch)},800)}if(state.world.stairs&&tx===state.world.stairs.x&&ty===state.world.stairs.y)log('Treppe gefunden. Erneut tippen zum Hinabsteigen.');hud()}
-function interact(){if(state.inCombat)return;const s=state.world.stairs;if(s&&state.player.x===s.x&&state.player.y===s.y){sound.stairs();map.generate(state.world.depth+1);state.meta.bestDepth=Math.max(state.meta.bestDepth,state.world.depth);showFloorTransition(state.world.depth);log(`Du steigst auf Ebene ${state.world.depth} hinab.`);hud();saveCurrentSlot()}}
+function move(dx,dy){if(state.inCombat)return;const tx=state.player.x+dx,ty=state.player.y+dy;if(map.isWall(tx,ty))return;const mon=state.world.monsters.find(m=>m.x===tx&&m.y===ty);if(mon)return startCombat(mon);state.player.x=tx;state.player.y=ty;sound.step();map.reveal();const ch=state.world.chests.find(c=>c.x===tx&&c.y===ty&&!c.open);if(ch){if(ch.item){const lootCheck=tryAddItem(state.player.inventory,ch.item,1);if(!lootCheck.ok){notifyError(lootCheck.reason==='INVENTORY_FULL'?'Kein Platz für die Truhenbeute. Schaffe Platz und versuche es erneut.':'Truhenbeute konnte nicht aufgenommen werden.');hud();return}}ch.open=true;sound.chest();gfx.flash('#ffe082',.9,.9);
+ gfx.shockwave(tx,ty,'#ffd54f');
+ gfx.shockwave(tx,ty,'#fff8e1');
+ gfx.shockwave(tx,ty,'#ff9800');
+ for(let i=0;i<200;i++){
+  const a=Math.random()*Math.PI*2,speed=85+Math.random()*250;
+  gfx.particles.push({
+   x:tx*32+16,y:ty*32+16,
+   vx:Math.cos(a)*speed,vy:Math.sin(a)*speed-115,
+   a:1,c:['#ffd54f','#ffca28','#ff9800','#fff8e1'][i%4],
+   size:2+Math.random()*4,gravity:60+Math.random()*55
+  });
+ }
+ gfx.text('✨ REICHTUM!',tx,ty,'#ffd54f',40,2.2);document.body.classList.add('screen-shake');setTimeout(()=>document.body.classList.remove('screen-shake'),550);const r=getSkillRank(state,'master_thief'),g=Math.floor(ch.caps*(1+.25*r));state.player.gold+=g;log(`Truhe: +${g} Gold.${ch.item?' Gegenstand aufgenommen.':''}`);const chestWorld=state.world;setTimeout(()=>{if(state.world===chestWorld)chestWorld.chests=chestWorld.chests.filter(c=>c!==ch)},800)}if(state.world.stairs&&tx===state.world.stairs.x&&ty===state.world.stairs.y)log('Treppe gefunden. Erneut tippen zum Hinabsteigen.');hud()}
+function interact(){
+ if(state.inCombat)return;
+ const s=state.world.stairs;
+ if(s&&state.player.x===s.x&&state.player.y===s.y){
+  sound.stairs();
+  gfx.flash('#ffd54f',.8,.85);
+  gfx.shockwave(state.player.x,state.player.y,'#ffd54f');
+  gfx.shockwave(state.player.x,state.player.y,'#fff8e1');
+  for(let i=0;i<100;i++){
+   const a=Math.random()*Math.PI*2,spread=45+Math.random()*140;
+   gfx.particles.push({
+    x:state.player.x*32+16,y:state.player.y*32+16,
+    vx:Math.cos(a)*spread,vy:-75-Math.random()*160,
+    a:1,c:['#ffd54f','#ffca28','#fff8e1'][i%3],
+    size:2+Math.random()*3,gravity:35+Math.random()*35
+   });
+  }
+  map.generate(state.world.depth+1);
+  state.meta.bestDepth=Math.max(state.meta.bestDepth,state.world.depth);
+  showFloorTransition(state.world.depth);
+  log(`Du steigst auf Ebene ${state.world.depth} hinab.`);
+  hud();
+  saveCurrentSlot();
+ }
+}
 function startCombat(m){if(phases.can(PHASES.COMBAT))phases.transition(PHASES.COMBAT);state.inCombat=true;state.activeMonster=m;ensureBuffs();el('combat').classList.remove('hidden');combatInfo();renderAbilities();updatePotionButtons();el('combat-log').textContent=`${m.name} lauert in den Schatten!`}
 function combatInfo(){const m=state.activeMonster,p=state.player;el('combat-info').innerHTML=`<div><b>${p.name}</b><br>${p.hp}/${p.maxHp} TP<br>${p.mp} MP</div><div>⚔️</div><div><b>${m.name}</b><br>${m.hp}/${m.maxHp} TP</div>`}
 function ensureBuffs(){const p=state.player;if(!p.buffs)p.buffs={shield:0,block:false,evade:false};if(!p.cooldowns)p.cooldowns={}}
