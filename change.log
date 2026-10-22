@@ -1867,3 +1867,14 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Veraltete Ergebnisse erzeugen keine Meldung im inzwischen anderen Spielkontext.
 - Bereits gestartete Cloud-Schreibvorgänge werden dadurch nicht abgebrochen.
 - Snapshot-Regressionstests und manueller Cloud-Test erforderlich.
+
+## 2026-10-22 – v0.6.11 – Prunkvolle Effekte und zentrierte Meldungen
+- Truhenöffnung erhält Lichtblitz, Schockwelle, 120 leuchtende Partikel und Bildschirmwackeln.
+- Zentrierter „REICHTUM!“-Text mit größerer Schrift und längerer Laufzeit.
+- Partikel haben Größen, Schatten, Reibung und individuelle Gravitation.
+- Neue Renderer-Effekte: flash, shockwave und celebrate.
+- Ebenenwechsel erhält stärkeren Auftritt und längere Anzeige.
+- Alle Erfolgs- und Fehlermeldungen erscheinen zentriert oben im Stil des Ebenenübergangs.
+- Fehlermeldungen behalten rote Akzente; Erfolgsmeldungen goldene Akzente.
+- Keine Änderung an Loot, Gold, Kampfwerten oder Speicherlogik.
+- Browser- und Mobiltest erforderlich.

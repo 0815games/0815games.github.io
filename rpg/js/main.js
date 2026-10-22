@@ -33,7 +33,24 @@ const slotCanvas=el('slot-canvas');if(slotCanvas){const sx=slotCanvas.getContext
 const loginCanvas=el('login-canvas');if(loginCanvas){const lx=loginCanvas.getContext('2d');let w=loginCanvas.width=innerWidth,h=loginCanvas.height=innerHeight;addEventListener('resize',()=>{w=loginCanvas.width=innerWidth;h=loginCanvas.height=innerHeight});const embers=Array.from({length:90},()=>({x:Math.random()*w,y:Math.random()*h,s:1.5+Math.random()*2.5,v:.5+Math.random()*1.5,a:Math.random()}));setInterval(()=>{lx.clearRect(0,0,w,h);for(const e of embers){e.y-=e.v;e.x+=Math.sin(e.y*.02)*.7;if(e.y<0){e.y=h;e.x=Math.random()*w}lx.fillStyle=`rgba(255,140,40,${e.a})`;lx.fillRect(e.x,e.y,e.s,e.s)}},33)}
 const fbOk=cloud.init();if(fbOk){el('cloud-status').className='cloud ok';el('cloud-status').textContent='● CLOUD-ARCHIV VERBUNDEN'}else{el('cloud-status').className='cloud offline';el('cloud-status').textContent='● ORDENSARCHIV NICHT VERBUNDEN'}
 document.querySelectorAll('.auth-tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.auth-tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');authMode=b.dataset.mode;el('auth-error').classList.add('hidden');el('auth-submit').textContent=authMode==='login'?'⚔️ IN DIE GRUFT HERABSTEIGEN':'🛡️ ACCOUNT ERSTELLEN'});
-function showToast(message,type='success'){const box=document.createElement('div');box.className=`toast ${type}`;box.textContent=message;el('toast').appendChild(box);setTimeout(()=>box.remove(),3600)}
+function showToast(message,type='success'){
+ if(!document.getElementById('toast-center-style')){
+  const style=document.createElement('style');
+  style.id='toast-center-style';
+  style.textContent=`#toast{position:fixed;inset:0;pointer-events:none;z-index:260;display:flex;align-items:flex-start;justify-content:center;padding:max(18px,env(safe-area-inset-top)) 16px 0}
+  #toast .toast{width:min(560px,calc(100vw - 32px));margin-top:0;padding:14px 18px;border:2px solid #c99c42;border-radius:14px;background:linear-gradient(180deg,#111420f2,#08090ef2);color:#ffe082;font:600 15px/1.4 system-ui,sans-serif;text-align:center;box-shadow:0 0 34px #000c,0 0 24px #c99c4233,0 10px 28px #000a;animation:toast-enter .35s cubic-bezier(.2,.9,.2,1),toast-exit .45s ease-in 3.15s forwards}
+  #toast .toast.success{border-color:#c99c42;color:#ffe082;text-shadow:0 0 12px #c99c4255}
+  #toast .toast.error{border-color:#b3543f;color:#ffb3a0;text-shadow:0 0 12px #b3543f55}
+  @keyframes toast-enter{from{opacity:0;transform:translateY(-18px) scale(.96)}to{opacity:1;transform:none}}
+  @keyframes toast-exit{to{opacity:0;transform:translateY(-14px) scale(.98)}}`;
+  document.head.append(style);
+ }
+ const box=document.createElement('div');
+ box.className=`toast ${type}`;
+ box.textContent=message;
+ el('toast').appendChild(box);
+ setTimeout(()=>box.remove(),3600);
+}
 function showError(msg){const box=el('auth-error');if(box){box.textContent=msg;box.classList.remove('hidden')}}
 const nameParts={first:['Vael','Kael','Mor','Thal','Ser','Drav','Ny','Umb','Rav','Zar','Eld','Vor','Mal','Cal','Aer','Gor'],middle:['a','e','i','o','u','ae','ia','ora','eth','ar','yn','ys'],last:['thar','mor','vane','rion','dric','wyn','thas','gorn','vex','shade','grave','mourn','blight','ash','dusk','wraith']};
 function randomDarkFantasyName(){let name='';do{const a=nameParts.first[Math.floor(Math.random()*nameParts.first.length)],b=nameParts.middle[Math.floor(Math.random()*nameParts.middle.length)],c=nameParts.last[Math.floor(Math.random()*nameParts.last.length)];name=`${a}${b}${c}`;name=name.charAt(0).toUpperCase()+name.slice(1)}while(name.length>16);return name}
@@ -72,7 +89,15 @@ function showLevelUpChoices(level,onDone){
  document.body.append(modal);
 }
 function levelUpHero(){const p=state.player;p.level++;p.xp-=p.nextXp;p.nextXp=Math.floor(p.nextXp*1.5);p.skillPoints=(p.skillPoints||0)+1;showLevelUpAnimation(p.level);log(`LEVEL UP! Stufe ${p.level} erreicht. +1 Skillpunkt.`);showLevelUpChoices(p.level,()=>{hud();saveCurrentSlot();});}
-function showFloorTransition(d){const o=el('floor-overlay'),t=el('floor-title');if(!o||!t)return;t.textContent=`EBENE ${d}`;o.classList.remove('hidden');setTimeout(()=>o.classList.add('hidden'),1700)}
+function showFloorTransition(d){
+ const o=el('floor-overlay'),t=el('floor-title');
+ if(!o||!t)return;
+ t.textContent=`EBENE ${d}`;
+ o.classList.remove('hidden');
+ document.body.classList.add('screen-shake');
+ setTimeout(()=>document.body.classList.remove('screen-shake'),550);
+ setTimeout(()=>o.classList.add('hidden'),2100);
+}
 function renderInv(){
  const box=el('items');box.innerHTML='';
  el('slots').textContent=`(${state.player.inventory.length}/${INVENTORY_LIMIT})`;
@@ -106,7 +131,7 @@ function renderInv(){
 function renderEquipmentMenu(){const p=state.player,s=calculateCombatStats(),slots=['head','body','mainhand','offhand','feet','ring'];slots.forEach(k=>{const id=p.equipped[k],name=el(`slot-item-${k}`),box=name.closest('.equip-slot-box'),btn=box.querySelector('.btn-unequip');if(id&&ITEMS[id]){name.textContent=ITEMS[id].name;box.classList.add('equipped');btn.classList.remove('hidden');btn.onclick=e=>{e.stopPropagation();unequipSlot(k)}}else{name.textContent='Leer';box.classList.remove('equipped');btn.classList.add('hidden')}});renderArmory(el('char'),p,s,state.world.depth,{classLabel:CLASSES[p.heroClass]?.title||'Recke'});}
 function useItem(i){const s=state.player.inventory[i],it=ITEMS[s?.id];if(!it||!consumePotion(state.player,i,ITEMS,removeItem,getSkillRank(state,'healing_lore')))return false;sound.potion();log(`${it.name} getrunken.`);hud();return true;}
 function log(m){const d=document.createElement('div');d.textContent=`🗡️ ${m}`;el('logs').prepend(d)}
-function move(dx,dy){if(state.inCombat)return;const tx=state.player.x+dx,ty=state.player.y+dy;if(map.isWall(tx,ty))return;const mon=state.world.monsters.find(m=>m.x===tx&&m.y===ty);if(mon)return startCombat(mon);state.player.x=tx;state.player.y=ty;sound.step();map.reveal();const ch=state.world.chests.find(c=>c.x===tx&&c.y===ty&&!c.open);if(ch){if(ch.item){const lootCheck=tryAddItem(state.player.inventory,ch.item,1);if(!lootCheck.ok){notifyError(lootCheck.reason==='INVENTORY_FULL'?'Kein Platz für die Truhenbeute. Schaffe Platz und versuche es erneut.':'Truhenbeute konnte nicht aufgenommen werden.');hud();return}}ch.open=true;sound.chest();gfx.burst(tx,ty);gfx.text('✨ REICHTUM!',tx,ty);const r=getSkillRank(state,'master_thief'),g=Math.floor(ch.caps*(1+.25*r));state.player.gold+=g;log(`Truhe: +${g} Gold.${ch.item?' Gegenstand aufgenommen.':''}`);const chestWorld=state.world;setTimeout(()=>{if(state.world===chestWorld)chestWorld.chests=chestWorld.chests.filter(c=>c!==ch)},800)}if(state.world.stairs&&tx===state.world.stairs.x&&ty===state.world.stairs.y)log('Treppe gefunden. Erneut tippen zum Hinabsteigen.');hud()}
+function move(dx,dy){if(state.inCombat)return;const tx=state.player.x+dx,ty=state.player.y+dy;if(map.isWall(tx,ty))return;const mon=state.world.monsters.find(m=>m.x===tx&&m.y===ty);if(mon)return startCombat(mon);state.player.x=tx;state.player.y=ty;sound.step();map.reveal();const ch=state.world.chests.find(c=>c.x===tx&&c.y===ty&&!c.open);if(ch){if(ch.item){const lootCheck=tryAddItem(state.player.inventory,ch.item,1);if(!lootCheck.ok){notifyError(lootCheck.reason==='INVENTORY_FULL'?'Kein Platz für die Truhenbeute. Schaffe Platz und versuche es erneut.':'Truhenbeute konnte nicht aufgenommen werden.');hud();return}}ch.open=true;sound.chest();gfx.celebrate(tx,ty,{particles:120,text:'✨ REICHTUM!'});document.body.classList.add('screen-shake');setTimeout(()=>document.body.classList.remove('screen-shake'),550);const r=getSkillRank(state,'master_thief'),g=Math.floor(ch.caps*(1+.25*r));state.player.gold+=g;log(`Truhe: +${g} Gold.${ch.item?' Gegenstand aufgenommen.':''}`);const chestWorld=state.world;setTimeout(()=>{if(state.world===chestWorld)chestWorld.chests=chestWorld.chests.filter(c=>c!==ch)},800)}if(state.world.stairs&&tx===state.world.stairs.x&&ty===state.world.stairs.y)log('Treppe gefunden. Erneut tippen zum Hinabsteigen.');hud()}
 function interact(){if(state.inCombat)return;const s=state.world.stairs;if(s&&state.player.x===s.x&&state.player.y===s.y){sound.stairs();map.generate(state.world.depth+1);state.meta.bestDepth=Math.max(state.meta.bestDepth,state.world.depth);showFloorTransition(state.world.depth);log(`Du steigst auf Ebene ${state.world.depth} hinab.`);hud();saveCurrentSlot()}}
 function startCombat(m){if(phases.can(PHASES.COMBAT))phases.transition(PHASES.COMBAT);state.inCombat=true;state.activeMonster=m;ensureBuffs();el('combat').classList.remove('hidden');combatInfo();renderAbilities();updatePotionButtons();el('combat-log').textContent=`${m.name} lauert in den Schatten!`}
 function combatInfo(){const m=state.activeMonster,p=state.player;el('combat-info').innerHTML=`<div><b>${p.name}</b><br>${p.hp}/${p.maxHp} TP<br>${p.mp} MP</div><div>⚔️</div><div><b>${m.name}</b><br>${m.hp}/${m.maxHp} TP</div>`}

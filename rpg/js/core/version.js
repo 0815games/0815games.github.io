@@ -30,4 +30,4 @@ import '../systems/combat-number-feedback.js?v=0.5.19';
 import '../systems/preparation-potion-purchase.js?v=0.5.20';
 import '../systems/stair-confirm.js?v=0.5.23';
 import '../systems/changelog-viewer.js?v=0.6.0';
-export const VERSION_LABEL='v0.6.10';
+export const VERSION_LABEL='v0.6.11';
