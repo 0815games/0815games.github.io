@@ -1878,3 +1878,10 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Fehlermeldungen behalten rote Akzente; Erfolgsmeldungen goldene Akzente.
 - Keine Änderung an Loot, Gold, Kampfwerten oder Speicherlogik.
 - Browser- und Mobiltest erforderlich.
+
+## 2026-10-22 – v0.6.11 – Build-Metadaten und Cache-Schlüssel
+- HTML-Build-Metadatum von 0.6.0 auf 0.6.11 aktualisiert.
+- main.js- und mobile.js-Cache-Parameter auf 0.6.11 erhöht.
+- Service-Worker-Cache-Schlüssel auf schattengruft-v0.6.11 erhöht.
+- Der alte Cache wird beim Aktivieren des Service Workers automatisch entfernt.
+- Keine Änderung an Spiellogik, Effekten oder Speicherablauf.
