@@ -4,55 +4,109 @@
   window.UFOGame =
     window.UFOGame || {};
 
+
   var cacheCanvas = null;
   var cacheContext = null;
 
-  var cacheState = {
+  var valid = false;
+
+  var metadata = {
     width: 0,
     height: 0,
-    dpr: 0,
-    quality: "",
-    valid: false,
-    builds: 0
+    dpr: 1,
+    quality: "mid",
+    rebuilds: 0,
+    lastBuildMs: 0,
+    pixelWidth: 0,
+    pixelHeight: 0
   };
 
 
-  function clampDpr(value) {
+  function clamp(value, min, max) {
 
     value = Number(value);
 
-    if (
-      !Number.isFinite(value) ||
-      value <= 0
-    ) {
-      return 1;
+    if (!Number.isFinite(value)) {
+      value = min;
     }
 
     return Math.min(
-      2,
-      Math.max(1, value)
+      max,
+      Math.max(min, value)
     );
 
   }
 
 
-  function getQuality() {
+  function qualityConfig(quality) {
 
-    if (
-      window.UFOGame.settings &&
-      typeof window.UFOGame.settings
-        .getGraphics === "function"
-    ) {
+    quality =
+      String(quality || "mid")
+        .toLowerCase();
 
-      return (
-        window.UFOGame.settings
-          .getGraphics() ||
-        "mid"
-      );
+
+    if (quality === "low") {
+
+      return {
+        quality: "low",
+        treeCount: 11,
+        grassCount: 35,
+        moonGlow: false,
+        fence: true
+      };
 
     }
 
-    return "mid";
+
+    if (quality === "high") {
+
+      return {
+        quality: "high",
+        treeCount: 18,
+        grassCount: 120,
+        moonGlow: true,
+        fence: true
+      };
+
+    }
+
+
+    return {
+      quality: "mid",
+      treeCount: 15,
+      grassCount: 70,
+      moonGlow: true,
+      fence: true
+    };
+
+  }
+
+
+  function ensureCanvas() {
+
+    if (cacheCanvas) {
+      return;
+    }
+
+
+    cacheCanvas =
+      document.createElement("canvas");
+
+
+    cacheCanvas.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+
+    cacheContext =
+      cacheCanvas.getContext(
+        "2d",
+        {
+          alpha: false,
+          desynchronized: true
+        }
+      );
 
   }
 
@@ -85,22 +139,11 @@
   }
 
 
-  function drawStaticScene(
+  function drawSky(
     context,
     width,
-    height,
-    quality
+    height
   ) {
-
-    context.clearRect(
-      0,
-      0,
-      width,
-      height
-    );
-
-
-    /* Himmel */
 
     var sky =
       context.createLinearGradient(
@@ -109,6 +152,7 @@
         0,
         height
       );
+
 
     sky.addColorStop(
       0,
@@ -135,6 +179,7 @@
       "#010704"
     );
 
+
     context.fillStyle = sky;
 
     context.fillRect(
@@ -145,9 +190,7 @@
     );
 
 
-    /* Himmelsleuchten */
-
-    var skyGlow =
+    var glow =
       context.createRadialGradient(
         width * 0.8,
         height * 0.15,
@@ -157,23 +200,24 @@
         width * 0.34
       );
 
-    skyGlow.addColorStop(
+
+    glow.addColorStop(
       0,
       "rgba(173,222,255,.18)"
     );
 
-    skyGlow.addColorStop(
+    glow.addColorStop(
       0.35,
       "rgba(81,137,255,.07)"
     );
 
-    skyGlow.addColorStop(
+    glow.addColorStop(
       1,
       "rgba(8,20,60,0)"
     );
 
-    context.fillStyle =
-      skyGlow;
+
+    context.fillStyle = glow;
 
     context.fillRect(
       0,
@@ -182,61 +226,163 @@
       height
     );
 
+  }
 
-    /* Mond */
+
+  function drawAuroraBase(
+    context,
+    width,
+    height
+  ) {
+
+    var aurora =
+      context.createLinearGradient(
+        0,
+        height * 0.12,
+        width,
+        height * 0.48
+      );
+
+
+    aurora.addColorStop(
+      0,
+      "rgba(36,255,186,0)"
+    );
+
+    aurora.addColorStop(
+      0.35,
+      "rgba(48,224,190,.11)"
+    );
+
+    aurora.addColorStop(
+      0.62,
+      "rgba(95,107,255,.10)"
+    );
+
+    aurora.addColorStop(
+      1,
+      "rgba(40,135,255,0)"
+    );
+
+
+    context.fillStyle = aurora;
+
+    context.beginPath();
+
+    context.moveTo(
+      0,
+      height * 0.18
+    );
+
+    context.bezierCurveTo(
+      width * 0.24,
+      height * 0.1,
+      width * 0.34,
+      height * 0.43,
+      width * 0.58,
+      height * 0.23
+    );
+
+    context.bezierCurveTo(
+      width * 0.75,
+      height * 0.05,
+      width * 0.87,
+      height * 0.32,
+      width,
+      height * 0.14
+    );
+
+    context.lineTo(
+      width,
+      height * 0.48
+    );
+
+    context.bezierCurveTo(
+      width * 0.78,
+      height * 0.38,
+      width * 0.67,
+      height * 0.6,
+      width * 0.45,
+      height * 0.4
+    );
+
+    context.bezierCurveTo(
+      width * 0.2,
+      height * 0.53,
+      width * 0.14,
+      height * 0.25,
+      0,
+      height * 0.43
+    );
+
+    context.closePath();
+    context.fill();
+
+  }
+
+
+  function drawMoon(
+    context,
+    width,
+    height,
+    config
+  ) {
+
+    var moonX =
+      width * 0.8;
+
+    var moonY =
+      height * 0.15;
+
 
     context.save();
 
-    if (quality !== "low") {
+
+    if (config.moonGlow) {
 
       context.shadowColor =
         "#c7e9ff";
 
       context.shadowBlur =
-        quality === "high"
-          ? 32
-          : 18;
+        28;
 
     }
 
+
     ellipse(
       context,
-      width * 0.8,
-      height * 0.15,
+      moonX,
+      moonY,
       38,
       38,
       "#ebf7ff"
     );
 
+
+    context.shadowBlur = 0;
+
+
     context.globalAlpha =
-      quality === "low"
-        ? 0.12
-        : 0.23;
+      0.17;
 
     context.strokeStyle =
       "#c7e9ff";
 
     context.lineWidth = 2;
 
-    var moonRings =
-      quality === "high"
-        ? 3
-        : quality === "mid"
-          ? 2
-          : 1;
 
     for (
-      var moonRing = 1;
-      moonRing <= moonRings;
-      moonRing++
+      var ring = 1;
+      ring < 4;
+      ring += 1
     ) {
 
       context.beginPath();
 
       context.arc(
-        width * 0.8,
-        height * 0.15,
-        38 + moonRing * 9,
+        moonX,
+        moonY,
+        38 + ring * 9,
         0,
         Math.PI * 2
       );
@@ -245,82 +391,210 @@
 
     }
 
+
     context.restore();
 
+  }
 
-    /* Ferne Berge */
+
+  function drawMountains(
+    context,
+    width,
+    height
+  ) {
 
     context.fillStyle =
-      "rgba(166,205,226,.18)";
+      "rgba(166,205,226,.16)";
+
 
     context.beginPath();
 
     context.moveTo(
-      width * 0.69,
-      height * 0.67
+      width * 0.59,
+      height * 0.68
     );
 
     context.lineTo(
-      width * 0.77,
+      width * 0.69,
       height * 0.58
     );
 
     context.lineTo(
-      width * 0.85,
+      width * 0.77,
       height * 0.67
+    );
+
+    context.lineTo(
+      width * 0.85,
+      height * 0.56
+    );
+
+    context.lineTo(
+      width * 0.96,
+      height * 0.68
     );
 
     context.closePath();
     context.fill();
 
 
-    /* Gebäude */
+    context.fillStyle =
+      "rgba(7,24,25,.72)";
+
+
+    context.beginPath();
+
+    context.moveTo(
+      0,
+      height * 0.7
+    );
+
+
+    for (
+      var x = 0;
+      x <= width;
+      x += 32
+    ) {
+
+      context.lineTo(
+        x,
+        height * 0.65 +
+        Math.sin(x * 0.028) * 18
+      );
+
+    }
+
+
+    context.lineTo(
+      width,
+      height
+    );
+
+    context.lineTo(
+      0,
+      height
+    );
+
+    context.closePath();
+    context.fill();
+
+  }
+
+
+  function drawFarm(
+    context,
+    width,
+    height
+  ) {
+
+    var farmX =
+      width * 0.735;
+
+    var farmY =
+      height * 0.63;
+
+    var farmWidth =
+      width * 0.07;
+
+    var farmHeight =
+      height * 0.08;
+
 
     context.fillStyle =
       "#09130e";
 
     context.fillRect(
-      width * 0.735,
-      height * 0.63,
-      width * 0.07,
-      height * 0.08
+      farmX,
+      farmY,
+      farmWidth,
+      farmHeight
     );
 
 
-    /* Baumreihe */
+    context.fillStyle =
+      "#121b17";
 
-    var treeCount =
-      quality === "low"
-        ? 11
-        : quality === "mid"
-          ? 15
-          : 18;
+    context.beginPath();
+
+    context.moveTo(
+      farmX - farmWidth * 0.12,
+      farmY
+    );
+
+    context.lineTo(
+      farmX + farmWidth * 0.5,
+      farmY - farmHeight * 0.48
+    );
+
+    context.lineTo(
+      farmX + farmWidth * 1.12,
+      farmY
+    );
+
+    context.closePath();
+    context.fill();
+
+
+    context.fillStyle =
+      "rgba(255,194,80,.78)";
+
+    context.fillRect(
+      farmX + farmWidth * 0.18,
+      farmY + farmHeight * 0.25,
+      farmWidth * 0.15,
+      farmHeight * 0.22
+    );
+
+
+    context.fillRect(
+      farmX + farmWidth * 0.67,
+      farmY + farmHeight * 0.25,
+      farmWidth * 0.15,
+      farmHeight * 0.22
+    );
+
+  }
+
+
+  function drawTreeLine(
+    context,
+    width,
+    height,
+    config
+  ) {
 
     for (
-      var tree = 0;
-      tree < treeCount;
-      tree++
+      var index = 0;
+      index < config.treeCount;
+      index += 1
     ) {
 
       var treeX =
-        tree *
         (
-          width /
-          Math.max(
-            1,
-            treeCount - 1
+          index *
+          (
+            width /
+            Math.max(
+              1,
+              config.treeCount - 1
+            )
           )
+        ) +
+        (
+          index % 2 === 0
+            ? -7
+            : 8
         );
+
 
       var treeHeight =
         18 +
-        (
-          tree % 5
-        ) *
-        11;
+        (index % 5) * 11;
+
 
       context.fillStyle =
         "rgba(3,13,8,.92)";
+
 
       context.beginPath();
 
@@ -345,6 +619,7 @@
       context.closePath();
       context.fill();
 
+
       context.fillRect(
         treeX - 2,
         height * 0.695 -
@@ -355,52 +630,16 @@
 
     }
 
-
-    /* Hügel */
-
-    context.fillStyle =
-      "#10200e";
-
-    context.beginPath();
-
-    context.moveTo(
-      0,
-      height * 0.7
-    );
-
-    for (
-      var hillX = 0;
-      hillX <= width;
-      hillX += 32
-    ) {
-
-      context.lineTo(
-        hillX,
-        height * 0.65 +
-        Math.sin(
-          hillX * 0.028
-        ) *
-        18
-      );
-
-    }
-
-    context.lineTo(
-      width,
-      height
-    );
-
-    context.lineTo(
-      0,
-      height
-    );
-
-    context.fill();
+  }
 
 
-    /* Boden */
+  function drawGround(
+    context,
+    width,
+    height
+  ) {
 
-    var foreground =
+    var ground =
       context.createLinearGradient(
         0,
         height * 0.69,
@@ -408,18 +647,19 @@
         height
       );
 
-    foreground.addColorStop(
+
+    ground.addColorStop(
       0,
       "#173615"
     );
 
-    foreground.addColorStop(
+    ground.addColorStop(
       1,
       "#020904"
     );
 
-    context.fillStyle =
-      foreground;
+
+    context.fillStyle = ground;
 
     context.fillRect(
       0,
@@ -429,8 +669,6 @@
     );
 
 
-    /* Bodennebel */
-
     var haze =
       context.createLinearGradient(
         0,
@@ -439,11 +677,10 @@
         height * 0.86
       );
 
+
     haze.addColorStop(
       0,
-      quality === "low"
-        ? "rgba(160,220,255,.07)"
-        : "rgba(160,220,255,.14)"
+      "rgba(160,220,255,.12)"
     );
 
     haze.addColorStop(
@@ -451,8 +688,8 @@
       "rgba(160,220,255,0)"
     );
 
-    context.fillStyle =
-      haze;
+
+    context.fillStyle = haze;
 
     context.fillRect(
       0,
@@ -461,83 +698,26 @@
       height * 0.16
     );
 
+  }
 
-    /* Statisches Gras */
 
-    var grassCount =
-      quality === "low"
-        ? 45
-        : quality === "mid"
-          ? 90
-          : 140;
+  function drawFence(
+    context,
+    width,
+    height,
+    config
+  ) {
 
-    for (
-      var grass = 0;
-      grass < grassCount;
-      grass++
-    ) {
-
-      var grassX =
-        (
-          grass * 83
-        ) %
-        width;
-
-      var grassY =
-        height * 0.72 +
-        (
-          (
-            grass * 47
-          ) %
-          (
-            height * 0.28
-          )
-        );
-
-      context.strokeStyle =
-        "rgba(93,149,58," +
-        (
-          0.1 +
-          (
-            grass % 4
-          ) *
-          0.035
-        ) +
-        ")";
-
-      context.lineWidth = 1;
-
-      context.beginPath();
-
-      context.moveTo(
-        grassX,
-        grassY
-      );
-
-      context.lineTo(
-        grassX +
-        (
-          grass % 5 - 2
-        ) *
-        3,
-        grassY -
-        5 -
-        (
-          grass % 7
-        )
-      );
-
-      context.stroke();
-
+    if (!config.fence) {
+      return;
     }
 
-
-    /* Zaun */
 
     context.strokeStyle =
       "rgba(44,75,33,.9)";
 
     context.lineWidth = 3;
+
 
     context.beginPath();
 
@@ -550,6 +730,7 @@
       width,
       height * 0.8
     );
+
 
     context.moveTo(
       0,
@@ -564,7 +745,129 @@
     context.stroke();
 
 
-    /* Vignette */
+    context.lineWidth = 4;
+
+
+    for (
+      var post = 0;
+      post <= width;
+      post += Math.max(
+        75,
+        width / 15
+      )
+    ) {
+
+      var postY =
+        height * 0.76 +
+        (
+          post /
+          Math.max(1, width)
+        ) *
+        height * 0.04;
+
+
+      context.beginPath();
+
+      context.moveTo(
+        post,
+        postY - 8
+      );
+
+      context.lineTo(
+        post,
+        postY + 38
+      );
+
+      context.stroke();
+
+    }
+
+  }
+
+
+  function drawStaticGrass(
+    context,
+    width,
+    height,
+    config
+  ) {
+
+    var count =
+      config.grassCount;
+
+
+    for (
+      var index = 0;
+      index < count;
+      index += 1
+    ) {
+
+      var grassX =
+        (
+          index *
+          83
+        ) % width;
+
+
+      var grassY =
+        height * 0.72 +
+        (
+          (
+            index *
+            47
+          ) %
+          Math.max(
+            1,
+            height * 0.28
+          )
+        );
+
+
+      context.strokeStyle =
+        "rgba(93,149,58," +
+        (
+          0.1 +
+          (index % 4) *
+          0.035
+        ) +
+        ")";
+
+
+      context.lineWidth = 1;
+
+
+      context.beginPath();
+
+      context.moveTo(
+        grassX,
+        grassY
+      );
+
+      context.lineTo(
+        grassX +
+        (
+          index % 5 -
+          2
+        ) * 3,
+        grassY -
+        5 -
+        (
+          index % 7
+        )
+      );
+
+      context.stroke();
+
+    }
+
+  }
+
+
+  function drawVignette(
+    context,
+    width,
+    height
+  ) {
 
     var vignette =
       context.createRadialGradient(
@@ -576,9 +879,9 @@
         Math.max(
           width,
           height
-        ) *
-        0.74
+        ) * 0.74
       );
+
 
     vignette.addColorStop(
       0.54,
@@ -587,11 +890,13 @@
 
     vignette.addColorStop(
       1,
-      "rgba(0,0,10,.38)"
+      "rgba(0,0,10,.35)"
     );
+
 
     context.fillStyle =
       vignette;
+
 
     context.fillRect(
       0,
@@ -608,52 +913,50 @@
     options =
       options || {};
 
+
+    ensureCanvas();
+
+
     var width =
       Math.max(
         1,
         Math.round(
-          options.width ||
-          window.innerWidth
+          Number(options.width) ||
+          window.innerWidth ||
+          1
         )
       );
+
 
     var height =
       Math.max(
         1,
         Math.round(
-          options.height ||
-          window.innerHeight
+          Number(options.height) ||
+          window.innerHeight ||
+          1
         )
       );
 
+
     var dpr =
-      clampDpr(
+      clamp(
         options.dpr ||
         window.devicePixelRatio ||
-        1
+        1,
+        0.75,
+        2
       );
 
-    var quality =
-      options.quality ||
-      getQuality();
+
+    var config =
+      qualityConfig(
+        options.quality
+      );
 
 
-    if (!cacheCanvas) {
-
-      cacheCanvas =
-        document.createElement(
-          "canvas"
-        );
-
-      cacheContext =
-        cacheCanvas.getContext(
-          "2d",
-          {
-            alpha: false
-          }
-        );
-
-    }
+    var startedAt =
+      performance.now();
 
 
     cacheCanvas.width =
@@ -663,6 +966,7 @@
           width * dpr
         )
       );
+
 
     cacheCanvas.height =
       Math.max(
@@ -683,133 +987,165 @@
     );
 
 
-    drawStaticScene(
-      cacheContext,
+    cacheContext.clearRect(
+      0,
+      0,
       width,
-      height,
-      quality
+      height
     );
 
 
-    cacheState.width =
+    drawSky(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    drawAuroraBase(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    drawMoon(
+      cacheContext,
+      width,
+      height,
+      config
+    );
+
+
+    drawMountains(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    drawFarm(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    drawTreeLine(
+      cacheContext,
+      width,
+      height,
+      config
+    );
+
+
+    drawGround(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    drawFence(
+      cacheContext,
+      width,
+      height,
+      config
+    );
+
+
+    drawStaticGrass(
+      cacheContext,
+      width,
+      height,
+      config
+    );
+
+
+    drawVignette(
+      cacheContext,
+      width,
+      height
+    );
+
+
+    metadata.width =
       width;
 
-    cacheState.height =
+    metadata.height =
       height;
 
-    cacheState.dpr =
+    metadata.dpr =
       dpr;
 
-    cacheState.quality =
-      quality;
+    metadata.quality =
+      config.quality;
 
-    cacheState.valid =
-      true;
+    metadata.rebuilds += 1;
 
-    cacheState.builds += 1;
+    metadata.pixelWidth =
+      cacheCanvas.width;
 
+    metadata.pixelHeight =
+      cacheCanvas.height;
 
-    return cacheState;
-
-  }
-
-
-  function ensure(options) {
-
-    options =
-      options || {};
-
-    var width =
-      Math.round(
-        options.width ||
-        window.innerWidth
+    metadata.lastBuildMs =
+      Number(
+        (
+          performance.now() -
+          startedAt
+        ).toFixed(2)
       );
 
-    var height =
-      Math.round(
-        options.height ||
-        window.innerHeight
-      );
 
-    var dpr =
-      clampDpr(
-        options.dpr ||
-        window.devicePixelRatio ||
-        1
-      );
-
-    var quality =
-      options.quality ||
-      getQuality();
+    valid = true;
 
 
-    if (
-      !cacheState.valid ||
-      cacheState.width !== width ||
-      cacheState.height !== height ||
-      Math.abs(
-        cacheState.dpr - dpr
-      ) > 0.01 ||
-      cacheState.quality !== quality
-    ) {
-
-      rebuild({
-        width: width,
-        height: height,
-        dpr: dpr,
-        quality: quality
-      });
-
-    }
+    window.dispatchEvent(
+      new CustomEvent(
+        "ufo:landscape-cache-rebuilt",
+        {
+          detail:
+            Object.assign(
+              {},
+              metadata
+            )
+        }
+      )
+    );
 
 
-    return cacheState;
+    return getStats();
 
   }
 
 
   function draw(
-    context,
+    targetContext,
     width,
-    height,
-    dpr,
-    quality
+    height
   ) {
 
-    ensure({
-      width: width,
-      height: height,
-      dpr: dpr,
-      quality: quality
-    });
-
-
     if (
+      !valid ||
       !cacheCanvas ||
-      !cacheState.valid
+      !targetContext
     ) {
       return false;
     }
 
 
-    context.save();
-
-    context.setTransform(
-      1,
-      0,
-      0,
-      1,
-      0,
-      0
-    );
-
-    context.drawImage(
+    targetContext.drawImage(
       cacheCanvas,
       0,
-      0
+      0,
+      cacheCanvas.width,
+      cacheCanvas.height,
+      0,
+      0,
+      width || metadata.width,
+      height || metadata.height
     );
-
-    context.restore();
 
 
     return true;
@@ -819,46 +1155,21 @@
 
   function invalidate() {
 
-    cacheState.valid =
-      false;
+    valid = false;
 
   }
 
 
-  window.addEventListener(
-    "ufo:graphics-change",
-    invalidate
-  );
+  function getStats() {
 
+    return Object.assign(
+      {
+        valid: valid
+      },
+      metadata
+    );
 
-  window.addEventListener(
-    "resize",
-    invalidate,
-    {
-      passive: true
-    }
-  );
-
-
-  window.addEventListener(
-    "orientationchange",
-    invalidate,
-    {
-      passive: true
-    }
-  );
-
-
-  document.addEventListener(
-    "fullscreenchange",
-    invalidate
-  );
-
-
-  document.addEventListener(
-    "webkitfullscreenchange",
-    invalidate
-  );
+  }
 
 
   window.UFOGame.landscapeCache = {
@@ -866,23 +1177,18 @@
     rebuild:
       rebuild,
 
-    ensure:
-      ensure,
-
     draw:
       draw,
 
     invalidate:
       invalidate,
 
-    getState:
+    getStats:
+      getStats,
+
+    isValid:
       function () {
-
-        return Object.assign(
-          {},
-          cacheState
-        );
-
+        return valid;
       }
 
   };

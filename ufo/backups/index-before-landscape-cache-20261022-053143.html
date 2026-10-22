@@ -1,0 +1,310 @@
+<!doctype html><html lang="de"><head><meta name="ms-sp-authoring-source" content="agent"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>UFO-Jagd: Nachtangriff</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="alternate icon" href="favicon.svg">
+<meta name="theme-color" content="#020817">
+
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/intro.css">
+<link rel="stylesheet" href="css/parallax.css">
+<link rel="stylesheet" href="css/beam.css">
+<link rel="stylesheet" href="css/transition.css">
+<link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/hud.css">
+<link rel="stylesheet" href="css/crosshair.css">
+<link rel="stylesheet" href="css/responsive.css">
+<link rel="stylesheet" href="css/mobile-hud.css">
+
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UFO-Jagd">
+<link rel="stylesheet" href="css/diagnostics.css">
+<link rel="stylesheet" href="css/leaderboard-validation.css">
+<link rel="stylesheet" href="css/settings.css">
+<link rel="stylesheet" href="css/performance-settings.css">
+<link rel="stylesheet" href="css/audio-settings.css">
+<link rel="stylesheet" href="css/fullscreen.css">
+</head><body class="intro-active">
+<div
+  id="ufoIntro"
+  role="dialog"
+  aria-modal="true"
+  aria-label="UFO-Jagd Intro"
+>
+  <div class="cinematicBlackout" aria-hidden="true"></div>
+
+  <div
+    id="cinematicSequenceText"
+    class="cinematicSequenceText"
+    aria-live="polite"
+  >
+    <div id="cinematicCode" class="cinematicCode">
+      SYSTEMSTART
+    </div>
+
+    <div id="cinematicMainText" class="cinematicMainText">
+      VERTEIDIGUNGSNETZWERK WIRD GESTARTET
+    </div>
+
+    <div id="cinematicSubText" class="cinematicSubText">
+      SEKTOR 51 // NACHTPROTOKOLL
+    </div>
+  </div>
+
+  <div class="cinematicReticle" aria-hidden="true">
+    <span></span>
+  </div>
+
+  <div class="cinematicWarning" aria-hidden="true">
+    <strong>WARNUNG</strong>
+    <span>VIEHBESTAND IN GEFAHR</span>
+  </div>
+
+  <div class="cinematicNoise" aria-hidden="true"></div>
+
+  <div class="cinematicLetterbox top" aria-hidden="true"></div>
+  <div class="cinematicLetterbox bottom" aria-hidden="true"></div>
+  <div class="introStars" aria-hidden="true"></div>
+
+  <!-- ==============================================
+       PHASE 2 - PARALLAX WORLD
+       ============================================== -->
+
+  <div
+    id="parallaxWorld"
+    class="parallaxWorld"
+    aria-hidden="true"
+  >
+
+    <div
+      class="parallaxLayer parallaxSkyGlow"
+      data-depth="0.04">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxMountainsFar"
+      data-depth="0.08">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxMountainsNear"
+      data-depth="0.13">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxForestFar"
+      data-depth="0.18">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFog parallaxFogOne"
+      data-depth="0.11">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFog parallaxFogTwo"
+      data-depth="0.16">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFarmLayer"
+      data-depth="0.24">
+
+      <div class="farmHouse">
+        <div class="farmRoof"></div>
+
+        <div class="farmWall">
+          <span class="farmWindow w1"></span>
+          <span class="farmWindow w2"></span>
+          <span class="farmDoor"></span>
+        </div>
+
+        <div class="farmChimney"></div>
+      </div>
+
+      <div class="windmill">
+        <div class="windmillTower"></div>
+
+        <div class="windmillRotor">
+          <i></i>
+          <i></i>
+          <i></i>
+          <i></i>
+        </div>
+      </div>
+
+    </div>
+
+    <div
+      class="parallaxLayer parallaxForestNear"
+      data-depth="0.31">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxFence"
+      data-depth="0.39">
+    </div>
+
+    <div
+      class="parallaxLayer parallaxGrass"
+      data-depth="0.47">
+    </div>
+
+    <div
+      id="fireflyField"
+      class="parallaxLayer fireflyField"
+      data-depth="0.34">
+    </div>
+
+  </div>
+  <div id="introMoon" class="introMoon" aria-hidden="true"></div>
+  <div class="introCloud one" aria-hidden="true"></div>
+  <div class="introCloud two" aria-hidden="true"></div>
+
+  <div id="introUfoScene" class="introUfoScene" aria-hidden="true">
+    <div id="introBeam" class="introBeam"></div>
+    
+<div class="introUfo"></div>
+
+<div class="phase3UfoHalo"></div>
+
+<div class="phase3Reactor">
+  <div class="phase3ReactorOuter"></div>
+  <div class="phase3ReactorInner"></div>
+  <div class="phase3ReactorCore"></div>
+</div>
+
+<div class="phase3PositionLights">
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+</div>
+
+<div class="phase3BeamOuter"></div>
+<div class="phase3BeamCore"></div>
+
+<div class="phase3BeamWaves">
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+  <i></i>
+</div>
+
+<div id="phase3BeamParticles" class="phase3BeamParticles"></div>
+
+<div class="phase3BeamArc arc1"></div>
+<div class="phase3BeamArc arc2"></div>
+<div class="phase3BeamArc arc3"></div>
+
+<div class="phase3GroundGlow">
+  <i></i>
+</div>
+
+    <div class="introLights">
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+
+    <div id="introCow" class="introCow">
+      <div class="introCowBody"></div>
+    </div>
+  </div>
+
+  <div class="introGround" aria-hidden="true"></div>
+  <div class="introTrees" aria-hidden="true"></div>
+
+  <main id="introContent" class="introContent">
+    <div class="introEyebrow">EINSATZPROTOKOLL 51</div>
+
+    <h1 class="introTitle">UFO-JAGD</h1>
+
+    <div class="introSubtitle">NACHTANGRIFF</div>
+
+    <p class="introMission">
+      KÜHE RETTEN&nbsp;&nbsp;•&nbsp;&nbsp;
+      UFOS ABWEHREN&nbsp;&nbsp;•&nbsp;&nbsp;
+      DIE ERDE BESCHÜTZEN
+    </p>
+
+    <button
+      id="introEnter"
+      class="introGate"
+      type="button"
+      aria-label="Intro bestätigen und Startmenü öffnen"
+      disabled
+    >
+      <span>
+        <span id="introGateText" class="introGateText">
+          SYSTEM WIRD INITIALISIERT
+        </span>
+
+        <span id="introGateHint" class="introGateHint">
+          EINSATZDATEN WERDEN GELADEN
+        </span>
+      </span>
+    </button>
+
+    <div
+      id="introStatus"
+      class="introSkipStatus"
+      aria-live="polite"
+    >
+      VERBINDUNG ZUM VERTEIDIGUNGSNETZWERK
+    </div>
+  </main>
+
+  <div class="introFlash" aria-hidden="true"></div>
+</div>
+<canvas id="game" tabindex="0" aria-label="UFO-Jagd"></canvas><div id="hud"><span>LEVEL <b id="level" class="cyan">1</b></span><span>PUNKTE <b id="score" class="cyan">0</b></span><span>UFOS <b id="targets" class="cyan">0/8</b></span><span>GETROFFEN <b id="ufoShot" class="cyan">0</b></span><span>JETS <b id="jetShot" class="cyan">0/5</b></span><span id="slowBox">ZEITLUPE <b id="slow" class="cyan">–</b></span><button id="pause" class="pause">PAUSE</button><button id="quit" class="pause">BEENDEN</button></div><div id="levelUp">LEVEL GESCHAFFT!</div><div id="sheet"><div class="sheetBox"><div class="updatePc" role="img" aria-label="Systemupdate wird installiert"><div class="monitor"><div class="updateRing"></div><div class="updateText"></div></div></div><h2>Updates werden ausgeführt</h2><p>Bitte lassen Sie den Computer eingeschaltet.</p><button id="closeSheet">Schließen</button></div></div><div id="message"><div class="card"><h1>UFO-JAGD</h1><div class="intro"><b>ANLEITUNG</b><br><b>1. Zielen &amp; klicken:</b> Triff UFOs, um Punkte zu sammeln.<br><b>2. Kühe retten:</b> Schieße UFOs ab, die rote Strahlen einsetzen.<br><b>3. Vorsicht:</b> Jets kosten Punkte; nach 5 Treffern ist die Mission verloren.<br><b>4. Bonus:</b> Klicke auf den Mond für 5 Sekunden Zeitlupe.<br><b>5. Ziel:</b> Beschütze die 10 Kühe vor den UFOs.</div><input id="player" class="name" maxlength=18 placeholder="Dein Name" autocomplete="nickname"><button id="start">MISSION STARTEN</button><div class="scores"><b>HIGHSCORES</b><ol id="scores"></ol></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-database-compat.js"></script>
+
+<script src="js/config/firebase-config.js"></script>
+<script src="js/services/highscores.js"></script>
+
+<script src="js/intro/transition.js"></script>
+<script src="js/intro/cinematic.js"></script>
+<script src="js/intro/parallax.js"></script>
+<script src="js/intro/beam-effects.js"></script>
+
+<script src="js/core/namespace.js"></script>
+<script src="js/core/device.js"></script>
+<script src="js/core/utils.js"></script>
+
+<script src="js/game/state.js"></script>
+<script src="js/game/audio.js"></script>
+<script src="js/game/difficulty.js"></script>
+<script src="js/game/entities.js"></script>
+<script src="js/game/environment.js"></script>
+<script src="js/game/particles.js"></script>
+<script src="js/game/input.js"></script>
+<script src="js/game/ui.js"></script>
+<script src="js/game/renderer.js"></script>
+
+<script src="js/ui/player-validation.js"></script>
+<script src="js/core/settings.js"></script>
+<script src="js/core/performance-recommendation.js"></script>
+<script src="js/game/audio-manager.js"></script>
+<script src="js/game/haptics.js"></script>
+<script src="js/core/settings-ui.js"></script>
+<script src="js/core/performance-settings-ui.js"></script>
+<script src="js/core/fullscreen.js"></script>
+<script src="js/core/audio-settings-ui.js"></script>
+<script src="js/game/landscape-cache.js"></script>
+<script src="js/game/game.js"></script>
+<script src="js/game/crosshair.js"></script>
+<script src="js/game/mobile-hud.js"></script>
+
+<script src="js/main.js"></script>
+<script src="js/debug/diagnostics.js"></script>
+
+</body></html>
