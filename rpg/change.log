@@ -717,3 +717,12 @@
 - Pro Eintrag Anlass, tatsächlichen Umfang, betroffene Systeme/Dateien, Tests und Grenzen nennen. Widerlegte Aussagen ausdrücklich berichtigen, Rücknahmen und erfolglose Versuche nicht aus der Geschichte löschen.
 - Implementiert, lokal mit Fixtures/Mocks getestet, veröffentlicht, deployed und auf echtem Gerät abgenommen sind unterschiedliche Status. Ein Changelog-Nachtrag schließt keine offene Abnahme.
 - Die dokumentierte Historie ist kein lückenloses Audit aller Codezeilen und keine Garantie fehlerfreien Spiels. Insbesondere S01b-Geräte-/Speicherabnahme, Fähigkeiten-CSS-Abweichung, S01c-Truhenvergabe und weitere Masterplan-Aufgaben bleiben nach ihrem tatsächlichen Stand offen.
+
+## 2026-10-26 – v0.7.1 – Kampfnummern für Mana und Flucht
+- Ursache: responsive-ui.js überschrieb die korrekten Tastaturbeschriftungen mit vertauschten Nummern.
+- Manatrank wird mit 4, Flucht mit 5 beschriftet.
+- Entsprechende vertauschte Hilfetexte korrigiert.
+- Tatsächliche Tastenzuordnung unverändert: 4 Mana, 5 Flucht.
+- RPG-Version, Build-Anzeige und Release-Cache-Parameter auf 0.7.1 erhöht.
+- Dashboard und andere Spiele unverändert.
+- Browserprüfung von Anzeige und Tastendruck steht aus.

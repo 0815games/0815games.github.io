@@ -22,18 +22,18 @@ function setup(){
  const replacements=new Map([
  ['Bewege dich: Am PC mit WASD oder Pfeiltasten. Auf dem Handy wischst du über die Karte.','Wische über die Karte, um deinen Recken zu bewegen.'],
  ['Truhen öffnen sich beim Betreten. Auf der Karte Enter oder Leertaste zum Interagieren drücken; im Treppendialog Absteigen bestätigen.','Truhen öffnen sich beim Betreten. Nutze die Treppe zum Hinabsteigen.'],
- ['TP sind Lebenspunkte, MP ist Mana. 1 Angriff, 2 Feuerball (8 MP), 3 Heiltrank, 4 Flucht, 5 Manatrank. Q / E / R: Klassenfähigkeiten 1 / 2 / 3. Tab wählt, Enter bestätigt.','TP sind Lebenspunkte, MP ist Mana. Tippe auf Angriff, Feuerball (8 MP), Heiltrank, Manatrank oder Flucht.'],
+ ['TP sind Lebenspunkte, MP ist Mana. 1 Angriff, 2 Feuerball (8 MP), 3 Heiltrank, 4 Manatrank, 5 Flucht. Q / E / R: Klassenfähigkeiten 1 / 2 / 3. Tab wählt, Enter bestätigt.','TP sind Lebenspunkte, MP ist Mana. Tippe auf Angriff, Feuerball (8 MP), Heiltrank, Manatrank oder Flucht.'],
  ['Du hast einen Skillpunkt! Öffne Skills mit ✨ oder K und lerne einen verfügbaren Rang.','Du hast einen Skillpunkt! Tippe auf ✨ und lerne einen verfügbaren Rang.'],
  ['Das Runensiegel ist gebrochen. Suche die Treppe und steige hinab. Hilfe findest du jederzeit über ❔ oder H.','Das Runensiegel ist gebrochen. Suche die Treppe und steige hinab. Hilfe findest du über ❔.'],
  ['PC: WASD / Pfeile. Enter / Leertaste: Interaktion auf der Karte. Tab / Shift+Tab: Auswahl. Enter / Leertaste: Bestätigen.','Wische über die Karte zum Bewegen. Tippe auf Schaltflächen zum Auswählen und Bestätigen.'],
  ['Handy: über die Karte wischen. Klicken zum Laufen ist deaktiviert.','Direktes Antippen der Karte zum Laufen ist deaktiviert.'],
- ['1 Angriff · 2 Feuerball (8 MP) · 3 Heiltrank · 4 Flucht · 5 Manatrank. Q / E / R: Klassenfähigkeiten 1 / 2 / 3. TP: Leben, MP: Mana. Flucht kann scheitern. Esc öffnet diese Hilfe ohne Spielzug.','Tippe auf Angriff, Feuerball (8 MP), Heiltrank, Manatrank oder Flucht. TP: Leben, MP: Mana. Flucht kann scheitern. Öffne Hilfe über ❔.'],
+ ['1 Angriff · 2 Feuerball (8 MP) · 3 Heiltrank · 4 Manatrank · 5 Flucht. Q / E / R: Klassenfähigkeiten 1 / 2 / 3. TP: Leben, MP: Mana. Flucht kann scheitern. Esc öffnet diese Hilfe ohne Spielzug.','Tippe auf Angriff, Feuerball (8 MP), Heiltrank, Manatrank oder Flucht. TP: Leben, MP: Mana. Flucht kann scheitern. Öffne Hilfe über ❔.'],
  ['I Inventar · C Ausrüstung · K Skills · L Chronik · P Speichern. Gegenstand antippen: Details und Vergleich. Nur Ausrüsten oder Nutzen führt die Aktion aus. Skills kosten Punkte und können Voraussetzungen haben.','Öffne Inventar, Ausrüstung, Skills oder Chronik über die Menüschaltflächen. Tippe auf Speichern zum Sichern. Gegenstand antippen: Details und Vergleich. Nur Ausrüsten oder Nutzen führt die Aktion aus. Skills kosten Punkte und können Voraussetzungen haben.']
  ]);
  function adapt(node,convert){const current=node.textContent;let entry=memory.get(node);if(!entry||current!==entry.output)entry={base:current,output:current};const output=touch?convert(entry.base):entry.base;if(current!==output)node.textContent=output;entry.output=output;memory.set(node,entry);}
  function refresh(){
   pending=false;
-  for(const [id,key] of [['attack','1'],['fire','2'],['heal','3'],['mana','5'],['flee','4']]){const button=document.getElementById(id);if(button){const label=actionLabel(button.textContent,key,touch);if(button.textContent!==label)button.textContent=label;}}
+  for(const [id,key] of [['attack','1'],['fire','2'],['heal','3'],['mana','4'],['flee','5']]){const button=document.getElementById(id);if(button){const label=actionLabel(button.textContent,key,touch);if(button.textContent!==label)button.textContent=label;}}
   document.querySelectorAll('.tutorial-box p,.game-help p').forEach(node=>adapt(node,text=>replacements.get(text)||text.replace('auf der Karte Enter oder Leertaste zum Interagieren drücken und den Treppendialog bestätigen.','Nutze die Treppe zum Hinabsteigen.')));
   const hint=document.querySelector('.intro-hint');if(hint)adapt(hint,()=> 'TIPPE ZUM BETRETEN');
   const grid=document.getElementById('slots-grid');if(grid){const label=touch?'Reckenliste: Tippe auf Spielen oder einen freien Reckenplatz.':'Reckenliste: Pfeiltasten zum Auswählen, Enter zum Bestätigen';if(grid.getAttribute('aria-label')!==label)grid.setAttribute('aria-label',label);}

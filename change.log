@@ -1984,3 +1984,12 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Portalversion, Asset-Parameter und Versionstest auf 2.0.1 aktualisiert.
 - Keine Änderung an den Favicons oder Versionen der einzelnen Spiele.
 - Sichtprüfung im Browser-Tab noch offen.
+
+## 2026-10-26 – v0.7.1 – Kampfnummern für Mana und Flucht
+- Ursache: responsive-ui.js überschrieb die korrekten Tastaturbeschriftungen mit vertauschten Nummern.
+- Manatrank wird mit 4, Flucht mit 5 beschriftet.
+- Entsprechende vertauschte Hilfetexte korrigiert.
+- Tatsächliche Tastenzuordnung unverändert: 4 Mana, 5 Flucht.
+- RPG-Version, Build-Anzeige und Release-Cache-Parameter auf 0.7.1 erhöht.
+- Dashboard und andere Spiele unverändert.
+- Browserprüfung von Anzeige und Tastendruck steht aus.
