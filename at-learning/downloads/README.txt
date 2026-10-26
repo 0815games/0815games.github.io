@@ -1,1 +1,0 @@
-PDFs/Formulare hier ablegen und in js/data.js bei links.groups[].items als {t:"Titel",href:"downloads/datei.pdf"} eintragen.
