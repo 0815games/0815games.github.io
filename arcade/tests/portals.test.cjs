@@ -17,7 +17,7 @@ for(let active=0;active<5;active++){
  assert.equal(context.offset((active+4)%5,active,5),-1);
 }
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-assert.ok(html.includes('data-dashboard-version="2.0.0"'));
+assert.ok(html.includes('data-dashboard-version="2.0.1"'));
 assert.ok(!/<iframe\b/i.test(html));
 assert.ok(!source.includes('createElement(\'iframe\')'));
 const embedded=html.match(/<script type="application\/json" id="portal-data">([\s\S]*?)<\/script>/);
@@ -26,5 +26,5 @@ const games=JSON.parse(embedded[1]);
 assert.equal(games.length,5);
 assert.deepEqual(games,JSON.parse(fs.readFileSync(path.join(root,'arcade/games.json'),'utf8')));
 for(const game of games){assert.ok(fs.existsSync(path.join(root,game.path)));assert.ok(fs.existsSync(path.join(root,'arcade/art',game.id+'.svg')));}
-for(const asset of ['theme.js','dashboard.css','dashboard.js'])assert.ok(html.includes('arcade/'+asset+'?v=2.0.0'));
+for(const asset of ['theme.js','dashboard.css','dashboard.js'])assert.ok(html.includes('arcade/'+asset+'?v=2.0.1'));
 console.log('Portal-Tests bestanden: zyklische Positionen, Spiele, Assets, eingebettete Daten und Version.');

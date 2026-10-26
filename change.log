@@ -1976,3 +1976,11 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Portalversion, Stylesheet, Skript und Theme-Einbindung auf 2.0.0 gesetzt.
 - Spielcode, Spielversionen, Firebase und Speicherpfade unverändert.
 - Automatische Geometrie-/Strukturtests bereitgestellt; echte Browserabnahme offen.
+
+## 2026-10-26 – Portal-Auswahl v2.0.1 – Eigenes SVG-Favicon
+- Eigenes Portal-Siegel als arcade/favicon.svg ergänzt.
+- Goldener Portalrahmen und türkisfarbener Riss auf dunklem Hintergrund.
+- Vorhandene Favicon-Verknüpfungen der Hauptseite ersetzt.
+- Portalversion, Asset-Parameter und Versionstest auf 2.0.1 aktualisiert.
+- Keine Änderung an den Favicons oder Versionen der einzelnen Spiele.
+- Sichtprüfung im Browser-Tab noch offen.

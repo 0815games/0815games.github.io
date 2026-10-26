@@ -1,4 +1,4 @@
-# Zwischen den Welten — 2.0.0
+# Zwischen den Welten — 2.0.1
 
 - Vollständiger Ersatz der bisherigen Hero-/Kartenoberfläche.
 - Fünf animierte Portal-Szenen, zyklischer 3D-Wechsel und Startübergang.
