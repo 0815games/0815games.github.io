@@ -1928,3 +1928,13 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Keine vollständige Einzelabnahme aller Spiel- und Adminfunktionen dokumentiert.
 - Prüfung der veröffentlichten GitHub-Pages-Version bleibt offen.
 - Dashboard, historische Changelog-Trennung und Zuordnung verbliebener Root-Dateien bleiben separate Aufgaben.
+
+## 2026-10-26 – Arcade-Dashboard v1.0.0
+- Root-Weiterleitung durch eigenständiges Arcade-Dashboard ersetzt.
+- Fünf geprüfte Spieleinstiege mit horizontaler Cartridge-Auswahl.
+- Original-Startseitenvorschauen ohne Spielskripte; keine Gameplay-Demos.
+- Eine aktive Vorschau, Entladen bei Auswahlwechsel und verborgenem Tab.
+- MausTastisch als separates Webseitenprojekt verlinkt.
+- Maus, Tastatur, Touch und reduzierte Bewegung berücksichtigt.
+- Spiele, Speicherpfade und Spielversionen unverändert.
+- Syntax-, Pfad- und echte Browserabnahme noch offen.
