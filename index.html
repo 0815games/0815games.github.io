@@ -1,71 +1,52 @@
 <!doctype html>
-<html lang="de" data-dashboard-version="1.1.0">
+<html lang="de" data-dashboard-version="1.2.0">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="Fünf unabhängige Browser-Spiele von pipboy3003. Entdecken, auswählen und direkt spielen.">
-<title>Spiele — pipboy3003</title>
-<script src="arcade/theme.js?v=1.1.0"></script>
-<link rel="stylesheet" href="arcade/dashboard.css?v=1.1.0">
-<script defer src="arcade/dashboard.js?v=1.1.0"></script>
+<meta name="description" content="Fünf Welten. Dein nächstes Abenteuer. Browser-Spiele von pipboy3003.">
+<title>Weltenatlas — pipboy3003</title>
+<script src="arcade/theme.js?v=1.2.0"></script>
+<script>
+document.documentElement.classList.add('arriving');
+setTimeout(()=>document.documentElement.classList.remove('arriving'),1600);
+</script>
+<link rel="stylesheet" href="arcade/dashboard.css?v=1.2.0">
+<script defer src="arcade/dashboard.js?v=1.2.0"></script>
 </head>
 <body>
-<a class="skip-link" href="#games">Zur Spielauswahl</a>
-<header class="site-header">
- <a class="wordmark" href="./">pipboy3003<span> / spiele</span></a>
- <fieldset class="theme-control">
-  <legend class="sr-only">Darstellung</legend>
+<div class="arrival" aria-hidden="true"><div class="arrival-mark">◇</div><span>DEIN NÄCHSTES ABENTEUER</span></div>
+<a class="skip" href="#worlds">Zur Weltenauswahl</a>
+<header>
+ <a class="brand" href="./">pipboy3003<span> / Weltenatlas</span></a>
+ <fieldset class="themes"><legend class="sr">Darstellung</legend>
   <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
   <button type="button" data-theme-choice="light" aria-pressed="false">Hell</button>
   <button type="button" data-theme-choice="dark" aria-pressed="false">Dunkel</button>
  </fieldset>
 </header>
 <main>
- <section class="intro">
-  <p class="eyebrow">Unabhängige Browser-Spiele</p>
-  <h1>Kleine Spiele.<br><span>Große Auszeiten.</span></h1>
-  <p class="intro-text">Von dunklen Katakomben bis zur letzten Nachtfahrt.
-  Finde deine nächste Welt.</p>
+ <section class="hero" aria-labelledby="hero-title">
+  <img id="landscape" class="landscape" src="arcade/art/schattengruft.svg" alt="" width="1600" height="900" fetchpriority="high">
+  <div class="shade"></div><div class="dust" aria-hidden="true"></div>
+  <div class="hero-top"><span>FÜNF WELTEN. DEINE GESCHICHTE.</span><span id="chapter">I / Unter der Oberfläche</span></div>
+  <div class="hero-copy">
+   <p class="kicker" id="category">Dark Fantasy</p>
+   <h1 id="hero-title">Das Unbekannte<br>wartet.</h1>
+   <p class="description" id="description">Hinter dem letzten Licht beginnt deine Geschichte.</p>
+   <a class="enter" id="play" href="rpg/index.html">Abenteuer beginnen <span aria-hidden="true">↗</span></a>
+   <span class="game-name" id="game-name">Chroniken der Schattengruft</span>
+  </div>
+  <div class="hero-bottom">
+   <span>ILLUSTRIERTE WELTEN · DIREKT IM BROWSER</span>
+   <div class="arrows"><button id="prev" aria-label="Vorherige Welt">←</button><span id="count">01 / 05</span><button id="next" aria-label="Nächste Welt">→</button></div>
+  </div>
  </section>
- <section id="games" class="library" aria-label="Spielebibliothek">
-  <div class="section-heading">
-   <h2>Die Sammlung</h2>
-   <span>05 Spiele · direkt im Browser</span>
-  </div>
-  <div class="stage" id="stage">
-   <div class="preview" id="preview">
-    <div class="preview-placeholder" aria-hidden="true">Spielvorschau</div>
-    <div id="preview-slot" aria-hidden="true" inert></div>
-    <div class="preview-label"><span class="preview-dot"></span>
-     Original-Startseite</div>
-   </div>
-   <div class="game-details">
-    <div class="game-copy" aria-live="polite" aria-atomic="true">
-     <p class="eyebrow" id="game-category">Dark Fantasy</p>
-     <h3 id="game-title">Chroniken der Schattengruft</h3>
-     <p id="game-description">Steige in die Schattengruft hinab.</p>
-    </div>
-    <a class="play-button" id="play" href="rpg/index.html">Jetzt spielen <span aria-hidden="true">↗</span></a>
-   </div>
-  </div>
-  <div class="selection-bar">
-   <span id="counter" class="counter">01 / 05</span>
-   <div class="arrows">
-    <button id="previous" type="button" aria-label="Vorheriges Spiel">←</button>
-    <button id="next" type="button" aria-label="Nächstes Spiel">→</button>
-   </div>
-  </div>
-  <div class="game-list" id="game-list"><button class="game-option" type="button" data-index="0" aria-pressed="true"><span class="option-number">01</span><span class="option-copy"><span class="option-title">Chroniken der Schattengruft</span><span class="option-category">Dark Fantasy</span></span><span class="option-arrow" aria-hidden="true">↗</span></button><button class="game-option" type="button" data-index="1" aria-pressed="false"><span class="option-number">02</span><span class="option-copy"><span class="option-title">Pip-Boy 3003</span><span class="option-category">Ödland-RPG</span></span><span class="option-arrow" aria-hidden="true">↗</span></button><button class="game-option" type="button" data-index="2" aria-pressed="false"><span class="option-number">03</span><span class="option-copy"><span class="option-title">UFO-Jagd: Nachtangriff</span><span class="option-category">Arcade</span></span><span class="option-arrow" aria-hidden="true">↗</span></button><button class="game-option" type="button" data-index="3" aria-pressed="false"><span class="option-number">04</span><span class="option-copy"><span class="option-title">Nachtfahrt</span><span class="option-category">Fahren &amp; Erkunden</span></span><span class="option-arrow" aria-hidden="true">↗</span></button><button class="game-option" type="button" data-index="4" aria-pressed="false"><span class="option-number">05</span><span class="option-copy"><span class="option-title">Garage &amp; Drive</span><span class="option-category">Werkstatt &amp; Fahren</span></span><span class="option-arrow" aria-hidden="true">↗</span></button></div>
-  <p class="preview-note" id="preview-status">Startseitenvorschau ohne Spielskripte.
-  Das vollständige Spiel öffnet sich über „Jetzt spielen“.</p>
+ <section class="selection" id="worlds" aria-labelledby="selection-title">
+  <div class="selection-title"><div><p class="eyebrow">Wohin zieht es dich?</p><h2 id="selection-title">Wähle deine Welt.</h2></div><span>01 — 05</span></div>
+  <div class="worlds"><button class="world" type="button" data-world="0" aria-pressed="true"><img src="arcade/art/schattengruft.svg" alt="" width="320" height="180"><span class="world-number">01</span><span class="world-title">Chroniken der Schattengruft</span></button><button class="world" type="button" data-world="1" aria-pressed="false"><img src="arcade/art/pipboy.svg" alt="" width="320" height="180"><span class="world-number">02</span><span class="world-title">Pip-Boy 3003</span></button><button class="world" type="button" data-world="2" aria-pressed="false"><img src="arcade/art/ufo.svg" alt="" width="320" height="180"><span class="world-number">03</span><span class="world-title">UFO-Jagd: Nachtangriff</span></button><button class="world" type="button" data-world="3" aria-pressed="false"><img src="arcade/art/nachtfahrt.svg" alt="" width="320" height="180"><span class="world-number">04</span><span class="world-title">Nachtfahrt</span></button><button class="world" type="button" data-world="4" aria-pressed="false"><img src="arcade/art/garage.svg" alt="" width="320" height="180"><span class="world-number">05</span><span class="world-title">Garage &amp; Drive</span></button></div>
  </section>
- <noscript>
-  <section class="direct-links">
-   <h2>Spiele direkt öffnen</h2><ul><li><a href="rpg/index.html">Chroniken der Schattengruft</a></li><li><a href="PipBoy3000/index.html">Pip-Boy 3003</a></li><li><a href="ufo/index.html">UFO-Jagd: Nachtangriff</a></li><li><a href="night/index.html">Nachtfahrt</a></li><li><a href="game/car-workshop/index.html">Garage &amp; Drive</a></li></ul>
-  </section>
- </noscript>
-</main>
-<footer class="site-footer"><span>Entwickelt von pipboy3003</span><span>Bibliothek 1.1.0</span></footer>
-</body>
-</html>
+ <noscript><nav class="direct" aria-label="Alle Spiele"><a href="rpg/index.html">Chroniken der Schattengruft</a><a href="PipBoy3000/index.html">Pip-Boy 3003</a><a href="ufo/index.html">UFO-Jagd: Nachtangriff</a><a href="night/index.html">Nachtfahrt</a><a href="game/car-workshop/index.html">Garage &amp; Drive</a></nav></noscript>
+</main><script type="application/json" id="world-data">[{"id": "schattengruft", "title": "Chroniken der Schattengruft", "path": "rpg/index.html", "category": "Dark Fantasy", "description": "Steige in die Schattengruft hinab.", "headline": "Das Unbekannte wartet.", "chapter": "I / Unter der Oberfläche", "copy": "Hinter dem letzten Licht beginnt deine Geschichte.", "accent": "#e7bc79"}, {"id": "pipboy", "title": "Pip-Boy 3003", "path": "PipBoy3000/index.html", "category": "Ödland-RPG", "description": "Dein erstes Abenteuer. Grüner Bildschirm. Gefährliches Ödland.", "headline": "Die Welt ist nicht vorbei.", "chapter": "II / Nach dem Ende", "copy": "Ein grünes Signal. Eine verlassene Welt. Dein nächster Schritt.", "accent": "#b1e6a2"}, {"id": "ufo", "title": "UFO-Jagd: Nachtangriff", "path": "ufo/index.html", "category": "Arcade", "description": "Kühe retten. UFOs abwehren. Die Erde beschützen.", "headline": "Heute Nacht gehört uns.", "chapter": "III / Kontakt von oben", "copy": "Am Himmel bewegt sich etwas. Unten zählt jede Sekunde.", "accent": "#a3e7f0"}, {"id": "nachtfahrt", "title": "Nachtfahrt", "path": "night/index.html", "category": "Fahren & Erkunden", "description": "Die Stadt schläft. Deine Nachtschicht beginnt.", "headline": "Noch eine letzte Fahrt.", "chapter": "IV / Wenn die Stadt schläft", "copy": "Folge den Lichtern. Hinter der nächsten Kurve geht es weiter.", "accent": "#ddbcff"}, {"id": "garage", "title": "Garage & Drive", "path": "game/car-workshop/index.html", "category": "Werkstatt & Fahren", "description": "Von der Werkstatt auf die Straße.", "headline": "Etwas Großes entsteht.", "chapter": "V / Vom ersten Bauteil", "copy": "Aus Einzelteilen wird ein Fahrzeug. Aus einer Idee ein Abenteuer.", "accent": "#ffbc96"}]</script>
+<footer><span>Geschaffen von pipboy3003.</span><span>Weltenatlas 1.2.0</span></footer>
+</body></html>

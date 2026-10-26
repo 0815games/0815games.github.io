@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#252136"/><stop offset="1" stop-color="#0b1422"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#f6d19a" stop-opacity=".45"/><stop offset="1" stop-color="#f6d19a" stop-opacity="0"/></radialGradient>
+<linearGradient id="door" x2="0" y2="1"><stop stop-color="#ecc995"/><stop offset=".55" stop-color="#b49360"/><stop offset="1" stop-color="#544f35"/></linearGradient>
+<linearGradient id="beam" x2="0" y2="1"><stop stop-color="#b5ffe1" stop-opacity=".55"/><stop offset="1" stop-color="#b5ffe1" stop-opacity="0"/></linearGradient>
+</defs>
+<path fill="url(#sky)" d="M0 0h1600v900H0z"/>
+<g fill="#e1e6dc" opacity=".35">
+<circle cx="180" cy="130" r="1.5"/><circle cx="450" cy="210" r="1"/>
+<circle cx="740" cy="110" r="1.5"/><circle cx="930" cy="170" r="1"/>
+<circle cx="1410" cy="90" r="1.5"/><circle cx="1510" cy="310" r="1"/>
+</g>
+
+<circle cx="1180" cy="210" r="95" fill="#c6b3e1" opacity=".16"/>
+<g fill="#222537">
+<path d="M570 680V360h120v320M720 680V250h125v430M875 680V410h110v270M1240 680V300h145v380M1420 680V180h150v500"/>
+</g>
+<g stroke="#8c7ba8" stroke-width="4" opacity=".6">
+<path d="M595 400h60M595 440h60M595 480h60M745 295h70M745 340h70M745 385h70M745 430h70M1270 350h80M1270 400h80M1455 230h70M1455 280h70M1455 330h70"/>
+</g>
+<path d="m980 570-390 330h1010l-440-330Z" fill="#1c2130"/>
+<path d="m1060 610-15 65M1020 710l-35 100M965 855l-20 45" stroke="#e9c6a2" stroke-width="5"/>
+<path d="M945 590 480 900M1190 590l410 300" stroke="#806d91" stroke-width="4"/>
+<path d="M820 650V430M1370 690V390" stroke="#655d76" stroke-width="7"/>
+<path d="M820 430h70M1300 390h70" stroke="#d3b2b7" stroke-width="6"/>
+<circle cx="880" cy="445" r="70" fill="url(#halo)" opacity=".5"/>
+<path d="m1110 755 22-74h153l35 74 13 72h-237Z" fill="#414459" stroke="#9597ae" stroke-width="3"/>
+<path d="m1147 690-15 52h154l-22-52Z" fill="#152130"/>
+<path d="M1112 780h45M1260 780h45" stroke="#ffa896" stroke-width="9"/>
+<path d="M1148 822h112" stroke="#d1c6b5" stroke-width="3"/>
+<path d="M1000 870h350" stroke="#d6a598" stroke-width="4" opacity=".25"/>
+
+</svg>

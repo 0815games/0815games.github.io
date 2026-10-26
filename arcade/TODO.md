@@ -1,22 +1,14 @@
-# Spielebibliothek: offene Abnahme
+# Weltenatlas: Abnahme
 
-## Darstellung
-- [ ] Desktop: Vorschau, Typografie und alle fünf Spiele prüfen.
-- [ ] Mobil: Layout ab 320px, Hoch-/Querformat und Wischen prüfen.
-- [ ] Tastatur: Fokus, Tab, Pfeiltasten und Startlinks prüfen.
-- [ ] Hell, Dunkel und System prüfen.
-- [ ] Erster Besuch ohne gespeicherte Auswahl folgt dem Gerät.
-- [ ] Gespeicherte manuelle Auswahl bleibt nach Neuladen erhalten.
-- [ ] Systemwechsel wird im System-Modus übernommen.
-- [ ] Verhalten bei gesperrtem localStorage prüfen.
+## Vor/nach Veröffentlichung prüfen
+- [ ] Desktop und Mobil: alle fünf Illustrationen und Spielziele.
+- [ ] System/Hell/Dunkel inklusive Neuladen.
+- [ ] Tastaturfokus, Pfeile, Buttons und Touch-Gesten.
+- [ ] Auftakt verschwindet automatisch, Escape funktioniert.
+- [ ] Reduzierte Bewegung.
+- [ ] Keine iFrames oder alten Vorschau-Dateien mehr.
+- [ ] Öffentliche Hauptseite nach Pages-Deployment prüfen.
 
-## Veröffentlichung
-- [ ] MausTastisch-Ordner aus dem aktuellen main entfernt.
-- [ ] Keine MausTastisch-/Beyond-Verknüpfungen in der aktiven Hauptseite.
-- [ ] Öffentliche Root-Adresse liefert Bibliothek 1.1.0.
-- [ ] Alle fünf Spiele weiterhin erreichbar.
-
-## Später
-- [ ] Dedizierte sichere Gameplay-Previews pro Spiel.
-- [ ] Vorschau-Generierung automatisieren.
-- [ ] Gemischte Changelog-Historie getrennt aufarbeiten.
+## Folgearbeiten
+- [ ] Einheitlicher Build-Schritt für Spieleliste und eingebettete Daten.
+- [ ] Historische Repository-To-dos und gemischte Logs gesondert aufarbeiten.

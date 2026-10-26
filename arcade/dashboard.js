@@ -1,87 +1,63 @@
 
 'use strict';
-(async()=>{
+(()=>{
+ const data=JSON.parse(document.getElementById('world-data').textContent);
  const $=id=>document.getElementById(id);
- const buttons=[...document.querySelectorAll('.game-option')];
- let games;
- try{
-  const response=await fetch('arcade/games.json?v=1.1.0');
-  if(!response.ok)throw new Error(`HTTP ${response.status}`);
-  games=await response.json();
-  if(games.length!==buttons.length)throw new Error('Spieleliste stimmt nicht mit HTML überein.');
- }catch(error){
-  $('preview-status').textContent='Die Auswahl konnte nicht geladen werden. Direkte Spielverknüpfungen stehen unten.';
-  const links=document.createElement('p');
-  links.className='direct-links';
-  const fallback=[
-   ['Schattengruft','rpg/'],['Pip-Boy','PipBoy3000/'],
-   ['UFO-Jagd','ufo/'],['Nachtfahrt','night/'],
-   ['Garage & Drive','game/car-workshop/']
-  ];
-  fallback.forEach(([label,path],index)=>{
-   if(index)links.append(' · ');
-   const a=document.createElement('a');a.href=path;a.textContent=label;
-   links.append(a);
-  });
-  $('games').append(links);
-  console.error('Dashboard:',error);
-  return;
- }
- let index=0,timer=null;
- function preview(){
-  clearTimeout(timer);
-  $('preview-slot').replaceChildren();
-  if(document.hidden)return;
-  const selected=index;
-  timer=setTimeout(()=>{
-   if(document.hidden||selected!==index)return;
-   const frame=document.createElement('iframe');
-   frame.title='Startseitenvorschau: '+games[index].title;
-   frame.setAttribute('sandbox','');
-   frame.setAttribute('tabindex','-1');
-   frame.setAttribute('aria-hidden','true');
-   frame.setAttribute('referrerpolicy','no-referrer');
-   frame.src='arcade/previews/'+games[index].id+'.html';
-   $('preview-slot').append(frame);
-  },180);
- }
+ const cards=[...document.querySelectorAll('[data-world]')];
+ const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+ let index=0,sequence=0;
  function select(next){
-  index=(next+games.length)%games.length;
-  const game=games[index];
-  $('game-title').textContent=game.title;
-  $('game-category').textContent=game.category;
-  $('game-description').textContent=game.description;
+  index=(next+data.length)%data.length;
+  const game=data[index],ticket=++sequence;
+  $('hero-title').textContent=game.headline;
+  $('category').textContent=game.category;
+  $('chapter').textContent=game.chapter;
+  $('description').textContent=game.copy;
+  $('game-name').textContent=game.title;
   $('play').href=game.path;
-  $('play').setAttribute('aria-label',game.title+' spielen');
-  $('counter').textContent=String(index+1).padStart(2,'0')+' / '+String(games.length).padStart(2,'0');
-  buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
-  preview();
+  $('play').setAttribute('aria-label',game.title+' beginnen');
+  $('count').textContent=String(index+1).padStart(2,'0')+' / '+String(data.length).padStart(2,'0');
+  document.documentElement.style.setProperty('--accent',game.accent);
+  cards.forEach((card,i)=>card.setAttribute('aria-pressed',String(i===index)));
+  const image=new Image();
+  const hero=document.querySelector('.hero');
+  hero.classList.add('switching');
+  image.onload=()=>{
+   if(ticket!==sequence)return;
+   $('landscape').src=image.src;
+   requestAnimationFrame(()=>hero.classList.remove('switching'));
+  };
+  image.onerror=()=>{if(ticket===sequence)hero.classList.remove('switching');};
+  image.src='arcade/art/'+game.id+'.svg';
  }
- buttons.forEach((button,i)=>button.addEventListener('click',()=>select(i)));
- $('previous').addEventListener('click',()=>select(index-1));
+ cards.forEach((card,i)=>card.addEventListener('click',()=>select(i)));
+ $('prev').addEventListener('click',()=>select(index-1));
  $('next').addEventListener('click',()=>select(index+1));
  document.addEventListener('keydown',event=>{
   if(event.altKey||event.ctrlKey||event.metaKey)return;
-  if(!event.target.closest('.library'))return;
-  if(event.target.closest('input,textarea,select,[contenteditable=true]'))return;
+  if(event.key==='Escape')document.documentElement.classList.remove('arriving');
+  if(event.target.closest('input,textarea,select,[contenteditable=true],.themes'))return;
   if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
    event.preventDefault();
    select(index+(event.key==='ArrowRight'?1:-1));
-   buttons[index].focus({preventScroll:true});
+   cards[index].focus({preventScroll:true});
+   cards[index].scrollIntoView({behavior:reduced.matches?'instant':'smooth',block:'nearest',inline:'nearest'});
   }
  });
  let touch=null;
- $('preview').addEventListener('touchstart',event=>{
+ const hero=document.querySelector('.hero');
+ hero.addEventListener('touchstart',event=>{
+  if(event.target.closest('a,button'))return;
   touch={x:event.touches[0].clientX,y:event.touches[0].clientY};
  },{passive:true});
- $('preview').addEventListener('touchcancel',()=>{touch=null;},{passive:true});
- $('preview').addEventListener('touchend',event=>{
+ hero.addEventListener('touchcancel',()=>{touch=null;},{passive:true});
+ hero.addEventListener('touchend',event=>{
   if(!touch)return;
   const dx=event.changedTouches[0].clientX-touch.x;
   const dy=event.changedTouches[0].clientY-touch.y;
   touch=null;
   if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)select(index+(dx<0?1:-1));
  },{passive:true});
- document.addEventListener('visibilitychange',preview);
- select(0);
+ for(const game of data){const image=new Image();image.src='arcade/art/'+game.id+'.svg';}
+ setTimeout(()=>document.documentElement.classList.remove('arriving'),650);
 })();

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#142e42"/><stop offset="1" stop-color="#071a23"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#f6d19a" stop-opacity=".45"/><stop offset="1" stop-color="#f6d19a" stop-opacity="0"/></radialGradient>
+<linearGradient id="door" x2="0" y2="1"><stop stop-color="#ecc995"/><stop offset=".55" stop-color="#b49360"/><stop offset="1" stop-color="#544f35"/></linearGradient>
+<linearGradient id="beam" x2="0" y2="1"><stop stop-color="#b5ffe1" stop-opacity=".55"/><stop offset="1" stop-color="#b5ffe1" stop-opacity="0"/></linearGradient>
+</defs>
+<path fill="url(#sky)" d="M0 0h1600v900H0z"/>
+<g fill="#e1e6dc" opacity=".35">
+<circle cx="180" cy="130" r="1.5"/><circle cx="450" cy="210" r="1"/>
+<circle cx="740" cy="110" r="1.5"/><circle cx="930" cy="170" r="1"/>
+<circle cx="1410" cy="90" r="1.5"/><circle cx="1510" cy="310" r="1"/>
+</g>
+
+<circle cx="1290" cy="180" r="65" fill="#c9e1d5" opacity=".65"/>
+<path d="M0 610 210 370 390 580 610 300 860 570 1140 370 1600 640V900H0Z" fill="#1b3540"/>
+<path d="M0 730Q440 560 900 710T1600 650V900H0Z" fill="#173d37"/>
+<path d="M0 820Q550 670 1050 800T1600 750V900H0Z" fill="#102e2b"/>
+<path d="m1035 350-220 440h460Z" fill="url(#beam)"/>
+<ellipse cx="1040" cy="785" rx="230" ry="32" fill="#b2e9cf" opacity=".18"/>
+<path d="M900 315Q1030 145 1170 315Z" fill="#88aeb1" stroke="#d9f5e4" stroke-width="3"/>
+<ellipse cx="1035" cy="326" rx="218" ry="49" fill="#294d59" stroke="#8dbfc0" stroke-width="3"/>
+<ellipse cx="1035" cy="347" rx="130" ry="16" fill="#b7ffe0"/>
+<g fill="#d6fbe7"><circle cx="895" cy="322" r="5"/><circle cx="954" cy="308" r="5"/><circle cx="1035" cy="303" r="5"/><circle cx="1115" cy="308" r="5"/><circle cx="1175" cy="322" r="5"/></g>
+<path d="M1360 700v-95h105v95M1340 606l73-65 75 65Z" fill="#25453b"/>
+<path d="M1380 635h20v28h-20z" fill="#e3bb79"/>
+<path d="M1015 713h58v28h-58zM1067 707h24v22h-24zM1020 739v15M1063 739v15" stroke="#d6e5d1" stroke-width="7"/>
+
+</svg>

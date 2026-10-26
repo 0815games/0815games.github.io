@@ -1951,3 +1951,15 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Bestehende skriptfreie Originalvorschauen bleiben erhalten.
 - Spielversionen, Spielcode und Speicherpfade unverändert.
 - Browserabnahme der neuen Gestaltung und Theme-Funktion noch offen.
+
+## 2026-10-26 – Weltenatlas v1.2.0
+- Bibliotheksoberfläche durch illustrierten Weltenatlas ersetzt.
+- Fünf individuelle SVG-Motive passend zu den jeweiligen Spielen.
+- Startseiten-iFrames und deren JavaScript vollständig entfernt.
+- Bisherige generierte Vorschau-HTML-Dateien werden aus dem aktuellen Stand entfernt.
+- Kurzer gestalterischer Auftakt ohne fingierte Ladeprozente.
+- Hell/Dunkel/System bleibt erhalten; reduzierte Bewegung wird berücksichtigt.
+- Wechsel per Auswahlkarten, Pfeilbuttons, Tastatur und Wischgeste.
+- Hauptseitenversion und Asset-Parameter auf 1.2.0 angehoben.
+- Spielcode, Spielversionen und Speicherpfade unverändert.
+- Browser-/Mobilabnahme und öffentliche Deployment-Prüfung noch offen.

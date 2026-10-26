@@ -1,11 +1,11 @@
-# Spielebibliothek 1.1.0
+# Weltenatlas 1.2.0
 
-- Root-index.html ist die Hauptseite; keine Weiterleitung.
-- games.json enthält ausschließlich die fünf Spiele.
-- theme.js setzt das Erscheinungsbild vor dem Stylesheet.
-- Erstbesuch: Geräteeinstellung. Auswahl: System, Hell oder Dunkel.
-- Manuelle Auswahl wird bei verfügbarem localStorage gespeichert.
-- System-Modus folgt auch Änderungen der Geräteeinstellung.
-- dashboard.css ersetzt das frühere Arcade-Stylesheet vollständig.
-- Vorschauen bleiben skriptfreie Original-Startseiten, keine Gameplay-Demos.
-- Keine Änderungen an Spielversionen, Firebase oder Speicherformaten.
+- Root-Hauptseite mit fünf eigens erstellten SVG-Weltenmotiven.
+- Keine iFrames, keine Startseitenkopien, keine ausgeführten Spielvorschauen.
+- games.json ist die Quelle; die Hauptseite enthält eine eingebettete Kopie.
+- Änderungen an games.json müssen auch die eingebetteten Daten aktualisieren.
+- Bestehende System-/Hell-/Dunkel-Steuerung in theme.js bleibt erhalten.
+- Kurzer rein gestalterischer Auftakt, keine fingierte Ladeanzeige.
+- Auftakt endet automatisch; Escape beendet ihn ebenfalls.
+- Reduzierte Bewegung deaktiviert Auftakt und Animationen.
+- Keine Änderungen an Spielversionen, Firebase oder Speicherpfaden.

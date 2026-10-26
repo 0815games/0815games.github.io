@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+<defs>
+<linearGradient id="sky" x2="0" y2="1"><stop stop-color="#263338"/><stop offset="1" stop-color="#101b20"/></linearGradient>
+<radialGradient id="halo"><stop stop-color="#f6d19a" stop-opacity=".45"/><stop offset="1" stop-color="#f6d19a" stop-opacity="0"/></radialGradient>
+<linearGradient id="door" x2="0" y2="1"><stop stop-color="#ecc995"/><stop offset=".55" stop-color="#b49360"/><stop offset="1" stop-color="#544f35"/></linearGradient>
+<linearGradient id="beam" x2="0" y2="1"><stop stop-color="#b5ffe1" stop-opacity=".55"/><stop offset="1" stop-color="#b5ffe1" stop-opacity="0"/></linearGradient>
+</defs>
+<path fill="url(#sky)" d="M0 0h1600v900H0z"/>
+<g fill="#e1e6dc" opacity=".35">
+<circle cx="180" cy="130" r="1.5"/><circle cx="450" cy="210" r="1"/>
+<circle cx="740" cy="110" r="1.5"/><circle cx="930" cy="170" r="1"/>
+<circle cx="1410" cy="90" r="1.5"/><circle cx="1510" cy="310" r="1"/>
+</g>
+
+<path d="M610 190h830v570H610Z" fill="#2b3030" stroke="#555b54" stroke-width="3"/>
+<path d="M650 220h750v440H650Z" fill="#151f22"/>
+<g stroke="#526366" stroke-width="2" opacity=".5">
+<path d="M650 290h750M650 370h750M650 450h750M650 530h750M650 610h750M760 220v440M890 220v440M1020 220v440M1150 220v440M1280 220v440"/>
+</g>
+<path d="m540 790 1070-1-180 85H660Z" fill="#3c4543"/>
+<path d="M700 710v80M1400 710v80" stroke="#8a7770" stroke-width="18"/>
+<path d="M690 710h760" stroke="#c3977d" stroke-width="14"/>
+<path d="m760 580 100-100h300l125 94 80 20v83H700v-65Z" fill="#c47a61" stroke="#f4bb93" stroke-width="3"/>
+<path d="m880 496-75 78h350l-65-78Z" fill="#18323b"/>
+<path d="M984 496v78" stroke="#c99b7f" stroke-width="5"/>
+<g fill="#152025" stroke="#727f7c" stroke-width="5"><circle cx="840" cy="672" r="59"/><circle cx="1240" cy="672" r="59"/></g>
+<g fill="#b3bab0"><circle cx="840" cy="672" r="25"/><circle cx="1240" cy="672" r="25"/></g>
+<path d="M1310 600h40" stroke="#fff2ca" stroke-width="10"/>
+<path d="M740 276h570" stroke="#f6d4ad" stroke-width="9"/>
+<path d="M740 276v-35M1310 276v-35" stroke="#7f8980" stroke-width="5"/>
+<path d="M1430 460h55v230h-55z" fill="#85705e"/>
+
+</svg>
