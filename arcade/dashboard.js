@@ -2,27 +2,39 @@
 'use strict';
 (async()=>{
  const $=id=>document.getElementById(id);
+ const buttons=[...document.querySelectorAll('.game-option')];
  let games;
  try{
-  const response=await fetch('arcade/games.json?v=1.0.0');
+  const response=await fetch('arcade/games.json?v=1.1.0');
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   games=await response.json();
+  if(games.length!==buttons.length)throw new Error('Spieleliste stimmt nicht mit HTML überein.');
  }catch(error){
-  $('preview-status').textContent='AUSWAHL NICHT GELADEN';
-  console.error('Arcade:',error);
+  $('preview-status').textContent='Die Auswahl konnte nicht geladen werden. Direkte Spielverknüpfungen stehen unten.';
+  const links=document.createElement('p');
+  links.className='direct-links';
+  const fallback=[
+   ['Schattengruft','rpg/'],['Pip-Boy','PipBoy3000/'],
+   ['UFO-Jagd','ufo/'],['Nachtfahrt','night/'],
+   ['Garage & Drive','game/car-workshop/']
+  ];
+  fallback.forEach(([label,path],index)=>{
+   if(index)links.append(' · ');
+   const a=document.createElement('a');a.href=path;a.textContent=label;
+   links.append(a);
+  });
+  $('games').append(links);
+  console.error('Dashboard:',error);
   return;
  }
- const cards=[...document.querySelectorAll('.cartridge')];
- const reduced=matchMedia('(prefers-reduced-motion: reduce)');
- let index=0,timer=null,hidden=false;
- function loadPreview(){
+ let index=0,timer=null;
+ function preview(){
   clearTimeout(timer);
   $('preview-slot').replaceChildren();
-  $('preview-status').textContent='VORSCHAU';
-  if(hidden)return;
+  if(document.hidden)return;
   const selected=index;
   timer=setTimeout(()=>{
-   if(selected!==index||hidden)return;
+   if(document.hidden||selected!==index)return;
    const frame=document.createElement('iframe');
    frame.title='Startseitenvorschau: '+games[index].title;
    frame.setAttribute('sandbox','');
@@ -30,58 +42,46 @@
    frame.setAttribute('aria-hidden','true');
    frame.setAttribute('referrerpolicy','no-referrer');
    frame.src='arcade/previews/'+games[index].id+'.html';
-   frame.addEventListener('load',()=>{
-    if(selected===index)$('preview-status').textContent='ORIGINAL · OHNE SPIELSKRIPTE';
-   },{once:true});
-   frame.addEventListener('error',()=>{
-    if(selected===index)$('preview-status').textContent='VORSCHAU NICHT VERFÜGBAR';
-   },{once:true});
    $('preview-slot').append(frame);
-  },250);
+  },180);
  }
- function select(next,scroll=true){
+ function select(next){
   index=(next+games.length)%games.length;
   const game=games[index];
-  document.documentElement.style.setProperty('--accent',game.color);
-  for(const id of ['game-title','scene-title'])$(id).textContent=game.title;
-  for(const id of ['game-category','scene-category'])$(id).textContent=game.category;
+  $('game-title').textContent=game.title;
+  $('game-category').textContent=game.category;
   $('game-description').textContent=game.description;
-  $('scene-icon').textContent=game.icon;
   $('play').href=game.path;
-  $('play').setAttribute('aria-label',game.title+' starten');
+  $('play').setAttribute('aria-label',game.title+' spielen');
   $('counter').textContent=String(index+1).padStart(2,'0')+' / '+String(games.length).padStart(2,'0');
-  cards.forEach((card,i)=>card.setAttribute('aria-pressed',String(i===index)));
-  if(scroll){
-   const rail=$('rail'),card=cards[index];
-   rail.scrollTo({
-    left:card.offsetLeft-rail.offsetLeft-(rail.clientWidth-card.offsetWidth)/2,
-    behavior:reduced.matches?'auto':'smooth'
-   });
-  }
-  loadPreview();
+  buttons.forEach((button,i)=>button.setAttribute('aria-pressed',String(i===index)));
+  preview();
  }
- cards.forEach((card,i)=>card.addEventListener('click',()=>select(i)));
+ buttons.forEach((button,i)=>button.addEventListener('click',()=>select(i)));
  $('previous').addEventListener('click',()=>select(index-1));
  $('next').addEventListener('click',()=>select(index+1));
  document.addEventListener('keydown',event=>{
   if(event.altKey||event.ctrlKey||event.metaKey)return;
+  if(!event.target.closest('.library'))return;
   if(event.target.closest('input,textarea,select,[contenteditable=true]'))return;
-  if(event.key==='ArrowLeft'){event.preventDefault();select(index-1);}
-  if(event.key==='ArrowRight'){event.preventDefault();select(index+1);}
+  if(event.key==='ArrowLeft'||event.key==='ArrowRight'){
+   event.preventDefault();
+   select(index+(event.key==='ArrowRight'?1:-1));
+   buttons[index].focus({preventScroll:true});
+  }
  });
  let touch=null;
- $('rail').addEventListener('touchstart',event=>{
-  touch=event.touches[0].clientX;
+ $('preview').addEventListener('touchstart',event=>{
+  touch={x:event.touches[0].clientX,y:event.touches[0].clientY};
  },{passive:true});
- $('rail').addEventListener('touchend',event=>{
-  if(touch===null)return;
-  const delta=event.changedTouches[0].clientX-touch;
+ $('preview').addEventListener('touchcancel',()=>{touch=null;},{passive:true});
+ $('preview').addEventListener('touchend',event=>{
+  if(!touch)return;
+  const dx=event.changedTouches[0].clientX-touch.x;
+  const dy=event.changedTouches[0].clientY-touch.y;
   touch=null;
-  if(Math.abs(delta)>55)select(index+(delta<0?1:-1));
+  if(Math.abs(dx)>65&&Math.abs(dx)>Math.abs(dy)*1.5)select(index+(dx<0?1:-1));
  },{passive:true});
- document.addEventListener('visibilitychange',()=>{
-  hidden=document.hidden;
-  loadPreview();
- });
- select(0,false);
+ document.addEventListener('visibilitychange',preview);
+ select(0);
 })();

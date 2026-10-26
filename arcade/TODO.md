@@ -1,16 +1,22 @@
-# Dashboard: Abnahme und Folgearbeiten
+# Spielebibliothek: offene Abnahme
 
-## Vor Veröffentlichung
-- [ ] Desktop: fünf Spiele auswählen und jeden Startlink prüfen.
-- [ ] Mobil: Karten, Wischen, Startknopf und kleine Höhen prüfen.
-- [ ] Tastatur: Tab, Fokus, Pfeiltasten und Links prüfen.
-- [ ] Vorschauen: Startseiten sichtbar, keine Spielskripte ausführbar.
-- [ ] Verborgener Tab: Vorschau wird entladen.
-- [ ] Reduzierte Bewegung prüfen.
-- [ ] Root-Hauptseite und alter Admin-Link nach Deployment prüfen.
+## Darstellung
+- [ ] Desktop: Vorschau, Typografie und alle fünf Spiele prüfen.
+- [ ] Mobil: Layout ab 320px, Hoch-/Querformat und Wischen prüfen.
+- [ ] Tastatur: Fokus, Tab, Pfeiltasten und Startlinks prüfen.
+- [ ] Hell, Dunkel und System prüfen.
+- [ ] Erster Besuch ohne gespeicherte Auswahl folgt dem Gerät.
+- [ ] Gespeicherte manuelle Auswahl bleibt nach Neuladen erhalten.
+- [ ] Systemwechsel wird im System-Modus übernommen.
+- [ ] Verhalten bei gesperrtem localStorage prüfen.
 
-## Folgearbeiten
-- [ ] Pro Spiel eine dedizierte, geprüfte Gameplay-Preview entwickeln.
-- [ ] Weitere index.html-Einstiege bei neuen Spielen registrieren.
-- [ ] Bestehende Repository-To-dos separat abgleichen, nicht überschreiben.
-- [ ] Gemischte historische Changelogs nach Spielzugehörigkeit trennen.
+## Veröffentlichung
+- [ ] MausTastisch-Ordner aus dem aktuellen main entfernt.
+- [ ] Keine MausTastisch-/Beyond-Verknüpfungen in der aktiven Hauptseite.
+- [ ] Öffentliche Root-Adresse liefert Bibliothek 1.1.0.
+- [ ] Alle fünf Spiele weiterhin erreichbar.
+
+## Später
+- [ ] Dedizierte sichere Gameplay-Previews pro Spiel.
+- [ ] Vorschau-Generierung automatisieren.
+- [ ] Gemischte Changelog-Historie getrennt aufarbeiten.

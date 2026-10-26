@@ -3,50 +3,35 @@
     "id": "schattengruft",
     "title": "Chroniken der Schattengruft",
     "path": "rpg/index.html",
-    "category": "DARK FANTASY",
-    "description": "Steige in die Schattengruft hinab.",
-    "color": "#eec071",
-    "icon": "⚔",
-    "number": "01"
+    "category": "Dark Fantasy",
+    "description": "Steige in die Schattengruft hinab."
   },
   {
     "id": "pipboy",
     "title": "Pip-Boy 3003",
     "path": "PipBoy3000/index.html",
-    "category": "WASTELAND RPG",
-    "description": "Dein erstes Abenteuer. Grüner Bildschirm. Gefährliches Ödland.",
-    "color": "#a1ff80",
-    "icon": "▣",
-    "number": "02"
+    "category": "Ödland-RPG",
+    "description": "Dein erstes Abenteuer. Grüner Bildschirm. Gefährliches Ödland."
   },
   {
     "id": "ufo",
     "title": "UFO-Jagd: Nachtangriff",
     "path": "ufo/index.html",
-    "category": "ARCADE DEFENSE",
-    "description": "Kühe retten. UFOs abwehren. Die Erde beschützen.",
-    "color": "#92ebff",
-    "icon": "◎",
-    "number": "03"
+    "category": "Arcade",
+    "description": "Kühe retten. UFOs abwehren. Die Erde beschützen."
   },
   {
     "id": "nachtfahrt",
     "title": "Nachtfahrt",
     "path": "night/index.html",
-    "category": "NIGHT DELIVERY",
-    "description": "Die Stadt schläft. Deine Nachtschicht beginnt.",
-    "color": "#c4a3ff",
-    "icon": "◈",
-    "number": "04"
+    "category": "Fahren & Erkunden",
+    "description": "Die Stadt schläft. Deine Nachtschicht beginnt."
   },
   {
     "id": "garage",
     "title": "Garage & Drive",
     "path": "game/car-workshop/index.html",
-    "category": "BUILD · FIX · DRIVE",
-    "description": "Von der Werkstatt auf die Straße.",
-    "color": "#ff9f91",
-    "icon": "▰",
-    "number": "05"
+    "category": "Werkstatt & Fahren",
+    "description": "Von der Werkstatt auf die Straße."
   }
 ]

@@ -71,23 +71,23 @@ v0.5.2 (Fixes)
 - [SYSTEM] Code-Bereinigung in `ui_view_camp.js` und `ui_render_minigames.js`.
 
 
-[v1.2.0] - 2026-01-04 10:15pm (Admin Tool Upgrade) 
-- Feature: Neuer Tab "CAMP" im Admin-Panel zur Verwaltung von Lager-Level und Position. 
-- Fix: Quest-Anzeige liest nun korrekt activeQuests und completedQuests aus. 
-- Fix: Ausgerüstete Gegenstände (Equipment) werden nun im Inventar-Tab angezeigt. 
+[v1.2.0] - 2026-01-04 10:15pm (Admin Tool Upgrade)
+- Feature: Neuer Tab "CAMP" im Admin-Panel zur Verwaltung von Lager-Level und Position.
+- Fix: Quest-Anzeige liest nun korrekt activeQuests und completedQuests aus.
+- Fix: Ausgerüstete Gegenstände (Equipment) werden nun im Inventar-Tab angezeigt.
 - UI: "Return to Mainframe" Button zum Login-Screen hinzugefügt.
 
-[v1.1.3] - 2026-01-04 09:45pm (Camp Info Feature) 
-- Feature: Info-Button (?) im Lager-Menü hinzugefügt. 
+[v1.1.3] - 2026-01-04 09:45pm (Camp Info Feature)
+- Feature: Info-Button (?) im Lager-Menü hinzugefügt.
 - Visual: Popup-Fenster zeigt detaillierte Tabelle aller Lager-Stufen (Heilung & Kosten).
 
-[v1.1.1] - 2026-01-04 09:15pm (Camp UI Dynamic) 
-- UI: Camp-Menü zeigt jetzt dynamische Heilungswerte und korrekte Upgrade-Materialien an. 
+[v1.1.1] - 2026-01-04 09:15pm (Camp UI Dynamic)
+- UI: Camp-Menü zeigt jetzt dynamische Heilungswerte und korrekte Upgrade-Materialien an.
 - Logic: Maximale Ausbaustufe (10) wird im Menü erkannt und deaktiviert den Upgrade-Button.
 
-[v1.1.0] - 2026-01-04 08:30pm (Camp Upgrade & Sleep System) 
-- Feature: Lager-Upgrades bis Level 10 implementiert mit steigenden Materialkosten. 
-- Logic: Schlaf-Regeneration im Lager ist nun gestaffelt (Lvl 1 = 30% Heilung -> Lvl 10 = 100% Heilung). 
+[v1.1.0] - 2026-01-04 08:30pm (Camp Upgrade & Sleep System)
+- Feature: Lager-Upgrades bis Level 10 implementiert mit steigenden Materialkosten.
+- Logic: Schlaf-Regeneration im Lager ist nun gestaffelt (Lvl 1 = 30% Heilung -> Lvl 10 = 100% Heilung).
 - Data: Neue Hilfsfunktion getCampUpgradeCost für dynamische Kosten.
 
 [v1.0.4] - 2026-01-04 08:00pm (Camp Safety Check)
@@ -130,8 +130,8 @@ v0.5.2 (Fixes)
 - Vault Legends: Box auf 80vh begrenzt, Scrollen repariert (flex-1/min-h-0).
 - Vault Legends: ESC-Taste Event Listener hinzugefügt.
 
-[v5.0] - 2026-01-03 08:30pm (UI & Vault Legends Update) 
-- Vault Legends Fensterhöhe auf Spielbereich begrenzt & Scrollbalken optimiert. 
+[v5.0] - 2026-01-03 08:30pm (UI & Vault Legends Update)
+- Vault Legends Fensterhöhe auf Spielbereich begrenzt & Scrollbalken optimiert.
 - Click-Outside-To-Close Feature für Vault Legends Fenster hinzugefügt.
 
 [v4.2] - 2026-01-03 06:30pm (Atmosphere & Weather Integration)
@@ -218,7 +218,7 @@ v0.5.2 (Fixes)
 - BALANCE: Dropraten von Monstern gesenkt, damit das Inventar sauberer bleibt.
 - VISUAL: Schadenszahlen im Kampf überlagern sich nicht mehr so stark (zufällige Position).
 
-[v3.0] - 2026-01-03 00:15am (UI & Map Link) 
+[v3.0] - 2026-01-03 00:15am (UI & Map Link)
 - UI: Sektoranzeige im Hauptbildschirm (Map View) integriert nun die Weltkugel (🌍).
 - UI: Text "WELTKARTE" entfernt; der Button zeigt nun immer den aktuellen Sektor "SEKTOR [X,Y]" an.
 - UX: Sektoranzeige fungiert weiterhin als direkter Link zur Weltkarte.
@@ -276,8 +276,8 @@ v0.5.2 (Fixes)
 - Game.init() Struktur bereinigt und Initialisierungsprozess optimiert
 - Consumables erweitert: Support für 'heal_rad' (Nahrung heilt, gibt aber Strahlung)
 
-[v2.x] - 2025-12-31 17:30pm (Admin & Docs) 
-- Komplettes 'readme.md' Handbuch mit neuen Mechaniken erstellt 
+[v2.x] - 2025-12-31 17:30pm (Admin & Docs)
+- Komplettes 'readme.md' Handbuch mit neuen Mechaniken erstellt
 - 'admin.html' und 'admin.js' hinzugefügt: Ermöglicht Login mit Passwort, User-Verwaltung, Editieren von Stats (Caps, Level, XP) und Hinzufügen von Items per Datenbank-Direktzugriff
 
 [v2.x] - 2025-12-31 16:30pm (Refactoring)
@@ -288,14 +288,14 @@ v0.5.2 (Fixes)
 • ui_view_journal.js: Quests, Wiki
 • ui_render_views.js: Enthält jetzt nur noch Menü-Systeme und Combat
 
-[v2.1] - 2025-12-31 16:15pm (Consumables Update & Loot Fix) 
-- Fix für 'Invisible Loot': Fehlende Item-Definitionen (Fleisch, Schrott) ergänzt 
-- Kochen im Lager hinzugefügt (neuer Button 'KOCHEN') 
+[v2.1] - 2025-12-31 16:15pm (Consumables Update & Loot Fix)
+- Fix für 'Invisible Loot': Fehlende Item-Definitionen (Fleisch, Schrott) ergänzt
+- Kochen im Lager hinzugefügt (neuer Button 'KOCHEN')
 - Gekochtes Essen heilt HP und gibt Strahlung (heal_rad)
 
-[v2.0] - 2025-12-31 16:00pm (Radio Update) 
-- Implementierung der Web Audio API für echte Klangerzeugung (Statisches Rauschen & Synth-Sounds pro Sender) 
-- Neuer Audio-Visualizer im Radio-Screen der auf Frequenzen reagiert 
+[v2.0] - 2025-12-31 16:00pm (Radio Update)
+- Implementierung der Web Audio API für echte Klangerzeugung (Statisches Rauschen & Synth-Sounds pro Sender)
+- Neuer Audio-Visualizer im Radio-Screen der auf Frequenzen reagiert
 - Erweiterte Datenstruktur für Radiosender und Verbindung der UI-Controls mit dem Audio-System
 
 [v1.7.1] - 2025-12-31 14:30pm (Visual Tweak)
@@ -316,70 +316,70 @@ v0.5.2 (Fixes)
 - Visual: Grid-Linien (Glow) bei Treppen und Truhen auf der Map entfernt für sauberere Optik.
 - Bugfix: Werkbank-Logik korrigiert – gelernte Baupläne werden nun zuverlässig in der Liste angezeigt.
 
-[v1.5.0] - 2025-12-30 05:00pm (Shop Overhaul & Categories) ------------------------------------------------ 
-- UI: Handelsposten komplett überarbeitet und in Kategorien (Waffen, Kleidung, Hilfsmittel) unterteilt. 
-- Feature: Detail-Ansicht beim Anklicken (Stats & Beschreibung) vor dem Kauf. 
+[v1.5.0] - 2025-12-30 05:00pm (Shop Overhaul & Categories) ------------------------------------------------
+- UI: Handelsposten komplett überarbeitet und in Kategorien (Waffen, Kleidung, Hilfsmittel) unterteilt.
+- Feature: Detail-Ansicht beim Anklicken (Stats & Beschreibung) vor dem Kauf.
 - UX: 'Im Besitz'-Markierung für bereits vorhandene oder ausgerüstete Gegenstände hinzugefügt.
 - Feature: Neuer 'showShopConfirm' Dialog für den Handelsposten implementiert.
 
-[v1.4.1] - 2025-12-30 04:45pm (Fix Stimpack Dialog) ------------------------------------------------ 
+[v1.4.1] - 2025-12-30 04:45pm (Fix Stimpack Dialog) ------------------------------------------------
 - Bugfix: Stimpack-Dialog erscheint nun korrekt (Prüfung auf invItem.id statt item.id korrigiert).
 
-[v1.4.0] - 2025-12-30 04:30pm (Stimpack Logic) ------------------------------------------------ 
+[v1.4.0] - 2025-12-30 04:30pm (Stimpack Logic) ------------------------------------------------
 - UI Update: Spezieller Dialog für Stimpacks hinzugefügt.
 - Feature: Auswahl zwischen "1x Benutzen" und "Auto-Heal (Max)".
 - Logic: 'useItem' unterstützt nun 'max' mode für automatisches Heilen bis HP voll sind.
 
-[v1.3.4] - 2025-12-30 04:15pm (Camp Limit & Overlay Text) ------------------------------------------------ 
+[v1.3.4] - 2025-12-30 04:15pm (Camp Limit & Overlay Text) ------------------------------------------------
 - Logic: Maximal 1 Zeltbausatz im Inventar erlaubt (Kauf/Loot blockiert bei Besitz).
 - Logic: buyItem prüft nun Besitz vor Abzug der Kronkorken.
 - UI Change: Zelt-Status im Inventar von 'AUFGEBAUT' zu 'AUFGESTELLT' geändert.
 
-[v1.3.3] - 2025-12-30 03:55pm (Fix Rest in Camp & Item Safety) ------------------------------------------------ 
+[v1.3.3] - 2025-12-30 03:55pm (Fix Rest in Camp & Item Safety) ------------------------------------------------
 - Bugfix: Fehlende Funktion 'restInCamp' hinzugefügt (Heilt 50% bei Lvl 1, 100% bei Lvl 2).
 - Bugfix: Absturzschutz beim Item-Wechsel (Undefined checks für Geister-Items).
 
-[v1.3.2] - 2025-12-30 03:45pm (Fix Crash & Camp Overlay) ------------------------------------------------ 
+[v1.3.2] - 2025-12-30 03:45pm (Fix Crash & Camp Overlay) ------------------------------------------------
 - Bugfix: Absturz bei unbekannten Item-IDs im 'useItem' Safety-Check behoben.
 - Bugfix: Zelt-Overlay (AUFGEBAUT) wird nun korrekt angezeigt (ID-Prüfung korrigiert).
 
-[v1.3.1] - 2025-12-30 03:30pm (Fix Camp Crash) ------------------------------------------------ 
+[v1.3.1] - 2025-12-30 03:30pm (Fix Camp Crash) ------------------------------------------------
 - Bugfix: Zelt-Datenstruktur korrigiert (sector: {x,y} statt sx,sy).
 - System: Verhindert Abstürze bei existierenden, fehlerhaften Zelt-Daten.
 - Logic Update: Render-Funktion repariert defekte Zelt-Objekte automatisch "on-the-fly".
 
-[v1.3.0] - 2025-12-30 03:15pm (Camp Cost & Workbench Fix) ------------------------------------------------ 
+[v1.3.0] - 2025-12-30 03:15pm (Camp Cost & Workbench Fix) ------------------------------------------------
 - Logic Update: Zelt aufstellen kostet nun 100 Kronkorken.
 - UI Fix: 'Speichern & Zurück' Button aus der Werkbank entfernt.
 
-[v1.2.0] - 2025-12-30 03:00pm (New Item Glow) ------------------------------------------------ 
+[v1.2.0] - 2025-12-30 03:00pm (New Item Glow) ------------------------------------------------
 - Feature: Neue Items erhalten das Flag 'isNew = true', um im Inventar hervorzustechen.
 - UI Update: Inventar-Items mit 'isNew'-Flag erhalten einen statischen Glow-Effekt.
 - UI Update: Hover über ein neues Item entfernt den Glow-Effekt.
 
-[v1.1.1] - 2025-12-30 02:45pm (Fix Quest Tab Bug) ------------------------------------------------ 
+[v1.1.1] - 2025-12-30 02:45pm (Fix Quest Tab Bug) ------------------------------------------------
 - Bugfix: Klick auf Quest-Tabs schließt nicht mehr das Fenster (Event Propagation gestoppt).
 
-[v1.1.0] - 2025-12-30 02:30pm (Quest Tabs) ------------------------------------------------ 
+[v1.1.0] - 2025-12-30 02:30pm (Quest Tabs) ------------------------------------------------
 - Feature: Tabs für "Aktiv" und "Abgeschlossen" im Quest-Log hinzugefügt.
 - UI: Abgeschlossene Quests werden historisch (ausgegraut) aufgelistet.
 
-[v1.0] - 2025-12-30 02:15pm (Inventory Persistence & Camp Update) ------------------------------------------------ 
+[v1.0] - 2025-12-30 02:15pm (Inventory Persistence & Camp Update) ------------------------------------------------
 - Logic Update: Waffen & Rüstung bleiben beim Ausrüsten im Inventar sichtbar.
 - Logic Update: Zelt-Kit wird beim Aufbau nicht mehr entfernt (Vorbereitung für Bauplan-Logik).
 - UI: Ausgerüstete Items erhalten ein "AUSGERÜSTET" Overlay.
 - UI: Overlay-Design begradigt (keine Schräge mehr).
 - Safety: Legacy-Support beim Item-Wechsel hinzugefügt.
 
-[v0.9.13] - 2025-12-30 14:00 (Fix Combat Crash & VATS Selection) 
-- Bugfix: Fehlende Funktion 'moveSelection' in combat.js hinzugefügt. 
-- Feature: Visuelle Auswahl (Hervorhebung) der Körperteile im Kampf-Modus hinzugefügt. 
+[v0.9.13] - 2025-12-30 14:00 (Fix Combat Crash & VATS Selection)
+- Bugfix: Fehlende Funktion 'moveSelection' in combat.js hinzugefügt.
+- Feature: Visuelle Auswahl (Hervorhebung) der Körperteile im Kampf-Modus hinzugefügt.
 - Initiale Auswahl (Torso) beim Kampfstart gesetzt.
 
-[v0.9.12] - 2025-12-30 01:00pm (Quest System 2.0) --------------------------------- 
-- System: Echtes Quest-System mit 'kill', 'collect' und 'visit' Zielen. 
-- UI: Quest-Log zeigt jetzt Fortschrittsbalken und Belohnungen an. 
-- Logic: Quests werden automatisch basierend auf dem Spieler-Level freigeschaltet. 
+[v0.9.12] - 2025-12-30 01:00pm (Quest System 2.0) ---------------------------------
+- System: Echtes Quest-System mit 'kill', 'collect' und 'visit' Zielen.
+- UI: Quest-Log zeigt jetzt Fortschrittsbalken und Belohnungen an.
+- Logic: Quests werden automatisch basierend auf dem Spieler-Level freigeschaltet.
 - Content: 5 neue Quests hinzugefügt (Jäger, Erkunder, Sammler).
 
 [v0.9.11] - 2025-12-30 02:30am (World Map Scanner) ---------------------------------
@@ -535,7 +535,7 @@ v0.9.2] - 2025-12-29 07:10pm (Camp Overhaul & Animation) -----------------------
   - "Terminal Link" zeigt jetzt korrekt den Namen des geladenen Charakters an.
 
 
-[v0.4.17] - 2025-12-25 11:20pm(Highscore System Update)  
+[v0.4.17] - 2025-12-25 11:20pm(Highscore System Update)
 - 'kills' Statistik zum Speicherstand hinzugefügt (game_core.js)
 - Globales Leaderboard-System im Netzwerk integriert (network.js)
 - UI für Highscore-Tafel 'Vault Legends' erstellt (ui_render_overlays.js)
@@ -544,13 +544,13 @@ v0.9.2] - 2025-12-29 07:10pm (Camp Overhaul & Animation) -----------------------
 - Logik für permanenten Tod in der Bestenliste angepasst
 
 
-[v0.4.16] - 2025-12-25 10:35pm(Game Logic Refactoring) 
-- game.js aufgeteilt in game_core.js, game_map.js, game_actions.js und game_render.js 
+[v0.4.16] - 2025-12-25 10:35pm(Game Logic Refactoring)
+- game.js aufgeteilt in game_core.js, game_map.js, game_actions.js und game_render.js
 - Modularisierung der Spiellogik abgeschlossen
 
 
-[v0.4.15] - 2025-12-25 10:25pm(UI Refactoring) 
-- ui_render.js aufgeteilt in ui_render_core.js, ui_render_views.js, ui_render_minigames.js und ui_render_overlays.js 
+[v0.4.15] - 2025-12-25 10:25pm(UI Refactoring)
+- ui_render.js aufgeteilt in ui_render_core.js, ui_render_views.js, ui_render_minigames.js und ui_render_overlays.js
 - index.html Lade-Reihenfolge angepasst
 
 
@@ -558,8 +558,8 @@ v0.9.2] - 2025-12-29 07:10pm (Camp Overhaul & Animation) -----------------------
 - Styles aus index.html in style.css ausgelagert - index.html bereinigt und Link zu style.css hinzugefügt
 
 
-[v0.4.12] - 2025-12-25 09:10pm(Data Structure Refactoring) 
-- data.js in data_core.js, data_items.js und data_monsters.js aufgeteilt 
+[v0.4.12] - 2025-12-25 09:10pm(Data Structure Refactoring)
+- data.js in data_core.js, data_items.js und data_monsters.js aufgeteilt
 - Lade-Reihenfolge in index.html angepasst
 
 [v0.4.11] - 2025-12-25 02:15am(Wiki Drop Info)
@@ -649,7 +649,7 @@ Char-Select:
 
 
 [v0.3.4a] - 2025-12-23 02:00am (Dynamic World & Fog Fix)
-- Welt: Vergrößert auf 10x10 Sektoren. 
+- Welt: Vergrößert auf 10x10 Sektoren.
 - Generierung: Vault 101 und Rusty Springs haben nun zufällige Positionen bei Spielstart.
 - Fix: Der "Nebel des Krieges" (aufgedeckte Karte) bleibt nun erhalten, wenn man Dungeons verlässt.
 - Biomes: Supermärkte können nun auch in Stadt-Ruinen gefunden werden.
@@ -792,7 +792,7 @@ Char-Select:
 
 [v0.2.5-alpha] - 2025-12-20 (Logout & Crash Fixes)
 ------------------------------------------------
-- CRITICAL FIX (Network): Fehler behoben, der das erneute Einloggen nach dem Ausloggen verhinderte ("Netzwerkfehler"). 
+- CRITICAL FIX (Network): Fehler behoben, der das erneute Einloggen nach dem Ausloggen verhinderte ("Netzwerkfehler").
   - Der 'active'-Status wird nun bei jedem Initialisierungsversuch korrekt zurückgesetzt.
 - CRITICAL FIX (Game): Aggressiver Schutz gegen Map-Abstürze.
   - Die Funktion 'reveal' erstellt das 'explored'-Objekt nun zwingend, falls es fehlt, bevor irgendein Zugriff erfolgt.
@@ -800,7 +800,7 @@ Char-Select:
 
 [v0.2.4-alpha] - 2025-12-20 (Action Button Fix)
 ------------------------------------------------
-- FIX: Fehlender "Aktions-Button" im HTML ergänzt. 
+- FIX: Fehlender "Aktions-Button" im HTML ergänzt.
   - Im Charakter-Auswahl-Screen gibt es nun über "Abmelden" einen dynamischen Button.
   - Dieser Button wechselt je nach Slot zwischen "CHARAKTER ERSTELLEN" (Gelb) und "SPIEL LADEN" (Grün).
   - Damit ist die Erstellung auch auf Touch-Geräten ohne Doppeltipp-Probleme möglich.
@@ -851,7 +851,7 @@ Char-Select:
   - Das behebt den Absturz beim Spielstart ("GAME INIT FAIL").
 - FIX: Map-Gedächtnis (Fog of War) und Rand-Fix sind weiterhin enthalten.
 
- 
+
 [v0.1.22-beta] - 2025-12-20 (Map Persistence & Fog Fix)
 ------------------------------------------------
 - CRITICAL FIX: Die Weltkarte merkt sich nun dauerhaft aufgedeckte Gebiete.
@@ -1938,3 +1938,16 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Maus, Tastatur, Touch und reduzierte Bewegung berücksichtigt.
 - Spiele, Speicherpfade und Spielversionen unverändert.
 - Syntax-, Pfad- und echte Browserabnahme noch offen.
+
+## 2026-10-26 – Spielebibliothek v1.1.0
+- Retro-Arcade-Oberfläche vollständig durch minimalistisches Bibliotheksdesign ersetzt.
+- Alte Dashboard-HTML-, CSS- und JavaScript-Implementierungen ersetzt statt überlagert.
+- System-, Hell- und Dunkelmodus; Geräteeinstellung beim Erstbesuch.
+- Manuelle Auswahl wird gespeichert, Systemmodus folgt Geräteänderungen.
+- Zentrale Spieleliste auf die für das neue Dashboard verwendeten Felder reduziert.
+- Beyond-the-Arcade-Bereich und MausTastisch-Verknüpfung entfernt.
+- Entfernung des versionierten maus-Ordners ist Teil dieses Release-Ablaufs.
+- Historische Changelog-Einträge und Git-Historie werden nicht umgeschrieben.
+- Bestehende skriptfreie Originalvorschauen bleiben erhalten.
+- Spielversionen, Spielcode und Speicherpfade unverändert.
+- Browserabnahme der neuen Gestaltung und Theme-Funktion noch offen.
