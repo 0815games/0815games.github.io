@@ -1,14 +1,18 @@
-# Weltenatlas: Abnahme
+# Portal-Auswahl: Abnahme 2.0.0
 
-## Vor/nach Veröffentlichung prüfen
-- [ ] Desktop und Mobil: alle fünf Illustrationen und Spielziele.
-- [ ] System/Hell/Dunkel inklusive Neuladen.
-- [ ] Tastaturfokus, Pfeile, Buttons und Touch-Gesten.
-- [ ] Auftakt verschwindet automatisch, Escape funktioniert.
-- [ ] Reduzierte Bewegung.
-- [ ] Keine iFrames oder alten Vorschau-Dateien mehr.
-- [ ] Öffentliche Hauptseite nach Pages-Deployment prüfen.
+## Vor Abschluss
+- [ ] Desktop: alle fünf Portale und Startlinks.
+- [ ] Mobil: kleine Breiten und Höhen, Wischen ohne blockiertes vertikales Scrollen.
+- [ ] Tastatur: Tab, Pfeile, Escape, sichtbarer Fokus.
+- [ ] Intro endet und kann übersprungen werden.
+- [ ] Jede Welt zeigt die eigene Animation.
+- [ ] Einfache Klicks starten mit Übergang; neue Tabs bleiben native Links.
+- [ ] Browser-Zurück entfernt den Startübergang.
+- [ ] Reduzierte Bewegung: statische Darstellung, direkter Start.
+- [ ] Hell/Dunkel/System und gespeicherte Wahl.
+- [ ] Keine Game-/Firebase-Anfragen beim Öffnen der Hauptseite.
+- [ ] Öffentliche Hauptseite und Deployment prüfen.
 
-## Folgearbeiten
-- [ ] Einheitlicher Build-Schritt für Spieleliste und eingebettete Daten.
-- [ ] Historische Repository-To-dos und gemischte Logs gesondert aufarbeiten.
+## Separat offen
+- [ ] Vollständiger historischer To-do-/Changelog-Abgleich.
+- [ ] Weitere Zuordnung bislang nicht migrierter Root-Dateien.

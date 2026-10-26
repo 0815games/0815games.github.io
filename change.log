@@ -1963,3 +1963,16 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Hauptseitenversion und Asset-Parameter auf 1.2.0 angehoben.
 - Spielcode, Spielversionen und Speicherpfade unverändert.
 - Browser-/Mobilabnahme und öffentliche Deployment-Prüfung noch offen.
+
+## 2026-10-26 – Portal-Auswahl v2.0.0 – Zwischen den Welten
+- Bisheriges Hero-/Kartenlayout vollständig durch fünf schwebende Portale ersetzt.
+- Zyklischer 3D-Weltenwechsel mit seitlichen Nachbarportalen.
+- Eigene Szenen: Nebel und Glut, Terminal, UFO-Suchstrahl, Straßenlichter, Fahrzeugmontage.
+- SVG-Motive bleiben als Szenenhintergründe erhalten; keine iFrames und keine Spielprozesse.
+- Überspringbarer Riss-Auftakt mit unabhängigem Sicherheitsausstieg.
+- Welt-betreten-Übergang bei normalem Klick; native neue Tabs bleiben erhalten.
+- System/Hell/Dunkel, Tastatur, Touch und reduzierte Bewegung berücksichtigt.
+- Nur aktives Portal animiert; Portal-Animationen pausieren im verborgenen Dokument.
+- Portalversion, Stylesheet, Skript und Theme-Einbindung auf 2.0.0 gesetzt.
+- Spielcode, Spielversionen, Firebase und Speicherpfade unverändert.
+- Automatische Geometrie-/Strukturtests bereitgestellt; echte Browserabnahme offen.
