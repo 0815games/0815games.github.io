@@ -1897,3 +1897,13 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Version, Build-Metadatum, Modul-Cache-Parameter und Service-Worker-Cache auf 0.6.12 erhöht.
 - Keine Änderung an Loot, Gold, Kampfwerten oder Speicherlogik.
 - Aufräumarbeiten: v0611_patch.py, v0612_patch.py und ungewollte Arbeitsdateien bleiben unversioniert und werden nach Freigabe entfernt.
+
+## 2026-10-26 – v0.7.0 – Einheitliche Versions- und Cache-Basis
+- Versionsprung auf v0.7.0 als saubere Basis nach den v0.6.x-Bereinigungen.
+- VERSION_LABEL, HTML-Titel, alle Versions-Badges und data-rpg-build auf v0.7.0 gesetzt.
+- Alle CSS- und JS-Cache-Parameter in index.html auf v0.7.0 vereinheitlicht.
+- Alle Modul-Cache-Parameter in version.js auf v0.7.0 vereinheitlicht.
+- Service-Worker-Cache auf schattengruft-v0.7.0 erhöht; alte Caches werden beim Aktivieren entfernt.
+- Keine Änderung an Spiellogik, Effekten, Loot, Kampfwerten oder Speicherablauf.
+- Künftig wird bei jedem Patch die Versionsnummer an allen genannten Stellen gemeinsam erhöht.
+- Browser-Test nach Service-Worker-Reset erforderlich.
