@@ -1921,3 +1921,10 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Root-index und Root-admin leiten vorläufig zum neuen Ort weiter.
 - Bestehenden gemischten Root-Changelog erhalten; Kopie für PipBoy-Patchnotes angelegt. Historische Trennung bleibt offen.
 - Statische Pfadprüfung und Browserabnahme noch offen.
+
+## 2026-10-26 – PipBoy-Umzug: lokale Browserprüfung
+- Nutzer bestätigt: Test über die Codespaces-Browservorschau hat funktioniert.
+- Zuvor bestanden: SHA-256-Vergleich aller 50 verschobenen Dateien, Syntaxprüfung von 28 JavaScript-Dateien und gezielte Loader-/View-Pfadprüfung.
+- Keine vollständige Einzelabnahme aller Spiel- und Adminfunktionen dokumentiert.
+- Prüfung der veröffentlichten GitHub-Pages-Version bleibt offen.
+- Dashboard, historische Changelog-Trennung und Zuordnung verbliebener Root-Dateien bleiben separate Aufgaben.
