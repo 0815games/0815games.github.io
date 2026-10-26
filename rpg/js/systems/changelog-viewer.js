@@ -1,4 +1,4 @@
-const VERSION_LABEL='v0.5.26';
+import { VERSION_LABEL } from '../core/version.js';
 function install(){
  try{
   const game=document.getElementById('game');if(!game||document.getElementById('changelog-viewer'))return;

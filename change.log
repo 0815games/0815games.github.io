@@ -1907,3 +1907,9 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Keine Änderung an Spiellogik, Effekten, Loot, Kampfwerten oder Speicherablauf.
 - Künftig wird bei jedem Patch die Versionsnummer an allen genannten Stellen gemeinsam erhöht.
 - Browser-Test nach Service-Worker-Reset erforderlich.
+
+## 2026-10-26 – v0.7.0 – Nachträgliches Überschreiben der Versionsanzeige behoben
+- Ursache: changelog-viewer.js enthielt eine eigene Konstante v0.5.26 und überschrieb zeitversetzt alle Versions-Badges.
+- Doppelte Versionskonstante entfernt; der Viewer importiert nun VERSION_LABEL aus core/version.js.
+- Historische Versionsnummern in Changelog-Einträgen bleiben unverändert.
+- Syntax- und Browserprüfung erforderlich; noch keine bestätigte Browserabnahme.
