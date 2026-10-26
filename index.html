@@ -1,2 +1,80 @@
 <!doctype html>
-<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PipBoy umgezogen</title></head><body><p>PipBoy ist umgezogen: <a href="PipBoy3000/index.html">Hier öffnen</a>.</p><script>location.replace("PipBoy3000/index.html"+location.search+location.hash);</script></body></html>
+<html lang="de" data-dashboard-version="1.0.0">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0c15">
+<title>Pipboy3003 · Arcade</title>
+<link rel="stylesheet" href="arcade/dashboard.css?v=1.0.0">
+<script defer src="arcade/dashboard.js?v=1.0.0"></script>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"></div>
+<header class="top">
+ <a class="brand" href="./" aria-label="Arcade Startseite">
+  <span class="brand-mark" aria-hidden="true">▦</span>
+  PIPBOY3003<span class="brand-small">ARCADE SYSTEM</span>
+ </a>
+ <span class="system"><i></i> INDEPENDENT WORLDS / 2026</span>
+</header>
+<main>
+ <section class="intro" aria-labelledby="lobby-title">
+  <p class="eyebrow">EIN ENTWICKLER. MEHRERE WELTEN.</p>
+  <h1 id="lobby-title">INSERT <span>ADVENTURE.</span></h1>
+  <p class="intro-copy">Such dir deine nächste Welt aus.</p>
+ </section>
+ <section class="cabinet" aria-label="Ausgewähltes Spiel">
+  <div class="screen">
+   <div class="screen-fallback" aria-hidden="true">
+    <span id="scene-icon">⚔</span>
+    <span class="orbit"></span><span class="orbit second"></span>
+   </div>
+   <div id="preview-slot" aria-hidden="true" inert></div>
+   <div class="screen-shade" aria-hidden="true"></div>
+   <div class="screen-top"><span>ORIGINAL STARTSCREEN</span>
+    <span id="preview-status">VORSCHAU</span></div>
+   <div class="screen-caption">
+    <span class="scene-tag" id="scene-category">DARK FANTASY</span>
+    <p id="scene-title">Chroniken der Schattengruft</p>
+   </div>
+  </div>
+  <div class="console">
+   <div class="console-copy">
+    <p class="eyebrow" id="game-category">DARK FANTASY</p>
+    <h2 id="game-title">Chroniken der Schattengruft</h2>
+    <p id="game-description">Steige in die Schattengruft hinab.</p>
+   </div>
+   <div class="launch">
+    <a id="play" class="play" href="rpg/index.html">SPIEL STARTEN <span>↗</span></a>
+    <span>Vollständiges Spiel · direkt im Browser</span>
+   </div>
+  </div>
+ </section>
+ <section class="selection" aria-labelledby="selection-title">
+  <div class="selection-head">
+   <h2 id="selection-title">SELECT YOUR WORLD</h2>
+   <div class="navigation">
+    <span id="counter" aria-live="polite">01 / 05</span>
+    <button id="previous" type="button" aria-label="Vorheriges Spiel">←</button>
+    <button id="next" type="button" aria-label="Nächstes Spiel">→</button>
+   </div>
+  </div>
+  <div class="rail" id="rail"><button class="cartridge" type="button" data-index="0" style="--card:#eec071" aria-pressed="true"><span class="cart-number">CARTRIDGE 01</span><span class="cart-art" aria-hidden="true">⚔</span><span class="cart-title">Chroniken der Schattengruft</span><span class="cart-category">DARK FANTASY</span></button><button class="cartridge" type="button" data-index="1" style="--card:#a1ff80" aria-pressed="false"><span class="cart-number">CARTRIDGE 02</span><span class="cart-art" aria-hidden="true">▣</span><span class="cart-title">Pip-Boy 3003</span><span class="cart-category">WASTELAND RPG</span></button><button class="cartridge" type="button" data-index="2" style="--card:#92ebff" aria-pressed="false"><span class="cart-number">CARTRIDGE 03</span><span class="cart-art" aria-hidden="true">◎</span><span class="cart-title">UFO-Jagd: Nachtangriff</span><span class="cart-category">ARCADE DEFENSE</span></button><button class="cartridge" type="button" data-index="3" style="--card:#c4a3ff" aria-pressed="false"><span class="cart-number">CARTRIDGE 04</span><span class="cart-art" aria-hidden="true">◈</span><span class="cart-title">Nachtfahrt</span><span class="cart-category">NIGHT DELIVERY</span></button><button class="cartridge" type="button" data-index="4" style="--card:#ff9f91" aria-pressed="false"><span class="cart-number">CARTRIDGE 05</span><span class="cart-art" aria-hidden="true">▰</span><span class="cart-title">Garage &amp; Drive</span><span class="cart-category">BUILD · FIX · DRIVE</span></button></div>
+  <p class="controls">← → AUSWÄHLEN <span>·</span> WISCHEN AUF MOBILGERÄTEN</p>
+ </section>
+ <section class="projects" aria-label="Weitere Projekte">
+  <p class="eyebrow">BEYOND THE ARCADE</p><a href="maus/">MausTastisch <span>WEBSITE ↗</span></a>
+ </section>
+ <p class="preview-note">Die Vorschau zeigt Original-Startseiten ohne Spielskripte.
+ CSS-Animationen bleiben erhalten. Login und Spielstart erfolgen erst im geöffneten Spiel.</p>
+ <noscript><p>JavaScript ist für die Spielauswahl deaktiviert.
+ Direkt öffnen:
+ <a href="rpg/">Schattengruft</a> ·
+ <a href="PipBoy3000/">Pip-Boy</a> ·
+ <a href="ufo/">UFO-Jagd</a> ·
+ <a href="night/">Nachtfahrt</a> ·
+ <a href="game/car-workshop/">Garage &amp; Drive</a>
+ </p></noscript>
+</main>
+<footer><span>HANDCRAFTED BY PIPBOY3003</span><span>LOBBY v1.0.0</span></footer>
+</body></html>
