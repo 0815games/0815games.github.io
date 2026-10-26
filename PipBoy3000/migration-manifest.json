@@ -1,0 +1,252 @@
+[
+  {
+    "from": "Version",
+    "to": "PipBoy3000/Version",
+    "sha256": "e85ced684176206b8c6a7fa3f294f7c29e5f65b772188f33817d490d7ba296c3"
+  },
+  {
+    "from": "admin.html",
+    "to": "PipBoy3000/admin.html",
+    "sha256": "09419a5674e0f543a0a12bd37cbb029e3cbb8af7c70f946ed83f8f6835eb213c"
+  },
+  {
+    "from": "admin.js",
+    "to": "PipBoy3000/admin.js",
+    "sha256": "a087f2a8da0cdb911c4bccb504d65e57deb6cf2ff4cb449593d3012d1a0f3d59"
+  },
+  {
+    "from": "data/data_core.js",
+    "to": "PipBoy3000/data/data_core.js",
+    "sha256": "ba88ab468cb63fc7d9c09218006f9995b5f44fc77c07e48fbdbc6b3254c8f14e"
+  },
+  {
+    "from": "data/data_items.js",
+    "to": "PipBoy3000/data/data_items.js",
+    "sha256": "700de17a2dba9415f2e03a581b82c57496f7689f7de4929d2862c59fcf42a39e"
+  },
+  {
+    "from": "data/data_minigames.js",
+    "to": "PipBoy3000/data/data_minigames.js",
+    "sha256": "06c47e1bb94684bce64751a32d83ad5c7af341d0bd12d4220a9b55190fd175c6"
+  },
+  {
+    "from": "data/data_monsters.js",
+    "to": "PipBoy3000/data/data_monsters.js",
+    "sha256": "7f32835a736ee00e527df00806a8ecfc888b98c86dc32fa4ec2a84a92d07f56a"
+  },
+  {
+    "from": "data/data_recipes.js",
+    "to": "PipBoy3000/data/data_recipes.js",
+    "sha256": "ca8a7a75f6dd9209b307877f114f33e3603d36b372e8f37ba6934ba7c44d4313"
+  },
+  {
+    "from": "game/game_char_logic.js",
+    "to": "PipBoy3000/game/game_char_logic.js",
+    "sha256": "13d6243854aaec1751f01c405641cc10795a21e1673a2676158fcf92c2cd9478"
+  },
+  {
+    "from": "game/game_combat.js",
+    "to": "PipBoy3000/game/game_combat.js",
+    "sha256": "9f83f608f6f654e588c06fd358114d48abddf0484bedd8506e28718a85ec1bfc"
+  },
+  {
+    "from": "game/game_core.js",
+    "to": "PipBoy3000/game/game_core.js",
+    "sha256": "3b6ef7a1cafc33a51d048adf232f3467e48ebe8fbe81ca02d8533fa970e1bac2"
+  },
+  {
+    "from": "game/game_core.old",
+    "to": "PipBoy3000/game/game_core.old",
+    "sha256": "fb53c4a14845e546332033c7e36427f80c78bc22cb0390f97a2df5f731c413ab"
+  },
+  {
+    "from": "game/game_inv_logic.js",
+    "to": "PipBoy3000/game/game_inv_logic.js",
+    "sha256": "8aeff8aee1a6d71f4b57fef1ab3cfb34f477c8d32528a10db6a99711a6acc73d"
+  },
+  {
+    "from": "game/game_map.js",
+    "to": "PipBoy3000/game/game_map.js",
+    "sha256": "6564dfb8b2673e9203d97aeb29f8597c0265215bad8fec2b9717976b7e6f2e0c"
+  },
+  {
+    "from": "game/game_map.old",
+    "to": "PipBoy3000/game/game_map.old",
+    "sha256": "ad373cf156a10734b7617a1bb58837603b40975c79ab3af8f1ca2b93a3836233"
+  },
+  {
+    "from": "game/game_render.js",
+    "to": "PipBoy3000/game/game_render.js",
+    "sha256": "814c0fd42d5b1b9b98eca0c926d01de0647a2b8fd4e17d8f20ae098f38327919"
+  },
+  {
+    "from": "game/game_render.old",
+    "to": "PipBoy3000/game/game_render.old",
+    "sha256": "e14be2c692b81b62999e7958ab22cbd4ab16f8cebf58e51930e1393d96ce3e4a"
+  },
+  {
+    "from": "game/game_render_3d.js",
+    "to": "PipBoy3000/game/game_render_3d.js",
+    "sha256": "06634d9f20765eab75ab19f513c67155af37413abdc3d4aeea9763fb3cc015d9"
+  },
+  {
+    "from": "game/game_world_gen.js",
+    "to": "PipBoy3000/game/game_world_gen.js",
+    "sha256": "69551d61adbdefe6c9608ec6e2e4e23b55adeb7e7b4b40e1fa060853ed17e444"
+  },
+  {
+    "from": "game/game_world_gen.old",
+    "to": "PipBoy3000/game/game_world_gen.old",
+    "sha256": "75aa418828dfff0789edf4e419607bc6cc5c34ecf3a8b5a240fe63bff06543a8"
+  },
+  {
+    "from": "game/game_world_logic.js",
+    "to": "PipBoy3000/game/game_world_logic.js",
+    "sha256": "38ac685a6e562c1d6c664d48e33d786dcd340203f4de6f63b2b84d80bcff1dee"
+  },
+  {
+    "from": "index.html",
+    "to": "PipBoy3000/index.html",
+    "sha256": "dfadd9e7b17ceae3a6248faa36e7c41512e3086160078a265f5af00de7da8ed8"
+  },
+  {
+    "from": "network.js",
+    "to": "PipBoy3000/network.js",
+    "sha256": "9979fdbf47234f0bbdf1700b59af049a98a8a0efea01faf14464b1f7f8eb49e1"
+  },
+  {
+    "from": "readme.md",
+    "to": "PipBoy3000/readme.md",
+    "sha256": "74120907184457c27329735fb46a72fc25ff2864d117ac15fec439c7d9ac2001"
+  },
+  {
+    "from": "style.css",
+    "to": "PipBoy3000/style.css",
+    "sha256": "462c5ddb09059c60e1ec1806bbd1dfac2da04ce90d5ead4015a7fd2d5c10a345"
+  },
+  {
+    "from": "ui/ui_combat.js",
+    "to": "PipBoy3000/ui/ui_combat.js",
+    "sha256": "d9d6259ba92b93c878c967dfaf429fa1aaba45451c986dc66b9f5471ac3ff1e9"
+  },
+  {
+    "from": "ui/ui_core.js",
+    "to": "PipBoy3000/ui/ui_core.js",
+    "sha256": "23de42d7951626710767b42a939f0b06cd9e7ef7f3afd0ddf0eb437e24f2718e"
+  },
+  {
+    "from": "ui/ui_input.js",
+    "to": "PipBoy3000/ui/ui_input.js",
+    "sha256": "d2a5a01ed4c63da3bfcf79481d00641a66ed7b639825e1039d34cb3de5f8f06d"
+  },
+  {
+    "from": "ui/ui_render_core.js",
+    "to": "PipBoy3000/ui/ui_render_core.js",
+    "sha256": "7cd3e52ac394e2545ef4502823784411ff18cd273b435b760d723127ee04fff2"
+  },
+  {
+    "from": "ui/ui_render_minigames.js",
+    "to": "PipBoy3000/ui/ui_render_minigames.js",
+    "sha256": "1f86944229c9462b42d1af1bcc3a0e6fcc8b07a32f80ea97b8955ee9c971f9ee"
+  },
+  {
+    "from": "ui/ui_render_overlays.js",
+    "to": "PipBoy3000/ui/ui_render_overlays.js",
+    "sha256": "49860c21841858b351cbb46a82b63a144932832d01c3c7a4c6fcbe0db725aa4d"
+  },
+  {
+    "from": "ui/ui_render_views.js",
+    "to": "PipBoy3000/ui/ui_render_views.js",
+    "sha256": "e75d7ed7b14f55dc5364518b6f4cc72457bddacf21a139051187665c2a96ba64"
+  },
+  {
+    "from": "ui/ui_view_camp.js",
+    "to": "PipBoy3000/ui/ui_view_camp.js",
+    "sha256": "a3aecfb2a5851daee3c2fd7fafc46a5a7fee270e561255023710a93bf18de26a"
+  },
+  {
+    "from": "ui/ui_view_inv.js",
+    "to": "PipBoy3000/ui/ui_view_inv.js",
+    "sha256": "b445e036f602910bf90226348da9a75c55107e6429f69c66d177298ef988bc97"
+  },
+  {
+    "from": "ui/ui_view_journal.js",
+    "to": "PipBoy3000/ui/ui_view_journal.js",
+    "sha256": "c2f094ab8044777fd235c1e2504d6d1a47e8a0d6b02cf926b293cdab21147b47"
+  },
+  {
+    "from": "ui/ui_view_town.js",
+    "to": "PipBoy3000/ui/ui_view_town.js",
+    "sha256": "f827760e3cd31f46ebb43217f682202569093c2895a92126605c7a87f20916d2"
+  },
+  {
+    "from": "ui/ui_view_world.js",
+    "to": "PipBoy3000/ui/ui_view_world.js",
+    "sha256": "df256fe71b3be473bfa08084d7042d31c8361e6ae043626ff8a45e518fc8d4c8"
+  },
+  {
+    "from": "views/camp.html",
+    "to": "PipBoy3000/views/camp.html",
+    "sha256": "8efc6b90125dfa7b38d86fd827a5b6bebbf55bbe8980fadb234a76466bf68337"
+  },
+  {
+    "from": "views/char.html",
+    "to": "PipBoy3000/views/char.html",
+    "sha256": "2b2bb96f82e6a813895495b69383c55cbb0dfa86b2e3af8c0b42df8cadf9e62d"
+  },
+  {
+    "from": "views/city.html",
+    "to": "PipBoy3000/views/city.html",
+    "sha256": "4e6954fca5b773859db06a143fa0bc890410e2ece8333b48ee14d7b6543b97a4"
+  },
+  {
+    "from": "views/clinic.html",
+    "to": "PipBoy3000/views/clinic.html",
+    "sha256": "47d94da0fc0cd142005315c9102efb27aed19e7b59443b91df894335905f9950"
+  },
+  {
+    "from": "views/combat.html",
+    "to": "PipBoy3000/views/combat.html",
+    "sha256": "8592a84e4b5c65a3c7b0026927645a1de19164dc4895fbffc64ee3b90eb6b8d5"
+  },
+  {
+    "from": "views/crafting.html",
+    "to": "PipBoy3000/views/crafting.html",
+    "sha256": "9a44b81c90c36a0139e9ce8b3e1d085b907c0573e2987043ee4d51d8b53cc4c0"
+  },
+  {
+    "from": "views/inventory.html",
+    "to": "PipBoy3000/views/inventory.html",
+    "sha256": "0ecb8dde0f941366fe9ed585552886cac28d93d7510432cedd2bdb2964858ac6"
+  },
+  {
+    "from": "views/quests.html",
+    "to": "PipBoy3000/views/quests.html",
+    "sha256": "d5fcc0d086b05ec4b4a9bc27e3d84fc98ff52a7076577bd23e853e20811d54cb"
+  },
+  {
+    "from": "views/radio.html",
+    "to": "PipBoy3000/views/radio.html",
+    "sha256": "ba4e9bd1b4bc92e25b35e87481c2027df5e836d163a3f8ef5e1c5cf758a6f8ba"
+  },
+  {
+    "from": "views/shop.html",
+    "to": "PipBoy3000/views/shop.html",
+    "sha256": "e27f82d82a3d588597e052e124836a90e96b5dc9825e946061686198e88ef9dc"
+  },
+  {
+    "from": "views/vault.html",
+    "to": "PipBoy3000/views/vault.html",
+    "sha256": "40c021135705464e74bacda69b1118636f7383be7c3b9524463a342951bdb817"
+  },
+  {
+    "from": "views/wiki.html",
+    "to": "PipBoy3000/views/wiki.html",
+    "sha256": "7cf8a84225abdab1c88cd99ccfbac0fd6026a7835e4f699db80ded031f2f4f54"
+  },
+  {
+    "from": "views/worldmap.html",
+    "to": "PipBoy3000/views/worldmap.html",
+    "sha256": "f97e3708dfcb022dca0199930c858e016dbeadf6a333ce35f97a926b51caf08c"
+  }
+]

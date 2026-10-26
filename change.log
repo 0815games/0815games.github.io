@@ -1913,3 +1913,11 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - Doppelte Versionskonstante entfernt; der Viewer importiert nun VERSION_LABEL aus core/version.js.
 - Historische Versionsnummern in Changelog-Einträgen bleiben unverändert.
 - Syntax- und Browserprüfung erforderlich; noch keine bestätigte Browserabnahme.
+
+## 2026-10-26 – PipBoy nach PipBoy3000 verschoben
+- PipBoy-Einstieg, Admin, Daten, UI, Views und direkte game-Dateien unter PipBoy3000 zusammengeführt.
+- Spielcode unverändert; SHA-256-Vergleich aller verschobenen Dateien durchgeführt.
+- Andere Spiele und Root-js-Baum nicht verschoben.
+- Root-index und Root-admin leiten vorläufig zum neuen Ort weiter.
+- Bestehenden gemischten Root-Changelog erhalten; Kopie für PipBoy-Patchnotes angelegt. Historische Trennung bleibt offen.
+- Statische Pfadprüfung und Browserabnahme noch offen.
