@@ -64,6 +64,27 @@ button:disabled{opacity:.4;cursor:not-allowed}
 
 <script>
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+
+// INKFALL_ART_V1
+const inkfallArt = {};
+for (const [key, path] of Object.entries({
+  knight: 'assets/art/heroes/knight.svg',
+  mage: 'assets/art/heroes/mage.svg',
+  arrow: 'assets/art/towers/arrow.svg'
+})) {
+  const image = new Image();
+  image.src = path;
+  image.onerror = () => console.warn('Grafik fehlt:', path);
+  inkfallArt[key] = image;
+}
+
+function drawInkfallArt(key, x, y, width, height) {
+  const image = inkfallArt[key];
+  if (!image || !image.complete || !image.naturalWidth) return false;
+  ctx.drawImage(image, x, y, width, height);
+  return true;
+}
+
 const ground=[[40,70],[280,70],[280,240],[600,240],[600,430],[850,430],[850,540]];
 const air=[[40,30],[300,30],[300,150],[640,150],[640,330],[880,330],[880,540]];
 const base={x:850,y:540,r:24};
@@ -200,11 +221,16 @@ function drawPath(pts,col){ctx.strokeStyle=col;ctx.lineWidth=30;ctx.lineJoin='ro
 function draw(){ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#e8d9bd';ctx.fillRect(0,0,cv.width,cv.height);
 drawPath(ground,'#c9b58f');drawPath(air,'#b9c6d6');
 ctx.fillStyle='#4f7d4f';ctx.beginPath();ctx.arc(base.x,base.y,base.r,0,7);ctx.fill();ctx.fillStyle='#f4ead8';ctx.font='bold 12px Georgia';ctx.textAlign='center';ctx.fillText('BASTION',base.x,base.y+4);
-for(const t of towers){const d=T[t.t];ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(t.x,t.y,15,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();if(sel===t){ctx.strokeStyle='#b8860b';ctx.beginPath();ctx.arc(t.x,t.y,towerRange(t.t),0,7);ctx.stroke()}ctx.fillStyle='#f4ead8';ctx.fillText('L'+t.lvl,t.x,t.y+4)}
+for(const t of towers){const d=T[t.t];if(t.t==='arrow' && drawInkfallArt('arrow',t.x-29,t.y-48,58,58)){
+}else{
+ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(t.x,t.y,15,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();
+}if(sel===t){ctx.strokeStyle='#b8860b';ctx.beginPath();ctx.arc(t.x,t.y,towerRange(t.t),0,7);ctx.stroke()}ctx.fillStyle='#f4ead8';ctx.fillText('L'+t.lvl,t.x,t.y+4)}
 for(const e of enemies){const p=pos(e.d);ctx.fillStyle=E[e.t].col;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=2;ctx.stroke();
 if(e.t==='boss'&&e.shieldUp){ctx.strokeStyle='#3a6ea5';ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r+7,0,7);ctx.stroke()}
 ctx.fillStyle='#000';ctx.fillRect(p.x-15,p.y-22,30,4);ctx.fillStyle='#a33';ctx.fillRect(p.x-15,p.y-22,30*Math.max(0,e.hp/e.max),4)}
+if(!drawInkfallArt(hero.cls,hero.x-27,hero.y-45,54,54)){
 ctx.fillStyle=HERO[hero.cls].color;ctx.beginPath();ctx.arc(hero.x,hero.y,13,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();
+}
 ctx.fillStyle='#f4ead8';ctx.font='bold 10px Georgia';ctx.fillText(HERO[hero.cls].name,hero.x,hero.y-18);
 for(const s of shots){ctx.fillStyle=s.type==='frost'?'#3a6ea5':s.type==='cannon'?'#333':s.type==='antiair'?'#7a5aa0':'#5a3a1a';ctx.beginPath();ctx.arc(s.x,s.y,s.type==='cannon'?6:4,0,7);ctx.fill()}
 if(buildType){ctx.fillStyle='rgba(184,134,11,.25)';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#22201c';ctx.font='bold 18px Georgia';ctx.fillText(T[buildType].n+' platzieren',cv.width/2,40)}

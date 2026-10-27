@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<g stroke="#292433" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+<ellipse cx="64" cy="115" rx="34" ry="7" fill="#292433" opacity=".18" stroke="none"/>
+<!-- Robe -->
+<path d="M48 54 Q64 47 79 55 L94 111 Q66 119 34 110Z" fill="#456f9f"/>
+<path d="M60 65 52 111M72 68 80 112" fill="none" stroke="#304b7a" stroke-width="3"/>
+<path d="M39 101 Q64 110 89 102 L94 112 Q64 122 34 111Z" fill="#d5ac63"/>
+<path d="M51 68 79 69 79 77 48 76Z" fill="#77504c"/>
+<path d="M60 68 70 68 70 78 60 78Z" fill="#ebc976"/>
+<!-- Gesicht -->
+<path d="M49 35 Q64 25 77 36 L76 53 Q63 67 51 51Z" fill="#e8b98f"/>
+<path d="M55 45 57 45M68 44 70 44" fill="none"/>
+<path d="M56 53 Q64 57 70 51" fill="none" stroke-width="2"/>
+<!-- Hut -->
+<path d="M36 33 54 8 65 18 79 27 85 37Z" fill="#456f9f"/>
+<path d="M30 35 Q62 25 91 36 L94 43 Q62 51 28 44Z" fill="#638cb1"/>
+<path d="M47 27 78 31" fill="none" stroke="#d5ac63" stroke-width="6"/>
+<path d="M61 19 64 23 61 27 58 23Z" fill="#f3de9b" stroke-width="2"/>
+<!-- Arme -->
+<path d="M47 59 30 73 35 86 54 73" fill="#456f9f"/>
+<path d="M78 59 91 70 99 65 106 74 91 85 76 74" fill="#456f9f"/>
+<path d="M32 76 25 76 23 85 34 87Z" fill="#e8b98f"/>
+<!-- Stab -->
+<path d="M23 111 20 35" fill="none" stroke="#735342" stroke-width="7"/>
+<path d="M20 15 31 28 21 43 9 29Z" fill="#91d8e5"/>
+<path d="M20 21 24 28 20 35" fill="none" stroke="#e8fcf2" stroke-width="2"/>
+<!-- Magie -->
+<path d="M105 43 113 53 106 64 97 54Z" fill="#a2e4ee"/>
+<path d="M97 39 93 32M116 40 121 35M119 62 124 65" fill="none" stroke="#83c9db" stroke-width="3"/>
+
+</g>
+</svg>

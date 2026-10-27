@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<g stroke="#292433" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+<!-- Schatten -->
+<ellipse cx="64" cy="115" rx="33" ry="7" fill="#292433" opacity=".18" stroke="none"/>
+<!-- Umhang -->
+<path d="M43 51 Q64 42 83 53 L95 106 70 99 40 110 31 104Z" fill="#ad4848"/>
+<path d="M46 65 40 101M78 63 86 96" fill="none" stroke="#79384b" stroke-width="3"/>
+<!-- Beine -->
+<path d="M48 87 47 111 59 111 64 89M67 88 70 111 83 111 79 86" fill="#57667c"/>
+<path d="M43 111 59 110 61 119 40 119ZM69 111 83 110 89 119 69 119Z" fill="#424455"/>
+<!-- Körper -->
+<path d="M43 53 Q65 46 82 56 L80 88 Q62 97 45 87Z" fill="#aebfcb"/>
+<path d="M61 56 62 87" fill="none" stroke="#74899b" stroke-width="3"/>
+<path d="M43 81 80 80 80 88 45 90Z" fill="#665044"/>
+<rect x="58" y="80" width="12" height="10" rx="2" fill="#e5b85b"/>
+<!-- Schwert -->
+<path d="M96 68 105 16 113 8 117 20 105 72Z" fill="#e5edf0"/>
+<path d="M108 24 101 62" fill="none" stroke="#99afbf" stroke-width="2"/>
+<path d="M90 70 111 74M99 75 96 89" fill="none" stroke="#e5b85b" stroke-width="6"/>
+<path d="M79 60 91 65 98 78 89 83 78 73" fill="#aebfcb"/>
+<!-- Helm -->
+<path d="M42 26 Q60 9 80 23 L83 46 70 56 46 48Z" fill="#c2d0d8"/>
+<path d="M48 31 78 29 77 42 48 43Z" fill="#343746"/>
+<path d="M60 32 60 42M69 31 69 42" fill="none" stroke="#d5e0e5" stroke-width="3"/>
+<path d="M60 18 Q53 4 69 6 L80 16" fill="#ad4848"/>
+<!-- Schild -->
+<path d="M18 60 40 53 58 63 55 91 Q43 108 32 111 16 96 16 79Z" fill="#d6ae63"/>
+<path d="M24 66 39 61 51 67 48 88 Q40 99 33 102 23 90 23 78Z" fill="#647e91" stroke-width="3"/>
+<path d="M37 69 36 92M28 80 45 81" fill="none" stroke="#f3dfad" stroke-width="4"/>
+
+</g>
+</svg>

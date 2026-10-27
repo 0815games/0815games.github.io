@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<g stroke="#292433" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+
+<ellipse cx="64" cy="115" rx="43" ry="8" fill="#292433" opacity=".18" stroke="none"/>
+<!-- Fundament -->
+<path d="M25 100 62 91 103 101 100 116 28 117Z" fill="#899395"/>
+<path d="M30 107 96 108" fill="none" stroke="#606e77" stroke-width="3"/>
+<!-- Turmkörper -->
+<path d="M37 57 87 56 95 103 30 104Z" fill="#b98555"/>
+<path d="M43 62 40 100M62 61 62 101M80 61 86 100" fill="none" stroke="#825538" stroke-width="3"/>
+<path d="M34 76 90 75 92 85 32 86Z" fill="#d3a574"/>
+<path d="M49 103 50 86 Q61 73 73 87 L75 103Z" fill="#4b3e3b"/>
+<!-- Plattform -->
+<path d="M23 48 99 46 105 61 20 64Z" fill="#d7b580"/>
+<path d="M26 60 101 58 99 70 25 72Z" fill="#8b5a3c"/>
+<!-- Brüstung -->
+<path d="M25 48 25 36 38 35 39 47M86 46 86 34 98 34 99 46" fill="#b98555"/>
+<!-- Bogenlafette -->
+<path d="M59 46 61 25 71 25 75 46Z" fill="#74523e"/>
+<path d="M40 18 Q67 37 94 16" fill="none" stroke="#b77848" stroke-width="7"/>
+<path d="M40 18 67 10 94 16" fill="none" stroke="#eee0bd" stroke-width="2"/>
+<path d="M65 39 67 5" fill="none" stroke="#ece5cf" stroke-width="4"/>
+<path d="M61 12 67 3 72 12Z" fill="#becbd0" stroke-width="2"/>
+<!-- Metallbeschläge -->
+<circle cx="32" cy="64" r="2" fill="#e7d6a5" stroke="none"/>
+<circle cx="91" cy="62" r="2" fill="#e7d6a5" stroke="none"/>
+
+</g>
+</svg>
