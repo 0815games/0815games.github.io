@@ -66,6 +66,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <script src="tower-renderer.js"></script>
 <script src="combat-art.js"></script>
 <script src="enemy-art.js"></script>
+<script src="impact-fx.js"></script>
 </head>
 <!-- INKFALL_MENU_CLEANUP_V2 -->
 <body>
@@ -206,7 +207,7 @@ function goldMult(){let m=1;if(has('wealth1'))m*=1.10;if(has('wealth4'))m*=1.15;
 function buildCost(type){let c=T[type].c;if(has('bastion2'))c*=.95;if(has('wealth2'))c*=.95;return Math.round(c)}
 function frostSlow(){let s=.35;if(has('arcane2'))s+=.10;return s}
 function setHero(cls){hero.cls=cls;hero.cd=0;void 0;ui()}
-function useAbility(){if(hero.cd>0)return;
+function useAbility(){if(!active || speed<=0 || lives<=0 || hero.cd>0)return;
 if(hero.cls==='knight'){for(const e of enemies){if(e.route==='ground'&&dist(hero,pos(e))<130){e.slow=Math.max(e.slow,.6);hit(e,25,'hero')}}void 0}
 else{for(const e of enemies){if(dist(hero,pos(e))<150){e.slow=Math.max(e.slow,frostSlow()+.2);hit(e,35,'hero')}}void 0}
 hero.cd=HERO[hero.cls].cd;ui()}
@@ -251,6 +252,22 @@ if(e.t==='boss')void 0}}
 function update(dt){
 /* DIAG_GAME_HEARTBEAT */
 window.inkfallDiag?.heartbeat();
+
+/* INKFALL_PAUSE_FIX_V1 */
+// Keine Kampfaktionen bei Pause oder ungültigem Zeitschritt.
+// UI und der separate Zeichen-/Kameraloop bleiben aktiv.
+if(!Number.isFinite(dt) || dt<=0 || speed<=0){
+  ui();
+  return;
+}
+
+// Eine verlorene Partie nicht weiter simulieren.
+if(lives<=0){
+  active=false;
+  ui();
+  return;
+}
+
 if(active){timer+=dt;while(queue.length&&queue[0].d<=timer){spawn(queue.shift().t)}
 /* INKFALL_HERO_MOVEMENT_FIX_V2 */
 if(hero.target && dt>0){
@@ -298,13 +315,15 @@ const hitRadius=12;
 // Treffer, wenn das Geschoss bereits im Trefferbereich ist
 // oder diesen mit seinem aktuellen Bewegungsschritt erreicht.
 if(dd<=hitRadius+projectileStep){s.dead=true;
+InkfallImpactFX.impact(s,p);
+
 if(s.aoe){for(const e of enemies){if(e.route===s.e.route&&dist(pos(e),p)<=s.aoe)hit(e,s.dmg,s.type)}}else hit(s.e,s.dmg,s.type);
 if(s.slow)s.e.slow=Math.max(s.e.slow,s.slow)}else{s.x+=dx/dd*420*dt;s.y+=dy/dd*420*dt}}
 shots=shots.filter(s=>!s.dead);
 if(!queue.length&&!enemies.length){active=false;skillPoints++;void 0;if(wave>=waves.length)void 0}}
 if(lives<=0){active=false;void 0}
 ui()}
-function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('className').textContent=HERO[hero.cls].name;document.getElementById('ability').textContent=hero.cd>0?Math.ceil(hero.cd)+' s':'Bereit';document.getElementById('abilityBtn').textContent=HERO[hero.cls].ability+' ('+Math.ceil(hero.cd)+' s)';document.getElementById('abilityBtn').disabled=hero.cd>0;document.getElementById('start').disabled=lives<=0||active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
+function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('className').textContent=HERO[hero.cls].name;document.getElementById('ability').textContent=hero.cd>0?Math.ceil(hero.cd)+' s':'Bereit';document.getElementById('abilityBtn').textContent=HERO[hero.cls].ability+' ('+Math.ceil(hero.cd)+' s)';document.getElementById('abilityBtn').disabled=hero.cd>0 || !active || speed<=0 || lives<=0;document.getElementById('start').disabled=lives<=0||active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
 function openTree(){document.getElementById('tree').classList.add('open');renderTree()}
 function closeTree(){document.getElementById('tree').classList.remove('open')}
 function renderTree(){const c=document.getElementById('treeContent');let html='';const regions=[...new Set(TREE.map(n=>n.region))];
@@ -333,10 +352,15 @@ if(e.t==='boss'&&e.shieldUp){ctx.strokeStyle='#3a6ea5';ctx.lineWidth=4;ctx.begin
 /* Lebensbalken zeichnet enemy-art.js. */}
 /* INKFALL_ANIMATION_INTEGRATION_V2 */
 InkfallCombatArt.renderHero(ctx);
-for(const s of shots){ctx.fillStyle=s.type==='frost'?'#3a6ea5':s.type==='cannon'?'#333':s.type==='antiair'?'#7a5aa0':'#5a3a1a';ctx.beginPath();ctx.arc(s.x,s.y,s.type==='cannon'?6:4,0,7);ctx.fill()}
+/* INKFALL_PROJECTILE_ART_V1 */
+for(const s of shots){
+  InkfallImpactFX.projectile(ctx,s);
+}
+
 if(buildType){ctx.fillStyle='rgba(184,134,11,.25)';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#22201c';ctx.font='bold 18px Georgia';ctx.fillText(T[buildType].n+' platzieren',cv.width/2,40)}
 InkfallCombatArt.frame(ctx);
 InkfallEnemyArt.frame(ctx);
+InkfallImpactFX.frame(ctx);
 requestAnimationFrame(draw)}
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;update(dt);requestAnimationFrame(loop)}
