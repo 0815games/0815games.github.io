@@ -24,6 +24,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .node button{width:auto;margin:0;padding:4px 8px;font-size:12px}
 .close{position:fixed;top:14px;right:18px;width:auto;padding:8px 14px}
 </style>
+<link rel="stylesheet" href="cartoon-theme.css">
+<link rel="stylesheet" href="skilltree.css">
+<link rel="stylesheet" href="game-window.css">
+<link rel="stylesheet" href="battle-layout.css">
 </head>
 <body>
 <div id="game"><canvas id="cv" width="940" height="600"></canvas></div>
@@ -218,8 +222,34 @@ html+=owned?'<span style="color:#b8860b">Aktiv</span>':'<button '+(can?'':'disab
 html+='</div>'}c.innerHTML=html}
 function buy(id){const n=TREE.find(x=>x.id===id);if(!n||has(id))return;if(n.req&&!has(n.req))return;if(skillPoints<n.cost)return;skillPoints-=n.cost;skills[id]=true;log('Skill freigeschaltet: <b>'+n.name+'</b>');renderTree();ui()}
 function drawPath(pts,col){ctx.strokeStyle=col;ctx.lineWidth=30;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(...pts[0]);pts.slice(1).forEach(p=>ctx.lineTo(...p));ctx.stroke();ctx.strokeStyle='#8b7355';ctx.lineWidth=3;ctx.setLineDash([9,7]);ctx.stroke();ctx.setLineDash([])}
-function draw(){ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#e8d9bd';ctx.fillRect(0,0,cv.width,cv.height);
-drawPath(ground,'#c9b58f');drawPath(air,'#b9c6d6');
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);
+/* INKFALL_CARTOON_WORLD_V1 */
+ctx.fillStyle='#88d66c';
+ctx.fillRect(0,0,cv.width,cv.height);
+
+ctx.save();
+ctx.lineCap='round';
+
+for(let i=0;i<95;i++){
+  const x=20+((i*137)%900);
+  const y=20+((i*83)%555);
+
+  ctx.strokeStyle=i%3===0?'#5fb75d':'#70c662';
+  ctx.lineWidth=2;
+
+  ctx.beginPath();
+  ctx.moveTo(x-4,y+3);
+  ctx.lineTo(x-6,y-2);
+  ctx.moveTo(x,y+3);
+  ctx.lineTo(x+1,y-5);
+  ctx.moveTo(x+4,y+3);
+  ctx.lineTo(x+7,y-1);
+  ctx.stroke();
+}
+
+ctx.restore();
+
+drawPath(ground,'#f8cf87');drawPath(air,'#88d8ee');
 ctx.fillStyle='#4f7d4f';ctx.beginPath();ctx.arc(base.x,base.y,base.r,0,7);ctx.fill();ctx.fillStyle='#f4ead8';ctx.font='bold 12px Georgia';ctx.textAlign='center';ctx.fillText('BASTION',base.x,base.y+4);
 for(const t of towers){const d=T[t.t];if(t.t==='arrow' && drawInkfallArt('arrow',t.x-29,t.y-48,58,58)){
 }else{
@@ -243,5 +273,8 @@ ui();draw();requestAnimationFrame(loop);log('Willkommen bei INKFALL v0.4. Klicke
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script src="firebase.js"></script>
+<script src="skilltree.js"></script>
+<script src="game-window.js"></script>
+<script src="battle-layout.js"></script>
 </body>
 </html>

@@ -1,0 +1,214 @@
+
+/* INKFALL: Handdrawn-Cartoon Skillkarte */
+#tree.open {
+  display: flex !important;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+  z-index: 1000;
+  background: #101733;
+  color: #fff;
+  font-family: system-ui, sans-serif;
+}
+#tree .close { display: none; }
+#tree > h1 { display: none; }
+#treeContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+.if-tree-head {
+  padding: 15px 20px;
+  background: #20294e;
+  border-bottom: 4px solid #090e23;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.if-tree-title {
+  flex: 1;
+  min-width: 200px;
+}
+.if-tree-title h2 {
+  margin: 0;
+  color: #ffe76c;
+  font-size: 24px;
+}
+.if-tree-title small { color: #c5d6fa; }
+.if-tree-head button,
+.if-detail button {
+  width: auto;
+  margin: 0;
+  padding: 10px 14px;
+  background: #ffe76c;
+  color: #121831;
+  border: 3px solid #090e23;
+  border-radius: 13px 9px 15px 8px;
+  box-shadow: 0 3px 0 #090e23;
+  font-family: inherit;
+}
+.if-tree-head input {
+  padding: 10px;
+  width: 180px;
+  background: #101733;
+  color: white;
+  border: 2px solid #56678e;
+  border-radius: 10px;
+}
+.if-tree-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.if-map-wrap {
+  flex: 1;
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+.if-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 350px;
+  touch-action: none;
+  cursor: grab;
+  background-color: #131d3e;
+  background-image:
+    radial-gradient(circle at 25% 25%, #26396b 0, transparent 45%),
+    radial-gradient(#49608a 1px, transparent 1px);
+  background-size: auto, 32px 32px;
+}
+.if-map.dragging { cursor: grabbing; }
+.if-link {
+  stroke: #425477;
+  stroke-width: 7;
+  fill: none;
+  stroke-linecap: round;
+}
+.if-link.learned {
+  stroke-width: 9;
+  filter: url(#if-glow);
+}
+.if-link.planned {
+  stroke: #ffe76c;
+  stroke-dasharray: 12 9;
+}
+.if-node {
+  cursor: pointer;
+  outline: none;
+}
+.if-node .node-body {
+  stroke: #090e23;
+  stroke-width: 5;
+}
+.if-node .node-ring {
+  fill: none;
+  stroke-width: 4;
+}
+.if-node.available .node-ring {
+  animation: if-pulse 2s ease-in-out infinite;
+}
+.if-node.owned .node-ring {
+  filter: url(#if-glow);
+}
+.if-node.selected .selection-ring {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-dasharray: 5 5;
+  fill: none;
+}
+.if-node text {
+  pointer-events: none;
+  text-anchor: middle;
+  font-weight: 800;
+  fill: white;
+  paint-order: stroke;
+  stroke: #101733;
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+.if-region-label {
+  font-size: 25px;
+  font-weight: 900;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: #101733;
+  stroke-width: 6;
+}
+.if-detail {
+  width: 290px;
+  padding: 22px;
+  overflow-y: auto;
+  background: #20294e;
+  border-left: 4px solid #090e23;
+}
+.if-detail h2 {
+  font-size: 24px;
+  margin-top: 12px;
+  color: #ffe76c;
+}
+.if-detail p {
+  line-height: 1.6;
+  color: #d5e0fa;
+}
+.if-detail .if-tag {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: #101733;
+}
+.if-detail button {
+  width: 100%;
+  margin-top: 12px;
+}
+.if-detail button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+.if-map-help {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  pointer-events: none;
+  color: #d5e0fa;
+  font-size: 12px;
+  background: #101733dc;
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+@keyframes if-pulse {
+  0%,100% { opacity: .45; }
+  50% { opacity: 1; }
+}
+@media(prefers-reduced-motion:reduce) {
+  .if-node.available .node-ring { animation: none; }
+}
+@media(max-width:760px) {
+  .if-tree-body { flex-direction: column; }
+  .if-detail {
+    width: auto;
+    max-height: 220px;
+    border-left: 0;
+    border-top: 4px solid #090e23;
+    padding: 14px;
+  }
+  .if-map { min-height: 260px; }
+  .if-tree-head { padding: 10px; gap: 8px; }
+  .if-tree-title h2 { font-size: 20px; }
+}
+
+/* Kompakte Regionsbeschriftungen */
+.if-region-label {
+  font-size: 20px;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+/* Die Auswahlmarkierung ist nur beim ausgewählten Knoten sichtbar. */
+.if-node:not(.selected) .selection-ring {
+  display: none;
+}

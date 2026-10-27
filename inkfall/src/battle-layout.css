@@ -1,0 +1,381 @@
+/* INKFALL — Battlefield HUD */
+#inkfall-window {
+  width: min(1500px, 100%);
+  border: 5px solid #302342;
+  border-radius: 19px;
+  background: #3a6740;
+  box-shadow: 0 7px 0 #171a30;
+}
+
+#if-window-titlebar {
+  flex: 0 0 30px;
+  min-height: 30px;
+  background: #302b46;
+  border-bottom: 3px solid #211b31;
+  font-size: 11px;
+}
+
+#if-battle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#if-stage {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at center, #8bd36a, #467b49);
+}
+
+/* Leisten überlagern die Karte nicht: eigener Innenabstand. */
+#inkfall-window #game {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 58px 12px 76px;
+  border: 0;
+  background: transparent;
+}
+
+#inkfall-window #cv {
+  border: 3px solid #345339;
+  border-radius: 15px;
+  box-shadow: 0 5px 0 #29483266;
+}
+
+#if-top-hud {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  pointer-events: none;
+}
+
+#if-top-hud .stat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 7px 12px;
+  color: #fff;
+  background: #283442e8;
+  border: 2px solid #1c2739;
+  border-radius: 13px 9px 14px 9px;
+  box-shadow: 0 3px 0 #1b25384d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+#if-top-hud .stat:last-child {
+  margin-left: auto;
+}
+
+#if-top-hud #lives {
+  color: #ffb4b5;
+}
+
+#if-top-hud #gold {
+  color: #ffe76b;
+}
+
+#if-top-hud #wave {
+  color: #b5ff91;
+}
+
+#if-bottom-hud {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  pointer-events: none;
+}
+
+#if-bottom-hud > * {
+  pointer-events: auto;
+}
+
+.if-hero-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 100px;
+  padding: 7px 10px;
+  color: #fff6dd;
+  background: #302b46;
+  border: 3px solid #211b31;
+  border-radius: 12px;
+}
+
+.if-hero-badge img {
+  width: 36px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.if-hero-badge span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.if-hud-spacer {
+  flex: 1;
+}
+
+#inkfall-window #if-menu-scroll {
+  display: block;
+  width: auto;
+  height: auto;
+  flex: none;
+  min-height: 0;
+  overflow-y: auto;
+  background: #efc98e;
+  border-left: 5px solid #493344;
+}
+
+#inkfall-window #ui {
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.if-panel {
+  margin-bottom: 12px;
+}
+
+#inkfall-window .if-panel h2 {
+  margin: 0 0 8px;
+  padding: 7px 9px;
+  color: #fff5da;
+  background: #77503b;
+  border: 2px solid #483142;
+  border-radius: 9px;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+#if-build-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#inkfall-window button.if-build-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: 110px;
+  margin: 0;
+  padding: 8px 4px;
+  color: #24304b;
+  background: linear-gradient(#d9f6ff, #91cce5);
+  border: 3px solid #493344;
+  border-radius: 11px 8px 12px 8px;
+  box-shadow: 0 3px 0 #493344;
+  font-size: 11px;
+}
+
+.if-build-tile img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+
+.if-tower-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  color: #fff;
+  background: var(--tile-color, #7262ac);
+  border: 3px solid #35405b;
+  border-radius: 18px 12px 20px 13px;
+  font-size: 31px;
+}
+
+.if-build-price {
+  color: #40312c;
+  font-weight: 900;
+}
+
+#if-selection {
+  padding: 9px;
+  color: #40322d;
+  background: #fff3d8;
+  border: 2px solid #76533b;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#if-selection p {
+  margin: 0 0 8px;
+}
+
+#inkfall-window .if-panel button,
+#inkfall-window #if-bottom-hud button {
+  margin: 4px 0;
+  padding: 8px;
+  border: 3px solid #342b46;
+  border-radius: 10px 7px 11px 8px;
+  box-shadow: 0 3px 0 #342b46;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+#inkfall-window #if-bottom-hud button {
+  width: auto;
+  min-height: 42px;
+  max-width: 190px;
+  margin: 0;
+  background: #ffe76b;
+}
+
+#inkfall-window #if-bottom-hud #abilityBtn {
+  background: #7fe4f3;
+}
+
+#inkfall-window #start {
+  background: #9be66b;
+  font-size: 14px;
+}
+
+#inkfall-window .if-panel details {
+  margin-top: 8px;
+  padding: 8px;
+  background: #ffedc9;
+  border: 2px solid #886343;
+  border-radius: 9px;
+  font-size: 12px;
+}
+
+#inkfall-window .if-panel summary {
+  cursor: pointer;
+  font-weight: 800;
+}
+
+#inkfall-window #authBox {
+  position: static !important;
+  width: auto !important;
+  margin: 9px 0 0 !important;
+  padding: 8px !important;
+  box-shadow: none;
+}
+
+#inkfall-window #log {
+  height: 130px;
+  font-size: 11px;
+}
+
+#if-hidden-status {
+  display: none;
+}
+
+#inkfall-window #diag {
+  bottom: 78px;
+}
+
+/* Schmalere Bildschirme: Leiste bleibt rechts, wird kompakter. */
+@media (max-width: 900px) {
+  #if-battle {
+    grid-template-columns: minmax(0, 1fr) 195px;
+  }
+
+  #inkfall-window #ui {
+    padding: 7px;
+  }
+
+  #inkfall-window button.if-build-tile {
+    min-height: 94px;
+  }
+
+  #if-bottom-hud {
+    flex-wrap: wrap;
+  }
+
+  .if-hero-badge {
+    min-width: 0;
+  }
+
+  .if-hero-badge span {
+    display: none;
+  }
+
+  #if-top-hud .stat {
+    gap: 5px;
+    padding: 6px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 600px) {
+  #if-battle {
+    grid-template-columns: minmax(0, 1fr) 150px;
+  }
+
+  #if-build-grid {
+    gap: 5px;
+  }
+
+  .if-build-tile img,
+  .if-tower-icon {
+    width: 38px;
+    height: 38px;
+  }
+
+  #inkfall-window button.if-build-tile {
+    min-height: 86px;
+    font-size: 10px;
+  }
+
+  #inkfall-window #game {
+    padding: 72px 5px 105px;
+  }
+
+  #if-top-hud {
+    flex-wrap: wrap;
+    left: 5px;
+    right: 5px;
+  }
+
+  #if-top-hud .stat:last-child {
+    margin-left: 0;
+  }
+
+  #if-bottom-hud {
+    left: 5px;
+    right: 5px;
+    gap: 5px;
+  }
+
+  #inkfall-window #if-bottom-hud button {
+    padding: 6px;
+    font-size: 10px;
+  }
+
+  .if-hud-spacer {
+    display: none;
+  }
+}
