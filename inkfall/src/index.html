@@ -215,13 +215,13 @@ function useAbility(){if(!active || speed<=0 || lives<=0 || hero.cd>0)return;
 if(hero.cls==='knight'){for(const e of enemies){if(e.route==='ground'&&dist(hero,pos(e))<130){e.slow=Math.max(e.slow,.6);hit(e,25,'hero')}}void 0}
 else{for(const e of enemies){if(dist(hero,pos(e))<150){e.slow=Math.max(e.slow,frostSlow()+.2);hit(e,35,'hero')}}void 0}
 hero.cd=HERO[hero.cls].cd;ui()}
-function startWave(){if(lives<=0||active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;let d=0;
+function startWave(){if(lives<=0||active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;hero.target=null;let d=0;
 if(has('wealth3'))gold+=10;
 waves[wave-1].forEach(([t,n])=>{for(let i=0;i<n;i++){queue.push({t,d});d+=t==='runner'?.55:t==='flyer'?.7:.85}});ui()}
 function build(t){if(active){void 0;return}const c=buildCost(t);if(gold<c){void 0;return}buildType=t;void 0}
 cv.onclick=e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*(cv.width/r.width),y=(e.clientY-r.top)*(cv.height/r.height);
 if(buildType){const c=buildCost(buildType);if(gold<c)return;if(near(x,y,26,ground)){void 0;return}gold-=c;towers.push({t:buildType,x,y,lvl:1,cd:0});void 0;buildType=null;ui();return}
-hero.target={x,y};};
+if(active)hero.target={x,y};};
 function near(x,y,r,pts){for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy;let t=((x-a[0])*dx+(y-a[1])*dy)/l2;t=Math.max(0,Math.min(1,t));if(Math.hypot(x-(a[0]+dx*t),y-(a[1]+dy*t))<r)return true}return false}
 function upgrade(){if(!sel)return;const c=Math.round(T[sel.t].c*.7*sel.lvl);if(gold<c){void 0;return}gold-=c;sel.lvl++;void 0;ui()}
 /* INKFALL_MOVEMENT_FIX_V1 */
