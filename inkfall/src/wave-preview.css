@@ -1,11 +1,64 @@
+/* Kompakte Wellenanzeige im Spiele-Header */
+#if-wave-header {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: auto;
+  margin: 0;
+  padding: 4px 10px;
+  color: #fff5db;
+  background: #2c2438;
+  border: 2px solid #4a3d5c;
+  border-radius: 999px;
+  font: 800 11px system-ui, sans-serif;
+  cursor: pointer;
+}
+
+#if-wave-header:hover,
+#if-wave-header.open {
+  border-color: #80e6ed;
+}
+
+.if-wave-header-label {
+  white-space: nowrap;
+}
+
+.if-wave-header-progress {
+  position: relative;
+  width: 74px;
+  height: 7px;
+  overflow: hidden;
+  background: #171225;
+  border: 1px solid #4a3d5c;
+  border-radius: 999px;
+}
+
+.if-wave-header-bar {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #94dd69, #58c95c);
+  transition: width .2s linear;
+}
+
+/* Aufklappbare Detailvorschau */
 #if-wave-preview {
-  margin-bottom: 12px;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 12px;
+  z-index: 220;
+  width: min(330px, calc(100vw - 24px));
+  margin: 0;
   color: #302840;
   background: #fff1d3;
   border: 3px solid #72503b;
   border-radius: 12px 8px 14px 9px;
   overflow: hidden;
-  box-shadow: 0 3px 0 #49334433;
+  box-shadow: 0 10px 24px rgba(10, 8, 20, .45);
+}
+
+#if-wave-preview[hidden] {
+  display: none;
 }
 
 #if-wave-preview h2 {
@@ -102,8 +155,21 @@
   transition: width .2s linear;
 }
 
-@media (max-width: 600px) {
-  .if-enemy-grid {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 700px) {
+  #if-wave-header {
+    max-width: 46vw;
+  }
+
+  .if-wave-header-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .if-wave-header-progress {
+    width: 48px;
+  }
+
+  #if-wave-preview {
+    right: 8px;
   }
 }

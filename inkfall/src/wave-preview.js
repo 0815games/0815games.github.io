@@ -1,9 +1,10 @@
 (() => {
   "use strict";
 
+  const titlebar = document.getElementById("if-window-titlebar");
   const menu = document.getElementById("ui");
 
-  if (!menu || document.getElementById("if-wave-preview")) return;
+  if (!titlebar || !menu || document.getElementById("if-wave-header")) return;
 
   if (
     typeof waves === "undefined" ||
@@ -13,8 +14,30 @@
     return;
   }
 
+  // Kompakte Anzeige im Spiele-Header.
+  const header = document.createElement("button");
+  header.id = "if-wave-header";
+  header.type = "button";
+  header.setAttribute("aria-expanded", "false");
+  header.setAttribute("aria-controls", "if-wave-preview");
+
+  const headerLabel = document.createElement("span");
+  headerLabel.className = "if-wave-header-label";
+
+  const headerProgress = document.createElement("span");
+  headerProgress.className = "if-wave-header-progress";
+
+  const headerBar = document.createElement("span");
+  headerBar.className = "if-wave-header-bar";
+  headerProgress.append(headerBar);
+
+  header.append(headerLabel, headerProgress);
+  titlebar.append(header);
+
+  // Aufklappbare Detailvorschau.
   const panel = document.createElement("section");
   panel.id = "if-wave-preview";
+  panel.hidden = true;
   panel.setAttribute("aria-label", "Wellen-Vorschau");
 
   const title = document.createElement("h2");
@@ -34,24 +57,23 @@
   progress.append(bar);
 
   panel.append(title, description, grid, warnings, progress);
+  titlebar.append(panel);
 
-  // Nach der Bauauswahl einfügen.
-  const buildPanel = document.getElementById("if-build-grid")?.parentElement;
-
-  if (buildPanel?.parentElement === menu) {
-    buildPanel.after(panel);
-  } else {
-    menu.prepend(panel);
-  }
+  header.onclick = () => {
+    const open = panel.hidden;
+    panel.hidden = !open;
+    header.setAttribute("aria-expanded", String(open));
+    header.classList.toggle("open", open);
+  };
 
   const symbols = {
-    crawler:"●",
-    runner:"»",
-    tank:"▣",
-    shield:"⬟",
-    flyer:"↑",
-    healer:"+",
-    boss:"★"
+    crawler: "●",
+    runner: "»",
+    tank: "▣",
+    shield: "⬟",
+    flyer: "↑",
+    healer: "+",
+    boss: "★"
   };
 
   let lastState = "";
@@ -81,10 +103,11 @@
 
     grid.replaceChildren();
     warnings.replaceChildren();
-
     progress.hidden = true;
 
     if (defeated) {
+      headerLabel.textContent = "Bastion gefallen";
+      headerBar.style.width = "0%";
       title.textContent = "BASTION GEFALLEN";
       description.textContent =
         "Die Verteidigung ist beendet. Öffne das Hauptmenü oder lade neu.";
@@ -92,6 +115,8 @@
     }
 
     if (finished) {
+      headerLabel.textContent = "Verteidigung geschafft";
+      headerBar.style.width = "100%";
       title.textContent = "VERTEIDIGUNG GESCHAFFT";
       description.textContent =
         "Alle verfügbaren Wellen wurden abgeschlossen.";
@@ -102,6 +127,8 @@
     const definition = waves[index];
 
     if (!definition) {
+      headerLabel.textContent = "Keine weitere Welle";
+      headerBar.style.width = "0%";
       title.textContent = "KEINE WEITERE WELLE";
       description.textContent = "Für diesen Abschnitt fehlen Wellendaten.";
       return;
@@ -117,13 +144,28 @@
       (sum, count) => sum + count, 0
     );
 
-    title.textContent = running
-      ? `WELLE ${wave} LÄUFT`
-      : `ALS NÄCHSTES: WELLE ${index + 1}`;
+    if (running) {
+      headerLabel.textContent = `Welle ${wave} · ${remaining} übrig`;
+      const total = Math.max(planned, remaining, 1);
+      const completed = Math.max(0, total - remaining);
+      const percent = completed / total * 100;
 
-    description.textContent = running
-      ? `${remaining} Gegner aktiv oder noch im Anmarsch.`
-      : `${planned} Gegner angekündigt. Bereite deine Verteidigung vor.`;
+      headerBar.style.width = `${percent}%`;
+      progress.hidden = false;
+      bar.style.width = `${percent}%`;
+      progress.setAttribute("aria-label", `${remaining} Gegner verbleibend`);
+
+      title.textContent = `WELLE ${wave} LÄUFT`;
+      description.textContent =
+        `${remaining} Gegner aktiv oder noch im Anmarsch.`;
+    } else {
+      headerLabel.textContent = `Nächste Welle ${index + 1} · ${planned} Gegner`;
+      headerBar.style.width = "0%";
+
+      title.textContent = `ALS NÄCHSTES: WELLE ${index + 1}`;
+      description.textContent =
+        `${planned} Gegner angekündigt. Bereite deine Verteidigung vor.`;
+    }
 
     for (const [type, count] of totals) {
       const enemy = E[type];
@@ -171,18 +213,6 @@
       if (totals.has("boss")) {
         addWarning("Bosswelle: Fähigkeiten bereithalten und Begleitgegner beachten.");
       }
-    } else {
-      // Fortschritt bezieht sich auf die aktuell bekannte Gegnerzahl.
-      // Zusätzliche Spawns können den Wert wieder verändern.
-      const total = Math.max(planned, remaining, 1);
-      const completed = Math.max(0, total - remaining);
-
-      progress.hidden = false;
-      bar.style.width = `${completed / total * 100}%`;
-      progress.setAttribute(
-        "aria-label",
-        `${remaining} Gegner verbleibend`
-      );
     }
   }
 
