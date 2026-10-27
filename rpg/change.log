@@ -759,3 +759,18 @@
 - Materialien, Schatten, 3D-Figuren und Effekte folgen in späteren Phasen.
 - RPG-Version und Release-Cache-Parameter auf 0.9.0 angehoben.
 - Tests mit Grafik-Doubles; echtes WebGL und Browserabnahme offen.
+
+## v0.10.0 – 2026-10-27 – 3D Phase 2: Material und Atmosphäre
+- Phase-1-Renderer gezielt erweitert, kein zweiter paralleler 3D-Zeichenpfad.
+- Lokale, deterministische Stein-/Holztexturen, Bump-Details und Metallmaterialien.
+- Bis zu vier Fackellichter; Punktlichter werfen keine eigenen Schatten.
+- Ein Richtungsschatten im Detailprofil; Mobilprofil ohne Schatten.
+- Auto/Mobil/Detail am 3D-Schalter; keine Änderung am gespeicherten Spielzustand.
+- Truhen mit Beschlägen, Schloss und zeitabhängiger Deckelbewegung.
+- Bodenöffnung und vertiefte Stufen mit seitlichen Steinrändern.
+- Begrenzte 3D-Darstellung von Partikeln, Schockwellen, Effekttext und Lichtimpuls.
+- Keine neuen Spielregeln oder Änderungen an Firebase, Inventar und Speichern.
+- Katakomben bleiben der 3D-Testbereich; Figuren und Kampf folgen später.
+- RPG-Version, Build und Release-Cache-Parameter auf 0.10.0 angehoben.
+- Phasenplan ergänzt; offene Phase-1-Gerätetests nicht pauschal geschlossen.
+- Tests mit Grafik-Doubles; echte Browser-/GPU-/Leistungsabnahme offen.

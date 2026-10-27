@@ -16,18 +16,18 @@ Das Backup enthält Repository-Dateien, keine Firebase-Spielstände.
 - [ ] Bewegung, Sichtbarkeit, Kollision und Gegenstände prüfen.
 - [ ] Treppenwechsel und Kampfstart prüfen.
 - [ ] Speichern/Neuladen und Charakterwechsel prüfen.
-- [ ] Nutzerfreigabe; erst danach Phase 2.
+- [x] Nutzer hat am 27.10.2026 die Fortsetzung mit Phase 2 angefordert. Einzelne Gerätetests sind damit nicht automatisch abgenommen.
 
 Online-Test: /rpg/?view=3d
 Standard: /rpg/ bleibt zunächst 2D.
 Andere Umgebungen bleiben in Phase 1 automatisch in 2D.
 3D benötigt Internet zum Laden der gepinnten Three.js-Abhängigkeit.
-Die bisherigen 2D-Weltpartikel werden noch nicht in 3D übertragen.
+In Phase 1 wurden 2D-Weltpartikel noch nicht übertragen; Phase 2 ergänzt eine begrenzte 3D-Darstellung.
 
-## Phase 2 — Material und Atmosphäre
-- [ ] Stein-, Holz- und Metallmaterialien.
-- [ ] Ausgewählte Lichter, Schatten und mobile Qualitätsstufen.
-- [ ] Gegenstandsdetails und 3D-Ereigniseffekte.
+## Phase 2 — v0.10.0: Material und Atmosphäre
+- [x] Prozedurale Stein-/Holztexturen, Bump-Details und Metallmaterialien implementiert.
+- [x] Begrenzte Fackellichter, Richtungsschatten und Auto/Mobil/Detail implementiert.
+- [x] Truhenbeschläge, Deckelbewegung, vertiefte Treppe und begrenzte 3D-Welteffekte implementiert.
 - [ ] Online-Abnahme durch Nutzer.
 
 ## Phase 3 — Figuren
@@ -45,3 +45,12 @@ Die bisherigen 2D-Weltpartikel werden noch nicht in 3D übertragen.
 - [ ] Angriffe, Zauber, Treffer und Belohnungsübergänge.
 - [ ] Mana 4 und Flucht 5 beibehalten.
 - [ ] Vollständige Kampfreihenfolge und Online-Abnahme.
+
+## Phase-2-Abnahme / v0.10.0
+- [ ] Texturen, Beleuchtung und Schatten im echten Browser.
+- [ ] Auto/Mobil/Detail, kleine Displays und Leistung.
+- [ ] Truhe öffnen: Deckel, Partikel, Ring, Text und Lichtimpuls.
+- [ ] Treppe, Erkundung, Kampfstart, Speichern/Neuladen.
+- [ ] Unbekannte Felder und Gegner bleiben verborgen.
+- [ ] 2D-Rückfall und andere Umgebungen unverändert.
+- [ ] Nutzerfreigabe für Phase 3.

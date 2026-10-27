@@ -1,3 +1,4 @@
+import {createDungeonSurfaces,createDungeonAtmosphere} from './world3d-atmosphere.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
 
@@ -36,7 +37,22 @@ export function installWorld3D(renderer,state){
  status.setAttribute('role','status');
  status.textContent='2D';
 
- controls.append(button,status);
+ const quality=document.createElement('select');
+ quality.setAttribute('aria-label','3D-Grafikqualität');
+ quality.style.cssText='max-width:130px;min-height:38px;background:#17232b;color:#e7dab6;border:1px solid #a28b5b;border-radius:5px;font:11px system-ui';
+ controls.style.maxWidth='calc(100% - 20px)';
+ controls.style.flexWrap='wrap';
+ for(const[value,label]of [
+  ['auto','Qualität: Auto'],
+  ['mobile','Qualität: Mobil'],
+  ['detail','Qualität: Detail']
+ ]){
+  const option=document.createElement('option');
+  option.value=value;
+  option.textContent=label;
+  quality.append(option);
+ }
+ controls.append(button,quality,status);
  parent.append(controls);
 
  if(!document.getElementById('world3d-style')){
@@ -83,11 +99,11 @@ export function installWorld3D(renderer,state){
      return false;
     }
     engine.render(
-     state.world,state.player,renderer._visualTime||0
+     state.world,state.player,renderer._visualTime||0,renderer
     );
     show(true);
-    if(status.textContent!=='3D · Phase 1'){
-     status.textContent='3D · Phase 1';
+    if(status.textContent!=='3D · Phase 2'){
+     status.textContent='3D · Phase 2';
     }
     return true;
    }catch(error){
@@ -157,7 +173,7 @@ export function installWorld3D(renderer,state){
    canvas.className='world3d-canvas';
    canvas.setAttribute('aria-hidden','true');
 
-   engine=createEngine(THREE,canvas);
+   engine=createEngine(THREE,canvas);engine.setQuality(quality.value);
    overlay=canvas;
    parent.append(canvas);
    ready=true;
@@ -188,6 +204,7 @@ export function installWorld3D(renderer,state){
   }
  }
 
+ quality.addEventListener('change',()=>engine?.setQuality(quality.value));
  button.addEventListener('click',()=>choose(!enabled));
  choose(wants3D(location.search));
  return api;
@@ -199,7 +216,7 @@ export function createEngine(T,canvas){
  });
  gpu.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
  gpu.setClearColor(0x081018,1);
- gpu.outputColorSpace=T.SRGBColorSpace;
+ gpu.outputColorSpace=T.SRGBColorSpace;gpu.toneMapping=T.ACESFilmicToneMapping;
 
  const scene=new T.Scene();
  scene.background=new T.Color(0x081018);
@@ -207,10 +224,11 @@ export function createEngine(T,canvas){
 
  const camera=new T.OrthographicCamera(-6,6,5,-5,.1,80);
 
- scene.add(new T.HemisphereLight(0xc5d4da,0x29302b,2.1));
- const sun=new T.DirectionalLight(0xffe0ae,2.2);
+ scene.add(new T.HemisphereLight(0xc5d4da,0x29302b,.8));
+ const sun=new T.DirectionalLight(0xffe0ae,1.8);
  sun.position.set(-5,12,5);
  scene.add(sun);
+ const atmosphere=createDungeonAtmosphere(T,scene,gpu,sun);
 
  const group=new T.Group();
  scene.add(group);
@@ -221,26 +239,12 @@ export function createEngine(T,canvas){
  const lidGeo=new T.BoxGeometry(.69,.13,.5);
  const stepGeo=new T.BoxGeometry(.7,.09,.17);
 
- const floorMats=[
-  0x58616a,0x505b63,0x60666b,0x556168
- ].map(color=>new T.MeshStandardMaterial({color,roughness:1}));
-
- const wallMat=new T.MeshStandardMaterial({
-  color:0x7a817e,roughness:.96
- });
- const fadeMat=new T.MeshStandardMaterial({
-  color:0x7a817e,roughness:1,
-  transparent:true,opacity:.24,depthWrite:false
- });
- const wood=new T.MeshStandardMaterial({
-  color:0x91633c,roughness:.88
- });
- const trim=new T.MeshStandardMaterial({
-  color:0xc4a365,roughness:.65,metalness:.25
- });
- const stone=new T.MeshStandardMaterial({
-  color:0xaaa589,roughness:1
- });
+ const surfaces=createDungeonSurfaces(T);
+ const {floorMats,wallMat,fadeMat,wood,trim,stone,pit}=surfaces;
+ const strapGeo=new T.BoxGeometry(.055,.36,.48);
+ const lidStrapGeo=new T.BoxGeometry(.055,.15,.51);
+ const lockGeo=new T.BoxGeometry(.12,.14,.05);
+ const railGeo=new T.BoxGeometry(.12,.18,1.05);
 
  const cells=new Map(),actors=new Map(),chests=new Map();
  let tiles=null,seed=null,stairs=null,size='',closed=false;
@@ -293,13 +297,13 @@ export function createEngine(T,canvas){
       ((x*17+y*31+(w.seed|0))>>>0)%4
      ];
      const floor=new T.Mesh(floorGeo,material);
-     floor.position.y=-.06;
+     floor.position.y=-.06;floor.receiveShadow=true;
      node.add(floor);
 
      let wall=null;
      if(type===1){
       wall=new T.Mesh(wallGeo,wallMat);
-      wall.position.y=.625;
+      wall.position.y=.625;wall.castShadow=true;wall.receiveShadow=true;
       node.add(wall);
      }
 
@@ -310,13 +314,14 @@ export function createEngine(T,canvas){
      }
 
      group.add(node);
-     entry={node,wall,type,x,y};
+     entry={node,wall,floor,type,x,y};
      cells.set(key,entry);
     }
 
+    entry.floor.visible=!(w.stairs&&w.stairs.x===x&&w.stairs.y===y);
     if(entry.wall){
      const inFront=y>p.y&&y-p.y<6&&Math.abs(x-p.x)<1.8;
-     entry.wall.material=inFront?fadeMat:wallMat;
+     entry.wall.material=inFront?fadeMat:wallMat;entry.wall.castShadow=!inFront;
     }
    }
   }
@@ -426,21 +431,47 @@ export function createEngine(T,canvas){
 
     const body=new T.Mesh(chestGeo,wood);
     body.position.y=.18;
+    body.castShadow=true;
+    body.receiveShadow=true;
     node.add(body);
+    for(const x of [-.23,.23]){
+     const band=new T.Mesh(strapGeo,trim);
+     band.position.set(x,.18,0);
+     band.castShadow=true;
+     node.add(band);
+    }
+    const lock=new T.Mesh(lockGeo,trim);
+    lock.position.set(0,.25,.25);
+    node.add(lock);
 
     const hinge=new T.Group();
     hinge.position.set(0,.35,-.23);
-    const lid=new T.Mesh(lidGeo,trim);
+    const lid=new T.Mesh(lidGeo,wood);
+    lid.castShadow=true;
+    lid.receiveShadow=true;
+    for(const x of [-.23,.23]){
+     const band=new T.Mesh(lidStrapGeo,trim);
+     band.position.set(x,0,0);
+     lid.add(band);
+    }
     lid.position.set(0,.02,.23);
     hinge.add(lid);
     node.add(hinge);
 
     group.add(node);
-    entry={node,hinge};
+    entry={node,hinge,amount:chest.open?1.1:0,lastTime:time};
     chests.set(chest,entry);
    }
 
-   entry.hinge.rotation.x=chest.open?-1.1:0;
+   const target=chest.open?1.1:0;
+   const dt=Math.min(.1,Math.max(0,time-entry.lastTime));
+   entry.lastTime=time;
+   if(matchMedia('(prefers-reduced-motion: reduce)').matches){
+    entry.amount=target;
+   }else{
+    entry.amount+=(target-entry.amount)*Math.min(1,dt*9);
+   }
+   entry.hinge.rotation.x=-entry.amount;
   }
 
   for(const[key,entry]of chests){
@@ -461,10 +492,21 @@ export function createEngine(T,canvas){
    if(stairKey){
     const node=new T.Group();
     node.position.set(s.x+.5,0,s.y+.5);
+    const bottom=new T.Mesh(floorGeo,pit);
+    bottom.position.y=-.47;
+    bottom.receiveShadow=true;
+    node.add(bottom);
+    for(const x of [-.45,.45]){
+     const rail=new T.Mesh(railGeo,stone);
+     rail.position.set(x,-.015,0);
+     rail.castShadow=true;
+     rail.receiveShadow=true;
+     node.add(rail);
+    }
 
     for(let i=0;i<5;i++){
      const step=new T.Mesh(stepGeo,stone);
-     step.position.set(0,.10-i*.02,-.34+i*.17);
+     step.position.set(0,-.04-i*.075,-.34+i*.17);step.receiveShadow=true;
      node.add(step);
     }
 
@@ -489,7 +531,7 @@ export function createEngine(T,canvas){
   camera.updateProjectionMatrix();
  }
 
- function render(w,p,time){
+ function render(w,p,time,effects){
   if(closed)return;
 
   if(tiles!==w.tiles||seed!==w.seed){
@@ -499,7 +541,7 @@ export function createEngine(T,canvas){
   }
 
   synchronizeCells(w,p);
-  synchronizeObjects(w,p,time);
+  synchronizeObjects(w,p,time);atmosphere.update(w,p,time,effects);
 
   camera.position.set(p.x+.5,12,p.y+.5+9);
   camera.lookAt(p.x+.5,0,p.y+.5);
@@ -528,15 +570,13 @@ export function createEngine(T,canvas){
   reset();
 
   for(const geometry of[
-   floorGeo,wallGeo,chestGeo,lidGeo,stepGeo
+   floorGeo,wallGeo,chestGeo,lidGeo,stepGeo,strapGeo,lidStrapGeo,lockGeo,railGeo
   ])geometry.dispose();
 
-  for(const material of[
-   ...floorMats,wallMat,fadeMat,wood,trim,stone
-  ])material.dispose();
+  atmosphere.dispose();surfaces.dispose();
 
   gpu.dispose();
  }
 
- return {resize,render,pick,dispose};
+ return {resize,render,pick,dispose,setQuality:atmosphere.setQuality};
 }
