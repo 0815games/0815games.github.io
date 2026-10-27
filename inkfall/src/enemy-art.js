@@ -7,6 +7,16 @@
   let time=0;
   let last=performance.now();
 
+  const phases = new WeakMap();
+  let nextPhase = 0;
+
+  function phase(enemy) {
+    if (!phases.has(enemy)) {
+      phases.set(enemy, (++nextPhase) * 1.618);
+    }
+    return phases.get(enemy);
+  }
+
   const particles=[];
   const flashes=[];
   const deaths=[];
@@ -109,8 +119,8 @@
 
     const def=E[e.t];
     const r=def.r;
-    const moving=e.speed>0&&!reduced;
-    const stride=moving?Math.sin(time*14+e.id):0;
+    const moving=active && speed>0 && def.s>0 && e.slow<1 && !reduced;
+    const stride=moving?Math.sin(time*14+phase(e)):0;
     const bob=moving?Math.abs(stride)*1.5:0;
 
     ctx.save();
@@ -235,7 +245,7 @@
     }
 
     else if(e.t==="flyer") {
-      const flap=reduced?0:Math.sin(time*18+e.id)*.55;
+      const flap=reduced?0:Math.sin(time*18+phase(e))*.55;
 
       // Flügel hinter dem Körper.
       ctx.fillStyle="#c8a1ef";
@@ -266,7 +276,7 @@
       ctx.lineWidth=4;
       ctx.beginPath();
       ctx.moveTo(0,r*.75);
-      ctx.quadraticCurveTo(0,r*1.35,Math.sin(time*9+e.id)*5,r*1.7);
+      ctx.quadraticCurveTo(0,r*1.35,Math.sin(time*9+phase(e))*5,r*1.7);
       ctx.stroke();
     }
 
@@ -419,37 +429,38 @@
   }
 
   function connect() {
-    if(!window.InkfallWorld)return;
+    if (!window.InkfallWorld) {
+      console.error("Gegneranimation: InkfallWorld fehlt.");
+      return;
+    }
 
-    const original=window.InkfallWorld.enemy;
+    window.InkfallWorld.enemy = function(
+      ctx, enemy, x, y, radius, color
+    ) {
+      const maximum = enemy.max || E[enemy.t].hp;
+      const ratio = Math.max(
+        0, Math.min(1, enemy.hp / maximum)
+      );
 
-    window.InkfallWorld.enemy=function(ctx,enemy,x,y,radius,color) {
-      const frozen=enemy.slow>0;
-      draw(ctx,enemy,Math.max(0,enemy.hp)/E[enemy.t].hp,frozen);
-    };
-
-    const originalHit=window.hit;
-
-    window.hit=function(enemy,damage,type) {
-      if(!enemy)return originalHit(enemy,damage,type);
-
-      const wasAlive=enemy.hp>0;
-      const before=enemy.hp;
-      const result=originalHit(enemy,damage,type);
-      const dealt=Math.max(0,before-enemy.hp);
-
-      if(wasAlive&&dealt>0) {
-        const color=type==="frost"?"#a5f5ff":"#ffe28b";
-        hit(enemy,color);
-
-        if(enemy.hp<=0)die(enemy,E[enemy.t].col);
-      }
-
-      return result;
+      // Die bestehende Spiellogik kennt allgemeine Verlangsamung,
+      // nicht getrennte Frost-/Schildstoß-Statusobjekte.
+      draw(ctx, enemy, ratio, enemy.slow > 0);
     };
   }
 
-  window.InkfallEnemyArt={frame,connect};
+
+  window.InkfallEnemyArt = {
+    frame,
+    connect,
+    onHit(enemy, color) {
+      enemy.artPos = pos(enemy);
+      hit(enemy, color);
+    },
+    onDeath(enemy, color) {
+      enemy.artPos = pos(enemy);
+      die(enemy, color);
+    }
+  };
 
   document.addEventListener("DOMContentLoaded",connect);
 })();

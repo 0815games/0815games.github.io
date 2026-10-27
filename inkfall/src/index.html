@@ -63,6 +63,9 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <link rel="stylesheet" href="camera-layout.css">
 <link rel="stylesheet" href="compact-controls.css">
 <link rel="stylesheet" href="command-deck.css">
+<script src="tower-renderer.js"></script>
+<script src="combat-art.js"></script>
+<script src="enemy-art.js"></script>
 </head>
 <!-- INKFALL_MENU_CLEANUP_V2 -->
 <body>
@@ -249,7 +252,26 @@ function update(dt){
 /* DIAG_GAME_HEARTBEAT */
 window.inkfallDiag?.heartbeat();
 if(active){timer+=dt;while(queue.length&&queue[0].d<=timer){spawn(queue.shift().t)}
-if(hero.target){const dx=hero.target.x-hero.x,dy=hero.target.y-hero.y,dd=Math.hypot(dx,dy);if(dd>4){const sp=(has('shadow1')?165:150)*dt;hero.x+=dx/dd*sp;hero.y+=dy/dd*sp}}
+/* INKFALL_HERO_MOVEMENT_FIX_V2 */
+if(hero.target && dt>0){
+  const dx=hero.target.x-hero.x;
+  const dy=hero.target.y-hero.y;
+  const distance=Math.hypot(dx,dy);
+  const movementSpeed=has('shadow1')?165:150;
+  const step=movementSpeed*dt;
+
+  if(distance<=step){
+    // Ziel in diesem Schritt erreichbar:
+    // exakt dort ankommen und Bewegungsauftrag abschließen.
+    hero.x=hero.target.x;
+    hero.y=hero.target.y;
+    hero.target=null;
+  }else{
+    // Nur einen Teil der Reststrecke zurücklegen.
+    hero.x+=dx/distance*step;
+    hero.y+=dy/distance*step;
+  }
+}
 hero.cd=Math.max(0,hero.cd-dt);hero.attackCd-=dt;
 if(hero.attackCd<=0){let best=null,bd=1e9;for(const e of enemies){if(e.alive===false||e.hp<=0)continue;const p=pos(e),dd=dist(hero,p);if(dd<HERO[hero.cls].range&&dd<bd){bd=dd;best=e}}
 if(best){hero.attackCd=HERO[hero.cls].rate;hit(best,heroDmg(best),'hero')}}
@@ -266,7 +288,16 @@ if(!s.e || s.e.alive===false || s.e.hp<=0){
   s.dead=true;
   continue;
 }
-const p=pos(s.e),dx=p.x-s.x,dy=p.y-s.y,dd=Math.hypot(dx,dy);if(dd<12){s.dead=true;
+/* INKFALL_PROJECTILE_HIT_FIX_V1 */
+const p=pos(s.e);
+const dx=p.x-s.x,dy=p.y-s.y;
+const dd=Math.hypot(dx,dy);
+const projectileStep=420*dt;
+const hitRadius=12;
+
+// Treffer, wenn das Geschoss bereits im Trefferbereich ist
+// oder diesen mit seinem aktuellen Bewegungsschritt erreicht.
+if(dd<=hitRadius+projectileStep){s.dead=true;
 if(s.aoe){for(const e of enemies){if(e.route===s.e.route&&dist(pos(e),p)<=s.aoe)hit(e,s.dmg,s.type)}}else hit(s.e,s.dmg,s.type);
 if(s.slow)s.e.slow=Math.max(s.e.slow,s.slow)}else{s.x+=dx/dd*420*dt;s.y+=dy/dd*420*dt}}
 shots=shots.filter(s=>!s.dead);
@@ -292,19 +323,20 @@ function draw(){ctx.clearRect(0,0,cv.width,cv.height);
 InkfallWorld.background(ctx,cv.width,cv.height,ground);
 drawPath(ground,'#f8cf87');drawPath(air,'#88d8ee');
 InkfallWorld.bastion(ctx,base.x,base.y);
-for(const t of towers){const d=T[t.t];if(t.t==='arrow' && drawInkfallArt('arrow',t.x-29,t.y-48,58,58)){
-}else{
-ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(t.x,t.y,15,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();
-}if(sel===t){ctx.strokeStyle='#b8860b';ctx.beginPath();ctx.arc(t.x,t.y,towerRange(t.t),0,7);ctx.stroke()}ctx.fillStyle='#f4ead8';ctx.fillText('L'+t.lvl,t.x,t.y+4)}
+/* INKFALL_TOWER_RENDERER_V1 */
+for(const t of towers){
+  InkfallTowerRenderer.draw(ctx,t,sel===t,towerRange(t.t));
+}
+
 for(const e of enemies){if(e.alive===false||e.hp<=0)continue;const p=pos(e);InkfallWorld.enemy(ctx,e,p.x,p.y,E[e.t].r,E[e.t].col);
 if(e.t==='boss'&&e.shieldUp){ctx.strokeStyle='#3a6ea5';ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r+7,0,7);ctx.stroke()}
-ctx.fillStyle='#000';ctx.fillRect(p.x-15,p.y-22,30,4);ctx.fillStyle='#a33';ctx.fillRect(p.x-15,p.y-22,30*Math.max(0,e.hp/e.max),4)}
-if(!drawInkfallArt(hero.cls,hero.x-27,hero.y-45,54,54)){
-ctx.fillStyle=HERO[hero.cls].color;ctx.beginPath();ctx.arc(hero.x,hero.y,13,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();
-}
-ctx.fillStyle='#f4ead8';ctx.font='bold 10px Georgia';ctx.fillText(HERO[hero.cls].name,hero.x,hero.y-18);
+/* Lebensbalken zeichnet enemy-art.js. */}
+/* INKFALL_ANIMATION_INTEGRATION_V2 */
+InkfallCombatArt.renderHero(ctx);
 for(const s of shots){ctx.fillStyle=s.type==='frost'?'#3a6ea5':s.type==='cannon'?'#333':s.type==='antiair'?'#7a5aa0':'#5a3a1a';ctx.beginPath();ctx.arc(s.x,s.y,s.type==='cannon'?6:4,0,7);ctx.fill()}
 if(buildType){ctx.fillStyle='rgba(184,134,11,.25)';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#22201c';ctx.font='bold 18px Georgia';ctx.fillText(T[buildType].n+' platzieren',cv.width/2,40)}
+InkfallCombatArt.frame(ctx);
+InkfallEnemyArt.frame(ctx);
 requestAnimationFrame(draw)}
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;update(dt);requestAnimationFrame(loop)}

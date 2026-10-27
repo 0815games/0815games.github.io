@@ -363,134 +363,96 @@
   }
 
   function connectCombat() {
-    const originalHit=window.hit;
-
-    window.hit=function(enemy,damage,type) {
-      if(!enemy)return originalHit(enemy,damage,type);
-
-      const wasAlive=enemy.hp>0 && enemy.alive!==false;
-      const before=enemy.hp;
-      const point=pos(enemy);
-
-      const result=originalHit(enemy,damage,type);
-      const dealt=Math.max(0,before-enemy.hp);
-
-      if(wasAlive && dealt>0) {
-        const color=type==="frost"?"#a5f5ff":"#ffe28b";
-
-        burst(point.x,point.y,color,4);
-
-        if(!reducedMotion && numbers.length<24) {
-          numbers.push({
-            x:point.x,
-            y:point.y-22,
-            text:String(Math.round(dealt)),
-            life:.65
-          });
-        }
-
-        if(type==="hero") {
-          heroVisual.attack=.22;
-          attackEffect(point.x,point.y,hero.cls==="knight");
-        }
-
-        if(enemy.hp<=0) {
-          burst(point.x,point.y,E[enemy.t].col,12);
-        }
-      }
-
-      return result;
-    };
-
-    const originalAbility=window.useAbility;
-
-    window.useAbility=function() {
-      // Fähigkeit nicht im Menü, während Pause oder außerhalb einer Welle auslösen.
-      if(!active || speed<=0 || hero.cd>0)return;
-
-      const knight=hero.cls==="knight";
-      const x=hero.x;
-      const y=hero.y;
-
-      const result=originalAbility();
-
-      if(hero.cd>0) {
-        ring(x,y,knight?130:150,knight?"#ffe28b":"#9af4ff");
-        burst(x,y,knight?"#ffce72":"#c7ffff",knight?14:22);
-        heroVisual.attack=.22;
-      }
-
-      return result;
-    };
-
-    // Tatsächliche neue Turmprojektile für Schussimpulse erkennen.
-    const originalUpdate=window.update;
-
-    window.update=function(dt) {
-      const previous=new Set(shots);
-      const result=originalUpdate(dt);
-
-      for(const shot of shots) {
-        if(previous.has(shot))continue;
-
-        let nearest=null;
-        let distance=Infinity;
-
-        for(const tower of towers) {
-          if(tower.t!==shot.type)continue;
-          const d=Math.hypot(tower.x-shot.x,tower.y-shot.y);
-          if(d<distance) {
-            distance=d;
-            nearest=tower;
-          }
-        }
-
-        if(nearest && distance<40) {
-          nearest.artShotTime=performance.now();
-        }
-      }
-
-      return result;
-    };
-
-    if(window.InkfallTowerArt) {
-      const originalDraw=window.InkfallTowerArt.draw;
-
-      window.InkfallTowerArt.draw=function(ctx,tower,selected,range) {
-        const age=performance.now()-(tower.artShotTime||0);
-        const pulse=!reducedMotion && speed>0 && age<140
-          ? Math.sin(age/140*Math.PI)
-          : 0;
-
-        ctx.save();
-        ctx.translate(0,-pulse*2.5);
-
-        originalDraw(ctx,tower,selected,range);
-
-        // Upgrade-Bänder: sichtbarer Ausbau ohne falsche neue Mechanik.
-        ctx.strokeStyle="#ffe19b";
-        ctx.lineWidth=2.5;
-        ctx.lineCap="round";
-
-        for(let i=0;i<Math.min(3,tower.lvl-1);i++) {
-          ctx.beginPath();
-          ctx.moveTo(tower.x-9,tower.y-i*4);
-          ctx.lineTo(tower.x+8,tower.y-i*4);
-          ctx.stroke();
-        }
-
-        ctx.restore();
-
-        if(pulse>0) {
-          ctx.save();
-          ctx.globalAlpha=pulse*.55;
-          circle(ctx,tower.x,tower.y-25,5,
-            tower.t==="frost"?"#aefaff":"#ffe6a0");
-          ctx.restore();
-        }
-      };
+    if (typeof window.hit !== "function" ||
+        typeof window.useAbility !== "function") {
+      console.error("Kampfanimation: Spielfunktionen fehlen.");
+      return;
     }
+
+    // Startposition übernehmen, damit beim ersten Bild
+    // keine scheinbare Laufbewegung entsteht.
+    heroVisual.x = hero.x;
+    heroVisual.y = hero.y;
+
+    const originalHit = window.hit;
+
+    window.hit = function(enemy, damage, type) {
+      if (!enemy) return originalHit(enemy, damage, type);
+
+      const wasAlive = enemy.hp > 0 && enemy.alive !== false;
+      const before = enemy.hp;
+      const point = pos(enemy);
+
+      // Erst die echte Spiellogik ausführen.
+      const result = originalHit(enemy, damage, type);
+      const dealt = Math.max(0, before - enemy.hp);
+
+      // Geblockte Treffer erzeugen keine falschen Schadenseffekte.
+      if (!wasAlive || dealt <= 0) return result;
+
+      const color = type === "frost"
+        ? "#a5f5ff"
+        : "#ffe28b";
+
+      window.InkfallEnemyArt?.onHit(enemy, color);
+
+      if (!reducedMotion && numbers.length < 24) {
+        numbers.push({
+          x: point.x,
+          y: point.y - 22,
+          text: String(Math.round(dealt)),
+          life: .65
+        });
+      }
+
+      if (type === "hero") {
+        heroVisual.attack = .22;
+        attackEffect(
+          point.x, point.y, hero.cls === "knight"
+        );
+      }
+
+      if (enemy.hp <= 0) {
+        window.InkfallEnemyArt?.onDeath(
+          enemy, E[enemy.t].col
+        );
+      }
+
+      return result;
+    };
+
+    const originalAbility = window.useAbility;
+
+    window.useAbility = function() {
+      if (!active || speed <= 0 ||
+          lives <= 0 || hero.cd > 0) return;
+
+      const knight = hero.cls === "knight";
+      const x = hero.x;
+      const y = hero.y;
+
+      const result = originalAbility();
+
+      if (hero.cd > 0) {
+        ring(
+          x, y,
+          knight ? 130 : 150,
+          knight ? "#ffe28b" : "#9af4ff"
+        );
+
+        burst(
+          x, y,
+          knight ? "#ffce72" : "#c7ffff",
+          knight ? 14 : 22
+        );
+
+        heroVisual.attack = .22;
+      }
+
+      return result;
+    };
   }
+
 
   window.InkfallCombatArt={renderHero,frame};
 
