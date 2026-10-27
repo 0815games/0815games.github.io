@@ -53,5 +53,16 @@
     "chapter": "V / Vom ersten Bauteil",
     "copy": "Aus Einzelteilen wird ein Fahrzeug. Aus einer Idee ein Abenteuer.",
     "accent": "#ffbc96"
+  },
+  {
+    "id": "inkfall",
+    "title": "INKFALL",
+    "path": "inkfall/src/index.html",
+    "category": "Taktik & Coop",
+    "description": "Verteidige den letzten Turm.",
+    "headline": "Die Tinte steigt.",
+    "chapter": "VI / Tinte & Asche",
+    "copy": "Held, Fähigkeiten und Turmverteidigung.",
+    "accent": "#8fd3ff"
   }
 ]
