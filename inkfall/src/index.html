@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>INKFALL — Prototyp v0.3</title>
+<title>INKFALL — Prototyp v0.4</title>
 <style>
 body{margin:0;background:#1c1a17;color:#f4ead8;font-family:Georgia,serif;display:flex;min-height:100vh}
 #game{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
 canvas{background:#f4ead8;border:4px solid #22201c;border-radius:6px;max-width:100%}
-#ui{width:320px;padding:16px;background:#26221d;border-left:4px solid #22201c}
+#ui{width:330px;padding:16px;background:#26221d;border-left:4px solid #22201c}
 h1{margin:0 0 4px;font-size:22px}
 h2{font-size:14px;margin:16px 0 6px;color:#b8860b}
 .stat{display:flex;justify-content:space-between;font-size:14px;margin:4px 0}
@@ -18,7 +18,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 #tree{position:fixed;inset:0;background:rgba(20,18,15,.96);display:none;overflow:auto;padding:24px}
 #tree.open{display:block}
 .region{border:2px solid #555;border-radius:8px;padding:12px;margin-bottom:14px;background:#211d18}
-.region h3{margin:0 0 8px;font-size:16px}
 .node{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px;border:1px dashed #777;border-radius:5px;margin:5px 0;font-size:13px}
 .node.owned{border-style:solid;border-color:#b8860b;background:#2c261d}
 .node.locked{opacity:.45}
@@ -30,12 +29,18 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div id="game"><canvas id="cv" width="940" height="600"></canvas></div>
 <div id="ui">
 <h1>INKFALL</h1>
-<div style="font-size:12px;opacity:.8">Prototyp v0.3 — Skilltree</div>
+<div style="font-size:12px;opacity:.8">Prototyp v0.4 — Held & Fähigkeit</div>
 <h2>Bastion</h2>
 <div class="stat"><span>Leben</span><span id="lives">100</span></div>
 <div class="stat"><span>Gold</span><span id="gold">150</span></div>
 <div class="stat"><span>Welle</span><span id="wave">0 / 10</span></div>
 <div class="stat"><span>Skillpunkte</span><span id="sp">0</span></div>
+<h2>Held</h2>
+<div class="stat"><span>Klasse</span><span id="className">Ritter</span></div>
+<div class="stat"><span>Fähigkeit</span><span id="ability">Bereit</span></div>
+<button onclick="setHero('knight')">Ritter werden</button>
+<button onclick="setHero('mage')">Elementarmagier werden</button>
+<button id="abilityBtn" onclick="useAbility()">Fähigkeit einsetzen</button>
 <h2>Türme</h2>
 <button onclick="build('arrow')">Pfeilturm — 100 G</button>
 <button onclick="build('frost')">Frostturm — 140 G</button>
@@ -62,8 +67,12 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const ground=[[40,70],[280,70],[280,240],[600,240],[600,430],[850,430],[850,540]];
 const air=[[40,30],[300,30],[300,150],[640,150],[640,330],[880,330],[880,540]];
 const base={x:850,y:540,r:24};
-let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null,skillPoints=0;
-let skills={};
+let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null,skillPoints=0,skills={};
+let hero={x:120,y:300,target:null,cls:'knight',cd:0,attackCd:0};
+const HERO={
+knight:{name:'Ritter',color:'#a33',range:70,dmg:16,rate:.8,ability:'Schildstoß',cd:10},
+mage:{name:'Elementarmagier',color:'#3a6ea5',range:95,dmg:12,rate:.9,ability:'Frostnova',cd:12}
+};
 const T={
 arrow:{n:'Pfeilturm',c:100,r:110,rate:.55,d:14,col:'#8a5a2b',air:false},
 frost:{n:'Frostturm',c:140,r:95,rate:.9,d:5,col:'#3a6ea5',slow:.35,air:false},
@@ -87,11 +96,11 @@ const waves=[
 [['boss',1],['crawler',10],['runner',6],['tank',2],['shield',3],['flyer',4]]
 ];
 const TREE=[
-{id:'blade1',region:'Klinge',name:'Scharfer Stahl',desc:'+8 % Turm-Schaden',tier:1,cost:1},
+{id:'blade1',region:'Klinge',name:'Scharfer Stahl',desc:'+10 % Helden- und Turm-Schaden',tier:1,cost:1},
 {id:'blade2',region:'Klinge',name:'Wuchtige Hiebe',desc:'+15 % Schaden gegen Panzer',tier:2,cost:1,req:'blade1'},
 {id:'blade3',region:'Klinge',name:'Rüstungsbrecher',desc:'Panzer wird um 10 % reduziert',tier:3,cost:2,req:'blade2'},
 {id:'blade4',region:'Klinge',name:'Klingensturm',desc:'+20 % Turm-Schaden',tier:4,cost:2,req:'blade3'},
-{id:'arcane1',region:'Arkan',name:'Arkane Funken',desc:'+8 % Magie-/Frost-Schaden',tier:1,cost:1},
+{id:'arcane1',region:'Arkan',name:'Arkane Funken',desc:'+10 % Helden- und Frost-Schaden',tier:1,cost:1},
 {id:'arcane2',region:'Arkan',name:'Tiefer Frost',desc:'Frost verlangsamt zusätzlich 10 %',tier:2,cost:1,req:'arcane1'},
 {id:'arcane3',region:'Arkan',name:'Kettenblitz',desc:'Kanonen-Schaden +15 %',tier:3,cost:2,req:'arcane2'},
 {id:'arcane4',region:'Arkan',name:'Sturmfront',desc:'+20 % Frost-Schaden',tier:4,cost:2,req:'arcane3'},
@@ -99,13 +108,13 @@ const TREE=[
 {id:'bastion2',region:'Bastion',name:'Reparatur',desc:'Türme kosten 5 % weniger',tier:2,cost:1,req:'bastion1'},
 {id:'bastion3',region:'Bastion',name:'Turm-Wachstum',desc:'+10 % Turm-Schaden',tier:3,cost:2,req:'bastion2'},
 {id:'bastion4',region:'Bastion',name:'Letzte Bastion',desc:'+15 % Turm-Reichweite',tier:4,cost:2,req:'bastion3'},
-{id:'shadow1',region:'Schatten',name:'Flinke Schritte',desc:'+10 % Schaden gegen Renner',tier:1,cost:1},
+{id:'shadow1',region:'Schatten',name:'Flinke Schritte',desc:'+15 % Heldentempo',tier:1,cost:1},
 {id:'shadow2',region:'Schatten',name:'Präzision',desc:'+10 % Schaden gegen Flieger',tier:2,cost:1,req:'shadow1'},
-{id:'shadow3',region:'Schatten',name:'Giftklinge',desc:'+15 % Schaden über Zeit',tier:3,cost:2,req:'shadow2'},
+{id:'shadow3',region:'Schatten',name:'Giftklinge',desc:'+15 % Heldenschaden',tier:3,cost:2,req:'shadow2'},
 {id:'shadow4',region:'Schatten',name:'Todesmarke',desc:'+25 % Schaden gegen Bosse',tier:4,cost:2,req:'shadow3'},
 {id:'wealth1',region:'Reichtum',name:'Goldader',desc:'+10 % Gold aus Gegnern',tier:1,cost:1},
 {id:'wealth2',region:'Reichtum',name:'Günstiger Bau',desc:'Türme kosten 5 % weniger',tier:2,cost:1,req:'wealth1'},
-{id:'wealth3',region:'Reichtum',name:'Tintenzins',desc:'+10 % Startgold pro Welle',tier:3,cost:2,req:'wealth2'},
+{id:'wealth3',region:'Reichtum',name:'Tintenzins',desc:'+10 Gold pro Welle',tier:3,cost:2,req:'wealth2'},
 {id:'wealth4',region:'Reichtum',name:'Schatzkammer',desc:'+15 % Gold aus Gegnern',tier:4,cost:2,req:'wealth3'},
 {id:'band1',region:'Band',name:'Gemeinsame Wache',desc:'+5 % Turm-Schaden',tier:1,cost:1},
 {id:'band2',region:'Band',name:'Schild-Übertragung',desc:'+5 % Turm-Reichweite',tier:2,cost:1,req:'band1'},
@@ -119,32 +128,34 @@ const GP=makePath(ground),AP=makePath(air);
 function pos(e){const P=e.route==='air'?AP:GP;let d=e.d;if(d>P.total)d=P.total;for(const s of P.segs){if(d<=s.s+s.l){const t=(d-s.s)/s.l;return{x:s.a[0]+(s.b[0]-s.a[0])*t,y:s.a[1]+(s.b[1]-s.a[1])*t}}}return{x:GP.segs.at(-1).b[0],y:GP.segs.at(-1).b[1]}}
 function hpS(w){return Math.pow(1.175,w-1)}
 function has(id){return !!skills[id]}
-function bonus(id){return has(id)}
-function towerDamage(type,e){
-let d=T[type].d;
-if(has('blade1'))d*=1.08;
-if(has('bastion3'))d*=1.10;
-if(has('band1'))d*=1.05;
-if(type==='frost'&&has('arcane4'))d*=1.20;
-if(type==='frost'&&has('band3'))d*=1.10;
+function heroDmg(e){let d=HERO[hero.cls].dmg;
+if(has('blade1'))d*=1.10;if(has('arcane1'))d*=1.10;if(has('shadow3'))d*=1.15;
+if(e){if(e.t==='tank'&&has('blade2'))d*=1.15;if(e.t==='flyer'&&has('shadow2'))d*=1.10;if(e.t==='boss'){if(has('shadow4'))d*=1.25;if(has('band4'))d*=1.10}}
+return d}
+function towerDamage(type,e){let d=T[type].d;
+if(has('blade1'))d*=1.08;if(has('bastion3'))d*=1.10;if(has('band1'))d*=1.05;
+if(type==='frost'){if(has('arcane4'))d*=1.20;if(has('band3'))d*=1.10}
 if(type==='cannon'&&has('arcane3'))d*=1.15;
-if(e&&e.t==='tank'&&has('blade2'))d*=1.15;
-if(e&&e.t==='runner'&&has('shadow1'))d*=1.10;
-if(e&&e.t==='flyer'&&has('shadow2'))d*=1.10;
-if(e&&e.t==='boss'){if(has('shadow4'))d*=1.25;if(has('band4'))d*=1.10}
+if(e){if(e.t==='tank'&&has('blade2'))d*=1.15;if(e.t==='flyer'&&has('shadow2'))d*=1.10;if(e.t==='boss'){if(has('shadow4'))d*=1.25;if(has('band4'))d*=1.10}}
 return d}
 function towerRange(type){let r=T[type].r;if(has('bastion1'))r*=1.10;if(has('bastion4'))r*=1.15;if(has('band2'))r*=1.05;return r}
 function goldMult(){let m=1;if(has('wealth1'))m*=1.10;if(has('wealth4'))m*=1.15;return m}
 function buildCost(type){let c=T[type].c;if(has('bastion2'))c*=.95;if(has('wealth2'))c*=.95;return Math.round(c)}
+function frostSlow(){let s=.35;if(has('arcane2'))s+=.10;return s}
+function setHero(cls){hero.cls=cls;hero.cd=0;log('Du bist jetzt: <b>'+HERO[cls].name+'</b>');ui()}
+function useAbility(){if(hero.cd>0)return;
+if(hero.cls==='knight'){for(const e of enemies){if(e.route==='ground'&&dist(hero,pos(e))<130){e.slow=Math.max(e.slow,.6);hit(e,25,'hero')}}log('<b>Schildstoß!</b> Gegner im Umkreis verlangsamt.')}
+else{for(const e of enemies){if(dist(hero,pos(e))<150){e.slow=Math.max(e.slow,frostSlow()+.2);hit(e,35,'hero')}}log('<b>Frostnova!</b> Gegner im Umkreis getroffen.')}
+hero.cd=HERO[hero.cls].cd;ui()}
 function startWave(){if(active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;let d=0;
-if(has('wealth3'))gold+=Math.round(10*(1+.055*(wave-1)));
+if(has('wealth3'))gold+=10;
 waves[wave-1].forEach(([t,n])=>{for(let i=0;i<n;i++){queue.push({t,d});d+=t==='runner'?.55:t==='flyer'?.7:.85}});
 if(wave===10)queue.unshift({t:'boss',d:10});
 log('<b>Welle '+wave+'</b> gestartet.');ui()}
 function build(t){if(active){log('Während der Welle nicht bauen.');return}const c=buildCost(t);if(gold<c){log('Nicht genug Gold.');return}buildType=t;log(T[t].n+': Karte anklicken.')}
 cv.onclick=e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*(cv.width/r.width),y=(e.clientY-r.top)*(cv.height/r.height);
 if(buildType){const c=buildCost(buildType);if(gold<c)return;if(near(x,y,26,ground)){log('Zu nah am Bodenweg.');return}gold-=c;towers.push({t:buildType,x,y,lvl:1,cd:0});log(T[buildType].n+' gebaut.');buildType=null;ui();return}
-sel=towers.find(t=>dist(t,{x,y})<22)||null;ui()};
+hero.target={x,y};};
 function near(x,y,r,pts){for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1],dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy;let t=((x-a[0])*dx+(y-a[1])*dy)/l2;t=Math.max(0,Math.min(1,t));if(Math.hypot(x-(a[0]+dx*t),y-(a[1]+dy*t))<r)return true}return false}
 function upgrade(){if(!sel)return;const c=Math.round(T[sel.t].c*.7*sel.lvl);if(gold<c){log('Upgrade kostet '+c+' Gold.');return}gold-=c;sel.lvl++;log(T[sel.t].n+' → Stufe '+sel.lvl);ui()}
 function spawn(t){const e=E[t];const hp=t==='boss'?2500:e.hp*hpS(wave);enemies.push({t,d:0,hp,max:hp,slow:0,shieldUp:t==='boss',healCd:0})}
@@ -154,8 +165,12 @@ if(e.t==='shield'&&type==='arrow')m-=E.shield.shield;
 if(e.t==='boss')m-=E.boss.armor;
 e.hp-=dmg*Math.max(.2,m);
 if(e.hp<=0){const g=Math.round(E[e.t].g*goldMult());gold+=g;log(E[e.t].n+' besiegt: +'+g+' Gold.');
-if(e.t==='boss')log('<b>Tintenkoloss besiegt! Tinten-Codex freigeschaltet.</b>')}}
+if(e.t==='boss')log('<b>Tintenkoloss besiegt!</b>')}}
 function update(dt){if(active){timer+=dt;while(queue.length&&queue[0].d<=timer){spawn(queue.shift().t)}
+if(hero.target){const dx=hero.target.x-hero.x,dy=hero.target.y-hero.y,dd=Math.hypot(dx,dy);if(dd>4){const sp=(has('shadow1')?165:150)*dt;hero.x+=dx/dd*sp;hero.y+=dy/dd*sp}}
+hero.cd=Math.max(0,hero.cd-dt);hero.attackCd-=dt;
+if(hero.attackCd<=0){let best=null,bd=1e9;for(const e of enemies){const p=pos(e.d),dd=dist(hero,p);if(dd<HERO[hero.cls].range&&dd<bd){bd=dd;best=e}}
+if(best){hero.attackCd=HERO[hero.cls].rate;hit(best,heroDmg(best),'hero')}}
 for(const e of enemies){let sp=E[e.t].s*(1-e.slow);if(e.t==='boss'&&e.hp/e.max<.3){sp*=1.3;if(!e.enraged){e.enraged=true;log('Tintenkoloss ist wütend!')}}
 e.d+=sp*dt;e.slow=Math.max(0,e.slow-dt*.25);
 if(E[e.t].healer){e.healCd-=dt;if(e.healCd<=0){e.healCd=2;for(const o of enemies){if(o!==e&&o.route==='ground'&&dist(pos(o),pos(e))<85&&o.hp<o.max)o.hp=Math.min(o.max,o.hp+18)}}}
@@ -171,19 +186,15 @@ shots=shots.filter(s=>!s.dead);
 if(!queue.length&&!enemies.length){active=false;skillPoints++;log('<b>Welle '+wave+' geschafft!</b> +1 Skillpunkt');if(wave>=waves.length)log('<b>Alle 10 Wellen geschafft!</b>')}}
 if(lives<=0){active=false;log('<b>Bastion gefallen.</b>')}
 ui()}
-function frostSlow(){let s=.35;if(has('arcane2'))s+=.10;return s}
-function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('start').disabled=active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
+function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('className').textContent=HERO[hero.cls].name;document.getElementById('ability').textContent=hero.cd>0?Math.ceil(hero.cd)+' s':'Bereit';document.getElementById('abilityBtn').textContent=HERO[hero.cls].ability+' ('+Math.ceil(hero.cd)+' s)';document.getElementById('abilityBtn').disabled=hero.cd>0;document.getElementById('start').disabled=active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
 function openTree(){document.getElementById('tree').classList.add('open');renderTree()}
 function closeTree(){document.getElementById('tree').classList.remove('open')}
-function renderTree(){const c=document.getElementById('treeContent');let html='';
-const regions=[...new Set(TREE.map(n=>n.region))];
+function renderTree(){const c=document.getElementById('treeContent');let html='';const regions=[...new Set(TREE.map(n=>n.region))];
 for(const r of regions){html+='<div class="region"><h3>'+r+'</h3>';
 for(const n of TREE.filter(n=>n.region===r)){const owned=has(n.id),locked=n.req&&!has(n.req),can=skillPoints>=n.cost&&!owned&&!locked;
 html+='<div class="node '+(owned?'owned':locked?'locked':'')+'"><div><b>'+n.name+'</b><br><span style="opacity:.8">'+n.desc+'</span></div>';
-html+=owned?'<span style="color:#b8860b">Aktiv</span>':'<button '+(can?'':'disabled')+' onclick="buy(\''+n.id+'\')">'+n.cost+' SP</button>';
-html+='</div>'}
-html+='</div>'}
-c.innerHTML=html}
+html+=owned?'<span style="color:#b8860b">Aktiv</span>':'<button '+(can?'':'disabled')+' onclick="buy(\''+n.id+'\')">'+n.cost+' SP</button></div>'}
+html+='</div>'}c.innerHTML=html}
 function buy(id){const n=TREE.find(x=>x.id===id);if(!n||has(id))return;if(n.req&&!has(n.req))return;if(skillPoints<n.cost)return;skillPoints-=n.cost;skills[id]=true;log('Skill freigeschaltet: <b>'+n.name+'</b>');renderTree();ui()}
 function drawPath(pts,col){ctx.strokeStyle=col;ctx.lineWidth=30;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(...pts[0]);pts.slice(1).forEach(p=>ctx.lineTo(...p));ctx.stroke();ctx.strokeStyle='#8b7355';ctx.lineWidth=3;ctx.setLineDash([9,7]);ctx.stroke();ctx.setLineDash([])}
 function draw(){ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#e8d9bd';ctx.fillRect(0,0,cv.width,cv.height);
@@ -193,12 +204,14 @@ for(const t of towers){const d=T[t.t];ctx.fillStyle=d.col;ctx.beginPath();ctx.ar
 for(const e of enemies){const p=pos(e.d);ctx.fillStyle=E[e.t].col;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=2;ctx.stroke();
 if(e.t==='boss'&&e.shieldUp){ctx.strokeStyle='#3a6ea5';ctx.lineWidth=4;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r+7,0,7);ctx.stroke()}
 ctx.fillStyle='#000';ctx.fillRect(p.x-15,p.y-22,30,4);ctx.fillStyle='#a33';ctx.fillRect(p.x-15,p.y-22,30*Math.max(0,e.hp/e.max),4)}
+ctx.fillStyle=HERO[hero.cls].color;ctx.beginPath();ctx.arc(hero.x,hero.y,13,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();
+ctx.fillStyle='#f4ead8';ctx.font='bold 10px Georgia';ctx.fillText(HERO[hero.cls].name,hero.x,hero.y-18);
 for(const s of shots){ctx.fillStyle=s.type==='frost'?'#3a6ea5':s.type==='cannon'?'#333':s.type==='antiair'?'#7a5aa0':'#5a3a1a';ctx.beginPath();ctx.arc(s.x,s.y,s.type==='cannon'?6:4,0,7);ctx.fill()}
 if(buildType){ctx.fillStyle='rgba(184,134,11,.25)';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#22201c';ctx.font='bold 18px Georgia';ctx.fillText(T[buildType].n+' platzieren',cv.width/2,40)}
 requestAnimationFrame(draw)}
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;update(dt);requestAnimationFrame(loop)}
-ui();draw();requestAnimationFrame(loop);log('Willkommen bei INKFALL v0.3. Nach jeder Welle erhältst du einen Skillpunkt.');
+ui();draw();requestAnimationFrame(loop);log('Willkommen bei INKFALL v0.4. Klicke auf die Karte, um deinen Helden zu bewegen.');
 </script>
 </body>
 </html>
