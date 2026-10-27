@@ -4,6 +4,9 @@ const db = firebase.database();
 
 let currentUser = null;
 let currentProfile = null;
+let dbConnected = false;
+let lastSave = null;
+let lastError = null;
 
 function logFb(t){
   const l=document.getElementById('log');
@@ -14,7 +17,7 @@ function ensureAuthUI(){
   if(document.getElementById('authBox')) return;
   const box=document.createElement('div');
   box.id='authBox';
-  box.style.cssText='position:fixed;top:10px;right:10px;background:#26221d;border:2px solid #22201c;padding:12px;border-radius:6px;width:270px;font-family:Georgia,serif;color:#f4ead8;z-index:9999';
+  box.style.cssText='position:fixed;top:10px;right:10px;background:#26221d;border:2px solid #22201c;padding:12px;border-radius:6px;width:280px;font-family:Georgia,serif;color:#f4ead8;z-index:9999';
   box.innerHTML=`
     <b style="color:#b8860b">INKFALL Account</b>
     <div id="authLoggedOut">
@@ -27,6 +30,7 @@ function ensureAuthUI(){
     <div id="authLoggedIn" style="display:none">
       <div id="userInfo" style="font-size:13px;margin:6px 0"></div>
       <button onclick="saveGame()" style="width:100%;margin:3px 0">Spiel speichern</button>
+      <button onclick="testDatabase()" style="width:100%;margin:3px 0">Datenbank-Test</button>
       <button onclick="logout()" style="width:100%;margin:3px 0">Abmelden</button>
     </div>
     <div id="authMsg" style="font-size:12px;color:#ff9c9c;margin-top:6px"></div>
@@ -49,14 +53,14 @@ async function register(){
     });
     authMsg('');
     logFb('Account erstellt.');
-  }catch(e){authMsg(e.message)}
+  }catch(e){authMsg(e.message);lastError=e.message}
 }
 
 async function login(){
   try{
     await auth.signInWithEmailAndPassword(mail.value.trim(),pass.value);
     authMsg('');
-  }catch(e){authMsg(e.message)}
+  }catch(e){authMsg(e.message);lastError=e.message}
 }
 
 async function logout(){
@@ -66,35 +70,56 @@ async function logout(){
 
 async function loadGame(){
   if(!currentUser)return;
-  const snap=await db.ref('users/'+currentUser.uid).get();
-  if(!snap.exists())return;
-  const data=snap.val();
-  currentProfile=data;
-  if(data.save){
-    if(typeof gold!=='undefined')gold=data.save.gold??gold;
-    if(typeof lives!=='undefined')lives=data.save.lives??lives;
-    if(typeof skillPoints!=='undefined')skillPoints=data.save.skillPoints??skillPoints;
-    if(typeof skills!=='undefined')skills=data.save.skills??{};
-    if(typeof hero!=='undefined'&&data.save.heroClass)hero.cls=data.save.heroClass;
-    if(typeof ui==='function')ui();
-  }
-  document.getElementById('userInfo').textContent=
-    'Name: '+(data.profile?.displayName??'?')+' | Level: '+(data.profile?.level??1);
-  document.getElementById('authLoggedOut').style.display='none';
-  document.getElementById('authLoggedIn').style.display='block';
-  logFb('Spielstand geladen.');
+  try{
+    const snap=await db.ref('users/'+currentUser.uid).get();
+    if(!snap.exists())return;
+    const data=snap.val();
+    currentProfile=data;
+    if(data.save){
+      if(typeof gold!=='undefined')gold=data.save.gold??gold;
+      if(typeof lives!=='undefined')lives=data.save.lives??lives;
+      if(typeof skillPoints!=='undefined')skillPoints=data.save.skillPoints??skillPoints;
+      if(typeof skills!=='undefined')skills=data.save.skills??{};
+      if(typeof hero!=='undefined'&&data.save.heroClass)hero.cls=data.save.heroClass;
+      if(typeof ui==='function')ui();
+    }
+    document.getElementById('userInfo').textContent=
+      'Name: '+(data.profile?.displayName??'?')+' | Level: '+(data.profile?.level??1);
+    document.getElementById('authLoggedOut').style.display='none';
+    document.getElementById('authLoggedIn').style.display='block';
+    logFb('Spielstand geladen.');
+  }catch(e){lastError=e.message;logFb('Fehler beim Laden: '+e.message)}
 }
 
 async function saveGame(){
   if(!currentUser)return;
-  const level=Math.max(1,Math.floor(wave/2)+1);
-  await db.ref('users/'+currentUser.uid+'/profile/level').set(level);
-  await db.ref('users/'+currentUser.uid+'/save').set({
-    gold:gold,lives:lives,wave:wave,skillPoints:skillPoints,
-    skills:skills,heroClass:hero.cls,updatedAt:Date.now()
-  });
-  logFb('Spiel gespeichert.');
+  try{
+    const level=Math.max(1,Math.floor(wave/2)+1);
+    await db.ref('users/'+currentUser.uid+'/profile/level').set(level);
+    await db.ref('users/'+currentUser.uid+'/save').set({
+      gold:gold,lives:lives,wave:wave,skillPoints:skillPoints,
+      skills:skills,heroClass:hero.cls,updatedAt:Date.now()
+    });
+    lastSave=new Date().toLocaleTimeString();
+    logFb('Spiel gespeichert.');
+  }catch(e){lastError=e.message;logFb('Fehler beim Speichern: '+e.message)}
 }
+
+async function testDatabase(){
+  if(!currentUser)return;
+  try{
+    const ref=db.ref('users/'+currentUser.uid+'/diagnostic');
+    await ref.set({test:true,time:Date.now()});
+    const snap=await ref.get();
+    dbConnected=snap.exists();
+    logFb('Datenbank-Test erfolgreich.');
+  }catch(e){dbConnected=false;lastError=e.message;logFb('Datenbank-Test fehlgeschlagen: '+e.message)}
+}
+
+db.ref('.info/connected').on('value',s=>{
+  dbConnected=!!s.val();
+  logFb(dbConnected?'Datenbank verbunden.':'Datenbank getrennt.');
+});
 
 auth.onAuthStateChanged(user=>{
   ensureAuthUI();
@@ -102,7 +127,7 @@ auth.onAuthStateChanged(user=>{
     currentUser=user;
     logFb('Angemeldet: '+user.email);
     loadGame();
-    setInterval(()=>{if(active===false)saveGame()},15000);
+    setInterval(()=>{if(typeof active!=='undefined'&&active===false)saveGame()},15000);
   }else{
     currentUser=null;
     document.getElementById('authLoggedOut').style.display='block';
