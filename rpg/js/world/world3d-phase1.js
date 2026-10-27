@@ -1,3 +1,4 @@
+import {createFigureFactory} from './world-actors3d.js';
 import {createDungeonSurfaces,createDungeonAtmosphere} from './world3d-atmosphere.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
@@ -102,8 +103,8 @@ export function installWorld3D(renderer,state){
      state.world,state.player,renderer._visualTime||0,renderer
     );
     show(true);
-    if(status.textContent!=='3D · Phase 2'){
-     status.textContent='3D · Phase 2';
+    if(status.textContent!=='3D · Phase 3'){
+     status.textContent='3D · Phase 3';
     }
     return true;
    }catch(error){
@@ -232,6 +233,7 @@ export function createEngine(T,canvas){
 
  const group=new T.Group();
  scene.add(group);
+ const figures=createFigureFactory(T);
 
  const floorGeo=new T.BoxGeometry(.98,.12,.98);
  const wallGeo=new T.BoxGeometry(.99,1.25,.99);
@@ -255,6 +257,7 @@ export function createEngine(T,canvas){
  const hit=new T.Vector3();
 
  function destroyActor(entry){
+  if(entry.figure){group.remove(entry.node);entry.figure.dispose();return;}
   group.remove(entry.node);
   entry.texture.dispose();
   entry.material.dispose();
@@ -335,6 +338,32 @@ export function createEngine(T,canvas){
  }
 
  function actor(key,value,hero,time){
+  if(figures.supports(value,hero)){
+   const signature=figures.signature(value,hero);
+   let entry=actors.get(key);
+
+   if(entry&&(!entry.figure||entry.signature!==signature)){
+    destroyActor(entry);
+    actors.delete(key);
+    entry=null;
+   }
+
+   if(!entry){
+    const figure=figures.create(value,hero);
+    group.add(figure.node);
+    entry={node:figure.node,figure,signature};
+    actors.set(key,entry);
+   }
+
+   entry.figure.update(value,time);
+   return;
+  }
+
+  const previous=actors.get(key);
+  if(previous?.figure){
+   destroyActor(previous);
+   actors.delete(key);
+  }
   let entry=actors.get(key);
 
   if(!entry){
@@ -575,6 +604,7 @@ export function createEngine(T,canvas){
 
   atmosphere.dispose();surfaces.dispose();
 
+  figures.dispose();
   gpu.dispose();
  }
 

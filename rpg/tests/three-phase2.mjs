@@ -1,3 +1,4 @@
+// Phase-1/2-Regression mit deaktivierter 3D-Figurenfabrik: prüft Sprite-Rückfall. Echte Figuren separat in three-phase3.mjs.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 
@@ -42,6 +43,9 @@ globalThis.__phase2=helperModule;
 
 let count=0;
 const source=raw.replace(
+ "import {createFigureFactory} from './world-actors3d.js';",
+ 'const createFigureFactory=()=>({supports:()=>false,signature:()=>"",create:()=>null,dispose(){}});'
+).replace(
  /^import \{(?:drawCharacter|drawMonster)\} from '\.\/(?:character|monster)\.js';$/gm,
  ()=>{count++;return '';}
 ).replace(

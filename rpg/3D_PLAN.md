@@ -30,9 +30,9 @@ In Phase 1 wurden 2D-Weltpartikel noch nicht übertragen; Phase 2 ergänzt eine 
 - [x] Truhenbeschläge, Deckelbewegung, vertiefte Treppe und begrenzte 3D-Welteffekte implementiert.
 - [ ] Online-Abnahme durch Nutzer.
 
-## Phase 3 — Figuren
-- [ ] 3D-Held, Klassenmerkmale und sichtbare Ausrüstung.
-- [ ] Erste Gegner und passende Animationen.
+## Phase 3 — v0.10.1: Figuren
+- [x] Prozedurale 3D-Helden für Krieger, Magier und Schurke mit sichtbarer Ausrüstung implementiert.
+- [x] Goblin, Skelett, Ratte, Schleim und Fledermaus mit Darstellungsanimationen implementiert.
 - [ ] Online-Abnahme durch Nutzer.
 
 ## Phase 4 — weitere Umgebungen
@@ -54,3 +54,19 @@ In Phase 1 wurden 2D-Weltpartikel noch nicht übertragen; Phase 2 ergänzt eine 
 - [ ] Unbekannte Felder und Gegner bleiben verborgen.
 - [ ] 2D-Rückfall und andere Umgebungen unverändert.
 - [ ] Nutzerfreigabe für Phase 3.
+
+## Phase-3-Abnahme / v0.10.1
+- Nutzer hat Fortsetzung mit Phase 3 angefordert; offene Geräteabnahmen bleiben offen.
+- [ ] Drei Klassen, Waffen, Helm, Rüstung, Schild, Stiefel und Ring visuell prüfen.
+- [ ] Bewegung, Blickrichtung, Trefferbewegung und reduzierte Bewegung prüfen.
+- [ ] Fünf Gegnertypen und Sprite-Rückfall übriger Typen prüfen.
+- [ ] Unbekannte Gegner, 2D-Schalter und Kampfstart prüfen.
+- [ ] Slot-/Ebenenwechsel sowie Speichern/Neuladen prüfen.
+- [ ] Mobil/Detail und öffentliche Veröffentlichung prüfen.
+- [ ] Freigabe für Phase 4.
+
+Die Modelle sind prozedurale Low-Poly-Figuren, keine fotorealistischen Assets.
+Die eigentliche 3D-Kampfchoreografie folgt in Phase 5.
+
+Versionsregel:
+Phasen erhöhen nicht automatisch die Minor-Version; Fortsetzung mit 0.10.x.

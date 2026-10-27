@@ -2041,3 +2041,17 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - RPG-Version, Build und Release-Cache-Parameter auf 0.10.0 angehoben.
 - Phasenplan ergänzt; offene Phase-1-Gerätetests nicht pauschal geschlossen.
 - Tests mit Grafik-Doubles; echte Browser-/GPU-/Leistungsabnahme offen.
+
+## v0.10.1 – 2026-10-27 – 3D Phase 3: Klassen und erste Gegnermodelle
+- Versionswunsch umgesetzt: 0.10.0 auf 0.10.1, kein Sprung auf 0.11.0.
+- Prozedurale Low-Poly-Figuren für Krieger, Magier und Schurke statt Helden-Sprite in 3D.
+- Waffen, Helm, Rüstung, Schild, Stiefel und Ring sichtbar; Gegenstandswerte unverändert.
+- Goblin, Skelett, Ratte, Schleim und Fledermaus räumlich; übrige Typen bleiben Übergangs-Sprites.
+- Bewegungsdarstellung, Blickrichtung, Idle-Bewegungen und visuelle Reaktion auf fallende TP.
+- Reduzierte Bewegung berücksichtigt; Spielposition und Schadenslogik unverändert.
+- Geteilte Geometrien und Materialien; Ressourcenentsorgung beim Renderer-Abbau.
+- Phase-1/2-Regression prüft Sprite-Rückfall; separate Tests prüfen echte Figuren.
+- Kampfmenü unverändert; 3D-Kampfchoreografie bleibt Phase 5.
+- RPG-Build, Anzeigen und Release-Cache-Parameter auf 0.10.1 aktualisiert.
+- Phasenplan ergänzt; offene Online-/Geräteabnahmen nicht als erledigt markiert.
+- Tests mit Grafik-Doubles; echte Browser-/Pixel-/Leistungsprüfung offen.
