@@ -18,9 +18,24 @@
   let connectionListener = null;
   let busy = false;
 
+  const lobbyClasses = [
+    {
+      id: "knight",
+      name: "Ritter",
+      role: "Nahkampf und Kontrolle",
+      available: true
+    },
+    {
+      id: "mage",
+      name: "Elementarmagier",
+      role: "Fernkampf und Flächenkontrolle",
+      available: true
+    }
+  ];
+
   const uid = () => auth.currentUser?.uid;
   const escapeText = text => String(text).replace(/[&<>"']/g, char =>
-    ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char])
+    ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[char])
   );
 
   function message(text) {
@@ -59,11 +74,11 @@
     }
 
     return {
-      uid:user.uid,
+      uid: user.uid,
       name,
-      heroClass:hero.cls === "mage" ? "mage" : "knight",
-      ready:false,
-      online:true
+      heroClass: hero.cls === "mage" ? "mage" : "knight",
+      ready: false,
+      online: true
     };
   }
 
@@ -154,9 +169,9 @@
       const result = await reference.transaction(current => {
         if (current !== null) return;
         return {
-          host:player,
-          status:"waiting",
-          createdAt:firebase.database.ServerValue.TIMESTAMP
+          host: player,
+          status: "waiting",
+          createdAt: firebase.database.ServerValue.TIMESTAMP
         };
       }, undefined, false);
 
@@ -199,8 +214,8 @@
       if (current && current.uid !== player.uid) return;
       return {
         ...player,
-        heroClass:current?.heroClass || player.heroClass,
-        ready:false
+        heroClass: current?.heroClass || player.heroClass,
+        ready: false
       };
     }, undefined, false);
 
@@ -283,6 +298,7 @@
       room.host?.ready && room.guest?.ready &&
       room.host?.online && room.guest?.online
     );
+    const canChoose = room.status === "waiting" && !me.ready;
 
     function playerCard(player, label) {
       if (!player) {
@@ -291,13 +307,32 @@
         </div>`;
       }
 
+      const selectedClass = lobbyClasses.find(
+        item => item.id === player.heroClass
+      );
+
       return `<div class="if-player-slot">
         <strong>${label} · ${escapeText(player.name)}</strong>
-        <div>${player.heroClass === "mage" ? "Elementarmagier" : "Ritter"}</div>
+        <div>${selectedClass ? selectedClass.name : "Ritter"}</div>
         <div>${player.online ? "Verbunden" : "Verbindung unterbrochen"}</div>
         <div>${player.ready ? "✓ Bereit" : "Noch nicht bereit"}</div>
       </div>`;
     }
+
+    const classCards = lobbyClasses.map(item => `
+      <button
+        data-lobby-class="${item.id}"
+        class="if-class-card${me.heroClass === item.id ? " selected" : ""}"
+        aria-pressed="${me.heroClass === item.id}"
+        ${canChoose ? "" : "disabled"}
+      >
+        <img src="assets/art/heroes/${item.id}.svg" alt="" 
+          onerror="this.hidden=true">
+        <strong>${item.name}</strong>
+        <small>${item.role}</small>
+        ${me.heroClass === item.id ? "<small>Ausgewählt</small>" : ""}
+      </button>
+    `).join("");
 
     screen.innerHTML = `
       <div class="if-pregame-shell">
@@ -308,23 +343,15 @@
           </button>
         </header>
         <p class="if-pregame-description">
-          Teile den Raumcode mit deinem Freund.
+          Teile den Raumcode mit deinem Freund und wählt eure Klassen.
         </p>
         <div class="if-player-slots">
           ${playerCard(room.host, "Gastgeber")}
           ${playerCard(room.guest, "Spieler 2")}
         </div>
-        <section class="if-class-info">
-          <h2>Deine Klasse</h2>
-          <button data-lobby-class="knight" class="if-pregame-button secondary"
-            ${room.status !== "waiting" || me.ready ? "disabled" : ""}>
-            ${me.heroClass === "knight" ? "✓ " : ""}Ritter
-          </button>
-          <button data-lobby-class="mage" class="if-pregame-button secondary"
-            ${room.status !== "waiting" || me.ready ? "disabled" : ""}>
-            ${me.heroClass === "mage" ? "✓ " : ""}Elementarmagier
-          </button>
-        </section>
+        <div id="if-class-grid" class="if-class-grid">
+          ${classCards}
+        </div>
         <footer class="if-pregame-footer">
           <button id="if-lobby-ready" class="if-pregame-button">
             ${me.ready ? "Bereit zurücknehmen" : "Ich bin bereit"}
@@ -341,7 +368,9 @@
             ? "Beide Spieler sind bereit. Die Lobby funktioniert. Die gemeinsame Kampfsimulation wird als nächstes angebunden."
             : room.status === "prepared"
               ? "Vorbereitung pausiert: Bereit- oder Verbindungsstatus hat sich geändert."
-              : "Klasse wählen und Bereitschaft bestätigen."}
+              : canChoose
+                ? "Wähle deine Klasse und bestätige deine Bereitschaft."
+                : "Deine Klasse ist gewählt. Bestätige deine Bereitschaft."}
         </p>
       </div>
     `;
