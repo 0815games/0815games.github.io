@@ -1993,3 +1993,19 @@ FIX: Dialogfenster schließen nicht mehr sofort.
 - RPG-Version, Build-Anzeige und Release-Cache-Parameter auf 0.7.1 erhöht.
 - Dashboard und andere Spiele unverändert.
 - Browserprüfung von Anzeige und Tastendruck steht aus.
+
+## v0.8.0 – 2026-10-26 – Lebendige Schattengruft: Erkundungswelt
+- Ein zentraler Zeichenpfad fuer die Erkundungswelt.
+- Alte draw-/loop-Ueberschreibungen aus living-world.js entfernt.
+- Stabile Steinvarianten, Fugen, Risse, Mauerkanten und Bodenschatten.
+- Eigene Details und Lichtfarben fuer alle fuenf Umgebungen.
+- Truhen mit Beschlaegen, Schloss, Schatten und Deckelbewegung.
+- Gemauerte Treppen und Runenlicht statt Pfeil-Emoji.
+- Atmosphaere und Welt-Effekte auf erkundete Felder begrenzt.
+- Heldenausruestung, Gegner-Sprites und Wanddekoration erhalten.
+- Schockwellen, grosse Effekttexte und Blitze im aktiven Renderer.
+- Begrenzte Atmosphaerenpartikel und reduzierte Bewegung.
+- Welt-Rendering pausiert bei verborgenem Spiel oder Tab.
+- RPG-Version und Release-Cache-Parameter auf 0.8.0 angehoben.
+- Keine Aenderung an Bewegung, Kollision, Werten oder Speicherlogik.
+- Automatische Canvas-/Zustandstests; echte Browserabnahme offen.

@@ -1,4 +1,4 @@
-const CACHE='schattengruft-v0.7.1';
+const CACHE='schattengruft-v0.8.0';
 const SCOPE=new URL(self.registration.scope).pathname;
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{try{const keys=await caches.keys();await Promise.all(keys.filter(k=>k.startsWith('schattengruft-')&&k!==CACHE).map(k=>caches.delete(k)));}catch(error){console.warn('Spielcache konnte nicht bereinigt werden:',error);}await self.clients.claim();})());});
