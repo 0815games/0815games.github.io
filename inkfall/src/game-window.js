@@ -71,8 +71,7 @@
     canvas.style.height = `${Math.floor(canvas.height * scale)}px`;
   }
 
-  new ResizeObserver(fitCanvas).observe(game);
-  fitCanvas();
+  // Die neue Kamera verwaltet die sichtbare Spielfläche.
 
   // Spielinterne Toast-Meldungen, ohne HTML aus Meldungstexten auszuführen.
   const notices = document.createElement("div");

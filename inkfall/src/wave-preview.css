@@ -1,0 +1,109 @@
+#if-wave-preview {
+  margin-bottom: 12px;
+  color: #302840;
+  background: #fff1d3;
+  border: 3px solid #72503b;
+  border-radius: 12px 8px 14px 9px;
+  overflow: hidden;
+  box-shadow: 0 3px 0 #49334433;
+}
+
+#if-wave-preview h2 {
+  margin: 0;
+  padding: 8px 10px;
+  color: #fff5db;
+  background: #70503e;
+  font-size: 12px;
+  text-align: center;
+  letter-spacing: .5px;
+}
+
+.if-wave-description {
+  margin: 0;
+  padding: 9px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.if-enemy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0 8px 8px;
+}
+
+.if-enemy-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 7px 5px;
+  background: #fffaf0;
+  border: 2px solid #c9a67d;
+  border-radius: 9px 6px 10px 7px;
+}
+
+.if-enemy-symbol {
+  display: grid;
+  place-items: center;
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
+  color: #fff;
+  background: var(--enemy-color, #8161af);
+  border: 2px solid #302840;
+  border-radius: 8px 5px 9px 6px;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.if-enemy-label {
+  display: block;
+  overflow-wrap: anywhere;
+  font-size: 10px;
+  line-height: 1.3;
+}
+
+.if-enemy-label strong {
+  display: block;
+  font-size: 12px;
+}
+
+.if-wave-warnings {
+  margin: 0;
+  padding: 0 9px 9px;
+  list-style: none;
+}
+
+.if-wave-warnings li {
+  margin-top: 5px;
+  padding: 7px;
+  background: #ffe2a3;
+  border-left: 3px solid #c47b36;
+  border-radius: 5px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.if-wave-progress {
+  margin: 0 9px 10px;
+  height: 9px;
+  overflow: hidden;
+  background: #cdbb9b;
+  border: 1px solid #73503d;
+  border-radius: 8px;
+}
+
+.if-wave-progress span {
+  display: block;
+  height: 100%;
+  background: #94dd69;
+  transition: width .2s linear;
+}
+
+@media (max-width: 600px) {
+  .if-enemy-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

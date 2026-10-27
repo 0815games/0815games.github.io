@@ -47,17 +47,21 @@
   buildGrid.id = "if-build-grid";
   buildPanel.append(buildGrid);
 
-  const selectionPanel = panel("AUSWAHL");
+  const selectionPanel = document.createElement("div");
   const selection = document.createElement("div");
   selection.id = "if-selection";
 
   const selectionText = document.createElement("p");
   selectionText.textContent = "Wähle einen Turm auf der Karte.";
-  selection.append(selectionText);
+  // Auswahltext bleibt nur als interne Referenz erhalten.
   selectionPanel.append(selection);
 
   const controls = panel("VERTEIDIGUNG");
-  const extras = panel("SPIELMENÜ");
+  // Interner Sammelbehälter für die alte Menü-Sortierung.
+  // Wird nach Verschieben der oberen Aktionen aus dem DOM entfernt.
+  const extras = document.createElement("div");
+  extras.id = "if-retired-menu";
+  extras.hidden = true;
 
   const heroBadge = document.createElement("div");
   heroBadge.className = "if-hero-badge";
@@ -163,7 +167,6 @@
       if (!chooser) {
         chooser = document.createElement("details");
         const summary = document.createElement("summary");
-        summary.textContent = "Heldenklasse";
         chooser.append(summary);
         extras.append(chooser);
       }
@@ -181,27 +184,16 @@
   bottom.append(spacer);
   shortcutButtons.forEach(button => bottom.append(button));
 
-  const account = document.createElement("details");
-  const accountSummary = document.createElement("summary");
-  accountSummary.textContent = "Account & Spielstand";
-  account.append(accountSummary);
-  extras.append(account);
-
-  const eventLog = document.getElementById("log");
-  if (eventLog) {
-    const details = document.createElement("details");
-    const summary = document.createElement("summary");
-    summary.textContent = "Ereignisprotokoll";
-    details.append(summary, eventLog);
-    extras.append(details);
-  }
+  const account = document.createElement("div");
+  account.hidden = true;
 
   // Übrige Originalelemente bleiben versteckt erhalten.
   for (const child of Array.from(menu.children)) {
     hidden.append(child);
   }
 
-  menu.append(buildPanel, selectionPanel, controls, extras, hidden);
+  buildPanel.append(selectionPanel);
+  menu.append(buildPanel, controls, extras, hidden);
 
   frame.append(battle);
   battle.append(stage, scroll);

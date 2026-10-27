@@ -236,18 +236,58 @@
     ).get();
 
     content.innerHTML = `
-      <h2 id="if-menu-greeting"></h2>
-      <button id="if-single">Einzelspieler starten / fortsetzen</button>
-      <button id="if-coop" class="secondary">Coop mit einem Freund</button>
-      <p class="if-start-note">
-        Einzelspieler ist spielbar. Online-Coop wird als nächster
-        eigener Entwicklungsschritt synchronisiert.
+      <!-- IF_PLAYER_MENU_V1 -->
+      <header class="if-player-header">
+        <div class="if-player-emblem" aria-hidden="true">✦</div>
+        <div class="if-player-identity">
+          <span class="if-player-eyebrow">DEINE BASTION WARTET</span>
+          <h2 id="if-menu-greeting"></h2>
+          <span id="if-menu-character" class="if-player-character"></span>
+        </div>
+      </header>
+      <div class="if-mode-heading">Wähle dein Abenteuer</div>
+      <button id="if-single" class="if-mode-card">
+        <span class="if-mode-icon" aria-hidden="true">⚔</span>
+        <span class="if-mode-copy">
+          <strong>Einzelspieler</strong>
+          <small>Dein Held. Deine Verteidigung.</small>
+        </span>
+        <span class="if-mode-arrow" aria-hidden="true">›</span>
+      </button>
+      <button id="if-coop" class="if-mode-card if-mode-coop">
+        <span class="if-mode-icon" aria-hidden="true">∞</span>
+        <span class="if-mode-copy">
+          <strong>Online-Coop</strong>
+          <small>Zusammen in die letzte Bastion.</small>
+        </span>
+        <span class="if-mode-arrow" aria-hidden="true">›</span>
+      </button>
+      <p class="if-menu-development">
+        Coop-Lobby verfügbar · Gemeinsamer Kampf in Entwicklung
       </p>
-      <button id="if-signout" class="text-button">Abmelden</button>
+      <footer class="if-menu-footer">
+        <span>INKFALL · Entwicklungsfassung</span>
+        <button id="if-signout" class="if-signout-button">
+          Account abmelden
+        </button>
+      </footer>
     `;
 
     content.querySelector("#if-menu-greeting").textContent =
-      "Hallo, " + (snapshot.val()?.displayName || "Wächter") + "!";
+      snapshot.val()?.displayName || "Wächter";
+
+    const menuCharacter = content.querySelector("#if-menu-character");
+    const selectedClass = typeof activeCharacterId !== "undefined"
+      ? activeCharacterId
+      : null;
+
+    const selectedCharacter = typeof currentProfile !== "undefined"
+      ? currentProfile?.characters?.[selectedClass]
+      : null;
+
+    menuCharacter.textContent = selectedClass && HERO[selectedClass]
+      ? HERO[selectedClass].name + " · Level " + (selectedCharacter?.level || 1)
+      : "Dein Abenteuer beginnt hier";
 
     content.querySelector("#if-single").onclick = () => {
       visible = false;
@@ -270,7 +310,7 @@
       }
     };
 
-    tell("Account bereit.");
+    tell("");
   }
 
   /* INKFALL_STARTUP_FIX_V1 */
@@ -303,6 +343,9 @@
 
 
   function reportStartupError(error) {
+    // DIAG_STARTUP_ERRORS
+    window.inkfallDiag?.capture(error, "Startbildschirm");
+
     ready = false;
     renderAuth();
 

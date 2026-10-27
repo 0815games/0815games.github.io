@@ -269,7 +269,7 @@
 
       skillPoints -= current.cost;
       skills[current.id] = true;
-      if(typeof log === "function") log("Skill gelernt: "+current.name);
+
       if(typeof ui === "function") ui();
       render();
     };

@@ -1,0 +1,253 @@
+#if-pregame {
+  position:absolute;
+  inset:0;
+  z-index:190;
+  overflow:auto;
+  padding:28px;
+  color:#fff1da;
+  background:
+    radial-gradient(circle at 15% 20%,#48599c,transparent 50%),
+    radial-gradient(circle at 90% 90%,#367568,transparent 45%),
+    #192443;
+}
+
+#if-pregame[hidden] {
+  display:none;
+}
+
+.if-pregame-shell {
+  width:min(1050px,100%);
+  margin:auto;
+}
+
+.if-pregame-heading {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+
+.if-pregame-heading h1 {
+  margin:0;
+  color:#ffe36a;
+  font-size:30px;
+}
+
+.if-pregame-description {
+  color:#cbd8f2;
+  line-height:1.6;
+}
+
+.if-player-slots {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin:20px 0;
+}
+
+.if-player-slot {
+  padding:16px;
+  background:#293c5e;
+  border:3px solid #131b32;
+  border-radius:16px 10px 18px 11px;
+}
+
+.if-player-slot strong {
+  display:block;
+  margin-bottom:6px;
+  color:#80e6ed;
+}
+
+.if-player-slot.empty {
+  border-style:dashed;
+  background:#202d48;
+  color:#b3bfd8;
+}
+
+.if-class-grid {
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:18px 0;
+}
+
+#if-pregame button {
+  font:inherit;
+  cursor:pointer;
+}
+
+#if-pregame .if-class-card {
+  position:relative;
+  width:100%;
+  margin:0;
+  padding:16px 12px;
+  color:#26304d;
+  background:#fff2d8;
+  border:4px solid #182141;
+  border-radius:18px 11px 20px 12px;
+  box-shadow:0 4px 0 #111a32;
+  text-align:left;
+}
+
+#if-pregame .if-class-card.selected {
+  border-color:#80e6ed;
+  box-shadow:0 0 0 2px #182141,0 0 20px #58ddf444;
+}
+
+#if-pregame .if-class-card:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.if-class-card img {
+  display:block;
+  width:85px;
+  height:85px;
+  margin:0 auto 8px;
+  object-fit:contain;
+}
+
+.if-class-placeholder {
+  display:grid;
+  place-items:center;
+  height:85px;
+  color:#765ba2;
+  font-size:40px;
+}
+
+.if-class-card strong {
+  display:block;
+  font-size:16px;
+}
+
+.if-class-card small {
+  display:block;
+  margin-top:6px;
+  line-height:1.5;
+}
+
+.if-class-info {
+  padding:18px;
+  color:#26304d;
+  background:#d8eff5;
+  border:3px solid #182141;
+  border-radius:15px;
+  line-height:1.6;
+}
+
+.if-class-info h2 {
+  margin:0 0 8px;
+  color:#4e4387;
+}
+
+.if-pregame-footer {
+  display:flex;
+  align-items:center;
+  gap:15px;
+  margin-top:18px;
+}
+
+#if-pregame .if-pregame-button {
+  width:auto;
+  margin:0;
+  padding:12px 20px;
+  color:#182141;
+  background:#a8ec72;
+  border:3px solid #182141;
+  border-radius:12px 8px 14px 9px;
+  font-weight:800;
+}
+
+#if-pregame .if-pregame-button.secondary {
+  background:#d6bdff;
+}
+
+#if-pregame .if-pregame-button:disabled {
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+#if-pregame-message {
+  margin:0;
+  color:#d5e1f7;
+  font-size:13px;
+  line-height:1.5;
+}
+
+@media(max-width:650px) {
+  #if-pregame { padding:16px; }
+  .if-class-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .if-player-slots { grid-template-columns:1fr; }
+  .if-pregame-footer { flex-direction:column; align-items:stretch; }
+}
+
+#if-pregame button:focus-visible {
+  outline:3px solid #ffe36a;
+  outline-offset:4px;
+}
+
+/* Klassenwahl findet vor dem Betreten statt. */
+#ui button[onclick*="setHero"] {
+  display:none !important;
+}
+
+/* Firebase-Lobby verwendet dieselbe Raumgestaltung. */
+#if-online-lobby {
+  position:absolute;
+  inset:0;
+  z-index:195;
+  overflow:auto;
+  padding:28px;
+  color:#fff1da;
+  background:
+    radial-gradient(circle at 15% 20%,#48599c,transparent 50%),
+    radial-gradient(circle at 90% 90%,#367568,transparent 45%),
+    #192443;
+}
+
+#if-online-lobby[hidden] {
+  display:none;
+}
+
+#if-online-lobby .if-pregame-button {
+  width:auto;
+  margin:6px 0;
+  padding:11px 16px;
+  color:#182141;
+  background:#a8ec72;
+  border:3px solid #182141;
+  border-radius:12px 8px 14px 9px;
+  font:800 13px system-ui,sans-serif;
+  cursor:pointer;
+}
+
+#if-online-lobby .if-pregame-button.secondary {
+  background:#d6bdff;
+}
+
+#if-online-lobby button:disabled {
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+#if-room-code {
+  display:block;
+  width:100%;
+  max-width:320px;
+  padding:12px;
+  margin:8px 0;
+  color:#26304d;
+  background:#fff;
+  border:2px solid #81739c;
+  border-radius:10px;
+  font:800 19px system-ui,sans-serif;
+  letter-spacing:3px;
+  text-transform:uppercase;
+}
+
+#if-lobby-message {
+  min-height:24px;
+  margin-top:16px;
+  color:#ffd39e;
+  overflow-wrap:anywhere;
+}

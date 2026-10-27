@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<g stroke="#293248" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+
+<ellipse cx="64" cy="115" rx="46" ry="8" fill="#264739" opacity=".23" stroke="none"/>
+
+<!-- Fundament -->
+<path d="M24 99 62 91 105 101 100 116 27 117 19 108Z" fill="#969b9c"/>
+<path d="M29 102 63 96 98 104" fill="none" stroke="#d8d6bd"/>
+
+<!-- Plattform -->
+<path d="M31 75 64 66 97 77 94 104 64 113 32 103Z" fill="#d17a3c"/>
+<path d="M64 69 97 77 94 104 64 113Z" fill="#a75c3c"/>
+<path d="M35 78 64 86 93 78" fill="none" stroke="#ffd287" stroke-width="4"/>
+<path d="M43 86 43 102M83 85 82 102" fill="none" stroke="#f5a652" stroke-width="4"/>
+
+<!-- Visier -->
+<path d="M47 55 47 38 61 37" fill="none" stroke="#303a51" stroke-width="5"/>
+
+<!-- Runder Geschützaufbau -->
+<path d="M35 73 Q29 47 54 39 Q84 34 95 61 L94 79 Q64 94 35 73Z" fill="#f6a348"/>
+<path d="M37 65 Q39 48 57 45" fill="none" stroke="#ffe08a" stroke-width="5"/>
+<path d="M36 76 Q63 91 93 77" fill="none" stroke="#b86638" stroke-width="4"/>
+
+<!-- Lauf -->
+<path d="M65 55 91 25 112 34 91 70Z" fill="#4c5e72"/>
+<path d="M71 52 94 29 102 33 79 59Z" fill="#8295a3" stroke="none"/>
+<path d="M88 24 101 18 117 28 112 42 100 47 87 37Z" fill="#687b8c"/>
+<ellipse cx="103" cy="32" rx="9" ry="10" transform="rotate(-40 103 32)" fill="#1d283e"/>
+
+<!-- Drehachse -->
+<circle cx="60" cy="69" r="12" fill="#c6733f"/>
+<circle cx="60" cy="69" r="6" fill="#ffe18a" stroke-width="2"/>
+
+<!-- Beschläge -->
+<circle cx="41" cy="98" r="3" fill="#ffd879" stroke-width="2"/>
+<circle cx="86" cy="97" r="3" fill="#ffd879" stroke-width="2"/>
+
+</g>
+</svg>

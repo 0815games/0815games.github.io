@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+<g stroke="#293248" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round">
+
+<ellipse cx="64" cy="115" rx="39" ry="8" fill="#264739" opacity=".23" stroke="none"/>
+
+<!-- Fundament -->
+<path d="M30 99 61 91 99 101 94 116 35 117 26 108Z" fill="#6c9eae"/>
+<path d="M35 99 62 95 94 103" fill="none" stroke="#b5edf0"/>
+
+<!-- Turmkörper -->
+<path d="M43 62 81 62 90 104 64 112 36 103Z" fill="#82cbdc"/>
+<path d="M64 65 81 62 90 104 64 112Z" fill="#4c9dc2"/>
+<path d="M43 65 50 64 45 97" fill="none" stroke="#d1f9f1" stroke-width="3"/>
+<path d="M37 89 64 97 86 90M40 76 64 83 84 77" fill="none" stroke="#4d86a5" stroke-width="2"/>
+
+<!-- Halterung -->
+<path d="M30 55 46 48 50 60 64 65 79 59 82 47 99 54 94 72 64 82 35 71Z" fill="#c4edf1"/>
+<path d="M35 70 64 79 94 70" fill="none" stroke="#7cc4dc" stroke-width="4"/>
+
+<!-- Runensymbol -->
+<path d="M63 87 70 96 63 104 56 95Z" fill="#d5ffff" stroke="#3f7c9c" stroke-width="2"/>
+
+<!-- Schwebender Kristall -->
+<path d="M64 8 85 34 74 55 64 63 46 44 45 30Z" fill="#6ee3ed"/>
+<path d="M64 8 64 63 46 44 45 30Z" fill="#b7fff3"/>
+<path d="M64 8 85 34 74 55 64 63 70 34Z" fill="#4ebbdc"/>
+<path d="M54 29 61 17M52 36 55 41" fill="none" stroke="#f1ffff" stroke-width="3"/>
+
+<!-- Kleine Eissplitter -->
+<path d="M24 39 29 29 34 39 29 46Z" fill="#b7fff3" stroke-width="2"/>
+<path d="M93 26 98 17 103 27 98 34Z" fill="#a8f7ff" stroke-width="2"/>
+<path d="M20 72 25 65M103 77 108 70" fill="none" stroke="#d7ffff" stroke-width="3"/>
+
+</g>
+</svg>
