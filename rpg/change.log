@@ -742,3 +742,20 @@
 - RPG-Version und Release-Cache-Parameter auf 0.8.0 angehoben.
 - Keine Aenderung an Bewegung, Kollision, Werten oder Speicherlogik.
 - Automatische Canvas-/Zustandstests; echte Browserabnahme offen.
+
+## v0.9.0 – 2026-10-27 – 3D Phase 1: spielbare Katakomben
+- Backup 20261027bak sichert Commit 3b123e5f672b7590a0fb89a62b5f76a4fe6e18f3.
+- Fünfphasiger 3D-Plan mit Nutzerabnahme in rpg/3D_PLAN.md.
+- Zuschaltbare 3D-Katakomben unter ?view=3d und Schalter auf der Karte.
+- 2D bleibt Standard und Rückfall bei Lade-/WebGL-Fehlern.
+- Three.js 0.184.0 wird nur bei Anforderung geladen.
+- Räumliche Böden/Mauern und feste schräge Kamera.
+- Einfache Truhen/Treppen; vorhandene Figuren als Übergangs-Sprites.
+- Unbekannte Felder/Gegner bleiben verborgen.
+- Vordergrundwände werden zur besseren Sicht transparent.
+- Eingabe bleibt auf dem vorhandenen Karten-Canvas.
+- Keine Änderung an Spiellogik, Inventar oder Firebase-Speicherung.
+- Andere Umgebungen und der Kampf bleiben zunächst in 2D.
+- Materialien, Schatten, 3D-Figuren und Effekte folgen in späteren Phasen.
+- RPG-Version und Release-Cache-Parameter auf 0.9.0 angehoben.
+- Tests mit Grafik-Doubles; echtes WebGL und Browserabnahme offen.

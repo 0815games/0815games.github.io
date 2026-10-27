@@ -1,3 +1,4 @@
+import {installWorld3D} from './world3d-phase1.js';
 import {drawDungeonWorld,worldFrameInterval} from './dungeon-world.js';
 import { state } from '../core/state.js';
 import { drawCharacter } from './character.js';
@@ -5,7 +6,7 @@ import { drawMonster as drawMonsterSprite } from './monster.js';
 import { installWallDecor } from './wall-decor.js';
 const THEMES={katakomben:['#141722','#10121a','#1c202c','#2e364a','#271b23','#392734','#05060a'],pilzwald:['#10241a','#0d1d16','#173024','#224634','#1f4030','#2f5c44','#040a07'],frostgruft:['#101a26','#0d1620','#1b2c3d','#2c455c','#24455c','#356a8a','#04070c'],feuershrein:['#241a14','#1d1410','#38160f','#5c241a','#4a1a10','#7a2c18','#0a0403'],schattenarena:['#131320','#0f0f1a','#232338','#383858','#2e2e48','#454569','#04040a']};
 export class Renderer{
- constructor(id){this.cv=document.getElementById(id);this.ctx=this.cv.getContext('2d');this.tile=32;this.camera={x:0,y:0};this.particles=[];this.texts=[];this.waves=[];this.flashEffect=null;this.loop();}
+ constructor(id){this.cv=document.getElementById(id);this.ctx=this.cv.getContext('2d');this.tile=32;this.camera={x:0,y:0};this.particles=[];this.texts=[];this.waves=[];this.flashEffect=null;this.world3d=installWorld3D(this,state);this.loop();}
  text(txt,x,y,c='#ffd54f',size=12,life=1.2){
   this.texts.push({txt,x:x*this.tile+16,y:y*this.tile,c,a:1,size,life,maxLife:life});
  }
@@ -70,9 +71,9 @@ export class Renderer{
  }
  getTheme(){const a=THEMES[state.world.theme]||THEMES.katakomben;return{floorA:a[0],floorB:a[1],wall:a[2],wallLine:a[3],accent:a[4],accentLine:a[5],fog:a[6]};}
  updateCamera(cols,rows){const t=this.tile,w=this.cv.width,h=this.cv.height,ww=cols*t,wh=rows*t,px=(Number.isFinite(state.player.x)?state.player.x:2)*t+t/2,py=(Number.isFinite(state.player.y)?state.player.y:2)*t+t/2;this.camera.x=ww>w?Math.max(0,Math.min(px-w/2,ww-w)):(ww-w)/2;this.camera.y=wh>h?Math.max(0,Math.min(py-h/2,wh-h)):(wh-h)/2;}
- screenToTile(clientX,clientY){const r=this.cv.getBoundingClientRect();return{x:Math.floor(((clientX-r.left)*this.cv.width/r.width+this.camera.x)/this.tile),y:Math.floor(((clientY-r.top)*this.cv.height/r.height+this.camera.y)/this.tile)};}
+ screenToTile(clientX,clientY){if(this.world3d&&this.world3d.active)return this.world3d.screenToTile(clientX,clientY);const r=this.cv.getBoundingClientRect();return{x:Math.floor(((clientX-r.left)*this.cv.width/r.width+this.camera.x)/this.tile),y:Math.floor(((clientY-r.top)*this.cv.height/r.height+this.camera.y)/this.tile)};}
  drawMonster(c,m,x,y){drawMonsterSprite(c,m,x,y,this._visualTime||0);}
- draw(){drawDungeonWorld(this,state.world,state.player,drawCharacter);}
+ draw(){if(this.world3d?.render())return;drawDungeonWorld(this,state.world,state.player,drawCharacter);}
 
 }
 installWallDecor(Renderer,state);
