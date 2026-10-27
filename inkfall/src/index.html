@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>INKFALL — Prototyp</title>
+<style>
+body{margin:0;background:#1c1a17;color:#f4ead8;font-family:Georgia,serif;display:flex;min-height:100vh}
+#game{flex:1;display:flex;align-items:center;justify-content:center;padding:10px}
+canvas{background:#f4ead8;border:4px solid #22201c;border-radius:6px;max-width:100%}
+#ui{width:300px;padding:16px;background:#26221d;border-left:4px solid #22201c}
+h1{margin:0 0 4px;font-size:22px}
+h2{font-size:14px;margin:16px 0 6px;color:#b8860b}
+.stat{display:flex;justify-content:space-between;font-size:14px;margin:4px 0}
+button{width:100%;margin:4px 0;padding:8px;border:2px solid #22201c;background:#f4ead8;color:#22201c;font-family:inherit;font-weight:bold;cursor:pointer;border-radius:4px}
+button:disabled{opacity:.4;cursor:not-allowed}
+#log{height:130px;overflow:auto;font-size:12px;background:#171512;border:1px solid #4a423a;padding:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="game"><canvas id="cv" width="900" height="560"></canvas></div>
+<div id="ui">
+<h1>INKFALL</h1>
+<div style="font-size:12px;opacity:.8">Prototyp v0.1</div>
+<h2>Bastion</h2>
+<div class="stat"><span>Leben</span><span id="lives">100</span></div>
+<div class="stat"><span>Gold</span><span id="gold">150</span></div>
+<div class="stat"><span>Welle</span><span id="wave">0 / 5</span></div>
+<div class="stat"><span>Gegner</span><span id="left">0</span></div>
+<h2>Türme</h2>
+<button onclick="build('arrow')">Pfeilturm — 100 G</button>
+<button onclick="build('frost')">Frostturm — 140 G</button>
+<button onclick="build('cannon')">Kanone — 180 G</button>
+<h2>Aktionen</h2>
+<button id="start" onclick="startWave()">Welle starten</button>
+<button onclick="speed= speed===1?2:1;this.textContent='Speed: '+speed+'x'">Speed: 1x</button>
+<button id="up" onclick="upgrade()" disabled>Turm verbessern</button>
+<button onclick="location.reload()">Neustart</button>
+<h2>Protokoll</h2>
+<div id="log"></div>
+</div>
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const path=[[40,70],[280,70],[280,240],[600,240],[600,420],[850,420],[850,500]];
+const base={x:850,y:500,r:24};
+let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null;
+const T={arrow:{n:'Pfeilturm',c:100,r:110,rate:.55,d:14,col:'#8a5a2b'},frost:{n:'Frostturm',c:140,r:95,rate:.9,d:5,col:'#3a6ea5',slow:.35},cannon:{n:'Kanone',c:180,r:85,rate:1.4,d:34,col:'#6b6b6b',aoe:46}};
+const E={crawler:{n:'Kriecher',hp:60,s:.9,g:12,r:11,col:'#7a4a2a',dmg:5},runner:{n:'Renner',hp:27,s:1.7,g:10,r:9,col:'#a33',dmg:5},tank:{n:'Panzerriese',hp:250,s:.55,g:26,r:16,col:'#4a4a4a',dmg:10,armor:.2}};
+const waves=[[['crawler',5]],[['crawler',6]],[['crawler',6],['runner',3]],[['crawler',7],['runner',3]],[['crawler',7],['runner',4],['tank',1]]];
+function log(t){document.getElementById('log').innerHTML='<div>'+t+'</div>'+document.getElementById('log').innerHTML}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function pos(d){let total=0;for(let i=0;i<path.length-1;i++){const a=path[i],b=path[i+1],l=Math.hypot(b[0]-a[0],b[1]-a[1]);if(d<=total+l){const t=(d-total)/l;return{x:a[0]+(b[0]-a[0])*t,y:a[1]+(b[1]-a[1])*t}}total+=l}return{x:path.at(-1)[0],y:path.at(-1)[1]}}
+const PLEN=(()=>{let t=0;for(let i=0;i<path.length-1;i++)t+=Math.hypot(path[i+1][0]-path[i][0],path[i+1][1]-path[i][1]);return t})();
+function hpS(w){return Math.pow(1.175,w-1)}
+function startWave(){if(active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;let d=0;waves[wave-1].forEach(([t,n])=>{for(let i=0;i<n;i++){queue.push({t,d});d+=t==='runner'?.55:.85}});log('<b>Welle '+wave+'</b> gestartet.');ui()}
+function build(t){if(active){log('Während der Welle nicht bauen.');return}if(gold<T[t].c){log('Nicht genug Gold.');return}buildType=t;log(T[t].n+': Karte anklicken.')}
+cv.onclick=e=>{const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)*(cv.width/r.width),y=(e.clientY-r.top)*(cv.height/r.height);
+if(buildType){if(gold<T[buildType].c)return;if(near(x,y,26)){log('Zu nah am Weg.');return}gold-=T[buildType].c;towers.push({t:buildType,x,y,lvl:1,cd:0});log(T[buildType].n+' gebaut.');buildType=null;ui();return}
+sel=towers.find(t=>dist(t,{x,y})<22)||null;ui()};
+function near(x,y,r){for(let i=0;i<path.length-1;i++){const a=path[i],b=path[i+1],dx=b[0]-a[0],dy=b[1]-a[1],l2=dx*dx+dy*dy;let t=((x-a[0])*dx+(y-a[1])*dy)/l2;t=Math.max(0,Math.min(1,t));if(Math.hypot(x-(a[0]+dx*t),y-(a[1]+dy*t))<r)return true}return false}
+function upgrade(){if(!sel)return;const c=Math.round(T[sel.t].c*.7*sel.lvl);if(gold<c){log('Upgrade kostet '+c+' Gold.');return}gold-=c;sel.lvl++;log(T[sel.t].n+' → Stufe '+sel.lvl);ui()}
+function spawn(t){const e=E[t];enemies.push({t,d:0,hp:e.hp*hpS(wave),max:e.hp*hpS(wave),slow:0})}
+function hit(e,dmg){let m=e.t==='tank'?1-E.tank.armor:1;e.hp-=dmg*m;if(e.hp<=0){gold+=Math.round(E[e.t].g*(1+.055*(wave-1)));log(E[e.t].n+' besiegt.')}}
+function update(dt){if(active){timer+=dt;while(queue.length&&queue[0].d<=timer){spawn(queue.shift().t)}
+for(const e of enemies){e.d+=E[e.t].s*(1-e.slow)*dt;e.slow=Math.max(0,e.slow-dt*.25);if(e.d>=PLEN){lives-=E[e.t].dmg;log(E[e.t].n+' erreichte die Bastion!')}}
+enemies=enemies.filter(e=>e.hp>0&&e.d<PLEN);
+for(const t of towers){t.cd-=dt;if(t.cd>0)continue;const d=T[t.t];let best=null,bd=-1;for(const e of enemies){const p=pos(e.d);if(dist(t,p)<=d.r&&e.d>bd){bd=e.d;best=e}}if(best){t.cd=d.rate;const p=pos(best.d);shots.push({x:t.x,y:t.y,e:best,dmg:d.d*(1+.25*(t.lvl-1)),t:t.t,aoe:d.aoe,slow:d.slow||0})}}
+for(const s of shots){const p=pos(s.e.d),dx=p.x-s.x,dy=p.y-s.y,dd=Math.hypot(dx,dy);if(dd<12){s.dead=true;if(s.aoe){for(const e of enemies){if(dist(pos(e.d),p)<=s.aoe)hit(e,s.dmg)}}else hit(s.e,s.dmg);if(s.slow)s.e.slow=Math.max(s.e.slow,s.slow)}else{s.x+=dx/dd*420*dt;s.y+=dy/dd*420*dt}}
+shots=shots.filter(s=>!s.dead);
+if(!queue.length&&!enemies.length){active=false;log('<b>Welle '+wave+' geschafft!</b>');if(wave>=waves.length)log('<b>Prototyp-Ziel erreicht.</b>')}}
+if(lives<=0){active=false;log('<b>Bastion gefallen.</b>')}
+ui()}
+function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('left').textContent=enemies.length+queue.length;document.getElementById('start').disabled=active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
+function draw(){ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle='#e8d9bd';ctx.fillRect(0,0,cv.width,cv.height);ctx.strokeStyle='#b9a179';ctx.lineWidth=32;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(...path[0]);path.slice(1).forEach(p=>ctx.lineTo(...p));ctx.stroke();ctx.strokeStyle='#8b7355';ctx.lineWidth=4;ctx.setLineDash([10,8]);ctx.stroke();ctx.setLineDash([]);
+ctx.fillStyle='#4f7d4f';ctx.beginPath();ctx.arc(base.x,base.y,base.r,0,7);ctx.fill();ctx.fillStyle='#f4ead8';ctx.font='bold 12px Georgia';ctx.textAlign='center';ctx.fillText('BASTION',base.x,base.y+4);
+for(const t of towers){const d=T[t.t];ctx.fillStyle=d.col;ctx.beginPath();ctx.arc(t.x,t.y,15,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=3;ctx.stroke();if(sel===t){ctx.strokeStyle='#b8860b';ctx.beginPath();ctx.arc(t.x,t.y,d.r,0,7);ctx.stroke()}ctx.fillStyle='#f4ead8';ctx.fillText('L'+t.lvl,t.x,t.y+4)}
+for(const e of enemies){const p=pos(e.d);ctx.fillStyle=E[e.t].col;ctx.beginPath();ctx.arc(p.x,p.y,E[e.t].r,0,7);ctx.fill();ctx.strokeStyle='#22201c';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#000';ctx.fillRect(p.x-14,p.y-20,28,4);ctx.fillStyle='#a33';ctx.fillRect(p.x-14,p.y-20,28*Math.max(0,e.hp/e.max),4)}
+for(const s of shots){ctx.fillStyle=s.t==='frost'?'#3a6ea5':s.t==='cannon'?'#333':'#5a3a1a';ctx.beginPath();ctx.arc(s.x,s.y,s.t==='cannon'?6:4,0,7);ctx.fill()}
+if(buildType){ctx.fillStyle='rgba(184,134,11,.25)';ctx.fillRect(0,0,cv.width,cv.height);ctx.fillStyle='#22201c';ctx.font='bold 18px Georgia';ctx.fillText(T[buildType].n+' platzieren',cv.width/2,40)}
+requestAnimationFrame(draw)}
+let last=performance.now();
+function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;update(dt);requestAnimationFrame(loop)}
+ui();draw();requestAnimationFrame(loop);log('Willkommen bei INKFALL. Baue einen Pfeilturm und starte Welle 1.');
+</script>
+</body>
+</html>
