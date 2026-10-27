@@ -1,0 +1,120 @@
+/* INKFALL — animierter Schriftzug */
+
+#if-launcher .if-logo-animated {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding: 12px 10px 20px;
+  max-width: 100%;
+  isolation: isolate;
+  transform: rotate(-3deg);
+}
+
+.if-logo-word {
+  position: relative;
+  display: inline-flex;
+  white-space: nowrap;
+  line-height: 1.1;
+}
+
+.if-logo-word > span {
+  display: inline-block;
+  transform-origin: 50% 85%;
+  color: #ffe36a;
+  -webkit-text-stroke: 2px #251f41;
+  text-shadow:
+    0 4px 0 #d88644,
+    0 8px 0 #873f76,
+    0 11px 0 #111b35;
+}
+
+/* Einzelne Akzente, ohne den Schriftzug unruhig zu machen. */
+.if-logo-word > span:nth-child(3),
+.if-logo-word > span:nth-child(4) {
+  color: #fff29a;
+}
+
+/* Lichtglanz: liegt nur über den Buchstaben. */
+.if-logo-word::after {
+  content: "INKFALL";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: transparent;
+  -webkit-text-stroke: 0 transparent;
+  text-shadow: none;
+  background: linear-gradient(
+    110deg,
+    transparent 38%,
+    transparent 44%,
+    #fffbe8 49%,
+    #ffffff 50%,
+    transparent 56%,
+    transparent 62%
+  );
+  background-size: 300% 100%;
+  background-position: 140% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  opacity: 0;
+}
+
+/* Animation nur, wenn keine reduzierte Bewegung gewünscht ist. */
+@media (prefers-reduced-motion: no-preference) {
+  .if-logo-word > span {
+    animation: if-letter-arrive 850ms cubic-bezier(.2,.8,.2,1) both;
+    animation-delay: calc(150ms + var(--letter) * 90ms);
+  }
+
+  .if-logo-word::after {
+    animation: if-logo-shine 7s ease-in-out 2s infinite;
+  }
+}
+
+@keyframes if-letter-arrive {
+  0% {
+    opacity: 0;
+    transform: translateY(-32px) scale(.7) rotate(-12deg);
+  }
+
+  55% {
+    opacity: 1;
+    transform: translateY(5px) scale(1.07,.94) rotate(3deg);
+  }
+
+  78% {
+    transform: translateY(-3px) scale(.98,1.03) rotate(-1deg);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes if-logo-shine {
+  0%, 12% {
+    opacity: 0;
+    background-position: 140% 0;
+  }
+
+  16% {
+    opacity: .85;
+  }
+
+  32% {
+    opacity: .85;
+    background-position: -40% 0;
+  }
+
+  36%, 100% {
+    opacity: 0;
+    background-position: -40% 0;
+  }
+}
+
+@media (max-width: 700px) {
+  #if-launcher .if-logo-animated {
+    font-size: clamp(38px, 10vw, 64px);
+  }
+}

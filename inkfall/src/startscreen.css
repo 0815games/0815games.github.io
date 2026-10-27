@@ -182,3 +182,8 @@
     animation: none;
   }
 }
+
+/* Platz für den Diagnose-Schalter oben rechts freihalten. */
+#inkfall-window #if-window-titlebar {
+  padding-right: 125px;
+}

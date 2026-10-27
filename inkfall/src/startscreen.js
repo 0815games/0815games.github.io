@@ -11,7 +11,11 @@
     <div class="if-launcher-shell">
       <div class="if-brand">
         <div class="if-brand-mark" aria-hidden="true">✦</div>
-        <h1 class="if-logo">INKFALL</h1>
+        <h1 class="if-logo if-logo-animated" aria-label="INKFALL">
+          <span class="if-logo-word" aria-hidden="true">
+            <span style="--letter:0">I</span><span style="--letter:1">N</span><span style="--letter:2">K</span><span style="--letter:3">F</span><span style="--letter:4">A</span><span style="--letter:5">L</span><span style="--letter:6">L</span>
+          </span>
+        </h1>
         <div class="if-brand-subtitle">Heroes of the Last Tower</div>
         <p>Entwickle deinen Helden.<br>
         Errichte deine Verteidigung.<br>
@@ -269,6 +273,9 @@
     tell("Account bereit.");
   }
 
+  /* INKFALL_STARTUP_FIX_V1 */
+  renderAuth();
+
   const back = document.createElement("button");
   back.id = "if-return-menu";
   back.textContent = "Hauptmenü";
@@ -294,32 +301,87 @@
     }
   };
 
-  if (typeof auth === "undefined" || typeof db === "undefined") {
-    content.innerHTML = "<h2>Firebase fehlt</h2>";
-    tell("Firebase konnte nicht geladen werden. Bitte Diagnose prüfen.", true);
-    return;
+
+  function reportStartupError(error) {
+    ready = false;
+    renderAuth();
+
+    tell(
+      "Firebase konnte nicht gestartet werden: " +
+      (error && error.message ? error.message : String(error)),
+      true
+    );
+
+    const hint = document.createElement("p");
+    hint.className = "if-start-note";
+    hint.textContent =
+      "Das Loginformular ist sichtbar, aber Anmeldung und Registrierung " +
+      "funktionieren erst nach Behebung dieses Verbindungsfehlers.";
+
+    const retry = document.createElement("button");
+    retry.className = "secondary";
+    retry.textContent = "Seite erneut laden";
+    retry.onclick = () => location.reload();
+
+    content.append(hint, retry);
+    console.error("INKFALL Startfehler:", error);
   }
 
-  renderAuth();
-
-  auth.onAuthStateChanged(async user => {
-    if (busy) return;
-
-    if (!user) {
-      ready = false;
-      visible = true;
-      launcher.hidden = false;
-      if (typeof speed !== "undefined") speed = 0;
-      renderAuth();
-      return;
+  try {
+    if (typeof firebase === "undefined") {
+      throw new Error(
+        "Firebase SDK fehlt. Die Firebase-Scriptdateien wurden nicht geladen."
+      );
     }
 
-    try {
-      tell("Spielerprofil wird geladen …");
-      await prepareAccount();
-      await renderMenu();
-    } catch (error) {
-      tell(errorText(error), true);
+    // Auch einen nicht initialisierten globalen Auth-/DB-Bezeichner
+    // innerhalb des try-Blocks abfangen.
+    if (typeof auth === "undefined" || typeof db === "undefined") {
+      throw new Error(
+        "Firebase Auth oder Realtime Database wurde nicht initialisiert."
+      );
     }
-  });
+
+    tell("Anmeldung bereit. Accountstatus wird geprüft …");
+
+    auth.onAuthStateChanged(async user => {
+      if (busy) return;
+
+      if (!user) {
+        ready = false;
+        visible = true;
+        launcher.hidden = false;
+        if (typeof speed !== "undefined") speed = 0;
+        renderAuth();
+        return;
+      }
+
+      try {
+        tell("Spielerprofil wird geladen …");
+        await prepareAccount();
+        await renderMenu();
+      } catch (error) {
+        tell(errorText(error), true);
+
+        // Bei Ladefehlern aus einem bestehenden Account abmelden können.
+        if (!content.querySelector("#if-recovery-signout")) {
+          const button = document.createElement("button");
+          button.id = "if-recovery-signout";
+          button.className = "secondary";
+          button.textContent = "Abmelden und erneut versuchen";
+          button.onclick = async () => {
+            try {
+              await auth.signOut();
+            } catch (signoutError) {
+              tell(errorText(signoutError), true);
+            }
+          };
+          content.append(button);
+        }
+      }
+    }, reportStartupError);
+
+  } catch (error) {
+    reportStartupError(error);
+  }
 })();

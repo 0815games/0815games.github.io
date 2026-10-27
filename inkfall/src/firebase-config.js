@@ -1,4 +1,6 @@
-const FIREBASE_CONFIG = {
+// Öffentliche Firebase-Webkonfiguration.
+// Keine Service-Account-Schlüssel oder Admin-Zugangsdaten eintragen.
+window.FIREBASE_CONFIG = {
   apiKey: "AIzaSyDCZaHQqRMLdg8tXDGqGF4v1aqkkRDBF8Y",
   authDomain: "inkfall-afbe9.firebaseapp.com",
   databaseURL: "https://inkfall-afbe9-default-rtdb.firebaseio.com",
@@ -9,4 +11,4 @@ const FIREBASE_CONFIG = {
   measurementId: "G-N74Z65NK73"
 };
 
-const FIREBASE_DIAGNOSTICS = true;
+window.FIREBASE_DIAGNOSTICS = true;
