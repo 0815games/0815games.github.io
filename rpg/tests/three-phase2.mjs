@@ -49,8 +49,8 @@ const source=raw.replace(
  /^import \{(?:drawCharacter|drawMonster)\} from '\.\/(?:character|monster)\.js';$/gm,
  ()=>{count++;return '';}
 ).replace(
- "import {createDungeonSurfaces,createDungeonAtmosphere} from './world3d-atmosphere.js';",
- 'const {createDungeonSurfaces,createDungeonAtmosphere}=globalThis.__phase2;'
+ "import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';",
+ 'const {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D}=globalThis.__phase2;'
 );
 
 assert.equal(count,2);
@@ -64,7 +64,7 @@ assert.equal(m.wants3D('?view=3d'),true);
 assert.equal(m.wants3D(''),false);
 assert.deepEqual(m.gridPosition(2,3),{x:2.5,y:0,z:3.5});
 assert.equal(
- m.supportsWorld({tiles:[[0]],theme:'pilzwald'}),false
+ m.supportsWorld({tiles:[[0]],theme:'pilzwald'}),true
 );
 assert.equal(
  helperModule.qualityProfile('auto',true).shadows,false

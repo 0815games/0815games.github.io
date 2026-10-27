@@ -1,5 +1,5 @@
 import {createFigureFactory} from './world-actors3d.js';
-import {createDungeonSurfaces,createDungeonAtmosphere} from './world3d-atmosphere.js';
+import {createDungeonSurfaces,createDungeonAtmosphere,theme3D,supportsTheme3D} from './world3d-atmosphere.js';
 import {drawCharacter} from './character.js';
 import {drawMonster} from './monster.js';
 
@@ -14,7 +14,7 @@ export function wants3D(search){
  return new URLSearchParams(search).get('view')==='3d';
 }
 export function supportsWorld(w){
- return !!w?.tiles?.length&&(!w.theme||w.theme==='katakomben');
+ return !!w?.tiles?.length&&supportsTheme3D(w.theme);
 }
 
 export function installWorld3D(renderer,state){
@@ -88,8 +88,8 @@ export function installWorld3D(renderer,state){
   render(){
    if(!enabled||!ready||!supportsWorld(state.world)){
     show(false);
-    if(enabled&&ready&&status.textContent!=='2D · diese Umgebung folgt in Phase 4'){
-     status.textContent='2D · diese Umgebung folgt in Phase 4';
+    if(enabled&&ready&&status.textContent!=='2D · unbekannte Umgebung'){
+     status.textContent='2D · unbekannte Umgebung';
     }
     return false;
    }
@@ -103,9 +103,8 @@ export function installWorld3D(renderer,state){
      state.world,state.player,renderer._visualTime||0,renderer
     );
     show(true);
-    if(status.textContent!=='3D · Phase 3'){
-     status.textContent='3D · Phase 3';
-    }
+    const label='3D · '+theme3D(state.world.theme).label;
+    if(status.textContent!==label)status.textContent=label;
     return true;
    }catch(error){
     console.error('3D-Darstellung:',error);
@@ -225,7 +224,8 @@ export function createEngine(T,canvas){
 
  const camera=new T.OrthographicCamera(-6,6,5,-5,.1,80);
 
- scene.add(new T.HemisphereLight(0xc5d4da,0x29302b,.8));
+ const ambient=new T.HemisphereLight(0xc5d4da,0x29302b,.8);
+ scene.add(ambient);
  const sun=new T.DirectionalLight(0xffe0ae,1.8);
  sun.position.set(-5,12,5);
  scene.add(sun);
@@ -249,7 +249,7 @@ export function createEngine(T,canvas){
  const railGeo=new T.BoxGeometry(.12,.18,1.05);
 
  const cells=new Map(),actors=new Map(),chests=new Map();
- let tiles=null,seed=null,stairs=null,size='',closed=false;
+ let tiles=null,seed=null,stairs=null,size='',closed=false,themeKey='';
 
  const ray=new T.Raycaster();
  const pointer=new T.Vector2();
@@ -567,6 +567,17 @@ export function createEngine(T,canvas){
    reset();
    tiles=w.tiles;
    seed=w.seed;
+  }
+
+  const palette=surfaces.setTheme(w.theme);
+
+  if(themeKey!==palette.key){
+   themeKey=palette.key;
+   scene.background.set(palette.background);
+   scene.fog.color?.set(palette.background);
+   ambient.color?.set(palette.sky);
+   ambient.groundColor?.set(palette.floors[0]);
+   sun.color?.set(palette.sun);
   }
 
   synchronizeCells(w,p);

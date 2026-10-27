@@ -788,3 +788,13 @@
 - RPG-Build, Anzeigen und Release-Cache-Parameter auf 0.10.1 aktualisiert.
 - Phasenplan ergänzt; offene Online-/Geräteabnahmen nicht als erledigt markiert.
 - Tests mit Grafik-Doubles; echte Browser-/Pixel-/Leistungsprüfung offen.
+
+## v0.10.2 – 2026-10-27 – 3D Phase 4: alle Umgebungen
+- Katakomben, Pilzwald, Frostgruft, Feuerschrein und Schattenarena in 3D freigeschaltet.
+- Eigene Material-/Lichtpaletten und gepoolte räumliche Umgebungsdetails.
+- Themenwechsel ohne Kartenneuerstellung unterstützt; Ressourcen werden wiederverwendet.
+- Dekoration verrät keine unentdeckten Felder; Mobilprofil begrenzt Detailzahl.
+- Keine Änderung an Spielständen, Kampflogik oder Weltgenerierung.
+- Status zeigt die aktive 3D-Umgebung; unbekannte Umgebungen bleiben in 2D.
+- Mobile-Web-App-Metatag ergänzt; Versionsanzeigen und Release-Cache auf 0.10.2.
+- Automatische Prüfungen ergänzt; echte Browser-/WebGL-/Geräteabnahme offen.

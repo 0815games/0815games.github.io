@@ -70,3 +70,17 @@ Die eigentliche 3D-Kampfchoreografie folgt in Phase 5.
 
 Versionsregel:
 Phasen erhöhen nicht automatisch die Minor-Version; Fortsetzung mit 0.10.x.
+
+## Phase 4 / v0.10.2 – implementiert, visuelle Abnahme offen
+- [x] Alle fünf vorhandenen Weltthemen für 3D freigeschaltet.
+- [x] Materialpaletten, Hintergrund und Haupt-/Umgebungslicht je Thema.
+- [x] Fackelfarben und Umgebungspartikel je Thema.
+- [x] Räumliche Pilze, Eiskristalle, Glutrisse und Arenarunen.
+- [x] Materialwechsel auch bei unveränderter Kartenreferenz und unverändertem Seed.
+- [x] Dekoration auf entdeckten Feldern, begrenzter Ressourcenpool und Mobilprofil.
+- [ ] Feuerschrein im bestehenden Spielstand online abnehmen.
+- [ ] Alle Umgebungen, 2D-Rückschaltung und Ebenenwechsel prüfen.
+- [ ] Speichern/Neuladen und Mobilgerät prüfen.
+- [ ] Freigabe für Phase 5.
+
+Keine Änderung an Kampfregeln, Spielstandformat oder Weltgenerierung.

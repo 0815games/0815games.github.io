@@ -182,6 +182,26 @@ export function createDungeonSurfaces(T){
 
  return {
   floorMats,wallMat,fadeMat,wood,trim,stone,pit,
+  setTheme(name){
+   const p=theme3D(name);
+   if(this.themeKey===p.key)return p;
+   this.themeKey=p.key;
+
+   floorMats.forEach((m,i)=>{
+    m.color.set(p.floors[i]);
+    m.roughness=p.roughness;
+    m.metalness=p.key==='frostgruft'?.12:0;
+   });
+
+   for(const m of[wallMat,fadeMat]){
+    m.color.set(p.wall);
+    m.roughness=p.key==='frostgruft'?.46:.95;
+   }
+
+   trim.color.set(p.trim);
+   stone.color.set(p.floors[0]);
+   return p;
+  },
   dispose(){
    if(closed)return;
    closed=true;
@@ -198,6 +218,8 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
  const coarse=matchMedia('(pointer: coarse)');
 
  let mode='auto',profile=null,closed=false;
+ const themeDetails=createThemeDetails(T,scene);
+ let atmosphereTheme='';
  const geos=[],mats=[],textures=[];
 
  const geometry=g=>{
@@ -356,6 +378,24 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   if(closed)return;
   setQuality(mode);
 
+  const palette=theme3D(w.theme);
+  if(atmosphereTheme!==palette.key){
+   atmosphereTheme=palette.key;
+   flame.color.set(palette.light);
+
+   for(const item of torches){
+    item.light.color?.set(palette.light);
+   }
+
+   stairsLight.color?.set(palette.light);
+
+   for(const mesh of dust){
+    mesh.material.color.set(palette.air);
+   }
+  }
+
+  themeDetails.update(w,p,profile);
+
   const still=reduced.matches;
   const t=still?0:time;
 
@@ -457,7 +497,7 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
    if(mesh.visible){
     mesh.position.set(
      x+.2+(n%60)/100,
-     .15+((t*.1+i*.21)%1)*1.3,
+     .15+(palette.key==='frostgruft'?1-((t*.1+i*.21)%1):((t*.1+i*.21)%1))*1.3,
      z+.4
     );
     mesh.material.opacity=.1+.12*(1+Math.sin(t+i));
@@ -494,9 +534,248 @@ export function createDungeonAtmosphere(T,scene,gpu,sun){
   geos.forEach(g=>g.dispose());
   mats.forEach(m=>m.dispose());
   textures.forEach(t=>t.dispose());
+  themeDetails.dispose();
   sun.shadow.map?.dispose();
  }
 
  setQuality('auto');
  return {update,setQuality,dispose};
+}
+
+
+export const WORLD3D_THEMES=Object.freeze({
+ katakomben:{
+  key:'katakomben',label:'Katakomben',
+  floors:[0xb6bdba,0xa5b0ae,0xb7b9ad,0xaeb6b8],
+  wall:0xc1c4b8,trim:0xb59962,
+  background:0x081018,sky:0xc5d4da,sun:0xffe0ae,
+  light:0xffb76b,air:0xd6c6a1,roughness:.96
+ },
+ pilzwald:{
+  key:'pilzwald',label:'Pilzwald',
+  floors:[0x62896d,0x70957b,0x597b68,0x7c9472],
+  wall:0x93ae8c,trim:0xb5bd8a,
+  background:0x081b18,sky:0xb9dfc5,sun:0xb4d5ad,
+  light:0x9eddac,air:0xadd599,roughness:.98
+ },
+ frostgruft:{
+  key:'frostgruft',label:'Frostgruft',
+  floors:[0x9fc5d8,0xb2d2df,0x8fbacf,0xb9dce2],
+  wall:0xc2e1ed,trim:0xc8e6ed,
+  background:0x0c1b2a,sky:0xd3edff,sun:0xc2e5ff,
+  light:0x9cdaff,air:0xdaeff5,roughness:.34
+ },
+ feuerschrein:{
+  key:'feuerschrein',label:'Feuerschrein',
+  floors:[0x9c7462,0x8b6358,0xa77c65,0x84605a],
+  wall:0xbb937b,trim:0xd09b66,
+  background:0x1b0b10,sky:0xd6b6a2,sun:0xffbf89,
+  light:0xff873e,air:0xffb577,roughness:.92
+ },
+ schattenarena:{
+  key:'schattenarena',label:'Schattenarena',
+  floors:[0x8c7baf,0x796a9a,0x9c8bb8,0x8275a5],
+  wall:0xb8a2cc,trim:0xd5b8ed,
+  background:0x100c21,sky:0xc8bde1,sun:0xd5bbf3,
+  light:0xbd8cff,air:0xccb2e8,roughness:.78
+ }
+});
+
+for(const p of Object.values(WORLD3D_THEMES)){
+ Object.freeze(p.floors);
+ Object.freeze(p);
+}
+
+export function supportsTheme3D(name){
+ return !name||Object.hasOwn(WORLD3D_THEMES,name);
+}
+
+export function theme3D(name){
+ return WORLD3D_THEMES[
+  Object.hasOwn(WORLD3D_THEMES,name)?name:'katakomben'
+ ];
+}
+
+export function themeDetailSites(w,p,limit=16){
+ const kind=theme3D(w.theme).key;
+ if(kind==='katakomben')return [];
+
+ const sites=[];
+
+ for(let y=Math.max(0,p.y-7);
+  y<Math.min(w.tiles.length,p.y+8);y++){
+  for(let x=Math.max(0,p.x-7);
+   x<Math.min(w.tiles[y].length,p.x+8);x++){
+
+   if(!known(w,x,y)||w.tiles[y][x]!==0
+    ||(x===p.x&&y===p.y))continue;
+
+   if(w.stairs?.x===x&&w.stairs?.y===y)continue;
+
+   if((w.chests||[]).some(
+    c=>c.x===x&&c.y===y
+   ))continue;
+
+   const n=visualNoise(x,y,w.seed);
+   if(n%4!==0)continue;
+
+   if((kind==='pilzwald'||kind==='frostgruft')&&!(
+    known(w,x,y-1)&&w.tiles[y-1][x]===1||
+    known(w,x-1,y)&&w.tiles[y][x-1]===1
+   ))continue;
+
+   sites.push({
+    x,y,n,
+    distance:(x-p.x)**2+(y-p.y)**2
+   });
+  }
+ }
+
+ sites.sort(
+  (a,b)=>a.distance-b.distance||a.y-b.y||a.x-b.x
+ );
+
+ return sites.slice(0,limit);
+}
+
+export function createThemeDetails(T,scene){
+ const root=new T.Group();
+ root.name='world3d-theme-details';
+ scene.add(root);
+
+ const geos=[
+  new T.BoxGeometry(1,1,1),
+  new T.OctahedronGeometry(1,0),
+  new T.RingGeometry(.10,.14,6)
+ ];
+
+ const mats=[];
+
+ const material=(color,emissive=0)=>{
+  const m=new T.MeshStandardMaterial({
+   color,emissive,emissiveIntensity:.65,
+   roughness:.65,side:T.DoubleSide
+  });
+  mats.push(m);
+  return m;
+ };
+
+ const stem=material(0x889b75);
+ const cap=material(0x8ac4a0,0x23452f);
+ const ice=material(0xbee6f5,0x153547);
+ const hot=material(0xfda15d,0xa13512);
+ const rune=material(0xcfabea,0x492366);
+ const pools=[];
+
+ function mesh(parent,index,mat,x,y,z,sx,sy,sz){
+  const m=new T.Mesh(geos[index],mat);
+  m.position.set(x,y,z);
+  m.scale.set(sx,sy,sz);
+  m.castShadow=index!==2;
+  parent.add(m);
+  return m;
+ }
+
+ for(let i=0;i<16;i++){
+  const node=new T.Group();
+  root.add(node);
+  const views={};
+
+  for(const key of[
+   'pilzwald','frostgruft',
+   'feuerschrein','schattenarena'
+  ]){
+   const g=new T.Group();
+   g.visible=false;
+   node.add(g);
+   views[key]=g;
+  }
+
+  mesh(
+   views.pilzwald,0,stem,
+   0,.10,0,.035,.20,.035
+  );
+  mesh(
+   views.pilzwald,1,cap,
+   0,.21,0,.15,.07,.15
+  );
+  mesh(
+   views.pilzwald,0,stem,
+   .13,.06,.07,.025,.12,.025
+  );
+  mesh(
+   views.pilzwald,1,cap,
+   .13,.13,.07,.09,.045,.09
+  );
+
+  mesh(
+   views.frostgruft,1,ice,
+   0,.19,0,.07,.24,.08
+  );
+  mesh(
+   views.frostgruft,1,ice,
+   .12,.09,.05,.05,.13,.05
+  ).rotation.z=-.3;
+
+  for(let j=0;j<3;j++){
+   const crack=mesh(
+    views.feuerschrein,0,hot,
+    (j-1)*.10,.012,j*.06,
+    .15,.012,.025
+   );
+   crack.rotation.y=j%2?.55:-.45;
+   crack.castShadow=false;
+  }
+
+  const ring=mesh(
+   views.schattenarena,2,rune,
+   .05,.015,.05,1,1,1
+  );
+  ring.rotation.x=-Math.PI/2;
+
+  mesh(
+   views.schattenarena,0,rune,
+   .05,.017,.05,.018,.012,.18
+  ).castShadow=false;
+
+  node.visible=false;
+  pools.push({node,views});
+ }
+
+ let closed=false;
+
+ return {
+  update(w,p,profile){
+   if(closed)return;
+
+   const key=theme3D(w.theme).key;
+   const sites=themeDetailSites(
+    w,p,profile.name==='mobile'?6:16
+   );
+
+   pools.forEach((item,i)=>{
+    const site=sites[i];
+    item.node.visible=!!site;
+
+    for(const [name,g]of Object.entries(item.views)){
+     g.visible=name===key;
+    }
+
+    if(site){
+     item.node.position.set(
+      site.x+.19,0,site.y+.19
+     );
+     item.node.rotation.y=(site.n%4)*Math.PI/2;
+    }
+   });
+  },
+
+  dispose(){
+   if(closed)return;
+   closed=true;
+   scene.remove(root);
+   geos.forEach(g=>g.dispose());
+   mats.forEach(m=>m.dispose());
+  }
+ };
 }
