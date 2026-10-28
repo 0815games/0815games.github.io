@@ -37,6 +37,8 @@ jobs:
         run: node --test inkfall/social/social-model.test.cjs
       - name: Existing INKFALL regression tests
         run: node --test inkfall/tests/*.test.cjs
+      - name: Social UI component tests
+        run: node --test inkfall/src/social/social-components.test.cjs
       - name: Install isolated emulator dependencies
         working-directory: inkfall/social
         run: npm install --ignore-scripts --no-audit --no-fund

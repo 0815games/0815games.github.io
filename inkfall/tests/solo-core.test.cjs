@@ -65,7 +65,15 @@ function createGame() {
     Image: class {},
     performance: { now: () => 0 },
     requestAnimationFrame() {},
-    window: {},
+    // INKFALL_TEST_WINDOW_EVENTS
+    window: (() => {
+      const events = new EventTarget();
+      return {
+        addEventListener: events.addEventListener.bind(events),
+        removeEventListener: events.removeEventListener.bind(events),
+        dispatchEvent: events.dispatchEvent.bind(events)
+      };
+    })(),
     InkfallImpactFX: { impact() {} }
   });
 

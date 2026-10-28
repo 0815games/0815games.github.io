@@ -196,6 +196,15 @@ async function createGame() {
     InkfallImpactFX:{ impact() {} },
     setTimeout
   };
+  // INKFALL_TEST_WINDOW_EVENTS
+  const windowEvents = new EventTarget();
+  environment.addEventListener =
+    windowEvents.addEventListener.bind(windowEvents);
+  environment.removeEventListener =
+    windowEvents.removeEventListener.bind(windowEvents);
+  environment.dispatchEvent =
+    windowEvents.dispatchEvent.bind(windowEvents);
+
   environment.window = environment;
 
   const context = vm.createContext(environment);
