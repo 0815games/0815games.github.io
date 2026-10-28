@@ -1,16 +1,16 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.InkfallSocialStore=api;})(globalThis,()=>{
 'use strict';
 function create(client){
- let state={uid:null,available:false,loading:false,friends:[],requests:[],selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false,classId:'knight',error:null,busy:false};
- let generation=0,selection=0,characterTicket=0,stop=null,stopProfile=null,stopCharacter=null;
+ let state={uid:null,available:false,loading:false,friends:[],requests:[],selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false,classId:'knight',error:null,busy:false,friendCode:null,codeLoading:false,codeError:null};
+ let generation=0,selection=0,characterTicket=0,stop=null,stopProfile=null,stopCharacter=null,codePromise=null;
  const listeners=new Set();
  const snapshot=()=>JSON.parse(JSON.stringify(state));
  const emit=()=>listeners.forEach(fn=>fn(snapshot()));
  const isFriend=uid=>state.friends.some(x=>x.uid===uid);
  function clearSelection(){selection++;characterTicket++;if(stopProfile)stopProfile();stopProfile=null;if(stopCharacter)stopCharacter();stopCharacter=null;Object.assign(state,{selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false});}
  function setUser(uid){
-  generation++;if(stop)stop();stop=null;clearSelection();
-  state={uid:uid||null,available:false,loading:!!uid,friends:[],requests:[],selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false,classId:'knight',error:null,busy:false};emit();
+  generation++;codePromise=null;if(stop)stop();stop=null;clearSelection();
+  state={uid:uid||null,available:false,loading:!!uid,friends:[],requests:[],selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false,classId:'knight',error:null,busy:false,friendCode:null,codeLoading:false,codeError:null};emit();
   if(!uid)return;
   const token=generation;
   try{stop=client.watch(uid,data=>{
@@ -19,6 +19,25 @@ function create(client){
    if(state.selectedUid&&!isFriend(state.selectedUid))clearSelection();emit();
   },()=>{if(token!==generation)return;clearSelection();Object.assign(state,{friends:[],requests:[],loading:false,available:false,error:'Freundesdaten konnten nicht geladen werden.'});emit();});}
   catch{state.loading=false;state.error='Freundesdaten konnten nicht geladen werden.';emit();}
+ }
+ function loadCode(){
+  if(!state.uid||!client.has('getCode'))return Promise.resolve(false);
+  if(state.friendCode)return Promise.resolve(state.friendCode);
+  if(codePromise)return codePromise;
+  const token=generation;
+  state.codeLoading=true;state.codeError=null;
+  codePromise=Promise.resolve().then(()=>{
+   if(token!==generation)return null;
+   return client.invoke('getCode',{});
+  }).then(result=>{
+   if(token!==generation)return false;
+   if(typeof result?.friendCode!=='string'||!/^[A-Za-z0-9_-]{24}$/.test(result.friendCode))throw Error('invalid-code-response');
+   state.friendCode=result.friendCode;return result.friendCode;
+  }).catch(()=>{
+   if(token===generation)state.codeError='Dein Freundescode konnte nicht geladen werden. Bitte erneut versuchen.';
+   return false;
+  }).finally(()=>{if(token===generation){state.codeLoading=false;codePromise=null;emit();}});
+  emit();return codePromise;
  }
  async function selectFriend(uid){
   if(!isFriend(uid))return;
@@ -52,7 +71,7 @@ function create(client){
   catch{if(token===generation)state.error='Aktion fehlgeschlagen. Bitte erneut versuchen.';return false;}
   finally{if(token===generation){state.busy=false;emit();}}
  }
- return {snapshot,setUser,selectFriend,selectCharacter,action,clearSelection(){clearSelection();emit();},has:client.has,
+ return {snapshot,setUser,loadCode,selectFriend,selectCharacter,action,clearSelection(){clearSelection();emit();},has:client.has,
  subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},
  destroy(){setUser(null);listeners.clear();}};
 }

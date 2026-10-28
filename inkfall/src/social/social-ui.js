@@ -1,5 +1,36 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.InkfallSocialUI=api;})(globalThis,()=>{
 'use strict';
+function ownCodeCard({doc,win,store}){
+ const state=store.snapshot(),card=doc.createElement('section');card.className='if-social-code-card';card.style.gridColumn='1 / -1';card.setAttribute('aria-labelledby','if-social-own-code-title');
+ const title=doc.createElement('h3');title.id='if-social-own-code-title';title.textContent='Dein Freundescode';
+ const description=doc.createElement('p');description.textContent='Teile diesen Code mit deinen Gefährten, damit sie dir eine Freundschaftsanfrage senden können.';
+ const note=doc.createElement('p');note.id='if-social-own-code-note';note.className='if-social-field-note';note.setAttribute('role','status');
+ card.append(title,description);
+ if(state.friendCode){
+  const label=doc.createElement('label');label.textContent='Dein persönlicher Code';label.htmlFor='if-social-own-code';
+  const field=doc.createElement('input');field.id='if-social-own-code';field.dataset.focus='own-code';field.type='text';field.readOnly=true;field.value=state.friendCode;field.spellcheck=false;field.setAttribute('aria-describedby',note.id);field.style.fontFamily='ui-monospace,monospace';label.append(field);card.append(label);
+  const copy=doc.createElement('button');copy.type='button';copy.dataset.focus='copy-own-code';copy.className='if-social-primary';copy.textContent='Code kopieren';
+  copy.onclick=async()=>{
+   const current=store.snapshot();if(current.uid!==state.uid||current.friendCode!==state.friendCode)return;
+   function stillCurrent(){const value=store.snapshot();return value.uid===state.uid&&value.friendCode===state.friendCode&&card.isConnected;}
+   try{
+    if(typeof win.navigator?.clipboard?.writeText!=='function')throw Error('clipboard-unavailable');
+    await win.navigator.clipboard.writeText(state.friendCode);
+    if(stillCurrent())note.textContent='Freundescode kopiert.';
+   }catch{
+    if(!stillCurrent())return;
+    field.focus({preventScroll:true});field.select();field.setSelectionRange(0,field.value.length);
+    note.textContent='Automatisches Kopieren nicht möglich. Der Code ist markiert; bitte manuell kopieren.';
+   }
+  };
+  card.append(copy);note.textContent='Der Code bleibt für deinen Account gleich.';
+ }else{
+  const available=Boolean(state.uid&&store.has('getCode'));
+  note.textContent=!state.uid?'Bitte zuerst anmelden.':!available?'Dein Code ist verfügbar, sobald der Freundesdienst freigeschaltet ist.':state.codeLoading?'Dein Freundescode wird geladen …':state.codeError||'Deinen persönlichen Freundescode laden.';
+  if(available){const load=doc.createElement('button');load.type='button';load.dataset.focus='load-own-code';load.className='if-social-primary';load.textContent=state.codeLoading?'Code wird geladen …':state.codeError?'Erneut versuchen':'Code laden';load.disabled=Boolean(state.codeLoading);load.onclick=()=>store.loadCode();card.append(load);}
+ }
+ card.append(note);return card;
+}
 function create({document:doc,window:win,store,inspector,skills=[],mount=doc.body}){
  const dialog=doc.createElement('dialog');dialog.id='if-social-dialog';dialog.setAttribute('aria-labelledby','if-social-title');
  const shell=doc.createElement('div');shell.className='if-social-shell';dialog.append(shell);mount.append(dialog);
@@ -17,7 +48,7 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
   const heading=node('header',undefined,'if-social-heading');const title=node('h2','Freunde & Gefährten');title.id='if-social-title';heading.append(title,button('Schließen','close',close));shell.append(heading);
   const tabs=node('nav',undefined,'if-social-tabs');tabs.setAttribute('aria-label','Freundesbereich');
   for(const [id,label] of [['friends','Freunde'],['requests','Anfragen ('+current.requests.length+')'],['add','Hinzufügen']]){
-   const b=button(label,'tab-'+id,()=>{tab=id;confirmation=null;mobileDetail=false;render();});b.setAttribute('aria-pressed',String(tab===id));tabs.append(b);
+   const b=button(label,'tab-'+id,()=>{tab=id;confirmation=null;mobileDetail=false;render();if(id==='add')store.loadCode?.();});b.setAttribute('aria-pressed',String(tab===id));tabs.append(b);
   }
   shell.append(tabs);
   const status=node('p',undefined,'if-social-status');status.setAttribute('role','status');status.textContent=current.loading?'Freundesdaten werden geladen …':current.error||(!current.uid?'Bitte zuerst anmelden.':!current.available?'Freundesdienst noch nicht aktiviert. Es werden keine Testkontakte angezeigt.':'Online-Status ist noch nicht angebunden.');shell.append(status);
@@ -55,6 +86,7 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
    for(const request of current.requests){const row=node('div',undefined,'if-social-row');row.append(node('span',request.displayName?'Anfrage von '+request.displayName:'Anfrage · Absenderdaten fehlen'),button('Annehmen','accept-'+request.uid,()=>act('accept',{targetUid:request.uid}),current.busy||!store.has('accept')||!request.displayName),button('Ablehnen','decline-'+request.uid,()=>act('decline',{targetUid:request.uid}),current.busy||!store.has('decline')));list.append(row);}
    content.append(list);
   }else{
+   content.append(ownCodeCard({doc,win,store}));
    const form=node('form');form.className='if-social-code-card';form.noValidate=true;
    form.append(node('span','NEUE GEFÄHRTEN','if-social-eyebrow'),node('h3','Freund hinzufügen'),node('p','Gib den Freundescode deines Gefährten ein und sende eine Anfrage.'));
    const label=node('label','Freundescode');label.htmlFor='if-social-code-input';
@@ -70,10 +102,10 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
    card.append(title,message,button('Abbrechen','confirm-cancel',cancelConfirmation),button('Bestätigen','confirm-apply',()=>{const pending=confirmation;confirmation=null;act(pending.name,{targetUid:pending.targetUid});render();},current.busy||!store.has(confirmation.name)));content.append(card);
   }
   content.scrollTop=scrollPositions[scrollKey]||0;
-  if(focused){const match=[...shell.querySelectorAll('[data-focus]')].find(n=>n.dataset.focus===focused);if(match&&!match.disabled)match.focus({preventScroll:true});else shell.querySelector('button')?.focus({preventScroll:true});}
+  if(focused){const match=[...shell.querySelectorAll('[data-focus]')].find(n=>n.dataset.focus===focused);if(match&&!match.disabled)match.focus({preventScroll:true});else if(focused==='load-own-code')focusKey('copy-own-code');else shell.querySelector('button')?.focus({preventScroll:true});}
  }
  function close(){confirmation=null;if(dialog.open)dialog.close();}
- function open(trigger){if(dialog.open)return;if(typeof dialog.showModal!=='function')throw Error('Dieser Browser unterstützt den Freundesdialog nicht.');previousFocus=trigger||doc.activeElement;render();dialog.showModal();shell.querySelector('button')?.focus({preventScroll:true});}
+ function open(trigger){if(dialog.open)return;if(typeof dialog.showModal!=='function')throw Error('Dieser Browser unterstützt den Freundesdialog nicht.');previousFocus=trigger||doc.activeElement;render();dialog.showModal();shell.querySelector('button')?.focus({preventScroll:true});if(tab==='add')store.loadCode?.();}
  dialog.addEventListener('close',()=>{confirmation=null;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});});
  function keyboard(event){if(!dialog.open)return;event.stopImmediatePropagation();if(event.key==='Escape'){event.preventDefault();if(confirmation)cancelConfirmation();else close();}}
  win.addEventListener('keydown',keyboard,true);
@@ -85,5 +117,5 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
  });
  return {open,close,destroy(){close();unsubscribe();win.removeEventListener('keydown',keyboard,true);dialog.remove();}};
 }
-return {create};
+return {create,ownCodeCard};
 });
