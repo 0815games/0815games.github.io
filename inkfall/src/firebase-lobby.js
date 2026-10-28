@@ -104,6 +104,8 @@
     presenceRef = null;
     room = null;
     roomCode = "";
+    window.inkfallActiveCoopSession = null;
+    window.dispatchEvent(new Event("inkfall:coop-session-cleared"));
   }
 
   async function watch(code) {
@@ -117,8 +119,16 @@
         return;
       }
 
-      room = snapshot.val();
-      renderRoom();
+      const next = snapshot.val();
+      const relevant = value => JSON.stringify({
+        host:value?.host,
+        guest:value?.guest,
+        status:value?.status,
+        session:value?.session
+      });
+      const redraw = relevant(room) !== relevant(next);
+      room = next;
+      if (redraw) renderRoom();
     };
 
     roomRef.on("value", roomListener, error => {
@@ -217,20 +227,29 @@
     await watch(code);
   }
 
+
   async function action(callback) {
     if (busy) return;
     busy = true;
-    const buttons = screen.querySelectorAll("button");
-    buttons.forEach(button => { button.disabled = true; });
+    let failure = "";
+
+    screen.querySelectorAll("button").forEach(button => {
+      button.disabled = true;
+    });
 
     try {
       await callback();
     } catch (error) {
-      message(errorText(error));
+      failure = errorText(error);
     } finally {
       busy = false;
       if (room) renderRoom();
-      else buttons.forEach(button => { button.disabled = false; });
+      else {
+        screen.querySelectorAll("button").forEach(button => {
+          button.disabled = false;
+        });
+      }
+      if (failure) message(failure);
     }
   }
 
@@ -276,19 +295,75 @@
     };
   }
 
+
+  async function startCoopSession() {
+    const user = auth.currentUser;
+    const reference = roomRef;
+    const code = roomCode;
+
+    if (!user || !reference || mySlot() !== "host") {
+      throw new Error("Nur der angemeldete Host darf starten.");
+    }
+
+    if (!window.InkfallCoopStart) {
+      throw new Error("Coop-Startmodul wurde nicht geladen.");
+    }
+
+    const result = await window.InkfallCoopStart.start(reference, {
+      actorUid: user.uid,
+      roomCode: code,
+      sessionId: randomCode() + "-" + Date.now(),
+      now: Date.now()
+    });
+
+    if (auth.currentUser?.uid !== user.uid || roomRef !== reference) {
+      throw new Error("Account oder Raum hat sich während des Starts geändert.");
+    }
+
+    const snapshot = await reference.get();
+    if (!snapshot.exists()) {
+      throw new Error("Der Raum wurde inzwischen geschlossen.");
+    }
+
+    room = snapshot.val();
+
+    if (room.session?.id !== result.session.id) {
+      throw new Error("Die Sitzung konnte nicht eindeutig bestätigt werden.");
+    }
+  }
+
+  function publishSession() {
+    const session = room?.session;
+    if (!session) {
+      window.inkfallActiveCoopSession = null;
+      return;
+    }
+
+    const previous = window.inkfallActiveCoopSession;
+    if (previous?.id === session.id &&
+        previous?.revision === session.revision) return;
+
+    const confirmed = JSON.parse(JSON.stringify(session));
+    window.inkfallActiveCoopSession = confirmed;
+    window.dispatchEvent(new CustomEvent("inkfall:coop-session", {
+      detail: JSON.parse(JSON.stringify(confirmed))
+    }));
+  }
+
   function renderRoom() {
     if (!room) return;
 
     const slot = mySlot();
     if (!slot) return;
 
+    publishSession();
     const me = room[slot];
     const isHost = slot === "host";
     const bothReady = Boolean(
       room.host?.ready && room.guest?.ready &&
       room.host?.online && room.guest?.online
     );
-    const canChoose = room.status === "waiting" && !me.ready;
+    const canChoose = !busy && !room.session && room.status === "waiting" && !me.ready;
 
     function playerCard(player, label) {
       if (!player) {
@@ -343,8 +418,27 @@
         <div id="if-class-grid" class="if-class-grid">
           ${classCards}
         </div>
+
+        <section class="if-class-info" aria-live="polite">
+          ${room.session ? `
+            <h2>Gemeinsame Sitzung bereit</h2>
+            <p>Sitzung: <code>${escapeText(room.session.id)}</code></p>
+            <p>
+              ${escapeText(room.session.players?.host?.heroName || "Held 1")}
+              &amp;
+              ${escapeText(room.session.players?.guest?.heroName || "Held 2")}
+            </p>
+            <p>Phase: ${escapeText(room.session.phase)}</p>
+            <p>Die gemeinsame Karte wird im nächsten Schritt angebunden.</p>
+          ` : `
+            <p>${room.status === "prepared"
+              ? "Vorbereitung bestätigt. Der Host kann die Sitzung erstellen."
+              : "Beide Spieler wählen ihre Klasse und bestätigen ihre Bereitschaft."}</p>
+          `}
+        </section>
         <footer class="if-pregame-footer">
-          <button id="if-lobby-ready" class="if-pregame-button">
+          <button id="if-lobby-ready" class="if-pregame-button"
+            ${busy || room.session ? "disabled" : ""}>
             ${me.ready ? "Bereit zurücknehmen" : "Ich bin bereit"}
           </button>
           ${isHost ? `
@@ -352,15 +446,46 @@
               ${!bothReady || room.status !== "waiting" ? "disabled" : ""}>
               Vorbereitung bestätigen
             </button>` : ""}
+
+          ${isHost && room.status === "prepared" && !room.session ? `
+            <button id="if-start-coop" class="if-pregame-button"
+              ${!bothReady || busy ? "disabled" : ""}>
+              Coop-Sitzung starten
+            </button>
+          ` : ""}
         </footer>
         <p id="if-lobby-message" role="status"></p>
       </div>
     `;
 
     screen.querySelectorAll("[data-lobby-class]").forEach(button => {
-      button.onclick = () => action(() =>
-        roomRef.child(slot + "/heroClass").set(button.dataset.lobbyClass)
-      );
+      button.onclick = () => action(async () => {
+        const user = auth.currentUser;
+        const reference = roomRef;
+        const classId = button.dataset.lobbyClass;
+
+        if (!user || !canChoose) {
+          throw new Error("Klassenwechsel ist gerade gesperrt.");
+        }
+
+        const snapshot = await db.ref(
+          "users/" + user.uid + "/characters/" + classId
+        ).get();
+
+        if (auth.currentUser?.uid !== user.uid || roomRef !== reference) {
+          throw new Error("Account oder Raum wurde geändert.");
+        }
+
+        const character = snapshot.val();
+        const heroName = typeof heroNameState === "function"
+          ? heroNameState(character, classId).name
+          : HERO[classId].name;
+
+        await reference.child(slot).update({
+          heroClass: classId,
+          heroName
+        });
+      });
     });
 
     screen.querySelector("#if-lobby-ready").onclick = () => action(() =>
@@ -369,6 +494,10 @@
 
     screen.querySelector("#if-prepare-room")?.addEventListener("click", () =>
       action(() => roomRef.child("status").set("prepared"))
+    );
+
+    screen.querySelector("#if-start-coop")?.addEventListener(
+      "click", () => action(startCoopSession)
     );
 
     screen.querySelector("#if-leave-room").onclick = () => action(async () => {
