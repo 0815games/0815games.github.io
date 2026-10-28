@@ -99,6 +99,18 @@
     ctx.lineJoin="round";
     ctx.lineCap="round";
 
+    // Heldenname über der Figur.
+    ctx.save();
+    ctx.scale(heroVisual.facing,1);
+    ctx.textAlign="center";
+    ctx.font="800 10px system-ui, sans-serif";
+    ctx.lineWidth=3;
+    ctx.strokeStyle="rgba(20,18,30,.85)";
+    ctx.strokeText(h.name||HERO[h.cls].name,0,-70);
+    ctx.fillStyle="#fff6d9";
+    ctx.fillText(h.name||HERO[h.cls].name,0,-70);
+    ctx.restore();
+
     // Stiefel und Beine.
     ctx.fillStyle="#3e4864";
     ctx.beginPath();
@@ -108,7 +120,6 @@
     ctx.stroke();
 
     if(h.cls==="knight") {
-      // Orangefarbener Umhang.
       ctx.fillStyle="#f49a50";
       ctx.beginPath();
       ctx.moveTo(-12,-22);
@@ -119,7 +130,6 @@
       ctx.fill();
       ctx.stroke();
 
-      // Türkise Rüstung.
       ctx.fillStyle="#61cbd2";
       ctx.beginPath();
       ctx.roundRect(-12,-22,25,28,7);
@@ -132,7 +142,6 @@
       ctx.lineTo(-6,-3);
       ctx.stroke();
 
-      // Helm.
       ctx.fillStyle="#b8dce1";
       ctx.strokeStyle=ink;
       ctx.beginPath();
@@ -151,7 +160,6 @@
       ctx.lineTo(5,-27);
       ctx.stroke();
 
-      // Helmbusch.
       ctx.strokeStyle="#f49a50";
       ctx.lineWidth=5;
       ctx.beginPath();
@@ -159,7 +167,6 @@
       ctx.quadraticCurveTo(1,-51,10,-48);
       ctx.stroke();
 
-      // Schild.
       ctx.lineWidth=2.5;
       ctx.strokeStyle=ink;
       ctx.fillStyle="#e7bc65";
@@ -182,7 +189,6 @@
       ctx.lineTo(-8,-8);
       ctx.stroke();
 
-      // Schwert schwingt nur bei einem tatsächlichen Helden-Treffer.
       ctx.save();
       ctx.translate(14,-13);
       const attack=heroVisual.attack/.22;
@@ -210,7 +216,6 @@
       ctx.stroke();
       ctx.restore();
     } else {
-      // Violett-blaue Magierrobe.
       ctx.fillStyle="#9271d3";
       ctx.beginPath();
       ctx.moveTo(-10,-22);
@@ -228,7 +233,6 @@
       ctx.lineTo(12,7);
       ctx.stroke();
 
-      // Gesicht.
       circle(ctx,0,-29,11,"#f0c698");
       ctx.strokeStyle=ink;
       ctx.lineWidth=2;
@@ -239,7 +243,6 @@
       ctx.lineTo(6,-29);
       ctx.stroke();
 
-      // Hut.
       ctx.fillStyle="#647dcc";
       ctx.beginPath();
       ctx.moveTo(-12,-36);
@@ -255,7 +258,6 @@
       ctx.fill();
       ctx.stroke();
 
-      // Stab.
       ctx.strokeStyle="#77543f";
       ctx.lineWidth=5;
       ctx.beginPath();
@@ -272,7 +274,6 @@
       ctx.lineTo(20,-30);
       ctx.lineTo(12,-40);
       ctx.closePath();
-      ctx.fill();
       ctx.stroke();
 
       if(heroVisual.attack>0) {
@@ -343,7 +344,6 @@
       particle.life-=dt;
       particle.x+=particle.vx*dt;
       particle.y+=particle.vy*dt;
-      particle.vy+=65*dt;
     }
 
     for(const effect of effects)effect.life-=dt;
@@ -369,8 +369,6 @@
       return;
     }
 
-    // Startposition übernehmen, damit beim ersten Bild
-    // keine scheinbare Laufbewegung entsteht.
     heroVisual.x = hero.x;
     heroVisual.y = hero.y;
 
@@ -383,11 +381,9 @@
       const before = enemy.hp;
       const point = pos(enemy);
 
-      // Erst die echte Spiellogik ausführen.
       const result = originalHit(enemy, damage, type);
       const dealt = Math.max(0, before - enemy.hp);
 
-      // Geblockte Treffer erzeugen keine falschen Schadenseffekte.
       if (!wasAlive || dealt <= 0) return result;
 
       const color = type === "frost"
@@ -453,9 +449,7 @@
     };
   }
 
-
   window.InkfallCombatArt={renderHero,frame};
 
-  // Erst nach Laden der bisherigen Spiel- und Grafikdateien verbinden.
   document.addEventListener("DOMContentLoaded",connectCombat);
 })();

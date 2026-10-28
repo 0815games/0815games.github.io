@@ -57,10 +57,6 @@ function ensureAuthUI() {
   `;
 
   document.body.append(box);
-
-  
-  
-  
 }
 
 function updateAccountUI() {
@@ -76,7 +72,7 @@ function updateAccountUI() {
 
   document.getElementById("userInfo").textContent = loggedIn
     ? (currentProfile?.profile?.displayName || "Wächter") +
-      " · " + (HERO[activeCharacterId]?.name || "Keine Klasse") +
+      " · " + (character?.heroName || HERO[activeCharacterId]?.name || "Keine Klasse") +
       " · Level " + (character?.level || 1)
     : "Nicht angemeldet";
 }
@@ -94,11 +90,19 @@ function freshRun(classId) {
 
 function freshCharacter(classId) {
   return {
+    heroName: HERO[classId]?.name || classId,
     level: 1,
     xp: 0,
     skillPoints: 0,
     soloRun: freshRun(classId)
   };
+}
+
+function validHeroName(value, classId) {
+  const name = String(value || "").trim();
+  return name.length >= 3 && name.length <= 20
+    ? name
+    : HERO[classId]?.name || classId;
 }
 
 function validSkills(source) {
@@ -120,8 +124,6 @@ async function migrateCharacters(user) {
   let latestSnapshot = null;
 
   try {
-    // Listener während der gesamten Transaktion aktiv halten.
-    // So liegen die gelesenen Accountdaten auch im aktiven lokalen Cache.
     await new Promise((resolve, reject) => {
       listener = snapshot => {
         latestSnapshot = snapshot;
@@ -221,7 +223,6 @@ async function migrateCharacters(user) {
           next.selectedClass = classId;
           next.schemaVersion = 2;
 
-          // Alte save- und profile-Daten ausdrücklich erhalten.
           return next;
         } catch (error) {
           callbackError = error;
@@ -238,16 +239,13 @@ async function migrateCharacters(user) {
 
       if (result.committed) {
         if (result.snapshot.val()?.schemaVersion !== 2) {
-          throw new Error(
-            "Migration wurde bestätigt, aber schemaVersion 2 fehlt."
-          );
+          throw new Error("Migration wurde bestätigt, aber schemaVersion 2 fehlt.");
         }
 
         logFb("Charakter-Migration erfolgreich abgeschlossen.");
         return;
       }
 
-      // Zwischenzeitlich könnte ein anderer Tab migriert haben.
       const check = await reference.get();
 
       if (check.val()?.schemaVersion === 2) {
@@ -261,9 +259,8 @@ async function migrateCharacters(user) {
 
       if (attempt === 3) {
         throw new Error(
-          "Migration nach drei Versuchen abgebrochen. " +
-          (abortReason || "Die Transaktion wurde nicht bestätigt.") +
-          " Bitte keine weiteren Tabs mit diesem Account offen lassen."
+          "Migration nach drei Versuchen abgebrochen: " +
+          (abortReason || "Die Transaktion wurde nicht bestätigt.")
         );
       }
 
@@ -282,7 +279,6 @@ async function migrateCharacters(user) {
     }
   }
 }
-
 
 function decodeCharacter(classId, character) {
   const run = character.soloRun || freshRun(classId);
@@ -330,6 +326,7 @@ function decodeCharacter(classId, character) {
     run,
     towers: restoredTowers,
     skills: validSkills(character.skills),
+    heroName: validHeroName(character.heroName, classId),
     heroX: number(run.heroX, 0, cv.width) ? run.heroX : 120,
     heroY: number(run.heroY, 0, cv.height) ? run.heroY : 300
   };
@@ -347,6 +344,7 @@ function applyCharacter(classId, character) {
   towers = restored.towers;
 
   hero.cls = classId;
+  hero.name = restored.heroName;
   hero.x = restored.heroX;
   hero.y = restored.heroY;
   hero.target = null;
@@ -393,7 +391,7 @@ async function loadGame() {
       lastError = null;
 
       updateAccountUI();
-      logFb("Charakter geladen: " + HERO[classId].name);
+      logFb("Charakter geladen: " + hero.name);
     } catch (error) {
       fbError(error);
       throw error;
@@ -456,6 +454,7 @@ async function saveGame() {
 
   const savedSkills = { ...skills };
   const savedPoints = skillPoints;
+  const savedName = validHeroName(hero.name, classId);
 
   characterSaveBusy = true;
 
@@ -464,6 +463,7 @@ async function saveGame() {
       ["characters/" + classId + "/skillPoints"]: savedPoints,
       ["characters/" + classId + "/skills"]: savedSkills,
       ["characters/" + classId + "/soloRun"]: run,
+      ["characters/" + classId + "/heroName"]: savedName,
       selectedClass: classId
     });
 
@@ -472,10 +472,11 @@ async function saveGame() {
       character.skillPoints = savedPoints;
       character.skills = savedSkills;
       character.soloRun = run;
+      character.heroName = savedName;
 
       lastSave = new Date().toLocaleTimeString("de-DE");
       lastError = null;
-      logFb(HERO[classId].name + " gespeichert.");
+      logFb(hero.name + " gespeichert.");
     }
 
     return true;
@@ -486,6 +487,33 @@ async function saveGame() {
     characterSaveBusy = false;
   }
 }
+
+window.setHeroName = async function(classId, value) {
+  if (!["knight", "mage"].includes(classId)) {
+    throw new Error("Diese Klasse ist noch nicht implementiert.");
+  }
+
+  const user = auth.currentUser;
+  if (!user) throw new Error("Bitte zuerst anmelden.");
+
+  const name = validHeroName(value, classId);
+
+  await db.ref(
+    "users/" + user.uid + "/characters/" + classId + "/heroName"
+  ).set(name);
+
+  if (activeCharacterId === classId) {
+    hero.name = name;
+    ui();
+  }
+
+  if (currentProfile?.characters?.[classId]) {
+    currentProfile.characters[classId].heroName = name;
+  }
+
+  updateAccountUI();
+  return name;
+};
 
 window.selectSoloCharacter = async function(classId) {
   if (!["knight", "mage"].includes(classId)) {
@@ -502,7 +530,6 @@ window.selectSoloCharacter = async function(classId) {
       throw new Error("Klassenwechsel erst nach Abschluss der laufenden Welle.");
     }
 
-    // Vor dem Wechsel die bisherige Einzelspieler-Partie sichern.
     if (window.inkfallMode === "single") {
       const saved = await saveGame();
       if (!saved) throw new Error("Vorheriger Charakter konnte nicht gespeichert werden.");

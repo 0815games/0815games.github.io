@@ -42,6 +42,7 @@
   let mode = "single";
   let chosen = "knight";
   let changed = false;
+  let chosenName = "";
 
   function playerName() {
     if (typeof currentProfile !== "undefined") {
@@ -54,6 +55,13 @@
     return "Wächter";
   }
 
+  function existingHeroName(classId) {
+    if (typeof currentProfile !== "undefined") {
+      return currentProfile?.characters?.[classId]?.heroName || "";
+    }
+    return "";
+  }
+
   function show(selectedMode) {
     mode = selectedMode;
     chosen = typeof hero !== "undefined" ? hero.cls : "knight";
@@ -61,6 +69,8 @@
       chosen = "knight";
     }
     changed = false;
+    chosenName = existingHeroName(chosen) ||
+      (typeof hero !== "undefined" && hero.cls === chosen ? hero.name : "");
     speed = 0;
     screen.hidden = false;
     render();
@@ -68,6 +78,7 @@
 
   function render() {
     const continuing = wave > 0 || active || towers.length > 0;
+    const selected = classes.find(item=>item.id===chosen);
 
     screen.innerHTML = `
       <div class="if-pregame-shell">
@@ -93,7 +104,19 @@
             </div>`:""}
         </div>
         <div id="if-class-grid" class="if-class-grid"></div>
-        <section id="if-class-info" class="if-class-info"></section>
+        <section id="if-class-info" class="if-class-info">
+          <h2>${selected.name}</h2>
+          <label class="if-hero-name-label">
+            Name deines Helden
+            <input id="if-hero-name" maxlength="20" minlength="3"
+              autocomplete="off" spellcheck="false"
+              placeholder="3–20 Zeichen"
+              value="${chosenName.replace(/"/g,"&quot;")}">
+          </label>
+          <p>${selected.description || "Diese Klasse ist noch nicht implementiert."}</p>
+          ${selected.ability?`<p>${selected.ability}</p>`:""}
+          ${selected.strength?`<p>${selected.strength}</p>`:""}
+        </section>
         <footer class="if-pregame-footer">
           <button id="if-pregame-start" class="if-pregame-button"
             ${mode==="coop"?"disabled":""}>
@@ -150,28 +173,18 @@
         }
         chosen = item.id;
         changed = chosen !== hero.cls;
+        chosenName = existingHeroName(chosen) ||
+          (hero.cls === chosen ? hero.name : "");
         render();
       };
 
       grid.append(button);
     }
 
-    const selected = classes.find(item=>item.id===chosen);
-    const info = screen.querySelector("#if-class-info");
-
-    const heading = document.createElement("h2");
-    heading.textContent = selected.name;
-
-    const description = document.createElement("p");
-    description.textContent = selected.description;
-
-    const ability = document.createElement("p");
-    ability.textContent = selected.ability;
-
-    const strength = document.createElement("p");
-    strength.textContent = selected.strength;
-
-    info.append(heading,description,ability,strength);
+    const nameInput = screen.querySelector("#if-hero-name");
+    nameInput.oninput = () => {
+      chosenName = nameInput.value;
+    };
 
     screen.querySelector("#if-pregame-message").textContent =
       mode==="coop"
@@ -180,12 +193,11 @@
       : active
         ? "Laufende Welle pausiert. Deine aktuelle Klasse bleibt erhalten."
         : changed
-          ? "Die gewählte Klasse wird beim Betreten übernommen."
+          ? "Die gewählte Klasse und der Name werden beim Betreten übernommen."
           : "Deine aktuelle Klasse ist ausgewählt.";
 
     screen.querySelector("#if-pregame-back").onclick = () => {
       screen.hidden = true;
-      // Startbildschirm bleibt darunter geöffnet und die Partie pausiert.
     };
 
     screen.querySelector("#if-pregame-start").onclick = async () => {
@@ -204,6 +216,7 @@
 
         status.textContent = "Charakter wird geladen …";
         await window.selectSoloCharacter(chosen);
+        await window.setHeroName(chosen, chosenName);
 
         screen.hidden = true;
         originalStart.onclick();
@@ -215,8 +228,6 @@
     };
   }
 
-  // Dynamisch erzeugte Modusbuttons abfangen.
-  // Der ursprüngliche Einzelspieler-Start wird erst nach Klassenwahl ausgeführt.
   document.addEventListener("click",event => {
     const button = event.target.closest?.("#if-single, #if-coop");
     if (!button) return;

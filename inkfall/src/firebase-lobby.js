@@ -19,18 +19,8 @@
   let busy = false;
 
   const lobbyClasses = [
-    {
-      id: "knight",
-      name: "Ritter",
-      role: "Nahkampf und Kontrolle",
-      available: true
-    },
-    {
-      id: "mage",
-      name: "Elementarmagier",
-      role: "Fernkampf und Flächenkontrolle",
-      available: true
-    }
+    { id: "knight", name: "Ritter", role: "Nahkampf und Kontrolle" },
+    { id: "mage", name: "Elementarmagier", role: "Fernkampf und Flächenkontrolle" }
   ];
 
   const uid = () => auth.currentUser?.uid;
@@ -44,7 +34,6 @@
   }
 
   function errorText(error) {
-    // DIAG_LOBBY_ERRORS
     window.inkfallDiag?.capture(error, "Coop-Lobby");
 
     const code = String(error.code || "").toLowerCase();
@@ -76,6 +65,7 @@
     return {
       uid: user.uid,
       name,
+      heroName: hero.name || HERO[hero.cls].name,
       heroClass: hero.cls === "mage" ? "mage" : "knight",
       ready: false,
       online: true
@@ -215,6 +205,7 @@
       return {
         ...player,
         heroClass: current?.heroClass || player.heroClass,
+        heroName: current?.heroName || player.heroName,
         ready: false
       };
     }, undefined, false);
@@ -254,7 +245,6 @@
         </header>
         <p class="if-pregame-description">
           Erstelle einen Raum oder tritt mit dem Code deines Freundes bei.
-          Maximal zwei unterschiedliche Accounts.
         </p>
         <section class="if-class-info">
           <button id="if-create-room" class="if-pregame-button">
@@ -313,6 +303,7 @@
 
       return `<div class="if-player-slot">
         <strong>${label} · ${escapeText(player.name)}</strong>
+        <div><b>${escapeText(player.heroName || "Held")}</b></div>
         <div>${selectedClass ? selectedClass.name : "Ritter"}</div>
         <div>${player.online ? "Verbunden" : "Verbindung unterbrochen"}</div>
         <div>${player.ready ? "✓ Bereit" : "Noch nicht bereit"}</div>
@@ -363,15 +354,6 @@
             </button>` : ""}
         </footer>
         <p id="if-lobby-message" role="status"></p>
-        <p class="if-pregame-description">
-          ${room.status === "prepared" && bothReady
-            ? "Beide Spieler sind bereit. Die Lobby funktioniert. Die gemeinsame Kampfsimulation wird als nächstes angebunden."
-            : room.status === "prepared"
-              ? "Vorbereitung pausiert: Bereit- oder Verbindungsstatus hat sich geändert."
-              : canChoose
-                ? "Wähle deine Klasse und bestätige deine Bereitschaft."
-                : "Deine Klasse ist gewählt. Bestätige deine Bereitschaft."}
-        </p>
       </div>
     `;
 
@@ -397,7 +379,6 @@
     });
   }
 
-  // Window-Capture läuft vor dem bisherigen Coop-Handler am document.
   window.addEventListener("click", event => {
     if (!event.target.closest?.("#if-coop")) return;
 
