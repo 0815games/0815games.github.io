@@ -29,7 +29,7 @@
         },
         "characters": {
           "$classId": {
-            ".validate": "($classId === 'knight' || $classId === 'mage') && newData.hasChildren(['level','xp','skillPoints','soloRun']) && newData.child('soloRun/heroClass').val() === $classId",
+            ".validate": "($classId === 'knight' || $classId === 'mage') && newData.hasChildren(['level','xp','skillPoints','soloRun']) && newData.child('soloRun/heroClass').val() === $classId && (!(data.child('heroNameLocked').val() === true || (data.child('heroName').isString() && data.child('heroName').val() !== ($classId === 'mage' ? 'Elementarmagier' : 'Ritter'))) || (newData.child('heroName').val() === data.child('heroName').val() && (newData.child('heroNameLocked').val() === data.child('heroNameLocked').val() || newData.child('heroNameLocked').val() === true)) || (newData.child('heroNameLocked').val() === false && newData.child('heroName').val() === ($classId === 'mage' ? 'Elementarmagier' : 'Ritter') && newData.child('level').val() === 1 && newData.child('xp').val() === 0 && newData.child('skillPoints').val() === 0 && !newData.child('skills').exists() && newData.child('soloRun/wave').val() === 0 && newData.child('soloRun/gold').val() === 150 && newData.child('soloRun/lives').val() === 100 && newData.child('soloRun/heroX').val() === 120 && newData.child('soloRun/heroY').val() === 300 && !newData.child('soloRun/towers').exists()))",
             "level": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 999 && newData.val() % 1 === 0"
             },
@@ -95,6 +95,12 @@
             },
             "$other": {
               ".validate": false
+            },
+            "heroName": {
+              ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
+            },
+            "heroNameLocked": {
+              ".validate": "newData.isBoolean() && (newData.val() === true || newData.parent().child('heroName').val() === ($classId === 'mage' ? 'Elementarmagier' : 'Ritter') || (data.val() === false && newData.parent().child('heroName').val() === data.parent().child('heroName').val()))"
             }
           }
         },
@@ -199,6 +205,9 @@
           },
           "$other": {
             ".validate": false
+          },
+          "heroName": {
+            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
           }
         },
         "guest": {
@@ -221,6 +230,9 @@
           },
           "$other": {
             ".validate": false
+          },
+          "heroName": {
+            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
           }
         },
         "status": {

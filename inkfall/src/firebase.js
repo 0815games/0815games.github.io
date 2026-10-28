@@ -91,6 +91,7 @@ function freshRun(classId) {
 function freshCharacter(classId) {
   return {
     heroName: HERO[classId]?.name || classId,
+    heroNameLocked: false,
     level: 1,
     xp: 0,
     skillPoints: 0,
@@ -326,7 +327,7 @@ function decodeCharacter(classId, character) {
     run,
     towers: restoredTowers,
     skills: validSkills(character.skills),
-    heroName: validHeroName(character.heroName, classId),
+    heroName: heroNameState(character, classId).name,
     heroX: number(run.heroX, 0, cv.width) ? run.heroX : 120,
     heroY: number(run.heroY, 0, cv.height) ? run.heroY : 300
   };
@@ -454,7 +455,6 @@ async function saveGame() {
 
   const savedSkills = { ...skills };
   const savedPoints = skillPoints;
-  const savedName = validHeroName(hero.name, classId);
 
   characterSaveBusy = true;
 
@@ -463,7 +463,6 @@ async function saveGame() {
       ["characters/" + classId + "/skillPoints"]: savedPoints,
       ["characters/" + classId + "/skills"]: savedSkills,
       ["characters/" + classId + "/soloRun"]: run,
-      ["characters/" + classId + "/heroName"]: savedName,
       selectedClass: classId
     });
 
@@ -472,7 +471,6 @@ async function saveGame() {
       character.skillPoints = savedPoints;
       character.skills = savedSkills;
       character.soloRun = run;
-      character.heroName = savedName;
 
       lastSave = new Date().toLocaleTimeString("de-DE");
       lastError = null;
@@ -488,31 +486,168 @@ async function saveGame() {
   }
 }
 
-window.setHeroName = async function(classId, value) {
+
+function heroNameState(character, classId) {
+  const fallback = HERO[classId]?.name || classId;
+  const value = typeof character?.heroName === "string"
+    ? character.heroName.trim()
+    : "";
+  const valid = value.length >= 3 && value.length <= 20 &&
+    !/[\u0000-\u001f\u007f]/.test(value);
+
+  return {
+    assigned: valid && (
+      character?.heroNameLocked === true ||
+      value !== fallback
+    ),
+    name: valid ? value : fallback
+  };
+}
+
+function requireCharacterSession(classId) {
   if (!["knight", "mage"].includes(classId)) {
-    throw new Error("Diese Klasse ist noch nicht implementiert.");
+    throw new Error("Klasse nicht verfügbar.");
+  }
+  const user = auth.currentUser;
+  if (!user || characterLoadedUid !== user.uid || !currentProfile) {
+    throw new Error("Bitte zuerst das Charakterprofil laden.");
+  }
+  return user;
+}
+
+function syncHeroIdentity(classId, data, user) {
+  if (auth.currentUser?.uid !== user.uid) {
+    throw new Error("Account wurde während der Aktion geändert.");
   }
 
-  const user = auth.currentUser;
-  if (!user) throw new Error("Bitte zuerst anmelden.");
+  currentProfile.characters ||= {};
+  const target = currentProfile.characters[classId] ||= data;
 
-  const name = validHeroName(value, classId);
+  if (typeof data.heroName === "string") {
+    target.heroName = data.heroName;
+  } else {
+    delete target.heroName;
+  }
 
-  await db.ref(
-    "users/" + user.uid + "/characters/" + classId + "/heroName"
-  ).set(name);
+  if (typeof data.heroNameLocked === "boolean") {
+    target.heroNameLocked = data.heroNameLocked;
+  } else {
+    delete target.heroNameLocked;
+  }
 
   if (activeCharacterId === classId) {
-    hero.name = name;
+    hero.name = heroNameState(data, classId).name;
     ui();
   }
+  updateAccountUI();
+}
 
-  if (currentProfile?.characters?.[classId]) {
-    currentProfile.characters[classId].heroName = name;
+window.refreshHeroNames = async function() {
+  const user = auth.currentUser;
+  if (!user || characterLoadedUid !== user.uid || !currentProfile) {
+    throw new Error("Charakterprofil ist noch nicht geladen.");
   }
 
-  updateAccountUI();
-  return name;
+  const snapshot = await db.ref(
+    "users/" + user.uid + "/characters"
+  ).get();
+
+  if (auth.currentUser?.uid !== user.uid) {
+    throw new Error("Account wurde geändert.");
+  }
+
+  const data = snapshot.val() || {};
+  for (const id of ["knight", "mage"]) {
+    if (data[id]) syncHeroIdentity(id, data[id], user);
+  }
+};
+
+window.setHeroName = async function(classId, value) {
+  const user = requireCharacterSession(classId);
+  const name = String(value || "").trim();
+
+  if (
+    name.length < 3 ||
+    name.length > 20 ||
+    /[\u0000-\u001f\u007f]/.test(name)
+  ) {
+    throw new Error(
+      "Bitte 3–20 Zeichen ohne Steuerzeichen eingeben."
+    );
+  }
+
+  if (
+    active ||
+    characterSaveBusy ||
+    window.inkfallMode === "lobby"
+  ) {
+    throw new Error("Namensvergabe ist gerade gesperrt.");
+  }
+
+  const reference = db.ref(
+    "users/" + user.uid + "/characters/" + classId
+  );
+  let listener;
+  characterSaveBusy = true;
+
+  try {
+    // Listener hält die Accountdaten während der Transaktion im Cache.
+    await new Promise((resolve, reject) => {
+      listener = snapshot => resolve(snapshot);
+      reference.on("value", listener, reject);
+    });
+
+    const result = await reference.transaction(current => {
+      if (auth.currentUser?.uid !== user.uid) return;
+
+      const data = current || freshCharacter(classId);
+      if (heroNameState(data, classId).assigned) return;
+
+      return {
+        ...data,
+        heroName: name,
+        heroNameLocked: true
+      };
+    }, undefined, false);
+
+    if (auth.currentUser?.uid !== user.uid) {
+      throw new Error("Account wurde geändert.");
+    }
+
+    const saved = result.snapshot.val();
+    if (!saved) {
+      throw new Error("Charakter konnte nicht gespeichert werden.");
+    }
+
+    syncHeroIdentity(classId, saved, user);
+
+    if (!result.committed && saved.heroName !== name) {
+      throw new Error(
+        "Name bereits vergeben. Nur ein vollständiger " +
+        "Charakter-Reset erlaubt einen neuen Namen."
+      );
+    }
+
+    if (!heroNameState(saved, classId).assigned) {
+      throw new Error("Namensvergabe wurde nicht bestätigt.");
+    }
+
+    return saved.heroName;
+  } catch (error) {
+    const denied = String(error.code || "")
+      .toLowerCase().includes("permission");
+
+    throw new Error(
+      (denied
+        ? "Firebase lehnt die Namensspeicherung ab. " +
+          "Bitte die aktualisierten Datenbankregeln veröffentlichen. "
+        : "") +
+      error.message
+    );
+  } finally {
+    if (listener) reference.off("value", listener);
+    characterSaveBusy = false;
+  }
 };
 
 window.selectSoloCharacter = async function(classId) {

@@ -39,21 +39,11 @@ document.head.append(style);
 const screen=document.createElement('section');screen.id='if-pregame';screen.hidden=true;screen.setAttribute('aria-label','Spielvorbereitung');frame.append(screen);
 let chosen='knight',busy=false;const drafts={};
 const character=id=>currentProfile?.characters?.[id];
-const locked=(data,id)=>data?.heroNameLocked===true||(data?.heroNameLocked!==false&&typeof data?.heroName==='string'&&data.heroName.trim()!==''&&data.heroName!==HERO[id].name);
+const locked=(data,id)=>heroNameState(data,id).assigned;
 const unavailable=()=>active||characterSaveBusy||window.inkfallMode==='lobby';
 function status(text){const target=screen.querySelector('#if-pregame-message');if(target)target.textContent=text;}
 function ensureAccount(user){if(auth.currentUser?.uid!==user.uid)throw new Error('Account wurde während der Aktion geändert.');}
 function sync(id,data,user){ensureAccount(user);currentProfile.characters||={};currentProfile.characters[id]=data;if(activeCharacterId===id){hero.name=data.heroName||HERO[id].name;ui();}updateAccountUI();}
-window.setHeroName=async function(id,value){
-if(!['knight','mage'].includes(id))throw new Error('Diese Klasse ist noch nicht verfügbar.');
-const user=auth.currentUser;if(!user||characterLoadedUid!==user.uid||!currentProfile)throw new Error('Bitte zuerst das Charakterprofil laden.');
-const name=String(value||'').trim();if(!name)return character(id)?.heroName||HERO[id].name;
-if(name.length<3||name.length>20||/[\u0000-\u001f\u007f]/.test(name))throw new Error('Bitte einen Namen mit 3–20 Zeichen ohne Steuerzeichen eingeben.');
-if(unavailable())throw new Error('Benennen ist während einer Welle, Speicherung oder in der Coop-Lobby gesperrt.');
-const ref=db.ref('users/'+user.uid+'/characters/'+id);characterSaveBusy=true;
-try{await ref.get();const result=await ref.transaction(data=>{if(auth.currentUser?.uid!==user.uid)return;data=data||freshCharacter(id);if(locked(data,id))return;return {...data,heroName:name,heroNameLocked:true};},undefined,false);
-ensureAccount(user);const data=result.snapshot.val();if(!result.committed){if(data)sync(id,data,user);if(data?.heroName===name&&locked(data,id))return name;throw new Error('Der Name ist bereits fest vergeben. Nur ein vollständiger Charakter-Reset gibt ihn wieder frei.');}sync(id,data,user);return data.heroName;}finally{characterSaveBusy=false;}
-};
 async function fixName(){const id=chosen,value=String(drafts[id]||'').trim();if(value.length<3||value.length>20)throw new Error('Bitte einen Namen mit 3–20 Zeichen eingeben.');if(unavailable())throw new Error('Namensvergabe ist gerade gesperrt.');const yes=await inkfallDialog({title:'Namen dauerhaft festlegen?',message:'„'+value+'“ bleibt der Name dieses Charakters. Er kann nur durch einen vollständigen Reset des Charakters geändert werden.',confirmText:'Namen festlegen',cancelText:'Abbrechen'});if(!yes)return false;await window.setHeroName(id,value);delete drafts[id];return true;}
 async function resetCharacter(){
 const id=chosen,user=auth.currentUser;if(!user||characterLoadedUid!==user.uid||!currentProfile)throw new Error('Charakterprofil ist noch nicht geladen.');if(unavailable())throw new Error('Reset während einer Welle, Speicherung oder in der Coop-Lobby gesperrt.');
@@ -73,15 +63,18 @@ for(const c of classes){
 const tile=element('div',undefined,'if-class-tile'),button=element('button',undefined,'if-class-card'+(c.id===chosen?' selected':''));button.type='button';button.disabled=!c.available;button.setAttribute('aria-pressed',String(c.id===chosen));
 if(c.available){const img=document.createElement('img');img.src='assets/art/heroes/'+c.id+'.svg';img.alt='';img.onerror=()=>img.hidden=true;button.append(img);}else button.append(element('div','✦','if-class-placeholder'));
 button.append(element('strong',c.name),element('small',c.role));if(!c.available)button.append(element('small','Noch nicht implementiert'));
-const saved=c.available?character(c.id):null;if(c.available&&locked(saved,c.id)){button.setAttribute('aria-label',c.name+' · '+saved.heroName);tile.append(element('span',saved.heroName,'if-wood-name'));}
+const saved=c.available?character(c.id):null;if(c.available&&locked(saved,c.id)){button.setAttribute('aria-label',c.name+' · '+saved.heroName);tile.append(element('span',heroNameState(saved,c.id).name,'if-wood-name'));}
 button.onclick=()=>{if(busy)return;if(active){status('Während einer laufenden Welle ist kein Klassenwechsel möglich.');return;}chosen=c.id;render();};tile.prepend(button);grid.append(tile);
 }
 const details=shell.querySelector('#if-character-details');
-const info=section(details,item.name+' · Level '+(data?.level||1)+' — Klasseninfos');for(const text of [item.description,item.ability,item.strength])info.append(element('p',text));
-if(!fixed){const body=section(details,'Heldennamen vergeben');body.innerHTML='<form class="if-name-form"><label for="if-hero-name">Name deines Helden</label><input id="if-hero-name" minlength="3" maxlength="20" autocomplete="off" placeholder="Dein Heldenname …"><button class="if-pregame-button" type="submit">Namen festlegen</button></form><p>3–20 Zeichen · Bleibt bis zum vollständigen Reset erhalten.</p>';const input=body.querySelector('input');input.value=drafts[chosen]||'';input.disabled=unavailable();input.oninput=()=>drafts[chosen]=input.value;body.querySelector('button').disabled=unavailable();body.querySelector('form').onsubmit=event=>{event.preventDefault();action(fixName);};}
-const management=section(details,'Charakter verwalten');management.append(element('p',fixed?'Der Name ist fest vergeben. Ein vollständiger Reset löscht auch den Fortschritt.':'Ein vollständiger Reset betrifft nur diese Klasse.'));const reset=element('button','Charakter zurücksetzen','if-pregame-button secondary');reset.id='if-reset-character';reset.disabled=unavailable()||!data;reset.onclick=()=>action(resetCharacter);management.append(reset);
+const management=section(details,'Charakter verwalten');
+management.append(element('strong',item.name+' · Level '+(data?.level||1)));
+const info=management;for(const text of [item.description,item.ability,item.strength])info.append(element('p',text));
+if(fixed)management.append(element('p','Heldenname: '+heroNameState(data,chosen).name+' · Fest vergeben.'));
+if(!fixed){const body=management;body.innerHTML='<form class="if-name-form"><label for="if-hero-name">Name deines Helden</label><input id="if-hero-name" minlength="3" maxlength="20" autocomplete="off" placeholder="Dein Heldenname …"><button class="if-pregame-button" type="submit">Namen festlegen</button></form><p>3–20 Zeichen · Bleibt bis zum vollständigen Reset erhalten.</p>';const input=body.querySelector('input');input.value=drafts[chosen]||'';input.disabled=unavailable();input.oninput=()=>drafts[chosen]=input.value;body.querySelector('button').disabled=unavailable();body.querySelector('form').onsubmit=event=>{event.preventDefault();action(fixName);};}
+management.append(element('p',fixed?'Der Name ist fest vergeben. Ein vollständiger Reset löscht auch den Fortschritt.':'Ein vollständiger Reset betrifft nur diese Klasse.'));const reset=element('button','Charakter zurücksetzen','if-pregame-button secondary');reset.id='if-reset-character';reset.disabled=unavailable()||!data;reset.onclick=()=>action(resetCharacter);management.append(reset);
 shell.querySelector('#if-pregame-back').onclick=()=>{if(!busy)screen.hidden=true;};
 const start=shell.querySelector('#if-pregame-start');start.textContent=(wave>0||active||towers.length)?'Spiel fortsetzen':'Verteidigung betreten';start.onclick=()=>action(async()=>{const original=document.getElementById('if-single');if(typeof original?.onclick!=='function')throw new Error('Start-Handler fehlt. Bitte zum Hauptmenü zurückkehren.');if(!locked(character(chosen),chosen)&&String(drafts[chosen]||'').trim()){if(!await fixName())return;}await window.selectSoloCharacter(chosen);screen.hidden=true;original.onclick();});status(active?'Laufende Welle pausiert.':'');
 }
-document.addEventListener('click',event=>{if(!event.target.closest?.('#if-single'))return;event.preventDefault();event.stopImmediatePropagation();if(busy)return;chosen=['knight','mage'].includes(hero.cls)?hero.cls:'knight';speed=0;screen.hidden=false;render();},true);
+document.addEventListener('click',event=>{if(!event.target.closest?.('#if-single'))return;event.preventDefault();event.stopImmediatePropagation();if(busy)return;chosen=['knight','mage'].includes(hero.cls)?hero.cls:'knight';speed=0;screen.hidden=false;render();action(async()=>{await window.refreshHeroNames();});},true);
 })();
