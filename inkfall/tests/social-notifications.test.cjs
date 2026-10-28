@@ -1,0 +1,18 @@
+"use strict";
+const test=require('node:test'),assert=require('node:assert/strict');
+const {createRequestTracker}=require('../src/social/social-bootstrap.js');
+const snapshot=(ids,extra={})=>({uid:'alice',available:true,loading:false,requests:ids.map(uid=>({uid})),...extra});
+test('Initial old requests only set badge',()=>assert.deepEqual(createRequestTracker().update(snapshot(['bob'])),{count:1,newCount:0}));
+test('New request after baseline notifies',()=>{const t=createRequestTracker();t.update(snapshot([]));assert.deepEqual(t.update(snapshot(['bob'])),{count:1,newCount:1});});
+test('Repeated snapshots do not notify again',()=>{const t=createRequestTracker();t.update(snapshot([]));t.update(snapshot(['bob']));assert.equal(t.update(snapshot(['bob'])).newCount,0);});
+test('Multiple additions grouped',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));assert.deepEqual(t.update(snapshot(['bob','carol','dan'])),{count:3,newCount:2});});
+test('Removing requests reduces badge without notice',()=>{const t=createRequestTracker();t.update(snapshot(['bob','carol']));assert.deepEqual(t.update(snapshot(['bob'])),{count:1,newCount:0});});
+test('Same sender can send a later new request',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));t.update(snapshot([]));assert.equal(t.update(snapshot(['bob'])).newCount,1);});
+test('Account change resets baseline',()=>{const t=createRequestTracker();t.update(snapshot([]));assert.deepEqual(t.update(snapshot(['bob'],{uid:'carol'})),{count:1,newCount:0});});
+test('Logout clears count',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));assert.deepEqual(t.update(snapshot([],{uid:null})),{count:0,newCount:0});});
+test('Login again does not replay old requests',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));t.update(snapshot([],{uid:null}));assert.equal(t.update(snapshot(['bob'])).newCount,0);});
+test('Unavailable service shows no count',()=>assert.deepEqual(createRequestTracker().update(snapshot(['bob'],{available:false})),{count:0,newCount:0}));
+test('Reconnect does not replay same requests',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));t.update(snapshot([],{available:false}));assert.equal(t.update(snapshot(['bob'])).newCount,0);});
+test('New requests during outage notify after reconnect',()=>{const t=createRequestTracker();t.update(snapshot(['bob']));t.update(snapshot([],{available:false}));assert.equal(t.update(snapshot(['bob','carol'])).newCount,1);});
+test('Loading does not initialize baseline',()=>{const t=createRequestTracker();t.update(snapshot([],{loading:true}));assert.equal(t.update(snapshot(['bob'])).newCount,0);});
+test('Duplicate and invalid IDs are ignored',()=>assert.deepEqual(createRequestTracker().update(snapshot(['bob','bob','',null,3])),{count:1,newCount:0}));
