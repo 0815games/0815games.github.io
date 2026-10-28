@@ -7,6 +7,9 @@ on:
       - 'inkfall/social/**'
       - 'inkfall/src/**'
       - 'inkfall/tests/**'
+      - 'inkfall/functions/**'
+      - 'inkfall/package.json'
+      - 'firebase.social-backend.json'
       - 'database.rules.json'
       - '.github/workflows/inkfall-social-security.yml'
   pull_request:
@@ -14,6 +17,9 @@ on:
       - 'inkfall/social/**'
       - 'inkfall/src/**'
       - 'inkfall/tests/**'
+      - 'inkfall/functions/**'
+      - 'inkfall/package.json'
+      - 'firebase.social-backend.json'
       - 'database.rules.json'
       - '.github/workflows/inkfall-social-security.yml'
 permissions:
@@ -35,10 +41,12 @@ jobs:
           java-version: '21'
       - name: Model tests
         run: node --test inkfall/social/social-model.test.cjs
-      - name: Existing INKFALL regression tests
+      - name: Existing INKFALL regression tests and backend service tests
         run: node --test inkfall/tests/*.test.cjs
       - name: Social UI component tests
         run: node --test inkfall/src/social/social-components.test.cjs
+      - name: Backend handler syntax
+        run: node --check inkfall/functions/index.cjs
       - name: Install isolated emulator dependencies
         working-directory: inkfall/social
         run: npm install --ignore-scripts --no-audit --no-fund

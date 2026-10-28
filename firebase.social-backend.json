@@ -1,0 +1,19 @@
+{
+  "functions": [
+    {
+      "source": "inkfall",
+      "codebase": "inkfall-social",
+      "ignore": [
+        "node_modules",
+        "src",
+        "tests",
+        "ARBEITSPLAN.md",
+        "social/node_modules",
+        "social/*.test.cjs",
+        "social/package*.json",
+        "social/firebase.emulator.json",
+        "social/emulator.closed.rules.json"
+      ]
+    }
+  ]
+}
