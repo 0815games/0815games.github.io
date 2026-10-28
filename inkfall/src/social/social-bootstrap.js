@@ -11,7 +11,86 @@ function createRequestTracker(){
   previous=ids;ready=true;return {count:ids.size,newCount};
  }};
 }
-if(typeof module==='object'&&module.exports){module.exports={createRequestTracker};return;}
+function createPresenceSession({auth,getDb,loadModule,enabled=false,onError=()=>{}}){
+ let running=false,disposed=false,version=0,owner=null,publisher=null,waiting=false,hidden=false,sdkPending=false,sdkNext=null,authOperations=0;
+ let offAuth=null,offBefore=null,restoreSignOut=null,stopping=Promise.resolve();
+ const report=error=>{try{onError(error);}catch{}};
+ const eligible=()=>running&&!disposed&&!hidden&&!sdkPending&&authOperations===0;
+ async function safeStop(value){if(!value)return;try{await value.stop();}catch(error){report(error);}}
+ function halt(){
+  version++;owner=null;waiting=false;const old=publisher;publisher=null;
+  stopping=Promise.all([stopping,safeStop(old)]).then(()=>{});return stopping;
+ }
+ function sync(user,force=false){
+  const uid=user?.uid||null;
+  if(!eligible()||(auth.currentUser?.uid||null)!==uid)return;
+  if(!force&&uid===owner&&(publisher||waiting))return;
+  const cleanup=halt(),ticket=version;owner=uid;if(!uid)return;
+  waiting=true;
+  const valid=()=>eligible()&&ticket===version&&auth.currentUser?.uid===uid;
+  Promise.resolve(cleanup).then(async()=>{
+   if(!valid())return;
+   const module=await loadModule();if(!valid())return;
+   if(typeof module?.createPublisher!=='function')throw Error('presence-module-unavailable');
+   const value=module.createPublisher({db:getDb(),auth,uid,enabled:true,onError:report});
+   if(!valid()){await safeStop(value);return;}
+   publisher=value;
+   try{if(value.start()===false)throw Error('presence-start-rejected');}
+   catch(error){if(publisher===value)publisher=null;await safeStop(value);throw error;}
+   if(!valid()){if(publisher===value)publisher=null;await safeStop(value);}
+  }).catch(error=>{if(ticket===version){owner=null;report(error);}}).finally(()=>{if(ticket===version)waiting=false;});
+ }
+ function start(){
+  if(running)return true;if(disposed||!enabled)return false;
+  running=true;
+  if(typeof auth.beforeAuthStateChanged==='function'){
+   try{offBefore=auth.beforeAuthStateChanged(next=>{if((next?.uid||null)!==(auth.currentUser?.uid||null)){sdkPending=true;sdkNext=next?.uid||null;return halt();}},()=>{sdkPending=false;sync(auth.currentUser);});}
+   catch(error){report(error);}
+  }
+  const original=auth.signOut,descriptor=Object.getOwnPropertyDescriptor(auth,'signOut');
+  const wrapped=function(...args){
+   if(!running||disposed)return original.apply(this,args);
+   authOperations++;
+   return halt().then(()=>original.apply(this,args)).finally(()=>{authOperations--;if(sdkPending&&sdkNext===null){sdkPending=false;}sync(auth.currentUser);});
+  };
+  try{
+   if(typeof original!=='function')throw Error('presence-signout-guard-unavailable');
+   auth.signOut=wrapped;if(auth.signOut!==wrapped)throw Error('presence-signout-guard-unavailable');
+   restoreSignOut=()=>{if(auth.signOut!==wrapped)return;if(descriptor)Object.defineProperty(auth,'signOut',descriptor);else delete auth.signOut;};
+  }catch(error){
+   if(!offBefore){running=false;report(error);return false;}
+  }
+  try{offAuth=auth.onAuthStateChanged(user=>{if(sdkPending&&(user?.uid||null)!==sdkNext)return;sdkPending=false;sync(user);});}
+  catch(error){running=false;if(offBefore)offBefore();offBefore=null;if(restoreSignOut)restoreSignOut();restoreSignOut=null;report(error);return false;}
+  return true;
+ }
+ async function destroy(){
+  if(disposed)return stopping;running=false;disposed=true;
+  if(offAuth)offAuth();offAuth=null;if(offBefore)offBefore();offBefore=null;
+  if(restoreSignOut){try{restoreSignOut();}catch(error){report(error);}}restoreSignOut=null;
+  await halt();
+ }
+ return {start,destroy,retry(){sync(auth.currentUser,true);},suspend(){hidden=true;return halt();},resume(){hidden=false;sync(auth.currentUser);},beforeAuthChange:halt};
+}
+function createPresenceLoader({document:doc,source,getModule=()=>globalThis.InkfallSocialPresence,schedule=setTimeout,cancel=clearTimeout}){
+ let loading=null;
+ return function load(){
+  if(typeof getModule()?.createPublisher==='function')return Promise.resolve(getModule());
+  if(loading)return loading;
+  if(!source)return Promise.reject(Error('presence-source-unavailable'));
+  loading=new Promise((resolve,reject)=>{
+   const script=doc.createElement('script');script.async=true;script.src=new URL('social-presence.js',source).href;
+   let settled=false;const finish=error=>{if(settled)return;settled=true;cancel(timer);if(error){script.remove();reject(error);}else resolve(getModule());};
+   const timer=schedule(()=>finish(Error('presence-module-timeout')),10000);
+   script.onload=()=>finish(typeof getModule()?.createPublisher==='function'?null:Error('presence-module-unavailable'));
+   script.onerror=()=>finish(Error('presence-module-unavailable'));
+   try{doc.head.append(script);}catch(error){finish(error);}
+  }).catch(error=>{loading=null;throw error;});
+  return loading;
+ };
+}
+if(typeof module==='object'&&module.exports){module.exports={createRequestTracker,createPresenceSession,createPresenceLoader};return;}
+const loadPresenceModule=createPresenceLoader({document,source:document.currentScript?.src||[...document.scripts].find(s=>/\/social-bootstrap\.js(?:\?.*)?$/.test(s.src))?.src});
 function socialIcon(){
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
  svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');svg.classList.add('if-social-icon');
@@ -89,7 +168,10 @@ function start(){
   if(result.newCount){heading.textContent=result.newCount===1?'Neue Freundschaftsanfrage':'Neue Freundschaftsanfragen';message.textContent=result.newCount===1?'Du hast eine neue Anfrage erhalten.':result.newCount+' neue Anfragen sind eingegangen.';notice.hidden=false;}
  });
  const unsubscribe=typeof auth!=='undefined'?auth.onAuthStateChanged(user=>{store.setUser(user?.uid||null);mountButtons();}):()=>{};
- window.inkfallSocial={open:()=>openFriends(buttons.find(b=>b.isConnected&&!b.disabled&&b.getClientRects().length)),destroy(){observer.disconnect();unsubscribe();stopNotifications();ui.destroy();store.destroy();buttons.forEach(b=>b.remove());notice.remove();style.remove();delete window.inkfallSocial;}};
+ const presenceSession=typeof auth!=='undefined'&&typeof db!=='undefined'?createPresenceSession({auth,getDb:()=>db,loadModule:loadPresenceModule,enabled:config.enabled===true&&config.presenceEnabled===true,onError:()=>window.inkfallDiag?.warn('Presence','Online-Status konnte nicht gestartet oder bereinigt werden.')}):null;
+ const onPageHide=()=>presenceSession?.suspend(),onPageShow=()=>presenceSession?.resume();
+ if(config.enabled===true&&config.presenceEnabled===true){window.addEventListener('pagehide',onPageHide);window.addEventListener('pageshow',onPageShow);presenceSession?.start();}
+ window.inkfallSocial={stopPresence:()=>presenceSession?.beforeAuthChange(),retryPresence:()=>presenceSession?.retry(),open:()=>openFriends(buttons.find(b=>b.isConnected&&!b.disabled&&b.getClientRects().length)),destroy(){const cleanup=presenceSession?.destroy();window.removeEventListener('pagehide',onPageHide);window.removeEventListener('pageshow',onPageShow);observer.disconnect();unsubscribe();stopNotifications();ui.destroy();store.destroy();buttons.forEach(b=>b.remove());notice.remove();style.remove();delete window.inkfallSocial;return cleanup;}};
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
