@@ -311,6 +311,34 @@
     let reference = null;
     let listener = null;
 
+    /* INKFALL_SMOOTH_READY_V1 */
+    const renderPositions = new Map();
+    let animationId = null;
+    let lastDrawTime = null;
+
+    function startAnimation() {
+      if (animationId !== null) return;
+      lastDrawTime = null;
+
+      function frame() {
+        animationId = null;
+        if (!model || layer.hidden) return;
+        draw();
+        animationId = root.requestAnimationFrame(frame);
+      }
+
+      animationId = root.requestAnimationFrame(frame);
+    }
+
+    function stopAnimation() {
+      if (animationId !== null) {
+        root.cancelAnimationFrame(animationId);
+      }
+      animationId = null;
+      lastDrawTime = null;
+      renderPositions.clear();
+    }
+
     const images = {};
     const groundPath = [
       [40,70],[280,70],[280,240],[600,240],
@@ -342,6 +370,27 @@
     function draw() {
       if (!model || layer.hidden || !ctx) return;
 
+      const now = root.performance?.now
+        ? root.performance.now()
+        : Date.now();
+
+      const dt = lastDrawTime === null
+        ? 0
+        : Math.max(0, Math.min(0.05, (now - lastDrawTime) / 1000));
+
+      lastDrawTime = now;
+
+      const movementStatus =
+        root.InkfallCoopRuntime?.getActive?.()?.status?.();
+
+      const snap = !movementStatus ||
+        movementStatus.paused ||
+        !movementStatus.connected ||
+        Boolean(movementStatus.error) ||
+        model.players.some(player => !player.online);
+
+      const alpha = 1 - Math.exp(-dt / 0.06);
+
       ctx.clearRect(0, 0, 940, 600);
 
       if (root.InkfallWorld) {
@@ -354,7 +403,26 @@
         ctx.fillRect(0, 0, 940, 600);
       }
 
-      for (const player of model.players) {
+      for (const source of model.players) {
+        let point = renderPositions.get(source.uid);
+
+        if (
+          !point || snap ||
+          Math.hypot(source.x - point.x, source.y - point.y) > 150
+        ) {
+          point = { x: source.x, y: source.y };
+          renderPositions.set(source.uid, point);
+        } else {
+          point.x += (source.x - point.x) * alpha;
+          point.y += (source.y - point.y) * alpha;
+
+          if (Math.hypot(source.x - point.x, source.y - point.y) < 0.05) {
+            point.x = source.x;
+            point.y = source.y;
+          }
+        }
+
+        const player = { ...source, x: point.x, y: point.y };
         ctx.save();
         ctx.strokeStyle = player.isLocal ? '#ffe36a' : '#80e6ed';
         ctx.lineWidth = 3;
@@ -426,6 +494,7 @@
 
       fit();
       draw();
+      startAnimation();
     }
 
     function detach() {
@@ -438,6 +507,7 @@
 
     function close() {
       detach();
+      stopAnimation();
       layer.hidden = true;
       model = null;
     }
@@ -453,6 +523,7 @@
         }
 
         const same = model?.id === next.id && reference;
+        if (!same) stopAnimation();
         model = next;
         layer.hidden = false;
         paint();

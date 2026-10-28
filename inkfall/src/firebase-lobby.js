@@ -10,6 +10,35 @@
   screen.setAttribute("aria-label", "Online-Coop-Lobby");
   frame.append(screen);
 
+  /* INKFALL_SMOOTH_READY_V1 */
+  const readyStyle = document.createElement("style");
+  readyStyle.id = "if-coop-ready-style";
+  readyStyle.textContent = `
+    #if-online-lobby .if-player-slot[data-ready],
+    #if-online-lobby .if-class-card.selected[data-ready] {
+      box-sizing: border-box;
+      transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease;
+    }
+
+    #if-online-lobby .if-player-slot[data-ready="true"],
+    #if-online-lobby .if-class-card.selected[data-ready="true"] {
+      border: 2px solid #54d987;
+      box-shadow:
+        inset 0 0 22px rgba(45, 200, 105, 0.28),
+        inset 0 0 5px rgba(90, 240, 145, 0.35);
+    }
+
+    #if-online-lobby .if-player-slot[data-ready="false"],
+    #if-online-lobby .if-class-card.selected[data-ready="false"] {
+      border: 2px solid rgba(218, 108, 108, 0.65);
+      box-shadow:
+        inset 0 0 18px rgba(190, 65, 65, 0.12);
+    }
+  `;
+  document.head.append(readyStyle);
+
   let roomRef = null;
   let room = null;
   let roomCode = "";
@@ -376,7 +405,7 @@
         item => item.id === player.heroClass
       );
 
-      return `<div class="if-player-slot">
+      return `<div class="if-player-slot" data-ready="${player.ready === true}">
         <strong>${label} · ${escapeText(player.name)}</strong>
         <div><b>${escapeText(player.heroName || "Held")}</b></div>
         <div>${selectedClass ? selectedClass.name : "Ritter"}</div>
@@ -388,6 +417,7 @@
     const classCards = lobbyClasses.map(item => `
       <button
         data-lobby-class="${item.id}"
+        data-ready="${me.heroClass === item.id ? String(me.ready === true) : 'idle'}"
         class="if-class-card${me.heroClass === item.id ? " selected" : ""}"
         aria-pressed="${me.heroClass === item.id}"
         ${canChoose ? "" : "disabled"}
