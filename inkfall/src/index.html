@@ -136,7 +136,7 @@ function drawInkfallArt(key, x, y, width, height) {
 const ground=[[40,70],[280,70],[280,240],[600,240],[600,430],[850,430],[850,540]];
 const air=[[40,30],[300,30],[300,150],[640,150],[640,330],[880,330],[880,540]];
 const base={x:850,y:540,r:24};
-let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null,skillPoints=0,skills={};
+let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null,skillPoints=0,skills={},coopWaveActive=false,coopWaveRef=null,coopSoloBackup=null;
 let hero={x:120,y:300,target:null,cls:'knight',name:'Ritter',cd:0,attackCd:0};
 const HERO={
 knight:{name:'Ritter',color:'#a33',range:70,dmg:16,rate:.8,ability:'Schildstoß',cd:10},
@@ -164,6 +164,12 @@ const waves=[
 [['crawler',9],['runner',6],['tank',2],['healer',1]],
 [['boss',1],['crawler',10],['runner',6],['tank',2],['shield',3],['flyer',4]]
 ];
+window.inkfallCoopWaveConfig={
+  waves:JSON.parse(JSON.stringify(waves)),
+  enemies:JSON.parse(JSON.stringify(E)),
+  ground:JSON.parse(JSON.stringify(ground)),
+  air:JSON.parse(JSON.stringify(air))
+};
 const TREE=[
 {id:'blade1',region:'Klinge',name:'Scharfer Stahl',desc:'+10 % Helden- und Turm-Schaden',tier:1,cost:1},
 {id:'blade2',region:'Klinge',name:'Wuchtige Hiebe',desc:'+15 % Schaden gegen Panzer',tier:2,cost:1,req:'blade1'},
@@ -216,7 +222,14 @@ function useAbility(){if(!active || speed<=0 || lives<=0 || hero.cd>0)return;
 if(hero.cls==='knight'){for(const e of enemies){if(e.route==='ground'&&dist(hero,pos(e))<130){e.slow=Math.max(e.slow,.6);hit(e,25,'hero')}}void 0}
 else{for(const e of enemies){if(dist(hero,pos(e))<150){e.slow=Math.max(e.slow,frostSlow()+.2);hit(e,35,'hero')}}void 0}
 hero.cd=HERO[hero.cls].cd;ui()}
-function startWave(){if(lives<=0||active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;hero.target=null;let d=0;
+function startWave(){
+if(window.inkfallActiveCoopSession){
+  if(window.inkfallCoopStartWave){
+    window.inkfallCoopStartWave().catch(e=>window.inkfallNotify?.(e.message,'error'));
+  }
+  return;
+}
+if(lives<=0||active||wave>=waves.length)return;wave++;active=true;enemies=[];shots=[];queue=[];timer=0;hero.target=null;let d=0;
 if(has('wealth3'))gold+=10;
 waves[wave-1].forEach(([t,n])=>{for(let i=0;i<n;i++){queue.push({t,d});d+=t==='runner'?.55:t==='flyer'?.7:.85}});ui()}
 function build(t){if(active){void 0;return}const c=buildCost(t);if(gold<c){void 0;return}buildType=t;void 0}
@@ -257,6 +270,12 @@ if(e.t==='boss')void 0}}
 function update(dt){
 /* DIAG_GAME_HEARTBEAT */
 window.inkfallDiag?.heartbeat();
+
+/* C2A2_COOP_WAVE_GATE */
+if(coopWaveActive){
+  ui();
+  return;
+}
 
 /* INKFALL_PAUSE_FIX_V1 */
 // Keine Kampfaktionen bei Pause oder ungültigem Zeitschritt.
@@ -367,6 +386,86 @@ InkfallCombatArt.frame(ctx);
 InkfallEnemyArt.frame(ctx);
 InkfallImpactFX.frame(ctx);
 requestAnimationFrame(draw)}
+/* C2A2_COOP_WAVE_VIEW */
+function applyCoopWaveState(state){
+  const session=window.inkfallActiveCoopSession;
+  if(!state||!session||state.sessionId!==session.id)return;
+
+  wave=state.wave||0;
+  lives=Number.isFinite(state.baseLives)?state.baseLives:lives;
+  active=state.phase==='running';
+  queue=[];
+  timer=0;
+  shots=[];
+  enemies=(state.enemies||[]).map(e=>({
+    id:e.id,
+    t:e.type,
+    route:e.route,
+    d:e.d,
+    hp:e.hp,
+    max:e.max,
+    alive:true,
+    slow:0,
+    shieldUp:e.type==='boss',
+    healCd:0
+  }));
+  ui();
+}
+
+window.addEventListener('inkfall:coop-session',event=>{
+  const session=event.detail;
+  if(!session)return;
+
+  coopWaveActive=true;
+  coopSoloBackup={
+    gold,lives,wave,active,enemies,towers,shots,queue,timer,
+    skillPoints,skills:{...skills}
+  };
+
+  const isHost=session.hostUid===auth.currentUser?.uid;
+
+  window.inkfallCoopStartWave=async()=>{
+    if(!isHost){
+      throw new Error('Nur der Host startet die Welle.');
+    }
+    const runtime=window.InkfallCoopRuntime?.getActive?.();
+    if(!runtime?.startWave){
+      throw new Error('Coop-Wellensteuerung ist nicht bereit.');
+    }
+    return runtime.startWave();
+  };
+
+  coopWaveRef=db.ref('rooms/'+session.roomCode+'/waves');
+  coopWaveRef.on('value',snapshot=>{
+    applyCoopWaveState(snapshot.val());
+  },error=>{
+    window.inkfallNotify?.('Coop-Welle: '+error.message,'error');
+  });
+});
+
+window.addEventListener('inkfall:coop-session-cleared',()=>{
+  coopWaveRef?.off('value');
+  coopWaveRef=null;
+  coopWaveActive=false;
+  window.inkfallCoopStartWave=null;
+
+  if(coopSoloBackup){
+    gold=coopSoloBackup.gold;
+    lives=coopSoloBackup.lives;
+    wave=coopSoloBackup.wave;
+    skillPoints=coopSoloBackup.skillPoints;
+    skills=coopSoloBackup.skills;
+    towers=coopSoloBackup.towers;
+  }
+
+  enemies=[];
+  shots=[];
+  queue=[];
+  active=false;
+  timer=0;
+  ui();
+});
+
 let last=performance.now();
 function loop(now){const dt=Math.min(.05,(now-last)/1000)*speed;last=now;update(dt);requestAnimationFrame(loop)}
 ui();draw();requestAnimationFrame(loop);void 0;
@@ -381,6 +480,10 @@ ui();draw();requestAnimationFrame(loop);void 0;
 <script src="startscreen.js"></script>
 <script src="wave-preview.js"></script>
 <script src="pregame.js"></script>
+<script src="coop-session.js"></script>
+<script src="coop-start.js"></script>
+<script src="coop-waves.js"></script>
+<script src="coop-wave-host.js"></script>
 <script src="firebase-lobby.js"></script>
 <script src="checkpoint-autosave.js"></script>
 <script src="build-menu-art.js"></script>
@@ -389,5 +492,10 @@ ui();draw();requestAnimationFrame(loop);void 0;
 <script src="camera-layout.js"></script>
 <script src="compact-controls.js"></script>
 <script src="command-deck.js"></script>
+<script src="coop-movement.js"></script>
+<script src="coop-commands.js"></script>
+<script src="coop-host.js"></script>
+<script src="coop-runtime.js"></script>
+<script src="coop-view.js"></script>
 </body>
 </html>
