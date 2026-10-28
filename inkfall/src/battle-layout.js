@@ -47,6 +47,23 @@
   buildGrid.id = "if-build-grid";
   buildPanel.append(buildGrid);
 
+  /* INKFALL_TOWER_AFFORDABILITY_V1 */
+  const affordabilityStyle = document.createElement("style");
+  affordabilityStyle.textContent = `
+    #if-build-grid button.if-build-unaffordable {
+      filter: grayscale(1);
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #if-build-grid button:disabled:hover {
+      transform: none;
+    }
+  `;
+  document.head.append(affordabilityStyle);
+
+
   const selectionPanel = document.createElement("div");
   const selection = document.createElement("div");
   selection.id = "if-selection";
@@ -256,9 +273,34 @@
     }
 
     for (const price of buildGrid.querySelectorAll("[data-tower]")) {
-      if (typeof buildCost === "function") {
-        price.textContent = `${buildCost(price.dataset.tower)} G`;
-      }
+      if (typeof buildCost !== "function") continue;
+
+      const cost = buildCost(price.dataset.tower);
+      price.textContent = `${cost} G`;
+
+      const button = price.closest("button");
+      if (!button) continue;
+
+      const tooExpensive =
+        typeof gold !== "number" || !Number.isFinite(gold) || gold < cost;
+
+      const waveRunning = typeof active !== "undefined" && active;
+      const defeated = typeof lives !== "undefined" && lives <= 0;
+      const disabled = tooExpensive || waveRunning || defeated;
+
+      button.disabled = disabled;
+      button.setAttribute("aria-disabled", String(disabled));
+      button.classList.toggle("if-build-unaffordable", tooExpensive);
+
+      const name = towerInfo[price.dataset.tower]?.name || "Turm";
+
+      button.title = tooExpensive
+        ? `${name}: zu wenig Gold (${cost} G benötigt)`
+        : defeated
+          ? "Die Partie ist beendet"
+          : waveRunning
+            ? "Turmbau erst nach der laufenden Welle möglich"
+            : `${name} auswählen und auf der Karte platzieren`;
     }
   }
 
