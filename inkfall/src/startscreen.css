@@ -200,3 +200,16 @@
   max-width: 100%;
   font-size: max(16px, 1rem);
 }
+
+/* Hotfix: empty drag preview must not inherit the global canvas background. */
+#inkfall-window #game canvas#if-tower-drag-preview {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  pointer-events: none !important;
+}
