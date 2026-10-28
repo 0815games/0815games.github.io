@@ -193,3 +193,10 @@
 #inkfall-window #if-window-titlebar {
   padding-right: 125px;
 }
+
+/* iPhone: readable inputs without disabling manual page zoom. */
+#if-launcher .if-start-card input {
+  box-sizing: border-box;
+  max-width: 100%;
+  font-size: max(16px, 1rem);
+}
