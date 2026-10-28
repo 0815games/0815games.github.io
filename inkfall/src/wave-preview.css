@@ -45,6 +45,12 @@
     box-shadow 120ms ease;
 }
 
+/* Die Titlebar muss über dem angedockten Baumenü bleiben,
+   damit die Wellenvorschau nicht dahinter verschwindet. */
+#inkfall-window #if-window-titlebar {
+  z-index: 30;
+}
+
 .if-wave-header-label {
   display: block;
   white-space: nowrap;
@@ -95,7 +101,8 @@
   outline-offset: 4px;
 }
 
-/* Aufklappbare Detailvorschau */
+/* Aufklappbare Detailvorschau: wächst sichtbar aus dem Wellen-Button
+   nach unten in den Kartenbereich. */
 #if-wave-preview {
   position: absolute;
   top: calc(100% + 8px);
@@ -109,10 +116,30 @@
   border-radius: 12px 8px 14px 9px;
   overflow: hidden;
   box-shadow: 0 10px 24px rgba(10, 8, 20, .45);
+  transform-origin: top right;
+  animation: if-wave-preview-grow 170ms cubic-bezier(.2, .8, .3, 1);
 }
 
 #if-wave-preview[hidden] {
   display: none;
+}
+
+@keyframes if-wave-preview-grow {
+  from {
+    opacity: 0;
+    transform: scale(.78) translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #if-wave-preview {
+    animation: none;
+  }
 }
 
 #if-wave-preview h2 {
