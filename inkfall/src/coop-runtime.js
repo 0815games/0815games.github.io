@@ -55,7 +55,7 @@
     const waveHost=isHost?waveHostApi.createWaveHost(reference,session,uid,{
       writerId:options.writerId,
       now:options.now,
-      config:options.waveConfig
+      config:options.waveConfig||globalThis.inkfallCoopWaveConfig
     }):null;
 
     const every=options.setInterval||setInterval;
