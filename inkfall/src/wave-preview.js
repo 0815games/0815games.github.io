@@ -18,6 +18,7 @@
   const header = document.createElement("button");
   header.id = "if-wave-header";
   header.type = "button";
+  header.className = "if-top-action";
   header.setAttribute("aria-expanded", "false");
   header.setAttribute("aria-controls", "if-wave-preview");
 
@@ -32,7 +33,26 @@
   headerProgress.append(headerBar);
 
   header.append(headerLabel, headerProgress);
-  titlebar.append(header);
+
+  // Direkt links neben "Hauptmenü" in die bestehende Button-Gruppe einsortieren.
+  function placeHeader() {
+    const actions = document.getElementById("if-top-actions");
+    const home = document.getElementById("if-return-menu");
+
+    if (!actions || !home) return false;
+    if (header.parentElement === actions) return true;
+
+    actions.insertBefore(header, home);
+    return true;
+  }
+
+  if (!placeHeader()) {
+    const placementTimer = setInterval(() => {
+      if (placeHeader()) clearInterval(placementTimer);
+    }, 50);
+
+    setTimeout(() => clearInterval(placementTimer), 5000);
+  }
 
   // Aufklappbare Detailvorschau.
   const panel = document.createElement("section");

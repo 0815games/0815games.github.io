@@ -1,35 +1,62 @@
-/* Kompakte Wellenanzeige im Spiele-Header */
-#if-wave-header {
+/* Kompakte Wellenanzeige im Stil der Topbar-Buttons */
+#if-window-titlebar #if-wave-header {
+  --button-top: #eaf6ff;
+  --button-bottom: #a9d9f7;
+  --button-edge: #4a7ba6;
+  --button-glow: #f2fbff;
+
+  box-sizing: border-box;
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  width: auto;
-  margin: 0;
-  padding: 4px 10px;
-  color: #fff5db;
-  background: #2c2438;
-  border: 2px solid #4a3d5c;
-  border-radius: 999px;
-  font: 800 11px system-ui, sans-serif;
-  cursor: pointer;
-}
+  justify-content: center;
+  gap: 7px;
 
-#if-wave-header:hover,
-#if-wave-header.open {
-  border-color: #80e6ed;
+  width: auto;
+  min-width: 0;
+  min-height: 33px;
+  margin: 0;
+  padding: 6px 10px;
+
+  border: 2px solid #302c43;
+  border-radius: 9px;
+  background: linear-gradient(180deg, var(--button-top), var(--button-bottom));
+  color: #302c43;
+  box-shadow:
+    inset 0 2px 0 var(--button-glow),
+    inset 0 -2px 0 #0000000d,
+    0 3px 0 var(--button-edge),
+    0 5px 0 #211e3433;
+
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: .1px;
+  text-shadow: 0 1px 0 #ffffff75;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 120ms ease,
+    filter 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .if-wave-header-label {
+  display: block;
   white-space: nowrap;
 }
 
 .if-wave-header-progress {
   position: relative;
-  width: 74px;
-  height: 7px;
+  width: 68px;
+  height: 8px;
   overflow: hidden;
-  background: #171225;
-  border: 1px solid #4a3d5c;
+  background: #302c43;
+  border: 1px solid #211e34;
   border-radius: 999px;
 }
 
@@ -39,6 +66,33 @@
   height: 100%;
   background: linear-gradient(90deg, #94dd69, #58c95c);
   transition: width .2s linear;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #if-window-titlebar #if-wave-header:hover:not(:disabled) {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+
+    box-shadow:
+      inset 0 2px 0 var(--button-glow),
+      inset 0 -2px 0 #0000000d,
+      0 4px 0 var(--button-edge),
+      0 6px 0 #211e3433;
+  }
+}
+
+#if-window-titlebar #if-wave-header:active:not(:disabled) {
+  filter: brightness(.98);
+  transform: translateY(3px);
+
+  box-shadow:
+    inset 0 2px 3px #302c4320,
+    0 1px 0 var(--button-edge);
+}
+
+#if-window-titlebar #if-wave-header:focus-visible {
+  outline: 3px solid #fff0a5;
+  outline-offset: 4px;
 }
 
 /* Aufklappbare Detailvorschau */
@@ -156,20 +210,31 @@
 }
 
 @media (max-width: 700px) {
-  #if-wave-header {
-    max-width: 46vw;
+  #if-window-titlebar #if-wave-header {
+    min-height: 34px;
+    padding: 6px 8px;
+    font-size: 10px;
+    gap: 5px;
   }
 
   .if-wave-header-label {
+    max-width: 34vw;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .if-wave-header-progress {
-    width: 48px;
+    width: 46px;
   }
 
   #if-wave-preview {
     right: 8px;
+  }
+}
+
+@media (pointer: coarse) {
+  #if-window-titlebar #if-wave-header {
+    min-height: 44px;
+    padding-inline: 11px;
   }
 }
