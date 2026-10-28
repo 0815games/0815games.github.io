@@ -1,5 +1,72 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.InkfallSocialUI=api;})(globalThis,()=>{
 'use strict';
+function normalizePrivacy(value){
+ if(value==null)return {profile:'private',characters:'private'};
+ if(typeof value!=='object'||Array.isArray(value))throw Error('invalid-privacy');
+ const result={};for(const key of ['profile','characters']){const item=value[key]??'private';if(!['private','friends'].includes(item))throw Error('invalid-privacy');result[key]=item;}return result;
+}
+function createPrivacyController({read,save,canUse}){
+ let state={uid:null,loaded:false,loading:false,saving:false,saved:normalizePrivacy(null),draft:normalizePrivacy(null),error:null,message:null};
+ let epoch=0,pending=null;
+ const listeners=new Set(),copy=x=>JSON.parse(JSON.stringify(x));
+ const dirty=()=>state.saved.profile!==state.draft.profile||state.saved.characters!==state.draft.characters;
+ const snapshot=()=>({...copy(state),dirty:dirty(),available:Boolean(state.uid&&canUse())});
+ const emit=()=>listeners.forEach(fn=>fn(snapshot()));
+ function setUser(uid){if((uid||null)===state.uid)return;epoch++;pending=null;state={uid:uid||null,loaded:false,loading:false,saving:false,saved:normalizePrivacy(null),draft:normalizePrivacy(null),error:null,message:null};emit();}
+ function load({discard=false}={}){
+  if(!state.uid||!canUse()||state.saving)return Promise.resolve(false);
+  if(pending)return pending;
+  if(state.loaded&&dirty()&&!discard)return Promise.resolve(false);
+  const token=epoch,uid=state.uid;state.loading=true;state.error=null;state.message=null;
+  pending=Promise.resolve().then(()=>token===epoch?read(uid):null).then(raw=>{
+   if(token!==epoch)return false;
+   const value=normalizePrivacy(raw);state.saved=value;state.draft={...value};state.loaded=true;return true;
+  }).catch(()=>{if(token===epoch){state.loaded=false;state.error='Einstellungen konnten nicht geladen werden. Es wurde nichts geändert.';}return false;}).finally(()=>{if(token===epoch){pending=null;state.loading=false;emit();}});
+  emit();return pending;
+ }
+ function set(key,value){if(!state.loaded||state.loading||state.saving||!state.uid||!canUse()||!['profile','characters'].includes(key)||!['private','friends'].includes(value))return false;state.draft={...state.draft,[key]:value};state.message=null;state.error=null;emit();return true;}
+ function reset(){if(state.loading||state.saving)return;state.draft={...state.saved};state.error=null;state.message=null;emit();}
+ async function submit(){
+  if(!state.uid||!canUse()||!state.loaded||state.loading||state.saving||!dirty())return false;
+  const token=epoch,uid=state.uid,sent={...state.draft};state.saving=true;state.error=null;state.message=null;emit();
+  let acknowledged=false;
+  try{if(token!==epoch)return false;acknowledged=(await save({...sent}))===true;}catch{}
+  if(token!==epoch)return false;
+  try{
+   const actual=normalizePrivacy(await read(uid));if(token!==epoch)return false;
+   state.saved=actual;state.loaded=true;
+   if(acknowledged&&actual.profile===sent.profile&&actual.characters===sent.characters){state.draft={...actual};state.message='Datenschutz-Einstellungen gespeichert und bestätigt.';return true;}
+   state.error=acknowledged?'Der Serverstand weicht vom Entwurf ab. Bitte prüfen und bei Bedarf erneut speichern.':'Die Aktion wurde nicht vollständig bestätigt. Der angezeigte Serverstand wurde neu geladen; die Veröffentlichung kann fehlgeschlagen sein.';
+   return false;
+  }catch{
+   if(token===epoch){state.loaded=false;state.error='Speicherergebnis unbekannt. Bitte den Serverstand neu laden, bevor du weiteränderst.';}return false;
+  }finally{if(token===epoch){state.saving=false;emit();}}
+ }
+ return {snapshot,setUser,load,set,reset,submit,subscribe(fn){listeners.add(fn);fn(snapshot());return()=>listeners.delete(fn);},destroy(){epoch++;pending=null;listeners.clear();state={uid:null,loaded:false,loading:false,saving:false,saved:normalizePrivacy(null),draft:normalizePrivacy(null),error:null,message:null};}};
+}
+function privacyCard({doc,controller,busy=false}){
+ const state=controller.snapshot(),card=doc.createElement('section');card.className='if-social-code-card';card.style.gridColumn='1 / -1';card.setAttribute('aria-labelledby','if-social-privacy-title');card.setAttribute('aria-busy',String(state.loading||state.saving));
+ function text(tag,value){const n=doc.createElement(tag);n.textContent=value;card.append(n);return n;}
+ const title=text('h3','Deine Privatsphäre');title.id='if-social-privacy-title';
+ text('p','Du entscheidest, was bestätigte Freunde sehen dürfen. Änderungen werden erst mit „Speichern“ übernommen.');
+ for(const [key,label,description] of [['profile','Spielerprofil','Dein freigegebenes Profil mit Anzeigenamen.'],['characters','Charaktere & Skills','Charakterblätter, gespeicherter Fortschritt und gelernte Skills.']]){
+  const group=doc.createElement('div');group.style.cssText='padding:14px 0;border-bottom:2px solid #d0b28a;';
+  const heading=doc.createElement('strong');heading.textContent=label;heading.id='if-social-privacy-'+key;
+  const hint=doc.createElement('p');hint.textContent=description;
+  const toggle=doc.createElement('button');toggle.type='button';toggle.dataset.focus='privacy-'+key;toggle.setAttribute('role','switch');toggle.setAttribute('aria-labelledby',heading.id);toggle.setAttribute('aria-checked',String(state.draft[key]==='friends'));if(state.draft[key]==='friends'){toggle.style.background='linear-gradient(#dcf5ff,#91ccec)';toggle.style.borderColor='#354860';}toggle.textContent=state.draft[key]==='friends'?'Für Freunde sichtbar':'Nur ich';toggle.disabled=!state.available||!state.loaded||state.loading||state.saving||busy;
+  toggle.onclick=()=>controller.set(key,state.draft[key]==='friends'?'private':'friends');
+  const saved=doc.createElement('small');saved.style.display='block';saved.textContent=state.loaded?'Gespeicherter Serverstand: '+(state.saved[key]==='friends'?'Für Freunde sichtbar':'Nur ich'):'Serverstand noch nicht geladen.';
+  group.append(heading,hint,toggle,saved);card.append(group);
+ }
+ const status=text('p',!state.uid?'Bitte zuerst anmelden.':!state.available?'Der Freundesdienst ist noch deaktiviert. Hier werden keine Änderungen gespeichert.':state.saving?'Einstellungen werden gespeichert und geprüft …':state.loading?'Einstellungen werden geladen …':state.error||state.message||(state.dirty?'Ungespeicherte Änderungen.':'Fehlende Einstellungen sind privat. Freigaben gelten nur für bestätigte Freunde.'));
+ status.tabIndex=-1;status.dataset.focus='privacy-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ function button(label,key,action,disabled){const b=doc.createElement('button');b.type='button';b.textContent=label;b.dataset.focus=key;b.disabled=disabled;b.onclick=action;card.append(b);return b;}
+ const disabled=!state.available||state.loading||state.saving||busy;
+ const apply=button(state.saving?'Wird gespeichert …':'Speichern','privacy-save',()=>controller.submit(),disabled||!state.loaded||!state.dirty);apply.className='if-social-primary';
+ button('Entwurf verwerfen','privacy-reset',()=>controller.reset(),disabled||!state.loaded||!state.dirty);
+ button(state.dirty?'Neu laden · Entwurf verwerfen':'Serverstand neu laden','privacy-reload',()=>controller.load({discard:true}),disabled);
+ return card;
+}
 function ownCodeCard({doc,win,store}){
  const state=store.snapshot(),card=doc.createElement('section');card.className='if-social-code-card';card.style.gridColumn='1 / -1';card.setAttribute('aria-labelledby','if-social-own-code-title');
  const title=doc.createElement('h3');title.id='if-social-own-code-title';title.textContent='Dein Freundescode';
@@ -31,7 +98,7 @@ function ownCodeCard({doc,win,store}){
  }
  card.append(note);return card;
 }
-function create({document:doc,window:win,store,inspector,skills=[],mount=doc.body}){
+function create({document:doc,window:win,store,inspector,skills=[],mount=doc.body,readPrivacy=async uid=>{if(typeof db==='undefined')throw Error('database-unavailable');return (await db.ref('social/privacy/'+uid).get()).val();}}){
  const dialog=doc.createElement('dialog');dialog.id='if-social-dialog';dialog.setAttribute('aria-labelledby','if-social-title');
  const shell=doc.createElement('div');shell.className='if-social-shell';dialog.append(shell);mount.append(dialog);
  let tab='friends',mobileDetail=false,previousFocus=null,current=store.snapshot(),confirmation=null;
@@ -41,14 +108,17 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
  const act=(name,payload)=>store.action(name,payload);
  function focusKey(key){[...shell.querySelectorAll('[data-focus]')].find(n=>n.dataset.focus===key&&!n.disabled)?.focus({preventScroll:true});}
  function cancelConfirmation(){const key=confirmation?.name;confirmation=null;render();if(key)focusKey(key);}
+ const privacyController=createPrivacyController({read:readPrivacy,save:values=>store.action('setPrivacy',values),canUse:()=>store.has('setPrivacy')});
+ function scheduleRender(){const ticket=++focusTicket;if(dialog.open)win.requestAnimationFrame(()=>{if(dialog.open&&ticket===focusTicket)render();});}
+ const stopPrivacy=privacyController.subscribe(scheduleRender);
  function render(){
   const active=doc.activeElement,focused=dialog.contains(active)?active?.dataset.focus:null;
   const inputValue=shell.querySelector('[data-focus="friend-code"]')?.value||'';
   shell.replaceChildren();
   const heading=node('header',undefined,'if-social-heading');const title=node('h2','Freunde & Gefährten');title.id='if-social-title';heading.append(title,button('Schließen','close',close));shell.append(heading);
   const tabs=node('nav',undefined,'if-social-tabs');tabs.setAttribute('aria-label','Freundesbereich');
-  for(const [id,label] of [['friends','Freunde'],['requests','Anfragen ('+current.requests.length+')'],['add','Hinzufügen']]){
-   const b=button(label,'tab-'+id,()=>{tab=id;confirmation=null;mobileDetail=false;render();if(id==='add')store.loadCode?.();});b.setAttribute('aria-pressed',String(tab===id));tabs.append(b);
+  for(const [id,label] of [['friends','Freunde'],['requests','Anfragen ('+current.requests.length+')'],['add','Hinzufügen'],['settings','Einstellungen']]){
+   const b=button(label,'tab-'+id,()=>{tab=id;confirmation=null;mobileDetail=false;render();if(id==='add')store.loadCode?.();if(id==='settings')privacyController.load();});b.setAttribute('aria-pressed',String(tab===id));tabs.append(b);
   }
   shell.append(tabs);
   const status=node('p',undefined,'if-social-status');status.setAttribute('role','status');status.textContent=current.loading?'Freundesdaten werden geladen …':current.error||(!current.uid?'Bitte zuerst anmelden.':!current.available?'Freundesdienst noch nicht aktiviert. Es werden keine Testkontakte angezeigt.':'Online-Status ist noch nicht angebunden.');shell.append(status);
@@ -85,6 +155,8 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
    if(!current.requests.length)list.append(node('p','Keine Anfragen vorhanden.'));
    for(const request of current.requests){const row=node('div',undefined,'if-social-row');row.append(node('span',request.displayName?'Anfrage von '+request.displayName:'Anfrage · Absenderdaten fehlen'),button('Annehmen','accept-'+request.uid,()=>act('accept',{targetUid:request.uid}),current.busy||!store.has('accept')||!request.displayName),button('Ablehnen','decline-'+request.uid,()=>act('decline',{targetUid:request.uid}),current.busy||!store.has('decline')));list.append(row);}
    content.append(list);
+  }else if(tab==='settings'){
+   content.append(privacyCard({doc,controller:privacyController,busy:current.busy}));
   }else{
    content.append(ownCodeCard({doc,win,store}));
    const form=node('form');form.className='if-social-code-card';form.noValidate=true;
@@ -102,20 +174,19 @@ function create({document:doc,window:win,store,inspector,skills=[],mount=doc.bod
    card.append(title,message,button('Abbrechen','confirm-cancel',cancelConfirmation),button('Bestätigen','confirm-apply',()=>{const pending=confirmation;confirmation=null;act(pending.name,{targetUid:pending.targetUid});render();},current.busy||!store.has(confirmation.name)));content.append(card);
   }
   content.scrollTop=scrollPositions[scrollKey]||0;
-  if(focused){const match=[...shell.querySelectorAll('[data-focus]')].find(n=>n.dataset.focus===focused);if(match&&!match.disabled)match.focus({preventScroll:true});else if(focused==='load-own-code')focusKey('copy-own-code');else shell.querySelector('button')?.focus({preventScroll:true});}
+  if(focused){const match=[...shell.querySelectorAll('[data-focus]')].find(n=>n.dataset.focus===focused);if(match&&!match.disabled)match.focus({preventScroll:true});else if(focused.startsWith('privacy-'))focusKey('privacy-status');else if(focused==='load-own-code')focusKey('copy-own-code');else shell.querySelector('button')?.focus({preventScroll:true});}
  }
  function close(){confirmation=null;if(dialog.open)dialog.close();}
- function open(trigger){if(dialog.open)return;if(typeof dialog.showModal!=='function')throw Error('Dieser Browser unterstützt den Freundesdialog nicht.');previousFocus=trigger||doc.activeElement;render();dialog.showModal();shell.querySelector('button')?.focus({preventScroll:true});if(tab==='add')store.loadCode?.();}
+ function open(trigger){if(dialog.open)return;if(typeof dialog.showModal!=='function')throw Error('Dieser Browser unterstützt den Freundesdialog nicht.');previousFocus=trigger||doc.activeElement;render();dialog.showModal();shell.querySelector('button')?.focus({preventScroll:true});if(tab==='add')store.loadCode?.();if(tab==='settings')privacyController.load();}
  dialog.addEventListener('close',()=>{confirmation=null;if(previousFocus?.isConnected)previousFocus.focus({preventScroll:true});});
  function keyboard(event){if(!dialog.open)return;event.stopImmediatePropagation();if(event.key==='Escape'){event.preventDefault();if(confirmation)cancelConfirmation();else close();}}
  win.addEventListener('keydown',keyboard,true);
  const unsubscribe=store.subscribe(value=>{
-  current=value;if(confirmation&&(confirmation.targetUid!==value.selectedUid||!value.profile))confirmation=null;if(!value.selectedUid)mobileDetail=false;
+  current=value;privacyController.setUser(value.uid);if(confirmation&&(confirmation.targetUid!==value.selectedUid||!value.profile))confirmation=null;if(!value.selectedUid)mobileDetail=false;
   if(!value.uid&&dialog.open)close();
-  const ticket=++focusTicket;
-  if(dialog.open)win.requestAnimationFrame(()=>{if(dialog.open&&ticket===focusTicket)render();});
+  scheduleRender();
  });
- return {open,close,destroy(){close();unsubscribe();win.removeEventListener('keydown',keyboard,true);dialog.remove();}};
+ return {open,close,destroy(){close();unsubscribe();stopPrivacy();privacyController.destroy();win.removeEventListener('keydown',keyboard,true);dialog.remove();}};
 }
-return {create,ownCodeCard};
+return {create,ownCodeCard,normalizePrivacy,createPrivacyController,privacyCard};
 });
