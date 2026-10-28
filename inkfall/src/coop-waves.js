@@ -164,6 +164,12 @@
         Number.isFinite(state.baseLives) &&
         state.baseLives >= 0 &&
         state.baseLives <= 100 &&
+        Number.isFinite(state.gold) &&
+        state.gold >= 0 &&
+        state.gold <= 999999 &&
+        Number.isSafeInteger(state.skillPoints) &&
+        state.skillPoints >= 0 &&
+        state.skillPoints <= 999 &&
         Number.isFinite(state.elapsed) &&
         state.elapsed >= 0,
         'Ungültiger Wellenzustand.'
@@ -197,6 +203,8 @@
         phase: 'preparation',
         wave: 0,
         baseLives: 100,
+        gold: 150,
+        skillPoints: 0,
         elapsed: 0,
         lastStartId: null,
         enemies: {},
@@ -350,6 +358,8 @@
         next.phase = next.wave === waves.length
           ? 'won'
           : 'preparation';
+        next.skillPoints++;
+        next.gold += 10;
       }
 
       next.revision++;
@@ -395,6 +405,8 @@
         phase: state.phase,
         wave: state.wave,
         baseLives: state.baseLives,
+        gold: state.gold,
+        skillPoints: state.skillPoints,
         remaining:
           Object.keys(state.pending || {}).length +
           Object.keys(state.enemies || {}).length,

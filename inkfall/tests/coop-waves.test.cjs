@@ -236,6 +236,23 @@ test('Vorhandene Spieldefinitionen sind verwendbar', () => {
   assert.equal(engine.project(state).remaining,5);
 });
 
+test('Wellenabschluss vergibt gemeinsame Belohnungen', () => {
+  const engine=createEngine(config());
+  const state=finish(engine,start(engine,engine.create(session())));
+  assert.equal(state.phase,'preparation');
+  assert.equal(state.skillPoints,1);
+  assert.equal(state.gold,160);
+});
+
+test('Auch der Sieg vergibt die Wellen-Belohnung', () => {
+  const engine=createEngine(config());
+  let state=finish(engine,start(engine,engine.create(session())));
+  state=finish(engine,start(engine,state,'second'));
+  assert.equal(state.phase,'won');
+  assert.equal(state.skillPoints,2);
+  assert.equal(state.gold,170);
+});
+
 console.log(
   '\nErgebnis C2a-Kern: '+passed+
   ' bestanden, '+failed+' fehlgeschlagen.'

@@ -393,6 +393,8 @@ function applyCoopWaveState(state){
 
   wave=state.wave||0;
   lives=Number.isFinite(state.baseLives)?state.baseLives:lives;
+  gold=Number.isFinite(state.gold)?state.gold:gold;
+  skillPoints=Number.isSafeInteger(state.skillPoints)?state.skillPoints:skillPoints;
   active=state.phase==='running';
   queue=[];
   timer=0;
