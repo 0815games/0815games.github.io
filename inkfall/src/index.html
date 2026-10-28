@@ -84,6 +84,7 @@ button:disabled{opacity:.4;cursor:not-allowed}
 <div class="stat"><span>Welle</span><span id="wave">0 / 10</span></div>
 <div class="stat"><span>Skillpunkte</span><span id="sp">0</span></div>
 <h2>Held</h2>
+<div class="stat"><span>Name</span><span id="heroName">Ritter</span></div>
 <div class="stat"><span>Klasse</span><span id="className">Ritter</span></div>
 <div class="stat"><span>Fähigkeit</span><span id="ability">Bereit</span></div>
 <button onclick="setHero('knight')">Ritter werden</button>
@@ -136,7 +137,7 @@ const ground=[[40,70],[280,70],[280,240],[600,240],[600,430],[850,430],[850,540]
 const air=[[40,30],[300,30],[300,150],[640,150],[640,330],[880,330],[880,540]];
 const base={x:850,y:540,r:24};
 let gold=150,lives=100,wave=0,active=false,enemies=[],towers=[],shots=[],queue=[],timer=0,speed=1,sel=null,buildType=null,skillPoints=0,skills={};
-let hero={x:120,y:300,target:null,cls:'knight',cd:0,attackCd:0};
+let hero={x:120,y:300,target:null,cls:'knight',name:'Ritter',cd:0,attackCd:0};
 const HERO={
 knight:{name:'Ritter',color:'#a33',range:70,dmg:16,rate:.8,ability:'Schildstoß',cd:10},
 mage:{name:'Elementarmagier',color:'#3a6ea5',range:95,dmg:12,rate:.9,ability:'Frostnova',cd:12}
@@ -327,7 +328,7 @@ shots=shots.filter(s=>!s.dead);
 if(!queue.length&&!enemies.length){active=false;skillPoints++;void 0;if(wave>=waves.length)void 0}}
 if(lives<=0){active=false;void 0}
 ui()}
-function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('className').textContent=HERO[hero.cls].name;document.getElementById('ability').textContent=hero.cd>0?Math.ceil(hero.cd)+' s':'Bereit';document.getElementById('abilityBtn').textContent=HERO[hero.cls].ability+' ('+Math.ceil(hero.cd)+' s)';document.getElementById('abilityBtn').disabled=hero.cd>0 || !active || speed<=0 || lives<=0;document.getElementById('start').disabled=lives<=0||active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
+function ui(){document.getElementById('lives').textContent=Math.max(0,lives);document.getElementById('gold').textContent=gold;document.getElementById('wave').textContent=wave+' / '+waves.length;document.getElementById('sp').textContent=skillPoints;document.getElementById('heroName').textContent=hero.name||HERO[hero.cls].name;document.getElementById('className').textContent=HERO[hero.cls].name;document.getElementById('ability').textContent=hero.cd>0?Math.ceil(hero.cd)+' s':'Bereit';document.getElementById('abilityBtn').textContent=HERO[hero.cls].ability+' ('+Math.ceil(hero.cd)+' s)';document.getElementById('abilityBtn').disabled=hero.cd>0 || !active || speed<=0 || lives<=0;document.getElementById('start').disabled=lives<=0||active||wave>=waves.length;document.getElementById('up').disabled=!sel;document.getElementById('up').textContent=sel?('Verbessern — '+Math.round(T[sel.t].c*.7*sel.lvl)+' G'):'Turm verbessern'}
 function openTree(){document.getElementById('tree').classList.add('open');renderTree()}
 function closeTree(){document.getElementById('tree').classList.remove('open')}
 function renderTree(){const c=document.getElementById('treeContent');let html='';const regions=[...new Set(TREE.map(n=>n.region))];
