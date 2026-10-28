@@ -1,0 +1,85 @@
+TAP version 13
+# Subtest: Unconfigured client shows no fake friends
+ok 1 - Unconfigured client shows no fake friends
+  ---
+  duration_ms: 1.644614
+  ...
+# Subtest: No database write API in client
+ok 2 - No database write API in client
+  ---
+  duration_ms: 0.13339
+  ...
+# Subtest: Disabled action rejects
+ok 3 - Disabled action rejects
+  ---
+  duration_ms: 0.564109
+  ...
+# Subtest: Invalid character class denied
+ok 4 - Invalid character class denied
+  ---
+  duration_ms: 0.226193
+  ...
+# Subtest: Logout clears private UI data and listeners
+ok 5 - Logout clears private UI data and listeners
+  ---
+  duration_ms: 0.610163
+  ...
+# Subtest: Late profile response after logout ignored
+ok 6 - Late profile response after logout ignored
+  ---
+  duration_ms: 0.180205
+  ...
+# Subtest: Late profile cannot overwrite newer selection
+ok 7 - Late profile cannot overwrite newer selection
+  ---
+  duration_ms: 0.189183
+  ...
+# Subtest: Removed friendship clears profile and pending response
+ok 8 - Removed friendship clears profile and pending response
+  ---
+  duration_ms: 0.835167
+  ...
+# Subtest: Cannot inspect nonfriend
+ok 9 - Cannot inspect nonfriend
+  ---
+  duration_ms: 0.280827
+  ...
+# Subtest: Permission error clears data
+ok 10 - Permission error clears data
+  ---
+  duration_ms: 0.284185
+  ...
+# Subtest: Observers receive isolated snapshots
+ok 11 - Observers receive isolated snapshots
+  ---
+  duration_ms: 0.172481
+  ...
+# Subtest: Disabling backend blocks action
+ok 12 - Disabling backend blocks action
+  ---
+  duration_ms: 0.192581
+  ...
+# Subtest: Late character response ignored after selection change
+ok 13 - Late character response ignored after selection change
+  ---
+  duration_ms: 0.364105
+  ...
+# Subtest: Live privacy revocation removes character
+ok 14 - Live privacy revocation removes character
+  ---
+  duration_ms: 0.36872
+  ...
+# Subtest: Live character permission error clears sheet
+ok 15 - Live character permission error clears sheet
+  ---
+  duration_ms: 0.24415
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 58.87605
