@@ -2,7 +2,7 @@
   {
     "id": "schattengruft",
     "title": "Chroniken der Schattengruft",
-    "path": "rpg/index.html",
+    "path": "schattengruft/index.html",
     "category": "Dark Fantasy",
     "description": "Steige in die Schattengruft hinab.",
     "headline": "Das Unbekannte wartet.",
@@ -34,8 +34,8 @@
   },
   {
     "id": "nachtfahrt",
-    "title": "Nachtfahrt",
-    "path": "night/index.html",
+    "title": "Nightride",
+    "path": "nightride/index.html",
     "category": "Fahren & Erkunden",
     "description": "Die Stadt schläft. Deine Nachtschicht beginnt.",
     "headline": "Noch eine letzte Fahrt.",
