@@ -15,51 +15,93 @@ function decodeIndex(raw,kind,now){
   return [{uid,displayName:nameOf(value.displayName),...(kind==='requests'?{expiresAt:value.expiresAt}:{})}];
  });
 }
-function createCallableActions({getFunctions,getUser}){
- if(typeof getFunctions!=='function'||typeof getUser!=='function')throw error('backend-unavailable');
- async function call(endpoint,payload){
-  const uid=getUser()?.uid;if(!validUid(uid))throw error('unauthenticated');
-  const functions=await getFunctions();
-  if(getUser()?.uid!==uid)throw error('session-changed');
-  const result=await functions.httpsCallable(endpoint,{timeout:15000})(payload);
-  if(getUser()?.uid!==uid)throw error('session-changed');
-  return result.data;
+function createRtdbActions({db,getUser,clock=Date.now}){
+ if(!db||typeof db.ref!=='function'||typeof getUser!=='function')throw error('backend-unavailable');
+ const codePattern=/^[A-Za-z0-9_-]{24}$/;
+ const ttl=7*24*60*60*1000;
+ function actor(){const uid=getUser()?.uid;if(!validUid(uid))throw error('unauthenticated');return uid;}
+ function sameUser(uid){if(getUser()?.uid!==uid)throw error('session-changed');}
+ async function read(path){return (await db.ref('social/'+path).get()).val();}
+ async function serverNow(){const snap=await db.ref('.info/serverTimeOffset').get();const offset=snap.val();return clock()+(Number.isFinite(offset)?offset:0);}
+ function pair(me,peer){if(!validUid(peer)||peer===me)throw error('invalid-argument');return [me,peer].sort();}
+ function randomCode(){const bytes=new Uint8Array(18);globalThis.crypto.getRandomValues(bytes);let raw='';for(const byte of bytes)raw+=String.fromCharCode(byte);return btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');}
+ async function getCode(){
+  const me=actor();
+  for(let attempt=0;attempt<3;attempt++){
+   const existing=await read('ownCodes/'+me);sameUser(me);
+   if(existing!==null){
+    if(typeof existing!=='string'||!codePattern.test(existing)||await read('codeLookup/'+existing)!==me)throw error('invalid-code-mapping');
+    sameUser(me);return {friendCode:existing};
+   }
+   const code=randomCode();
+   if(!codePattern.test(code))throw error('invalid-generated-code');
+   try{sameUser(me);await db.ref('social').update({['ownCodes/'+me]:code,['codeLookup/'+code]:me});sameUser(me);return {friendCode:code};}
+   catch(e){sameUser(me);if(await read('ownCodes/'+me)!==null)continue;const owner=await read('codeLookup/'+code);if(owner!==null&&owner!==me)continue;throw e;}
+  }
+  throw error('code-reservation-conflict');
  }
+ function batch(rel){
+  const patch={['relationships/'+rel.a+'/'+rel.b]:rel};
+  for(const [owner,peer] of [[rel.a,rel.b],[rel.b,rel.a]]){
+   const pending=rel.status==='pending';
+   patch['friends/'+owner+'/'+peer]={active:rel.status==='friends',revision:rel.revision};
+   patch['requests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===peer,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null,displayName:pending&&rel.requestedBy===peer?rel.requesterName:null};
+   patch['sentRequests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===owner,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null};
+  }
+  return patch;
+ }
+ async function transition(me,peer,operation){
+  const [a,b]=pair(me,peer),path='relationships/'+a+'/'+b;
+  for(let attempt=0;attempt<3;attempt++){
+   const previous=await read(path),time=await serverNow();sameUser(me);
+   if(previous&&(previous.a!==a||previous.b!==b||!Number.isSafeInteger(previous.revision)||previous.revision<0))throw error('invalid-relationship');
+   let next;
+   if(operation==='request'){
+    if(previous?.status==='friends')return {status:'friends'};
+    if(previous&&!['none','pending'].includes(previous.status))throw error('request-not-allowed');
+    if(previous?.status==='pending'&&previous.expiresAt>time){if(previous.requestedBy!==me)throw error('incoming-request-exists');return {status:'pending'};}
+    const name=(await db.ref('users/'+me+'/profile/displayName').get()).val();
+    if(typeof name!=='string'||name.trim().length<3||name.trim().length>20)throw error('invalid-profile');
+    next={a,b,status:'pending',requestedBy:me,requesterName:name.trim(),requestedAt:time,expiresAt:time+ttl};
+   }else{
+    if(!previous)throw error('relationship-missing');
+    if(operation==='accept'&&previous.status==='friends')return {status:'friends'};
+    if(operation==='remove'){if(previous.status!=='friends')throw error('not-friends');}
+    else{
+     if(previous.status!=='pending')throw error('request-missing');
+     const expectedSender=operation==='cancel'?me:peer;
+     if(previous.requestedBy!==expectedSender)throw error('wrong-actor');
+     if(operation==='accept'&&previous.expiresAt<=time)throw error('request-expired');
+    }
+    next={a,b,status:operation==='accept'?'friends':'none'};
+   }
+   next.revision=(previous?.revision||0)+1;next.updatedAt=time;
+   try{sameUser(me);await db.ref('social').update(batch(next));sameUser(me);return {status:next.status,revision:next.revision};}
+   catch(e){sameUser(me);const latest=await read(path);if((latest?.revision||0)!==(previous?.revision||0))continue;throw e;}
+  }
+  throw error('relationship-conflict');
+ }
+ async function requestByCode(data){
+  if(!data||Object.keys(data).some(k=>k!=='friendCode')||typeof data.friendCode!=='string')throw error('invalid-argument');
+  const code=data.friendCode.trim();if(!codePattern.test(code))throw error('invalid-argument');
+  const me=actor(),peer=await read('codeLookup/'+code);sameUser(me);
+  if(!validUid(peer))throw error('friend-code-not-found');
+  return transition(me,peer,'request');
+ }
+ async function setPrivacy(data){
+  const me=actor();
+  if(!data||Object.keys(data).some(k=>!['profile','characters'].includes(k))||!['private','friends'].includes(data.profile)||!['private','friends'].includes(data.characters))throw error('invalid-argument');
+  sameUser(me);await db.ref('social/privacy/'+me).update({profile:data.profile,characters:data.characters});sameUser(me);return {profile:data.profile,characters:data.characters};
+ }
+ async function block(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).set(true);sameUser(me);return {blocked:true};}
+ async function unblock(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).remove();sameUser(me);return {blocked:false};}
  function target(data){if(!data||Object.keys(data).some(k=>k!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');return data.targetUid;}
- const actions={
-  getCode:()=>call('socialGetCode',{}),
-  requestByCode:data=>{if(!data||Object.keys(data).some(k=>k!=='friendCode')||typeof data.friendCode!=='string'||!/^[A-Za-z0-9_-]{24}$/.test(data.friendCode.trim()))throw error('invalid-argument');return call('socialRequestByCode',{friendCode:data.friendCode.trim()});},
-  setPrivacy:data=>{if(!data||Object.keys(data).some(k=>!['profile','characters'].includes(k))||!['private','friends'].includes(data.profile)||!['private','friends'].includes(data.characters))throw error('invalid-argument');return call('socialSetPrivacy',{profile:data.profile,characters:data.characters});}
- };
- for(const operation of operations)actions[operation]=data=>call('socialRespond',{operation,targetUid:target(data)});
+ const actions={getCode,requestByCode,setPrivacy,block,unblock};
+ for(const operation of ['accept','decline','cancel','remove'])actions[operation]=data=>transition(actor(),target(data),operation);
  return Object.freeze(actions);
 }
-let sdkLoading=null;
-function loadFunctionsSdk(firebase){
- if(typeof firebase.functions==='function')return Promise.resolve();
- if(sdkLoading)return sdkLoading;
- const doc=globalThis.document;
- const appScript=doc&&[...doc.scripts].find(s=>/^https:\/\/www\.gstatic\.com\/firebasejs\/[0-9.]+\/firebase-app-compat\.js(?:\?.*)?$/.test(s.src));
- if(!appScript)return Promise.reject(error('functions-sdk-unavailable'));
- sdkLoading=new Promise((resolve,reject)=>{
-  const script=doc.createElement('script');script.async=true;
-  script.src=appScript.src.split('?')[0].replace('firebase-app-compat.js','firebase-functions-compat.js');
-  let settled=false;
-  const finish=e=>{if(settled)return;settled=true;clearTimeout(timer);if(e){script.remove();reject(e);}else resolve();};
-  const timer=setTimeout(()=>finish(error('functions-sdk-timeout')),10000);
-  script.onload=()=>finish(typeof firebase.functions==='function'?null:error('functions-sdk-unavailable'));
-  script.onerror=()=>finish(error('functions-sdk-unavailable'));
-  doc.head.append(script);
- }).catch(e=>{sdkLoading=null;throw e;});
- return sdkLoading;
-}
-function defaultActions(){
- const firebase=globalThis.firebase,region=globalThis.INKFALL_SOCIAL_CONFIG?.functionsRegion;
- if(typeof region!=='string'||!/^[a-z][a-z0-9-]{1,62}$/.test(region)||typeof firebase?.auth!=='function'||typeof firebase?.app!=='function')return {};
- return createCallableActions({getUser:()=>firebase.auth().currentUser,getFunctions:async()=>{await loadFunctionsSdk(firebase);return firebase.app().functions(region);}});
-}
 function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,cancel=clearTimeout}={}){
- const bound=enabled?{...defaultActions(),...actions}:{};
+ const bound=enabled?{...createRtdbActions({db,getUser:()=>globalThis.firebase?.auth?.currentUser,clock}),...actions}:{};
  const has=name=>enabled&&actionNames.includes(name)&&typeof bound[name]==='function';
  function watch(uid,onData,onError){
   if(!validUid(uid))throw error('invalid-uid');
@@ -107,5 +149,5 @@ function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,
  async function invoke(name,payload){if(!has(name))throw error('backend-unavailable');return bound[name](payload);}
  return Object.freeze({watch,getProfile,getCharacter,watchProfile,watchCharacter,has,invoke,enabled});
 }
-return {create,validUid,decodeIndex,createCallableActions};
+return {create,validUid,decodeIndex,createRtdbActions};
 });
