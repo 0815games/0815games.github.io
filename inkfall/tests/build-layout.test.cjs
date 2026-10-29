@@ -1,6 +1,6 @@
 "use strict";
 const assert=require("node:assert/strict");
-const {canDock}=require("../src/command-deck.js");
+const {canDock}=require("../game/js/command-deck.js");
 const cases=[
  [1440,780,80,true],[1200,600,80,true],[1000,400,80,true],
  [999,780,80,false],[390,700,80,false],[844,330,70,false],

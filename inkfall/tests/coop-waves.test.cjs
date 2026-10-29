@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { createEngine } = require('../src/coop-waves.js');
+const { createEngine } = require('../game/js/coop-waves.js');
 
 const config = () => ({
   ground: [[0,0],[10,0]],
@@ -213,7 +213,7 @@ test('Leere Wellen und unbekannte Gegner werden abgewiesen', () => {
 
 test('Vorhandene Spieldefinitionen sind verwendbar', () => {
   const html=fs.readFileSync(
-    path.join(__dirname,'../src/index.html'),'utf8'
+    path.join(__dirname,'../index.html'),'utf8'
   );
 
   function value(pattern){

@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const api = require('../src/coop-commands.js');
+const api = require('../game/js/coop-commands.js');
 
 const clone = value =>
   value === undefined ? null : JSON.parse(JSON.stringify(value));

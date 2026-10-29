@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const api = require('../src/coop-movement.js');
+const api = require('../game/js/coop-movement.js');
 
 const connected = () => ({
   host: { online: true },

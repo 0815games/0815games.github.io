@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const modulePath = path.join(__dirname, '../src/coop-start.js');
+const modulePath = path.join(__dirname, '../game/js/coop-start.js');
 
 if (!fs.existsSync(modulePath)) {
   console.error(

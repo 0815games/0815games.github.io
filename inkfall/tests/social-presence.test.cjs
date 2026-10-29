@@ -1,6 +1,6 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createPublisher,watch,summarize}=require('../src/social/social-presence.js');
+const {createPublisher,watch,summarize}=require('../game/social/social-presence.js');
 const tick=()=>new Promise(setImmediate);
 function fixture(){
  let uid='alice',serial=0,time=1000,timerId=0;

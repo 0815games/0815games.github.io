@@ -8,12 +8,12 @@ function fakeDb(){
  const data={};
  function setPath(path,value){
   const parts=path.split('/').filter(Boolean);let node=data;
-  for(let i=0;i<parts.length-1;i++){const key=parts[i];if(value===null&&i===parts.length-2){delete node[key];return;}node[key]??={};node=node[key];}
+  for(let i=0;i<parts.length-1;i++){const key=parts[i];if(value===null&&node[key]==null)return;node[key]??={};node=node[key];}
   const key=parts.at(-1);if(value===null)delete node[key];else node[key]=value;
  }
  return {data,ref(path){return {
   async get(){const value=path.split('/').filter(Boolean).reduce((node,key)=>node?.[key],data);return {val:()=>value===undefined?null:value};},
-  update(patch){for(const [key,value] of Object.entries(patch))setPath(key,value);},
+  update(patch){for(const [key,value] of Object.entries(patch))setPath([path,key].filter(Boolean).join('/'),value);},
   set(value){setPath(path,value);},
   remove(){setPath(path,null);},
   on(){return;},off(){return;}
@@ -23,27 +23,35 @@ function user(uid){return {uid};}
 test('Unconfigured client shows no fake friends',()=>{const c=createClient();let data;c.watch('alice',x=>data=x,()=>{});assert.equal(data.available,false);assert.deepEqual(data.friends,[]);assert.equal(c.has('invite'),false);});
 test('No database write API in client',()=>{const c=createClient();assert.equal(c.set,undefined);assert.equal(c.update,undefined);assert.equal(c.remove,undefined);});
 test('Disabled action rejects',async()=>{await assert.rejects(createClient().invoke('invite',{}),/backend-unavailable/);});
-test('Invalid character class denied',async()=>{await assert.rejects(createClient({enabled:true}).getCharacter('bob','admin'));});
+test('Invalid character class denied',async()=>{await assert.rejects(createClient({enabled:true,db:fakeDb()}).getCharacter('bob','admin'));});
 test('RTDB actions require database',()=>{assert.throws(()=>createRtdbActions({getUser:()=>user('alice')}),/backend-unavailable/);});
-test('getCode reserves a matching friend code',async()=>{
- const db=fakeDb();const actions=createRtdbActions({db,getUser:()=>user('alice')});
- const first=await actions.getCode();assert.match(first.friendCode,/^[A-Za-z0-9_-]{24}$/);
- assert.equal(db.data.social.codeLookup[first.friendCode],'alice');
- const second=await actions.getCode();assert.equal(second.friendCode,first.friendCode);
-});
-test('requestByCode creates a pending relationship and request indexes',async()=>{
- const db=fakeDb();db.data.social={ownCodes:{bob:'BOB'.padEnd(24,'B')},codeLookup:{'BOB'.padEnd(24,'B'):'bob'},profiles:{bob:{displayName:'Bob'}}};
- const actions=createRtdbActions({db,getUser:()=>user('alice')});
- const result=await actions.requestByCode({friendCode:'BOB'.padEnd(24,'B')});
+test('requestByUid creates a pending relationship and both request indexes',async()=>{
+ const db=fakeDb();
+ db.data.users={alice:{profile:{displayName:'Alice'}}};
+ const actions=createRtdbActions({db,getUser:()=>user('alice'),clock:()=>1000});
+ const result=await actions.requestByUid({targetUid:'bob'});
  assert.equal(result.status,'pending');
- const relationship=Object.values(db.data.social.relationships)[0];
- assert.equal(relationship.status,'pending');assert.equal(relationship.requestedBy,'alice');
+ const relationship=db.data.social.relationships.alice.bob;
+ assert.equal(relationship.status,'pending');
+ assert.equal(relationship.requestedBy,'alice');
+ assert.equal(relationship.requesterName,'Alice');
+ assert.equal(relationship.revision,1);
  assert.equal(db.data.social.requests.bob.alice.active,true);
  assert.equal(db.data.social.sentRequests.alice.bob.active,true);
  assert.equal(db.data.social.friends.alice.bob.active,false);
+ assert.equal(db.data.social.friends.bob.alice.active,false);
 });
+
+test('requestByUid rejects own account without writing a relationship',async()=>{
+ const db=fakeDb();
+ db.data.users={alice:{profile:{displayName:'Alice'}}};
+ const actions=createRtdbActions({db,getUser:()=>user('alice')});
+ await assert.rejects(actions.requestByUid({targetUid:'alice'}),/invalid-argument/);
+ assert.equal(db.data.social,undefined);
+});
+
 test('Recipient accept activates friendship and clears requests',async()=>{
- const db=fakeDb();db.data.social={ownCodes:{alice:'A'.padEnd(24,'A')},codeLookup:{'A'.padEnd(24,'A'):'alice'},relationships:{alice:{bob:{a:'alice',b:'bob',status:'pending',requestedBy:'alice',requesterName:'Alice',requestedAt:1,expiresAt:9999999999999,revision:1,updatedAt:1}}}};
+ const db=fakeDb();db.data.social={ownCodes:{alice:'A'.padEnd(24,'A')},codeLookup:{['A'.padEnd(24,'A')]:'alice'},relationships:{alice:{bob:{a:'alice',b:'bob',status:'pending',requestedBy:'alice',requesterName:'Alice',requestedAt:1,expiresAt:9999999999999,revision:1,updatedAt:1}}}};
  const actions=createRtdbActions({db,getUser:()=>user('bob')});
  const result=await actions.accept({targetUid:'alice'});
  assert.equal(result.status,'friends');

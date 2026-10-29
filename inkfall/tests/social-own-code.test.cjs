@@ -1,7 +1,7 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {create}=require('../src/social/social-store.js');
-const {ownCodeCard}=require('../src/social/social-ui.js');
+const {create}=require('../game/social/social-store.js');
+const {ownCodeCard}=require('../game/social/social-ui.js');
 const CODE='Abcd_0123456789-EfghIJKL';
 function fixture({enabled=true}={}){
  const calls=[],pending=[];

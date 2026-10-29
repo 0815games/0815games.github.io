@@ -1,6 +1,6 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {create,decodeIndex,createCallableActions}=require('../src/social/social-client.js');
+const {create,decodeIndex,createCallableActions}=require('../game/social/social-client.js');
 const record=(extra={})=>({active:true,revision:1,...extra});
 for(const [label,raw,kind,want] of [
  ['inactive friend',{bob:record({active:false})},'friends',0],
@@ -57,10 +57,10 @@ function browserClient(){
  const scripts=[],calls=[];let user={uid:'alice'};
  const firebase={auth:()=>({currentUser:user}),app:()=>({functions:region=>({httpsCallable:name=>async payload=>{calls.push({region,name,payload});return {data:{ok:true}};}})})};
  const doc={scripts:[{src:'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js'}],createElement:()=>({remove(){this.removed=true;}}),head:{append:script=>scripts.push(script)}};
- const box={module:{exports:{}},firebase,document:doc,INKFALL_SOCIAL_CONFIG:{functionsRegion:'europe-west1'},setTimeout,clearTimeout};box.globalThis=box;
- vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/social/social-client.js'),'utf8'),box);
+ const box={module:{exports:{}},firebase,document:doc,INKFALL_SOCIAL_CONFIG:{functionsRegion:'us-central1'},setTimeout,clearTimeout};box.globalThis=box;
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../game/social/social-client.js'),'utf8'),box);
  return {client:box.module.exports.create({enabled:true}),firebase,scripts,calls,box,setUser:value=>user=value};
 }
-test('Functions SDK loads only on first action with matching version',async()=>{const b=browserClient();assert.equal(b.scripts.length,0);const p=b.client.invoke('accept',{targetUid:'bob'});assert.equal(b.scripts.length,1);assert.equal(b.scripts[0].src,'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js');b.firebase.functions=()=>{};b.scripts[0].onload();await p;assert.equal(b.calls[0].region,'europe-west1');assert.equal(b.calls[0].name,'socialRespond');});
+test('Functions SDK loads only on first action with matching version',async()=>{const b=browserClient();assert.equal(b.scripts.length,0);const p=b.client.invoke('accept',{targetUid:'bob'});assert.equal(b.scripts.length,1);assert.equal(b.scripts[0].src,'https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js');b.firebase.functions=()=>{};b.scripts[0].onload();await p;assert.equal(b.calls[0].region,'us-central1');assert.equal(b.calls[0].name,'socialRespond');});
 test('SDK load failure permits retry',async()=>{const b=browserClient();const p=b.client.invoke('block',{targetUid:'bob'});b.scripts[0].onerror();await assert.rejects(p,{code:'functions-sdk-unavailable'});const second=b.client.invoke('block',{targetUid:'bob'});assert.equal(b.scripts.length,2);b.firebase.functions=()=>{};b.scripts[1].onload();await second;assert.equal(b.calls.length,1);});
 test('Logout during actual lazy loader prevents backend call',async()=>{const b=browserClient();const p=b.client.invoke('remove',{targetUid:'bob'});b.setUser(null);b.firebase.functions=()=>{};b.scripts[0].onload();await assert.rejects(p,{code:'session-changed'});assert.equal(b.calls.length,0);});

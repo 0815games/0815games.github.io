@@ -6,8 +6,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const src = path.join(__dirname, '../src');
-const html = fs.readFileSync(path.join(src, 'index.html'), 'utf8');
+const src = path.join(__dirname, '../game/js');
+const html = fs.readFileSync(path.join(__dirname, '../index.html'), 'utf8');
 const firebaseSource = fs.readFileSync(
   path.join(src, 'firebase.js'), 'utf8'
 );

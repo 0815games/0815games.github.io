@@ -1,6 +1,6 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createPresenceSession}=require('../src/social/social-bootstrap.js');
+const {createPresenceSession}=require('../game/social/social-bootstrap.js');
 const tick=()=>new Promise(setImmediate);
 function fixture({user='alice',enabled=true,hooks=false,readonly=false}={}){
  let current=user?{uid:user}:null,signOutError=false;
@@ -35,9 +35,9 @@ test('Old auth event during pre-change hook cannot restart old owner',async()=>{
 test('Publisher start failure is reported and stopped',async()=>{const f=fixture();let stops=0;f.setLoader(async()=>({createPublisher:()=>({start(){throw Error('denied');},async stop(){stops++;}})}));f.session.start();await tick();assert.equal(f.errors.length,1);assert.equal(stops,1);await f.session.destroy();});
 test('Calling start twice is idempotent',async()=>{const f=fixture();f.session.start();f.session.start();await tick();assert.equal(f.listeners.size,1);assert.equal(f.publishers.length,1);await f.session.destroy();});
 
-const {createPresenceLoader}=require('../src/social/social-bootstrap.js');
-function loaderFixture(){let module=null;const scripts=[],jobs=new Map();let id=0;return {scripts,jobs,setModule(value){module=value;},load:createPresenceLoader({source:'https://example.test/inkfall/src/social/social-bootstrap.js?v=1',document:{createElement:()=>({remove(){this.removed=true;}}),head:{append:script=>scripts.push(script)}},getModule:()=>module,schedule:fn=>{jobs.set(++id,fn);return id;},cancel:key=>jobs.delete(key)})};}
-test('Local module loader resolves sibling URL and deduplicates loads',async()=>{const f=loaderFixture();const a=f.load(),b=f.load();assert.equal(a,b);assert.equal(f.scripts.length,1);assert.equal(f.scripts[0].src,'https://example.test/inkfall/src/social/social-presence.js');const module={createPublisher(){}};f.setModule(module);f.scripts[0].onload();assert.equal(await a,module);assert.equal(f.jobs.size,0);});
+const {createPresenceLoader}=require('../game/social/social-bootstrap.js');
+function loaderFixture(){let module=null;const scripts=[],jobs=new Map();let id=0;return {scripts,jobs,setModule(value){module=value;},load:createPresenceLoader({source:'https://example.test/inkfall/game/social/social-bootstrap.js?v=1',document:{createElement:()=>({remove(){this.removed=true;}}),head:{append:script=>scripts.push(script)}},getModule:()=>module,schedule:fn=>{jobs.set(++id,fn);return id;},cancel:key=>jobs.delete(key)})};}
+test('Local module loader resolves sibling URL and deduplicates loads',async()=>{const f=loaderFixture();const a=f.load(),b=f.load();assert.equal(a,b);assert.equal(f.scripts.length,1);assert.equal(f.scripts[0].src,'https://example.test/inkfall/game/social/social-presence.js');const module={createPublisher(){}};f.setModule(module);f.scripts[0].onload();assert.equal(await a,module);assert.equal(f.jobs.size,0);});
 test('Module timeout clears pending script and allows retry',async()=>{const f=loaderFixture();const a=f.load();[...f.jobs.values()][0]();await assert.rejects(a,/timeout/);assert.equal(f.scripts[0].removed,true);const b=f.load();assert.equal(f.scripts.length,2);f.setModule({createPublisher(){}});f.scripts[1].onload();await b;});
 test('Script errors are retryable',async()=>{const f=loaderFixture();const a=f.load();f.scripts[0].onerror();await assert.rejects(a,/unavailable/);const b=f.load();f.setModule({createPublisher(){}});f.scripts[1].onload();await b;assert.equal(f.jobs.size,0);});
 test('Already loaded module does not inject a script',async()=>{const f=loaderFixture();f.setModule({createPublisher(){}});await f.load();assert.equal(f.scripts.length,0);});

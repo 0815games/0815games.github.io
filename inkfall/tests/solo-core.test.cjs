@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const html = fs.readFileSync(
-  path.join(__dirname, '../src/index.html'),
+  path.join(__dirname, '../index.html'),
   'utf8'
 );
 

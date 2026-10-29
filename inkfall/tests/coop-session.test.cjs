@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const api = require('../src/coop-session.js');
+const api = require('../game/js/coop-session.js');
 
 function room() {
   return {

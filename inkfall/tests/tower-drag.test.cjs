@@ -1,6 +1,6 @@
 "use strict";
 const assert=require("node:assert/strict");
-const {toWorld,placementError}=require("../src/build-menu-art.js");
+const {toWorld,placementError}=require("../game/js/build-menu-art.js");
 let passed=0;function test(name,run){run();passed++;console.log("OK "+name);}
 const rect={left:100,top:50,width:940,height:600};
 const camera={x:470,y:300,w:940,h:600,z:1};

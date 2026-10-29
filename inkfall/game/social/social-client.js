@@ -1,8 +1,9 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.InkfallSocialClient=api;})(globalThis,()=>{
 'use strict';
+const root=globalThis;
 const validUid=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(x);
 const operations=['accept','decline','cancel','remove','block','unblock'];
-const actionNames=['requestByUid','setPrivacy',...operations];
+const actionNames=['requestByUid','requestByCode','getCode','setPrivacy',...operations];
 function error(code){const e=new Error(code);e.code=code;return e;}
 function nameOf(value){return typeof value==='string'&&!/[\u0000-\u001f\u007f]/.test(value)?value.slice(0,80):null;}
 function decodeIndex(raw,kind,now){
@@ -77,8 +78,67 @@ function createRtdbActions({db,getUser,clock=Date.now}){
  for(const operation of ['accept','decline','cancel','remove'])actions[operation]=data=>transition(actor(),target(data),operation);
  return Object.freeze(actions);
 }
-function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,cancel=clearTimeout}={}){
- const bound=enabled?{...createRtdbActions({db,getUser:()=>globalThis.firebase?.auth?.currentUser,clock}),...actions}:{};
+function createCallableActions({getFunctions,getUser,timeout=15000}){
+ if(typeof getFunctions!=='function'||typeof getUser!=='function')throw error('backend-unavailable');
+ async function invoke(name,payload){
+  const uid=getUser()?.uid;
+  if(!validUid(uid))throw error('unauthenticated');
+  const functions=await getFunctions();
+  if(getUser()?.uid!==uid)throw error('session-changed');
+  const callable=functions.httpsCallable(name,{timeout});
+  const response=await callable(payload);
+  if(getUser()?.uid!==uid)throw error('session-changed');
+  return response?.data;
+ }
+ function respond(operation){
+  return async data=>{
+   if(!data||Object.keys(data).some(key=>key!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');
+   return invoke('socialRespond',{operation,targetUid:data.targetUid});
+  };
+ }
+ return Object.freeze({
+  getCode:async()=>invoke('socialGetCode',{}),
+  requestByCode:async data=>{
+   const code=typeof data?.friendCode==='string'?data.friendCode.trim():'';
+   if(!/^[A-Za-z0-9_-]{24}$/.test(code))throw error('invalid-argument');
+   return invoke('socialRequestByCode',{friendCode:code});
+  },
+  setPrivacy:async data=>{
+   if(!data||Object.keys(data).some(key=>!['profile','characters'].includes(key))||!['private','friends'].includes(data.profile)||!['private','friends'].includes(data.characters))throw error('invalid-argument');
+   return invoke('socialSetPrivacy',{profile:data.profile,characters:data.characters});
+  },
+  accept:respond('accept'),
+  decline:respond('decline'),
+  cancel:respond('cancel'),
+  remove:respond('remove'),
+  block:respond('block'),
+  unblock:respond('unblock')
+ });
+}
+function createBrowserFunctions({region}){
+ let loader=null;
+ return async()=>{
+  if(!loader){
+   loader=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js';
+    script.onload=()=>resolve();
+    script.onerror=()=>{loader=null;script.remove();reject(error('functions-sdk-unavailable'));};
+    document.head.append(script);
+   });
+  }
+  try{await loader;}
+  catch(loadError){loader=null;throw loadError;}
+  const functions=root.firebase?.app?.()?.functions?.(region);
+  if(!functions)throw error('functions-sdk-unavailable');
+  return functions;
+ };
+}
+function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,cancel=clearTimeout,config=root.INKFALL_SOCIAL_CONFIG||{}}={}){
+ const bound=enabled?{...(db?createRtdbActions({db,getUser:()=>root.firebase?.auth?.()?.currentUser,clock}):{}),...actions}:{};
+ if(enabled&&!bound.getCode&&!bound.requestByCode){
+  Object.assign(bound,createCallableActions({getFunctions:createBrowserFunctions({region:config.functionsRegion}),getUser:()=>root.firebase?.auth?.()?.currentUser}));
+ }
  const has=name=>enabled&&actionNames.includes(name)&&typeof bound[name]==='function';
  function watch(uid,onData,onError){
   if(!validUid(uid))throw error('invalid-uid');
@@ -126,5 +186,5 @@ function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,
  async function invoke(name,payload){if(!has(name))throw error('backend-unavailable');return bound[name](payload);}
  return Object.freeze({watch,getProfile,getCharacter,watchProfile,watchCharacter,has,invoke,enabled});
 }
-return {create,validUid,decodeIndex,createRtdbActions};
+return {create,validUid,decodeIndex,createRtdbActions,createCallableActions};
 });

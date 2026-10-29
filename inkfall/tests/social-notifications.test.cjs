@@ -1,6 +1,6 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createRequestTracker}=require('../src/social/social-bootstrap.js');
+const {createRequestTracker}=require('../game/social/social-bootstrap.js');
 const snapshot=(ids,extra={})=>({uid:'alice',available:true,loading:false,requests:ids.map(uid=>({uid})),...extra});
 test('Initial old requests only set badge',()=>assert.deepEqual(createRequestTracker().update(snapshot(['bob'])),{count:1,newCount:0}));
 test('New request after baseline notifies',()=>{const t=createRequestTracker();t.update(snapshot([]));assert.deepEqual(t.update(snapshot(['bob'])),{count:1,newCount:1});});

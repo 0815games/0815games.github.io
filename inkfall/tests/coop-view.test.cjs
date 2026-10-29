@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { createViewModel } = require('../src/coop-view.js');
+const { createViewModel } = require('../game/js/coop-view.js');
 
 function session() {
   return {

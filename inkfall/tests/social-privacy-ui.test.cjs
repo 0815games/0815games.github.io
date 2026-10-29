@@ -1,6 +1,6 @@
 "use strict";
 const test=require('node:test'),assert=require('node:assert/strict');
-const {createPrivacyController,privacyCard,normalizePrivacy}=require('../src/social/social-ui.js');
+const {createPrivacyController,privacyCard,normalizePrivacy}=require('../game/social/social-ui.js');
 const tick=()=>new Promise(setImmediate);
 function fixture(options={}){
  let remote=options.remote??null,enabled=options.enabled!==false;
@@ -37,7 +37,7 @@ test('Disabled card shows unavailable status rather than saved values',()=>{cons
 test('Switch edits local draft and save button enables only after editing',async()=>{const f=fixture();await f.controller.load();let nodes=all(privacyCard({doc:dom(),controller:f.controller}));nodes.find(n=>n.dataset.focus==='privacy-profile').onclick();nodes=all(privacyCard({doc:dom(),controller:f.controller}));assert.equal(nodes.find(n=>n.dataset.focus==='privacy-profile').attrs['aria-checked'],'true');assert.equal(nodes.find(n=>n.dataset.focus==='privacy-save').disabled,false);assert.equal(f.writes.length,0);});
 
 test('Settings tab loads, edits locally, saves and confirms through UI',async()=>{
- const {create}=require('../src/social/social-ui.js');let doc;
+ const {create}=require('../game/social/social-ui.js');let doc;
  function el(tag){return {tag,children:[],dataset:{},style:{},attrs:{},open:false,disabled:false,handlers:{},append(...xs){for(const x of xs){x.parent=this;this.children.push(x);}},replaceChildren(...xs){this.children=[];this.append(...xs);},contains(x){return x===this||this.children.some(c=>c.contains(x));},setAttribute(k,v){this.attrs[k]=v;},querySelectorAll(s){const flat=this.children.flatMap(c=>[c,...c.querySelectorAll('*')]);if(s==='*')return flat;if(s==='button')return flat.filter(c=>c.tag==='button');if(s==='[data-focus]')return flat.filter(c=>c.dataset.focus);if(s.startsWith('[data-focus='))return flat.filter(c=>c.dataset.focus===s.match(/"([^"]+)"/)[1]);return [];},querySelector(s){return this.querySelectorAll(s)[0]||null;},focus(){doc.activeElement=this;},addEventListener(k,f){this.handlers[k]=f;},showModal(){this.open=true;},close(){this.open=false;this.handlers.close?.();},remove(){}};}
  doc={createElement:el,body:el('body'),activeElement:null};
  const state={uid:'alice',available:true,loading:false,busy:false,friends:[],requests:[],selectedUid:null};let remote=null,reads=0;const writes=[];

@@ -1,6 +1,6 @@
 'use strict';
 const assert=require('node:assert/strict');
-const {createWaveHost}=require('../src/coop-wave-host.js');
+const {createWaveHost}=require('../game/js/coop-wave-host.js');
 
 const config={
   ground:[[0,0],[940,0]],
