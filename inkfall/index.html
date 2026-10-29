@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<script src="startup-diagnostics.js"></script>
+<script src="game/js/startup-diagnostics.js"></script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>INKFALL — Prototyp v0.4</title>
@@ -29,17 +29,17 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .node button{width:auto;margin:0;padding:4px 8px;font-size:12px}
 .close{position:fixed;top:14px;right:18px;width:auto;padding:8px 14px}
 </style>
-<link rel="stylesheet" href="cartoon-theme.css">
-<link rel="stylesheet" href="skilltree.css">
-<link rel="stylesheet" href="game-window.css">
-<link rel="stylesheet" href="battle-layout.css">
-<link rel="stylesheet" href="startscreen.css">
-<link rel="stylesheet" href="logo-animation.css">
-<script src="firebase-config.js"></script>
-<link rel="stylesheet" href="wave-preview.css">
-<link rel="stylesheet" href="pregame.css">
-<link rel="stylesheet" href="player-menu.css">
-<script src="world-art.js"></script>
+<link rel="stylesheet" href="game/css/cartoon-theme.css">
+<link rel="stylesheet" href="game/css/skilltree.css">
+<link rel="stylesheet" href="game/css/game-window.css">
+<link rel="stylesheet" href="game/css/battle-layout.css">
+<link rel="stylesheet" href="game/css/startscreen.css">
+<link rel="stylesheet" href="game/css/logo-animation.css">
+<script src="game/js/firebase-config.js"></script>
+<link rel="stylesheet" href="game/css/wave-preview.css">
+<link rel="stylesheet" href="game/css/pregame.css">
+<link rel="stylesheet" href="game/css/player-menu.css">
+<script src="game/js/world-art.js"></script>
 <style id="inkfall-menu-cleanup">
 #if-save-floppy {
   display:inline-flex;
@@ -63,14 +63,14 @@ button:disabled{opacity:.4;cursor:not-allowed}
   transform:translateY(1px);
 }
 </style>
-<link rel="stylesheet" href="topbar-actions.css">
-<link rel="stylesheet" href="camera-layout.css">
-<link rel="stylesheet" href="compact-controls.css">
-<link rel="stylesheet" href="command-deck.css">
-<script src="tower-renderer.js"></script>
-<script src="combat-art.js"></script>
-<script src="enemy-art.js"></script>
-<script src="impact-fx.js"></script>
+<link rel="stylesheet" href="game/css/topbar-actions.css">
+<link rel="stylesheet" href="game/css/camera-layout.css">
+<link rel="stylesheet" href="game/css/compact-controls.css">
+<link rel="stylesheet" href="game/css/command-deck.css">
+<script src="game/js/tower-renderer.js"></script>
+<script src="game/js/combat-art.js"></script>
+<script src="game/js/enemy-art.js"></script>
+<script src="game/js/impact-fx.js"></script>
 <link rel="stylesheet" href="game/social/social-ui.css">
 </head>
 <!-- INKFALL_MENU_CLEANUP_V2 -->
@@ -476,34 +476,34 @@ ui();draw();requestAnimationFrame(loop);void 0;
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-<script src="firebase.js"></script>
-<script src="skilltree.js"></script>
-<script src="game-window.js"></script>
-<script src="battle-layout.js"></script>
-<script src="startscreen.js"></script>
-<script src="wave-preview.js"></script>
-<script src="pregame.js"></script>
-<script src="coop-session.js"></script>
-<script src="coop-start.js"></script>
+<script src="game/js/firebase.js"></script>
+<script src="game/js/skilltree.js"></script>
+<script src="game/js/game-window.js"></script>
+<script src="game/js/battle-layout.js"></script>
+<script src="game/js/startscreen.js"></script>
+<script src="game/js/wave-preview.js"></script>
+<script src="game/js/pregame.js"></script>
+<script src="game/js/coop-session.js"></script>
+<script src="game/js/coop-start.js"></script>
 
 
-<script src="firebase-lobby.js"></script>
-<script src="checkpoint-autosave.js"></script>
-<script src="build-menu-art.js"></script>
+<script src="game/js/firebase-lobby.js"></script>
+<script src="game/js/checkpoint-autosave.js"></script>
+<script src="game/js/build-menu-art.js"></script>
 <!-- INKFALL_TOPBAR_FINAL_V1 -->
-<script src="topbar-actions.js"></script>
-<script src="camera-layout.js"></script>
-<script src="compact-controls.js"></script>
-<script src="command-deck.js"></script>
-<script src="coop-movement.js"></script>
-<script src="coop-commands.js"></script>
-<script src="coop-host.js"></script>
+<script src="game/js/topbar-actions.js"></script>
+<script src="game/js/camera-layout.js"></script>
+<script src="game/js/compact-controls.js"></script>
+<script src="game/js/command-deck.js"></script>
+<script src="game/js/coop-movement.js"></script>
+<script src="game/js/coop-commands.js"></script>
+<script src="game/js/coop-host.js"></script>
 
 
-<script src="coop-waves.js"></script>
-<script src="coop-wave-host.js"></script>
-<script src="coop-runtime.js"></script>
-<script src="coop-view.js"></script>
+<script src="game/js/coop-waves.js"></script>
+<script src="game/js/coop-wave-host.js"></script>
+<script src="game/js/coop-runtime.js"></script>
+<script src="game/js/coop-view.js"></script>
 <script>window.INKFALL_SOCIAL_CONFIG={enabled:true};</script>
 <script src="game/social/social-client.js"></script>
 <script src="game/social/social-store.js"></script>
