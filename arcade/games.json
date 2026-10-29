@@ -46,7 +46,7 @@
   {
     "id": "garage",
     "title": "Garage & Drive",
-    "path": "game/car-workshop/index.html",
+    "path": "car-workshop/index.html",
     "category": "Werkstatt & Fahren",
     "description": "Von der Werkstatt auf die Straße.",
     "headline": "Etwas Großes entsteht.",

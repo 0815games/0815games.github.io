@@ -1,7 +1,7 @@
 {
   "name": "inkfall-social-backend",
   "private": true,
-  "main": "functions/index.cjs",
+  "main": "index.cjs",
   "engines": {
     "node": "22"
   },
