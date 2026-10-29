@@ -161,6 +161,29 @@
     };
   }
 
+  async function reservePlayerName(name, uid) {
+    const normalized = name.trim().toLowerCase();
+    const reference = db.ref("usernames/" + encodeURIComponent(normalized));
+
+    const result = await reference.transaction(current => {
+      if (current === null) {
+        return { uid, name: name.trim() };
+      }
+
+      if (current.uid === uid) {
+        return { uid, name: name.trim() };
+      }
+
+      return;
+    }, undefined, false);
+
+    if (!result.committed) {
+      throw new Error("Dieser Spielername ist bereits vergeben.");
+    }
+
+    return result.snapshot.val();
+  }
+
   async function prepareAccount() {
     ready = false;
     const user = auth.currentUser;
@@ -178,6 +201,8 @@
         return;
       }
 
+      await reservePlayerName(name, user.uid);
+
       await reference.set({
         profile:{
           displayName:name,
@@ -192,6 +217,12 @@
           heroClass:"knight"
         }
       });
+    } else {
+      const existingName = snapshot.val()?.profile?.displayName;
+
+      if (existingName) {
+        await reservePlayerName(existingName, user.uid);
+      }
     }
 
     if (typeof loadGame === "function") await loadGame();

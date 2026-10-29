@@ -334,6 +334,13 @@
     },
     "$other": {
       ".validate": false
+    },
+    "usernames": {
+      "$name": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid))",
+        ".validate": "newData.hasChildren(['uid','name']) && newData.child('uid').isString() && newData.child('name').isString() && newData.child('name').val().length >= 3 && newData.child('name').val().length <= 20 && $name === newData.child('name').val().toLowerCase()"
+      }
     }
   }
 }

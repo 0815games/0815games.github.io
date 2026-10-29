@@ -3,7 +3,7 @@
 const root=globalThis;
 const validUid=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(x);
 const operations=['accept','decline','cancel','remove','block','unblock'];
-const actionNames=['requestByUid','requestByCode','getCode','setPrivacy',...operations];
+const actionNames=['requestByUid','requestByName','requestByCode','getCode','setPrivacy',...operations];
 function error(code){const e=new Error(code);e.code=code;return e;}
 function nameOf(value){return typeof value==='string'&&!/[\u0000-\u001f\u007f]/.test(value)?value.slice(0,80):null;}
 function decodeIndex(raw,kind,now){
@@ -67,6 +67,14 @@ function createRtdbActions({db,getUser,clock=Date.now}){
   throw error('relationship-conflict');
  }
  async function requestByUid(data){return transition(actor(),target(data),'request');}
+ async function requestByName(data){
+  const name=typeof data?.playerName==='string'?data.playerName.trim():'';
+  if(!/^[A-Za-z0-9_-]{3,20}$/.test(name))throw error('invalid-argument');
+  const snapshot=await db.ref('usernames/'+name.toLowerCase()).get();
+  const uid=snapshot.val()?.uid;
+  if(!validUid(uid))throw error('player-not-found');
+  return requestByUid({targetUid:uid});
+ }
  async function setPrivacy(data){
   const me=actor();
   if(!data||Object.keys(data).some(k=>!['profile','characters'].includes(k))||!['private','friends'].includes(data.profile)||!['private','friends'].includes(data.characters))throw error('invalid-argument');
@@ -74,7 +82,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
  }
  async function block(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).set(true);sameUser(me);return {blocked:true};}
  async function unblock(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).remove();sameUser(me);return {blocked:false};}
- const actions={requestByUid,setPrivacy,block,unblock};
+ const actions={requestByUid,requestByName,setPrivacy,block,unblock};
  for(const operation of ['accept','decline','cancel','remove'])actions[operation]=data=>transition(actor(),target(data),operation);
  return Object.freeze(actions);
 }
@@ -136,7 +144,7 @@ function createBrowserFunctions({region}){
 }
 function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,cancel=clearTimeout,config=root.INKFALL_SOCIAL_CONFIG||{}}={}){
  const bound=enabled?{...(db?createRtdbActions({db,getUser:()=>root.firebase?.auth?.()?.currentUser,clock}):{}),...actions}:{};
- if(enabled&&!bound.getCode&&!bound.requestByCode){
+ if(enabled&&!db&&!bound.getCode&&!bound.requestByCode){
   Object.assign(bound,createCallableActions({getFunctions:createBrowserFunctions({region:config.functionsRegion}),getUser:()=>root.firebase?.auth?.()?.currentUser}));
  }
  const has=name=>enabled&&actionNames.includes(name)&&typeof bound[name]==='function';

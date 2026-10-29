@@ -2,28 +2,6 @@ const app = firebase.apps.length
   ? firebase.app()
   : firebase.initializeApp(FIREBASE_CONFIG);
 
-const appCheck = firebase.appCheck(app);
-const appCheckSiteKey = window.INKFALL_APPCHECK_SITE_KEY;
-const isLocalDevelopment = ["localhost", "127.0.0.1"].includes(window.location.hostname)
-  || window.location.hostname.endsWith(".app.github.dev");
-
-if (appCheckSiteKey) {
-  appCheck.activate(
-    new firebase.appCheck.ReCaptchaV3Provider(appCheckSiteKey),
-    true
-  );
-} else if (isLocalDevelopment) {
-  self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-  appCheck.activate(
-    new firebase.appCheck.ReCaptchaV3Provider("local-debug-only"),
-    true
-  );
-
-  appCheck.getToken()
-    .then(token => console.info("Inkfall App Check debug token:", token))
-    .catch(error => console.warn("Inkfall App Check debug token konnte nicht erzeugt werden:", error));
-}
-
 const auth = firebase.auth();
 const db = firebase.database();
 
