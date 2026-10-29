@@ -1,51 +1,74 @@
-# INKFALL: Freundeslisten-Komponenten (noch nicht im Repository integriert)
+# INKFALL: Freundesliste (RTDB-only)
 
-## Dateien
-social-client.js: read-only Firebase-Adapter und injizierte Backend-Aktionen.
-social-store.js: Sessionwechsel, Listener-Lebenszyklus, asynchrone Auswahl und Fehlerzustand.
-social-ui.js / social-ui.css: nativer Dialog, Liste/Details, Anfragen, Hinzufuegen und mobile Navigation.
-character-inspector.js: schreibgeschuetztes Charakterblatt und Skillliste mit Beschreibungen.
-social-bootstrap.js: Hauptmenue-/Topbar-Einstieg, Auth-Anbindung und Bereinigung.
+## Aktueller Stand
 
-## Integration
-Diese Dateien zusammen nach inkfall/src/social/ uebernehmen.
-Im head von inkfall/src/index.html:
-<link rel="stylesheet" href="social/social-ui.css">
-Am Ende des body, NACH bestehenden Firebase-, Menue- und UI-Scripts:
-<script src="social/social-client.js"></script>
-<script src="social/social-store.js"></script>
-<script src="social/character-inspector.js"></script>
-<script src="social/social-ui.js"></script>
-<script src="social/social-bootstrap.js"></script>
+Die Freundesliste verwendet keine Cloud Functions. Sämtliche Social-Aktionen schreiben direkt in die Firebase Realtime Database.
 
-Default: deaktivierter Datenadapter, sichtbare Erklaerung statt Fake-Kontakten.
-Freunde-Button ist nur mit Anmeldung bedienbar. Kein Online-Zaehler ohne Presence.
-Erst nach Backend-/Regelfreigabe VOR Bootstrap konfigurieren:
-window.INKFALL_SOCIAL_CONFIG = {enabled:true, actions:{ ... }};
-Aktionen: requestByCode({friendCode}), accept/decline/remove/block/invite({targetUid}).
-Nur verifizierte Backend-Aufrufe injizieren; niemals direkte Graphwrites als Ersatz.
-Jede nicht konfigurierte Aktion bleibt deaktiviert. Presence ist noch nicht implementiert.
-Anfragen mit fehlendem Absendernamen koennen nicht angenommen werden.
+Unterstützte Aktionen:
 
-## Datenschutz und Sicherheit
-Daten nur unter social lesen, niemals komplette private users-Spielstaende.
-Profile/Charakteransichten einzeln, Charakteransichten pro knight/mage laden.
-Listener fuer aktuell ausgewahltes Profil/Charakter beachten Zugriffsfehler/Entzug.
-Logout/Accountwechsel/Freund entfernen verwirft alte Antworten und fremde Daten.
-Text wird ausschliesslich mit textContent eingesetzt, nicht als dynamisches HTML.
-Der Charakterinspektor ist vorerst eine Nur-Lese-Skillliste, NICHT die grafische Skillkarte.
-Kein Kaufen/Reset und keine Aenderung eigener globals skills/skillPoints.
-Native showModal()/Dialog-Toplayer statt weiterer lokaler Z-Index-Ueberlagerungen.
-Dialog schliesst mit Escape/Schliessen; Fokus wird zum Ausloeser zurueckgegeben.
-Tastaturereignisse werden bei offenem Dialog auf Window-Capture gestoppt.
-Bereits frueher registrierte Window-Capture-Handler (z.B. F2-Diagnose) muessen im
-spaeteren gemeinsamen Overlay-Manager ebenfalls beruecksichtigt werden.
-Das Oeffnen aendert weder Spielgeschwindigkeit noch Coop-Pausenzustand.
+- `getCode`
+- `requestByCode`
+- `accept`
+- `decline`
+- `cancel`
+- `remove`
+- `block`
+- `unblock`
+- `setPrivacy`
 
-## Pruefstand
+## Datenpfade
+
+```text
+social/ownCodes/{uid}
+social/codeLookup/{friendCode}
+social/relationships/{uidA}/{uidB}
+social/friends/{uid}/{friendUid}
+social/requests/{recipientUid}/{senderUid}
+social/sentRequests/{senderUid}/{recipientUid}
+social/blocks/{uid}/{blockedUid}
+social/privacy/{uid}
+social/profiles/{uid}
+social/characterViews/{uid}/{classId}
+```
+
+Private Spielstände bleiben weiterhin unter `users/{uid}` und werden nicht über die Freundesliste freigegeben.
+
+## Regeln und Deployment
+
+Der `social`-Zweig befindet sich in `database.rules.json`. Die bestehenden Bereiche `users` und `rooms` bleiben unverändert.
+
+Deployment im Codespace:
+
+```bash
+git checkout feature/social-rtdb-only
+git pull
+firebase deploy --only database
+```
+
+Vor dem Produktiv-Deployment sollten die Regeln im Emulator mit zwei Testaccounts geprüft werden.
+
+## Aktivierung
+
+Der Client ist standardmäßig deaktiviert. Für die Aktivierung muss vor `social-bootstrap.js` gelten:
+
+```js
+window.INKFALL_SOCIAL_CONFIG = {
+  enabled: true
+};
+```
+
+Presence bleibt separat und wird nur bei zusätzlich gesetztem `presenceEnabled: true` gestartet.
+
+## Tests
+
+```bash
 node --test inkfall/src/social/social-components.test.cjs
-15 Adapter-/Store-Tests lokal bestanden; JS-Syntax geprueft.
-Keine echten Firebase-/Backend-Aufrufe ausgefuehrt.
-Kein Browser-, Fokus-, Tastatur- oder Layouttest: vor Integration erforderlich.
-Die bestehenden Firebase-Regeln und der letzte Social-CI-Lauf wurden hier nicht freigegeben.
-Nicht committed, nicht gepusht, nicht auf der Website aktiviert.
+```
+
+Die Tests decken Code-Reservierung, Anfrage, Annahme, Ablehnen, Zurückziehen, Entfernen, blockieren und Datenschutz auf Adapterebene ab. Firebase-Emulator-, Browser-, Fokus- und Zwei-Account-Tests sind vor dem Merge zusätzlich erforderlich.
+
+## Bekannte Grenzen
+
+- Profil- und Charakteransichten werden derzeit gelesen, aber vom RTDB-only-Adapter noch nicht automatisch veröffentlicht.
+- Einladungen und Wartezimmer sind noch nicht Teil dieses Social-Kerns.
+- Die Regeln erzwingen Anfrageablauf, Blockierungen und Revisionsänderungen; die Client-Prüfungen sind lediglich Bedienungsprüfungen.
