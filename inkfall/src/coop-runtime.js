@@ -20,7 +20,9 @@
   let active=null;
 
   function project(session,movement){
-    const next=JSON.parse(JSON.stringify(session));
+    const next=typeof structuredClone==='function'
+      ?structuredClone(session)
+      :JSON.parse(JSON.stringify(session));
     if(!movement)return next;
 
     if(movement.sessionId!==session.id){
@@ -175,6 +177,10 @@
           result=await host.tick(dt);
         }
 
+        if(!result?.committed){
+          return result;
+        }
+
         if(waveHost&&room.session.phase==='running'){
           const waveState=room.waves;
           const movementPaused=
@@ -276,13 +282,28 @@
       const generateId=options.generateId||
         (()=>root.crypto.randomUUID());
       const expected=(room.waves?.wave||0)+1;
+      const timestamp=options.now?options.now():Date.now();
 
-      await reference.child('waveStart').set({
-        id:generateId(),
-        expectedWave:expected,
-        requestedBy:uid,
-        at:options.now?options.now():Date.now()
-      });
+      const result=await reference.child('waveStart').transaction(current=>{
+        if(
+          current &&
+          Number.isSafeInteger(current.expectedWave) &&
+          current.expectedWave >= expected
+        ){
+          return;
+        }
+
+        return {
+          id:generateId(),
+          expectedWave:expected,
+          requestedBy:uid,
+          at:timestamp
+        };
+      }, undefined, false);
+
+      if(!result?.committed){
+        throw new Error('Wellenstart konnte nicht bestätigt werden.');
+      }
 
       return pump(0);
     }
