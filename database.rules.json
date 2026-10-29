@@ -236,20 +236,6 @@
       }
     },
     "social": {
-      "ownCodes": {
-        "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": "auth != null && auth.uid === $uid",
-          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{24}$/)"
-        }
-      },
-      "codeLookup": {
-        "$code": {
-          ".read": "auth != null",
-          ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && data.val() === auth.uid && newData.val() === auth.uid))",
-          ".validate": "newData.isString() && newData.val().matches(/^[A-Za-z0-9_-]{1,128}$/)"
-        }
-      },
       "relationships": {
         "$a": {
           "$b": {

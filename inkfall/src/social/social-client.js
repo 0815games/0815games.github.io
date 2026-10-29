@@ -2,7 +2,7 @@
 'use strict';
 const validUid=x=>typeof x==='string'&&x.length>0&&x.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(x);
 const operations=['accept','decline','cancel','remove','block','unblock'];
-const actionNames=['getCode','requestByCode','setPrivacy',...operations];
+const actionNames=['requestByUid','setPrivacy',...operations];
 function error(code){const e=new Error(code);e.code=code;return e;}
 function nameOf(value){return typeof value==='string'&&!/[\u0000-\u001f\u007f]/.test(value)?value.slice(0,80):null;}
 function decodeIndex(raw,kind,now){
@@ -17,29 +17,13 @@ function decodeIndex(raw,kind,now){
 }
 function createRtdbActions({db,getUser,clock=Date.now}){
  if(!db||typeof db.ref!=='function'||typeof getUser!=='function')throw error('backend-unavailable');
- const codePattern=/^[A-Za-z0-9_-]{24}$/;
  const ttl=7*24*60*60*1000;
  function actor(){const uid=getUser()?.uid;if(!validUid(uid))throw error('unauthenticated');return uid;}
  function sameUser(uid){if(getUser()?.uid!==uid)throw error('session-changed');}
  async function read(path){return (await db.ref('social/'+path).get()).val();}
  async function serverNow(){const snap=await db.ref('.info/serverTimeOffset').get();const offset=snap.val();return clock()+(Number.isFinite(offset)?offset:0);}
  function pair(me,peer){if(!validUid(peer)||peer===me)throw error('invalid-argument');return [me,peer].sort();}
- function randomCode(){const bytes=new Uint8Array(18);globalThis.crypto.getRandomValues(bytes);let raw='';for(const byte of bytes)raw+=String.fromCharCode(byte);return btoa(raw).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/g,'');}
- async function getCode(){
-  const me=actor();
-  for(let attempt=0;attempt<3;attempt++){
-   const existing=await read('ownCodes/'+me);sameUser(me);
-   if(existing!==null){
-    if(typeof existing!=='string'||!codePattern.test(existing)||await read('codeLookup/'+existing)!==me)throw error('invalid-code-mapping');
-    sameUser(me);return {friendCode:existing};
-   }
-   const code=randomCode();
-   if(!codePattern.test(code))throw error('invalid-generated-code');
-   try{sameUser(me);await db.ref('social').update({['ownCodes/'+me]:code,['codeLookup/'+code]:me});sameUser(me);return {friendCode:code};}
-   catch(e){sameUser(me);if(await read('ownCodes/'+me)!==null)continue;const owner=await read('codeLookup/'+code);if(owner!==null&&owner!==me)continue;throw e;}
-  }
-  throw error('code-reservation-conflict');
- }
+ function target(data){if(!data||Object.keys(data).some(k=>k!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');return data.targetUid;}
  function batch(rel){
   const patch={['relationships/'+rel.a+'/'+rel.b]:rel};
   for(const [owner,peer] of [[rel.a,rel.b],[rel.b,rel.a]]){
@@ -81,13 +65,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
   }
   throw error('relationship-conflict');
  }
- async function requestByCode(data){
-  if(!data||Object.keys(data).some(k=>k!=='friendCode')||typeof data.friendCode!=='string')throw error('invalid-argument');
-  const code=data.friendCode.trim();if(!codePattern.test(code))throw error('invalid-argument');
-  const me=actor(),peer=await read('codeLookup/'+code);sameUser(me);
-  if(!validUid(peer))throw error('friend-code-not-found');
-  return transition(me,peer,'request');
- }
+ async function requestByUid(data){return transition(actor(),target(data),'request');}
  async function setPrivacy(data){
   const me=actor();
   if(!data||Object.keys(data).some(k=>!['profile','characters'].includes(k))||!['private','friends'].includes(data.profile)||!['private','friends'].includes(data.characters))throw error('invalid-argument');
@@ -95,8 +73,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
  }
  async function block(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).set(true);sameUser(me);return {blocked:true};}
  async function unblock(data){const me=actor(),peer=target(data);sameUser(me);await db.ref('social/blocks/'+me+'/'+peer).remove();sameUser(me);return {blocked:false};}
- function target(data){if(!data||Object.keys(data).some(k=>k!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');return data.targetUid;}
- const actions={getCode,requestByCode,setPrivacy,block,unblock};
+ const actions={requestByUid,setPrivacy,block,unblock};
  for(const operation of ['accept','decline','cancel','remove'])actions[operation]=data=>transition(actor(),target(data),operation);
  return Object.freeze(actions);
 }
