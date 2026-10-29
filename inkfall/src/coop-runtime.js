@@ -177,7 +177,11 @@
           result=await host.tick(dt);
         }
 
-        if(!result?.committed){
+        if(
+          result &&
+          result.committed === false &&
+          result.reason !== 'unchanged'
+        ){
           return result;
         }
 
