@@ -57,7 +57,7 @@
   {
     "id": "inkfall",
     "title": "INKFALL",
-    "path": "inkfall/src/index.html",
+    "path": "inkfall/index.html",
     "category": "Taktik & Coop",
     "description": "Verteidige den letzten Turm.",
     "headline": "Die Tinte steigt.",
