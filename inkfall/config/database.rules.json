@@ -7,7 +7,7 @@
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid",
         "profile": {
-          ".validate": "newData.hasChildren(['displayName','level'])",
+          ".validate": "newData.hasChildren(['displayName', 'level'])",
           "displayName": {
             ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
           },
@@ -29,7 +29,7 @@
         },
         "characters": {
           "$classId": {
-            ".validate": "($classId === 'knight' || $classId === 'mage') && newData.hasChildren(['level','xp','skillPoints','soloRun']) && newData.child('soloRun/heroClass').val() === $classId",
+            ".validate": "($classId === 'knight' || $classId === 'mage') && newData.hasChildren(['level', 'xp', 'skillPoints', 'soloRun']) && newData.child('soloRun/heroClass').val() === $classId",
             "level": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 999 && newData.val() % 1 === 0"
             },
@@ -46,7 +46,7 @@
               }
             },
             "soloRun": {
-              ".validate": "newData.hasChildren(['heroClass','gold','lives','wave'])",
+              ".validate": "newData.hasChildren(['heroClass', 'gold', 'lives', 'wave'])",
               "heroClass": {
                 ".validate": "newData.val() === 'knight' || newData.val() === 'mage'"
               },
@@ -68,7 +68,7 @@
               "towers": {
                 ".validate": "newData.hasChildren()",
                 "$towerId": {
-                  ".validate": "$towerId.matches(/^tower_([0-9]|[1-9][0-9]|1[0-9][0-9])$/) && newData.hasChildren(['type','x','y','level'])",
+                  ".validate": "$towerId.matches(/^tower_([0-9]|[1-9][0-9]|1[0-9][0-9])$/) && newData.hasChildren(['type', 'x', 'y', 'level'])",
                   "type": {
                     ".validate": "newData.val() === 'arrow' || newData.val() === 'frost' || newData.val() === 'cannon' || newData.val() === 'antiair'"
                   },
@@ -98,343 +98,14 @@
             }
           }
         },
-        "save": {
-          ".validate": "newData.hasChildren(['gold','lives','wave','skillPoints'])",
-          "heroClass": {
-            ".validate": "newData.val() === 'knight' || newData.val() === 'mage'"
-          },
-          "gold": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999999"
-          },
-          "lives": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
-          },
-          "wave": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999 && newData.val() % 1 === 0"
-          },
-          "heroX": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 940"
-          },
-          "heroY": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 600"
-          },
-          "towers": {
-            ".validate": "newData.hasChildren()",
-            "$towerId": {
-              ".validate": "$towerId.matches(/^tower_([0-9]|[1-9][0-9]|1[0-9][0-9])$/) && newData.hasChildren(['type','x','y','level'])",
-              "type": {
-                ".validate": "newData.val() === 'arrow' || newData.val() === 'frost' || newData.val() === 'cannon' || newData.val() === 'antiair'"
-              },
-              "x": {
-                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 940"
-              },
-              "y": {
-                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 600"
-              },
-              "level": {
-                ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100 && newData.val() % 1 === 0"
-              },
-              "$other": {
-                ".validate": false
-              }
-            }
-          },
-          "updatedAt": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "$other": {
-            ".validate": false
-          },
-          "skillPoints": {
-            ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 999 && newData.val() % 1 === 0"
-          },
-          "skills": {
-            ".validate": "newData.hasChildren()",
-            "$skillId": {
-              ".validate": "$skillId.matches(/^(blade|arcane|bastion|shadow|wealth|band)[1-4]$/) && newData.isBoolean() && newData.val() === true"
-            }
-          }
-        },
-        "diagnostic": {
-          ".validate": "newData.hasChildren(['test','time'])",
-          "test": {
-            ".validate": "newData.isBoolean()"
-          },
-          "time": {
-            ".validate": "newData.isNumber() && newData.val() >= 0"
-          },
-          "$other": {
-            ".validate": false
-          }
-        },
         "$other": {
           ".validate": false
         }
-      }
-    },
-    "rooms": {
-      "$code": {
-        ".read": "auth != null",
-        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('host/uid').val() === auth.uid && !newData.child('guest').exists() && newData.child('status').val() === 'waiting') || (data.exists() && data.child('host/uid').val() === auth.uid && !newData.exists()))",
-        ".validate": "$code.matches(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{8}$/) && newData.hasChildren(['host','status','createdAt']) && (!newData.child('guest').exists() || newData.child('guest/uid').val() !== newData.child('host/uid').val())",
-        "host": {
-          ".validate": "newData.hasChildren(['uid','name','heroClass','ready','online'])",
-          "uid": {
-            ".validate": "newData.isString() && ((!data.exists() && newData.val() === auth.uid) || (data.exists() && newData.val() === data.val()))"
-          },
-          "name": {
-            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
-          },
-          "heroClass": {
-            ".write": "auth != null && auth.uid === data.parent().child('uid').val() && data.parent().parent().child('status').val() === 'waiting' && data.parent().child('ready').val() === false && newData.exists()",
-            ".validate": "newData.val() === 'knight' || newData.val() === 'mage'"
-          },
-          "ready": {
-            ".write": "auth != null && auth.uid === data.parent().child('uid').val() && newData.exists()",
-            ".validate": "newData.isBoolean()"
-          },
-          "online": {
-            ".write": "auth != null && auth.uid === data.parent().child('uid').val() && newData.exists()",
-            ".validate": "newData.isBoolean()"
-          },
-          "$other": {
-            ".validate": false
-          },
-          "heroName": {
-            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
-          }
-        },
-        "guest": {
-          ".write": "auth != null && auth.uid !== data.parent().child('host/uid').val() && ((data.exists() && data.child('uid').val() === auth.uid) || (!data.exists() && data.parent().child('status').val() === 'waiting' && data.parent().child('host/online').val() === true && newData.child('uid').val() === auth.uid))",
-          ".validate": "newData.hasChildren(['uid','name','heroClass','ready','online']) && ((!data.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && newData.child('uid').val() === data.child('uid').val())) && (!data.exists() || newData.child('heroClass').val() === data.child('heroClass').val() || (data.parent().child('status').val() === 'waiting' && data.child('ready').val() === false && newData.child('ready').val() === false))",
-          "uid": {
-            ".validate": "newData.isString()"
-          },
-          "name": {
-            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
-          },
-          "heroClass": {
-            ".validate": "newData.val() === 'knight' || newData.val() === 'mage'"
-          },
-          "ready": {
-            ".validate": "newData.isBoolean()"
-          },
-          "online": {
-            ".validate": "newData.isBoolean()"
-          },
-          "$other": {
-            ".validate": false
-          },
-          "heroName": {
-            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
-          }
-        },
-        "status": {
-          ".write": "auth != null && data.parent().child('host/uid').val() === auth.uid && (newData.val() === 'waiting' || (newData.val() === 'prepared' && data.parent().child('host/ready').val() === true && data.parent().child('guest/ready').val() === true && data.parent().child('host/online').val() === true && data.parent().child('guest/online').val() === true))",
-          ".validate": "newData.val() === 'waiting' || newData.val() === 'prepared'"
-        },
-        "createdAt": {
-          ".validate": "newData.isNumber() && newData.val() >= 0 && (!data.exists() || newData.val() === data.val())"
-        },
-        "$other": {
-          ".validate": false
-        }
-      }
-    },
-    "social": {
-      ".read": false,
-      ".write": false,
-      "relationships": {
-        "$uidA": {
-          "$uidB": {
-            ".read": "auth != null && (auth.uid === $uidA || auth.uid === $uidB)",
-            ".write": "auth != null && (auth.uid === $uidA || auth.uid === $uidB) && $uidA !== $uidB && newData.exists()",
-            ".validate": "newData.hasChildren(['a','b','status','requestedBy','revision','updatedAt']) && newData.child('a').val() === $uidA && newData.child('b').val() === $uidB && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'friends' || newData.child('status').val() === 'none') && (newData.child('requestedBy').val() === $uidA || newData.child('requestedBy').val() === $uidB) && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() <= now && newData.child('updatedAt').val() > now - 30000 && (newData.child('status').val() === 'pending' ? (newData.hasChildren(['requestedAt','expiresAt']) && newData.child('requestedAt').isNumber() && newData.child('requestedAt').val() <= now && newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() === newData.child('requestedAt').val() + 604800000) : (!newData.hasChildren(['requestedAt','expiresAt'])))",
-            "a": {
-              ".validate": "newData.isString() && newData.val() === $uidA"
-            },
-            "b": {
-              ".validate": "newData.isString() && newData.val() === $uidB"
-            },
-            "status": {
-              ".validate": "newData.val() === 'pending' || newData.val() === 'friends' || newData.val() === 'none'"
-            },
-            "requestedBy": {
-              ".validate": "newData.val() === $uidA || newData.val() === $uidB"
-            },
-            "requesterName": {
-              ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
-            },
-            "requestedAt": {
-              ".validate": "newData.isNumber() && newData.val() <= now"
-            },
-            "expiresAt": {
-              ".validate": "newData.isNumber() && newData.val() > now"
-            },
-            "revision": {
-              ".validate": "newData.isNumber() && newData.val() >= 1"
-            },
-            "updatedAt": {
-              ".validate": "newData.isNumber() && newData.val() <= now && newData.val() > now - 30000"
-            },
-            "$other": {
-              ".validate": false
-            }
-          }
-        }
-      },
-      "friends": {
-        "$uid": {
-          "$peer": {
-            ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && (auth.uid === $uid || auth.uid === $peer) && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            "active": {
-              ".validate": "newData.isBoolean()"
-            },
-            "revision": {
-              ".validate": "newData.isNumber() && newData.val() >= 1"
-            },
-            "$other": {
-              ".validate": false
-            }
-          },
-          ".read": "auth != null && auth.uid === $uid"
-        }
-      },
-      "requests": {
-        "$uid": {
-          "$peer": {
-            ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && (auth.uid === $uid || auth.uid === $peer) && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            "active": {
-              ".validate": "newData.isBoolean()"
-            },
-            "revision": {
-              ".validate": "newData.isNumber() && newData.val() >= 1"
-            },
-            "displayName": {
-              ".validate": "newData.hasChildren() === false || (newData.isString() && newData.val().length >= 3 && newData.val().length <= 20)"
-            },
-            "$other": {
-              ".validate": false
-            },
-            "requestedAt": {
-              ".validate": "newData.hasChildren() === false || (newData.isNumber() && newData.val() >= 0)"
-            },
-            "expiresAt": {
-              ".validate": "newData.hasChildren() === false || (newData.isNumber() && newData.val() >= 0)"
-            }
-          },
-          ".read": "auth != null && auth.uid === $uid"
-        }
-      },
-      "sentRequests": {
-        "$uid": {
-          "$peer": {
-            ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && (auth.uid === $uid || auth.uid === $peer) && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
-            "active": {
-              ".validate": "newData.isBoolean()"
-            },
-            "revision": {
-              ".validate": "newData.isNumber() && newData.val() >= 1"
-            },
-            "$other": {
-              ".validate": false
-            },
-            "requestedAt": {
-              ".validate": "newData.hasChildren() === false || (newData.isNumber() && newData.val() >= 0)"
-            },
-            "expiresAt": {
-              ".validate": "newData.hasChildren() === false || (newData.isNumber() && newData.val() >= 0)"
-            }
-          }
-        }
-      },
-      "blocks": {
-        "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": false
-        }
-      },
-      "profiles": {
-        "$uid": {
-          ".read": "auth != null && (auth.uid === $uid || ((root.child('social/relationships').child(auth.uid).child($uid).child('status').val() === 'friends' || root.child('social/relationships').child($uid).child(auth.uid).child('status').val() === 'friends') && root.child('social/privacy').child($uid).child('profile').val() === 'friends'))",
-          ".write": false
-        }
-      },
-      "characterViews": {
-        "$uid": {
-          "$classId": {
-            ".read": "($classId === 'knight' || $classId === 'mage') && (auth != null && (auth.uid === $uid || ((root.child('social/relationships').child(auth.uid).child($uid).child('status').val() === 'friends' || root.child('social/relationships').child($uid).child(auth.uid).child('status').val() === 'friends') && root.child('social/privacy').child($uid).child('characters').val() === 'friends')))",
-            ".write": false
-          }
-        }
-      },
-      "privacy": {
-        "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": "auth != null && auth.uid === $uid && newData.exists()",
-          ".validate": "newData.hasChildren(['profile','characters'])",
-          "profile": {
-            ".validate": "newData.val() === 'private' || newData.val() === 'friends'"
-          },
-          "characters": {
-            ".validate": "newData.val() === 'private' || newData.val() === 'friends'"
-          },
-          "$other": {
-            ".validate": false
-          }
-        }
-      },
-      "presence": {
-        "$uid": {
-          ".read": "auth != null && (auth.uid === $uid || ((root.child('social/relationships').child(auth.uid).child($uid).child('status').val() === 'friends' || root.child('social/relationships').child($uid).child(auth.uid).child('status').val() === 'friends') && root.child('social/presencePrivacy').child($uid).val() === 'friends'))",
-          ".write": false,
-          "connections": {
-            "$connectionId": {
-              ".write": "auth != null && auth.uid === $uid && (!newData.exists() || root.child('social/presencePrivacy').child($uid).val() === 'friends')",
-              ".validate": "$connectionId.matches(/^[-A-Za-z0-9_]{20}$/) && newData.hasChildren(['online','updatedAt'])",
-              "online": {
-                ".validate": "newData.val() === true"
-              },
-              "updatedAt": {
-                ".validate": "newData.isNumber() && newData.val() === now"
-              },
-              "$other": {
-                ".validate": false
-              }
-            }
-          },
-          "$other": {
-            ".validate": false
-          }
-        }
-      },
-      "presencePrivacy": {
-        "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": "auth != null && auth.uid === $uid && newData.exists()",
-          ".validate": "newData.val() === 'private' || newData.val() === 'friends'"
-        }
-      },
-      "invites": {
-        ".read": false,
-        ".write": false
       }
     },
     "$other": {
-      ".validate": false
-    },
-    "usernames": {
-      "$name": {
-        ".read": "auth != null",
-        ".write": "auth != null && ((!data.exists() && newData.exists() && newData.child('uid').val() === auth.uid) || (data.exists() && data.child('uid').val() === auth.uid))",
-        ".validate": "newData.hasChildren(['uid','name']) && newData.child('uid').isString() && newData.child('name').isString() && newData.child('name').val().length >= 3 && newData.child('name').val().length <= 20 && $name === newData.child('name').val().toLowerCase()"
-      }
+      ".read": false,
+      ".write": false
     }
   }
 }

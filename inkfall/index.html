@@ -503,5 +503,26 @@ ui();draw();requestAnimationFrame(loop);void 0;
 <script src="game/js/coop-wave-host.js"></script>
 <script src="game/js/coop-runtime.js"></script>
 <script src="game/js/coop-view.js"></script>
+<!-- INKFALL_COOP_DISABLED -->
+<script>
+(function(){
+  const disableCoop=()=>{
+    document.querySelectorAll('button,[role="button"],a').forEach(el=>{
+      const text=(el.textContent||'').trim().toLowerCase();
+      if(text.includes('coop')){
+        el.disabled=true;
+        el.setAttribute('aria-disabled','true');
+        el.classList.add('inkfall-coop-disabled');
+        el.title='Coop ist derzeit nicht verfügbar.';
+      }
+    });
+  };
+  disableCoop();
+  new MutationObserver(disableCoop).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+<style>
+.inkfall-coop-disabled{opacity:.45;cursor:not-allowed;filter:grayscale(1);}
+</style>
 </body>
 </html>
