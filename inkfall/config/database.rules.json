@@ -239,25 +239,101 @@
       ".read": false,
       ".write": false,
       "relationships": {
-        ".read": false,
-        ".write": false
+        "$uidA": {
+          "$uidB": {
+            ".read": "auth != null && (auth.uid === $uidA || auth.uid === $uidB)",
+            ".write": "auth != null && (auth.uid === $uidA || auth.uid === $uidB) && $uidA !== $uidB && newData.exists()",
+            ".validate": "newData.hasChildren(['a','b','status','requestedBy','revision','updatedAt']) && newData.child('a').val() === $uidA && newData.child('b').val() === $uidB && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'friends' || newData.child('status').val() === 'none') && (newData.child('requestedBy').val() === $uidA || newData.child('requestedBy').val() === $uidB) && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() === now && (newData.child('status').val() === 'pending' ? (newData.hasChildren(['requestedAt','expiresAt']) && newData.child('requestedAt').isNumber() && newData.child('requestedAt').val() <= now && newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() === newData.child('requestedAt').val() + 604800000) : (!newData.hasChildren(['requestedAt','expiresAt'])))",
+            "a": {
+              ".validate": "newData.isString() && newData.val() === $uidA"
+            },
+            "b": {
+              ".validate": "newData.isString() && newData.val() === $uidB"
+            },
+            "status": {
+              ".validate": "newData.val() === 'pending' || newData.val() === 'friends' || newData.val() === 'none'"
+            },
+            "requestedBy": {
+              ".validate": "newData.val() === $uidA || newData.val() === $uidB"
+            },
+            "requesterName": {
+              ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
+            },
+            "requestedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "expiresAt": {
+              ".validate": "newData.isNumber() && newData.val() > now"
+            },
+            "revision": {
+              ".validate": "newData.isNumber() && newData.val() >= 1"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber() && newData.val() === now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
       },
       "friends": {
         "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": false
+          "$peer": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('active').val() === (root.child('social/relationships').child($uid).child($peer).child('status').val() === 'friends') && newData.child('revision').val() === root.child('social/relationships').child($uid).child($peer).child('revision').val()",
+            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
+            "active": {
+              ".validate": "newData.isBoolean()"
+            },
+            "revision": {
+              ".validate": "newData.isNumber() && newData.val() >= 1"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          ".read": "auth != null && auth.uid === $uid"
         }
       },
       "requests": {
         "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": false
+          "$peer": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('active').val() === (root.child('social/relationships').child($uid).child($peer).child('status').val() === 'pending' && root.child('social/relationships').child($uid).child($peer).child('requestedBy').val() === $peer) && newData.child('revision').val() === root.child('social/relationships').child($uid).child($peer).child('revision').val()",
+            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
+            "active": {
+              ".validate": "newData.isBoolean()"
+            },
+            "revision": {
+              ".validate": "newData.isNumber() && newData.val() >= 1"
+            },
+            "displayName": {
+              ".validate": "newData.hasChildren() === false || (newData.isString() && newData.val().length >= 3 && newData.val().length <= 20)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          ".read": "auth != null && auth.uid === $uid"
         }
       },
       "sentRequests": {
         "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": false
+          "$peer": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('active').val() === (root.child('social/relationships').child($uid).child($peer).child('status').val() === 'pending' && root.child('social/relationships').child($uid).child($peer).child('requestedBy').val() === $uid) && newData.child('revision').val() === root.child('social/relationships').child($uid).child($peer).child('revision').val()",
+            ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
+            "active": {
+              ".validate": "newData.isBoolean()"
+            },
+            "revision": {
+              ".validate": "newData.isNumber() && newData.val() >= 1"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
         }
       },
       "blocks": {
