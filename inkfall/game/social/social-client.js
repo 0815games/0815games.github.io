@@ -35,6 +35,16 @@ function createRtdbActions({db,getUser,clock=Date.now}){
   }
   return patch;
  }
+ function indexBatch(rel){
+  const patch={};
+  for(const [owner,peer] of [[rel.a,rel.b],[rel.b,rel.a]]){
+   const pending=rel.status==='pending';
+   patch['friends/'+owner+'/'+peer]={active:rel.status==='friends',revision:rel.revision};
+   patch['requests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===peer,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null,displayName:pending&&rel.requestedBy===peer?rel.requesterName:null};
+   patch['sentRequests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===owner,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null};
+  }
+  return patch;
+ }
  async function transition(me,peer,operation){
   const [a,b]=pair(me,peer),path='relationships/'+a+'/'+b;
   for(let attempt=0;attempt<3;attempt++){
@@ -42,9 +52,9 @@ function createRtdbActions({db,getUser,clock=Date.now}){
    if(previous&&(previous.a!==a||previous.b!==b||!Number.isSafeInteger(previous.revision)||previous.revision<0))throw error('invalid-relationship');
    let next;
    if(operation==='request'){
-    if(previous?.status==='friends')return {status:'friends'};
+    if(previous?.status==='friends'){await db.ref('social').update(indexBatch(previous));return {status:'friends'};}
     if(previous&&!['none','pending'].includes(previous.status))throw error('request-not-allowed');
-    if(previous?.status==='pending'&&previous.expiresAt>time){if(previous.requestedBy!==me)throw error('incoming-request-exists');return {status:'pending'};}
+    if(previous?.status==='pending'&&previous.expiresAt>time){await db.ref('social').update(indexBatch(previous));if(previous.requestedBy!==me)throw error('incoming-request-exists');return {status:'pending'};}
     const name=(await db.ref('users/'+me+'/profile/displayName').get()).val();
     if(typeof name!=='string'||name.trim().length<3||name.trim().length>20)throw error('invalid-profile');
     next={a,b,status:'pending',requestedBy:me,requesterName:name.trim(),requestedAt:time,expiresAt:time+ttl};
