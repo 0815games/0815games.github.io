@@ -1,15 +1,1 @@
-{
-  "database": {
-    "rules": "emulator.closed.rules.json"
-  },
-  "emulators": {
-    "database": {
-      "host": "127.0.0.1",
-      "port": 9000
-    },
-    "ui": {
-      "enabled": false
-    },
-    "singleProjectMode": true
-  }
-}
+{"archived": true, "note": "Alte Inkfall-Version – vollständig im Branch old_inkfall gesichert."}
