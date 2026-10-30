@@ -16,6 +16,23 @@ function decodeIndex(raw,kind,now){
   return [{uid,displayName:nameOf(value.displayName),...(kind==='requests'?{expiresAt:value.expiresAt}:{})}];
  });
 }
+function decodeRelationships(raw,uid,now){
+ if(!Number.isFinite(now)||!raw||typeof raw!=='object'||Array.isArray(raw))return {friends:[],requests:[]};
+ const friends=[],requests=[];
+ for(const [peer,value] of Object.entries(raw)){
+  if(!validUid(peer)||peer===uid||!value||typeof value!=='object'||Array.isArray(value))continue;
+  const involved=(value.a===uid&&value.b===peer)||(value.a===peer&&value.b===uid);
+  if(!involved||!Number.isSafeInteger(value.revision)||value.revision<0)continue;
+  if(value.status==='friends'){friends.push({uid:peer,displayName:null});continue;}
+  if(value.status==='pending'&&value.requestedBy===peer&&Number.isSafeInteger(value.expiresAt)&&value.expiresAt>now){
+   requests.push({uid:peer,displayName:nameOf(value.requesterName),expiresAt:value.expiresAt});
+  }
+ }
+ friends.sort((a,b)=>a.uid.localeCompare(b.uid));
+ requests.sort((a,b)=>a.expiresAt-b.expiresAt||a.uid.localeCompare(b.uid));
+ return {friends,requests};
+}
+
 function createRtdbActions({db,getUser,clock=Date.now}){
  if(!db||typeof db.ref!=='function'||typeof getUser!=='function')throw error('backend-unavailable');
  const ttl=7*24*60*60*1000;
@@ -25,16 +42,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
  async function serverNow(){return new Promise((resolve,reject)=>{const ref=db.ref('.info/serverTimeOffset');const callback=snap=>{ref.off('value',callback);const offset=snap.val();resolve(clock()+(Number.isFinite(offset)?offset:0));};ref.on('value',callback,reject);});}
  function pair(me,peer){if(!validUid(peer)||peer===me)throw error('invalid-argument');return [me,peer].sort();}
  function target(data){if(!data||Object.keys(data).some(k=>k!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');return data.targetUid;}
- function batch(rel){
-  const patch={['relationships/'+rel.a+'/'+rel.b]:rel};
-  for(const [owner,peer] of [[rel.a,rel.b],[rel.b,rel.a]]){
-   const pending=rel.status==='pending';
-   patch['friends/'+owner+'/'+peer]={active:rel.status==='friends',revision:rel.revision};
-   patch['requests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===peer,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null,displayName:pending&&rel.requestedBy===peer?rel.requesterName:null};
-   patch['sentRequests/'+owner+'/'+peer]={active:pending&&rel.requestedBy===owner,revision:rel.revision,requestedAt:pending?rel.requestedAt:null,expiresAt:pending?rel.expiresAt:null};
-  }
-  return patch;
- }
+ function batch(rel){return {['relationships/'+rel.a+'/'+rel.b]:rel};}
  async function transition(me,peer,operation){
   const [a,b]=pair(me,peer),path='relationships/'+a+'/'+b;
   for(let attempt=0;attempt<3;attempt++){
@@ -153,14 +161,14 @@ function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,
   if(!enabled){onData({available:false,friends:[],requests:[]});return()=>{};}
   if(!db)throw error('missing-database');
   let alive=true,timer=null,offset=0;
-  const ready={friends:false,requests:false,offset:false},raw={friends:null,requests:null},names=new Map(),unsubs=[];
+  const ready={relationships:false,offset:false},raw={relationships:null},names=new Map(),unsubs=[];
   function cleanup(){if(timer!==null)cancel(timer);timer=null;unsubs.forEach(fn=>fn());names.clear();}
   function fail(e){if(!alive)return;alive=false;cleanup();onError(e);}
   function publish(){
-   if(!alive||!ready.friends||!ready.requests||!ready.offset)return;
+   if(!alive||!ready.relationships||!ready.offset)return;
    if(timer!==null)cancel(timer);timer=null;
    const now=clock()+offset;
-   const friends=decodeIndex(raw.friends,'friends',now),requests=decodeIndex(raw.requests,'requests',now);
+   const decoded=decodeRelationships(raw.relationships,uid,now),friends=decoded.friends,requests=decoded.requests;
    const active=new Set(friends.map(f=>f.uid));
    for(const id of names.keys())if(!active.has(id))names.delete(id);
    for(const friend of friends){
@@ -182,7 +190,7 @@ function create({db,enabled=false,actions={},clock=Date.now,schedule=setTimeout,
    const ref=db.ref(path);ref.on('value',callback,fail);unsubs.push(()=>ref.off('value',callback));
   }
   listen('.info/serverTimeOffset',snap=>{if(!alive)return;offset=Number.isFinite(snap.val())?snap.val():0;ready.offset=true;publish();});
-  for(const kind of ['friends','requests'])listen('social/'+kind+'/'+uid,snap=>{if(!alive)return;raw[kind]=snap.val();ready[kind]=true;publish();});
+  listen('social/relationships/'+uid,snap=>{if(!alive)return;raw.relationships=snap.val();ready.relationships=true;publish();});
   if(!alive)cleanup();
   return()=>{alive=false;cleanup();};
  }
