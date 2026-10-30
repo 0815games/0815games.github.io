@@ -300,7 +300,7 @@
         "$uid": {
           "$peer": {
             ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
+            ".write": "auth != null && (auth.uid === $uid || auth.uid === $peer) && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
             ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
             "active": {
               ".validate": "newData.isBoolean()"
@@ -322,7 +322,7 @@
         "$uid": {
           "$peer": {
             ".read": "auth != null && auth.uid === $uid",
-            ".write": "auth != null && auth.uid === $uid && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
+            ".write": "auth != null && (auth.uid === $uid || auth.uid === $peer) && newData.exists() && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
             ".validate": "newData.hasChildren(['active','revision']) && newData.child('active').isBoolean() && newData.child('revision').isNumber() && newData.child('revision').val() >= 1",
             "active": {
               ".validate": "newData.isBoolean()"
