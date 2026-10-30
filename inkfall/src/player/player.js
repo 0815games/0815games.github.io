@@ -5,6 +5,8 @@ const ATTACK_RANGE = 70;
 const ATTACK_DAMAGE = 25;
 const RESPAWN_TIME = 3;
 
+export const TOWER_TYPES = ['standard', 'frost', 'cannon'];
+
 export class Player {
   constructor(role) {
     this.role = role;
@@ -20,6 +22,7 @@ export class Player {
     this.attackCooldown = 0;
     this.respawnTimer = 0;
     this.alive = true;
+    this.towerTypeIndex = 0;
   }
 
   update(dt) {
@@ -28,7 +31,8 @@ export class Player {
       y: this.input.getMoveVector().y,
       attack: this.input.isDown('Space'),
       build: this.input.isDown('KeyT'),
-      upgrade: this.input.isDown('KeyU')
+      upgrade: this.input.isDown('KeyU'),
+      cycle: this.input.isDown('KeyB')
     }, dt);
   }
 
@@ -61,6 +65,21 @@ export class Player {
     if (input.upgrade) {
       this.wantsUpgrade = true;
     }
+
+    if (input.cycle) {
+      this.wantsCycle = true;
+    }
+  }
+
+  cycleTowerType() {
+    if (!this.wantsCycle) return;
+
+    this.wantsCycle = false;
+    this.towerTypeIndex = (this.towerTypeIndex + 1) % TOWER_TYPES.length;
+  }
+
+  get towerType() {
+    return TOWER_TYPES[this.towerTypeIndex];
   }
 
   tryAttack(enemies) {

@@ -70,10 +70,12 @@ export class Game {
 
   updateHost(dt) {
     this.localPlayer.update(dt);
+    this.localPlayer.cycleTowerType();
 
     const guestInput = this.remoteInputs.guest;
     if (guestInput) {
       this.remotePlayer.applyInput(guestInput, dt);
+      this.remotePlayer.cycleTowerType();
     }
 
     this.localPlayer.tryAttack(this.world.enemies);
@@ -109,7 +111,8 @@ export class Game {
         y: move.y,
         attack: this.localPlayer.input.isDown('Space'),
         build: this.localPlayer.input.isDown('KeyT'),
-        upgrade: this.localPlayer.input.isDown('KeyU')
+        upgrade: this.localPlayer.input.isDown('KeyU'),
+        cycle: this.localPlayer.input.isDown('KeyB')
       });
     }
 
