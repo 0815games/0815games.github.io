@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Ping Pong - Multiplayer</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #080811;
+            color: #ffffff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Neon Glow Effects */
+        .neon-glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+        .neon-glow-pink {
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.8), 0 0 20px rgba(255, 0, 127, 0.4);
+        }
+        .neon-border-cyan {
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4), inset 0 0 15px rgba(0, 243, 255, 0.2);
+            border-color: #00f3ff;
+        }
+        .neon-border-pink {
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4), inset 0 0 15px rgba(255, 0, 127, 0.2);
+            border-color: #ff007f;
+        }
+
+        .neon-btn-cyan {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.2) 0%, rgba(0, 150, 255, 0.4) 100%);
+            border: 2px solid #00f3ff;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+            transition: all 0.2s ease;
+        }
+        .neon-btn-cyan:hover {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.4) 0%, rgba(0, 150, 255, 0.6) 100%);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .neon-btn-pink {
+            background: linear-gradient(135deg, rgba(255, 0, 127, 0.2) 0%, rgba(200, 0, 100, 0.4) 100%);
+            border: 2px solid #ff007f;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+            transition: all 0.2s ease;
+        }
+        .neon-btn-pink:hover {
+            background: linear-gradient(135deg, rgba(255, 0, 127, 0.4) 0%, rgba(200, 0, 100, 0.6) 100%);
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.8);
+            transform: translateY(-2px);
+        }
+
+        /* CRT Screen Scanline Effect Overlay */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            ), linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.03),
+                rgba(0, 255, 0, 0.01),
+                rgba(0, 0, 255, 0.03)
+            );
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+
+        /* Canvas Container Aspect Ratio */
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 16 / 9;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center p-2 sm:p-4 bg-slate-950 select-none">
+
+    <!-- Top Bar Header -->
+    <header class="w-full max-w-4xl flex justify-between items-center px-4 py-2 z-10">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-table-tennis-paddle-ball text-2xl text-cyan-400"></i>
+            <h1 class="text-xl sm:text-2xl font-black font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
+                NEON<span class="text-white">PONG</span>
+            </h1>
+        </div>
+        
+        <!-- Controls & Sound Toggle Header Buttons -->
+        <div class="flex items-center gap-3">
+            <div id="roomBadge" class="hidden px-3 py-1 rounded-lg bg-slate-800/90 border border-cyan-500/50 text-cyan-300 font-orbitron text-xs flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                <span id="roomBadgeText">RAUM: ------</span>
+            </div>
+            <button id="soundToggleBtn" class="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-cyan-400 hover:text-white hover:border-cyan-400 transition-all text-sm flex items-center gap-2">
+                <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                <span id="soundStatus" class="hidden sm:inline">Ton AN</span>
+            </button>
+            <button id="leaveRoomBtn" class="hidden px-3 py-1.5 rounded-lg bg-red-900/50 border border-red-700 text-red-300 hover:bg-red-800 transition-all text-sm flex items-center gap-2">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span class="hidden sm:inline">Verlassen</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="w-full flex-1 flex flex-col justify-center items-center my-auto relative">
+        <div class="game-container rounded-2xl overflow-hidden border-2 border-slate-800 bg-slate-900/90 shadow-2xl relative flex items-center justify-center">
+            
+            <!-- Game Canvas -->
+            <canvas id="pongCanvas" class="w-full h-full block"></canvas>
+            
+            <!-- Scanline Overlay Effect -->
+            <div class="scanlines absolute inset-0 z-10"></div>
+
+            <!-- OVERLAY SCREENS -->
+            
+            <!-- 1. MODE SELECTION / START SCREEN -->
+            <div id="startOverlay" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col justify-center items-center p-6 text-center">
+                <h2 class="text-3xl sm:text-5xl font-black font-orbitron mb-2 neon-glow-cyan text-cyan-400">NEON PONG</h2>
+                <p class="text-slate-300 mb-6 text-sm sm:text-base max-w-md">Klassisches Retro-Duell. Wähle deinen Spielmodus!</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-md mb-4">
+                    <button id="localModeBtn" class="neon-btn-cyan text-white font-orbitron font-bold py-4 px-6 rounded-xl text-base tracking-wider flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-users text-2xl"></i>
+                        <span>LOKAL 2 SPIELER</span>
+                        <span class="text-[10px] text-slate-300 font-normal">Ein Gerät / Gleiche Tastatur</span>
+                    </button>
+                    <button id="onlineModeBtn" class="neon-btn-pink text-white font-orbitron font-bold py-4 px-6 rounded-xl text-base tracking-wider flex flex-col items-center justify-center gap-2">
+                        <i class="fa-solid fa-globe text-2xl"></i>
+                        <span>ONLINE DUO</span>
+                        <span class="text-[10px] text-slate-300 font-normal">Über Raum-Code spielen</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. ONLINE ROOM MENU (CREATE / JOIN) -->
+            <div id="onlineRoomOverlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col justify-center items-center p-6 text-center">
+                <h2 class="text-2xl sm:text-4xl font-black font-orbitron mb-4 text-pink-500 neon-glow-pink">ONLINE MULTIPLAYER</h2>
+                
+                <div class="flex flex-col sm:flex-row gap-6 w-full max-w-lg mb-6">
+                    <!-- Create Room Box -->
+                    <div class="flex-1 bg-slate-900/80 p-5 rounded-xl border border-pink-500/30 flex flex-col justify-between items-center">
+                        <div>
+                            <i class="fa-solid fa-plus-circle text-3xl text-pink-400 mb-2"></i>
+                            <h3 class="font-orbitron font-bold text-lg mb-1">Raum Erstellen</h3>
+                            <p class="text-xs text-slate-400 mb-4">Erstelle ein neues Spiel und teile den Raum-Code.</p>
+                        </div>
+                        <button id="createRoomBtn" class="w-full neon-btn-pink text-white font-orbitron font-bold py-2.5 rounded-lg text-sm tracking-wider">
+                            RAUM ERSTELLEN
+                        </button>
+                    </div>
+
+                    <!-- Join Room Box -->
+                    <div class="flex-1 bg-slate-900/80 p-5 rounded-xl border border-cyan-500/30 flex flex-col justify-between items-center">
+                        <div>
+                            <i class="fa-solid fa-right-to-bracket text-3xl text-cyan-400 mb-2"></i>
+                            <h3 class="font-orbitron font-bold text-lg mb-1">Raum Beitreten</h3>
+                            <p class="text-xs text-slate-400 mb-2">Gib den 6-stelligen Raum-Code ein:</p>
+                        </div>
+                        <input id="joinCodeInput" type="text" maxlength="6" placeholder="CODE" class="w-full text-center uppercase tracking-widest font-orbitron text-lg bg-slate-950 border border-slate-700 rounded py-1.5 mb-3 text-cyan-300 focus:outline-none focus:border-cyan-400">
+                        <button id="joinRoomBtn" class="w-full neon-btn-cyan text-white font-orbitron font-bold py-2.5 rounded-lg text-sm tracking-wider">
+                            BEITRETEN
+                        </button>
+                    </div>
+                </div>
+
+                <button id="backToStartBtn" class="text-slate-400 hover:text-white text-sm font-orbitron flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Zurück zum Hauptmenü
+                </button>
+            </div>
+
+            <!-- 3. LOBBY WAITING SCREEN -->
+            <div id="lobbyOverlay" class="hidden absolute inset-0 bg-slate-950/95 backdrop-blur-md z-20 flex flex-col justify-center items-center p-6 text-center">
+                <h3 class="text-xl font-orbitron text-slate-400 mb-2">WARTE AUF GEGNER...</h3>
+                <div class="flex items-center gap-3 bg-slate-900 px-6 py-3 rounded-xl border border-pink-500/50 mb-6">
+                    <span class="text-xs font-orbitron text-slate-400">RAUM-CODE:</span>
+                    <span id="displayRoomCode" class="font-orbitron text-2xl sm:text-3xl font-black text-pink-400 tracking-widest">------</span>
+                    <button id="copyCodeBtn" class="ml-2 text-slate-400 hover:text-cyan-400 transition-colors" title="Code kopieren">
+                        <i class="fa-regular fa-copy text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex items-center gap-3 text-slate-300 text-sm mb-6 animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin text-pink-500 text-xl"></i>
+                    <span>Teile diesen Code mit deinem Mitspieler...</span>
+                </div>
+                <button id="cancelLobbyBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-orbitron">
+                    Abbrechen
+                </button>
+            </div>
+
+            <!-- 4. GAME OVER SCREEN -->
+            <div id="gameOverOverlay" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-md z-20 flex flex-col justify-center items-center p-6 text-center">
+                <h2 id="winnerTitle" class="text-3xl sm:text-5xl font-black font-orbitron mb-2 neon-glow-cyan">SPIELER 1 GEWINNT!</h2>
+                <p id="finalScoreText" class="text-xl font-orbitron text-slate-300 mb-6">Endstand: 7 - 5</p>
+                <div class="flex gap-4">
+                    <button id="restartGameBtn" class="neon-btn-cyan text-white font-orbitron font-bold py-3 px-8 rounded-xl text-lg tracking-wider cursor-pointer flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-right"></i> NEUES SPIEL
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer Controls Info & Manual -->
+    <footer class="w-full max-w-4xl mt-2 px-4 py-2 z-10 text-xs text-slate-400 flex flex-wrap justify-between items-center gap-2 border-t border-slate-800/60">
+        <div class="flex items-center gap-4 flex-wrap">
+            <span class="flex items-center gap-1.5"><strong class="text-cyan-400">S1 (Links):</strong> [W] / [S] oder Maus</span>
+            <span class="flex items-center gap-1.5"><strong class="text-pink-500">S2 (Rechts):</strong> [Pfeil Oben] / [Pfeil Unten]</span>
+        </div>
+        <div>
+            <span>Ziel: <b>7 Punkte</b> gewinnt!</span>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK Modules -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'neon-pong-app';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "demo",
+            authDomain: "demo.firebaseapp.com",
+            projectId: "demo",
+            storageBucket: "demo.appspot.com",
+            messagingSenderId: "00000000000",
+            appId: "1:00000000000:web:00000000000"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let currentUser = null;
+
+        // Initialize Authentication
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = userCred.user;
+                } else {
+                    const userCred = await signInAnonymously(auth);
+                    currentUser = userCred.user;
+                }
+            } catch (err) {
+                console.error("Auth Exception:", err);
+            }
+        }
+        initAuth();
+
+        // --- Web Audio API Synthesizer Sound Generator ---
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playPaddleHit() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
+                    
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.08);
+                } catch (e) {}
+            }
+
+            playWallHit() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.05);
+                    
+                    gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                    
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.05);
+                } catch (e) {}
+            }
+
+            playScore() {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(now + 0.35);
+                } catch (e) {}
+            }
+
+            playGameOver(won) {
+                if (this.muted || !this.ctx) return;
+                try {
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = won ? 'triangle' : 'sawtooth';
+
+                    if (won) {
+                        osc.frequency.setValueAtTime(440, now);
+                        osc.frequency.setValueAtTime(554.37, now + 0.15);
+                        osc.frequency.setValueAtTime(659.25, now + 0.3);
+                        osc.frequency.setValueAtTime(880, now + 0.45);
+                    } else {
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.setValueAtTime(350, now + 0.15);
+                        osc.frequency.setValueAtTime(300, now + 0.3);
+                        osc.frequency.setValueAtTime(200, now + 0.45);
+                    }
+
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.7);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(now + 0.7);
+                } catch (e) {}
+            }
+        }
+
+        const sounds = new SoundFX();
+
+        // --- Game Setup & Variables ---
+        const canvas = document.getElementById('pongCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const GAME_WIDTH = 800;
+        const GAME_HEIGHT = 450;
+        const WINNING_SCORE = 7;
+
+        let gameMode = 'LOCAL'; // 'LOCAL' or 'ONLINE'
+        let gameState = 'START'; // 'START', 'LOBBY', 'PLAYING', 'GAMEOVER'
+        let playerRole = 'P1'; // 'P1' (Host/Left) or 'P2' (Guest/Right)
+        let currentRoomId = null;
+        let roomUnsubscribe = null;
+
+        // Input Keys State
+        const keys = { KeyW: false, KeyS: false, ArrowUp: false, ArrowDown: false };
+
+        let goalFlash = { active: false, color: '#00f3ff', opacity: 0 };
+
+        // Game Entities
+        const p1 = {
+            x: 20,
+            y: GAME_HEIGHT / 2 - 40,
+            width: 12,
+            height: 80,
+            score: 0,
+            color: '#00f3ff',
+            speed: 8
+        };
+
+        const p2 = {
+            x: GAME_WIDTH - 32,
+            y: GAME_HEIGHT / 2 - 40,
+            width: 12,
+            height: 80,
+            score: 0,
+            color: '#ff007f',
+            speed: 8
+        };
+
+        const ball = {
+            x: GAME_WIDTH / 2,
+            y: GAME_HEIGHT / 2,
+            radius: 7,
+            vx: 0,
+            vy: 0,
+            baseSpeed: 6,
+            maxSpeed: 14,
+            speedMultiplier: 1.05,
+            color: '#ffffff',
+            trail: []
+        };
+
+        let particles = [];
+
+        // Particle System
+        function createImpactParticles(x, y, color, count = 16) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 1.5;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    radius: Math.random() * 3 + 1,
+                    color: color,
+                    alpha: 1,
+                    decay: Math.random() * 0.03 + 0.015
+                });
+            }
+        }
+
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= p.decay;
+
+                if (p.alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function resetBall(servingToRight = true) {
+            ball.x = GAME_WIDTH / 2;
+            ball.y = GAME_HEIGHT / 2;
+            ball.trail = [];
+
+            const angle = (Math.random() * 60 - 30) * (Math.PI / 180);
+            const direction = servingToRight ? 1 : -1;
+            
+            const currentSpeed = ball.baseSpeed;
+            ball.vx = Math.cos(angle) * currentSpeed * direction;
+            ball.vy = Math.sin(angle) * currentSpeed;
+        }
+
+        function triggerGoalFlash(color) {
+            goalFlash.active = true;
+            goalFlash.color = color;
+            goalFlash.opacity = 0.4;
+        }
+
+        // --- ONLINE MULTIPLAYER SYNC (FIRESTORE) ---
+
+        function getRoomDocRef(roomId) {
+            // RULE 1: Public path `/artifacts/{appId}/public/data/{collectionName}`
+            return doc(db, 'artifacts', appId, 'public', 'data', 'rooms', roomId);
+        }
+
+        async function createOnlineRoom() {
+            if (!currentUser) await initAuth();
+            
+            const roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            currentRoomId = roomId;
+            playerRole = 'P1';
+
+            const roomData = {
+                roomId: roomId,
+                hostId: currentUser.uid,
+                guestId: null,
+                status: 'WAITING', // WAITING, PLAYING, GAMEOVER
+                p1Y: p1.y,
+                p2Y: p2.y,
+                p1Score: 0,
+                p2Score: 0,
+                ballX: GAME_WIDTH / 2,
+                ballY: GAME_HEIGHT / 2,
+                ballVx: 0,
+                ballVy: 0,
+                lastUpdated: Date.now()
+            };
+
+            await setDoc(getRoomDocRef(roomId), roomData);
+            subscribeToRoom(roomId);
+            showLobbyUI(roomId);
+        }
+
+        async function joinOnlineRoom(code) {
+            if (!currentUser) await initAuth();
+            const roomId = code.toUpperCase().trim();
+            const roomRef = getRoomDocRef(roomId);
+            const snap = await getDoc(roomRef);
+
+            if (!snap.exists()) {
+                alert("Raum mit diesem Code wurde nicht gefunden!");
+                return;
+            }
+
+            const data = snap.data();
+            if (data.status !== 'WAITING' && data.guestId !== currentUser.uid) {
+                alert("Dieser Raum ist bereits voll oder das Spiel läuft schon.");
+                return;
+            }
+
+            currentRoomId = roomId;
+            playerRole = 'P2';
+
+            await updateDoc(roomRef, {
+                guestId: currentUser.uid,
+                status: 'PLAYING'
+            });
+
+            subscribeToRoom(roomId);
+        }
+
+        function subscribeToRoom(roomId) {
+            if (roomUnsubscribe) roomUnsubscribe();
+
+            roomUnsubscribe = onSnapshot(getRoomDocRef(roomId), (docSnap) => {
+                if (!docSnap.exists()) {
+                    if (gameState === 'PLAYING') {
+                        alert("Der andere Spieler hat das Spiel verlassen.");
+                        resetToMenu();
+                    }
+                    return;
+                }
+
+                const data = docSnap.data();
+
+                // Lobby waiting state transition
+                if (data.status === 'PLAYING' && gameState !== 'PLAYING') {
+                    startOnlineMatch();
+                }
+
+                // Sync game state from remote
+                if (gameMode === 'ONLINE' && gameState === 'PLAYING') {
+                    if (playerRole === 'P1') {
+                        // Host receives Player 2 Paddle Y
+                        p2.y = data.p2Y;
+                    } else {
+                        // Guest receives Player 1 Paddle Y, Ball position, and Scores calculated by Host
+                        p1.y = data.p1Y;
+                        ball.x = data.ballX;
+                        ball.y = data.ballY;
+                        p1.score = data.p1Score;
+                        p2.score = data.p2Score;
+                    }
+
+                    if (data.status === 'GAMEOVER' && gameState !== 'GAMEOVER') {
+                        handleGameOver(data.p1Score >= WINNING_SCORE ? 'P1' : 'P2');
+                    }
+                }
+            }, (error) => {
+                console.error("Firestore snapshot error:", error);
+            });
+        }
+
+        async function pushLocalStateToFirebase() {
+            if (gameMode !== 'ONLINE' || !currentRoomId) return;
+
+            const roomRef = getRoomDocRef(currentRoomId);
+            try {
+                if (playerRole === 'P1') {
+                    // Host pushes P1 Position, Ball position & Scores
+                    await updateDoc(roomRef, {
+                        p1Y: p1.y,
+                        ballX: ball.x,
+                        ballY: ball.y,
+                        p1Score: p1.score,
+                        p2Score: p2.score,
+                        lastUpdated: Date.now()
+                    });
+                } else {
+                    // Guest pushes P2 Position
+                    await updateDoc(roomRef, {
+                        p2Y: p2.y,
+                        lastUpdated: Date.now()
+                    });
+                }
+            } catch (err) {
+                console.error("Error updating online state:", err);
+            }
+        }
+
+        // --- GAME LOGIC & PHYSICS ---
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            // 1. Paddle Controls logic
+            // Player 1 (W / S or Mouse)
+            if (playerRole === 'P1' || gameMode === 'LOCAL') {
+                if (keys.KeyW) p1.y -= p1.speed;
+                if (keys.KeyS) p1.y += p1.speed;
+                p1.y = Math.max(0, Math.min(GAME_HEIGHT - p1.height, p1.y));
+            }
+
+            // Player 2 (Up / Down)
+            if (playerRole === 'P2' || gameMode === 'LOCAL') {
+                if (keys.ArrowUp) p2.y -= p2.speed;
+                if (keys.ArrowDown) p2.y += p2.speed;
+                p2.y = Math.max(0, Math.min(GAME_HEIGHT - p2.height, p2.y));
+            }
+
+            // 2. Ball physics (Host/Local only calculates collisions)
+            if (gameMode === 'LOCAL' || playerRole === 'P1') {
+                ball.trail.push({ x: ball.x, y: ball.y });
+                if (ball.trail.length > 8) ball.trail.shift();
+
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+
+                // Wall Collisions
+                if (ball.y - ball.radius <= 0) {
+                    ball.y = ball.radius;
+                    ball.vy *= -1;
+                    sounds.playWallHit();
+                    createImpactParticles(ball.x, ball.y, '#ffffff', 8);
+                } else if (ball.y + ball.radius >= GAME_HEIGHT) {
+                    ball.y = GAME_HEIGHT - ball.radius;
+                    ball.vy *= -1;
+                    sounds.playWallHit();
+                    createImpactParticles(ball.x, ball.y, '#ffffff', 8);
+                }
+
+                // Paddle 1 Hit (Left)
+                if (
+                    ball.x - ball.radius <= p1.x + p1.width &&
+                    ball.x + ball.radius >= p1.x &&
+                    ball.y >= p1.y &&
+                    ball.y <= p1.y + p1.height &&
+                    ball.vx < 0
+                ) {
+                    ball.x = p1.x + p1.width + ball.radius;
+                    const hitPoint = (ball.y - (p1.y + p1.height / 2)) / (p1.height / 2);
+                    const bounceAngle = hitPoint * ((5 * Math.PI) / 12);
+                    const currentSpeed = Math.min(ball.maxSpeed, Math.hypot(ball.vx, ball.vy) * ball.speedMultiplier);
+
+                    ball.vx = Math.cos(bounceAngle) * currentSpeed;
+                    ball.vy = Math.sin(bounceAngle) * currentSpeed;
+
+                    sounds.playPaddleHit();
+                    createImpactParticles(ball.x, ball.y, p1.color, 15);
+                }
+
+                // Paddle 2 Hit (Right)
+                if (
+                    ball.x + ball.radius >= p2.x &&
+                    ball.x - ball.radius <= p2.x + p2.width &&
+                    ball.y >= p2.y &&
+                    ball.y <= p2.y + p2.height &&
+                    ball.vx > 0
+                ) {
+                    ball.x = p2.x - ball.radius;
+                    const hitPoint = (ball.y - (p2.y + p2.height / 2)) / (p2.height / 2);
+                    const bounceAngle = hitPoint * ((5 * Math.PI) / 12);
+                    const currentSpeed = Math.min(ball.maxSpeed, Math.hypot(ball.vx, ball.vy) * ball.speedMultiplier);
+
+                    ball.vx = -Math.cos(bounceAngle) * currentSpeed;
+                    ball.vy = Math.sin(bounceAngle) * currentSpeed;
+
+                    sounds.playPaddleHit();
+                    createImpactParticles(ball.x, ball.y, p2.color, 15);
+                }
+
+                // Goals
+                if (ball.x - ball.radius < 0) {
+                    p2.score++;
+                    sounds.playScore();
+                    triggerGoalFlash(p2.color);
+                    createImpactParticles(ball.x, ball.y, p2.color, 25);
+                    checkGameOver() || resetBall(true);
+                } else if (ball.x + ball.radius > GAME_WIDTH) {
+                    p1.score++;
+                    sounds.playScore();
+                    triggerGoalFlash(p1.color);
+                    createImpactParticles(ball.x, ball.y, p1.color, 25);
+                    checkGameOver() || resetBall(false);
+                }
+            }
+
+            // Sync Online State
+            if (gameMode === 'ONLINE') {
+                pushLocalStateToFirebase();
+            }
+
+            // Flash FX
+            if (goalFlash.active) {
+                goalFlash.opacity -= 0.02;
+                if (goalFlash.opacity <= 0) goalFlash.active = false;
+            }
+
+            updateParticles();
+        }
+
+        function checkGameOver() {
+            if (p1.score >= WINNING_SCORE || p2.score >= WINNING_SCORE) {
+                const winner = p1.score >= WINNING_SCORE ? 'P1' : 'P2';
+                if (gameMode === 'ONLINE' && currentRoomId) {
+                    updateDoc(getRoomDocRef(currentRoomId), { status: 'GAMEOVER' });
+                }
+                handleGameOver(winner);
+                return true;
+            }
+            return false;
+        }
+
+        function handleGameOver(winnerRole) {
+            gameState = 'GAMEOVER';
+            const isWinner = (winnerRole === 'P1' && playerRole === 'P1') || (winnerRole === 'P2' && playerRole === 'P2') || gameMode === 'LOCAL';
+            sounds.playGameOver(isWinner);
+
+            const winnerTitle = document.getElementById('winnerTitle');
+            const finalScoreText = document.getElementById('finalScoreText');
+
+            if (winnerRole === 'P1') {
+                winnerTitle.textContent = "SPIELER 1 (CYAN) GEWINNT!";
+                winnerTitle.className = "text-2xl sm:text-4xl font-black font-orbitron mb-2 neon-glow-cyan text-cyan-400";
+            } else {
+                winnerTitle.textContent = "SPIELER 2 (PINK) GEWINNT!";
+                winnerTitle.className = "text-2xl sm:text-4xl font-black font-orbitron mb-2 neon-glow-pink text-pink-500";
+            }
+
+            finalScoreText.textContent = `Endstand: ${p1.score} - ${p2.score}`;
+            document.getElementById('gameOverOverlay').classList.remove('hidden');
+        }
+
+        // --- GRAPHICS RENDERING ---
+
+        function draw() {
+            // Background
+            ctx.fillStyle = '#080811';
+            ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+
+            // Flash Goal Feedback
+            if (goalFlash.active) {
+                ctx.save();
+                ctx.fillStyle = goalFlash.color;
+                ctx.globalAlpha = goalFlash.opacity;
+                ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
+                ctx.restore();
+            }
+
+            // Center Dashed Line
+            ctx.save();
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(GAME_WIDTH / 2, 0);
+            ctx.lineTo(GAME_WIDTH / 2, GAME_HEIGHT);
+            ctx.stroke();
+            ctx.restore();
+
+            // Score Board
+            ctx.save();
+            ctx.font = '700 64px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            ctx.fillStyle = 'rgba(0, 243, 255, 0.25)';
+            ctx.fillText(p1.score, GAME_WIDTH / 4, 70);
+
+            ctx.fillStyle = 'rgba(255, 0, 127, 0.25)';
+            ctx.fillText(p2.score, (3 * GAME_WIDTH) / 4, 70);
+            ctx.restore();
+
+            // Ball Trail
+            ball.trail.forEach((pos, index) => {
+                const ratio = (index + 1) / ball.trail.length;
+                ctx.save();
+                ctx.fillStyle = `rgba(0, 243, 255, ${ratio * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, ball.radius * ratio, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Ball with Glow
+            ctx.save();
+            ctx.fillStyle = ball.color;
+            ctx.shadowColor = '#00f3ff';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Player 1 Paddle
+            ctx.save();
+            ctx.fillStyle = p1.color;
+            ctx.shadowColor = p1.color;
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.roundRect(p1.x, p1.y, p1.width, p1.height, 6);
+            ctx.fill();
+            ctx.restore();
+
+            // Player 2 Paddle
+            ctx.save();
+            ctx.fillStyle = p2.color;
+            ctx.shadowColor = p2.color;
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.roundRect(p2.x, p2.y, p2.width, p2.height, 6);
+            ctx.fill();
+            ctx.restore();
+
+            drawParticles();
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- INTERACTION & CONTROLS ---
+
+        function updatePlayerPositionFromPointer(clientY) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleY = GAME_HEIGHT / rect.height;
+            const canvasY = (clientY - rect.top) * scaleY;
+            
+            if (playerRole === 'P1') {
+                p1.y = canvasY - p1.height / 2;
+                p1.y = Math.max(0, Math.min(GAME_HEIGHT - p1.height, p1.y));
+            } else if (playerRole === 'P2') {
+                p2.y = canvasY - p2.height / 2;
+                p2.y = Math.max(0, Math.min(GAME_HEIGHT - p2.height, p2.y));
+            }
+        }
+
+        // Mouse Controls
+        canvas.addEventListener('mousemove', (e) => {
+            if (gameState === 'PLAYING') {
+                updatePlayerPositionFromPointer(e.clientY);
+            }
+        });
+
+        // Touch Controls
+        canvas.addEventListener('touchmove', (e) => {
+            if (gameState === 'PLAYING' && e.touches.length > 0) {
+                e.preventDefault();
+                updatePlayerPositionFromPointer(e.touches[0].clientY);
+            }
+        }, { passive: false });
+
+        // Keyboard Event Listeners
+        window.addEventListener('keydown', (e) => {
+            if (['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown'].includes(e.code)) {
+                keys[e.code] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (['KeyW', 'KeyS', 'ArrowUp', 'ArrowDown'].includes(e.code)) {
+                keys[e.code] = false;
+            }
+        });
+
+        // UI Flow Actions
+        function startLocalGame() {
+            sounds.init();
+            gameMode = 'LOCAL';
+            playerRole = 'P1';
+            p1.score = 0;
+            p2.score = 0;
+            p1.y = GAME_HEIGHT / 2 - p1.height / 2;
+            p2.y = GAME_HEIGHT / 2 - p2.height / 2;
+            resetBall(true);
+            gameState = 'PLAYING';
+
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            document.getElementById('roomBadge').classList.add('hidden');
+            document.getElementById('leaveRoomBtn').classList.add('hidden');
+        }
+
+        function showLobbyUI(roomId) {
+            gameState = 'LOBBY';
+            document.getElementById('onlineRoomOverlay').classList.add('hidden');
+            document.getElementById('displayRoomCode').textContent = roomId;
+            document.getElementById('lobbyOverlay').classList.remove('hidden');
+        }
+
+        function startOnlineMatch() {
+            sounds.init();
+            p1.score = 0;
+            p2.score = 0;
+            p1.y = GAME_HEIGHT / 2 - p1.height / 2;
+            p2.y = GAME_HEIGHT / 2 - p2.height / 2;
+            if (playerRole === 'P1') resetBall(true);
+            gameState = 'PLAYING';
+
+            document.getElementById('lobbyOverlay').classList.add('hidden');
+            document.getElementById('onlineRoomOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            
+            document.getElementById('roomBadgeText').textContent = `RAUM: ${currentRoomId}`;
+            document.getElementById('roomBadge').classList.remove('hidden');
+            document.getElementById('leaveRoomBtn').classList.remove('hidden');
+        }
+
+        function resetToMenu() {
+            if (roomUnsubscribe) {
+                roomUnsubscribe();
+                roomUnsubscribe = null;
+            }
+            if (currentRoomId && playerRole === 'P1') {
+                deleteDoc(getRoomDocRef(currentRoomId)).catch(() => {});
+            }
+
+            gameState = 'START';
+            currentRoomId = null;
+
+            document.getElementById('startOverlay').classList.remove('hidden');
+            document.getElementById('onlineRoomOverlay').classList.add('hidden');
+            document.getElementById('lobbyOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            document.getElementById('roomBadge').classList.add('hidden');
+            document.getElementById('leaveRoomBtn').classList.add('hidden');
+        }
+
+        // Button Listeners
+        document.getElementById('localModeBtn').addEventListener('click', startLocalGame);
+        document.getElementById('onlineModeBtn').addEventListener('click', () => {
+            sounds.init();
+            gameMode = 'ONLINE';
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('onlineRoomOverlay').classList.remove('hidden');
+        });
+
+        document.getElementById('createRoomBtn').addEventListener('click', createOnlineRoom);
+        document.getElementById('joinRoomBtn').addEventListener('click', () => {
+            const input = document.getElementById('joinCodeInput').value;
+            if (input.length === 6) {
+                joinOnlineRoom(input);
+            } else {
+                alert("Bitte gib einen gültigen 6-stelligen Raum-Code ein.");
+            }
+        });
+
+        document.getElementById('backToStartBtn').addEventListener('click', resetToMenu);
+        document.getElementById('cancelLobbyBtn').addEventListener('click', resetToMenu);
+        document.getElementById('leaveRoomBtn').addEventListener('click', resetToMenu);
+        document.getElementById('restartGameBtn').addEventListener('click', () => {
+            if (gameMode === 'LOCAL') {
+                startLocalGame();
+            } else {
+                resetToMenu();
+            }
+        });
+
+        document.getElementById('copyCodeBtn').addEventListener('click', () => {
+            if (currentRoomId) {
+                navigator.clipboard.writeText(currentRoomId).then(() => {
+                    alert("Raum-Code in Zwischenablage kopiert!");
+                }).catch(() => {
+                    document.execCommand('copy');
+                });
+            }
+        });
+
+        // Sound Toggle
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        const soundIcon = document.getElementById('soundIcon');
+        const soundStatus = document.getElementById('soundStatus');
+
+        soundToggleBtn.addEventListener('click', () => {
+            sounds.init();
+            sounds.muted = !sounds.muted;
+            if (sounds.muted) {
+                soundIcon.className = 'fa-solid fa-volume-xmark text-slate-500';
+                soundStatus.textContent = 'Ton AUS';
+            } else {
+                soundIcon.className = 'fa-solid fa-volume-high text-cyan-400';
+                soundStatus.textContent = 'Ton AN';
+            }
+        });
+
+        function resizeCanvas() {
+            canvas.width = GAME_WIDTH;
+            canvas.height = GAME_HEIGHT;
+        }
+
+        window.onload = function() {
+            resizeCanvas();
+            draw();
+            gameLoop();
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
