@@ -243,7 +243,7 @@
           "$uidB": {
             ".read": "auth != null && (auth.uid === $uidA || auth.uid === $uidB)",
             ".write": "auth != null && (auth.uid === $uidA || auth.uid === $uidB) && $uidA !== $uidB && newData.exists()",
-            ".validate": "newData.hasChildren(['a','b','status','requestedBy','revision','updatedAt']) && newData.child('a').val() === $uidA && newData.child('b').val() === $uidB && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'friends' || newData.child('status').val() === 'none') && (newData.child('requestedBy').val() === $uidA || newData.child('requestedBy').val() === $uidB) && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() === now && (newData.child('status').val() === 'pending' ? (newData.hasChildren(['requestedAt','expiresAt']) && newData.child('requestedAt').isNumber() && newData.child('requestedAt').val() <= now && newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() === newData.child('requestedAt').val() + 604800000) : (!newData.hasChildren(['requestedAt','expiresAt'])))",
+            ".validate": "newData.hasChildren(['a','b','status','requestedBy','revision','updatedAt']) && newData.child('a').val() === $uidA && newData.child('b').val() === $uidB && (newData.child('status').val() === 'pending' || newData.child('status').val() === 'friends' || newData.child('status').val() === 'none') && (newData.child('requestedBy').val() === $uidA || newData.child('requestedBy').val() === $uidB) && newData.child('revision').isNumber() && newData.child('revision').val() >= 1 && newData.child('updatedAt').isNumber() && newData.child('updatedAt').val() <= now && newData.child('updatedAt').val() > now - 30000 && (newData.child('status').val() === 'pending' ? (newData.hasChildren(['requestedAt','expiresAt']) && newData.child('requestedAt').isNumber() && newData.child('requestedAt').val() <= now && newData.child('expiresAt').isNumber() && newData.child('expiresAt').val() === newData.child('requestedAt').val() + 604800000) : (!newData.hasChildren(['requestedAt','expiresAt'])))",
             "a": {
               ".validate": "newData.isString() && newData.val() === $uidA"
             },
@@ -269,7 +269,7 @@
               ".validate": "newData.isNumber() && newData.val() >= 1"
             },
             "updatedAt": {
-              ".validate": "newData.isNumber() && newData.val() === now"
+              ".validate": "newData.isNumber() && newData.val() <= now && newData.val() > now - 30000"
             },
             "$other": {
               ".validate": false
