@@ -22,7 +22,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
  function actor(){const uid=getUser()?.uid;if(!validUid(uid))throw error('unauthenticated');return uid;}
  function sameUser(uid){if(getUser()?.uid!==uid)throw error('session-changed');}
  async function read(path){return (await db.ref('social/'+path).get()).val();}
- async function serverNow(){const snap=await db.ref('.info/serverTimeOffset').get();const offset=snap.val();return clock()+(Number.isFinite(offset)?offset:0);}
+ async function serverNow(){return new Promise((resolve,reject)=>{const ref=db.ref('.info/serverTimeOffset');const callback=snap=>{ref.off('value',callback);const offset=snap.val();resolve(clock()+(Number.isFinite(offset)?offset:0));};ref.on('value',callback,reject);});}
  function pair(me,peer){if(!validUid(peer)||peer===me)throw error('invalid-argument');return [me,peer].sort();}
  function target(data){if(!data||Object.keys(data).some(k=>k!=='targetUid')||!validUid(data.targetUid))throw error('invalid-argument');return data.targetUid;}
  function batch(rel){
