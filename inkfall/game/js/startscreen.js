@@ -131,9 +131,13 @@
         ? content.querySelector("#if-playername").value.trim()
         : null;
 
-      if (registering && (name.length < 3 || name.length > 20)) {
-        tell("Der Spielername muss 3 bis 20 Zeichen enthalten.", true);
-        return;
+      if (registering) {
+        const problem = playerNameError(name);
+
+        if (problem) {
+          tell(problem, true);
+          return;
+        }
       }
 
       lock(true);
@@ -161,27 +165,26 @@
     };
   }
 
-  async function reservePlayerName(name, uid) {
-    const normalized = name.trim().toLowerCase();
-    const reference = db.ref("usernames/" + encodeURIComponent(normalized));
+  // Der Spielername steht in users/{uid}/profile/displayName. Er ist KEIN
+  // Firebase-Schlüssel mehr: die veröffentlichten Regeln (solo-only, Stand
+  // f49fc32) kennen den Knoten usernames/ nicht, jede Reservierung dort endet
+  // mit PERMISSION_DENIED. Deshalb wird nur noch auf Zeichen geprüft, die in
+  // der Datenbank und in der Anzeige unproblematisch sind.
+  const NAME_FORBIDDEN = /[.#$\[\]\/\u0000-\u001f\u007f]/;
 
-    const result = await reference.transaction(current => {
-      if (current === null) {
-        return { uid, name: name.trim() };
-      }
+  function playerNameError(name) {
+    const trimmed = String(name || "").trim();
 
-      if (current.uid === uid) {
-        return { uid, name: name.trim() };
-      }
-
-      return;
-    }, undefined, false);
-
-    if (!result.committed) {
-      throw new Error("Dieser Spielername ist bereits vergeben.");
+    if (trimmed.length < 3 || trimmed.length > 20) {
+      return "Der Spielername muss 3 bis 20 Zeichen enthalten.";
     }
 
-    return result.snapshot.val();
+    if (NAME_FORBIDDEN.test(trimmed)) {
+      return "Der Spielername darf keine Punkte, Rauten, Klammern, " +
+        "Dollarzeichen oder Schrägstriche enthalten.";
+    }
+
+    return "";
   }
 
   async function prepareAccount() {
@@ -193,35 +196,45 @@
     const snapshot = await reference.get();
 
     if (!snapshot.exists()) {
-      const name = user.displayName ||
-        content.querySelector("#if-playername")?.value.trim();
+      const name = (user.displayName ||
+        content.querySelector("#if-playername")?.value.trim() || "").trim();
+      const problem = playerNameError(name);
 
-      if (!name || name.length < 3 || name.length > 20) {
+      if (problem) {
+        tell(problem, true);
         renderProfileRepair();
         return;
       }
 
-      await reservePlayerName(name, user.uid);
+      // Die veröffentlichten Regeln erlauben unter users/{uid} ausschließlich
+      // profile, schemaVersion, selectedClass und characters. `$other` steht
+      // dort auf false — ein einziges zusätzliches Feld (früher: `save`) lässt
+      // deshalb die komplette Anfrage mit PERMISSION_DENIED scheitern.
+      try {
+        await reference.set({
+          profile: {
+            displayName: name,
+            level: 1,
+            createdAt: firebase.database.ServerValue.TIMESTAMP
+          },
+          selectedClass: "knight",
+          schemaVersion: 2,
+          characters: { knight: characterRecord("knight") }
+        });
+      } catch (error) {
+        const denied = String(error?.code || "")
+          .toLowerCase().includes("permission");
 
-      await reference.set({
-        profile:{
-          displayName:name,
-          level:1,
-          createdAt:firebase.database.ServerValue.TIMESTAMP
-        },
-        save:{
-          gold:150,
-          lives:100,
-          wave:0,
-          skillPoints:0,
-          heroClass:"knight"
-        }
-      });
-    } else {
-      const existingName = snapshot.val()?.profile?.displayName;
+        window.inkfallDiag?.capture(error, "Profil anlegen");
 
-      if (existingName) {
-        await reservePlayerName(existingName, user.uid);
+        tell(denied
+          ? "Das Profil wurde von der Datenbank abgelehnt, obwohl nur " +
+            "erlaubte Felder geschrieben wurden. Bitte die Regeln in der " +
+            "Firebase-Konsole mit inkfall/config/database.rules.json " +
+            "vergleichen."
+          : errorText(error), true);
+
+        throw error;
       }
     }
 
@@ -242,8 +255,10 @@
 
     content.querySelector("#if-repair-profile").onclick = async () => {
       const name = content.querySelector("#if-repair-name").value.trim();
-      if (name.length < 3 || name.length > 20) {
-        tell("Bitte 3 bis 20 Zeichen eingeben.", true);
+      const problem = playerNameError(name);
+
+      if (problem) {
+        tell(problem, true);
         return;
       }
       lock(true);

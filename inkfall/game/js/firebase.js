@@ -5,6 +5,19 @@ const app = firebase.apps.length
 const auth = firebase.auth();
 const db = firebase.database();
 
+// Browser mit aktivem Tracking-Schutz (Edge, Safari) blockieren den Speicher
+// für Skripte, die von gstatic.com geladen werden. Firebase kann die Anmeldung
+// dann nicht persistieren und meldet beim Neuladen keinen Nutzer mehr.
+// Endgültige Lösung: das SDK selbst hosten, damit es als eigene Quelle gilt.
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(error => {
+  window.inkfallDiag?.warn(
+    "Anmeldung",
+    "Die Anmeldung kann nicht dauerhaft gespeichert werden (" +
+    (error?.code || error?.message) + "). Der Browser blockiert " +
+    "vermutlich den Speicher für das Firebase-SDK von gstatic.com."
+  );
+});
+
 let currentUser = null;
 let currentProfile = null;
 let dbConnected = false;
@@ -99,6 +112,23 @@ function freshCharacter(classId) {
   };
 }
 
+// Felder, die nur im Client existieren. Die veröffentlichten Regeln erlauben
+// unter characters/$classId ausschließlich level, xp, skillPoints, skills und
+// soloRun — `$other` steht dort auf false, deshalb lässt ein zusätzliches Feld
+// die GESAMTE Schreiboperation mit PERMISSION_DENIED scheitern.
+const CLIENT_ONLY_CHARACTER_FIELDS = ["heroName", "heroNameLocked"];
+
+// Der Charakter, wie er tatsächlich in der Datenbank landet.
+function characterRecord(classId) {
+  const character = freshCharacter(classId);
+
+  for (const field of CLIENT_ONLY_CHARACTER_FIELDS) {
+    delete character[field];
+  }
+
+  return character;
+}
+
 function validHeroName(value, classId) {
   const name = String(value || "").trim();
   return name.length >= 3 && name.length <= 20
@@ -180,7 +210,7 @@ async function migrateCharacters(user) {
           next.characters = next.characters || {};
 
           if (!next.characters[classId]) {
-            const character = freshCharacter(classId);
+            const character = characterRecord(classId);
 
             if (old) {
               character.skillPoints =
@@ -600,7 +630,7 @@ window.setHeroName = async function(classId, value) {
     const result = await reference.transaction(current => {
       if (auth.currentUser?.uid !== user.uid) return;
 
-      const data = current || freshCharacter(classId);
+      const data = current || characterRecord(classId);
       if (heroNameState(data, classId).assigned) return;
 
       return {
@@ -639,8 +669,10 @@ window.setHeroName = async function(classId, value) {
 
     throw new Error(
       (denied
-        ? "Firebase lehnt die Namensspeicherung ab. " +
-          "Bitte die aktualisierten Datenbankregeln veröffentlichen. "
+        ? "Eigene Heldennamen sind derzeit nicht freigeschaltet: die " +
+          "veröffentlichten Datenbankregeln erlauben unter characters/ nur " +
+          "level, xp, skillPoints, skills und soloRun. Es bleibt beim " +
+          "Klassennamen. "
         : "") +
       error.message
     );
@@ -675,7 +707,7 @@ window.selectSoloCharacter = async function(classId) {
     );
 
     const result = await reference.transaction(current =>
-      current || freshCharacter(classId)
+      current || characterRecord(classId)
     , undefined, false);
 
     const character = result.snapshot.val();
