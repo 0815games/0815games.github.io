@@ -80,6 +80,8 @@ export class Game {
     this.remotePlayer.tryAttack(this.world.enemies);
     this.world.tryBuild(this.localPlayer);
     this.world.tryBuild(this.remotePlayer);
+    this.world.tryUpgrade(this.localPlayer);
+    this.world.tryUpgrade(this.remotePlayer);
     this.world.update(dt, [this.localPlayer, this.remotePlayer]);
 
     this.stateTimer += dt;
@@ -106,7 +108,8 @@ export class Game {
         x: move.x,
         y: move.y,
         attack: this.localPlayer.input.isDown('Space'),
-        build: this.localPlayer.input.isDown('KeyT')
+        build: this.localPlayer.input.isDown('KeyT'),
+        upgrade: this.localPlayer.input.isDown('KeyU')
       });
     }
 

@@ -27,7 +27,8 @@ export class Player {
       x: this.input.getMoveVector().x,
       y: this.input.getMoveVector().y,
       attack: this.input.isDown('Space'),
-      build: this.input.isDown('KeyT')
+      build: this.input.isDown('KeyT'),
+      upgrade: this.input.isDown('KeyU')
     }, dt);
   }
 
@@ -55,6 +56,10 @@ export class Player {
 
     if (input.build) {
       this.wantsBuild = true;
+    }
+
+    if (input.upgrade) {
+      this.wantsUpgrade = true;
     }
   }
 

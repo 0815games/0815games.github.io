@@ -2,9 +2,11 @@ const CONTACT_DAMAGE_PER_SECOND = 20;
 const ENEMY_HEALTH = 50;
 const GOLD_PER_KILL = 10;
 const TOWER_COST = 50;
-const TOWER_RANGE = 150;
-const TOWER_DAMAGE = 12;
-const TOWER_FIRE_INTERVAL = 1;
+const TOWER_BASE_DAMAGE = 12;
+const TOWER_BASE_RANGE = 150;
+const TOWER_BASE_FIRE_INTERVAL = 1;
+const TOWER_UPGRADE_BASE_COST = 50;
+const TOWER_UPGRADE_RANGE = 60;
 
 export class World {
   constructor() {
@@ -60,9 +62,9 @@ export class World {
 
       const distance = Math.hypot(target.x - tower.x, target.y - tower.y);
 
-      if (distance <= TOWER_RANGE) {
-        target.health -= TOWER_DAMAGE;
-        tower.cooldown = TOWER_FIRE_INTERVAL;
+      if (distance <= tower.range) {
+        target.health -= tower.damage;
+        tower.cooldown = tower.fireInterval;
 
         if (target.health <= 0) {
           this.gold += GOLD_PER_KILL;
@@ -114,8 +116,48 @@ export class World {
     this.towers.push({
       x: player.x,
       y: player.y,
+      level: 1,
+      damage: TOWER_BASE_DAMAGE,
+      range: TOWER_BASE_RANGE,
+      fireInterval: TOWER_BASE_FIRE_INTERVAL,
       cooldown: 0
     });
+  }
+
+  tryUpgrade(player) {
+    if (!player?.alive || !player.wantsUpgrade) return;
+
+    player.wantsUpgrade = false;
+
+    const tower = this.nearestTower(player);
+
+    if (!tower) return;
+
+    const cost = TOWER_UPGRADE_BASE_COST * tower.level;
+
+    if (this.gold < cost) return;
+
+    this.gold -= cost;
+    tower.level += 1;
+    tower.damage += 6;
+    tower.range += 20;
+    tower.fireInterval = Math.max(0.4, tower.fireInterval - 0.1);
+  }
+
+  nearestTower(player) {
+    let nearest = null;
+    let nearestDistance = Infinity;
+
+    this.towers.forEach((tower) => {
+      const distance = Math.hypot(player.x - tower.x, player.y - tower.y);
+
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = tower;
+      }
+    });
+
+    return nearestDistance <= TOWER_UPGRADE_RANGE ? nearest : null;
   }
 
   startWave(playerCount) {
@@ -148,7 +190,11 @@ export class World {
       })),
       towers: this.towers.map((tower) => ({
         x: tower.x,
-        y: tower.y
+        y: tower.y,
+        level: tower.level,
+        damage: tower.damage,
+        range: tower.range,
+        fireInterval: tower.fireInterval
       })),
       gold: this.gold,
       wave: this.wave
@@ -171,6 +217,11 @@ export class World {
       ctx.beginPath();
       ctx.arc(tower.x, tower.y, 14, 0, Math.PI * 2);
       ctx.fill();
+
+      ctx.fillStyle = '#eaf2ff';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`L${tower.level}`, tower.x, tower.y + 4);
     });
 
     this.enemies.forEach((enemy) => {
