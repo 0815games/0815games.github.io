@@ -76,6 +76,8 @@ export class Game {
       this.remotePlayer.applyInput(guestInput, dt);
     }
 
+    this.localPlayer.tryAttack(this.world.enemies);
+    this.remotePlayer.tryAttack(this.world.enemies);
     this.world.update(dt, [this.localPlayer, this.remotePlayer]);
 
     this.stateTimer += dt;
@@ -97,9 +99,12 @@ export class Game {
 
     if (this.inputTimer >= INPUT_INTERVAL) {
       this.inputTimer = 0;
+      const move = this.localPlayer.input.getMoveVector();
+
       this.session.net.sendInput(this.session.code, 'guest', {
-        x: this.localPlayer.input.getMoveVector().x,
-        y: this.localPlayer.input.getMoveVector().y
+        x: move.x,
+        y: move.y,
+        attack: this.localPlayer.input.isDown('Space')
       });
     }
 
@@ -108,7 +113,7 @@ export class Game {
 
     this.localPlayer.applyState(state.players?.guest);
     this.remotePlayer.applyState(state.players?.host);
-    this.world.applyState(state.enemies ?? []);
+    this.world.applyState(state.enemies ?? [], state.wave);
   }
 
   render() {
@@ -119,6 +124,6 @@ export class Game {
     this.world.render(ctx);
     this.localPlayer.render(ctx);
     this.remotePlayer.render(ctx);
-    this.hud.render(ctx, this.session);
+    this.hud.render(ctx, this.session, this.localPlayer, this.remotePlayer);
   }
 }
