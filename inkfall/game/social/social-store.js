@@ -1,5 +1,21 @@
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.InkfallSocialStore=api;})(globalThis,()=>{
 'use strict';
+function describeActionError(error){
+ const code=String(error?.code||error?.message||'unknown-error');
+ const messages={
+  'invalid-argument':'Ungültiger Spielername. Erlaubt sind 3 bis 20 Zeichen: A-Z, a-z, 0-9, Unterstrich und Bindestrich.',
+  'player-not-found':'Kein Spieler mit diesem Namen gefunden. Der Account muss sich mindestens einmal nach der Namensmigration angemeldet haben.',
+  'unauthenticated':'Du bist nicht angemeldet. Bitte melde dich erneut an.',
+  'session-changed':'Die Anmeldung hat sich während der Aktion geändert. Bitte lade die Seite neu.',
+  'request-not-allowed':'Für diesen Kontakt kann derzeit keine Anfrage gesendet werden.',
+  'incoming-request-exists':'Dieser Spieler hat dir bereits eine Anfrage gesendet.',
+  'invalid-profile':'Dein eigener Anzeigename ist ungültig. Bitte prüfe dein Profil.',
+  'permission-denied':'Die Datenbankregeln erlauben diese Aktion nicht.',
+  'PERMISSION_DENIED':'Die Datenbankregeln erlauben diese Aktion nicht.'
+ };
+ return messages[code]||('Aktion fehlgeschlagen: '+code);
+}
+
 function create(client){
  let state={uid:null,available:false,loading:false,friends:[],requests:[],selectedUid:null,profile:null,profileLoading:false,character:null,characterLoading:false,classId:'knight',error:null,busy:false,friendCode:null,codeLoading:false,codeError:null};
  let generation=0,selection=0,characterTicket=0,stop=null,stopProfile=null,stopCharacter=null,codePromise=null;
@@ -68,7 +84,7 @@ function create(client){
   if(state.busy||!state.uid||!client.has(name))return false;
   const token=generation;state.busy=true;state.error=null;emit();
   try{await client.invoke(name,payload);return token===generation;}
-  catch{if(token===generation)state.error='Aktion fehlgeschlagen. Bitte erneut versuchen.';return false;}
+  catch(error){if(token===generation){console.error('[Inkfall Social]',name,error);state.error=describeActionError(error);}return false;}
   finally{if(token===generation){state.busy=false;emit();}}
  }
  return {snapshot,setUser,loadCode,selectFriend,selectCharacter,action,clearSelection(){clearSelection();emit();},has:client.has,
