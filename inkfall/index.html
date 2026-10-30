@@ -1,1 +1,31 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><title>Inkfall – archiviert</title></head><body><h1>Inkfall wurde neu aufgebaut</h1><p>Die alte Version ist vollständig im Branch <code>old_inkfall</code> gesichert.</p></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INKFALL – Coop Foundation</title>
+  <style>
+    body { margin: 0; background: #0b1020; color: #eaf2ff; font-family: system-ui, sans-serif; }
+    #game { display: block; width: 100vw; height: 100vh; }
+    #lobby { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(5, 8, 18, .92); }
+    .panel { background: #131a30; padding: 32px; border-radius: 16px; width: min(420px, 90vw); }
+    input, button { width: 100%; padding: 12px; margin: 6px 0; border-radius: 8px; border: 1px solid #2b3a5f; background: #0d1428; color: inherit; }
+    button { cursor: pointer; background: #2563eb; border: 0; font-weight: 700; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <canvas id="game"></canvas>
+  <div id="lobby">
+    <div class="panel">
+      <h1>INKFALL</h1>
+      <p>Coop für maximal 2 Spieler.</p>
+      <button id="create-room">Raum erstellen</button>
+      <input id="room-code" placeholder="Raumcode eingeben" maxlength="6">
+      <button id="join-room">Raum beitreten</button>
+      <p id="lobby-status"></p>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
