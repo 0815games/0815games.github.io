@@ -1,11 +1,9 @@
 import { CoopSession } from './session.js';
-import { LocalNet } from './net.js';
+import { FirebaseNet } from './net.js';
 
 export class Lobby {
-  constructor({ onCreate, onJoin }) {
-    this.net = new LocalNet();
-    this.onCreate = onCreate;
-    this.onJoin = onJoin;
+  constructor() {
+    this.net = new FirebaseNet();
     this.onStatus = () => {};
     this.onSessionReady = () => {};
   }
@@ -23,17 +21,23 @@ export class Lobby {
 
   async createRoom() {
     this.onStatus('Raum wird erstellt …');
-    const code = this.generateCode();
-    const session = new CoopSession({ code, role: 'host', net: this.net });
-    await session.open();
-    this.onStatus(`Raum erstellt. Code: ${code}`);
-    this.onSessionReady(session);
+
+    try {
+      const code = this.generateCode();
+      const session = new CoopSession({ code, role: 'host', net: this.net });
+      await session.open();
+      this.onStatus(`Raum erstellt. Code: ${code}`);
+      this.onSessionReady(session);
+    } catch (error) {
+      this.onStatus(error.message);
+    }
   }
 
   async joinRoom(code) {
     this.onStatus(`Raum ${code} wird beigetreten …`);
-    const session = new CoopSession({ code, role: 'guest', net: this.net });
+
     try {
+      const session = new CoopSession({ code, role: 'guest', net: this.net });
       await session.join();
       this.onStatus(`Raum ${code} beigetreten.`);
       this.onSessionReady(session);

@@ -1,1 +1,29 @@
-{"archived": true, "note": "Alte Inkfall-Version – vollständig im Branch old_inkfall gesichert."}
+{
+  "rules": {
+    "rooms": {
+      "$code": {
+        ".read": true,
+        ".write": true,
+        "players": {
+          "$playerSlot": {
+            ".write": true
+          }
+        },
+        "events": {
+          "$eventId": {
+            ".write": true
+          }
+        },
+        "state": {
+          ".write": true
+        }
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid"
+      }
+    }
+  }
+}
