@@ -199,6 +199,9 @@
           },
           "$other": {
             ".validate": false
+          },
+          "heroName": {
+            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
           }
         },
         "guest": {
@@ -221,6 +224,9 @@
           },
           "$other": {
             ".validate": false
+          },
+          "heroName": {
+            ".validate": "newData.isString() && newData.val().length >= 3 && newData.val().length <= 20"
           }
         },
         "status": {
