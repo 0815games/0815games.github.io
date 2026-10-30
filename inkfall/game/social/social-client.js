@@ -68,7 +68,7 @@ function createRtdbActions({db,getUser,clock=Date.now}){
      if(previous.requestedBy!==expectedSender)throw error('wrong-actor');
      if(operation==='accept'&&previous.expiresAt<=time)throw error('request-expired');
     }
-    next={a,b,status:operation==='accept'?'friends':'none'};
+    next={a,b,status:operation==='accept'?'friends':'none',requestedAt:null,expiresAt:null};
    }
    next.revision=(previous?.revision||0)+1;next.updatedAt=time;
    try{sameUser(me);await db.ref('social').update(batch(next));sameUser(me);return {status:next.status,revision:next.revision};}
