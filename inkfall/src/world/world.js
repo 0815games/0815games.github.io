@@ -14,31 +14,55 @@ export class World {
     }
 
     this.enemies.forEach((enemy) => enemy.update(dt, players));
-    this.enemies = this.enemies.filter((enemy) => enemy.alive);
   }
 
   spawnEnemy(players) {
-    const playerList = [...players.values()];
-    if (!playerList.length) return;
+    const target = players.find(Boolean);
+    if (!target) return;
 
     this.enemies.push({
       x: Math.random() * 600 + 100,
       y: 80,
       speed: 70,
       radius: 12,
-      alive: true,
       update(dt, targets) {
-        const target = targets[0];
-        if (!target) return;
+        const player = targets.find(Boolean);
+        if (!player) return;
 
-        const dx = target.x - this.x;
-        const dy = target.y - this.y;
+        const dx = player.x - this.x;
+        const dy = player.y - this.y;
         const distance = Math.hypot(dx, dy) || 1;
 
         this.x += (dx / distance) * this.speed * dt;
         this.y += (dy / distance) * this.speed * dt;
       }
     });
+  }
+
+  serializeEnemies() {
+    return this.enemies.map((enemy) => ({
+      x: enemy.x,
+      y: enemy.y,
+      speed: enemy.speed,
+      radius: enemy.radius
+    }));
+  }
+
+  applyState(enemies) {
+    this.enemies = enemies.map((enemy) => ({
+      ...enemy,
+      update: (dt, targets) => {
+        const player = targets.find(Boolean);
+        if (!player) return;
+
+        const dx = player.x - enemy.x;
+        const dy = player.y - enemy.y;
+        const distance = Math.hypot(dx, dy) || 1;
+
+        enemy.x += (dx / distance) * enemy.speed * dt;
+        enemy.y += (dy / distance) * enemy.speed * dt;
+      }
+    }));
   }
 
   render(ctx) {

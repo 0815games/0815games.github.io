@@ -59,17 +59,28 @@ export class FirebaseNet {
     return Object.keys(snapshot.val() ?? {}).length;
   }
 
-  send(code, event) {
-    const eventRef = ref(this.db, `rooms/${code}/events/${crypto.randomUUID()}`);
-    return set(eventRef, {
-      ...event,
-      playerId: this.playerId,
-      createdAt: serverTimestamp()
-    });
+  async writeState(code, state) {
+    await set(ref(this.db, `rooms/${code}/state`), state);
   }
 
   onState(code, callback) {
     return onValue(ref(this.db, `rooms/${code}/state`), (snapshot) => {
+      callback(snapshot.val());
+    });
+  }
+
+  async sendInput(code, slot, input) {
+    await set(ref(this.db, `rooms/${code}/inputs/${slot}`), input);
+  }
+
+  onInputs(code, callback) {
+    return onValue(ref(this.db, `rooms/${code}/inputs`), (snapshot) => {
+      callback(snapshot.val());
+    });
+  }
+
+  onPlayers(code, callback) {
+    return onValue(ref(this.db, `rooms/${code}/players`), (snapshot) => {
       callback(snapshot.val());
     });
   }
@@ -92,7 +103,13 @@ export class LocalNet {
     return this.room?.code === code ? this.room.players : 0;
   }
 
-  send() {}
+  async writeState() {}
 
   onState() {}
+
+  async sendInput() {}
+
+  onInputs() {}
+
+  onPlayers() {}
 }

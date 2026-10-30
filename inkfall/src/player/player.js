@@ -1,8 +1,7 @@
 import { Input } from '../core/input.js';
 
 export class Player {
-  constructor(id, role) {
-    this.id = id;
+  constructor(role) {
     this.role = role;
     this.input = new Input();
     this.x = role === 'host' ? 240 : 320;
@@ -14,11 +13,33 @@ export class Player {
   }
 
   update(dt) {
-    const move = this.input.getMoveVector();
-    const length = Math.hypot(move.x, move.y) || 1;
+    this.applyInput({
+      x: this.input.getMoveVector().x,
+      y: this.input.getMoveVector().y
+    }, dt);
+  }
 
-    this.x += (move.x / length) * this.speed * dt;
-    this.y += (move.y / length) * this.speed * dt;
+  applyInput(input, dt) {
+    const length = Math.hypot(input.x, input.y) || 1;
+
+    this.x += (input.x / length) * this.speed * dt;
+    this.y += (input.y / length) * this.speed * dt;
+  }
+
+  applyState(state) {
+    if (!state) return;
+
+    this.x = state.x ?? this.x;
+    this.y = state.y ?? this.y;
+    this.health = state.health ?? this.health;
+  }
+
+  serialize() {
+    return {
+      x: this.x,
+      y: this.y,
+      health: this.health
+    };
   }
 
   render(ctx) {

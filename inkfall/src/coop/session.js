@@ -6,11 +6,13 @@ export class CoopSession {
     this.role = role;
     this.net = net;
     this.players = new Map();
+    this.onPlayersChanged = () => {};
   }
 
   async open() {
     await this.net.createRoom(this.code);
     this.addLocalPlayer('host');
+    this.watchPlayers();
   }
 
   async join() {
@@ -22,11 +24,19 @@ export class CoopSession {
 
     await this.net.joinRoom(this.code);
     this.addLocalPlayer('guest');
+    this.watchPlayers();
   }
 
   addLocalPlayer(role) {
-    const id = role === 'host' ? 'player-1' : 'player-2';
+    const id = role === 'host' ? 'host' : 'guest';
     this.players.set(id, { id, role });
+  }
+
+  watchPlayers() {
+    this.net.onPlayers(this.code, (players) => {
+      this.remotePlayers = players ?? {};
+      this.onPlayersChanged(this.remotePlayers);
+    });
   }
 
   getPlayers() {
