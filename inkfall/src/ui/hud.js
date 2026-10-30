@@ -1,18 +1,20 @@
 export class Hud {
-  render(ctx, session, localPlayer, remotePlayer) {
+  render(ctx, session, localPlayer, remotePlayer, world) {
     ctx.fillStyle = '#eaf2ff';
     ctx.font = '16px system-ui, sans-serif';
     ctx.textAlign = 'left';
 
-    ctx.fillText(`Welle: ${session ? 1 : 1}`, 20, 32);
-    ctx.fillText(`Spieler: ${session?.players.size ?? 1} / 2`, 20, 56);
+    ctx.fillText(`Welle: ${world?.wave ?? 1}`, 20, 32);
+    ctx.fillText(`Gold: ${world?.gold ?? 0}`, 20, 56);
+    ctx.fillText(`Türme: ${world?.towers.length ?? 0}`, 20, 80);
+    ctx.fillText(`Spieler: ${session?.players.size ?? 1} / 2`, 20, 104);
 
     if (localPlayer) {
-      this.drawHealthBar(ctx, 20, 76, localPlayer, 'Du');
+      this.drawHealthBar(ctx, 20, 128, localPlayer, 'Du');
     }
 
     if (remotePlayer) {
-      this.drawHealthBar(ctx, 20, 116, remotePlayer, 'Partner');
+      this.drawHealthBar(ctx, 20, 168, remotePlayer, 'Partner');
     }
   }
 

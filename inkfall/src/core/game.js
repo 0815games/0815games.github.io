@@ -78,6 +78,8 @@ export class Game {
 
     this.localPlayer.tryAttack(this.world.enemies);
     this.remotePlayer.tryAttack(this.world.enemies);
+    this.world.tryBuild(this.localPlayer);
+    this.world.tryBuild(this.remotePlayer);
     this.world.update(dt, [this.localPlayer, this.remotePlayer]);
 
     this.stateTimer += dt;
@@ -88,8 +90,7 @@ export class Game {
           host: this.localPlayer.serialize(),
           guest: this.remotePlayer.serialize()
         },
-        enemies: this.world.serializeEnemies(),
-        wave: this.world.wave
+        ...this.world.serialize()
       });
     }
   }
@@ -104,7 +105,8 @@ export class Game {
       this.session.net.sendInput(this.session.code, 'guest', {
         x: move.x,
         y: move.y,
-        attack: this.localPlayer.input.isDown('Space')
+        attack: this.localPlayer.input.isDown('Space'),
+        build: this.localPlayer.input.isDown('KeyT')
       });
     }
 
@@ -113,7 +115,7 @@ export class Game {
 
     this.localPlayer.applyState(state.players?.guest);
     this.remotePlayer.applyState(state.players?.host);
-    this.world.applyState(state.enemies ?? [], state.wave);
+    this.world.applyState(state);
   }
 
   render() {
@@ -124,6 +126,6 @@ export class Game {
     this.world.render(ctx);
     this.localPlayer.render(ctx);
     this.remotePlayer.render(ctx);
-    this.hud.render(ctx, this.session, this.localPlayer, this.remotePlayer);
+    this.hud.render(ctx, this.session, this.localPlayer, this.remotePlayer, this.world);
   }
 }

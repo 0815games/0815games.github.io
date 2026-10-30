@@ -26,7 +26,8 @@ export class Player {
     this.applyInput({
       x: this.input.getMoveVector().x,
       y: this.input.getMoveVector().y,
-      attack: this.input.isDown('Space')
+      attack: this.input.isDown('Space'),
+      build: this.input.isDown('KeyT')
     }, dt);
   }
 
@@ -50,6 +51,10 @@ export class Player {
     if (input.attack && this.attackCooldown <= 0) {
       this.attackCooldown = ATTACK_COOLDOWN;
       this.wantsAttack = true;
+    }
+
+    if (input.build) {
+      this.wantsBuild = true;
     }
   }
 
