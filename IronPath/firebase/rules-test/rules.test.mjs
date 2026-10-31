@@ -90,7 +90,7 @@ test('slot contention has one winner and departed guests lose party access',asyn
 });
 
 test('two Firebase clients run a shared hosted match, pause, and resume', {timeout:20000}, async t=>{
-  const {onValue,onDisconnect,remove}=await import('firebase/database');
+  const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
   const {createFirebasePartyPresence}=await import('../../firebase-party-presence.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
   const {createPartyHost}=await import('../../party-host.mjs');
@@ -120,10 +120,9 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   const start=a.command({type:'startWave'});await until(()=>engine.snapshotFor('alice').nextSeq===2);
   for(let i=0;i<6;i++)h.step();assert.equal((await start).ok,true);
   await until(()=>bobSnapshot.match.wave===1);
-  await pb.stop();await until(()=>!engine.ready()&&!aliceReady);
+  goOffline(bob);t.after(()=>goOnline(bob));await until(()=>!engine.ready()&&!aliceReady);
   assert.equal(h.step(),null);assert.equal((await a.command({type:'airstrike'})).ok,false);
-  const pb2=createFirebasePartyPresence({...pOpts,db:bob,auth:authB});t.after(()=>pb2.stop());pb2.start();
-  await until(()=>engine.ready()&&aliceReady&&bobReady);
+  goOnline(bob);await until(()=>engine.ready()&&aliceReady&&bobReady);
   const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
 });
