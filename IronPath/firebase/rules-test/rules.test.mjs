@@ -66,3 +66,21 @@ test('profile isolation and real client lobby/channel operations under draft rul
   await assertFails(get(ref(alice,'players/bob')));await assertFails(set(ref(alice,'players/bob/xp'),999));
   await host.close();await guest.close();
 });
+
+
+test('slot contention has one winner and departed guests lose party access',async()=>{
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));
+  const claim=(db,id)=>runTransaction(at(db,'guestId'),v=>v===null?id:undefined);
+  const claims=await Promise.all([claim(bob,'bob'),claim(eve,'eve')]);
+  assert.equal(claims.filter(result=>result.committed).length,1);
+  const winner=claims[0].committed?'bob':'eve',winnerDb=winner==='bob'?bob:eve;
+  const next=winner==='bob'?'eve':'bob',nextDb=winner==='bob'?eve:bob;
+  await assertSucceeds(set(at(winnerDb,`inputs/${winner}`),'{}'));
+  await assertSucceeds(set(at(alice,`views/${winner}`),'{}'));
+  await assertSucceeds(set(at(winnerDb,'guestId'),null));
+  await assertFails(get(at(winnerDb,`views/${winner}`)));
+  await assertFails(set(at(winnerDb,`inputs/${winner}`),'{}'));
+  await assertFails(set(at(alice,`views/${winner}`),'{}'));
+  await assertSucceeds(set(at(nextDb,'guestId'),next));
+  await assertFails(get(at(nextDb,`views/${winner}`)));
+});
