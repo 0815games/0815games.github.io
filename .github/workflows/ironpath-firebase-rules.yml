@@ -1,0 +1,37 @@
+name: Iron Path Firebase party rules
+on:
+  push:
+    paths: ['IronPath/firebase/**', 'IronPath/firebase-party-*.mjs', '.github/workflows/ironpath-firebase-rules.yml']
+  pull_request:
+    paths: ['IronPath/firebase/**', 'IronPath/firebase-party-*.mjs', '.github/workflows/ironpath-firebase-rules.yml']
+permissions:
+  contents: read
+jobs:
+  database-rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: IronPath/firebase/rules-test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: IronPath/firebase/rules-test/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: npm ci --no-audit --no-fund
+      - name: Run emulator tests
+        shell: bash
+        run: |
+          if npm test > rules-output.log 2>&1; then
+            cat rules-output.log
+          else
+            cat rules-output.log
+            python3 -c "from pathlib import Path; s=Path('rules-output.log').read_text()[-12000:]; print('::error title=Firebase emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
