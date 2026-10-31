@@ -1,0 +1,18 @@
+import { strict as assert } from 'node:assert';
+import { createTutorial, TUTORIAL_STEPS } from '../tutorial.mjs';
+const nodes=new Map();
+const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},addEventListener(type,fn){this['on'+type]=fn;},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
+const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)};
+const changes=[];const tour=createTutorial({document,storage,onVisibilityChange:x=>changes.push(x)});
+const el=id=>document.getElementById(id);
+assert.ok(TUTORIAL_STEPS.length>=4);
+tour.startIfNeeded('first');assert.equal(tour.isOpen(),true);assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[0].title);assert.equal(el('tutorialBack').disabled,true);
+el('tutorialNext').onclick();assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[1].title);el('tutorialBack').onclick();assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[0].title);
+tour.stop();assert.equal(tour.isOpen(),false);tour.startIfNeeded('first');assert.equal(tour.isOpen(),true,'interrupted tutorial should reopen');
+for(let i=0;i<TUTORIAL_STEPS.length;i++)el('tutorialNext').onclick();assert.equal(tour.isOpen(),false);
+tour.startIfNeeded('first');assert.equal(tour.isOpen(),false,'completed tutorial should not reopen');
+tour.startIfNeeded('second');assert.equal(tour.isOpen(),true,'different account should see tutorial');el('tutorialSkip').onclick();assert.equal(tour.isOpen(),false);
+tour.replay('first');assert.equal(tour.isOpen(),true);el('tutorialDialog').oncancel({preventDefault(){}});assert.equal(tour.isOpen(),false);
+assert.ok(changes.includes(true)&&changes.includes(false));
+const bad=createTutorial({document,storage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}});bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),true);el('tutorialSkip').onclick();bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),false);
+console.log('Tutorial onboarding and persistence tests passed.');
