@@ -13,6 +13,9 @@ assert.equal(cmd('bob',{type:'move',x:Infinity,y:2}).ok,false);
 assert.equal(cmd('alice',{type:'build',pad:1,towerType:0}).ok,true);
 assert.equal(state.money,300-TOWER_COSTS[0]);
 assert.equal(state.towers[0].ownerId,'alice');
+const towerId=state.towers[0].id;
+assert.equal(cmd('bob',{type:'sell',pad:1,expectedTowerId:towerId+1,expectedLevel:1}).ok,false);
+assert.equal(cmd('bob',{type:'upgrade',pad:1,expectedTowerId:towerId,expectedLevel:2}).ok,false);
 assert.equal(cmd('bob',{type:'build',pad:1,towerType:1}).ok,false);
 assert.equal(state.money,250);
 assert.equal(cmd('bob',{type:'upgrade',pad:1}).ok,true); // shared towers

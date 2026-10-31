@@ -17,8 +17,12 @@ test('two network clients join, issue commands and reconnect without moving whil
   await until(()=>alice.getState()==='ready'&&bob.getState()==='ready');
   assert.equal((await alice.command({type:'build',pad:0,towerType:0})).ok,true);
   assert.equal((await bob.command({type:'build',pad:0,towerType:1})).ok,false);
+  assert.equal((await bob.command({type:'upgrade',pad:0,expectedTowerId:999,expectedLevel:1})).reason,'Tower changed. Select it again.');
+  assert.equal((await bob.command({type:'sell',pad:0,expectedTowerId:999,expectedLevel:1})).ok,false);
   assert.equal((await alice.command({type:'direction',x:1,y:0})).ok,true);
+  assert.equal((await bob.command({type:'direction',x:-1,y:0})).ok,true);
   alice.stop();await until(()=>bob.getState()==='waiting');
+  await until(()=>bob.getSnapshot()?.match.players.bob.direction.x===0);
   await assert.rejects(bob.command({type:'startWave'}),/not ready/);
   alice.start();await until(()=>alice.getState()==='ready'&&bob.getState()==='ready');
   assert.deepEqual(alice.getSnapshot().match.players.alice.direction,{x:0,y:0});
