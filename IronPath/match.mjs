@@ -1,11 +1,12 @@
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
+import { WAVES } from './combat.mjs';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
-  return {id, name:profile.name, gender:profile.gender, x, y, target:null, cooldown:0, shotTimer:0};
+  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level:Number.isInteger(profile.level)&&profile.level>0?profile.level:1, cooldown:0, shotTimer:0};
 }
 // Shared resources and pads; abilities and movement are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.
@@ -15,9 +16,17 @@ export function applyCommand(state, playerId, command) {
   if(!command||typeof command.type!=='string')return {ok:false,reason:'Invalid command.'};
   if(state.ended)return {ok:false,reason:'The operation is over.'};
   switch(command.type){
+    case 'startWave': {
+      if(state.running||state.wave>=WAVES.length)return {ok:false,reason:'Cannot start a wave now.'};
+      state.wave++;state.running=true;state.spawnLeft=WAVES[state.wave-1].length;state.spawnIndex=0;state.spawnTimer=.2;return {ok:true};
+    }
+    case 'direction': {
+      if(!Number.isInteger(command.x)||!Number.isInteger(command.y)||Math.abs(command.x)>1||Math.abs(command.y)>1)return {ok:false,reason:'Invalid direction.'};
+      player.direction={x:command.x,y:command.y};if(command.x||command.y)player.target=null;return {ok:true};
+    }
     case 'move': {
       if(!Number.isFinite(command.x)||!Number.isFinite(command.y)||command.x<12||command.x>948||command.y<12||command.y>528)return {ok:false,reason:'Invalid destination.'};
-      player.target={x:command.x,y:command.y};return {ok:true};
+      player.direction={x:0,y:0};player.target={x:command.x,y:command.y};return {ok:true};
     }
     case 'build': {
       const {pad,towerType}=command;

@@ -1,12 +1,11 @@
-import { createPlayer, applyCommand, TOWER_COSTS } from './match.mjs?v=20261031-coop1';
-import { ENEMY_TYPES, WAVES, makeEnemy, towerDamage } from './combat.mjs?v=20261031-rpg2';
-import { MAX_TOWER_LEVEL, upgradeCost, waveXP } from './progression.mjs?v=20261031-rpg2';
+import { createMatch, stepMatch, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-sim1';
+import { createPlayer, applyCommand, TOWER_COSTS } from './match.mjs?v=20261031-sim1';
+import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
+import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
 export function startGame(account) {
   'use strict';
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
-  const path = [{x:0,y:130},{x:210,y:130},{x:210,y:320},{x:470,y:320},{x:470,y:150},{x:710,y:150},{x:710,y:400},{x:900,y:400}];
-  const pads = [{x:105,y:210},{x:285,y:210},{x:135,y:360},{x:350,y:390},{x:390,y:220},{x:550,y:225},{x:620,y:75},{x:790,y:230},{x:625,y:395},{x:810,y:335}];
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
     {name:'Cannon',cost:TOWER_COSTS[1],range:145,damage:34,interval:1.4,color:'#e49b67',description:'Heavy damage · strong vs tanks; weak vs aircraft'},
@@ -19,8 +18,8 @@ export function startGame(account) {
     [{name:'Twin Flak',damage:1,interval:.55,range:1,description:'Much faster fire'}, {name:'Long-range Flak',damage:1.3,interval:1,range:1.45,description:'Greater range and damage'}],
     [{name:'Marksman',damage:1,interval:.6,range:1,description:'Faster shots'}, {name:'Anti-armor Rifle',damage:2,interval:1,range:1.1,description:'Heavy damage, extra vs tanks'}]
   ];
-  const waves = WAVES.length, initialMoney = 125, keys = new Set();
-  let state;
+  const waves = WAVES.length, keys = new Set();
+  let state, accumulator=0;
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
@@ -31,7 +30,7 @@ export function startGame(account) {
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(){state={wave:0,hp:100,money:initialMoney,enemies:[],towers:[],shots:[],selected:0,speed:1,running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:{local:createPlayer('local',account.getProfile())},branchPad:null}; updateUI();}
+  function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{selected:0,speed:1,branchPad:null});accumulator=0;keys.clear();updateUI();}
   function notice(text){$('message').textContent=text;}
   function updateUI(){
     const preview=state.ended?'Operation complete. Restart to play again.':state.running?'Current: '+waveSummary(state.wave):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
@@ -44,25 +43,31 @@ export function startGame(account) {
   function waveSummary(wave){const counts={};for(const kind of WAVES[wave-1]) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ');}
   $('cycle').onclick=()=>{state.selected=(state.selected+1)%types.length;updateUI();};
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
-  $('start').onclick=()=>{if(state.ended){reset();notice('Deploy when ready.');return;} if(state.running)return;state.wave++;state.running=true;state.spawnLeft=WAVES[state.wave-1].length;state.spawnIndex=0;state.spawnTimer=.2;notice(`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();};
+  $('start').onclick=()=>{if(state.ended){reset();notice('Deploy when ready.');return;}if(state.running)return;state.players.local.level=account.getLevel();const result=applyCommand(state,'local',{type:'startWave'});if(!result.ok){notice(result.reason);return;}notice(`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();};
   $('ability').onclick=()=>{const result=applyCommand(state,'local',{type:'airstrike'});if(!result.ok){notice(result.reason);return;}notice('Airstrike deployed!');updateUI();};
-  window.addEventListener('keydown', e=>{if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);}});
-  window.addEventListener('keyup', e=>keys.delete(e.key.toLowerCase()));
-  window.addEventListener('blur',()=>keys.clear());
+  function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);applyCommand(state,'local',{type:'direction',x,y});}
+  window.addEventListener('keydown', e=>{if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
+  window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
+  window.addEventListener('blur',()=>{keys.clear();sendDirection();});
   function closeBranch(){state.branchPad=null; $('upgradePanel').close(); updateUI();}
   $('cancelBranch').onclick=closeBranch;
   $('upgradePanel').addEventListener('cancel',e=>{e.preventDefault();closeBranch();});
   function chooseBranch(index){const tower=state.towers.find(t=>t.pad===state.branchPad);if(!tower)return;const result=applyCommand(state,'local',{type:'upgrade',pad:tower.pad,branch:index});if(!result.ok){$('upgradeError').textContent=result.reason;return;}notice(`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} upgraded to level ${tower.level}.`);closeBranch();}
   $('branchA').onclick=()=>chooseBranch(0); $('branchB').onclick=()=>chooseBranch(1);
-  canvas.addEventListener('click',e=>{if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius; pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});if(index<0){const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);return;}const existing=state.towers.find(t=>t.pad===index);if(existing){if(existing.level>=MAX_TOWER_LEVEL){notice('Tower is already at maximum level.');return;}state.branchPad=index;keys.clear();$('upgradeError').textContent='';updateUI();$('upgradePanel').showModal();return;}else{const type=types[state.selected];const result=applyCommand(state,'local',{type:'build',pad:index,towerType:state.selected});if(!result.ok){notice(result.reason);return;}notice(`${type.name} built. Click it again to upgrade.`);}updateUI();});
-  function spawn(){const kind=WAVES[state.wave-1][state.spawnIndex++];state.enemies.push({...makeEnemy(kind,state.wave),x:path[0].x,y:path[0].y,segment:1});}
-  function update(dt){if(state.ended||$('upgradePanel').open||!account.isReady())return;dt*=state.speed;let dx=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),dy=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(dx||dy){state.players.local.target=null;const len=Math.hypot(dx,dy);state.players.local.x+=dx/len*150*dt;state.players.local.y+=dy/len*150*dt;}else if(state.players.local.target){dx=state.players.local.target.x-state.players.local.x;dy=state.players.local.target.y-state.players.local.y;const len=Math.hypot(dx,dy),step=Math.min(len,150*dt);if(len>0){state.players.local.x+=dx/len*step;state.players.local.y+=dy/len*step;}if(len<=step)state.players.local.target=null;}state.players.local.x=Math.max(12,Math.min(948,state.players.local.x));state.players.local.y=Math.max(12,Math.min(528,state.players.local.y));state.players.local.cooldown=Math.max(0,state.players.local.cooldown-dt);state.shots=state.shots.filter(s=>(s.life-=dt)>0);
-    if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){spawn();state.spawnLeft--;state.spawnTimer=.8;}}
-    for(const e of state.enemies){let distance=e.speed*dt;while(distance>0&&e.segment<path.length){const target=path[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
-    for(const tower of state.towers){tower.timer-=dt;const type=types[tower.type],p=pads[tower.pad],branch=tower.level>=3?branches[tower.type][tower.branch]:null;if(tower.timer<=0){const target=state.enemies.filter(e=>e.hp>0&&e.segment<path.length&&Math.hypot(e.x-p.x,e.y-p.y)<=type.range*(branch?branch.range:1)).sort((a,b)=>b.segment-a.segment)[0];if(target){target.hp-=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind);tower.timer=type.interval*(branch?branch.interval:1);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.12,color:type.color});}}}
-    state.players.local.shotTimer-=dt;const hero={x:state.players.local.x,y:state.players.local.y};if(state.wave>0&&state.players.local.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<path.length&&Math.hypot(e.x-hero.x,e.y-hero.y)<150);if(target){target.hp-=10+Math.min(account.getLevel()-1,20);state.players.local.shotTimer=.65;state.shots.push({x:hero.x,y:hero.y,tx:target.x,ty:target.y,life:.12,color:'#fff'});}}
-    state.enemies=state.enemies.filter(e=>{if(e.hp<=0){state.money+=e.reward;return false;}if(e.segment>=path.length){state.hp-=e.damage;notice(`${ENEMY_TYPES[e.kind].label} reached the bunker! −${e.damage} health.`);return false;}return true;});
-    if(state.hp<=0){state.ended=true;state.running=false;notice('Bunker lost. The operation has failed.');}else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){state.running=false;account.awardXP(waveXP(state.wave));if(state.wave===waves){state.ended=true;notice(`Victory! The bunker survived all ${waves} waves. +${waveXP(state.wave)} XP.`);}else{state.money+=20;notice(`Wave cleared! +20 supplies and +${waveXP(state.wave)} XP. Prepare for the next wave.`);}}updateUI();
+  canvas.addEventListener('click',e=>{if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius; pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});if(index<0){const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);return;}const existing=state.towers.find(t=>t.pad===index);if(existing){if(existing.level>=MAX_TOWER_LEVEL){notice('Tower is already at maximum level.');return;}state.branchPad=index;keys.clear();sendDirection();$('upgradeError').textContent='';updateUI();$('upgradePanel').showModal();return;}else{const type=types[state.selected];const result=applyCommand(state,'local',{type:'build',pad:index,towerType:state.selected});if(!result.ok){notice(result.reason);return;}notice(`${type.name} built. Click it again to upgrade.`);}updateUI();});
+  function update(dt){
+    if(state.ended||$('upgradePanel').open||!account.isReady()){accumulator=0;return;}
+    accumulator+=dt*state.speed;
+    while(accumulator>=STEP){
+      accumulator-=STEP;
+      for(const event of stepMatch(state)){
+        if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);
+        else if(event.type==='defeat')notice('Bunker lost. The operation has failed.');
+        else if(event.type==='waveCleared'){account.awardXP(event.xp);notice(event.victory?`Victory! The bunker survived all ${waves} waves. +${event.xp} XP.`:`Wave cleared! +20 supplies and +${event.xp} XP. Prepare for the next wave.`);}
+      }
+      if(state.ended){accumulator=0;break;}
+    }
+    updateUI();
   }
   function draw(){ctx.clearRect(0,0,960,540);ctx.fillStyle='#303c2d';ctx.fillRect(0,0,960,540);ctx.strokeStyle='#394635';ctx.lineWidth=1;for(let x=0;x<960;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,540);ctx.stroke();}for(let y=0;y<540;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(960,y);ctx.stroke();}
     ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#84795e';ctx.lineWidth=62;ctx.stroke();ctx.strokeStyle='#a69a79';ctx.lineWidth=2;ctx.setLineDash([9,12]);ctx.stroke();ctx.setLineDash([]);

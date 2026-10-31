@@ -8,7 +8,7 @@ globalThis.document={getElementById:element,activeElement:{tagName:'BODY'}};
 globalThis.window={matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
 globalThis.requestAnimationFrame=()=>{};
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-for(const file of ['match.mjs','combat.mjs','progression.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+for(const file of ['match.mjs','combat.mjs','progression.mjs','simulation.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 startGame({getProfile:()=>({name:'Test',gender:'female'}),isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}});
 assert.equal(element('money').textContent,125);
