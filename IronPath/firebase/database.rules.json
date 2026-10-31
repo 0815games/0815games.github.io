@@ -1,0 +1,17 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "players": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists()",
+        ".validate": "newData.hasChildren(['name', 'gender', 'xp'])",
+        "name": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && (!data.exists() || newData.val() === data.val())" },
+        "gender": { ".validate": "(newData.val() === 'male' || newData.val() === 'female') && (!data.exists() || newData.val() === data.val())" },
+        "xp": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000 && newData.val() % 1 === 0 && (!data.exists() ? newData.val() === 0 : newData.val() >= data.val())" },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
