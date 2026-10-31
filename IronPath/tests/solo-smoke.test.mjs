@@ -15,39 +15,55 @@ assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
 assert.equal(element('money').textContent,125);
-// Tap a pad: no purchase happens until a tower is chosen.
+// Choose an unaffordable tower to inspect it without purchasing.
 element('game').onclick({clientX:105,clientY:210});
-assert.equal(element('money').textContent,125);
 assert.equal(element('radialMenu').hidden,false);
 assert.equal(element('radial0').disabled,false);
 assert.match(element('radial0').textContent,/MG Nest/);
 element('radial0').onclick();
+assert.equal(element('towerDetails').open,true);
+assert.match(element('towerDetailsText').textContent,/infantry/);
+assert.equal(element('money').textContent,125);
+assert.equal(element('towerDetailsConfirm').disabled,false);
+element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,75);
 assert.equal(element('radialMenu').hidden,true);
-// Upgrade to level two through the tower wheel.
+// Upgrades show effects before confirming.
 element('game').onclick({clientX:105,clientY:210});
 assert.match(element('radial0').textContent,/UPGRADE/);
-assert.equal(element('radial0').disabled,false);
 element('radial0').onclick();
+assert.match(element('towerDetailsText').textContent,/0.3/);
+assert.equal(element('money').textContent,75);
+element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,5);
-// Level three upgrade is too expensive; it is visibly disabled.
+// Unaffordable branch options can be inspected but not purchased.
 element('game').onclick({clientX:105,clientY:210});
-assert.equal(element('radial0').disabled,true);
-assert.match(element('radial1').textContent,/SELL/);
+element('radial0').onclick();
+assert.match(element('radial0').textContent,/Twin MG/);
+element('radial0').onclick();
+assert.match(element('towerDetailsText').textContent,/45% shorter/);
+assert.equal(element('towerDetailsConfirm').disabled,true);
+assert.match(element('towerDetailsCost').textContent,/Not enough/);
+assert.equal(element('money').textContent,5);
+element('towerDetailsBack').onclick();
+element('radialClose').onclick();
+// Sale still requires confirmation.
+element('game').onclick({clientX:105,clientY:210});
 element('radial1').onclick();
 assert.match(element('radial0').textContent,/CONFIRM/);
-element('radial1').onclick(); // cancel returns to tower actions
+element('radial1').onclick();
 assert.match(element('radial0').textContent,/UPGRADE/);
 element('radial1').onclick();element('radial0').onclick();
 assert.equal(element('money').textContent,65);
 assert.equal(element('radialMenu').hidden,true);
-// Costs gate build choices too.
+// Inspect an unaffordable cannon without spending supplies.
 element('game').onclick({clientX:105,clientY:210});
-assert.equal(element('radial0').disabled,false);
-assert.equal(element('radial1').disabled,true);
-assert.equal(element('radial2').disabled,false);
-assert.equal(element('radial3').disabled,true);
-element('radial0').onclick();
+element('radial1').onclick();
+assert.match(element('towerDetailsTitle').textContent,/Cannon/);
+assert.match(element('towerDetailsText').textContent,/tanks/);
+assert.equal(element('towerDetailsConfirm').disabled,true);
+element('towerDetailsBack').onclick();
+element('radial0').onclick();element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,15);
 element('start').onclick();
 assert.equal(element('wave').textContent,'1 / 10');
