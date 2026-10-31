@@ -25,6 +25,14 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
       check();if(!result.committed)throw new Error('Party unavailable');
       return {partyId,hostId,guestId:uid};
     },
+    // Host may remove the entire party atomically; rules must enforce host-only
+    // deletion without granting parent-level write access for normal edits.
+    async close(partyId){
+      check();if(typeof sdk.remove!=='function')throw new Error('Party cleanup unavailable');
+      const hostId=(await sdk.get(ref(partyId,'hostId'))).val();check();
+      if(hostId!==uid)return false;
+      await sdk.remove(sdk.ref(db,`parties/${partyId}`));check();return true;
+    },
     async leaveGuest(partyId){
       check();const result=await sdk.runTransaction(ref(partyId,'guestId'),current=>current===uid?null:undefined,{applyLocally:false});check();return result.committed;
     },

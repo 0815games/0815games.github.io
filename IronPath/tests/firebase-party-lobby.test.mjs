@@ -3,7 +3,7 @@ import {createFirebasePartyLobby} from '../firebase-party-lobby.mjs';
 // Firebase-shaped mock. It verifies client behavior, not database security rules.
 const values=new Map(),listeners=new Map();
 const snapshot=value=>({val:()=>value??null});
-const sdk={ref:(_db,path)=>path,async get(path){return snapshot(values.get(path));},async runTransaction(path,update){const next=update(values.get(path)??null);if(next===undefined)return {committed:false,snapshot:snapshot(values.get(path))};if(next===null)values.delete(path);else values.set(path,next);for(const cb of listeners.get(path)||[])cb(snapshot(next));return {committed:true,snapshot:snapshot(next)};},onValue(path,cb){if(!listeners.has(path))listeners.set(path,new Set());listeners.get(path).add(cb);cb(snapshot(values.get(path)));return ()=>listeners.get(path).delete(cb);}};
+const sdk={ref:(_db,path)=>path,async remove(path){for(const key of [...values.keys()])if(key===path||key.startsWith(path+'/'))values.delete(key);},async get(path){return snapshot(values.get(path));},async runTransaction(path,update){const next=update(values.get(path)??null);if(next===undefined)return {committed:false,snapshot:snapshot(values.get(path))};if(next===null)values.delete(path);else values.set(path,next);for(const cb of listeners.get(path)||[])cb(snapshot(next));return {committed:true,snapshot:snapshot(next)};},onValue(path,cb){if(!listeners.has(path))listeners.set(path,new Set());listeners.get(path).add(cb);cb(snapshot(values.get(path)));return ()=>listeners.get(path).delete(cb);}};
 let random=0;const crypto={getRandomValues(buffer){buffer.fill(++random);return buffer;}};
 const auth=id=>({currentUser:{uid:id}}),base={db:{},sdk,crypto};
 const host=createFirebasePartyLobby({...base,auth:auth('alice')}),guest=createFirebasePartyLobby({...base,auth:auth('bob')}),outsider=createFirebasePartyLobby({...base,auth:auth('eve')});
@@ -16,6 +16,7 @@ await assert.rejects(guest.join('../other'),/Invalid party code/);await assert.r
 const next=await host.create();assert.notEqual(next.partyId,party.partyId);
 const entrants=await Promise.allSettled([guest.join(next.partyId),outsider.join(next.partyId)]);
 assert.deepEqual(entrants.map(x=>x.status).sort(),['fulfilled','rejected'],'only one guest may claim the slot');
+assert.equal(await guest.close(next.partyId),false);assert.equal(await host.close(next.partyId),true);await assert.rejects(guest.join(next.partyId),/unavailable/);
 // Auth changes while an operation is in flight must not return a usable result.
 const changing=auth('bob');const slow={...sdk,async get(path){changing.currentUser={uid:'eve'};return sdk.get(path);}};
 const stale=createFirebasePartyLobby({...base,sdk:slow,auth:changing});await assert.rejects(stale.join(party.partyId),/identity changed/);

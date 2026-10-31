@@ -65,6 +65,9 @@ test('profile isolation and real client lobby/channel operations under draft rul
   await assertSucceeds(host.publishViews({alice:{tick:1},bob:{tick:1}}));
   await assertFails(get(ref(alice,'players/bob')));await assertFails(set(ref(alice,'players/bob/xp'),999));
   await host.close();await guest.close();
+  const cleanup=createFirebasePartyLobby({db:alice,auth:authA,sdk:{...sdk,remove:(await import('firebase/database')).remove},crypto:deterministicCrypto});
+  assert.equal(await cleanup.close(party),true);
+  assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });
 
 
@@ -122,4 +125,16 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   await until(()=>engine.ready()&&aliceReady&&bobReady);
   const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
+});
+
+
+test('only the host can delete an entire party, without gaining parent write access',async()=>{
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  await assertSucceeds(set(at(bob,'inputs/bob'),'{}'));
+  await assertFails(set(ref(bob,`parties/${party}`),null));
+  await assertFails(set(ref(eve,`parties/${party}`),null));
+  await assertFails(set(ref(alice,`parties/${party}`),{hostId:'alice',guestId:'bob',inputs:{bob:'forged'}}));
+  await assertSucceeds(set(ref(alice,`parties/${party}`),null));
+  await assertFails(set(at(bob,'inputs/bob'),'{}'));
+  assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });

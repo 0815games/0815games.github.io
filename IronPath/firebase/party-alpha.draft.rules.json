@@ -58,7 +58,8 @@
         },
         "$other": {
           ".validate": false
-        }
+        },
+        ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && data.exists() && !newData.exists() && data.child('hostId').val() === auth.uid"
       }
     }
   }
