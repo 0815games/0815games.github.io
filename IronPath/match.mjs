@@ -4,6 +4,13 @@ import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
 import { WAVES } from './combat.mjs';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
+// All investments have fixed costs in this version, so the refund can be derived
+// from trusted match state without accepting a price from a client.
+export function towerRefund(tower) {
+  let total=TOWER_COSTS[tower.type];
+  for(let level=1;level<tower.level;level++)total+=upgradeCost(level);
+  return Math.floor(total/2);
+}
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
   return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level:Number.isInteger(profile.level)&&profile.level>0?profile.level:1, cooldown:0, shotTimer:0};
@@ -43,6 +50,13 @@ export function applyCommand(state, playerId, command) {
       if(tower.level===2&&command.branch!==0&&command.branch!==1)return {ok:false,reason:'Choose a valid specialization.'};
       const cost=upgradeCost(tower.level);if(state.money<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
       state.money-=cost;if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
+    }
+    case 'sell': {
+      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
+      const index=state.towers.findIndex(t=>t.pad===command.pad);
+      if(index<0)return {ok:false,reason:'Tower not found.'};
+      const refund=towerRefund(state.towers[index]);state.towers.splice(index,1);state.money+=refund;
+      return {ok:true,refund};
     }
     case 'airstrike': {
       if(player.cooldown>0)return {ok:false,reason:'Airstrike is recharging.'};

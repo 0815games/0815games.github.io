@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { createPlayer, applyCommand, TOWER_COSTS } from '../match.mjs';
+import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from '../match.mjs';
 const state={ended:false, money:300, towers:[], enemies:[{hp:100}], players:{
   alice:createPlayer('alice',{name:'Alice',gender:'female'}),
   bob:createPlayer('bob',{name:'Bob',gender:'male'},100,100)
@@ -29,7 +29,16 @@ assert.equal(state.players.bob.cooldown,0);
 assert.equal(cmd('alice',{type:'airstrike'}).ok,false);
 assert.equal(cmd('bob',{type:'airstrike'}).ok,true);
 assert.equal(state.enemies[0].hp,30);
+assert.equal(towerRefund(state.towers[0]),120); // 50 + 70 + 120, half refunded
+const beforeSell=state.money;
+assert.equal(cmd('bob',{type:'sell',pad:1}).refund,120);
+assert.equal(state.money,beforeSell+120);
+assert.equal(cmd('alice',{type:'sell',pad:1}).ok,false);
+assert.equal(state.money,beforeSell+120);
+assert.equal(cmd('bob',{type:'sell',pad:-1}).ok,false);
+assert.equal(cmd('alice',{type:'build',pad:1,towerType:0}).ok,true);
 state.ended=true;
+assert.equal(cmd('bob',{type:'sell',pad:1}).ok,false);
 assert.equal(cmd('bob',{type:'airstrike'}).ok,false);
 assert.equal(cmd('alice',{type:'move',x:200,y:200}).ok,false);
 assert.equal(state.enemies[0].hp,30);
