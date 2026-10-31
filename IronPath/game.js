@@ -1,3 +1,4 @@
+import { createTutorial } from './tutorial.mjs?v=20261031-tutorial1';
 import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-towers1';
 import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from './match.mjs?v=20261031-towers1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
@@ -46,6 +47,9 @@ export function startGame(account) {
   window.addEventListener('keydown', e=>{if(!menu.hidden){if(e.key==='Escape'){closeMenu();state.selectedPad=null;updateUI();}return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
   window.addEventListener('blur',()=>{keys.clear();sendDirection();});
+  let tutorialStorage;try{tutorialStorage=window.localStorage;}catch{tutorialStorage=null;}
+  const tutorial=createTutorial({document,storage:tutorialStorage});
+  $('tutorialReplay').onclick=()=>{closeMenu();state.selectedPad=null;keys.clear();sendDirection();tutorial.replay(account.getUserId());updateUI();};
   const menu=$('radialMenu');
   const options=[0,1,2,3].map(i=>$('radial'+i));
   function closeMenu(){menu.hidden=true;menuPad=null;}
@@ -95,7 +99,7 @@ export function startGame(account) {
     showMenu(index);
   });
   function update(dt){
-    if(state.ended||!menu.hidden||!account.isReady()){accumulator=0;return;}
+    if(state.ended||!menu.hidden||tutorial.isOpen()||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -122,6 +126,6 @@ export function startGame(account) {
     }
     for(const s of state.shots){ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke();}
   }
-  account.onSessionChange(()=>{closeMenu();keys.clear();if(account.isReady())reset();});
-  reset();let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+  account.onSessionChange(()=>{closeMenu();tutorial.stop();keys.clear();if(account.isReady()){reset();tutorial.startIfNeeded(account.getUserId());}});
+  reset();tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
 }
