@@ -25,4 +25,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - run: npm ci --no-audit --no-fund
-      - run: npm test
+      - name: Run emulator tests
+        shell: bash
+        run: |
+          if npm test > rules-output.log 2>&1; then
+            cat rules-output.log
+          else
+            cat rules-output.log
+            python3 -c "from pathlib import Path; s=Path('rules-output.log').read_text()[-12000:]; print('::error title=Firebase emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
