@@ -18,6 +18,16 @@ export function startGame(account) {
   ];
   const waves = 5, initialMoney = 150, keys = new Set();
   let state;
+  // A large, horizontally scrollable map is the default in portrait on phones.
+  const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
+  const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
+  let largeMap=portrait.matches;
+  function setMapZoom(large){largeMap=large;mapViewport.classList.toggle('map-large',large);zoomButton.setAttribute('aria-pressed',String(large));zoomButton.textContent=large?'MAP: LARGE':'MAP: FIT';$('mapHint').textContent=large?'Swipe the map left or right to see the battlefield. Tap to build or move.':'Full map view. Tap MAP: FIT to enlarge it.';}
+  setMapZoom(largeMap);
+  zoomButton.addEventListener('click',()=>{const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
+  $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
+  $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
+  portrait.addEventListener('change',e=>setMapZoom(e.matches));
   function reset(){state={wave:0,hp:100,money:initialMoney,enemies:[],towers:[],shots:[],selected:0,speed:1,running:false,spawnLeft:0,spawnTimer:0,cooldown:0,ended:false,heroShot:0,hero:account.getProfile().gender,heroX:850,heroY:450,heroTarget:null,branchPad:null}; updateUI();}
   function notice(text){$('message').textContent=text;}
   function updateUI(){
