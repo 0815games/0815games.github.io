@@ -1,0 +1,17 @@
+{
+  "name": "ironpath-match-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node main.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^14.5.0",
+    "ws": "^8.18.3"
+  }
+}
