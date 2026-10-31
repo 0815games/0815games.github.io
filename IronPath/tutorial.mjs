@@ -2,8 +2,8 @@
 // browser for now; do not put tutorial data in Firebase until rules are migrated.
 export const TUTORIAL_STEPS = [
   {title:'Welcome, soldier',text:'Enemies follow the road toward your bunker. Keep the bunker standing through all ten waves.',scene:'bunker',caption:'DEFEND THE BUNKER'},
-  {title:'Build your defenses',text:'Tap a + pad to open the circle menu. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A + PAD'},
-  {title:'Upgrade or sell',text:'Tap a tower to see its range and open its action menu. View upgrade details before buying, choose a specialization at level 3, or sell it for half the investment.',scene:'upgrade',caption:'CHOOSE AN ACTION'},
+  {title:'Build your defenses',text:'Tap a + pad to open the build panel. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A + PAD'},
+  {title:'Upgrade or sell',text:'Tap a tower to see its range and open its action panel. View upgrade details before buying, choose a specialization at level 3, or sell it for half the investment.',scene:'upgrade',caption:'CHOOSE AN ACTION'},
   {title:'Move your hero',text:'Tap open ground to move. On a keyboard, use WASD or the arrow keys. Your hero automatically fires at nearby enemies once deployed.',scene:'hero',caption:'MOVE INTO POSITION'},
   {title:'Start the battle',text:'Start each wave with Deploy. Use Speed to change the pace and Airstrike to damage enemies. Defeated enemies provide supplies; cleared waves earn XP.',scene:'battle',caption:'HOLD THE LINE'},
   {title:'Find your way around',text:'On a phone, swipe the enlarged map sideways or use Entry and Bunker to jump around. Open How to play to replay this briefing anytime.',scene:'map',caption:'SWIPE THE MAP'}

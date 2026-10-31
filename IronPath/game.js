@@ -1,4 +1,4 @@
-import { createTutorial } from './tutorial.mjs?v=20261031-details1';
+import { createTutorial } from './tutorial.mjs?v=20261031-sheet1';
 import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-towers1';
 import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from './match.mjs?v=20261031-towers1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
@@ -53,18 +53,12 @@ export function startGame(account) {
   const menu=$('radialMenu');
   const options=[0,1,2,3].map(i=>$('radial'+i));
   function closeMenu(){menu.hidden=true;menuPad=null;}
-  function positionMenu(pad){
-    const rect=canvas.getBoundingClientRect(),p=pads[pad],size=240,margin=6;
-    const x=rect.left+p.x*rect.width/canvas.width,y=rect.top+p.y*rect.height/canvas.height;
-    menu.style.left=Math.max(margin,Math.min(window.innerWidth-size-margin,x-size/2))+'px';
-    menu.style.top=Math.max(margin,Math.min(window.innerHeight-size-margin,y-size/2))+'px';
-  }
   function showMenu(pad,mode='actions'){
     const tower=state.towers.find(t=>t.pad===pad);menuPad=pad;state.selectedPad=tower?pad:null;
     keys.clear();sendDirection();
     const actions=[];
     if(!tower){
-      types.forEach((type,i)=>actions.push({label:`${type.name}\n${type.cost}`,unaffordable:state.money<type.cost,description:`View ${type.name}, ${type.cost} supplies. ${type.description}${state.money<type.cost?'. Not enough supplies to build.':''}`,run:()=>{
+      types.forEach((type,i)=>actions.push({label:`${type.name} · ${type.cost}`,summary:type.description,unaffordable:state.money<type.cost,description:`View ${type.name}, ${type.cost} supplies. ${type.description}${state.money<type.cost?'. Not enough supplies to build.':''}`,run:()=>{
         showDetails(type.name,`${type.description}. Base damage: ${type.damage} per shot, firing interval: ${type.interval} seconds, range: ${type.range}. Damage varies by enemy type.`,type.cost,'BUILD',()=>{
           const result=applyCommand(state,'local',{type:'build',pad,towerType:i});
           if(!result.ok){$('towerDetailsCost').textContent=result.reason;return;} $('towerDetails').close();state.selectedPad=pad;closeMenu();notice(`${type.name} built. Tap it to upgrade or sell.`);updateUI();
@@ -73,22 +67,24 @@ export function startGame(account) {
       notice('Tap a tower for details. Grey options need more supplies. Battle paused.');
     }else if(mode==='branches'){
       const cost=upgradeCost(tower.level);
-      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name}\n${cost}`,unaffordable:state.money<cost,description:`View ${branch.name}: ${branch.description}. ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.`,cost,'UPGRADE',()=>upgrade(i))}));
+      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name} · ${cost}`,summary:branch.description,unaffordable:state.money<cost,description:`View ${branch.name}: ${branch.description}. ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.`,cost,'UPGRADE',()=>upgrade(i))}));
       notice('Tap a specialization to see its effects. Battle paused.');
     }else if(mode==='confirmSell'){
-      actions.push({label:`CONFIRM\n+${towerRefund(tower)}`,description:`Confirm sale for ${towerRefund(tower)} supplies`,run:()=>{const result=applyCommand(state,'local',{type:'sell',pad});if(!result.ok){notice(result.reason);return;}state.selectedPad=null;closeMenu();notice(`Tower sold. +${result.refund} supplies.`);updateUI();}});
-      actions.push({label:'CANCEL',description:'Cancel sale',run:()=>showMenu(pad)});
+      actions.push({label:`Confirm sale · +${towerRefund(tower)}`,summary:'Remove this tower and recover half of its total cost.',description:`Confirm sale for ${towerRefund(tower)} supplies`,run:()=>{const result=applyCommand(state,'local',{type:'sell',pad});if(!result.ok){notice(result.reason);return;}state.selectedPad=null;closeMenu();notice(`Tower sold. +${result.refund} supplies.`);updateUI();}});
+      actions.push({label:'Cancel',summary:'Keep this tower.',description:'Cancel sale',run:()=>showMenu(pad)});
       notice('Confirm sale for half the investment, or cancel. Battle paused.');
     }else{
       const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL;
-      actions.push({label:max?'MAX\nLEVEL':`UPGRADE\n${cost}`,disabled:max,unaffordable:!max&&state.money<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else showDetails(`Level ${tower.level+1} upgrade`,`Adds 0.3 to the base damage multiplier; specialization and enemy modifiers still apply. Range and firing interval stay the same.`,cost,'UPGRADE',()=>upgrade(0));}});
-      actions.push({label:`SELL\n+${towerRefund(tower)}`,description:`Sell tower for ${towerRefund(tower)} supplies`,run:()=>showMenu(pad,'confirmSell')});
+      actions.push({label:max?'Max level':`Upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':'Increase damage by one level.',disabled:max,unaffordable:!max&&state.money<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else showDetails(`Level ${tower.level+1} upgrade`,`Adds 0.3 to the base damage multiplier; specialization and enemy modifiers still apply. Range and firing interval stay the same.`,cost,'UPGRADE',()=>upgrade(0));}});
+      actions.push({label:`Sell · +${towerRefund(tower)}`,summary:'Recover half of build and upgrade costs.',description:`Sell tower for ${towerRefund(tower)} supplies`,run:()=>showMenu(pad,'confirmSell')});
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
       notice(`${name} · level ${tower.level} · range ${Math.round(getTowerRange(tower))}. Battle paused.`);
     }
     function upgrade(branch){const result=applyCommand(state,'local',{type:'upgrade',pad,branch});if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=result.reason;else notice(result.reason);return;}const updated=state.towers.find(t=>t.pad===pad);notice(`${updated.branch!=null?branches[updated.type][updated.branch].name:types[updated.type].name} upgraded to level ${updated.level}.`);if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();}
-    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.classList.toggle('unaffordable',!!action?.unaffordable);button.textContent=action?action.label:'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
-    menu.hidden=false;positionMenu(pad);updateUI();
+    $('sheetTitle').textContent=!tower?'Build defense':mode==='branches'?'Choose specialization':mode==='confirmSell'?'Sell tower?':`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} · Level ${tower.level}`;
+    $('sheetHint').textContent=!tower?'Choose a tower to inspect.':mode==='branches'?'This choice is permanent.':mode==='confirmSell'?'Confirm or cancel the sale.':`Range ${Math.round(getTowerRange(tower))} · tap an action for details`;
+    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.classList.toggle('unaffordable',!!action?.unaffordable);$('menuName'+i).textContent=action?action.label:'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?' · Not enough supplies':''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
+    menu.hidden=false;updateUI();
   }
   function showDetails(title,text,cost,verb,confirm){
     $('towerDetailsTitle').textContent=title;$('towerDetailsText').textContent=text;
@@ -98,8 +94,6 @@ export function startGame(account) {
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
   $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
-  mapViewport.addEventListener('scroll',()=>{if(!menu.hidden){closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();}});
-  window.addEventListener('resize',()=>{if(!menu.hidden&&menuPad!==null)positionMenu(menuPad);});
   canvas.addEventListener('click',e=>{
     if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
     const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius;
