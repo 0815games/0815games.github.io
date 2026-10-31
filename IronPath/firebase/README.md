@@ -43,3 +43,8 @@ The draft now allows only the host to delete the whole party atomically; emulato
 The page includes a **disabled-by-default** party setup panel for creating, copying, joining and leaving party codes. It is wired to the Firebase lobby primitives but does not start a match. The explicit feature flag in `account.js` must remain false until the full match flow, lifecycle, rules and real-account testing are complete. The code is a bearer secret and is never put in a URL. Sign-out resets the panel, but a transaction already in flight may complete on Firebase and leave an abandoned party; cleanup remains necessary.
 
 The emulator suite now exercises two authenticated clients running the hosted match, issuing commands, disconnecting and reconnecting. It is still not a live Firebase or physical-device test. No draft rules have been deployed.
+
+
+### Experimental game-facing adapter
+
+`../firebase-party-game.mjs` composes the Firebase packet channel, the presence layer and player-hosted simulation into a game-facing adapter. It accepts an already established roster and explicitly supplied players; it does not itself establish membership, load player profiles, start a lobby match, or enable a UI. Local presence and the host's latest view must both indicate readiness before accepting commands. The emulator suite exercises two adapters, shared building, starting a wave and a network disconnect/reconnect. The adapter is still disabled and must not be used against live Firebase before the rules and complete lifecycle are reviewed. It reports failure but the caller must call `stop()` to release resources. Each adapter is single-use.

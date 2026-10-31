@@ -11,7 +11,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   if(!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
   if(uid===hostId&&(!Array.isArray(players)||players.length!==2||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
   if(![onState,onStatus,onSnapshot].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
-  let active=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false;
+  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false;
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
     const next=active&&!failed&&sessionReady&&playerIds.every(id=>online.get(id));
@@ -22,7 +22,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   const options={db,auth,sdk,partyId,hostId,playerIds,onError:fail};
   return {
     start(){
-      if(active||client)throw new Error('Party game already started');active=true;onState('connecting');
+      if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         const channel=createFirebasePartyChannel(options);
         client=createFirebasePartyClientSession({channel,onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(active&&!failed)onSnapshot(snapshot);}});
