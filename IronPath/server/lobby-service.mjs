@@ -3,7 +3,7 @@ import { createLobbyRegistry } from './lobby.mjs';
 
 // Experimental only: authentication and CORS do not replace edge-level abuse
 // controls, shared storage, TLS termination, or a production security review.
-export function createLobbyHttpService({verifyToken,allowedOrigins,registry=createLobbyRegistry(),now=Date.now,rateLimit=30,rateWindowMs=60_000,maxTrackedUsers=2000}={}) {
+export function createLobbyHttpService({verifyToken,allowedOrigins,registry=createLobbyRegistry(),now=Date.now,rateLimit=30,rateWindowMs=60_000,maxTrackedUsers=2000,allocator=null}={}) {
   if(typeof verifyToken!=='function'||!Array.isArray(allowedOrigins)||!allowedOrigins.length||typeof now!=='function'||!Number.isSafeInteger(rateLimit)||rateLimit<1||!Number.isSafeInteger(rateWindowMs)||rateWindowMs<1||!Number.isSafeInteger(maxTrackedUsers)||maxTrackedUsers<1)throw new Error('Invalid lobby service configuration');
   for(const origin of allowedOrigins){let url;try{url=new URL(origin);}catch{throw new Error('Invalid origin');}if(url.origin!==origin||!['https:','http:'].includes(url.protocol))throw new Error('Invalid origin');}
   const origins=new Set(allowedOrigins),rates=new Map();
@@ -15,7 +15,8 @@ export function createLobbyHttpService({verifyToken,allowedOrigins,registry=crea
     ['POST /lobby/join',(uid,body)=>registry.join(uid,body.secret)],
     ['DELETE /lobby',uid=>{registry.leave(uid);return {}; }]
   ]);
-  const statuses={'invalid-identity':401,'not-in-lobby':404,'not-owner':403,'already-in-lobby':409,'invalid-invite':404,'lobby-full':409,'match-active':409,'capacity':503};
+  if(allocator){if(typeof allocator.start!=='function'||typeof allocator.get!=='function')throw new Error('Invalid match allocator');routes.set('POST /lobby/start',uid=>allocator.start(uid));routes.set('GET /lobby/match',uid=>allocator.get(uid));}
+  const statuses={'need-two-players':409,'no-match':404,'invalid-identity':401,'not-in-lobby':404,'not-owner':403,'already-in-lobby':409,'invalid-invite':404,'lobby-full':409,'match-active':409,'capacity':503};
   function respond(res,status,value,origin){
     if(res.destroyed||res.writableEnded)return;
     const headers={'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff','vary':'Origin'};
@@ -50,7 +51,7 @@ export function createLobbyHttpService({verifyToken,allowedOrigins,registry=crea
     let body;try{body=await readBody(req);}catch(error){respond(res,error==='body-too-large'?413:400,{error:error==='body-too-large'?'body-too-large':'invalid-body'},origin);return;}
     const allowed=req.method==='POST'&&req.url==='/lobby/join'?['secret']:[];
     if(Object.keys(body).some(key=>!allowed.includes(key))||(allowed.length&&typeof body.secret!=='string')){respond(res,400,{error:'invalid-body'},origin);return;}
-    try{respond(res,200,action(identity.uid,body),origin);}catch(error){const status=statuses[error?.code];respond(res,status||500,{error:status?error.code:'internal-error'},origin);}
+    try{respond(res,200,await action(identity.uid,body),origin);}catch(error){const status=statuses[error?.code];respond(res,status||500,{error:status?error.code:'internal-error'},origin);}
   });
   server.requestTimeout=15_000;server.headersTimeout=10_000;
   return server;
