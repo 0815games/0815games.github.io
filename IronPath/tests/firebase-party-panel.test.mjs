@@ -1,0 +1,16 @@
+import {strict as assert} from 'node:assert';
+import {createFirebasePartyPanel} from '../firebase-party-panel.mjs';
+const nodes=new Map();const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:''});return nodes.get(id);}};
+const code='0123456789abcdef0123456789abcdef';let watcher,closed=0,left=0,copied;
+const lobby={async create(){return {partyId:code,hostId:'a'};},watchGuest(_id,fn){watcher=fn;return()=>{watcher=null;};},async join(id){return {partyId:id,hostId:'a',guestId:'b'};},async close(){closed++;return true;},async leaveGuest(){left++;return true;}};
+const panel=createFirebasePartyPanel({document,createLobby:()=>lobby,clipboard:{async writeText(text){copied=text;}},enabled:true});
+assert.equal(document.getElementById('firebaseParty').hidden,false);
+await document.getElementById('partyCreate').onclick();assert.equal(document.getElementById('partyCodeDisplay').textContent,code);watcher('b');assert.match(document.getElementById('partyStatus').textContent,/not ready/);
+await document.getElementById('partyCopy').onclick();assert.equal(copied,code);
+await document.getElementById('partyLeave').onclick();assert.equal(closed,1);assert.equal(document.getElementById('partyCodeDisplay').textContent,'');
+document.getElementById('partyCodeInput').value='bad';await document.getElementById('partyJoin').onclick();assert.match(document.getElementById('partyStatus').textContent,/valid/);
+document.getElementById('partyCodeInput').value=code;await document.getElementById('partyJoin').onclick();assert.equal(document.getElementById('partyCodeInput').value,'');await document.getElementById('partyLeave').onclick();assert.equal(left,1);
+let resolve;const pendingLobby={...lobby,create:()=>new Promise(r=>{resolve=r;})};const stale=createFirebasePartyPanel({document,createLobby:()=>pendingLobby,enabled:true});
+const pending=document.getElementById('partyCreate').onclick();stale.reset();resolve({partyId:code,hostId:'a'});await pending;assert.equal(document.getElementById('partyCodeDisplay').textContent,'');
+const hidden=createFirebasePartyPanel({document,createLobby:()=>lobby,enabled:false});assert.equal(document.getElementById('firebaseParty').hidden,true);await document.getElementById('partyCreate').onclick();assert.equal(document.getElementById('partyCodeDisplay').textContent,'');hidden.reset();panel.reset();
+console.log('Disabled-by-default Firebase party panel tests passed.');

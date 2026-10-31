@@ -23,3 +23,5 @@
 body, button, summary, a, dialog, .tower-sheet { touch-action: manipulation; }
 .map-viewport canvas { touch-action: pan-x pan-y pinch-zoom; }
 .coop-controls{display:flex;align-items:center;gap:10px;margin:0 0 8px}.coop-controls button{width:auto;min-height:40px;margin:0}.coop-controls span{font-size:11px;color:var(--muted)}
+
+.firebase-party{padding:10px;margin-bottom:8px;background:var(--panel);border:1px solid var(--line)}.firebase-party>strong{font-size:11px;letter-spacing:.08em}.firebase-party button{width:auto;min-height:40px;margin:4px 4px 0 0}.firebase-party input{max-width:100%;width:260px;min-height:40px;padding:8px;background:#111a11;border:1px solid #566348;color:#eef1e6;font-size:16px}.firebase-party label{display:inline;margin:0 4px}.firebase-party code{display:block;overflow-wrap:anywhere;margin-top:8px;color:var(--accent)}.firebase-party #partyStatus{font-size:12px;color:var(--muted);margin:7px 0 0}
