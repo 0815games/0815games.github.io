@@ -23,7 +23,7 @@ export class Hud {
 
     const cooldown = localPlayer?.abilityCooldown ?? 0;
     ctx.fillText(`Fähigkeit (Q): ${cooldown > 0 ? `${cooldown.toFixed(1)} s` : 'bereit'}`, 20, 152);
-    ctx.fillText(`C: Klasse · Q: Fähigkeit · B: Turm · T: bauen · U: Upgrade`, 20, 176);
+    ctx.fillText(`Duo-Synergie: Ritter + Magier innerhalb 1,5 s`, 20, 176);
     ctx.fillText(`Spieler: ${session?.players.size ?? 1} / 2`, 20, 200);
 
     if (localPlayer) {

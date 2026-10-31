@@ -69,6 +69,8 @@ export class Game {
   }
 
   updateHost(dt) {
+    const now = performance.now() / 1000;
+
     this.localPlayer.update(dt);
     this.localPlayer.cycleTowerType();
     this.localPlayer.cycleClass();
@@ -86,8 +88,8 @@ export class Game {
     this.world.tryBuild(this.remotePlayer);
     this.world.tryUpgrade(this.localPlayer);
     this.world.tryUpgrade(this.remotePlayer);
-    this.world.tryAbility(this.localPlayer);
-    this.world.tryAbility(this.remotePlayer);
+    this.world.tryAbility(this.localPlayer, now);
+    this.world.tryAbility(this.remotePlayer, now);
     this.world.update(dt, [this.localPlayer, this.remotePlayer]);
 
     this.stateTimer += dt;

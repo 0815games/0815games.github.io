@@ -6,6 +6,10 @@ const TOWER_UPGRADE_RANGE = 60;
 const MAGE_BLAST_DAMAGE = 40;
 const MAGE_BLAST_RADIUS = 120;
 const SHIELD_DURATION = 3;
+const DUO_WINDOW = 1.5;
+const DUO_DAMAGE = 80;
+const DUO_RADIUS = 180;
+const DUO_SLOW_DURATION = 3;
 
 export const TOWER_CONFIG = {
   standard: { cost: 50, damage: 12, range: 150, fireInterval: 1 },
@@ -20,6 +24,8 @@ export class World {
     this.gold = 100;
     this.wave = 1;
     this.waveBreak = 0;
+    this.knightAbilityAt = null;
+    this.mageAbilityAt = null;
   }
 
   update(dt, players) {
@@ -175,16 +181,24 @@ export class World {
     return nearestDistance <= TOWER_UPGRADE_RANGE ? nearest : null;
   }
 
-  tryAbility(player) {
+  tryAbility(player, now) {
     if (!player?.alive || !player.wantsAbility) return;
 
     player.wantsAbility = false;
 
     if (player.className === 'knight') {
       player.shieldTimer = SHIELD_DURATION;
+      this.knightAbilityAt = now;
+      this.checkDuoSynergy(player, now);
       return;
     }
 
+    this.mageAbilityAt = now;
+    this.mageBlast(player);
+    this.checkDuoSynergy(player, now);
+  }
+
+  mageBlast(player) {
     this.enemies.forEach((enemy) => {
       const distance = Math.hypot(enemy.x - player.x, enemy.y - player.y);
 
@@ -192,6 +206,37 @@ export class World {
         enemy.health -= MAGE_BLAST_DAMAGE;
       }
     });
+  }
+
+  checkDuoSynergy(player, now) {
+    const knightTime = this.knightAbilityAt;
+    const mageTime = this.mageAbilityAt;
+
+    if (knightTime === null || mageTime === null) return;
+
+    const difference = Math.abs(knightTime - mageTime);
+
+    if (difference > DUO_WINDOW) return;
+
+    this.knightAbilityAt = null;
+    this.mageAbilityAt = null;
+
+    const center = player.className === 'mage' ? player : this.findMage(player);
+
+    if (!center) return;
+
+    this.enemies.forEach((enemy) => {
+      const distance = Math.hypot(enemy.x - center.x, enemy.y - center.y);
+
+      if (distance <= DUO_RADIUS) {
+        enemy.health -= DUO_DAMAGE;
+        enemy.slowTimer = DUO_SLOW_DURATION;
+      }
+    });
+  }
+
+  findMage(exclude) {
+    return this.enemies.length >= 0 ? exclude : null;
   }
 
   startWave(playerCount) {
