@@ -1,6 +1,6 @@
 # Experimental co-op match service
 
-This is an **experimental, single-process, single-match server**, not a production deployment and not connected to the game UI. It hosts the existing fixed-step protocol over WebSockets. Two preconfigured player UIDs form the roster. The server verifies Firebase ID tokens (including revocation checks at connection), loads profiles from the Realtime Database using Firebase Admin, checks the explicit Origin allowlist and roster, and pauses the match on disconnect. On disconnect, held movement is neutralized for both players and both players' pending commands are cancelled; reconnecting returns a fresh snapshot with sequence receipts. Inputs are bounded and rate-limited. No production credentials, hosting, public endpoint or database rules are included.
+This is an **experimental, single-process, single-match server**, not a production deployment and not enabled in the public game UI. It hosts the existing fixed-step protocol over WebSockets. Two preconfigured player UIDs form the roster. The server verifies Firebase ID tokens (including revocation checks at connection), loads profiles from the Realtime Database using Firebase Admin, checks the explicit Origin allowlist and roster, and pauses the match on disconnect. On disconnect, held movement is neutralized for both players and both players' pending commands are cancelled; reconnecting returns a fresh snapshot with sequence receipts. Inputs are bounded and rate-limited. No production credentials, hosting, public endpoint or database rules are included.
 
 ## Local development and tests
 
@@ -22,7 +22,7 @@ Connect to `/match` from an allowed Origin. The first JSON message is `{ "type":
 
 ## Limitations before real players
 
-- No lobby/invite service, browser co-op integration, friend list, matchmaking or ready-up UI.
+- No deployed lobby/invite service, friend list, matchmaking or ready-up UI. The co-op UI adapter is disabled by default.
 - State and checkpoints are only in memory. Restart loses the match. There is no durable idempotent reward processing or co-op XP, and existing solo XP is client-writable/untrusted. Profile XP loaded for the match is likewise not cheat-proof.
 - Only one statically provisioned roster per process. Match lifecycle, capacity, persistent recovery, replay protection, observability, deployment, cost limits and abuse controls need design and testing.
 - No encryption at the process itself, CSRF/origin allowlisting alone is not authentication, and rate limiting is per connection rather than distributed. Firebase ID token revocation is checked on connection; active sessions are closed on token expiry, not continuously rechecked for revocation.
@@ -34,7 +34,7 @@ The dependency audit currently reports moderate advisories in transitive Firebas
 
 `../coop-client.mjs` is an independent browser-side transport adapter for this protocol. It obtains a fresh Firebase ID token from an injected token provider on each connection, sends it in the first WebSocket message, accepts WSS (or localhost WS for development), tracks snapshots and bounded reconnects, and exposes command results. It permits only one command in flight. If a command times out with an unknown outcome, the adapter requires a fresh snapshot before accepting another command rather than blindly replaying a purchase. If the server says a command was cancelled on disconnect, the caller must decide whether to issue a new action. The server's sequence and receipt rules remain authoritative; the adapter is not anti-cheat.
 
-The adapter is **not yet wired into the game UI**. The URL must come from trusted deployment configuration and point to the deployed match service, not a token-bearing link. The upcoming integration must draw both players from snapshots, route all input through the adapter, handle disconnect/reconnect and explicit retry feedback, and must not execute client-side XP rewards for co-op. No public service is deployed by this repository.
+The game UI uses this adapter behind a disabled-by-default feature flag. The URL must come from trusted deployment configuration and point to the deployed match service, not a token-bearing link. No public service is deployed by this repository.
 
 ## Opt-in UI integration (development only)
 
@@ -43,3 +43,9 @@ The browser now contains a feature-flagged co-op adapter. `IronPath/coop-config.
 In test mode the browser renders both players from server snapshots and sends actions as commands, without simulating co-op locally or awarding client-side XP. Speed is fixed at 1×; unlike solo, the match continues while tower and tutorial menus are open. The server pauses while either player is disconnected. Tower upgrades/sales include expected tower identity and level to reject stale choices. This is not a lobby, and both participants must be in the server's configured roster.
 
 Limitations: no durable match state, co-op rewards, friend invites, live Firebase end-to-end test, production security review or public deployment. A client can still modify solo XP, which is currently used for server-loaded character levels. Transport snapshots are rendered directly (no interpolation); final UX and mobile multiplayer testing remain necessary.
+
+## Experimental private lobby rules
+
+`lobby.mjs` implements an **in-memory rules component**, not a network service or a player-facing lobby. An authenticated owner can create a two-player waiting room, issue or revoke a short-lived, single-use cryptographically random invitation, and start once both players have joined. Invitation secrets are indexed only by hash; lobby views do not expose them. Waiting rooms and invitations expire, capacity is bounded, and a player may belong to at most one room. Active rooms are locked until the trusted match lifecycle calls `finishMatch`. A test provisions a real local WebSocket match from a lobby roster, using mocked authentication.
+
+All UID arguments **must** be taken from verified authentication, never a request body. The match allocator must load trusted profiles, enforce roster admission and call `finishMatch` only after its match has stopped. Do not expose this component directly: it has no authentication, network endpoint, cross-process synchronization, durable storage, rate limiting, abuse prevention, user interface, or crash recovery. Invitations are bearer secrets: transmit over TLS, avoid logging or URL query strings, and never send Firebase tokens to invitation-provided destinations. A production implementation needs atomic storage transactions and limits across instances, plus a lifecycle policy for abandoned active matches.
