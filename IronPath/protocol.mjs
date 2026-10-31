@@ -58,6 +58,19 @@ function makeHost(data){
     const events=stepMatch(match);
     return clone({version:PROTOCOL_VERSION,tick,commands,events});
   }
+  // Cancel unprocessed inputs and neutralize movement on transport disconnect.
+  // The host must stop ticking until its disconnect policy permits resuming.
+  function suspendPlayer(playerId){
+    if(!Object.hasOwn(players,playerId))return false;
+    const player=match.players[playerId];player.direction={x:0,y:0};player.target=null;
+    const remaining=[];
+    for(const item of queue){
+      if(item.playerId!==playerId){remaining.push(item);continue;}
+      const receipt=players[playerId].receipts.find(r=>r.seq===item.seq);
+      receipt.response={status:'cancelled',seq:item.seq,reason:'disconnected'};
+    }
+    queue=remaining;return true;
+  }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}
   // A reconnecting authenticated player receives a detached view and their own receipts.
@@ -66,7 +79,7 @@ function makeHost(data){
     const p=players[playerId];
     return clone({version:PROTOCOL_VERSION,tick,match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
   }
-  return {receive,advance,checkpoint,snapshotFor};
+  return {receive,advance,checkpoint,snapshotFor,suspendPlayer};
 }
 export function createHost(initialMatch){
   const match=clone(initialMatch),ids=Object.keys(match.players||{});

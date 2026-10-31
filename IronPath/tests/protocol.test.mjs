@@ -48,4 +48,12 @@ const bounded=createHost(match());for(let i=1;i<=MAX_PENDING;i++)assert.equal(bo
 assert.equal(bounded.receive('alice',message(MAX_PENDING+1,{type:'direction',x:0,y:0})).reason,'queue-full');bounded.advance();
 for(let i=MAX_PENDING+1;i<=MAX_PENDING+RECEIPT_HISTORY;i++){assert.equal(bounded.receive('alice',message(i,{type:'direction',x:0,y:0})).status,'queued');bounded.advance();}
 assert.equal(bounded.receive('alice',message(1,{type:'direction',x:0,y:0})).reason,'receipt-expired');
+const disconnected=createHost(match());
+assert.equal(disconnected.receive('alice',message(1,{type:'direction',x:1,y:0})).status,'queued');disconnected.advance();
+assert.equal(disconnected.receive('alice',message(2,{type:'direction',x:1,y:0})).status,'queued');
+assert.equal(disconnected.suspendPlayer('alice'),true);
+assert.equal(disconnected.receive('alice',message(2,{type:'direction',x:1,y:0})).status,'cancelled');
+const position=disconnected.snapshotFor('alice').match.players.alice.x;disconnected.advance();
+assert.equal(disconnected.snapshotFor('alice').match.players.alice.x,position);
+assert.equal(disconnected.suspendPlayer('intruder'),false);
 console.log('Protocol ordering, retries, checkpoints and replay tests passed.');
