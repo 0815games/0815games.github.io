@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iron Path — Field Prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1>IRON PATH</h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">SOLO · EARLY BUILD</span></header>
+    <section class="dashboard" aria-label="Battle status">
+      <div><small>WAVE</small><strong id="wave">0 / 5</strong></div><div><small>BUNKER</small><strong id="health">100</strong></div><div><small>SUPPLIES</small><strong id="money">150</strong></div><div><small>ENEMIES</small><strong id="enemies">0</strong></div>
+    </section>
+    <div class="layout"><section class="battle"><div class="battle-head"><div><span class="eyebrow">OPERATION 01</span><h2>The Last Road</h2></div><span class="legend"><i></i> BUILD PAD <i></i> ENEMY ROUTE</span></div><canvas id="game" width="960" height="540" aria-label="Battlefield. Click a build pad to place or upgrade a tower."></canvas><div class="battle-foot"><span id="message" aria-live="polite">Choose your hero and deploy when ready.</span><span>FIELD MAP / 01</span></div></section>
+      <aside><section class="panel"><span class="eyebrow">COMMAND CENTER</span><h2>Prepare for battle</h2><label for="hero">HERO</label><select id="hero"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button id="start" class="primary">DEPLOY / START WAVE</button><button id="speed">SPEED: 1×</button><p class="hint">Waves begin manually. Build between waves and prepare your defenses.</p></section>
+      <section class="panel"><span class="eyebrow">DEFENSE SYSTEMS</span><h2>Selected tower</h2><div id="towerInfo" class="tower-info"></div><button id="cycle">CYCLE TOWER →</button><p class="hint">Click an empty pad to build. Click an existing tower to upgrade it.</p></section>
+      <section class="panel"><span class="eyebrow">HERO ABILITY</span><h2>Airstrike</h2><p class="hint">Damages every enemy on the field. Cooldown: 20 seconds of game time.</p><button id="ability">AIRSTRIKE READY</button><p class="hint">Your hero automatically fires at nearby enemies.</p></section></aside></div>
+    <footer>PROTOTYPE BUILD · Local play only. Progress is not saved. <a href="../">← 0815 Games</a></footer>
+  </main><script src="game.js"></script>
+</body></html>
