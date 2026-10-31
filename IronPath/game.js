@@ -108,6 +108,14 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
     if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))},result=>{notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
     showMenu(index);
+    // On phones the fixed action sheet may cover the spot that was just tapped.
+    // Move only the page vertically, leaving the player's horizontal map position intact.
+    if(window.innerWidth<=850){
+      const spotY=rect.top+pads[index].y*rect.height/canvas.height;
+      const margin=48*rect.height/canvas.height+12;
+      const overlap=spotY+margin-menu.getBoundingClientRect().top;
+      if(overlap>0)window.scrollBy({top:overlap,behavior:'auto'});
+    }
   });
   function update(dt){
     if(coop||state.ended||!menu.hidden||tutorial.isOpen()||!account.isReady()){accumulator=0;return;}
@@ -137,6 +145,20 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       ctx.fillStyle='#302b25';ctx.fillRect(e.x-14,e.y-19,28,4);ctx.fillStyle='#c9db81';ctx.fillRect(e.x-14,e.y-19,28*Math.max(0,e.hp/e.maxHp),4);
     }
     for(const s of state.shots){ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke();}
+    // Draw selection above units and effects, including an empty pad while its
+    // build menu is open. A dark border keeps the bright marker legible on roads.
+    const markerPad=menuPad??state.selectedPad;
+    if(markerPad!==null&&!state.ended){
+      const p=pads[markerPad];
+      if(p){
+        ctx.beginPath();ctx.arc(p.x,p.y,35,0,Math.PI*2);
+        ctx.strokeStyle='#172016';ctx.lineWidth=10;ctx.stroke();
+        ctx.strokeStyle='#ffed70';ctx.lineWidth=5;ctx.stroke();
+        ctx.beginPath();
+        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ctx.moveTo(p.x+dx*40,p.y+dy*40);ctx.lineTo(p.x+dx*49,p.y+dy*49);}
+        ctx.strokeStyle='#172016';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#fff6ac';ctx.lineWidth=4;ctx.stroke();
+      }
+    }
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop(){if(!coop)return;const old=coop;coop=null;coopReady=false;coopInput.setEnabled(false);coopInput=null;old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent='JOIN CO-OP (TEST)';$('coopStatus').textContent='SOLO';if(account.isReady())reset();}
