@@ -138,3 +138,24 @@ test('only the host can delete an entire party, without gaining parent write acc
   await assertFails(set(at(bob,'inputs/bob'),'{}'));
   assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });
+
+test('game-facing Firebase adapter connects, plays and pauses without a game server', {timeout:20000}, async t=>{
+  const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
+  const ids=['alice','bob'],players=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
+  let readyA=false,readyB=false,viewB,stateA,stateB;
+  const common={sdk,partyId:party,hostId:'alice',playerIds:ids};
+  const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;}});
+  const b=createFirebasePartyGame({...common,db:bob,auth:{currentUser:{uid:'bob'}},onState:s=>{stateB=s;},onStatus:v=>{readyB=v;},onSnapshot:s=>{viewB=s;}});
+  t.after(async()=>{goOnline(bob);await Promise.all([a.stop(),b.stop()]);});
+  const until=async predicate=>{const end=Date.now()+8000;while(!predicate()){if(stateA==='error'||stateB==='error')throw Error(`Party error: ${stateA} ${stateB}`);if(Date.now()>end)throw Error('Party game timed out');await new Promise(resolve=>setTimeout(resolve,25));}};
+  a.start();b.start();await until(()=>readyA&&readyB);
+  assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
+  await until(()=>viewB?.match.towers.length===1);
+  assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
+  goOffline(bob);await until(()=>!readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
+  goOnline(bob);await until(()=>readyA&&readyB);assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
+});
