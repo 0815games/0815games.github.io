@@ -1,5 +1,5 @@
-import { createMatch, stepMatch, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-sim1';
-import { createPlayer, applyCommand, TOWER_COSTS } from './match.mjs?v=20261031-sim1';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-towers1';
+import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from './match.mjs?v=20261031-towers1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
 export function startGame(account) {
@@ -30,13 +30,15 @@ export function startGame(account) {
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{selected:0,speed:1,branchPad:null});accumulator=0;keys.clear();updateUI();}
+  function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{selected:0,speed:1,branchPad:null,selectedPad:null});accumulator=0;keys.clear();updateUI();}
   function notice(text){$('message').textContent=text;}
   function updateUI(){
     const preview=state.ended?'Operation complete. Restart to play again.':state.running?'Current: '+waveSummary(state.wave):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=state.money; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const t=types[state.selected]; $('towerInfo').innerHTML=`<strong>${t.name}</strong><span>${t.description}</span><span>BUILD COST: ${t.cost} SUPPLIES</span>`;
     const selectedTower=state.towers.find(t=>t.pad===state.branchPad); if(selectedTower&&!state.ended){const next=selectedTower.level+1,cost=upgradeCost(selectedTower.level);$('upgradeTitle').textContent=types[selectedTower.type].name+' · Level '+next;$('upgradeHelp').textContent=selectedTower.level===2?`Choose a permanent specialization · ${cost} supplies. The battle is paused.`:`Upgrade to level ${next} · ${cost} supplies. The battle is paused.`;$('branchB').hidden=selectedTower.level!==2;if(selectedTower.level===2){branches[selectedTower.type].forEach((b,i)=>{$(i?'branchB':'branchA').textContent=b.name+' — '+b.description;});}else{$('branchA').textContent=`UPGRADE TO LEVEL ${next} · ${cost} SUPPLIES`;}}
+    const chosen=state.towers.find(t=>t.pad===state.selectedPad);$('selectedPanel').hidden=!chosen||state.ended;
+    if(chosen&&!state.ended){const name=chosen.branch!=null?branches[chosen.type][chosen.branch].name:types[chosen.type].name;$('selectedName').textContent=`${name} · LEVEL ${chosen.level}`;$('selectedStats').textContent=`Range ${Math.round(getTowerRange(chosen))} · Sell +${towerRefund(chosen)} supplies`;$('upgradeTower').disabled=chosen.level>=MAX_TOWER_LEVEL;$('upgradeTower').textContent=chosen.level>=MAX_TOWER_LEVEL?'MAX LEVEL':`UPGRADE · ${upgradeCost(chosen.level)}`;$('sellTower').textContent=`SELL · +${towerRefund(chosen)}`;}
     $('speed').textContent=`SPEED: ${state.speed}×`; $('ability').textContent=state.players.local.cooldown>0?`AIRSTRIKE: ${Math.ceil(state.players.local.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||state.players.local.cooldown>0||!state.enemies.length;
     $('start').textContent=state.ended?'RESTART OPERATION':state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=state.running&&!state.ended;
   }
@@ -54,9 +56,17 @@ export function startGame(account) {
   $('upgradePanel').addEventListener('cancel',e=>{e.preventDefault();closeBranch();});
   function chooseBranch(index){const tower=state.towers.find(t=>t.pad===state.branchPad);if(!tower)return;const result=applyCommand(state,'local',{type:'upgrade',pad:tower.pad,branch:index});if(!result.ok){$('upgradeError').textContent=result.reason;return;}notice(`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} upgraded to level ${tower.level}.`);closeBranch();}
   $('branchA').onclick=()=>chooseBranch(0); $('branchB').onclick=()=>chooseBranch(1);
-  canvas.addEventListener('click',e=>{if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius; pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});if(index<0){const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);return;}const existing=state.towers.find(t=>t.pad===index);if(existing){if(existing.level>=MAX_TOWER_LEVEL){notice('Tower is already at maximum level.');return;}state.branchPad=index;keys.clear();sendDirection();$('upgradeError').textContent='';updateUI();$('upgradePanel').showModal();return;}else{const type=types[state.selected];const result=applyCommand(state,'local',{type:'build',pad:index,towerType:state.selected});if(!result.ok){notice(result.reason);return;}notice(`${type.name} built. Click it again to upgrade.`);}updateUI();});
+  $('upgradeTower').onclick=()=>{const tower=state.towers.find(t=>t.pad===state.selectedPad);if(!tower||state.ended||tower.level>=MAX_TOWER_LEVEL)return;state.branchPad=tower.pad;keys.clear();sendDirection();$('upgradeError').textContent='';updateUI();$('upgradePanel').showModal();};
+  $('deselectTower').onclick=()=>{state.selectedPad=null;updateUI();};
+  $('sellTower').onclick=()=>{const tower=state.towers.find(t=>t.pad===state.selectedPad);if(!tower||state.ended)return;keys.clear();sendDirection();$('sellError').textContent='';$('sellHelp').textContent=`Sell this tower for ${towerRefund(tower)} supplies (50% of its build and upgrade costs)? The battle is paused.`;$('sellPanel').showModal();};
+  function closeSell(){$('sellPanel').close();updateUI();}
+  $('cancelSell').onclick=closeSell;
+  $('sellPanel').addEventListener('cancel',e=>{e.preventDefault();closeSell();});
+  $('confirmSell').onclick=()=>{const result=applyCommand(state,'local',{type:'sell',pad:state.selectedPad});if(!result.ok){$('sellError').textContent=result.reason;return;}state.selectedPad=null;notice(`Tower sold. +${result.refund} supplies.`);closeSell();};
+
+  canvas.addEventListener('click',e=>{if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius; pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});if(index<0){state.selectedPad=null;updateUI();const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);return;}const existing=state.towers.find(t=>t.pad===index);if(existing){state.selectedPad=index;notice('Tower selected. Review its range and choose an action.');updateUI();return;}else{const type=types[state.selected];const result=applyCommand(state,'local',{type:'build',pad:index,towerType:state.selected});if(!result.ok){notice(result.reason);return;}state.selectedPad=index;notice(`${type.name} built. Select upgrade or sell below the map.`);}updateUI();});
   function update(dt){
-    if(state.ended||$('upgradePanel').open||!account.isReady()){accumulator=0;return;}
+    if(state.ended||($('upgradePanel').open||$('sellPanel').open)||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -73,7 +83,8 @@ export function startGame(account) {
     ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#84795e';ctx.lineWidth=62;ctx.stroke();ctx.strokeStyle='#a69a79';ctx.lineWidth=2;ctx.setLineDash([9,12]);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle='#aebc83';ctx.font='bold 11px Arial';ctx.fillText('ENEMY ENTRY',15,75);ctx.fillText('BUNKER',850,350);
     ctx.fillStyle='#647359';ctx.fillRect(875,375,70,50);ctx.strokeStyle='#c9d6a3';ctx.lineWidth=3;ctx.strokeRect(875,375,70,50);
-    pads.forEach((p,i)=>{const tower=state.towers.find(t=>t.pad===i);ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.fillStyle=tower?'#313a2d':'#3d4938';ctx.fill();ctx.strokeStyle=tower?types[tower.type].color:'#809470';ctx.lineWidth=2;ctx.stroke();if(tower){ctx.fillStyle=types[tower.type].color;ctx.fillRect(p.x-10,p.y-10,20,20);ctx.fillStyle='#1c241b';ctx.font='bold 12px Arial';ctx.fillText(tower.level,p.x-3,p.y+4);}else{ctx.strokeStyle='#849a78';ctx.beginPath();ctx.moveTo(p.x-6,p.y);ctx.lineTo(p.x+6,p.y);ctx.moveTo(p.x,p.y-6);ctx.lineTo(p.x,p.y+6);ctx.stroke();}});
+    const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(211,223,124,0.12)';ctx.fill();ctx.strokeStyle='#d3df7c';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
+    pads.forEach((p,i)=>{const tower=state.towers.find(t=>t.pad===i);ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.fillStyle=tower?'#313a2d':'#3d4938';ctx.fill();ctx.strokeStyle=state.selectedPad===i?'#ffffff':tower?types[tower.type].color:'#809470';ctx.lineWidth=state.selectedPad===i?4:2;ctx.stroke();if(tower){ctx.fillStyle=types[tower.type].color;ctx.fillRect(p.x-10,p.y-10,20,20);ctx.fillStyle='#1c241b';ctx.font='bold 12px Arial';ctx.fillText(tower.level,p.x-3,p.y+4);}else{ctx.strokeStyle='#849a78';ctx.beginPath();ctx.moveTo(p.x-6,p.y);ctx.lineTo(p.x+6,p.y);ctx.moveTo(p.x,p.y-6);ctx.lineTo(p.x,p.y+6);ctx.stroke();}});
     if(state.wave>0){ctx.fillStyle=state.players.local.gender==='female'?'#e6c793':'#d5d8b3';ctx.beginPath();ctx.arc(state.players.local.x,state.players.local.y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e8f0d4';ctx.font='bold 10px Arial';ctx.fillText(account.getProfile()?.name||'HERO',state.players.local.x-15,state.players.local.y+28);}
     for(const e of state.enemies){
       ctx.fillStyle={infantry:'#d18c70',runner:'#f0ca79',tank:'#925e4c',plane:'#91cbd5'}[e.kind];
@@ -82,6 +93,6 @@ export function startGame(account) {
     }
     for(const s of state.shots){ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke();}
   }
-  account.onSessionChange(()=>{if($('upgradePanel').open)$('upgradePanel').close();keys.clear();if(account.isReady())reset();});
+  account.onSessionChange(()=>{if($('upgradePanel').open)$('upgradePanel').close();if($('sellPanel').open)$('sellPanel').close();keys.clear();if(account.isReady())reset();});
   reset();let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
 }
