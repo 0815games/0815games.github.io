@@ -33,6 +33,18 @@ This is **not yet safe to enable**: it requires tested rules restricting presenc
 
 `party-alpha.draft.rules.json` is a **separate, unapproved draft**, not the live `database.rules.json`. It keeps existing player rules and sketches authenticated, code-based party membership, own-input writes, host-only view publication and member presence. Party codes are high-entropy bearer secrets: anyone authenticated who learns a code can inspect the host/guest slot and, if vacant, claim it. Do not put codes in URLs or logs. The hosting player can still modify their own match state, and existing XP remains client-writable.
 
-The draft is intentionally not deployable alpha infrastructure yet: there is no safe party deletion/retention policy, guest replacement/session fencing or automatic cleanup; malicious participants can generate costs or tamper with their allowed inputs/presence; rules cannot validate gameplay. Security and lifecycle review, client integration, Firebase quotas, and real-account tests remain necessary. **Do not publish this file to your Firebase project as-is.** Publishing a rules file replaces the database rules.
+The draft now allows only the host to delete the whole party atomically; emulator tests also check that this does not grant the host unrestricted parent writes. However, the draft is not deployable alpha infrastructure yet: there is no automatic retention policy, guest replacement/session fencing or abandoned-party cleanup; malicious participants can generate costs or tamper with their allowed inputs/presence; rules cannot validate gameplay. Security and lifecycle review, client integration, Firebase quotas, and real-account tests remain necessary. **Do not publish this file to your Firebase project as-is.** Publishing a rules file replaces the database rules.
 
 `rules-test/` contains Firebase Realtime Database emulator tests for the draft, including authenticated and unauthenticated access, slot claims, input/view privacy, packet limits, presence and existing profile isolation. Run `npm ci && npm test` there with Node 22, Java 21, and network access to download the database emulator. The GitHub Actions workflow runs the same tests on changes. These tests do not touch the live Firebase project and cannot prove the full application is secure.
+
+
+### Party setup UI prototype
+
+The page includes a **disabled-by-default** party setup panel for creating, copying, joining and leaving party codes. It is wired to the Firebase lobby primitives but does not start a match. The explicit feature flag in `account.js` must remain false until the full match flow, lifecycle, rules and real-account testing are complete. The code is a bearer secret and is never put in a URL. Sign-out resets the panel, but a transaction already in flight may complete on Firebase and leave an abandoned party; cleanup remains necessary.
+
+The emulator suite now exercises two authenticated clients running the hosted match, issuing commands, disconnecting and reconnecting. It is still not a live Firebase or physical-device test. No draft rules have been deployed.
+
+
+### Experimental game-facing adapter
+
+`../firebase-party-game.mjs` composes the Firebase packet channel, the presence layer and player-hosted simulation into a game-facing adapter. It accepts an already established roster and explicitly supplied players; it does not itself establish membership, load player profiles, start a lobby match, or enable a UI. Local presence and the host's latest view must both indicate readiness before accepting commands. The emulator suite exercises two adapters, shared building, starting a wave and a network disconnect/reconnect. The adapter is still disabled and must not be used against live Firebase before the rules and complete lifecycle are reviewed. It reports failure but the caller must call `stop()` to release resources. Each adapter is single-use.

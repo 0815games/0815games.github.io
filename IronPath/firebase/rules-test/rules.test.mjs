@@ -19,9 +19,10 @@ test('only the signed-in owner can create an immutable host; guest slot is atomi
   await assertFails(set(at(anonymous,'hostId'),'alice'));
   await assertFails(set(at(alice,'hostId'),'bob'));
   await assertSucceeds(set(at(alice,'hostId'),'alice'));
-  await assertFails(set(at(eve,'hostId'),'eve'));await assertFails(set(at(alice,'hostId'),null));
+  await assertFails(set(at(eve,'hostId'),'eve'));
   await assertFails(set(at(alice,'guestId'),'alice'));
   const joined=await assertSucceeds(runTransaction(at(bob,'guestId'),v=>v===null?'bob':undefined));assert.equal(joined.committed,true);
+  await assertFails(set(at(alice,'hostId'),null));
   await assertFails(set(at(eve,'guestId'),'eve'));await assertFails(set(at(eve,'guestId'),null));
   await assertSucceeds(set(at(bob,'guestId'),null));await assertSucceeds(set(at(eve,'guestId'),'eve'));
   await assertFails(set(ref(alice,'parties/not-a-code/hostId'),'alice'));
@@ -65,6 +66,9 @@ test('profile isolation and real client lobby/channel operations under draft rul
   await assertSucceeds(host.publishViews({alice:{tick:1},bob:{tick:1}}));
   await assertFails(get(ref(alice,'players/bob')));await assertFails(set(ref(alice,'players/bob/xp'),999));
   await host.close();await guest.close();
+  const cleanup=createFirebasePartyLobby({db:alice,auth:authA,sdk:{...sdk,remove:(await import('firebase/database')).remove},crypto:deterministicCrypto});
+  assert.equal(await cleanup.close(party),true);
+  assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });
 
 
@@ -83,4 +87,75 @@ test('slot contention has one winner and departed guests lose party access',asyn
   await assertFails(set(at(alice,`views/${winner}`),'{}'));
   await assertSucceeds(set(at(nextDb,'guestId'),next));
   await assertFails(get(at(nextDb,`views/${winner}`)));
+});
+
+test('two Firebase clients run a shared hosted match, pause, and resume', {timeout:20000}, async t=>{
+  const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
+  const {createFirebasePartyPresence}=await import('../../firebase-party-presence.mjs');
+  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
+  const {createPartyHost}=await import('../../party-host.mjs');
+  const {createMatch}=await import('../../simulation.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
+  const authA={currentUser:{uid:'alice'}},authB={currentUser:{uid:'bob'}};
+  const opts={sdk,partyId:party,hostId:'alice',playerIds:['alice','bob']};
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  const hc=createFirebasePartyChannel({...opts,db:alice,auth:authA}),ac=createFirebasePartyChannel({...opts,db:alice,auth:authA}),bc=createFirebasePartyChannel({...opts,db:bob,auth:authB});
+  const engine=createPartyHost(createMatch(['alice','bob'].map(id=>createPlayer(id,{name:id,gender:'female'}))));
+  let error,aliceReady=false,bobReady=false,bobSnapshot;
+  const h=createFirebasePartyHostSession({channel:hc,host:engine,playerIds:opts.playerIds,epoch:'test-session',onError:e=>{error=e;}});
+  const a=createFirebasePartyClientSession({channel:ac,onState:s=>{aliceReady=s==='ready';},timeoutMs:4000});
+  const b=createFirebasePartyClientSession({channel:bc,onState:s=>{bobReady=s==='ready';},onView:s=>{bobSnapshot=s;},timeoutMs:4000});
+  const pOpts={sdk,partyId:party,playerIds:opts.playerIds,heartbeatMs:1000,expiryMs:5000,onError:e=>{error=e;}};
+  const pa=createFirebasePartyPresence({...pOpts,db:alice,auth:authA,onPresence:(id,online)=>h.setPresence(id,online)});
+  const pb=createFirebasePartyPresence({...pOpts,db:bob,auth:authB});
+  t.after(async()=>{await pb.stop();await pa.stop();await b.stop();await a.stop();await h.stop();});
+  const until=async (fn)=>{const end=Date.now()+5000;while(!fn()){if(error)throw error;if(Date.now()>end)throw new Error('Timed out waiting for party');await new Promise(resolve=>setTimeout(resolve,20));}};
+  a.start();b.start();h.start();pa.start();pb.start();
+  await until(()=>engine.ready()&&aliceReady&&bobReady);
+  const build=b.command({type:'build',pad:0,towerType:0});
+  await until(()=>engine.snapshotFor('bob').nextSeq===2);
+  for(let i=0;i<6;i++)h.step();
+  assert.equal((await build).ok,true);await until(()=>bobSnapshot?.match.towers.length===1);
+  const start=a.command({type:'startWave'});await until(()=>engine.snapshotFor('alice').nextSeq===2);
+  for(let i=0;i<6;i++)h.step();assert.equal((await start).ok,true);
+  await until(()=>bobSnapshot.match.wave===1);
+  goOffline(bob);t.after(()=>goOnline(bob));await until(()=>!engine.ready()&&!aliceReady);
+  assert.equal(h.step(),null);assert.equal((await a.command({type:'airstrike'})).ok,false);
+  goOnline(bob);await until(()=>engine.ready()&&aliceReady&&bobReady);
+  const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
+  for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
+});
+
+
+test('only the host can delete an entire party, without gaining parent write access',async()=>{
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  await assertSucceeds(set(at(bob,'inputs/bob'),'{}'));
+  await assertFails(set(ref(bob,`parties/${party}`),null));
+  await assertFails(set(ref(eve,`parties/${party}`),null));
+  await assertFails(set(ref(alice,`parties/${party}`),{hostId:'alice',guestId:'bob',inputs:{bob:'forged'}}));
+  await assertSucceeds(set(ref(alice,`parties/${party}`),null));
+  await assertFails(set(at(bob,'inputs/bob'),'{}'));
+  assert.equal((await get(at(alice,'hostId'))).exists(),false);
+});
+
+test('game-facing Firebase adapter connects, plays and pauses without a game server', {timeout:20000}, async t=>{
+  const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
+  const ids=['alice','bob'],players=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
+  let readyA=false,readyB=false,viewB,stateA,stateB;
+  const common={sdk,partyId:party,hostId:'alice',playerIds:ids};
+  const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;}});
+  const b=createFirebasePartyGame({...common,db:bob,auth:{currentUser:{uid:'bob'}},onState:s=>{stateB=s;},onStatus:v=>{readyB=v;},onSnapshot:s=>{viewB=s;}});
+  t.after(async()=>{goOnline(bob);await Promise.all([a.stop(),b.stop()]);});
+  const until=async predicate=>{const end=Date.now()+8000;while(!predicate()){if(stateA==='error'||stateB==='error')throw Error(`Party error: ${stateA} ${stateB}`);if(Date.now()>end)throw Error('Party game timed out');await new Promise(resolve=>setTimeout(resolve,25));}};
+  a.start();b.start();await until(()=>readyA&&readyB);
+  assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
+  await until(()=>viewB?.match.towers.length===1);
+  assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
+  goOffline(bob);await until(()=>!readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
+  goOnline(bob);await until(()=>readyA&&readyB);assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
 });
