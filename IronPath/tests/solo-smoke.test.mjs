@@ -20,7 +20,10 @@ assert.match(element('wavePreview').textContent,/Next: Wave 1/);
 element('game').onclick({clientX:105,clientY:210});
 assert.equal(element('radialMenu').hidden,false);
 assert.equal(element('radial0').disabled,false);
-assert.match(element('radial0').textContent,/MG Nest/);
+assert.match(element('menuName0').textContent,/MG Nest/);
+assert.match(element('menuDesc0').textContent,/infantry/);
+assert.equal(element('sheetTitle').textContent,'Build defense');
+assert.equal(element('radialMenu').hidden,false); // remains open while inspecting the map
 element('radial0').onclick();
 assert.equal(element('towerDetails').open,true);
 assert.match(element('towerDetailsText').textContent,/infantry/);
@@ -31,7 +34,7 @@ assert.equal(element('money').textContent,75);
 assert.equal(element('radialMenu').hidden,true);
 // Upgrades show effects before confirming.
 element('game').onclick({clientX:105,clientY:210});
-assert.match(element('radial0').textContent,/UPGRADE/);
+assert.match(element('menuName0').textContent,/Upgrade/);
 element('radial0').onclick();
 assert.match(element('towerDetailsText').textContent,/0.3/);
 assert.equal(element('money').textContent,75);
@@ -40,7 +43,7 @@ assert.equal(element('money').textContent,5);
 // Unaffordable branch options can be inspected but not purchased.
 element('game').onclick({clientX:105,clientY:210});
 element('radial0').onclick();
-assert.match(element('radial0').textContent,/Twin MG/);
+assert.match(element('menuName0').textContent,/Twin MG/);
 element('radial0').onclick();
 assert.match(element('towerDetailsText').textContent,/45% shorter/);
 assert.equal(element('towerDetailsConfirm').disabled,true);
@@ -51,9 +54,9 @@ element('radialClose').onclick();
 // Sale still requires confirmation.
 element('game').onclick({clientX:105,clientY:210});
 element('radial1').onclick();
-assert.match(element('radial0').textContent,/CONFIRM/);
+assert.match(element('menuName0').textContent,/Confirm/);
 element('radial1').onclick();
-assert.match(element('radial0').textContent,/UPGRADE/);
+assert.match(element('menuName0').textContent,/Upgrade/);
 element('radial1').onclick();element('radial0').onclick();
 assert.equal(element('money').textContent,65);
 assert.equal(element('radialMenu').hidden,true);
@@ -73,4 +76,4 @@ element('tutorialReplay').onclick();
 assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
-console.log('Solo radial menu and tutorial smoke test passed.');
+console.log('Solo tower sheet and tutorial smoke test passed.');
