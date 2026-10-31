@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { startGame } from './game.js?v=20261031-tutorial1';
+import { startGame } from './game.js?v=20261031-details1';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
 
 window.ironPathLoaded = true;
