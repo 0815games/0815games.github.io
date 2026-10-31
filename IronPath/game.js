@@ -34,7 +34,7 @@ export function startGame(account) {
   function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function notice(text){$('message').textContent=text;}
   function updateUI(){
-    const preview=state.ended?'Operation complete. Restart to play again.':state.running?'Current: '+waveSummary(state.wave):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
+    const preview=state.ended?'Operation complete. Restart to play again.':state.wave>=waves?'Final wave underway.':'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=state.money; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     $('speed').textContent=`SPEED: ${state.speed}×`; $('ability').textContent=state.players.local.cooldown>0?`AIRSTRIKE: ${Math.ceil(state.players.local.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||state.players.local.cooldown>0||!state.enemies.length||!menu.hidden; $('speed').disabled=!menu.hidden;
     $('start').textContent=state.ended?'RESTART OPERATION':state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden;
