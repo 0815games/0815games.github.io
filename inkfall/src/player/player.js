@@ -4,8 +4,11 @@ const ATTACK_COOLDOWN = 0.5;
 const ATTACK_RANGE = 70;
 const ATTACK_DAMAGE = 25;
 const RESPAWN_TIME = 3;
+const SHIELD_DURATION = 3;
+const SHIELD_COOLDOWN = 8;
+const ABILITY_COOLDOWN = 6;
 
-export const TOWER_TYPES = ['standard', 'frost', 'cannon'];
+export const CLASSES = ['knight', 'mage'];
 
 export class Player {
   constructor(role) {
@@ -23,6 +26,9 @@ export class Player {
     this.respawnTimer = 0;
     this.alive = true;
     this.towerTypeIndex = 0;
+    this.classIndex = role === 'host' ? 0 : 1;
+    this.abilityCooldown = 0;
+    this.shieldTimer = 0;
   }
 
   update(dt) {
@@ -32,12 +38,16 @@ export class Player {
       attack: this.input.isDown('Space'),
       build: this.input.isDown('KeyT'),
       upgrade: this.input.isDown('KeyU'),
-      cycle: this.input.isDown('KeyB')
+      cycle: this.input.isDown('KeyB'),
+      classCycle: this.input.isDown('KeyC'),
+      ability: this.input.isDown('KeyQ')
     }, dt);
   }
 
   applyInput(input, dt) {
     this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+    this.abilityCooldown = Math.max(0, this.abilityCooldown - dt);
+    this.shieldTimer = Math.max(0, this.shieldTimer - dt);
 
     if (!this.alive) {
       this.respawnTimer -= dt;
@@ -69,17 +79,37 @@ export class Player {
     if (input.cycle) {
       this.wantsCycle = true;
     }
+
+    if (input.classCycle) {
+      this.wantsClassCycle = true;
+    }
+
+    if (input.ability && this.abilityCooldown <= 0) {
+      this.abilityCooldown = this.className === 'knight' ? SHIELD_COOLDOWN : ABILITY_COOLDOWN;
+      this.wantsAbility = true;
+    }
   }
 
   cycleTowerType() {
     if (!this.wantsCycle) return;
 
     this.wantsCycle = false;
-    this.towerTypeIndex = (this.towerTypeIndex + 1) % TOWER_TYPES.length;
+    this.towerTypeIndex = (this.towerTypeIndex + 1) % 3;
+  }
+
+  cycleClass() {
+    if (!this.wantsClassCycle) return;
+
+    this.wantsClassCycle = false;
+    this.classIndex = (this.classIndex + 1) % CLASSES.length;
+  }
+
+  get className() {
+    return CLASSES[this.classIndex];
   }
 
   get towerType() {
-    return TOWER_TYPES[this.towerTypeIndex];
+    return ['standard', 'frost', 'cannon'][this.towerTypeIndex];
   }
 
   tryAttack(enemies) {
@@ -99,7 +129,8 @@ export class Player {
   takeDamage(amount) {
     if (!this.alive) return;
 
-    this.health -= amount;
+    const reduction = this.shieldTimer > 0 ? 0.5 : 1;
+    this.health -= amount * reduction;
 
     if (this.health <= 0) {
       this.health = 0;
@@ -122,6 +153,9 @@ export class Player {
     this.y = state.y ?? this.y;
     this.health = state.health ?? this.health;
     this.alive = state.alive ?? this.alive;
+    this.classIndex = state.classIndex ?? this.classIndex;
+    this.abilityCooldown = state.abilityCooldown ?? this.abilityCooldown;
+    this.shieldTimer = state.shieldTimer ?? this.shieldTimer;
   }
 
   serialize() {
@@ -129,16 +163,28 @@ export class Player {
       x: this.x,
       y: this.y,
       health: this.health,
-      alive: this.alive
+      alive: this.alive,
+      classIndex: this.classIndex,
+      abilityCooldown: this.abilityCooldown,
+      shieldTimer: this.shieldTimer
     };
   }
 
   render(ctx) {
     ctx.globalAlpha = this.alive ? 1 : 0.3;
-    ctx.fillStyle = this.role === 'host' ? '#38bdf8' : '#f97316';
+    ctx.fillStyle = this.className === 'knight' ? '#38bdf8' : '#a78bfa';
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
+
+    if (this.shieldTimer > 0) {
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + 6, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
     ctx.globalAlpha = 1;
   }
 }

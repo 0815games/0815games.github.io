@@ -3,6 +3,9 @@ const ENEMY_HEALTH = 50;
 const GOLD_PER_KILL = 10;
 const TOWER_UPGRADE_BASE_COST = 50;
 const TOWER_UPGRADE_RANGE = 60;
+const MAGE_BLAST_DAMAGE = 40;
+const MAGE_BLAST_RADIUS = 120;
+const SHIELD_DURATION = 3;
 
 export const TOWER_CONFIG = {
   standard: { cost: 50, damage: 12, range: 150, fireInterval: 1 },
@@ -170,6 +173,25 @@ export class World {
     });
 
     return nearestDistance <= TOWER_UPGRADE_RANGE ? nearest : null;
+  }
+
+  tryAbility(player) {
+    if (!player?.alive || !player.wantsAbility) return;
+
+    player.wantsAbility = false;
+
+    if (player.className === 'knight') {
+      player.shieldTimer = SHIELD_DURATION;
+      return;
+    }
+
+    this.enemies.forEach((enemy) => {
+      const distance = Math.hypot(enemy.x - player.x, enemy.y - player.y);
+
+      if (distance <= MAGE_BLAST_RADIUS) {
+        enemy.health -= MAGE_BLAST_DAMAGE;
+      }
+    });
   }
 
   startWave(playerCount) {
