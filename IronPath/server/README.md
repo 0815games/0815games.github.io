@@ -29,3 +29,9 @@ Connect to `/match` from an allowed Origin. The first JSON message is `{ "type":
 - Fixed interval scheduling does not compensate for overloaded event loops; latency, bandwidth and disconnect behavior need real-device testing. The entire match pauses whenever either player disconnects and resumes when both reconnect; a timeout or forfeit policy remains to be designed.
 
 The dependency audit currently reports moderate advisories in transitive Firebase Admin/Firestore dependencies (`glob`/`minimatch`); the server does not explicitly use Firestore. Reassess and update dependencies before any public deployment. Avoid forced major-version overrides without compatibility testing.
+
+## Experimental client adapter
+
+`../coop-client.mjs` is an independent browser-side transport adapter for this protocol. It obtains a fresh Firebase ID token from an injected token provider on each connection, sends it in the first WebSocket message, accepts WSS (or localhost WS for development), tracks snapshots and bounded reconnects, and exposes command results. It permits only one command in flight. If a command times out with an unknown outcome, the adapter requires a fresh snapshot before accepting another command rather than blindly replaying a purchase. If the server says a command was cancelled on disconnect, the caller must decide whether to issue a new action. The server's sequence and receipt rules remain authoritative; the adapter is not anti-cheat.
+
+The adapter is **not yet wired into the game UI**. The URL must come from trusted deployment configuration and point to the deployed match service, not a token-bearing link. The upcoming integration must draw both players from snapshots, route all input through the adapter, handle disconnect/reconnect and explicit retry feedback, and must not execute client-side XP rewards for co-op. No public service is deployed by this repository.
