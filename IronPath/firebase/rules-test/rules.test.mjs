@@ -19,9 +19,10 @@ test('only the signed-in owner can create an immutable host; guest slot is atomi
   await assertFails(set(at(anonymous,'hostId'),'alice'));
   await assertFails(set(at(alice,'hostId'),'bob'));
   await assertSucceeds(set(at(alice,'hostId'),'alice'));
-  await assertFails(set(at(eve,'hostId'),'eve'));await assertFails(set(at(alice,'hostId'),null));
+  await assertFails(set(at(eve,'hostId'),'eve'));
   await assertFails(set(at(alice,'guestId'),'alice'));
   const joined=await assertSucceeds(runTransaction(at(bob,'guestId'),v=>v===null?'bob':undefined));assert.equal(joined.committed,true);
+  await assertFails(set(at(alice,'hostId'),null));
   await assertFails(set(at(eve,'guestId'),'eve'));await assertFails(set(at(eve,'guestId'),null));
   await assertSucceeds(set(at(bob,'guestId'),null));await assertSucceeds(set(at(eve,'guestId'),'eve'));
   await assertFails(set(ref(alice,'parties/not-a-code/hostId'),'alice'));
