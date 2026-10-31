@@ -15,6 +15,7 @@ assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
 assert.equal(element('money').textContent,125);
+assert.match(element('wavePreview').textContent,/Next: Wave 1/);
 // Choose an unaffordable tower to inspect it without purchasing.
 element('game').onclick({clientX:105,clientY:210});
 assert.equal(element('radialMenu').hidden,false);
@@ -67,6 +68,7 @@ element('radial0').onclick();element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,15);
 element('start').onclick();
 assert.equal(element('wave').textContent,'1 / 10');
+assert.match(element('wavePreview').textContent,/Next: Wave 2/);
 element('tutorialReplay').onclick();
 assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
