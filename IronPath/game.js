@@ -19,7 +19,7 @@ export function startGame(account) {
     [{name:'Marksman',damage:1,interval:.6,range:1,description:'Faster shots'}, {name:'Anti-armor Rifle',damage:2,interval:1,range:1.1,description:'Heavy damage, extra vs tanks'}]
   ];
   const waves = WAVES.length, keys = new Set();
-  let state, accumulator=0;
+  let state, accumulator=0, menuPad=null;
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
@@ -30,43 +30,72 @@ export function startGame(account) {
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{selected:0,speed:1,branchPad:null,selectedPad:null});accumulator=0;keys.clear();updateUI();}
+  function reset(){state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function notice(text){$('message').textContent=text;}
   function updateUI(){
     const preview=state.ended?'Operation complete. Restart to play again.':state.running?'Current: '+waveSummary(state.wave):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=state.money; $('enemies').textContent=state.enemies.length+state.spawnLeft;
-    const t=types[state.selected]; $('towerInfo').innerHTML=`<strong>${t.name}</strong><span>${t.description}</span><span>BUILD COST: ${t.cost} SUPPLIES</span>`;
-    const selectedTower=state.towers.find(t=>t.pad===state.branchPad); if(selectedTower&&!state.ended){const next=selectedTower.level+1,cost=upgradeCost(selectedTower.level);$('upgradeTitle').textContent=types[selectedTower.type].name+' · Level '+next;$('upgradeHelp').textContent=selectedTower.level===2?`Choose a permanent specialization · ${cost} supplies. The battle is paused.`:`Upgrade to level ${next} · ${cost} supplies. The battle is paused.`;$('branchB').hidden=selectedTower.level!==2;if(selectedTower.level===2){branches[selectedTower.type].forEach((b,i)=>{$(i?'branchB':'branchA').textContent=b.name+' — '+b.description;});}else{$('branchA').textContent=`UPGRADE TO LEVEL ${next} · ${cost} SUPPLIES`;}}
-    const chosen=state.towers.find(t=>t.pad===state.selectedPad);$('selectedPanel').hidden=!chosen||state.ended;
-    if(chosen&&!state.ended){const name=chosen.branch!=null?branches[chosen.type][chosen.branch].name:types[chosen.type].name;$('selectedName').textContent=`${name} · LEVEL ${chosen.level}`;$('selectedStats').textContent=`Range ${Math.round(getTowerRange(chosen))} · Sell +${towerRefund(chosen)} supplies`;$('upgradeTower').disabled=chosen.level>=MAX_TOWER_LEVEL;$('upgradeTower').textContent=chosen.level>=MAX_TOWER_LEVEL?'MAX LEVEL':`UPGRADE · ${upgradeCost(chosen.level)}`;$('sellTower').textContent=`SELL · +${towerRefund(chosen)}`;}
-    $('speed').textContent=`SPEED: ${state.speed}×`; $('ability').textContent=state.players.local.cooldown>0?`AIRSTRIKE: ${Math.ceil(state.players.local.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||state.players.local.cooldown>0||!state.enemies.length;
-    $('start').textContent=state.ended?'RESTART OPERATION':state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=state.running&&!state.ended;
+    $('speed').textContent=`SPEED: ${state.speed}×`; $('ability').textContent=state.players.local.cooldown>0?`AIRSTRIKE: ${Math.ceil(state.players.local.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||state.players.local.cooldown>0||!state.enemies.length||!menu.hidden; $('speed').disabled=!menu.hidden;
+    $('start').textContent=state.ended?'RESTART OPERATION':state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden;
   }
   function waveSummary(wave){const counts={};for(const kind of WAVES[wave-1]) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ');}
-  $('cycle').onclick=()=>{state.selected=(state.selected+1)%types.length;updateUI();};
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   $('start').onclick=()=>{if(state.ended){reset();notice('Deploy when ready.');return;}if(state.running)return;state.players.local.level=account.getLevel();const result=applyCommand(state,'local',{type:'startWave'});if(!result.ok){notice(result.reason);return;}notice(`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();};
   $('ability').onclick=()=>{const result=applyCommand(state,'local',{type:'airstrike'});if(!result.ok){notice(result.reason);return;}notice('Airstrike deployed!');updateUI();};
   function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);applyCommand(state,'local',{type:'direction',x,y});}
-  window.addEventListener('keydown', e=>{if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
+  window.addEventListener('keydown', e=>{if(!menu.hidden){if(e.key==='Escape'){closeMenu();state.selectedPad=null;updateUI();}return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
   window.addEventListener('blur',()=>{keys.clear();sendDirection();});
-  function closeBranch(){state.branchPad=null; $('upgradePanel').close(); updateUI();}
-  $('cancelBranch').onclick=closeBranch;
-  $('upgradePanel').addEventListener('cancel',e=>{e.preventDefault();closeBranch();});
-  function chooseBranch(index){const tower=state.towers.find(t=>t.pad===state.branchPad);if(!tower)return;const result=applyCommand(state,'local',{type:'upgrade',pad:tower.pad,branch:index});if(!result.ok){$('upgradeError').textContent=result.reason;return;}notice(`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} upgraded to level ${tower.level}.`);closeBranch();}
-  $('branchA').onclick=()=>chooseBranch(0); $('branchB').onclick=()=>chooseBranch(1);
-  $('upgradeTower').onclick=()=>{const tower=state.towers.find(t=>t.pad===state.selectedPad);if(!tower||state.ended||tower.level>=MAX_TOWER_LEVEL)return;state.branchPad=tower.pad;keys.clear();sendDirection();$('upgradeError').textContent='';updateUI();$('upgradePanel').showModal();};
-  $('deselectTower').onclick=()=>{state.selectedPad=null;updateUI();};
-  $('sellTower').onclick=()=>{const tower=state.towers.find(t=>t.pad===state.selectedPad);if(!tower||state.ended)return;keys.clear();sendDirection();$('sellError').textContent='';$('sellHelp').textContent=`Sell this tower for ${towerRefund(tower)} supplies (50% of its build and upgrade costs)? The battle is paused.`;$('sellPanel').showModal();};
-  function closeSell(){$('sellPanel').close();updateUI();}
-  $('cancelSell').onclick=closeSell;
-  $('sellPanel').addEventListener('cancel',e=>{e.preventDefault();closeSell();});
-  $('confirmSell').onclick=()=>{const result=applyCommand(state,'local',{type:'sell',pad:state.selectedPad});if(!result.ok){$('sellError').textContent=result.reason;return;}state.selectedPad=null;notice(`Tower sold. +${result.refund} supplies.`);closeSell();};
-
-  canvas.addEventListener('click',e=>{if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius; pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});if(index<0){state.selectedPad=null;updateUI();const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);return;}const existing=state.towers.find(t=>t.pad===index);if(existing){state.selectedPad=index;notice('Tower selected. Review its range and choose an action.');updateUI();return;}else{const type=types[state.selected];const result=applyCommand(state,'local',{type:'build',pad:index,towerType:state.selected});if(!result.ok){notice(result.reason);return;}state.selectedPad=index;notice(`${type.name} built. Select upgrade or sell below the map.`);}updateUI();});
+  const menu=$('radialMenu');
+  const options=[0,1,2,3].map(i=>$('radial'+i));
+  function closeMenu(){menu.hidden=true;menuPad=null;}
+  function positionMenu(pad){
+    const rect=canvas.getBoundingClientRect(),p=pads[pad],size=240,margin=6;
+    const x=rect.left+p.x*rect.width/canvas.width,y=rect.top+p.y*rect.height/canvas.height;
+    menu.style.left=Math.max(margin,Math.min(window.innerWidth-size-margin,x-size/2))+'px';
+    menu.style.top=Math.max(margin,Math.min(window.innerHeight-size-margin,y-size/2))+'px';
+  }
+  function showMenu(pad,mode='actions'){
+    const tower=state.towers.find(t=>t.pad===pad);menuPad=pad;state.selectedPad=tower?pad:null;
+    keys.clear();sendDirection();
+    const actions=[];
+    if(!tower){
+      types.forEach((type,i)=>actions.push({label:`${type.name}\n${type.cost}`,disabled:state.money<type.cost,description:`Build ${type.name}, ${type.cost} supplies. ${type.description}`,run:()=>{
+        const result=applyCommand(state,'local',{type:'build',pad,towerType:i});
+        if(!result.ok){notice(result.reason);return;}state.selectedPad=pad;closeMenu();notice(`${type.name} built. Tap it to upgrade or sell.`);updateUI();
+      }}));
+      notice('Choose a tower. Grey options need more supplies. Battle paused.');
+    }else if(mode==='branches'){
+      const cost=upgradeCost(tower.level);
+      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name}\n${cost}`,disabled:state.money<cost,description:`${branch.name}: ${branch.description}. ${cost} supplies`,run:()=>upgrade(i)}));
+      notice('Choose a level 3 specialization. Battle paused.');
+    }else if(mode==='confirmSell'){
+      actions.push({label:`CONFIRM\n+${towerRefund(tower)}`,description:`Confirm sale for ${towerRefund(tower)} supplies`,run:()=>{const result=applyCommand(state,'local',{type:'sell',pad});if(!result.ok){notice(result.reason);return;}state.selectedPad=null;closeMenu();notice(`Tower sold. +${result.refund} supplies.`);updateUI();}});
+      actions.push({label:'CANCEL',description:'Cancel sale',run:()=>showMenu(pad)});
+      notice('Confirm sale for half the investment, or cancel. Battle paused.');
+    }else{
+      const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL;
+      actions.push({label:max?'MAX\nLEVEL':`UPGRADE\n${cost}`,disabled:max||state.money<cost,description:max?'Maximum level':`Upgrade to level ${tower.level+1}, ${cost} supplies`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else upgrade(0);}});
+      actions.push({label:`SELL\n+${towerRefund(tower)}`,description:`Sell tower for ${towerRefund(tower)} supplies`,run:()=>showMenu(pad,'confirmSell')});
+      const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
+      notice(`${name} · level ${tower.level} · range ${Math.round(getTowerRange(tower))}. Battle paused.`);
+    }
+    function upgrade(branch){const result=applyCommand(state,'local',{type:'upgrade',pad,branch});if(!result.ok){notice(result.reason);return;}const updated=state.towers.find(t=>t.pad===pad);notice(`${updated.branch!=null?branches[updated.type][updated.branch].name:types[updated.type].name} upgraded to level ${updated.level}.`);closeMenu();updateUI();}
+    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.textContent=action?action.label:'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
+    menu.hidden=false;positionMenu(pad);updateUI();
+  }
+  $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
+  mapViewport.addEventListener('scroll',()=>{if(!menu.hidden){closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();}});
+  window.addEventListener('resize',()=>{if(!menu.hidden&&menuPad!==null)positionMenu(menuPad);});
+  canvas.addEventListener('click',e=>{
+    if(state.ended)return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
+    const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius;
+    pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
+    if(index<0){closeMenu();state.selectedPad=null;const result=applyCommand(state,'local',{type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))});notice(result.ok?'Hero moving to position.':result.reason);updateUI();return;}
+    showMenu(index);
+  });
   function update(dt){
-    if(state.ended||($('upgradePanel').open||$('sellPanel').open)||!account.isReady()){accumulator=0;return;}
+    if(state.ended||!menu.hidden||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -93,6 +122,6 @@ export function startGame(account) {
     }
     for(const s of state.shots){ctx.strokeStyle=s.color;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(s.tx,s.ty);ctx.stroke();}
   }
-  account.onSessionChange(()=>{if($('upgradePanel').open)$('upgradePanel').close();if($('sellPanel').open)$('sellPanel').close();keys.clear();if(account.isReady())reset();});
+  account.onSessionChange(()=>{closeMenu();keys.clear();if(account.isReady())reset();});
   reset();let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
 }
