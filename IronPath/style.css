@@ -22,3 +22,4 @@
 /* Disable double-tap zoom while retaining ordinary scrolling and pinch-to-zoom. */
 body, button, summary, a, dialog, .tower-sheet { touch-action: manipulation; }
 .map-viewport canvas { touch-action: pan-x pan-y pinch-zoom; }
+.coop-controls{display:flex;align-items:center;gap:10px;margin:0 0 8px}.coop-controls button{width:auto;min-height:40px;margin:0}.coop-controls span{font-size:11px;color:var(--muted)}

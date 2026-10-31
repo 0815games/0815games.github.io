@@ -7,7 +7,7 @@ export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const commandFields={startWave:[],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch'],sell:['pad']};
+const commandFields={startWave:[],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -15,7 +15,7 @@ function normalizeCommand(command){
   const result={type:command.type};
   for(const key of fields){
     const value=command[key];
-    if(value===undefined&&key==='branch')continue;
+    if(value===undefined&&['branch','expectedTowerId','expectedLevel'].includes(key))continue;
     if(typeof value!=='number'||!Number.isFinite(value))return null;
     result[key]=value;
   }

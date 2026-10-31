@@ -1,0 +1,29 @@
+import { strict as assert } from 'node:assert';
+import { readFile } from 'node:fs/promises';
+import { createMatch } from '../simulation.mjs';
+import { createPlayer, applyCommand } from '../match.mjs';
+const nodes=new Map(),ctx=new Proxy({}, {get:()=>()=>{},set:()=>true});let frame;
+function el(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{toggle(){}},setAttribute(){},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return nodes.get(id);}
+globalThis.document={getElementById:el,activeElement:{tagName:'BODY'}};
+globalThis.window={innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
+globalThis.requestAnimationFrame=fn=>{frame=fn;};
+let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
+for(const file of ['match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false;
+const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
+startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory});
+el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);
+el('coopToggle').onclick();assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
+el('game').onclick({clientX:105,clientY:210});assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers.length,1);assert.equal(el('money').textContent,75);
+// A replacement made by the other player cannot be sold by an old open menu.
+el('game').onclick({clientX:105,clientY:210});el('radial1').onclick();
+assert.equal(applyCommand(match,'bob',{type:'sell',pad:0}).ok,true);
+assert.equal(applyCommand(match,'bob',{type:'build',pad:0,towerType:0}).ok,true);
+opts.onSnapshot({match:structuredClone(match)});el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers.length,1);assert.match(el('message').textContent,/Tower changed/);
+el('radialClose').onclick();opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
+frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
+el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
+console.log('Opt-in co-op UI adapter smoke tests passed.');

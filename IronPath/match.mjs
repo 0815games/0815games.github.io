@@ -40,12 +40,13 @@ export function applyCommand(state, playerId, command) {
       if(!Number.isInteger(pad)||pad<0||pad>=PAD_COUNT||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
       if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
       const cost=TOWER_COSTS[towerType];if(state.money<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
-      state.money-=cost;state.towers.push({pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
+      state.money-=cost;state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
     }
     case 'upgrade': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
       const tower=state.towers.find(t=>t.pad===command.pad);
       if(!tower)return {ok:false,reason:'Tower not found.'};
+      if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
       if(tower.level>=MAX_TOWER_LEVEL)return {ok:false,reason:'Tower is already at maximum level.'};
       if(tower.level===2&&command.branch!==0&&command.branch!==1)return {ok:false,reason:'Choose a valid specialization.'};
       const cost=upgradeCost(tower.level);if(state.money<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
@@ -55,6 +56,7 @@ export function applyCommand(state, playerId, command) {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
       const index=state.towers.findIndex(t=>t.pad===command.pad);
       if(index<0)return {ok:false,reason:'Tower not found.'};
+      if(command.expectedTowerId!==undefined&&(state.towers[index].id!==command.expectedTowerId||state.towers[index].level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
       const refund=towerRefund(state.towers[index]);state.towers.splice(index,1);state.money+=refund;
       return {ok:true,refund};
     }

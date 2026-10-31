@@ -48,7 +48,7 @@ export function createMatchService({players,verifyToken,allowedOrigins}) {
       }else if(msg.type==='snapshot'){send(ws,{type:'snapshot',snapshot:host.snapshotFor(playerId)});}
       else ws.close(1008,'unknown message');
     });
-    ws.on('close',()=>{clearTimeout(authTimeout);clearInterval(heartbeat);all.delete(ws);if(playerId&&peers.get(playerId)===ws){peers.delete(playerId);host.suspendPlayer(playerId);broadcastStatus();snapshotAll();}});
+    ws.on('close',()=>{clearTimeout(authTimeout);clearInterval(heartbeat);all.delete(ws);if(playerId&&peers.get(playerId)===ws){peers.delete(playerId);for(const id of roster)host.suspendPlayer(id);broadcastStatus();snapshotAll();}});
   });
   const ticker=setInterval(()=>{
     if(!ready())return;

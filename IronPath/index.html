@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261031-touch1">
+  <link rel="stylesheet" href="style.css?v=20261031-coopui1">
 </head>
 <body>
   <main>
@@ -16,7 +16,7 @@
       <div id="characterView" hidden><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><button id="logout" type="button">SIGN OUT</button></div><p id="saveStatus" class="save-status" role="status"></p>
+    <div id="gameView" hidden><div class="profile-bar"><div><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><button id="logout" type="button">SIGN OUT</button></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section class="dashboard" aria-label="Battle status">
       <div><small>WAVE</small><strong id="wave">0 / 10</strong></div><div><small>BUNKER</small><strong id="health">100</strong></div><div><small>SUPPLIES</small><strong id="money">125</strong></div><div><small>ENEMIES</small><strong id="enemies">0</strong></div>
     </section>
@@ -40,7 +40,7 @@
     <span class="eyebrow">DEFENSE INTELLIGENCE</span><h2 id="towerDetailsTitle"></h2><p id="towerDetailsText"></p><p id="towerDetailsCost" class="tower-details-cost"></p><button id="towerDetailsConfirm" type="button" class="primary">CONFIRM</button><button id="towerDetailsBack" type="button">BACK TO MENU</button>
   </dialog>
   <section id="radialMenu" class="tower-sheet" role="region" aria-label="Tower actions" aria-labelledby="sheetTitle" hidden>
-    <div class="sheet-header"><div><span class="eyebrow">BATTLE PAUSED</span><h2 id="sheetTitle">Build defense</h2><p id="sheetHint"></p></div><button type="button" id="radialClose" class="sheet-close" aria-label="Close tower menu">✕</button></div>
+    <div class="sheet-header"><div><span class="eyebrow" id="sheetMode">BATTLE PAUSED</span><h2 id="sheetTitle">Build defense</h2><p id="sheetHint"></p></div><button type="button" id="radialClose" class="sheet-close" aria-label="Close tower menu">✕</button></div>
     <div class="sheet-options">
       <button type="button" id="radial0" class="sheet-option"><span class="sheet-name" id="menuName0"></span><span class="sheet-description" id="menuDesc0"></span></button>
       <button type="button" id="radial1" class="sheet-option"><span class="sheet-name" id="menuName1"></span><span class="sheet-description" id="menuDesc1"></span></button>
@@ -49,5 +49,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261031-sheet1"></script>
+  <script type="module" src="account.js?v=20261031-coopui1"></script>
 </body></html>
