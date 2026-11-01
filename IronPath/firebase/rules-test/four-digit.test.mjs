@@ -57,3 +57,38 @@ test('four-digit adapter reserves a code and requires approval',async()=>{
   await assertSucceeds(baseB.leaveGuest(created.partyId));
   assert.equal(await a.close(created.partyId,created.inviteCode),true);
 });
+
+test('host approves four-digit request and two clients play and rejoin', {timeout:25000}, async t=>{
+  const {onValue,runTransaction,remove,update,onDisconnect,serverTimestamp}=await import('firebase/database');
+  const {createFirebasePartyLobby}=await import('../../firebase-party-lobby.mjs');
+  const {createFourDigitLobby}=await import('../../firebase-four-digit-lobby.mjs');
+  const {createFourDigitPanel}=await import('../../firebase-four-digit-panel.mjs');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  const sdk={ref,get,set,onValue,runTransaction,remove,update,onDisconnect,serverTimestamp};
+  for(const [db,uid,name] of [[host,'alice','Alice'],[guest,'bob','Bob']])await set(at(db,`players/${uid}`),{name,gender:'female',xp:0});
+  let seed=1;const crypto={getRandomValues(bytes){bytes.fill(seed++);return bytes;}};
+  function makeDoc(){const nodes=new Map();function node(){return {hidden:false,disabled:false,textContent:'',value:'',children:[],append(...v){this.children.push(...v);},replaceChildren(...v){this.children=v;}};}return {getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},createElement:()=>node()};}
+  function player(db,uid,name){
+    const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false;
+    const panel=createFourDigitPanel({document:doc,enabled:true,createLobby:()=>createFirebasePartyLobby({db,auth,sdk,crypto}),createApproval:lobby=>createFourDigitLobby({db,auth,sdk,crypto,lobby}),getProfile:()=>({name,gender:'female',level:1}),confirmMatch:()=>true,
+      onJoinMatch:(info,onState)=>{game=createFirebasePartyGame({db,auth,sdk,...info,players:info.profiles?.map((p,i)=>createPlayer(info.playerIds[i],p)),onState,onStatus:value=>{ready=value;}});game.start();return true;},
+      onLeaveMatch:async()=>{const old=game;game=null;ready=false;await old?.stop();}});
+    return {doc,panel,get game(){return game;},get ready(){return ready;}};
+  }
+  const a=player(host,'alice','Alice'),b=player(guest,'bob','Bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
+  const until=async fn=>{const end=Date.now()+10000;while(!fn()){if(Date.now()>end)throw Error(`UI timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,25));}};
+  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);
+  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
+  await until(()=>a.doc.getElementById('partyRequests').children.length===1);
+  const row=a.doc.getElementById('partyRequests').children[0];assert.match(row.children[0].textContent,/Bob/);assert.equal(b.game,null);
+  await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled);
+  await a.doc.getElementById('partyStart').onclick();await until(()=>a.ready&&b.ready);
+  assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
+  await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
+  assert.equal((await a.game.command({type:'move',x:700,y:400})).ok,true);
+  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
+  await until(()=>a.doc.getElementById('partyRequests').children.length===1);await a.doc.getElementById('partyRequests').children[0].children[1].onclick();
+  await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
+  await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();
+});

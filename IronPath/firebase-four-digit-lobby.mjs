@@ -31,6 +31,9 @@ export function createFourDigitLobby({db,auth,sdk,crypto=globalThis.crypto,lobby
       await sdk.set(ref(`${base}/requests/${uid}`),{name});check();
       return {inviteCode,partyId,hostId,guestId:uid};
     },
+    async readGuest(partyId){check();if(!validParty(partyId))throw Error('Invalid party');const result=await sdk.get(ref(`parties/${partyId}/guestId`));check();return result.val();},
+    watchOwnRequest(inviteCode,callback,onError=()=>{}){check();if(!validCode(inviteCode))throw Error('Invalid code');return sdk.onValue(ref(`partyCodes/${inviteCode}/requests/${uid}`),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
+    async readStarted(partyId){check();if(!validParty(partyId))throw Error('Invalid party');const result=await sdk.get(ref(`parties/${partyId}/startedGuest`));check();return result.val();},
     watchRequests(inviteCode,callback,onError=()=>{}){check();if(!validCode(inviteCode))throw Error('Invalid code');return sdk.onValue(ref(`partyCodes/${inviteCode}/requests`),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val()||{});},onError);},
     async approve(partyId,inviteCode,guestId){
       check();if(!validParty(partyId)||!validCode(inviteCode)||!validId(guestId)||guestId===uid)throw Error('Invalid approval');
