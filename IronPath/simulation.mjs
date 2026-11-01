@@ -20,7 +20,7 @@ export function stepMatch(state){
   const events=[];if(state.ended)return events;const dt=STEP;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];let {x:dx,y:dy}=p.direction;
+    const p=state.players[id];if(p.active===false)continue;let {x:dx,y:dy}=p.direction;
     if(dx||dy){const len=Math.hypot(dx,dy);p.x+=dx/len*150*dt;p.y+=dy/len*150*dt;}
     else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,150*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
     p.x=Math.max(12,Math.min(948,p.x));p.y=Math.max(12,Math.min(528,p.y));p.cooldown=Math.max(0,p.cooldown-dt);
@@ -29,7 +29,7 @@ export function stepMatch(state){
   for(const e of state.enemies){let distance=e.speed*dt;while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
   for(const tower of state.towers){tower.timer-=dt;const type=towerStats[tower.type],p=PADS[tower.pad],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;if(tower.timer<=0){const target=state.enemies.filter(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<=getTowerRange(tower)).sort((a,b)=>b.segment-a.segment)[0];if(target){target.hp-=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind);tower.timer=type.interval*(branch?branch.interval:1);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.12,color:type.color});}}}
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<150);if(target){target.hp-=10+Math.min(p.level-1,20);p.shotTimer=.65;state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.12,color:'#fff'});}}
+    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<150);if(target){target.hp-=10+Math.min(p.level-1,20);p.shotTimer=.65;state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.12,color:'#fff'});}}
   }
   state.enemies=state.enemies.filter(e=>{if(e.hp<=0){state.money+=e.reward;return false;}if(e.segment>=PATH.length){state.hp-=e.damage;events.push({type:'bunkerHit',kind:e.kind,damage:e.damage});return false;}return true;});
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}

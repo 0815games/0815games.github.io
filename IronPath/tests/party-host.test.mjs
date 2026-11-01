@@ -10,7 +10,7 @@ assert.equal(host.advance(),null);
 assert.equal(host.receive('host',command(1,'startWave')).reason,'match-paused');
 assert.equal(host.receive('stranger',command(1,'startWave')).reason,'unknown-player');
 assert.equal(host.setPresence('stranger',true),false);
-assert.equal(host.setPresence('host',true),true);assert.equal(host.ready(),false);
+assert.equal(host.setPresence('host',true),true);assert.equal(host.ready(),true);assert.equal(host.snapshotFor('host').match.players.guest.active,false);
 assert.equal(host.setPresence('guest',true),true);assert.equal(host.ready(),true);
 assert.equal(host.receive('host',command(1,'build',{pad:0,towerType:0})).status,'queued');
 assert.equal(host.receive('guest',command(1,'build',{pad:0,towerType:1})).status,'queued');
@@ -18,6 +18,9 @@ let result=host.advance();assert.equal(result.commands[0].result.ok,true);assert
 assert.equal(host.snapshotFor('guest').match.towers.length,1);
 assert.equal(host.snapshotFor('stranger'),null);
 assert.equal(host.receive('guest',command(2,'direction',{x:1,y:0})).status,'queued');host.advance();
+assert.equal(host.setPresence('guest',false),true);assert.equal(host.ready(),true);assert.ok(host.advance());
+assert.equal(host.snapshotFor('host').match.players.guest.active,false);assert.equal(host.receive('guest',command(3,'sell',{pad:0})).reason,'player-offline');
+host.setPresence('guest',true);assert.equal(host.snapshotFor('host').match.players.guest.active,true);
 assert.equal(host.receive('guest',command(3,'sell',{pad:0})).status,'queued');
 assert.equal(host.setPresence('host',false),true);assert.equal(host.ready(),false);assert.equal(host.advance(),null);
 let snap=host.snapshotFor('guest');assert.deepEqual(snap.match.players.guest.direction,{x:0,y:0});
@@ -28,3 +31,10 @@ assert.equal(host.snapshotFor('guest').match.towers.length,1,'cancelled sale mus
 assert.equal(host.receive('guest',command(4,'startWave')).status,'queued');host.advance();
 assert.equal(host.snapshotFor('host').match.wave,1);
 console.log('Player-hosted party command, pause, and reconnect tests passed.');
+// A disconnected soldier must not invisibly fire while the host plays alone.
+const soloMatch=createMatch([createPlayer('one',{name:'One',gender:'male'},850,450),createPlayer('two',{name:'Two',gender:'female'},105,210)]);
+soloMatch.wave=1;soloMatch.running=true;soloMatch.spawnLeft=1;soloMatch.spawnTimer=100;
+soloMatch.enemies=[{x:110,y:210,segment:1,speed:0,hp:100,maxHp:100,reward:0,damage:1,kind:'infantry'}];
+const soloHost=createPartyHost(soloMatch,{hostId:'one'});soloHost.setPresence('one',true);soloHost.advance();
+assert.equal(soloHost.snapshotFor('one').match.enemies[0].hp,100,'absent guest cannot fire');
+soloHost.setPresence('two',true);soloHost.advance();assert.ok(soloHost.snapshotFor('one').match.enemies[0].hp<100,'rejoined guest can fire');

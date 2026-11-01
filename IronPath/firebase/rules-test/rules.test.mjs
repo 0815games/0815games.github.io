@@ -120,8 +120,10 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   const start=a.command({type:'startWave'});await until(()=>engine.snapshotFor('alice').nextSeq===2);
   for(let i=0;i<6;i++)h.step();assert.equal((await start).ok,true);
   await until(()=>bobSnapshot.match.wave===1);
-  goOffline(bob);t.after(()=>goOnline(bob));await until(()=>!engine.ready()&&!aliceReady);
-  assert.equal(h.step(),null);assert.equal((await a.command({type:'airstrike'})).ok,false);
+  goOffline(bob);t.after(()=>goOnline(bob));await until(()=>engine.snapshotFor('alice').match.players.bob.active===false);
+  assert.equal(engine.ready(),true);assert.equal(aliceReady,true);assert.ok(h.step());
+  const move=a.command({type:'move',x:700,y:400});await until(()=>engine.snapshotFor('alice').nextSeq===3);
+  for(let i=0;i<6;i++)h.step();assert.equal((await move).ok,true);
   goOnline(bob);await until(()=>engine.ready()&&aliceReady&&bobReady);
   const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
@@ -160,7 +162,8 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>viewB?.match.towers.length===1);
   assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
-  goOffline(bob);await until(()=>!readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
+  goOffline(bob);await until(()=>readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
+  assert.equal((await a.command({type:'move',x:700,y:400})).ok,true);
   goOnline(bob);await until(()=>readyA&&readyB);assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
 });
 
@@ -182,10 +185,12 @@ test('party profiles and one-time start handoff are member-bound',async()=>{
   await assertFails(set(at(bob,'profiles/bob'),profileB));await assert.rejects(host.startMatch(party),/already started/);
   await assertSucceeds(set(at(bob,'inputs/bob'),'{}'));
   assert.equal(await guest.leaveGuest(party),true);await assertFails(set(at(eve,'guestId'),'eve'));
+  await assertSucceeds(set(at(alice,'views/bob'),'{}')); // Host can keep publishing while guest is away.
   await env.withSecurityRulesDisabled(async context=>{
     const db=context.database();assert.equal((await get(at(db,'profiles/bob'))).exists(),false);
     assert.equal((await get(at(db,'inputs/bob'))).exists(),false);assert.equal((await get(at(db,'profiles/alice'))).exists(),true);
   });
+  assert.equal((await guest.join(party)).started,true);
   await assertSucceeds(set(ref(alice,`parties/${party}`),null));
 });
 
@@ -211,7 +216,9 @@ test('party UI handoff drives the Firebase game with two authenticated clients',
   await until(()=>!a.doc.getElementById('partyStart').disabled);await a.doc.getElementById('partyStart').onclick();
   await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>b.snapshot?.match.towers.length===1);assert.equal(b.snapshot.match.players.alice.name,'alice');
-  await b.doc.getElementById('partyLeave').onclick();await until(()=>!a.game);
-  assert.match(a.doc.getElementById('partyStatus').textContent,/Teammate left/);
-  await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
+  await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
+  assert.ok(a.game,'host must keep their current match');assert.equal((await a.game.command({type:'move',x:700,y:400})).ok,true);
+  b.doc.getElementById('partyCodeInput').value=party;await b.doc.getElementById('partyJoin').onclick();await until(()=>a.ready&&b.ready);
+  assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
+  await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });

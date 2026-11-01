@@ -6,7 +6,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
   let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false;
   function queueView(){
     if(closed||failed)return;
-    latest=Object.fromEntries(playerIds.map(id=>[id,{epoch,ready:host.ready(),snapshot:host.snapshotFor(id)}]));
+    latest=Object.fromEntries(playerIds.map(id=>[id,{epoch,ready:host.readyFor(id),snapshot:host.snapshotFor(id)}]));
     if(!publishing)void pump();
   }
   async function pump(){

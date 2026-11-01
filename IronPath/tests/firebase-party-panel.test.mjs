@@ -10,6 +10,8 @@ await document.getElementById('partyCreate').onclick();assert.equal(document.get
 guestWatcher('b');assert.equal(document.getElementById('partyStart').disabled,true);
 const oldProfileWatcher=profileWatcher;guestWatcher('c');oldProfileWatcher(profile);assert.equal(document.getElementById('partyStart').disabled,true,'stale profile callbacks must not enable start');
 guestWatcher('b');profileWatcher(profile);assert.equal(document.getElementById('partyStart').disabled,false);await document.getElementById('partyStart').onclick();assert.deepEqual(joined[0].playerIds,['a','b']);assert.deepEqual(joined[0].profiles,[profile,profile]);assert.equal(document.getElementById('partyStart').disabled,true);
+const stopsBeforeGuestExit=stops;guestWatcher(null);assert.equal(stops,stopsBeforeGuestExit,'host must not leave the ongoing match');assert.match(document.getElementById('partyStatus').textContent,/battle continues/);
+guestWatcher('b');assert.match(document.getElementById('partyStatus').textContent,/rejoined/);
 await document.getElementById('partyCopy').onclick();assert.equal(copied,code);
 await document.getElementById('partyLeave').onclick();assert.equal(closed,1);assert.equal(document.getElementById('partyCodeDisplay').textContent,'');
 document.getElementById('partyCodeInput').value='bad';await document.getElementById('partyJoin').onclick();assert.match(document.getElementById('partyStatus').textContent,/valid/);
