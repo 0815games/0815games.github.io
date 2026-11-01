@@ -8,7 +8,7 @@ let inputListener=()=>{},listeners={},published=[],held=null,holdInput=false;
 const hostChannel={watchInputs(fn){inputListener=fn;return()=>{inputListener=()=>{};};},async publishViews(views){published.push(views);for(const id of players)listeners[id]?.(views[id]);},async close(){}};
 function clientChannel(id){return {watchView(fn){listeners[id]=fn;return()=>delete listeners[id];},async writeInput(packet){if(holdInput)held={id,packet};else inputListener(id,packet);},async close(){}};}
 const states=[],alice=createFirebasePartyClientSession({channel:clientChannel('alice'),onState:s=>states.push(s),timeoutMs:15});
-let bobView;const bob=createFirebasePartyClientSession({channel:clientChannel('bob'),onView:s=>bobView=s,timeoutMs:15});
+let bobView,bobState;const bob=createFirebasePartyClientSession({channel:clientChannel('bob'),onState:s=>bobState=s,onView:s=>bobView=s,timeoutMs:15});
 alice.start();bob.start();
 const session=createFirebasePartyHostSession({channel:hostChannel,host,playerIds:players,epoch:'epoch-one'});
 session.start();session.setPresence('alice',true);session.setPresence('bob',true);
@@ -18,8 +18,8 @@ assert.match((await alice.command({type:'startWave'})).reason,/previous/);
 for(let i=0;i<6;i++)session.step();await flush();assert.equal((await first).ok,true);assert.equal(bobView.match.towers.length,1);
 // An uncertain command must not be retried or replaced until its receipt arrives.
 holdInput=true;const uncertain=bob.command({type:'sell',pad:0});await flush();
-assert.match((await uncertain).reason,/unknown/);assert.match((await bob.command({type:'startWave'})).reason,/previous/);
-holdInput=false;inputListener(held.id,held.packet);for(let i=0;i<6;i++)session.step();await flush();
+assert.match((await uncertain).reason,/unknown/);assert.equal(bobState,'syncing');assert.match((await bob.command({type:'startWave'})).reason,/previous/);
+holdInput=false;inputListener(held.id,held.packet);for(let i=0;i<6;i++)session.step();await flush();assert.equal(bobState,'ready');
 const wave=bob.command({type:'startWave'});await flush();for(let i=0;i<6;i++)session.step();await flush();assert.equal((await wave).ok,true);
 // Disconnect cancels pending commands and pauses the game.
 const sale=alice.command({type:'sell',pad:0});await flush();session.setPresence('bob',false);await flush();

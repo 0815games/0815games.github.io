@@ -143,9 +143,13 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
   const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
   const {createPlayer}=await import('../../match.mjs');
-  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
-  const ids=['alice','bob'],players=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
+  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const hostLobby=createFirebasePartyLobby({db:alice,auth:{currentUser:{uid:'alice'}},sdk,crypto});
+  const guestLobby=createFirebasePartyLobby({db:bob,auth:{currentUser:{uid:'bob'}},sdk,crypto});
+  await hostLobby.create();await hostLobby.publishProfile(party,{name:'Alice',gender:'female',level:2});
+  await guestLobby.join(party);await guestLobby.publishProfile(party,{name:'Bob',gender:'male',level:3});
+  const info=await hostLobby.startMatch(party),ids=[info.hostId,info.guestId],players=info.profiles.map((profile,i)=>createPlayer(ids[i],profile));
   let readyA=false,readyB=false,viewB,stateA,stateB;
   const common={sdk,partyId:party,hostId:'alice',playerIds:ids};
   const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;}});
@@ -158,4 +162,51 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
   goOffline(bob);await until(()=>!readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
   goOnline(bob);await until(()=>readyA&&readyB);assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
+});
+
+
+test('party profiles and one-time start handoff are member-bound',async()=>{
+  const {onValue,remove}=await import('firebase/database');const sdk={ref,get,set,update,runTransaction,onValue,remove};
+  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const host=createFirebasePartyLobby({db:alice,auth:{currentUser:{uid:'alice'}},sdk,crypto});
+  const guest=createFirebasePartyLobby({db:bob,auth:{currentUser:{uid:'bob'}},sdk,crypto});
+  const profileA={name:'Alice',gender:'female',level:2,xp:1234},profileB={name:'Bob',gender:'male',level:3};
+  await host.create();await host.publishProfile(party,profileA);await guest.join(party);
+  await assert.rejects(host.startMatch(party),/not ready/);
+  await assertFails(set(at(bob,'profiles/alice'),{name:'Fake',gender:'female',level:1}));
+  await assertFails(set(at(bob,'profiles/bob'),{name:'Bob',gender:'male',level:3,xp:999}));
+  await guest.publishProfile(party,profileB);await assertFails(get(at(eve,'profiles/bob')));
+  await assertFails(set(at(bob,'startedGuest'),'bob'));
+  const result=await host.startMatch(party);assert.deepEqual(result.profiles,[{name:'Alice',gender:'female',level:2},profileB]);
+  assert.equal((await assertSucceeds(get(at(bob,'startedGuest')))).val(),'bob');
+  await assertFails(set(at(bob,'profiles/bob'),profileB));await assert.rejects(host.startMatch(party),/already started/);
+  assert.equal(await guest.leaveGuest(party),true);await assertFails(set(at(eve,'guestId'),'eve'));
+  await assertSucceeds(set(ref(alice,`parties/${party}`),null));
+});
+
+test('party UI handoff drives the Firebase game with two authenticated clients', {timeout:20000}, async t=>{
+  const {onValue,onDisconnect,remove}=await import('firebase/database');
+  const {createFirebasePartyPanel}=await import('../../firebase-party-panel.mjs');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
+  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  function makeDoc(){const nodes=new Map();return {getElementById(id){if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:''});return nodes.get(id);}};}
+  function player(db,uid){
+    const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false,snapshot;
+    const panel=createFirebasePartyPanel({document:doc,enabled:true,createLobby:()=>createFirebasePartyLobby({db,auth,sdk,crypto:deterministicCrypto}),getProfile:()=>({name:uid,gender:'female',level:1}),
+      onJoinMatch:(partyInfo,onState)=>{game=createFirebasePartyGame({db,auth,sdk,...partyInfo,players:partyInfo.profiles?.map((p,i)=>createPlayer(partyInfo.playerIds[i],p)),onState,onStatus:value=>{ready=value;},onSnapshot:value=>{snapshot=value;}});game.start();return true;},
+      onLeaveMatch:async()=>{const old=game;game=null;ready=false;await old?.stop();}});
+    return {doc,panel,get game(){return game;},get ready(){return ready;},get snapshot(){return snapshot;}};
+  }
+  const a=player(alice,'alice'),b=player(bob,'bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
+  const until=async fn=>{const end=Date.now()+8000;while(!fn()){if(Date.now()>end)throw Error(`UI flow timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,20));}};
+  await a.doc.getElementById('partyCreate').onclick();assert.equal(a.doc.getElementById('partyCodeDisplay').textContent,party);
+  b.doc.getElementById('partyCodeInput').value=party;await b.doc.getElementById('partyJoin').onclick();
+  await until(()=>!a.doc.getElementById('partyStart').disabled);await a.doc.getElementById('partyStart').onclick();
+  await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
+  await until(()=>b.snapshot?.match.towers.length===1);assert.equal(b.snapshot.match.players.alice.name,'alice');
+  await b.doc.getElementById('partyLeave').onclick();await until(()=>!a.game);
+  assert.match(a.doc.getElementById('partyStatus').textContent,/Teammate left/);
+  await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });
