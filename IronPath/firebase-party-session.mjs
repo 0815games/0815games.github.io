@@ -7,7 +7,13 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
   const connections=new Map(playerIds.map(id=>[id,[]]));
   function queueView(){
     if(closed||failed)return;
-    latest=Object.fromEntries(playerIds.map(id=>[id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot:host.snapshotFor(id)}]));
+    latest=Object.fromEntries(playerIds.map(id=>{
+      const snapshot=host.snapshotFor(id);
+      // Older game screens read match.money. Supply a per-recipient alias so
+      // a cached screen never displays an empty balance during an update.
+      if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
+      return [id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot}];
+    }));
     if(!publishing)void pump();
   }
   async function pump(){

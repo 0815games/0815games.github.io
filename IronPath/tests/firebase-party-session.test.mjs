@@ -16,6 +16,7 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));await flush();
 const first=alice.command({type:'build',pad:0,towerType:0});await flush();
 assert.match((await alice.command({type:'startWave'})).reason,/previous/);
 for(let i=0;i<6;i++)session.step();await flush();assert.equal((await first).ok,true);assert.equal(bobView.match.towers.length,1);
+assert.equal(published.at(-1).alice.snapshot.match.money,75);assert.equal(published.at(-1).bob.snapshot.match.money,125,'legacy snapshots expose the receiving player balance');
 // An uncertain command must not be retried or replaced until its receipt arrives.
 holdInput=true;const uncertain=bob.command({type:'sell',pad:0});await flush();
 assert.match((await uncertain).reason,/unknown/);assert.equal(bobState,'syncing');assert.match((await bob.command({type:'startWave'})).reason,/previous/);

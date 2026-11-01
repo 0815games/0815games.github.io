@@ -44,7 +44,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function notice(text){$('message').textContent=text;}
   function updateUI(){
     const preview=state.ended?'Operation complete. Restart to play again.':state.wave>=waves?'Final wave underway.':'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
-    $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
+    $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; $('ability').textContent=player?.cooldown>0?`AIRSTRIKE: ${Math.ceil(player.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||!player||player.cooldown>0||!state.enemies.length||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
     $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden||(!!coop&&(!coopReady||state.ended));
   }

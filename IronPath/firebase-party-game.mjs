@@ -1,6 +1,6 @@
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-coopxp1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-guestfix1';
 import {createPartyHost} from './party-host.mjs?v=20261101-coopxp1';
 import {createMatch,STEP} from './simulation.mjs?v=20261101-coopxp1';
 
@@ -25,7 +25,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         const channel=createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if(snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=1023)){fail();return;}onSnapshot(snapshot);onWaveRewards(snapshot.match.players[uid].completedWaveMask);}});
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if(snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=1023)){fail();return;}onWaveRewards(snapshot.match.players[uid].completedWaveMask);onSnapshot(snapshot);}});
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
           host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players),{hostId}),playerIds,epoch,onError:fail});
