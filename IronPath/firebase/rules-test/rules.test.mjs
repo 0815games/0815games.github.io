@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/ru
 import {ref,get,set,update,runTransaction,serverTimestamp} from 'firebase/database';
 import {createFirebasePartyLobby} from '../../firebase-party-lobby.mjs';
 import {createFirebasePartyChannel} from '../../firebase-party-channel.mjs';
-const projectId='demo-ironpath',party='0123456789abcdef0123456789abcdef';
+const projectId='demo-ironpath',party='0123456789abcdef0123000000000000';
 let env,alice,bob,eve,anonymous;
 const at=(db,path)=>ref(db,`parties/${party}/${path}`);
 before(async()=>{
@@ -56,7 +56,7 @@ test('presence writes belong to each member and use bounded server time',async()
 test('profile isolation and real client lobby/channel operations under draft rules',async()=>{
   const sdk={ref,get,set,update,runTransaction,onValue:(await import('firebase/database')).onValue};
   const authA={currentUser:{uid:'alice'}},authB={currentUser:{uid:'bob'}};
-  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
   const lobbyA=createFirebasePartyLobby({db:alice,auth:authA,sdk,crypto:deterministicCrypto});
   const lobbyB=createFirebasePartyLobby({db:bob,auth:authB,sdk,crypto:deterministicCrypto});
   assert.equal((await lobbyA.create()).partyId,party);assert.equal((await lobbyB.join(party)).hostId,'alice');
@@ -146,7 +146,7 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
   const {createPlayer}=await import('../../match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
-  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
   const hostLobby=createFirebasePartyLobby({db:alice,auth:{currentUser:{uid:'alice'}},sdk,crypto});
   const guestLobby=createFirebasePartyLobby({db:bob,auth:{currentUser:{uid:'bob'}},sdk,crypto});
   await hostLobby.create();await hostLobby.publishProfile(party,{name:'Alice',gender:'female',level:2});
@@ -180,7 +180,7 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
 
 test('party profiles and one-time start handoff are member-bound',async()=>{
   const {onValue,remove}=await import('firebase/database');const sdk={ref,get,set,update,runTransaction,onValue,remove};
-  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
   const host=createFirebasePartyLobby({db:alice,auth:{currentUser:{uid:'alice'}},sdk,crypto});
   const guest=createFirebasePartyLobby({db:bob,auth:{currentUser:{uid:'bob'}},sdk,crypto});
   const profileA={name:'Alice',gender:'female',level:2,xp:1234},profileB={name:'Bob',gender:'male',level:3};
@@ -210,7 +210,7 @@ test('party UI handoff drives the Firebase game with two authenticated clients',
   const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
   const {createPlayer}=await import('../../match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
-  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex'));return bytes;}};
+  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
   function makeDoc(){const nodes=new Map();return {getElementById(id){if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:''});return nodes.get(id);}};}
   function player(db,uid){
     const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false,snapshot;
@@ -221,14 +221,14 @@ test('party UI handoff drives the Firebase game with two authenticated clients',
   }
   const a=player(alice,'alice'),b=player(bob,'bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
   const until=async fn=>{const end=Date.now()+8000;while(!fn()){if(Date.now()>end)throw Error(`UI flow timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,20));}};
-  await a.doc.getElementById('partyCreate').onclick();assert.equal(a.doc.getElementById('partyCodeDisplay').textContent,party);
-  b.doc.getElementById('partyCodeInput').value=party;await b.doc.getElementById('partyJoin').onclick();
+  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
+  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
   await until(()=>!a.doc.getElementById('partyStart').disabled);await a.doc.getElementById('partyStart').onclick();
   await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>b.snapshot?.match.towers.length===1);assert.equal(b.snapshot.match.players.alice.name,'alice');
   await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
   assert.ok(a.game,'host must keep their current match');assert.equal((await a.game.command({type:'move',x:700,y:400})).ok,true);
-  b.doc.getElementById('partyCodeInput').value=party;await b.doc.getElementById('partyJoin').onclick();await until(()=>a.ready&&b.ready);
+  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();await until(()=>a.ready&&b.ready);
   assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
   await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });

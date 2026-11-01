@@ -1,8 +1,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-hostcontinues1';
-import { createFirebasePartyPanel } from './firebase-party-panel.mjs?v=20261101-hostcontinues1';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-shortcode1';
+import { createFirebasePartyPanel } from './firebase-party-panel.mjs?v=20261101-shortcode1';
 import { startGame } from './game.js?v=20261101-hostcontinues1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-handshake1';
 import { createPlayer } from './match.mjs?v=20261031-coopui1';

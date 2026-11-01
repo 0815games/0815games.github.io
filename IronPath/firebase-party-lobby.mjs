@@ -1,3 +1,4 @@
+import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
 // Experimental player-hosted Firebase lobby primitives. Access control MUST be
 // provided by Realtime Database rules; this module is not itself authorization.
 // No game UI should enable these operations until those rules are tested.
@@ -8,14 +9,13 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
   const uid=auth.currentUser?.uid;if(!validUid(uid))throw new Error('Sign in required');
   function check(){if(auth.currentUser?.uid!==uid)throw new Error('Party identity changed');}
   function ref(code,path){if(!CODE.test(code))throw new Error('Invalid party code');return sdk.ref(db,`parties/${code}/${path}`);}
-  function code(){const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
   return {
     // Generate a high-entropy capability locally, reserve its owner atomically.
     // Never use codes as URLs to choose where Firebase tokens are sent.
     async create(){
       check();for(let attempt=0;attempt<3;attempt++){
-        const partyId=code();const result=await sdk.runTransaction(ref(partyId,'hostId'),current=>current===null?uid:undefined,{applyLocally:false});
-        check();if(result.committed)return {partyId,hostId:uid};
+        const {partyId,inviteCode}=createPartyCode(crypto);const result=await sdk.runTransaction(ref(partyId,'hostId'),current=>current===null?uid:undefined,{applyLocally:false});
+        check();if(result.committed)return {partyId,hostId:uid,inviteCode};
       }throw new Error('Could not create party');
     },
     async join(partyId){
