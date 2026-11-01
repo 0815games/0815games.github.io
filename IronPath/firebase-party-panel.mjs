@@ -1,3 +1,4 @@
+import {parsePartyCode} from './party-code.mjs?v=20261101-shortcode1';
 // Experimental private party UI. Disabled until rules and real-account testing
 // are complete. Party codes are bearer secrets, never navigation destinations.
 export function createFirebasePartyPanel({document,createLobby,getProfile=()=>null,onJoinMatch=()=>false,onLeaveMatch=()=>{},confirmMatch=()=>true,clipboard,enabled=false}){
@@ -6,7 +7,7 @@ export function createFirebasePartyPanel({document,createLobby,getProfile=()=>nu
   root.hidden=!enabled;
   function render(message=''){
     $('partyStatus').textContent=message;$('partyEntry').hidden=!!party;$('partyActive').hidden=!party;
-    $('partyCodeDisplay').textContent=party?.role==='host'?party.partyId:'';$('partyCopy').hidden=party?.role!=='host';
+    $('partyCodeDisplay').textContent=party?.role==='host'?party.inviteCode:'';$('partyCopy').hidden=party?.role!=='host';
     $('partyStart').hidden=party?.role!=='host';
     for(const id of ['partyCreate','partyJoin','partyLeave','partyCopy'])$(id).disabled=busy;
     $('partyStart').disabled=busy||!guest||!guestReady||matchStarted;
@@ -40,7 +41,7 @@ export function createFirebasePartyPanel({document,createLobby,getProfile=()=>nu
     },()=>{if(current===version)render('Party connection lost.');}));
   });
   $('partyJoin').onclick=()=>run(async current=>{
-    const code=$('partyCodeInput').value.trim().toLowerCase();if(!/^[a-f0-9]{32}$/.test(code)){render('Enter a valid 32-character party code.');return;}
+    let code;try{code=parsePartyCode($('partyCodeInput').value);}catch{render('Enter a valid party code.');return;}
     const next=createLobby(),result=await next.join(code);if(current!==version)return;
     lobby=next;party={...result,role:'guest'};$('partyCodeInput').value='';render('Preparing your soldier…');watchHost(current);
     if(!result.started)await lobby.publishProfile(code,getProfile());if(current!==version||!party)return;
@@ -65,7 +66,7 @@ export function createFirebasePartyPanel({document,createLobby,getProfile=()=>nu
   });
   $('partyCopy').onclick=()=>run(async current=>{
     if(!party||party.role!=='host'||!clipboard?.writeText){render('Select the code above to copy it.');return;}
-    await clipboard.writeText(party.partyId);if(current===version)render('Party code copied. Share it privately.');
+    await clipboard.writeText(party.inviteCode);if(current===version)render('Party code copied. Share it privately.');
   });
   render();return {reset,leaveForLogout};
 }
