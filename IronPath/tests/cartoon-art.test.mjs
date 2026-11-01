@@ -1,0 +1,12 @@
+import {strict as assert} from 'node:assert';
+import {drawCartoonBattle} from '../cartoon-art.mjs';
+import {createPlayer} from '../match.mjs';
+import {createMatch,PATH,PADS,getTowerRange} from '../simulation.mjs';
+const p=createPlayer('a',{name:'Alice',gender:'female'}),q=createPlayer('b',{name:'Bob',gender:'male'});
+const state=createMatch([p,q]);state.wave=1;state.hp=20;state.plating=3;state.selectedPad=0;
+state.towers=[0,1,2,3].map((type,pad)=>({type,pad,level:1,ownerId:'a'}));
+state.enemies=['infantry','runner','tank','plane'].map((kind,i)=>({kind,x:20+i*40,y:130,hp:10,maxHp:20}));state.shots=[{x:105,y:210,tx:50,ty:130,color:'red'}];
+const before=structuredClone(state),calls=[];const ctx=new Proxy({}, {get(target,key){if(key in target)return target[key];return (...args)=>{assert.ok(args.every(a=>typeof a!=='number'||Number.isFinite(a)),`${String(key)} has non-finite coordinates`);calls.push([key,...args]);};},set(target,key,value){target[key]=value;return true;}});
+drawCartoonBattle(ctx,state,{path:PATH,pads:PADS,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'a',getTowerRange});
+assert.deepEqual(state,before,'the drawing must not mutate game state');assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='BUNKER'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Alice'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Bob'));
+console.log('Cartoon drawing covers towers, enemies, players and bunker without changing state.');
