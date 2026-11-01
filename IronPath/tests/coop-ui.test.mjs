@@ -24,7 +24,13 @@ assert.equal(applyCommand(match,'bob',{type:'sell',pad:0}).ok,true);
 assert.equal(applyCommand(match,'bob',{type:'build',pad:0,towerType:0}).ok,true);
 opts.onSnapshot({match:structuredClone(match)});el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.towers.length,1);assert.match(el('message').textContent,/Tower changed/);
-el('radialClose').onclick();opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
+el('radialClose').onclick();
+// Show whose balance pays for a teammate's tower and who receives a sale refund.
+assert.equal(applyCommand(match,'bob',{type:'build',pad:1,towerType:0}).ok,true);opts.onSnapshot({match:structuredClone(match)});
+el('game').onclick({clientX:285,clientY:210});el('radial0').onclick();assert.match(el('towerDetailsText').textContent,/You pay.*refund goes to Bob/);el('towerDetailsBack').onclick();
+el('radial1').onclick();assert.match(el('menuDesc0').textContent,/Bob receives 25/);el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,/Bob receives 25/);
+opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
 assert.equal(game.confirmParty(),true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),true);

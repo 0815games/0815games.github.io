@@ -2,6 +2,7 @@
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVES, makeEnemy, towerDamage } from './combat.mjs';
 import { waveXP } from './progression.mjs';
+import {addSupplies} from './match.mjs?v=20261101-wallet1';
 export const STEP = 1/30;
 export const PATH = [{x:0,y:130},{x:210,y:130},{x:210,y:320},{x:470,y:320},{x:470,y:150},{x:710,y:150},{x:710,y:400},{x:900,y:400}];
 export const PADS = [{x:105,y:210},{x:285,y:210},{x:135,y:360},{x:350,y:390},{x:390,y:220},{x:550,y:225},{x:620,y:75},{x:790,y:230},{x:625,y:395},{x:810,y:335}];
@@ -13,7 +14,14 @@ export function getTowerRange(tower){
 }
 export function createMatch(players){
   if(!Array.isArray(players)||players.length<1||players.length>2||new Set(players.map(p=>p.id)).size!==players.length)throw new Error('A match needs one or two unique players');
-  return {wave:0,hp:100,money:125,enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,p]))};
+  const individualSupplies=players.length>1;
+  return {wave:0,hp:100,...(individualSupplies?{individualSupplies:true}:{money:125}),enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,individualSupplies?{...p,money:125}:p]))};
+}
+// Every active player receives the same team reward. An absent guest earns
+// nothing until reconnecting, and retains the balance they had on departure.
+function rewardTeam(state,amount){
+  if(state.individualSupplies){for(const id of Object.keys(state.players).sort())if(state.players[id].active!==false)addSupplies(state,id,amount);}
+  else state.money+=amount;
 }
 // Exactly one fixed step per call. Events are transient, not a record of validated rewards.
 export function stepMatch(state){
@@ -31,8 +39,8 @@ export function stepMatch(state){
   for(const id of Object.keys(state.players).sort()){
     const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<150);if(target){target.hp-=10+Math.min(p.level-1,20);p.shotTimer=.65;state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:.12,color:'#fff'});}}
   }
-  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){state.money+=e.reward;return false;}if(e.segment>=PATH.length){state.hp-=e.damage;events.push({type:'bunkerHit',kind:e.kind,damage:e.damage});return false;}return true;});
+  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){rewardTeam(state,e.reward);return false;}if(e.segment>=PATH.length){state.hp-=e.damage;events.push({type:'bunkerHit',kind:e.kind,damage:e.damage});return false;}return true;});
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}
-  else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){state.running=false;const victory=state.wave===WAVES.length;if(victory)state.ended=true;else state.money+=20;events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory});}
+  else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){state.running=false;const victory=state.wave===WAVES.length;if(victory)state.ended=true;else rewardTeam(state,20);events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory});}
   return events;
 }

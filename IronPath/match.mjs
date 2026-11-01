@@ -15,7 +15,10 @@ export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
   return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level:Number.isInteger(profile.level)&&profile.level>0?profile.level:1, cooldown:0, shotTimer:0};
 }
-// Shared resources and pads; abilities and movement are owned by each player.
+// Solo keeps its original shared balance; co-op stores separate player wallets.
+export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
+export function addSupplies(state,playerId,amount){if(state.individualSupplies){const player=state.players[playerId];if(!player)throw new Error('Unknown supplies owner');player.money+=amount;}else state.money+=amount;}
+// Shared pads; abilities, movement and co-op supplies are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.
 export function applyCommand(state, playerId, command) {
   const player=Object.hasOwn(state.players,playerId)?state.players[playerId]:null;
@@ -39,8 +42,8 @@ export function applyCommand(state, playerId, command) {
       const {pad,towerType}=command;
       if(!Number.isInteger(pad)||pad<0||pad>=PAD_COUNT||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
       if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
-      const cost=TOWER_COSTS[towerType];if(state.money<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
-      state.money-=cost;state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
+      const cost=TOWER_COSTS[towerType];if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
+      addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
     }
     case 'upgrade': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
@@ -49,16 +52,18 @@ export function applyCommand(state, playerId, command) {
       if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
       if(tower.level>=MAX_TOWER_LEVEL)return {ok:false,reason:'Tower is already at maximum level.'};
       if(tower.level===2&&command.branch!==0&&command.branch!==1)return {ok:false,reason:'Choose a valid specialization.'};
-      const cost=upgradeCost(tower.level);if(state.money<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
-      state.money-=cost;if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
+      const cost=upgradeCost(tower.level);if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
+      addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
     }
     case 'sell': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
       const index=state.towers.findIndex(t=>t.pad===command.pad);
       if(index<0)return {ok:false,reason:'Tower not found.'};
       if(command.expectedTowerId!==undefined&&(state.towers[index].id!==command.expectedTowerId||state.towers[index].level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
-      const refund=towerRefund(state.towers[index]);state.towers.splice(index,1);state.money+=refund;
-      return {ok:true,refund};
+      const tower=state.towers[index],refund=towerRefund(tower),refundTo=state.individualSupplies?tower.ownerId:playerId;
+      if(state.individualSupplies&&!Object.hasOwn(state.players,refundTo))return {ok:false,reason:'Tower owner not found.'};
+      state.towers.splice(index,1);addSupplies(state,refundTo,refund);
+      return {ok:true,refund,...(state.individualSupplies?{refundTo}:{})};
     }
     case 'airstrike': {
       if(player.cooldown>0)return {ok:false,reason:'Airstrike is recharging.'};
