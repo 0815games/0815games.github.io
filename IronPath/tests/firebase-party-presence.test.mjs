@@ -7,8 +7,8 @@ function notify(path){for(const [name,callbacks] of listeners)if(path===name||pa
 const sdk={ref:(_db,path)=>path,onValue(path,cb){if(!listeners.has(path))listeners.set(path,new Set());listeners.get(path).add(cb);cb({val:()=>read(path)});return()=>listeners.get(path).delete(cb);},onDisconnect(path){return {async remove(){events.push(['register',path]);if(allowRegistration)await allowRegistration;disconnects.add(path);}};},async set(path,value){events.push(['set',path]);values.set(path,value);notify(path);},async remove(path){events.push(['remove',path]);values.delete(path);notify(path);},serverTimestamp(){return now;}};
 let counter=0;const crypto={getRandomValues(bytes){bytes.fill(++counter);return bytes;}};
 const shared={db:{},sdk,crypto,partyId:'party',playerIds:['alice','bob'],heartbeatMs:100,expiryMs:300,clock:()=>now};
-let aliceStates=[],bobStates=[],aliceConn=[];
-const alice=createFirebasePartyPresence({...shared,auth:{currentUser:{uid:'alice'}},onPresence:(...args)=>aliceStates.push(args),onConnection:value=>aliceConn.push(value)});
+let aliceStates=[],bobStates=[],aliceConn=[],aliceIds=[],observedConnections=[];
+const alice=createFirebasePartyPresence({...shared,auth:{currentUser:{uid:'alice'}},onPresence:(...args)=>aliceStates.push(args),onConnections:(...args)=>observedConnections.push(args),onConnection:(value,id)=>{aliceConn.push(value);if(id)aliceIds.push(id);}});
 const bob=createFirebasePartyPresence({...shared,auth:{currentUser:{uid:'bob'}},onPresence:(...args)=>bobStates.push(args)});
 alice.start();bob.start();assert.deepEqual(aliceConn,[false]);
 values.set('.info/serverTimeOffset',0);notify('.info/serverTimeOffset');values.set('.info/connected',true);notify('.info/connected');await sleep(5);
@@ -20,7 +20,7 @@ assert.deepEqual(aliceStates.slice(-2),[['alice',true],['bob',true]]);assert.ok(
 now+=301;await sleep(110);assert.ok(aliceStates.some(([id,online])=>id==='bob'&&!online));
 values.set('.info/connected',false);notify('.info/connected');assert.deepEqual(aliceStates.slice(-2),[['alice',false],['bob',false]]);
 for(const path of disconnects){values.delete(path);notify(path);}disconnects.clear();
-values.set('.info/connected',true);notify('.info/connected');await sleep(5);assert.equal(events.filter(e=>e[0]==='register').length,4);
+values.set('.info/connected',true);notify('.info/connected');await sleep(5);assert.equal(events.filter(e=>e[0]==='register').length,4);assert.equal(aliceIds.length,2);assert.notEqual(aliceIds[0],aliceIds[1]);assert.ok(observedConnections.some(([id,ids])=>id==='alice'&&ids.includes(aliceIds[1])));
 await bob.stop();assert.deepEqual(aliceStates.at(-1),['bob',false]);await alice.stop();assert.equal(aliceConn.at(-1),false);
 // A disconnect while registration is pending must never publish online.
 let release;allowRegistration=new Promise(resolve=>{release=resolve;});const before=events.filter(e=>e[0]==='set').length;const states=[];

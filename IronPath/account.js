@@ -4,7 +4,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-hostcontinues1';
 import { createFirebasePartyPanel } from './firebase-party-panel.mjs?v=20261101-hostcontinues1';
 import { startGame } from './game.js?v=20261101-hostcontinues1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-hostcontinues1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-handshake1';
 import { createPlayer } from './match.mjs?v=20261031-coopui1';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
 

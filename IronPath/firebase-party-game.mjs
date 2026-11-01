@@ -1,6 +1,6 @@
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
-import {createFirebasePartyPresence} from './firebase-party-presence.mjs';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-hostcontinues1';
+import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-handshake1';
 import {createPartyHost} from './party-host.mjs?v=20261101-hostcontinues1';
 import {createMatch,STEP} from './simulation.mjs?v=20261101-hostcontinues1';
 
@@ -11,10 +11,10 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   if(!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
   if(uid===hostId&&(!Array.isArray(players)||players.length!==2||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
   if(![onState,onStatus,onSnapshot].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
-  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false;
+  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[];
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
-    const next=active&&!failed&&sessionReady&&online.get(hostId)&&online.get(uid);
+    const next=active&&!failed&&sessionReady&&localConnection!==null&&acknowledged.includes(localConnection)&&online.get(hostId)&&online.get(uid);
     if(next!==ready){ready=next;onStatus(ready);}
     if(active&&!failed)onState(ready?'ready':'waiting');
   }
@@ -25,13 +25,13 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         const channel=createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(active&&!failed)onSnapshot(snapshot);}});
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(active&&!failed)onSnapshot(snapshot);}});
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
           host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players),{hostId}),playerIds,epoch,onError:fail});
         }
         client.start();host?.start();
-        presence=createFirebasePartyPresence({...options,crypto,onPresence:(id,value)=>{if(!active)return;online.set(id,value);host?.setPresence(id,value);refresh();},onConnection:connected=>{if(!active)return;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});
+        presence=createFirebasePartyPresence({...options,crypto,onConnections:(id,ids)=>{if(active)host?.setConnections(id,ids);},onPresence:(id,value)=>{if(!active)return;online.set(id,value);host?.setPresence(id,value);refresh();},onConnection:(connected,id)=>{if(!active)return;localConnection=connected?id:null;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});
         presence.start();
         if(host)timer=setInterval(()=>{if(active&&!failed)host.step();},STEP*1000);
       }catch(error){fail();void this.stop();throw error;}
