@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261101-partywire1">
+  <link rel="stylesheet" href="style.css?v=20261101-partylayout1">
 </head>
 <body>
   <main>
@@ -18,9 +18,18 @@
     </section>
     <div id="gameView" hidden><div class="profile-bar"><div><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><button id="logout" type="button">SIGN OUT</button></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
-      <strong>PRIVATE PARTY · ALPHA TEST</strong><p class="hint">Share the four-digit code. The host must approve each player and stay online. Co-op does not award XP.</p>
-      <div id="partyEntry"><button id="partyCreate" type="button">CREATE PARTY</button><label for="partyCodeInput">PARTY CODE</label><input id="partyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" spellcheck="false"><button id="partyJoin" type="button">JOIN PARTY</button></div>
-      <div id="partyRequests" hidden></div><div id="partyActive" hidden><code id="partyCodeDisplay"></code><button id="partyCopy" type="button">COPY CODE</button><button id="partyStart" type="button">START CO-OP</button><button id="partyLeave" type="button">LEAVE PARTY</button></div><p id="partyStatus" role="status"></p>
+      <div class="party-heading"><strong>CO-OP PARTY</strong><span>ALPHA TEST</span></div>
+      <p class="hint">Play together with a four-digit code. The host approves each player and stays online.</p>
+      <div id="partyEntry" class="party-entry">
+        <button id="partyCreate" class="primary" type="button">CREATE PARTY</button>
+        <div class="party-join"><label for="partyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="partyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" spellcheck="false" placeholder="0000"><button id="partyJoin" type="button">JOIN</button></div></div>
+      </div>
+      <div id="partyActive" hidden>
+        <div id="partyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="partyCodeDisplay"></code><small>Share this code with your teammate</small></div>
+        <div id="partyRequests" class="party-requests" hidden></div>
+        <div class="party-actions"><button id="partyStart" class="primary" type="button">START CO-OP</button><button id="partyLeave" type="button">LEAVE PARTY</button></div>
+      </div>
+      <p id="partyStatus" role="status"></p><p class="party-note">Co-op does not award XP.</p>
     </section>
     <section class="dashboard" aria-label="Battle status">
       <div><small>WAVE</small><strong id="wave">0 / 10</strong></div><div><small>BUNKER</small><strong id="health">100</strong></div><div><small>SUPPLIES</small><strong id="money">125</strong></div><div><small>ENEMIES</small><strong id="enemies">0</strong></div>
@@ -54,5 +63,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-fourparty1"></script>
+  <script type="module" src="account.js?v=20261101-partylayout1"></script>
 </body></html>
