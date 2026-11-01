@@ -37,7 +37,7 @@ test('host snapshots credit both participants once and preserve progress on reco
   const a=createFirebasePartyClientSession({channel:createFirebasePartyChannel({...opts,db:alice,auth:authA}),onView:view=>qa.observe(view.match.players.alice.completedWaveMask)});
   const b=createFirebasePartyClientSession({channel:createFirebasePartyChannel({...opts,db:bob,auth:authB}),onView:view=>qb.observe(view.match.players.bob.completedWaveMask)});
   t.after(async()=>{qa.close();qb.close();await Promise.all([h.stop(),a.stop(),b.stop()]);});
-  a.start();b.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.step();h.publish();
+  a.start();b.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.step(); // Completion is published immediately, even off the normal snapshot cadence.
   await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
   h.publish();h.publish();await new Promise(r=>setTimeout(r,150));
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),30);assert.equal((await get(ref(bob,'players/bob/xp'))).val(),30);
