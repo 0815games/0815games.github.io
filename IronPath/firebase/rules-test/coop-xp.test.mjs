@@ -42,3 +42,32 @@ test('host snapshots credit both participants once and preserve progress on reco
   h.publish();h.publish();await new Promise(r=>setTimeout(r,150));
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),30);assert.equal((await get(ref(bob,'players/bob/xp'))).val(),30);
 });
+
+test('actual game adapters show each balance and credit both players for a completed wave', {timeout:20000}, async t=>{
+  const {onDisconnect,remove,serverTimestamp}=await import('firebase/database');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createPlayer}=await import('../../match.mjs');
+  const {STEP}=await import('../../simulation.mjs');
+  const fullSdk={ref,get,set,onValue,update,runTransaction,onDisconnect,remove,serverTimestamp};
+  await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});await set(ref(bob,'players/bob'),{name:'Bob',gender:'female',xp:0});
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  const ids=['alice','bob'],authA={currentUser:{uid:'alice'}},authB={currentUser:{uid:'bob'}};
+  const qa=createCoopRewardQueue({db:alice,auth:authA,sdk:fullSdk,partyId:party}),qb=createCoopRewardQueue({db:bob,auth:authB,sdk:fullSdk,partyId:party});
+  let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
+  const common={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
+  const a=createFirebasePartyGame({...common,db:alice,auth:authA,players:ids.map(id=>createPlayer(id,{name:id,gender:'female',level:21},100,130)),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;},onWaveRewards:v=>qa.observe(v)});
+  const b=createFirebasePartyGame({...common,db:bob,auth:authB,onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;},onWaveRewards:v=>qb.observe(v)});
+  t.after(async()=>{qa.close();qb.close();await Promise.all([a.stop(),b.stop()]);});
+  // Accelerate only the game tick; network and presence timers use real time.
+  const originalSetInterval=globalThis.setInterval;
+  try{globalThis.setInterval=(fn,delay,...args)=>originalSetInterval(fn,delay===STEP*1000?2:delay,...args);a.start();b.start();}finally{globalThis.setInterval=originalSetInterval;}
+  const readyUntil=async fn=>{const end=Date.now()+10000;while(!await fn()){if(stateA==='error'||stateB==='error')throw Error(`Adapter error: ${stateA}/${stateB}`);if(Date.now()>end)throw Error('Timed out waiting for game adapters');await new Promise(r=>setTimeout(r,20));}};
+  await readyUntil(()=>readyA&&readyB&&viewA&&viewB);
+  assert.equal(viewA.match.money,125);assert.equal(viewB.match.money,125);
+  assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
+  await readyUntil(()=>viewB.match.players.bob.money===75);
+  assert.equal(viewB.match.money,75,'guest sees their own updated balance');assert.equal(viewA.match.players.alice.money,125);
+  assert.equal((await a.command({type:'startWave'})).ok,true);
+  await readyUntil(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
+  assert.equal(viewB.match.players.bob.completedWaveMask,1);assert.equal(viewA.match.players.alice.completedWaveMask,1);
+});
