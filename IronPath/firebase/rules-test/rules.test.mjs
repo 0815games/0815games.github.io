@@ -180,7 +180,12 @@ test('party profiles and one-time start handoff are member-bound',async()=>{
   const result=await host.startMatch(party);assert.deepEqual(result.profiles,[{name:'Alice',gender:'female',level:2},profileB]);
   assert.equal((await assertSucceeds(get(at(bob,'startedGuest')))).val(),'bob');
   await assertFails(set(at(bob,'profiles/bob'),profileB));await assert.rejects(host.startMatch(party),/already started/);
+  await assertSucceeds(set(at(bob,'inputs/bob'),'{}'));
   assert.equal(await guest.leaveGuest(party),true);await assertFails(set(at(eve,'guestId'),'eve'));
+  await env.withSecurityRulesDisabled(async context=>{
+    const db=context.database();assert.equal((await get(at(db,'profiles/bob'))).exists(),false);
+    assert.equal((await get(at(db,'inputs/bob'))).exists(),false);assert.equal((await get(at(db,'profiles/alice'))).exists(),true);
+  });
   await assertSucceeds(set(ref(alice,`parties/${party}`),null));
 });
 
