@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../coop-xp.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../skill-tree.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
 const sdk={ref,get,onValue,runTransaction};
@@ -70,4 +70,20 @@ test('actual game adapters show each balance and credit both players for a compl
   assert.equal((await a.command({type:'startWave'})).ok,true);
   await readyUntil(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
   assert.equal(viewB.match.players.bob.completedWaveMask,1);assert.equal(viewA.match.players.alice.completedWaveMask,1);
+});
+
+
+test('skill builds are owner-only, validated and survive XP transactions',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0}));
+  await assertSucceeds(set(ref(alice,'players/alice/skills'),'1,0,0,0,0;engineer'));
+  await assertFails(set(ref(bob,'players/alice/skills'),'0,0,0,0,0;assault'));
+  await assertFails(set(ref(alice,'players/alice/skills'),'4,0,0,0,0;assault'));
+  await assertFails(set(ref(alice,'players/alice/skills'),'0,0,0,0,0;bogus'));
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1);
+  await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30);
+  assert.equal((await get(ref(alice,'players/alice/skills'))).val(),'1,0,0,0,0;engineer');q.close();
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:2,skills:'1,0,0,0,0;engineer'}));
+  await assertFails(set(ref(bob,`parties/${party}/profiles/alice/skills`),'0,0,0,0,0;assault'));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/skills`),'9,0,0,0,0;assault'));
 });

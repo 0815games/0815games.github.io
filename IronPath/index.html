@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261101-cooptoggle1">
+  <link rel="stylesheet" href="style.css?v=20261101-skills1">
 </head>
 <body>
   <main>
@@ -16,7 +16,7 @@
       <div id="characterView" hidden><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>CO-OP</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>CO-OP</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>CO-OP PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Play together with a four-digit code. The host approves each player and stays online.</p>
@@ -38,12 +38,18 @@
       <section class="battle"><div class="battle-head"><div><span class="eyebrow">OPERATION 01</span><h2>The Last Road</h2></div><span class="legend"><i></i> BUILD PAD <i></i> ENEMY ROUTE</span></div><div class="map-frame"><div class="map-viewport" id="mapViewport" tabindex="0" aria-label="Scrollable battlefield" aria-describedby="mapHint"><canvas id="game" width="960" height="540" aria-label="Battlefield. Tap an empty build pad to build, tap a tower to select it, or tap open ground to move your hero."></canvas></div><details class="wave-info"><summary aria-label="Show next wave details" title="Next wave">⚑</summary><div class="wave-popover"><strong>NEXT WAVE</strong><p id="wavePreview" aria-live="polite"></p></div></details></div><div class="map-toolbar" aria-label="Map view controls"><button id="mapZoom" type="button" aria-pressed="true">MAP: LARGE</button><button id="mapEntry" type="button">← ENTRY</button><button id="mapBunker" type="button">BUNKER →</button></div><p class="map-hint" id="mapHint">Swipe the map left or right to see the battlefield. Tap to build or move.</p><div class="battle-foot"><span id="message" aria-live="polite">Choose your hero and deploy when ready.</span><span>FIELD MAP / 01</span></div></section>
       <aside aria-label="Battle controls">
         <section class="panel command"><div class="panel-heading"><span class="eyebrow">COMMAND CENTER</span><h2>Battle controls</h2></div><div class="command-controls"><button id="start" class="primary">DEPLOY / START WAVE</button><button id="speed">SPEED: 1×</button><button id="ability">AIRSTRIKE READY</button></div></section>
-        <details class="help"><summary>How to play</summary><p>Tap a plus pad to choose a tower from the build panel. Tap a tower to see its range and open its upgrade and sell panel. Unaffordable choices are greyed out; tap them to read their details. Confirm purchases in the details window. Selling returns half the total investment. Tap open ground to deselect and move your hero. Towers have six levels; choose a permanent specialization at level 3. Upgrade costs increase at each level. Tap open ground to move your hero; on desktop use WASD or arrow keys. The hero fires automatically. Airstrike damages all enemies and recharges in 30 seconds of game time. Start each wave manually. Scouts (yellow triangles) are fast, tanks (brown squares) are armored, and aircraft (blue arrows) fly along the same route. Infantry are orange circles. MGs and snipers excel against infantry; cannons counter tanks; Flak counters aircraft. All towers can hit all enemies, but with different damage.</p><button type="button" id="tutorialReplay">REPLAY FIELD BRIEFING</button></details>
+        <details class="help"><summary>How to play</summary><p>Tap a plus pad to choose a tower from the build panel. Tap a tower to see its range and open its upgrade and sell panel. Unaffordable choices are greyed out; tap them to read their details. Confirm purchases in the details window. Selling returns half the total investment. Tap open ground to deselect and move your hero. Towers have six levels; choose a permanent specialization at level 3. Upgrade costs increase at each level. Tap open ground to move your hero; on desktop use WASD or arrow keys. The hero fires automatically. Choose a skill path ability in SKILLS; abilities recharge in 30 seconds of game time. Start each wave manually. Scouts (yellow triangles) are fast, tanks (brown squares) are armored, and aircraft (blue arrows) fly along the same route. Infantry are orange circles. MGs and snipers excel against infantry; cannons counter tanks; Flak counters aircraft. All towers can hit all enemies, but with different damage.</p><button type="button" id="tutorialReplay">REPLAY FIELD BRIEFING</button></details>
       </aside>
     </div>
     <footer>PROTOTYPE BUILD · Soldier progress is saved online; battles are local. <a href="../">← 0815 Games</a></footer>
     </div>
   </main>
+  <dialog id="skillDialog" class="skill-dialog" aria-labelledby="skillTitle">
+    <span class="eyebrow">SOLDIER DEVELOPMENT</span><h2 id="skillTitle">Skill paths</h2>
+    <p>One point per level after level 1. Reset freely between matches. Select one active ability; all purchased passives apply together.</p>
+    <p id="skillPoints" class="skill-points"></p><div id="skillPaths" class="skill-paths"></div>
+    <p id="skillStatus" role="status"></p><div class="skill-actions"><button id="skillReset" type="button">RESET POINTS</button><button id="skillCancel" type="button">CANCEL</button><button id="skillSave" class="primary" type="button">SAVE BUILD</button></div>
+  </dialog>
   <dialog id="tutorialDialog" class="tutorial-dialog" aria-labelledby="tutorialTitle" aria-describedby="tutorialText">
     <span class="eyebrow" id="tutorialStep"></span>
     <div class="tutorial-scene" id="tutorialScene" aria-hidden="true"><div class="scene-road"></div><span class="scene-enemy">◆</span><span class="scene-pad">+</span><span class="scene-hero">●</span><span class="scene-bunker">▰</span><span class="scene-pointer">⌖</span><span class="scene-caption" id="tutorialCaption"></span></div>
@@ -63,5 +69,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-guestfix1"></script>
+  <script type="module" src="account.js?v=20261101-skills1"></script>
 </body></html>

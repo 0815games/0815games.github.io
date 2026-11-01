@@ -1,3 +1,4 @@
+import {parseBuild,abilityName} from './skills.mjs';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
@@ -13,7 +14,8 @@ export function towerRefund(tower) {
 }
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
-  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level:Number.isInteger(profile.level)&&profile.level>0?profile.level:1, cooldown:0, shotTimer:0};
+  const level=Number.isInteger(profile.level)&&profile.level>0?profile.level:1;
+  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level, skills:parseBuild(profile.skills,level), cooldown:0, shotTimer:0,overdrive:0};
 }
 // Solo keeps its original shared balance; co-op stores separate player wallets.
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
@@ -65,10 +67,22 @@ export function applyCommand(state, playerId, command) {
       state.towers.splice(index,1);addSupplies(state,refundTo,refund);
       return {ok:true,refund,...(state.individualSupplies?{refundTo}:{})};
     }
-    case 'airstrike': {
-      if(player.cooldown>0)return {ok:false,reason:'Airstrike is recharging.'};
-      if(!state.enemies.some(e=>e.hp>0))return {ok:false,reason:'No enemies in the field.'};
-      player.cooldown=30;for(const enemy of state.enemies)enemy.hp-=35;return {ok:true};
+    case 'airstrike': { // Legacy command name; the active path determines the effect.
+      if(player.cooldown>0)return {ok:false,reason:`${abilityName(player.skills)} is recharging.`};
+      const active=player.skills?.active||'assault';
+      // Preserve the original airstrike behaviour for old/default builds.
+      if(active==='assault'||active==='recon'){
+        if(!state.enemies.some(e=>e.hp>0))return {ok:false,reason:'No enemies in the field.'};
+      }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
+      if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
+      if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
+      player.cooldown=30;
+      if(active==='assault')for(const enemy of state.enemies)enemy.hp-=35;
+      else if(active==='engineer')player.overdrive=10;
+      else if(active==='logistics')addSupplies(state,playerId,30);
+      else if(active==='medic')state.hp=Math.min(state.maxHp??100,state.hp+15);
+      else if(active==='recon')state.suppression=8;
+      return {ok:true};
     }
     default:return {ok:false,reason:'Unknown command.'};
   }
