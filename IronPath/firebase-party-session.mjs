@@ -4,9 +4,10 @@
 export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onError=()=>{}}){
   if(!channel||!host||!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||typeof epoch!=='string'||!epoch||typeof onError!=='function')throw new Error('Invalid host session');
   let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false;
+  const connections=new Map(playerIds.map(id=>[id,[]]));
   function queueView(){
     if(closed||failed)return;
-    latest=Object.fromEntries(playerIds.map(id=>[id,{epoch,ready:host.readyFor(id),snapshot:host.snapshotFor(id)}]));
+    latest=Object.fromEntries(playerIds.map(id=>[id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot:host.snapshotFor(id)}]));
     if(!publishing)void pump();
   }
   async function pump(){
@@ -22,6 +23,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
       queueView();
     },
     setPresence(id,connected){if(!started||closed||failed)return false;const changed=host.setPresence(id,connected);if(changed)queueView();return changed;},
+    setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
     // Called once per fixed simulation step. Views are published at most once per
     // six ticks and coalesced while a previous Firebase update is in flight.
     step(){if(!started||closed||failed)return null;const result=host.advance();if(result&&result.tick%6===0)queueView();return result;},
@@ -30,8 +32,8 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
   };
 }
 
-export function createFirebasePartyClientSession({channel,onView=()=>{},onState=()=>{},timeoutMs=15000}){
-  if(!channel||typeof onView!=='function'||typeof onState!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0)throw new Error('Invalid client session');
+export function createFirebasePartyClientSession({channel,onView=()=>{},onState=()=>{},onConnections=()=>{},timeoutMs=15000}){
+  if(!channel||typeof onView!=='function'||typeof onState!=='function'||typeof onConnections!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0)throw new Error('Invalid client session');
   let started=false,closed=false,unsubscribe=null,epoch=null,latest=null,pending=null,invalid=false;
   function settle(item,result){if(item.timer)clearTimeout(item.timer);if(!item.settled){item.settled=true;item.resolve(result);}}
   function observe(view){
@@ -45,6 +47,7 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
       if(receipt?.status==='applied'){settle(pending,receipt.result);pending=null;}
       else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:'Command cancelled when a player disconnected.'});pending=null;}
     }
+    onConnections(Array.isArray(view.connections)?view.connections.filter(id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id)).slice(0,64):[]);
     onState(pending?.settled?'syncing':view.ready?'ready':'waiting');onView(view.snapshot);
   }
   return {

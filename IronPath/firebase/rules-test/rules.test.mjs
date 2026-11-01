@@ -155,16 +155,26 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   let readyA=false,readyB=false,viewB,stateA,stateB;
   const common={sdk,partyId:party,hostId:'alice',playerIds:ids};
   const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;}});
-  const b=createFirebasePartyGame({...common,db:bob,auth:{currentUser:{uid:'bob'}},onState:s=>{stateB=s;},onStatus:v=>{readyB=v;},onSnapshot:s=>{viewB=s;}});
+  let holdGuestViews=false,heldGuestView=null,guestViewListener=null;
+  const guestSdk={...sdk,onValue(target,callback,onError){
+    if(target.toString().endsWith(`/parties/${party}/views/bob`))return onValue(target,snapshot=>{if(holdGuestViews){heldGuestView=snapshot;guestViewListener=callback;}else callback(snapshot);},onError);
+    return onValue(target,callback,onError);
+  }};
+  const b=createFirebasePartyGame({...common,sdk:guestSdk,db:bob,auth:{currentUser:{uid:'bob'}},onState:s=>{stateB=s;},onStatus:v=>{readyB=v;},onSnapshot:s=>{viewB=s;}});
   t.after(async()=>{goOnline(bob);await Promise.all([a.stop(),b.stop()]);});
   const until=async predicate=>{const end=Date.now()+8000;while(!predicate()){if(stateA==='error'||stateB==='error')throw Error(`Party error: ${stateA} ${stateB}`);if(Date.now()>end)throw Error('Party game timed out');await new Promise(resolve=>setTimeout(resolve,25));}};
   a.start();b.start();await until(()=>readyA&&readyB);
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>viewB?.match.towers.length===1);
   assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
-  goOffline(bob);await until(()=>readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
+  const oldConnections=Object.keys((await get(at(alice,'presence/bob'))).val());
+  holdGuestViews=true;goOffline(bob);await until(()=>readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
   assert.equal((await a.command({type:'move',x:700,y:400})).ok,true);
-  goOnline(bob);await until(()=>readyA&&readyB);assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
+  goOnline(bob);
+  await until(()=>{try{const view=JSON.parse(heldGuestView?.val()||'null');return view?.ready&&view.connections?.some(id=>!oldConnections.includes(id));}catch{return false;}});
+  assert.equal(readyB,false,'cached ready state must not enable a newly reconnected guest');
+  holdGuestViews=false;guestViewListener(heldGuestView);await until(()=>readyA&&readyB);
+  assert.equal((await b.command({type:'direction',x:1,y:0})).ok,true);
 });
 
 

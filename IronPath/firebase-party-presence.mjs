@@ -1,19 +1,21 @@
 // Experimental Firebase presence adapter. It depends on rules restricting each
 // participant to their own presence path; these rules have not been deployed.
 const validKey=value=>typeof value==='string'&&value.length>0&&value.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(value);
-export function createFirebasePartyPresence({db,auth,sdk,partyId,playerIds,crypto=globalThis.crypto,onPresence=()=>{},onConnection=()=>{},onError=()=>{},heartbeatMs=5000,expiryMs=20000,clock=Date.now}){
-  if(!db||!auth||!sdk||!['ref','onValue','onDisconnect','set','remove','serverTimestamp'].every(key=>typeof sdk[key]==='function')||!validKey(partyId)||!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||playerIds.some(id=>!validKey(id))||typeof crypto?.getRandomValues!=='function'||![onPresence,onConnection,onError,clock].every(fn=>typeof fn==='function')||!Number.isFinite(heartbeatMs)||heartbeatMs<100||!Number.isFinite(expiryMs)||expiryMs<heartbeatMs*2)throw new Error('Invalid party presence configuration');
+export function createFirebasePartyPresence({db,auth,sdk,partyId,playerIds,crypto=globalThis.crypto,onPresence=()=>{},onConnections=()=>{},onConnection=()=>{},onError=()=>{},heartbeatMs=5000,expiryMs=20000,clock=Date.now}){
+  if(!db||!auth||!sdk||!['ref','onValue','onDisconnect','set','remove','serverTimestamp'].every(key=>typeof sdk[key]==='function')||!validKey(partyId)||!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||playerIds.some(id=>!validKey(id))||typeof crypto?.getRandomValues!=='function'||![onPresence,onConnections,onConnection,onError,clock].every(fn=>typeof fn==='function')||!Number.isFinite(heartbeatMs)||heartbeatMs<100||!Number.isFinite(expiryMs)||expiryMs<heartbeatMs*2)throw new Error('Invalid party presence configuration');
   const uid=auth.currentUser?.uid;if(!validKey(uid)||!playerIds.includes(uid))throw new Error('Authenticated party member required');
   let started=false,closed=false,connected=false,registered=false,failed=false,generation=0,offset=0,heartbeat=null,checker=null,activeRef=null;
-  const subscriptions=[],raw=new Map(),states=new Map(playerIds.map(id=>[id,false]));
+  const subscriptions=[],raw=new Map(),connectionStates=new Map(),states=new Map(playerIds.map(id=>[id,false]));
   const ref=path=>sdk.ref(db,path);
   const authorized=()=>!closed&&auth.currentUser?.uid===uid;
   function emit(){
     if(!closed&&auth.currentUser?.uid!==uid&&connected){failed=true;disconnect();onError(new Error('Party identity changed'));return;}
     const now=clock()+offset;
     for(const id of playerIds){
-      const values=raw.get(id),timestamps=values&&typeof values==='object'&&!Array.isArray(values)?Object.values(values):[];
-      const online=!!(authorized()&&connected&&registered&&timestamps.some(t=>typeof t==='number'&&Number.isFinite(t)&&t<=now+5000&&now-t<expiryMs));
+      const values=raw.get(id),entries=values&&typeof values==='object'&&!Array.isArray(values)?Object.entries(values):[];
+      const ids=authorized()&&connected&&registered?entries.filter(([key,t])=>/^[a-f0-9]{32}$/.test(key)&&typeof t==='number'&&Number.isFinite(t)&&t<=now+5000&&now-t<expiryMs).map(([key])=>key).sort().slice(0,64):[];
+      const key=ids.join(',');if(connectionStates.get(id)!==key){connectionStates.set(id,key);onConnections(id,ids);}
+      const online=ids.length>0;
       if(states.get(id)!==online){states.set(id,online);onPresence(id,online);}
     }
   }
@@ -24,13 +26,13 @@ export function createFirebasePartyPresence({db,auth,sdk,partyId,playerIds,crypt
   function stale(myGeneration){return !authorized()||failed||!connected||myGeneration!==generation;}
   async function connect(){
     if(!authorized()||failed||connected)return;
-    connected=true;registered=false;const myGeneration=++generation,connectionRef=ref(`parties/${partyId}/presence/${uid}/${name()}`);activeRef=connectionRef;
+    connected=true;registered=false;const myGeneration=++generation,connectionId=name(),connectionRef=ref(`parties/${partyId}/presence/${uid}/${connectionId}`);activeRef=connectionRef;
     try{
       // Register removal before announcing presence, every time Firebase connects.
       await sdk.onDisconnect(connectionRef).remove();if(stale(myGeneration))return;
       await sdk.set(connectionRef,sdk.serverTimestamp());
       if(stale(myGeneration)){void sdk.remove(connectionRef).catch(()=>{});return;}
-      registered=true;onConnection(true);emit();let writing=false;
+      registered=true;onConnection(true,connectionId);emit();let writing=false;
       heartbeat=setInterval(async()=>{
         if(stale(myGeneration)||writing)return;writing=true;
         try{await sdk.set(connectionRef,sdk.serverTimestamp());if(stale(myGeneration))void sdk.remove(connectionRef).catch(()=>{});}
