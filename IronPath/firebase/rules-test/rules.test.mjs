@@ -124,7 +124,7 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   assert.equal(engine.ready(),true);assert.equal(aliceReady,true);assert.ok(h.step());
   const move=a.command({type:'move',x:700,y:400});await until(()=>engine.snapshotFor('alice').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await move).ok,true);
-  goOnline(bob);await until(()=>engine.ready()&&aliceReady&&bobReady);
+  goOnline(bob);await until(()=>engine.snapshotFor('bob').match.players.bob.active&&bobReady&&bobSnapshot?.match.players.bob.active&&bobSnapshot.tick===engine.snapshotFor('bob').tick);
   const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
 });
