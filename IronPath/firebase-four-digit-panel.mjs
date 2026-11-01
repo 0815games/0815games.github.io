@@ -79,5 +79,5 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');
   });
   $('partyLeave').onclick=()=>run(async current=>{if(!party||(party.role==='host'&&!confirmClose()))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
-  render('');return {reset,leaveForLogout,collapse};
+  render('');return {reset,leaveForLogout,collapse,isActive:()=>!!party};
 }

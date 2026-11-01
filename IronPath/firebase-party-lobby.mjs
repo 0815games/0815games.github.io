@@ -1,3 +1,4 @@
+import {parseBuild,encodeBuild} from './skills.mjs';
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
 // Experimental player-hosted Firebase lobby primitives. Access control MUST be
 // provided by Realtime Database rules; this module is not itself authorization.
@@ -44,14 +45,15 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
     },
     async publishProfile(partyId,profile){
       check();if(typeof sdk.set!=='function'||!profile||typeof profile.name!=='string'||profile.name.length<2||profile.name.length>24||!['male','female'].includes(profile.gender)||!Number.isInteger(profile.level)||profile.level<1||profile.level>1000)throw new Error('Invalid party profile');
-      await sdk.set(ref(partyId,`profiles/${uid}`),{name:profile.name,gender:profile.gender,level:profile.level});check();
+      if(profile.skills!==undefined&&encodeBuild(parseBuild(profile.skills,profile.level))!==profile.skills)throw new Error('Invalid skill build');
+      await sdk.set(ref(partyId,`profiles/${uid}`),{name:profile.name,gender:profile.gender,level:profile.level,...(profile.skills!==undefined?{skills:profile.skills}:{})});check();
     },
     async startMatch(partyId){
       check();const hostId=(await sdk.get(ref(partyId,'hostId'))).val();const guestId=(await sdk.get(ref(partyId,'guestId'))).val();check();
       if(hostId!==uid||!validUid(guestId)||guestId===uid)throw new Error('Party is not ready');
       const [a,b]=await Promise.all([sdk.get(ref(partyId,`profiles/${uid}`)),sdk.get(ref(partyId,`profiles/${guestId}`))]);check();
       const profiles=[a.val(),b.val()];
-      if(profiles.some(p=>!p||typeof p.name!=='string'||p.name.length<2||p.name.length>24||!['male','female'].includes(p.gender)||!Number.isInteger(p.level)||p.level<1||p.level>1000))throw new Error('Players are not ready');
+      if(profiles.some(p=>!p||typeof p.name!=='string'||p.name.length<2||p.name.length>24||!['male','female'].includes(p.gender)||!Number.isInteger(p.level)||p.level<1||p.level>1000||(p.skills!==undefined&&encodeBuild(parseBuild(p.skills,p.level))!==p.skills)))throw new Error('Players are not ready');
       const result=await sdk.runTransaction(ref(partyId,'startedGuest'),value=>value===null?guestId:undefined,{applyLocally:false});check();
       if(!result.committed)throw new Error('Match already started');
       return {partyId,hostId,guestId,profiles};
