@@ -1,8 +1,12 @@
 // Staged UI for the four-digit approval flow. Only enable with matching rules.
 export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,confirmClose=()=>true,enabled=false}){
-  const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests');
+  const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests'),toggle=$('partyToggle');
   let base=null,approval=null,party=null,unwatch=[],profileWatch=null,guest=null,guestReady=false,matchGuest=null,started=false,busy=false,version=0;
-  root.hidden=!enabled;
+  root.hidden=true;toggle.hidden=!enabled;toggle.setAttribute('aria-expanded','false');
+  function collapse(){root.hidden=true;toggle.setAttribute('aria-expanded','false');}
+  function updateRequestIndicator(count){toggle.textContent=count?'CO-OP •':'CO-OP';toggle.setAttribute('aria-label',count?'Co-op, join request waiting':'Co-op party');}
+  updateRequestIndicator(0);
+  toggle.onclick=()=>{if(!enabled)return;root.hidden=!root.hidden;toggle.setAttribute('aria-expanded',String(!root.hidden));};
   function render(message){
     if(message!==undefined)$('partyStatus').textContent=message;
     $('partyEntry').hidden=!!party;$('partyActive').hidden=!party;
@@ -13,7 +17,7 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     for(const id of ['partyCreate','partyJoin','partyLeave'])$(id).disabled=busy;
     requests.hidden=party?.role!=='host';
   }
-  function clear(){profileWatch?.();profileWatch=null;for(const fn of unwatch)fn();unwatch=[];requests.replaceChildren();}
+  function clear(){profileWatch?.();profileWatch=null;for(const fn of unwatch)fn();unwatch=[];requests.replaceChildren();updateRequestIndicator(0);}
   function reset(){version++;clear();const stopped=Promise.resolve().then(()=>onLeaveMatch()).catch(()=>{});base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;busy=false;$('partyCodeInput').value='';render('');return stopped;}
   async function run(fn){if(!enabled||busy)return;busy=true;const current=version;render();try{await fn(current);}catch{if(current===version)render('Could not complete the party request. Check your connection and try again.');}finally{if(current===version){busy=false;render();}}}
   async function cleanup(oldParty,oldBase,oldApproval){if(!oldParty)return;if(oldParty.role==='host')await oldApproval.close(oldParty.partyId,oldParty.inviteCode);else if(oldParty.role==='guest')await oldBase.leaveGuest(oldParty.partyId);else await oldApproval.cancel(oldParty.inviteCode);}
@@ -29,6 +33,7 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
   },()=>{if(current===version)render('Party connection lost.');}));}
   function showRequests(current,values){
     requests.replaceChildren();if(current!==version||party?.role!=='host')return;
+    updateRequestIndicator(Object.values(values).filter(profile=>profile&&typeof profile.name==='string').length);
     for(const [uid,profile] of Object.entries(values)){
       if(!profile||typeof profile.name!=='string')continue;
       const row=document.createElement('div'),label=document.createElement('span'),accept=document.createElement('button'),reject=document.createElement('button');
@@ -74,5 +79,5 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');
   });
   $('partyLeave').onclick=()=>run(async current=>{if(!party||(party.role==='host'&&!confirmClose()))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
-  render('');return {reset,leaveForLogout};
+  render('');return {reset,leaveForLogout,collapse};
 }

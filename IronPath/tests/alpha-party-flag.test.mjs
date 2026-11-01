@@ -8,5 +8,5 @@ assert.match(html,/Co-op does not award XP/);
 assert.doesNotMatch(html,/id="partyCopy"/);
 assert.match(html,/id="partyCodeArea"/);
 assert.match(await readFile(new URL('../style.css',import.meta.url),'utf8'),/party-code-card code\{[^}]*font-size:clamp\(38px/);
-assert.match(html,/account\.js\?v=20261101-partylayout1/);
+assert.match(html,/account\.js\?v=20261101-cooptoggle1/);
 console.log('Live alpha party entry point checks passed.');
