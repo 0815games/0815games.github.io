@@ -32,7 +32,7 @@
       <p id="partyStatus" role="status"></p><p class="party-note">Co-op does not award XP.</p>
     </section>
     <section class="dashboard" aria-label="Battle status">
-      <div><small>WAVE</small><strong id="wave">0 / 10</strong></div><div><small>BUNKER</small><strong id="health">100</strong></div><div><small>SUPPLIES</small><strong id="money">125</strong></div><div><small>ENEMIES</small><strong id="enemies">0</strong></div>
+      <div><small>WAVE</small><strong id="wave">0 / 10</strong></div><div><small>BUNKER</small><strong id="health">100</strong></div><div><small id="moneyLabel">SUPPLIES</small><strong id="money">125</strong></div><div><small>ENEMIES</small><strong id="enemies">0</strong></div>
     </section>
     <div class="layout">
       <section class="battle"><div class="battle-head"><div><span class="eyebrow">OPERATION 01</span><h2>The Last Road</h2></div><span class="legend"><i></i> BUILD PAD <i></i> ENEMY ROUTE</span></div><div class="map-frame"><div class="map-viewport" id="mapViewport" tabindex="0" aria-label="Scrollable battlefield" aria-describedby="mapHint"><canvas id="game" width="960" height="540" aria-label="Battlefield. Tap an empty build pad to build, tap a tower to select it, or tap open ground to move your hero."></canvas></div><details class="wave-info"><summary aria-label="Show next wave details" title="Next wave">⚑</summary><div class="wave-popover"><strong>NEXT WAVE</strong><p id="wavePreview" aria-live="polite"></p></div></details></div><div class="map-toolbar" aria-label="Map view controls"><button id="mapZoom" type="button" aria-pressed="true">MAP: LARGE</button><button id="mapEntry" type="button">← ENTRY</button><button id="mapBunker" type="button">BUNKER →</button></div><p class="map-hint" id="mapHint">Swipe the map left or right to see the battlefield. Tap to build or move.</p><div class="battle-foot"><span id="message" aria-live="polite">Choose your hero and deploy when ready.</span><span>FIELD MAP / 01</span></div></section>
@@ -63,5 +63,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-cooptoggle1"></script>
+  <script type="module" src="account.js?v=20261101-wallet1"></script>
 </body></html>

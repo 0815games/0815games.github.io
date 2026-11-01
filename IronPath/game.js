@@ -2,8 +2,8 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261031-sheet1';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261101-hostcontinues1';
-import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from './match.mjs?v=20261031-coopui1';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261101-wallet1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261101-wallet1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient}={}) {
@@ -24,6 +24,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const waves = WAVES.length, keys = new Set();
   let state, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false;
   const me=()=>coop?account.getUserId():'local';
+  const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
@@ -43,7 +44,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function notice(text){$('message').textContent=text;}
   function updateUI(){
     const preview=state.ended?'Operation complete. Restart to play again.':state.wave>=waves?'Final wave underway.':'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
-    $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=state.money; $('enemies').textContent=state.enemies.length+state.spawnLeft;
+    $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; $('ability').textContent=player?.cooldown>0?`AIRSTRIKE: ${Math.ceil(player.cooldown)}s`:'AIRSTRIKE READY'; $('ability').disabled=state.ended||!player||player.cooldown>0||!state.enemies.length||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
     $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden||(!!coop&&(!coopReady||state.ended));
   }
@@ -66,24 +67,26 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     keys.clear();sendDirection();
     const actions=[];
     if(!tower){
-      types.forEach((type,i)=>actions.push({label:`${type.name} · ${type.cost}`,summary:type.description,unaffordable:state.money<type.cost,description:`View ${type.name}, ${type.cost} supplies. ${type.description}${state.money<type.cost?'. Not enough supplies to build.':''}`,run:()=>{
+      types.forEach((type,i)=>actions.push({label:`${type.name} · ${type.cost}`,summary:type.description,unaffordable:supplies()<type.cost,description:`View ${type.name}, ${type.cost} supplies. ${type.description}${supplies()<type.cost?'. Not enough supplies to build.':''}`,run:()=>{
         showDetails(type.name,`${type.description}. Base damage: ${type.damage} per shot, firing interval: ${type.interval} seconds, range: ${type.range}. Damage varies by enemy type.`,type.cost,'BUILD',()=>{
           dispatch({type:'build',pad,towerType:i},result=>{if(!result.ok){$('towerDetailsCost').textContent=result.reason;return;}if($('towerDetails').open)$('towerDetails').close();state.selectedPad=pad;closeMenu();notice(`${type.name} built. Tap it to upgrade or sell.`);updateUI();});
         });
       }}));
       notice(`Tap a tower for details. Grey options need more supplies. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else if(mode==='branches'){
-      const cost=upgradeCost(tower.level);
-      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name} · ${cost}`,summary:branch.description,unaffordable:state.money<cost,description:`View ${branch.name}: ${branch.description}. ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.`,cost,'UPGRADE',()=>upgrade(i))}));
+      const cost=upgradeCost(tower.level),sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
+      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name} · ${cost}`,summary:branch.description,unaffordable:supplies()<cost,description:`View ${branch.name}: ${branch.description}. ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.${sharedUpgrade}`,cost,'UPGRADE',()=>upgrade(i))}));
       notice(`Tap a specialization to see its effects. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else if(mode==='confirmSell'){
-      actions.push({label:`Confirm sale · +${towerRefund(tower)}`,summary:'Remove this tower and recover half of its total cost.',description:`Confirm sale for ${towerRefund(tower)} supplies`,run:()=>{dispatch({type:'sell',pad,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){notice(result.reason);return;}state.selectedPad=null;closeMenu();notice(`Tower sold. +${result.refund} supplies.`);updateUI();});}});
+      const ownerName=state.players[tower.ownerId]?.name||'tower owner',mine=!state.individualSupplies||tower.ownerId===me();
+      actions.push({label:mine?`Confirm sale · +${towerRefund(tower)}`:'Confirm sale',summary:mine?'Remove this tower and recover half of its total cost.':`Remove this tower; ${ownerName} receives ${towerRefund(tower)} supplies.`,description:mine?`Confirm sale for ${towerRefund(tower)} supplies`:`Confirm sale. ${ownerName} receives ${towerRefund(tower)} supplies`,run:()=>{dispatch({type:'sell',pad,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){notice(result.reason);return;}state.selectedPad=null;closeMenu();notice(result.refundTo&&result.refundTo!==me()?`Tower sold. ${state.players[result.refundTo]?.name||'The owner'} receives ${result.refund} supplies.`:`Tower sold. +${result.refund} supplies.`);updateUI();});}});
       actions.push({label:'Cancel',summary:'Keep this tower.',description:'Cancel sale',run:()=>showMenu(pad)});
       notice(`Confirm sale for half the investment, or cancel. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else{
-      const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL;
-      actions.push({label:max?'Max level':`Upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':'Increase damage by one level.',disabled:max,unaffordable:!max&&state.money<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${state.money<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else showDetails(`Level ${tower.level+1} upgrade`,`Adds 0.3 to the base damage multiplier; specialization and enemy modifiers still apply. Range and firing interval stay the same.`,cost,'UPGRADE',()=>upgrade(0));}});
-      actions.push({label:`Sell · +${towerRefund(tower)}`,summary:'Recover half of build and upgrade costs.',description:`Sell tower for ${towerRefund(tower)} supplies`,run:()=>showMenu(pad,'confirmSell')});
+      const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL,sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
+      actions.push({label:max?'Max level':`Upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':'Increase damage by one level.',disabled:max,unaffordable:!max&&supplies()<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else showDetails(`Level ${tower.level+1} upgrade`,`Adds 0.3 to the base damage multiplier; specialization and enemy modifiers still apply. Range and firing interval stay the same.${sharedUpgrade}`,cost,'UPGRADE',()=>upgrade(0));}});
+      const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||'the owner';
+      actions.push({label:mine?`Sell · +${towerRefund(tower)}`:'Sell tower',summary:mine?'Recover half of build and upgrade costs.':`Half the costs go to ${ownerName}.`,description:mine?`Sell tower for ${towerRefund(tower)} supplies`:`Sell tower; refund goes to ${ownerName}`, run:()=>showMenu(pad,'confirmSell')});
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
       notice(`${name} · level ${tower.level} · range ${Math.round(getTowerRange(tower))}. ${coop?"Battle continues in co-op.":"Battle paused."}`);
     }
@@ -96,8 +99,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function showDetails(title,text,cost,verb,confirm){
     $('towerDetailsTitle').textContent=title;$('towerDetailsText').textContent=text;
-    $('towerDetailsCost').textContent=`Cost: ${cost} supplies · Available: ${state.money}${state.money<cost?' · Not enough supplies':''}`;
-    const button=$('towerDetailsConfirm');button.textContent=`${verb} · ${cost}`;button.disabled=state.money<cost;button.onclick=confirm;
+    $('towerDetailsCost').textContent=`Cost: ${cost} supplies · Available: ${supplies()}${supplies()<cost?' · Not enough supplies':''}`;
+    const button=$('towerDetailsConfirm');button.textContent=`${verb} · ${cost}`;button.disabled=supplies()<cost;button.onclick=confirm;
     $('towerDetails').showModal();
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
@@ -167,7 +170,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(coop||!account.isReady())return false;
     closeMenu();keys.clear();lastDirection='0,0';let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave and try again.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
       coop=client;coopInput=createCoopInput(client,message=>notice(message));coopReady=false;$('coopToggle').textContent='LEAVE CO-OP';$('coopStatus').textContent='CONNECTING';client.start();updateUI();return true;
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
