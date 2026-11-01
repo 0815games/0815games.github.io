@@ -93,7 +93,7 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   await until(()=>a.doc.getElementById('partyRequests').children.length===1);
   assert.match(a.doc.getElementById('partyToggle').textContent,/•/);a.doc.getElementById('partyToggle').onclick();assert.equal(a.doc.getElementById('partyCodeDisplay').textContent,invite);
   const row=a.doc.getElementById('partyRequests').children[0];assert.match(row.children[0].textContent,/Bob/);assert.equal(b.game,null);
-  await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled);assert.equal(b.doc.getElementById('partyLeave').textContent,'LEAVE PARTY');
+  await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled&&b.doc.getElementById('partyLeave').textContent==='LEAVE PARTY');
   await a.doc.getElementById('partyStart').onclick();await until(()=>a.ready&&b.ready);
   assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
   await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
