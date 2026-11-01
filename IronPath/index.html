@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261101-partylayout1">
+  <link rel="stylesheet" href="style.css?v=20261101-cooptoggle1">
 </head>
 <body>
   <main>
@@ -16,7 +16,7 @@
       <div id="characterView" hidden><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><button id="logout" type="button">SIGN OUT</button></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>CO-OP</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>CO-OP PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Play together with a four-digit code. The host approves each player and stays online.</p>
@@ -63,5 +63,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-partylayout1"></script>
+  <script type="module" src="account.js?v=20261101-cooptoggle1"></script>
 </body></html>

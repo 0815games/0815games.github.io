@@ -75,7 +75,7 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   const sdk={ref,get,set,onValue,runTransaction,remove,update,onDisconnect,serverTimestamp};
   for(const [db,uid,name] of [[host,'alice','Alice'],[guest,'bob','Bob']])await set(at(db,`players/${uid}`),{name,gender:'female',xp:0});
   let seed=1;const crypto={getRandomValues(bytes){bytes.fill(seed++);return bytes;}};
-  function makeDoc(){const nodes=new Map();function node(){return {hidden:false,disabled:false,textContent:'',value:'',children:[],append(...v){this.children.push(...v);},replaceChildren(...v){this.children=v;}};}return {getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},createElement:()=>node()};}
+  function makeDoc(){const nodes=new Map();function node(){return {hidden:false,disabled:false,textContent:'',value:'',children:[],attributes:{},setAttribute(k,v){this.attributes[k]=v;},append(...v){this.children.push(...v);},replaceChildren(...v){this.children=v;}};}return {getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},createElement:()=>node()};}
   let allowClose=false;
   function player(db,uid,name){
     const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false;
@@ -86,10 +86,12 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   }
   const a=player(host,'alice','Alice'),b=player(guest,'bob','Bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
   const until=async fn=>{const end=Date.now()+10000;while(!fn()){if(Date.now()>end)throw Error(`UI timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,25));}};
-  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);assert.equal(a.doc.getElementById('partyCodeArea').hidden,false);assert.equal(a.doc.getElementById('partyLeave').textContent,'CLOSE PARTY');
+  assert.equal(a.doc.getElementById('firebaseParty').hidden,true);a.doc.getElementById('partyToggle').onclick();assert.equal(a.doc.getElementById('firebaseParty').hidden,false);
+  await a.doc.getElementById('partyCreate').onclick();a.doc.getElementById('partyToggle').onclick();assert.equal(a.doc.getElementById('firebaseParty').hidden,true);const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);assert.equal(a.doc.getElementById('partyCodeArea').hidden,false);assert.equal(a.doc.getElementById('partyLeave').textContent,'CLOSE PARTY');
   b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
   assert.equal(b.doc.getElementById('partyLeave').textContent,'CANCEL REQUEST');assert.equal(b.doc.getElementById('partyCodeArea').hidden,true);
   await until(()=>a.doc.getElementById('partyRequests').children.length===1);
+  assert.match(a.doc.getElementById('partyToggle').textContent,/•/);a.doc.getElementById('partyToggle').onclick();assert.equal(a.doc.getElementById('partyCodeDisplay').textContent,invite);
   const row=a.doc.getElementById('partyRequests').children[0];assert.match(row.children[0].textContent,/Bob/);assert.equal(b.game,null);
   await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled);assert.equal(b.doc.getElementById('partyLeave').textContent,'LEAVE PARTY');
   await a.doc.getElementById('partyStart').onclick();await until(()=>a.ready&&b.ready);
