@@ -21,10 +21,10 @@ holdInput=true;const uncertain=bob.command({type:'sell',pad:0});await flush();
 assert.match((await uncertain).reason,/unknown/);assert.equal(bobState,'syncing');assert.match((await bob.command({type:'startWave'})).reason,/previous/);
 holdInput=false;inputListener(held.id,held.packet);for(let i=0;i<6;i++)session.step();await flush();assert.equal(bobState,'ready');
 const wave=bob.command({type:'startWave'});await flush();for(let i=0;i<6;i++)session.step();await flush();assert.equal((await wave).ok,true);
-// Disconnect cancels pending commands and pauses the game.
-const sale=alice.command({type:'sell',pad:0});await flush();session.setPresence('bob',false);await flush();
-assert.match((await sale).reason,/cancelled/);assert.equal(session.step(),null);assert.equal(bobView.match.towers.length,0);
-assert.equal((await alice.command({type:'startWave'})).ok,false);
+// Guest disconnect cancels only their pending commands; the host continues.
+const sale=bob.command({type:'sell',pad:0});await flush();session.setPresence('bob',false);await flush();
+assert.match((await sale).reason,/cancelled/);assert.ok(session.step());assert.equal(bobView.match.towers.length,0);
+const hostMove=alice.command({type:'move',x:700,y:400});await flush();for(let i=0;i<6;i++)session.step();await flush();assert.equal((await hostMove).ok,true);
 assert.ok(states.includes('ready'));assert.ok(states.includes('waiting'));
 await alice.stop();await bob.stop();await session.stop();
 // Different host epochs cannot silently resume an old session.

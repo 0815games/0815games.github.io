@@ -45,5 +45,5 @@ hostSession.start();
 const hostPresence=createFirebasePartyPresence({...shared,auth:{currentUser:{uid:'alice'}},onPresence:(id,online)=>hostSession.setPresence(id,online)});
 const guestPresence=createFirebasePartyPresence({...shared,auth:{currentUser:{uid:'bob'}}});
 hostPresence.start();guestPresence.start();await sleep(5);assert.equal(gameHost.ready(),true);assert.ok(hostSession.step());
-await guestPresence.stop();assert.equal(gameHost.ready(),false);assert.equal(hostSession.step(),null);
-await hostPresence.stop();await hostSession.stop();
+await guestPresence.stop();assert.equal(gameHost.ready(),true);assert.ok(hostSession.step(),'host keeps advancing without guest');
+await hostPresence.stop();assert.equal(gameHost.ready(),false);assert.equal(hostSession.step(),null);await hostSession.stop();

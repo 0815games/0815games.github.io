@@ -2,7 +2,7 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261031-sheet1';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261031-towers1';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261101-hostcontinues1';
 import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from './match.mjs?v=20261031-coopui1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
@@ -137,7 +137,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     ctx.fillStyle='#647359';ctx.fillRect(875,375,70,50);ctx.strokeStyle='#c9d6a3';ctx.lineWidth=3;ctx.strokeRect(875,375,70,50);
     const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(211,223,124,0.12)';ctx.fill();ctx.strokeStyle='#d3df7c';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
     pads.forEach((p,i)=>{const tower=state.towers.find(t=>t.pad===i);ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.fillStyle=tower?'#313a2d':'#3d4938';ctx.fill();ctx.strokeStyle=state.selectedPad===i?'#ffffff':tower?types[tower.type].color:'#809470';ctx.lineWidth=state.selectedPad===i?4:2;ctx.stroke();if(tower){ctx.fillStyle=types[tower.type].color;ctx.fillRect(p.x-10,p.y-10,20,20);ctx.fillStyle='#1c241b';ctx.font='bold 12px Arial';ctx.fillText(tower.level,p.x-3,p.y+4);}else{ctx.strokeStyle='#849a78';ctx.beginPath();ctx.moveTo(p.x-6,p.y);ctx.lineTo(p.x+6,p.y);ctx.moveTo(p.x,p.y-6);ctx.lineTo(p.x,p.y+6);ctx.stroke();}});
-    if(state.wave>0){for(const player of Object.values(state.players)){ctx.fillStyle=player.id===me()?'#e6c793':'#8cc7dd';ctx.beginPath();ctx.arc(player.x,player.y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e8f0d4';ctx.font='bold 10px Arial';ctx.fillText(player.name||'HERO',player.x-15,player.y+28);}}
+    if(state.wave>0){for(const player of Object.values(state.players)){if(player.active===false)continue;ctx.fillStyle=player.id===me()?'#e6c793':'#8cc7dd';ctx.beginPath();ctx.arc(player.x,player.y,12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#e8f0d4';ctx.font='bold 10px Arial';ctx.fillText(player.name||'HERO',player.x-15,player.y+28);}}
 
     for(const e of state.enemies){
       ctx.fillStyle={infantry:'#d18c70',runner:'#f0ca79',tank:'#925e4c',plane:'#91cbd5'}[e.kind];
@@ -167,7 +167,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(coop||!account.isReady())return false;
     closeMenu();keys.clear();lastDirection='0,0';let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave and try again.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op paused: waiting for both players.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave and try again.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
       coop=client;coopInput=createCoopInput(client,message=>notice(message));coopReady=false;$('coopToggle').textContent='LEAVE CO-OP';$('coopStatus').textContent='CONNECTING';client.start();updateUI();return true;
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }

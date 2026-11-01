@@ -23,7 +23,8 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
       if(!validUid(hostId)||hostId===uid)throw new Error('Party unavailable');
       const result=await sdk.runTransaction(ref(partyId,'guestId'),current=>current===null||current===uid?uid:undefined,{applyLocally:false});
       check();if(!result.committed)throw new Error('Party unavailable');
-      return {partyId,hostId,guestId:uid};
+      const started=(await sdk.get(ref(partyId,'startedGuest'))).val();check();
+      return {partyId,hostId,guestId:uid,...(started===uid?{started:true}:{})};
     },
     // Host may remove the entire party atomically; rules must enforce host-only
     // deletion without granting parent-level write access for normal edits.

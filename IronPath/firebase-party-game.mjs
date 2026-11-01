@@ -1,8 +1,8 @@
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-partywire1';
-import {createPartyHost} from './party-host.mjs';
-import {createMatch,STEP} from './simulation.mjs';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-hostcontinues1';
+import {createPartyHost} from './party-host.mjs?v=20261101-hostcontinues1';
+import {createMatch,STEP} from './simulation.mjs?v=20261101-hostcontinues1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
@@ -14,7 +14,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false;
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
-    const next=active&&!failed&&sessionReady&&playerIds.every(id=>online.get(id));
+    const next=active&&!failed&&sessionReady&&online.get(hostId)&&online.get(uid);
     if(next!==ready){ready=next;onStatus(ready);}
     if(active&&!failed)onState(ready?'ready':'waiting');
   }
@@ -28,7 +28,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
         client=createFirebasePartyClientSession({channel,onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(active&&!failed)onSnapshot(snapshot);}});
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players)),playerIds,epoch,onError:fail});
+          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players),{hostId}),playerIds,epoch,onError:fail});
         }
         client.start();host?.start();
         presence=createFirebasePartyPresence({...options,crypto,onPresence:(id,value)=>{if(!active)return;online.set(id,value);host?.setPresence(id,value);refresh();},onConnection:connected=>{if(!active)return;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});

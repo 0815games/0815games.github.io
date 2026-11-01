@@ -2,7 +2,7 @@
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
 import { applyCommand } from './match.mjs';
-import { stepMatch } from './simulation.mjs';
+import { stepMatch } from './simulation.mjs?v=20261101-hostcontinues1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
@@ -71,6 +71,12 @@ function makeHost(data){
     }
     queue=remaining;return true;
   }
+  // Player-hosted sessions can suspend an absent player's combat without
+  // removing their identity, towers or reconnect receipts from the match.
+  function setPlayerActive(playerId,active){
+    if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
+    match.players[playerId].active=active;return true;
+  }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}
   // A reconnecting authenticated player receives a detached view and their own receipts.
@@ -79,7 +85,7 @@ function makeHost(data){
     const p=players[playerId];
     return clone({version:PROTOCOL_VERSION,tick,match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
   }
-  return {receive,advance,checkpoint,snapshotFor,suspendPlayer};
+  return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive};
 }
 export function createHost(initialMatch){
   const match=clone(initialMatch),ids=Object.keys(match.players||{});

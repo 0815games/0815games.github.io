@@ -13,7 +13,8 @@ assert.deepEqual(await guest.join(party.partyId),{partyId:party.partyId,hostId:'
 await assert.rejects(outsider.join(party.partyId),/unavailable/);await assert.rejects(host.join(party.partyId),/unavailable/);
 values.set(`parties/${party.partyId}/profiles/bob`,{name:'Bob'});values.set(`parties/${party.partyId}/inputs/bob`,'stale');
 assert.equal(await outsider.leaveGuest(party.partyId),false);assert.equal(await guest.leaveGuest(party.partyId),true);
-assert.equal(values.has(`parties/${party.partyId}/profiles/bob`),false);assert.equal(values.has(`parties/${party.partyId}/inputs/bob`),false);assert.equal(seen.at(-1),null);unsubscribe();
+assert.equal(values.has(`parties/${party.partyId}/profiles/bob`),false);assert.equal(values.has(`parties/${party.partyId}/inputs/bob`),false);
+values.set(`parties/${party.partyId}/startedGuest`,'bob');assert.equal((await guest.join(party.partyId)).started,true);assert.equal(await guest.leaveGuest(party.partyId),true);assert.equal(seen.at(-1),null);unsubscribe();
 await assert.rejects(guest.join('../other'),/Invalid party code/);await assert.rejects(guest.join('f'.repeat(32)),/unavailable/);
 const next=await host.create();assert.notEqual(next.partyId,party.partyId);
 const entrants=await Promise.allSettled([guest.join(next.partyId),outsider.join(next.partyId)]);
