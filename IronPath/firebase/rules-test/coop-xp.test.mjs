@@ -8,7 +8,7 @@ const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../coop-xp.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
-const sdk={ref,get,runTransaction};
+const sdk={ref,get,onValue,runTransaction};
 test('atomic wave receipts protect both profiles from duplicate credits and other accounts',async()=>{
   await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0}));await assertSucceeds(set(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0}));
   const qa=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,onStatus:(s,e)=>{if(e)console.error('A reward:',e);}}),qb=createCoopRewardQueue({db:bob,auth:{currentUser:{uid:'bob'}},sdk,partyId:party,onStatus:(s,e)=>{if(e)console.error('B reward:',e);}});

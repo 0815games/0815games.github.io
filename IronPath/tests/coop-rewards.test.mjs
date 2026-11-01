@@ -8,7 +8,7 @@ match.wave=1;match.running=true;stepMatch(match);assert.equal(match.players.a.co
 match.players.b.active=false;match.wave=2;match.running=true;stepMatch(match);assert.equal(match.players.a.completedWaveMask,3);assert.equal(match.players.b.completedWaveMask,1);
 match.players.b.active=true;match.wave=3;match.running=true;stepMatch(match);assert.equal(match.players.a.completedWaveMask,7);assert.equal(match.players.b.completedWaveMask,5);
 const uid={currentUser:{uid:'a'}},data={xp:0,name:'Alice',gender:'female'},statuses=[];let calls=0,fail=false,now=1000;
-const sdk={ref(_db,path){return path;},async get(){return {val:()=>structuredClone(data)};},async runTransaction(_ref,update){calls++;if(fail)throw Error('offline');const next=update(structuredClone(data));if(next)Object.assign(data,next);return {committed:!!next,snapshot:{val:()=>structuredClone(data)}};}};
+const sdk={ref(_db,path){return path;},onValue(_ref,callback){callback({val:()=>structuredClone(data)});return()=>{};},async runTransaction(_ref,update){calls++;if(fail)throw Error('offline');const next=update(structuredClone(data));if(next)Object.assign(data,next);return {committed:!!next,snapshot:{val:()=>structuredClone(data)}};}};
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
 const queue=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,onStatus:s=>statuses.push(s),clock:()=>now});
 queue.observe(1);queue.observe(1);await flush();assert.equal(data.xp,30);assert.equal(data.coopRewards[party],1);assert.deepEqual(statuses,['saved']);
