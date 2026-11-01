@@ -34,7 +34,12 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
       await sdk.remove(sdk.ref(db,`parties/${partyId}`));check();return true;
     },
     async leaveGuest(partyId){
-      check();const result=await sdk.runTransaction(ref(partyId,'guestId'),current=>current===uid?null:undefined,{applyLocally:false});check();return result.committed;
+      check();if(typeof sdk.remove!=='function')throw new Error('Party cleanup unavailable');
+      const slot=ref(partyId,'guestId'),current=(await sdk.get(slot)).val();check();if(current!==uid)return false;
+      // The database rules re-check ownership atomically at deletion time. A
+      // transaction that aborts on the SDK's initial uncached null can silently
+      // leave the guest slot occupied, so don't use one for this operation.
+      await sdk.remove(slot);check();return true;
     },
     async publishProfile(partyId,profile){
       check();if(typeof sdk.set!=='function'||!profile||typeof profile.name!=='string'||profile.name.length<2||profile.name.length>24||!['male','female'].includes(profile.gender)||!Number.isInteger(profile.level)||profile.level<1||profile.level>1000)throw new Error('Invalid party profile');
