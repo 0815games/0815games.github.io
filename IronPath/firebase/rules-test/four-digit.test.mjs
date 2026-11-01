@@ -32,6 +32,13 @@ test('four-digit requests require explicit host approval and cannot grant unauth
   await assertSucceeds(set(at(guest,`${p}/inputs/bob`),'{}'));
   await assertFails(set(at(attacker,`${p}/inputs/eve`),'{}'));
   await assertSucceeds(set(at(guest,`${p}/guestId`),null));
+  // A locked match can only re-admit its original guest, even if another
+  // signed-in player knows the short code and requests access.
+  await env.withSecurityRulesDisabled(async context=>{await set(ref(context.database(),`${p}/startedGuest`),'bob');});
+  await assertSucceeds(set(at(attacker,`${c}/requests/eve`),{name:'Eve'}));
+  await assertFails(set(at(host,`${p}/guestId`),'eve'));
+  await assertSucceeds(set(at(host,`${p}/guestId`),'bob'));
+  await assertSucceeds(set(at(guest,`${p}/guestId`),null));
   await assertSucceeds(set(at(host,`${c}/requests/bob`),null));
   await assertFails(set(at(guest,`${p}/guestId`),'bob'));
   await assertSucceeds(set(at(host,c),null));

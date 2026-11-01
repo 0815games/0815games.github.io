@@ -1,6 +1,6 @@
-# Four-digit join flow (staged, not enabled)
+# Four-digit join flow and deployment
 
-This is preparatory work, not a deployable feature yet. The live party UI continues using the previous long invite. Do not publish `party-four-digit.draft.rules.json` until the UI is connected and the full two-client flow has passed emulator tests: the new rules disable direct guest claims, so publishing them early would break the current live join flow.
+The new UI uses four-digit invites and host approval. It requires `party-four-digit.draft.rules.json`, which replaces the earlier alpha rules. Publish the rules only after reviewing and backing up the live rules. The old and new join flows are not compatible: joining parties will be unavailable between the site update and rules publication. Restart both browsers after the rules are published. Emulator tests cover requests, approval, gameplay and guest rejoin; real Firebase and phone testing are still needed.
 
 The staged design maps a four-digit code to a random internal party ID. A signed-in player may send a join request containing the name from their own Firebase profile. Only the host can read the request list or assign the guest slot; rules require an existing request, an empty slot, and the original guest for a started match. Code knowledge alone does not authorize reading match views or writing gameplay input. The host sees a player name, which is not a verified identity: names can be duplicated, so agree on who is joining out of band.
 

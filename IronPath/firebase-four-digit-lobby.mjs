@@ -14,8 +14,10 @@ export function createFourDigitLobby({db,auth,sdk,crypto=globalThis.crypto,lobby
       check();const party=await lobby.create();let inviteCode=null;
       try{
         for(let i=0;i<40;i++){
-          const candidate=code();const claimed=await sdk.runTransaction(ref(`partyCodes/${candidate}/hostId`),value=>value===null?uid:undefined,{applyLocally:false});check();
-          if(claimed.committed){inviteCode=candidate;break;}
+          const candidate=code(),slot=ref(`partyCodes/${candidate}/hostId`);
+          if((await sdk.get(slot)).exists()){check();continue;}
+          try{const claimed=await sdk.runTransaction(slot,value=>value===null?uid:undefined,{applyLocally:false});check();if(claimed.committed){inviteCode=candidate;break;}}
+          catch(error){check();if((await sdk.get(slot)).exists())continue;throw error;}
         }
         if(inviteCode===null)throw Error('No party code available');
         await sdk.set(ref(`parties/${party.partyId}/inviteCode`),inviteCode);check();
