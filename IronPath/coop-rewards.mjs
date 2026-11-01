@@ -25,7 +25,7 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,onStatus=()=>{},clock
       const receipt=result.snapshot.val()?.coopRewards?.[partyId]||0;
       if(!Number.isInteger(receipt)||receipt<0||receipt>1023||(receipt&mask)!==mask)throw new Error('XP credit not confirmed');
       confirmed|=receipt;pending&=~confirmed;if(result.committed)onStatus('saved');
-    }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error');}}
+    }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error',error);}}
     finally{running=false;if(!closed&&pending&&clock()>=retryAt)void pump();}
   }
   return {

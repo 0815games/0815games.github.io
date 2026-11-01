@@ -11,7 +11,7 @@ const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now(
 const sdk={ref,get,runTransaction};
 test('atomic wave receipts protect both profiles from duplicate credits and other accounts',async()=>{
   await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0}));await assertSucceeds(set(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0}));
-  const qa=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party}),qb=createCoopRewardQueue({db:bob,auth:{currentUser:{uid:'bob'}},sdk,partyId:party});
+  const qa=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,onStatus:(s,e)=>{if(e)console.error('A reward:',e);}}),qb=createCoopRewardQueue({db:bob,auth:{currentUser:{uid:'bob'}},sdk,partyId:party,onStatus:(s,e)=>{if(e)console.error('B reward:',e);}});
   qa.observe(1);qb.observe(1);
   await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
   qa.observe(1);qb.observe(1);qa.observe(3);qb.observe(3);
@@ -30,7 +30,7 @@ test('host snapshots credit both participants once and preserve progress on reco
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   const fullSdk={...sdk,set,onValue,update},ids=['alice','bob'],opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
   const authA={currentUser:{uid:'alice'}},authB={currentUser:{uid:'bob'}};
-  const qa=createCoopRewardQueue({db:alice,auth:authA,sdk,partyId:party}),qb=createCoopRewardQueue({db:bob,auth:authB,sdk,partyId:party});
+  const qa=createCoopRewardQueue({db:alice,auth:authA,sdk,partyId:party,onStatus:(s,e)=>{if(e)console.error('A reward:',e);}}),qb=createCoopRewardQueue({db:bob,auth:authB,sdk,partyId:party});
   const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'})));state.wave=1;state.running=true;
   const engine=createPartyHost(state,{hostId:'alice'});
   const h=createFirebasePartyHostSession({channel:createFirebasePartyChannel({...opts,db:alice,auth:authA}),host:engine,playerIds:ids,epoch:'xp-test'});
