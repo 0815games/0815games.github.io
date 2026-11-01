@@ -2,7 +2,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-shortcode1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261101-fourstage1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261101-partylayout1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
 import { startGame } from './game.js?v=20261101-hostcontinues1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-handshake1';
@@ -15,7 +15,7 @@ const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null;
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
-const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>createFirebasePartyLobby({db,auth,sdk:partySdk}),getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp)}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks}),onUpdate)??false,clipboard:navigator.clipboard,enabled:true});
+const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>createFirebasePartyLobby({db,auth,sdk:partySdk}),getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp)}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks}),onUpdate)??false,confirmClose:()=>window.confirm("Close the party? This ends co-op for both players."),enabled:true});
 const level=xp=>characterProgress(xp).level;
 const levelText=xp=>{const p=characterProgress(xp);return `LEVEL ${p.level} · ${p.current} / ${p.required} XP`;};
 function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';}

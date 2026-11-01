@@ -76,20 +76,22 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   for(const [db,uid,name] of [[host,'alice','Alice'],[guest,'bob','Bob']])await set(at(db,`players/${uid}`),{name,gender:'female',xp:0});
   let seed=1;const crypto={getRandomValues(bytes){bytes.fill(seed++);return bytes;}};
   function makeDoc(){const nodes=new Map();function node(){return {hidden:false,disabled:false,textContent:'',value:'',children:[],append(...v){this.children.push(...v);},replaceChildren(...v){this.children=v;}};}return {getElementById(id){if(!nodes.has(id))nodes.set(id,node());return nodes.get(id);},createElement:()=>node()};}
+  let allowClose=false;
   function player(db,uid,name){
     const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false;
-    const panel=createFourDigitPanel({document:doc,enabled:true,createLobby:()=>createFirebasePartyLobby({db,auth,sdk,crypto}),createApproval:lobby=>createFourDigitLobby({db,auth,sdk,crypto,lobby}),getProfile:()=>({name,gender:'female',level:1}),confirmMatch:()=>true,
+    const panel=createFourDigitPanel({document:doc,enabled:true,createLobby:()=>createFirebasePartyLobby({db,auth,sdk,crypto}),createApproval:lobby=>createFourDigitLobby({db,auth,sdk,crypto,lobby}),getProfile:()=>({name,gender:'female',level:1}),confirmMatch:()=>true,confirmClose:()=>allowClose,
       onJoinMatch:(info,onState)=>{game=createFirebasePartyGame({db,auth,sdk,...info,players:info.profiles?.map((p,i)=>createPlayer(info.playerIds[i],p)),onState,onStatus:value=>{ready=value;}});game.start();return true;},
       onLeaveMatch:async()=>{const old=game;game=null;ready=false;await old?.stop();}});
     return {doc,panel,get game(){return game;},get ready(){return ready;}};
   }
   const a=player(host,'alice','Alice'),b=player(guest,'bob','Bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
   const until=async fn=>{const end=Date.now()+10000;while(!fn()){if(Date.now()>end)throw Error(`UI timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,25));}};
-  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);
+  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);assert.equal(a.doc.getElementById('partyCodeArea').hidden,false);assert.equal(a.doc.getElementById('partyLeave').textContent,'CLOSE PARTY');
   b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
+  assert.equal(b.doc.getElementById('partyLeave').textContent,'CANCEL REQUEST');assert.equal(b.doc.getElementById('partyCodeArea').hidden,true);
   await until(()=>a.doc.getElementById('partyRequests').children.length===1);
   const row=a.doc.getElementById('partyRequests').children[0];assert.match(row.children[0].textContent,/Bob/);assert.equal(b.game,null);
-  await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled);
+  await row.children[1].onclick();await until(()=>!a.doc.getElementById('partyStart').disabled);assert.equal(b.doc.getElementById('partyLeave').textContent,'LEAVE PARTY');
   await a.doc.getElementById('partyStart').onclick();await until(()=>a.ready&&b.ready);
   assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
   await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
@@ -97,5 +99,5 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
   await until(()=>a.doc.getElementById('partyRequests').children.length===1);await a.doc.getElementById('partyRequests').children[0].children[1].onclick();
   await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
-  await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();
+  await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();assert.ok(a.game,'cancelling close keeps the host playing');allowClose=true;await a.doc.getElementById('partyLeave').onclick();
 });

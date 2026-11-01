@@ -1,5 +1,5 @@
 // Staged UI for the four-digit approval flow. Only enable with matching rules.
-export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,clipboard,enabled=false}){
+export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,confirmClose=()=>true,enabled=false}){
   const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests');
   let base=null,approval=null,party=null,unwatch=[],profileWatch=null,guest=null,guestReady=false,matchGuest=null,started=false,busy=false,version=0;
   root.hidden=!enabled;
@@ -7,9 +7,10 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     if(message!==undefined)$('partyStatus').textContent=message;
     $('partyEntry').hidden=!!party;$('partyActive').hidden=!party;
     $('partyCodeDisplay').textContent=party?.role==='host'?party.inviteCode:'';
-    $('partyCopy').hidden=party?.role!=='host';$('partyStart').hidden=party?.role!=='host';
+    $('partyCodeArea').hidden=party?.role!=='host';$('partyStart').hidden=party?.role!=='host';
+    $('partyLeave').textContent=party?.role==='host'?'CLOSE PARTY':party?.role==='pending'?'CANCEL REQUEST':'LEAVE PARTY';
     $('partyStart').disabled=busy||!guest||!guestReady||started;
-    for(const id of ['partyCreate','partyJoin','partyLeave','partyCopy'])$(id).disabled=busy;
+    for(const id of ['partyCreate','partyJoin','partyLeave'])$(id).disabled=busy;
     requests.hidden=party?.role!=='host';
   }
   function clear(){profileWatch?.();profileWatch=null;for(const fn of unwatch)fn();unwatch=[];requests.replaceChildren();}
@@ -72,7 +73,6 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     const result=await base.startMatch(party.partyId);if(current!==version||!party)return;
     started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');
   });
-  $('partyLeave').onclick=()=>run(async current=>{if(!party)return;await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render('Party closed.');});
-  $('partyCopy').onclick=()=>run(async current=>{if(!party||party.role!=='host'||!clipboard?.writeText){render('Select the code above to copy it.');return;}await clipboard.writeText(party.inviteCode);if(current===version)render('Party code copied. Share it privately.');});
+  $('partyLeave').onclick=()=>run(async current=>{if(!party||(party.role==='host'&&!confirmClose()))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
   render('');return {reset,leaveForLogout};
 }
