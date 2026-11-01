@@ -1,11 +1,12 @@
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261101-coopxp1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-shortcode1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261101-cooptoggle1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261101-wallet1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-wallet1';
+import { startGame } from './game.js?v=20261101-coopxp1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-coopxp1';
 import { createPlayer } from './match.mjs?v=20261101-wallet1';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
 
@@ -15,7 +16,7 @@ const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null;
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
-const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>createFirebasePartyLobby({db,auth,sdk:partySdk}),getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp)}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks}),onUpdate)??false,confirmClose:()=>window.confirm("Close the party? This ends co-op for both players."),enabled:true});
+const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>createFirebasePartyLobby({db,auth,sdk:partySdk}),getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp)}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>{const uid=auth.currentUser?.uid,version=sessionVersion;const rewardQueue=createCoopRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,onStatus:status=>{if(version===sessionVersion&&auth.currentUser?.uid===uid)$('saveStatus').textContent=status==='saved'?'Co-op wave XP saved.':'Co-op XP could not be saved yet. Check Firebase rules and connection.';}});const joined=gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks,onWaveRewards:mask=>rewardQueue.observe(mask)}),onUpdate)??false;if(!joined)rewardQueue.close();return joined;},confirmClose:()=>window.confirm("Close the party? This ends co-op for both players."),enabled:true});
 const level=xp=>characterProgress(xp).level;
 const levelText=xp=>{const p=characterProgress(xp);return `LEVEL ${p.level} · ${p.current} / ${p.required} XP`;};
 function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';}

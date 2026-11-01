@@ -2,7 +2,7 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261031-sheet1';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261101-wallet1';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261101-coopxp1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261101-wallet1';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
@@ -22,7 +22,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     [{name:'Marksman',damage:1,interval:.6,range:1,description:'40% shorter firing interval'}, {name:'Anti-armor Rifle',damage:2,interval:1,range:1.1,description:'100% more damage, 10% more range and another 40% damage against tanks'}]
   ];
   const waves = WAVES.length, keys = new Set();
-  let state, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false;
+  let state, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0;
   const me=()=>coop?account.getUserId():'local';
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
@@ -168,9 +168,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function confirmParty(){return !(state.wave>0||state.towers.length)||window.confirm('Joining co-op will end the current solo run. Continue?');}
   function beginCoop(factory,onUpdate=()=>{}){
     if(coop||!account.isReady())return false;
-    closeMenu();keys.clear();lastDirection='0,0';let client;
+    closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const selectedPad=state.selectedPad;state={...snapshot.match,selectedPad,speed:1};const completed=state.players[me()]?.completedWaveMask||0;if(completed&~seenCoopWaves)notice('Wave completed! Saving co-op XP…');seenCoopWaves|=completed;updateUI();},onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${event.damage} health.`);else if(event.type==='defeat')notice('Bunker lost.');else if(event.type==='waveCleared')notice(event.victory?'Co-op victory!':'Wave cleared. Prepare for the next wave.');}}});
       coop=client;coopInput=createCoopInput(client,message=>notice(message));coopReady=false;$('coopToggle').textContent='LEAVE CO-OP';$('coopStatus').textContent='CONNECTING';client.start();updateUI();return true;
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
