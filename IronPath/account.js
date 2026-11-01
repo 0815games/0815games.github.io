@@ -1,3 +1,4 @@
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-tree1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261101-armory1';
@@ -36,20 +37,19 @@ function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscri
 const account={getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},awardXP:async (amount,wave)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||wave>10)return;$('saveStatus').textContent=`Saving +${amount} XP and loot…`;try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current&&Number.isInteger(current.xp)&&current.xp+amount<=10000000?{...current,xp:current.xp+amount,armory:rewardWave(current.armory,wave)}:undefined,{applyLocally:false});if(version!==sessionVersion)return;$('saveStatus').textContent=result.committed?`+${amount} XP and wave loot saved.`:'XP and loot could not be saved.';}catch(e){if(version===sessionVersion)$('saveStatus').textContent='XP and loot could not be saved. Check your connection and database rules.';}}};
 onAuthStateChanged(auth,currentUser=>{if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();partyPanel.reset();partyPanel.collapse();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');$('password').value='';if(!currentUser){display('auth');return;}display('loading');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
-let draftSkills=null;
+let draftSkills=null,selectedSkill={path:'assault',rank:1};
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!!gameControl?.canEditSkills();}
 function renderSkills(){
-  const container=$('skillPaths');container.replaceChildren();const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl);
-  $('skillPoints').textContent=`LEVEL ${lvl} · ${left} SKILL POINT${left===1?'':'S'} AVAILABLE`;
-  for(const path of SKILL_PATHS){
-    const card=document.createElement('section'),title=document.createElement('strong'),description=document.createElement('small'),actions=document.createElement('div'),rank=document.createElement('button'),active=document.createElement('button');
-    card.className='skill-path';actions.className='skill-path-actions';title.textContent=`${path.name.toUpperCase()} · RANK ${draftSkills[path.id]} / 3`;description.textContent=`Passive: ${path.passive}. Ability: ${path.ability} — ${path.description}`;
-    rank.type='button';rank.textContent='UPGRADE · 1 POINT';rank.disabled=!left||draftSkills[path.id]>=3;rank.onclick=()=>{draftSkills[path.id]++;renderSkills();};
-    active.type='button';active.textContent=draftSkills.active===path.id?'ACTIVE ABILITY':'SELECT ABILITY';active.setAttribute('aria-pressed',String(draftSkills.active===path.id));active.onclick=()=>{draftSkills.active=path.id;renderSkills();};
-    actions.append(rank,active);card.append(title,description,actions);container.append(card);
-  }
+  const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),path=SKILL_PATHS.find(p=>p.id===selectedSkill.path)||SKILL_PATHS[0],rank=selectedSkill.rank,ability=rank===4;
+  $('skillPoints').textContent=`LEVEL ${lvl}  ·  ${left} POINT${left===1?'':'S'} AVAILABLE`;
+  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,onSelect:(value,keyboard)=>{selectedSkill=value;renderSkills();if(keyboard)$('skillPaths').querySelector(`[data-path="${value.path}"][data-rank="${value.rank}"]`)?.focus({preventScroll:true});}});
+  const action=$('skillDetailAction');$('skillDetailType').textContent=ability?'ACTIVE ABILITY':`${path.name.toUpperCase()} / PASSIVE`;
+  $('skillDetailTitle').textContent=ability?path.ability:`${path.name} · Rank ${rank}`;
+  $('skillDetailText').textContent=ability?`${path.description} Choose one active ability; all passive upgrades remain active.`:`${path.passive}. ${draftSkills[path.id]} of 3 ranks unlocked.`;
+  if(ability){action.textContent=draftSkills.active===path.id?'ABILITY SELECTED':'SELECT ABILITY';action.disabled=draftSkills.active===path.id;action.onclick=()=>{draftSkills.active=path.id;renderSkills();};}
+  else {const unlocked=rank<=draftSkills[path.id],next=rank===draftSkills[path.id]+1;action.textContent=unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT';action.disabled=unlocked||!next||!left;action.onclick=()=>{if(rank===draftSkills[path.id]+1&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills[path.id]++;renderSkills();}};}
 }
-$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Edit skills between matches, before building or joining a party.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));$('skillStatus').textContent='';renderSkills();$('skillDialog').showModal();};
+$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Edit skills between matches, before building or joining a party.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));selectedSkill={path:'assault',rank:1};$('skillStatus').textContent='';renderSkills();$('skillDialog').showModal();};
 $('skillReset').onclick=()=>{draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();};
 $('skillCancel').onclick=()=>$('skillDialog').close();
 $('skillSave').onclick=async()=>{
@@ -69,14 +69,21 @@ $('skillSave').onclick=async()=>{
 
 function renderArmory(){
   const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=`${a.scrap} SCRAP`;
-  const add=(title,description,label,disabled,action)=>{
-    const card=document.createElement('section'),heading=document.createElement('strong'),text=document.createElement('small'),button=document.createElement('button');card.className='skill-path';heading.textContent=title;text.textContent=description;button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;card.append(heading,text,button);list.append(card);
+  const section=(name,caption)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';head.className='armory-section-head';title.textContent=name;sub.textContent=caption;head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
+  const add=(grid,{icon,title,description,eyebrow,label,disabled,action,state,rank})=>{
+    const card=document.createElement('article'),art=document.createElement('div'),body=document.createElement('div'),meta=document.createElement('span'),heading=document.createElement('h4'),text=document.createElement('p'),button=document.createElement('button');
+    card.className=`armory-card ${state||''}`;art.className='armory-art';art.append(armoryIcon(document,icon));body.className='armory-card-body';meta.className='armory-meta';meta.textContent=eyebrow;heading.textContent=title;text.textContent=description;
+    body.append(meta,heading,text);
+    if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',`Rank ${rank} of 3`);for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
+    button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
-  for(const [kind,name,description] of [['fortify','FORTIFICATION','+10 maximum bunker health per rank.'],['plating','PLATING','10% less bunker damage per rank.']]){
-    const rank=a[kind],cost=(rank+1)*30;add(`${name} · RANK ${rank} / 3`,`${description} In co-op, the highest player rank applies to the shared bunker.`,rank===3?'MAX RANK':`UPGRADE · ${cost} SCRAP`,rank===3||a.scrap<cost,()=>{if(window.confirm(`Upgrade ${name.toLowerCase()} for ${cost} scrap?`))void saveArmory(current=>upgradeArmory(current,kind));});
+  const defenses=section('Bunker upgrades','SHARED DEFENSE');
+  for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.']]){
+    const rank=a[kind],cost=(rank+1)*30;add(defenses,{icon:kind,title:name,description:`${description} In co-op the highest player rank applies.`,eyebrow:'PERMANENT UPGRADE',rank,label:rank===3?'MAX RANK':`UPGRADE · ${cost} SCRAP`,disabled:rank===3||a.scrap<cost,action:()=>{if(window.confirm(`Upgrade ${name.toLowerCase()} for ${cost} scrap?`))void saveArmory(current=>upgradeArmory(current,kind));}});
   }
-  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i));add(item.name.toUpperCase(),item.description,owned?(a.equipped===id?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${id*2}`,!owned||a.equipped===id,()=>void saveArmory(current=>equipArmory(current,id)));});
-  add('NO EQUIPMENT','Remove the currently equipped item.','UNEQUIP',a.equipped===0,()=>void saveArmory(current=>equipArmory(current,0)));
+  const equipment=section('Your equipment','ONE SLOT');
+  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:['scope','vest','boots'][i],title:item.name,description:item.description,eyebrow:equipped?'EQUIPPED':owned?'UNLOCKED':`WAVE ${id*2} REWARD`,state:equipped?'is-equipped':owned?'':'is-locked',label:owned?(equipped?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${id*2}`,disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
+  const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent='UNEQUIP ITEM';unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));list.append(unequip);
 }
 async function saveArmory(change){
   if(!canEditSkills()){$('armoryStatus').textContent='Finish the match and leave the party before changing your armory.';return;}
