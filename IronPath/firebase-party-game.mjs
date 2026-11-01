@@ -1,6 +1,6 @@
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-partywire1';
 import {createPartyHost} from './party-host.mjs';
 import {createMatch,STEP} from './simulation.mjs';
 

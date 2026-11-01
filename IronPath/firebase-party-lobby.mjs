@@ -36,6 +36,22 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
     async leaveGuest(partyId){
       check();const result=await sdk.runTransaction(ref(partyId,'guestId'),current=>current===uid?null:undefined,{applyLocally:false});check();return result.committed;
     },
+    async publishProfile(partyId,profile){
+      check();if(typeof sdk.set!=='function'||!profile||typeof profile.name!=='string'||profile.name.length<2||profile.name.length>24||!['male','female'].includes(profile.gender)||!Number.isInteger(profile.level)||profile.level<1||profile.level>1000)throw new Error('Invalid party profile');
+      await sdk.set(ref(partyId,`profiles/${uid}`),{name:profile.name,gender:profile.gender,level:profile.level});check();
+    },
+    async startMatch(partyId){
+      check();const hostId=(await sdk.get(ref(partyId,'hostId'))).val();const guestId=(await sdk.get(ref(partyId,'guestId'))).val();check();
+      if(hostId!==uid||!validUid(guestId)||guestId===uid)throw new Error('Party is not ready');
+      const [a,b]=await Promise.all([sdk.get(ref(partyId,`profiles/${uid}`)),sdk.get(ref(partyId,`profiles/${guestId}`))]);check();
+      const profiles=[a.val(),b.val()];
+      if(profiles.some(p=>!p||typeof p.name!=='string'||p.name.length<2||p.name.length>24||!['male','female'].includes(p.gender)||!Number.isInteger(p.level)||p.level<1||p.level>1000))throw new Error('Players are not ready');
+      const result=await sdk.runTransaction(ref(partyId,'startedGuest'),value=>value===null?guestId:undefined,{applyLocally:false});check();
+      if(!result.committed)throw new Error('Match already started');
+      return {partyId,hostId,guestId,profiles};
+    },
+    watchMatch(partyId,callback,onError=()=>{}){check();return sdk.onValue(ref(partyId,'startedGuest'),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
+    watchHost(partyId,callback,onError=()=>{}){check();return sdk.onValue(ref(partyId,'hostId'),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
     watchGuest(partyId,callback,onError=()=>{}){
       check();if(typeof callback!=='function'||typeof onError!=='function')throw new Error('Callback required');
       return sdk.onValue(ref(partyId,'guestId'),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);

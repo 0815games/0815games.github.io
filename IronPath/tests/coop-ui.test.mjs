@@ -10,11 +10,12 @@ globalThis.requestAnimationFrame=fn=>{frame=fn;};
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
 for(const file of ['match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
-const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false;
-const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
-startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory});
+const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];
+const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
+const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory});
 el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);
 el('coopToggle').onclick();assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
+opts.onStatus(false);opts.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(commands.at(-1),{type:'direction',x:0,y:0},'reconnection neutralizes movement');
 el('game').onclick({clientX:105,clientY:210});assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.towers.length,1);assert.equal(el('money').textContent,75);
 // A replacement made by the other player cannot be sold by an old open menu.
@@ -26,4 +27,7 @@ assert.equal(match.towers.length,1);assert.match(el('message').textContent,/Towe
 el('radialClose').onclick();opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
-console.log('Opt-in co-op UI adapter smoke tests passed.');
+assert.equal(game.confirmParty(),true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),true);
+assert.equal(el('speed').disabled,true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),false);
+await game.leaveCoop();assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
+console.log('Opt-in co-op UI adapter and party handoff smoke tests passed.');

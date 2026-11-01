@@ -45,7 +45,7 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
       if(receipt?.status==='applied'){settle(pending,receipt.result);pending=null;}
       else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:'Command cancelled when a player disconnected.'});pending=null;}
     }
-    onState(view.ready?'ready':'waiting');onView(view.snapshot);
+    onState(pending?.settled?'syncing':view.ready?'ready':'waiting');onView(view.snapshot);
   }
   return {
     start(){if(started||closed)throw new Error('Client session already started or closed');started=true;unsubscribe=channel.watchView(observe);onState(latest?.ready?'ready':'waiting');},
@@ -55,10 +55,10 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
       const seq=latest.snapshot.nextSeq,activeEpoch=epoch;
       return new Promise(resolve=>{
         const item={seq,resolve,settled:false,timer:null};pending=item;
-        item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
+        item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
         // A failed/disconnected write can still have reached Firebase. Keep the
         // sequence locked until a receipt or a new host epoch resolves it.
-        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
+        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
       });
     },
     async stop(){if(closed)return;closed=true;unsubscribe?.();if(pending){settle(pending,{ok:false,reason:'Party closed.'});pending=null;}await channel.close();}
