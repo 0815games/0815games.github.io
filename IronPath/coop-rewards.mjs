@@ -1,3 +1,4 @@
+import {rewardWave} from './armory.mjs';
 import {waveXP} from './progression.mjs?v=20261031-rpg2';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's
@@ -20,9 +21,9 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,onStatus=()=>{},clock
         const receipts=current.coopRewards||{},old=receipts[partyId]||0;
         if(!Number.isInteger(old)||old<0||old>1023)return undefined;
         const added=mask&~old;if(!added)return undefined;
-        let xp=0;for(let wave=1;wave<=10;wave++)if(added&(1<<(wave-1)))xp+=waveXP(wave);
+        let xp=0,armory=current.armory;for(let wave=1;wave<=10;wave++)if(added&(1<<(wave-1))){xp+=waveXP(wave);armory=rewardWave(armory,wave);}
         if(current.xp+xp>10000000)return undefined;
-        return {...current,xp:current.xp+xp,coopRewards:{...receipts,[partyId]:old|mask}};
+        return {...current,xp:current.xp+xp,armory,coopRewards:{...receipts,[partyId]:old|mask}};
       },{applyLocally:false});
       if(closed||auth.currentUser?.uid!==uid)return;
       const receipt=result.snapshot.val()?.coopRewards?.[partyId]||0;

@@ -11,13 +11,13 @@ const uid={currentUser:{uid:'a'}},data={xp:0,name:'Alice',gender:'female'},statu
 const sdk={ref(_db,path){return path;},onValue(_ref,callback){callback({val:()=>structuredClone(data)});return()=>{};},async runTransaction(_ref,update){calls++;if(fail)throw Error('offline');const next=update(structuredClone(data));if(next)Object.assign(data,next);return {committed:!!next,snapshot:{val:()=>structuredClone(data)}};}};
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));
 const queue=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,onStatus:s=>statuses.push(s),clock:()=>now});
-queue.observe(1);queue.observe(1);await flush();assert.equal(data.xp,30);assert.equal(data.coopRewards[party],1);assert.deepEqual(statuses,['saved']);
+queue.observe(1);queue.observe(1);await flush();assert.equal(data.xp,30);assert.equal(data.armory.scrap,10);assert.equal(data.coopRewards[party],1);assert.deepEqual(statuses,['saved']);
 queue.observe(1);await flush();assert.equal(calls,1,'repeated snapshots must not create more transactions');
 queue.observe(5);await flush();assert.equal(data.xp,80);assert.equal(data.coopRewards[party],5);
 fail=true;queue.observe(7);await flush();assert.equal(data.xp,80);assert.equal(statuses.at(-1),'error');const attempted=calls;
 queue.observe(7);await flush();assert.equal(calls,attempted,'failed claims are backed off');
 fail=false;now+=5001;queue.observe(7);await flush();assert.equal(data.xp,120);assert.equal(data.coopRewards[party],7);
-const second=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party});second.observe(7);await flush();assert.equal(data.xp,120,'rejoin cannot credit a wave twice');
+const second=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party});second.observe(7);await flush();assert.equal(data.xp,120,'rejoin cannot credit a wave twice');assert.equal(data.armory.scrap,30,'rejoin cannot duplicate loot');assert.equal(data.armory.owned,1,'wave two unlocks the scope');
 uid.currentUser={uid:'other'};queue.observe(15);await flush();assert.equal(data.xp,120,'account switch cannot credit previous profile');
 queue.close();second.close();
 console.log('Co-op wave participation and idempotent reward queue tests passed.');

@@ -1,0 +1,13 @@
+import {strict as assert} from 'node:assert';
+import {readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout,parseLoadout} from '../armory.mjs';
+import {createPlayer} from '../match.mjs';
+import {createMatch,stepMatch} from '../simulation.mjs';
+let a=readArmory(null);assert.equal(a.scrap,0);assert.equal(upgradeArmory(a,'fortify'),null);assert.equal(equipArmory(a,1),null);
+a=rewardWave(a,1);a=rewardWave(a,2);assert.equal(a.scrap,20);assert.equal(a.owned,1);a=rewardWave(a,2);assert.equal(a.scrap,40,'duplicate item grants bonus scrap');
+a=upgradeArmory(a,'fortify');assert.equal(a.scrap,10);assert.equal(a.fortify,1);assert.equal(upgradeArmory(a,'fortify'),null);a=equipArmory(a,1);assert.equal(encodeLoadout(a),'1,0,1');assert.deepEqual(parseLoadout('4,0,1'),{fortify:0,plating:0,equipped:0});
+const player=(id,loadout)=>createPlayer(id,{name:id,gender:'male',loadout},500,300);
+const state=createMatch([player('a','1,1,2'),player('b','3,2,0')]);assert.equal(state.maxHp,140);assert.equal(state.plating,2,'highest player upgrade applies to shared bunker');
+state.wave=1;state.running=true;state.spawnLeft=5;state.spawnTimer=100;state.enemies.push({hp:100,segment:8,x:900,y:400,speed:0,damage:10});stepMatch(state);assert.equal(state.hp,132);
+for(let i=0;i<5;i++)state.enemies.push({hp:0,reward:2,segment:1,x:0,y:130,speed:0});state.players.b.active=false;const events=stepMatch(state);assert.equal(state.players.a.money,150);assert.equal(state.players.b.money,125,'absent teammate receives neither kills nor cache');assert.equal(state.players.a.lootCaches,1);assert.equal(state.players.b.lootCaches,0);assert.ok(events.some(e=>e.type==='lootDrop'));
+const strong=createMatch([player('a','0,0,1')]);strong.wave=1;strong.running=true;strong.spawnLeft=1;strong.spawnTimer=100;strong.players.a.x=100;strong.players.a.y=130;strong.enemies.push({hp:100,kind:'infantry',segment:1,x:100,y:130,speed:0});stepMatch(strong);assert.equal(strong.enemies[0].hp,87,'scope adds damage');
+console.log('Armory progression, loot, and shared bunker tests passed.');

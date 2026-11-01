@@ -16,7 +16,7 @@
       <div id="characterView" hidden><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>CO-OP</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>CO-OP</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>CO-OP PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Play together with a four-digit code. The host approves each player and stays online.</p>
@@ -44,6 +44,12 @@
     <footer>PROTOTYPE BUILD · Soldier progress is saved online; battles are local. <a href="../">← 0815 Games</a></footer>
     </div>
   </main>
+  <dialog id="armoryDialog" class="skill-dialog" aria-labelledby="armoryTitle">
+    <span class="eyebrow">PERSISTENT PROGRESSION</span><h2 id="armoryTitle">Armory & bunker</h2>
+    <p>Earn 10 scrap per completed wave. Equipment drops on waves 2, 4 and 6; duplicates give 10 extra scrap. Buy upgrades and equip one item before starting a match or joining a party.</p>
+    <p id="armoryScrap" class="skill-points"></p><div id="armoryList" class="skill-paths"></div>
+    <p id="armoryStatus" role="status"></p><div class="skill-actions"><button id="armoryClose" type="button">CLOSE</button></div>
+  </dialog>
   <dialog id="skillDialog" class="skill-dialog" aria-labelledby="skillTitle">
     <span class="eyebrow">SOLDIER DEVELOPMENT</span><h2 id="skillTitle">Skill paths</h2>
     <p>One point per level after level 1. Reset freely between matches. Select one active ability; all purchased passives apply together.</p>
@@ -69,5 +75,5 @@
     </div>
   </section>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-skills1"></script>
+  <script type="module" src="account.js?v=20261101-armory1"></script>
 </body></html>
