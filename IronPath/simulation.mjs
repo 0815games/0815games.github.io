@@ -15,7 +15,7 @@ export function getTowerRange(tower){
 export function createMatch(players){
   if(!Array.isArray(players)||players.length<1||players.length>2||new Set(players.map(p=>p.id)).size!==players.length)throw new Error('A match needs one or two unique players');
   const individualSupplies=players.length>1;
-  return {wave:0,hp:100,...(individualSupplies?{individualSupplies:true}:{money:125}),enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,individualSupplies?{...p,money:125}:p]))};
+  return {wave:0,hp:100,...(individualSupplies?{individualSupplies:true}:{money:125}),enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,individualSupplies?{...p,money:125,completedWaveMask:0}:p]))};
 }
 // Every active player receives the same team reward. An absent guest earns
 // nothing until reconnecting, and retains the balance they had on departure.
@@ -41,6 +41,6 @@ export function stepMatch(state){
   }
   state.enemies=state.enemies.filter(e=>{if(e.hp<=0){rewardTeam(state,e.reward);return false;}if(e.segment>=PATH.length){state.hp-=e.damage;events.push({type:'bunkerHit',kind:e.kind,damage:e.damage});return false;}return true;});
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}
-  else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){state.running=false;const victory=state.wave===WAVES.length;if(victory)state.ended=true;else rewardTeam(state,20);events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory});}
+  else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){state.running=false;if(state.individualSupplies){for(const player of Object.values(state.players))if(player.active!==false)player.completedWaveMask|=1<<(state.wave-1);}const victory=state.wave===WAVES.length;if(victory)state.ended=true;else rewardTeam(state,20);events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory});}
   return events;
 }

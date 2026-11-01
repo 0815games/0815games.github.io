@@ -1,16 +1,16 @@
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-handshake1';
-import {createPartyHost} from './party-host.mjs?v=20261101-wallet1';
-import {createMatch,STEP} from './simulation.mjs?v=20261101-wallet1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-coopxp1';
+import {createPartyHost} from './party-host.mjs?v=20261101-coopxp1';
+import {createMatch,STEP} from './simulation.mjs?v=20261101-coopxp1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
-export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{}}){
+export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){
   const uid=auth?.currentUser?.uid;
   if(!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
   if(uid===hostId&&(!Array.isArray(players)||players.length!==2||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
-  if(![onState,onStatus,onSnapshot].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
+  if(![onState,onStatus,onSnapshot,onWaveRewards].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
   let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[];
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
@@ -25,7 +25,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         const channel=createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if(snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money))){fail();return;}onSnapshot(snapshot);}});
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if(snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=1023)){fail();return;}onSnapshot(snapshot);onWaveRewards(snapshot.match.players[uid].completedWaveMask);}});
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
           host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players),{hostId}),playerIds,epoch,onError:fail});

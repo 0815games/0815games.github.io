@@ -26,7 +26,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
     setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
     // Called once per fixed simulation step. Views are published at most once per
     // six ticks and coalesced while a previous Firebase update is in flight.
-    step(){if(!started||closed||failed)return null;const result=host.advance();if(result&&result.tick%6===0)queueView();return result;},
+    step(){if(!started||closed||failed)return null;const result=host.advance();if(result&&(result.tick%6===0||result.events.some(event=>event.type==='waveCleared')))queueView();return result;},
     publish(){if(started&&!closed&&!failed)queueView();},
     async stop(){if(closed)return;closed=true;latest=null;unsubscribe?.();for(const id of playerIds)host.setPresence(id,false);await channel.close();}
   };
