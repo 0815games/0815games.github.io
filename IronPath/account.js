@@ -8,7 +8,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-armory1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261101-skills1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261101-armory1';
+import { startGame } from './game.js?v=20261102-cartoon1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-armory1';
 import { createPlayer } from './match.mjs?v=20261101-armory1';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
