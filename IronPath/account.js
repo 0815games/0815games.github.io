@@ -1,8 +1,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-partywire1';
-import { createFirebasePartyPanel } from './firebase-party-panel.mjs?v=20261101-partywire1';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-lifecycle1';
+import { createFirebasePartyPanel } from './firebase-party-panel.mjs?v=20261101-lifecycle1';
 import { startGame } from './game.js?v=20261101-partywire1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261101-partywire1';
 import { createPlayer } from './match.mjs?v=20261031-coopui1';
@@ -24,7 +24,7 @@ async function busy(button, task){if(button.disabled)return;button.disabled=true
 $('authForm').addEventListener('submit',e=>{e.preventDefault();busy(e.submitter,()=>signInWithEmailAndPassword(auth,$('email').value.trim(),$('password').value));});
 $('register').onclick=e=>{if(!$('authForm').reportValidity())return;busy(e.currentTarget,()=>createUserWithEmailAndPassword(auth,$('email').value.trim(),$('password').value));};
 $('forgot').onclick=e=>{const email=$('email').value.trim();if(!email){message('Enter your email address first.');return;}busy(e.currentTarget,async()=>{await sendPasswordResetEmail(auth,email);message('If the email is registered, a reset email may arrive shortly.');});};
-async function logout(){try{await signOut(auth);}catch(e){message(errorText(e));$('saveStatus').textContent=errorText(e);}}
+async function logout(){try{await partyPanel.leaveForLogout();await signOut(auth);}catch(e){message(errorText(e));$('saveStatus').textContent=errorText(e);}}
 $('logout').onclick=logout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function showProfile(value){profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=`HERO DAMAGE: ${10+Math.min(level(value.xp)-1,20)} / SHOT`;$('saveStatus').textContent='';display('game');if(!gameStarted){gameStarted=true;gameControl=startGame(account);}else notifySession();}

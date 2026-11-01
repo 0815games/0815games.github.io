@@ -36,7 +36,7 @@
         "inputs": {
           "$uid": {
             ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()) && ($uid === auth.uid || auth.uid === root.child('parties').child($partyId).child('hostId').val())",
-            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())) && newData.exists()",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()))",
             ".validate": "newData.isString() && newData.val().length <= 4096"
           }
         },
@@ -63,7 +63,7 @@
         "profiles": {
           "$uid": {
             ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()) && ($uid === root.child('parties').child($partyId).child('hostId').val() || $uid === root.child('parties').child($partyId).child('guestId').val())",
-            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())) && newData.exists() && !root.child('parties').child($partyId).child('startedGuest').exists()",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())) && (!newData.exists() || !root.child('parties').child($partyId).child('startedGuest').exists())",
             ".validate": "newData.hasChildren(['name','gender','level'])",
             "name": {
               ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"

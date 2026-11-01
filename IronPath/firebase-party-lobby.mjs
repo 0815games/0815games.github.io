@@ -36,10 +36,10 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
     async leaveGuest(partyId){
       check();if(typeof sdk.remove!=='function')throw new Error('Party cleanup unavailable');
       const slot=ref(partyId,'guestId'),current=(await sdk.get(slot)).val();check();if(current!==uid)return false;
-      // The database rules re-check ownership atomically at deletion time. A
-      // transaction that aborts on the SDK's initial uncached null can silently
-      // leave the guest slot occupied, so don't use one for this operation.
-      await sdk.remove(slot);check();return true;
+      // Atomically remove only this guest's profile and last input with the
+      // slot. Rules re-check the current owner for every affected path.
+      if(typeof sdk.update!=='function')throw new Error('Party cleanup unavailable');
+      await sdk.update(sdk.ref(db,`parties/${partyId}`),{[`profiles/${uid}`]:null,[`inputs/${uid}`]:null,guestId:null});check();return true;
     },
     async publishProfile(partyId,profile){
       check();if(typeof sdk.set!=='function'||!profile||typeof profile.name!=='string'||profile.name.length<2||profile.name.length>24||!['male','female'].includes(profile.gender)||!Number.isInteger(profile.level)||profile.level<1||profile.level>1000)throw new Error('Invalid party profile');
@@ -55,6 +55,7 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
       if(!result.committed)throw new Error('Match already started');
       return {partyId,hostId,guestId,profiles};
     },
+    watchProfile(partyId,playerId,callback,onError=()=>{}){check();if(!validUid(playerId)||typeof callback!=='function'||typeof onError!=='function')throw new Error('Invalid profile listener');return sdk.onValue(ref(partyId,`profiles/${playerId}`),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
     watchMatch(partyId,callback,onError=()=>{}){check();return sdk.onValue(ref(partyId,'startedGuest'),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
     watchHost(partyId,callback,onError=()=>{}){check();return sdk.onValue(ref(partyId,'hostId'),snapshot=>{if(auth.currentUser?.uid===uid)callback(snapshot.val());},onError);},
     watchGuest(partyId,callback,onError=()=>{}){
