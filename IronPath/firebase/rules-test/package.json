@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {"node": ">=22"},
-  "scripts": {"test": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase.emulator.json 'node --test rules.test.mjs'"},
+  "scripts": {"test": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase.emulator.json 'node --test rules.test.mjs && node --test four-digit.test.mjs'"},
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",
     "firebase": "10.14.1",
