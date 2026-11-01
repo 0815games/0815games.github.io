@@ -1,3 +1,4 @@
+import {parseLoadout} from './armory.mjs';
 import {parseBuild,abilityName} from './skills.mjs';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
@@ -15,7 +16,7 @@ export function towerRefund(tower) {
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
   const level=Number.isInteger(profile.level)&&profile.level>0?profile.level:1;
-  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level, skills:parseBuild(profile.skills,level), cooldown:0, shotTimer:0,overdrive:0};
+  return {id, name:profile.name, gender:profile.gender, x, y, target:null, direction:{x:0,y:0}, level, skills:parseBuild(profile.skills,level),loadout:parseLoadout(profile.loadout), cooldown:0, shotTimer:0,overdrive:0};
 }
 // Solo keeps its original shared balance; co-op stores separate player wallets.
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
