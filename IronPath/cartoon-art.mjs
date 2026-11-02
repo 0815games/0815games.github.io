@@ -46,6 +46,13 @@ function drawRoad(ctx,path,theme){
   ctx.strokeStyle='#a38d69';ctx.lineWidth=1.5;ctx.setLineDash([8,18]);ctx.stroke();ctx.setLineDash([]);
   for(const [x,y] of [[50,119],[160,140],[206,220],[230,328],[350,311],[480,250],[600,157],[709,278],[775,409]]){line(ctx,[[x-7,y+8],[x-2,y+7],[x+2,y+9]],'#ac986f',2);line(ctx,[[x+6,y-7],[x+11,y-8]],'#a08a66',2);}
 }
+function thinIce(ctx,path,theme){
+  if(theme!=='arctic'||path.length!==10)return;
+  const a=path[4],b=path[5];
+  ctx.save();ctx.lineCap='butt';line(ctx,[[a.x,a.y],[b.x,b.y]],'#8fc4cb',49);
+  for(let x=a.x+25;x<b.x-10;x+=45)line(ctx,[[x-8,a.y-12],[x+1,a.y-3],[x-5,a.y+6],[x+7,a.y+14]],'#eaf8f4',2);
+  ctx.fillStyle='#355e62';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText('THIN ICE',(a.x+b.x)/2,a.y-31);ctx.restore();
+}
 function bunker(ctx,state){
   const damage=state.hp/Math.max(1,state.maxHp||100),plating=state.plating||0;
   oval(ctx,910,427,43,12,'#71835f',null);
@@ -87,9 +94,9 @@ function enemy(ctx,e){
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
 function drawTerrain(ctx,path,theme){
-  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);return;}
+  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);return;}
   let cached=terrainCache.get(path);
-  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path,theme);cached=canvas;terrainCache.set(path,cached);}
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path,theme);thinIce(off,path,theme);cached=canvas;terrainCache.set(path,cached);}
   ctx.drawImage(cached,0,0);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false}){
@@ -99,6 +106,9 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types));
   if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false)soldier(ctx,p,p.id===me);
+  if(theme==='scrub'&&path.length===10)for(const e of state.enemies)if(e.kind==='tank'&&e.hp>0){
+    ctx.save();ctx.beginPath();ctx.arc(e.x,e.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.18)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.65)';ctx.lineWidth=2;ctx.setLineDash([6,7]);ctx.stroke();ctx.restore();
+  }
   for(const e of state.enemies)enemy(ctx,e);
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
   if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);

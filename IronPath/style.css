@@ -150,3 +150,6 @@ html::-webkit-scrollbar-track,dialog::-webkit-scrollbar-track,.map-viewport::-we
 html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-webkit-scrollbar-thumb,.skill-tree::-webkit-scrollbar-thumb{background:#788e60;border:2px solid #d7c9a1;border-radius:7px}
 .tower-details{border-radius:6px 11px 7px 9px;box-shadow:5px 7px 0 #26372b,0 18px 80px #000b}.tower-details button{text-align:center;border-radius:5px}
 .tree-dialog .skill-tree:focus-visible{outline:3px solid #f5e5ab;outline-offset:3px}
+
+/* Compact, accessible field briefing stays available on phones. */
+.terrain-briefing{padding:6px 12px;background:#ded2aa;color:#354a36;border-top:2px solid #657551;font-size:12px;line-height:1.4}.terrain-briefing summary{cursor:pointer;font-weight:bold}.terrain-briefing p{margin:5px 0 2px}.terrain-briefing[hidden]{display:none}

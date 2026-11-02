@@ -1,12 +1,13 @@
-import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain3';
+import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrainfx1';
+import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrainfx1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-fx1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-terrain3';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-terrainfx1';
 import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-terrain3';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-terrain3';
+import { createTutorial } from './tutorial.mjs?v=20261102-terrainfx1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-terrainfx1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-armory2';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261102-waves20';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
@@ -49,7 +50,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function notice(text){$('message').textContent=text;}
   function updateUI(){
-    $('mapName').textContent=getMap(state.mapId).name;
+    const map=getMap(state.mapId),terrain=terrainFor(map);$('mapName').textContent=map.name;
+    if($('terrainBriefing')){$('terrainBriefing').hidden=!terrain;if(terrain&&$('terrainTitle'))$('terrainTitle').textContent=`${map.name} · Terrain effects`;if(terrain&&$('terrainDescription').textContent!==TERRAIN_BRIEFINGS[terrain])$('terrainDescription').textContent=TERRAIN_BRIEFINGS[terrain];}
     const preview=state.ended?'Operation complete. Restart to play again.':state.wave>=waves?'Final wave underway.':'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active||'assault'); $('ability').textContent=player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
