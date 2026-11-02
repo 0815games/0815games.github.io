@@ -78,3 +78,12 @@ button,select{background:#62794d;color:#fff5d5;border:2px solid #344631;border-r
 @keyframes intro-leg{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}@keyframes intro-burst{0%{opacity:0;transform:scale(.2) rotate(-20deg)}25%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(1.5) rotate(18deg)}}@keyframes intro-title-in{to{opacity:1;transform:translate(-50%,0) rotate(-2deg)}}@keyframes intro-dots{from{width:0}to{width:1.4em}}
 @media(max-width:520px){.intro-overlay{padding:10px}.intro-topline,.intro-footer{padding:10px;font-size:9px;letter-spacing:.06em}.intro-scene{aspect-ratio:4/4.2}.intro-bunker{width:33%;right:2%}.intro-soldier{width:20%}.intro-title{top:18%}.intro-title strong{font-size:clamp(38px,11vw,58px)}}
 @media(prefers-reduced-motion:reduce){.intro-soldier,.intro-leg,.intro-burst,.intro-title,.intro-dots{animation:none!important}.intro-soldier,.intro-burst{display:none}.intro-title{opacity:1;transform:translate(-50%,0) rotate(-2deg)}.intro-dots{width:auto}}
+
+/* The main mark stays compact during battle, but takes center stage at sign-in. */
+.brand-title{margin:4px 0;line-height:0}.brand-logo{display:block;width:min(270px,48vw);height:auto;filter:drop-shadow(2px 3px 0 #233428)}
+body:has(#entry:not([hidden])) main>header{justify-content:center;text-align:center;margin:14px auto 12px}
+body:has(#entry:not([hidden])) main>header .brand-logo{width:min(420px,80vw);margin:6px auto 8px}
+body:has(#entry:not([hidden])) main>header .badge{display:none}
+body:has(#entry:not([hidden])) main>header p{display:block;color:#d5dfbf;font-size:13px}
+body:has(#entry:not([hidden])) #entry{margin:12px auto}
+@media(max-width:850px){.brand-logo{width:110px}body:has(#entry:not([hidden])) main>header .brand-logo{width:min(330px,78vw)}body:has(#entry:not([hidden])) main>header{margin:8px auto 10px}body:has(#entry:not([hidden])) #entry{margin:8px auto}}
