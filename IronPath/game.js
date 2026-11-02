@@ -1,11 +1,12 @@
+import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-maps1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-fx1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-controls7';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-maps1';
 import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-waves20';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-armory2';
+import { createTutorial } from './tutorial.mjs?v=20261102-maps1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-maps1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-armory2';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261102-waves20';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
@@ -27,7 +28,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     [{name:'Marksman',damage:1,interval:.6,range:1,description:'40% shorter firing interval'}, {name:'Anti-armor Rifle',damage:2,interval:1,range:1.1,description:'100% more damage, 10% more range and another 40% damage against tanks'}]
   ];
   const waves = WAVES.length, keys = new Set();
-  let state, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0;
+  let state, selectedMap=DEFAULT_MAP, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0;
   const me=()=>coop?account.getUserId():'local';
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
@@ -40,7 +41,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(){combatFx.clear();lastSnapshotAt=0;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})]);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(){combatFx.clear();lastSnapshotAt=0;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;
@@ -48,12 +49,14 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function notice(text){$('message').textContent=text;}
   function updateUI(){
+    const selected=getMap(state.mapId);$('mapSelect').value=selected.id;$('mapSelect').disabled=!!coop||(!state.ended&&(state.wave>0||state.towers.length>0));$('mapName').textContent=selected.name;$('mapSelectHint').textContent=coop?'Host battlefield · locked during co-op':$('mapSelect').disabled?'Finish this operation to change maps.':'Choose before building or deploying; host picks for co-op.';
     const preview=state.ended?'Operation complete. Restart to play again.':state.wave>=waves?'Final wave underway.':'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ${waves}`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active||'assault'); $('ability').textContent=player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
     $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden||(!!coop&&(!coopReady||state.ended));
   }
   function waveSummary(wave){const counts={};for(const kind of WAVES[wave-1]) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave}${wave%5===0?' · MILESTONE':''} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ');}
+  $('mapSelect').onchange=()=>{let id=$('mapSelect').value;if(id==='random')id=['road','forest','outpost'][Math.floor(Math.random()*3)];if(!isMapId(id)||coop||(!state.ended&&(state.wave>0||state.towers.length))){updateUI();return;}selectedMap=id;reset();notice(`${getMap(id).name} selected. Deploy when ready.`);};
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   $('start').onclick=()=>{if(state.ended){if(!coop){reset();notice('Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();dispatch({type:'startWave'},result=>{if(!result.ok){notice(result.reason);return;}notice(coop?'Wave started.':`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();});};
   $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo)combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});notice(`${abilityName(state.players[me()]?.skills)} deployed!`);updateUI();});};
@@ -112,7 +115,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
   canvas.addEventListener('click',e=>{
     if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;
-    const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width));let index=-1,nearest=radius;
+    const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width)),pads=getMap(state.mapId).pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
     if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))},result=>{notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
     showMenu(index);
@@ -141,7 +144,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}
   }
-  function draw(){ctx.clearRect(0,0,960,540);drawCartoonBattle(ctx,state,{path,pads,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
+  function draw(){const {path,pads,theme}=getMap(state.mapId);ctx.clearRect(0,0,960,540);drawCartoonBattle(ctx,state,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
     // Draw selection above units and effects, including an empty pad while its
     // build menu is open. A dark border keeps the bright marker legible on roads.
     const markerPad=menuPad??state.selectedPad;
@@ -172,5 +175,5 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
   account.onSessionChange(()=>{leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){reset();tutorial.startIfNeeded(account.getUserId());}});
   reset();tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
-  return {canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop};
+  return {getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop};
 }

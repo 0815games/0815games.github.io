@@ -3,12 +3,26 @@ const ink='#29352c',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
 function shape(ctx,points,fill,stroke=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}
 function oval(ctx,x,y,rx,ry,fill,stroke=ink,width=2){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}}
-function ground(ctx){
-  ctx.fillStyle='#8b9d6c';ctx.fillRect(0,0,960,540);
+function ground(ctx,theme='road'){
+  ctx.fillStyle=theme==='forest'?'#779463':theme==='outpost'?'#a69c79':'#8b9d6c';ctx.fillRect(0,0,960,540);
   // Fixed decorative marks, never random on redraw, so nothing flickers.
   for(let i=0;i<64;i++){let x=(i*137+37)%960,y=(i*89+19)%540;ctx.strokeStyle=i%3?'#718759':'#b4bc88';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4,y-5);ctx.moveTo(x+7,y+1);ctx.lineTo(x+10,y-3);ctx.stroke();}
   for(const [x,y] of [[70,50],[330,65],[575,65],[850,75],[65,465],[420,470],[565,470],[935,260]]){
     oval(ctx,x,y,16,6,'#71875b',null);line(ctx,[[x-8,y],[x-10,y-6],[x-5,y-10]],'#506744',2);line(ctx,[[x,y],[x+2,y-9],[x+6,y-12]],'#506744',2);line(ctx,[[x+7,y],[x+10,y-6]],'#506744',2);
+  }
+}
+// Illustrated landmarks are part of the cached terrain, below roads and units.
+function landmarks(ctx,theme){
+  if(theme==='forest'){
+    for(const [x,y,size] of [[45,45,1],[120,55,.8],[250,55,1],[340,65,.8],[590,48,1],[735,65,.85],[860,65,1],[55,485,.85],[390,480,.9],[570,480,.8],[920,500,1]]){
+      ctx.save();ctx.translate(x,y);ctx.scale(size,size);oval(ctx,0,18,18,6,'#607a50',null);shape(ctx,[[-5,18],[-5,0],[5,0],[5,18]],'#816e4f');shape(ctx,[[-22,2],[-12,-13],[-17,-13],[0,-35],[17,-13],[12,-13],[22,2]],'#456d4c');line(ctx,[[-10,-5],[0,-14],[9,-5]],'#83a377',2);ctx.restore();
+    }
+    line(ctx,[[20,255],[58,247],[87,250]],'#b7ca9a',3);line(ctx,[[770,470],[810,464],[840,468]],'#b7ca9a',3);
+  }else if(theme==='outpost'){
+    for(const [x,y] of [[65,50],[430,58],[790,65],[65,480],[520,485],[920,485]]){
+      ctx.save();ctx.translate(x,y);shape(ctx,[[-28,20],[-28,-8],[-17,-8],[-17,-20],[-5,-14],[5,-22],[16,-12],[28,-12],[28,20]],'#c5b492','#695f4b',3);line(ctx,[[-21,2],[-6,2],[-6,15],[7,15]],'#8c7e61',2);line(ctx,[[10,-5],[22,-5],[22,8]],'#8c7e61',2);ctx.restore();
+    }
+    for(const [x,y] of [[440,80],[570,65],[800,470]]){oval(ctx,x,y,22,9,'#817862','#605b4a',2);oval(ctx,x+3,y-1,12,4,'#b2a589',null);}
   }
 }
 function drawRoad(ctx,path){
@@ -56,14 +70,14 @@ function enemy(ctx,e){
 }
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
-function drawTerrain(ctx,path){
-  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx);drawRoad(ctx,path);return;}
+function drawTerrain(ctx,path,theme){
+  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path);return;}
   let cached=terrainCache.get(path);
-  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx);drawRoad(ctx,path);return;}off.lineCap='round';off.lineJoin='round';ground(off);drawRoad(off,path);cached=canvas;terrainCache.set(path,cached);}
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path);cached=canvas;terrainCache.set(path,cached);}
   ctx.drawImage(cached,0,0);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,shotAge=0,effects=[],reducedMotion=false}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path);bunker(ctx,state);
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme);bunker(ctx,state);
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}

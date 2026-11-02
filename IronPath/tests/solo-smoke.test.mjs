@@ -10,7 +10,7 @@ let scrolls=[];globalThis.window={scrollBy(options){scrolls.push(options);},inne
 let frame;globalThis.requestAnimationFrame=fn=>{frame=fn;};
 function draw(){strokes=[];frame(performance.now());return strokes.filter(s=>s.arc?.[2]===35&&s.style==='#ffed70');}
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-for(const file of ['combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+for(const file of ['maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 startGame({getProfile:()=>({name:'Test',gender:'female'}),getUserId:()=> 'smoke-user',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}});
@@ -18,6 +18,7 @@ assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
 assert.equal(element('money').textContent,125);
+element('mapSelect').value='forest';element('mapSelect').onchange();assert.equal(element('mapName').textContent,'Pinewood Crossing');element('mapSelect').value='road';element('mapSelect').onchange();assert.equal(element('mapName').textContent,'The Last Road');
 assert.match(element('wavePreview').textContent,/Next: Wave 1/);
 // A phone selection obscured by the fixed sheet scrolls only vertically.
 element('radialMenu').getBoundingClientRect=()=>({top:220});
@@ -42,7 +43,7 @@ assert.equal(element('money').textContent,125);
 assert.equal(element('towerDetailsConfirm').disabled,false);
 element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,75);
-assert.equal(element('radialMenu').hidden,true);
+assert.equal(element('radialMenu').hidden,true);assert.equal(element('mapSelect').disabled,true,'map is locked after building');
 assert.deepEqual(draw()[0].arc.slice(0,3),[105,210,35], 'built tower stays visibly selected');
 // The action panel shows effects and acts as the purchase confirmation.
 element('game').onclick({clientX:105,clientY:210});
