@@ -1,10 +1,10 @@
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrainfx1';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-waves20';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-endless1';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-endless1';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
 import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-guestfix1';
-import {createPartyHost} from './party-host.mjs?v=20261102-terrainfx1';
-import {createMatch,STEP} from './simulation.mjs?v=20261102-terrainfx1';
+import {createPartyHost} from './party-host.mjs?v=20261102-endless1';
+import {createMatch,STEP} from './simulation.mjs?v=20261102-endless1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
@@ -28,7 +28,9 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         const channel=createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if((snapshot?.match?.mapId!==undefined&&!isMapId(snapshot.match.mapId))||snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=MAX_WAVE_MASK)){fail();return;}onWaveRewards(snapshot.match.players[uid].completedWaveMask);onSnapshot(snapshot);}});
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if((snapshot?.match?.mapId!==undefined&&!isMapId(snapshot.match.mapId))||snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const blocks=snapshot.match.players[uid].completedWaveBlocks||{};
+        if(typeof blocks!=='object'||Array.isArray(blocks)||Object.entries(blocks).some(([key,value])=>!/^\d+$/.test(key)||!Number.isSafeInteger(Number(key))||Number(key)<1||!Number.isInteger(value)||value<0||value>MAX_WAVE_MASK)){fail();return;}
+        onWaveRewards(snapshot.match.players[uid].completedWaveMask,0);for(const [block,mask] of Object.entries(blocks))onWaveRewards(mask,Number(block));onSnapshot(snapshot);}});
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
           host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players,mapId),{hostId}),playerIds,epoch,onError:fail});

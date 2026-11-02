@@ -3,7 +3,8 @@ import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
-import { WAVES } from './combat.mjs?v=20261102-waves20';
+import { waveFormation } from './combat.mjs?v=20261102-endless1';
+import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-endless1';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
@@ -30,8 +31,16 @@ export function applyCommand(state, playerId, command) {
   if(state.ended)return {ok:false,reason:'The operation is over.'};
   switch(command.type){
     case 'startWave': {
-      if(state.running||state.wave>=WAVES.length)return {ok:false,reason:'Cannot start a wave now.'};
-      state.wave++;state.running=true;state.spawnLeft=WAVES[state.wave-1].length;state.spawnIndex=0;state.spawnTimer=.2;return {ok:true};
+      if(state.running||state.pendingPerk||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
+      state.wave++;state.running=true;state.spawnLeft=waveFormation(state.wave).length;state.spawnIndex=0;state.spawnTimer=.2;return {ok:true};
+    }
+    case 'choosePerk': {
+      if(!state.pendingPerk||state.running||!Number.isInteger(command.index)||command.index<0||command.index>2)return {ok:false,reason:'No such field upgrade is available.'};
+      const choice=perkOffers(state.mapId,state.pendingPerk)[command.index],perk=RUN_PERKS[choice];
+      const perks=state.runPerks||(state.runPerks={});perks[perk.key]=(perks[perk.key]||0)+1;
+      if(perk.key==='bunker'){state.maxHp+=20;state.hp=Math.min(state.maxHp,state.hp+20);}
+      if(perk.key==='supplies'){if(state.individualSupplies){for(const id of Object.keys(state.players))if(state.players[id].active!==false)addSupplies(state,id,60);}else addSupplies(state,playerId,60);}
+      state.pendingPerk=0;return {ok:true,perk:perk.name};
     }
     case 'direction': {
       if(!Number.isInteger(command.x)||!Number.isInteger(command.y)||Math.abs(command.x)>1||Math.abs(command.y)>1)return {ok:false,reason:'Invalid direction.'};

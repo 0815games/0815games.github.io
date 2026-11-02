@@ -147,3 +147,11 @@ test('expanded armory supports legacy saves, validates new ranks and loadouts',a
   await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,7;1,2'));
   await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,0'));
 });
+
+test('endless wave receipts award both players once under published rules',async()=>{
+  await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});await set(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0});
+  const qa=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,block:1}),qb=createCoopRewardQueue({db:bob,auth:{currentUser:{uid:'bob'}},sdk,partyId:party,block:1});
+  qa.observe(1);qb.observe(1);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===230&&(await get(ref(bob,'players/bob/xp'))).val()===230);
+  const reconnect=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,block:1});reconnect.observe(1);await new Promise(r=>setTimeout(r,150));
+  assert.equal((await get(ref(alice,'players/alice/xp'))).val(),230);assert.equal((await get(ref(bob,'players/bob/armory/scrap'))).val(),10);qa.close();qb.close();reconnect.close();
+});

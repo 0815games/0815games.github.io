@@ -24,3 +24,7 @@ second.observe(late);await flush();assert.equal(data.xp,470,'rejoin cannot credi
 uid.currentUser={uid:'other'};queue.observe(late|(1<<11));await flush();assert.equal(data.xp,470,'account switch cannot credit previous profile');
 queue.close();second.close();
 console.log('Co-op wave participation and idempotent reward queue tests passed.');
+// Additional 20-wave blocks use separate valid receipts and retain exactly-once XP.
+uid.currentUser={uid:'a'};
+const later=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,block:1});later.observe(1);await flush();assert.equal(data.xp,700);assert.equal(data.armory.scrap,60);later.observe(1);await flush();assert.equal(data.xp,700);
+const laterReconnect=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,block:1});laterReconnect.observe(1);await flush();assert.equal(data.xp,700,'wave 21 is not credited twice on reconnect');later.close();laterReconnect.close();
