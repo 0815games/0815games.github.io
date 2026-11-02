@@ -72,7 +72,7 @@
         <div id="partyRequests" class="party-requests" hidden></div>
         <div class="party-actions"><button id="partyStart" class="primary" type="button">START CO-OP</button><button id="partyLeave" type="button">LEAVE PARTY</button></div>
       </div>
-      <p id="partyStatus" role="status"></p><p class="party-note">Complete waves together to earn XP.</p>
+      <p id="partyStatus" role="status"></p><p class="party-note">Complete waves together to earn XP. While both players are active, enemies spawn with 50% more health and each player receives 65% of base supply rewards (rounded down). If your teammate leaves, newly spawned enemies and rewards return to solo rates until they rejoin.</p>
     </section>
     <section class="dashboard" aria-label="Battle status">
       <div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3m1 1h12l-3 4 3 4H6"/></svg><span><small>WAVE</small><strong id="wave">0 / 10</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20v-8l3-5h12l3 5v8H3zm3-8h12M9 20v-5h6v5"/></svg><span><small>BUNKER</small><strong id="health">100</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v12H4zM7 8V5h10v3M9 14h6M12 11v6"/></svg><span><small id="moneyLabel">SUPPLIES</small><strong id="money">125</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span><small>ENEMIES</small><strong id="enemies">0</strong></span></div>
@@ -146,5 +146,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-controls7"></script>
+  <script type="module" src="account.js?v=20261102-balance1"></script>
 </body></html>

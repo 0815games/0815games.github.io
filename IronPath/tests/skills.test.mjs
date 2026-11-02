@@ -12,7 +12,7 @@ assert.equal(applyCommand(state,'a',{type:'airstrike'}).ok,false,'no supply drop
 state.running=true;state.wave=1;state.spawnLeft=10;state.spawnTimer=100;
 assert.equal(applyCommand(state,'a',{type:'airstrike'}).ok,true);assert.equal(state.players.a.money,155);assert.equal(state.players.b.money,125);assert.equal(applyCommand(state,'a',{type:'airstrike'}).ok,false);
 assert.equal(applyCommand(state,'b',{type:'airstrike'}).ok,false,'cannot repair full bunker');state.hp=110;assert.equal(applyCommand(state,'b',{type:'airstrike'}).ok,true);assert.equal(state.hp,115);
-state.enemies.push({hp:0,reward:10,segment:1,x:0,y:130,speed:0});stepMatch(state);assert.equal(state.players.a.money,166);assert.equal(state.players.b.money,135,'logistics only benefits its owner');
+state.enemies.push({hp:0,reward:10,segment:1,x:0,y:130,speed:0});stepMatch(state);assert.equal(state.players.a.money,162);assert.equal(state.players.b.money,131,'logistics only benefits its owner');
 const solo=createMatch([player('local','0,1,0,0,0;engineer')]);solo.running=true;solo.wave=1;solo.spawnLeft=5;solo.spawnTimer=100;
 assert.equal(applyCommand(solo,'local',{type:'airstrike'}).ok,false);assert.equal(applyCommand(solo,'local',{type:'build',pad:0,towerType:0}).ok,true);assert.equal(applyCommand(solo,'local',{type:'airstrike'}).ok,true);assert.equal(solo.players.local.overdrive,10);
 solo.enemies.push({hp:1000,reward:10,segment:1,x:100,y:130,speed:0,kind:'infantry'});stepMatch(solo);assert.ok(solo.enemies[0].hp<984,'engineer passive and overdrive increase tower damage');
