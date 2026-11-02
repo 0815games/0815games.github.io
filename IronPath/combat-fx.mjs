@@ -1,11 +1,11 @@
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
-  let effects=[],cooldowns=null,previous=null;
+  let effects=[],cooldowns=null,comboSeqs=null,previous=null;
   function emit(kind,player,match){
     if(reducedMotion||!player||!Number.isFinite(player.x)||!Number.isFinite(player.y))return;
     const now=clock(),targets=kind==='assault'?(match?.enemies||[]).filter(e=>e.hp>0&&Number.isFinite(e.x)&&Number.isFinite(e.y)).slice(0,8).map(e=>({x:e.x,y:e.y})):[];
     const x=kind==='medic'?910:player.x,y=kind==='medic'?400:player.y;
-    effects.push({kind,x,y,targets,started:now,duration:950});if(effects.length>12)effects=effects.slice(-12);
+    effects.push({kind,x,y,targets,label:player.comboLabel||"",started:now,duration:950});if(effects.length>12)effects=effects.slice(-12);
   }
   return {
     emit,
@@ -14,9 +14,9 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
     observe(match,pads){
       if(!match?.players)return [];
       const changes=[];
-      const next=new Map();
+      const next=new Map(),nextCombos=new Map();
       for(const [id,p] of Object.entries(match.players)){
-        const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);
+        const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);const seq=p.comboCue?.seq||0;nextCombos.set(id,seq);if(comboSeqs?.has(id)&&seq>comboSeqs.get(id)&&p.active!==false){emit('combo',{x:p.comboCue.x,y:p.comboCue.y,comboLabel:p.comboCue.name},match);changes.push('combo');}
         if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',p,previous||match);changes.push('ability');}
       }
       if(Array.isArray(previous?.towers)&&Array.isArray(match.towers)&&Array.isArray(pads)){
@@ -25,9 +25,9 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
           const kind=!old?'build':tower.level>old.level?'upgrade':null;if(kind){emit(kind,point,match);changes.push(kind);}
         }
       }
-      cooldowns=next;previous=match;return changes;
+      cooldowns=next;comboSeqs=nextCombos;previous=match;return changes;
     },
     active(){const now=clock();effects=effects.filter(e=>now-e.started<e.duration);return effects.map(e=>({...e,progress:Math.max(0,Math.min(1,(now-e.started)/e.duration))}));},
-    clear(){effects=[];cooldowns=null;previous=null;}
+    clear(){effects=[];cooldowns=null;comboSeqs=null;previous=null;}
   };
 }

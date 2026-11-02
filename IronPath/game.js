@@ -1,18 +1,18 @@
 import {projectCoopMotion} from './coop-motion.mjs?v=20261102-coopmotion1';
 import {bossPhaseLabel} from './boss-mechanics.mjs?v=20261102-terrain4';
-import {createBattleSound} from './battle-sound.mjs?v=20261102-polish1';
+import {createBattleSound} from './battle-sound.mjs?v=20261102-combos1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain4';
-import {createCombatEffects} from './combat-fx.mjs?v=20261102-polish1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-polish1';
-import {abilityName} from './skills.mjs?v=20261102-web2';
+import {createCombatEffects} from './combat-fx.mjs?v=20261102-combos1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-combos1';
+import {abilityName} from './skills.mjs?v=20261102-combos1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-web1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-web2';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-web2';
+import { createTutorial } from './tutorial.mjs?v=20261102-combos1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-combos1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-combos1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-longterm1';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
@@ -104,7 +104,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
     dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();});
   };
-  $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');}notice(`${abilityName(state.players[me()]?.skills)} deployed!`);updateUI();});};
+  $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');if(result.combos?.length){combatFx.emit('combo',{x:player.comboCue.x,y:player.comboCue.y,comboLabel:result.combos.join(' + ')},state);sound.play('combo');}}notice(`${abilityName(state.players[me()]?.skills)} deployed!${result.combos?.length?' '+result.combos.join(' + ')+' combo!':''}`);updateUI();});};
   function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(coop){const key=`${x},${y}`;if(key!==lastDirection){lastDirection=key;coopInput.direction({type:'direction',x,y});}}else applyCommand(state,'local',{type:'direction',x,y});}
   window.addEventListener('keydown', e=>{if(!menu.hidden){if(e.key==='Escape'){closeMenu();state.selectedPad=null;updateUI();}return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
@@ -180,7 +180,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     while(accumulator>=STEP){
       accumulator-=STEP;
       for(const event of stepMatch(state)){
-        if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${Math.round(event.damage*10)/10} health.`);
+        if(event.type==='skillCombo'){combatFx.emit('combo',{x:event.x,y:event.y,comboLabel:event.name},state);sound.play('combo');}
+        else if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${Math.round(event.damage*10)/10} health.`);
         else if(event.type==='lootDrop')notice(`Supply cache found! +${event.supplies} supplies.`);
         else if(event.type==='bossAbility'&&event.ability==='bomb'){sound.play('impact');notice(`Bomber struck the bunker! −${Math.round(event.damage*10)/10} health.`);}
         else if(event.type==='rubbleCleared'){sound.play('impact');notice('Rubble cleared! Long-range shots are no longer weakened in that zone.');}

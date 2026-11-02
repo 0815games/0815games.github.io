@@ -2,19 +2,19 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261102-longterm1';
 import {enableTreeDrag} from './drag-tree.mjs?v=20261102-web2';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-web2';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-combos1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261102-web2';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261102-combos1';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-longterm1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-web2';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-combos1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261102-web2';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-web2';
-import { createPlayer } from './match.mjs?v=20261102-web2';
+import { startGame } from './game.js?v=20261102-combos1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-combos1';
+import { createPlayer } from './match.mjs?v=20261102-combos1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
 
 window.ironPathLoaded = true;
@@ -50,7 +50,7 @@ function renderSkills(){
   $('skillPoints').textContent=`LEVEL ${lvl}  ·  ${left} POINT${left===1?'':'S'} AVAILABLE`;
   renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,onSelect:(value,keyboard)=>{selectedSkill=value;renderSkills();if(keyboard)$('skillPaths').querySelector(`[data-path="${value.path}"][data-rank="${value.rank}"]`)?.focus({preventScroll:true});}});
   const action=$('skillDetailAction');
-  if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=node.kind!=='mastery'?'HYBRID SPECIALIZATION':'ADVANCED MASTERY';$('skillDetailTitle').textContent=node.name;$('skillDetailText').textContent=`${node.description} ${webRequirement(node)} Each node costs one point.`;action.textContent=unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=unlocked||!ready||!left;action.onclick=()=>{if(!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
+  if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=node.kind!=='mastery'?'HYBRID COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY';$('skillDetailTitle').textContent=node.name;$('skillDetailText').textContent=`${node.description} ${webRequirement(node)} Each node costs one point.`;action.textContent=unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=unlocked||!ready||!left;action.onclick=()=>{if(!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
 $('skillDetailType').textContent=rank===1?'MAIN SKILL':`${path.name.toUpperCase()} / ${specialist?'SPECIAL SKILL':'PASSIVE'}`;
   $('skillDetailTitle').textContent=rank===1?path.ability:specialist?path.branches[rank-5].ability:`${path.name} · Rank ${rank}`;
   $('skillDetailText').textContent=rank===1?`${path.description} ${path.passive}. Spend one point to unlock this main skill.`:specialist?`${path.branches[rank-5].abilityDescription} Passive: ${path.branches[rank-5].description} Requires ${path.name} rank 2. Selecting it replaces your current active skill.`:`${path.passive}. ${draftSkills[path.id]} of 3 ranks unlocked.`;
