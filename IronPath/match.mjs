@@ -1,5 +1,5 @@
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
-import {parseBuild,abilityName} from './skills.mjs?v=20261102-special1';
+import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-web1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
@@ -116,7 +116,7 @@ export function applyCommand(state, playerId, command) {
       }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
-      player.cooldown=(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0)+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0);
+      player.cooldown=Math.max(10,(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0)+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0)-webBonuses(player.skills).cooldown);
       if(active==='assault'){
         const bonus=state.wave>=6&&player.loadout?.equipped===7?10:0;
         if(variant===2){const target=state.enemies.filter(e=>e.hp>0).reduce((a,b)=>!a||b.hp>a.hp?b:a,null);if(target)target.hp-=80+bonus;}

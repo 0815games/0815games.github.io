@@ -17,14 +17,27 @@ const VARIANTS={
  recon:[['Extended Suppression','Slow enemies by 50% for 12 seconds; cooldown is 8 seconds longer.'],['Targeted Disruption','Deal 20 damage to enemies and slow them for 4 seconds.']]
 };
 for(const path of SKILL_PATHS)path.branches.forEach((branch,i)=>{[branch.ability,branch.abilityDescription]=VARIANTS[path.id][i];});
+// Five deep mastery chains and five bridges between neighboring disciplines.
+const paths=SKILL_PATHS.map(p=>p.id);
+const effects={damage:['soldier damage',''],tower:['tower damage','%'],supplies:['supplies per kill',''],health:['shared bunker health',''],movement:['soldier movement speed',''],heroRange:['soldier firing range',''],heroSpeed:['soldier firing speed','%'],towerSpeed:['tower firing speed','%'],start:['starting supplies',''],cooldown:['ability cooldown reduction',' seconds']};
+const primary=[['damage',2],['tower',5],['supplies',1],['health',5],['movement',8]];
+const masteryEffects=[[["damage",2],["heroSpeed",5],["heroRange",15],["damage",2],["heroSpeed",5]],[["tower",5],["towerSpeed",5],["cooldown",1],["tower",5],["towerSpeed",5]],[["supplies",1],["start",15],["cooldown",1],["supplies",1],["start",15]],[["health",5],["cooldown",1],["health",5],["start",10],["health",5]],[["movement",8],["heroRange",15],["heroSpeed",5],["movement",8],["cooldown",1]]];
+const names=[['Sharpshooter','Battle Drills','Veteran Aim','Deadly Focus','War Hero'],['Calibration','Reinforced Turrets','Advanced Mechanics','Master Engineer','War Machine'],['Salvage Routes','Supply Lines','Quartermaster','Resource Network','War Economy'],['First Response','Field Hospital','Combat Medicine','Lifesaver','Bunker Guardian'],['Trailblazer','Forward Scout','Rapid Deployment','Pathfinder','Ghost Operative']];
+const bridgeNames=['Siege Command','Combat Logistics','Humanitarian Supply','Rapid Response','Vanguard'];
+const describe=bonuses=>bonuses.map(([key,amount])=>`+${amount}${effects[key][1]} ${effects[key][0]}`).join(' and ')+'.';
+export const WEB_NODES=[...paths.flatMap((path,i)=>names[i].map((name,tier)=>{const bonuses=[masteryEffects[i][tier]];return {id:i*5+tier,name,path,tier,kind:'mastery',bonuses,description:describe(bonuses)};})),...paths.flatMap((path,i)=>Array.from({length:3},(_,tier)=>{const other=paths[(i+1)%5],bonuses=[primary[i],primary[(i+1)%5]];return {id:25+i*3+tier,name:`${bridgeNames[i]} ${['I','II','III'][tier]}`,path,other,tier,kind:'hybrid',bonuses,description:describe(bonuses)};}))];
+export function webReady(build,node){return node.kind==='mastery'?build[node.path]>=3&&(node.tier===0||!!build.web?.[node.id-1]):build[node.path]>=2&&build[node.other]>=2&&(node.tier===0||!!build.web?.[node.id-1]);}
+export function webRequirement(node){const path=SKILL_PATHS.find(p=>p.id===node.path).name;if(node.kind==='mastery')return node.tier?`Requires previous ${path} mastery.`:`Requires ${path} rank 3.`;const other=SKILL_PATHS.find(p=>p.id===node.other).name;return node.tier?'Requires previous hybrid node.':`Requires ${path} and ${other} rank 2.`;}
+export function webBonuses(build){const result=Object.fromEntries(Object.keys(effects).map(key=>[key,0]));for(const node of WEB_NODES)if(build?.web?.[node.id])for(const [key,amount] of node.bonuses)result[key]+=amount;return result;}
 export const DEFAULT_BUILD='0,0,0,0,0;assault';
-const BUILD=/^([0-3],){4}[0-3];(assault|engineer|logistics|medic|recon)(;[01]{10}(;[12])?)?$/;
+const BUILD=/^([0-3],){4}[0-3];(assault|engineer|logistics|medic|recon)(;[01]{10}(;[12]|;[012];[01]{40})?)?$/;
 export function parseBuild(value,level=1){
   if(typeof value!=='string'||!BUILD.test(value))value=DEFAULT_BUILD;
-  const [ranks,active,bits='0000000000',variantText]=value.split(';'),values=ranks.split(',').map(Number),extra=[...bits].map(Number),variant=Number(variantText)||0,activeIndex=SKILL_PATHS.findIndex(p=>p.id===active);
-  if(values.reduce((a,b)=>a+b,0)+extra.reduce((a,b)=>a+b,0)>Math.max(0,level-1)||extra.some((on,i)=>on&&values[Math.floor(i/2)]<2)||(variant&&(!extra[activeIndex*2+variant-1]||!values[activeIndex])))return parseBuild(DEFAULT_BUILD,level);
-  return {active:values.some(Boolean)?active:null,variant,...Object.fromEntries(SKILL_PATHS.map((p,i)=>[p.id,values[i]])),extra};
+  const [ranks,active,bits='0000000000',variantText,webBits='0000000000000000000000000000000000000000']=value.split(';'),values=ranks.split(',').map(Number),extra=[...bits].map(Number),web=[...webBits].map(Number),variant=Number(variantText)||0,activeIndex=SKILL_PATHS.findIndex(p=>p.id===active);
+  const build={active:values.some(Boolean)?active:null,variant,...Object.fromEntries(SKILL_PATHS.map((p,i)=>[p.id,values[i]])),extra,web};
+  if(values.reduce((a,b)=>a+b,0)+extra.reduce((a,b)=>a+b,0)+web.reduce((a,b)=>a+b,0)>Math.max(0,level-1)||extra.some((on,i)=>on&&values[Math.floor(i/2)]<2)||(variant&&(!extra[activeIndex*2+variant-1]||!values[activeIndex]))||WEB_NODES.some(node=>web[node.id]&&!webReady(build,node)))return parseBuild(DEFAULT_BUILD,level);
+  return build;
 }
-export function encodeBuild(build){const bits=(build.extra||Array(10).fill(0)).join(''),variant=build.variant||0;return SKILL_PATHS.map(p=>build[p.id]).join(',')+';'+(build.active||'assault')+(bits.includes('1')||variant?';'+bits:'')+(variant?';'+variant:'');}
-export function pointsLeft(build,level){return Math.max(0,level-1-SKILL_PATHS.reduce((n,p)=>n+build[p.id],0)-(build.extra||[]).reduce((a,b)=>a+b,0));}
+export function encodeBuild(build){const bits=(build.extra||Array(10).fill(0)).join(''),web=(build.web||Array(40).fill(0)).join(''),variant=build.variant||0;return SKILL_PATHS.map(p=>build[p.id]).join(',')+';'+(build.active||'assault')+(web.includes('1')?`;${bits};${variant};${web}`:bits.includes('1')||variant?';'+bits+(variant?';'+variant:''):'');}
+export function pointsLeft(build,level){return Math.max(0,level-1-SKILL_PATHS.reduce((n,p)=>n+build[p.id],0)-(build.extra||[]).reduce((a,b)=>a+b,0)-(build.web||[]).reduce((a,b)=>a+b,0));}
 export function abilityName(build){const path=SKILL_PATHS.find(p=>p.id===build?.active);return path?(build.variant?path.branches[build.variant-1]?.ability||path.ability:path.ability):'No skill';}

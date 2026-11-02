@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261102-special1">
+  <link rel="stylesheet" href="style.css?v=20261102-web1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -96,8 +96,8 @@
   <dialog id="skillDialog" class="skill-dialog tree-dialog" aria-labelledby="skillTitle">
     <div class="development-head"><div><span class="eyebrow">SOLDIER DEVELOPMENT / 01</span><h2 id="skillTitle">Skill tree</h2></div><button class="development-close" id="skillCancel" type="button" aria-label="Close skill tree">✕</button></div>
     <div class="tree-summary"><span>YOUR PROGRESSION</span><strong id="skillPoints"></strong></div>
-    <p class="tree-hint">DRAG TO EXPLORE · TAP NODES TO INSPECT</p>
-    <div id="skillPaths" class="skill-tree" tabindex="0" aria-label="Five connected skill paths. Drag to explore or use arrow keys to scroll."></div>
+    <p class="tree-hint">DRAG TO EXPLORE · OUTER RINGS: MASTERIES · BRIDGES: HYBRIDS</p>
+    <div id="skillPaths" class="skill-tree" tabindex="0" aria-label="Skill web with five paths, outer mastery chains and hybrid bridges. Drag to explore or use arrow keys to scroll."></div>
     <section class="tree-detail" aria-live="polite"><div><span id="skillDetailType" class="eyebrow"></span><h3 id="skillDetailTitle"></h3><p id="skillDetailText"></p></div><button id="skillDetailAction" type="button"></button></section>
     <p class="development-hint">One point per level after level 1. Rank 2 unlocks two optional specialist branches per path. All purchased passives work together; select one active ability. Changes apply to your next match.</p>
     <p id="skillStatus" class="development-status" role="status"></p><div class="skill-actions"><button id="skillReset" type="button">RESET POINTS</button><button id="skillSave" class="primary" type="button">SAVE BUILD</button></div>
@@ -146,5 +146,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-special1"></script>
+  <script type="module" src="account.js?v=20261102-web1"></script>
 </body></html>

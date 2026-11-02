@@ -239,3 +239,15 @@ test('skill specialization encoding accepts legacy and new profiles but rejects 
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:4,skills:'2,0,0,0,0;assault;1000000000;1'}));
   await assertFails(set(ref(alice,`parties/${party}/profiles/alice/skills`),'2,0,0,0,0;assault;1000000000;9'));
 });
+
+test('large skill web is accepted in profiles and party rosters, malformed encodings rejected',async()=>{
+  const bits='1000000000000000000000000000000000000000';
+  const web=`3,2,0,0,0;assault;0000000000;0;${bits}`;
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,skills:web}));
+  await assertFails(set(ref(alice,'players/alice/skills'),web+'1'));
+  await assertFails(set(ref(alice,'players/alice/skills'),web.replace(';0;',';3;')));
+  await assertFails(set(ref(alice,'players/alice/skills'),web.replace(bits,'x'+bits.slice(1))));
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:7,skills:web}));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/skills`),web+'!'));
+});
