@@ -1,4 +1,4 @@
-import {bossPhase} from './boss-mechanics.mjs?v=20261102-boss2';
+import {bossPhase} from './boss-mechanics.mjs?v=20261102-terrain4';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#29352c',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -59,6 +59,20 @@ function bog(ctx,path,theme){
   ctx.save();ctx.lineCap='butt';line(ctx,[[a.x,a.y],[b.x,b.y]],'#77674f',46);
   for(let x=a.x+15;x<b.x-10;x+=30)line(ctx,[[x-7,a.y-10],[x+2,a.y-8],[x+8,a.y-10]],'#b4a17b',2);
   ctx.fillStyle='#354a36';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText('DEEP BOG',(a.x+b.x)/2,a.y-31);ctx.restore();
+}
+function fieldZone(ctx,path,state,theme){
+  if(!state.mapId?.startsWith('g2-')||path.length!==10||!['forest','urban'].includes(theme))return;
+  const a=path[2],b=path[3];ctx.save();ctx.lineCap='butt';
+  if(theme==='forest'){
+    line(ctx,[[a.x,a.y],[b.x,b.y]],'#9f9d72',45);
+    for(let x=a.x+18;x<b.x-10;x+=32){line(ctx,[[x-9,a.y-11],[x,a.y-16],[x+9,a.y-11]],'#536e4a',3);line(ctx,[[x-5,a.y+11],[x+2,a.y+15],[x+10,a.y+10]],'#688254',2);}
+  }else if(!state.rubbleCleared){
+    line(ctx,[[a.x,a.y],[b.x,b.y]],'#827d72',44);
+    for(let x=a.x+18;x<b.x-10;x+=32){shape(ctx,[[x-7,a.y-7],[x-1,a.y-14],[x+8,a.y-9],[x+4,a.y-3]],'#b3aa97','#665f56',1);shape(ctx,[[x+3,a.y+7],[x+8,a.y+3],[x+14,a.y+7],[x+10,a.y+12]],'#ada48f','#665f56',1);}
+  }else{line(ctx,[[a.x,a.y],[b.x,b.y]],'#b3aa98',44);}
+  ctx.fillStyle='#344a35';ctx.font='bold 11px Georgia';ctx.textAlign='center';
+  const label=theme==='forest'?'AMBUSH TRAIL':state.rubbleCleared?'RUBBLE CLEARED':`RUBBLE ${Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))}`;
+  ctx.fillText(label,(a.x+b.x)/2,a.y-31);ctx.restore();
 }
 function brokenIce(ctx,path,state,theme){
   if(theme!=='arctic'||!state.iceBroken||path.length!==10)return;const a=path[4],b=path[5];
@@ -133,12 +147,15 @@ function drawTerrain(ctx,path,theme){
   ctx.drawImage(cached,0,0);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme);brokenIce(ctx,path,state,theme);bunker(ctx,state);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);bunker(ctx,state);
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types));
   if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false)soldier(ctx,p,p.id===me);
+  if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
+    ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
+  }
   if(theme==='scrub'&&path.length===10)for(const e of state.enemies)if(e.kind==='tank'&&e.hp>0){
     ctx.save();ctx.beginPath();ctx.arc(e.x,e.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.18)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.65)';ctx.lineWidth=2;ctx.setLineDash([6,7]);ctx.stroke();ctx.restore();
   }

@@ -1,4 +1,4 @@
-import { createHost } from './protocol.mjs?v=20261102-boss2';
+import { createHost } from './protocol.mjs?v=20261102-terrain4';
 
 // Local, player-hosted match core. The future Firebase adapter must bind each
 // playerId to an authenticated, rules-protected input path; never trust an ID

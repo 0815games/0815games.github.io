@@ -190,3 +190,19 @@ test('boss warning timing and bunker strike synchronize through Firebase',async 
   h.step();h.publish();await until(()=>view?.match.hp===92);assert.ok(view.match.enemies[0].bossFlash>0);assert.ok(view.match.enemies[0].bossClock>=12);
   h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.hp,92);
 });
+
+test('destroyed urban cover synchronizes across Firebase and reconnect',async t=>{
+  const {createFirebasePartyChannel}=await import('../../firebase-party-channel.mjs');
+  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
+  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');const {getMap}=await import('../../maps.mjs');
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};let map;
+  for(let i=0;i<1000&&!map;i++){const m=getMap(`g2-${(Math.imul(i,2654435761)>>>0).toString(16).padStart(8,'0')}`);if(m.theme==='urban')map=m;}
+  assert.ok(map);const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'},900,20)),map.id);state.wave=1;state.running=true;state.spawnLeft=1;state.spawnTimer=100;state.rubbleDamage=195;
+  state.towers=[{type:3,level:1,pad:0,timer:0,ownerId:'alice'}];state.enemies=[{kind:'infantry',x:map.pads[0].x+120,y:map.pads[0].y,segment:3,hp:1000,maxHp:1000,speed:0,reward:1,damage:1}];
+  const h=createFirebasePartyHostSession({channel:createFirebasePartyChannel({...opts,db:alice,auth:{currentUser:{uid:'alice'}}}),host:createPartyHost(state,{hostId:'alice'}),playerIds:ids,epoch:'terrain-cover-test'});
+  let view;const client=createFirebasePartyClientSession({channel:createFirebasePartyChannel({...opts,db:bob,auth:{currentUser:{uid:'bob'}}}),onView:v=>{view=v;}});
+  t.after(async()=>{await Promise.all([h.stop(),client.stop()]);});client.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.publish();await until(()=>view?.match.rubbleDamage===195);
+  h.step();h.publish();await until(()=>view?.match.rubbleCleared===true);assert.equal(view.match.rubbleDamage,200);
+  h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.rubbleCleared,true);
+});
