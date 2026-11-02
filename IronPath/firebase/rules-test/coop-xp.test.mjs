@@ -159,3 +159,19 @@ test('endless wave receipts award both players once under published rules',async
   const reconnect=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party,block:1});reconnect.observe(1);await new Promise(r=>setTimeout(r,150));
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),230);assert.equal((await get(ref(bob,'players/bob/armory/scrap'))).val(),10);qa.close();qb.close();reconnect.close();
 });
+
+test('shared rare upgrades and broken ice survive Firebase snapshots and reconnect',async t=>{
+  const {createFirebasePartyChannel}=await import('../../firebase-party-channel.mjs');
+  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
+  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
+  const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'})),'g2-12345678');state.pendingPerk=5;state.iceBroken=true;
+  const engine=createPartyHost(state,{hostId:'alice'}),h=createFirebasePartyHostSession({channel:createFirebasePartyChannel({...opts,db:alice,auth:{currentUser:{uid:'alice'}}}),host:engine,playerIds:ids,epoch:'future-test'});
+  let view,ready=false;const client=createFirebasePartyClientSession({channel:createFirebasePartyChannel({...opts,db:bob,auth:{currentUser:{uid:'bob'}}}),onView:v=>{view=v;},onState:s=>{ready=s==='ready';}});
+  t.after(async()=>{await Promise.all([h.stop(),client.stop()]);});
+  client.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.publish();await until(()=>ready&&view?.match.pendingPerk===5);
+  const choice=client.command({type:'choosePerk',index:1});for(let i=0;i<30;i++){h.step();await new Promise(r=>setTimeout(r,10));}
+  assert.equal((await choice).ok,true);await until(()=>view?.match.pendingPerk===0);assert.equal(view.match.iceBroken,true);assert.equal(Object.values(view.match.runPerks).reduce((a,b)=>a+b,0),1);
+  h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.iceBroken,true);assert.equal(Object.values(view.match.runPerks).reduce((a,b)=>a+b,0),1);
+});
