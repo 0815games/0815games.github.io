@@ -13,9 +13,10 @@ source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('..
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];
 const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
-const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory});
-el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);
-await el('coopToggle').onclick();assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
+let mapGeneration=0;
+const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';}});
+el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);assert.equal(mapGeneration,1);game.resetSkills();assert.equal(mapGeneration,1,'editing skills does not reroll the current operation');
+await el('coopToggle').onclick();assert.equal(mapGeneration,2,'a co-op start generates a new battlefield');assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
 opts.onStatus(false);opts.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(commands.at(-1),{type:'direction',x:0,y:0},'reconnection neutralizes movement');
 match.players.bob.skills.active='recon';opts.onSnapshot({match:structuredClone(match)});match.players.bob.cooldown=30;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+100);assert.ok(drawnText.includes('SUPPRESSION'),'teammate ability renders from a co-op view');
 opts.onStatus(false);opts.onStatus(true);drawnText.length=0;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+200);assert.ok(!drawnText.includes('SUPPRESSION'),'reconnect does not replay an old ability');await new Promise(resolve=>setTimeout(resolve,0));
@@ -33,7 +34,7 @@ assert.equal(applyCommand(match,'bob',{type:'build',pad:1,towerType:0}).ok,true)
 el('game').onclick({clientX:285,clientY:210});assert.match(el('menuDesc0').textContent,/You pay.*refund goes to Bob/);assert.match(el('menuName0').textContent,/Confirm upgrade/);
 el('radial1').onclick();assert.match(el('menuDesc0').textContent,/Bob receives 25/);el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,/Bob receives 25/);
-match.mapId='forest';opts.onSnapshot({match:structuredClone(match)});assert.equal(el('mapSelect').value,'forest','guest uses map from host snapshot');assert.equal(el('mapSelect').disabled,true,'map remains locked in co-op');
+match.mapId='forest';opts.onSnapshot({match:structuredClone(match)});assert.equal(el('mapName').textContent,'Pinewood Crossing','guest uses map from host snapshot');
 opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);

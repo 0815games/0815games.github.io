@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261102-maps1">
+  <link rel="stylesheet" href="style.css?v=20261102-routes2">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -77,7 +77,6 @@
     <section class="dashboard" aria-label="Battle status">
       <div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3m1 1h12l-3 4 3 4H6"/></svg><span><small>WAVE</small><strong id="wave">0 / 20</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20v-8l3-5h12l3 5v8H3zm3-8h12M9 20v-5h6v5"/></svg><span><small>BUNKER</small><strong id="health">100</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v12H4zM7 8V5h10v3M9 14h6M12 11v6"/></svg><span><small id="moneyLabel">SUPPLIES</small><strong id="money">125</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span><small>ENEMIES</small><strong id="enemies">0</strong></span></div>
     </section>
-    <div class="map-select-bar"><label for="mapSelect">BATTLEFIELD</label><select id="mapSelect" aria-describedby="mapSelectHint"><option value="road">The Last Road</option><option value="forest">Pinewood Crossing</option><option value="outpost">Broken Outpost</option><option value="random">Surprise me · random map</option></select><span id="mapSelectHint">Choose before building or deploying; host picks for co-op.</span></div>
     <div class="layout">
       <section class="battle"><div class="battle-head"><div><span class="eyebrow">OPERATION 01</span><h2 id="mapName">The Last Road</h2></div><span class="legend"><i></i> BUILD PAD <i></i> ENEMY ROUTE</span></div><div class="map-frame"><div class="map-viewport" id="mapViewport" tabindex="0" aria-label="Scrollable battlefield" aria-describedby="mapHint"><canvas id="game" width="960" height="540" aria-label="Battlefield. Tap an empty build pad to build, tap a tower to select it, or tap open ground to move your hero."></canvas></div><details class="wave-info"><summary aria-label="Show next wave details" title="Next wave">⚑</summary><div class="wave-popover"><strong>NEXT WAVE</strong><p id="wavePreview" aria-live="polite"></p></div></details></div><div class="map-toolbar" aria-label="Map view controls"><button id="mapZoom" type="button" aria-pressed="true">MAP: LARGE</button><button id="mapEntry" type="button">← ENTRY</button><button id="mapBunker" type="button">BUNKER →</button></div><p class="map-hint" id="mapHint">Swipe the map left or right to see the battlefield. Tap to build or move.</p><div class="battle-foot"><span id="message" aria-live="polite">Choose your hero and deploy when ready.</span><span>FIELD MAP / 01</span></div></section>
       <aside aria-label="Battle controls">
@@ -147,5 +146,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-maps1"></script>
+  <script type="module" src="account.js?v=20261102-routes2"></script>
 </body></html>
