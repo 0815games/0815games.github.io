@@ -13,8 +13,8 @@ source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('..
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];
 const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
-let mapGeneration=0;
-const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';}});
+let mapGeneration=0,allowEnd=false,confirmation;
+const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';},confirmAction:async options=>{confirmation=options;return allowEnd;}});
 el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);assert.equal(mapGeneration,1);game.resetSkills();assert.equal(mapGeneration,1,'editing skills does not reroll the current operation');
 await el('coopToggle').onclick();assert.equal(mapGeneration,2,'a co-op start generates a new battlefield');assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
 opts.onStatus(false);opts.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(commands.at(-1),{type:'direction',x:0,y:0},'reconnection neutralizes movement');
@@ -37,6 +37,7 @@ assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,
 match.mapId='forest';opts.onSnapshot({match:structuredClone(match)});assert.equal(el('mapName').textContent,'Pinewood Crossing','guest uses map from host snapshot');
 opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
+await el('endRun').onclick();assert.equal(match.ended,false);assert.match(confirmation.text,/both players/);allowEnd=true;await el('endRun').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(match.ended,true);assert.equal(el('start').textContent,'MATCH ENDED');assert.equal(el('endRun').disabled,true);assert.match(el('message').textContent,/Shared run ended/);
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
 assert.equal(game.confirmParty(),true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),true);
 assert.equal(el('speed').disabled,true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),false);

@@ -1,13 +1,13 @@
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261102-endless1';
-import { stepMatch } from './simulation.mjs?v=20261102-endless1';
+import { applyCommand } from './match.mjs?v=20261102-endrun1';
+import { stepMatch } from './simulation.mjs?v=20261102-endrun1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const commandFields={startWave:[],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const commandFields={endRun:[],startWave:[],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];

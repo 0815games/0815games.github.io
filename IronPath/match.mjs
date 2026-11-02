@@ -3,8 +3,8 @@ import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
-import { waveFormation } from './combat.mjs?v=20261102-endless1';
-import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-endless1';
+import { waveFormation } from './combat.mjs?v=20261102-endrun1';
+import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-endrun1';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
@@ -30,6 +30,10 @@ export function applyCommand(state, playerId, command) {
   if(!command||typeof command.type!=='string')return {ok:false,reason:'Invalid command.'};
   if(state.ended)return {ok:false,reason:'The operation is over.'};
   switch(command.type){
+    case 'endRun': {
+      state.ended=true;state.running=false;state.endReason='retired';state.pendingPerk=0;state.spawnLeft=0;
+      return {ok:true};
+    }
     case 'startWave': {
       if(state.running||state.pendingPerk||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
       state.wave++;state.running=true;state.spawnLeft=waveFormation(state.wave).length;state.spawnIndex=0;state.spawnTimer=.2;return {ok:true};

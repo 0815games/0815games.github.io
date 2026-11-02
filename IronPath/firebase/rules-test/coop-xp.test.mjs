@@ -71,6 +71,10 @@ test('actual game adapters show each balance and credit both players for a compl
   await readyUntil(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
   assert.equal(viewB.match.players.bob.completedWaveMask,1);assert.equal(viewA.match.players.alice.completedWaveMask,1);
   assert.equal((await get(ref(alice,'players/alice/armory/scrap'))).val(),10);assert.equal((await get(ref(bob,'players/bob/armory/scrap'))).val(),10);
+  assert.equal((await b.command({type:'endRun'})).ok,true);
+  await readyUntil(()=>viewA.match.ended&&viewB.match.ended);
+  assert.equal(viewA.match.endReason,'retired');assert.equal(viewB.match.endReason,'retired');
+  assert.equal((await get(ref(alice,'players/alice/xp'))).val(),30);assert.equal((await get(ref(bob,'players/bob/xp'))).val(),30);
 });
 
 
