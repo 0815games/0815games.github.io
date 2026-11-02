@@ -180,3 +180,5 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 
 /* Keep the nodes and labels in proportion to the zoomed map. */
 .tree-dialog .tree-node,.tree-dialog .tree-node.tree-web{width:calc(43px * var(--tree-zoom, 1));height:calc(43px * var(--tree-zoom, 1));font-size:calc(15px * var(--tree-zoom, 1))}.tree-dialog .tree-node.tree-specialist,.tree-dialog .tree-node.tree-web{font-size:calc(12px * var(--tree-zoom, 1))}.tree-dialog .tree-core{width:calc(55px * var(--tree-zoom, 1));font-size:calc(10px * var(--tree-zoom, 1))}.tree-dialog .tree-path-label{font-size:calc(10px * var(--tree-zoom, 1));padding:calc(3px * var(--tree-zoom, 1)) calc(5px * var(--tree-zoom, 1))}
+
+.tree-dialog .tree-node.tree-capstone{border:4px double #7b5b25;background:#e5c679;color:#573e19}.tree-dialog .tree-node.tree-capstone.is-unlocked{background:#bf6b43;color:#fff0c4}

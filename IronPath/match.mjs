@@ -1,5 +1,6 @@
+import {activateCombos} from './skill-combos.mjs?v=20261102-combos1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
-import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-web2';
+import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-combos1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
@@ -125,7 +126,7 @@ export function applyCommand(state, playerId, command) {
       else if(active==='logistics'){addSupplies(state,playerId,(variant===1?45:variant===2?20:30)+(player.skills?.extra?.[5]?15:0));if(variant===2)state.hp=Math.min(state.maxHp??100,state.hp+6);}
       else if(active==='medic'){state.hp=Math.min(state.maxHp??100,state.hp+(variant===1?25:variant===2?10:15)+(player.skills?.extra?.[7]?10:0));if(variant===2)addSupplies(state,playerId,12);}
       else if(active==='recon'){state.suppression=(variant===1?12:variant===2?4:8)+(player.skills?.extra?.[9]?3:0);if(variant===2)for(const enemy of state.enemies)enemy.hp-=20;}
-      return {ok:true};
+      const combos=activateCombos(state,playerId,active,addSupplies);return {ok:true,combos};
     }
     default:return {ok:false,reason:'Unknown command.'};
   }

@@ -1,3 +1,4 @@
+import {COMBOS,CAPSTONES} from './skill-combos.mjs?v=20261102-combos1';
 // Existing five-rank builds remain valid. Optional bits add two specialist
 // branches per path without changing or refunding existing investments.
 export const SKILL_PATHS=[
@@ -27,6 +28,7 @@ const bridgeNames=['Siege Command','Combat Logistics','Humanitarian Supply','Rap
 const crossNames=['Supply Shock','Combat Medics','Mobile Supply','Combat Hospital','Recon Engineering'];
 const describe=bonuses=>bonuses.map(([key,amount])=>`+${amount}${effects[key][1]} ${effects[key][0]}`).join(' and ')+'.';
 export const WEB_NODES=[...paths.flatMap((path,i)=>names[i].map((name,tier)=>{const bonuses=[masteryEffects[i][tier]];return {id:i*5+tier,name,path,tier,kind:'mastery',bonuses,description:describe(bonuses)};})),...paths.flatMap((path,i)=>Array.from({length:3},(_,tier)=>{const other=paths[(i+1)%5],bonuses=[primary[i],primary[(i+1)%5]];return {id:25+i*3+tier,name:`${bridgeNames[i]} ${['I','II','III'][tier]}`,path,other,tier,kind:'hybrid',bonuses,description:describe(bonuses)};})),...paths.flatMap((path,i)=>Array.from({length:3},(_,tier)=>{const other=paths[(i+2)%5],bonuses=[primary[i],primary[(i+2)%5]];return {id:40+i*3+tier,name:`${crossNames[i]} ${['I','II','III'][tier]}`,path,other,tier,kind:'cross',bonuses,description:describe(bonuses)};}))];
+for(const node of WEB_NODES){if(CAPSTONES[node.id])node.description+=` CAPSTONE: ${CAPSTONES[node.id]}`;const combo=COMBOS.find(c=>node.id>=c.id&&node.id<c.id+3);if(combo)node.description+=` COMBO (tier ${node.tier+1}): ${combo.description}`;}
 export function webReady(build,node){return node.kind==='mastery'?build[node.path]>=3&&(node.tier===0||!!build.web?.[node.id-1]):build[node.path]>=2&&build[node.other]>=2&&(node.tier===0||!!build.web?.[node.id-1]);}
 export function webRequirement(node){const path=SKILL_PATHS.find(p=>p.id===node.path).name;if(node.kind==='mastery')return node.tier?`Requires previous ${path} mastery.`:`Requires ${path} rank 3.`;const other=SKILL_PATHS.find(p=>p.id===node.other).name;return node.tier?'Requires previous hybrid node.':`Requires ${path} and ${other} rank 2.`;}
 export function webBonuses(build){const result=Object.fromEntries(Object.keys(effects).map(key=>[key,0]));for(const node of WEB_NODES)if(build?.web?.[node.id])for(const [key,amount] of node.bonuses)result[key]+=amount;return result;}
