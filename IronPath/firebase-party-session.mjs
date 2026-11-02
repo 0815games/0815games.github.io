@@ -1,10 +1,15 @@
 // Experimental session logic, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
-export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onError=()=>{}}){
+export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{}}){
   if(!channel||!host||!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||typeof epoch!=='string'||!epoch||typeof onError!=='function')throw new Error('Invalid host session');
-  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false;
+  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null;
   const connections=new Map(playerIds.map(id=>[id,[]]));
+  function localView(){
+    if(!localListener||!localPlayerId||closed||failed)return;
+    const snapshot=host.snapshotFor(localPlayerId);if(snapshot?.match?.individualSupplies)snapshot.match.money=snapshot.match.players[localPlayerId].money;
+    localListener({epoch,ready:host.readyFor(localPlayerId),connections:connections.get(localPlayerId),snapshot});
+  }
   function queueView(){
     if(closed||failed)return;
     latest=Object.fromEntries(playerIds.map(id=>{
@@ -14,7 +19,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
       if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
       return [id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot}];
     }));
-    if(!publishing)void pump();
+    localView();if(!publishing)void pump();
   }
   async function pump(){
     publishing=true;
@@ -30,11 +35,17 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,onE
     },
     setPresence(id,connected){if(!started||closed||failed)return false;const changed=host.setPresence(id,connected);if(changed)queueView();return changed;},
     setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
-    // Called once per fixed simulation step. Views are published at most once per
-    // six ticks and coalesced while a previous Firebase update is in flight.
-    step(){if(!started||closed||failed)return null;const result=host.advance();if(result&&(result.tick%6===0||result.events.some(event=>event.type==='waveCleared')))queueView();return result;},
+    // The host sees its authoritative state locally, while remote views are
+    // coalesced to at most 10 Hz plus command and wave-completion receipts.
+    step(){if(!started||closed||failed)return null;const result=host.advance();if(result){if(result.tick%3===0||result.commands.length||result.events.some(event=>event.type==='waveCleared'))queueView();else if(result.tick%2===0)localView();}return result;},
+    localChannel(){
+      if(!playerIds.includes(localPlayerId))throw new Error('Local player required');
+      return {watchView(fn){localListener=fn;if(started)localView();return()=>{if(localListener===fn)localListener=null;};},
+        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='rejected')throw new Error(result.reason);},
+        async close(){localListener=null;}};
+    },
     publish(){if(started&&!closed&&!failed)queueView();},
-    async stop(){if(closed)return;closed=true;latest=null;unsubscribe?.();for(const id of playerIds)host.setPresence(id,false);await channel.close();}
+    async stop(){if(closed)return;closed=true;latest=null;localListener=null;unsubscribe?.();for(const id of playerIds)host.setPresence(id,false);await channel.close();}
   };
 }
 
