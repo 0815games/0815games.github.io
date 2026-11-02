@@ -37,4 +37,12 @@ jobs:
           fi
 
       - name: Run four-player combined rules tests
-        run: npm run test:four
+        shell: bash
+        run: |
+          if npm run test:four > four-rules-output.log 2>&1; then
+            cat four-rules-output.log
+          else
+            cat four-rules-output.log
+            python3 -c "from pathlib import Path; s=Path('four-rules-output.log').read_text()[-14000:]; print('::error title=Four-player emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
