@@ -1,0 +1,33 @@
+// Deterministic, host-simulated terrain rules. Legacy maps keep their old balance.
+export const TERRAIN_BRIEFINGS=Object.freeze({
+ scrub:'Tanks raise dust within 75 units. Towers and soldiers have 25% less targeting range against targets in dust; sniper towers ignore it.',
+ forest:'All infantry and scouts have forest cover: 20% less tower and soldier damage. A shooter with Recon ranks ignores this cover.',
+ urban:'Rubble reduces tower and soldier damage by 25% beyond 110 units. Fight closer to avoid the penalty.',
+ arctic:'Off-road soldiers move 25% slower in snow. Tanks on the marked thin ice lose 10 HP per second.',
+ marsh:'Tanks move 25% slower in mud. All infantry and scouts have reed cover: 20% less tower and soldier damage from beyond 100 units.'
+});
+export function terrainFor(map){return map.id?.startsWith('g2-')?map.theme:null;}
+export function distanceToRoad(point,path){
+ let nearest=Infinity;
+ for(let i=1;i<path.length;i++){
+  const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy;
+  const t=length?Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.y-a.y)*dy)/length)):0;
+  nearest=Math.min(nearest,Math.hypot(point.x-a.x-t*dx,point.y-a.y-t*dy));
+ }
+ return nearest;
+}
+// segment 5 is a horizontal route section on every g2 map, drawn as thin ice.
+export const onThinIce=enemy=>enemy.segment===5;
+export function soldierSpeedFactor(theme,player,path){return theme==='arctic'&&distanceToRoad(player,path)>36?.75:1;}
+export function enemySpeedFactor(theme,enemy){return theme==='marsh'&&enemy.kind==='tank'?.75:1;}
+export function iceDamage(theme,enemy,dt){return theme==='arctic'&&enemy.kind==='tank'&&onThinIce(enemy)?10*dt:0;}
+export function targetingRange(theme,range,target,enemies,{sniper=false}={}){
+ if(theme==='scrub'&&!sniper&&enemies.some(e=>e.kind==='tank'&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=75))return range*.75;
+ return range;
+}
+export function weaponDamageFactor(theme,enemy,distance,{recon=false}={}){
+ if(theme==='forest'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&!recon)return .8;
+ if(theme==='urban'&&distance>110)return .75;
+ if(theme==='marsh'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&distance>100)return .8;
+ return 1;
+}
