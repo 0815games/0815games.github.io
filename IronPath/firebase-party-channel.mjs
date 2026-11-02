@@ -17,11 +17,11 @@ function decode(value,limit){
   if(!result||typeof result!=='object'||Array.isArray(result))throw new Error('Invalid party packet');
   return result;
 }
-export function createFirebasePartyChannel({db,auth,sdk,partyId,hostId,playerIds,onError=()=>{}}){
-  if(!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.set!=='function'||typeof sdk.update!=='function'||!validKey(partyId)||!validKey(hostId)||!Array.isArray(playerIds)||playerIds.length!==2||playerIds.some(id=>!validKey(id))||new Set(playerIds).size!==2||!playerIds.includes(hostId)||typeof onError!=='function')throw new Error('Invalid party channel configuration');
+export function createFirebasePartyChannel({db,auth,sdk,partyId,hostId,playerIds,partyRoot='parties',onError=()=>{}}){
+  if(!['parties','fourParties'].includes(partyRoot)||!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.set!=='function'||typeof sdk.update!=='function'||!validKey(partyId)||!validKey(hostId)||!Array.isArray(playerIds)||![2,4].includes(playerIds.length)||(playerIds.length===4)!==(partyRoot==='fourParties')||playerIds.some(id=>!validKey(id))||new Set(playerIds).size!==playerIds.length||!playerIds.includes(hostId)||typeof onError!=='function')throw new Error('Invalid party channel configuration');
   const uid=auth.currentUser?.uid;
   if(!validKey(uid)||!playerIds.includes(uid))throw new Error('Authenticated party member required');
-  const base=`parties/${partyId}`,listeners=new Set();let closed=false,pending=Promise.resolve();
+  const base=`${partyRoot}/${partyId}`,listeners=new Set();let closed=false,pending=Promise.resolve();
   const ensure=()=>{if(closed)throw new Error('Party channel closed');if(auth.currentUser?.uid!==uid)throw new Error('Party identity changed');};
   const ref=path=>sdk.ref(db,`${base}/${path}`);
   // Queue writes so older asynchronous snapshots cannot overwrite newer ones.
@@ -51,7 +51,7 @@ export function createFirebasePartyChannel({db,auth,sdk,partyId,hostId,playerIds
     },
     publishViews(views){
       ensure();if(uid!==hostId)throw new Error('Host required');
-      if(!views||typeof views!=='object'||Array.isArray(views)||Object.keys(views).length!==2||playerIds.some(id=>!Object.hasOwn(views,id)))throw new Error('Both player views required');
+      if(!views||typeof views!=='object'||Array.isArray(views)||Object.keys(views).length!==playerIds.length||playerIds.some(id=>!Object.hasOwn(views,id)))throw new Error('Both player views required (all roster members)');
       const changes=Object.fromEntries(playerIds.map(id=>[`views/${id}`,encode(views[id],MAX_VIEW_BYTES)]));
       return write(()=>sdk.update(sdk.ref(db,base),changes));
     },

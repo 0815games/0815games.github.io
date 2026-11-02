@@ -1,12 +1,12 @@
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261102-results1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261102-fourbase1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261102-fourbase2';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-battle2';
 import {createBattleSound} from './battle-sound.mjs?v=20261102-battle2';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-battle2';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-fourbase2';
 import {abilityName} from './skills.mjs?v=20261102-results1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';

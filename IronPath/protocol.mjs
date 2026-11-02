@@ -1,3 +1,4 @@
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261102-fourbase1';
 import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261102-fourbase1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
@@ -7,6 +8,8 @@ import { stepMatch } from './simulation.mjs?v=20261102-fourbase1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
+const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
+const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{});
 const clone=value=>JSON.parse(JSON.stringify(value));
 const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 function normalizeCommand(command){
@@ -49,21 +52,21 @@ function makeHost(data){
   function advance(){
     tick++;const commands=[];
     for(const item of queue){
-      const result=match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
+      const result=isFour(match)?applyFourCommand(match,item.playerId,item.command):match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
       const response={status:'applied',seq:item.seq,tick,result};
       const receipt=players[item.playerId].receipts.find(r=>r.seq===item.seq);
       receipt.response=clone(response);
       commands.push({...clone(item),result:clone(result)});
     }
     queue=[];
-    const events=match.mode==='versus'?stepVersus(match):stepMatch(match);
+    const events=isFour(match)?stepFour(match):match.mode==='versus'?stepVersus(match):stepMatch(match);
     return clone({version:PROTOCOL_VERSION,tick,commands,events});
   }
   // Cancel unprocessed inputs and neutralize movement on transport disconnect.
   // The host must stop ticking until its disconnect policy permits resuming.
   function suspendPlayer(playerId){
     if(!Object.hasOwn(players,playerId))return false;
-    const player=match.mode==='versus'?match.lanes[playerId].players[playerId]:match.players[playerId];player.direction={x:0,y:0};player.target=null;
+    const player=isFour(match)?(match.mode==='four-coop'?match.match.players[playerId]:match.lanes.find(lane=>Object.hasOwn(lane.players,playerId))?.players[playerId]):match.mode==='versus'?match.lanes[playerId].players[playerId]:match.players[playerId];if(!player)return false;player.direction={x:0,y:0};player.target=null;
     const remaining=[];
     for(const item of queue){
       if(item.playerId!==playerId){remaining.push(item);continue;}
@@ -76,7 +79,7 @@ function makeHost(data){
   // removing their identity, towers or reconnect receipts from the match.
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
-    match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
+    if(isFour(match))return setFourPresence(match,playerId,active);match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}
@@ -89,14 +92,14 @@ function makeHost(data){
   return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive};
 }
 export function createHost(initialMatch){
-  const match=clone(initialMatch),ids=Object.keys(match.players||{});
-  if(ids.length<1||ids.length>2)throw new Error('Match must contain one or two players');
+  const match=clone(initialMatch),ids=matchIds(match);
+  if(isFour(match)?ids.length!==4:ids.length<1||ids.length>2)throw new Error('Match must contain one or two players');
   return makeHost({match,tick:0,players:Object.fromEntries(ids.map(id=>[id,{nextSeq:1,receipts:[]}])),queue:[]});
 }
 export function restoreHost(checkpoint){
   if(!checkpoint||checkpoint.version!==PROTOCOL_VERSION)throw new Error('Unsupported checkpoint version');
-  const data=clone(checkpoint),ids=Object.keys(data.match?.players||{});
-  if(!Number.isSafeInteger(data.tick)||data.tick<0||!data.players||!Array.isArray(data.queue)||data.queue.length>MAX_PENDING||ids.length<1||ids.length>2||Object.keys(data.players).length!==ids.length||ids.some(id=>!Object.hasOwn(data.players,id)||!Number.isSafeInteger(data.players[id].nextSeq)||data.players[id].nextSeq<1||!Array.isArray(data.players[id].receipts)))throw new Error('Invalid trusted checkpoint');
+  const data=clone(checkpoint),ids=matchIds(data.match);
+  if(!Number.isSafeInteger(data.tick)||data.tick<0||!data.players||!Array.isArray(data.queue)||data.queue.length>MAX_PENDING||(isFour(data.match)?ids.length!==4:ids.length<1||ids.length>2)||Object.keys(data.players).length!==ids.length||ids.some(id=>!Object.hasOwn(data.players,id)||!Number.isSafeInteger(data.players[id].nextSeq)||data.players[id].nextSeq<1||!Array.isArray(data.players[id].receipts)))throw new Error('Invalid trusted checkpoint');
   // Storage is trusted; reject obviously inconsistent pending records rather than
   // accepting checkpoint data from an untrusted client as an authorization source.
   for(const item of data.queue){const p=data.players[item.playerId];if(!p||!normalizeCommand(item.command)||!p.receipts.some(r=>r.seq===item.seq&&r.response.status==='queued'))throw new Error('Invalid pending command');}

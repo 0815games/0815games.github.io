@@ -1,5 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {drawCartoonBattle} from '../cartoon-art.mjs';
+import {getMap} from '../maps.mjs';
 import {createPlayer} from '../match.mjs';
 import {createMatch,PATH,PADS,getTowerRange} from '../simulation.mjs';
 const p=createPlayer('a',{name:'Alice',gender:'female'}),q=createPlayer('b',{name:'Bob',gender:'male'});
@@ -14,3 +15,5 @@ assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='S'));assert.ok(ca
 const count=calls.length;drawCartoonBattle(ctx,state,{...opts,effects,reducedMotion:true});assert.ok(calls.length-count<count,'reduced motion avoids animated effects');
 assert.deepEqual(state,before,'the drawing must not mutate game state');assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='BUNKER'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Alice'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Bob'));
 console.log('Cartoon drawing covers towers, enemies, players and bunker without changing state.');
+
+const big=getMap('four-front'),bigState=createMatch([p,q],big.id),bigBefore=structuredClone(bigState);calls.length=0;drawCartoonBattle(ctx,bigState,{...opts,path:big.path,paths:big.paths,pads:big.pads,width:big.width,height:big.height,bunkerPosition:big.bunker});assert.ok(calls.some(([name,x,y,w,h])=>name==='fillRect'&&x===0&&y===0&&w===1440&&h===720));assert.equal(calls.filter(([name,text])=>name==='fillText'&&text==='ENEMY ENTRY').length,2);assert.ok(calls.some(([name,x,y])=>name==='translate'&&x===480&&y===-40));assert.ok(calls.some(([name,x,y])=>name==='moveTo'&&x===0&&y===580));assert.deepEqual(bigState,bigBefore);
