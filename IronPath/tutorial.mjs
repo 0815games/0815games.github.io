@@ -29,7 +29,7 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{}}){
       $('tutorialSkillPoints').textContent=`EXAMPLE: ${skill.upgraded?0:1} POINT AVAILABLE`;
       $('tutorialSkillNode').textContent=skill.inspected?'ASSAULT · RANK 1 SELECTED':'1 · INSPECT ASSAULT';$('tutorialSkillNode').setAttribute('aria-pressed',String(skill.inspected));
       $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?'✓ RANK 2 UNLOCKED':'UPGRADE · 1 POINT';
-      $('tutorialSkillAbility').disabled=!skill.upgraded||skill.ability;$('tutorialSkillAbility').textContent=skill.ability?'✓ SUPPRESSION SELECTED':'SELECT SUPPRESSION';
+      $('tutorialSkillAbility').disabled=!skill.upgraded||skill.ability;$('tutorialSkillAbility').textContent=skill.ability?'✓ AIRSTRIKE SELECTED':'SELECT AIRSTRIKE';
       $('tutorialPracticeStatus').textContent=skipped.has('skills')?'Practice skipped. Your real build is unchanged.':!skill.inspected?'Tap the Assault node to inspect it.':!skill.upgraded?'Now tap Upgrade to spend the example point.':!skill.ability?'Now select the example ability.':'Well done! Your real build is unchanged.';
     }else if(practice==='armory'){
       $('tutorialScrap').textContent=`EXAMPLE: ${armory.upgraded?30:60} SCRAP`;
