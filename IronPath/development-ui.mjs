@@ -1,24 +1,24 @@
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft} from './skills.mjs?v=20261102-special1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-web1';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
 const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];
-const nodeAt=(angle,r)=>({x:300+Math.cos(angle)*r,y:300+Math.sin(angle)*r});
+const nodeAt=(angle,r)=>({x:700+Math.cos(angle)*r,y:700+Math.sin(angle)*r});
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
 export function renderSkillTree({document,container,build,level,selected,onSelect}){
   const scrollLeft=container.scrollLeft,scrollTop=container.scrollTop;
   const board=document.createElement('div');board.className='skill-tree-board';
-  const lines=svg(document,'svg',{viewBox:'0 0 600 600','aria-hidden':'true',class:'skill-tree-lines'});
-  for(const r of [75,130,185,245])lines.append(svg(document,'circle',{cx:300,cy:300,r,class:'tree-orbit'}));
+  const lines=svg(document,'svg',{viewBox:'0 0 1400 1400','aria-hidden':'true',class:'skill-tree-lines'});
+  for(const r of [90,165,235,315,410,520,610])lines.append(svg(document,'circle',{cx:700,cy:700,r,class:'tree-orbit'}));
   const left=pointsLeft(build,level);
   SKILL_PATHS.forEach((path,i)=>{
     const angle=-Math.PI/2+i*2*Math.PI/5;
-    let prev={x:300,y:300};
-    [75,130,185].forEach((radius,j)=>{
+    let prev={x:700,y:700};
+    [90,165,235].forEach((radius,j)=>{
       const pos=nodeAt(angle,radius),rank=j+1,isAbility=j===0,unlocked=build[path.id]>=rank,active=isAbility&&build.active===path.id&&!build.variant;
       lines.append(svg(document,'line',{x1:prev.x,y1:prev.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:(unlocked||active)?'tree-link is-lit':'tree-link'}));prev=pos;
       const button=document.createElement('button');button.type='button';button.className=`tree-node${isAbility?' tree-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
-      button.style.left=`${pos.x/6}%`;button.style.top=`${pos.y/6}%`;button.style.setProperty('--path-color',colors[i]);
+      button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);
       if(isAbility){const symbol=document.createElement('span');symbol.textContent=icons[i];symbol.className='tree-ability-symbol';button.append(symbol);}else button.textContent=String(rank);
       button.dataset.path=path.id;button.dataset.rank=String(rank);
       const status=active?'selected main skill':unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked';
@@ -27,13 +27,19 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
       button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
     });
     path.branches.forEach((branch,j)=>{
-      const pos=nodeAt(angle+(j===0?-.33:.33),245),parent=nodeAt(angle,130),rank=5+j,unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
+      const pos=nodeAt(angle+(j===0?-.30:.30),315),parent=nodeAt(angle,165),rank=5+j,unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
       lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:unlocked?'tree-link is-lit':'tree-link'}));
       const button=document.createElement('button');button.type='button';button.className=`tree-node tree-specialist${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
-      button.style.left=`${pos.x/6}%`;button.style.top=`${pos.y/6}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=j===0?'Ⅰ':'Ⅱ';button.dataset.path=path.id;button.dataset.rank=String(rank);
+      button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=j===0?'Ⅰ':'Ⅱ';button.dataset.path=path.id;button.dataset.rank=String(rank);
       button.setAttribute('aria-label',`${path.name} specialist ${branch.ability}, ${active?'selected':unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
     });
-    const labelPos=nodeAt(angle,283),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/6}%`;label.style.top=`${labelPos.y/6}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
+    const labelPos=nodeAt(angle,665),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/14}%`;label.style.top=`${labelPos.y/14}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
+  });
+  WEB_NODES.forEach(node=>{
+    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),angle=-Math.PI/2+i*2*Math.PI/5+(node.kind==='hybrid'?Math.PI/5:0),radius=node.kind==='hybrid'?[285,405,525][node.tier]:[340,405,470,535,600][node.tier],pos=nodeAt(angle,radius),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
+    const parents=node.kind==='hybrid'&&node.tier===0?[nodeAt(angle-Math.PI/5,165),nodeAt(angle+Math.PI/5,165)]:[nodeAt(angle,node.kind==='hybrid'?[0,285,405][node.tier]:[235,340,405,470,535][node.tier])];
+    for(const parent of parents)lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:unlocked?'tree-link is-lit':'tree-link'}));
+    const button=document.createElement('button');button.type='button';button.className=`tree-node tree-web ${node.kind==='hybrid'?'tree-hybrid':'tree-mastery'}${unlocked?' is-unlocked':''}${selected.path===node.path&&selected.rank===rank?' is-selected':''}`;button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=node.kind==='hybrid'?'✧':String(node.tier+1);button.dataset.path=node.path;button.dataset.rank=String(rank);button.setAttribute('aria-label',`${node.name}, ${unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===node.path&&selected.rank===rank));button.onclick=event=>onSelect({path:node.path,rank},event?.detail===0);board.append(button);
   });
   const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-label','Start here');core.textContent='START';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }
