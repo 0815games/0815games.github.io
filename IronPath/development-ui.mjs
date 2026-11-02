@@ -48,6 +48,12 @@ const shapes={
  binoculars:'M4 18 6 6h4l1 12z M13 18l1-12h4l2 12z M10 9h4 M4 18h7 M13 18h7',
  radio:'M5 9h14v12H5z M8 5l8-3 M8 13h8 M8 17h2 M14 17h2',
  satchel:'M4 8h16v12H4z M8 8V5h8v3 M10 13h4 M12 11v4',
+ pouch:'M5 8h14v12H5z M9 8V5h6v3 M12 11v6 M9 14h6',
+ manual:'M4 4h7c2 0 3 1 3 3v13c0-2-1-3-3-3H4z M14 7c0-2 1-3 3-3h3v13h-3c-2 0-3 1-3 3',
+ badge:'M12 2l2 6 6 1-5 4 1 7-4-3-4 3 1-7-5-4 6-1z',
+ tankkit:'M4 15h16l-2 5H6z M7 15l2-5h5l2 5 M12 10V6h7',
+ supply:'M3 11h18v9H3z M6 11V7h12v4 M12 13v5 M9 15h6',
+ safeguard:'M12 2 20 5v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z M12 8v8 M8 12h8',
  empty:'M4 4l16 16 M20 4 4 20'
 };
 export function armoryIcon(document,name){const icon=svg(document,'svg',{viewBox:'0 0 24 24','aria-hidden':'true',class:'armory-icon'});icon.append(svg(document,'path',{d:shapes[name]||shapes.empty,fill:'none',stroke:'currentColor','stroke-width':1.5,'stroke-linecap':'round','stroke-linejoin':'round'}));return icon;}

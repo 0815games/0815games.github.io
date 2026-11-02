@@ -1,9 +1,9 @@
-import {parseLoadout} from './armory.mjs?v=20261102-armory2';
+import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
 import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
-import { waveFormation } from './combat.mjs?v=20261102-terrain4';
+import { waveFormation } from './combat.mjs?v=20261102-longterm1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
@@ -92,8 +92,9 @@ export function applyCommand(state, playerId, command) {
       if(!tower)return {ok:false,reason:'Tower not found.'};
       if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
       if(tower.level>=MAX_TOWER_LEVEL)return {ok:false,reason:'Tower is already at maximum level.'};
-      if(tower.level===2&&![0,1,2].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
+      if(tower.level===2&&![0,1,2,3].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
       if(tower.level===2&&command.branch===2&&player.level<5)return {ok:false,reason:'Veteran specialization unlocks at soldier level 5.'};
+      if(tower.level===2&&command.branch===3&&player.level<10)return {ok:false,reason:'Boss Hunter specialization unlocks at soldier level 10.'};
       const cost=upgradeCost(tower.level);if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
       addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
     }
@@ -117,7 +118,7 @@ export function applyCommand(state, playerId, command) {
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
       player.cooldown=(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0);
-      if(active==='assault')for(const enemy of state.enemies)enemy.hp-=35;
+      if(active==='assault')for(const enemy of state.enemies)enemy.hp-=state.wave>=6&&player.loadout?.equipped===7?45:35;
       else if(active==='engineer')player.overdrive=10;
       else if(active==='logistics')addSupplies(state,playerId,30+(player.skills?.extra?.[5]?15:0));
       else if(active==='medic')state.hp=Math.min(state.maxHp??100,state.hp+15+(player.skills?.extra?.[7]?10:0));

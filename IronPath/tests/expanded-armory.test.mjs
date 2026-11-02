@@ -6,7 +6,7 @@ const old={scrap:300,fortify:2,plating:1,owned:7,equipped:1};let a=readArmory(ol
 assert.equal(a.scrap,300);assert.equal(a.fortify,2);assert.equal(a.repair,0);assert.equal(a.gun,0);assert.equal(encodeLoadout(a),'2,1,1');
 a=upgradeArmory(a,'repair');a=upgradeArmory(a,'gun');assert.equal(a.scrap,240);assert.equal(encodeLoadout(a),'2,1,1;1,1');assert.deepEqual(parseLoadout('2,1,1;1,1'),{fortify:2,plating:1,equipped:1,repair:1,gun:1});
 for(const wave of [8,10,12])a=rewardWave(a,wave);assert.equal(a.owned,63);assert.equal(equipArmory(a,6).equipped,6);const before=a.scrap;a=rewardWave(a,12);assert.equal(a.scrap,before+20);assert.equal(equipArmory({...a,owned:7},4),null);
-assert.deepEqual(parseLoadout('1,1,7;1,1'),{fortify:0,plating:0,equipped:0});assert.equal(upgradeArmory({...a,repair:3},'repair'),null);
+assert.deepEqual(parseLoadout('1,1,11;1,1'),{fortify:0,plating:0,equipped:0});assert.equal(upgradeArmory({...a,repair:3},'repair'),null);
 const p=(id,loadout,x=500,y=300,skills)=>createPlayer(id,{name:id,gender:'female',loadout,skills,level:10},x,y);
 const solo=createMatch([p('solo','0,0,6;2,1')]);assert.equal(solo.money,150);assert.equal(solo.repair,2);assert.equal(solo.gun,1);
 solo.wave=1;solo.running=true;solo.hp=80;solo.spawnLeft=1;solo.spawnTimer=100;solo.enemies=[{kind:'tank',hp:50,maxHp:50,speed:0,reward:10,damage:10,segment:7,x:800,y:400}];stepMatch(solo);assert.equal(solo.enemies[0].hp,45,'bunker gun attacks nearby enemy');stepMatch(solo);assert.equal(solo.enemies[0].hp,45,'bunker gun has a cooldown');

@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../expanded-armory.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../long-term-progression.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
 const sdk={ref,get,onValue,runTransaction};
@@ -152,7 +152,7 @@ test('expanded armory supports legacy saves, validates new ranks and loadouts',a
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:4,loadout:'1,0,6;1,2'}));
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,1'));
-  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,7;1,2'));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,11;1,2'));
   await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,0'));
 });
 
@@ -209,4 +209,14 @@ test('destroyed urban cover synchronizes across Firebase and reconnect',async t=
   t.after(async()=>{await Promise.all([h.stop(),client.stop()]);});client.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.publish();await until(()=>view?.match.rubbleDamage===195);
   h.step();h.publish();await until(()=>view?.match.rubbleCleared===true);assert.equal(view.match.rubbleDamage,200);
   h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.rubbleCleared,true);
+});
+
+test('long-term progression stays backward compatible and validates new loadouts',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,armory:{scrap:100,fortify:0,plating:0,owned:63,equipped:1}}));
+  const armory={scrap:50,fortify:0,plating:0,repair:0,gun:0,supply:1,safeguard:2,owned:1023,equipped:10};
+  await assertSucceeds(set(ref(alice,'players/alice/armory'),armory));
+  await assertFails(set(ref(alice,'players/alice/armory/owned'),1024));await assertFails(set(ref(alice,'players/alice/armory/equipped'),11));await assertFails(set(ref(alice,'players/alice/armory/supply'),4));
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:10,loadout:'0,0,10;0,0;1,2'}));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'0,0,11;0,0;1,2'));await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,1'));
 });
