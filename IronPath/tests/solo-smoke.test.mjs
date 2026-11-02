@@ -44,13 +44,12 @@ element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,75);
 assert.equal(element('radialMenu').hidden,true);
 assert.deepEqual(draw()[0].arc.slice(0,3),[105,210,35], 'built tower stays visibly selected');
-// Upgrades show effects before confirming.
+// The action panel shows effects and acts as the purchase confirmation.
 element('game').onclick({clientX:105,clientY:210});
-assert.match(element('menuName0').textContent,/Upgrade/);
-element('radial0').onclick();
-assert.match(element('towerDetailsText').textContent,/0.3/);
+assert.match(element('menuName0').textContent,/Confirm upgrade/i);
+assert.match(element('menuDesc0').textContent,/0.3/);
 assert.equal(element('money').textContent,75);
-element('towerDetailsConfirm').onclick();
+element('radial0').onclick();
 assert.equal(element('money').textContent,5);
 // Unaffordable branch options can be inspected but not purchased.
 element('game').onclick({clientX:105,clientY:210});
@@ -68,7 +67,7 @@ element('game').onclick({clientX:105,clientY:210});
 element('radial1').onclick();
 assert.match(element('menuName0').textContent,/Confirm/);
 element('radial1').onclick();
-assert.match(element('menuName0').textContent,/Upgrade/);
+assert.match(element('menuName0').textContent,/specialization/i);
 element('radial1').onclick();element('radial0').onclick();
 assert.equal(element('money').textContent,65);
 assert.equal(element('radialMenu').hidden,true);

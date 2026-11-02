@@ -1,15 +1,15 @@
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-fx1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-fx1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-controls7';
 import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-manual3';
+import { createTutorial } from './tutorial.mjs?v=20261102-controls7';
 import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-tree2';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-tree2';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -89,7 +89,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       notice(`Confirm sale for half the investment, or cancel. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else{
       const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL,sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
-      actions.push({label:max?'Max level':`Upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':'Increase damage by one level.',disabled:max,unaffordable:!max&&supplies()<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else showDetails(`Level ${tower.level+1} upgrade`,`Adds 0.3 to the base damage multiplier; specialization and enemy modifiers still apply. Range and firing interval stay the same.${sharedUpgrade}`,cost,'UPGRADE',()=>upgrade(0));}});
+      actions.push({label:max?'Max level':tower.level===2?`Choose specialization · ${cost}`:`Confirm upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':`Confirm purchase: +0.3 damage multiplier.${sharedUpgrade}`,disabled:max,unaffordable:!max&&supplies()<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else notice('Not enough supplies to upgrade.');}});
       const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||'the owner';
       actions.push({label:mine?`Sell · +${towerRefund(tower)}`:'Sell tower',summary:mine?'Recover half of build and upgrade costs.':`Half the costs go to ${ownerName}.`,description:mine?`Sell tower for ${towerRefund(tower)} supplies`:`Sell tower; refund goes to ${ownerName}`, run:()=>showMenu(pad,'confirmSell')});
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
@@ -125,8 +125,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       if(overlap>0)window.scrollBy({top:overlap,behavior:'auto'});
     }
   });
+  let uiElapsed=0;
   function update(dt){
-    if(coop||state.ended||!menu.hidden||tutorial.isOpen()||!account.isReady()){accumulator=0;return;}
+    if(coop||state.ended||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -136,9 +137,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
         else if(event.type==='defeat')notice('Bunker lost. The operation has failed.');
         else if(event.type==='waveCleared'){account.awardXP(event.xp,event.wave);notice(event.victory?`Victory! The bunker survived all ${waves} waves. +${event.xp} XP.`:`Wave cleared! +20 supplies and +${event.xp} XP. Prepare for the next wave.`);}
       }
-      if(state.ended){accumulator=0;break;}
+      if(state.ended){accumulator=0;updateUI();break;}
     }
-    updateUI();
+    uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}
   }
   function draw(){ctx.clearRect(0,0,960,540);drawCartoonBattle(ctx,state,{path,pads,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
     // Draw selection above units and effects, including an empty pad while its
@@ -158,7 +159,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop(){if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;needStop=false;coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent='JOIN CO-OP (TEST)';$('coopStatus').textContent='SOLO';if(account.isReady())reset();return Promise.resolve(stopping);}
-  function confirmParty(){return !(state.wave>0||state.towers.length)||window.confirm('Joining co-op will end the current solo run. Continue?');}
+  function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
   function beginCoop(factory,onUpdate=()=>{}){
     if(coop||!account.isReady())return false;
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;combatFx.clear();lastSnapshotAt=0;let client;
@@ -168,7 +169,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       coop=client;coopInput=createCoopInput(client,message=>notice(message));coopReady=false;$('coopToggle').textContent='LEAVE CO-OP';$('coopStatus').textContent='CONNECTING';client.start();updateUI();return true;
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
-  $('coopToggle').onclick=()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(confirmParty())beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
+  $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
   account.onSessionChange(()=>{leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){reset();tutorial.startIfNeeded(account.getUserId());}});
   reset();tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   return {canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop};
