@@ -1,20 +1,20 @@
-import {serviceMedals} from './service-record.mjs?v=20261102-future1';
+import {serviceMedals} from './service-record.mjs?v=20261102-boss2';
 import {enableTreeDrag} from './drag-tree.mjs?v=20261102-controls7';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-armory2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-armory2';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs?v=20261102-tree2';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-future1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-boss2';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-armory2';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-controls7';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261102-future1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-future1';
-import { createPlayer } from './match.mjs?v=20261102-future1';
-import { characterProgress } from './progression.mjs?v=20261102-future1';
+import { startGame } from './game.js?v=20261102-boss2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-boss2';
+import { createPlayer } from './match.mjs?v=20261102-boss2';
+import { characterProgress } from './progression.mjs?v=20261102-boss2';
 
 window.ironPathLoaded = true;
 const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
