@@ -53,17 +53,20 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     const code=$('partyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){render('Enter the four-digit party code.');return;}
     base=createLobby();approval=createApproval(base);const result=await approval.request(code,getProfile().name);if(current!==version)return;
     party={...result,role:'pending'};$('partyCodeInput').value='';render('Request sent. Waiting for host approval…');watchHost(current);
-    let accepting=false;
+    let accepting=false,confirmingMatch=false;
     unwatch.push(base.watchGuest(party.partyId,value=>{
       if(current!==version||!party||party.role!=='pending'||value!==party.guestId||accepting)return;accepting=true;
       void (async()=>{
         const startedGuest=await approval.readStarted(party.partyId);if(current!==version||!party)return;
         party.role='guest';if(startedGuest!==party.guestId)await base.publishProfile(party.partyId,getProfile());if(current!==version||!party)return;
         unwatch.push(base.watchMatch(party.partyId,value=>{
-          if(current!==version||!party||started||value!==party.guestId)return;
-          if(!confirmMatch()){render('Match not joined. Leave the party to return to solo.');return;}
-          started=true;const joined=onJoinMatch({partyId:party.partyId,hostId:party.hostId,playerIds:[party.hostId,party.guestId]},state=>{if(current===version&&party)render(`Co-op: ${state}.`);});
-          render(joined?'Connecting to the match…':'Could not join the match. Leave and try again.');
+          if(current!==version||!party||started||confirmingMatch||value!==party.guestId)return;
+          confirmingMatch=true;void (async()=>{
+            const accepted=await confirmMatch();if(current!==version||!party||started)return;
+            if(!accepted){render('Match not joined. Leave the party to return to solo.');return;}
+            started=true;const joined=onJoinMatch({partyId:party.partyId,hostId:party.hostId,playerIds:[party.hostId,party.guestId]},state=>{if(current===version&&party)render(`Co-op: ${state}.`);});
+            render(joined?'Connecting to the match…':'Could not join the match. Leave and try again.');
+          })().catch(()=>{if(current===version)render('Could not join the match. Leave and try again.');}).finally(()=>{confirmingMatch=false;});
         },()=>{if(current===version)render('Party connection lost.');}));
         if(!started)render('Approved. Waiting for the host to start.');
       })().catch(()=>{if(current===version)render('Could not join the approved party. Leave and try again.');});
@@ -74,10 +77,11 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     },()=>{if(current===version)render('Party connection lost.');}));
   });
   $('partyStart').onclick=()=>run(async current=>{
-    if(!party||party.role!=='host'||!guest||!guestReady||started||!confirmMatch())return;
+    if(!party||party.role!=='host'||!guest||!guestReady||started)return;
+    const confirmedGuest=guest;if(!await confirmMatch()||current!==version||!party||party.role!=='host'||guest!==confirmedGuest||!guestReady||started)return;
     const result=await base.startMatch(party.partyId);if(current!==version||!party)return;
     started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');
   });
-  $('partyLeave').onclick=()=>run(async current=>{if(!party||(party.role==='host'&&!confirmClose()))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
+  $('partyLeave').onclick=()=>run(async current=>{if(!party)return;if(party.role==='host'&&(!await confirmClose()||current!==version||!party))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
   render('');return {reset,leaveForLogout,collapse,isActive:()=>!!party};
 }

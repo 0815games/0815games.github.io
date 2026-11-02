@@ -17,3 +17,8 @@ requestsListener({});assert.equal(toggle.textContent,'CO-OP');panel.collapse();a
 await panel.reset();assert.equal(leaves,1);
 const disabled=createFourDigitPanel({document,createLobby:()=>base,createApproval:()=>approval,getProfile:()=>null,onLeaveMatch:()=>{},enabled:false});assert.equal(toggle.hidden,true);toggle.onclick();assert.equal(root.hidden,true);await disabled.reset();
 console.log('Co-op panel toggle preserves party state and signals requests.');
+// A delayed in-game confirmation must not close a party after logout/reset.
+let resolveClose;
+const guarded=createFourDigitPanel({document,createLobby:()=>base,createApproval:()=>approval,getProfile:()=>({name:'Alice'}),onJoinMatch:()=>true,onLeaveMatch:()=>{leaves++;},confirmMatch:()=>true,confirmClose:()=>new Promise(resolve=>{resolveClose=resolve;}),enabled:true});
+await document.getElementById('partyCreate').onclick();
+const closing=document.getElementById('partyLeave').onclick();assert.equal(typeof resolveClose,'function');await guarded.reset();resolveClose(true);await closing;assert.equal(closed,0,'stale confirmation must not close a reset party');

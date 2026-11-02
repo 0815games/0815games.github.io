@@ -54,8 +54,16 @@ function enemy(ctx,e){
   else {oval(ctx,x,y+3,7,8,e.kind==='runner'?'#e1b86d':'#bc846d');oval(ctx,x,y-6,5,5,'#e1b391');shape(ctx,[[x-6,y-7],[x-4,y-11],[x+4,y-11],[x+6,y-7]],'#725f4a');if(e.kind==='runner')line(ctx,[[x-11,y+3],[x-16,y+3]],'#6d624e',2);}
   ctx.fillStyle=ink;ctx.fillRect(x-14,y-22,28,5);ctx.fillStyle='#d4df88';ctx.fillRect(x-13,y-21,26*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
 }
+// The road and terrain never change during a match; draw them once per path.
+const terrainCache=new WeakMap();
+function drawTerrain(ctx,path){
+  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx);drawRoad(ctx,path);return;}
+  let cached=terrainCache.get(path);
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx);drawRoad(ctx,path);return;}off.lineCap='round';off.lineJoin='round';ground(off);drawRoad(off,path);cached=canvas;terrainCache.set(path,cached);}
+  ctx.drawImage(cached,0,0);
+}
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,shotAge=0,effects=[],reducedMotion=false}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ground(ctx);drawRoad(ctx,path);bunker(ctx,state);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path);bunker(ctx,state);
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}

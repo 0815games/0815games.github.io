@@ -15,7 +15,7 @@ const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),cr
 const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
 const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory});
 el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);
-el('coopToggle').onclick();assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
+await el('coopToggle').onclick();assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('speed').disabled,true);
 opts.onStatus(false);opts.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(commands.at(-1),{type:'direction',x:0,y:0},'reconnection neutralizes movement');
 match.players.bob.skills.active='recon';opts.onSnapshot({match:structuredClone(match)});match.players.bob.cooldown=30;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+100);assert.ok(drawnText.includes('SUPPRESSION'),'teammate ability renders from a co-op view');
 opts.onStatus(false);opts.onStatus(true);drawnText.length=0;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+200);assert.ok(!drawnText.includes('SUPPRESSION'),'reconnect does not replay an old ability');await new Promise(resolve=>setTimeout(resolve,0));
@@ -30,7 +30,7 @@ assert.equal(match.towers.length,1);assert.match(el('message').textContent,/Towe
 el('radialClose').onclick();
 // Show whose balance pays for a teammate's tower and who receives a sale refund.
 assert.equal(applyCommand(match,'bob',{type:'build',pad:1,towerType:0}).ok,true);opts.onSnapshot({match:structuredClone(match)});
-el('game').onclick({clientX:285,clientY:210});el('radial0').onclick();assert.match(el('towerDetailsText').textContent,/You pay.*refund goes to Bob/);el('towerDetailsBack').onclick();
+el('game').onclick({clientX:285,clientY:210});assert.match(el('menuDesc0').textContent,/You pay.*refund goes to Bob/);assert.match(el('menuName0').textContent,/Confirm upgrade/);
 el('radial1').onclick();assert.match(el('menuDesc0').textContent,/Bob receives 25/);el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,/Bob receives 25/);
 opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
