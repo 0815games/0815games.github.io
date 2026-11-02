@@ -15,3 +15,10 @@ const player=id=>createPlayer(id,{name:id,gender:'male'},850,450);
 function setup(players){const s=createMatch(players);s.running=true;s.wave=1;s.spawnLeft=1;s.spawnTimer=100;s.towers=[{id:1,pad:0,type:0,level:1,timer:0,ownerId:players[0].id}];s.enemies=[{x:105,y:130,hp:1000,maxHp:1000,reward:1,kind:'infantry',speed:0,segment:1}];return s;}
 const solo=setup([player('alice')]),coop=setup([player('alice'),player('bob')]);for(let i=0;i<7;i++){stepMatch(solo);stepMatch(coop);}assert.equal(solo.enemies[0].hp,coop.enemies[0].hp);assert.ok(coop.shots.length>0,'at least one shot remains for the next co-op snapshot');assert.equal(coop.shots[0].kind,0);assert.ok(coop.shots[0].life>0);
 console.log('Ability effects, replay suppression and co-op visual snapshot tests passed.');
+// Tower feedback is inferred from authoritative snapshots and never replayed
+// when a client reconnects to an already-built battlefield.
+const pads=[{x:105,y:210}],snapshot=towers=>({players:{alice:{x:150,y:180,cooldown:0}},enemies:[],towers});
+fx.clear();assert.deepEqual(fx.observe(snapshot([{id:1,pad:0,level:1}]),pads),[]);assert.equal(fx.active().length,0);
+assert.deepEqual(fx.observe(snapshot([{id:1,pad:0,level:2}]),pads),['upgrade']);assert.equal(fx.active().at(-1).kind,'upgrade');
+assert.deepEqual(fx.observe(snapshot([{id:2,pad:0,level:1}]),pads),['build']);assert.equal(fx.active().at(-1).kind,'build');
+fx.clear();assert.deepEqual(fx.observe(snapshot([{id:2,pad:0,level:3}]),pads),[]);assert.equal(fx.active().length,0,'rejoin cannot replay old tower effects');

@@ -11,14 +11,21 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
     emit,
     // Cooldown transitions are already in each authoritative view. Treat the
     // first view as a baseline so joins/rejoins never replay an old ability.
-    observe(match){
-      if(!match?.players)return;
+    observe(match,pads){
+      if(!match?.players)return [];
+      const changes=[];
       const next=new Map();
       for(const [id,p] of Object.entries(match.players)){
         const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);
-        if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1)emit(p.skills?.active||'assault',p,previous||match);
+        if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',p,previous||match);changes.push('ability');}
       }
-      cooldowns=next;previous=match;
+      if(Array.isArray(previous?.towers)&&Array.isArray(match.towers)&&Array.isArray(pads)){
+        for(const tower of match.towers){const old=previous.towers.find(t=>t.id===tower.id&&t.pad===tower.pad),point=pads[tower.pad];
+          if(!point||!Number.isSafeInteger(tower.id))continue;
+          const kind=!old?'build':tower.level>old.level?'upgrade':null;if(kind){emit(kind,point,match);changes.push(kind);}
+        }
+      }
+      cooldowns=next;previous=match;return changes;
     },
     active(){const now=clock();effects=effects.filter(e=>now-e.started<e.duration);return effects.map(e=>({...e,progress:Math.max(0,Math.min(1,(now-e.started)/e.duration))}));},
     clear(){effects=[];cooldowns=null;previous=null;}

@@ -154,9 +154,9 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   await hostLobby.create();await hostLobby.publishProfile(party,{name:'Alice',gender:'female',level:2});
   await guestLobby.join(party);await guestLobby.publishProfile(party,{name:'Bob',gender:'male',level:3});
   const info=await hostLobby.startMatch(party),ids=[info.hostId,info.guestId],players=info.profiles.map((profile,i)=>createPlayer(ids[i],profile));
-  let readyA=false,readyB=false,viewB,stateA,stateB;
+  let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
   const common={sdk,partyId:party,hostId:'alice',playerIds:ids};
-  const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;}});
+  const a=createFirebasePartyGame({...common,db:alice,auth:{currentUser:{uid:'alice'}},players,onState:s=>{stateA=s;},onStatus:v=>{readyA=v;},onSnapshot:s=>{viewA=s;}});
   let holdGuestViews=false,heldGuestView=null,guestViewListener=null;
   const guestSdk={...sdk,onValue(target,callback,onError){
     if(target.toString().endsWith(`/parties/${party}/views/bob`))return onValue(target,snapshot=>{if(holdGuestViews){heldGuestView=snapshot;guestViewListener=callback;}else callback(snapshot);},onError);
@@ -168,6 +168,12 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   a.start();b.start();await until(()=>readyA&&readyB);
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>viewB?.match.towers.length===1);
+  // Disconnect while a wave request is pending: it must cancel, not start or
+  // resurrect on reconnect, and a stale approval must be rejected.
+  assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);await until(()=>viewB?.match.pendingWave===1);const staleRequest=viewB.match.waveRequestId;
+  goOffline(bob);await until(()=>readyA&&!readyB&&viewA?.match.pendingWave===0);assert.equal(viewA.match.wave,0);
+  goOnline(bob);await until(()=>readyB&&viewB?.match.players.bob.active&&viewB.match.pendingWave===0);
+  assert.equal((await b.command({type:'approveWave',requestId:staleRequest})).ok,false);assert.equal(viewB.match.wave,0);
   assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);await until(()=>viewB?.match.pendingWave===1);assert.equal(viewB.match.wave,0);assert.equal((await b.command({type:'approveWave',requestId:viewB.match.waveRequestId})).ok,true);await until(()=>viewB?.match.wave===1);
   const oldConnections=Object.keys((await get(at(alice,'presence/bob'))).val());
   holdGuestViews=true;goOffline(bob);await until(()=>readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);

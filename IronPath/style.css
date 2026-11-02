@@ -165,3 +165,6 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 .service-medal{padding:10px 12px;background:#c9c7a4;border:2px solid #899175;color:#59614c;font-size:12px}.service-medal.is-earned{background:#ead9a4;border-color:#a78545;color:#3b4d34}.service-medal strong{font:700 14px Georgia,serif}.service-medal p{margin:4px 0 0}.help #soundToggle{width:auto;margin-top:10px;min-height:40px}
 
 .wave-request{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 10px;background:#ead9ab;border-top:2px solid #667450;color:#354a35;font-size:12px;font-weight:bold}.wave-request[hidden]{display:none}.wave-request button{width:auto;margin:0;padding:7px 12px;min-height:36px;font-size:10px}.wave-request button[hidden]{display:none}
+
+/* Field-order prompt stays visible above the phone command bar. */
+@media(max-width:850px){.wave-request:not([hidden]){position:fixed;z-index:9;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom,0px));border:2px solid #46593b;border-radius:4px 8px 5px 6px;box-shadow:3px 3px 0 #26372b;padding:6px 8px;line-height:1.25}.wave-request button{min-height:44px;flex:none}.command-controls button{min-width:0;letter-spacing:0;line-height:1.15;white-space:normal;overflow-wrap:break-word}}
