@@ -1,11 +1,11 @@
 // Tutorial completion is per account and browser. The interactive exercises
 // use isolated example data; they never touch a soldier profile or Firebase.
 export const TUTORIAL_STEPS = [
-  {title:'Welcome, soldier',text:'Enemies follow the road toward your bunker. Keep the bunker standing through all twenty waves.',scene:'bunker',caption:'DEFEND THE BUNKER'},
+  {title:'Welcome, soldier',text:'Enemies follow the road toward your bunker. Keep the bunker standing as long as you can. Bosses attack every five waves.',scene:'bunker',caption:'DEFEND THE BUNKER'},
   {title:'Build your defenses',text:'Tap a + pad to open the build panel. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A + PAD'},
   {title:'Upgrade or sell',text:'Tap a tower to see its range and open its action panel. Confirm the upgrade directly in the action panel, choose a specialization at level 3, or sell it for half the investment.',scene:'upgrade',caption:'CHOOSE AN ACTION'},
   {title:'Move your hero',text:'Tap open ground to move. On a keyboard, use WASD or the arrow keys. Your hero automatically fires at nearby enemies once deployed.',scene:'hero',caption:'MOVE INTO POSITION'},
-  {title:'Start the battle',text:'Start each wave with Deploy. Use Speed in solo and your selected ability in battle. Defeated enemies provide supplies; cleared waves earn XP and loot.',scene:'battle',caption:'HOLD THE LINE'},
+  {title:'Start the battle',text:'Start each wave with Deploy. Use Speed in solo and your selected ability in battle. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade.',scene:'battle',caption:'HOLD THE LINE'},
   {title:'Find your way around',text:'Each new operation generates a different battlefield. On a phone, swipe the enlarged map sideways or use Entry and Bunker to jump around. Open How to play to replay this briefing anytime. A co-op battle continues while the briefing is open.',scene:'map',caption:'SWIPE THE MAP'},
   {title:'Practice the skill tree',text:'In this example, inspect a node, upgrade it, then select an ability. This practice uses example points and will not change your soldier.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills'},
   {title:'Practice the armory',text:'In this example, equip a reward and upgrade the bunker. This is a safe practice: no real scrap or equipment is changed.',scene:'armory',caption:'EXAMPLE ARMORY',practice:'armory'}

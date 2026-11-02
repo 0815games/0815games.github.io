@@ -9,8 +9,8 @@ const player=id=>createPlayer(id,{name:id,gender:'female',level:1});
 for(const ids of [['solo'],['host','guest']]){
  const s=createMatch(ids.map(player));s.wave=10;s.running=true;s.spawnLeft=0;s.enemies=[];
  const e10=stepMatch(s).find(e=>e.type==='waveCleared');assert.equal(e10.victory,false);assert.equal(s.ended,false);
- assert.equal(applyCommand(s,ids[0],{type:'startWave'}).ok,true);assert.equal(s.wave,11);assert.equal(s.spawnLeft,WAVES[10].length);
- s.wave=20;s.running=true;s.spawnLeft=0;s.enemies=[];const e20=stepMatch(s).find(e=>e.type==='waveCleared');assert.equal(e20.victory,true);assert.equal(e20.xp,220);assert.equal(s.ended,true);
+ assert.equal(applyCommand(s,ids[0],{type:'startWave'}).ok,false);assert.equal(applyCommand(s,ids[0],{type:'choosePerk',index:0}).ok,true);assert.equal(applyCommand(s,ids[0],{type:'startWave'}).ok,true);assert.equal(s.wave,11);assert.equal(s.spawnLeft,WAVES[10].length);
+ s.wave=20;s.running=true;s.spawnLeft=0;s.enemies=[];const e20=stepMatch(s).find(e=>e.type==='waveCleared');assert.equal(e20.victory,false);assert.equal(e20.xp,220);assert.equal(s.ended,false);assert.equal(s.pendingPerk,20);assert.equal(applyCommand(s,ids[0],{type:'choosePerk',index:0}).ok,true);assert.equal(applyCommand(s,ids[0],{type:'startWave'}).ok,true);assert.equal(s.wave,21);
  if(ids.length===2)for(const id of ids)assert.equal(s.players[id].completedWaveMask,(1<<9)|(1<<19));
 }
 console.log('Twenty waves, milestones, progression and victory checks passed.');

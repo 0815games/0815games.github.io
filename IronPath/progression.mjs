@@ -9,4 +9,4 @@ export const MAX_TOWER_LEVEL=6;
 // Indexed by current level. Level 2 -> 3 includes a permanent specialization.
 export const UPGRADE_COSTS=[0,70,120,180,260,360];
 export function upgradeCost(level){return level>=1&&level<MAX_TOWER_LEVEL?UPGRADE_COSTS[level]:null;}
-export function waveXP(wave){return 20+wave*10;}
+export function waveXP(wave){return 20+Math.min(wave,100)*10;}
