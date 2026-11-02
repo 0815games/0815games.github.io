@@ -3,8 +3,8 @@ export const TERRAIN_BRIEFINGS=Object.freeze({
  scrub:'Tanks raise dust within 75 units. Towers and soldiers have 25% less targeting range against targets in dust; sniper towers ignore it.',
  forest:'All infantry and scouts have forest cover: 20% less tower and soldier damage. A shooter with Recon ranks ignores this cover.',
  urban:'Rubble reduces tower and soldier damage by 25% beyond 110 units. Fight closer to avoid the penalty.',
- arctic:'Off-road soldiers move 25% slower in snow. Tanks on the marked thin ice lose 10 HP per second.',
- marsh:'Tanks move 25% slower in mud. All infantry and scouts have reed cover: 20% less tower and soldier damage from beyond 100 units.'
+ arctic:'Off-road soldiers move 25% slower in snow. Tanks damage marked thin ice: after 4 tank-seconds it breaks for the rest of the run, slowing tanks 25% and dealing 20 HP per second instead of 10.',
+ marsh:'Tanks move 25% slower in mud and 50% slower on the marked bog. All infantry and scouts have reed cover: 20% less tower and soldier damage from beyond 100 units.'
 });
 export function terrainFor(map){return map.id?.startsWith('g2-')?map.theme:null;}
 export function distanceToRoad(point,path){
@@ -19,8 +19,8 @@ export function distanceToRoad(point,path){
 // segment 5 is a horizontal route section on every g2 map, drawn as thin ice.
 export const onThinIce=enemy=>enemy.segment===5;
 export function soldierSpeedFactor(theme,player,path){return theme==='arctic'&&distanceToRoad(player,path)>36?.75:1;}
-export function enemySpeedFactor(theme,enemy){return theme==='marsh'&&enemy.kind==='tank'?.75:1;}
-export function iceDamage(theme,enemy,dt){return theme==='arctic'&&enemy.kind==='tank'&&onThinIce(enemy)?10*dt:0;}
+export function enemySpeedFactor(theme,enemy){return theme==='marsh'&&enemy.kind==='tank'?(enemy.segment===7?.5:.75):1;}
+export function iceDamage(theme,enemy,dt,broken=false){return theme==='arctic'&&enemy.kind==='tank'&&onThinIce(enemy)?(broken?20:10)*dt:0;}
 export function targetingRange(theme,range,target,enemies,{sniper=false}={}){
  if(theme==='scrub'&&!sniper&&enemies.some(e=>e.kind==='tank'&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=75))return range*.75;
  return range;

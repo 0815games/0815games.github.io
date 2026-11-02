@@ -1,10 +1,10 @@
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-endrun1';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-endrun1';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-future1';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-future1';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
 import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261101-guestfix1';
-import {createPartyHost} from './party-host.mjs?v=20261102-endrun1';
-import {createMatch,STEP} from './simulation.mjs?v=20261102-endrun1';
+import {createPartyHost} from './party-host.mjs?v=20261102-future1';
+import {createMatch,STEP} from './simulation.mjs?v=20261102-future1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.

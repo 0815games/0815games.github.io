@@ -53,6 +53,18 @@ function thinIce(ctx,path,theme){
   for(let x=a.x+25;x<b.x-10;x+=45)line(ctx,[[x-8,a.y-12],[x+1,a.y-3],[x-5,a.y+6],[x+7,a.y+14]],'#eaf8f4',2);
   ctx.fillStyle='#355e62';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText('THIN ICE',(a.x+b.x)/2,a.y-31);ctx.restore();
 }
+function bog(ctx,path,theme){
+  if(theme!=='marsh'||path.length!==10)return;const a=path[6],b=path[7];
+  ctx.save();ctx.lineCap='butt';line(ctx,[[a.x,a.y],[b.x,b.y]],'#77674f',46);
+  for(let x=a.x+15;x<b.x-10;x+=30)line(ctx,[[x-7,a.y-10],[x+2,a.y-8],[x+8,a.y-10]],'#b4a17b',2);
+  ctx.fillStyle='#354a36';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText('DEEP BOG',(a.x+b.x)/2,a.y-31);ctx.restore();
+}
+function brokenIce(ctx,path,state,theme){
+  if(theme!=='arctic'||!state.iceBroken||path.length!==10)return;const a=path[4],b=path[5];
+  ctx.save();ctx.lineCap='butt';line(ctx,[[a.x,a.y],[b.x,b.y]],'#648f9b',33);
+  for(let x=a.x+18;x<b.x-10;x+=32)line(ctx,[[x-12,a.y-18],[x,a.y-5],[x-6,a.y+6],[x+12,a.y+17]],'#d9f5ef',3);
+  ctx.fillStyle='#244b52';ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText('BROKEN ICE',(a.x+b.x)/2,a.y+37);ctx.restore();
+}
 function bunker(ctx,state){
   const damage=state.hp/Math.max(1,state.maxHp||100),plating=state.plating||0;
   oval(ctx,910,427,43,12,'#71835f',null);
@@ -88,7 +100,16 @@ function enemy(ctx,e){
   const x=e.x,y=e.y;
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
   oval(ctx,x,y+10,11,4,'#8c8264',null);
-  if(e.kind==='tank'){shape(ctx,[[x-13,y-6],[x+11,y-6],[x+13,y+7],[x-13,y+7]],'#a36e57');oval(ctx,x,y-7,7,5,'#c39170');line(ctx,[[x+3,y-8],[x+16,y-12]],ink,3);}
+  if(e.boss==='bossBomber'){
+    shape(ctx,[[x+24,y],[x-4,y-7],[x-15,y-16],[x-13,y-5],[x-24,y+1],[x-8,y+6],[x-16,y+16],[x-5,y+11]],'#879b92');line(ctx,[[x-8,y],[x+8,y]],'#e1c49a',3);oval(ctx,x-4,y-4,4,3,'#d8b77f');
+  }else if(e.boss){
+    const color=e.boss==='bossIronclad'?'#8a6350':e.boss==='bossJuggernaut'?'#ad7658':'#7d6955';
+    shape(ctx,[[x-22,y-8],[x+17,y-8],[x+21,y+9],[x-22,y+9]],color);shape(ctx,[[x-15,y-9],[x-9,y-17],[x+8,y-17],[x+14,y-8]],'#c29773');line(ctx,[[x+6,y-13],[x+26,y-17]],ink,5);
+    for(const dx of [-14,-5,5,14])oval(ctx,x+dx,y+8,3,3,'#463e34',null);
+    if(e.boss==='bossIronclad')line(ctx,[[x-18,y-3],[x+16,y-3]],'#ead1a0',3);
+    if(e.boss==='bossJuggernaut'){line(ctx,[[x-2,y-15],[x-2,y-8]],'#f5ddb5',2);line(ctx,[[x-6,y-11],[x+2,y-11]],'#f5ddb5',2);}
+    if(e.boss==='bossCommander'){line(ctx,[[x-13,y-15],[x-13,y-28]],ink,2);shape(ctx,[[x-13,y-28],[x-2,y-26],[x-13,y-21]],'#cf765c');}
+  }else if(e.kind==='tank'){shape(ctx,[[x-13,y-6],[x+11,y-6],[x+13,y+7],[x-13,y+7]],'#a36e57');oval(ctx,x,y-7,7,5,'#c39170');line(ctx,[[x+3,y-8],[x+16,y-12]],ink,3);}
   else if(e.kind==='plane'){shape(ctx,[[x+15,y],[x-5,y-4],[x-11,y-11],[x-10,y-2],[x-15,y+2],[x-5,y+4],[x-10,y+11],[x-4,y+8]],'#9fc5bd');}
   else {oval(ctx,x,y+3,7,8,e.kind==='runner'?'#e1b86d':'#bc846d');oval(ctx,x,y-6,5,5,'#e1b391');shape(ctx,[[x-6,y-7],[x-4,y-11],[x+4,y-11],[x+6,y-7]],'#725f4a');if(e.kind==='runner')line(ctx,[[x-11,y+3],[x-16,y+3]],'#6d624e',2);}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':'#d4df88';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
@@ -97,13 +118,13 @@ function enemy(ctx,e){
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
 function drawTerrain(ctx,path,theme){
-  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);return;}
+  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);bog(ctx,path,theme);return;}
   let cached=terrainCache.get(path);
-  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path,theme);thinIce(off,path,theme);cached=canvas;terrainCache.set(path,cached);}
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);thinIce(ctx,path,theme);bog(ctx,path,theme);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path,theme);thinIce(off,path,theme);bog(off,path,theme);cached=canvas;terrainCache.set(path,cached);}
   ctx.drawImage(cached,0,0);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme);bunker(ctx,state);
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme);brokenIce(ctx,path,state,theme);bunker(ctx,state);
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}

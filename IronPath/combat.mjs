@@ -54,7 +54,7 @@ export function towerDamage(type, level, branch, enemyKind) {
   if(multiplier===undefined) throw new Error('Invalid tower or enemy');
   const base=[10,34,17,45][type];
   const armorBonus=type===3 && branch===1 && baseKind==='tank'?1.4:1;
-  const branchDamage=branch===null?1:[[1,2.1],[1,2.1],[1,1.3],[1,2]][type][branch];
+  const branchDamage=branch===null?1:[[1,2.1,1.4],[1,2.1,1.4],[1,1.3,1.4],[1,2,1.4]][type][branch];
   return base*(1+(level-1)*.30)*branchDamage*multiplier*armorBonus;
 }
 

@@ -1,19 +1,20 @@
+import {serviceMedals} from './service-record.mjs?v=20261102-future1';
 import {enableTreeDrag} from './drag-tree.mjs?v=20261102-controls7';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-armory2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-armory2';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs?v=20261102-tree2';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-endrun1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-future1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-armory2';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-controls7';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261102-endrun1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-endrun1';
-import { createPlayer } from './match.mjs?v=20261102-endrun1';
-import { characterProgress } from './progression.mjs?v=20261102-endrun1';
+import { startGame } from './game.js?v=20261102-future1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-future1';
+import { createPlayer } from './match.mjs?v=20261102-future1';
+import { characterProgress } from './progression.mjs?v=20261102-future1';
 
 window.ironPathLoaded = true;
 const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
@@ -82,6 +83,9 @@ function renderArmory(){
     if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',`Rank ${rank} of 3`);for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
+  const medals=section('Service record','PERMANENT MEDALS');
+  for(const medal of serviceMedals(profile)){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${medal.name}`;text.textContent=medal.description;card.append(title,text);medals.append(card);}
+  const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent='Soldier level 5 unlocks the Veteran Kit specialization on every tower at level 3.';list.append(veteran);
   const defenses=section('Bunker upgrades','SHARED DEFENSE');
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.']]){
     const rank=a[kind],cost=(rank+1)*30;add(defenses,{icon:kind,title:name,description:`${description} In co-op the highest player rank applies.`,eyebrow:'PERMANENT UPGRADE',rank,label:rank===3?'MAX RANK':`UPGRADE · ${cost} SCRAP`,disabled:rank===3||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:`Upgrade ${name}?`,text:`Spend ${cost} scrap on ${name.toLowerCase()}?`,accept:"UPGRADE"})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
