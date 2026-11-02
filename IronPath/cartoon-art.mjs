@@ -54,13 +54,43 @@ function enemy(ctx,e){
   else {oval(ctx,x,y+3,7,8,e.kind==='runner'?'#e1b86d':'#bc846d');oval(ctx,x,y-6,5,5,'#e1b391');shape(ctx,[[x-6,y-7],[x-4,y-11],[x+4,y-11],[x+6,y-7]],'#725f4a');if(e.kind==='runner')line(ctx,[[x-11,y+3],[x-16,y+3]],'#6d624e',2);}
   ctx.fillStyle=ink;ctx.fillRect(x-14,y-22,28,5);ctx.fillStyle='#d4df88';ctx.fillRect(x-13,y-21,26*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange}){
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,shotAge=0,effects=[],reducedMotion=false}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ground(ctx);drawRoad(ctx,path);bunker(ctx,state);
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
+  if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types));
   if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false)soldier(ctx,p,p.id===me);
   for(const e of state.enemies)enemy(ctx,e);
-  for(const s of state.shots){line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,5);line(ctx,[[s.x,s.y],[s.tx,s.ty]],'#ffec9e',2);oval(ctx,s.tx,s.ty,4,4,'#ffe49d',ink,1);}
+  if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
+  if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);
+  ctx.restore();
+}
+
+function burst(ctx,x,y,r,fill){
+  const points=[];for(let i=0;i<16;i++){const a=Math.PI*i/8,d=i%2?r*.52:r;points.push([x+Math.cos(a)*d,y+Math.sin(a)*d]);}shape(ctx,points,fill,ink,2);
+}
+function drawShot(ctx,s,age,reduced){
+  const life=(Number.isFinite(s.life)?s.life:.12)-age;if(life<=0)return;
+  const duration=s.duration||.12,progress=1-Math.max(0,Math.min(1,life/duration));
+  line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',2);
+  if(reduced)return;
+  const scale=s.kind===1?1.35:s.kind===3?.75:1;
+  if(progress<.65)burst(ctx,s.x,s.y,(7+(1-progress)*4)*scale,'#ffe39b');
+  if(progress>.12)burst(ctx,s.tx,s.ty,(5+progress*8)*scale,s.kind===1?'#e89964':'#f6d787');
+}
+function drawAbility(ctx,e){
+  const t=e.progress,fade=Math.max(0,1-t);ctx.save();ctx.globalAlpha=fade;
+  if(e.kind==='assault'){
+    const targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];for(const p of targets){burst(ctx,p.x,p.y,12+20*t,'#ef9e68');oval(ctx,p.x,p.y,6+12*t,4+8*t,'#f9dc91',ink,2);}
+  }else if(e.kind==='engineer'){
+    burst(ctx,e.x,e.y-20,12+15*t,'#eed475');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('OVERDRIVE',e.x,e.y-42-12*t);
+  }else if(e.kind==='logistics'){
+    const y=e.y-24-12*t;shape(ctx,[[e.x-12,y-9],[e.x+12,y-9],[e.x+12,y+9],[e.x-12,y+9]],'#d7b276');line(ctx,[[e.x-11,y],[e.x+11,y]],ink,2);line(ctx,[[e.x,y-9],[e.x,y+9]],ink,2);ctx.fillStyle=ink;ctx.font='bold 14px Georgia';ctx.textAlign='center';ctx.fillText('+30',e.x,y-15);
+  }else if(e.kind==='medic'){
+    oval(ctx,e.x,e.y,22+12*t,22+12*t,'#cee6a6',ink,2);shape(ctx,[[e.x-4,e.y-12],[e.x+4,e.y-12],[e.x+4,e.y-4],[e.x+12,e.y-4],[e.x+12,e.y+4],[e.x+4,e.y+4],[e.x+4,e.y+12],[e.x-4,e.y+12],[e.x-4,e.y+4],[e.x-12,e.y+4],[e.x-12,e.y-4],[e.x-4,e.y-4]],'#f1e6c4');
+  }else if(e.kind==='recon'){
+    for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(e.x,e.y,16+36*t+i*15,0,Math.PI*2);ctx.strokeStyle='#b8e0d1';ctx.lineWidth=4-i;ctx.stroke();}ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('SUPPRESSION',e.x,e.y-35-12*t);
+  }
   ctx.restore();
 }
