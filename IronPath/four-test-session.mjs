@@ -1,6 +1,6 @@
 // Offline-only test harness: four local soldiers, no accounts or rewards saved.
 import {createPlayer} from './match.mjs?v=20261102-fourbase1';
-import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour} from './four-modes.mjs?v=20261102-fourbase1';
+import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour} from './four-modes.mjs?v=20261103-unified1';
 const IDS=['p1','p2','p3','p4'];
 export function createFourTestSession(mode){
   if(!['four-coop','two-vs-two'].includes(mode))throw Error('Invalid test mode');

@@ -3,12 +3,12 @@
 import {createMatch,stepMatch} from './simulation.mjs?v=20261102-fourbase1';
 import {applyCommand} from './match.mjs?v=20261102-fourbase1';
 export const FOUR_PLAYER_MAP='four-front';
-function roster(players,hostId){
-  if(!Array.isArray(players)||players.length!==4||new Set(players.map(p=>p?.id)).size!==4||!players.every(p=>typeof p?.id==='string'&&p.id.length>0)||!players.some(p=>p.id===hostId))throw new Error('Four unique players including the host are required');
+function roster(players,hostId,count=[4]){
+  if(!Array.isArray(players)||!count.includes(players.length)||new Set(players.map(p=>p?.id)).size!==players.length||!players.every(p=>typeof p?.id==='string'&&p.id.length>0)||!players.some(p=>p.id===hostId))throw new Error('Invalid roster: unique players including the host are required');
   return Object.fromEntries(players.map(p=>[p.id,{id:p.id,active:true}]));
 }
 export function createFourCoop(players,hostId){
-  const members=roster(players,hostId),match=createMatch(players,FOUR_PLAYER_MAP);
+  const members=roster(players,hostId,[3,4]),match=createMatch(players,FOUR_PLAYER_MAP);
   return {mode:'four-coop',hostId,members,match,pending:null,nextRequest:1};
 }
 export function createTwoVsTwo(players,hostId,teams){

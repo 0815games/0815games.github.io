@@ -17,7 +17,7 @@ import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
 import { startGame } from './game.js?v=20261103-online1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-fourbase2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-unified1';
 import { createPlayer } from './match.mjs?v=20261102-fourbase1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
 

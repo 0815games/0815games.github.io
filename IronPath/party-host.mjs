@@ -1,11 +1,11 @@
-import { createHost } from './protocol.mjs?v=20261102-fourbase2';
+import { createHost } from './protocol.mjs?v=20261103-unified1';
 
 // Local, player-hosted match core. The future Firebase adapter must bind each
 // playerId to an authenticated, rules-protected input path; never trust an ID
 // inside a command. The hosting browser is not an anti-cheat authority.
 export function createPartyHost(initialMatch,{hostId}={}){
   const four=initialMatch?.mode==='four-coop'||initialMatch?.mode==='two-vs-two',ids=Object.keys((four?initialMatch?.members:initialMatch?.players)||{});
-  if(ids.length!==(four?4:2)||new Set(ids).size!==ids.length)throw new Error('Invalid party roster');
+  if((four?(initialMatch.mode==='four-coop'?![3,4].includes(ids.length):ids.length!==4):ids.length!==2)||new Set(ids).size!==ids.length)throw new Error('Invalid party roster');
   hostId=hostId??ids[0];if(!ids.includes(hostId))throw new Error('Host must be a party player');
   const host=createHost({...initialMatch,hostId}),online=new Map(ids.map(id=>[id,false]));
   for(const id of ids)host.setPlayerActive(id,false);

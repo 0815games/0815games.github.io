@@ -1,4 +1,4 @@
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261102-fourbase1';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261103-unified1';
 import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261102-fourbase1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
@@ -10,6 +10,7 @@ export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
 const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{});
+const validCount=match=>isFour(match)?(match.mode==='four-coop'?[3,4].includes(matchIds(match).length):matchIds(match).length===4):matchIds(match).length>=1&&matchIds(match).length<=2;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 function normalizeCommand(command){
@@ -93,13 +94,13 @@ function makeHost(data){
 }
 export function createHost(initialMatch){
   const match=clone(initialMatch),ids=matchIds(match);
-  if(isFour(match)?ids.length!==4:ids.length<1||ids.length>2)throw new Error('Match must contain one or two players');
+  if(!validCount(match))throw new Error('Match must contain one or two players');
   return makeHost({match,tick:0,players:Object.fromEntries(ids.map(id=>[id,{nextSeq:1,receipts:[]}])),queue:[]});
 }
 export function restoreHost(checkpoint){
   if(!checkpoint||checkpoint.version!==PROTOCOL_VERSION)throw new Error('Unsupported checkpoint version');
   const data=clone(checkpoint),ids=matchIds(data.match);
-  if(!Number.isSafeInteger(data.tick)||data.tick<0||!data.players||!Array.isArray(data.queue)||data.queue.length>MAX_PENDING||(isFour(data.match)?ids.length!==4:ids.length<1||ids.length>2)||Object.keys(data.players).length!==ids.length||ids.some(id=>!Object.hasOwn(data.players,id)||!Number.isSafeInteger(data.players[id].nextSeq)||data.players[id].nextSeq<1||!Array.isArray(data.players[id].receipts)))throw new Error('Invalid trusted checkpoint');
+  if(!Number.isSafeInteger(data.tick)||data.tick<0||!data.players||!Array.isArray(data.queue)||data.queue.length>MAX_PENDING||!validCount(data.match)||Object.keys(data.players).length!==ids.length||ids.some(id=>!Object.hasOwn(data.players,id)||!Number.isSafeInteger(data.players[id].nextSeq)||data.players[id].nextSeq<1||!Array.isArray(data.players[id].receipts)))throw new Error('Invalid trusted checkpoint');
   // Storage is trusted; reject obviously inconsistent pending records rather than
   // accepting checkpoint data from an untrusted client as an authorization source.
   for(const item of data.queue){const p=data.players[item.playerId];if(!p||!normalizeCommand(item.command)||!p.receipts.some(r=>r.seq===item.seq&&r.response.status==='queued'))throw new Error('Invalid pending command');}
