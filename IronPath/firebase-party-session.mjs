@@ -2,7 +2,7 @@
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
 export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{}}){
-  if(!channel||!host||!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||typeof epoch!=='string'||!epoch||typeof onError!=='function')throw new Error('Invalid host session');
+  if(!channel||!host||!Array.isArray(playerIds)||![2,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||typeof epoch!=='string'||!epoch||typeof onError!=='function')throw new Error('Invalid host session');
   let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null;
   const connections=new Map(playerIds.map(id=>[id,[]]));
   function localView(){

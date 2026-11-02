@@ -1,22 +1,25 @@
+import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261102-fourviewport2';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261102-results1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261102-results1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261102-fourbase2';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-battle2';
 import {createBattleSound} from './battle-sound.mjs?v=20261102-battle2';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
-import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain4';
+import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-battle2';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-fourbase2';
 import {abilityName} from './skills.mjs?v=20261102-results1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261102-planner1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-results1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-results1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-fourbase1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-fourbase1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -45,8 +48,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function recordCoopReward(id,status,detail,block=0){const target=coopReports.get(id);if(!target)return;const errors=target.errors||(target.errors=new Set());if(status==='saved'){addReward(target,detail);errors.delete(block);}else if(status==='error')errors.add(block);else if(status==='confirmed'){target.confirmedEarlier=true;errors.delete(block);}target.failed=errors.size>0;if(lastReport===target&&$('runResults').open)renderResults(target);}
   function renderResults(target){
     const snapshot=target.snapshot;if(!snapshot)return;const waves=waveRewardSummary(snapshot,target.playerId),p=snapshot.players?.[target.playerId],damage=p?.towerDamage||[],combos=Object.entries(p?.comboCounts||{}).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]);
-    $('resultsTitle').textContent=snapshot.mode==='versus'?(snapshot.winnerId?(snapshot.winnerId===target.playerId?'Victory!':'Defeat'):'Match ended'):(target.left?'You left the operation':snapshot.endReason==='retired'?'Operation ended':'Bunker lost');
-    $('resultsOutcome').textContent=snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION';
+    $('resultsTitle').textContent=snapshot.fourInfo?.mode==='two-vs-two'?(snapshot.fourInfo.winnerTeam===null?'Match ended in a draw':snapshot.fourInfo.winnerTeam===snapshot.fourInfo.team?'Victory!':'Defeat'):snapshot.mode==='versus'?(snapshot.winnerId?(snapshot.winnerId===target.playerId?'Victory!':'Defeat'):'Match ended'):(target.left?'You left the operation':snapshot.endReason==='retired'?'Operation ended':'Bunker lost');
+    $('resultsOutcome').textContent=snapshot.fourInfo?.mode==='two-vs-two'?'2 VS 2 · SURVIVAL':snapshot.fourInfo?.mode==='four-coop'?'FOUR-PLAYER CO-OP':snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION';
     $('resultsWaves').textContent=`${waves.count} wave${waves.count===1?'':'s'} completed · reached wave ${snapshot.wave||0}\nWave reward value: ${waves.xp} XP\n${snapshot.lootKills||0} enemies defeated ${target.mode==='coop'&&snapshot.mode!=='versus'?'(team)':''}`;
     $('resultsRewards').textContent=`Confirmed during this session: +${target.xp} XP · +${target.scrap} scrap${target.items.length?'\nNew equipment: '+target.items.join(', '):''}`;
     $('resultsSave').textContent=target.failed?'Some rewards could not be confirmed. Check your connection and save status.':target.pending?'Saving rewards…':target.disconnected?'This uses the last received snapshot. Reconnect to confirm any missing rewards.':target.confirmedEarlier?'Some earlier rewards were already saved before this report; they are not counted twice.':target.mode==='coop'?'Rewards may still be saving or may have been saved before reconnecting.':'Only confirmed saves are counted above.';
@@ -62,13 +65,18 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
-  let largeMap=portrait.matches;
+  let largeMap=portrait.matches, battleViewport=null, savedLargeMap=false;
   function setMapZoom(large){largeMap=large;mapViewport.classList.toggle('map-large',large);zoomButton.setAttribute('aria-pressed',String(large));zoomButton.textContent=large?'MAP: LARGE':'MAP: FIT';$('mapHint').textContent=large?'Swipe the map left or right to see the battlefield. Tap to build or move.':'Full map view. Tap MAP: FIT to enlarge it.';}
   setMapZoom(largeMap);
-  zoomButton.addEventListener('click',()=>{const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
-  $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
-  $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
-  portrait.addEventListener('change',e=>setMapZoom(e.matches));
+  zoomButton.addEventListener('click',()=>{if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else battleViewport.zoom(2);return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
+  $('mapEntry').addEventListener('click',()=>battleViewport?battleViewport.pan(1e6,0):mapViewport.scrollTo({left:0,behavior:'smooth'}));
+  $('mapBunker').addEventListener('click',()=>battleViewport?battleViewport.pan(-1e6,0):mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
+  portrait.addEventListener('change',e=>{if(!battleViewport)setMapZoom(e.matches);});
+  function syncBattleViewport(map,versus){
+    const wanted=experimentalFourViewport&&map.fourPlayer&&!versus;
+    if(wanted&&!battleViewport){savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=zoomed?'MAP: FIT':'MAP: ZOOM';}});$('mapHint').textContent='Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.';zoomButton.textContent='MAP: ZOOM';}
+    else if(!wanted&&battleViewport){battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);}
+  }
   function reset(freshMap=false){if($('runResults').open)$('runResults').close();report=newReport();if(canvas.height!==540)canvas.height=540;if(freshMap)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;bossSignal=null;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -79,9 +87,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?`${result.perk} acquired for this operation.`:result.reason);updateUI();});
   function updateUI(){
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished)finishReport(report,state,me());else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
-    const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus';$('mapName').textContent=versus?`${map.name} · 1 VS 1`:map.name;
-    const canvasHeight=versus?1100:540;if(canvas.height!==canvasHeight)canvas.height=canvasHeight;
-    $('versusStatus').hidden=!versus;if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?'VICTORY':'DEFEAT'):'DRAW / MATCH ENDED'):'1 VS 1 · SURVIVAL';$('versusInfo').textContent=`YOUR BUNKER ${Math.max(0,Math.ceil(state.hp))} · ${state.players[state.rivalId]?.name||'OPPONENT'} ${Math.max(0,Math.ceil(state.rival.hp))}${state.waitingForRival&&!state.ended?' · WAITING FOR OPPONENT':''}`;}
+    const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('mapName').textContent=versus?`${map.name} · 1 VS 1`:map.name;
+    const canvasHeight=versus?1100:540;if(canvas.height!==canvasHeight)canvas.height=canvasHeight;syncBattleViewport(map,versus);
+    $('versusStatus').hidden=!versus&&!teamMatch;if(teamMatch){const info=state.fourInfo;$('versusTitle').textContent=state.ended?(info.winnerTeam===null?'DRAW / MATCH ENDED':info.winnerTeam===info.team?'VICTORY':'DEFEAT'):`2 VS 2 · TEAM ${info.team?'B':'A'}`;$('versusInfo').textContent=`YOUR BUNKER ${Math.max(0,Math.ceil(state.hp))} · OTHER BUNKER ${Math.max(0,Math.ceil(info.otherHealth))}`;}if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?'VICTORY':'DEFEAT'):'DRAW / MATCH ENDED'):'1 VS 1 · SURVIVAL';$('versusInfo').textContent=`YOUR BUNKER ${Math.max(0,Math.ceil(state.hp))} · ${state.players[state.rivalId]?.name||'OPPONENT'} ${Math.max(0,Math.ceil(state.rival.hp))}${state.waitingForRival&&!state.ended?' · WAITING FOR OPPONENT':''}`;}
     if($('terrainBriefing')){$('terrainBriefing').hidden=!terrain;if(terrain&&$('terrainTitle'))$('terrainTitle').textContent=`${map.name} · Terrain effects`;if(terrain){const text=TERRAIN_BRIEFINGS[terrain]+(terrain==='urban'?(state.rubbleCleared?' Rubble is cleared.':` Rubble remaining: ${Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))} / 200.`):'');if($('terrainDescription').textContent!==text)$('terrainDescription').textContent=text;}}
     if($('runPerksStatus')){const ranks=state.runPerks||{},acquired=RUN_PERKS.filter(perk=>ranks[perk.key]);$('runPerksStatus').hidden=!acquired.length;const text=acquired.map(perk=>`${perk.name} ×${ranks[perk.key]}`).join(' · ');if($('runPerksList').textContent!==text)$('runPerksList').textContent=text;}
     if($('runPerkPanel')){
@@ -100,29 +108,29 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),host=!!coop&&state.hostId===me(),pending=!!state.pendingWave;
     $('endRun').textContent=guest?(versus?'LEAVE MATCH':'LEAVE CO-OP'):host&&(state.ended||(versus&&!coopReady))?'CLOSE PARTY':'END RUN';$('endRun').disabled=(!coop&&state.ended)||!menu.hidden||(!!coop&&!coopReady&&!guest&&!state.ended&&!versus);
     $('waveRequest').hidden=!coop||!pending||state.ended;
-    if(coop&&pending){$('waveRequestText').textContent=guest?`Host requests wave ${state.pendingWave}. Approve when ready.`:`Waiting for your ${versus?'opponent':'teammate'} to approve wave ${state.pendingWave}.`;$('waveDecline').hidden=!guest;$('waveDecline').disabled=!coopReady;}
-    $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':guest?(pending?'APPROVE WAVE':'WAIT FOR HOST'):host&&pending?'CANCEL REQUEST':host&&versus&&state.waitingForRival?'WAIT FOR OPPONENT':coop?(versus||Object.entries(state.players).some(([id,p])=>id!==state.hostId&&p.active!==false)?'REQUEST WAVE':'START NEXT WAVE'):state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE';
-    $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)||(versus&&host&&state.waitingForRival)));
+    if(coop&&pending){$('waveRequestText').textContent=guest?`Host requests wave ${state.pendingWave}. Approve when ready.`:state.fourInfo?`Waiting for players to approve wave ${state.pendingWave} (${state.fourInfo.approved}/${state.fourInfo.required}).`:`Waiting for your ${versus?'opponent':'teammate'} to approve wave ${state.pendingWave}.`;$('waveDecline').hidden=!guest;$('waveDecline').disabled=!coopReady;}
+    $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':guest?(pending?'APPROVE WAVE':state.fourInfo?.waitingForOthers?'WAIT FOR PLAYERS':'WAIT FOR HOST'):host&&pending?'CANCEL REQUEST':host&&versus&&state.waitingForRival?'WAIT FOR OPPONENT':coop?(versus||Object.entries(state.players).some(([id,p])=>id!==state.hostId&&p.active!==false)?'REQUEST WAVE':'START NEXT WAVE'):state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE';
+    $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)||(versus&&host&&state.waitingForRival)||(teamMatch&&host&&state.fourInfo?.otherNotReady)));
   }
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave}${wave%5===0?' · BOSS WAVE':''} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ')+(bossForWave(wave)?` · ${bossForWave(wave).description}`:'');}
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
     const command=coop&&state.pendingWave?(state.hostId===me()?'cancelWave':'approveWave'):'startWave';
-    dispatch(command==='startWave'?{type:command}:{type:command,requestId:state.waveRequestId},result=>{if(!result.ok){notice(result.reason);return;}if(!coop)sound.play(state.wave%5===0?'boss':'wave');notice(!coop?`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`:command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest?'Waiting for teammate approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
+    dispatch(command==='startWave'?{type:command}:{type:command,requestId:state.waveRequestId},result=>{if(!result.ok){notice(result.reason);return;}if(!coop)sound.play(state.wave%5===0?'boss':'wave');notice(!coop?`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`:command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest||result.waitingForPlayers?'Waiting for player approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
   };
   $('waveDecline').onclick=()=>dispatch({type:'declineWave',requestId:state.waveRequestId},result=>{notice(result.ok?'Wave postponed. The host can request again when ready.':result.reason);updateUI();});
   $('endRun').onclick=async()=>{
-    const guest=!!coop&&!!state.hostId&&state.hostId!==me();
+    const guest=!!coop&&!!state.hostId&&state.hostId!==me(),teamMatch=state.fourInfo?.mode==='two-vs-two';
     if(coop&&(state.ended||(state.mode==='versus'&&!coopReady))&&!guest){if(typeof leaveParty==='function')await leaveParty();else await leaveCoop();return;}
     if((state.ended&&!guest)||!menu.hidden||(coop&&!coopReady&&!guest))return;
     const session=coop,soloState=state,mapId=state.mapId;
-    const confirmed=await confirmAction({title:guest?(state.mode==='versus'?'Leave match?':'Leave co-op?'):'End this run?',text:guest?(state.mode==='versus'?(coopReady?'Leave this match? You forfeit and the host wins. Completed-wave rewards are saved.':'Leave while disconnected? Your opponent may not receive your forfeit; reconnect first if possible.'):coopReady?'Leave this co-op party? The host keeps playing. Completed-wave rewards are saved; the current unfinished wave earns no rewards.':'Leave while disconnected? Rewards not yet received from the host may require reconnecting. The host keeps playing.'):session?'This ends the shared run for both players. Completed-wave rewards are kept; the current unfinished wave earns no rewards. Battle continues until confirmed.':'End this run now? Completed-wave rewards are kept; the current unfinished wave earns no rewards.',accept:guest?(state.mode==='versus'?'LEAVE MATCH':'LEAVE CO-OP'):'END RUN'});
+    const confirmed=await confirmAction({title:guest?(state.mode==='versus'||teamMatch?'Leave match?':'Leave co-op?'):'End this run?',text:guest?(state.mode==='versus'||teamMatch?(coopReady?'Leave this match? You forfeit and the host wins. Completed-wave rewards are saved.':'Leave while disconnected? Your opponent may not receive your forfeit; reconnect first if possible.'):coopReady?'Leave this co-op party? The host keeps playing. Completed-wave rewards are saved; the current unfinished wave earns no rewards.':'Leave while disconnected? Rewards not yet received from the host may require reconnecting. The host keeps playing.'):session?'This ends the shared run for both players. Completed-wave rewards are kept; the current unfinished wave earns no rewards. Battle continues until confirmed.':'End this run now? Completed-wave rewards are kept; the current unfinished wave earns no rewards.',accept:guest?(state.mode==='versus'||teamMatch?'LEAVE MATCH':'LEAVE CO-OP'):'END RUN'});
     if(!confirmed||!account.isReady()||coop!==session||(!guest&&state.ended)||state.mapId!==mapId||(!session&&state!==soloState)||(session&&!coopReady&&!guest))return;
     if(guest){
       // The host marks the guest inactive before the final reward snapshot is
       // delivered. This prevents a wave-clear race while leaving mid-battle.
       if(coopReady&&!state.ended){const result=await new Promise(resolve=>dispatch({type:'leaveRun'},resolve));if(coop!==session)return;if(!result.ok&&!state.ended){notice(result.reason);return;}}
-      const resultSnapshot=state,resultReport=report,resultId=me(),wasDisconnected=!coopReady;if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();resultReport.left=true;resultReport.disconnected=wasDisconnected;finishReport(resultReport,resultSnapshot,resultId);notice('You left co-op. The host can continue.');return;
+      const resultSnapshot=state,resultReport=report,resultId=me(),wasDisconnected=!coopReady;if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();resultReport.left=true;resultReport.disconnected=wasDisconnected;finishReport(resultReport,resultSnapshot,resultId);notice(teamMatch?'You left the match.':'You left co-op. The host can continue.');return;
     }
     dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();});
   };
@@ -180,21 +188,22 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
   $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
-  canvas.addEventListener('click',e=>{
-    if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),x=(e.clientX-rect.left)*canvas.width/rect.width,y=(e.clientY-rect.top)*canvas.height/rect.height;if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
-    const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width)),pads=getMap(state.mapId).pads;let index=-1,nearest=radius;
+  function selectBattlePoint(x,y){
+    if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),map=getMap(state.mapId),view=battleViewport?.getViewport();
+    if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
+    const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width/(view?.scale||1))),pads=map.pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
-    if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min(948,x)),y:Math.max(12,Math.min(528,y))},result=>{notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
+    if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min((map.width||960)-12,x)),y:Math.max(12,Math.min((map.height||540)-12,y))},result=>{notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
     showMenu(index);
-    // On phones the fixed action sheet may cover the spot that was just tapped.
-    // Move only the page vertically, leaving the player's horizontal map position intact.
     if(window.innerWidth<=850){
-      const spotY=rect.top+pads[index].y*rect.height/canvas.height;
-      const margin=48*rect.height/canvas.height+12;
+      const screenY=view?(pads[index].y-view.y)*view.scale:pads[index].y;
+      const spotY=rect.top+screenY*rect.height/canvas.height;
+      const margin=48*(view?.scale||1)*rect.height/canvas.height+12;
       const overlap=spotY+margin-menu.getBoundingClientRect().top;
       if(overlap>0)window.scrollBy({top:overlap,behavior:'auto'});
     }
-  });
+  }
+  canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();selectBattlePoint((e.clientX-rect.left)*canvas.width/rect.width,(e.clientY-rect.top)*canvas.height/rect.height);});
   let uiElapsed=0;
   function update(dt){
     if(coop||state.ended||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
@@ -215,8 +224,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}
   }
-  function draw(){const {path,pads,theme}=getMap(state.mapId);ctx.clearRect(0,0,960,canvas.height);const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000):state;drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
-    if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(`${state.players[state.rivalId]?.name||'OPPONENT'} · OPPONENT BATTLEFIELD`,480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});ctx.restore();}
+  function draw(){const map=getMap(state.mapId),{path,pads,theme}=map;ctx.clearRect(0,0,canvas.width,canvas.height);const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000):state;
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,...(battleViewport?{paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker}:{})});
+
     // Draw selection above units and effects, including an empty pad while its
     // build menu is open. A dark border keeps the bright marker legible on roads.
     const markerPad=menuPad??state.selectedPad;
@@ -231,6 +241,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
         ctx.strokeStyle='#172016';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#fff6ac';ctx.lineWidth=4;ctx.stroke();
       }
     }
+    }
+    if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawOwn);else drawOwn();
+    if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(`${state.players[state.rivalId]?.name||'OPPONENT'} · OPPONENT BATTLEFIELD`,480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});ctx.restore();}
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop(){if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;coopHasBaseline=false;needStop=false;coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent='JOIN CO-OP (TEST)';$('coopStatus').textContent='SOLO';if(account.isReady())reset(true);return Promise.resolve(stopping);}
@@ -240,7 +253,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     selectedMap=nextMapId(selectedMap);hasCoopSnapshot=false;report=newReport(reportId||'test');coopReports.set(report.id,report);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();lastSnapshotAt=0;let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;hasCoopSnapshot=true;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;if(snapshot?.match?.mode==='four-coop'||snapshot?.match?.mode==='two-vs-two'){try{snapshot=projectFourGameView(snapshot,me());}catch{notice('Invalid four-player match snapshot.');return;}}hasCoopSnapshot=true;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
       if(hadSnapshot&&(state.bunkerImpact?.seq||0)>oldImpact){const hit=state.bunkerImpact;notice(`${ENEMY_TYPES[hit.kind]?.label||'Enemy'} hit the bunker! −${Math.round(hit.damage*10)/10} health.`);}
       const newBoss=state.enemies.find(e=>e.boss&&e.hp>0);
       if(hadSnapshot&&coopReady&&newBoss?.boss==='bossBomber'&&newBoss.bossFlash>0&&oldBoss?.boss===newBoss.boss&&!(oldBoss.bossFlash>0)){sound.play('impact');notice('Bomber struck the bunker!');}

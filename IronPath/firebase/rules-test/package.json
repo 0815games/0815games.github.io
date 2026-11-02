@@ -2,8 +2,13 @@
   "name": "ironpath-firebase-rules-test",
   "private": true,
   "type": "module",
-  "engines": {"node": ">=22"},
-  "scripts": {"test": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase.emulator.json 'node --test rules.test.mjs && node --test four-digit.test.mjs && node --test coop-xp.test.mjs'"},
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase.emulator.json 'node --test rules.test.mjs && node --test four-digit.test.mjs && node --test coop-xp.test.mjs'",
+    "test:four": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-four.emulator.json 'node --test four-player.test.mjs && IRONPATH_COMBINED_RULES=1 node --test four-digit.test.mjs && IRONPATH_COMBINED_RULES=1 node --test coop-xp.test.mjs'"
+  },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",
     "firebase": "10.14.1",

@@ -1,20 +1,23 @@
-import {createVersus} from './versus.mjs?v=20261102-results1';
+import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261102-fourbase1';
+import {createVersus} from './versus.mjs?v=20261102-fourbase1';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
-import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
-import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261102-coopmotion1';
-import {createPartyHost} from './party-host.mjs?v=20261102-results1';
-import {createMatch,STEP} from './simulation.mjs?v=20261102-results1';
+import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261102-fourbase2';
+import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261102-fourbase2';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261102-fourbase2';
+import {createPartyHost} from './party-host.mjs?v=20261102-fourbase2';
+import {createMatch,STEP} from './simulation.mjs?v=20261102-fourbase1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
-export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
-  const uid=auth?.currentUser?.uid;
-  if(!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
+export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',teams=null,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
+  const uid=auth?.currentUser?.uid,four=mode==='four-coop'||mode==='two-vs-two',count=four?4:2;
+  if(!['coop','versus','four-coop','two-vs-two'].includes(mode))throw new Error('Invalid mode');
+  if(!Array.isArray(playerIds)||playerIds.length!==count||new Set(playerIds).size!==count||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
   if(uid===hostId&&!isMapId(mapId))throw new Error('Invalid host map');
-  if(uid===hostId&&(!Array.isArray(players)||players.length!==2||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
+  if(uid===hostId&&(!Array.isArray(players)||players.length!==count||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
+  if(uid===hostId&&mode==='two-vs-two'&&(!Array.isArray(teams)||teams.length!==2||teams.some(t=>!Array.isArray(t)||t.length!==2)||new Set(teams.flat()).size!==4||teams.flat().some(id=>!playerIds.includes(id))))throw new Error('Invalid teams');
   if(![onState,onStatus,onSnapshot,onWaveRewards,clock].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
   let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null;
   const online=new Map(playerIds.map(id=>[id,false]));
@@ -24,19 +27,19 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
     if(active&&!failed){const state=ready?'ready':'waiting';if(state!==lastState){lastState=state;onState(state);}}
   }
   function fail(){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState('error');}
-  const options={db,auth,sdk,partyId,hostId,playerIds,onError:fail};
+  const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:four?'fourParties':'parties',onError:fail};
   return {
     start(){
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
       try{
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
+          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(mode==='two-vs-two'?createTwoVsTwo(players,hostId,teams):mode==='four-coop'?createFourCoop(players,hostId):mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
         }
         const channel=host?host.localChannel():createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if((snapshot?.match?.mapId!==undefined&&!isMapId(snapshot.match.mapId))||snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const blocks=snapshot.match.players[uid].completedWaveBlocks||{};
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;const game=snapshot?.match;let fields;if(four){if(game?.mode!==mode||game.hostId!==hostId||Object.keys(game.members||{}).length!==4||playerIds.some(id=>!Object.hasOwn(game.members,id))){fail();return;}fields=mode==='four-coop'?[game.match]:game.lanes;if(mode==='two-vs-two'&&(!Array.isArray(game.teams)||game.teams.length!==2||new Set(game.teams.flat()).size!==4||game.teams.some((team,i)=>!Array.isArray(team)||team.length!==2||team.some(id=>!Object.hasOwn(game.lanes?.[i]?.players||{},id))))) {fail();return;}if(!Array.isArray(fields)||fields.length!==(mode==='four-coop'?1:2)||fields.some(lane=>lane?.mapId!==FOUR_PLAYER_MAP||lane.individualSupplies!==true)||playerIds.some(id=>fields.filter(lane=>Object.hasOwn(lane.players||{},id)).length!==1)){fail();return;}}else{if((game?.mapId!==undefined&&!isMapId(game.mapId))||game?.individualSupplies!==true){fail();return;}fields=[game];}const playerFor=id=>fields.find(lane=>Object.hasOwn(lane.players||{},id))?.players[id];if(!playerIds.every(id=>Number.isFinite(playerFor(id)?.money)&&Number.isInteger(playerFor(id)?.completedWaveMask)&&playerFor(id).completedWaveMask>=0&&playerFor(id).completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const player=playerFor(uid),blocks=player.completedWaveBlocks||{};
         if(typeof blocks!=='object'||Array.isArray(blocks)||Object.entries(blocks).some(([key,value])=>!/^\d+$/.test(key)||!Number.isSafeInteger(Number(key))||Number(key)<1||!Number.isInteger(value)||value<0||value>MAX_WAVE_MASK)){fail();return;}
-        onWaveRewards(snapshot.match.players[uid].completedWaveMask,0);for(const [block,mask] of Object.entries(blocks))onWaveRewards(mask,Number(block));onSnapshot(snapshot);}});
+        onWaveRewards(player.completedWaveMask,0);for(const [block,mask] of Object.entries(blocks))onWaveRewards(mask,Number(block));onSnapshot(snapshot);}});
         client.start();host?.start();
         presence=createFirebasePartyPresence({...options,crypto,onConnections:(id,ids)=>{if(active)host?.setConnections(id,ids);},onPresence:(id,value)=>{if(!active)return;online.set(id,value);if(id===hostId)ticker?.reset();host?.setPresence(id,value);refresh();},onConnection:(connected,id)=>{if(!active)return;localConnection=connected?id:null;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});
         presence.start();
