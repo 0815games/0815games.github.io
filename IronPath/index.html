@@ -4,13 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261102-cartoon1">
+  <link rel="stylesheet" href="style.css?v=20261102-intro1">
 </head>
 <body>
+  <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
+    <div class="intro-card">
+      <div class="intro-topline"><span>0815 GAMES / FIELD REPORT</span><button id="introSkip" type="button">SKIP INTRO <span aria-hidden="true">→</span></button></div>
+      <div class="intro-scene" aria-hidden="true">
+        <div class="intro-sun"></div><div class="intro-hill intro-hill-back"></div><div class="intro-hill intro-hill-front"></div><div class="intro-road"></div>
+        <div class="intro-burst intro-burst-one">✹</div><div class="intro-burst intro-burst-two">✹</div><div class="intro-burst intro-burst-three">✹</div>
+        <svg class="intro-bunker" viewBox="0 0 190 125" xmlns="http://www.w3.org/2000/svg"><path d="M8 112V66L28 39h132l20 27v46z" fill="#829369" stroke="#29392c" stroke-width="6" stroke-linejoin="round"/><path d="M8 66l20-27h132l20 27z" fill="#afbc8e" stroke="#29392c" stroke-width="6" stroke-linejoin="round"/><path d="M28 77h104v18H28z" fill="#344736" stroke="#29392c" stroke-width="5"/><path d="M46 86h66" stroke="#9dad86" stroke-width="4"/><path d="M145 112V80h23v32" fill="#303f2f" stroke="#29392c" stroke-width="5"/><path d="M24 105h102" stroke="#677b55" stroke-width="3" stroke-dasharray="8 8"/></svg>
+        <svg class="intro-soldier" viewBox="0 0 100 115" xmlns="http://www.w3.org/2000/svg"><g stroke="#2d3a2c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g class="intro-leg intro-leg-back"><path d="M51 79l-8 17-13 5" fill="none"/></g><g class="intro-leg intro-leg-front"><path d="M57 79l12 14 12 2" fill="none"/></g><path d="M39 51l21-3 9 28-21 10-17-15z" fill="#718252"/><path d="M43 58l-10 15-13 2M61 57l12 8 11-8" fill="none"/><circle cx="52" cy="34" r="16" fill="#e8bd91"/><path d="M33 32l3-12q14-12 29 0l5 11z" fill="#718252"/><path d="M35 32h34" fill="none"/><path d="M58 36h1" fill="none"/></g></svg>
+        <div class="intro-title"><span>HOLD THE LINE</span><strong>IRON PATH</strong><small>THE LAST ROAD</small></div>
+      </div>
+      <div class="intro-footer"><span>AN 0815 GAMES FIELD OPERATION</span><span>PREPARING DEPLOYMENT<span class="intro-dots">...</span></span></div>
+    </div>
+  </section>
+  <noscript><style>#introOverlay{display:none!important}</style></noscript>
   <main>
     <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1>IRON PATH</h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">SOLO · EARLY BUILD</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
-      <div id="loading"><h2>Connecting to headquarters…</h2></div>
+      <div id="loading"><h2>Connecting…</h2><p class="hint">Preparing your soldier.</p></div>
       <div id="connectionView" hidden><h2>Could not load soldier</h2><p class="hint">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button">RETRY</button><button id="errorLogout" type="button">SIGN OUT</button></div>
       <div id="authView" hidden><span class="eyebrow">PERSONNEL ACCESS</span><h2>Sign in to Iron Path</h2><p class="hint">Sign in or create an account to save your soldier and XP.</p><form id="authForm"><label for="email">EMAIL</label><input id="email" type="email" autocomplete="email" required><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" minlength="6" required><button class="primary" type="submit">SIGN IN</button><button id="register" type="button">CREATE ACCOUNT</button><button id="forgot" type="button">RESET PASSWORD</button></form></div>
       <div id="characterView" hidden><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
@@ -77,6 +91,8 @@
       <button type="button" id="radial3" class="sheet-option"><span class="sheet-name" id="menuName3"></span><span class="sheet-description" id="menuDesc3"></span></button>
     </div>
   </section>
+  <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
+  <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
   <script type="module" src="account.js?v=20261102-cartoon1"></script>
 </body></html>

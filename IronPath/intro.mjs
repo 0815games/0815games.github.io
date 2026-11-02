@@ -1,0 +1,17 @@
+// The intro is independent of authentication. When it ends, any loading or
+// connection error remains visible underneath instead of blocking sign-in.
+export function startIntro({document,window,duration=4300}){
+  const overlay=document.getElementById('introOverlay'),skip=document.getElementById('introSkip');
+  if(!overlay||!skip)return ()=>{};
+  const reduced=typeof window.matchMedia==='function'&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let closed=false,timer;
+  const close=()=>{
+    if(closed)return;closed=true;window.clearTimeout(timer);overlay.hidden=true;
+    skip.removeEventListener('click',close);document.removeEventListener('keydown',onKey);
+  };
+  const onKey=event=>{if(event.key==='Escape')close();};
+  skip.addEventListener('click',close);document.addEventListener('keydown',onKey);
+  timer=window.setTimeout(close,reduced?1200:duration);
+  return close;
+}
+if(typeof document!=='undefined'&&typeof window!=='undefined')startIntro({document,window});
