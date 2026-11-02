@@ -1,4 +1,4 @@
-import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-maps1';
+import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-routes2';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVES, makeEnemy, towerDamage } from './combat.mjs?v=20261102-waves20';
