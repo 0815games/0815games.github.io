@@ -1,8 +1,8 @@
 // Experimental four-player panel. Not instantiated by the live application:
 // it requires reviewed, published rules and a complete four-player game handoff.
 import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261103-fourlobby1';
-export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,onLeaveMatch=async()=>{}}){
-  if(!document||![createLobby,getProfile,onMatch,confirmStart,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
+export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{}}){
+  if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
   let lobby=null,party=null,slots={},profiles={},config=null,started=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false;
@@ -94,7 +94,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
   });
   const leaveParty=()=>run(async gen=>{
-    if(!party||joining)return;const current=party,active=lobby;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);
+    if(!party||joining)return;const current=party,active=lobby;if(current.role==='host'&&(!await confirmClose()||gen!==generation||party!==current))return;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);
     if(gen===generation){clear();status(current.role==='host'?'Party closed.':'You left the party.');return true;}
   });
   $('fourPartyLeave').onclick=leaveParty;

@@ -1,4 +1,4 @@
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-online2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-online3';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-fourlobby1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -37,7 +37,7 @@ const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFour
 if(fourPlayerTest){
   fourPanel=createFourPlayerPanel({document,createLobby:()=>{if(partyPanel.isActive())throw Error('Leave the current party first');return createFirebaseFourLobby({db,auth,sdk:partySdk});},
     getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),
-    confirmStart:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),
+    confirmStart:()=>gameControl?.confirmParty()??false,confirmClose:()=>confirmation.ask({title:'Close four-player party?',text:'This ends the party and disconnects all players.',accept:'CLOSE PARTY'}),onLeaveMatch:()=>gameControl?.leaveCoop(),
     onMatch:party=>{const uid=auth.currentUser?.uid,version=sessionVersion,rewardQueues=new Map();
       const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?'Wave rewards could not be saved yet.':'Wave rewards saved.';gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
       const joined=gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,partyId:party.partyId,hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,teams:party.teamRosters,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,1220,270+i*60)),...callbacks,onWaveRewards:(mask,block=0)=>getRewards(block).observe(mask)}),()=>{},party.partyId)??false;
