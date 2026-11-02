@@ -38,11 +38,15 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
       const entry={stop:null};profileWatches.set(id,entry);entry.stop=lobby.watchProfile(party.partyId,id,value=>{if(gen!==generation||!party||profileWatches.get(id)!==entry)return;if(value)profiles[id]=value;else delete profiles[id];render();},failed);
     }
   }
+  function enterMatch(gen,value){
+    if(gen!==generation||!party||started)return;
+    try{const teamRosters=fourTeamRosters(value);if(!value.playerIds.includes(party.uid)||value.hostId!==party.hostId)throw Error('Roster changed');started=true;render();status('Match started. Connecting…');Promise.resolve(onMatch({...value,partyId:party.partyId,teamRosters})).then(ok=>{if(gen===generation)status(ok===false?'Could not connect to the match. Leave and try again.':'Connecting to the match…');}).catch(failed);}catch{failed();}
+  }
   function watchMember(gen){
     addWatch(lobby.watchConfig(party.partyId,value=>{if(gen!==generation||!party)return;config=value;render();},failed));
     addWatch(lobby.watchStarted(party.partyId,value=>{
       if(gen!==generation||!party||!value||party.role==='host'||started)return;
-      try{const teamRosters=fourTeamRosters(value);if(!value.playerIds.includes(party.uid)||value.hostId!==party.hostId)throw Error('Roster changed');started=true;render();status('Match started. Connecting…');Promise.resolve(onMatch({...value,partyId:party.partyId,teamRosters})).then(ok=>{if(gen===generation)status(ok===false?'Could not connect to the match. Leave and try again.':'Connecting to the match…');}).catch(failed);}catch{failed();}
+      enterMatch(gen,value);
     },failed));
     watchProfiles(gen);
   }
@@ -50,7 +54,14 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     addWatch(lobby.watchHost(party.partyId,value=>{if(gen===generation&&party&&value!==party.hostId){const wasStarted=started;clear();if(wasStarted)void Promise.resolve(onLeaveMatch()).catch(()=>{});status('The host closed the party.');}},failed));
     addWatch(lobby.watchSlots(party.partyId,value=>{
       if(gen!==generation||!party)return;slots=value||{};
-      if(party.role==='pending'&&Object.values(slots).includes(party.uid)&&!joining){joining=true;party.role='guest';render();void lobby.publishProfile(party.partyId,getProfile()).then(()=>{if(gen!==generation||!party)return;watchMember(gen);render();status('Approved. Waiting for the host to start.');}).catch(()=>{if(gen===generation)status('Approved, but your soldier could not be published. Leave and try again.');}).finally(()=>{joining=false;if(gen===generation)render();});}
+      if(party.role==='pending'&&Object.values(slots).includes(party.uid)&&!joining){joining=true;party.role='guest';render();void (async()=>{
+        let resumed=null;try{resumed=await lobby.reconnect(party.partyId,party.inviteCode);}catch{}
+        if(gen!==generation||!party)return;
+        if(!resumed){try{await lobby.publishProfile(party.partyId,getProfile());}catch(error){try{resumed=await lobby.reconnect(party.partyId,party.inviteCode);}catch{throw error;}}}
+        if(gen!==generation||!party)return;
+        if(resumed){await lobby.cancel(party.inviteCode).catch(()=>{});if(gen!==generation||!party)return;enterMatch(gen,resumed);}
+        watchMember(gen);render();if(!started)status('Approved. Waiting for the host to start.');
+      })().catch(()=>{if(gen===generation)status('Approved, but your soldier could not be published. Leave and try again.');}).finally(()=>{joining=false;if(gen===generation)render();});}
       else if(party.role!=='pending'){watchProfiles(gen);if(party.role==='guest'&&!started&&!Object.values(slots).includes(party.uid)){clear();status('You are no longer in the party.');return;}}
       render();
     },failed));

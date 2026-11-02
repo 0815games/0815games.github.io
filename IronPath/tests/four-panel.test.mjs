@@ -10,7 +10,7 @@ function fixture(role='host'){
   const lobby={async create(){return {hostId:'alice',partyId:'party',inviteCode:'0123'};},async request(){return {hostId:'alice',partyId:'party',inviteCode:'0123',uid:'bob'};},async approve(_p,_c,id){calls.push(['approve',id]);},async reject(_c,id){calls.push(['reject',id]);},async publishProfile(_p,p){calls.push(['publish',p.name]);},async configure(_p,c){calls.push(['config',c]);w.config(c);},async start(){calls.push(['start']);return {...manifest,profiles:Object.values(profiles),teamRosters:[['alice','cara'],['bob','dan']]};},async close(){calls.push(['close']);},async leave(){calls.push(['leave']);},async cancel(){calls.push(['cancel']);},
     watchHost:watch('host','alice'),watchSlots:watch('slots',null),watchConfig:watch('config',{mode:'four-coop',teams:[0,0,1,1]}),watchStarted:watch('started',null),watchRequests:watch('requests',{}),watchOwnRequest:watch('own',{name:'Bob'}),watchProfile(_p,id,cb){watchedProfiles[id]=cb;cb(profiles[id]||null);return()=>{if(watchedProfiles[id]===cb)delete watchedProfiles[id];};}};
   const panel=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles[role==='host'?'alice':'bob'],onMatch:m=>{joined.push(m);return true;},onLeaveMatch:async()=>{stopped++;}});
-  return {$,w,watchedProfiles,panel,calls,joined,get stopped(){return stopped;}};
+  return {$,w,watchedProfiles,panel,calls,joined,lobby,get stopped(){return stopped;}};
 }
 test('host lobby handles approvals, roster readiness, teams and start',async()=>{
   const f=fixture();assert.equal(f.$('fourPartyPanel').hidden,true);f.panel.show();await f.$('fourPartyCreate').onclick();assert.equal(f.$('fourPartyCodeDisplay').textContent,'0123');assert.equal(f.$('fourPartyStart').disabled,true);
@@ -34,4 +34,8 @@ test('logout during party creation closes the late reservation',async()=>{
   const doc={getElementById:f.$,createElement:()=>({append(){}})};
   const p=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles.alice,onMatch:()=>true});
   const pending=f.$('fourPartyCreate').onclick();await p.leaveForLogout(5);resolve({partyId:'party',inviteCode:'0123',hostId:'alice'});await pending;assert.equal(closed,1);assert.equal(p.isActive(),false);
+});
+
+test('an existing guest can reconnect after a page reload without republishing a locked profile',async()=>{
+  const f=fixture('guest');f.lobby.reconnect=async()=>manifest;f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});await new Promise(resolve=>setImmediate(resolve));assert.equal(f.joined.length,1);assert.deepEqual(f.joined[0].playerIds,manifest.playerIds);assert.ok(!f.calls.some(c=>c[0]==='publish'));assert.ok(f.calls.some(c=>c[0]==='cancel'));assert.equal(f.$('fourPartyLeave').hidden,true);
 });

@@ -1,4 +1,4 @@
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-online1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-online2';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-fourlobby1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
