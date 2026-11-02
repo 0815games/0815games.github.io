@@ -34,6 +34,15 @@ test('locked manifest must match current roster, profiles and balanced configura
 test('a stale manifest cannot start after a guest leaves',async()=>{
   await full();const stale=manifest();await assertSucceeds(set(at('dan',`${p}/slots/three`),null));await assertFails(set(at('alice',`${p}/started`),stale));
 });
+test('concurrent start and departure cannot both commit',async()=>{
+  await full();const [start,leave]=await Promise.allSettled([set(at('alice',`${p}/started`),manifest()),set(at('dan',`${p}/slots/three`),null)]);
+  assert.notEqual(start.status==='fulfilled'&&leave.status==='fulfilled',true,'a stale manifest must never coexist with a removed member');
+  if(start.status==='fulfilled')assert.equal((await get(at('alice',`${p}/slots/three`))).val(),'dan');else assert.equal((await get(at('alice',`${p}/started`))).val(),null);
+});
+test('concurrent duplicate approvals cannot put one account in two slots',async()=>{
+  await create();await assertSucceeds(set(at('bob',`${c}/requests/bob`),{name:'Bob'}));const [a,b]=await Promise.allSettled([set(at('alice',`${p}/slots/one`),'bob'),set(at('alice',`${p}/slots/two`),'bob')]);
+  assert.equal([a,b].filter(r=>r.status==='fulfilled').length,1);const slots=(await get(at('alice',`${p}/slots`))).val();assert.equal(Object.values(slots).filter(id=>id==='bob').length,1);
+});
 test('member-only inputs, private views and bounded presence',async()=>{
   await full();await assertFails(set(at('bob',`${p}/inputs/bob`),'{}'));await assertSucceeds(set(at('alice',`${p}/started`),manifest()));
   await assertSucceeds(set(at('bob',`${p}/inputs/bob`),'{}'));await assertSucceeds(get(at('alice',`${p}/inputs/bob`)));await assertFails(get(at('cara',`${p}/inputs/bob`)));await assertFails(set(at('eve',`${p}/inputs/eve`),'{}'));await assertFails(set(at('alice',`${p}/inputs/bob`),'{}'));await assertFails(set(at('bob',`${p}/inputs/bob`),'x'.repeat(4097)));
@@ -45,7 +54,7 @@ test('four-player SDK lobby operations and reconnect work under the combined rul
   const lobbies=Object.fromEntries(Object.keys(names).map(uid=>[uid,createFirebaseFourLobby({db:db[uid],auth:{currentUser:{uid}},sdk,crypto})]));
   const created=await assertSucceeds(lobbies.alice.create(profile('alice')));for(const uid of ['bob','cara','dan']){await assertSucceeds(lobbies[uid].request(created.inviteCode,names[uid]));await assertSucceeds(lobbies.alice.approve(created.partyId,created.inviteCode,uid));await assertSucceeds(lobbies[uid].publishProfile(created.partyId,profile(uid)));}
   await assertSucceeds(lobbies.alice.configure(created.partyId,{mode:'two-vs-two',teams:[0,1,0,1]}));const started=await assertSucceeds(lobbies.alice.start(created.partyId));assert.deepEqual(started.playerIds,['alice','bob','cara','dan']);assert.deepEqual((await assertSucceeds(lobbies.bob.reconnect(created.partyId,created.inviteCode))).teamRosters,[['alice','cara'],['bob','dan']]);
-  await assertFails(lobbies.eve.reconnect(created.partyId,created.inviteCode));await assertFails(lobbies.bob.leave(created.partyId));await assertSucceeds(lobbies.alice.close(created.partyId,created.inviteCode));
+  await assertFails(lobbies.eve.reconnect(created.partyId,created.inviteCode));await assert.rejects(()=>lobbies.bob.leave(created.partyId),/locked/);await assertSucceeds(lobbies.alice.close(created.partyId,created.inviteCode));
 });
 test('existing account and two-player code rules remain present',async()=>{
   const old='fedcba9876543210fedcba9876543210';await assertSucceeds(set(at('alice',`parties/${old}/hostId`),'alice'));await assertSucceeds(set(at('alice','partyCodes/0987/hostId'),'alice'));await assertFails(get(at('eve','players/alice')));await assertFails(set(at('bob','players/alice/xp'),500));
