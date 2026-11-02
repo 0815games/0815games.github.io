@@ -1,6 +1,6 @@
 // Pan by dragging with a mouse; touch keeps native scrolling and pinch zoom.
 // Resizing the board rather than transforming it keeps scroll bounds accurate.
-export function enableTreeDrag(element){
+export function enableTreeDrag(element,{minButtonScale=()=>.45}={}){
   let pointer=null,suppressClick=false,scale=1;
   function zoom(next,clientX,clientY){
     const board=element.querySelector('.skill-tree-board');if(!board)return;
@@ -11,6 +11,8 @@ export function enableTreeDrag(element){
     const width=board.offsetWidth;element.style.setProperty('--tree-zoom',String(width/1400));
     element.scrollLeft=boardX*width-x;element.scrollTop=boardY*width-y;
   }
+  const center=()=>{element.scrollLeft=(element.scrollWidth-element.clientWidth)/2;element.scrollTop=(element.scrollHeight-element.clientHeight)/2;};
+  const zoomBy=factor=>{const rect=element.getBoundingClientRect();zoom(scale*factor,rect.left+element.clientWidth/2,rect.top+element.clientHeight/2);};
   element.addEventListener('wheel',event=>{
     // The tree owns the wheel only while the pointer is over it.
     event.preventDefault();const delta=event.deltaMode===1?event.deltaY*16:event.deltaMode===2?event.deltaY*element.clientHeight:event.deltaY;
@@ -34,4 +36,5 @@ export function enableTreeDrag(element){
   element.addEventListener('pointerup',end);element.addEventListener('pointercancel',end);
   element.addEventListener('lostpointercapture',()=>{pointer=null;element.classList.remove('is-dragging');});
   element.addEventListener('click',event=>{if(suppressClick&&event.detail!==0){event.preventDefault();event.stopImmediatePropagation();suppressClick=false;}},true);
+  return {zoomIn:()=>zoomBy(1.2),zoomOut:()=>zoomBy(Math.max(scale/1.2,minButtonScale())/scale),center};
 }

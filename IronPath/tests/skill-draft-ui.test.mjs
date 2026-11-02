@@ -1,0 +1,20 @@
+import {strict as assert} from 'node:assert';
+import {readFile} from 'node:fs/promises';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement} from '../skills.mjs';
+import {skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
+import {characterProgress} from '../progression.mjs';
+const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
+const start=source.indexOf('function canEditSkills()'),end=source.indexOf('\nfunction renderArmory()',start);assert.ok(start>0&&end>start);
+const nodes=new Map();function $(id){if(!nodes.has(id))nodes.set(id,{textContent:'',value:'all',disabled:false,open:false,querySelector(){return null},showModal(){this.open=true},close(){this.open=false}});return nodes.get(id);}
+let lastRender,store={name:'Alice',gender:'female',xp:750,skills:'1,0,0,0,0;assault'},allow=false,resets=0,select;
+const confirmation={async ask(){return allow;}},gameControl={canEditSkills:()=>true,resetSkills(){resets++;}},skillMap={center(){}};
+const renderSkillTree=options=>{lastRender=options;select=options.onSelect;};
+const runTransaction=async(_ref,update)=>{const next=update(structuredClone(store));if(!next)return {committed:false};store=next;return {committed:true,snapshot:{val:()=>structuredClone(store)}};};
+const init=new Function('$','profile','user','sessionVersion','partyPanel','gameControl','confirmation','skillMap','level','pointsLeft','parseBuild','encodeBuild','SKILL_PATHS','WEB_NODES','webReady','webRequirement','skillBuildSummary','canSaveSkillDraft','renderSkillTree','document','runTransaction','ref','db','updateSkillPrompt',`let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false;\n${source.slice(start,end)}\nreturn {getDraft:()=>draftSkills};`);
+const ui=init($,structuredClone(store),{uid:'alice'},1,{isActive:()=>false},gameControl,confirmation,skillMap,xp=>characterProgress(xp).level,pointsLeft,parseBuild,encodeBuild,SKILL_PATHS,WEB_NODES,webReady,webRequirement,skillBuildSummary,canSaveSkillDraft,renderSkillTree,{},runTransaction,(_db,path)=>path,{},()=>{});
+$('skillOpen').onclick();assert.equal($('skillDialog').open,true);assert.match($('skillSummaryActive').textContent,/Airstrike/);assert.match($('skillStatus').textContent,/unchanged/);$('skillFilter').value='hybrid';$('skillPathFilter').value='engineer';$('skillFilter').onchange();assert.equal(lastRender.filter,'hybrid');assert.equal(lastRender.pathFilter,'engineer');assert.equal(store.skills,'1,0,0,0,0;assault','filtering never changes saved data');
+await $('skillReset').onclick();assert.equal(ui.getDraft().assault,1,'cancel reset leaves draft untouched');
+allow=true;await $('skillReset').onclick();assert.equal(ui.getDraft().active,null);assert.match($('skillStatus').textContent,/Unsaved draft/);$('skillCancel').onclick();assert.equal(store.skills,'1,0,0,0,0;assault','closing discards unsaved draft');
+$('skillOpen').onclick();await $('skillReset').onclick();await $('skillSave').onclick();assert.equal(store.skills,'0,0,0,0,0;assault');assert.equal(resets,1);assert.equal($('skillDialog').open,false);
+$('skillOpen').onclick();select({path:'assault',rank:1},false);$('skillDetailAction').onclick();assert.match($('skillStatus').textContent,/Unsaved draft/);store.skills='0,1,0,0,0;engineer';await $('skillSave').onclick();assert.equal(store.skills,'0,1,0,0,0;engineer');assert.match($('skillStatus').textContent,/changed elsewhere/);assert.equal($('skillDialog').open,true);
+console.log('Draft reset confirmation, discard, save and cross-device conflict handling passed.');
