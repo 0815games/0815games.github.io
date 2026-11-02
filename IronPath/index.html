@@ -59,7 +59,7 @@
       <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>MULTIPLAYER</button><button id="fourPartyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>FOUR-PLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Connect with a four-digit code. The host approves the second player and chooses a game mode.</p>
@@ -76,17 +76,17 @@
     </section>
     <!-- Four-player online alpha, enabled with the combined Firebase rules. -->
     <section id="fourPartyPanel" class="firebase-party four-party" aria-label="Four-player party" hidden>
-      <div class="party-heading"><strong>FOUR-PLAYER PARTY</strong><span>EXPERIMENTAL</span></div>
-      <p class="hint">The host approves three players. All soldiers must be ready before starting.</p>
+      <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ONLINE</span></div>
+      <p class="hint">Share one code. The host approves up to three players and chooses a mode.</p>
       <div id="fourPartyEntry" class="party-entry">
         <button id="fourPartyCreate" class="primary" type="button">CREATE PARTY</button>
         <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button></div></div>
       </div>
       <div id="fourPartyActive" hidden>
-        <div id="fourPartyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="fourPartyCodeDisplay"></code><small>Share with your three teammates</small></div>
+        <div id="fourPartyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="fourPartyCodeDisplay"></code><small>Share with your players</small></div>
         <ul id="fourPartyRequests" class="party-requests four-party-list" aria-label="Join requests"></ul>
         <h3>PARTY ROSTER</h3><ol id="fourPartyRoster" class="four-party-list" aria-label="Party roster"></ol>
-        <div id="fourPartySettings" class="party-mode"><label for="fourPartyMode">GAME MODE</label><select id="fourPartyMode"><option value="four-coop">Four-player co-op · defend together</option><option value="two-vs-two">2 vs 2 · last bunker standing</option></select>
+        <div id="fourPartySettings" class="party-mode"><label for="fourPartyMode">GAME MODE</label><select id="fourPartyMode"></select>
           <label id="fourPartyTeamsLabel" for="fourPartyTeams">TEAM A: HOST AND</label><select id="fourPartyTeams" hidden><option value="0">Player in slot 2</option><option value="1">Player in slot 3</option><option value="2">Player in slot 4</option></select>
           <p class="hint">2 vs 2 is a survival race: each team protects its own bunker. No enemy sending or ranked rewards.</p></div>
         <div class="party-actions"><button id="fourPartyStart" class="primary" type="button">START MATCH</button><button id="fourPartyLeave" type="button">LEAVE PARTY</button></div>
@@ -169,5 +169,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-unified1"></script>
+  <script type="module" src="account.js?v=20261103-unified2"></script>
 </body></html>

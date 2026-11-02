@@ -1,4 +1,4 @@
-// Staged four-player lobby adapter. Not wired to the UI. Firebase rules MUST
+// Unified multiplayer lobby adapter. Firebase rules MUST
 // enforce all actor, request, roster-lock and path constraints independently.
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
 import {createFourLobby} from './four-lobby.mjs?v=20261102-fourbase2';
