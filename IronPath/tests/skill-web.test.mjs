@@ -3,7 +3,7 @@ import {WEB_NODES,webReady,webBonuses,parseBuild,encodeBuild,pointsLeft} from '.
 import {createPlayer,applyCommand} from '../match.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {createVersus} from '../versus.mjs';
-assert.equal(WEB_NODES.length,40);assert.equal(new Set(WEB_NODES.map(n=>n.name)).size,40);
+assert.equal(WEB_NODES.length,55);assert.equal(new Set(WEB_NODES.map(n=>n.name)).size,55);
 const build=parseBuild('3,2,0,0,0;assault',20);
 assert.equal(webReady(build,WEB_NODES[0]),true);assert.equal(webReady(build,WEB_NODES[1]),false);assert.equal(webReady(build,WEB_NODES[25]),true);assert.equal(webReady(build,WEB_NODES[28]),false);
 build.web[0]=1;build.web[1]=1;build.web[25]=1;build.web[26]=1;
@@ -22,5 +22,7 @@ const co=createMatch([p,mp]);assert.equal(co.maxHp,120);assert.equal(co.players.
 console.log('Expanded skill web prerequisites, save compatibility, and combat bonuses passed.');
 const full=parseBuild('3,3,3,3,3;assault',100);
 for(const node of WEB_NODES){assert.ok(webReady(full,node),`${node.name} prerequisite`);full.web[node.id]=1;}
-assert.equal(pointsLeft(full,100),44);assert.equal(encodeBuild(parseBuild(encodeBuild(full),100)),encodeBuild(full));
-assert.deepEqual(webBonuses(full),{damage:16,tower:40,supplies:8,health:45,movement:64,heroRange:30,heroSpeed:15,towerSpeed:10,start:40,cooldown:4});
+assert.equal(pointsLeft(full,100),29);assert.equal(encodeBuild(parseBuild(encodeBuild(full),100)),encodeBuild(full));
+assert.deepEqual(webBonuses(full),{damage:28,tower:70,supplies:14,health:75,movement:112,heroRange:30,heroSpeed:15,towerSpeed:10,start:40,cooldown:4});
+
+const cross=parseBuild('2,0,2,0,0;assault',15);assert.ok(webReady(cross,WEB_NODES[40]));assert.equal(webReady(cross,WEB_NODES[41]),false);cross.web[40]=1;cross.web[41]=1;const crossSave=encodeBuild(cross);assert.equal(crossSave.split(';').at(-1).length,55);assert.equal(encodeBuild(parseBuild(crossSave,15)),crossSave);assert.equal(webBonuses(parseBuild(crossSave,15)).supplies,2);const invalid=structuredClone(cross);invalid.web[40]=0;assert.equal(parseBuild(encodeBuild(invalid),15).active,null,'cross nodes require prior tier');assert.equal(parseBuild(crossSave,6).active,null,'cross nodes cost points');

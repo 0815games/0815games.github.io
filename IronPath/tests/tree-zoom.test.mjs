@@ -1,0 +1,13 @@
+import {strict as assert} from 'node:assert';
+import {enableTreeDrag} from '../drag-tree.mjs';
+const listeners={},styleValues={},board={get offsetWidth(){return Math.max(600,parseFloat(styleValues['--tree-size']||1400));}};
+const el={scrollLeft:200,scrollTop:300,clientLeft:0,clientTop:0,clientWidth:600,clientHeight:400,style:{setProperty(k,v){styleValues[k]=v;}},classList:{add(){},remove(){}},setPointerCapture(){},querySelector(){return board;},getBoundingClientRect(){return {left:10,top:20};},addEventListener(k,fn,opts){listeners[k]=fn;if(k==='wheel')assert.equal(opts.passive,false);}};
+enableTreeDrag(el);
+let prevented=false;const x=200,y=180;const beforeX=(el.scrollLeft+x-10)/board.offsetWidth,beforeY=(el.scrollTop+y-20)/board.offsetWidth;
+listeners.wheel({deltaY:-200,deltaMode:0,clientX:x,clientY:y,preventDefault(){prevented=true;}});
+assert.ok(prevented);assert.ok(board.offsetWidth>1400);assert.ok(Math.abs((el.scrollLeft+x-10)/board.offsetWidth-beforeX)<1e-10);assert.ok(Math.abs((el.scrollTop+y-20)/board.offsetWidth-beforeY)<1e-10);assert.equal(Number(styleValues['--tree-zoom']),board.offsetWidth/1400);
+listeners.wheel({deltaY:100000,deltaMode:0,clientX:x,clientY:y,preventDefault(){}});assert.equal(board.offsetWidth,630,'zoom out has a bounded minimum');
+listeners.wheel({deltaY:-100000,deltaMode:0,clientX:x,clientY:y,preventDefault(){}});assert.equal(board.offsetWidth,2520,'zoom in has a bounded maximum');
+listeners.keydown({key:'-',preventDefault(){prevented=true;}});assert.ok(board.offsetWidth<2520,'keyboard zoom');
+const oldLeft=el.scrollLeft;listeners.pointerdown({pointerType:'touch',button:0,isPrimary:true,pointerId:1,clientX:0,clientY:0});listeners.pointermove({pointerType:'touch',pointerId:1,clientX:30,clientY:0,preventDefault(){throw Error('native touch should not be intercepted');}});assert.equal(el.scrollLeft,oldLeft);
+console.log('Pointer-anchored bounded wheel zoom, keyboard zoom and native touch passed.');
