@@ -7,7 +7,7 @@ let a=readArmory({scrap:1000,fortify:0,plating:0,owned:63,equipped:1});
 for(const wave of [14,16,18,20])a=rewardWave(a,wave);assert.equal(a.owned,1023);const duplicate=rewardWave(a,20);assert.equal(duplicate.scrap,a.scrap+20);
 a=upgradeArmory(a,'supply');a=upgradeArmory(a,'safeguard');a=equipArmory(a,10);assert.equal(encodeLoadout(a),'0,0,10;0,0;1,1');assert.deepEqual(parseLoadout(encodeLoadout(a)),{fortify:0,plating:0,equipped:10,repair:0,gun:0,supply:1,safeguard:1});assert.equal(equipArmory({...a,owned:63},10),null);
 assert.equal(serviceMedals({xp:999999,armory:a}).find(m=>m.name==='Full Arsenal').unlocked,true);
-const player=(id,loadout='0,0,0',level=10)=>createPlayer(id,{name:id,gender:'male',level,loadout});
+const player=(id,loadout='0,0,0',level=10)=>createPlayer(id,{name:id,gender:'male',level,loadout,skills:'1,0,0,0,0;assault'});
 const duo=createMatch([player('a','0,0,9;0,0;1,2'),player('b','0,0,0;0,0;3,1')]);assert.equal(duo.supply,3);assert.equal(duo.safeguard,2);
 for(const wave of [1,6]){const s=createMatch([player('a','0,0,9;0,0;3,0')]);s.wave=wave;s.running=true;s.spawnLeft=0;s.enemies=[];stepMatch(s);assert.equal(s.money,wave===1?145:162,'new rewards start only at wave 6');}
 const inactive=createMatch([player('a','0,0,9;0,0;3,0'),player('b','0,0,9;0,0;0,0')]);inactive.wave=6;inactive.running=true;inactive.players.b.active=false;stepMatch(inactive);assert.equal(inactive.players.a.money,162);assert.equal(inactive.players.b.money,125);

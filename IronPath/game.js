@@ -6,13 +6,13 @@ import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain4';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-polish1';
 import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-polish1';
-import {abilityName} from './skills.mjs?v=20261102-tree2';
+import {abilityName} from './skills.mjs?v=20261102-special1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-versus1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-longterm1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-longterm1';
+import { createTutorial } from './tutorial.mjs?v=20261102-special1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-special1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-special1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-longterm1';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
@@ -74,7 +74,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
     const preview=state.ended?(coop?'Run ended. Close the party to start a new operation.':'Run ended. Restart to play again.'):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
-    const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active||'assault'); $('ability').textContent=player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
+    const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active); $('ability').textContent=!player?.skills?.active?'NO SKILL':player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player?.skills?.active||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),host=!!coop&&state.hostId===me(),pending=!!state.pendingWave;
     $('endRun').textContent=guest?(versus?'LEAVE MATCH':'LEAVE CO-OP'):host&&(state.ended||(versus&&!coopReady))?'CLOSE PARTY':'END RUN';$('endRun').disabled=(!coop&&state.ended)||!menu.hidden||(!!coop&&!coopReady&&!guest&&!state.ended&&!versus);
     $('waveRequest').hidden=!coop||!pending||state.ended;

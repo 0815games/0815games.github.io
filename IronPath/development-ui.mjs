@@ -1,5 +1,5 @@
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft} from './skills.mjs?v=20261102-tree2';
+import {SKILL_PATHS,pointsLeft} from './skills.mjs?v=20261102-special1';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
 const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];
@@ -14,28 +14,28 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
   SKILL_PATHS.forEach((path,i)=>{
     const angle=-Math.PI/2+i*2*Math.PI/5;
     let prev={x:300,y:300};
-    [75,130,185,245].forEach((radius,j)=>{
-      const pos=nodeAt(angle,radius),rank=j+1,isAbility=j===3,unlocked=!isAbility&&build[path.id]>=rank,active=isAbility&&build.active===path.id;
+    [75,130,185].forEach((radius,j)=>{
+      const pos=nodeAt(angle,radius),rank=j+1,isAbility=j===0,unlocked=build[path.id]>=rank,active=isAbility&&build.active===path.id&&!build.variant;
       lines.append(svg(document,'line',{x1:prev.x,y1:prev.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:(unlocked||active)?'tree-link is-lit':'tree-link'}));prev=pos;
       const button=document.createElement('button');button.type='button';button.className=`tree-node${isAbility?' tree-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
       button.style.left=`${pos.x/6}%`;button.style.top=`${pos.y/6}%`;button.style.setProperty('--path-color',colors[i]);
       if(isAbility){const symbol=document.createElement('span');symbol.textContent=icons[i];symbol.className='tree-ability-symbol';button.append(symbol);}else button.textContent=String(rank);
       button.dataset.path=path.id;button.dataset.rank=String(rank);
-      const status=isAbility?(active?'selected ability':'available ability'):(unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked');
-      button.setAttribute('aria-label',`${path.name} ${isAbility?path.ability:'rank '+rank}, ${status}`);
+      const status=active?'selected main skill':unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked';
+      button.setAttribute('aria-label',`${path.name} ${isAbility?'main skill '+path.ability:'rank '+rank}, ${status}`);
       button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));
       button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
     });
     path.branches.forEach((branch,j)=>{
-      const pos=nodeAt(angle+(j===0?-.27:.27),195),parent=nodeAt(angle,130),rank=5+j,unlocked=!!build.extra?.[i*2+j],available=build[path.id]>=2&&left>0;
+      const pos=nodeAt(angle+(j===0?-.33:.33),245),parent=nodeAt(angle,130),rank=5+j,unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
       lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:unlocked?'tree-link is-lit':'tree-link'}));
-      const button=document.createElement('button');button.type='button';button.className=`tree-node tree-specialist${unlocked?' is-unlocked':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
+      const button=document.createElement('button');button.type='button';button.className=`tree-node tree-specialist${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
       button.style.left=`${pos.x/6}%`;button.style.top=`${pos.y/6}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=j===0?'Ⅰ':'Ⅱ';button.dataset.path=path.id;button.dataset.rank=String(rank);
-      button.setAttribute('aria-label',`${path.name} specialist ${branch.name}, ${unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
+      button.setAttribute('aria-label',`${path.name} specialist ${branch.ability}, ${active?'selected':unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
     });
     const labelPos=nodeAt(angle,283),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/6}%`;label.style.top=`${labelPos.y/6}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
   });
-  const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-hidden','true');core.textContent='★';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
+  const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-label','Start here');core.textContent='START';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }
 const shapes={
  fortify:'M3 20h18v-3h-2v-6l-3-3H8l-3 3v6H3z M9 17v-4h6v4 M8 8V5h8v3',

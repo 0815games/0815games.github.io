@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261102-versus1">
+  <link rel="stylesheet" href="style.css?v=20261102-special1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -59,7 +59,7 @@
       <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="firebaseParty" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Connect with a four-digit code. The host approves the second player and chooses a game mode.</p>
@@ -115,10 +115,10 @@
       </svg><span class="scene-caption" id="tutorialCaption"></span></div>
     <h2 id="tutorialTitle"></h2><p id="tutorialText" class="tutorial-text"></p>
     <div id="tutorialSkillsPractice" class="tutorial-practice" hidden aria-label="Skill tree practice">
-      <span class="tutorial-practice-label">TRAINING EXAMPLE · LEVEL 3</span><strong id="tutorialSkillPoints"></strong>
+      <span class="tutorial-practice-label">TRAINING EXAMPLE · LEVEL 2</span><strong id="tutorialSkillPoints"></strong>
       <div class="practice-tree"><button id="tutorialSkillNode" type="button"></button><span aria-hidden="true">━━</span><button id="tutorialSkillUpgrade" type="button"></button></div>
       <button id="tutorialSkillAbility" type="button" class="practice-ability"></button>
-      <p class="practice-note">In the real tree, drag to explore. Each level after level 1 earns a point; rank 2 opens specialist branches. Choose one active ability. Save your build before the next match.</p>
+      <p class="practice-note">In the real tree, drag to explore. At level 2, spend your first point on a main skill. Upgrade its path to rank 2, then unlock special skills that replace the main ability. Save your build before the next match.</p>
     </div>
     <div id="tutorialArmoryPractice" class="tutorial-practice" hidden aria-label="Armory practice">
       <span class="tutorial-practice-label">TRAINING EXAMPLE · NOT YOUR INVENTORY</span><strong id="tutorialScrap"></strong>
@@ -146,5 +146,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-versus1"></script>
+  <script type="module" src="account.js?v=20261102-special1"></script>
 </body></html>

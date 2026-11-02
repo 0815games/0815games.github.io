@@ -1,5 +1,5 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261102-longterm1';
-import {applyCommand} from './match.mjs?v=20261102-longterm1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261102-special1';
+import {applyCommand} from './match.mjs?v=20261102-special1';
 import {WAVE_COUNT} from './combat.mjs?v=20261102-longterm1';
 
 // Two isolated, identically generated battlefields, advanced on the host's

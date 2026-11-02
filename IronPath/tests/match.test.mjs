@@ -1,8 +1,8 @@
 import { strict as assert } from 'node:assert';
 import { createPlayer, applyCommand, towerRefund, TOWER_COSTS } from '../match.mjs';
 const state={ended:false, money:300, towers:[], enemies:[{hp:100}], players:{
-  alice:createPlayer('alice',{name:'Alice',gender:'female'}),
-  bob:createPlayer('bob',{name:'Bob',gender:'male'},100,100)
+  alice:createPlayer('alice',{name:'Alice',gender:'female',level:2,skills:'1,0,0,0,0;assault'}),
+  bob:createPlayer('bob',{name:'Bob',gender:'male',level:2,skills:'1,0,0,0,0;assault'},100,100)
 }};
 const cmd=(id, action)=>applyCommand(state,id,action);
 assert.equal(cmd('eve',{type:'build',pad:0,towerType:0}).ok,false);
