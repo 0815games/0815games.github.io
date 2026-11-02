@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261102-hud4">
+  <link rel="stylesheet" href="style.css?v=20261102-dossier5">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -29,7 +29,33 @@
     <section id="entry" class="entry panel" aria-live="polite">
       <div id="loading"><h2>Connecting…</h2><p class="hint">Preparing your soldier.</p></div>
       <div id="connectionView" hidden><h2>Could not load soldier</h2><p class="hint">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button">RETRY</button><button id="errorLogout" type="button">SIGN OUT</button></div>
-      <div id="authView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">PERSONNEL ACCESS · 0815 GAMES</span><h2>Welcome back, soldier.</h2><p class="hint">Sign in or create an account to save your soldier and XP.</p><form id="authForm"><label for="email">EMAIL</label><input id="email" type="email" autocomplete="email" required><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" minlength="6" required><button class="primary" type="submit">SIGN IN</button><button id="register" type="button">CREATE ACCOUNT</button><button id="forgot" type="button">RESET PASSWORD</button></form></div>
+      <div id="authView" class="dossier" hidden>
+        <div class="dossier-heading">
+          <div class="dossier-portrait" aria-hidden="true">
+            <svg viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg">
+              <rect width="100" height="112" fill="#b2c095"/><path d="M0 86 Q25 66 50 80 T100 77 V112 H0Z" fill="#879e72"/>
+              <g stroke="#354a36" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 112 Q17 88 32 84 L42 80 H59 L70 84 Q85 89 88 112Z" fill="#6d8558"/>
+                <path d="M39 79 L50 93 L61 79" fill="#e4bc8f"/><path d="M34 88 L44 98 L50 93 L56 98 L66 88" fill="#a2b186"/>
+                <path d="M32 48 Q31 71 39 79 Q50 89 61 79 Q69 71 68 48Z" fill="#e7c298"/>
+                <path d="M32 51 Q28 44 32 35 Q38 23 50 24 Q64 23 69 36 L68 51" fill="#6b533e"/>
+                <path d="M25 47 Q26 24 50 22 Q74 24 75 47Z" fill="#728b5c"/><path d="M24 47 Q50 42 76 47" fill="none"/>
+                <path d="M40 60h1 M59 60h1 M47 72 Q50 74 53 72" fill="none"/>
+              </g><path d="M8 9h12 M8 9v12 M92 9H80 M92 9v12" fill="none" stroke="#e9dfbb" stroke-width="2"/>
+            </svg>
+            <span>PERSONNEL / 01</span>
+          </div>
+          <div class="dossier-intro"><span class="dossier-kicker">0815 GAMES · PERSONNEL</span><h2>Soldier’s<br>field dossier</h2><span class="dossier-stamp">IDENTITY CHECK</span></div>
+        </div>
+        <p class="dossier-copy">Sign in to access your soldier and saved progress.</p>
+        <form id="authForm" class="dossier-form">
+          <div class="dossier-field"><label for="email">EMAIL ADDRESS</label><input id="email" type="email" autocomplete="email" required></div>
+          <div class="dossier-field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" minlength="6" required></div>
+          <div class="dossier-actions"><button class="primary" type="submit">SIGN IN <span aria-hidden="true">→</span></button><button id="register" type="button">CREATE ACCOUNT</button></div>
+          <button id="forgot" type="button">Forgot your password?</button>
+        </form>
+        <div class="dossier-footer" aria-hidden="true"><span>FIELD RECORD · 01</span><span>HOLD THE LINE ★</span></div>
+      </div>
       <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
