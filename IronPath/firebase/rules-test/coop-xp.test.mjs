@@ -231,8 +231,11 @@ test('late-wave rewards unlock new equipment exactly once under progression rule
 });
 
 test('skill specialization encoding accepts legacy and new profiles but rejects malformed suffixes',async()=>{
-  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:300,skills:'2,0,0,0,0;assault;1000000000;1'}));
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,skills:'2,0,0,0,0;assault;1000000000;1'}));
   await assertSucceeds(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1000000000'));
   await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1000000000;3'));
   await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1'));
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:4,skills:'2,0,0,0,0;assault;1000000000;1'}));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/skills`),'2,0,0,0,0;assault;1000000000;9'));
 });
