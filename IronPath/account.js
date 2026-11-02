@@ -1,4 +1,4 @@
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-unified2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-hardening1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-unified2';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -17,7 +17,7 @@ import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
 import { startGame } from './game.js?v=20261103-online1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-unified2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-hardening1';
 import { createPlayer } from './match.mjs?v=20261102-fourbase1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
 

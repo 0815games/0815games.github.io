@@ -1,13 +1,17 @@
-# Unified multiplayer lobby — work in progress
+# Multiplayer status and hardening
 
-One Multiplayer button and one four-digit code must serve all supported party sizes. The host approves guests into a shared roster and chooses from the modes allowed by the current number of ready players:
+One Multiplayer button uses a four-digit invitation code and host-approved roster. Two players can choose co-op or 1v1; three play large-map co-op; four choose co-op or 2v2. Versus is a synchronized survival race, not direct combat or enemy sending. Two-vs-two has independent shared bunkers and pads, individual supplies, and a draw if both bunkers fall in the same simulation step.
 
-- 2 players: existing co-op or 1v1.
-- 3 players: co-op on the larger two-road map.
-- 4 players: co-op on the larger map or 2v2, with balanced teams.
+The live interface uses `fourParties` and `fourCodes`. The older `parties` rules remain for older clients; old and new clients cannot share newly created lobbies. Everyone should reload after an update. The full replacement rules tested for the unified lobby are `firebase/unified.complete.draft.rules.json` (Firebase rules publication replaces the entire ruleset). Do not publish a partial rule fragment.
 
-The first increment adds this policy and three-player large-map simulation/host/transport support. **It is not yet wired to the live lobby and is not playable online.** The existing two-player and four-player panels and deployed rules are unchanged. Do not deploy this increment as if the unified lobby were finished.
+## Hardening and limitations
 
-Remaining: migrate both two-player modes and the 3/4-player modes onto one compatible authenticated roster and code namespace; redesign the manifest and rules so the locked roster has 2, 3 or 4 members and the mode is valid for that count; compare the current published rules and provide a complete replacement rather than a fragment; preserve existing running two- and four-player sessions; update the single panel, game handoff, reconnect and departure paths; emulator-test permissions and start/join/leave races for every size, then run real multi-device tests before release. Player-hosted simulation and progression remain non-authoritative.
+- Input packets have size limits and authenticated per-player paths. The client rejects malformed commands before consuming a sequence, snapshots contain receipts, and uncertain commands are not blindly retried.
+- Presence expires without heartbeats, guest reconnect is supported, and competitive matches pause for absent players. The host runs the simulation: **host reload/loss does not restore the match** and duplicate tabs remain a risk. No host migration or durable match recovery is claimed.
+- Four-digit invites are enumerable and there is no server-side rate limiting. Host approval reduces accidental joins but is not a secure private invitation mechanism.
+- The host and account progression are client-controlled. Neither results nor XP/loot are cheat-proof; do not use them for trusted rankings or rewards without server authority.
+- Automated game tests and Firebase emulator tests cover the roster sizes and modes, but they do not establish real-device reliability or prove security.
 
-The unified panel now uses the existing Multiplayer button and creates all new parties under `fourParties`. It offers modes based on the ready roster and hands two-player modes to the existing game renderer. The previous `parties` rules remain for existing clients. The complete replacement rules are in `firebase/unified.complete.draft.rules.json`; do not publish until the emulator checks pass. They must be published before deploying the new interface. Old and new clients cannot join each other's newly created lobbies across the update, so all players should reload after deployment.
+## Release test checklist
+
+On separate devices/accounts and networks, reload the deployed build, then create/join and complete waves in 2-player co-op, 1v1, 3-player co-op, 4-player co-op, and 2v2. Check team choice, simultaneous defeats, wave approvals, leave/forfeit, a guest network drop and reconnect, sign-out, and host close. Repeat on mobile with reduced motion and sound preferences. Record browser/device, party size, mode, and reproduction steps for failures. Test host reload explicitly as a known unsupported recovery case. Complete this gate before calling multiplayer beta-ready.

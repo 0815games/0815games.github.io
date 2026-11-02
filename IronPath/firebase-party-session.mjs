@@ -1,3 +1,4 @@
+import {normalizeCommand} from './protocol.mjs?v=20261103-hardening1';
 // Experimental session logic, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
@@ -72,13 +73,14 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
     command(command){
       if(!started||closed||invalid||!latest?.ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});
       if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});
+      const normalized=normalizeCommand(command);if(!normalized)return Promise.resolve({ok:false,reason:'Invalid command.'});
       const seq=latest.snapshot.nextSeq,activeEpoch=epoch;
       return new Promise(resolve=>{
         const item={seq,resolve,settled:false,timer:null};pending=item;
         item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
         // A failed/disconnected write can still have reached Firebase. Keep the
         // sequence locked until a receipt or a new host epoch resolves it.
-        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
+        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command:normalized}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
       });
     },
     async stop(){if(closed)return;closed=true;unsubscribe?.();if(pending){settle(pending,{ok:false,reason:'Party closed.'});pending=null;}await channel.close();}
