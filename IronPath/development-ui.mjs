@@ -1,5 +1,5 @@
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-web1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-web2';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
 const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];
@@ -36,10 +36,10 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
     const labelPos=nodeAt(angle,665),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/14}%`;label.style.top=`${labelPos.y/14}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
   });
   WEB_NODES.forEach(node=>{
-    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),angle=-Math.PI/2+i*2*Math.PI/5+(node.kind==='hybrid'?Math.PI/5:0),radius=node.kind==='hybrid'?[285,405,525][node.tier]:[340,405,470,535,600][node.tier],pos=nodeAt(angle,radius),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
-    const parents=node.kind==='hybrid'&&node.tier===0?[nodeAt(angle-Math.PI/5,165),nodeAt(angle+Math.PI/5,165)]:[nodeAt(angle,node.kind==='hybrid'?[0,285,405][node.tier]:[235,340,405,470,535][node.tier])];
+    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),angle=-Math.PI/2+i*2*Math.PI/5+(node.kind==='hybrid'?Math.PI/5:node.kind==='cross'?.31:0),radius=node.kind==='hybrid'?[285,405,525][node.tier]:node.kind==='cross'?[370,480,590][node.tier]:[340,405,470,535,600][node.tier],pos=nodeAt(angle,radius),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
+    const base=-Math.PI/2+i*2*Math.PI/5,parents=node.kind!=='mastery'&&node.tier===0?[nodeAt(base,165),nodeAt(base+(node.kind==='cross'?4:2)*Math.PI/5,165)]:[nodeAt(angle,node.kind==='hybrid'?[0,285,405][node.tier]:node.kind==='cross'?[0,370,480][node.tier]:[235,340,405,470,535][node.tier])];
     for(const parent of parents)lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:unlocked?'tree-link is-lit':'tree-link'}));
-    const button=document.createElement('button');button.type='button';button.className=`tree-node tree-web ${node.kind==='hybrid'?'tree-hybrid':'tree-mastery'}${unlocked?' is-unlocked':''}${selected.path===node.path&&selected.rank===rank?' is-selected':''}`;button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=node.kind==='hybrid'?'✧':String(node.tier+1);button.dataset.path=node.path;button.dataset.rank=String(rank);button.setAttribute('aria-label',`${node.name}, ${unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===node.path&&selected.rank===rank));button.onclick=event=>onSelect({path:node.path,rank},event?.detail===0);board.append(button);
+    const button=document.createElement('button');button.type='button';button.className=`tree-node tree-web ${node.kind!=='mastery'?'tree-hybrid':'tree-mastery'}${unlocked?' is-unlocked':''}${selected.path===node.path&&selected.rank===rank?' is-selected':''}`;button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=node.kind==='cross'?'✦':node.kind==='hybrid'?'✧':String(node.tier+1);button.dataset.path=node.path;button.dataset.rank=String(rank);button.setAttribute('aria-label',`${node.name}, ${unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===node.path&&selected.rank===rank));button.onclick=event=>onSelect({path:node.path,rank},event?.detail===0);board.append(button);
   });
   const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-label','Start here');core.textContent='START';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }

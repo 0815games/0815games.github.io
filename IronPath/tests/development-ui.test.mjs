@@ -12,8 +12,8 @@ const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new
 const container=new Element('div'),build=parseBuild('1,0,0,0,0;recon',3);let selection;
 renderSkillTree({document,container,build,level:3,selected:{path:'assault',rank:1},onSelect:value=>selection=value});
 const board=container.children[0],buttons=board.children.filter(n=>n.tag==='button'),svg=board.children.find(n=>n.tag==='svg');
-assert.equal(buttons.length,65,'25 original nodes plus 40 mastery and hybrid nodes');
-assert.equal(svg.children.filter(n=>n.tag==='line').length,70,'all nodes and hybrid bridges have connecting lines');
+assert.equal(buttons.length,80,'25 original nodes plus 55 mastery and hybrid nodes');
+assert.equal(svg.children.filter(n=>n.tag==='line').length,90,'all nodes and hybrid bridges have connecting lines');
 assert.equal(svg.children.filter(n=>n.tag==='circle').length,7);
 assert.match(buttons[0].attrs['aria-label'],/Assault main skill Airstrike, unlocked/);
 assert.match(buttons[1].attrs['aria-label'],/Assault rank 2, available/);

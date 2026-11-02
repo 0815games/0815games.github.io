@@ -251,3 +251,13 @@ test('large skill web is accepted in profiles and party rosters, malformed encod
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:7,skills:web}));
   await assertFails(set(ref(alice,`parties/${party}/profiles/alice/skills`),web+'!'));
 });
+
+test('cross-path web format works in profiles and party rosters while legacy web remains valid',async()=>{
+  const oldBits='1'+'0'.repeat(39),newBits=oldBits+'1'+'0'.repeat(14),old=`3,0,2,0,0;assault;0000000000;0;${oldBits}`,extended=`3,0,2,0,0;assault;0000000000;0;${newBits}`;
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,skills:old}));
+  await assertSucceeds(set(ref(alice,'players/alice/skills'),extended));
+  await assertFails(set(ref(alice,'players/alice/skills'),extended.slice(0,-1)));
+  await assertFails(set(ref(alice,'players/alice/skills'),extended+'0'));
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:8,skills:extended}));
+});

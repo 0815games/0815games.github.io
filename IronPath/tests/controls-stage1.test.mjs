@@ -2,7 +2,7 @@ import {strict as assert} from 'node:assert';
 import {enableTreeDrag} from '../drag-tree.mjs';
 import {createConfirmation} from '../confirmation.mjs';
 const listeners={};const tree={scrollLeft:100,scrollTop:80,classList:{add(){},remove(){}},setPointerCapture(){},addEventListener(k,fn){listeners[k]=fn;}};enableTreeDrag(tree);
-const ev=(x,y,extra={})=>({button:0,isPrimary:true,pointerId:1,clientX:x,clientY:y,preventDefault(){},...extra});
+const ev=(x,y,extra={})=>({button:0,isPrimary:true,pointerType:'mouse',pointerId:1,clientX:x,clientY:y,preventDefault(){},...extra});
 listeners.pointerdown(ev(10,10));listeners.pointermove(ev(30,35));assert.equal(tree.scrollLeft,80);assert.equal(tree.scrollTop,55);listeners.pointerup(ev(30,35));let prevented=false,stopped=false;listeners.click({detail:1,preventDefault(){prevented=true},stopImmediatePropagation(){stopped=true}});assert.ok(prevented&&stopped,'drag never selects a node');
 listeners.pointerdown(ev(10,10));listeners.pointerup(ev(10,10));prevented=false;listeners.click({detail:1,preventDefault(){prevented=true},stopImmediatePropagation(){}});assert.equal(prevented,false,'tap remains a selection');
 const nodes={};for(const id of ['gameConfirm','gameConfirmTitle','gameConfirmText','gameConfirmAccept','gameConfirmCancel'])nodes[id]={textContent:'',open:false,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;},showModal(){this.open=true},close(){this.open=false;this.handlers.close?.()}};
