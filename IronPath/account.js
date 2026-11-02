@@ -1,16 +1,16 @@
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-tree1';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-tree2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs?v=20261102-tree2';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261101-armory1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261101-armory1';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-tree2';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261101-skills1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261102-fx1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-fx1';
-import { createPlayer } from './match.mjs?v=20261101-armory1';
+import { startGame } from './game.js?v=20261102-tree2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-tree2';
+import { createPlayer } from './match.mjs?v=20261102-tree2';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
 
 window.ironPathLoaded = true;
@@ -40,16 +40,17 @@ onAuthStateChanged(auth,currentUser=>{if($('skillDialog').open)$('skillDialog').
 let draftSkills=null,selectedSkill={path:'assault',rank:1};
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!!gameControl?.canEditSkills();}
 function renderSkills(){
-  const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),path=SKILL_PATHS.find(p=>p.id===selectedSkill.path)||SKILL_PATHS[0],rank=selectedSkill.rank,ability=rank===4;
+  const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,ability=rank===4,specialist=rank>=5,extraIndex=(index<0?0:index)*2+rank-5;
   $('skillPoints').textContent=`LEVEL ${lvl}  ·  ${left} POINT${left===1?'':'S'} AVAILABLE`;
   renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,onSelect:(value,keyboard)=>{selectedSkill=value;renderSkills();if(keyboard)$('skillPaths').querySelector(`[data-path="${value.path}"][data-rank="${value.rank}"]`)?.focus({preventScroll:true});}});
-  const action=$('skillDetailAction');$('skillDetailType').textContent=ability?'ACTIVE ABILITY':`${path.name.toUpperCase()} / PASSIVE`;
-  $('skillDetailTitle').textContent=ability?path.ability:`${path.name} · Rank ${rank}`;
-  $('skillDetailText').textContent=ability?`${path.description} Choose one active ability; all passive upgrades remain active.`:`${path.passive}. ${draftSkills[path.id]} of 3 ranks unlocked.`;
+  const action=$('skillDetailAction');$('skillDetailType').textContent=ability?'ACTIVE ABILITY':`${path.name.toUpperCase()} / ${specialist?'SPECIALIST':'PASSIVE'}`;
+  $('skillDetailTitle').textContent=ability?path.ability:specialist?path.branches[rank-5].name:`${path.name} · Rank ${rank}`;
+  $('skillDetailText').textContent=ability?`${path.description} Choose one active ability; all passive upgrades remain active.`:specialist?`${path.branches[rank-5].description} Requires ${path.name} rank 2.`:`${path.passive}. ${draftSkills[path.id]} of 3 ranks unlocked.`;
   if(ability){action.textContent=draftSkills.active===path.id?'ABILITY SELECTED':'SELECT ABILITY';action.disabled=draftSkills.active===path.id;action.onclick=()=>{draftSkills.active=path.id;renderSkills();};}
+  else if(specialist){const unlocked=!!draftSkills.extra[extraIndex],ready=draftSkills[path.id]>=2;action.textContent=unlocked?'UNLOCKED':!ready?'REQUIRES RANK 2':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=unlocked||!ready||!left;action.onclick=()=>{if(!draftSkills.extra[extraIndex]&&draftSkills[path.id]>=2&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.extra[extraIndex]=1;renderSkills();}};}
   else {const unlocked=rank<=draftSkills[path.id],next=rank===draftSkills[path.id]+1;action.textContent=unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT';action.disabled=unlocked||!next||!left;action.onclick=()=>{if(rank===draftSkills[path.id]+1&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills[path.id]++;renderSkills();}};}
 }
-$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Edit skills between matches, before building or joining a party.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));selectedSkill={path:'assault',rank:1};$('skillStatus').textContent='';renderSkills();$('skillDialog').showModal();};
+$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Edit skills between matches, before building or joining a party.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));selectedSkill={path:'assault',rank:1};$('skillStatus').textContent='';renderSkills();$('skillDialog').showModal();const tree=$('skillPaths');tree.scrollLeft=(tree.scrollWidth-tree.clientWidth)/2;tree.scrollTop=(tree.scrollHeight-tree.clientHeight)/2;};
 $('skillReset').onclick=()=>{draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();};
 $('skillCancel').onclick=()=>$('skillDialog').close();
 $('skillSave').onclick=async()=>{

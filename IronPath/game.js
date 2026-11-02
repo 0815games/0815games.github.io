@@ -1,12 +1,12 @@
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-fx1';
 import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-fx1';
-import {abilityName} from './skills.mjs';
+import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261031-sheet1';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-fx1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261101-armory1';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-tree2';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-tree2';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient}={}) {

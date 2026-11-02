@@ -1,11 +1,12 @@
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft} from './skills.mjs';
+import {SKILL_PATHS,pointsLeft} from './skills.mjs?v=20261102-tree2';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
 const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];
 const nodeAt=(angle,r)=>({x:300+Math.cos(angle)*r,y:300+Math.sin(angle)*r});
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
 export function renderSkillTree({document,container,build,level,selected,onSelect}){
+  const scrollLeft=container.scrollLeft,scrollTop=container.scrollTop;
   const board=document.createElement('div');board.className='skill-tree-board';
   const lines=svg(document,'svg',{viewBox:'0 0 600 600','aria-hidden':'true',class:'skill-tree-lines'});
   for(const r of [75,130,185,245])lines.append(svg(document,'circle',{cx:300,cy:300,r,class:'tree-orbit'}));
@@ -25,9 +26,16 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
       button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));
       button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
     });
+    path.branches.forEach((branch,j)=>{
+      const pos=nodeAt(angle+(j===0?-.27:.27),195),parent=nodeAt(angle,130),rank=5+j,unlocked=!!build.extra?.[i*2+j],available=build[path.id]>=2&&left>0;
+      lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:unlocked?'tree-link is-lit':'tree-link'}));
+      const button=document.createElement('button');button.type='button';button.className=`tree-node tree-specialist${unlocked?' is-unlocked':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}`;
+      button.style.left=`${pos.x/6}%`;button.style.top=`${pos.y/6}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=j===0?'Ⅰ':'Ⅱ';button.dataset.path=path.id;button.dataset.rank=String(rank);
+      button.setAttribute('aria-label',`${path.name} specialist ${branch.name}, ${unlocked?'unlocked':available?'available':'locked'}`);button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
+    });
     const labelPos=nodeAt(angle,283),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/6}%`;label.style.top=`${labelPos.y/6}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
   });
-  const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-hidden','true');core.textContent='★';board.prepend(lines,core);container.replaceChildren(board);
+  const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-hidden','true');core.textContent='★';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }
 const shapes={
  fortify:'M3 20h18v-3h-2v-6l-3-3H8l-3 3v6H3z M9 17v-4h6v4 M8 8V5h8v3',
