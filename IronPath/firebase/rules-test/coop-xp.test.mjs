@@ -147,8 +147,8 @@ test('expanded armory supports legacy saves, validates new ranks and loadouts',a
   const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30);assert.equal((await get(ref(alice,'players/alice/armory/gun'))).val(),2);q.close();
   await assertFails(set(ref(alice,'players/alice/armory/repair'),4));
   await assertFails(set(ref(alice,'players/alice/armory/gun'),-1));
-  await assertFails(set(ref(alice,'players/alice/armory/owned'),64));
-  await assertFails(set(ref(alice,'players/alice/armory/equipped'),7));
+  await assertFails(set(ref(alice,'players/alice/armory/owned'),1024));
+  await assertFails(set(ref(alice,'players/alice/armory/equipped'),11));
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:4,loadout:'1,0,6;1,2'}));
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,1'));
