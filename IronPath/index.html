@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Field Prototype</title>
-  <link rel="stylesheet" href="style.css?v=20261102-tree2">
+  <link rel="stylesheet" href="style.css?v=20261102-tutorial2">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -77,6 +77,18 @@
     <span class="eyebrow" id="tutorialStep"></span>
     <div class="tutorial-scene" id="tutorialScene" aria-hidden="true"><div class="scene-road"></div><span class="scene-enemy">◆</span><span class="scene-pad">+</span><span class="scene-hero">●</span><span class="scene-bunker">▰</span><span class="scene-pointer">⌖</span><span class="scene-caption" id="tutorialCaption"></span></div>
     <h2 id="tutorialTitle"></h2><p id="tutorialText" class="tutorial-text"></p>
+    <div id="tutorialSkillsPractice" class="tutorial-practice" hidden aria-label="Skill tree practice">
+      <span class="tutorial-practice-label">TRAINING EXAMPLE · LEVEL 3</span><strong id="tutorialSkillPoints"></strong>
+      <div class="practice-tree"><button id="tutorialSkillNode" type="button"></button><span aria-hidden="true">━━</span><button id="tutorialSkillUpgrade" type="button"></button></div>
+      <button id="tutorialSkillAbility" type="button" class="practice-ability"></button>
+      <p class="practice-note">In the real tree, swipe to explore. Each level after level 1 earns a point; rank 2 opens specialist branches. Choose one active ability. Save your build before the next match.</p>
+    </div>
+    <div id="tutorialArmoryPractice" class="tutorial-practice" hidden aria-label="Armory practice">
+      <span class="tutorial-practice-label">TRAINING EXAMPLE · NOT YOUR INVENTORY</span><strong id="tutorialScrap"></strong>
+      <div class="practice-armory"><div><span class="practice-icon" aria-hidden="true">◎</span><strong>FIELD SCOPE</strong><small>+3 soldier damage</small><button id="tutorialEquip" type="button"></button></div><div><span class="practice-icon" aria-hidden="true">▰</span><strong>FORTIFICATION</strong><small>+10 bunker health</small><button id="tutorialBunkerUpgrade" type="button"></button></div></div>
+      <p class="practice-note">Earn 10 scrap per completed wave and equipment on waves 2, 4 and 6. Edit your armory between matches, before building or joining a party. In co-op, the highest bunker upgrade rank applies.</p>
+    </div>
+    <p id="tutorialPracticeStatus" class="tutorial-practice-status" role="status" hidden></p><button id="tutorialPracticeSkip" type="button" class="tutorial-practice-skip" hidden>SKIP THIS PRACTICE</button>
     <div class="tutorial-actions"><button id="tutorialBack" type="button">← BACK</button><button id="tutorialNext" class="primary" type="button">NEXT →</button></div><button id="tutorialSkip" class="tutorial-skip" type="button">SKIP BRIEFING</button>
   </dialog>
   <dialog id="towerDetails" class="tower-details" aria-labelledby="towerDetailsTitle" aria-describedby="towerDetailsText">
@@ -94,5 +106,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-tree2"></script>
+  <script type="module" src="account.js?v=20261102-tutorial2"></script>
 </body></html>
