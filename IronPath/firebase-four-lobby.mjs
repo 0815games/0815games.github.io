@@ -13,6 +13,7 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
   const check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Party identity changed');};
   const ref=path=>sdk.ref(db,path),party=(id,path)=>{if(!validParty(id))throw Error('Invalid party');return ref(`fourParties/${id}/${path}`);};
   async function read(path){const value=(await sdk.get(path)).val();check();return value;}
+  async function transactionWithCache(path,update){let unwatch;await new Promise((resolve,reject)=>{unwatch=sdk.onValue(path,resolve,reject);});try{check();const result=await sdk.runTransaction(path,update,{applyLocally:false});check();return result;}finally{unwatch?.();}}
   function code(){const bytes=new Uint32Array(1);do{crypto.getRandomValues(bytes);}while(bytes[0]>=4294960000);return String(bytes[0]%10000).padStart(4,'0');}
   function watch(path,callback,onError){check();if(typeof callback!=='function')throw Error('Callback required');return sdk.onValue(path,s=>{if(auth.currentUser?.uid===uid)callback(s.val());},onError);}
   return {
@@ -37,10 +38,10 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
       check();if(!validCode(inviteCode)||!validUid(guestId)||guestId===uid)throw Error('Invalid approval');
       const [hostId,linked,started,request]=await Promise.all([read(party(partyId,'hostId')),read(ref(`fourCodes/${inviteCode}/partyId`)),read(party(partyId,'started')),read(ref(`fourCodes/${inviteCode}/requests/${guestId}`))]);
       if(hostId!==uid||linked!==partyId||started||!request)throw Error('Request unavailable');
-      const result=await sdk.runTransaction(party(partyId,'slots'),current=>{
+      const result=await transactionWithCache(party(partyId,'slots'),current=>{
         const slots=current||{};if(Object.keys(slots).some(k=>!['one','two','three'].includes(k))||Object.values(slots).includes(guestId))return;
         const free=['one','two','three'].find(k=>!slots[k]);if(!free)return;return {...slots,[free]:guestId};
-      },{applyLocally:false});check();if(!result.committed)throw Error('Roster full or changed');
+      });check();if(!result.committed)throw Error('Roster full or changed');
       await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${guestId}`));check();return true;
     },
     async publishProfile(partyId,profile){
@@ -60,7 +61,7 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
       const manifest={hostId,playerIds:players,mode:config.mode,teams:config.teams};
       // Rules must compare the manifest to the live slots/config/profiles at
       // commit time, otherwise a concurrent leave or approval can race this.
-      const result=await sdk.runTransaction(party(partyId,'started'),value=>value===null?manifest:undefined,{applyLocally:false});check();if(!result.committed)throw Error('Party already started or changed');return {...manifest,teamRosters:fourTeamRosters(manifest),profiles};
+      const result=await transactionWithCache(party(partyId,'started'),value=>value===null?manifest:undefined);check();if(!result.committed)throw Error('Party already started or changed');return {...manifest,teamRosters:fourTeamRosters(manifest),profiles};
     },
     async reconnect(partyId,inviteCode){
       check();if(!validCode(inviteCode)||(await read(ref(`fourCodes/${inviteCode}/partyId`)))!==partyId)throw Error('Party unavailable');const manifest=await read(party(partyId,'started'));if(!manifest||!Array.isArray(manifest.playerIds)||!manifest.playerIds.includes(uid))throw Error('Not in the started roster');return {...manifest,teamRosters:fourTeamRosters(manifest)};
@@ -68,7 +69,7 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
     async leave(partyId){
       check();const [hostId,slots,started]=await Promise.all([read(party(partyId,'hostId')),read(party(partyId,'slots')),read(party(partyId,'started'))]);if(hostId===uid||started)throw Error('Cannot leave locked roster');
       const slot=Object.keys(slots||{}).find(k=>slots[k]===uid);if(!slot)return false;
-      const result=await sdk.runTransaction(party(partyId,`slots/${slot}`),value=>value===uid?null:undefined,{applyLocally:false});check();if(result.committed){await sdk.remove(party(partyId,`profiles/${uid}`));check();}return result.committed;
+      const result=await transactionWithCache(party(partyId,`slots/${slot}`),value=>value===uid?null:undefined);check();if(result.committed){await sdk.remove(party(partyId,`profiles/${uid}`));check();}return result.committed;
     },
     async reject(inviteCode,guestId){check();if(!validCode(inviteCode)||!validUid(guestId))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${guestId}`));check();},
     async cancel(inviteCode){check();if(!validCode(inviteCode))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${uid}`));check();},
