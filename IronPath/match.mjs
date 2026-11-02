@@ -1,3 +1,4 @@
+import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
 import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-results1';
@@ -77,18 +78,18 @@ export function applyCommand(state, playerId, command) {
       player.direction={x:command.x,y:command.y};if(command.x||command.y)player.target=null;return {ok:true};
     }
     case 'move': {
-      if(!Number.isFinite(command.x)||!Number.isFinite(command.y)||command.x<12||command.x>948||command.y<12||command.y>528)return {ok:false,reason:'Invalid destination.'};
+      if(!Number.isFinite(command.x)||!Number.isFinite(command.y)||command.x<12||command.x>(getMap(state.mapId).width||960)-12||command.y<12||command.y>(getMap(state.mapId).height||540)-12)return {ok:false,reason:'Invalid destination.'};
       player.direction={x:0,y:0};player.target={x:command.x,y:command.y};return {ok:true};
     }
     case 'build': {
       const {pad,towerType}=command;
-      if(!Number.isInteger(pad)||pad<0||pad>=PAD_COUNT||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
+      if(!Number.isInteger(pad)||pad<0||pad>=getMap(state.mapId).pads.length||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
       if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
       const cost=TOWER_COSTS[towerType];if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
       addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
     }
     case 'upgrade': {
-      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
+      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
       const tower=state.towers.find(t=>t.pad===command.pad);
       if(!tower)return {ok:false,reason:'Tower not found.'};
       if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
@@ -100,7 +101,7 @@ export function applyCommand(state, playerId, command) {
       addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
     }
     case 'sell': {
-      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=PAD_COUNT)return {ok:false,reason:'Invalid pad.'};
+      if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
       const index=state.towers.findIndex(t=>t.pad===command.pad);
       if(index<0)return {ok:false,reason:'Tower not found.'};
       if(command.expectedTowerId!==undefined&&(state.towers[index].id!==command.expectedTowerId||state.towers[index].level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};

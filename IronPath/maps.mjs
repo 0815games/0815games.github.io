@@ -5,10 +5,20 @@ export const MAPS=Object.freeze({
   forest:{id:'forest',name:'Pinewood Crossing',theme:'forest',path:[{x:0,y:130},{x:150,y:130},{x:150,y:350},{x:350,y:350},{x:350,y:160},{x:560,y:160},{x:560,y:370},{x:745,y:370},{x:745,y:400},{x:900,y:400}],pads:[{x:75,y:210},{x:225,y:220},{x:115,y:440},{x:260,y:425},{x:270,y:285},{x:430,y:240},{x:465,y:75},{x:640,y:240},{x:650,y:440},{x:810,y:320}]},
   outpost:{id:'outpost',name:'Broken Outpost',theme:'outpost',path:[{x:0,y:130},{x:300,y:130},{x:300,y:285},{x:110,y:285},{x:110,y:420},{x:470,y:420},{x:470,y:210},{x:680,y:210},{x:680,y:400},{x:900,y:400}],pads:[{x:105,y:55},{x:205,y:200},{x:375,y:185},{x:225,y:350},{x:45,y:350},{x:340,y:345},{x:410,y:300},{x:560,y:130},{x:580,y:295},{x:780,y:320}]}
 });
+// Not selected by the live game until the four-player UI and rules are ready.
+export const EXPERIMENTAL_MAPS=Object.freeze({
+  'four-front':{id:'four-front',name:'Twin Roads Frontier',theme:'road',fourPlayer:true,width:1440,height:720,bunker:{x:1380,y:360},
+    path:[{x:0,y:140},{x:260,y:140},{x:260,y:260},{x:560,y:260},{x:560,y:120},{x:880,y:120},{x:880,y:270},{x:1150,y:270},{x:1150,y:360},{x:1380,y:360}],
+    paths:[[{x:0,y:140},{x:260,y:140},{x:260,y:260},{x:560,y:260},{x:560,y:120},{x:880,y:120},{x:880,y:270},{x:1150,y:270},{x:1150,y:360},{x:1380,y:360}],
+           [{x:0,y:580},{x:260,y:580},{x:260,y:460},{x:560,y:460},{x:560,y:600},{x:880,y:600},{x:880,y:450},{x:1150,y:450},{x:1150,y:360},{x:1380,y:360}]],
+    pads:[{x:110,y:210},{x:330,y:185},{x:440,y:315},{x:640,y:190},{x:760,y:195},{x:960,y:190},{x:1050,y:300},{x:1250,y:285},
+          {x:110,y:510},{x:330,y:535},{x:440,y:405},{x:640,y:530},{x:760,y:525},{x:960,y:530},{x:1050,y:420},{x:1250,y:435}]}
+});
 export const DEFAULT_MAP='road';
-export function isMapId(id){return typeof id==='string'&&(Object.hasOwn(MAPS,id)||seeded(id));}
+export function isMapId(id){return typeof id==='string'&&(Object.hasOwn(MAPS,id)||Object.hasOwn(EXPERIMENTAL_MAPS,id)||seeded(id));}
 export function getMap(id){
   if(typeof id==='string'&&Object.hasOwn(MAPS,id))return MAPS[id];
+  if(typeof id==='string'&&Object.hasOwn(EXPERIMENTAL_MAPS,id))return EXPERIMENTAL_MAPS[id];
   if(!seeded(id))return MAPS[DEFAULT_MAP];
   if(!generated.has(id)){if(generated.size>=MAX_CACHED)generated.delete(generated.keys().next().value);generated.set(id,id.startsWith('g2-')?buildRoadside(id):buildGenerated(id));}
   return generated.get(id);
