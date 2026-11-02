@@ -5,10 +5,10 @@ export const TUTORIAL_STEPS = [
   {title:'Build your defenses',text:'Tap a + pad to open the build panel. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A + PAD'},
   {title:'Upgrade or sell',text:'Tap a tower to see its range and open its action panel. Confirm the upgrade directly in the action panel, choose a specialization at level 3, or sell it for half the investment.',scene:'upgrade',caption:'CHOOSE AN ACTION'},
   {title:'Move your hero',text:'Tap open ground to move. On a keyboard, use WASD or the arrow keys. Your hero automatically fires at nearby enemies once deployed.',scene:'hero',caption:'MOVE INTO POSITION'},
-  {title:'Start the battle',text:'Start each wave with Deploy. Use Speed in solo and your selected ability in battle. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade; rare upgrades can change how towers fight.',scene:'battle',caption:'HOLD THE LINE'},
+  {title:'Start the battle',text:'Start each wave with Deploy. Use Speed in solo. You start without an ability; unlock one after reaching level 2. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade; rare upgrades can change how towers fight.',scene:'battle',caption:'HOLD THE LINE'},
   {title:'Find your way around',text:'Each new operation generates a different battlefield. On a phone, swipe the enlarged map sideways or use Entry and Bunker to jump around. Open Terrain effects for battlefield rules and watch the marked zones: dust, cover, ice and mud change combat. Open How to play for sound and this briefing. A co-op battle continues while the briefing is open.',scene:'map',caption:'SWIPE THE MAP'},
   {title:'Play together',text:'Open MULTIPLAYER, share the four-digit code, and approve the second player. The host chooses co-op or 1 vs 1 and requests waves; the guest approves or chooses Not Yet. In co-op the host can continue alone; 1 vs 1 pauses if a player disconnects. Keep the host browser open and in the foreground.',scene:'hero',caption:'TWO SOLDIERS · ONE BUNKER'},
-  {title:'Practice the skill tree',text:'In this example, inspect a node, upgrade it, then select an ability. This practice uses example points and will not change your soldier.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills'},
+  {title:'Practice the skill tree',text:'Start in the middle with no active skill at level 1. At level 2, spend your first point on a main skill. Upgrade that path and its branches offer special skills to replace your main one. Try the example; it will not change your soldier.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills'},
   {title:'Practice the armory',text:'In this example, equip a reward and upgrade the bunker. This is a safe practice: no real scrap or equipment is changed.',scene:'armory',caption:'EXAMPLE ARMORY',practice:'armory'}
 ];
 const memory=new Set();
@@ -29,9 +29,9 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{}}){
     if(practice==='skills'){
       $('tutorialSkillPoints').textContent=`EXAMPLE: ${skill.upgraded?0:1} POINT AVAILABLE`;
       $('tutorialSkillNode').textContent=skill.inspected?'ASSAULT · RANK 1 SELECTED':'1 · INSPECT ASSAULT';$('tutorialSkillNode').setAttribute('aria-pressed',String(skill.inspected));
-      $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?'✓ RANK 2 UNLOCKED':'UPGRADE · 1 POINT';
-      $('tutorialSkillAbility').disabled=!skill.upgraded||skill.ability;$('tutorialSkillAbility').textContent=skill.ability?'✓ AIRSTRIKE SELECTED':'SELECT AIRSTRIKE';
-      $('tutorialPracticeStatus').textContent=skipped.has('skills')?'Practice skipped. Your real build is unchanged.':!skill.inspected?'Tap the Assault node to inspect it.':!skill.upgraded?'Now tap Upgrade to spend the example point.':!skill.ability?'Now select the example ability.':'Well done! Your real build is unchanged.';
+      $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?'✓ MAIN SKILL UNLOCKED':'UNLOCK MAIN SKILL · 1 POINT';
+      $('tutorialSkillAbility').disabled=!skill.upgraded||skill.ability;$('tutorialSkillAbility').textContent=skill.ability?'✓ BRANCHES INSPECTED':'VIEW SPECIAL BRANCHES';
+      $('tutorialPracticeStatus').textContent=skipped.has('skills')?'Practice skipped. Your real build is unchanged.':!skill.inspected?'Tap the Assault node to inspect it.':!skill.upgraded?'Spend the example point to unlock your first main skill.':!skill.ability?'Now inspect the special branches that can replace it.':'At rank 2, unlock a special skill to replace Airstrike. Your real build is unchanged.';
     }else if(practice==='armory'){
       $('tutorialScrap').textContent=`EXAMPLE: ${armory.upgraded?30:60} SCRAP`;
       $('tutorialEquip').disabled=armory.equipped;$('tutorialEquip').textContent=armory.equipped?'✓ SCOPE EQUIPPED':'EQUIP FIELD SCOPE';

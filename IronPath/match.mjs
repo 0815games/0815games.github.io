@@ -1,5 +1,5 @@
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
-import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
+import {parseBuild,abilityName} from './skills.mjs?v=20261102-special1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
@@ -110,19 +110,21 @@ export function applyCommand(state, playerId, command) {
     }
     case 'airstrike': { // Legacy command name; the active path determines the effect.
       if(player.cooldown>0)return {ok:false,reason:`${abilityName(player.skills)} is recharging.`};
-      const active=player.skills?.active||'assault';
-      // Preserve the original airstrike behaviour for old/default builds.
+      const active=player.skills?.active,variant=player.skills?.variant||0;if(!active)return {ok:false,reason:'Unlock a main skill in the skill tree first.'};
       if(active==='assault'||active==='recon'){
         if(!state.enemies.some(e=>e.hp>0))return {ok:false,reason:'No enemies in the field.'};
       }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
-      player.cooldown=(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0);
-      if(active==='assault')for(const enemy of state.enemies)enemy.hp-=state.wave>=6&&player.loadout?.equipped===7?45:35;
-      else if(active==='engineer')player.overdrive=10;
-      else if(active==='logistics')addSupplies(state,playerId,30+(player.skills?.extra?.[5]?15:0));
-      else if(active==='medic')state.hp=Math.min(state.maxHp??100,state.hp+15+(player.skills?.extra?.[7]?10:0));
-      else if(active==='recon')state.suppression=8+(player.skills?.extra?.[9]?3:0);
+      player.cooldown=(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0)+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0);
+      if(active==='assault'){
+        const bonus=state.wave>=6&&player.loadout?.equipped===7?10:0;
+        if(variant===2){const target=state.enemies.filter(e=>e.hp>0).reduce((a,b)=>!a||b.hp>a.hp?b:a,null);if(target)target.hp-=80+bonus;}
+        else {for(const enemy of state.enemies)enemy.hp-=(variant===1?25:35)+bonus;if(variant===1)state.suppression=Math.max(state.suppression||0,3);}
+      }else if(active==='engineer'){player.overdrive=variant===1?15:variant===2?6:10;player.overdriveFactor=variant===1?1.35:variant===2?1.8:1.5;}
+      else if(active==='logistics'){addSupplies(state,playerId,(variant===1?45:variant===2?20:30)+(player.skills?.extra?.[5]?15:0));if(variant===2)state.hp=Math.min(state.maxHp??100,state.hp+6);}
+      else if(active==='medic'){state.hp=Math.min(state.maxHp??100,state.hp+(variant===1?25:variant===2?10:15)+(player.skills?.extra?.[7]?10:0));if(variant===2)addSupplies(state,playerId,12);}
+      else if(active==='recon'){state.suppression=(variant===1?12:variant===2?4:8)+(player.skills?.extra?.[9]?3:0);if(variant===2)for(const enemy of state.enemies)enemy.hp-=20;}
       return {ok:true};
     }
     default:return {ok:false,reason:'Unknown command.'};

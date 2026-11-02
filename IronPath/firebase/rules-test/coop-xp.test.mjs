@@ -229,3 +229,10 @@ test('late-wave rewards unlock new equipment exactly once under progression rule
   const again=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});again.observe(1<<13);await new Promise(r=>setTimeout(r,150));
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),first.xp);assert.equal((await get(ref(alice,'players/alice/armory/scrap'))).val(),10);q.close();again.close();
 });
+
+test('skill specialization encoding accepts legacy and new profiles but rejects malformed suffixes',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:300,skills:'2,0,0,0,0;assault;1000000000;1'}));
+  await assertSucceeds(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1000000000'));
+  await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1000000000;3'));
+  await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1'));
+});
