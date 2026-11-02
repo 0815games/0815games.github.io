@@ -7,7 +7,7 @@ let env,host,guest,attacker;
 const party='0123456789abcdef0123456789abcdef',code='0123';
 const at=(db,path)=>ref(db,path);
 before(async()=>{
-  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../party-four-digit.draft.rules.json',import.meta.url),'utf8')}});
+  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.IRONPATH_COMBINED_RULES?'../four-player.complete.draft.rules.json':'../party-four-digit.draft.rules.json',import.meta.url),'utf8')}});
   host=env.authenticatedContext('alice').database();guest=env.authenticatedContext('bob').database();attacker=env.authenticatedContext('eve').database();
 });
 beforeEach(async()=>{await env.clearDatabase();});after(async()=>{await env.cleanup();});
