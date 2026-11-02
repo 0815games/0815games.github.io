@@ -1,0 +1,18 @@
+import {strict as assert} from 'node:assert';
+import {createPlayer} from '../match.mjs';
+import {createVersus,applyVersus,stepVersus,versusView} from '../versus.mjs';
+import {createPartyHost} from '../party-host.mjs';
+const players=['a','b'].map(id=>createPlayer(id,{name:id,gender:'female',level:1}));
+const direct=createVersus(players,'road','a');assert.deepEqual(direct.lanes.a.players.a.x,direct.lanes.b.players.b.x);assert.equal(applyVersus(direct,'a',{type:'build',pad:0,towerType:0}).ok,true);assert.equal(direct.lanes.b.towers.length,0,'tower placement is isolated');
+assert.equal(applyVersus(direct,'b',{type:'build',pad:0,towerType:1}).ok,true);assert.equal(direct.lanes.a.towers[0].type,0);assert.equal(direct.lanes.b.towers[0].type,1);assert.equal(direct.lanes.a.money,75);assert.equal(direct.lanes.b.money,45);
+assert.equal(applyVersus(direct,'b',{type:'startWave'}).ok,false);assert.equal(applyVersus(direct,'a',{type:'startWave'}).waitingForGuest,true);assert.equal(direct.lanes.a.wave,0);const request=direct.waveRequestId;
+assert.equal(applyVersus(direct,'b',{type:'approveWave',requestId:request}).ok,true);assert.equal(direct.lanes.a.wave,1);assert.equal(direct.lanes.b.wave,1);assert.equal(direct.lanes.a.spawnLeft,direct.lanes.b.spawnLeft);
+for(const lane of Object.values(direct.lanes)){lane.spawnLeft=0;lane.enemies=[];}stepVersus(direct);assert.equal(direct.players.a.completedWaveMask,1);assert.equal(direct.players.b.completedWaveMask,1);
+const aView=versusView(direct,'a'),bView=versusView(direct,'b');assert.equal(aView.towers[0].type,0);assert.equal(aView.rival.towers[0].type,1);assert.equal(bView.towers[0].type,1);assert.equal(aView.players.a.money,95);assert.equal(bView.players.b.money,65);
+const duel=createVersus(players,'road','a');duel.lanes.a.hp=0;stepVersus(duel);assert.equal(duel.ended,true);assert.equal(duel.winnerId,'b');assert.equal(versusView(duel,'a').winnerId,'b');
+const tie=createVersus(players,'road','a');tie.lanes.a.hp=0;tie.lanes.b.hp=0;stepVersus(tie);assert.equal(tie.ended,true);assert.equal(tie.winnerId,null);
+const quit=createVersus(players,'road','a');assert.equal(applyVersus(quit,'b',{type:'leaveRun'}).ok,true);assert.equal(quit.winnerId,'a');
+const host=createPartyHost(createVersus(players,'road','a'),{hostId:'a'});host.setPresence('a',true);assert.equal(host.ready(),false,'versus pauses while the guest is absent');host.setPresence('b',true);assert.equal(host.ready(),true);
+const send=(id,seq,command)=>{assert.equal(host.receive(id,{version:1,seq,command}).status,'queued');return host.advance().commands[0].result;};
+assert.equal(send('a',1,{type:'startWave'}).waitingForGuest,true);const stale=host.snapshotFor('a').match.waveRequestId;host.setPresence('b',false);assert.equal(host.ready(),false);assert.equal(host.advance(),null);host.setPresence('b',true);assert.equal(host.snapshotFor('b').match.pendingWave,0);assert.equal(send('b',1,{type:'approveWave',requestId:stale}).ok,false);assert.equal(send('a',2,{type:'startWave'}).waitingForGuest,true);assert.equal(send('b',2,{type:'approveWave',requestId:host.snapshotFor('b').match.waveRequestId}).ok,true);
+console.log('Versus isolation, synchronized waves, winner, draw, rewards and reconnect passed.');

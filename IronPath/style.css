@@ -168,3 +168,5 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 
 /* Field-order prompt stays visible above the phone command bar. */
 @media(max-width:850px){.wave-request:not([hidden]){position:fixed;z-index:9;left:8px;right:8px;bottom:calc(64px + env(safe-area-inset-bottom,0px));border:2px solid #46593b;border-radius:4px 8px 5px 6px;box-shadow:3px 3px 0 #26372b;padding:6px 8px;line-height:1.25}.wave-request button{min-height:44px;flex:none}.command-controls button{min-width:0;letter-spacing:0;line-height:1.15;white-space:normal;overflow-wrap:break-word}}
+
+.versus-status{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;color:#f4e8c4;background:#40563c;border-top:2px solid #d6c18f;font-size:12px}.versus-status[hidden]{display:none}.versus-status strong{font-family:Georgia,serif}.party-mode{margin:8px 0;padding:10px;background:#d7c69a;color:#354c36;border:2px solid #536b49}.party-mode[hidden]{display:none}.party-mode label{color:#354c36}.party-mode select{min-height:44px;margin:0}.party-mode .hint{color:#455a42}

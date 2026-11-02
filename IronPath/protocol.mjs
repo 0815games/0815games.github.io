@@ -1,3 +1,4 @@
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261102-versus1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
@@ -48,21 +49,21 @@ function makeHost(data){
   function advance(){
     tick++;const commands=[];
     for(const item of queue){
-      const result=applyCommand(match,item.playerId,item.command);
+      const result=match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
       const response={status:'applied',seq:item.seq,tick,result};
       const receipt=players[item.playerId].receipts.find(r=>r.seq===item.seq);
       receipt.response=clone(response);
       commands.push({...clone(item),result:clone(result)});
     }
     queue=[];
-    const events=stepMatch(match);
+    const events=match.mode==='versus'?stepVersus(match):stepMatch(match);
     return clone({version:PROTOCOL_VERSION,tick,commands,events});
   }
   // Cancel unprocessed inputs and neutralize movement on transport disconnect.
   // The host must stop ticking until its disconnect policy permits resuming.
   function suspendPlayer(playerId){
     if(!Object.hasOwn(players,playerId))return false;
-    const player=match.players[playerId];player.direction={x:0,y:0};player.target=null;
+    const player=match.mode==='versus'?match.lanes[playerId].players[playerId]:match.players[playerId];player.direction={x:0,y:0};player.target=null;
     const remaining=[];
     for(const item of queue){
       if(item.playerId!==playerId){remaining.push(item);continue;}
@@ -83,7 +84,7 @@ function makeHost(data){
   function snapshotFor(playerId){
     if(!Object.hasOwn(players,playerId))return null;
     const p=players[playerId];
-    return clone({version:PROTOCOL_VERSION,tick,match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
+    return clone({version:PROTOCOL_VERSION,tick,match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
   }
   return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive};
 }

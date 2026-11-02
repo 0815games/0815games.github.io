@@ -55,3 +55,11 @@ assert.equal(guestGame.beginCoop(cb=>guestFactory(cb)),true);assert.equal(el('st
 assert.equal(applyCommand(guestMatch,'alice',{type:'startWave'}).waitingForGuest,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('start').textContent,'APPROVE WAVE');assert.equal(el('waveRequest').hidden,false);
 el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(guestMatch.wave,1);assert.equal(guestCommands.at(-1).type,'approveWave');
 await el('endRun').onclick();assert.equal(leftParty,1);assert.equal(guestStopped,true);assert.equal(guestMatch.ended,false);assert.equal(guestMatch.players.bob.active,false);assert.ok(guestCommands.some(c=>c.type==='leaveRun'));
+// The versus canvas is taller and the opponent lane is visible but read-only.
+const {createVersus,applyVersus,versusView,stepVersus}=await import('../versus.mjs');
+const duel=createVersus([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})],'road','alice');let duelOptions,duelCommands=[];
+const duelFactory=options=>{duelOptions=options;return {start(){options.onSnapshot({match:versusView(duel,'alice')});options.onStatus(true);},stop(){},async command(command){duelCommands.push(command);const result=applyVersus(duel,'alice',command);options.onSnapshot({match:versusView(duel,'alice')});return result;}};};
+const duelGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road'});
+assert.equal(duelGame.beginCoop(cb=>duelFactory(cb)),true);assert.equal(el('game').height,1100);assert.equal(el('versusStatus').hidden,false);assert.equal(el('start').textContent,'REQUEST WAVE');
+const count=duelCommands.length;el('game').onclick({clientX:100,clientY:350});assert.equal(duelCommands.length,count);assert.match(el('message').textContent,/opponent’s battlefield/);
+duel.lanes.bob.hp=0;stepVersus(duel);duelOptions.onSnapshot({match:versusView(duel,'alice')});assert.equal(el('versusTitle').textContent,'VICTORY');await duelGame.leaveCoop();assert.equal(el('game').height,540);
