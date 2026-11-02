@@ -1,4 +1,4 @@
-import {COMBOS,CAPSTONES} from './skill-combos.mjs?v=20261102-combos1';
+import {COMBOS,CAPSTONES} from './skill-combos.mjs?v=20261102-results1';
 // Existing five-rank builds remain valid. Optional bits add two specialist
 // branches per path without changing or refunding existing investments.
 export const SKILL_PATHS=[

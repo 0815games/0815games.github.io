@@ -1,5 +1,5 @@
-import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-combos1';
-import {webBonuses} from './skills.mjs?v=20261102-planner1';
+import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
+import {webBonuses} from './skills.mjs?v=20261102-results1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
@@ -7,7 +7,7 @@ import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261102-terrain4';
-import {addSupplies} from './match.mjs?v=20261102-planner1';
+import {addSupplies} from './match.mjs?v=20261102-results1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -89,12 +89,12 @@ export function stepMatch(state){
   }
   for(const tower of state.towers){tower.timer-=dt;const type=towerStats[tower.type],p=PADS[tower.pad],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;if(tower.timer<=0){const target=state.enemies.filter(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<=targetingRange(theme,getTowerRange(tower),e,state.enemies,{sniper:tower.type===3,clouds:state.dustClouds||[]})).sort((a,b)=>b.segment-a.segment)[0];if(target){const owner=state.players[tower.ownerId];const perks=state.runPerks||{};tower.shotCount=(tower.shotCount||0)+1;
       const dealt=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.1*(perks.damage||0))*(target.kind==='tank'&&(tower.type===1||tower.type===3)?1+.2*(perks.tankhunter||0):1)*(tower.type===3&&tower.shotCount%4===0?1+.75*(perks.critical||0):1)*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(owner?.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared})*(1+.1*(owner?.skills?.engineer||0)+.01*(bonuses[tower.ownerId]?.tower||0)+(state.suppression>0&&owner?.active!==false?.08*comboTier(owner?.skills,52):0))*(state.wave>=6&&owner?.loadout?.equipped===10&&target.kind==='tank'?1.1:1)*(tower.branch===3&&target.boss?1.5:1)*(owner?.active!==false&&owner?.overdrive>0?(owner.overdriveFactor||1.5):1);
-      hitRubble(target,dealt);target.hp-=dealt;
+      hitRubble(target,dealt);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,target.hp),dealt);}target.hp-=dealt;
       if(owner?.active!==false&&comboTier(owner?.skills,25)&&target.hp>0){const marks=target.siegeMarks||(target.siegeMarks=[]),mark=marks.find(m=>m.id===tower.ownerId);if(mark)mark.time=5;else marks.push({id:tower.ownerId,time:5});}
-      if(owner?.active!==false&&owner?.skills?.web?.[9]&&tower.shotCount%4===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=100);if(other){other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(owner,'War Machine',other.x,other.y);events.push({type:'skillCombo',name:'War Machine',x:other.x,y:other.y});}}
+      if(owner?.active!==false&&owner?.skills?.web?.[9]&&tower.shotCount%4===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=100);if(other){if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(20,Math.max(0,other.hp));}other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(owner,'War Machine',other.x,other.y);events.push({type:'skillCombo',name:'War Machine',x:other.x,y:other.y});}}
 
       if(tower.type===0&&perks.pinning&&target.kind!=='plane')target.pinned=Math.max(target.pinned||0,2+perks.pinning-1);
-      if(tower.type===2&&perks.chain){const other=state.enemies.find(e=>e!==target&&e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-target.x,e.y-target.y)<=85);if(other){other.hp-=dealt*.3*perks.chain*bossWeaponFactor(other);state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#8cc0a6'});}}tower.timer=type.interval*Math.max(.5,1-(bonuses[tower.ownerId]?.towerSpeed||0)/100)*(branch?branch.interval:1)*(owner?.skills?.extra?.[2] ? .9 : 1)*Math.pow(.92,state.runPerks?.speed||0);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:tower.type,color:type.color});}}}
+      if(tower.type===2&&perks.chain){const other=state.enemies.find(e=>e!==target&&e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-target.x,e.y-target.y)<=85);if(other){const chain=dealt*.3*perks.chain*bossWeaponFactor(other);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,other.hp),chain);}other.hp-=chain;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#8cc0a6'});}}tower.timer=type.interval*Math.max(.5,1-(bonuses[tower.ownerId]?.towerSpeed||0)/100)*(branch?branch.interval:1)*(owner?.skills?.extra?.[2] ? .9 : 1)*Math.pow(.92,state.runPerks?.speed||0);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:tower.type,color:type.color});}}}
   for(const id of Object.keys(state.players).sort()){
     const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+(p.skills?.extra?.[1]?25:0)+(p.skills?.extra?.[8]?25:0)+(p.loadout?.equipped===4?30:0),e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+2*(p.skills?.assault||0)+bonuses[id].damage+(p.loadout?.equipped===1?3:0))*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared});hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
       if(p.skills?.web?.[4]&&p.heroShotCount%5===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=120);if(other){other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(p,'War Hero',other.x,other.y);events.push({type:'skillCombo',name:'War Hero',x:other.x,y:other.y});}}
@@ -105,7 +105,7 @@ export function stepMatch(state){
   if(state.running&&state.hp>0&&state.hp<state.maxHp*.3)for(const id of activePlayers(state)){const p=state.players[id];if(p.skills?.web?.[19]&&p.guardWave!==state.wave){p.guardWave=state.wave;state.hp=Math.min(state.maxHp,state.hp+20);comboCue(p,'Bunker Guardian',910,400);events.push({type:'skillCombo',name:'Bunker Guardian',x:910,y:400});}}
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}
   else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){
-    state.running=false;state.hp=Math.min(state.maxHp,state.hp+3*(state.repair||0)+12*(state.runPerks?.repair||0));
+    state.running=false;state.completedWave=state.wave;state.hp=Math.min(state.maxHp,state.hp+3*(state.repair||0)+12*(state.runPerks?.repair||0));
     if(state.individualSupplies)for(const player of Object.values(state.players))if(player.active!==false){
       const block=Math.floor((state.wave-1)/WAVE_COUNT),bit=1<<((state.wave-1)%WAVE_COUNT);
       if(block===0)player.completedWaveMask|=bit;else{const blocks=player.completedWaveBlocks||(player.completedWaveBlocks={});blocks[block]=(blocks[block]||0)|bit;}

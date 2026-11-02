@@ -1,6 +1,6 @@
-import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261102-planner1';
+import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261102-results1';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-planner1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-results1';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
 const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];

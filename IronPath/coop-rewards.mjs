@@ -1,6 +1,7 @@
 import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 import {rewardWave} from './armory.mjs?v=20261102-longterm1';
 import {waveXP} from './progression.mjs?v=20261102-terrain4';
+import {rewardDelta} from './run-results.mjs?v=20261102-results1';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's
 // wave receipt together; the player-host is not trusted or cheat-proof.
@@ -18,19 +19,19 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>
       // a transaction with uncached null even after a one-off get().
       await new Promise((resolve,reject)=>{unwatch=sdk.onValue(profileRef,()=>resolve(),reject);});
       if(closed||auth.currentUser?.uid!==uid)return;
-      const result=await sdk.runTransaction(profileRef,current=>{
+      let before=null;const result=await sdk.runTransaction(profileRef,current=>{
         if(closed||auth.currentUser?.uid!==uid||!current||!Number.isInteger(current.xp))return undefined;
         const receipts=current.coopRewards||{},old=receipts[receiptId]||0;
         if(!Number.isInteger(old)||old<0||old>MAX_WAVE_MASK)return undefined;
         const added=mask&~old;if(!added)return undefined;
         let xp=0,armory=current.armory;for(let wave=1;wave<=WAVE_COUNT;wave++)if(added&(1<<(wave-1))){const actualWave=block*WAVE_COUNT+wave;xp+=waveXP(actualWave);armory=rewardWave(armory,actualWave);}
         if(current.xp+xp>10000000)return undefined;
-        return {...current,xp:current.xp+xp,armory,coopRewards:{...receipts,[receiptId]:old|mask}};
+        before=current;return {...current,xp:current.xp+xp,armory,coopRewards:{...receipts,[receiptId]:old|mask}};
       },{applyLocally:false});
       if(closed||auth.currentUser?.uid!==uid)return;
       const receipt=result.snapshot.val()?.coopRewards?.[receiptId]||0;
       if(!Number.isInteger(receipt)||receipt<0||receipt>MAX_WAVE_MASK||(receipt&mask)!==mask)throw new Error('XP credit not confirmed');
-      confirmed|=receipt;pending&=~confirmed;if(result.committed)onStatus('saved');
+      confirmed|=receipt;pending&=~confirmed;if(result.committed)onStatus('saved',{delta:rewardDelta(before,result.snapshot.val()),profile:result.snapshot.val()});else onStatus('confirmed');
     }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error',error);if(!retryTimer){retryTimer=setTimeout(()=>{retryTimer=null;void pump();},5000);retryTimer.unref?.();}}}
     finally{unwatch?.();running=false;if(!closed&&pending&&clock()>=retryAt)void pump();}
   }
