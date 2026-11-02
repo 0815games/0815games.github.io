@@ -240,3 +240,23 @@ test('party UI handoff drives the Firebase game with two authenticated clients',
   assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
   await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
 });
+
+test('versus adapters isolate lanes, synchronize waves and pause on reconnect', {timeout:30000}, async t=>{
+  const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
+  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');const {createPlayer}=await import('../../match.mjs');
+  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
+  await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
+  const ids=['alice','bob'],common={sdk,partyId:party,hostId:'alice',playerIds:ids};let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
+  const a=createFirebasePartyGame({...common,mode:'versus',db:alice,auth:{currentUser:{uid:'alice'}},players:ids.map(id=>createPlayer(id,{name:id,gender:'female'})),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;}});
+  const b=createFirebasePartyGame({...common,db:bob,auth:{currentUser:{uid:'bob'}},onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;}});
+  t.after(async()=>{goOnline(bob);await Promise.all([a.stop(),b.stop()]);});
+  const until=async fn=>{const end=Date.now()+8000;while(!fn()){if(stateA==='error'||stateB==='error')throw Error(`Adapter error ${stateA}/${stateB}`);if(Date.now()>end)throw Error('Versus timed out');await new Promise(r=>setTimeout(r,25));}};
+  a.start();b.start();await until(()=>readyA&&readyB&&viewA&&viewB);assert.equal(viewA.match.mode,'versus');assert.equal(viewB.match.mode,'versus');
+  assert.equal((await a.command({type:'build',pad:0,towerType:0})).ok,true);assert.equal((await b.command({type:'build',pad:0,towerType:1})).ok,true);
+  await until(()=>viewA.match.rival.towers.length===1&&viewB.match.rival.towers.length===1);assert.equal(viewA.match.towers[0].type,0);assert.equal(viewB.match.towers[0].type,1);
+  assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);await until(()=>viewB.match.pendingWave===1);const oldRequest=viewB.match.waveRequestId;
+  goOffline(bob);await until(()=>!readyA&&!readyB&&viewA.match.pendingWave===0);assert.equal(viewA.match.wave,0);goOnline(bob);await until(()=>readyA&&readyB&&viewB.match.pendingWave===0);
+  assert.equal((await b.command({type:'approveWave',requestId:oldRequest})).ok,false);assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);await until(()=>viewB.match.pendingWave===1);assert.equal((await b.command({type:'approveWave',requestId:viewB.match.waveRequestId})).ok,true);
+  await until(()=>viewA.match.wave===1&&viewB.match.wave===1);assert.equal(viewA.match.rival.wave,1);assert.equal(viewB.match.rival.wave,1);
+  assert.equal((await b.command({type:'leaveRun'})).ok,true);await until(()=>viewA.match.ended);assert.equal(viewA.match.winnerId,'alice');assert.equal(viewB.match.winnerId,'alice');
+});

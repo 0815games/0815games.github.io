@@ -1,15 +1,16 @@
+import {createVersus} from './versus.mjs?v=20261102-versus1';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-longterm1';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
 import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261102-coopmotion1';
-import {createPartyHost} from './party-host.mjs?v=20261102-longterm1';
+import {createPartyHost} from './party-host.mjs?v=20261102-versus1';
 import {createMatch,STEP} from './simulation.mjs?v=20261102-longterm1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
-export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
+export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
   const uid=auth?.currentUser?.uid;
   if(!Array.isArray(playerIds)||playerIds.length!==2||new Set(playerIds).size!==2||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
   if(uid===hostId&&!isMapId(mapId))throw new Error('Invalid host map');
@@ -30,7 +31,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       try{
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
+          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
         }
         const channel=host?host.localChannel():createFirebasePartyChannel(options);
         client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;if((snapshot?.match?.mapId!==undefined&&!isMapId(snapshot.match.mapId))||snapshot?.match?.individualSupplies!==true||!playerIds.every(id=>Number.isFinite(snapshot.match.players?.[id]?.money)&&Number.isInteger(snapshot.match.players?.[id]?.completedWaveMask)&&snapshot.match.players[id].completedWaveMask>=0&&snapshot.match.players[id].completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const blocks=snapshot.match.players[uid].completedWaveBlocks||{};

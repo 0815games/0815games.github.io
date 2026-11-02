@@ -5,7 +5,7 @@ const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,da
 const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)};
 const changes=[];const tour=createTutorial({document,storage,onVisibilityChange:x=>changes.push(x)});
 const el=id=>document.getElementById(id);
-assert.match(TUTORIAL_STEPS.find(s=>s.title==='Play together').text,/host requests each wave/i);assert.match(TUTORIAL_STEPS.find(s=>s.title==='Play together').text,/guest disconnects/i);assert.equal(TUTORIAL_STEPS.at(-2).practice,'skills');assert.equal(TUTORIAL_STEPS.at(-1).practice,'armory');
+assert.match(TUTORIAL_STEPS.find(s=>s.title==='Play together').text,/requests waves/i);assert.match(TUTORIAL_STEPS.find(s=>s.title==='Play together').text,/disconnects/i);assert.equal(TUTORIAL_STEPS.at(-2).practice,'skills');assert.equal(TUTORIAL_STEPS.at(-1).practice,'armory');
 tour.startIfNeeded('first');assert.equal(tour.isOpen(),true);assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[0].title);assert.equal(el('tutorialBack').disabled,true);
 el('tutorialNext').onclick();assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[1].title);el('tutorialBack').onclick();assert.equal(el('tutorialTitle').textContent,TUTORIAL_STEPS[0].title);
 tour.stop();assert.equal(tour.isOpen(),false);tour.startIfNeeded('first');assert.equal(tour.isOpen(),true,'interrupted tutorial should reopen');
