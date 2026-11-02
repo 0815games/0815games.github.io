@@ -1,4 +1,4 @@
-import { createHost } from './protocol.mjs?v=20261102-terrain4';
+import { createHost } from './protocol.mjs?v=20261102-coopflow1';
 
 // Local, player-hosted match core. The future Firebase adapter must bind each
 // playerId to an authenticated, rules-protected input path; never trust an ID
@@ -7,7 +7,7 @@ export function createPartyHost(initialMatch,{hostId}={}){
   const ids=Object.keys(initialMatch?.players||{});
   if(ids.length!==2||new Set(ids).size!==2)throw new Error('Party requires two players');
   hostId=hostId??ids[0];if(!ids.includes(hostId))throw new Error('Host must be a party player');
-  const host=createHost(initialMatch),online=new Map(ids.map(id=>[id,false]));
+  const host=createHost({...initialMatch,hostId}),online=new Map(ids.map(id=>[id,false]));
   for(const id of ids)host.setPlayerActive(id,false);
   const ready=()=>online.get(hostId)===true;
   function setPresence(id,connected){

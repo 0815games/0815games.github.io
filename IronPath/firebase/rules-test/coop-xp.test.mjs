@@ -67,11 +67,15 @@ test('actual game adapters show each balance and credit both players for a compl
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await readyUntil(()=>viewB.match.players.bob.money===75);
   assert.equal(viewB.match.money,75,'guest sees their own updated balance');assert.equal(viewA.match.players.alice.money,125);
-  assert.equal((await a.command({type:'startWave'})).ok,true);
+  assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);
+  await readyUntil(()=>viewB.match.pendingWave===1);assert.equal(viewB.match.wave,0);
+  assert.equal((await b.command({type:'approveWave',requestId:viewB.match.waveRequestId})).ok,true);
   await readyUntil(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30&&(await get(ref(bob,'players/bob/xp'))).val()===30);
   assert.equal(viewB.match.players.bob.completedWaveMask,1);assert.equal(viewA.match.players.alice.completedWaveMask,1);
   assert.equal((await get(ref(alice,'players/alice/armory/scrap'))).val(),10);assert.equal((await get(ref(bob,'players/bob/armory/scrap'))).val(),10);
-  assert.equal((await b.command({type:'endRun'})).ok,true);
+  assert.equal((await b.command({type:'endRun'})).ok,false);
+  assert.equal((await b.command({type:'leaveRun'})).ok,true);await readyUntil(()=>viewA.match.players.bob.active===false);assert.equal(viewA.match.ended,false);
+  assert.equal((await a.command({type:'endRun'})).ok,true);
   await readyUntil(()=>viewA.match.ended&&viewB.match.ended);
   assert.equal(viewA.match.endReason,'retired');assert.equal(viewB.match.endReason,'retired');
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),30);assert.equal((await get(ref(bob,'players/bob/xp'))).val(),30);

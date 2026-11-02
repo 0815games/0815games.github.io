@@ -22,6 +22,7 @@ export function createPlayer(id, profile, x=850, y=450) {
 // Solo keeps its original shared balance; co-op stores separate player wallets.
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
 export function addSupplies(state,playerId,amount){if(state.individualSupplies){const player=state.players[playerId];if(!player)throw new Error('Unknown supplies owner');player.money+=amount;}else state.money+=amount;}
+function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;state.spawnLeft=waveFormation(state.wave).length;state.spawnIndex=0;state.spawnTimer=.2;}
 // Shared pads; abilities, movement and co-op supplies are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.
 export function applyCommand(state, playerId, command) {
@@ -29,14 +30,38 @@ export function applyCommand(state, playerId, command) {
   if(!player)return {ok:false,reason:'Unknown player.'};
   if(!command||typeof command.type!=='string')return {ok:false,reason:'Invalid command.'};
   if(state.ended)return {ok:false,reason:'The operation is over.'};
+  if(state.hostId&&player.active===false)return {ok:false,reason:'Player is offline.'};
   switch(command.type){
+    case 'leaveRun': {
+      if(!state.individualSupplies||!state.hostId||playerId===state.hostId)return {ok:false,reason:'Only the guest can leave individually.'};
+      player.active=false;player.direction={x:0,y:0};player.target=null;state.pendingWave=0;return {ok:true};
+    }
     case 'endRun': {
-      state.ended=true;state.running=false;state.endReason='retired';state.pendingPerk=0;state.spawnLeft=0;
+      if(state.individualSupplies&&state.hostId&&playerId!==state.hostId)return {ok:false,reason:'Only the host can end the shared run. Leave the party to exit.'};
+      state.pendingWave=0;state.ended=true;state.running=false;state.endReason='retired';state.pendingPerk=0;state.spawnLeft=0;
       return {ok:true};
     }
     case 'startWave': {
       if(state.running||state.pendingPerk||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
-      state.wave++;state.running=true;state.spawnLeft=waveFormation(state.wave).length;state.spawnIndex=0;state.spawnTimer=.2;return {ok:true};
+      if(state.individualSupplies&&state.hostId){
+        if(playerId!==state.hostId)return {ok:false,reason:'Only the host can request the next wave.'};
+        if(state.pendingWave)return {ok:false,reason:'Waiting for your teammate to approve.'};
+        const teammate=Object.keys(state.players).find(id=>id!==state.hostId);
+        if(teammate&&state.players[teammate].active!==false){state.waveRequestId=(state.waveRequestId||0)+1;state.pendingWave=state.wave+1;return {ok:true,waitingForGuest:true};}
+      }
+      startNextWave(state);return {ok:true};
+    }
+    case 'approveWave': {
+      if(!state.individualSupplies||!state.hostId||playerId===state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.pendingWave!==state.wave+1||state.running||state.pendingPerk||state.players[state.hostId]?.active===false)return {ok:false,reason:'No wave is waiting for your approval.'};
+      startNextWave(state);return {ok:true};
+    }
+    case 'declineWave': {
+      if(!state.individualSupplies||!state.hostId||playerId===state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.running)return {ok:false,reason:'No wave request to decline.'};
+      state.pendingWave=0;return {ok:true};
+    }
+    case 'cancelWave': {
+      if(!state.individualSupplies||!state.hostId||playerId!==state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.running)return {ok:false,reason:'No wave request to cancel.'};
+      state.pendingWave=0;return {ok:true};
     }
     case 'choosePerk': {
       if(!state.pendingPerk||state.running||!Number.isInteger(command.index)||command.index<0||command.index>2)return {ok:false,reason:'No such field upgrade is available.'};

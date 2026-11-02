@@ -10,11 +10,11 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261102-terrain4';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-terrain4';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-terrain4';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-coopflow1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-coopflow1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-terrain4';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, nextMapId=createRandomMapId}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -72,17 +72,33 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     const preview=state.ended?(coop?'Run ended. Close the party to start a new operation.':'Run ended. Restart to play again.'):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active||'assault'); $('ability').textContent=player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
-    $('endRun').disabled=state.ended||!menu.hidden||(!!coop&&!coopReady);
-    $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended));
+    const guest=!!coop&&!!state.hostId&&state.hostId!==me(),host=!!coop&&state.hostId===me(),pending=!!state.pendingWave;
+    $('endRun').textContent=guest?'LEAVE CO-OP':host&&state.ended?'CLOSE PARTY':'END RUN';$('endRun').disabled=(!coop&&state.ended)||!menu.hidden||(!!coop&&!coopReady&&!guest&&!state.ended);
+    $('waveRequest').hidden=!coop||!pending||state.ended;
+    if(coop&&pending){$('waveRequestText').textContent=guest?`Host requests wave ${state.pendingWave}. Approve when ready.`:`Waiting for your teammate to approve wave ${state.pendingWave}.`;$('waveDecline').hidden=!guest;$('waveDecline').disabled=!coopReady;}
+    $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':guest?(pending?'APPROVE WAVE':'WAIT FOR HOST'):host&&pending?'CANCEL REQUEST':coop?(Object.entries(state.players).some(([id,p])=>id!==state.hostId&&p.active!==false)?'REQUEST WAVE':'START NEXT WAVE'):state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE';
+    $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)));
   }
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave}${wave%5===0?' · BOSS WAVE':''} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ')+(bossForWave(wave)?` · ${bossForWave(wave).description}`:'');}
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
-  $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();dispatch({type:'startWave'},result=>{if(!result.ok){notice(result.reason);return;}if(!coop&&state.wave%5===0)sound.play('boss');notice(coop?'Wave started.':`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();});};
+  $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
+    const command=coop&&state.pendingWave?(state.hostId===me()?'cancelWave':'approveWave'):'startWave';
+    dispatch(command==='startWave'?{type:command}:{type:command,requestId:state.waveRequestId},result=>{if(!result.ok){notice(result.reason);return;}if(!coop&&state.wave%5===0)sound.play('boss');notice(!coop?`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`:command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest?'Waiting for teammate approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
+  };
+  $('waveDecline').onclick=()=>dispatch({type:'declineWave',requestId:state.waveRequestId},result=>{notice(result.ok?'Wave postponed. The host can request again when ready.':result.reason);updateUI();});
   $('endRun').onclick=async()=>{
-    if(state.ended||!menu.hidden||(coop&&!coopReady))return;
+    const guest=!!coop&&!!state.hostId&&state.hostId!==me();
+    if(coop&&state.ended&&!guest){if(typeof leaveParty==='function')await leaveParty();else await leaveCoop();return;}
+    if((state.ended&&!guest)||!menu.hidden||(coop&&!coopReady&&!guest))return;
     const session=coop,soloState=state,mapId=state.mapId;
-    const confirmed=await confirmAction({title:'End this run?',text:session?'This ends the shared run for both players. Completed-wave rewards are kept; the current unfinished wave earns no rewards. Battle continues until confirmed.':'End this run now? Completed-wave rewards are kept; the current unfinished wave earns no rewards.',accept:'END RUN'});
-    if(!confirmed||!account.isReady()||coop!==session||state.ended||state.mapId!==mapId||(!session&&state!==soloState)||(session&&!coopReady))return;
+    const confirmed=await confirmAction({title:guest?'Leave co-op?':'End this run?',text:guest?(coopReady?'Leave this co-op party? The host keeps playing. Completed-wave rewards are saved; the current unfinished wave earns no rewards.':'Leave while disconnected? Rewards not yet received from the host may require reconnecting. The host keeps playing.'):session?'This ends the shared run for both players. Completed-wave rewards are kept; the current unfinished wave earns no rewards. Battle continues until confirmed.':'End this run now? Completed-wave rewards are kept; the current unfinished wave earns no rewards.',accept:guest?'LEAVE CO-OP':'END RUN'});
+    if(!confirmed||!account.isReady()||coop!==session||(!guest&&state.ended)||state.mapId!==mapId||(!session&&state!==soloState)||(session&&!coopReady&&!guest))return;
+    if(guest){
+      // The host marks the guest inactive before the final reward snapshot is
+      // delivered. This prevents a wave-clear race while leaving mid-battle.
+      if(coopReady&&!state.ended){const result=await new Promise(resolve=>dispatch({type:'leaveRun'},resolve));if(coop!==session)return;if(!result.ok&&!state.ended){notice(result.reason);return;}}
+      if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();notice('You left co-op. The host can continue.');return;
+    }
     dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();});
   };
   $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo)combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});notice(`${abilityName(state.players[me()]?.skills)} deployed!`);updateUI();});};
@@ -197,9 +213,11 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     selectedMap=nextMapId(selectedMap);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;combatFx.clear();lastSnapshotAt=0;let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),hadSnapshot=!!lastSnapshotAt,selectedPad=state.selectedPad;if(coopReady)combatFx.observe(snapshot.match);else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(state.running&&state.wave!==oldWave&&state.wave%5===0)sound.play('boss');
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();needStop=true;keys.clear();lastDirection='0,0';notice('Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),hadSnapshot=!!lastSnapshotAt,selectedPad=state.selectedPad;if(coopReady)combatFx.observe(snapshot.match);else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(state.running&&state.wave!==oldWave&&state.wave%5===0)sound.play('boss');
       const newBoss=state.enemies.find(e=>e.boss&&e.hp>0);
       if(hadSnapshot&&coopReady&&newBoss?.boss==='bossBomber'&&newBoss.bossFlash>0&&oldBoss?.boss===newBoss.boss&&!(oldBoss.bossFlash>0)){sound.play('impact');notice('Bomber struck the bunker!');}
+      if(hadSnapshot&&!oldPendingWave&&state.pendingWave)notice(state.hostId===me()?'Waiting for teammate approval.':`Host requests wave ${state.pendingWave}. Approve when ready.`);
+      if(hadSnapshot&&oldPendingWave&&!state.pendingWave&&!state.running&&!state.ended)notice('Wave request cancelled, declined or teammate disconnected.');
       if(hadSnapshot&&!wasRubbleCleared&&state.rubbleCleared){sound.play('impact');notice('Rubble cleared! Long-range shots are no longer weakened in that zone.');}
       if(hadSnapshot&&!wasIceBroken&&state.iceBroken){sound.play('ice');notice('Thin ice broke! Tanks slow down and take more damage.');}
       if(hadSnapshot&&wasRunning&&!state.running&&!state.ended){sound.play('clear');notice(state.pendingPerk?'Boss wave cleared! Choose a shared field upgrade.':'Wave cleared. Prepare for the next wave.');}
