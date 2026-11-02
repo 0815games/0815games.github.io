@@ -109,7 +109,7 @@ for(const mode of ['four-coop','two-vs-two'])test(`four lobby panels hand off a 
       await waitFor(()=>get('fourPartyStatus').textContent.includes('Approved.'),`${id} approved and profile published`);
     }
     await waitFor(()=>!host('fourPartyStart').disabled,'host sees four ready profiles');
-    if(mode==='two-vs-two'){host('fourPartyMode').value=mode;host('fourPartyTeams').value='1';await host('fourPartyMode').onchange();await waitFor(()=>host('fourPartyMode').value===mode,'team mode configured');}
+    if(mode==='two-vs-two'){host('fourPartyMode').value=mode;await host('fourPartyMode').onchange();host('fourPartyTeams').value='1';await host('fourPartyTeams').onchange();await waitFor(()=>host('fourPartyMode').value===mode,'team mode configured');}
     await host('fourPartyStart').onclick();await waitFor(()=>ids.every(id=>statuses[id]&&views[id]),'four game clients ready');assert.equal(views.dan.match.mode,mode);if(mode==='two-vs-two')assert.equal(views.cara.match.fourInfo.team,0);
     const result=await clients.alice.command({type:'startWave'});assert.equal(result.ok,true);for(const id of ids.slice(1))assert.equal((await clients[id].command({type:'approveWave',requestId:result.requestId})).ok,true);
     await waitFor(()=>ids.every(id=>views[id]?.match?.wave===1),'wave displayed for all panels');assert.equal((await clients.dan.command({type:'build',pad:15,towerType:0})).ok,true);await waitFor(()=>views.dan.match.towers.length===1,'build displayed');
