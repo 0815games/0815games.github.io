@@ -48,10 +48,10 @@
           <div class="dossier-intro"><span class="dossier-kicker">0815 GAMES · PERSONNEL</span><h2>Soldier’s<br>field dossier</h2><span class="dossier-stamp">IDENTITY CHECK</span></div>
         </div>
         <p class="dossier-copy">Sign in to access your soldier and saved progress.</p>
-        <form id="authForm" class="dossier-form">
-          <div class="dossier-field"><label for="email">EMAIL ADDRESS</label><input id="email" type="email" autocomplete="email" required></div>
-          <div class="dossier-field"><label for="password">PASSWORD</label><input id="password" type="password" autocomplete="current-password" minlength="6" required></div>
-          <div class="dossier-actions"><button class="primary" type="submit">SIGN IN <span aria-hidden="true">→</span></button><button id="register" type="button">CREATE ACCOUNT</button></div>
+        <form id="authForm" class="dossier-form" method="post">
+          <div class="dossier-field"><label for="email">EMAIL ADDRESS</label><input id="email" name="username" type="email" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" required></div>
+          <div class="dossier-field"><label for="password">PASSWORD</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="6" required></div>
+          <div class="dossier-actions"><button id="authSubmit" class="primary" type="submit">SIGN IN</button><button id="register" type="button">CREATE ACCOUNT</button></div>
           <button id="forgot" type="button">Forgot your password?</button>
         </form>
         <div class="dossier-footer" aria-hidden="true"><span>FIELD RECORD · 01</span><span>HOLD THE LINE ★</span></div>
@@ -146,5 +146,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261102-terrain4"></script>
+  <script type="module" src="account.js?v=20261102-autofill1"></script>
 </body></html>
