@@ -8,7 +8,7 @@ globalThis.document={getElementById:el,activeElement:{tagName:'BODY'}};
 globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
 globalThis.requestAnimationFrame=fn=>{frame=fn;};
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-for(const file of ['combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+for(const file of ['maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];
@@ -33,6 +33,7 @@ assert.equal(applyCommand(match,'bob',{type:'build',pad:1,towerType:0}).ok,true)
 el('game').onclick({clientX:285,clientY:210});assert.match(el('menuDesc0').textContent,/You pay.*refund goes to Bob/);assert.match(el('menuName0').textContent,/Confirm upgrade/);
 el('radial1').onclick();assert.match(el('menuDesc0').textContent,/Bob receives 25/);el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,/Bob receives 25/);
+match.mapId='forest';opts.onSnapshot({match:structuredClone(match)});assert.equal(el('mapSelect').value,'forest','guest uses map from host snapshot');assert.equal(el('mapSelect').disabled,true,'map remains locked in co-op');
 opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);

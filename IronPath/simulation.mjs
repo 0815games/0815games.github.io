@@ -1,18 +1,19 @@
+import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-maps1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVES, makeEnemy, towerDamage } from './combat.mjs?v=20261102-waves20';
 import { waveXP } from './progression.mjs';
 import {addSupplies} from './match.mjs?v=20261102-armory2';
 export const STEP = 1/30;
-export const PATH = [{x:0,y:130},{x:210,y:130},{x:210,y:320},{x:470,y:320},{x:470,y:150},{x:710,y:150},{x:710,y:400},{x:900,y:400}];
-export const PADS = [{x:105,y:210},{x:285,y:210},{x:135,y:360},{x:350,y:390},{x:390,y:220},{x:550,y:225},{x:620,y:75},{x:790,y:230},{x:625,y:395},{x:810,y:335}];
+export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
 const branchStats=[[{interval:.55,range:1},{interval:1,range:1}],[{interval:.6,range:1},{interval:1,range:1}],[{interval:.55,range:1},{interval:1,range:1.45}],[{interval:.6,range:1},{interval:1,range:1.1}]];
 export function getTowerRange(tower){
   const stats=towerStats[tower.type],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;
   return stats.range*(branch?branch.range:1);
 }
-export function createMatch(players){
+export function createMatch(players,mapId=DEFAULT_MAP){
+  if(!isMapId(mapId))throw new Error('Invalid map');
   if(!Array.isArray(players)||players.length<1||players.length>2||new Set(players.map(p=>p.id)).size!==players.length)throw new Error('A match needs one or two unique players');
   const individualSupplies=players.length>1;
   // The shared bunker uses the strongest purchased upgrade of each type;
@@ -20,7 +21,7 @@ export function createMatch(players){
   const fortify=Math.max(...players.map(p=>p.loadout?.fortify||0)),plating=Math.max(...players.map(p=>p.loadout?.plating||0));
   const repair=Math.max(...players.map(p=>p.loadout?.repair||0)),gun=Math.max(...players.map(p=>p.loadout?.gun||0));
   const maxHp=100+fortify*10+players.reduce((n,p)=>n+5*(p.skills?.medic||0)+(p.skills?.extra?.[6]?10:0)+(p.loadout?.equipped===2?10:0),0);
-  return {wave:0,hp:maxHp,maxHp,plating,repair,gun,gunTimer:0,lootKills:0,suppression:0,...(individualSupplies?{individualSupplies:true}:{money:125+(players[0].loadout?.equipped===6?25:0)}),enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,individualSupplies?{...p,money:125+(p.loadout?.equipped===6?25:0),completedWaveMask:0,lootCaches:0}:p]))};
+  return {mapId,wave:0,hp:maxHp,maxHp,plating,repair,gun,gunTimer:0,lootKills:0,suppression:0,...(individualSupplies?{individualSupplies:true}:{money:125+(players[0].loadout?.equipped===6?25:0)}),enemies:[],towers:[],shots:[],running:false,spawnLeft:0,spawnIndex:0,spawnTimer:0,ended:false,players:Object.fromEntries(players.map(p=>[p.id,individualSupplies?{...p,money:125+(p.loadout?.equipped===6?25:0),completedWaveMask:0,lootCaches:0}:p]))};
 }
 // Co-op rewards are personal: when both players are active, each gets 65% of
 // the base reward (rounded down); the owner's Logistics bonus remains intact.
@@ -36,7 +37,7 @@ function rewardTeam(state,amount,enemyKill=false){
 }
 // Exactly one fixed step per call. Events are transient, not a record of validated rewards.
 export function stepMatch(state){
-  const events=[];if(state.ended)return events;const dt=STEP;
+  const events=[];if(state.ended)return events;const dt=STEP,{path:PATH,pads:PADS}=getMap(state.mapId);
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);
