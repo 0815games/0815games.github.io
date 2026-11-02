@@ -24,3 +24,5 @@ The staged viewport now has a clipped canvas drawing helper and a pointer contro
 The staged lobby adapter exposes subscriptions for host, own request, configuration and individual profiles so the next UI can show approval and readiness without reading forbidden parent paths. Security rules remain draft-only.
 
 A hidden four-player lobby panel now covers code entry, approval/decline, four-slot readiness, co-op or balanced 2v2 selection, start handoff and logout cleanup. It is tested with a mock lobby but is not instantiated by the live account UI or connected to the game adapter; emulator-backed panel flow, accessibility and real-device testing remain required.
+
+An isolated `four-test.html` offline playground lets one person switch among four local players, test two-road co-op or both 2v2 fields, build and run waves. It is deliberately not linked from the live game and does not test networking, lobby security or progression saves.
