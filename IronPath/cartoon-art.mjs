@@ -4,9 +4,10 @@ function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y
 function shape(ctx,points,fill,stroke=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}
 function oval(ctx,x,y,rx,ry,fill,stroke=ink,width=2){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}}
 function ground(ctx,theme='road'){
-  ctx.fillStyle=theme==='forest'?'#779463':theme==='outpost'?'#a69c79':'#8b9d6c';ctx.fillRect(0,0,960,540);
+  ctx.fillStyle=({forest:'#779463',outpost:'#a69c79',urban:'#989488',scrub:'#b76f51',arctic:'#d8e6e3',marsh:'#788c6b'})[theme]||'#8b9d6c';ctx.fillRect(0,0,960,540);
   // Fixed decorative marks, never random on redraw, so nothing flickers.
-  for(let i=0;i<64;i++){let x=(i*137+37)%960,y=(i*89+19)%540;ctx.strokeStyle=i%3?'#718759':'#b4bc88';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4,y-5);ctx.moveTo(x+7,y+1);ctx.lineTo(x+10,y-3);ctx.stroke();}
+  for(let i=0;i<64;i++){let x=(i*137+37)%960,y=(i*89+19)%540;ctx.strokeStyle=theme==='scrub'?'#d79a73':theme==='arctic'?'#adc9cb':theme==='urban'?'#77776d':theme==='marsh'?'#637d69':i%3?'#718759':'#b4bc88';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4,y-5);ctx.moveTo(x+7,y+1);ctx.lineTo(x+10,y-3);ctx.stroke();}
+  if(['scrub','arctic','urban','marsh'].includes(theme))return;
   for(const [x,y] of [[70,50],[330,65],[575,65],[850,75],[65,465],[420,470],[565,470],[935,260]]){
     oval(ctx,x,y,16,6,'#71875b',null);line(ctx,[[x-8,y],[x-10,y-6],[x-5,y-10]],'#506744',2);line(ctx,[[x,y],[x+2,y-9],[x+6,y-12]],'#506744',2);line(ctx,[[x+7,y],[x+10,y-6]],'#506744',2);
   }
@@ -18,15 +19,30 @@ function landmarks(ctx,theme){
       ctx.save();ctx.translate(x,y);ctx.scale(size,size);oval(ctx,0,18,18,6,'#607a50',null);shape(ctx,[[-5,18],[-5,0],[5,0],[5,18]],'#816e4f');shape(ctx,[[-22,2],[-12,-13],[-17,-13],[0,-35],[17,-13],[12,-13],[22,2]],'#456d4c');line(ctx,[[-10,-5],[0,-14],[9,-5]],'#83a377',2);ctx.restore();
     }
     line(ctx,[[20,255],[58,247],[87,250]],'#b7ca9a',3);line(ctx,[[770,470],[810,464],[840,468]],'#b7ca9a',3);
-  }else if(theme==='outpost'){
+  }else if(theme==='outpost'||theme==='urban'){
     for(const [x,y] of [[65,50],[430,58],[790,65],[65,480],[520,485],[920,485]]){
       ctx.save();ctx.translate(x,y);shape(ctx,[[-28,20],[-28,-8],[-17,-8],[-17,-20],[-5,-14],[5,-22],[16,-12],[28,-12],[28,20]],'#c5b492','#695f4b',3);line(ctx,[[-21,2],[-6,2],[-6,15],[7,15]],'#8c7e61',2);line(ctx,[[10,-5],[22,-5],[22,8]],'#8c7e61',2);ctx.restore();
     }
     for(const [x,y] of [[440,80],[570,65],[800,470]]){oval(ctx,x,y,22,9,'#817862','#605b4a',2);oval(ctx,x+3,y-1,12,4,'#b2a589',null);}
+  }else if(theme==='scrub'){
+    for(const [x,y] of [[75,55],[355,55],[620,65],[850,60],[70,475],[380,470],[600,485],[900,480]]){
+      shape(ctx,[[x-18,y+10],[x-12,y-13],[x-2,y-25],[x+12,y-18],[x+19,y+10]],'#d79a72','#794e3d');line(ctx,[[x-9,y],[x-5,y-12],[x+2,y-16]],'#efbd8d',2);
+    }
+    for(const [x,y] of [[245,55],[500,470],[805,480]]){shape(ctx,[[x-20,y+5],[x-15,y-7],[x+12,y-7],[x+22,y+5]],'#806f5c');oval(ctx,x-12,y+7,5,5,'#514c42');oval(ctx,x+13,y+7,5,5,'#514c42');}
+  }else if(theme==='arctic'){
+    for(const [x,y] of [[70,55],[360,55],[650,55],[850,70],[70,470],[360,480],[590,475],[900,485]]){
+      shape(ctx,[[x-24,y+14],[x-5,y-24],[x+3,y-9],[x+13,y-20],[x+25,y+14]],'#b0d1d4','#6f9297');line(ctx,[[x-5,y-24],[x-1,y+5],[x+13,y-20]],'#eef6ed',2);
+    }
+    for(const [x,y] of [[220,55],[520,480],[800,475]]){oval(ctx,x,y,42,13,'#a9ced2','#82aaaf');line(ctx,[[x-15,y],[x,y-4],[x+15,y+2]],'#e9f5ef',2);}
+  }else if(theme==='marsh'){
+    for(const [x,y] of [[70,55],[350,55],[640,55],[850,65],[70,470],[380,475],[620,480],[900,480]]){
+      oval(ctx,x,y,35,14,'#87a9a0','#536f61');line(ctx,[[x-20,y],[x-23,y-19],[x-19,y-25]],'#536a4c',3);line(ctx,[[x-12,y+3],[x-10,y-21]],'#536a4c',3);oval(ctx,x-10,y-23,3,6,'#795c42');
+    }
+    line(ctx,[[440,480],[500,480]],'#a5855e',9);for(let x=445;x<500;x+=10)line(ctx,[[x,475],[x,485]],'#624d3b',2);
   }
 }
-function drawRoad(ctx,path){
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#4b503d';ctx.lineWidth=73;ctx.stroke();ctx.strokeStyle='#b19a70';ctx.lineWidth=65;ctx.stroke();ctx.strokeStyle='#cbb58a';ctx.lineWidth=55;ctx.stroke();
+function drawRoad(ctx,path,theme){
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#4b503d';ctx.lineWidth=73;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#a5c2c0':theme==='urban'?'#77766d':theme==='marsh'?'#8e795c':theme==='scrub'?'#bd8765':'#b19a70';ctx.lineWidth=65;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#c4d9d4':theme==='urban'?'#aaa69a':theme==='marsh'?'#b29b74':theme==='scrub'?'#dda77f':'#cbb58a';ctx.lineWidth=55;ctx.stroke();
   ctx.strokeStyle='#a38d69';ctx.lineWidth=1.5;ctx.setLineDash([8,18]);ctx.stroke();ctx.setLineDash([]);
   for(const [x,y] of [[50,119],[160,140],[206,220],[230,328],[350,311],[480,250],[600,157],[709,278],[775,409]]){line(ctx,[[x-7,y+8],[x-2,y+7],[x+2,y+9]],'#ac986f',2);line(ctx,[[x+6,y-7],[x+11,y-8]],'#a08a66',2);}
 }
@@ -71,9 +87,9 @@ function enemy(ctx,e){
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
 function drawTerrain(ctx,path,theme){
-  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path);return;}
+  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);return;}
   let cached=terrainCache.get(path);
-  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path);cached=canvas;terrainCache.set(path,cached);}
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=960;canvas.height=540;const off=canvas.getContext('2d');if(!off){ground(ctx,theme);landmarks(ctx,theme);drawRoad(ctx,path,theme);return;}off.lineCap='round';off.lineJoin='round';ground(off,theme);landmarks(off,theme);drawRoad(off,path,theme);cached=canvas;terrainCache.set(path,cached);}
   ctx.drawImage(cached,0,0);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false}){
