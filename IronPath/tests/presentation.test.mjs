@@ -10,4 +10,6 @@ for(const id of ['wave','health','money','enemies']) assert.match(html,new RegEx
 assert.equal((html.match(/class="hud-icon"/g)||[]).length,4);
 assert.match(css,/map-viewport\.map-large canvas\{width:max\(760px, 200%\)/,'retain the playable, horizontally scrollable large map');
 assert.match(css,/body:has\(#gameView:not\(\[hidden\]\)\) main>header\{display:none\}/);
+assert.match(css,/@media\(min-width:851px\)[\s\S]*?#gameView \.layout\{grid-template-columns:[^}]*177\.78dvh/, 'desktop map is constrained by viewport height');
+assert.match(css,/#gameView \.battle-foot\{padding:8px 14px\}/, 'battle messages remain visible');
 console.log('Login, favicon and compact HUD checks passed.');
