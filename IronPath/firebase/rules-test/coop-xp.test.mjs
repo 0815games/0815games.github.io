@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../twenty-waves.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../expanded-armory.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
 const sdk={ref,get,onValue,runTransaction};
@@ -130,4 +130,20 @@ test('twenty-wave receipts pay late waves once and retain legacy progress',async
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),380);
   await assertFails(set(ref(alice,`players/alice/coopRewards/${party}`),1048576));
   q.close();again.close();
+});
+
+
+test('expanded armory supports legacy saves, validates new ranks and loadouts',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,armory:{scrap:90,fortify:1,plating:0,owned:1,equipped:1}}));
+  await assertSucceeds(set(ref(alice,'players/alice/armory'),{scrap:60,fortify:1,plating:0,repair:1,gun:2,owned:63,equipped:6}));
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30);assert.equal((await get(ref(alice,'players/alice/armory/gun'))).val(),2);q.close();
+  await assertFails(set(ref(alice,'players/alice/armory/repair'),4));
+  await assertFails(set(ref(alice,'players/alice/armory/gun'),-1));
+  await assertFails(set(ref(alice,'players/alice/armory/owned'),64));
+  await assertFails(set(ref(alice,'players/alice/armory/equipped'),7));
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:4,loadout:'1,0,6;1,2'}));
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,1'));
+  await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'1,0,7;1,2'));
+  await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,0'));
 });

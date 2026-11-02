@@ -1,19 +1,19 @@
 import {WAVE_COUNT} from './combat.mjs?v=20261102-waves20';
 import {enableTreeDrag} from './drag-tree.mjs?v=20261102-controls7';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-tree2';
-import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261102-armory2';
+import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-armory2';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft} from './skills.mjs?v=20261102-tree2';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-waves20';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-armory2';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-tree2';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-armory2';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-controls7';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261102-waves20';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-waves20';
-import { createPlayer } from './match.mjs?v=20261102-waves20';
+import { startGame } from './game.js?v=20261102-armory2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261102-armory2';
+import { createPlayer } from './match.mjs?v=20261102-armory2';
 import { characterProgress } from './progression.mjs?v=20261031-rpg2';
 
 window.ironPathLoaded = true;
@@ -84,11 +84,11 @@ function renderArmory(){
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
   const defenses=section('Bunker upgrades','SHARED DEFENSE');
-  for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.']]){
+  for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.']]){
     const rank=a[kind],cost=(rank+1)*30;add(defenses,{icon:kind,title:name,description:`${description} In co-op the highest player rank applies.`,eyebrow:'PERMANENT UPGRADE',rank,label:rank===3?'MAX RANK':`UPGRADE · ${cost} SCRAP`,disabled:rank===3||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:`Upgrade ${name}?`,text:`Spend ${cost} scrap on ${name.toLowerCase()}?`,accept:"UPGRADE"})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
   const equipment=section('Your equipment','ONE SLOT');
-  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:['scope','vest','boots'][i],title:item.name,description:item.description,eyebrow:equipped?'EQUIPPED':owned?'UNLOCKED':`WAVE ${id*2} REWARD`,state:equipped?'is-equipped':owned?'':'is-locked',label:owned?(equipped?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${id*2}`,disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
+  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:item.name,description:item.description,eyebrow:equipped?'EQUIPPED':owned?'UNLOCKED':`WAVE ${item.wave} REWARD`,state:equipped?'is-equipped':owned?'':'is-locked',label:owned?(equipped?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${item.wave}`,disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
   const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent='UNEQUIP ITEM';unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));list.append(unequip);
 }
 async function saveArmory(change){

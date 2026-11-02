@@ -1,4 +1,4 @@
-import {parseLoadout} from './armory.mjs';
+import {parseLoadout} from './armory.mjs?v=20261102-armory2';
 import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
@@ -77,7 +77,7 @@ export function applyCommand(state, playerId, command) {
       }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
-      player.cooldown=player.skills?.extra?.[3]?25:30;
+      player.cooldown=(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0);
       if(active==='assault')for(const enemy of state.enemies)enemy.hp-=35;
       else if(active==='engineer')player.overdrive=10;
       else if(active==='logistics')addSupplies(state,playerId,30+(player.skills?.extra?.[5]?15:0));

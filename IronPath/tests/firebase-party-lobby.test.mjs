@@ -22,9 +22,9 @@ assert.deepEqual(entrants.map(x=>x.status).sort(),['fulfilled','rejected'],'only
 assert.equal(await guest.close(next.partyId),false);assert.equal(await host.close(next.partyId),true);await assert.rejects(guest.join(next.partyId),/unavailable/);
 // Expanded skills travel through the real roster handoff; overspending is rejected.
 const expanded=await host.create();await guest.join(expanded.partyId);
-await host.publishProfile(expanded.partyId,{name:'Alice',gender:'female',level:5,skills:'2,0,0,0,0;assault;1100000000'});
-await guest.publishProfile(expanded.partyId,{name:'Bob',gender:'male',level:1,skills:'0,0,0,0,0;assault'});
-const roster=await host.startMatch(expanded.partyId);assert.equal(roster.profiles[0].skills,'2,0,0,0,0;assault;1100000000');assert.equal(roster.profiles[1].skills,'0,0,0,0,0;assault');
+await host.publishProfile(expanded.partyId,{name:'Alice',gender:'female',level:5,skills:'2,0,0,0,0;assault;1100000000',loadout:'1,0,6;2,3'});
+await guest.publishProfile(expanded.partyId,{name:'Bob',gender:'male',level:1,skills:'0,0,0,0,0;assault',loadout:'1,0,1'});
+const roster=await host.startMatch(expanded.partyId);assert.equal(roster.profiles[0].skills,'2,0,0,0,0;assault;1100000000');assert.equal(roster.profiles[1].skills,'0,0,0,0,0;assault');assert.equal(roster.profiles[0].loadout,'1,0,6;2,3');assert.equal(roster.profiles[1].loadout,'1,0,1');
 await assert.rejects(host.publishProfile(expanded.partyId,{name:'Alice',gender:'female',level:2,skills:'2,0,0,0,0;assault;1100000000'}),/Invalid skill build/);
 await host.close(expanded.partyId);
 // Auth changes while an operation is in flight must not return a usable result.

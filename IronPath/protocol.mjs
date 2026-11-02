@@ -1,8 +1,8 @@
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261102-waves20';
-import { stepMatch } from './simulation.mjs?v=20261102-waves20';
+import { applyCommand } from './match.mjs?v=20261102-armory2';
+import { stepMatch } from './simulation.mjs?v=20261102-armory2';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
