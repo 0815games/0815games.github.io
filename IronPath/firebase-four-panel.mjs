@@ -1,13 +1,14 @@
 // Experimental four-player panel. Not instantiated by the live application:
 // it requires reviewed, published rules and a complete four-player game handoff.
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261103-fourlobby1';
+import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261103-unified2';
 export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{}}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
-  let lobby=null,party=null,slots={},profiles={},config=null,started=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false;
+  let lobby=null,party=null,slots={},profiles={},config=null,started=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='';
   function status(message){$('fourPartyStatus').textContent=message;}
-  function clear(){generation++;for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;busy=false;joining=false;requests.replaceChildren();roster.replaceChildren();render();}
+  function clear(){generation++;for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';requests.replaceChildren();roster.replaceChildren();render();}
   function render(){
     $('fourPartyEntry').hidden=!!party;$('fourPartyActive').hidden=!party;
     const host=party?.role==='host',pending=party?.role==='pending';
@@ -19,15 +20,18 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     $('fourPartyLeave').textContent=host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY';
     for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
     if(joining)$('fourPartyLeave').disabled=true;
-    if(config){$('fourPartyMode').value=config.mode;const choice=teams.findIndex(t=>t.every((v,i)=>v===config.teams?.[i]));if(choice>=0)$('fourPartyTeams').value=String(choice);}
-    $('fourPartyTeamsLabel').hidden=$('fourPartyTeams').hidden=config?.mode!=='two-vs-two';
+    const modes=availablePartyModes(party?1+Object.values(slots).filter(Boolean).length:0),signature=modes.join(',');
+    if(!modes.includes(selectedMode))selectedMode=modes[0]||null;
+    if(signature!==renderedModes){renderedModes=signature;$('fourPartyMode').replaceChildren();for(const mode of modes){const option=document.createElement('option');option.value=mode;option.textContent=({coop:'Co-op · defend together',versus:'1 vs 1 · survival', 'four-coop':'Large-map co-op · two roads','two-vs-two':'2 vs 2 · survival'})[mode];$('fourPartyMode').append(option);}}
+    if(selectedMode)$('fourPartyMode').value=selectedMode;$('fourPartyTeams').value=String(selectedTeams);
+    $('fourPartyTeamsLabel').hidden=$('fourPartyTeams').hidden=selectedMode!=='two-vs-two';
     roster.replaceChildren();if(!party||pending)return;
     [party.hostId,slots.one,slots.two,slots.three].forEach((id,index)=>{
-      const item=document.createElement('li'),profile=id&&profiles[id],team=config?.mode==='two-vs-two'?` · Team ${config.teams?.[index]===0?'A':'B'}`:'';
+      const item=document.createElement('li'),profile=id&&profiles[id],team=selectedMode==='two-vs-two'?` · Team ${teams[selectedTeams][index]===0?'A':'B'}`:'';
       item.textContent=id?`${profile?.name||'Waiting for soldier'}${index===0?' · Host':''}${team}${profile?' · Ready':' · Not ready'}`:`Slot ${index+1} · Open`;roster.append(item);
     });
   }
-  function ready(){return !!party&&!!config&&[party.hostId,slots.one,slots.two,slots.three].every(id=>id&&profiles[id]);}
+  function ready(){const ids=party?[party.hostId,slots.one,slots.two,slots.three].filter(Boolean):[];return !!config&&availablePartyModes(ids.length).includes(selectedMode)&&ids.every(id=>profiles[id]);}
   function addWatch(stop){unwatch.push(stop);}
   function failed(){status('Party connection lost. Check your connection or leave and try again.');}
   async function run(fn){if(busy)return;busy=true;const gen=generation;render();try{return await fn(gen);}catch{if(gen===generation)status('Could not complete that action. Check your connection and try again.');}finally{if(gen===generation){busy=false;render();}}}
@@ -78,7 +82,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   }
   $('fourPartyCreate').onclick=()=>run(async gen=>{
     const active=createLobby();lobby=active;const result=await active.create(getProfile());if(gen!==generation){await active.close(result.partyId,result.inviteCode);return;}
-    party={...result,role:'host'};status('Share the code and approve three players.');watchParty(gen);watchMember(gen);addWatch(lobby.watchRequests(party.inviteCode,v=>showRequests(gen,v),failed));render();
+    party={...result,role:'host'};status('Share the code and approve players. Start with two, three or four players.');watchParty(gen);watchMember(gen);addWatch(lobby.watchRequests(party.inviteCode,v=>showRequests(gen,v),failed));render();
   });
   $('fourPartyJoin').onclick=()=>run(async gen=>{
     const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){status('Enter a four-digit code.');return;}
@@ -86,12 +90,11 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     party={...result,role:'pending'};status('Request sent. Waiting for approval.');watchParty(gen);
     addWatch(lobby.watchOwnRequest(code,value=>{if(gen===generation&&party?.role==='pending'&&value===null)status('Request closed. If not approved, leave and ask the host to try again.');},failed));render();
   });
-  async function configure(mode,selection){if(!party||party.role!=='host'||started||!teams[selection])return;await lobby.configure(party.partyId,{mode,teams:teams[selection]});}
-  function changeConfig(){const mode=$('fourPartyMode').value,selection=Number($('fourPartyTeams').value);return run(()=>configure(mode,selection));}
-  $('fourPartyMode').onchange=changeConfig;$('fourPartyTeams').onchange=changeConfig;
+  $('fourPartyMode').onchange=()=>{selectedMode=$('fourPartyMode').value;render();};
+  $('fourPartyTeams').onchange=()=>{selectedTeams=Number($('fourPartyTeams').value);if(!teams[selectedTeams])selectedTeams=0;render();};
   $('fourPartyStart').onclick=()=>run(async gen=>{
     if(party?.role!=='host'||!ready()||started||!await confirmStart()||gen!==generation||!party||!ready())return;
-    const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
+    await lobby.configure(party.partyId,{mode:selectedMode,teams:teams[selectedTeams]});if(gen!==generation||!party||!ready())return;const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
   });
   const leaveParty=()=>run(async gen=>{
     if(!party||joining)return;const current=party,active=lobby;if(current.role==='host'&&(!await confirmClose()||gen!==generation||party!==current))return;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);

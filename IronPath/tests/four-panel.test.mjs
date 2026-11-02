@@ -15,9 +15,9 @@ function fixture(role='host'){
 test('host lobby handles approvals, roster readiness, teams and start',async()=>{
   const f=fixture();assert.equal(f.$('fourPartyPanel').hidden,true);f.panel.show();await f.$('fourPartyCreate').onclick();assert.equal(f.$('fourPartyCodeDisplay').textContent,'0123');assert.equal(f.$('fourPartyStart').disabled,true);
   f.w.requests({bob:{name:'Bob'},eve:{name:'<b>Not HTML</b>'}});const rows=f.$('fourPartyRequests').children;assert.equal(rows[1].children[0].textContent,'<b>Not HTML</b>');await rows[0].children[1].onclick();assert.deepEqual(f.calls[0],['approve','bob']);
-  f.w.slots({one:'bob',two:'cara'});assert.equal(f.$('fourPartyStart').disabled,true);f.w.slots({one:'bob',two:'cara',three:'dan'});assert.equal(f.$('fourPartyStart').disabled,false);
-  f.$('fourPartyMode').value='two-vs-two';f.$('fourPartyTeams').value='1';await f.$('fourPartyMode').onchange();assert.deepEqual(f.calls.at(-1)[1],{mode:'two-vs-two',teams:[0,1,0,1]});assert.equal(f.$('fourPartyTeams').hidden,false);assert.match(f.$('fourPartyRoster').children[2].textContent,/Cara · Team A · Ready/);
-  await f.$('fourPartyStart').onclick();assert.deepEqual(f.joined[0].playerIds,manifest.playerIds);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.stopped,1);assert.deepEqual(f.calls.at(-1),['close']);assert.equal(f.panel.isActive(),false);
+  f.w.slots({one:'bob',two:'cara'});assert.equal(f.$('fourPartyStart').disabled,false);assert.deepEqual(f.$('fourPartyMode').children.map(x=>x.value),['four-coop']);f.w.slots({one:'bob',two:'cara',three:'dan'});assert.equal(f.$('fourPartyStart').disabled,false);
+  f.$('fourPartyMode').value='two-vs-two';f.$('fourPartyMode').onchange();f.$('fourPartyTeams').value='1';f.$('fourPartyTeams').onchange();assert.equal(f.$('fourPartyTeams').hidden,false);assert.match(f.$('fourPartyRoster').children[2].textContent,/Cara · Team A · Ready/);
+  await f.$('fourPartyStart').onclick();assert.deepEqual(f.calls.find(c=>c[0]==='config')[1],{mode:'two-vs-two',teams:[0,1,0,1]});assert.deepEqual(f.joined[0].playerIds,manifest.playerIds);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.stopped,1);assert.deepEqual(f.calls.at(-1),['close']);assert.equal(f.panel.isActive(),false);
 });
 test('guest approval publishes profile and hands off locked match once',async()=>{
   const f=fixture('guest');f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();assert.match(f.$('fourPartyStatus').textContent,/Waiting/);f.w.slots({one:'bob',two:'cara',three:'dan'});await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(f.calls[0],['publish','Bob']);assert.match(f.$('fourPartyStatus').textContent,/Approved/);
@@ -42,4 +42,8 @@ test('an existing guest can reconnect after a page reload without republishing a
 
 test('host can cancel closing the party before stopping the match',async()=>{
   const f=fixture();const doc={getElementById:f.$,createElement:()=>({children:[],append(...a){this.children.push(...a);}})};const panel=createFourPlayerPanel({document:doc,createLobby:()=>f.lobby,getProfile:()=>profiles.alice,onMatch:()=>true,confirmClose:async()=>false});await f.$('fourPartyCreate').onclick();await f.$('fourPartyLeave').onclick();assert.equal(panel.isActive(),true);assert.ok(!f.calls.some(c=>c[0]==='close'));
+});
+
+test('the same lobby exposes appropriate modes as the roster grows',async()=>{
+  const f=fixture();await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob'});assert.deepEqual(f.$('fourPartyMode').children.map(x=>x.value),['coop','versus']);assert.equal(f.$('fourPartyStart').disabled,false);f.w.slots({one:'bob',two:'cara'});assert.deepEqual(f.$('fourPartyMode').children.map(x=>x.value),['four-coop']);f.w.slots({one:'bob',two:'cara',three:'dan'});assert.deepEqual(f.$('fourPartyMode').children.map(x=>x.value),['four-coop','two-vs-two']);
 });
