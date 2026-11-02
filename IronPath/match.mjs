@@ -4,7 +4,7 @@ import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-combos1
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
-import { waveFormation } from './combat.mjs?v=20261102-longterm1';
+import { waveFormation } from './combat.mjs?v=20261102-battle2';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;

@@ -1,6 +1,7 @@
+import {webBonuses} from './skills.mjs?v=20261102-combos1';
 import {getMap} from './maps.mjs?v=20261102-terrain4';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261102-terrain4';
-import {bossPhase} from './boss-mechanics.mjs?v=20261102-terrain4';
+import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
 
 // Render-only prediction from the latest authoritative snapshot. It never changes
 // the game state or awards damage/rewards, and stops after a short connection gap.
@@ -13,7 +14,7 @@ export function projectCoopMotion(state,age){
     let dx=p.direction?.x||0,dy=p.direction?.y||0;
     if(!dx&&!dy&&p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;}
     const len=Math.hypot(dx,dy);if(!len)return [id,p];
-    const speed=(150+10*(p.skills?.recon||0)+(p.loadout?.equipped===3?20:0))*soldierSpeedFactor(theme,p,path);
+    const mobile=p.mobileSupply?.remaining>0?p.mobileSupply.bonus*Math.min(dt,p.mobileSupply.remaining)/dt:0;const speed=(150+10*(p.skills?.recon||0)+webBonuses(p.skills).movement+mobile+(p.loadout?.equipped===3?20:0))*soldierSpeedFactor(theme,p,path);
     const distance=p.direction?.x||p.direction?.y?speed*dt:Math.min(len,speed*dt);
     return [id,{...p,x:Math.max(12,Math.min(948,p.x+dx/len*distance)),y:Math.max(12,Math.min(528,p.y+dy/len*distance))}];
   }));

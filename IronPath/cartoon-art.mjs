@@ -1,4 +1,5 @@
-import {bossPhase} from './boss-mechanics.mjs?v=20261102-terrain4';
+import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
+import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#29352c',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -135,6 +136,7 @@ function enemy(ctx,e,reducedMotion){
   }else if(e.kind==='tank'){shape(ctx,[[x-13,y-6],[x+11,y-6],[x+13,y+7],[x-13,y+7]],'#a36e57');oval(ctx,x,y-7,7,5,'#c39170');line(ctx,[[x+3,y-8],[x+16,y-12]],ink,3);}
   else if(e.kind==='plane'){shape(ctx,[[x+15,y],[x-5,y-4],[x-11,y-11],[x-10,y-2],[x-15,y+2],[x-5,y+4],[x-10,y+11],[x-4,y+8]],'#9fc5bd');}
   else {oval(ctx,x,y+3,7,8,e.kind==='runner'?'#e1b86d':'#bc846d');oval(ctx,x,y-6,5,5,'#e1b391');shape(ctx,[[x-6,y-7],[x-4,y-11],[x+4,y-11],[x+6,y-7]],'#725f4a');if(e.kind==='runner')line(ctx,[[x-11,y+3],[x-16,y+3]],'#6d624e',2);}
+  if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':'#d4df88';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
   if(e.boss){const names={bossIronclad:'IRONCLAD',bossBomber:'DREAD BOMBER',bossJuggernaut:'JUGGERNAUT',bossCommander:'WAR COMMANDER'};ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(names[e.boss]||'BOSS',x,y-29);ctx.fillStyle='#ffe1a0';ctx.fillText(names[e.boss]||'BOSS',x,y-29);ctx.textAlign='start';}
 }
@@ -170,6 +172,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     enemy(ctx,e,reducedMotion);
   }
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
+  if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');ctx.restore();}}
   if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);
   ctx.restore();
 }
@@ -180,7 +183,7 @@ function burst(ctx,x,y,r,fill){
 function drawShot(ctx,s,age,reduced){
   const life=(Number.isFinite(s.life)?s.life:.12)-age;if(life<=0)return;
   const duration=s.duration||.12,progress=1-Math.max(0,Math.min(1,life/duration));
-  line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',2);
+  ctx.save();if(s.kind===3)ctx.setLineDash([9,5]);line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,s.kind===1?6:4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',s.kind===1?4:2);ctx.restore();
   if(reduced)return;
   const scale=s.kind===1?1.35:s.kind===3?.75:1;
   if(progress<.65)burst(ctx,s.x,s.y,(7+(1-progress)*4)*scale,'#ffe39b');
@@ -188,7 +191,8 @@ function drawShot(ctx,s,age,reduced){
 }
 function drawAbility(ctx,e){
   const t=e.progress,fade=Math.max(0,1-t);ctx.save();ctx.globalAlpha=fade;
-  if(e.kind==='combo'){const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};burst(ctx,e.x,e.y-20,14+15*t,palette[e.label]||'#88e3d3');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label||'COMBO!',e.x,e.y-43-12*t);
+  if(e.kind==='bunkerHit'){burst(ctx,e.x,e.y,20+18*t,'#f27f59');ctx.fillStyle='#fff1ca';ctx.strokeStyle=ink;ctx.lineWidth=4;ctx.font='bold 16px Georgia';ctx.textAlign='center';ctx.strokeText(e.label||'BUNKER HIT',e.x,e.y-45-15*t);ctx.fillText(e.label||'BUNKER HIT',e.x,e.y-45-15*t);
+  }else if(e.kind==='combo'){const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};burst(ctx,e.x,e.y-20,14+15*t,palette[e.label]||'#88e3d3');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label||'COMBO!',e.x,e.y-43-12*t);
   }else if(e.kind==='assault'){
     const targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];for(const p of targets){burst(ctx,p.x,p.y,12+20*t,'#ef9e68');oval(ctx,p.x,p.y,6+12*t,4+8*t,'#f9dc91',ink,2);}
   }else if(e.kind==='build'||e.kind==='upgrade'){

@@ -1,19 +1,19 @@
-import {projectCoopMotion} from './coop-motion.mjs?v=20261102-coopmotion1';
-import {bossPhaseLabel} from './boss-mechanics.mjs?v=20261102-terrain4';
-import {createBattleSound} from './battle-sound.mjs?v=20261102-combos1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261102-battle2';
+import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-battle2';
+import {createBattleSound} from './battle-sound.mjs?v=20261102-battle2';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain4';
-import {createCombatEffects} from './combat-fx.mjs?v=20261102-combos1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-combos1';
+import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-battle2';
 import {abilityName} from './skills.mjs?v=20261102-combos1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-combos1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-combos1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-combos1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-longterm1';
+import { createTutorial } from './tutorial.mjs?v=20261102-battle2';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-battle2';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-battle2';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
@@ -36,7 +36,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   ];
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
-  let state, selectedMap=nextMapId(), accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false;
+  let state, selectedMap=nextMapId(), accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null;
   const me=()=>coop?account.getUserId():'local';
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
@@ -49,7 +49,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(freshMap=false){if(canvas.height!==540)canvas.height=540;if(freshMap)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false){if(canvas.height!==540)canvas.height=540;if(freshMap)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;bossSignal=null;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;
@@ -70,8 +70,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if($('bossAlert')){
       const boss=state.enemies.find(e=>e.boss&&e.hp>0),incoming=state.running&&state.wave%5===0&&state.spawnLeft>0?bossForWave(state.wave):null,info=boss?BOSSES.find(b=>b.kind===boss.boss):incoming;
       $('bossAlert').hidden=!info||state.ended;
-      if(info){$('bossAlertTitle').textContent=boss?`BOSS · ${info.label}`:`BOSS INCOMING · ${info.label}`;$('bossAlertInfo').textContent=(boss&&bossPhaseLabel(boss))||info.description;$('bossHealth').hidden=!boss;if(boss)$('bossHealthFill').style.width=`${Math.max(0,Math.min(100,100*boss.hp/boss.maxHp))}%`;}
+      if(info){const signal=boss?bossTelegraph(boss):null,key=boss?`${boss.boss}:${signal?.key||'normal'}`:null;if(signal?.warning&&bossSignal?.startsWith(`${boss.boss}:`)&&bossSignal!==key){sound.play('warning');$('bossAnnouncement').textContent=`${info.label}: ${signal.text}`;}bossSignal=key;$('bossAlert').classList.toggle('is-warning',!!signal?.warning);$('bossAlertTitle').textContent=boss?`BOSS · ${info.label}`:`BOSS INCOMING · ${info.label}`;$('bossAlertInfo').textContent=signal?.text||(boss&&bossPhaseLabel(boss))||info.description;$('bossHealth').hidden=!boss;if(boss)$('bossHealthFill').style.width=`${Math.max(0,Math.min(100,100*boss.hp/boss.maxHp))}%`;}else bossSignal=null;
     }
+    const threats=countFieldThreats(state.enemies);for(const [kind,id] of [['infantry','threatInfantry'],['runner','threatRunner'],['tank','threatTank'],['plane','threatPlane']])$(id).textContent=String(threats[kind]);const summary=Object.entries(threats).filter(([,n])=>n).map(([kind,n])=>`${ENEMY_TYPES[kind].label} ${n}`).join(' · ');$('threatSummary').textContent=summary||'No enemies on field';
     const preview=state.ended?(coop?'Run ended. Close the party to start a new operation.':'Run ended. Restart to play again.'):'Next: '+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
     $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?'YOUR SUPPLIES':'SUPPLIES'; $('enemies').textContent=state.enemies.length+state.spawnLeft;
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active); $('ability').textContent=!player?.skills?.active?'NO SKILL':player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player?.skills?.active||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
@@ -181,9 +182,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       accumulator-=STEP;
       for(const event of stepMatch(state)){
         if(event.type==='skillCombo'){combatFx.emit('combo',{x:event.x,y:event.y,comboLabel:event.name},state);sound.play('combo');}
-        else if(event.type==='bunkerHit')notice(`${ENEMY_TYPES[event.kind].label} reached the bunker! −${Math.round(event.damage*10)/10} health.`);
+        else if(event.type==='bunkerHit'){sound.play('impact');combatFx.emit('bunkerHit',{x:900,y:400,comboLabel:`−${Math.round(event.damage*10)/10}`},state);notice(`${ENEMY_TYPES[event.kind]?.label||'Enemy'} reached the bunker! −${Math.round(event.damage*10)/10} health.`);}
         else if(event.type==='lootDrop')notice(`Supply cache found! +${event.supplies} supplies.`);
-        else if(event.type==='bossAbility'&&event.ability==='bomb'){sound.play('impact');notice(`Bomber struck the bunker! −${Math.round(event.damage*10)/10} health.`);}
+        else if(event.type==='bossAbility'&&event.ability==='bomb'){sound.play('impact');combatFx.emit('bunkerHit',{x:900,y:400,comboLabel:`−${Math.round(event.damage*10)/10}`},state);notice(`Bomber struck the bunker! −${Math.round(event.damage*10)/10} health.`);}
         else if(event.type==='rubbleCleared'){sound.play('impact');notice('Rubble cleared! Long-range shots are no longer weakened in that zone.');}
         else if(event.type==='iceBroken'){sound.play('ice');notice('Thin ice broke! Tanks slow down and take more damage.');}
         else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost. The operation has failed.');}
@@ -218,7 +219,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     selectedMap=nextMapId(selectedMap);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();lastSnapshotAt=0;let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error')notice('Co-op connection failed. Leave the party and reload both devices.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
+      if(hadSnapshot&&(state.bunkerImpact?.seq||0)>oldImpact){const hit=state.bunkerImpact;notice(`${ENEMY_TYPES[hit.kind]?.label||'Enemy'} hit the bunker! −${Math.round(hit.damage*10)/10} health.`);}
       const newBoss=state.enemies.find(e=>e.boss&&e.hp>0);
       if(hadSnapshot&&coopReady&&newBoss?.boss==='bossBomber'&&newBoss.bossFlash>0&&oldBoss?.boss===newBoss.boss&&!(oldBoss.bossFlash>0)){sound.play('impact');notice('Bomber struck the bunker!');}
       if(hadSnapshot&&!oldPendingWave&&state.pendingWave){if(state.hostId!==me())sound.play('request');notice(state.hostId===me()?'Waiting for teammate approval.':`Host requests wave ${state.pendingWave}. Approve when ready.`);}

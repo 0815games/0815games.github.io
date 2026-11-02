@@ -1,12 +1,12 @@
-import {createVersus} from './versus.mjs?v=20261102-combos1';
+import {createVersus} from './versus.mjs?v=20261102-battle2';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-longterm1';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
 import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261102-coopmotion1';
-import {createPartyHost} from './party-host.mjs?v=20261102-combos1';
-import {createMatch,STEP} from './simulation.mjs?v=20261102-combos1';
+import {createPartyHost} from './party-host.mjs?v=20261102-battle2';
+import {createMatch,STEP} from './simulation.mjs?v=20261102-battle2';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.

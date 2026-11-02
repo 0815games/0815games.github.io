@@ -10,7 +10,7 @@ const before=structuredClone(state),calls=[];const ctx=new Proxy({}, {get(target
 const opts={path:PATH,pads:PADS,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'a',getTowerRange};
 const effects=['assault','engineer','logistics','medic','recon'].map(kind=>({kind,x:200,y:200,targets:[{x:60,y:130}],progress:.5}));
 drawCartoonBattle(ctx,state,{...opts,effects});
-assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='OVERDRIVE'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='SUPPRESSION'));
+assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='S'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='T'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='A'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='OVERDRIVE'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='SUPPRESSION'));
 const count=calls.length;drawCartoonBattle(ctx,state,{...opts,effects,reducedMotion:true});assert.ok(calls.length-count<count,'reduced motion avoids animated effects');
 assert.deepEqual(state,before,'the drawing must not mutate game state');assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='BUNKER'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Alice'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='Bob'));
 console.log('Cartoon drawing covers towers, enemies, players and bunker without changing state.');
