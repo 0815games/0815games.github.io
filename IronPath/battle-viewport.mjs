@@ -34,3 +34,12 @@ export function battleClientToScreen(client,rect,width,height){
   if(!validPoint(client)||!rect||!Number.isFinite(rect.left)||!Number.isFinite(rect.top)||![rect.width,rect.height,width,height].every(finitePositive))throw Error('Invalid canvas geometry');
   return {x:(client.x-rect.left)*width/rect.width,y:(client.y-rect.top)*height/rect.height};
 }
+// Limit painting to the battlefield even when the fitted map is letterboxed.
+// Restore the caller's canvas state if rendering throws.
+export function drawInBattleViewport(ctx,view,draw){
+  validate(view);if(!ctx||typeof draw!=='function')throw Error('Invalid viewport draw');
+  ctx.save();try{
+    ctx.scale(view.scale,view.scale);ctx.translate(-view.x,-view.y);
+    ctx.beginPath();ctx.rect(0,0,view.worldWidth,view.worldHeight);ctx.clip();draw();
+  }finally{ctx.restore();}
+}

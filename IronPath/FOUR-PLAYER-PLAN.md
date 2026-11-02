@@ -18,3 +18,5 @@ The current Firebase lobby, roster rules and live protocol are two-player only. 
 The staged four-player lobby (`firebase-four-lobby.mjs`) and host/game transport now use isolated `fourParties` / `fourCodes` paths and are exercised with in-memory SDK tests, including roster locking, ordered receipts, reconnect and reward participation. These are not security tests; see `firebase/FOUR-PLAYER-RULES-SPEC.md` for the still-required complete ruleset and emulator gate.
 
 The staged `battle-viewport.mjs` provides fit, bounded pan, anchored zoom and CSS-to-world pointer conversion for the larger battlefield, with geometry tests. It is not yet connected to canvas rendering or touch gestures. The combined rules and SDK lobby flow now pass the emulator CI, including simultaneous start/departure and duplicate approval tests; this is not a security review or real-device validation.
+
+The staged viewport now has a clipped canvas drawing helper and a pointer controller for tap, drag, pinch and wheel zoom. These are unit-tested but are not instantiated by `game.js`; actual mobile gesture behavior still needs device testing.

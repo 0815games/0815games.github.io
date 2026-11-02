@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen} from '../battle-viewport.mjs';
+import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen,drawInBattleViewport} from '../battle-viewport.mjs';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('large battlefield fits and CSS-scaled taps map to world coordinates',()=>{
   const v=createBattleViewport(1440,720,960,540);
@@ -23,4 +23,11 @@ test('invalid or zero geometry is rejected without creating NaNs',()=>{
   const v=createBattleViewport(1440,720,960,540);
   assert.throws(()=>zoomBattleViewport(v,NaN,{x:0,y:0}));
   assert.throws(()=>panBattleViewport(v,Infinity,0));
+});
+
+test('draw transform clips the world and restores canvas state on failure',()=>{
+  const calls=[],ctx=Object.fromEntries(['save','restore','scale','translate','beginPath','rect','clip'].map(name=>[name,(...args)=>calls.push([name,...args])]));
+  const view=createBattleViewport(1440,720,960,540);
+  assert.throws(()=>drawInBattleViewport(ctx,view,()=>{throw Error('drawing failed');}),/drawing failed/);
+  assert.deepEqual(calls,[['save'],['scale',2/3,2/3],['translate',-view.x,-view.y],['beginPath'],['rect',0,0,1440,720],['clip'],['restore']]);
 });
