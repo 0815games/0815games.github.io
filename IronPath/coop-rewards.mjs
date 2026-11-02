@@ -1,5 +1,5 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-terrain4';
-import {rewardWave} from './armory.mjs?v=20261102-armory2';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-longterm1';
+import {rewardWave} from './armory.mjs?v=20261102-longterm1';
 import {waveXP} from './progression.mjs?v=20261102-terrain4';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's

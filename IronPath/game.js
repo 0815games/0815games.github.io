@@ -11,9 +11,9 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261102-terrain4';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-coopflow1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-coopflow1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-terrain4';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-longterm1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-longterm1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave } from './combat.mjs?v=20261102-longterm1';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
@@ -34,7 +34,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     [{name:'Twin Flak',damage:1,interval:.55,range:1,description:'45% shorter firing interval'}, {name:'Long-range Flak',damage:1.3,interval:1,range:1.45,description:'45% more range and 30% more damage'}],
     [{name:'Marksman',damage:1,interval:.6,range:1,description:'40% shorter firing interval'}, {name:'Anti-armor Rifle',damage:2,interval:1,range:1.1,description:'100% more damage, 10% more range and another 40% damage against tanks'}]
   ];
-  for(const variants of branches)variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});
+  for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
   let state, selectedMap=nextMapId(), accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0;
   const me=()=>coop?account.getUserId():'local';
@@ -126,7 +126,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       notice(`Tap a tower for details. Grey options need more supplies. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else if(mode==='branches'){
       const cost=upgradeCost(tower.level),sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
-      branches[tower.type].forEach((branch,i)=>actions.push({label:`${branch.name} · ${cost}`,summary:branch.description,unaffordable:supplies()<cost||(i===2&&(state.players[me()]?.level||1)<5),description:`View ${branch.name}: ${branch.description}. ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.${sharedUpgrade}`,cost,'UPGRADE',()=>upgrade(i))}));
+      branches[tower.type].forEach((branch,i)=>{const required=i===2?5:i===3?10:0,locked=(state.players[me()]?.level||1)<required;actions.push({label:`${branch.name} · ${cost}`,summary:branch.description+(locked?` · LOCKED UNTIL LEVEL ${required}`:''),unaffordable:supplies()<cost,description:`View ${branch.name}: ${branch.description}. ${cost} supplies${locked?`. Unlocks at level ${required}.`:''}${supplies()<cost?'. Not enough supplies.':''}`,run:()=>showDetails(branch.name,`${branch.description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.${sharedUpgrade}`,cost,'UPGRADE',()=>upgrade(i),locked?`Unlocks at soldier level ${required}.`:'')});});
       notice(`Tap a specialization to see its effects. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else if(mode==='confirmSell'){
       const ownerName=state.players[tower.ownerId]?.name||'tower owner',mine=!state.individualSupplies||tower.ownerId===me();
@@ -148,10 +148,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.classList.toggle('unaffordable',!!action?.unaffordable);$('menuName'+i).textContent=action?action.label:'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?' · Not enough supplies':''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
     menu.hidden=false;updateUI();
   }
-  function showDetails(title,text,cost,verb,confirm){
+  function showDetails(title,text,cost,verb,confirm,lockedReason=''){
     $('towerDetailsTitle').textContent=title;$('towerDetailsText').textContent=text;
-    $('towerDetailsCost').textContent=`Cost: ${cost} supplies · Available: ${supplies()}${supplies()<cost?' · Not enough supplies':''}`;
-    const button=$('towerDetailsConfirm');button.textContent=`${verb} · ${cost}`;button.disabled=supplies()<cost;button.onclick=confirm;
+    $('towerDetailsCost').textContent=`Cost: ${cost} supplies · Available: ${supplies()}${lockedReason?' · '+lockedReason:supplies()<cost?' · Not enough supplies':''}`;
+    const button=$('towerDetailsConfirm');button.textContent=`${verb} · ${cost}`;button.disabled=!!lockedReason||supplies()<cost;button.onclick=confirm;
     $('towerDetails').showModal();
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
