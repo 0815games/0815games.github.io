@@ -19,7 +19,9 @@ export const CAPSTONES={
  24:'Every fourth soldier shot pins its target for 3 seconds.'
 };
 export function comboTier(build,id){return (build?.web?.[id]?1:0)+(build?.web?.[id+1]?1:0)+(build?.web?.[id+2]?1:0);}
-export function comboCue(player,name,x=player.x,y=player.y){player.comboCue={seq:(player.comboCue?.seq||0)+1,name,x,y};}
+// Per-player run record: credited by the host's authoritative simulation and shown on the results screen.
+export function playerRecord(p){return p.record||(p.record={heroDamage:0,towerDamage:0,kills:0,supplies:0,combos:0});}
+export function comboCue(player,name,x=player.x,y=player.y,count=1){player.comboCue={seq:(player.comboCue?.seq||0)+1,name,x,y};playerRecord(player).combos+=count;}
 export function activateCombos(state,id,active,addSupplies){
   const p=state.players[id],triggered=[];
   for(const combo of COMBOS){
@@ -39,5 +41,5 @@ export function activateCombos(state,id,active,addSupplies){
     }
     if(applied)triggered.push(combo.name);
   }
-  if(triggered.length)comboCue(p,triggered.join(' + '));return triggered;
+  if(triggered.length)comboCue(p,triggered.join(' + '),p.x,p.y,triggered.length);return triggered;
 }

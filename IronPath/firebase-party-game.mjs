@@ -6,7 +6,7 @@ import {createFirebasePartyChannel} from './firebase-party-channel.mjs';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261101-handshake1';
 import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261102-coopmotion1';
 import {createPartyHost} from './party-host.mjs?v=20261102-planner1';
-import {createMatch,STEP} from './simulation.mjs?v=20261102-planner1';
+import {createMatch,STEP} from './simulation.mjs?v=20261102-beta1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.

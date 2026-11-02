@@ -11,7 +11,13 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261102-planner1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-planner1';
+import { summarizeRun } from './run-summary.mjs?v=20261102-beta1';
+import { CAMPAIGN_MISSIONS, missionStatus, missionSetup, missionDetails } from './campaign.mjs?v=20261102-beta1';
+import { feedbackUrl } from './feedback.mjs?v=20261102-beta1';
+import { renderRunResults } from './results-view.mjs?v=20261102-beta1';
+import { renderCampaign } from './campaign-view.mjs?v=20261102-beta1';
+import { readArmory } from './armory.mjs?v=20261102-longterm1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-beta1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-planner1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
@@ -37,6 +43,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
   let state, selectedMap=nextMapId(), accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null;
+  // Campaign and results state is client-side presentation over the host's match state.
+  let activeMission=null, runStart=null, resultsShown=false;
   const me=()=>coop?account.getUserId():'local';
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
@@ -49,7 +57,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('mapEntry').addEventListener('click',()=>mapViewport.scrollTo({left:0,behavior:'smooth'}));
   $('mapBunker').addEventListener('click',()=>mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
   portrait.addEventListener('change',e=>setMapZoom(e.matches));
-  function reset(freshMap=false){if(canvas.height!==540)canvas.height=540;if(freshMap)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;bossSignal=null;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function captureRunStart(){const profile=account.getProfile();runStart={xp:Number.isSafeInteger(profile.xp)?profile.xp:0,owned:readArmory(profile.armory).owned};}
+  function reset(freshMap=false){if(canvas.height!==540)canvas.height=540;if(activeMission)selectedMap=activeMission.map;else if(freshMap)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;bossSignal=null;resultsShown=false;captureRunStart();state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap,activeMission?missionSetup(activeMission):undefined);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;
@@ -58,6 +67,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function notice(text){$('message').textContent=text;}
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?`${result.perk} acquired for this operation.`:result.reason);updateUI();});
   function updateUI(){
+    // The report and campaign chrome are presentation only; they must never block the HUD.
+    try{renderBattleChrome();maybeShowResults();}catch(error){console.warn('Operation report:',error);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus';$('mapName').textContent=versus?`${map.name} · 1 VS 1`:map.name;
     const canvasHeight=versus?1100:540;if(canvas.height!==canvasHeight)canvas.height=canvasHeight;
     $('versusStatus').hidden=!versus;if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?'VICTORY':'DEFEAT'):'DRAW / MATCH ENDED'):'1 VS 1 · SURVIVAL';$('versusInfo').textContent=`YOUR BUNKER ${Math.max(0,Math.ceil(state.hp))} · ${state.players[state.rivalId]?.name||'OPPONENT'} ${Math.max(0,Math.ceil(state.rival.hp))}${state.waitingForRival&&!state.ended?' · WAITING FOR OPPONENT':''}`;}
@@ -85,7 +96,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave}${wave%5===0?' · BOSS WAVE':''} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ')+(bossForWave(wave)?` · ${bossForWave(wave).description}`:'');}
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
-  $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
+  $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice(activeMission?'Mission restarted. Deploy when ready.':'New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
     const command=coop&&state.pendingWave?(state.hostId===me()?'cancelWave':'approveWave'):'startWave';
     dispatch(command==='startWave'?{type:command}:{type:command,requestId:state.waveRequestId},result=>{if(!result.ok){notice(result.reason);return;}if(!coop)sound.play(state.wave%5===0?'boss':'wave');notice(!coop?`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`:command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest?'Waiting for teammate approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
   };
@@ -176,7 +187,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   });
   let uiElapsed=0;
   function update(dt){
-    if(coop||state.ended||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
+    if(coop||state.ended||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||$('campaignDialog').open||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -188,6 +199,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
         else if(event.type==='rubbleCleared'){sound.play('impact');notice('Rubble cleared! Long-range shots are no longer weakened in that zone.');}
         else if(event.type==='iceBroken'){sound.play('ice');notice('Thin ice broke! Tanks slow down and take more damage.');}
         else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost. The operation has failed.');}
+        else if(event.type==='victory'){sound.play('clear');notice(`${activeMission?activeMission.name:'Objective'} complete! Review your operation report.`);}
         else if(event.type==='waveCleared'){sound.play('clear');account.awardXP(event.xp,event.wave);notice(event.wave%5===0?`Boss wave ${event.wave} cleared! Choose a field upgrade. +${event.xp} XP.`:`Wave cleared! +20 supplies and +${event.xp} XP. Prepare for the next wave.`);}
       }
       if(state.ended){accumulator=0;updateUI();break;}
@@ -212,10 +224,53 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
   }
   $('coopControls').hidden=!coopUrl;
+  // Operation report, campaign picker and feedback. Kept beside the existing controls for clarity.
+  $('feedbackLink').href=feedbackUrl({});
+  $('campaignOpen').onclick=openCampaign;$('campaignClose').onclick=()=>$('campaignDialog').close();$('campaignEndless').onclick=beginEndless;
+  $('resultsClose').onclick=()=>$('runResults').close();
+  $('resultsNewRun').onclick=()=>{$('runResults').close();keys.clear();reset(true);notice(activeMission?'Mission restarted. Deploy when ready.':'New battlefield ready. Deploy when ready.');updateUI();};
+  function renderBattleChrome(){
+    const line=$('missionLine');if(line){line.hidden=!activeMission||!!coop;if(activeMission&&!coop)line.textContent=`CAMPAIGN · ${activeMission.region} · ${activeMission.name} · Objective: wave ${Math.min(state.wave,activeMission.objectiveWave)} / ${activeMission.objectiveWave}`;}
+    $('campaignOpen').disabled=!!coop||!account.isReady();
+  }
+  function maybeShowResults(){
+    if(!state.ended||resultsShown||state.mode==='versus')return;
+    resultsShown=true;const solo=!coop,mission=solo?activeMission:null;
+    const summary=summarizeRun(state,{playerId:me(),mission,startXP:runStart?.xp||0,startOwned:solo?(runStart?.owned??null):null});
+    renderRunResults(document,summary,{feedbackHref:feedbackUrl({outcome:summary.outcome,mission:mission?.name||'',wave:state.wave}),coop:!solo});
+    $('resultsNewRun').hidden=!solo;$('resultsNewRun').textContent=mission?'TRY MISSION AGAIN':'NEW OPERATION';
+    if(!$('runResults').open)$('runResults').showModal();
+  }
+  // Replacing a live field needs confirmation; a fresh, untouched battlefield does not.
+  async function canReplaceField(title,text){
+    if(state.ended||(state.wave===0&&!state.towers.length))return true;
+    return !!await confirmAction({title,text,accept:'START'});
+  }
+  function openCampaign(){
+    if(!account.isReady()||coop)return;
+    renderCampaign(document,CAMPAIGN_MISSIONS,account.getLevel(),{onStart:beginMission,activeId:activeMission?.id||null,coop:false});
+    $('campaignStatus').textContent='Each mission is one fixed battlefield with a finale boss. Missions unlock as you level up. Endless operations stay available.';
+    $('campaignDialog').showModal();
+  }
+  async function beginMission(mission){
+    if(coop){notice('Leave co-op to start a campaign mission.');return;}
+    const status=missionStatus(mission,account.getLevel());
+    if(!status.open){$('campaignStatus').textContent=status.reason;return;}
+    if(!await canReplaceField(`Start ${mission.name}?`,'This replaces your current battlefield. Completed-wave rewards are kept.'))return;
+    activeMission=mission;$('campaignDialog').close();keys.clear();reset(false);
+    const details=missionDetails(mission);notice(`${mission.name}: ${details.objective} ${details.bossLabel} arrives at wave ${mission.objectiveWave}.`);updateUI();
+  }
+  async function beginEndless(){
+    if(coop)return;
+    if(!activeMission){$('campaignDialog').close();return;}
+    if(!await canReplaceField('Leave the campaign?','Endless operations start on a new battlefield. Completed-wave rewards are kept.'))return;
+    activeMission=null;$('campaignDialog').close();keys.clear();reset(true);notice('Endless operation ready. Deploy when ready.');updateUI();
+  }
   function leaveCoop(){if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;coopHasBaseline=false;needStop=false;coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent='JOIN CO-OP (TEST)';$('coopStatus').textContent='SOLO';if(account.isReady())reset(true);return Promise.resolve(stopping);}
   function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
   function beginCoop(factory,onUpdate=()=>{}){
     if(coop||!account.isReady())return false;
+    activeMission=null;resultsShown=false;captureRunStart();
     selectedMap=nextMapId(selectedMap);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();lastSnapshotAt=0;let client;
     try{
@@ -235,7 +290,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
   $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
-  account.onSessionChange(()=>{leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){reset();tutorial.startIfNeeded(account.getUserId());}});
+  account.onSessionChange(()=>{activeMission=null;leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){reset();tutorial.startIfNeeded(account.getUserId());}});
   reset();tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   return {getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop};
 }

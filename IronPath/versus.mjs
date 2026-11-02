@@ -1,4 +1,4 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261102-planner1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261102-beta1';
 import {applyCommand} from './match.mjs?v=20261102-planner1';
 import {WAVE_COUNT} from './combat.mjs?v=20261102-battle2';
 

@@ -1,5 +1,5 @@
 import {SKILL_PATHS,WEB_NODES,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild} from './skills.mjs?v=20261102-planner1';
-import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261102-combos1';
+import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261102-beta1';
 export const nodeKey=(path,rank)=>`${path}:${rank}`;
 export function prerequisites(path,rank){
  if(rank===1)return [];

@@ -190,3 +190,34 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 .tree-tools{display:flex;align-items:end;gap:8px;margin:10px 0 4px}.tree-tools label{flex:1;margin:0;color:#cad4b6;font-size:9px;letter-spacing:.08em}.tree-tools select{display:block;min-height:44px;margin:4px 0 0;background:#e2d3ab;color:#344b35;border:2px solid #465b3f;font-size:11px;letter-spacing:0}.tree-zoom{display:flex;gap:4px}.tree-zoom button{width:auto;min-width:44px;min-height:44px;margin:0;padding:6px 10px;text-align:center;background:#667d50;color:#fff5d3;border-color:#344631}.tree-zoom button:focus-visible,.tree-tools select:focus-visible,.skill-build-summary summary:focus-visible{outline:3px solid #fff;outline-offset:2px}.tree-key{text-align:center;color:#dfd5ad;margin:2px 0 6px;font-size:9px;letter-spacing:.04em}.tree-dialog .tree-node.is-filtered{opacity:.18}.tree-dialog .tree-node.is-filtered:focus-visible,.tree-dialog .tree-node.is-filtered.is-prerequisite,.tree-dialog .tree-node.is-filtered.is-dependent{opacity:1}.tree-dialog .tree-node.is-prerequisite{outline:4px solid #f5c752;outline-offset:4px;z-index:4}.tree-dialog .tree-node.is-dependent{outline:4px solid #76cbd6;outline-offset:4px;z-index:4}.tree-dialog .tree-node.is-selected{outline:4px solid #fff7dc;outline-offset:4px;z-index:5}.tree-dialog .tree-link.is-related{stroke:#e7ab49;stroke-width:7;stroke-opacity:1}.skill-build-summary{margin:10px 0;background:#d4c59d;border:2px solid #344631;color:#344631}.skill-build-summary summary{cursor:pointer;padding:10px;font-weight:bold;font-size:11px;letter-spacing:.06em}.skill-build-summary div{padding:0 10px 10px}.skill-build-summary p{font-size:11px;line-height:1.45;white-space:pre-line;margin:6px 0}.skill-build-summary small{font-size:10px;color:#53644b;letter-spacing:0}.skill-build-summary p:empty{display:none}@media(max-width:600px){.tree-tools{display:grid;grid-template-columns:1fr 1fr}.tree-zoom{grid-column:1/-1}.tree-zoom button{flex:1}.tree-dialog .skill-tree{max-height:40dvh}.tree-key{font-size:8px}}
 
 @media (pointer:coarse){.tree-dialog .tree-node{min-width:44px;min-height:44px}.tree-dialog .tree-hint{line-height:1.4}}
+
+/* Iron Path beta: campaign picker, operation report and feedback route. */
+.mission-line{display:block;width:100%;order:3;margin-top:4px;font:bold 11px/1.3 Georgia,serif;letter-spacing:.04em;color:#3f5234}
+.battle-head{flex-wrap:wrap}
+.campaign-dialog{width:min(720px,calc(100vw - 24px))}
+.campaign-list{display:grid;gap:10px;margin:12px 0}
+.campaign-mission{display:grid;gap:6px;padding:12px;border:1px solid #4d6144;border-radius:6px;background:#202b20}
+.campaign-mission h3{margin:0;font-family:Georgia,serif;font-size:19px;color:#f3dfab}
+.campaign-mission p{margin:0;color:#d8dcc7;line-height:1.4}
+.campaign-mission small{color:#a0ad96;line-height:1.4}
+.campaign-mission button{min-height:44px;justify-self:start}
+.campaign-mission.is-active{border-color:#f3dfab}
+.campaign-mission.is-locked{opacity:.72}
+.campaign-lock{font-size:12px;color:#e3b27a!important}
+.results-dialog{width:min(720px,calc(100vw - 24px))}
+.results-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}
+.results-stat{display:grid;gap:4px;padding:10px;border:1px solid #4d6144;border-radius:6px;background:#202b20}
+.results-stat span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#a0ad96}
+.results-stat strong{font-family:Georgia,serif;font-size:22px;color:#f3dfab}
+.results-dialog h3{margin:14px 0 6px;font-family:Georgia,serif;color:#f3dfab;font-size:17px}
+.results-contributions,.results-rewards{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.results-contributor{padding:8px 10px;border:1px solid #3b4836;border-radius:6px;background:#1a221a}
+.results-contributor.is-you{border-color:#d3df7c}
+.results-contributor-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.results-bar{height:8px;margin:6px 0;border-radius:4px;background:#2c3a2b;overflow:hidden}
+.results-bar span{display:block;height:100%;background:linear-gradient(90deg,#8ca36b,#d3df7c)}
+.results-contributor small,.results-rewards li{color:#c4cdb4;line-height:1.4}
+.results-rewards li{padding-left:10px;border-left:3px solid #6b8456}
+.results-feedback,.footer-feedback{color:#d3df7c}
+.results-dialog .skill-actions{align-items:center;justify-content:space-between}
+@media(max-width:520px){.campaign-dialog,.results-dialog{padding:12px}.results-stat strong{font-size:18px}}
