@@ -81,7 +81,7 @@ element('towerDetailsBack').onclick();
 element('radial0').onclick();element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,15);
 element('start').onclick();
-assert.equal(element('wave').textContent,'1 / 10');
+assert.equal(element('wave').textContent,'1 / 20');
 assert.match(element('wavePreview').textContent,/Next: Wave 2/);
 element('tutorialReplay').onclick();
 assert.equal(element('tutorialDialog').open,true);

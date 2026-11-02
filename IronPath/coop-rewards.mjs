@@ -1,3 +1,4 @@
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-waves20';
 import {rewardWave} from './armory.mjs';
 import {waveXP} from './progression.mjs?v=20261031-rpg2';
 
@@ -19,21 +20,21 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,onStatus=()=>{},clock
       const result=await sdk.runTransaction(profileRef,current=>{
         if(closed||auth.currentUser?.uid!==uid||!current||!Number.isInteger(current.xp))return undefined;
         const receipts=current.coopRewards||{},old=receipts[partyId]||0;
-        if(!Number.isInteger(old)||old<0||old>1023)return undefined;
+        if(!Number.isInteger(old)||old<0||old>MAX_WAVE_MASK)return undefined;
         const added=mask&~old;if(!added)return undefined;
-        let xp=0,armory=current.armory;for(let wave=1;wave<=10;wave++)if(added&(1<<(wave-1))){xp+=waveXP(wave);armory=rewardWave(armory,wave);}
+        let xp=0,armory=current.armory;for(let wave=1;wave<=WAVE_COUNT;wave++)if(added&(1<<(wave-1))){xp+=waveXP(wave);armory=rewardWave(armory,wave);}
         if(current.xp+xp>10000000)return undefined;
         return {...current,xp:current.xp+xp,armory,coopRewards:{...receipts,[partyId]:old|mask}};
       },{applyLocally:false});
       if(closed||auth.currentUser?.uid!==uid)return;
       const receipt=result.snapshot.val()?.coopRewards?.[partyId]||0;
-      if(!Number.isInteger(receipt)||receipt<0||receipt>1023||(receipt&mask)!==mask)throw new Error('XP credit not confirmed');
+      if(!Number.isInteger(receipt)||receipt<0||receipt>MAX_WAVE_MASK||(receipt&mask)!==mask)throw new Error('XP credit not confirmed');
       confirmed|=receipt;pending&=~confirmed;if(result.committed)onStatus('saved');
     }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error',error);}}
     finally{unwatch?.();running=false;if(!closed&&pending&&clock()>=retryAt)void pump();}
   }
   return {
-    observe(mask){if(closed||!Number.isInteger(mask)||mask<0||mask>1023)return;pending|=mask&~confirmed;void pump();},
+    observe(mask){if(closed||!Number.isInteger(mask)||mask<0||mask>MAX_WAVE_MASK)return;pending|=mask&~confirmed;void pump();},
     close(){closed=true;pending=0;}
   };
 }

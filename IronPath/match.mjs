@@ -3,7 +3,7 @@ import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
-import { WAVES } from './combat.mjs';
+import { WAVES } from './combat.mjs?v=20261102-waves20';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
