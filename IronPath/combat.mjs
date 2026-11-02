@@ -60,10 +60,10 @@ export function towerDamage(type, level, branch, enemyKind) {
 
 // Authored opening followed by deterministic, bounded-size endless formations.
 export const BOSSES=Object.freeze([
- {kind:'bossIronclad',label:'Ironclad',base:'tank',hp:4,speed:.9,damage:1.5,reward:75,description:'Armored: takes 20% less tower and soldier damage.'},
- {kind:'bossBomber',label:'Dread Bomber',base:'plane',hp:4,speed:.85,damage:2,reward:90,description:'Fast aerial boss: doubles its bunker damage.'},
- {kind:'bossJuggernaut',label:'Juggernaut',base:'tank',hp:5,speed:.8,damage:2,reward:110,description:'Self-repair: regenerates 0.2% of maximum HP per second.'},
- {kind:'bossCommander',label:'War Commander',base:'tank',hp:6,speed:.8,damage:2.5,reward:140,description:'Command aura: nearby ground enemies move 25% faster.'}
+ {kind:'bossIronclad',label:'Ironclad',base:'tank',hp:4,speed:.9,damage:1.5,reward:75,description:'Armored: takes 20% less weapon damage; raises a shield every 16 seconds.'},
+ {kind:'bossBomber',label:'Dread Bomber',base:'plane',hp:4,speed:.85,damage:2,reward:90,description:'Bomb run: warns for 2 seconds, then strikes the bunker every 12 seconds.'},
+ {kind:'bossJuggernaut',label:'Juggernaut',base:'tank',hp:5,speed:.8,damage:2,reward:110,description:'Self-repair: regenerates and restores 2% HP every 10 seconds after a warning.'},
+ {kind:'bossCommander',label:'War Commander',base:'tank',hp:6,speed:.8,damage:2.5,reward:140,description:'Command aura speeds nearby ground troops; a rally periodically extends its range.'}
 ]);
 for(const boss of BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};
 export function bossForWave(wave){return wave>0&&wave%5===0?BOSSES[(Math.floor(wave/5)-1)%BOSSES.length]:null;}

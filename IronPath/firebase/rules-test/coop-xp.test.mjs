@@ -175,3 +175,18 @@ test('shared rare upgrades and broken ice survive Firebase snapshots and reconne
   assert.equal((await choice).ok,true);await until(()=>view?.match.pendingPerk===0);assert.equal(view.match.iceBroken,true);assert.equal(Object.values(view.match.runPerks).reduce((a,b)=>a+b,0),1);
   h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.iceBroken,true);assert.equal(Object.values(view.match.runPerks).reduce((a,b)=>a+b,0),1);
 });
+
+test('boss warning timing and bunker strike synchronize through Firebase',async t=>{
+  const {createFirebasePartyChannel}=await import('../../firebase-party-channel.mjs');
+  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
+  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch,STEP}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');const {makeEnemy}=await import('../../combat.mjs');
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
+  const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'})),'g2-12345678');state.wave=10;state.running=true;state.spawnLeft=1;state.spawnTimer=100;
+  state.enemies=[{...makeEnemy('bossBomber',10),bossClock:12-STEP/2,x:100,y:130,segment:1,speed:0}];
+  const h=createFirebasePartyHostSession({channel:createFirebasePartyChannel({...opts,db:alice,auth:{currentUser:{uid:'alice'}}}),host:createPartyHost(state,{hostId:'alice'}),playerIds:ids,epoch:'boss-test'});
+  let view;const client=createFirebasePartyClientSession({channel:createFirebasePartyChannel({...opts,db:bob,auth:{currentUser:{uid:'bob'}}}),onView:v=>{view=v;}});
+  t.after(async()=>{await Promise.all([h.stop(),client.stop()]);});client.start();h.start();h.setPresence('alice',true);h.setPresence('bob',true);h.publish();await until(()=>view?.match.enemies?.[0]?.bossClock>11);
+  h.step();h.publish();await until(()=>view?.match.hp===92);assert.ok(view.match.enemies[0].bossFlash>0);assert.ok(view.match.enemies[0].bossClock>=12);
+  h.setPresence('bob',false);h.setPresence('bob',true);h.publish();await until(()=>view?.match.players.bob.active===true);assert.equal(view.match.hp,92);
+});

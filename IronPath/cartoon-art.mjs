@@ -1,3 +1,4 @@
+import {bossPhase} from './boss-mechanics.mjs?v=20261102-boss2';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#29352c',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -96,8 +97,16 @@ function soldier(ctx,p,own){
   line(ctx,[[x+3,y+1],[x+14,y-4]],ink,3);line(ctx,[[x-4,y+11],[x-5,y+15]],ink,3);line(ctx,[[x+5,y+11],[x+6,y+15]],ink,3);
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||'HERO',x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||'HERO',x,y+29);ctx.textAlign='start';
 }
-function enemy(ctx,e){
+function enemy(ctx,e,reducedMotion){
   const x=e.x,y=e.y;
+  if(e.boss){const phase=bossPhase(e);if(phase!=='normal'){
+    const radius=phase==='rally'?45:phase==='shield'?31:28;
+    ctx.save();ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.strokeStyle=phase==='shield'?'#a5d9e3':phase==='repair-warning'?'#addb8b':'#f3c776';ctx.lineWidth=3;ctx.setLineDash(reducedMotion?[]:[5,5]);ctx.stroke();
+    if(phase==='shield'){ctx.globalAlpha=.18;ctx.fillStyle='#b6e7ed';ctx.fill();}
+    if(phase==='repair-warning'){line(ctx,[[x-6,y-30],[x+6,y-30]],'#daf0ad',3);line(ctx,[[x,y-36],[x,y-24]],'#daf0ad',3);}
+    if(phase==='bomb-warning'){line(ctx,[[x+3,y+17],[x+3,y+27]],'#ffd193',3);oval(ctx,x+3,y+30,3,5,'#f2ca87');}
+    ctx.restore();
+  }}
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
   oval(ctx,x,y+10,11,4,'#8c8264',null);
   if(e.boss==='bossBomber'){
@@ -133,7 +142,14 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   if(theme==='scrub'&&path.length===10)for(const e of state.enemies)if(e.kind==='tank'&&e.hp>0){
     ctx.save();ctx.beginPath();ctx.arc(e.x,e.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.18)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.65)';ctx.lineWidth=2;ctx.setLineDash([6,7]);ctx.stroke();ctx.restore();
   }
-  for(const e of state.enemies)enemy(ctx,e);
+  for(const e of state.enemies){
+    if(e.boss==='bossBomber'&&bossPhase(e)==='bomb-warning'){
+      ctx.save();ctx.strokeStyle='#f2aa78';ctx.lineWidth=3;ctx.setLineDash(reducedMotion?[]:[7,6]);ctx.beginPath();ctx.arc(900,400,36,0,Math.PI*2);ctx.stroke();ctx.restore();
+    }
+    if(e.boss==='bossBomber'&&e.bossFlash>0&&!reducedMotion)burst(ctx,900,400,20+(1-e.bossFlash)*12,'#ef9e68');
+    if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
+    enemy(ctx,e,reducedMotion);
+  }
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
   if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);
   ctx.restore();

@@ -1,6 +1,6 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-future1';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-boss2';
 import {rewardWave} from './armory.mjs?v=20261102-armory2';
-import {waveXP} from './progression.mjs?v=20261102-future1';
+import {waveXP} from './progression.mjs?v=20261102-boss2';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's
 // wave receipt together; the player-host is not trusted or cheat-proof.
