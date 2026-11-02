@@ -72,3 +72,16 @@ export function waveFormation(wave){
  const base=wave<=WAVE_COUNT?[...WAVES[wave-1]]:Array.from({length:Math.min(72,36+Math.floor((wave-21)/2))},(_,i)=>['tank','runner','plane','infantry','tank','plane'][(i+wave)%6]);
  const boss=bossForWave(wave);if(boss)base.push(boss.kind);return base;
 }
+
+// Readable field-manual roles, matching the existing damage multipliers.
+export const ENEMY_INTEL=Object.freeze({
+ infantry:{symbol:'I',role:'Infantry',counter:'MG / Sniper'},
+ runner:{symbol:'S',role:'Scout',counter:'MG / Sniper'},
+ tank:{symbol:'T',role:'Tank',counter:'Cannon'},
+ plane:{symbol:'A',role:'Aircraft',counter:'Flak'}
+});
+export function countFieldThreats(enemies){
+ const counts={infantry:0,runner:0,tank:0,plane:0};
+ for(const e of enemies||[])if(e.hp>0&&Object.hasOwn(counts,e.kind))counts[e.kind]++;
+ return counts;
+}

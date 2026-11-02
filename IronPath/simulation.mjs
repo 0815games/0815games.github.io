@@ -1,13 +1,13 @@
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-combos1';
 import {webBonuses} from './skills.mjs?v=20261102-combos1';
-import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-terrain4';
+import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-terrain4';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
-import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-longterm1';
+import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261102-terrain4';
-import {addSupplies} from './match.mjs?v=20261102-combos1';
+import {addSupplies} from './match.mjs?v=20261102-battle2';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -45,7 +45,7 @@ export function stepMatch(state){
   const events=[];if(state.ended)return events;const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map);
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
-  state.shots=state.shots.filter(s=>(s.life-=dt)>0);
+  state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);
   for(const id of Object.keys(state.players).sort()){
     const p=state.players[id];if(p.active===false)continue;const speed=(150+10*(p.skills?.recon||0)+bonuses[id].movement+(p.mobileSupply?.remaining>0?p.mobileSupply.bonus:0)+(p.loadout?.equipped===3?20:0))*soldierSpeedFactor(theme,p,PATH);p.overdrive=Math.max(0,(p.overdrive||0)-dt);if(p.mobileSupply)p.mobileSupply.remaining=Math.max(0,p.mobileSupply.remaining-dt);if(p.healingField?.remaining>0&&state.running){const elapsed=Math.min(dt,p.healingField.remaining);p.healingField.remaining=Math.max(0,p.healingField.remaining-elapsed);state.hp=Math.min(state.maxHp,state.hp+p.healingField.rate*elapsed);}let {x:dx,y:dy}=p.direction;
     if(dx||dy){const len=Math.hypot(dx,dy);p.x+=dx/len*speed*dt;p.y+=dy/len*speed*dt;}
@@ -74,7 +74,7 @@ export function stepMatch(state){
     if(e.boss==='bossJuggernaut'&&crossedCycle(before,after,10)){e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.02);e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'repair'});}
     if(e.boss==='bossBomber'&&crossedCycle(before,after,12)){
       const damage=8*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);
-      state.hp-=damage;e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'bomb',damage});
+      state.hp-=damage;e.bossFlash=.8;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:'bossBomber',damage};events.push({type:'bossAbility',boss:e.boss,ability:'bomb',damage});
     }
   }
   const commander=state.enemies.find(e=>e.boss==='bossCommander'&&e.hp>0),rally=commander&&bossPhase(commander)==='rally';
@@ -101,7 +101,7 @@ export function stepMatch(state){
       if(p.skills?.web?.[24]&&p.heroShotCount%4===0&&target.hp>0){target.pinned=Math.max(target.pinned||0,3);comboCue(p,'Ghost Operative',target.x,target.y);events.push({type:'skillCombo',name:'Ghost Operative',x:target.x,y:target.y});}
       p.shotTimer=.65*Math.max(.5,1-bonuses[id].heroSpeed/100)*(p.skills?.extra?.[0] ? .85 : 1)*(state.wave>=6&&p.loadout?.equipped===8?.9:1);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}
   }
-  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){rewardTeam(state,e.reward,true);state.lootKills=(state.lootKills||0)+1;if(state.lootKills%5===0){const cacheReward=rewardTeam(state,15);if(state.individualSupplies)for(const p of Object.values(state.players))if(p.active!==false)p.lootCaches=(p.lootCaches||0)+1;events.push({type:'lootDrop',supplies:cacheReward});}return false;}if(e.segment>=PATH.length){const damage=e.damage*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);state.hp-=damage;events.push({type:'bunkerHit',kind:e.kind,damage});return false;}return true;});
+  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){if(Number.isFinite(e.x)&&Number.isFinite(e.y)){const pops=state.combatPops||(state.combatPops=[]);pops.push({x:e.x,y:e.y,life:.65,boss:!!e.boss});if(pops.length>20)pops.shift();}rewardTeam(state,e.reward,true);state.lootKills=(state.lootKills||0)+1;if(state.lootKills%5===0){const cacheReward=rewardTeam(state,15);if(state.individualSupplies)for(const p of Object.values(state.players))if(p.active!==false)p.lootCaches=(p.lootCaches||0)+1;events.push({type:'lootDrop',supplies:cacheReward});}return false;}if(e.segment>=PATH.length){const damage=e.damage*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);state.hp-=damage;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:e.boss||e.kind,damage};events.push({type:'bunkerHit',kind:e.boss||e.kind,damage});return false;}return true;});
   if(state.running&&state.hp>0&&state.hp<state.maxHp*.3)for(const id of activePlayers(state)){const p=state.players[id];if(p.skills?.web?.[19]&&p.guardWave!==state.wave){p.guardWave=state.wave;state.hp=Math.min(state.maxHp,state.hp+20);comboCue(p,'Bunker Guardian',910,400);events.push({type:'skillCombo',name:'Bunker Guardian',x:910,y:400});}}
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}
   else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){
