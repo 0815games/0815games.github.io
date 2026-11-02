@@ -2,8 +2,11 @@ import {test,before,after,beforeEach} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
-import {ref,set,get,update,onValue,runTransaction,remove,serverTimestamp} from 'firebase/database';
+import {ref,set,get,update,onValue,runTransaction,remove,serverTimestamp,onDisconnect} from 'firebase/database';
 import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
+import {createFirebasePartyGame} from '../../firebase-party-game.mjs';
+import {createPlayer} from '../../match.mjs';
+import {webcrypto} from 'node:crypto';
 let env,db;const names={alice:'Alice',bob:'Bob',cara:'Cara',dan:'Dan',eve:'Eve'};
 const party='0123456789abcdef0123456789abcdef',code='0123',p=`fourParties/${party}`,c=`fourCodes/${code}`,at=(uid,path)=>ref(db[uid],path);
 const profile=uid=>({name:names[uid],gender:'female',level:1});
@@ -71,6 +74,20 @@ test('SDK lobby subscriptions expose only permitted roster information', {timeou
   await assert.rejects(once((ok,err)=>lobby.eve.watchConfig(created.partyId,ok,err)),/permission_denied/i);
   await assert.rejects(once((ok,err)=>lobby.eve.watchProfile(created.partyId,'alice',ok,err)),/permission_denied/i);
   await lobby.bob.leave(created.partyId);await lobby.alice.close(created.partyId,created.inviteCode);
+});
+for(const mode of ['four-coop','two-vs-two'])test(`four real Firebase SDK clients play ${mode} under draft rules`,{timeout:60000},async()=>{
+  await full();if(mode==='four-coop')await set(at('alice',`${p}/config`),{mode,teams:[0,1,0,1]});await set(at('alice',`${p}/started`),manifest(mode));
+  const ids=['alice','bob','cara','dan'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp},statuses={},views={},errors=[];
+  const players=ids.map((id,i)=>createPlayer(id,profile(id),1220,270+i*60));
+  const clients=ids.map(id=>createFirebasePartyGame({db:db[id],auth:{currentUser:{uid:id}},sdk,partyId:party,hostId:'alice',playerIds:ids,mode,crypto:webcrypto,...(id==='alice'?{players,teams:[['alice','cara'],['bob','dan']]}:{}),onStatus:value=>{statuses[id]=value;},onState:value=>{if(value==='error')errors.push(id);},onSnapshot:value=>{views[id]=value;}}));
+  async function waitFor(fn,label){const until=Date.now()+20000;while(Date.now()<until){if(errors.length)throw Error(`Client error: ${errors.join(',')}`);if(fn())return;await new Promise(resolve=>setTimeout(resolve,50));}throw Error(`Timed out: ${label}`);}
+  try{
+    for(const client of clients)client.start();await waitFor(()=>ids.every(id=>statuses[id]),'four clients ready');
+    const requested=await clients[0].command({type:'startWave'});assert.equal(requested.ok,true);for(let i=1;i<4;i++){const result=await clients[i].command({type:'approveWave',requestId:requested.requestId});assert.equal(result.ok,true,`${ids[i]} approves`);}
+    await waitFor(()=>ids.every(id=>mode==='four-coop'?views[id]?.match?.match?.wave===1:views[id]?.match?.lanes?.every(lane=>lane.wave===1)),'wave visible');
+    assert.equal((await clients[3].command({type:'build',pad:15,towerType:0})).ok,true);await waitFor(()=>mode==='four-coop'?views.bob?.match?.match?.towers?.length===1:views.bob?.match?.lanes?.[1]?.towers?.length===1,'tower visible');
+    await clients[3].stop();await waitFor(()=>statuses.dan===false,'guest offline');await waitFor(()=>mode==='four-coop'?statuses.alice===true:statuses.alice===false,'disconnect behavior');assert.deepEqual(errors,[]);
+  }finally{await Promise.allSettled(clients.map(client=>client.stop()));}
 });
 test('existing account and two-player code rules remain present',async()=>{
   const old='fedcba9876543210fedcba9876543210';await assertSucceeds(set(at('alice',`parties/${old}/hostId`),'alice'));await assertSucceeds(set(at('alice','partyCodes/0987/hostId'),'alice'));await assertFails(get(at('eve','players/alice')));await assertFails(set(at('bob','players/alice/xp'),500));

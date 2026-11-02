@@ -15,6 +15,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     $('fourPartySettings').hidden=!host||started;requests.hidden=!host||started;
     $('fourPartyStart').hidden=!host||started;
     $('fourPartyStart').disabled=busy||!host||started||!ready();
+    $('fourPartyLeave').hidden=started&&!host;
     $('fourPartyLeave').textContent=host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY';
     for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
     if(joining)$('fourPartyLeave').disabled=true;
@@ -29,7 +30,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   function ready(){return !!party&&!!config&&[party.hostId,slots.one,slots.two,slots.three].every(id=>id&&profiles[id]);}
   function addWatch(stop){unwatch.push(stop);}
   function failed(){status('Party connection lost. Check your connection or leave and try again.');}
-  async function run(fn){if(busy)return;busy=true;const gen=generation;render();try{await fn(gen);}catch{if(gen===generation)status('Could not complete that action. Check your connection and try again.');}finally{if(gen===generation){busy=false;render();}}}
+  async function run(fn){if(busy)return;busy=true;const gen=generation;render();try{return await fn(gen);}catch{if(gen===generation)status('Could not complete that action. Check your connection and try again.');}finally{if(gen===generation){busy=false;render();}}}
   function watchProfiles(gen){
     const ids=[party.hostId,slots.one,slots.two,slots.three].filter(Boolean);
     for(const [id,entry] of profileWatches)if(!ids.includes(id)){entry.stop?.();profileWatches.delete(id);delete profiles[id];}
@@ -81,14 +82,15 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     if(party?.role!=='host'||!ready()||started||!await confirmStart()||gen!==generation||!party||!ready())return;
     const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
   });
-  $('fourPartyLeave').onclick=()=>run(async gen=>{
+  const leaveParty=()=>run(async gen=>{
     if(!party||joining)return;const current=party,active=lobby;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);
-    if(gen===generation){clear();status(current.role==='host'?'Party closed.':'You left the party.');}
+    if(gen===generation){clear();status(current.role==='host'?'Party closed.':'You left the party.');return true;}
   });
+  $('fourPartyLeave').onclick=leaveParty;
   async function leaveForLogout(timeoutMs=2000){
     const old=party,active=lobby,wasStarted=started;clear();root.hidden=true;
     const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host')await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted)await active.cancel(old.inviteCode);})().catch(()=>{});
     let timer;await Promise.race([cleanup,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);
   }
-  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,leaveForLogout};
+  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,leaveParty,leaveForLogout};
 }
