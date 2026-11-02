@@ -1,5 +1,5 @@
 import {parseLoadout} from './armory.mjs';
-import {parseBuild,abilityName} from './skills.mjs';
+import {parseBuild,abilityName} from './skills.mjs?v=20261102-tree2';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
@@ -77,12 +77,12 @@ export function applyCommand(state, playerId, command) {
       }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
-      player.cooldown=30;
+      player.cooldown=player.skills?.extra?.[3]?25:30;
       if(active==='assault')for(const enemy of state.enemies)enemy.hp-=35;
       else if(active==='engineer')player.overdrive=10;
-      else if(active==='logistics')addSupplies(state,playerId,30);
-      else if(active==='medic')state.hp=Math.min(state.maxHp??100,state.hp+15);
-      else if(active==='recon')state.suppression=8;
+      else if(active==='logistics')addSupplies(state,playerId,30+(player.skills?.extra?.[5]?15:0));
+      else if(active==='medic')state.hp=Math.min(state.maxHp??100,state.hp+15+(player.skills?.extra?.[7]?10:0));
+      else if(active==='recon')state.suppression=8+(player.skills?.extra?.[9]?3:0);
       return {ok:true};
     }
     default:return {ok:false,reason:'Unknown command.'};

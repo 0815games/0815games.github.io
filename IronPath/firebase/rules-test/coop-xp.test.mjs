@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../armory.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../expanded-skills.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
 const sdk={ref,get,onValue,runTransaction};
@@ -55,7 +55,7 @@ test('actual game adapters show each balance and credit both players for a compl
   const qa=createCoopRewardQueue({db:alice,auth:authA,sdk:fullSdk,partyId:party}),qb=createCoopRewardQueue({db:bob,auth:authB,sdk:fullSdk,partyId:party});
   let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
   const common={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
-  const a=createFirebasePartyGame({...common,db:alice,auth:authA,players:ids.map((id,i)=>createPlayer(id,{name:id,gender:'female',level:21,loadout:i?'0,2,2':'1,0,1'},100,130)),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;},onWaveRewards:v=>qa.observe(v)});
+  const a=createFirebasePartyGame({...common,db:alice,auth:authA,players:ids.map((id,i)=>createPlayer(id,{name:id,gender:'female',level:21,skills:i?'0,0,0,2,0;medic;0000001100':'2,0,0,0,0;assault;1100000000',loadout:i?'0,2,2':'1,0,1'},100,130)),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;},onWaveRewards:v=>qa.observe(v)});
   const b=createFirebasePartyGame({...common,db:bob,auth:authB,onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;},onWaveRewards:v=>qb.observe(v)});
   t.after(async()=>{qa.close();qb.close();await Promise.all([a.stop(),b.stop()]);});
   // Accelerate only the game tick; network and presence timers use real time.
@@ -63,7 +63,7 @@ test('actual game adapters show each balance and credit both players for a compl
   try{globalThis.setInterval=(fn,delay,...args)=>originalSetInterval(fn,delay===STEP*1000?2:delay,...args);a.start();b.start();}finally{globalThis.setInterval=originalSetInterval;}
   const readyUntil=async fn=>{const end=Date.now()+10000;while(!await fn()){if(stateA==='error'||stateB==='error')throw Error(`Adapter error: ${stateA}/${stateB}`);if(Date.now()>end)throw Error('Timed out waiting for game adapters');await new Promise(r=>setTimeout(r,20));}};
   await readyUntil(()=>readyA&&readyB&&viewA&&viewB);
-  assert.equal(viewA.match.money,125);assert.equal(viewB.match.money,125);assert.equal(viewA.match.maxHp,120);assert.equal(viewB.match.plating,2);assert.equal(viewB.match.players.bob.loadout.equipped,2);
+  assert.equal(viewA.match.money,125);assert.equal(viewB.match.money,125);assert.equal(viewA.match.maxHp,140);assert.equal(viewB.match.plating,2);assert.equal(viewB.match.players.bob.loadout.equipped,2);assert.equal(viewA.match.players.alice.skills.extra[0],1);assert.equal(viewB.match.players.bob.skills.extra[6],1);
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await readyUntil(()=>viewB.match.players.bob.money===75);
   assert.equal(viewB.match.money,75,'guest sees their own updated balance');assert.equal(viewA.match.players.alice.money,125);
@@ -102,4 +102,18 @@ test('armory data and party loadout are owner-only and bounded',async()=>{
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:1,loadout:'1,0,1'}));
   await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,0'));
   await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'4,0,0'));
+});
+
+
+test('expanded and legacy skill builds remain compatible with account, party and rewards',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,skills:'2,0,0,0,0;assault;1100000000'}));
+  await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1100000009'));
+  await assertFails(set(ref(alice,'players/alice/skills'),'2,0,0,0,0;assault;1100'));
+  await assertFails(set(ref(bob,'players/alice/skills'),'2,0,0,0,0;assault;1000000000'));
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30);
+  assert.equal((await get(ref(alice,'players/alice/skills'))).val(),'2,0,0,0,0;assault;1100000000');q.close();
+  await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
+  await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:5,skills:'2,0,0,0,0;assault;1100000000'}));
+  await assertSucceeds(set(ref(bob,`parties/${party}/profiles/bob`),{name:'Bob',gender:'male',level:1,skills:'0,0,0,0,0;assault'}));
+  await assertFails(set(ref(bob,`parties/${party}/profiles/alice/skills`),'0,0,0,0,0;assault'));
 });
