@@ -22,3 +22,14 @@ let resolveClose;
 const guarded=createFourDigitPanel({document,createLobby:()=>base,createApproval:()=>approval,getProfile:()=>({name:'Alice'}),onJoinMatch:()=>true,onLeaveMatch:()=>{leaves++;},confirmMatch:()=>true,confirmClose:()=>new Promise(resolve=>{resolveClose=resolve;}),enabled:true});
 await document.getElementById('partyCreate').onclick();
 const closing=document.getElementById('partyLeave').onclick();assert.equal(typeof resolveClose,'function');await guarded.reset();resolveClose(true);await closing;assert.equal(closed,0,'stale confirmation must not close a reset party');
+// Successful start collapses the panel without closing the party or match.
+let guestWatch,profileWatch;
+const startingBase={...base,watchGuest(_id,fn){guestWatch=fn;return()=>{};},watchProfile(_id,_uid,fn){profileWatch=fn;return()=>{};},async startMatch(){return {partyId:'x',hostId:'alice',guestId:'bob',profiles:[{},{}]};}};
+const starting=createFourDigitPanel({document,createLobby:()=>startingBase,createApproval:()=>approval,getProfile:()=>({name:'Alice'}),onJoinMatch:()=>true,onLeaveMatch:()=>{leaves++;},confirmMatch:()=>true,confirmClose:()=>true,enabled:true});
+toggle.onclick();await document.getElementById('partyCreate').onclick();guestWatch('bob');profileWatch({name:'Bob'});await document.getElementById('partyStart').onclick();assert.equal(root.hidden,true);assert.equal(starting.isActive(),true);assert.equal(toggle.attrs['aria-expanded'],'false');await starting.reset();
+// The joining player also collapses only after accepting and joining the match.
+let approvalGuest,matchWatch,guestLeaves=0;
+const joinBase={...base,watchGuest(_id,fn){approvalGuest=fn;return()=>{};},watchMatch(_id,fn){matchWatch=fn;return()=>{};},async leaveGuest(){guestLeaves++;}};
+const joinApproval={async request(){return {partyId:'x',hostId:'alice',guestId:'bob'};},async readStarted(){return null;},watchOwnRequest(){return()=>{};}};
+const joining=createFourDigitPanel({document,createLobby:()=>joinBase,createApproval:()=>joinApproval,getProfile:()=>({name:'Bob'}),onJoinMatch:()=>true,onLeaveMatch:()=>{leaves++;},confirmMatch:()=>true,enabled:true});
+toggle.onclick();document.getElementById('partyCodeInput').value='0123';await document.getElementById('partyJoin').onclick();approvalGuest('bob');await new Promise(r=>setTimeout(r,0));matchWatch('bob');await new Promise(r=>setTimeout(r,0));assert.equal(root.hidden,true);assert.equal(joining.isActive(),true);assert.equal(await joining.leaveParty(),true);assert.equal(guestLeaves,1);assert.equal(joining.isActive(),false);

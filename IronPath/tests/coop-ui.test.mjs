@@ -11,7 +11,7 @@ let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
 for(const file of ['boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
-const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];
+const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];match.hostId='alice';
 const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
 let mapGeneration=0,allowEnd=false,confirmation;
 const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';},confirmAction:async options=>{confirmation=options;return allowEnd;}});
@@ -40,9 +40,18 @@ assert.equal(match.players.bob.money,50);assert.match(el('message').textContent,
 match.mapId='forest';opts.onSnapshot({match:structuredClone(match)});assert.equal(el('mapName').textContent,'Pinewood Crossing','guest uses map from host snapshot');
 opts.onEvents([{type:'waveCleared',xp:30,victory:false}]);assert.equal(awards,0,'online clients must never award XP');
 frame(performance.now()+100);assert.equal(awards,0);assert.equal(match.wave,0,'browser must not simulate online');
-await el('endRun').onclick();assert.equal(match.ended,false);assert.match(confirmation.text,/both players/);allowEnd=true;await el('endRun').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(match.ended,true);assert.equal(el('start').textContent,'MATCH ENDED');assert.equal(el('endRun').disabled,true);assert.match(el('message').textContent,/Shared run ended/);
+await el('endRun').onclick();assert.equal(match.ended,false);assert.match(confirmation.text,/both players/);allowEnd=true;await el('endRun').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(match.ended,true);assert.equal(el('start').textContent,'MATCH ENDED');assert.equal(el('endRun').disabled,false);assert.equal(el('endRun').textContent,'CLOSE PARTY');assert.match(el('message').textContent,/Shared run ended/);
 el('coopToggle').onclick();assert.equal(stopCalled,true);assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
 assert.equal(game.confirmParty(),true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),true);
 assert.equal(el('speed').disabled,true);assert.equal(game.beginCoop(callbacks=>factory(callbacks)),false);
 await game.leaveCoop();assert.equal(el('money').textContent,125);assert.equal(el('speed').disabled,false);
 console.log('Opt-in co-op UI adapter and party handoff smoke tests passed.');
+// Guest approves the host's request and leaves without ending the host's run.
+const guestMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);guestMatch.hostId='alice';
+let guestOptions,guestStopped=false,leftParty=0,guestCommands=[],guestGame;
+const guestFactory=options=>{guestOptions=options;return {start(){options.onSnapshot({match:structuredClone(guestMatch)});options.onStatus(true);},stop(){guestStopped=true;},async command(command){guestCommands.push(command);const result=applyCommand(guestMatch,'bob',command);options.onSnapshot({match:structuredClone(guestMatch)});return result;}};};
+guestGame=startGame({getProfile:()=>({name:'Bob',gender:'male'}),getUserId:()=> 'bob',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{confirmAction:async()=>true,leaveParty:async()=>{leftParty++;await guestGame.leaveCoop();return true;},nextMapId:()=> 'road'});
+assert.equal(guestGame.beginCoop(cb=>guestFactory(cb)),true);assert.equal(el('start').textContent,'WAIT FOR HOST');assert.equal(el('start').disabled,true);assert.equal(el('endRun').textContent,'LEAVE CO-OP');
+assert.equal(applyCommand(guestMatch,'alice',{type:'startWave'}).waitingForGuest,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('start').textContent,'APPROVE WAVE');assert.equal(el('waveRequest').hidden,false);
+el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(guestMatch.wave,1);assert.equal(guestCommands.at(-1).type,'approveWave');
+await el('endRun').onclick();assert.equal(leftParty,1);assert.equal(guestStopped,true);assert.equal(guestMatch.ended,false);assert.equal(guestMatch.players.bob.active,false);assert.ok(guestCommands.some(c=>c.type==='leaveRun'));

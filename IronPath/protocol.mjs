@@ -1,13 +1,13 @@
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261102-terrain4';
-import { stepMatch } from './simulation.mjs?v=20261102-terrain4';
+import { applyCommand } from './match.mjs?v=20261102-coopflow1';
+import { stepMatch } from './simulation.mjs?v=20261102-coopflow1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const commandFields={endRun:[],startWave:[],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -75,7 +75,7 @@ function makeHost(data){
   // removing their identity, towers or reconnect receipts from the match.
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
-    match.players[playerId].active=active;return true;
+    match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}

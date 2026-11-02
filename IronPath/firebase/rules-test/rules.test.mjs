@@ -119,13 +119,15 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   assert.equal((await build).ok,true);await until(()=>bobSnapshot?.match.towers.length===1);
   const start=a.command({type:'startWave'});await until(()=>engine.snapshotFor('alice').nextSeq===2);
   for(let i=0;i<6;i++)h.step();assert.equal((await start).ok,true);
-  await until(()=>bobSnapshot.match.wave===1);
+  await until(()=>bobSnapshot.match.pendingWave===1);assert.equal(bobSnapshot.match.wave,0);
+  const approve=b.command({type:'approveWave',requestId:bobSnapshot.match.waveRequestId});await until(()=>engine.snapshotFor('bob').nextSeq===3);
+  for(let i=0;i<6;i++)h.step();assert.equal((await approve).ok,true);await until(()=>bobSnapshot.match.wave===1);
   goOffline(bob);t.after(()=>goOnline(bob));await until(()=>engine.snapshotFor('alice').match.players.bob.active===false);
   assert.equal(engine.ready(),true);assert.equal(aliceReady,true);assert.ok(h.step());
   const move=a.command({type:'move',x:700,y:400});await until(()=>engine.snapshotFor('alice').nextSeq===3);
   for(let i=0;i<6;i++)h.step();assert.equal((await move).ok,true);
   goOnline(bob);await until(()=>engine.snapshotFor('bob').match.players.bob.active&&bobReady&&bobSnapshot?.match.players.bob.active&&bobSnapshot.tick===engine.snapshotFor('bob').tick);
-  const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===3);
+  const direction=b.command({type:'direction',x:1,y:0});await until(()=>engine.snapshotFor('bob').nextSeq===4);
   for(let i=0;i<6;i++)h.step();assert.equal((await direction).ok,true);
 });
 
@@ -166,7 +168,7 @@ test('game-facing Firebase adapter connects, plays and pauses without a game ser
   a.start();b.start();await until(()=>readyA&&readyB);
   assert.equal((await b.command({type:'build',pad:0,towerType:0})).ok,true);
   await until(()=>viewB?.match.towers.length===1);
-  assert.equal((await a.command({type:'startWave'})).ok,true);await until(()=>viewB?.match.wave===1);
+  assert.equal((await a.command({type:'startWave'})).waitingForGuest,true);await until(()=>viewB?.match.pendingWave===1);assert.equal(viewB.match.wave,0);assert.equal((await b.command({type:'approveWave',requestId:viewB.match.waveRequestId})).ok,true);await until(()=>viewB?.match.wave===1);
   const oldConnections=Object.keys((await get(at(alice,'presence/bob'))).val());
   holdGuestViews=true;goOffline(bob);await until(()=>readyA&&!readyB);assert.equal((await b.command({type:'airstrike'})).ok,false);
   assert.equal((await a.command({type:'move',x:700,y:400})).ok,true);

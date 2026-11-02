@@ -8,7 +8,7 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>
   const uid=auth?.currentUser?.uid;
   if(!db||!uid||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||!/^[a-f0-9]{32}$/.test(partyId)||!Number.isSafeInteger(block)||block<0||typeof onStatus!=='function')throw new Error('Invalid reward queue');
   const receiptId=block===0?partyId:((BigInt('0x'+partyId)+BigInt(block))%(1n<<128n)).toString(16).padStart(32,'0');
-  let pending=0,confirmed=0,running=false,retryAt=0,closed=false;
+  let pending=0,confirmed=0,running=false,retryAt=0,closed=false,retryTimer=null;
   async function pump(){
     if(running||closed||!pending||clock()<retryAt||auth.currentUser?.uid!==uid)return;
     running=true;const mask=pending;pending=0;let unwatch=null;
@@ -31,11 +31,11 @@ export function createCoopRewardQueue({db,auth,sdk,partyId,block=0,onStatus=()=>
       const receipt=result.snapshot.val()?.coopRewards?.[receiptId]||0;
       if(!Number.isInteger(receipt)||receipt<0||receipt>MAX_WAVE_MASK||(receipt&mask)!==mask)throw new Error('XP credit not confirmed');
       confirmed|=receipt;pending&=~confirmed;if(result.committed)onStatus('saved');
-    }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error',error);}}
+    }catch(error){if(!closed&&auth.currentUser?.uid===uid){pending|=mask;retryAt=clock()+5000;onStatus('error',error);if(!retryTimer){retryTimer=setTimeout(()=>{retryTimer=null;void pump();},5000);retryTimer.unref?.();}}}
     finally{unwatch?.();running=false;if(!closed&&pending&&clock()>=retryAt)void pump();}
   }
   return {
     observe(mask){if(closed||!Number.isInteger(mask)||mask<0||mask>MAX_WAVE_MASK)return;pending|=mask&~confirmed;void pump();},
-    close(){closed=true;pending=0;}
+    close(){closed=true;pending=0;if(retryTimer)clearTimeout(retryTimer);retryTimer=null;}
   };
 }

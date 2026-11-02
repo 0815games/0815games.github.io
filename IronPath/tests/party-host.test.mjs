@@ -28,7 +28,10 @@ assert.equal(snap.receipts.at(-1).status,'cancelled');assert.equal(snap.match.to
 assert.equal(host.receive('guest',command(4,'startWave')).reason,'match-paused');
 host.setPresence('host',true);assert.equal(host.ready(),true);host.advance();
 assert.equal(host.snapshotFor('guest').match.towers.length,1,'cancelled sale must not replay');
-assert.equal(host.receive('guest',command(4,'startWave')).status,'queued');host.advance();
+assert.equal(host.receive('guest',command(4,'startWave')).status,'queued');assert.equal(host.advance().commands[0].result.ok,false);
+assert.equal(host.receive('host',command(2,'startWave')).status,'queued');assert.equal(host.advance().commands[0].result.waitingForGuest,true);
+let requested=host.snapshotFor('host').match;assert.equal(requested.wave,0);assert.equal(requested.pendingWave,1);
+assert.equal(host.receive('guest',command(5,'approveWave',{requestId:requested.waveRequestId})).status,'queued');assert.equal(host.advance().commands[0].result.ok,true);
 assert.equal(host.snapshotFor('host').match.wave,1);
 console.log('Player-hosted party command, pause, and reconnect tests passed.');
 // A disconnected soldier must not invisibly fire while the host plays alone.

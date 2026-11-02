@@ -19,7 +19,7 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
   }
   function clear(){profileWatch?.();profileWatch=null;for(const fn of unwatch)fn();unwatch=[];requests.replaceChildren();updateRequestIndicator(0);}
   function reset(){version++;clear();const stopped=Promise.resolve().then(()=>onLeaveMatch()).catch(()=>{});base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;busy=false;$('partyCodeInput').value='';render('');return stopped;}
-  async function run(fn){if(!enabled||busy)return;busy=true;const current=version;render();try{await fn(current);}catch{if(current===version)render('Could not complete the party request. Check your connection and try again.');}finally{if(current===version){busy=false;render();}}}
+  async function run(fn){if(!enabled||busy)return;busy=true;const current=version;render();try{return await fn(current);}catch{if(current===version)render('Could not complete the party request. Check your connection and try again.');}finally{if(current===version){busy=false;render();}}}
   async function cleanup(oldParty,oldBase,oldApproval){if(!oldParty)return;if(oldParty.role==='host')await oldApproval.close(oldParty.partyId,oldParty.inviteCode);else if(oldParty.role==='guest')await oldBase.leaveGuest(oldParty.partyId);else await oldApproval.cancel(oldParty.inviteCode);}
   async function leaveForLogout(timeoutMs=2000){const p=party,b=base,a=approval,stopped=reset();const done=(async()=>{await stopped;await cleanup(p,b,a);})().catch(()=>{});let timer;await Promise.race([done,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);}
   function watchHost(current){unwatch.push(base.watchHost(party.partyId,value=>{if(current===version&&party&&value!==party.hostId){void reset();render('The host closed the party.');}},()=>{if(current===version)render('Party connection lost.');}));}
@@ -65,7 +65,7 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
             const accepted=await confirmMatch();if(current!==version||!party||started)return;
             if(!accepted){render('Match not joined. Leave the party to return to solo.');return;}
             started=true;const joined=onJoinMatch({partyId:party.partyId,hostId:party.hostId,playerIds:[party.hostId,party.guestId]},state=>{if(current===version&&party)render(`Co-op: ${state}.`);});
-            render(joined?'Connecting to the match…':'Could not join the match. Leave and try again.');
+            render(joined?'Connecting to the match…':'Could not join the match. Leave and try again.');if(joined)collapse();
           })().catch(()=>{if(current===version)render('Could not join the match. Leave and try again.');}).finally(()=>{confirmingMatch=false;});
         },()=>{if(current===version)render('Party connection lost.');}));
         if(!started)render('Approved. Waiting for the host to start.');
@@ -80,8 +80,9 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
     if(!party||party.role!=='host'||!guest||!guestReady||started)return;
     const confirmedGuest=guest;if(!await confirmMatch()||current!==version||!party||party.role!=='host'||guest!==confirmedGuest||!guestReady||started)return;
     const result=await base.startMatch(party.partyId);if(current!==version||!party)return;
-    started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');
+    started=true;matchGuest=result.guestId;const joined=onJoinMatch({partyId:result.partyId,hostId:result.hostId,playerIds:[result.hostId,result.guestId],profiles:result.profiles},state=>{if(current===version&&party)render(state==='ready'&&!guest?'Teammate left. Your battle continues.':`Co-op: ${state}.`);});render(joined?'Connecting to the match…':'Could not start the match. Close the party and try again.');if(joined)collapse();
   });
-  $('partyLeave').onclick=()=>run(async current=>{if(!party)return;if(party.role==='host'&&(!await confirmClose()||current!==version||!party))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');});
-  render('');return {reset,leaveForLogout,collapse,isActive:()=>!!party};
+  const leaveParty=()=>run(async current=>{if(!party)return;if(party.role==='host'&&(!await confirmClose()||current!==version||!party))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');return true;});
+  $('partyLeave').onclick=leaveParty;
+  render('');return {reset,leaveForLogout,leaveParty,collapse,isActive:()=>!!party};
 }

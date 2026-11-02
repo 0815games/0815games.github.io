@@ -9,7 +9,8 @@ for(const wave of [0,1,5,21]){
 }
 const s=createMatch([p('host'),p('guest')]);s.wave=21;s.running=true;s.spawnLeft=5;s.players.host.completedWaveMask=3;s.players.guest.completedWaveMask=1;
 const host=createPartyHost(s,{hostId:'host'});host.setPresence('host',true);host.setPresence('guest',true);
-assert.equal(host.receive('guest',{version:1,seq:1,command:{type:'endRun'}}).status,'queued');const update=host.advance();assert.equal(update.commands[0].result.ok,true);assert.deepEqual(update.events,[]);
+assert.equal(host.receive('guest',{version:1,seq:1,command:{type:'endRun'}}).status,'queued');const refused=host.advance();assert.equal(refused.commands[0].result.ok,false);assert.equal(host.snapshotFor('host').match.ended,false);
+assert.equal(host.receive('host',{version:1,seq:1,command:{type:'endRun'}}).status,'queued');const update=host.advance();assert.equal(update.commands[0].result.ok,true);assert.deepEqual(update.events,[]);
 for(const id of ['host','guest']){const view=host.snapshotFor(id).match;assert.equal(view.ended,true);assert.equal(view.endReason,'retired');assert.equal(view.players.host.completedWaveMask,3);assert.equal(view.players.guest.completedWaveMask,1);assert.equal(view.players.host.completedWaveBlocks,undefined);}
 host.setPresence('guest',false);host.advance();host.setPresence('guest',true);assert.equal(host.snapshotFor('guest').match.endReason,'retired');
 console.log('End run preserves completed rewards and synchronizes for both players.');
