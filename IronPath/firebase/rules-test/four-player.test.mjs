@@ -5,6 +5,8 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,set,get,update,onValue,runTransaction,remove,serverTimestamp,onDisconnect} from 'firebase/database';
 import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
 import {createFirebasePartyGame} from '../../firebase-party-game.mjs';
+import {createFourPlayerPanel} from '../../firebase-four-panel.mjs';
+import {projectFourGameView} from '../../four-game-view.mjs';
 import {createPlayer} from '../../match.mjs';
 import {webcrypto} from 'node:crypto';
 let env,db;const names={alice:'Alice',bob:'Bob',cara:'Cara',dan:'Dan',eve:'Eve'};
@@ -88,6 +90,30 @@ for(const mode of ['four-coop','two-vs-two'])test(`four real Firebase SDK client
     assert.equal((await clients[3].command({type:'build',pad:15,towerType:0})).ok,true);await waitFor(()=>mode==='four-coop'?views.bob?.match?.match?.towers?.length===1:views.bob?.match?.lanes?.[1]?.towers?.length===1,'tower visible');
     await clients[3].stop();await waitFor(()=>statuses.dan===false,'guest offline');await waitFor(()=>mode==='four-coop'?statuses.alice===true:statuses.alice===false,'disconnect behavior');clients[3]=makeClient('dan');clients[3].start();await waitFor(()=>ids.every(id=>statuses[id]),'guest reconnect');assert.deepEqual(errors,[]);
   }finally{await Promise.allSettled(clients.map(client=>client.stop()));}
+});
+for(const mode of ['four-coop','two-vs-two'])test(`four lobby panels hand off a ${mode} match over the Firebase emulator`,{timeout:90000},async()=>{
+  const ids=['alice','bob','cara','dan'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp},clients={},statuses={},views={},errors=[],panels={};
+  function documentFixture(){const nodes=new Map(),make=()=>({hidden:false,disabled:false,textContent:'',value:'',children:[],append(...items){this.children.push(...items);},replaceChildren(...items){this.children=[...items];}});return {getElementById(id){if(!nodes.has(id)){const n=make();if(id==='fourPartyMode')n.value='four-coop';if(id==='fourPartyTeams')n.value='0';nodes.set(id,n);}return nodes.get(id);},createElement:make};}
+  const documents=Object.fromEntries(ids.map(id=>[id,documentFixture()]));
+  async function waitFor(fn,label){const until=Date.now()+25000;while(Date.now()<until){if(errors.length)throw Error(`Client error: ${errors.join(',')}`);if(fn())return;await new Promise(resolve=>setTimeout(resolve,50));}throw Error(`Timed out: ${label}; statuses: ${ids.map(id=>`${id}=${documents[id].getElementById('fourPartyStatus').textContent}`).join(', ')}`);}
+  for(const id of ids){const auth={currentUser:{uid:id}};panels[id]=createFourPlayerPanel({document:documents[id],createLobby:()=>createFirebaseFourLobby({db:db[id],auth,sdk,crypto:webcrypto}),getProfile:()=>profile(id),confirmStart:async()=>true,confirmClose:async()=>true,onLeaveMatch:async()=>clients[id]?.stop(),onMatch:party=>{
+    const client=createFirebasePartyGame({db:db[id],auth,sdk,crypto:webcrypto,partyId:party.partyId,hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,teams:party.teamRosters,players:party.profiles?.map((player,i)=>createPlayer(party.playerIds[i],player,1220,270+i*60)),onStatus:value=>{statuses[id]=value;},onState:value=>{if(value==='error')errors.push(id);},onSnapshot:value=>{views[id]=projectFourGameView(value,id);}});clients[id]=client;client.start();return true;
+  }});}
+  const host=documents.alice.getElementById.bind(documents.alice);
+  try{
+    await host('fourPartyCreate').onclick();const invite=host('fourPartyCodeDisplay').textContent;assert.match(invite,/^\d{4}$/);
+    for(const id of ids.slice(1)){
+      const get=documents[id].getElementById.bind(documents[id]);get('fourPartyCodeInput').value=invite;await get('fourPartyJoin').onclick();
+      await waitFor(()=>host('fourPartyRequests').children.some(row=>row.children[0].textContent===names[id]),`${id} request shown`);
+      const row=host('fourPartyRequests').children.find(row=>row.children[0].textContent===names[id]);await row.children[1].onclick();
+      await waitFor(()=>get('fourPartyStatus').textContent.includes('Approved.'),`${id} approved and profile published`);
+    }
+    await waitFor(()=>!host('fourPartyStart').disabled,'host sees four ready profiles');
+    if(mode==='two-vs-two'){host('fourPartyMode').value=mode;host('fourPartyTeams').value='1';await host('fourPartyMode').onchange();await waitFor(()=>host('fourPartyMode').value===mode,'team mode configured');}
+    await host('fourPartyStart').onclick();await waitFor(()=>ids.every(id=>statuses[id]&&views[id]),'four game clients ready');assert.equal(views.dan.match.mode,mode);if(mode==='two-vs-two')assert.equal(views.cara.match.fourInfo.team,0);
+    const result=await clients.alice.command({type:'startWave'});assert.equal(result.ok,true);for(const id of ids.slice(1))assert.equal((await clients[id].command({type:'approveWave',requestId:result.requestId})).ok,true);
+    await waitFor(()=>ids.every(id=>views[id]?.match?.wave===1),'wave displayed for all panels');assert.equal((await clients.dan.command({type:'build',pad:15,towerType:0})).ok,true);await waitFor(()=>views.dan.match.towers.length===1,'build displayed');
+  }finally{await Promise.allSettled(Object.values(clients).map(c=>c.stop()));await Promise.allSettled(ids.slice(1).map(id=>panels[id].leaveForLogout(500)));await panels.alice.leaveForLogout(500);}
 });
 test('existing account and two-player code rules remain present',async()=>{
   const old='fedcba9876543210fedcba9876543210';await assertSucceeds(set(at('alice',`parties/${old}/hostId`),'alice'));await assertSucceeds(set(at('alice','partyCodes/0987/hostId'),'alice'));await assertFails(get(at('eve','players/alice')));await assertFails(set(at('bob','players/alice/xp'),500));
