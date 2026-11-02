@@ -1,12 +1,12 @@
-import {getMap,createRandomMapId} from './maps.mjs?v=20261102-routes2';
+import {getMap,createRandomMapId} from './maps.mjs?v=20261102-terrain3';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-fx1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-routes2';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261102-terrain3';
 import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-routes2';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-routes2';
+import { createTutorial } from './tutorial.mjs?v=20261102-terrain3';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-terrain3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-armory2';
 import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261102-waves20';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';

@@ -37,4 +37,24 @@ assert.ok(paths.size>1500,'generated seeds must produce a wide variety of roads'
 assert.equal(isMapId('gen-abcdefgh'),false);assert.equal(isMapId('gen-000000000'),false);
 
 const fixedRandom={getRandomValues(bytes){bytes[0]=0;return bytes;}};
-assert.equal(createRandomMapId(undefined,fixedRandom),'gen-00000000');assert.equal(createRandomMapId('gen-00000000',fixedRandom),'gen-00000001','restarts cannot reuse the immediately previous seed');
+assert.equal(createRandomMapId(undefined,fixedRandom),'g2-00000000');assert.equal(createRandomMapId('g2-00000000',fixedRandom),'g2-00000001','restarts cannot reuse the immediately previous seed');
+
+const themes=new Set(),roads=new Set();let saved;
+for(let i=0;i<3000;i++){
+ const id=`g2-${(Math.imul(i,2654435761)>>>0).toString(16).padStart(8,'0')}`, map=getMap(id);
+ if(!i)saved=structuredClone(map);
+ themes.add(map.theme);roads.add(JSON.stringify(map.path));
+ assert.equal(map.path.length,10);assert.deepEqual(map.path.at(-1),{x:900,y:400});assert.equal(map.pads.length,10);
+ assert.deepEqual([map.pads.filter(p=>p.x<300).length,map.pads.filter(p=>p.x>=300&&p.x<600).length,map.pads.filter(p=>p.x>=600).length],[3,3,4]);
+ for(const [j,p] of map.pads.entries()){
+  const d=Math.min(...map.path.slice(1).map((b,k)=>distance(p,map.path[k],b)));
+  assert.ok(d>=62&&d<=82,`${id}: pad ${j} roadside distance ${d}`);
+  assert.ok(p.x>=25&&p.x<=935&&p.y>=25&&p.y<=515);
+  assert.ok(Math.hypot(p.x-900,p.y-400)>=75);
+  for(const q of map.pads.slice(j+1))assert.ok(Math.hypot(p.x-q.x,p.y-q.y)>=68);
+ }
+}
+assert.equal(themes.size,5);assert.ok(roads.size>2900);assert.deepEqual(getMap('g2-00000000'),saved);
+const newState=createMatch([player('host'),player('guest')],'g2-12345678'),newHost=createPartyHost(newState,{hostId:'host'});
+newHost.setPresence('host',true);newHost.setPresence('guest',true);newHost.setPresence('guest',false);newHost.advance();newHost.setPresence('guest',true);
+assert.deepEqual(getMap(newHost.snapshotFor('guest').match.mapId),getMap('g2-12345678'));
