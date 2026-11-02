@@ -35,3 +35,10 @@ const epochClient=createFirebasePartyClientSession({channel:epochChannel,onState
 const snap={tick:2,nextSeq:1,receipts:[]};viewCallback({epoch:'old',ready:true,snapshot:snap});viewCallback({epoch:'new',ready:true,snapshot:snap});
 assert.equal(state,'error');assert.equal((await epochClient.command({type:'startWave'})).ok,false);await epochClient.stop();
 console.log('Firebase party session sequencing, pause and uncertainty tests passed.');
+// A hosting player uses the authoritative simulation directly, not a network
+// round trip; the guest still receives ordered Firebase-style snapshots.
+const fastHost=createPartyHost(createMatch(players.map(id=>createPlayer(id,{name:id,gender:'female'}))));let guestInputs,networkViews=0,localSnapshot;
+const fastSession=createFirebasePartyHostSession({host:fastHost,playerIds:players,epoch:'local',localPlayerId:'alice',channel:{watchInputs(fn){guestInputs=fn;return()=>{};},async publishViews(){networkViews++;},async close(){}}});
+const local=createFirebasePartyClientSession({channel:fastSession.localChannel(),onView:s=>localSnapshot=s,timeoutMs:100});local.start();fastSession.start();fastSession.setPresence('alice',true);fastSession.setPresence('bob',true);
+const direct=local.command({type:'move',x:700,y:400});await flush();fastSession.step();await flush();assert.equal((await direct).ok,true);assert.deepEqual(localSnapshot.match.players.alice.target,{x:700,y:400});assert.ok(networkViews>0);assert.equal(typeof guestInputs,'function');
+await local.stop();await fastSession.stop();

@@ -1,0 +1,16 @@
+import {strict as assert} from 'node:assert';
+import {projectCoopMotion} from '../coop-motion.mjs';
+import {createMatch,stepMatch,STEP} from '../simulation.mjs';
+import {createPlayer} from '../match.mjs';
+import {getMap} from '../maps.mjs';
+const state=createMatch([createPlayer('a',{name:'A',gender:'female'}),createPlayer('b',{name:'B',gender:'male'})]);
+const path=getMap(state.mapId).path;
+state.players.a.x=100;state.players.a.y=100;state.players.a.direction={x:1,y:0};state.players.b.x=200;state.players.b.y=100;state.players.b.target={x:203,y:100};
+state.running=true;state.spawnLeft=1;state.spawnTimer=100;state.enemies=[{kind:'infantry',speed:30,x:path[0].x,y:path[0].y,segment:1,hp:999,maxHp:999,reward:0,damage:1}];
+const before=structuredClone(state),visual=projectCoopMotion(state,STEP);assert.deepEqual(state,before,'rendering must not mutate authoritative combat state');
+const simulated=structuredClone(state);stepMatch(simulated);
+assert.ok(Math.abs(visual.players.a.x-simulated.players.a.x)<1e-8);assert.ok(Math.abs(visual.enemies[0].x-simulated.enemies[0].x)<1e-8);assert.ok(Math.abs(visual.enemies[0].y-simulated.enemies[0].y)<1e-8);
+assert.equal(projectCoopMotion(state,2).players.a.x,137.5,'prediction is capped when the connection stalls');
+assert.equal(projectCoopMotion(state,.25).players.b.x,203,'target prediction cannot overshoot');
+state.players.a.active=false;assert.equal(projectCoopMotion(state,.1).players.a.x,100,'offline soldiers do not move');state.ended=true;assert.equal(projectCoopMotion(state,.1),state,'ended battles are not extrapolated');
+console.log('Co-op render prediction stays bounded and never changes match state.');

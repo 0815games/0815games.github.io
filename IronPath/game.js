@@ -1,3 +1,4 @@
+import {projectCoopMotion} from './coop-motion.mjs?v=20261102-coopmotion1';
 import {bossPhaseLabel} from './boss-mechanics.mjs?v=20261102-terrain4';
 import {createBattleSound} from './battle-sound.mjs?v=20261102-terrain4';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
@@ -189,7 +190,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}
   }
-  function draw(){const {path,pads,theme}=getMap(state.mapId);ctx.clearRect(0,0,960,540);drawCartoonBattle(ctx,state,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
+  function draw(){const {path,pads,theme}=getMap(state.mapId);ctx.clearRect(0,0,960,540);const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000):state;drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});
     // Draw selection above units and effects, including an empty pad while its
     // build menu is open. A dark border keeps the bright marker legible on roads.
     const markerPad=menuPad??state.selectedPad;
