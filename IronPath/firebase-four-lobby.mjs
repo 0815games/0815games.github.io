@@ -1,12 +1,13 @@
 // Staged four-player lobby adapter. Not wired to the UI. Firebase rules MUST
 // enforce all actor, request, roster-lock and path constraints independently.
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
-import {createFourLobby,transitionFourLobby} from './four-lobby.mjs?v=20261102-fourbase2';
+import {createFourLobby} from './four-lobby.mjs?v=20261102-fourbase2';
+import {availablePartyModes,canStartParty} from './multiplayer-lobby.mjs?v=20261103-unified1';
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const validParty=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);
 const validCode=code=>typeof code==='string'&&/^[0-9]{4}$/.test(code);
-export function fourTeamRosters(manifest){if(!manifest||!Array.isArray(manifest.playerIds)||manifest.playerIds.length!==4||new Set(manifest.playerIds).size!==4||manifest.playerIds.some(id=>!validUid(id))||manifest.hostId!==manifest.playerIds[0]||!validConfig(manifest))throw Error('Invalid started roster');return [0,1].map(team=>manifest.playerIds.filter((_,i)=>manifest.teams[i]===team));}
-function validConfig(config){return config&&['four-coop','two-vs-two'].includes(config.mode)&&Array.isArray(config.teams)&&config.teams.length===4&&config.teams.every(t=>t===0||t===1)&&config.teams.filter(t=>t===0).length===2;}
+export function fourTeamRosters(manifest){if(!manifest||!Array.isArray(manifest.playerIds)||!availablePartyModes(manifest.playerIds.length).includes(manifest.mode)||new Set(manifest.playerIds).size!==manifest.playerIds.length||manifest.playerIds.some(id=>!validUid(id))||manifest.hostId!==manifest.playerIds[0]||!validConfig(manifest))throw Error('Invalid started roster');return [0,1].map(team=>manifest.playerIds.filter((_,i)=>manifest.teams[i]===team));}
+function validConfig(config){return config&&['coop','versus','four-coop','two-vs-two'].includes(config.mode)&&Array.isArray(config.teams)&&config.teams.length===4&&config.teams.every(t=>t===0||t===1)&&config.teams.filter(t=>t===0).length===2;}
 export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
   if(!db||!auth||!sdk||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function')throw Error('Invalid four-player lobby configuration');
   const uid=auth.currentUser?.uid;if(!validUid(uid))throw Error('Sign in required');
@@ -55,9 +56,9 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
     },
     async start(partyId){
       check();const [hostId,slots,config,started]=await Promise.all([read(party(partyId,'hostId')),read(party(partyId,'slots')),read(party(partyId,'config')),read(party(partyId,'started'))]);
-      const players=[hostId,slots?.one,slots?.two,slots?.three];if(hostId!==uid||started||!validConfig(config)||players.some(id=>!validUid(id))||new Set(players).size!==4)throw Error('Party is not ready');
+      const players=[hostId,...[slots?.one,slots?.two,slots?.three].filter(Boolean)];if(hostId!==uid||started||!validConfig(config)||players.some(id=>!validUid(id))||new Set(players).size!==players.length||!availablePartyModes(players.length).includes(config.mode))throw Error('Party is not ready');
       const profiles=await Promise.all(players.map(id=>read(party(partyId,`profiles/${id}`))));
-      let model=createFourLobby(uid,profiles[0]);for(let i=1;i<4;i++){model=transitionFourLobby(model,uid,{type:'approve',uid:players[i]});model=model&&transitionFourLobby(model,players[i],{type:'profile',profile:profiles[i]});}model=model&&transitionFourLobby(model,uid,{type:'mode',mode:config.mode});model=model&&transitionFourLobby(model,uid,{type:'teams',teams:config.teams});model=model&&transitionFourLobby(model,uid,{type:'start'});if(!model)throw Error('Soldiers are not ready');
+      if(!canStartParty({playerIds:players,profiles:Object.fromEntries(players.map((id,i)=>[id,profiles[i]])),mode:config.mode,teams:config.teams}))throw Error('Soldiers are not ready');for(let i=0;i<players.length;i++)createFourLobby(players[i],profiles[i]);
       const manifest={hostId,playerIds:players,mode:config.mode,teams:config.teams};
       // Rules must compare the manifest to the live slots/config/profiles at
       // commit time, otherwise a concurrent leave or approval can race this.

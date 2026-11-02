@@ -11,7 +11,7 @@ import {createMatch,STEP} from './simulation.mjs?v=20261102-fourbase1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
-export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',teams=null,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
+export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',teams=null,partyRoot=null,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
   const uid=auth?.currentUser?.uid,four=mode==='four-coop'||mode==='two-vs-two',count=mode==='four-coop'&&Array.isArray(playerIds)?playerIds.length:four?4:2;
   if(!['coop','versus','four-coop','two-vs-two'].includes(mode))throw new Error('Invalid mode');
   if(!Array.isArray(playerIds)||(mode==='four-coop'&&![3,4].includes(count))||playerIds.length!==count||new Set(playerIds).size!==count||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
@@ -27,7 +27,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
     if(active&&!failed){const state=ready?'ready':'waiting';if(state!==lastState){lastState=state;onState(state);}}
   }
   function fail(){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState('error');}
-  const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:four?'fourParties':'parties',onError:fail};
+  const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:partyRoot||(four?'fourParties':'parties'),onError:fail};
   return {
     start(){
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
