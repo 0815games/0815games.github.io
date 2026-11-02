@@ -220,3 +220,12 @@ test('long-term progression stays backward compatible and validates new loadouts
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:10,loadout:'0,0,10;0,0;1,2'}));
   await assertFails(set(ref(alice,`parties/${party}/profiles/alice/loadout`),'0,0,11;0,0;1,2'));await assertFails(set(ref(bob,`parties/${party}/profiles/alice/loadout`),'0,0,1'));
 });
+
+test('late-wave rewards unlock new equipment exactly once under progression rules',async()=>{
+  await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0,armory:{scrap:0,fortify:0,plating:0,owned:63,equipped:1}}));
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});q.observe(1<<13);
+  await until(async()=>((await get(ref(alice,'players/alice/armory/owned'))).val()&64)!==0);
+  const first=(await get(ref(alice,'players/alice'))).val();assert.ok(first.xp>0);assert.equal(first.armory.scrap,10);assert.equal(first.armory.supply,0);
+  const again=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});again.observe(1<<13);await new Promise(r=>setTimeout(r,150));
+  assert.equal((await get(ref(alice,'players/alice/xp'))).val(),first.xp);assert.equal((await get(ref(alice,'players/alice/armory/scrap'))).val(),10);q.close();again.close();
+});
