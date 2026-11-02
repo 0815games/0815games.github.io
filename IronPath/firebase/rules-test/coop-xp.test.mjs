@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../expanded-skills.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../twenty-waves.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
 const until=async fn=>{const end=Date.now()+5000;while(!await fn()){if(Date.now()>end)throw Error('Timed out waiting for XP');await new Promise(r=>setTimeout(r,20));}};
 const sdk={ref,get,onValue,runTransaction};
@@ -19,7 +19,7 @@ test('atomic wave receipts protect both profiles from duplicate credits and othe
   const again=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});again.observe(3);await new Promise(r=>setTimeout(r,150));
   assert.equal((await get(ref(alice,'players/alice/xp'))).val(),70);
   await assertFails(set(ref(alice,'players/bob/coopRewards/'+party),7));await assertFails(get(ref(alice,'players/bob')));
-  await assertFails(set(ref(alice,'players/alice/coopRewards/bad'),3));await assertFails(set(ref(alice,'players/alice/coopRewards/'+party),1024));
+  await assertFails(set(ref(alice,'players/alice/coopRewards/bad'),3));await assertSucceeds(set(ref(alice,'players/alice/coopRewards/'+party),1024));await assertFails(set(ref(alice,'players/alice/coopRewards/'+party),1048576));
   qa.close();qb.close();again.close();
 });
 test('host snapshots credit both participants once and preserve progress on reconnect',async t=>{
@@ -116,4 +116,18 @@ test('expanded and legacy skill builds remain compatible with account, party and
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:5,skills:'2,0,0,0,0;assault;1100000000'}));
   await assertSucceeds(set(ref(bob,`parties/${party}/profiles/bob`),{name:'Bob',gender:'male',level:1,skills:'0,0,0,0,0;assault'}));
   await assertFails(set(ref(bob,`parties/${party}/profiles/alice/skills`),'0,0,0,0,0;assault'));
+});
+
+
+test('twenty-wave receipts pay late waves once and retain legacy progress',async()=>{
+  await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});
+  const q=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});
+  q.observe(1);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===30);
+  const receipt=1|(1<<10)|(1<<19);q.observe(receipt);await until(async()=>(await get(ref(alice,'players/alice/xp'))).val()===380);
+  assert.equal((await get(ref(alice,`players/alice/coopRewards/${party}`))).val(),receipt);
+  assert.equal((await get(ref(alice,'players/alice/armory/scrap'))).val(),30);
+  const again=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});again.observe(receipt);await new Promise(r=>setTimeout(r,150));
+  assert.equal((await get(ref(alice,'players/alice/xp'))).val(),380);
+  await assertFails(set(ref(alice,`players/alice/coopRewards/${party}`),1048576));
+  q.close();again.close();
 });

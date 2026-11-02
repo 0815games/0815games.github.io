@@ -4,10 +4,10 @@ import {abilityName} from './skills.mjs?v=20261102-tree2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-controls7';
-import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-balance1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-tree2';
-import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261031-rpg2';
+import { createTutorial } from './tutorial.mjs?v=20261102-waves20';
+import { createMatch, stepMatch, getTowerRange, STEP, PATH as path, PADS as pads } from './simulation.mjs?v=20261102-waves20';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-waves20';
+import { ENEMY_TYPES, WAVES } from './combat.mjs?v=20261102-waves20';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261031-rpg2';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
@@ -53,7 +53,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     const player=state.players[me()]; $('speed').textContent=coop?'SPEED: 1×':`SPEED: ${state.speed}×`; const ability=abilityName(player?.skills).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active||'assault'); $('ability').textContent=player?.cooldown>0?`${ability}: ${Math.ceil(player.cooldown)}s`:`${ability} READY`; $('ability').disabled=state.ended||!player||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!!coop||!menu.hidden;
     $('start').textContent=state.ended?(coop?'MATCH ENDED':'RESTART OPERATION'):state.running?'WAVE IN PROGRESS':state.wave===0?'DEPLOY / START WAVE':'START NEXT WAVE'; $('start').disabled=(state.running&&!state.ended)||!menu.hidden||(!!coop&&(!coopReady||state.ended));
   }
-  function waveSummary(wave){const counts={};for(const kind of WAVES[wave-1]) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ');}
+  function waveSummary(wave){const counts={};for(const kind of WAVES[wave-1]) counts[kind]=(counts[kind]||0)+1;return `Wave ${wave}${wave%5===0?' · MILESTONE':''} · `+Object.entries(counts).map(([kind,n])=>`${n} ${ENEMY_TYPES[kind].label}`).join(' · ');}
   $('speed').onclick=()=>{state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   $('start').onclick=()=>{if(state.ended){if(!coop){reset();notice('Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();dispatch({type:'startWave'},result=>{if(!result.ok){notice(result.reason);return;}notice(coop?'Wave started.':`Wave ${state.wave} incoming: ${waveSummary(state.wave)}.`);updateUI();});};
   $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo)combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});notice(`${abilityName(state.players[me()]?.skills)} deployed!`);updateUI();});};

@@ -1,8 +1,8 @@
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
-import { WAVES, makeEnemy, towerDamage } from './combat.mjs';
+import { WAVES, makeEnemy, towerDamage } from './combat.mjs?v=20261102-waves20';
 import { waveXP } from './progression.mjs';
-import {addSupplies} from './match.mjs?v=20261102-tree2';
+import {addSupplies} from './match.mjs?v=20261102-waves20';
 export const STEP = 1/30;
 export const PATH = [{x:0,y:130},{x:210,y:130},{x:210,y:320},{x:470,y:320},{x:470,y:150},{x:710,y:150},{x:710,y:400},{x:900,y:400}];
 export const PADS = [{x:105,y:210},{x:285,y:210},{x:135,y:360},{x:350,y:390},{x:390,y:220},{x:550,y:225},{x:620,y:75},{x:790,y:230},{x:625,y:395},{x:810,y:335}];

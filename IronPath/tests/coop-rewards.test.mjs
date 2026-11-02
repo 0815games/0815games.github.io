@@ -18,6 +18,9 @@ fail=true;queue.observe(7);await flush();assert.equal(data.xp,80);assert.equal(s
 queue.observe(7);await flush();assert.equal(calls,attempted,'failed claims are backed off');
 fail=false;now+=5001;queue.observe(7);await flush();assert.equal(data.xp,120);assert.equal(data.coopRewards[party],7);
 const second=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party});second.observe(7);await flush();assert.equal(data.xp,120,'rejoin cannot credit a wave twice');assert.equal(data.armory.scrap,30,'rejoin cannot duplicate loot');assert.equal(data.armory.owned,1,'wave two unlocks the scope');
-uid.currentUser={uid:'other'};queue.observe(15);await flush();assert.equal(data.xp,120,'account switch cannot credit previous profile');
+// Later waves retain old receipts and pay exactly once through wave 20.
+const late=7|(1<<10)|(1<<19);queue.observe(late);await flush();assert.equal(data.xp,470);assert.equal(data.armory.scrap,50);assert.equal(data.coopRewards[party],late);
+second.observe(late);await flush();assert.equal(data.xp,470,'rejoin cannot credit late waves twice');
+uid.currentUser={uid:'other'};queue.observe(late|(1<<11));await flush();assert.equal(data.xp,470,'account switch cannot credit previous profile');
 queue.close();second.close();
 console.log('Co-op wave participation and idempotent reward queue tests passed.');

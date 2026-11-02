@@ -17,7 +17,23 @@ export const WAVES = [
   ['tank','plane','runner','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank'],
   ['plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane'],
   ['tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','runner','tank','plane','tank','runner','plane','tank','plane','tank','runner','plane','tank','plane','tank']
+,
+  // Reinforcements: repeated mixed formations build toward two heavy assaults.
+  ...[
+    ['infantry','runner','plane','tank','runner','plane'],
+    ['tank','infantry','plane','runner','tank','plane'],
+    ['runner','plane','tank','runner','plane','tank'],
+    ['plane','tank','infantry','tank','runner','plane'],
+    ['tank','tank','plane','runner','tank','plane'],
+    ['runner','tank','plane','infantry','tank','plane'],
+    ['plane','runner','tank','plane','tank','runner'],
+    ['tank','plane','tank','runner','infantry','plane'],
+    ['plane','tank','runner','tank','plane','tank'],
+    ['tank','plane','tank','runner','tank','plane']
+  ].map((formation,index)=>Array.from({length:6+Math.floor(index/3)},()=>formation).flat())
 ];
+export const WAVE_COUNT=WAVES.length;
+export const MAX_WAVE_MASK=(2**WAVE_COUNT)-1;
 // Multipliers apply to base damage, including upgrades. Every tower can hit every type.
 export const DAMAGE_MULTIPLIERS = [
   {infantry:1.25,runner:1.25,tank:.4,plane:.6},
