@@ -217,7 +217,7 @@
               ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && newData.val() === root.child('players').child($uid).child('name').val()"
             },
             "gender": {
-              ".validate": "newData.val() === 'male' || newData.val() === 'female' && newData.val() === root.child('players').child($uid).child('gender').val()"
+              ".validate": "(newData.val() === 'male' || newData.val() === 'female') && newData.val() === root.child('players').child($uid).child('gender').val()"
             },
             "level": {
               ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 1000"

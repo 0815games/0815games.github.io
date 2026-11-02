@@ -17,7 +17,7 @@ test('requests, slots and profiles enforce identity, capacity and uniqueness',as
   await assertFails(set(at('anon',`${p}/hostId`),'alice'));await create();
   await assertFails(set(at('bob',`${p}/slots/one`),'bob'));await assertFails(set(at('alice',`${p}/slots/one`),'bob'));
   await assertFails(set(at('bob',`${c}/requests/bob`),{name:'Alice'}));await assertFails(set(at('eve',`${c}/requests/bob`),{name:'Bob'}));
-  await add('bob','one');await assertFails(set(at('bob',`${p}/profiles/cara`),profile('cara')));await assertFails(set(at('bob',`${p}/profiles/bob`),{...profile('bob'),name:'Alice'}));
+  await add('bob','one');await assertFails(set(at('bob',`${p}/profiles/cara`),profile('cara')));await assertFails(set(at('bob',`${p}/profiles/bob`),{...profile('bob'),name:'Alice'}));await assertFails(set(at('bob',`${p}/profiles/bob`),{...profile('bob'),gender:'male'}));
   await assertFails(set(at('alice',`${p}/slots/two`),'bob'));await assertFails(set(at('alice',`${p}/slots/four`),'bob'));
   await assertSucceeds(set(at('cara',`${c}/requests/cara`),{name:'Cara'}));await assertSucceeds(set(at('dan',`${c}/requests/dan`),{name:'Dan'}));
   await assertSucceeds(set(at('alice',`${p}/slots`),{one:'bob',two:'cara',three:'dan'}));
@@ -55,6 +55,22 @@ test('four-player SDK lobby operations and reconnect work under the combined rul
   const created=await assertSucceeds(lobbies.alice.create(profile('alice')));for(const uid of ['bob','cara','dan']){await assertSucceeds(lobbies[uid].request(created.inviteCode,names[uid]));await assertSucceeds(lobbies.alice.approve(created.partyId,created.inviteCode,uid));await assertSucceeds(lobbies[uid].publishProfile(created.partyId,profile(uid)));}
   await assertSucceeds(lobbies.alice.configure(created.partyId,{mode:'two-vs-two',teams:[0,1,0,1]}));const started=await assertSucceeds(lobbies.alice.start(created.partyId));assert.deepEqual(started.playerIds,['alice','bob','cara','dan']);assert.deepEqual((await assertSucceeds(lobbies.bob.reconnect(created.partyId,created.inviteCode))).teamRosters,[['alice','cara'],['bob','dan']]);
   await assertFails(lobbies.eve.reconnect(created.partyId,created.inviteCode));await assert.rejects(()=>lobbies.bob.leave(created.partyId),/locked/);await assertSucceeds(lobbies.alice.close(created.partyId,created.inviteCode));
+});
+test('SDK lobby subscriptions expose only permitted roster information', {timeout:30000},async()=>{
+  const sdk={ref,get,set,onValue,runTransaction,remove};let random=0;const crypto={getRandomValues(bytes){bytes.fill(++random);return bytes;}};
+  const lobby=Object.fromEntries(['alice','bob','eve'].map(uid=>[uid,createFirebaseFourLobby({db:db[uid],auth:{currentUser:{uid}},sdk,crypto})]));
+  const created=await lobby.alice.create(profile('alice'));
+  function once(subscribe){return new Promise((resolve,reject)=>{let unwatch;unwatch=subscribe(value=>{queueMicrotask(()=>unwatch?.());resolve(value);},reject);});}
+  assert.equal(await once((ok,err)=>lobby.bob.watchHost(created.partyId,ok,err)),'alice');
+  await lobby.bob.request(created.inviteCode,'Bob');assert.deepEqual(await once((ok,err)=>lobby.bob.watchOwnRequest(created.inviteCode,ok,err)),{name:'Bob'});
+  assert.equal(await once((ok,err)=>lobby.bob.watchSlots(created.partyId,ok,err)),null);
+  await lobby.alice.approve(created.partyId,created.inviteCode,'bob');await lobby.bob.publishProfile(created.partyId,profile('bob'));
+  assert.equal((await once((ok,err)=>lobby.bob.watchSlots(created.partyId,ok,err))).one,'bob');
+  assert.equal((await once((ok,err)=>lobby.bob.watchConfig(created.partyId,ok,err))).mode,'four-coop');
+  assert.deepEqual(await once((ok,err)=>lobby.bob.watchProfile(created.partyId,'alice',ok,err)),profile('alice'));
+  await assert.rejects(once((ok,err)=>lobby.eve.watchConfig(created.partyId,ok,err)),/permission_denied/i);
+  await assert.rejects(once((ok,err)=>lobby.eve.watchProfile(created.partyId,'alice',ok,err)),/permission_denied/i);
+  await lobby.bob.leave(created.partyId);await lobby.alice.close(created.partyId,created.inviteCode);
 });
 test('existing account and two-player code rules remain present',async()=>{
   const old='fedcba9876543210fedcba9876543210';await assertSucceeds(set(at('alice',`parties/${old}/hostId`),'alice'));await assertSucceeds(set(at('alice','partyCodes/0987/hostId'),'alice'));await assertFails(get(at('eve','players/alice')));await assertFails(set(at('bob','players/alice/xp'),500));

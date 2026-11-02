@@ -74,6 +74,10 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
     async reject(inviteCode,guestId){check();if(!validCode(inviteCode)||!validUid(guestId))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${guestId}`));check();},
     async cancel(inviteCode){check();if(!validCode(inviteCode))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${uid}`));check();},
     async close(partyId,inviteCode){check();if(!validCode(inviteCode)||(await read(party(partyId,'hostId')))!==uid)throw Error('Host required');await sdk.remove(ref(`fourCodes/${inviteCode}`));check();await sdk.remove(ref(`fourParties/${partyId}`));check();},
+    watchHost(partyId,callback,onError=()=>{}){return watch(party(partyId,'hostId'),callback,onError);},
+    watchConfig(partyId,callback,onError=()=>{}){return watch(party(partyId,'config'),callback,onError);},
+    watchProfile(partyId,playerId,callback,onError=()=>{}){if(!validUid(playerId))throw Error('Invalid player');return watch(party(partyId,`profiles/${playerId}`),callback,onError);},
+    watchOwnRequest(inviteCode,callback,onError=()=>{}){if(!validCode(inviteCode))throw Error('Invalid code');return watch(ref(`fourCodes/${inviteCode}/requests/${uid}`),callback,onError);},
     watchSlots(partyId,callback,onError=()=>{}){return watch(party(partyId,'slots'),callback,onError);},
     watchStarted(partyId,callback,onError=()=>{}){return watch(party(partyId,'started'),callback,onError);},
     watchRequests(inviteCode,callback,onError=()=>{}){if(!validCode(inviteCode))throw Error('Invalid code');return watch(ref(`fourCodes/${inviteCode}/requests`),callback,onError);}

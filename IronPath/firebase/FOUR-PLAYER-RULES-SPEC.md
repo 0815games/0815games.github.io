@@ -1,6 +1,6 @@
 # Four-player Firebase security requirements — NOT DEPLOYABLE RULES
 
-The four-player client and transport are experimental and disabled in the UI. Current deployed rules know only the two-player `parties`/`partyCodes` schema. Four-player traffic uses separate `fourParties`/`fourCodes` paths so widening an old rule is not necessary. **This document grants no access and is not a replacement ruleset.** The next stage must produce a complete combined ruleset and run Firebase Emulator tests before asking the project owner to publish it.
+The four-player client and transport are experimental and disabled in the UI. Current deployed rules know only the two-player `parties`/`partyCodes` schema. Four-player traffic uses separate `fourParties`/`fourCodes` paths so widening an old rule is not necessary. **This document grants no access and is not a replacement ruleset.** A complete combined rules draft exists and passes emulator CI, but it still requires security review and end-to-end validation before asking the owner to publish it.
 
 ## Intended paths
 
