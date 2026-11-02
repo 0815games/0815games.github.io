@@ -11,3 +11,6 @@ listeners.wheel({deltaY:-100000,deltaMode:0,clientX:x,clientY:y,preventDefault()
 listeners.keydown({key:'-',preventDefault(){prevented=true;}});assert.ok(board.offsetWidth<2520,'keyboard zoom');
 const oldLeft=el.scrollLeft;listeners.pointerdown({pointerType:'touch',button:0,isPrimary:true,pointerId:1,clientX:0,clientY:0});listeners.pointermove({pointerType:'touch',pointerId:1,clientX:30,clientY:0,preventDefault(){throw Error('native touch should not be intercepted');}});assert.equal(el.scrollLeft,oldLeft);
 console.log('Pointer-anchored bounded wheel zoom, keyboard zoom and native touch passed.');
+const touchListeners={},touchStyles={},touchBoard={get offsetWidth(){return parseFloat(touchStyles['--tree-size']||1400);}};
+const touch={...el,scrollLeft:0,scrollTop:0,scrollWidth:1400,scrollHeight:1400,style:{setProperty(k,v){touchStyles[k]=v;}},querySelector(){return touchBoard;},addEventListener(k,fn){touchListeners[k]=fn;}};
+const controls=enableTreeDrag(touch,{minButtonScale:()=>.8});for(let i=0;i<10;i++)controls.zoomOut();assert.equal(touchBoard.offsetWidth,1120,'touch zoom buttons keep targets usable');controls.zoomIn();assert.ok(touchBoard.offsetWidth>1120);controls.center();assert.equal(touch.scrollLeft,400);assert.equal(touch.scrollTop,500);
