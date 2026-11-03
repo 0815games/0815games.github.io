@@ -201,3 +201,5 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 
 /* Solo mission tracker stays in the battle flow, without covering the map. */
 .solo-objective{margin:0 0 10px;padding:10px 12px;background:#263525;border:1px solid #8d9a65;border-radius:8px;color:#f2ebd4}.solo-objective[hidden]{display:none}.solo-objective div{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.solo-objective strong{color:#f0d989}.solo-objective span,.solo-objective p{font-size:.85rem}.solo-objective progress{display:block;width:100%;height:8px;margin-top:7px;accent-color:#d5b962}.solo-objective p{margin:5px 0 0;line-height:1.35}.results-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.results-dialog .results-actions #resultsDone{margin-top:0}@media(max-width:600px){.results-actions button{flex:1 1 100%}}
+
+.story-journal{margin:8px 0;padding:9px 12px;border:1px solid #68745b;border-radius:7px;background:#263525}.story-journal summary{cursor:pointer;font-weight:800;letter-spacing:.08em;color:#e9d182}.story-journal p{white-space:pre-line;line-height:1.5;margin:10px 0 2px}
