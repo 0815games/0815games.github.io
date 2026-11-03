@@ -27,17 +27,32 @@ const assert = require('node:assert/strict');
 
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
+    const visible=selector=>page.locator(selector).isVisible();
     await page.locator('#menuCampaign').click(); await page.locator('#campaignBoard').waitFor({state:'visible'});
+    assert.equal(await visible('.dashboard'),false,'campaign board is separate from the battlefield');
+    assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),false);
     await page.locator('#backToCommand').click();
     await page.locator('#menuEndless').click(); await page.locator('#gameWorkspace').waitFor({state:'visible'});
+    assert.equal(await visible('#game'),true); assert.equal(await visible('#partyToggle'),false,'no multiplayer button in Endless');
+    assert.equal(await visible('#campaignPanel'),false); assert.equal(await visible('#fourPartyPanel'),false);
     await page.locator('#backToCommand').click();
     await page.locator('#menuMultiplayer').click(); await page.locator('#fourPartyPanel').waitFor({state:'visible'});
-    await page.locator('#partyToggle').click(); await page.locator('#backToCommand').click();
+    assert.equal(await visible('.profile-bar'),false,'no soldier header in lobby'); assert.equal(await visible('#campaignPanel'),false);
+    assert.equal(await visible('#game'),false,'no map in lobby'); assert.equal(await visible('.dashboard'),false);
+    await page.locator('#backToCommand').click();
     // Reproduce the reported case: a solo operation is already under way.
     await page.locator('#menuEndless').click(); await page.locator('#start').click(); await page.locator('#backToCommand').click();
     await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/armory-banner/); await page.locator('#armoryClose').click();
     await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skills-banner/); await page.locator('#skillCancel').click();
     await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true); await page.locator('#tutorialSkip').click();
+    // Exercise the online handoff independently from Firebase: no stale solo
+    // battlefield appears until the first authoritative match snapshot arrives.
+    await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261103-modes1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
+    assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
+    await page.evaluate(()=>document.querySelector('#gameWorkspace').dataset.onlineReady='true');
+    assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);
+    await page.evaluate(()=>window.testNav.showLobby());
+    assert.equal(await visible('#game'),false); assert.equal(await visible('#returnOnline'),true);
     assert.deepEqual(errors,[],`browser exceptions: ${errors.join('\n')}`);
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
