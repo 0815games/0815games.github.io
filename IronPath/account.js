@@ -1,4 +1,4 @@
-import {createCommandCenter} from './command-center.mjs?v=20261103-command1';
+import {createCommandCenter} from './command-center.mjs?v=20261103-command2';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-onlinebeta2';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-onlinebeta1';
@@ -19,7 +19,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-results1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261103-battleart1';
+import { startGame } from './game.js?v=20261103-world2';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-hardening2';
 import { createPlayer } from './match.mjs?v=20261102-fourbase1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
@@ -71,7 +71,7 @@ const account={getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory
 let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false;
 onAuthStateChanged(auth,currentUser=>{savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
-function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl?.canEditSkills();}
+function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){
   const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100,extraIndex=(index<0?0:index)*2+rank-5;
   $('skillPoints').textContent=`LEVEL ${lvl}  ·  ${left} POINT${left===1?'':'S'} AVAILABLE`;
@@ -89,7 +89,7 @@ $('skillDetailType').textContent=rank===1?'MAIN SKILL':`${path.name.toUpperCase(
   else {const unlocked=rank<=draftSkills[path.id],next=rank===draftSkills[path.id]+1;action.textContent=unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT';action.disabled=savingSkills||unlocked||!next||!left;action.onclick=()=>{if(!savingSkills&&rank===draftSkills[path.id]+1&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills[path.id]++;renderSkills();}};}
 }
 $('skillFilter').onchange=()=>renderSkills();$('skillPathFilter').onchange=()=>renderSkills();
-$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Edit skills between matches, before building or joining a party.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='all';renderSkills();$('skillDialog').showModal();skillMap.center();};
+$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to edit skills between deployments, or leave your party first.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='all';renderSkills();$('skillDialog').showModal();skillMap.center();};
 $('skillReset').onclick=async()=>{if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
 $('skillCancel').onclick=()=>$('skillDialog').close();
 $('skillSave').onclick=async()=>{
@@ -102,7 +102,7 @@ $('skillSave').onclick=async()=>{
     },{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
     if(!result.committed){$('skillStatus').textContent='Could not save: your saved build may have changed elsewhere, or this draft is no longer valid. Close and reopen Skills to reload it.';return;}
-    profile=result.snapshot.val();commandCenter?.render();$('skillDialog').close();if(canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);$('saveStatus').textContent='Skill build saved for the next match.';
+    profile=result.snapshot.val();commandCenter?.render();$('skillDialog').close();if(gameControl?.canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);$('saveStatus').textContent='Skill build saved for the next match.';
   }catch(error){if(version===sessionVersion)$('skillStatus').textContent='Could not save skills. Check your connection and Firebase rules.';}
   finally{if(version===sessionVersion){savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;if($('skillDialog').open){const message=$('skillStatus').textContent;renderSkills();$('skillStatus').textContent=message;}}}
 };
@@ -134,8 +134,8 @@ async function saveArmory(change){
   try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{if(!current||!Number.isInteger(current.xp))return;const armory=change(current.armory);if(!armory)return;const old=readArmory(current.armory);if(characterProgress(current.xp).level<5&&(armory.supply>old.supply||armory.safeguard>old.safeguard))return;return {...current,armory};},{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
     if(!result.committed){$('armoryStatus').textContent='Not enough scrap or the armory changed. Please try again.';return;}
-    profile=result.snapshot.val();commandCenter?.render();if(canEditSkills())gameControl.resetSkills();$('armoryStatus').textContent='Saved for your next match.';renderArmory();
+    profile=result.snapshot.val();commandCenter?.render();if(gameControl?.canEditSkills())gameControl.resetSkills();$('armoryStatus').textContent='Saved for your next match.';renderArmory();
   }catch(error){if(version===sessionVersion)$('armoryStatus').textContent='Could not save. Check your connection and database rules.';}
 }
-$('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Open the armory between matches, before building or joining a party.';return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
+$('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to open the armory, or leave your party first.';return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
 $('armoryClose').onclick=()=>$('armoryDialog').close();
