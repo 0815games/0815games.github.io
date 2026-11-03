@@ -23,47 +23,28 @@ const layoutCache=new WeakMap();
 function layout(mission,path,pads){let item=layoutCache.get(mission);if(!item||item.path!==path||item.pads!==pads){item={path,pads,spots:storyAnchors(path,pads,mission.stages||[])};layoutCache.set(mission,item);}return item.spots;}
 function disk(ctx,x,y,rx,ry,color){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();}
 function stroke(ctx,x1,y1,x2,y2,color,width=2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
-function scenery(ctx,x,y,s,index){
- ctx.save();ctx.translate(x,y);disk(ctx,0,12,15,5,s.dark);
- const rocky=['station','prison','dispatch','antenna','transformer','dam'].includes(s.feature);
- if(rocky){
-  ctx.beginPath();ctx.moveTo(-15,9);ctx.lineTo(-10,-4);ctx.lineTo(-3,-13);ctx.lineTo(8,-11);ctx.lineTo(15,9);ctx.closePath();ctx.fillStyle=s.dark;ctx.fill();ctx.strokeStyle='#344a40';ctx.lineWidth=2;ctx.stroke();
-  ctx.beginPath();ctx.moveTo(-9,3);ctx.lineTo(-2,-9);ctx.lineTo(6,-8);ctx.lineTo(10,3);ctx.closePath();ctx.fillStyle=s.light;ctx.globalAlpha=.8;ctx.fill();ctx.globalAlpha=1;
-  if(s.weather==='snow'){stroke(ctx,-10,-1,-3,-8,'#f1f8eb',3);stroke(ctx,-3,-8,4,-5,'#f1f8eb',3);}
- }else if(['receiver','relay','bridge'].includes(s.feature)){
-  disk(ctx,0,5,16,7,s.water);stroke(ctx,-10,3,8,3,s.light,1.5);for(const dx of [-8,0,8]){stroke(ctx,dx,4,dx+2,-12,s.dark,2);disk(ctx,dx+2,-13,2,4,s.dark);}
- }else{
-  ctx.fillStyle='#725c40';ctx.fillRect(-3,-5,6,17);ctx.beginPath();ctx.moveTo(-15,-2);ctx.lineTo(-7,-11);ctx.lineTo(-11,-11);ctx.lineTo(0,-26);ctx.lineTo(11,-11);ctx.lineTo(7,-11);ctx.lineTo(15,-2);ctx.closePath();ctx.fillStyle=s.dark;ctx.fill();ctx.strokeStyle='#344d39';ctx.lineWidth=2;ctx.stroke();stroke(ctx,-8,-6,0,-13,s.light,2);stroke(ctx,0,-13,7,-6,s.light,2);
- }
- ctx.restore();
+// Load illustrated landmark art once. A version change invalidates cached terrain
+// as images arrive, while missing assets retain a clear functional fallback.
+const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',transformer:'transformer',convoy:'truck',dispatch:'truck',wreck:'wreck',bridge:'bridge',dam:'dam',shelter:'shelter',prison:'prison'};
+const artEntries=new Map();let artVersion=0;
+export function prepareStoryArt(doc){
+ if(!doc?.createElement)return {version:0,get:()=>null};
+ for(const name of new Set(Object.values(artFiles))){if(artEntries.has(name))continue;const image=doc.createElement('img'),entry={image,ready:false};artEntries.set(name,entry);image.onload=()=>{entry.ready=true;artVersion++;};image.src=`assets/landmark-${name}-sprite.png`;}
+ return {version:artVersion,get:kind=>{const item=artEntries.get(artFiles[kind]);return item?.ready?item.image:null;}};
 }
-function building(ctx,x,y,kind,s){
- ctx.save();ctx.translate(x,y);disk(ctx,2,19,31,12,s.dark);ctx.strokeStyle='#293b33';ctx.lineWidth=2;
- if(['antenna','receiver','relay','station'].includes(kind)){
-  ctx.fillStyle=s.light;ctx.fillRect(-17,0,34,18);ctx.strokeRect(-17,0,34,18);ctx.fillStyle=s.dark;ctx.fillRect(-12,5,8,5);ctx.fillRect(5,5,8,5);
-  stroke(ctx,0,0,0,-31,'#293b33',3);stroke(ctx,-12,-18,12,-18,'#293b33',2);stroke(ctx,-9,-6,9,-6,'#293b33',2);stroke(ctx,-12,-18,9,-6,'#293b33',1);stroke(ctx,12,-18,-9,-6,'#293b33',1);disk(ctx,0,-32,4,4,s.accent);
- }else if(kind==='transformer'){
-  ctx.fillStyle=s.light;ctx.fillRect(-24,-8,48,27);ctx.strokeRect(-24,-8,48,27);for(let i=-1;i<=1;i++){ctx.fillStyle=s.dark;ctx.fillRect(i*14-4,-19,8,13);ctx.strokeRect(i*14-4,-19,8,13);stroke(ctx,i*14-5,-12,i*14+5,-12,s.accent,2);}stroke(ctx,-19,5,19,5,'#293b33',2);
- }else if(['convoy','dispatch','wreck'].includes(kind)){
-  ctx.fillStyle=kind==='wreck'?'#927659':s.light;ctx.fillRect(-26,-8,34,21);ctx.strokeRect(-26,-8,34,21);ctx.fillStyle=s.dark;ctx.fillRect(8,-3,17,16);ctx.strokeRect(8,-3,17,16);disk(ctx,-16,15,5,5,'#293b33');disk(ctx,16,15,5,5,'#293b33');stroke(ctx,-20,-3,2,-3,s.accent,2);
-  if(kind==='wreck'){stroke(ctx,-18,-10,0,10,'#4a4639',3);stroke(ctx,-24,9,-6,-9,'#4a4639',2);}
- }else if(kind==='dam'||kind==='bridge'){
-  ctx.fillStyle=s.water;ctx.fillRect(-32,-13,64,29);ctx.strokeRect(-32,-13,64,29);ctx.fillStyle=s.light;ctx.fillRect(-27,-4,54,13);ctx.strokeRect(-27,-4,54,13);for(let i=-20;i<=20;i+=10)stroke(ctx,i,-3,i,8,s.dark,2);
- }else{
-  ctx.fillStyle=s.light;ctx.fillRect(-24,-12,48,31);ctx.strokeRect(-24,-12,48,31);ctx.fillStyle=s.dark;ctx.fillRect(-18,-7,12,8);ctx.fillRect(7,-7,12,8);ctx.fillRect(-4,7,8,12);stroke(ctx,-28,-12,28,-12,'#293b33',3);
-  if(kind==='prison'){for(let i=-17;i<=17;i+=6)stroke(ctx,i,-6,i,0,'#293b33',1);}
-  if(kind==='shelter'){stroke(ctx,-6,-2,6,-2,s.accent,3);stroke(ctx,0,-8,0,4,s.accent,3);}
- }
- ctx.restore();
+function building(ctx,x,y,kind,s,art=null){
+ const image=art?.get(kind);if(image){const scale=Math.min(64/(image.naturalWidth||256),56/(image.naturalHeight||256)),w=(image.naturalWidth||256)*scale,h=(image.naturalHeight||256)*scale;ctx.drawImage(image,x-w/2,y+20-h,w,h);return;}
+ // Neutral field marker while the illustrated asset is unavailable.
+ ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON'})[kind]||'SITE',x,y+4);ctx.restore();
 }
-export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null){
+export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null,art=null){
  const s=storyMapStyle(mission?.id);if(!s)return false;ctx.save();ctx.fillStyle=s.ground;ctx.fillRect(0,0,width,height);
  // Textured terrain replaces the old cartoon underpainting when artwork is ready.
  if(texture){ctx.save();ctx.globalAlpha=.88;ctx.drawImage(texture,0,0,width,height);ctx.restore();}
  if(!texture)for(let i=0;i<42;i++){const x=(i*197+41)%width,y=(i*131+33)%height;ctx.globalAlpha=.22;disk(ctx,x,y,20+(i%4)*8,7+(i%3)*4,i%2?s.light:s.dark);ctx.globalAlpha=.65;stroke(ctx,x-9,y+1,x-3,y-3,s.dark,1.4);stroke(ctx,x+4,y+3,x+10,y-1,s.light,1.5);}ctx.globalAlpha=1;
- const spots=layout(mission,path,pads);if(!texture)for(let i=0;i<spots.length;i++){const {x,y}=spots[i];if(i%3===1){scenery(ctx,x,y,s,i);}else if(i%5===3){disk(ctx,x,y,14,6,s.water);stroke(ctx,x-8,y,x+7,y,s.light,1);}else{stroke(ctx,x-5,y+4,x-7,y-5,s.dark,2);stroke(ctx,x+2,y+4,x+5,y-7,s.dark,2);}}
+ const spots=layout(mission,path,pads);
  // Place two distinct mission landmarks away from paths, build pads and objectives.
- const locations=spots.filter((_,i)=>i%4===0);if(locations.length){const a=locations[Math.floor(locations.length/3)],b=locations[Math.floor(locations.length*2/3)];building(ctx,a.x,a.y,s.feature,s);if(b!==a){const second={wreck:'antenna',shelter:'convoy',antenna:'wreck',convoy:'shelter',dispatch:'antenna',bridge:'convoy',receiver:'shelter',station:'receiver',transformer:'station',prison:'antenna',relay:'bridge',dam:'relay'};building(ctx,b.x,b.y,second[s.feature],s);}}
+ const locations=spots.filter((_,i)=>i%4===0);if(locations.length){const a=locations[Math.floor(locations.length/3)],b=locations[Math.floor(locations.length*2/3)];building(ctx,a.x,a.y,s.feature,s,art);if(b!==a){const second={wreck:'antenna',shelter:'convoy',antenna:'wreck',convoy:'shelter',dispatch:'antenna',bridge:'convoy',receiver:'shelter',station:'receiver',transformer:'station',prison:'antenna',relay:'bridge',dam:'relay'};building(ctx,b.x,b.y,second[s.feature],s,art);}}
  ctx.restore();return true;
 }
 export function drawStoryAtmosphere(ctx,mission,time,reducedMotion=false,width=960,height=540,path=[],pads=[]){
@@ -76,8 +57,8 @@ export function drawStoryAtmosphere(ctx,mission,time,reducedMotion=false,width=9
 }
 
 // Story objectives are painted as scenery; the objective engine owns all logic.
-export function drawStoryObjective(ctx,mission,stage,time=0,reducedMotion=false){
+export function drawStoryObjective(ctx,mission,stage,time=0,reducedMotion=false,art=null){
  const s=storyMapStyle(mission?.id);if(!s||stage?.type!=='protect'||!Number.isFinite(stage.x)||!Number.isFinite(stage.y))return;
- const feature=stage.asset?.toLowerCase().includes('transformer')?'transformer':'receiver';building(ctx,stage.x,stage.y,feature,s);
+ const feature=stage.asset?.toLowerCase().includes('transformer')?'transformer':'receiver';building(ctx,stage.x,stage.y,feature,s,art);
  if(!reducedMotion){ctx.save();ctx.globalAlpha=.25+.1*Math.sin((Number.isFinite(time)?time:0)*2);disk(ctx,stage.x,stage.y-32,12,10,s.accent);ctx.restore();}
 }
