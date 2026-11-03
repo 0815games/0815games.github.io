@@ -42,3 +42,15 @@ const fastSession=createFirebasePartyHostSession({host:fastHost,playerIds:player
 const local=createFirebasePartyClientSession({channel:fastSession.localChannel(),onView:s=>localSnapshot=s,timeoutMs:100});local.start();fastSession.start();fastSession.setPresence('alice',true);fastSession.setPresence('bob',true);
 const direct=local.command({type:'move',x:700,y:400});await flush();fastSession.step();await flush();assert.equal((await direct).ok,true);assert.deepEqual(localSnapshot.match.players.alice.target,{x:700,y:400});assert.ok(networkViews>0);assert.equal(typeof guestInputs,'function');
 await local.stop();await fastSession.stop();
+
+// Malformed commands must not consume or lock a sequence on the host.
+let validatedView, sent=[];
+const validationClient=createFirebasePartyClientSession({channel:{watchView(fn){validatedView=fn;return()=>{};},async writeInput(packet){sent.push(packet);},async close(){}}});
+validationClient.start();validatedView({epoch:'safe',ready:true,snapshot:{tick:0,nextSeq:1,receipts:[]}});
+assert.match((await validationClient.command({type:'approveWave'})).reason,/Invalid/);
+assert.match((await validationClient.command({type:'move',x:NaN,y:2})).reason,/Invalid/);
+assert.match((await validationClient.command({type:'startWave',extra:1})).reason,/Invalid/);
+assert.equal(sent.length,0);
+const mutable={type:'move',x:100,y:200},valid=validationClient.command(mutable);mutable.x=NaN;await flush();assert.equal(sent[0].envelope.command.x,100);
+validatedView({epoch:'safe',ready:true,snapshot:{tick:1,nextSeq:2,receipts:[{seq:1,status:'applied',result:{ok:true}}]}});
+assert.equal((await valid).ok,true);await validationClient.stop();

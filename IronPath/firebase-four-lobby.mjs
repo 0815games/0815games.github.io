@@ -64,6 +64,14 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
       // commit time, otherwise a concurrent leave or approval can race this.
       const result=await transactionWithCache(party(partyId,'started'),value=>value===null?manifest:undefined);check();if(!result.committed)throw Error('Party already started or changed');return {...manifest,teamRosters:fourTeamRosters(manifest),profiles};
     },
+    async resumeHost(inviteCode){
+      check();if(!validCode(inviteCode))throw Error('Invalid code');
+      const [hostId,partyId]=await Promise.all([read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);
+      if(hostId!==uid||!validParty(partyId))throw Error('Host party unavailable');
+      const [started,lease]=await Promise.all([read(party(partyId,'started')),read(party(partyId,'recovery/lease'))]);
+      if(!started||started.hostId!==uid||!Number.isSafeInteger(lease?.generation)||lease.generation<1)throw Error('No recoverable match');
+      return {...started,partyId,inviteCode,uid,teamRosters:fourTeamRosters(started),resumeGeneration:lease.generation};
+    },
     async reconnect(partyId,inviteCode){
       check();if(!validCode(inviteCode)||(await read(ref(`fourCodes/${inviteCode}/partyId`)))!==partyId)throw Error('Party unavailable');const manifest=await read(party(partyId,'started'));if(!manifest||!Array.isArray(manifest.playerIds)||!manifest.playerIds.includes(uid))throw Error('Not in the started roster');return {...manifest,teamRosters:fourTeamRosters(manifest)};
     },

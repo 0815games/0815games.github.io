@@ -13,7 +13,7 @@ const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{
 const validCount=match=>isFour(match)?(match.mode==='four-coop'?[3,4].includes(matchIds(match).length):matchIds(match).length===4):matchIds(match).length>=1&&matchIds(match).length<=2;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
-function normalizeCommand(command){
+export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
   if(Object.keys(command).some(key=>key!=='type'&&!fields.includes(key)))return null;

@@ -195,3 +195,6 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 
 /* Staged four-player lobby; no live entry point. */
 .four-party-list{display:grid;gap:6px;margin:8px 0 12px;padding:0;list-style:none}.four-party-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;background:#ebe1bf;border:1px solid #a89b72;color:#263a29}.four-party-list li span{flex:1;overflow-wrap:anywhere}.four-party-list li button{width:auto;margin:0;padding:6px 9px}.four-party h3{font-size:12px;letter-spacing:.06em;margin:10px 0 4px}.four-party .party-mode label{display:block;margin-top:10px}
+
+/* Solo campaign operation picker. */
+.campaign{margin:1rem 0;padding:1rem}.campaign h2{margin:.15rem 0}.campaign p{margin:.5rem 0}.campaign-controls{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}.campaign-controls label{font-size:.75rem;font-weight:700;letter-spacing:.08em}.campaign-controls select{flex:1 1 15rem;max-width:30rem}.campaign-controls button{flex:0 0 auto}#campaignBriefing{font-weight:600}#resultsCampaign{white-space:pre-line}
