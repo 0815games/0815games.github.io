@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261103-visual3">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261103-modes1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -54,7 +54,7 @@
       <section class="command-nav" aria-label="Choose your operation"><div class="command-nav-head"><span class="command-kicker">YOUR NEXT DEPLOYMENT</span><h3>Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><div class="mode-grid"><button type="button" id="menuCampaign" class="mode-card mode-campaign"><span class="mode-index">01 / STORY</span><strong>Campaign</strong><span id="menuCampaignProgress">The Broken Signal</span><b aria-hidden="true">↗</b></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index">02 / SOLO</span><strong>Endless</strong><span>Survive wave after wave</span><b aria-hidden="true">↗</b></button><button type="button" id="menuMultiplayer" class="mode-card mode-multiplayer"><span class="mode-index">03 / ONLINE</span><strong>Multiplayer</strong><span>One code. Your squad.</span><b aria-hidden="true">↗</b></button></div><div class="command-utilities"><button type="button" id="menuTutorial">FIELD TUTORIAL <span>↗</span></button><button type="button" id="menuLogout">SIGN OUT <span>→</span></button></div></section></div>
     </section>
     <p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p>
-    <div id="gameWorkspace" hidden><button id="backToCommand" type="button" class="back-to-command">← COMMAND CENTER</button><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameWorkspace" data-screen="endless" data-online-ready="false" hidden><nav class="workspace-nav" aria-label="Operation navigation"><button id="backToCommand" type="button" class="back-to-command">← COMMAND CENTER</button><button id="partyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>PARTY / LEAVE</button><button id="returnOnline" type="button">← RETURN TO MATCH</button></nav><p id="onlineConnecting" class="online-connecting" role="status">Connecting to the multiplayer battlefield…</p><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="logout" type="button">SIGN OUT</button></div></div><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Connect with a four-digit code. The host approves the second player and chooses a game mode.</p>
@@ -170,5 +170,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-landmarks1"></script>
+  <script type="module" src="account.js?v=20261103-modes1"></script>
 </body></html>
