@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261103-brand2">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261103-visual3">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -127,14 +127,7 @@
   <dialog id="tutorialDialog" class="tutorial-dialog" aria-labelledby="tutorialTitle" aria-describedby="tutorialText">
     <span class="eyebrow" id="tutorialStep"></span>
     <div class="tutorial-scene" id="tutorialScene" aria-hidden="true">
-      <svg class="brief-art" viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <rect width="400" height="160" fill="#a8bc91"/><path d="M0 56 Q55 21 111 53 T221 48 T400 42 V160 H0Z" fill="#819d70"/><path d="M0 106 Q105 71 197 102 T400 93 V160 H0Z" fill="#b9a57c" stroke="#536345" stroke-width="4"/><path d="M0 131 Q103 96 197 127 T400 118" fill="none" stroke="#e7d4a5" stroke-width="2" stroke-dasharray="12 9"/>
-        <g class="brief-enemy" stroke="#3e4936" stroke-width="3" stroke-linejoin="round"><ellipse cx="62" cy="106" rx="15" ry="6" fill="#6e7c55"/><path d="M53 98 L52 87 Q61 78 70 87 L71 98Z" fill="#ab7355"/><circle cx="61" cy="82" r="7" fill="#d5ae83"/><path d="M53 81 Q61 70 70 81Z" fill="#806650"/></g>
-        <g class="brief-pad" stroke="#42563d" stroke-width="3"><ellipse cx="166" cy="92" rx="22" ry="12" fill="#e9d8a7"/><path d="M166 84 V100 M158 92 H174" fill="none"/></g>
-        <g class="brief-soldier" stroke="#344b36" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M237 109 L233 127 M247 109 L253 126"/><path d="M235 93 Q242 87 250 93 L251 111 L234 111Z" fill="#658052"/><circle cx="242" cy="86" r="8" fill="#e5bd91"/><path d="M232 84 Q241 73 252 84Z" fill="#5c764b"/><path d="M248 99 L263 95"/></g>
-        <g class="brief-bunker" stroke="#43563e" stroke-width="3" stroke-linejoin="round"><path d="M306 109 L312 82 L370 82 L379 109Z" fill="#87947b"/><path d="M313 83 L322 70 H362 L370 83Z" fill="#aab79b"/><path d="M332 109 V93 H353 V109Z" fill="#455c46"/><path d="M302 110 H383" fill="none"/></g>
-        <g class="brief-pointer" stroke="#f6e8bc" stroke-width="3" fill="none"><circle cx="166" cy="92" r="27"/><path d="M166 56 V63 M166 121 V128 M130 92 H137 M195 92 H202"/></g>
-      </svg><span class="scene-caption" id="tutorialCaption"></span></div>
+      <span class="scene-caption" id="tutorialCaption"></span></div>
     <h2 id="tutorialTitle"></h2><p id="tutorialText" class="tutorial-text"></p>
     <div id="tutorialSkillsPractice" class="tutorial-practice" hidden aria-label="Skill tree practice">
       <span class="tutorial-practice-label">TRAINING EXAMPLE · LEVEL 2</span><strong id="tutorialSkillPoints"></strong>
@@ -177,5 +170,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-brand2"></script>
+  <script type="module" src="account.js?v=20261103-visual3"></script>
 </body></html>
