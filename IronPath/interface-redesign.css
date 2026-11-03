@@ -90,3 +90,23 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 /* Long roster names and dialog content should wrap rather than widen phones. */
 .firebase-party .party-join-controls,.firebase-party .party-join{min-width:0}
 .firebase-party .four-party-list li span,.tree-detail>div{min-width:0;overflow-wrap:anywhere}
+
+/* Cinematic personnel and field briefing: same visual language as the story. */
+.entry:has(.dossier:not([hidden])){width:min(760px,100%);max-width:760px;background:#152820;border:1px solid #81947a;box-shadow:0 24px 70px #0009}
+.entry:has(.dossier:not([hidden])):before{content:'IRON PATH / PERSONNEL DIVISION';padding:13px 22px;background:#192f25;color:#e3ca8b;border-bottom:1px solid #6c8068}
+.dossier{display:grid;grid-template-columns:minmax(190px,36%) minmax(0,1fr);column-gap:24px;padding:22px}
+.dossier-heading{grid-row:1 / span 3;display:flex;flex-direction:column;align-items:stretch;gap:12px;min-width:0}
+.dossier-portrait{position:relative;width:100%;height:245px;padding:0;overflow:hidden;transform:none;background:#213a2d;border:1px solid #7c8f70;box-shadow:none}
+.dossier-portrait img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 28%}
+.dossier-portrait span{position:absolute;bottom:0;left:0;right:0;padding:20px 10px 10px;background:linear-gradient(transparent,#14261fea);color:#ebd49c;text-align:left}
+.dossier-intro{padding:0 2px}.dossier-kicker{color:#dfc991}.entry .dossier h2{font-size:28px;color:#f5ead0}.dossier-stamp{transform:none;color:#d7c28c;border:1px solid #8e9a77}
+.dossier-copy{align-self:end;margin:0;color:#c9d6bf}.entry .dossier-form{margin:15px 0 0}.dossier-footer{grid-column:1/-1;margin-top:16px;border-top:1px solid #627961;color:#bccbb3}
+.tutorial-dialog{width:min(620px,calc(100vw - 24px));background:#172b23;color:#f1ead4;border:1px solid #899b7b;padding:20px;box-shadow:0 22px 85px #000d}
+.tutorial-dialog .eyebrow{color:#dec98e}.tutorial-dialog h2{color:#f6e9ca;font:700 27px Georgia,serif}.tutorial-dialog .tutorial-text{color:#d4dfcc;min-height:0;line-height:1.55}
+.tutorial-scene{aspect-ratio:5/2;border:1px solid #819575;border-radius:3px;box-shadow:none;background:linear-gradient(#11231b60,#11231b72),url('assets/story-outpost.jpg') center 58%/cover}
+.tutorial-scene .brief-art>rect,.tutorial-scene .brief-art>path{display:none}.tutorial-scene .brief-art{filter:drop-shadow(0 2px 3px #102119)}
+.tutorial-dialog .tutorial-practice{background:#2b4334;border:1px solid #758b6d;color:#f0ead3}.tutorial-dialog .tutorial-practice-label,.tutorial-dialog .tutorial-practice>strong,.tutorial-dialog .practice-note,.tutorial-dialog .tutorial-practice-status{color:#d7dfc9}
+.tutorial-dialog .practice-armory>div{background:#354e3d;border:1px solid #7d9275}.tutorial-dialog .practice-armory small,.tutorial-dialog .practice-icon{color:#d8c995}
+.tutorial-dialog button{background:#36503e;border:1px solid #8b9b80;color:#f3e9ce;box-shadow:none;border-radius:3px}.tutorial-dialog button.primary{background:#e4ca89;border-color:#e4ca89;color:#1b3024}.tutorial-dialog .tutorial-skip,.tutorial-dialog .tutorial-practice-skip{color:#e5d09c;border-color:#829475}
+.tutorial-dialog .tutorial-practice button[aria-pressed=true]{background:#bb774e;color:#fff7d6}
+@media(max-width:600px){.dossier{grid-template-columns:1fr;gap:0;padding:15px}.dossier-heading{grid-row:auto;display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center}.dossier-portrait{height:130px}.entry .dossier h2{font-size:24px}.dossier-copy{margin:14px 0 0}.dossier-footer{grid-column:auto}.tutorial-dialog{padding:14px}.tutorial-dialog h2{font-size:23px}}

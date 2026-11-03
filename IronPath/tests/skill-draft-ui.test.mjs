@@ -6,8 +6,8 @@ import {characterProgress} from '../progression.mjs';
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const start=source.indexOf('function canEditSkills()'),end=source.indexOf('\nfunction renderArmory()',start);assert.ok(start>0&&end>start);
 const nodes=new Map();function $(id){if(!nodes.has(id))nodes.set(id,{textContent:'',value:'all',disabled:false,open:false,querySelector(){return null},showModal(){this.open=true},close(){this.open=false}});return nodes.get(id);}
-let lastRender,store={name:'Alice',gender:'female',xp:750,skills:'1,0,0,0,0;assault'},allow=false,resets=0,select;
-const confirmation={async ask(){return allow;}},gameControl={canEditSkills:()=>true,resetSkills(){resets++;}},skillMap={center(){}};
+let lastRender,store={name:'Alice',gender:'female',xp:750,skills:'1,0,0,0,0;assault'},allow=false,resets=0,select,pristine=true;
+const confirmation={async ask(){return allow;}},gameControl={canEditSkills:()=>pristine,resetSkills(){resets++;}},skillMap={center(){}};
 const renderSkillTree=options=>{lastRender=options;select=options.onSelect;};
 const runTransaction=async(_ref,update)=>{const next=update(structuredClone(store));if(!next)return {committed:false};store=next;return {committed:true,snapshot:{val:()=>structuredClone(store)}};};
 const init=new Function('$','profile','user','sessionVersion','partyPanel','fourPanel','gameControl','commandCenter','confirmation','skillMap','level','pointsLeft','parseBuild','encodeBuild','SKILL_PATHS','WEB_NODES','webReady','webRequirement','skillBuildSummary','canSaveSkillDraft','renderSkillTree','document','runTransaction','ref','db','updateSkillPrompt',`let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false;\n${source.slice(start,end)}\nreturn {getDraft:()=>draftSkills};`);
@@ -17,4 +17,10 @@ await $('skillReset').onclick();assert.equal(ui.getDraft().assault,1,'cancel res
 allow=true;await $('skillReset').onclick();assert.equal(ui.getDraft().active,null);assert.match($('skillStatus').textContent,/Unsaved draft/);$('skillCancel').onclick();assert.equal(store.skills,'1,0,0,0,0;assault','closing discards unsaved draft');
 $('skillOpen').onclick();await $('skillReset').onclick();await $('skillSave').onclick();assert.equal(store.skills,'0,0,0,0,0;assault');assert.equal(resets,1);assert.equal($('skillDialog').open,false);
 $('skillOpen').onclick();select({path:'assault',rank:1},false);$('skillDetailAction').onclick();assert.match($('skillStatus').textContent,/Unsaved draft/);store.skills='0,1,0,0,0;engineer';await $('skillSave').onclick();assert.equal(store.skills,'0,1,0,0,0;engineer');assert.match($('skillStatus').textContent,/changed elsewhere/);assert.equal($('skillDialog').open,true);
+$('skillCancel').onclick(); store.skills='0,0,0,0,0;assault'; pristine=false; $('commandCenter').hidden=false; $('skillOpen').onclick();
+assert.equal($('skillDialog').open,true,'skills can be edited from command center during a paused run');
+await $('skillReset').onclick(); await $('skillSave').onclick();
+assert.equal(resets,1,'saving for a future match must not reset an active run');
+$('commandCenter').hidden=true; $('skillOpen').onclick();
+assert.equal($('skillDialog').open,false,'active battle still blocks mid-match editing');
 console.log('Draft reset confirmation, discard, save and cross-device conflict handling passed.');
