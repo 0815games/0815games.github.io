@@ -14,7 +14,7 @@ for(const file of ['story-cinematics.mjs','campaign.mjs','story-mission.mjs','fo
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 let allowEnd=false,confirmation;
-startGame({getProfile:()=>({name:'Test',gender:'female'}),getUserId:()=> 'smoke-user',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',confirmAction:async options=>{confirmation=options;return allowEnd;}});
+const gameControl=startGame({getProfile:()=>({name:'Test',gender:'female'}),getUserId:()=> 'smoke-user',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',confirmAction:async options=>{confirmation=options;return allowEnd;}});
 assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
@@ -85,6 +85,7 @@ assert.equal(element('money').textContent,15);
 element('start').onclick();
 assert.equal(element('wave').textContent,'1 / ∞');
 assert.match(element('wavePreview').textContent,/Next: Wave 2/);
+const enemiesBeforePause=element('enemies').textContent;gameControl.setMenuOpen(true);const pauseTime=performance.now();for(let i=1;i<=30;i++)frame(pauseTime+i*50);assert.equal(element('enemies').textContent,enemiesBeforePause,'solo combat does not advance while the command menu is open');gameControl.setMenuOpen(false);assert.equal(await gameControl.chooseEndless(),false,'declining a new operation preserves the current run');assert.equal(element('wave').textContent,'1 / ∞');
 await element('endRun').onclick();assert.equal(element('wave').textContent,'1 / ∞');assert.equal(element('start').textContent,'WAVE IN PROGRESS');assert.match(confirmation.text,/unfinished wave/);
 allowEnd=true;await element('endRun').onclick();assert.equal(element('start').textContent,'RESTART OPERATION');assert.equal(element('endRun').disabled,true);assert.match(element('message').textContent,/Run ended/);assert.equal(element('runResults').open,true);assert.match(element('resultsTitle').textContent,/Operation ended/);assert.match(element('resultsWaves').textContent,/0 waves completed/);element('resultsDone').onclick();assert.equal(element('runResults').open,false);element('viewResults').onclick();assert.equal(element('runResults').open,true);element('resultsDone').onclick();element('start').onclick();assert.equal(element('wave').textContent,'0 / ∞');assert.equal(element('endRun').disabled,false);
 

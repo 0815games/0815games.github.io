@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261103-redesign1">
+  <link rel="stylesheet" href="style.css?v=20261103-command1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -56,7 +56,14 @@
       <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
+    <div id="gameView" hidden>
+    <section id="commandCenter" class="command-center" aria-labelledby="commandTitle">
+      <div class="command-hero"><div><span class="command-kicker">IRON PATH / FIELD HEADQUARTERS</span><h2 id="commandTitle">Command Center</h2><p>The valley is waiting. Choose your next operation.</p></div><span class="command-hero-label" aria-hidden="true">YOUR STORY CONTINUES HERE</span></div>
+      <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button></div></div></section>
+      <section class="command-nav" aria-label="Choose your operation"><div class="command-nav-head"><span class="command-kicker">YOUR NEXT DEPLOYMENT</span><h3>Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><div class="mode-grid"><button type="button" id="menuCampaign" class="mode-card mode-campaign"><span class="mode-index">01 / STORY</span><strong>Campaign</strong><span id="menuCampaignProgress">The Broken Signal</span><b aria-hidden="true">↗</b></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index">02 / SOLO</span><strong>Endless</strong><span>Survive wave after wave</span><b aria-hidden="true">↗</b></button><button type="button" id="menuMultiplayer" class="mode-card mode-multiplayer"><span class="mode-index">03 / ONLINE</span><strong>Multiplayer</strong><span>One code. Your squad.</span><b aria-hidden="true">↗</b></button></div><div class="command-utilities"><button type="button" id="menuTutorial">FIELD TUTORIAL <span>↗</span></button><button type="button" id="menuLogout">SIGN OUT <span>→</span></button></div></section></div>
+    </section>
+    <p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p>
+    <div id="gameWorkspace" hidden><button id="backToCommand" type="button" class="back-to-command">← COMMAND CENTER</button><div class="profile-bar"><div class="profile-details"><span class="eyebrow">YOUR SOLDIER</span><strong id="profileName"></strong><span id="profileLevel"></span><span id="profileStats"></span></div><div class="profile-actions"><button id="armoryOpen" type="button">ARMORY</button><button id="skillOpen" type="button">SKILLS</button><button id="partyToggle" type="button" aria-controls="fourPartyPanel" aria-expanded="false" hidden>MULTIPLAYER</button><button id="logout" type="button">SIGN OUT</button></div></div><div id="coopControls" class="coop-controls" hidden><button id="coopToggle" type="button">JOIN CO-OP (TEST)</button><span id="coopStatus" role="status">SOLO</span></div>
     <section id="firebaseParty" class="firebase-party" aria-label="Private co-op party" hidden>
       <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ALPHA TEST</span></div>
       <p class="hint">Connect with a four-digit code. The host approves the second player and chooses a game mode.</p>
@@ -79,6 +86,7 @@
         <button id="fourPartyCreate" class="primary" type="button">CREATE PARTY</button>
         <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button><button id="fourPartyResume" type="button" hidden>RESUME AS HOST</button></div></div>
       </div>
+      <p class="hint">Solo combat pauses while the lobby is open. Online matches continue independently.</p>
       <div id="fourPartyActive" hidden>
         <div id="fourPartyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="fourPartyCodeDisplay"></code><small>Share with your players</small></div>
         <ul id="fourPartyRequests" class="party-requests four-party-list" aria-label="Join requests"></ul>
@@ -106,7 +114,7 @@
       </aside>
     </div>
     <footer>IRON PATH · Soldier progress is saved online. Solo battles run locally. <a href="../">← 0815 Games</a></footer>
-    </div>
+    </div></div>
   </main>
   <dialog id="armoryDialog" class="skill-dialog armory-dialog" aria-labelledby="armoryTitle">
     <div class="development-head"><div><span class="eyebrow">FIELD EQUIPMENT / 02</span><h2 id="armoryTitle">Armory & bunker</h2></div><button class="development-close" id="armoryClose" type="button" aria-label="Close armory">✕</button></div>
@@ -176,5 +184,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-storymaps1"></script>
+  <script type="module" src="account.js?v=20261103-command1"></script>
 </body></html>
