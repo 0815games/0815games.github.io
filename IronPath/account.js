@@ -1,5 +1,5 @@
 import {completeCampaign} from './campaign.mjs?v=20261103-campaign1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-onlinebeta1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-onlinebeta2';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-onlinebeta1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-onlinebeta1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';

@@ -3,7 +3,7 @@
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
 import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261103-recovery1';
-import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261103-onlinebeta1';
+import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261103-onlinebeta2';
 import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261103-onlinebeta1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
 import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261103-recovery1';
@@ -26,7 +26,7 @@ export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,play
    channel=createFirebaseDurableChannel({...opts,onError:fail});client=createDurableClientSession({channel,onConnections:ids=>{acknowledged=ids;refresh();},onState:value=>{if(!active)return;if(value==='error'){fail();return;}sessionReady=value==='ready';refresh();},onView:view});client.start();
    if(uid===hostId){const store=createFirebaseRecoveryStore({db,auth,sdk,partyId,manifest,crypto,readFresh});let core,fence=null;if(resumeGeneration!==null){fence=await store.claim(resumeGeneration);if(!active)return;core=restorePartyHost(fence.checkpoint,{hostId,playerIds:ids,mode,teams});}else core=createPartyHost(mode==='two-vs-two'?createTwoVsTwo(players,hostId,teams):mode==='four-coop'?createFourCoop(players,hostId):mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId});host=createDurableHostSession({host:core,store,playerIds:ids,onError:fail});stopInputs=channel.watchInputs((id,packet)=>host?.receive(id,packet));if(!await host.start(fence)){fail();return;}if(!active)return;}
    presence=createFirebasePartyPresence({...opts,onError:fail,onConnections:(id,value)=>{if(active)host?.setConnections(id,value);},onPresence:(id,value)=>{if(!active)return;online.set(id,value);host?.setPresence(id,value);refresh();},onConnection:(connected,id)=>{if(!active)return;localConnection=connected?id:null;if(!connected)for(const id of ids)online.set(id,false);refresh();}});presence.start();
-   if(host)timer=setInterval(()=>{if(active&&!failed)void host.step(3);},100);
+   if(host)timer=setInterval(()=>{if(active&&!failed)void host.step(6);},200);
  }catch{fail();}}
  return {start(){if(started)throw Error('Party already started');started=true;active=true;onState('connecting');releaseTab=guardMultiplayerTab({locks:lockManager,partyId,uid,onConflict:()=>fail('duplicate'),onAcquired:()=>{void launch();}});},command(command){return !active||failed||!ready?Promise.resolve({ok:false,reason:'Party is not ready.'}):client.command(command);},async stop(){if(!active&&!client)return;active=false;sessionReady=false;refresh();if(timer)clearInterval(timer);timer=null;releaseTab?.();releaseTab=null;stopInputs?.();stopInputs=null;host?.stop();const p=presence,c=client;presence=null;client=null;host=null;await Promise.allSettled([p?.stop(),c?.stop()]);}};
 }
