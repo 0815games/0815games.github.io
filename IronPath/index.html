@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261103-fourlobby1">
+  <link rel="stylesheet" href="style.css?v=20261103-campaign1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -92,6 +92,12 @@
         <div class="party-actions"><button id="fourPartyStart" class="primary" type="button">START MATCH</button><button id="fourPartyLeave" type="button">LEAVE PARTY</button></div>
       </div><p id="fourPartyStatus" role="status" aria-live="polite"></p>
     </section>
+    <section class="campaign panel" aria-labelledby="campaignTitle">
+      <div class="panel-heading"><span class="eyebrow">SOLO CAMPAIGN</span><h2 id="campaignTitle">Operations</h2></div>
+      <p>Complete each operation to unlock the next. Progress is saved to your account; completed missions can be replayed.</p>
+      <div class="campaign-controls"><label for="campaignSelect">OPERATION</label><select id="campaignSelect"><option value="free">Free play · random battlefield</option><option id="campaignOption0" value="last-road">01 · The Last Road</option><option id="campaignOption1" value="pinewood">02 · Pinewood Crossing</option><option id="campaignOption2" value="outpost">03 · Broken Outpost</option></select><button id="campaignLoad" type="button">LOAD OPERATION</button></div>
+      <p id="campaignBriefing" role="status" aria-live="polite"></p><p class="hint">Campaign is solo; multiplayer uses its own match. Wave XP and loot follow the usual rules.</p>
+    </section>
     <section class="dashboard" aria-label="Battle status">
       <div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V3m1 1h12l-3 4 3 4H6"/></svg><span><small>WAVE</small><strong id="wave">0 / ∞</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20v-8l3-5h12l3 5v8H3zm3-8h12M9 20v-5h6v5"/></svg><span><small>BUNKER</small><strong id="health">100</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v12H4zM7 8V5h10v3M9 14h6M12 11v6"/></svg><span><small id="moneyLabel">SUPPLIES</small><strong id="money">125</strong></span></div><div><svg class="hud-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 2v5m0 10v5M2 12h5m10 0h5"/></svg><span><small>ENEMIES</small><strong id="enemies">0</strong></span></div>
     </section>
@@ -148,7 +154,7 @@
   </dialog>
   <dialog id="runResults" class="skill-dialog results-dialog" aria-labelledby="resultsTitle">
     <div class="development-head"><div><span class="eyebrow">AFTER-ACTION REPORT</span><h2 id="resultsTitle">Operation complete</h2></div><button class="development-close" id="resultsClose" type="button" aria-label="Close results">✕</button></div>
-    <p id="resultsOutcome" class="results-outcome"></p><div class="results-grid"><section><h3>THE RUN</h3><p id="resultsWaves"></p><p id="resultsRewards"></p><p id="resultsSave" role="status"></p></section><section><h3>YOUR CONTRIBUTIONS</h3><p id="resultsDamage"></p><p id="resultsCombos"></p></section></div>
+    <p id="resultsOutcome" class="results-outcome"></p><div class="results-grid"><section><h3>THE RUN</h3><p id="resultsWaves"></p><p id="resultsRewards"></p><button id="campaignRetry" type="button" hidden>RETRY CAMPAIGN SAVE</button><p id="resultsCampaign" role="status" hidden></p><p id="resultsSave" role="status"></p></section><section><h3>YOUR CONTRIBUTIONS</h3><p id="resultsDamage"></p><p id="resultsCombos"></p></section></div>
     <section class="results-next"><h3>WHAT'S NEXT</h3><p id="resultsUnlocks"></p><p id="resultsNext"></p></section><p class="development-hint">Tower damage counts effective health removed, including tower splash and chain damage. Combo counts show activations, not a damage ranking. Rewards are credited per completed wave; unfinished waves earn no XP or loot. Leave the party before editing Skills or Armory.</p><button id="resultsDone" type="button" class="primary">CONTINUE</button>
   </dialog>
   <dialog id="gameConfirm" class="tower-details game-confirm" aria-labelledby="gameConfirmTitle" aria-describedby="gameConfirmText">
@@ -169,5 +175,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-recovery2"></script>
+  <script type="module" src="account.js?v=20261103-campaign1"></script>
 </body></html>
