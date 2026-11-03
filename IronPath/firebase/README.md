@@ -1,13 +1,16 @@
 # Firebase setup
 
-The game uses Firebase Authentication (email/password) and the existing Realtime Database. `database.rules.json` is a complete, deny-by-default ruleset for this prototype, NOT a rules fragment. Before publishing it, inspect the existing database rules and merge the `players` subtree if the database contains other applications or data; publishing the file as-is replaces all database rules. Publish the resulting rules in Firebase Console → Realtime Database → Rules (or use the Firebase CLI with the correct project and database instance). The repository cannot deploy rules by itself.
+## Current deployment guidance
 
-Ensure Authentication → Sign-in method has Email/Password enabled. Password reset emails use the Firebase Auth configuration. Profile creation and XP sync require the rules to be published. Profiles are owner-readable/writable, with immutable name/gender and validated XP. Client-side XP is **not cheat-proof**: an authenticated player can submit arbitrary increases. Do not use it for competitive leaderboards. Server-authoritative rewards and validation are future work. Runs themselves are not saved. The game currently assumes one active run per account; concurrent tabs/devices may award XP for separate runs.
+The current complete repository ruleset is `story.complete.draft.rules.json`. It includes sequential story progress, multiplayer and experimental recovery rules. The user reported publishing it, but the live Firebase database rules have not been independently verified. Publishing **replaces the entire ruleset**: first back up and compare the live rules, merge any unrelated existing rules, and run the complete story emulator tests. Do not publish older snapshots such as `database.rules.json`, `party-four-digit.draft.rules.json`, or `online-recovery.complete.draft.rules.json` as replacements; they lack later features and may break current progress or multiplayer.
 
+Enable Email/Password in Firebase Authentication. The repository cannot publish rules by itself. Player XP and player-hosted results are client-controlled and are not trustworthy for competitive rewards. Online play, host recovery and production rules still need real-account and device testing.
 
-## Player-hosted co-op (limited alpha test)
+## Historical implementation notes
 
-**Four-digit rollout:** the current UI requires `party-four-digit.draft.rules.json` and host approval; the previously published `party-alpha.draft.rules.json` does not support it. Until the user publishes the new complete rules, party creation/joining will fail. See `FOUR-DIGIT-STAGING.md` for rollout and remaining abuse risks.
+The sections below describe earlier development stages and their historical rules files. They are **not current deployment instructions**; use the guidance above. Some limitations described here may have been addressed in later stages.
+
+### Player-hosted co-op (earlier alpha)
 
 `../firebase-party-channel.mjs` is an experimental low-level Realtime Database packet channel, not a complete party system. It takes the modular Firebase SDK as an injected dependency, sends each player's latest input under their own path, and lets a host publish both player views atomically. JSON string encoding preserves empty arrays through Realtime Database; packet sizes are bounded and writes are serialized. Tests use an in-memory SDK mock, not a Firebase emulator or live project. The user reports that the combined party rules were published; this has not been independently verified here.
 

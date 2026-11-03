@@ -1,6 +1,6 @@
 # Limited online host-recovery test
 
-This is a controlled trial, not a general release. The complete `firebase/online-recovery.complete.draft.rules.json` rules are required on the intended Firebase database; the user reports publishing them. Firebase replaces the whole ruleset on publication: never paste only the `recovery` fragment. The combined file preserves the campaign and existing multiplayer rules and adds the recovery paths and optional started-manifest marker. Back up the current live rules first. The GitHub emulator suite tests the complete combined file, but cannot replace real-device testing.
+This is a controlled trial, not a general release. The latest complete repository rules are `firebase/story.complete.draft.rules.json`: they include story progress, multiplayer and the recovery paths. The user reported publishing these rules, but live database contents have not been independently verified. Do **not** publish the older `online-recovery.complete.draft.rules.json`: it lacks the current story-progress rules. Firebase replaces the entire ruleset on publication. Before any rules deployment, back up and compare the actual live rules, merge any independent changes and run the complete story emulator suite. Never publish a fragment. Emulator tests do not replace real-device testing.
 
 On the deployed GitHub Pages client:
 

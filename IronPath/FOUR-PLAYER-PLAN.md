@@ -25,7 +25,7 @@ The staged lobby adapter exposes subscriptions for host, own request, configurat
 
 A hidden four-player lobby panel now covers code entry, approval/decline, four-slot readiness, co-op or balanced 2v2 selection, start handoff and logout cleanup. It is connected to the game adapter behind `?fourPlayerTest=1`, but the required Firebase rules are not published. Emulator-backed panel flow, accessibility and real-device testing remain required.
 
-An isolated `four-test.html` offline playground lets one person switch among four local players, test two-road co-op or both 2v2 fields, build and run waves. It is deliberately not linked from the live game and does not test networking, lobby security or progression saves.
+The former unlinked offline playground was removed. Automated four-player simulation, viewport and online protocol tests remain; real online device testing is still required.
 
 The emulator suite exercises four real Firebase SDK clients for each mode: presence, synchronized wave approval, tower replication, disconnect and reconnect. This tests the adapter and draft rules together, not the browser panel or real devices. The host is still a single point of failure; a reloaded host cannot resume the prior authoritative simulation. Do not publish rules or merge until security, lifecycle and real-device tests are complete.
 

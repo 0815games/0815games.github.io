@@ -1,5 +1,7 @@
 # Four-digit join flow and deployment
 
+> **Historical document — do not use as current deployment instructions.** The latest complete repository rules are `story.complete.draft.rules.json`; back up and compare live rules and run the complete story emulator suite before publishing. Older files here lack later features. Live production rules have not been independently verified.
+
 The new UI uses four-digit invites and host approval. It requires `party-four-digit.draft.rules.json`, which replaces the earlier alpha rules. Publish the rules only after reviewing and backing up the live rules. The old and new join flows are not compatible: joining parties will be unavailable between the site update and rules publication. Restart both browsers after the rules are published. Emulator tests cover requests, approval, gameplay and guest rejoin; real Firebase and phone testing are still needed.
 
 The staged design maps a four-digit code to a random internal party ID. A signed-in player may send a join request containing the name from their own Firebase profile. Only the host can read the request list or assign the guest slot; rules require an existing request, an empty slot, and the original guest for a started match. Code knowledge alone does not authorize reading match views or writing gameplay input. The host sees a player name, which is not a verified identity: names can be duplicated, so agree on who is joining out of band.
