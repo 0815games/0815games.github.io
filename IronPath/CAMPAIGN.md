@@ -1,7 +1,13 @@
-# Solo campaign
+# The Broken Signal — solo story
 
-The campaign has three fixed solo operations: The Last Road (clear wave 5), Pinewood Crossing (wave 10), and Broken Outpost (wave 15). Completing one unlocks the next. Each starts a fresh battle; existing wave XP, loot, skills and armory apply. There are no separate campaign rewards. Completed operations can be replayed, and Free Play remains the random-map endless mode. Campaign selection is disabled while in an online party. During an operation, a tracker shows the objective and completed waves. The after-action report offers replay and, after a successful confirmed save, the next unlocked operation. On defeat, replay starts a fresh attempt; no battle checkpoint is restored.
+Three connected missions replace the old wave-target operations. They use the existing tower-defense battlefield and enemy waves but have narrative briefings, dialogue, map markers and separate mission objectives:
 
-A successful completion and its final wave XP/loot are written in the same account transaction. If the save cannot be confirmed, the results screen provides a separate idempotent progress retry, which does not grant the wave XP twice. Progress is an account field, not a battle save; reloading during a mission starts a new run. Firebase account rules validate the progress range and sequential changes but cannot verify gameplay: client-controlled progress is not suitable for trusted rankings or rewards.
+1. **The Silent Signal** — find a downed courier, restore a field relay and return the coordinates to command.
+2. **The Missing Patrol** — locate a patrol and escort it to the bunker. Nearby living enemies damage the patrol; losing it fails the mission.
+3. **Blackout at the Outpost** — plant charges at two sites and hold the bunker through a detonation countdown.
 
-The user reports publishing `firebase/online-recovery.complete.draft.rules.json`, a complete ruleset containing campaign progress, unified multiplayer and the optional host-recovery trial. Replacing Realtime Database rules with a fragment would remove other protections. This solo UI change requires no rules update.
+Deploy enemy waves to work on objectives. Hold position in the marked circle to interact; leaving it interrupts a hold. If a wave ends first, deploy the next one to continue. The bunker must survive. Missions restart from the beginning on reload; the results screen supports replay and the next unlocked mission.
+
+Story progression uses the new `storyProgress` account field. The prior `campaign` field remains untouched as legacy data; old wave-target completions do not falsely mark the new story finished. Existing XP, armory, skills, Free Play and multiplayer remain unchanged. Completed waves still award their normal XP and loot; completing a story objective does not award additional XP. Story saves are independent of wave rewards and can be retried without duplicating XP. Client-reported story completion is not cheat-proof or suitable for trusted competitive rewards.
+
+`firebase/story.complete.draft.rules.json` is a **complete replacement** based on the user-reported live `online-recovery.complete.draft.rules.json`, adding sequential, monotonic story progress while retaining legacy campaign and all multiplayer rules. Publishing a fragment would replace and break existing rules. Publish the complete file only after the combined story emulator suite passes, and before deploying the story client. Actual live behavior and devices still need testing.

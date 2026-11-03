@@ -1,11 +1,14 @@
-// Campaign progress is account-saved but client-reported, not cheat-proof.
-// Each mission is a fresh solo operation using existing waves and rewards.
+// Story progress is account-saved and client-reported, not cheat-proof.
+// The retired wave-goal campaign is kept only for old account/rules compatibility.
 export const CAMPAIGN=Object.freeze([
-  Object.freeze({id:'last-road',title:'The Last Road',mapId:'road',goal:5,briefing:'Hold the road through the first boss wave.'}),
-  Object.freeze({id:'pinewood',title:'Pinewood Crossing',mapId:'forest',goal:10,briefing:'Secure the forest crossing through wave 10.'}),
-  Object.freeze({id:'outpost',title:'Broken Outpost',mapId:'outpost',goal:15,briefing:'Defend the outpost through wave 15.'})
+  Object.freeze({id:'lost-signal',title:'The Silent Signal',mapId:'road',briefing:'A distress call cuts out beyond the road. Restore the relay, then bring its coordinates back to command.',stages:[{type:'hold',x:500,y:485,seconds:4,label:'Find the downed courier',dialogue:'COMMAND: A courier vanished with the relay key. Search the marked position.'},{type:'hold',x:250,y:485,seconds:5,label:'Restore the field relay',dialogue:'COURIER: Take my key. The relay carries the last distress call.'},{type:'hold',x:900,y:400,seconds:2,label:'Return the signal to command',dialogue:'RELAY: Coordinates recovered. Get them back to the bunker.'}],success:'COMMAND: Signal received. There are survivors in Pinewood.'}),
+  Object.freeze({id:'pinewood-rescue',title:'The Missing Patrol',mapId:'forest',briefing:'The relay points to a missing patrol in Pinewood. Find them and escort them to the bunker before the enemy closes in.',stages:[{type:'hold',x:430,y:440,seconds:5,label:'Find the missing patrol',dialogue:'COMMAND: The patrol is sheltering near the crossing. Reach them before the route is lost.'},{type:'escort',x:900,y:400,seconds:2,label:'Escort the patrol to the bunker',dialogue:'PATROL: We can move, but keep enemies away from us!'}],success:'PATROL: We made it. The enemy transmitter is operating from the old outpost.'}),
+  Object.freeze({id:'blackout',title:'Blackout at the Outpost',mapId:'outpost',briefing:'Disable the enemy transmitter. Plant charges at both sites and defend the bunker until detonation.',stages:[{type:'hold',x:180,y:485,seconds:3,label:'Plant the first charge',dialogue:'COMMAND: Two charges will bring the transmitter down. Plant the first at the supply junction.'},{type:'hold',x:570,y:35,seconds:3,label:'Plant the second charge',dialogue:'COMMAND: First charge armed. The second is across the outpost.'},{type:'defend',seconds:40,label:'Defend until detonation',dialogue:'COMMAND: Charges armed. Hold the bunker while the timer runs.'}],success:'COMMAND: Transmitter destroyed. The road is open again.'})
 ]);
-export function campaignProgress(profile){const n=profile?.campaign;return Number.isInteger(n)&&n>=0&&n<=CAMPAIGN.length?n:0;}
+export function campaignProgress(profile){const n=profile?.storyProgress;return Number.isInteger(n)&&n>=0&&n<=CAMPAIGN.length?n:0;}
 export function campaignMission(id){return CAMPAIGN.find(m=>m.id===id)||null;}
 export function campaignAvailable(profile,id){const index=CAMPAIGN.findIndex(m=>m.id===id);return index>=0&&index<=campaignProgress(profile);}
-export function completeCampaign(profile,id,wave){const mission=campaignMission(id),index=CAMPAIGN.indexOf(mission),progress=campaignProgress(profile);if(!profile||!mission||!Number.isSafeInteger(wave)||wave<mission.goal||index>progress)return null;return {...profile,campaign:Math.max(progress,index+1)};}
+export function completeStory(profile,id){const index=CAMPAIGN.findIndex(m=>m.id===id),progress=campaignProgress(profile);if(!profile||index<0||index>progress)return null;return {...profile,storyProgress:Math.max(progress,index+1)};}
+// Retained solely for compatibility with existing campaign rules/tests and old data.
+const LEGACY=[['last-road',5],['pinewood',10],['outpost',15]];
+export function completeCampaign(profile,id,wave){const index=LEGACY.findIndex(m=>m[0]===id),progress=Number.isInteger(profile?.campaign)&&profile.campaign>=0&&profile.campaign<=3?profile.campaign:0;if(!profile||index<0||!Number.isSafeInteger(wave)||wave<LEGACY[index][1]||index>progress)return null;return {...profile,campaign:Math.max(progress,index+1)};}
