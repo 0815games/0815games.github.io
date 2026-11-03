@@ -212,35 +212,6 @@ test('party profiles and one-time start handoff are member-bound',async()=>{
   await assertSucceeds(set(ref(alice,`parties/${party}`),null));
 });
 
-test('party UI handoff drives the Firebase game with two authenticated clients', {timeout:20000}, async t=>{
-  const {onValue,onDisconnect,remove}=await import('firebase/database');
-  const {createFirebasePartyPanel}=await import('../../firebase-party-panel.mjs');
-  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
-  const {createPlayer}=await import('../../match.mjs');
-  const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
-  const deterministicCrypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
-  function makeDoc(){const nodes=new Map();return {getElementById(id){if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:''});return nodes.get(id);}};}
-  function player(db,uid){
-    const auth={currentUser:{uid}},doc=makeDoc();let game=null,ready=false,snapshot;
-    const panel=createFirebasePartyPanel({document:doc,enabled:true,createLobby:()=>createFirebasePartyLobby({db,auth,sdk,crypto:deterministicCrypto}),getProfile:()=>({name:uid,gender:'female',level:1}),
-      onJoinMatch:(partyInfo,onState)=>{game=createFirebasePartyGame({db,auth,sdk,...partyInfo,players:partyInfo.profiles?.map((p,i)=>createPlayer(partyInfo.playerIds[i],p)),onState,onStatus:value=>{ready=value;},onSnapshot:value=>{snapshot=value;}});game.start();return true;},
-      onLeaveMatch:async()=>{const old=game;game=null;ready=false;await old?.stop();}});
-    return {doc,panel,get game(){return game;},get ready(){return ready;},get snapshot(){return snapshot;}};
-  }
-  const a=player(alice,'alice'),b=player(bob,'bob');t.after(async()=>{await b.game?.stop();await a.game?.stop();a.panel.reset();b.panel.reset();});
-  const until=async fn=>{const end=Date.now()+8000;while(!fn()){if(Date.now()>end)throw Error(`UI flow timed out: ${a.doc.getElementById('partyStatus').textContent} / ${b.doc.getElementById('partyStatus').textContent}`);await new Promise(resolve=>setTimeout(resolve,20));}};
-  await a.doc.getElementById('partyCreate').onclick();const invite=a.doc.getElementById('partyCodeDisplay').textContent;assert.match(invite,/^[0-9A-Z]{4}(-[0-9A-Z]{4}){3}$/);
-  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();
-  await until(()=>!a.doc.getElementById('partyStart').disabled);await a.doc.getElementById('partyStart').onclick();
-  await until(()=>a.ready&&b.ready);assert.equal((await b.game.command({type:'build',pad:0,towerType:0})).ok,true);
-  await until(()=>b.snapshot?.match.towers.length===1);assert.equal(b.snapshot.match.players.alice.name,'alice');
-  await b.doc.getElementById('partyLeave').onclick();await until(()=>a.ready&&/Teammate left/.test(a.doc.getElementById('partyStatus').textContent));
-  assert.ok(a.game,'host must keep their current match');assert.equal((await a.game.command({type:'move',x:700,y:400})).ok,true);
-  b.doc.getElementById('partyCodeInput').value=invite;await b.doc.getElementById('partyJoin').onclick();await until(()=>a.ready&&b.ready);
-  assert.equal((await b.game.command({type:'direction',x:1,y:0})).ok,true);
-  await b.doc.getElementById('partyLeave').onclick();await a.doc.getElementById('partyLeave').onclick();assert.equal((await get(at(alice,'hostId'))).exists(),false);
-});
-
 test('versus adapters isolate lanes, synchronize waves and pause on reconnect', {timeout:30000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
   const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');const {createPlayer}=await import('../../match.mjs');

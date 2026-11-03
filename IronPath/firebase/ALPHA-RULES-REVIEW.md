@@ -1,5 +1,7 @@
 # Private alpha Firebase rules review
 
+> **Historical document — do not use as current deployment instructions.** The latest complete repository rules are `story.complete.draft.rules.json`; back up and compare live rules and run the complete story emulator suite before publishing. Older files here lack later features. Live production rules have not been independently verified.
+
 The current reference rules in `database.rules.json` match the rules shown in the Firebase Console screenshot: root read/write are denied, and only the authenticated owner can access their `players/$uid` profile. The screenshot cannot establish the project/instance identity or rule changes made afterwards; check those again immediately before publishing.
 
 `party-alpha.draft.rules.json` is the **complete combined ruleset**, not a fragment. Its root defaults and `players` subtree are identical to the repository reference. It adds the `parties` subtree, so publishing replaces all the rules, not only that subtree. Back up the current rules first. Do not publish if the console differs from the screenshot or is on the wrong database.
