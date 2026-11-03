@@ -56,11 +56,12 @@ function building(ctx,x,y,kind,s){
  }
  ctx.restore();
 }
-export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540){
+export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null){
  const s=storyMapStyle(mission?.id);if(!s)return false;ctx.save();ctx.fillStyle=s.ground;ctx.fillRect(0,0,width,height);
- // Hand-drawn contour patches and small marks add depth without hiding roads.
- for(let i=0;i<42;i++){const x=(i*197+41)%width,y=(i*131+33)%height;ctx.globalAlpha=.22;disk(ctx,x,y,20+(i%4)*8,7+(i%3)*4,i%2?s.light:s.dark);ctx.globalAlpha=.65;stroke(ctx,x-9,y+1,x-3,y-3,s.dark,1.4);stroke(ctx,x+4,y+3,x+10,y-1,s.light,1.5);}ctx.globalAlpha=1;
- const spots=layout(mission,path,pads);for(let i=0;i<spots.length;i++){const {x,y}=spots[i];if(i%3===1){scenery(ctx,x,y,s,i);}else if(i%5===3){disk(ctx,x,y,14,6,s.water);stroke(ctx,x-8,y,x+7,y,s.light,1);}else{stroke(ctx,x-5,y+4,x-7,y-5,s.dark,2);stroke(ctx,x+2,y+4,x+5,y-7,s.dark,2);}}
+ // Textured terrain replaces the old cartoon underpainting when artwork is ready.
+ if(texture){ctx.save();ctx.globalAlpha=.88;ctx.drawImage(texture,0,0,width,height);ctx.restore();}
+ if(!texture)for(let i=0;i<42;i++){const x=(i*197+41)%width,y=(i*131+33)%height;ctx.globalAlpha=.22;disk(ctx,x,y,20+(i%4)*8,7+(i%3)*4,i%2?s.light:s.dark);ctx.globalAlpha=.65;stroke(ctx,x-9,y+1,x-3,y-3,s.dark,1.4);stroke(ctx,x+4,y+3,x+10,y-1,s.light,1.5);}ctx.globalAlpha=1;
+ const spots=layout(mission,path,pads);if(!texture)for(let i=0;i<spots.length;i++){const {x,y}=spots[i];if(i%3===1){scenery(ctx,x,y,s,i);}else if(i%5===3){disk(ctx,x,y,14,6,s.water);stroke(ctx,x-8,y,x+7,y,s.light,1);}else{stroke(ctx,x-5,y+4,x-7,y-5,s.dark,2);stroke(ctx,x+2,y+4,x+5,y-7,s.dark,2);}}
  // Place two distinct mission landmarks away from paths, build pads and objectives.
  const locations=spots.filter((_,i)=>i%4===0);if(locations.length){const a=locations[Math.floor(locations.length/3)],b=locations[Math.floor(locations.length*2/3)];building(ctx,a.x,a.y,s.feature,s);if(b!==a){const second={wreck:'antenna',shelter:'convoy',antenna:'wreck',convoy:'shelter',dispatch:'antenna',bridge:'convoy',receiver:'shelter',station:'receiver',transformer:'station',prison:'antenna',relay:'bridge',dam:'relay'};building(ctx,b.x,b.y,second[s.feature],s);}}
  ctx.restore();return true;

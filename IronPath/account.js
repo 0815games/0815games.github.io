@@ -19,7 +19,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-results1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261103-brand2';
+import { startGame } from './game.js?v=20261103-visual3';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-hardening2';
 import { createPlayer } from './match.mjs?v=20261102-fourbase1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
@@ -112,7 +112,7 @@ function renderArmory(){
   const section=(name,caption)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';head.className='armory-section-head';title.textContent=name;sub.textContent=caption;head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
   const add=(grid,{icon,title,description,eyebrow,label,disabled,action,state,rank})=>{
     const card=document.createElement('article'),art=document.createElement('div'),body=document.createElement('div'),meta=document.createElement('span'),heading=document.createElement('h4'),text=document.createElement('p'),button=document.createElement('button');
-    card.className=`armory-card ${state||''}`;art.className='armory-art';art.append(armoryIcon(document,icon));body.className='armory-card-body';meta.className='armory-meta';meta.textContent=eyebrow;heading.textContent=title;text.textContent=description;
+    card.className=`armory-card ${state||''}`;art.className='armory-art';art.dataset.item=icon;art.append(armoryIcon(document,icon));body.className='armory-card-body';meta.className='armory-meta';meta.textContent=eyebrow;heading.textContent=title;text.textContent=description;
     body.append(meta,heading,text);
     if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',`Rank ${rank} of 3`);for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);

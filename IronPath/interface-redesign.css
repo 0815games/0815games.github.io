@@ -142,3 +142,31 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tree-dialog .skill-build-summary{background:#1c3026;border:1px solid #70856b;color:#ebead5}.tree-dialog .skill-build-summary small{color:#b8cbb4}
 .armory-dialog button:focus-visible,.tree-dialog button:focus-visible,.tree-dialog select:focus-visible{outline:3px solid #fff2bc;outline-offset:3px}
 @media(max-width:600px){.armory-dialog,.tree-dialog{padding:12px}.armory-dialog .development-head,.tree-dialog .development-head{min-height:110px;margin:-12px -12px 14px;padding:16px}.armory-dialog .armory-grid{grid-template-columns:1fr}.armory-dialog .armory-art{width:70px;min-width:70px}.armory-dialog .armory-card{min-height:120px}.armory-dialog .armory-card-body{padding:12px}.tree-dialog .tree-detail{padding:12px}.intro-title .intro-brand{width:100%}}
+
+/* Fully illustrated briefings replace the former cartoon SVG scene. */
+.tutorial-scene{position:relative;overflow:hidden;background:linear-gradient(0deg,#0d1b17ba,transparent 65%),url('assets/tutorial-defend.jpg') center/cover;filter:none}
+.tutorial-scene[data-scene="build"],.tutorial-scene[data-scene="upgrade"]{background-image:linear-gradient(0deg,#0d1b17ba,transparent 65%),url('assets/tutorial-build.jpg')}
+.tutorial-scene[data-scene="hero"]{background-image:linear-gradient(0deg,#0d1b17ba,transparent 65%),url('assets/tutorial-soldier.jpg')}
+.tutorial-scene[data-scene="map"]{background-image:linear-gradient(0deg,#0d1b17ba,transparent 65%),url('assets/story-valley.jpg')}
+.tutorial-scene[data-scene="battle"]{background-image:linear-gradient(0deg,#0d1b17ba,transparent 65%),url('assets/tutorial-defend.jpg')}
+.tutorial-scene .scene-caption{bottom:10px;left:10px;background:#14251ede;border-left:2px solid #e3ca8c;padding:7px 10px;color:#fff1ca;letter-spacing:.12em}
+/* Equipment artwork fills the card instead of relying on line drawings. */
+.armory-dialog .armory-art{position:relative;background:linear-gradient(0deg,#12231ed9,transparent 80%),url('assets/armory-kit.jpg') center/cover}
+.armory-dialog .armory-art[data-item="scope"],.armory-dialog .armory-art[data-item="binoculars"],.armory-dialog .armory-art[data-item="tankkit"]{background-image:linear-gradient(0deg,#12231ed9,transparent 80%),url('assets/armory-optics.jpg')}
+.armory-dialog .armory-art[data-item="radio"],.armory-dialog .armory-art[data-item="manual"],.armory-dialog .armory-art[data-item="badge"]{background-image:linear-gradient(0deg,#12231ed9,transparent 80%),url('assets/armory-banner.jpg')}
+.armory-dialog .armory-art[data-item="fortify"],.armory-dialog .armory-art[data-item="plating"],.armory-dialog .armory-art[data-item="repair"],.armory-dialog .armory-art[data-item="gun"],.armory-dialog .armory-art[data-item="supply"],.armory-dialog .armory-art[data-item="safeguard"]{background:linear-gradient(0deg,#12231eb0,transparent),url('assets/bunker-sprite.png') center/contain no-repeat,#263b2c}
+.armory-dialog .armory-icon{position:absolute;width:24px;height:24px;bottom:7px;right:7px;padding:3px;background:#17271fdd;border:1px solid #cbb77e;border-radius:3px;color:#f2dfaa}
+.armory-dialog .service-medal{background:#22382d;border:1px solid #566d58;color:#bbcbbb}.armory-dialog .service-medal.is-earned{background:#344b37;border-color:#d5bb7d;color:#f6e5b7}
+.tree-dialog .skill-tree-board{background:radial-gradient(circle,#173026ed,#0c1a16f5),url('assets/skills-banner.jpg') center/cover}
+.tree-dialog .tree-node:not(.is-unlocked):not(.is-active){background:#233c31;color:#e7dbb8;border:2px solid var(--path-color);box-shadow:0 3px 12px #000a,inset 0 0 8px #0007;font-family:Arial,sans-serif}
+.tree-dialog .tree-node.is-unlocked,.tree-dialog .tree-node.is-active{background:#ddc183;color:#1b2d23;border:2px solid #fff0c2;box-shadow:0 0 12px #dfbe7880}
+.tree-dialog .tree-node.tree-hybrid:not(.is-unlocked){background:#263c46;color:#d3e5e2;border-color:#84b6bd}
+.tree-dialog .tree-node.tree-capstone:not(.is-unlocked){background:#403c2d;color:#f4d899;border:3px double #dfc078}
+.tree-dialog .tree-core{background:#d0b777;color:#17271f;border:2px solid #f3e0a4;box-shadow:0 0 18px #e4c68080}
+.tree-dialog .tree-orbit{stroke:#b2c6a5;stroke-opacity:.25}.tree-dialog .tree-link{stroke-opacity:.6}.tree-dialog .tree-link.is-lit{stroke:#ebc978;stroke-opacity:1}
+/* Bring the build sheet in line with the battlefield sprites. */
+.tower-sheet[data-mode="build"] .sheet-option{background-position:center,right center;background-repeat:no-repeat;background-size:100% 100%,auto 85%;padding-right:62px}
+.tower-sheet[data-mode="build"] #radial0{background-image:linear-gradient(90deg,#263d30 50%,#263d3090),url('assets/mg-sprite.png')}
+.tower-sheet[data-mode="build"] #radial1{background-image:linear-gradient(90deg,#263d30 50%,#263d3090),url('assets/cannon-sprite.png')}
+.tower-sheet[data-mode="build"] #radial2{background-image:linear-gradient(90deg,#263d30 50%,#263d3090),url('assets/flak-sprite.png')}
+.tower-sheet[data-mode="build"] #radial3{background-image:linear-gradient(90deg,#263d30 50%,#263d3090),url('assets/sniper-sprite.png')}

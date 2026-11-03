@@ -21,6 +21,10 @@ const assert = require('node:assert/strict');
     });
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
     await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
+    const artwork=['terrain-forest.jpg','terrain-city.jpg','terrain-desert.jpg','terrain-snow.jpg','terrain-marsh.jpg','tutorial-defend.jpg','tutorial-build.jpg','tutorial-soldier.jpg','armory-kit.jpg','armory-optics.jpg','bunker-sprite.png','hero-sprite.png','tank-sprite.png'];
+    const missing=await page.evaluate(async files=>{const results=await Promise.all(files.map(file=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(null);image.onerror=()=>resolve(file);image.src='assets/'+file;})));return results.filter(Boolean);},artwork);
+    assert.deepEqual(missing,[],'artwork must load and decode in the browser');
+
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     await page.locator('#menuCampaign').click(); await page.locator('#campaignBoard').waitFor({state:'visible'});
@@ -31,9 +35,9 @@ const assert = require('node:assert/strict');
     await page.locator('#partyToggle').click(); await page.locator('#backToCommand').click();
     // Reproduce the reported case: a solo operation is already under way.
     await page.locator('#menuEndless').click(); await page.locator('#start').click(); await page.locator('#backToCommand').click();
-    await page.locator('#menuArmory').click(); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/armory-banner/); await page.locator('#armoryClose').click();
+    await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/armory-banner/); await page.locator('#armoryClose').click();
     await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skills-banner/); await page.locator('#skillCancel').click();
-    await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true); await page.locator('#tutorialSkip').click();
+    await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true); await page.locator('#tutorialSkip').click();
     assert.deepEqual(errors,[],`browser exceptions: ${errors.join('\n')}`);
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
