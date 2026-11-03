@@ -48,9 +48,10 @@ function landmarks(ctx,theme){
     line(ctx,[[440,480],[500,480]],'#a5855e',9);for(let x=445;x<500;x+=10)line(ctx,[[x,475],[x,485]],'#624d3b',2);
   }
 }
-function drawRoad(ctx,path,theme){
+function drawRoad(ctx,path,theme,texture=null){
   ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#303d30';ctx.lineWidth=73;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#a5c2c0':theme==='urban'?'#77766d':theme==='marsh'?'#8e795c':theme==='scrub'?'#bd8765':'#b19a70';ctx.lineWidth=65;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#c4d9d4':theme==='urban'?'#aaa69a':theme==='marsh'?'#b29b74':theme==='scrub'?'#dda77f':'#cbb58a';ctx.lineWidth=55;ctx.stroke();
-  ctx.strokeStyle='#756a53';ctx.lineWidth=1.5;ctx.setLineDash([4,16]);ctx.stroke();ctx.setLineDash([]);
+  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle=pattern;ctx.lineWidth=52;ctx.stroke();ctx.restore();}}
+  ctx.strokeStyle='#756a53';ctx.lineWidth=1;ctx.setLineDash([5,18]);ctx.stroke();ctx.setLineDash([]);
   for(const [x,y] of [[50,119],[160,140],[206,220],[230,328],[350,311],[480,250],[600,157],[709,278],[775,409]]){line(ctx,[[x-7,y+8],[x-2,y+7],[x+2,y+9]],'#ac986f',2);line(ctx,[[x+6,y-7],[x+11,y-8]],'#a08a66',2);}
 }
 function thinIce(ctx,path,theme){
@@ -113,8 +114,8 @@ function bunker(ctx,state){
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.fillText('BUNKER',849,350);
 }
 function pad(ctx,p,tower,selected,types){
-  const x=p.x,y=p.y;oval(ctx,x+2,y+5,26,20,'#465c48',null);oval(ctx,x,y,24,21,tower?'#6e8061':'#8fa77b',selected?'#fff2ad':'#354c3c',selected?4:3);
-  oval(ctx,x,y-1,18,15,tower?'#829372':'#a9bd91','#647c5e',1);
+  const x=p.x,y=p.y;oval(ctx,x+2,y+4,26,20,'#18291ee0',null);oval(ctx,x,y,24,21,tower?'#435848':'#304c3ce8',selected?'#fff2ad':'#b5c9a2',selected?4:2);
+  oval(ctx,x,y-1,18,15,tower?'#596b53':'#476149','#a1b28d',1);
   if(!tower){line(ctx,[[x-7,y],[x+7,y]],'#f5efd0',3);line(ctx,[[x,y-7],[x,y+7]],'#f5efd0',3);return;}
   // A different silhouette, barrel and colour for every tower class.
   const c=types[tower.type].color;shape(ctx,[[x-14,y+9],[x-14,y-2],[x-8,y-9],[x+8,y-9],[x+14,y-2],[x+14,y+9]],'#526c54');
@@ -179,15 +180,21 @@ function ambient(ctx,theme,time,width,height){
 const terrainCache=new WeakMap();
 // Same-origin illustrated ground is cosmetic. Cache a new terrain layer once it
 // loads; no simulation data, map geometry, or hit targets are touched.
-let groundImage=null, groundReady=false;
-function getGroundImage(doc){
-  if(!groundImage&&doc?.createElement){groundImage=doc.createElement('img');groundImage.onload=()=>{groundReady=true;};groundImage.src='assets/battlefield-ground.jpg';}
-  return groundReady?groundImage:null;
+const groundImages=new Map();
+function getGroundImage(doc,story){
+  const name=story?'battlefield-ground.jpg':'endless-ground.jpg';
+  if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
+  const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[]}={}){
-  function paint(target){if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height)){ground(target,theme,width,height);landmarks(target,theme);}const img=target.canvas?.ownerDocument?getGroundImage(target.canvas.ownerDocument):null;if(img){target.save();target.globalAlpha=['road','forest'].includes(theme)?.48:.16;target.drawImage(img,0,0,width,height);target.restore();}for(const road of paths)drawRoad(target,road,theme);thinIce(target,path,theme);bog(target,path,theme);}
-  const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){paint(ctx);return;}
-  getGroundImage(doc);let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const key=`${storyMission?.id||'free'}:${theme}:${width}:${height}:${groundReady?'art':'fallback'}`;let cached=variants.get(key);
+  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,!!storyMission):null;
+  function paint(target){
+    if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height)){ground(target,theme,width,height);if(!img||!['road','forest'].includes(theme))landmarks(target,theme);}
+    if(img){target.save();target.globalAlpha=storyMission?(['road','forest'].includes(theme)?.48:.16):(['road','forest'].includes(theme)?.9:.24);target.drawImage(img,0,0,width,height);target.restore();}
+    for(const road of paths)drawRoad(target,road,theme,!storyMission?img:null);thinIce(target,path,theme);bog(target,path,theme);
+  }
+  if(!doc?.createElement){paint(ctx);return;}
+  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const key=`${storyMission?.id||'free'}:${theme}:${width}:${height}:${img?'art':'fallback'}`;let cached=variants.get(key);
   if(!cached){const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.lineCap='round';off.lineJoin='round';paint(off);cached=canvas;variants.set(key,cached);}
   ctx.drawImage(cached,0,0);
 }

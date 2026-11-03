@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261103-world2">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261103-brand2">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
@@ -16,14 +16,14 @@
       <div class="intro-scene">
         <div class="intro-art" aria-hidden="true"></div><div class="intro-atmosphere" aria-hidden="true"></div>
         <div class="intro-topline"><span>0815 GAMES <i> / </i> FIELD TRANSMISSION</span><button id="introSkip" type="button">SKIP INTRO <span aria-hidden="true">→</span></button></div>
-        <div class="intro-title"><span>THE VALLEY IS CALLING</span><strong>IRON PATH</strong><small>ONE ROAD. ONE LAST CHANCE.</small><div class="intro-rule" aria-hidden="true"></div><p>Hold the line. Bring them home.</p></div>
+        <div class="intro-title"><span>THE VALLEY IS CALLING</span><strong><img class="intro-brand" src="assets/iron-path-brand-cutout.png?v=20261103-brand2" alt="IRON PATH"></strong><small>ONE ROAD. ONE LAST CHANCE.</small><div class="intro-rule" aria-hidden="true"></div><p>Hold the line. Bring them home.</p></div>
         <div class="intro-footer"><span>THE BROKEN SIGNAL <b> / </b> A STORY OF SURVIVAL</span><span>PREPARING DEPLOYMENT<span class="intro-dots">...</span></span></div>
       </div>
     </div>
   </section>
   <noscript><style>#introOverlay{display:none!important}</style></noscript>
   <main>
-    <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-logo.png?v=20261102-logo1" width="1035" height="434" alt="Iron Path"></h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">FIELD COMMAND / ONLINE</span></header>
+    <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-brand-cutout.png?v=20261103-brand2" width="1000" height="351" alt="Iron Path"></h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">FIELD COMMAND / ONLINE</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
       <div id="loading"><h2>Connecting…</h2><p class="hint">Preparing your soldier.</p></div>
       <div id="connectionView" hidden><h2>Could not load soldier</h2><p class="hint">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button">RETRY</button><button id="errorLogout" type="button">SIGN OUT</button></div>
@@ -177,5 +177,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-world2"></script>
+  <script type="module" src="account.js?v=20261103-brand2"></script>
 </body></html>

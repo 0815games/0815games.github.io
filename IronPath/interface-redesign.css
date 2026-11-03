@@ -110,3 +110,35 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tutorial-dialog button{background:#36503e;border:1px solid #8b9b80;color:#f3e9ce;box-shadow:none;border-radius:3px}.tutorial-dialog button.primary{background:#e4ca89;border-color:#e4ca89;color:#1b3024}.tutorial-dialog .tutorial-skip,.tutorial-dialog .tutorial-practice-skip{color:#e5d09c;border-color:#829475}
 .tutorial-dialog .tutorial-practice button[aria-pressed=true]{background:#bb774e;color:#fff7d6}
 @media(max-width:600px){.dossier{grid-template-columns:1fr;gap:0;padding:15px}.dossier-heading{grid-row:auto;display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center}.dossier-portrait{height:130px}.entry .dossier h2{font-size:24px}.dossier-copy{margin:14px 0 0}.dossier-footer{grid-column:auto}.tutorial-dialog{padding:14px}.tutorial-dialog h2{font-size:23px}}
+
+/* Iron Path identity and field equipment refresh. */
+.brand-logo{filter:drop-shadow(0 3px 7px #0009)}
+.intro-title .intro-brand{display:block;width:min(100%,560px);height:auto;filter:drop-shadow(0 5px 12px #000b)}
+.intro-title strong{margin:15px 0!important;line-height:0!important}
+.mode-endless{background-image:linear-gradient(90deg,#10241de8,#10241d55),url('assets/endless-ground.jpg')!important;background-size:cover!important;background-position:center!important}
+.armory-dialog,.tree-dialog{width:min(900px,calc(100vw - 24px));max-width:900px;max-height:calc(100dvh - 24px);background:linear-gradient(145deg,#172a22,#101d18);border:1px solid #879578;box-shadow:0 30px 100px #000e;color:#f4ead1}
+.armory-dialog .development-head,.tree-dialog .development-head{min-height:140px;align-items:flex-start;padding:24px;margin:-20px -20px 18px;background-size:cover;background-position:center;border-bottom:1px solid #b49f70}
+.armory-dialog .development-head{background-image:linear-gradient(90deg,#101e18ef 0%,#101e18be 48%,#101e1840),url('assets/armory-banner.jpg')}
+.tree-dialog .development-head{background-image:linear-gradient(90deg,#101e18ef 0%,#101e18be 48%,#101e1840),url('assets/skills-banner.jpg')}
+.armory-dialog .development-head h2,.tree-dialog .development-head h2{font:700 clamp(27px,4vw,39px)/1.05 Georgia,serif;letter-spacing:-.025em;color:#fff1cf;text-shadow:0 3px 10px #000}
+.armory-dialog .development-head:after,.tree-dialog .development-head:after{display:none}
+.armory-dialog .development-close,.tree-dialog .development-close{background:#14251fdd;border:1px solid #b2b89a;color:#fff2d2;min-width:44px;min-height:44px}
+.armory-dialog .armory-wallet,.tree-dialog .tree-summary{background:linear-gradient(100deg,#293f31,#1a3026);border:1px solid #62785f;border-left:4px solid #d4b976;padding:16px;box-shadow:0 7px 20px #0003}
+.armory-dialog .armory-section-head{padding:8px 0;border-bottom:1px solid #65785c}
+.armory-dialog .armory-grid{gap:12px}
+.armory-dialog .armory-card{min-height:145px;background:linear-gradient(145deg,#2e4435,#1b3025);border:1px solid #6e8066;box-shadow:0 5px 15px #0004}
+.armory-dialog .armory-card.is-equipped{border-color:#e3c680;box-shadow:inset 0 0 0 1px #e3c68066}
+.armory-dialog .armory-art{width:90px;min-width:90px;background:radial-gradient(circle at center,#637858,#263c2e 75%);border-right:1px solid #718164}
+.armory-dialog .armory-icon{width:52px;height:52px;filter:drop-shadow(0 3px 4px #0009)}
+.armory-dialog .armory-card-body{padding:15px}.armory-dialog .armory-card h4{font:700 18px Georgia,serif;margin:7px 0}
+.armory-dialog .armory-card p{font-size:12px!important;line-height:1.5!important}
+.tree-dialog .tree-tools select{background:#21382c;color:#f2e8cd;border:1px solid #82967a}
+.tree-dialog .skill-tree{border:1px solid #798b6f;box-shadow:inset 0 0 30px #0009,0 8px 24px #0005;background:#101d17}
+.tree-dialog .skill-tree-board{background:radial-gradient(circle at 50% 50%,#355040 0%,#17291f 44%,#101b16 100%)}
+.tree-dialog .skill-tree-board:before{background-image:linear-gradient(#c7d0ad10 1px,transparent 1px),linear-gradient(90deg,#c7d0ad10 1px,transparent 1px);background-size:40px 40px}
+.tree-dialog .tree-path-label{background:#1b3025;color:#f3e3b9!important;border:1px solid #93a482;box-shadow:0 3px 8px #0008}
+.tree-dialog .tree-detail{background:linear-gradient(120deg,#2b4535,#1c3026);border:1px solid #829579;border-left:4px solid #d4b976;box-shadow:0 6px 16px #0004;padding:16px}
+.tree-dialog .tree-detail h3{color:#fae7b9}.tree-dialog .tree-detail p{color:#d5dfcd}
+.tree-dialog .skill-build-summary{background:#1c3026;border:1px solid #70856b;color:#ebead5}.tree-dialog .skill-build-summary small{color:#b8cbb4}
+.armory-dialog button:focus-visible,.tree-dialog button:focus-visible,.tree-dialog select:focus-visible{outline:3px solid #fff2bc;outline-offset:3px}
+@media(max-width:600px){.armory-dialog,.tree-dialog{padding:12px}.armory-dialog .development-head,.tree-dialog .development-head{min-height:110px;margin:-12px -12px 14px;padding:16px}.armory-dialog .armory-grid{grid-template-columns:1fr}.armory-dialog .armory-art{width:70px;min-width:70px}.armory-dialog .armory-card{min-height:120px}.armory-dialog .armory-card-body{padding:12px}.tree-dialog .tree-detail{padding:12px}.intro-title .intro-brand{width:100%}}
