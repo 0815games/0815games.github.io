@@ -111,3 +111,29 @@ jobs:
         run: npm ci --prefix IronPath/server --no-audit --no-fund
       - name: Run server tests
         run: npm test --prefix IronPath/server
+  interface-browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned browser test tooling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1
+          "$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Check static interface at phone and desktop sizes
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/ironpath-http.log 2>&1 &
+          node IronPath/browser-tests/interface-smoke.cjs
+      - name: Save interface screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ironpath-interface-screenshots
+          path: browser-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
