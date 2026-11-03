@@ -3,50 +3,49 @@ import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261102-r
 import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-results1';
 const NS='http://www.w3.org/2000/svg';
 const icons=['✦','⚒','◆','✚','◎'];
-const colors=['#e6a979','#b4c782','#e1bf6c','#8cb8a8','#9eb8d4'];
-const nodeAt=(angle,r)=>({x:700+Math.cos(angle)*r,y:700+Math.sin(angle)*r});
+const colors=['#cb7656','#b0a75c','#cb9861','#81a78c','#849fb5'];
+const row=i=>165+i*245;
+const base=(i,rank)=>({x:[0,115,245,375][rank],y:row(i)});
+const specialist=(i,j)=>({x:[245,375][j],y:row(i)+75});
+const webPosition=(i,node)=>node.kind==='mastery'?{x:510+node.tier*130,y:row(i)}:{x:650+node.tier*150,y:row(i)+(node.kind==='hybrid'?75:150)};
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
 export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all'}){
   const scrollLeft=container.scrollLeft,scrollTop=container.scrollTop;
   const board=document.createElement('div');board.className='skill-tree-board';
   const lines=svg(document,'svg',{viewBox:'0 0 1400 1400','aria-hidden':'true',class:'skill-tree-lines'});
-  for(const r of [90,165,235,315,410,520,610])lines.append(svg(document,'circle',{cx:700,cy:700,r,class:'tree-orbit'}));
   const left=pointsLeft(build,level),related=relatedNodes(selected);
   function nodeClasses(path,rank){const key=nodeKey(path,rank),matches=nodeMatches(build,level,path,rank,filter,pathFilter);return `${!matches&&key!==related.current?' is-filtered':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;}
   function relationLabel(path,rank){const key=nodeKey(path,rank);return related.before.has(key)?', prerequisite of selected node':related.after.has(key)?', connected next node':'';}
   function linkClass(path,rank,fromPath,fromRank,lit){const from=nodeKey(fromPath,fromRank),to=nodeKey(path,rank);return `tree-link${lit?' is-lit':''}${(to===related.current&&related.before.has(from))||(from===related.current&&related.after.has(to))?' is-related':''}`;}
-
+  function link(from,to,path,rank,fromPath,fromRank,lit,remote=false){lines.append(svg(document,'line',{x1:from.x,y1:from.y,x2:to.x,y2:to.y,stroke:colors[SKILL_PATHS.findIndex(p=>p.id===path)],class:linkClass(path,rank,fromPath,fromRank,lit)+(remote?' tree-remote':'')}));}
+  function card({path,rank,pos,color,title,kind,status,unlocked=false,active=false,extra=''}){
+    const button=document.createElement('button');button.type='button';button.className=`tree-node ${extra}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path&&selected.rank===rank?' is-selected':''}${nodeClasses(path,rank)}`;
+    button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',color);button.dataset.path=path;button.dataset.rank=String(rank);
+    const tag=document.createElement('span'),name=document.createElement('strong');tag.className='node-tag';tag.textContent=kind;name.className='node-name';name.textContent=title;button.append(tag,name);
+    button.setAttribute('aria-label',`${title}, ${status}${relationLabel(path,rank)}`);button.setAttribute('aria-pressed',String(selected.path===path&&selected.rank===rank));button.onclick=event=>onSelect({path,rank},event?.detail===0);board.append(button);
+  }
   SKILL_PATHS.forEach((path,i)=>{
-    const angle=-Math.PI/2+i*2*Math.PI/5;
-    let prev={x:700,y:700};
-    [90,165,235].forEach((radius,j)=>{
-      const pos=nodeAt(angle,radius),rank=j+1,isAbility=j===0,unlocked=build[path.id]>=rank,active=isAbility&&build.active===path.id&&!build.variant;
-      lines.append(svg(document,'line',{x1:prev.x,y1:prev.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:linkClass(path.id,rank,path.id,rank-1,unlocked||active)}));prev=pos;
-      const button=document.createElement('button');button.type='button';button.className=`tree-node${isAbility?' tree-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}${nodeClasses(path.id,rank)}`;
-      button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);
-      if(isAbility){const symbol=document.createElement('span');symbol.textContent=icons[i];symbol.className='tree-ability-symbol';button.append(symbol);}else button.textContent=String(rank);
-      button.dataset.path=path.id;button.dataset.rank=String(rank);
-      const status=active?'selected main skill':unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked';
-      button.setAttribute('aria-label',`${path.name} ${isAbility?'main skill '+path.ability:'rank '+rank}, ${status}${relationLabel(path.id,rank)}`);
-      button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));
-      button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
-    });
+    const strip=document.createElement('div');strip.className='tree-lane';strip.style.top=`${(row(i)-80)/14}%`;strip.style.setProperty('--path-color',colors[i]);board.append(strip);
+    const label=document.createElement('span');label.className='tree-path-label';label.style.top=`${(row(i)-53)/14}%`;label.style.setProperty('--path-color',colors[i]);label.textContent=`0${i+1}  /  ${icons[i]}  ${path.name.toUpperCase()}`;board.append(label);
+    for(let rank=1;rank<=3;rank++){
+      const pos=base(i,rank),unlocked=build[path.id]>=rank,active=rank===1&&build.active===path.id&&!build.variant;
+      if(rank>1)link(base(i,rank-1),pos,path.id,rank,path.id,rank-1,unlocked);
+      card({path:path.id,rank,pos,color:colors[i],title:rank===1?path.ability:`${path.name} ${rank}`,kind:rank===1?'MAIN ABILITY':`RANK ${rank} / 3`,status:active?'selected main skill':unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked',unlocked,active,extra:rank===1?'tree-ability':'tree-rank'});
+    }
     path.branches.forEach((branch,j)=>{
-      const pos=nodeAt(angle+(j===0?-.30:.30),315),parent=nodeAt(angle,165),rank=5+j,unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
-      lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:linkClass(path.id,rank,path.id,2,unlocked)}));
-      const button=document.createElement('button');button.type='button';button.className=`tree-node tree-specialist${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path.id&&selected.rank===rank?' is-selected':''}${nodeClasses(path.id,rank)}`;
-      button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=j===0?'Ⅰ':'Ⅱ';button.dataset.path=path.id;button.dataset.rank=String(rank);
-      button.setAttribute('aria-label',`${path.name} specialist ${branch.ability}, ${active?'selected':unlocked?'unlocked':available?'available':'locked'}${relationLabel(path.id,rank)}`);button.setAttribute('aria-pressed',String(selected.path===path.id&&selected.rank===rank));button.onclick=event=>onSelect({path:path.id,rank},event?.detail===0);board.append(button);
+      const rank=5+j,pos=specialist(i,j),unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
+      link(base(i,2),pos,path.id,rank,path.id,2,unlocked);
+      card({path:path.id,rank,pos,color:colors[i],title:branch.ability,kind:`SPECIALIST ${j+1}`,status:active?'selected':unlocked?'unlocked':available?'available':'locked',unlocked,active,extra:'tree-specialist'});
     });
-    const labelPos=nodeAt(angle,665),label=document.createElement('span');label.className='tree-path-label';label.style.left=`${labelPos.x/14}%`;label.style.top=`${labelPos.y/14}%`;label.style.color=colors[i];label.textContent=path.name;board.append(label);
   });
   WEB_NODES.forEach(node=>{
-    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),angle=-Math.PI/2+i*2*Math.PI/5+(node.kind==='hybrid'?Math.PI/5:node.kind==='cross'?.31:0),radius=node.kind==='hybrid'?[285,405,525][node.tier]:node.kind==='cross'?[370,480,590][node.tier]:[340,405,470,535,600][node.tier],pos=nodeAt(angle,radius),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
-    const base=-Math.PI/2+i*2*Math.PI/5,parents=node.kind!=='mastery'&&node.tier===0?[nodeAt(base,165),nodeAt(base+(node.kind==='cross'?4:2)*Math.PI/5,165)]:[nodeAt(angle,node.kind==='hybrid'?[0,285,405][node.tier]:node.kind==='cross'?[0,370,480][node.tier]:[235,340,405,470,535][node.tier])];
-    parents.forEach((parent,j)=>{const fromPath=node.tier===0&&node.kind!=='mastery'&&j===1?node.other:node.path,fromRank=node.tier>0?rank-1:node.kind==='mastery'?3:2;lines.append(svg(document,'line',{x1:parent.x,y1:parent.y,x2:pos.x,y2:pos.y,stroke:colors[i],class:linkClass(node.path,rank,fromPath,fromRank,unlocked)}));});
-    const button=document.createElement('button');button.type='button';button.className=`tree-node tree-web ${node.kind!=='mastery'?'tree-hybrid':'tree-mastery'}${node.kind==='mastery'&&node.tier===4?' tree-capstone':''}${unlocked?' is-unlocked':''}${selected.path===node.path&&selected.rank===rank?' is-selected':''}${nodeClasses(node.path,rank)}`;button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',colors[i]);button.textContent=node.kind==='cross'?'✦':node.kind==='hybrid'?'✧':node.tier===4?'★':String(node.tier+1);button.dataset.path=node.path;button.dataset.rank=String(rank);button.setAttribute('aria-label',`${node.name}, ${unlocked?'unlocked':available?'available':'locked'}${relationLabel(node.path,rank)}`);button.setAttribute('aria-pressed',String(selected.path===node.path&&selected.rank===rank));button.onclick=event=>onSelect({path:node.path,rank},event?.detail===0);board.append(button);
+    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),pos=webPosition(i,node),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
+    if(node.tier>0){const previous=WEB_NODES[node.id-1];link(webPosition(i,previous),pos,node.path,rank,node.path,rank-1,unlocked);}
+    else if(node.kind==='mastery')link(base(i,3),pos,node.path,rank,node.path,3,unlocked);
+    else {link(base(i,2),pos,node.path,rank,node.path,2,unlocked);const other=SKILL_PATHS.findIndex(p=>p.id===node.other);link(base(other,2),pos,node.path,rank,node.other,2,unlocked,true);}
+    card({path:node.path,rank,pos,color:colors[i],title:node.name,kind:node.kind==='mastery'?(node.tier===4?'CAPSTONE':`MASTERY ${node.tier+1}`):`${node.kind==='hybrid'?'COMBO':'CROSS'} / ${node.other.toUpperCase()}`,status:unlocked?'unlocked':available?'available':'locked',unlocked,extra:`tree-web ${node.kind==='mastery'?'tree-mastery':'tree-hybrid'}${node.kind==='mastery'&&node.tier===4?' tree-capstone':''}`});
   });
-  const core=document.createElement('div');core.className='tree-core';core.setAttribute('aria-label','Start here');core.textContent='START';board.prepend(lines,core);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
+  board.prepend(lines);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }
 const shapes={
  fortify:'M3 20h18v-3h-2v-6l-3-3H8l-3 3v6H3z M9 17v-4h6v4 M8 8V5h8v3',

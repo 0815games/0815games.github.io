@@ -8,7 +8,7 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261102-longterm1';
 import {enableTreeDrag} from './drag-tree.mjs?v=20261103-skilltouch1';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261103-skilltouch1';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261103-training2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261102-results1';
 import {rewardDelta} from './run-results.mjs?v=20261102-results1';
@@ -88,8 +88,9 @@ $('skillDetailType').textContent=rank===1?'MAIN SKILL':`${path.name.toUpperCase(
   else if(rank===1){const unlocked=draftSkills[path.id]>=1,selected=draftSkills.active===path.id&&!draftSkills.variant;action.textContent=selected?'MAIN SKILL SELECTED':unlocked?'SELECT MAIN SKILL':!left?'NO POINTS AVAILABLE':'UNLOCK & SELECT · 1 POINT';action.disabled=savingSkills||selected||(!unlocked&&!left);action.onclick=()=>{if(savingSkills)return;if(!draftSkills[path.id]){if(!pointsLeft(draftSkills,level(profile.xp)))return;draftSkills[path.id]=1;}draftSkills.active=path.id;draftSkills.variant=0;renderSkills();};}
   else {const unlocked=rank<=draftSkills[path.id],next=rank===draftSkills[path.id]+1;action.textContent=unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT';action.disabled=savingSkills||unlocked||!next||!left;action.onclick=()=>{if(!savingSkills&&rank===draftSkills[path.id]+1&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills[path.id]++;renderSkills();}};}
 }
+document.querySelectorAll('[data-tree-jump]').forEach(button=>{button.onclick=()=>{const tree=$('skillPaths'),board=tree.querySelector('.skill-tree-board'),index=Number(button.dataset.treeJump);if(!board)return;tree.scrollLeft=0;tree.scrollTop=Math.max(0,board.offsetWidth*(85+index*245)/1400);};});
 $('skillFilter').onchange=()=>renderSkills();$('skillPathFilter').onchange=()=>renderSkills();
-$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to edit skills between deployments, or leave your party first.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='all';renderSkills();$('skillDialog').showModal();skillMap.center();};
+$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to edit skills between deployments, or leave your party first.';return;}draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='all';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
 $('skillReset').onclick=async()=>{if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
 $('skillCancel').onclick=()=>$('skillDialog').close();
 $('skillSave').onclick=async()=>{
