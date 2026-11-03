@@ -2,6 +2,8 @@
 
 The live Firebase match still cannot resume after a host reload. `restorePartyHost` is a tested simulation building block, not a complete recovery system. It requires a checkpoint from trusted storage; it checks the locked roster, mode and teams, resets all presence and held movement, cancels queued inputs, and retains receipts. The browser host is not a trusted anti-cheat authority.
 
+An experimental Firebase recovery store and complete draft rules now exist. The emulator covers atomic checkpoint/view records, generation takeover, stale-owner writes and member read isolation. They are **not wired into gameplay or published**, and do not yet guarantee safe end-to-end recovery. In particular, a crash during takeover and reading a cached checkpoint need explicit handling; the old live view paths are not fenced by these experimental rules.
+
 A safe online handoff still needs all of the following before it is enabled:
 
 1. A durable checkpoint bound to the immutable party ID and started manifest, with an explicit version and bounded size. Account for versus lanes and four-player state. A recipient snapshot is not a full checkpoint.
