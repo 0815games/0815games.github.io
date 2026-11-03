@@ -78,7 +78,15 @@ jobs:
             exit 1
           fi
       - name: Run expanded doctrine rules tests
-        run: npm run test:doctrines
+        shell: bash
+        run: |
+          if npm run test:doctrines > doctrine-output.log 2>&1; then
+            cat doctrine-output.log
+          else
+            cat doctrine-output.log
+            python3 -c "from pathlib import Path; s=Path('doctrine-output.log').read_text()[-3500:]; print('::error title=Doctrine emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Run complete story rules tests
         shell: bash
         run: |
