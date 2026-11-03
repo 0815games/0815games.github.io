@@ -27,6 +27,22 @@ const CODAS={
  'tidelock':[['NARRATOR','Rook’s soldiers have heard Ada. Now the tower must be reached.'],['NARRATOR','The broadcast has reached Rook. His answer leaves one last task.']],
 'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']]
 };
+// Locations change between the opening and aftermath to follow the journey.
+const SCENES={
+ 'lost-signal':[{art:'signal',place:'THE VALLEY ROAD',weather:'mist'},{art:'pinewood',place:'PINEWOOD APPROACH',weather:'mist'}],
+ 'pinewood-rescue':[{art:'pinewood',place:'PINEWOOD CROSSING',weather:'mist'},{art:'pinewood',place:'THE RETURN ROAD',weather:'mist'}],
+ 'blackout':[{art:'outpost',place:'THE BROKEN OUTPOST',weather:'embers'},{art:'outpost',place:'THE SIGNAL RETURNS',weather:'embers'}],
+ 'supply-line':[{art:'pinewood',place:'THE FOREST CONVOY',weather:'mist'},{art:'valley',place:'THE VALLEY ROAD',weather:'mist'}],
+ 'intercept':[{art:'outpost',place:'THE DISPATCH ROUTE',weather:'embers'},{art:'valley',place:'THE VALLEY BELOW',weather:'mist'}],
+ 'bridge':[{art:'pinewood',place:'THE EVACUATION BRIDGE',weather:'mist'},{art:'valley',place:'THE ROAD TO TIDELOCK',weather:'rain'}],
+ 'dead-air':[{art:'marsh',place:'THE FLOODED MARSH',weather:'rain'},{art:'ice',place:'THE NORTHERN SIGNAL',weather:'snow'}],
+ 'white-noise':[{art:'ice',place:'THE ICE STATION',weather:'snow'},{art:'ice',place:'THE NORTHERN RIDGE',weather:'snow'}],
+ 'long-switch':[{art:'outpost',place:'THE POWER SUBSTATION',weather:'embers'},{art:'city',place:'THE OCCUPIED CITY',weather:'rain'}],
+ 'city-of-glass':[{art:'city',place:'THE INDUSTRIAL DISTRICT',weather:'rain'},{art:'tower',place:'THE GATE AHEAD',weather:'rain'}],
+ 'tidelock':[{art:'marsh',place:'THE MARSH CONTROL LINE',weather:'rain'},{art:'tower',place:'THE INDUSTRIAL TOWER',weather:'rain'}],
+ 'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]
+};
+export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 function speakers(text){return text.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|SURVIVORS):\s)/).map(line=>line.trim()).filter(Boolean).map(line=>{const m=line.match(/^([A-Z]+):\s*(.*)$/);return m?[m[1],m[2]]:['NARRATOR',line];});}
 export function cinematicFrames(mission,kind){
  if(!mission||!OPENINGS[mission.id]||!['intro','ending'].includes(kind))return [];

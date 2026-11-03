@@ -1,4 +1,4 @@
-import {cinematicFrames} from './story-cinematics.mjs?v=20261103-cinematic1';
+import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
@@ -46,10 +46,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null;
   let cinematic=null,radioTime=0;
   function closeCinematic(continueScene=true){if(!cinematic)return;const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
-  function showCinematic(mission,kind,done=null){
-    const frames=cinematicFrames(mission,kind);if(!frames.length){if(done)done();return;}closeCinematic(false);keys.clear();sendDirection();accumulator=0;cinematic={mission,kind,frames,index:0,done};$('storyCinematic').dataset.act=mission.act.includes('ACT III')?'3':mission.act.includes('ACT II')?'2':'1';renderCinematic();$('storyCinematic').showModal();
+  function showCinematic(mission,kind,done=null,finishLabel=null){
+    const frames=cinematicFrames(mission,kind);if(!frames.length){if(done)done();return;}closeCinematic(false);keys.clear();sendDirection();accumulator=0;cinematic={mission,kind,frames,index:0,done,finishLabel};const scene=cinematicScene(mission,kind);$('storyCinematic').dataset.location=scene?.art||'valley';$('storyCinematic').dataset.weather=scene?.weather||'mist';$('cinematicLocation').textContent=scene?.place||'';$('storyCinematic').dataset.act=mission.act.includes('ACT III')?'3':mission.act.includes('ACT II')?'2':'1';renderCinematic();$('storyCinematic').showModal();
   }
-  function renderCinematic(){const {mission,kind,frames,index}=cinematic,frame=frames[index];$('cinematicAct').textContent=`${mission.act} / ${kind==='intro'?'BRIEFING':'DEBRIEF'}`;$('cinematicCount').textContent=`${index+1} / ${frames.length}`;$('cinematicTitle').textContent=mission.title;$('cinematicSpeaker').textContent=frame.speaker==='NARRATOR'?'FIELD REPORT':frame.speaker;$('cinematicText').textContent=frame.text;$('cinematicInitial').textContent=frame.speaker==='NARRATOR'?'◆':frame.speaker[0];$('storyCinematic').dataset.speaker=frame.speaker.toLowerCase();$('cinematicPrevious').disabled=index===0;$('cinematicNext').textContent=index===frames.length-1?(kind==='intro'?'DEPLOY':'VIEW RESULTS'):'NEXT →';}
+  function renderCinematic(){const {mission,kind,frames,index,finishLabel}=cinematic,frame=frames[index];$('cinematicProgress').max=frames.length;$('cinematicProgress').value=index+1;$('cinematicAct').textContent=`${mission.act} / ${kind==='intro'?'BRIEFING':'DEBRIEF'} · ${cinematicScene(mission,kind)?.place||''}`;$('cinematicCount').textContent=`${index+1} / ${frames.length}`;$('cinematicTitle').textContent=mission.title;$('cinematicSpeaker').textContent=frame.speaker==='NARRATOR'?'FIELD REPORT':frame.speaker;$('cinematicText').textContent=frame.text;$('cinematicInitial').textContent=frame.speaker==='NARRATOR'?'◆':frame.speaker[0];$('storyCinematic').dataset.speaker=frame.speaker.toLowerCase();$('cinematicPrevious').disabled=index===0;$('cinematicNext').textContent=index===frames.length-1?(finishLabel||(kind==='intro'?'DEPLOY':'VIEW RESULTS')):'NEXT →';}
   $('cinematicPrevious').onclick=()=>{if(cinematic&&cinematic.index>0){cinematic.index--;renderCinematic();}};
   $('cinematicNext').onclick=()=>{if(!cinematic)return;if(cinematic.index+1<cinematic.frames.length){cinematic.index++;renderCinematic();}else closeCinematic();};
   $('cinematicSkip').onclick=()=>closeCinematic();$('storyCinematic').addEventListener('cancel',e=>{e.preventDefault();closeCinematic();});
@@ -113,11 +113,12 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     CAMPAIGN.forEach((m,i)=>{$(`campaignOption${i}`).disabled=i>progress;});
     const journal=progress?CAMPAIGN.slice(0,progress).map(m=>`${m.act} · ${m.title}\n${m.success}`).join('\n\n'):'No transmissions recorded yet. Start The Silent Signal to begin the story.';if($('storyJournal').textContent!==journal)$('storyJournal').textContent=journal;
     const blocked=!!coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo());
-    $('storyReplayIntro').hidden=!mission;$('storyReplayIntro').disabled=blocked||!mission||!campaignAvailable(profile,mission.id);$('campaignSelect').disabled=blocked;$('campaignLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);
+    $('storyReplayDebrief').hidden=!mission||CAMPAIGN.indexOf(mission)>=progress;$('storyReplayDebrief').disabled=blocked;$('storyReplayIntro').hidden=!mission;$('storyReplayIntro').disabled=blocked||!mission||!campaignAvailable(profile,mission.id);$('campaignSelect').disabled=blocked;$('campaignLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);
     $('campaignBriefing').textContent=blocked?'Leave your party before changing solo operations.':mission?`${mission.act} · ${mission.title} — ${mission.briefing}${CAMPAIGN.indexOf(mission)>0&&campaignAvailable(profile,mission.id)?` Previously: ${CAMPAIGN[CAMPAIGN.indexOf(mission)-1].success}`:''} ${campaignAvailable(profile,mission.id)?'Available.':'Complete the previous mission first.'}`:`Free play: random map and endless waves. Campaign: ${progress} / ${CAMPAIGN.length} operations complete.`;
   }
   $('campaignSelect').onchange=renderCampaign;
-  $('storyReplayIntro').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'intro');};
+  $('storyReplayDebrief').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&CAMPAIGN.indexOf(mission)<campaignProgress(account.getProfile())&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'ending',null,'CLOSE');};
+  $('storyReplayIntro').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'intro',null,'CLOSE');};
   $('campaignLoad').onclick=async()=>{
     if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return;
     const id=$('campaignSelect').value,mission=id==='free'?null:campaignMission(id),currentState=state,currentUser=account.getUserId();if(id!=='free'&&(!mission||!campaignAvailable(account.getProfile(),id)))return;
@@ -132,7 +133,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     coopInput.execute(command).then(result=>{if(coop===active)done(result);});
   }
   function notice(text){$('message').textContent=text;}
-  function storyRadio(text){const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:'FIELD REPORT';$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;radioTime=7;sound.play('request');}
+  function storyRadio(text){const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadio').dataset.speaker=match?match[1].toLowerCase():'narrator';$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:'FIELD REPORT';$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;radioTime=7;sound.play('request');}
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?`${result.perk} acquired for this operation.`:result.reason);updateUI();});
   function updateUI(){
     renderCampaign();
