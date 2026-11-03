@@ -1,3 +1,4 @@
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective} from './story-map-art.mjs?v=20261103-storymaps1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
 import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -142,15 +143,15 @@ function enemy(ctx,e,reducedMotion){
 }
 // The road and terrain never change during a match; draw them once per path.
 const terrainCache=new WeakMap();
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540}={}){
-  function paint(target){ground(target,theme,width,height);landmarks(target,theme);for(const road of paths)drawRoad(target,road,theme);thinIce(target,path,theme);bog(target,path,theme);}
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[]}={}){
+  function paint(target){if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height)){ground(target,theme,width,height);landmarks(target,theme);}for(const road of paths)drawRoad(target,road,theme);thinIce(target,path,theme);bog(target,path,theme);}
   const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement){paint(ctx);return;}
-  let cached=terrainCache.get(path);
-  if(!cached){const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.lineCap='round';off.lineJoin='round';paint(off);cached=canvas;terrainCache.set(path,cached);}
+  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`;let cached=variants.get(key);
+  if(!cached){const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.lineCap='round';off.lineJoin='round';paint(off);cached=canvas;variants.set(key,cached);}
   ctx.drawImage(cached,0,0);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,paths=[path],width=960,height=540,bunkerPosition={x:900,y:400}}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme,{paths,width,height});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state);ctx.restore();
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion);}ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state);ctx.restore();
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText('ENEMY ENTRY',15,75);if(paths.length>1)ctx.fillText('ENEMY ENTRY',15,height-75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(241,231,177,.16)';ctx.fill();ctx.strokeStyle='#f2e2a3';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
