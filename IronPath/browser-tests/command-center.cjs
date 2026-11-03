@@ -42,8 +42,13 @@ const assert = require('node:assert/strict');
     await page.locator('#backToCommand').click();
     // Reproduce the reported case: a solo operation is already under way.
     await page.locator('#menuEndless').click(); await page.locator('#start').click(); await page.locator('#backToCommand').click();
-    await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/armory-banner/); await page.locator('#armoryClose').click();
-    await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skills-banner/); await page.locator('#skillCancel').click();
+    await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
+    assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true);
+    assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),false);
+    await page.locator('#armoryDefensesTab').click(); assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),true); assert.equal(await page.locator('#armoryDefensesTab').getAttribute('aria-pressed'),'true');
+    await page.locator('#armoryServiceTab').click(); assert.equal(await page.locator('.armory-section[data-section="service"]').isVisible(),true);
+    await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true); await page.locator('#armoryClose').click();
+    await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skill-operations/); assert.ok(await page.locator('#skillPaths .tree-node').count()>10); await page.locator('#skillZoomIn').click(); await page.locator('#skillCenter').click(); await page.locator('#skillCancel').click();
     await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true); await page.locator('#tutorialSkip').click();
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.

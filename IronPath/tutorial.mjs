@@ -2,7 +2,7 @@
 // use isolated example data; they never touch a soldier profile or Firebase.
 export const TUTORIAL_STEPS = [
   {title:'Welcome, soldier',text:'Enemies follow the road toward your bunker. Keep the bunker standing as long as you can. Bosses attack every five waves.',scene:'bunker',caption:'DEFEND THE BUNKER'},
-  {title:'Build your defenses',text:'Tap a + pad to open the build panel. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A + PAD'},
+  {title:'Build your defenses',text:'Tap a BUILD marker to open the build panel. Tap a tower to see its details, then confirm to build. Grey choices need more supplies but can still be inspected.',scene:'build',caption:'TAP A BUILD MARKER'},
   {title:'Upgrade or sell',text:'Tap a tower to see its range and open its action panel. Confirm the upgrade directly in the action panel, choose a specialization at level 3, or sell it for half the investment.',scene:'upgrade',caption:'CHOOSE AN ACTION'},
   {title:'Move your hero',text:'Tap open ground to move. On a keyboard, use WASD or the arrow keys. Your hero automatically fires at nearby enemies once deployed.',scene:'hero',caption:'MOVE INTO POSITION'},
   {title:'Start the battle',text:'Use Field Intel below the map to identify threats and tower counters. Start each wave with Deploy. Use Speed in solo. You start without an ability; unlock one after reaching level 2. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade; rare upgrades can change how towers fight.',scene:'battle',caption:'HOLD THE LINE'},

@@ -2,13 +2,13 @@ import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 // Minimal browser adapter to check that the existing solo UI still drives shared commands.
 const elements=new Map();
-let lastArc, strokes=[];
-const ctx=new Proxy({}, {get(target,key){if(key==='arc')return (...args)=>{lastArc=args;};if(key==='stroke')return ()=>strokes.push({arc:lastArc,style:target.strokeStyle});return target[key]||(()=>{});},set(target,key,value){target[key]=value;return true;}});
+let lastArc, strokes=[], path=[];
+const ctx=new Proxy({}, {get(target,key){if(key==='beginPath')return ()=>{path=[];};if(key==='moveTo'||key==='lineTo')return (...args)=>path.push([key,...args]);if(key==='arc')return (...args)=>{lastArc=args;};if(key==='stroke')return ()=>strokes.push({arc:lastArc,path:[...path],style:target.strokeStyle});return target[key]||(()=>{});},set(target,key,value){target[key]=value;return true;}});
 function element(id){if(!elements.has(id))elements.set(id,{id,textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{toggle(){}},setAttribute(){},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return elements.get(id);}
 globalThis.document={getElementById:element,activeElement:{tagName:'BODY'}};
 let scrolls=[];globalThis.window={scrollBy(options){scrolls.push(options);},innerWidth:400,innerHeight:800,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
 let frame;globalThis.requestAnimationFrame=fn=>{frame=fn;};
-function draw(){strokes=[];frame(performance.now());return strokes.filter(s=>s.arc?.[2]===35&&s.style==='#ffed70');}
+function draw(){strokes=[];frame(performance.now());return strokes.filter(s=>s.style==='#bad8ca');}
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
 for(const file of ['story-cinematics.mjs','campaign.mjs','story-mission.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
@@ -27,9 +27,9 @@ element('game').onclick({clientX:105,clientY:210});
 assert.ok(scrolls[0].top>0);assert.equal('left' in scrolls[0],false);assert.equal(scrolls[0].behavior,'auto');
 // Choose an unaffordable tower to inspect it without purchasing.
 assert.equal(element('radialMenu').hidden,false);
-assert.deepEqual(draw()[0].arc.slice(0,3),[105,210,35], 'empty selected pad has a visible marker');
+assert.deepEqual(draw()[0].path[0],['moveTo',73,189], 'empty selected pad has a visible marker');
 element('game').onclick({clientX:285,clientY:210});
-assert.deepEqual(draw()[0].arc.slice(0,3),[285,210,35], 'marker follows a newly selected pad');
+assert.deepEqual(draw()[0].path[0],['moveTo',253,189], 'marker follows a newly selected pad');
 element('radialClose').onclick();assert.equal(draw().length,0,'closing clears an empty pad marker');
 element('game').onclick({clientX:105,clientY:210});
 assert.equal(element('radial0').disabled,false);
@@ -45,7 +45,7 @@ assert.equal(element('towerDetailsConfirm').disabled,false);
 element('towerDetailsConfirm').onclick();
 assert.equal(element('money').textContent,75);
 assert.equal(element('radialMenu').hidden,true);
-assert.deepEqual(draw()[0].arc.slice(0,3),[105,210,35], 'built tower stays visibly selected');
+assert.deepEqual(draw()[0].path[0],['moveTo',73,189], 'built tower stays visibly selected');
 // The action panel shows effects and acts as the purchase confirmation.
 element('game').onclick({clientX:105,clientY:210});
 assert.match(element('menuName0').textContent,/Confirm upgrade/i);

@@ -12,12 +12,12 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261103-landmarks1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261103-arsenal1';
 import {abilityName} from './skills.mjs?v=20261102-results1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261102-planner1';
+import { createTutorial } from './tutorial.mjs?v=20261103-arsenal1';
 import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261102-fourbase1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261102-fourbase1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -290,24 +290,16 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function draw(){const map=getMap(state.mapId),{path,pads,theme}=map;ctx.clearRect(0,0,canvas.width,canvas.height);const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000):state;
     function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,...(battleViewport?{paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker}:{})});
 
-    if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#ffe17b';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#14221b';ctx.fillRect(point.x-48,point.y-61,96,20);ctx.fillStyle='#ffe17b';ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.fillText(point.type==='protect'?'PROTECT':'OBJECTIVE',point.x,point.y-47);if(point.type==='protect'){ctx.fillStyle='#1c2b20';ctx.fillRect(point.x-25,point.y+43,50,7);ctx.fillStyle=activeStory.assetHealth<30?'#f28f73':'#b6dd8b';ctx.fillRect(point.x-24,point.y+44,48*Math.max(0,activeStory.assetHealth)/100,5);}ctx.restore();}}
+    if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#14221b';ctx.fillRect(point.x-48,point.y-61,96,20);ctx.fillStyle='#d8e9da';ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.fillText(point.type==='protect'?'PROTECT':'OBJECTIVE',point.x,point.y-47);if(point.type==='protect'){ctx.fillStyle='#1c2b20';ctx.fillRect(point.x-25,point.y+43,50,7);ctx.fillStyle=activeStory.assetHealth<30?'#f28f73':'#b6dd8b';ctx.fillRect(point.x-24,point.y+44,48*Math.max(0,activeStory.assetHealth)/100,5);}ctx.restore();}}
 
     if(activeStory&&!coop&&!state.ended&&activeStory.mission.stages[activeStory.stage]?.type==='escort'){const hero=visual.players.local;if(hero){ctx.save();for(const offset of [-14,14]){ctx.beginPath();ctx.arc(hero.x+offset,hero.y+25,7,0,Math.PI*2);ctx.fillStyle='#bce6f1';ctx.fill();ctx.strokeStyle='#263c35';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}}
 
-    // Draw selection above units and effects, including an empty pad while its
-    // build menu is open. A dark border keeps the bright marker legible on roads.
+    // Subtle corner brackets keep the selected pad visible over any terrain.
     const markerPad=menuPad??state.selectedPad;
-    if(markerPad!==null&&!state.ended){
-      const p=pads[markerPad];
-      if(p){
-        ctx.beginPath();ctx.arc(p.x,p.y,35,0,Math.PI*2);
-        ctx.strokeStyle='#172016';ctx.lineWidth=10;ctx.stroke();
-        ctx.strokeStyle='#ffed70';ctx.lineWidth=5;ctx.stroke();
-        ctx.beginPath();
-        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ctx.moveTo(p.x+dx*40,p.y+dy*40);ctx.lineTo(p.x+dx*49,p.y+dy*49);}
-        ctx.strokeStyle='#172016';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#fff6ac';ctx.lineWidth=4;ctx.stroke();
-      }
-    }
+    if(markerPad!==null&&!state.ended){const p=pads[markerPad];if(p){
+      ctx.save();ctx.beginPath();for(const [sx,sy] of [[-1,-1],[1,-1],[-1,1],[1,1]]){ctx.moveTo(p.x+sx*32,p.y+sy*21);ctx.lineTo(p.x+sx*32,p.y+sy*28);ctx.lineTo(p.x+sx*24,p.y+sy*28);}
+      ctx.lineJoin='round';ctx.strokeStyle='#172721';ctx.lineWidth=5;ctx.stroke();ctx.strokeStyle='#bad8ca';ctx.lineWidth=2;ctx.stroke();ctx.restore();
+    }}
     }
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawOwn);else drawOwn();
     if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(`${state.players[state.rivalId]?.name||'OPPONENT'} · OPPONENT BATTLEFIELD`,480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});ctx.restore();}
