@@ -12,7 +12,7 @@ const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new
 const container=new Element('div'),build=parseBuild('1,0,0,0,0;recon',3);let selection;
 renderSkillTree({document,container,build,level:3,selected:{path:'assault',rank:1},onSelect:value=>selection=value});
 const board=container.children[0],buttons=board.children.flatMap(section=>section.children?.flatMap(child=>child.children?.filter(n=>n.tag==='button')||[])||[]);
-assert.equal(buttons.length,80,'all core, specialist, mastery and combo skills remain accessible');
+assert.equal(buttons.length,100,'all core, specialist, mastery and combo skills remain accessible');
 assert.ok(buttons.some(n=>n.children.some(c=>c.textContent==='War Hero')));
 assert.match(buttons[0].attrs['aria-label'],/Airstrike, unlocked/);
 assert.match(buttons[1].attrs['aria-label'],/Assault · Rank 2, available/);

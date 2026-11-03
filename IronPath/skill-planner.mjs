@@ -1,4 +1,4 @@
-import {SKILL_PATHS,WEB_NODES,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild} from './skills.mjs?v=20261102-results1';
+import {SKILL_PATHS,WEB_NODES,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild} from './skills.mjs?v=20261104-doctrines1';
 import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261102-results1';
 export const nodeKey=(path,rank)=>`${path}:${rank}`;
 export function prerequisites(path,rank){
@@ -7,6 +7,7 @@ export function prerequisites(path,rank){
  if(rank===5||rank===6)return [nodeKey(path,2)];
  const n=WEB_NODES[rank-100];if(!n||n.path!==path)return [];
  if(n.tier>0)return [nodeKey(path,rank-1)];
+ if(n.kind==='doctrine')return [nodeKey(path,5+n.branch)];
  return n.kind==='mastery'?[nodeKey(path,3)]:[nodeKey(path,2),nodeKey(n.other,2)];
 }
 export function relatedNodes(selected){
@@ -18,7 +19,7 @@ export function relatedNodes(selected){
 export function nodeMatches(build,level,path,rank,filter='all',pathFilter='all'){
  const n=rank>=100?WEB_NODES[rank-100]:null,relatedPath=path===pathFilter||n?.other===pathFilter;
  if(pathFilter!=='all'&&!relatedPath)return false;
- if(filter==='hybrid')return !!n&&n.kind!=='mastery';
+ if(filter==='hybrid')return !!n&&(n.kind==='hybrid'||n.kind==='cross');
  if(filter==='active')return rank===1||rank===5||rank===6;
  if(filter==='unlocked')return n?!!build.web?.[n.id]:rank>=5?!!build.extra?.[SKILL_PATHS.findIndex(p=>p.id===path)*2+rank-5]:build[path]>=rank;
  if(filter==='available'){

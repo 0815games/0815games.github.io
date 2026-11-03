@@ -1,10 +1,10 @@
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261103-unified1';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261102-fourbase1';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261104-doctrines1';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261104-doctrines1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261102-fourbase1';
-import { stepMatch } from './simulation.mjs?v=20261102-fourbase1';
+import { applyCommand } from './match.mjs?v=20261104-doctrines1';
+import { stepMatch } from './simulation.mjs?v=20261104-doctrines1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;

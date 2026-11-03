@@ -1,7 +1,7 @@
 // Unified multiplayer lobby adapter. Firebase rules MUST
 // enforce all actor, request, roster-lock and path constraints independently.
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
-import {createFourLobby} from './four-lobby.mjs?v=20261102-fourbase2';
+import {createFourLobby} from './four-lobby.mjs?v=20261104-doctrines1';
 import {availablePartyModes,canStartParty} from './multiplayer-lobby.mjs?v=20261103-unified1';
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const validParty=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);

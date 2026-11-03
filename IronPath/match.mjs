@@ -1,7 +1,7 @@
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
-import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261102-results1';
+import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';

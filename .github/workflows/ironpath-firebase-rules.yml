@@ -77,6 +77,8 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('online-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Combined online rules output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run expanded doctrine rules tests
+        run: npm run test:doctrines
       - name: Run complete story rules tests
         shell: bash
         run: |
