@@ -87,3 +87,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tree-dialog .tree-detail .eyebrow{color:#d8c68d}
 .tree-dialog .tree-summary{box-shadow:none}
 .tree-dialog .development-head{border-bottom:1px solid #8b997355}
+/* Long roster names and dialog content should wrap rather than widen phones. */
+.firebase-party .party-join-controls,.firebase-party .party-join{min-width:0}
+.firebase-party .four-party-list li span,.tree-detail>div{min-width:0;overflow-wrap:anywhere}
