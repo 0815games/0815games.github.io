@@ -8,7 +8,7 @@ import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
 import {createFirebasePartyGame} from '../../firebase-party-game.mjs';
 import {createPlayer} from '../../match.mjs';
 const ids=['alice','bob','cara','dan'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp},profiles=Object.fromEntries(ids.map(id=>[id,{name:id,gender:'female',level:1}]));let env,db;
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../unified.complete.draft.rules.json',import.meta.url),'utf8')}});db=Object.fromEntries(ids.map(id=>[id,env.authenticatedContext(id).database()]));});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.IRONPATH_CAMPAIGN_RULES?'../campaign.complete.draft.rules.json':'../unified.complete.draft.rules.json',import.meta.url),'utf8')}});db=Object.fromEntries(ids.map(id=>[id,env.authenticatedContext(id).database()]));});
 beforeEach(async()=>{await env.clearDatabase();for(const id of ids)await set(ref(db[id],`players/${id}`),{name:id,gender:'female',xp:0});});after(async()=>env.cleanup());
 for(const [mode,count] of [['coop',2],['versus',2],['four-coop',3],['four-coop',4],['two-vs-two',4]])test(`unified ${mode} with ${count} players`,{timeout:45000},async()=>{
  const participants=ids.slice(0,count),auth=id=>({currentUser:{uid:id}}),lobbies=Object.fromEntries(ids.map(id=>[id,createFirebaseFourLobby({db:db[id],auth:auth(id),sdk,crypto:webcrypto})]));

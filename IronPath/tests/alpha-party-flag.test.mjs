@@ -4,7 +4,7 @@ const account=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 assert.match(account,/const fourPlayerTest=true/,'four-player is enabled in the online alpha');
 assert.doesNotMatch(html,/id="fourPartyToggle"/);assert.match(html,/id="partyToggle"[^>]*>MULTIPLAYER<\/button>/);
-assert.match(account,/fourPanel=createFourPlayerPanel/,'unified multiplayer panel is configured');
+assert.match(account,/const hostRecoveryEnabled=false/);assert.match(html,/id="fourPartyResume"[^>]*hidden/);assert.match(account,/fourPanel=createFourPlayerPanel/,'unified multiplayer panel is configured');
 assert.match(html,/MULTIPLAYER PARTY/);
 assert.match(html,/Complete waves together to earn XP/);
 assert.doesNotMatch(html,/id="partyCopy"/);
