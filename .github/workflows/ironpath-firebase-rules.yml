@@ -112,7 +112,7 @@ jobs:
       - name: Run server tests
         run: npm test --prefix IronPath/server
   interface-browser-smoke:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -133,7 +133,13 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/ironpath-http.log 2>&1 &
-          node IronPath/browser-tests/interface-smoke.cjs
+          if node IronPath/browser-tests/interface-smoke.cjs > /tmp/browser-smoke.log 2>&1; then
+            cat /tmp/browser-smoke.log
+          else
+            cat /tmp/browser-smoke.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/browser-smoke.log').read_text()[-3500:]; print('::error title=Browser smoke::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Save interface screenshots
         if: always()
         uses: actions/upload-artifact@v4
