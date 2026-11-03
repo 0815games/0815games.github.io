@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 (async () => {
   const browser = await chromium.launch({headless:true});
   try {
-    const context = await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
+    const context = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
     const page = await context.newPage(), errors=[];
     page.on('pageerror', error => errors.push(error.stack || String(error)));
     const mocks = {
@@ -28,6 +28,7 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     const visible=selector=>page.locator(selector).isVisible();
+    assert.equal(await page.locator('.mode-card b').count(),0,'operation cards have no arrows');
     await page.locator('#menuCampaign').click(); await page.locator('#campaignBoard').waitFor({state:'visible'});
     assert.equal(await visible('.dashboard'),false,'campaign board is separate from the battlefield');
     assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),false);
@@ -48,7 +49,18 @@ const assert = require('node:assert/strict');
     await page.locator('#armoryDefensesTab').click(); assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),true); assert.equal(await page.locator('#armoryDefensesTab').getAttribute('aria-pressed'),'true');
     await page.locator('#armoryServiceTab').click(); assert.equal(await page.locator('.armory-section[data-section="service"]').isVisible(),true);
     await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true); await page.locator('#armoryClose').click();
-    await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skill-operations/); assert.ok(await page.locator('#skillPaths .tree-node').count()>10); await page.locator('#skillZoomIn').click(); await page.locator('#skillCenter').click(); await page.locator('#skillCancel').click();
+    await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#skillDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/skill-operations/); assert.ok(await page.locator('#skillPaths .tree-node').count()>10); await page.locator('#skillZoomIn').click(); await page.locator('#skillCenter').click();
+    await page.locator('#skillPaths').scrollIntoViewIfNeeded();
+    const box=await page.locator('#skillPaths').boundingBox(), cdp=await context.newCDPSession(page);
+    const touch=(type,points)=>cdp.send('Input.dispatchTouchEvent',{type,touchPoints:points.map(([x,y,id])=>({x,y,id}))});
+    const x=box.x+box.width/2,y=box.y+box.height/2;
+    const before=await page.locator('#skillPaths').evaluate(e=>({left:e.scrollLeft,top:e.scrollTop,width:e.firstElementChild.offsetWidth}));
+    await touch('touchStart',[[x,y,1]]);await touch('touchMove',[[x+55,y+45,1]]);await touch('touchEnd',[]);
+    const panned=await page.locator('#skillPaths').evaluate(e=>({left:e.scrollLeft,top:e.scrollTop}));assert.ok(panned.left<before.left-20&&panned.top<before.top-20,'one finger pans both axes');
+    await touch('touchStart',[[x-40,y,2]]);await touch('touchStart',[[x-40,y,2],[x+40,y,3]]);await touch('touchMove',[[x-75,y,2],[x+75,y,3]]);await touch('touchEnd',[]);
+    const width=await page.locator('#skillPaths .skill-tree-board').evaluate(e=>e.offsetWidth);assert.ok(width>before.width,'pinch zooms the skill board');
+    await page.locator('#skillCenter').click(); const node=page.locator('#skillPaths .tree-node').first();await node.scrollIntoViewIfNeeded();await node.tap();assert.equal(await node.getAttribute('aria-pressed'),'true','nodes still select on tap');
+    await page.locator('#skillCancel').click();
     await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true); await page.locator('#tutorialSkip').click();
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.

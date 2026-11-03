@@ -234,3 +234,32 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tree-dialog .skill-actions{gap:8px;margin-top:14px}.tree-dialog .skill-actions button{min-height:44px;flex:1}
 .armory-dialog button:focus-visible,.tree-dialog button:focus-visible,.tree-dialog select:focus-visible{outline:3px solid #d7f1dd;outline-offset:3px}
 @media(max-width:700px){.armory-dialog,.tree-dialog{padding:14px}.armory-dialog .development-head,.tree-dialog .development-head{min-height:118px;margin:-14px -14px 14px;padding:16px}.armory-dialog .armory-grid{grid-template-columns:1fr}.armory-dialog .armory-card{flex-direction:row;min-height:118px}.armory-dialog .armory-art{width:82px;min-width:82px;height:auto;border-right:1px solid #4d6c5d;border-bottom:0}.armory-dialog .armory-card-body{padding:12px}.armory-dialog .armory-card h4{font-size:17px}.arsenal-tabs{margin:14px 0 10px}.skill-dialog .arsenal-tabs button{flex:1 1 90px;font-size:9px}.tree-dialog .tree-workspace{grid-template-columns:1fr}.tree-dialog .skill-tree{max-height:42dvh}.tree-dialog .tree-detail{padding:14px}.tree-dialog .tree-detail h3{font-size:20px}}
+
+/* Skill command map: a distinct blueprint rather than the old olive web. */
+.tree-dialog{background:#101e2b;border:1px solid #648595;color:#e8f4f4}
+.tree-dialog .development-head{background:linear-gradient(90deg,#091b29ef 0%,#132d38c9 55%,#101f2c66),url('assets/skill-operations.jpg') center 48%/cover;border-bottom:2px solid #e8a35a}
+.tree-dialog .development-head h2{color:#f2f6ee;text-shadow:none;font:700 34px Georgia,serif}
+.tree-dialog .tree-summary{background:#193542;border:1px solid #436874;border-left:4px solid #e4a25e;box-shadow:none}
+.tree-dialog .tree-summary span,.tree-dialog .tree-summary strong{color:#d1e5e2}
+.tree-dialog .tree-hint,.tree-dialog .tree-key{color:#b2d1d4}
+.tree-dialog .skill-tree{border:2px solid #608d96;background:#09212e;touch-action:none;overscroll-behavior:contain}
+.tree-dialog .skill-tree-board{background:radial-gradient(circle at 50% 50%,#205063 0%,#143747 48%,#0a2533 100%);border:0}
+.tree-dialog .skill-tree-board:before{background-image:linear-gradient(#90d9df14 1px,transparent 1px),linear-gradient(90deg,#90d9df14 1px,transparent 1px);background-size:35px 35px}
+.tree-dialog .tree-orbit{stroke:#82b8c2;stroke-opacity:.28;stroke-width:1;stroke-dasharray:10 12}
+.tree-dialog .tree-link{stroke:#71aab4;stroke-width:3;stroke-opacity:.6}
+.tree-dialog .tree-link.is-lit{stroke:#f3bf73;stroke-width:5;stroke-opacity:1}
+.tree-dialog .tree-link.is-related{stroke:#ffcd70;stroke-width:7;stroke-opacity:1}
+.tree-dialog .tree-core{background:#e6aa65;color:#162833;border:3px solid #ffe5aa;border-radius:12px;box-shadow:0 0 0 6px #e6aa6525,0 0 28px #ffbe7077;letter-spacing:.07em}
+.tree-dialog .skill-tree .tree-node:is(button){border-radius:12px 3px 12px 3px;background:#122e3b;color:#f0f6e9;border:2px solid var(--path-color);box-shadow:0 0 0 4px #0a202ccd,0 5px 14px #0009;font-family:Arial,sans-serif;font-weight:900}
+.tree-dialog .skill-tree .tree-node.tree-ability{border-radius:50%;background:#294b56;font-size:calc(20px * var(--tree-zoom, 1))}
+.tree-dialog .skill-tree .tree-node.tree-specialist{border-style:dashed;border-radius:3px 12px 3px 12px}
+.tree-dialog .skill-tree .tree-node.tree-hybrid{border-radius:50%;border-style:double;border-width:4px;background:#26485a}
+.tree-dialog .skill-tree .tree-node.tree-capstone{border-radius:3px;border:3px double #ffd28b;background:#533e36;color:#ffdf9d}
+.tree-dialog .skill-tree .tree-node.is-unlocked,.tree-dialog .skill-tree .tree-node.is-active{background:#e8aa65;color:#182a31;border:2px solid #fff0be;box-shadow:0 0 0 4px #f4b85e33,0 0 18px #e5a75c88}
+.tree-dialog .tree-path-label{color:#dff5f0!important;background:#102e3b;border:1px solid #79aab1;border-left:4px solid #efa65e;padding:5px 10px;box-shadow:3px 3px #071a26;font-family:Arial,sans-serif;letter-spacing:.12em}
+.tree-dialog .tree-detail{background:#193744;color:#e6f2e8;border:1px solid #72969a;border-top:4px solid #e5a65e;box-shadow:none}
+.tree-dialog .tree-detail h3{color:#f2f2db}.tree-dialog .tree-detail p,.tree-dialog .tree-detail .eyebrow{color:#bdd9d7}
+.tree-dialog .skill-build-summary{background:#162f3a;color:#d8ebe5;border:1px solid #567d87}
+.tree-dialog .skill-build-summary small{color:#b3cbc9}
+.tree-dialog .tree-tools select{background:#e1ece4;color:#18313b;border-color:#6b9699}
+.tree-dialog .development-hint{color:#b8d0ce}
