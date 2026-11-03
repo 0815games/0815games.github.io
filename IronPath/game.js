@@ -44,7 +44,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
   let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null;
-  let cinematic=null,radioTime=0,commandMenuOpen=false;
+  let cinematic=null,radioTime=0,commandMenuOpen=false,missionBoardOpen=false;
   function closeCinematic(continueScene=true){if(!cinematic)return;const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
   function showCinematic(mission,kind,done=null,finishLabel=null){
     const frames=cinematicFrames(mission,kind);if(!frames.length){if(done)done();return;}closeCinematic(false);keys.clear();sendDirection();accumulator=0;cinematic={mission,kind,frames,index:0,done,finishLabel};const scene=cinematicScene(mission,kind);$('storyCinematic').dataset.location=scene?.art||'valley';$('storyCinematic').dataset.weather=scene?.weather||'mist';$('cinematicLocation').textContent=scene?.place||'';$('storyCinematic').dataset.act=mission.act.includes('ACT III')?'3':mission.act.includes('ACT II')?'2':'1';renderCinematic();$('storyCinematic').showModal();
@@ -110,21 +110,28 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('campaignSelect').value='free';
   function renderCampaign(){
     const profile=account.getProfile(),progress=campaignProgress(profile),selection=$('campaignSelect').value,mission=campaignMission(selection);
-    CAMPAIGN.forEach((m,i)=>{$(`campaignOption${i}`).disabled=i>progress;});
-    const journal=progress?CAMPAIGN.slice(0,progress).map(m=>`${m.act} · ${m.title}\n${m.success}`).join('\n\n'):'No transmissions recorded yet. Start The Silent Signal to begin the story.';if($('storyJournal').textContent!==journal)$('storyJournal').textContent=journal;
     const blocked=!!coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo());
+    CAMPAIGN.forEach((m,i)=>{const locked=i>progress,complete=i<progress,card=$(`missionCard${i}`);$(`campaignOption${i}`).disabled=locked;$(`campaignOption${i}`).textContent=`${String(i+1).padStart(2,'0')} · ${locked?'CLASSIFIED':m.title}`;card.disabled=blocked||locked;card.dataset.status=locked?'locked':complete?'complete':'available';card.setAttribute('aria-pressed',String(selection===m.id));$(`missionTitle${i}`).textContent=locked?'CLASSIFIED':m.title;$(`missionStatus${i}`).textContent=locked?'LOCKED':complete?'COMPLETED':'NEXT MISSION';});
+    $('campaignBoard').hidden=!mission||!missionBoardOpen;$('campaignShowBoard').hidden=!mission||missionBoardOpen;$('campaignShowBoard').disabled=blocked;$('campaignPanel').dataset.boardOpen=String(missionBoardOpen);$('campaignOverall').textContent=progress===CAMPAIGN.length?'The valley is safe. Revisit any completed mission.':progress?`Your next mission awaits. ${progress} of ${CAMPAIGN.length} missions completed.`:'A lost signal is only the beginning.';$('campaignProgressText').textContent=`${progress} / ${CAMPAIGN.length} COMPLETED`;$('campaignProgressBar').max=CAMPAIGN.length;$('campaignProgressBar').value=progress;$('campaignContinue').disabled=blocked;$('campaignContinue').textContent=progress===CAMPAIGN.length?'REPLAY FINAL MISSION →':progress?'CONTINUE STORY →':'BEGIN STORY →';$('campaignSelectedAct').textContent=mission?.act||'';$('campaignSelectedTitle').textContent=mission?.title||'Select a mission';$('campaignQuickLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);$('campaignQuickStatus').textContent=blocked?'Leave your party before changing solo operations.':mission?'Select a mission on the board or load this selection.':'Free play: random map and endless waves.';
+    const journal=progress?CAMPAIGN.slice(0,progress).map(m=>`${m.act} · ${m.title}\n${m.success}`).join('\n\n'):'No transmissions recorded yet. Start The Silent Signal to begin the story.';if($('storyJournal').textContent!==journal)$('storyJournal').textContent=journal;
     $('storyReplayDebrief').hidden=!mission||CAMPAIGN.indexOf(mission)>=progress;$('storyReplayDebrief').disabled=blocked;$('storyReplayIntro').hidden=!mission;$('storyReplayIntro').disabled=blocked||!mission||!campaignAvailable(profile,mission.id);$('campaignSelect').disabled=blocked;$('campaignLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);
     $('campaignBriefing').textContent=blocked?'Leave your party before changing solo operations.':mission?`${mission.act} · ${mission.title} — ${mission.briefing}${CAMPAIGN.indexOf(mission)>0&&campaignAvailable(profile,mission.id)?` Previously: ${CAMPAIGN[CAMPAIGN.indexOf(mission)-1].success}`:''} ${campaignAvailable(profile,mission.id)?'Available.':'Complete the previous mission first.'}`:`Free play: random map and endless waves. Campaign: ${progress} / ${CAMPAIGN.length} operations complete.`;
   }
-  $('campaignSelect').onchange=renderCampaign;
+  function setMissionBoard(open){missionBoardOpen=!!open;keys.clear();sendDirection();accumulator=0;renderCampaign();}
+  $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
+  $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
+  CAMPAIGN.forEach((mission,i)=>{$(`missionCard${i}`).onclick=()=>{if(!coop&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo())){$('campaignSelect').value=mission.id;renderCampaign();}};});
+  $('campaignContinue').onclick=async()=>{if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return;const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;renderCampaign();await $('campaignLoad').onclick();};
+  $('campaignQuickLoad').onclick=()=>$('campaignLoad').onclick();
   $('storyReplayDebrief').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&CAMPAIGN.indexOf(mission)<campaignProgress(account.getProfile())&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'ending',null,'CLOSE');};
   $('storyReplayIntro').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'intro',null,'CLOSE');};
   $('campaignLoad').onclick=async()=>{
     if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return false;
+    if(state.ended&&report?.campaign&&report.campaignSaved!==true){notice('Confirm or retry your story save before changing operations.');return false;}
     const id=$('campaignSelect').value,mission=id==='free'?null:campaignMission(id),currentState=state,currentUser=account.getUserId();if(id!=='free'&&(!mission||!campaignAvailable(account.getProfile(),id)))return false;
     if(!state.ended&&(state.wave>0||state.towers.length)&&!await confirmAction({title:'Change operation?',text:'This ends your current solo run. Completed-wave rewards remain saved.',accept:'CHANGE OPERATION'}))return false;
     if(coop||state!==currentState||account.getUserId()!==currentUser||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||(mission&&!campaignAvailable(account.getProfile(),id)))return false;
-    activeMission=mission;selectedMap=mission?mission.mapId:nextMapId(selectedMap);reset();notice(mission?mission.stages[0].dialogue:'Free play ready.');if(mission)showCinematic(mission,'intro');return true;
+    activeMission=mission;selectedMap=mission?mission.mapId:nextMapId(selectedMap);missionBoardOpen=false;reset();notice(mission?mission.stages[0].dialogue:'Free play ready.');if(mission)showCinematic(mission,'intro');return true;
   };
   function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.accountId=account.getUserId();activeStory=activeMission?createStoryMission(activeMission):null;if(canvas.height!==540)canvas.height=540;if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();lastSnapshotAt=0;bossSignal=null;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
@@ -260,7 +267,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   let uiElapsed=0;
   function update(dt){
     if(radioTime>0&&!cinematic){radioTime=Math.max(0,radioTime-dt);if(!radioTime)$('storyRadio').hidden=true;}
-    if(coop||state.ended||commandMenuOpen||cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
+    if(coop||state.ended||commandMenuOpen||missionBoardOpen||cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -328,10 +335,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
   $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
-  account.onSessionChange(()=>{closeCinematic(false);lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
+  account.onSessionChange(()=>{closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
-  function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;renderCampaign();$('campaignSelect').focus?.();}
+  function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
   async function chooseEndless(){const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
   return {recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,showTutorial:()=>{closeMenu();keys.clear();sendDirection();tutorial.replay(account.getUserId());},getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?(activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
 }
