@@ -59,3 +59,24 @@ for(const [mode,count] of [['versus',2],['four-coop',3],['four-coop',4],['two-vs
 test('server REST recovery reads enforce host-only access',async()=>{
  const f=await setup();try{const first=await f.store('alice').initialize(f.host.checkpoint(),f.views),path=ref(db.alice,`${f.path}/sessions/${first.owner}`);assert.equal((await readFresh(path,{currentUser:{uid:'alice'}})).generation,1);await assert.rejects(readFresh(path,{currentUser:{uid:'bob'}}),/Server checkpoint read failed/);await assert.rejects(readFresh(path,{currentUser:{uid:'eve'}}),/Server checkpoint read failed/);}finally{await f.close();}
 });
+
+test('interrupted takeovers recover the latest complete server checkpoint',async()=>{
+ const f=await setup();try{
+  const first=f.store('alice'),initial=await first.initialize(f.host.checkpoint(),f.views),second=await f.store('alice2').claim(1);
+  f.host.advance();const latest=f.host.checkpoint();await f.store('alice2').publish(second,latest,f.views);
+  const broken=createFirebaseRecoveryStore({db:db.alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:f.party.partyId,manifest:f.manifest,crypto:webcrypto,readFresh:async()=>{throw Error('network interrupted');}});
+  await assert.rejects(broken.claim(2),/network interrupted/);await assert.rejects(broken.claim(3),/network interrupted/);
+  const recovered=await first.claim(4);assert.equal(recovered.generation,5);assert.deepEqual(recovered.checkpoint,latest);
+  await assert.rejects(first.publish(initial,f.host.checkpoint(),f.views));await assert.rejects(f.store('alice2').publish(second,f.host.checkpoint(),f.views));
+ }finally{await f.close();}
+});
+test('a later takeover fences an earlier takeover stalled before publishing',async()=>{
+ const f=await setup();try{
+  const first=f.store('alice'),initial=await first.initialize(f.host.checkpoint(),f.views);let release,entered;const started=new Promise(r=>entered=r),blocked=new Promise(r=>release=r);
+  const stalled=createFirebaseRecoveryStore({db:db.alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:f.party.partyId,manifest:f.manifest,crypto:webcrypto,readFresh:async(path,auth)=>{entered();await blocked;return readFresh(path,auth);}});
+  const pending=stalled.claim(1);await started;const winner=await f.store('alice2').claim(2);assert.equal(winner.generation,3);assert.deepEqual(winner.checkpoint,f.host.checkpoint());release();await assert.rejects(pending);await assert.rejects(first.publish(initial,f.host.checkpoint(),f.views));
+ }finally{await f.close();}
+});
+test('lease rules prevent deleting or rewriting recovery history',async()=>{
+ const f=await setup();try{const store=f.store('alice'),first=await store.initialize(f.host.checkpoint(),f.views),second=await store.claim(1),leasePath=`${f.path}/lease`;const forged={generation:3,owner:'f'.repeat(32),previousOwner:second.owner,history:'f'.repeat(32)};await assertFails(set(ref(db.alice,leasePath),forged));await assertFails(set(ref(db.alice,`${leasePath}/history`),null));assert.equal((await get(ref(db.alice,`${leasePath}/history`))).val(),first.owner);}finally{await f.close();}
+});

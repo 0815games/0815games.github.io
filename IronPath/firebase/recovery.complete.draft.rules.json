@@ -286,13 +286,16 @@
         "recovery": {
           "lease": {
             ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
-            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && newData.exists() && ((!data.exists() && newData.child('generation').val() === 1 && !newData.child('previousOwner').exists()) || (data.exists() && newData.child('generation').val() === data.child('generation').val() + 1 && newData.child('owner').val() !== data.child('owner').val() && newData.child('previousOwner').val() === data.child('owner').val()))",
-            ".validate": "newData.hasChildren(['generation','owner'])",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && newData.exists() && ((!data.exists() && newData.child('generation').val() === 1 && !newData.child('previousOwner').exists() && newData.child('history').val() === '') || (data.exists() && newData.child('generation').val() === data.child('generation').val() + 1 && newData.child('owner').val() !== data.child('owner').val() && newData.child('previousOwner').val() === data.child('owner').val() && newData.child('history').val() === (data.child('history').val() === '' ? data.child('owner').val() : data.child('history').val() + ',' + data.child('owner').val())))",
+            ".validate": "newData.hasChildren(['generation','owner','history'])",
             "generation": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000000 && newData.val() % 1 === 0"
             },
             "owner": {
               ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+            },
+            "history": {
+              ".validate": "newData.isString() && newData.val().length <= 4096"
             },
             "previousOwner": {
               ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
