@@ -1,3 +1,4 @@
+import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261103-unified1';
 import {createVersus} from './versus.mjs?v=20261102-fourbase1';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
@@ -11,7 +12,7 @@ import {createMatch,STEP} from './simulation.mjs?v=20261102-fourbase1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
-export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',teams=null,partyRoot=null,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now()}){
+export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,players,mapId=DEFAULT_MAP,mode='coop',teams=null,partyRoot=null,crypto=globalThis.crypto,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{},clock=()=>performance.now(),lockManager=globalThis.navigator?.locks}){
   const uid=auth?.currentUser?.uid,four=mode==='four-coop'||mode==='two-vs-two',count=mode==='four-coop'&&Array.isArray(playerIds)?playerIds.length:four?4:2;
   if(!['coop','versus','four-coop','two-vs-two'].includes(mode))throw new Error('Invalid mode');
   if(!Array.isArray(playerIds)||(mode==='four-coop'&&![3,4].includes(count))||playerIds.length!==count||new Set(playerIds).size!==count||!playerIds.includes(uid)||!playerIds.includes(hostId)||typeof crypto?.getRandomValues!=='function')throw new Error('Invalid party roster');
@@ -19,18 +20,19 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   if(uid===hostId&&(!Array.isArray(players)||players.length!==count||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
   if(uid===hostId&&mode==='two-vs-two'&&(!Array.isArray(teams)||teams.length!==2||teams.some(t=>!Array.isArray(t)||t.length!==2)||new Set(teams.flat()).size!==4||teams.flat().some(id=>!playerIds.includes(id))))throw new Error('Invalid teams');
   if(![onState,onStatus,onSnapshot,onWaveRewards,clock].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
-  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null;
+  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null,releaseTab=null;
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
     const next=active&&!failed&&sessionReady&&localConnection!==null&&acknowledged.includes(localConnection)&&online.get(hostId)&&online.get(uid);
     if(next!==ready){ready=next;onStatus(ready);}
     if(active&&!failed){const state=ready?'ready':'waiting';if(state!==lastState){lastState=state;onState(state);}}
   }
-  function fail(){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState('error');}
+  function fail(reason='error'){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState(reason==='duplicate'?'duplicate':'error');}
   const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:partyRoot||(four?'fourParties':'parties'),onError:fail};
   return {
     start(){
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
+      releaseTab=guardMultiplayerTab({locks:lockManager,partyId,uid,onConflict:()=>fail('duplicate'),onAcquired:()=>{
       try{
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
@@ -44,11 +46,12 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
         presence=createFirebasePartyPresence({...options,crypto,onConnections:(id,ids)=>{if(active)host?.setConnections(id,ids);},onPresence:(id,value)=>{if(!active)return;online.set(id,value);if(id===hostId)ticker?.reset();host?.setPresence(id,value);refresh();},onConnection:(connected,id)=>{if(!active)return;localConnection=connected?id:null;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});
         presence.start();
         if(host){ticker=createFixedStepClock({step:STEP,now:clock,advance:()=>host.step()});timer=setInterval(()=>{if(active&&!failed)ticker.tick();},STEP*1000);}
-      }catch(error){fail();void this.stop();throw error;}
+      }catch(error){fail();void this.stop();}
+      }});
     },
     command(command){if(!active||failed||!ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});return client.command(command);},
     async stop(){
-      if(!active&&!client)return;active=false;sessionReady=false;refresh();if(timer)clearInterval(timer);timer=null;ticker=null;
+      if(!active&&!client)return;active=false;sessionReady=false;refresh();if(timer)clearInterval(timer);timer=null;ticker=null;releaseTab?.();releaseTab=null;
       // Stop presence first so the host pauses before channels are closed.
       const p=presence,c=client,h=host;presence=null;client=null;host=null;
       await Promise.allSettled([p?.stop(),c?.stop(),h?.stop()]);
