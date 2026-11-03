@@ -2,8 +2,8 @@ import {normalizeCommand} from './protocol.mjs?v=20261103-hardening1';
 // Experimental generation-aware client. The channel must derive each view's
 // owner/generation from a rules-protected lease and owner-scoped view path, and
 // hosts must reject input envelopes from old generations. Not wired live.
-export function createDurableClientSession({channel,onView=()=>{},onState=()=>{},timeoutMs=15000}){
-  if(!channel||!['watchLease','watchView','writeInput','close'].every(k=>typeof channel[k]==='function')||typeof onView!=='function'||typeof onState!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0)throw Error('Invalid durable client');
+export function createDurableClientSession({channel,onView=()=>{},onState=()=>{},onConnections=()=>{},timeoutMs=15000}){
+  if(!channel||!['watchLease','watchView','writeInput','close'].every(k=>typeof channel[k]==='function')||typeof onView!=='function'||typeof onState!=='function'||typeof onConnections!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0)throw Error('Invalid durable client');
   let started=false,closed=false,invalid=false,lease=null,latest=null,maxTick=-1,pending=null,stops=[];
   function settle(item,result){if(item.timer)clearTimeout(item.timer);if(!item.settled){item.settled=true;item.resolve(result);}}
   function fail(reason){if(invalid||closed)return;invalid=true;latest=null;if(pending){settle(pending,{ok:false,reason});pending=null;}onState('error');}
@@ -25,7 +25,7 @@ export function createDurableClientSession({channel,onView=()=>{},onState=()=>{}
         else {fail('Command outcome could not be reconciled after recovery.');return;}
       }
     }
-    onState(pending?.settled?'syncing':view.ready?'ready':'waiting');onView(snapshot);
+    onConnections(Array.isArray(view.connections)?view.connections.filter(id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id)).slice(0,64):[]);onState(pending?.settled?'syncing':view.ready?'ready':'waiting');onView(snapshot);
   }
   return {
     start(){if(started||closed)throw Error('Client already started or closed');started=true;stops=[channel.watchLease(observeLease),channel.watchView(observeView)];onState(latest?.ready?'ready':'waiting');},
