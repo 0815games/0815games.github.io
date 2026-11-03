@@ -19,7 +19,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-results1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261103-modes1';
+import { startGame } from './game.js?v=20261103-arsenal1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-hardening2';
 import { createPlayer } from './match.mjs?v=20261102-fourbase1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
@@ -107,9 +107,16 @@ $('skillSave').onclick=async()=>{
   finally{if(version===sessionVersion){savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;if($('skillDialog').open){const message=$('skillStatus').textContent;renderSkills();$('skillStatus').textContent=message;}}}
 };
 
+let armoryCategory='equipment';
+function chooseArmoryCategory(category){
+  armoryCategory=category;
+  for(const [id,key] of [['armoryEquipmentTab','equipment'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']])$(id).setAttribute('aria-pressed',String(key===category));
+  for(const section of $('armoryList').querySelectorAll('.armory-section'))section.hidden=section.dataset.section!==category;
+}
+for(const [id,key] of [['armoryEquipmentTab','equipment'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']])$(id).onclick=()=>chooseArmoryCategory(key);
 function renderArmory(){
   const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=`${a.scrap} SCRAP`;
-  const section=(name,caption)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';head.className='armory-section-head';title.textContent=name;sub.textContent=caption;head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
+  const section=(name,caption,key)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';wrap.dataset.section=key;head.className='armory-section-head';title.textContent=name;sub.textContent=caption;head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
   const add=(grid,{icon,title,description,eyebrow,label,disabled,action,state,rank})=>{
     const card=document.createElement('article'),art=document.createElement('div'),body=document.createElement('div'),meta=document.createElement('span'),heading=document.createElement('h4'),text=document.createElement('p'),button=document.createElement('button');
     card.className=`armory-card ${state||''}`;art.className='armory-art';art.dataset.item=icon;art.append(armoryIcon(document,icon));body.className='armory-card-body';meta.className='armory-meta';meta.textContent=eyebrow;heading.textContent=title;text.textContent=description;
@@ -117,16 +124,16 @@ function renderArmory(){
     if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',`Rank ${rank} of 3`);for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
-  const medals=section('Service record','PERMANENT MEDALS');
+  const medals=section('Service record','PERMANENT MEDALS','service');
   for(const medal of serviceMedals(profile)){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${medal.name}`;text.textContent=medal.description;card.append(title,text);medals.append(card);}
-  const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent='Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.';list.append(veteran);
-  const defenses=section('Bunker upgrades','SHARED DEFENSE');
+  const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent='Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.';medals.parentElement.append(veteran);
+  const defenses=section('Bunker upgrades','SHARED DEFENSE','defenses');
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.'],['supply','Supply Relay','From wave 6, each active soldier receives 3 supplies per rank after each wave. Unlocks at soldier level 5.'],['safeguard','Emergency Bulwark','From wave 6, bunker takes 2% less damage per rank while below half health. Unlocks at soldier level 5.']]){
     const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:name,description:`${description} In co-op the highest player rank applies.`,eyebrow:'PERMANENT UPGRADE',rank,label:rank===3?'MAX RANK':locked?'UNLOCKS AT LEVEL 5':`UPGRADE · ${cost} SCRAP`,disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:`Upgrade ${name}?`,text:`Spend ${cost} scrap on ${name.toLowerCase()}?`,accept:"UPGRADE"})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
-  const equipment=section('Your equipment','ONE SLOT');
+  const equipment=section('Your equipment','ONE SLOT','equipment');
   ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:item.name,description:item.description,eyebrow:equipped?'EQUIPPED':owned?'UNLOCKED':`WAVE ${item.wave} REWARD`,state:equipped?'is-equipped':owned?'':'is-locked',label:owned?(equipped?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${item.wave}`,disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
-  const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent='UNEQUIP ITEM';unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));list.append(unequip);
+  const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent='UNEQUIP ITEM';unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));equipment.parentElement.append(unequip);chooseArmoryCategory(armoryCategory);
 }
 async function saveArmory(change){
   if(!canEditSkills()){$('armoryStatus').textContent='Finish the match and leave the party before changing your armory.';return;}

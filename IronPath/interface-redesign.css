@@ -190,3 +190,47 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 
 #gameView:has(#gameWorkspace:not([hidden])) > #skillNotice{display:none}
 #gameWorkspace[data-screen="lobby"]>footer{display:none}
+
+/* Arsenal / operations-board redesign: controls remain native and keyboard usable. */
+.armory-dialog,.tree-dialog{width:min(1120px,calc(100vw - 24px));max-width:1120px;padding:24px;border:1px solid #647e76;border-radius:3px;background:#111e1c;color:#e9eee4;box-shadow:0 30px 100px #000e}
+.armory-dialog .development-head,.tree-dialog .development-head{min-height:155px;margin:-24px -24px 20px;padding:26px 28px;align-items:flex-end;border-bottom:1px solid #668178}
+.armory-dialog .development-head{background:linear-gradient(90deg,#0d1919f7 0%,#12221de0 50%,#16231c50),url('assets/arsenal-workbench.jpg') center/cover}
+.tree-dialog .development-head{background:linear-gradient(90deg,#0c1b1df7 0%,#122723dc 50%,#12201b50),url('assets/skill-operations.jpg') center/cover}
+.armory-dialog .development-head h2,.tree-dialog .development-head h2{font:700 clamp(30px,4vw,46px)/1 Georgia,serif;color:#f4efe0;text-shadow:0 3px 15px #000}
+.armory-dialog .development-head .eyebrow,.tree-dialog .development-head .eyebrow{color:#96c0b0;letter-spacing:.18em}
+.armory-dialog .development-close,.tree-dialog .development-close{align-self:flex-start;background:#10201de8;border-color:#829b90}
+.armory-dialog .armory-wallet,.tree-dialog .tree-summary{margin:0;padding:15px 18px;background:#233834;border:1px solid #4c6b61;border-left:3px solid #9dc4b2;box-shadow:none}
+.armory-dialog .armory-wallet strong,.tree-dialog .tree-summary strong{font:700 18px Georgia,serif;color:#e6efdd}
+.armory-dialog .development-hint,.tree-dialog .development-hint{color:#bdcfc2;line-height:1.5}
+.arsenal-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:20px 0 12px;padding-bottom:10px;border-bottom:1px solid #425e54}
+.skill-dialog .arsenal-tabs button{flex:1 1 130px;min-height:44px;margin:0;padding:9px 13px;background:#182b27;border:1px solid #49665b;color:#b9cec1;font-size:10px;letter-spacing:.1em}
+.skill-dialog .arsenal-tabs button[aria-pressed="true"]{background:#b2cdbd;border-color:#b2cdbd;color:#142621}
+.armory-dialog .armory-section[hidden]{display:none}
+.armory-dialog .armory-section{margin-top:12px}.armory-dialog .armory-section-head{padding:10px 0;margin-bottom:12px}.armory-dialog .armory-section-head h3{font:700 25px Georgia,serif;color:#edf0e2}
+.armory-dialog .armory-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.armory-dialog .armory-card{display:flex;flex-direction:column;min-height:0;background:#1b2e29;border:1px solid #4d6c5d;box-shadow:none}
+.armory-dialog .armory-card.is-equipped{border-color:#a9c9b3;box-shadow:inset 0 0 0 1px #a9c9b3}
+.armory-dialog .armory-art{width:100%;min-width:0;height:100px;border-right:0;border-bottom:1px solid #4d6c5d}
+.armory-dialog .armory-art[data-item]{background-size:cover;background-position:center 48%}
+.armory-dialog .armory-card-body{display:flex;flex-direction:column;flex:1;padding:14px}
+.armory-dialog .armory-card-body button{margin-top:auto;min-height:44px}.armory-dialog .armory-card h4{font:700 18px Georgia,serif;color:#f0efe0}
+.armory-dialog .armory-meta{color:#99baaa}.armory-dialog .armory-ranks i{background:#465e50}.armory-dialog .armory-ranks i.filled{background:#9ac7ad}
+.armory-dialog .service-medal{background:#1c302a;border:1px solid #526d5e;color:#bbcbbd}.armory-dialog .service-medal.is-earned{background:#2a4637;border-color:#92b89a;color:#e5efdf}
+.tree-dialog .tree-tools{margin:16px 0 4px}.tree-dialog .tree-tools select{background:#203630;border:1px solid #638176;color:#e8f0e6}
+.tree-dialog .tree-workspace{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(245px,.7fr);gap:12px;align-items:start;margin-top:12px}
+.tree-dialog .skill-tree{max-height:min(62dvh,650px);background:#0b1a1b;border:1px solid #57796f;box-shadow:inset 0 0 35px #0009}
+.tree-dialog .skill-tree-board{background:radial-gradient(circle,#1d3b36e8,#102624f5 70%),url('assets/skill-operations.jpg') center/cover}
+.tree-dialog .skill-tree-board:before{background-image:linear-gradient(#c7e6d00b 1px,transparent 1px),linear-gradient(90deg,#c7e6d00b 1px,transparent 1px);background-size:50px 50px}
+.tree-dialog .tree-node:is(button){border-radius:6px;box-shadow:0 4px 10px #000a;font-family:Arial,sans-serif;font-weight:800}
+.tree-dialog .skill-tree .tree-node:not(.is-unlocked):not(.is-active){background:#1a3430;color:#d7e8dd;border:2px solid var(--path-color)}
+.tree-dialog .skill-tree .tree-node.is-unlocked,.tree-dialog .skill-tree .tree-node.is-active{background:#a9cbbb;color:#132822;border:2px solid #e4f5e9;box-shadow:0 0 12px #a4d2bc70}
+.tree-dialog .skill-tree .tree-node.is-prerequisite{outline-color:#e9c479}.tree-dialog .skill-tree .tree-node.is-dependent{outline-color:#7ac8d1}.tree-dialog .skill-tree .tree-node.is-selected{outline-color:#f2f5e7}
+.tree-dialog .tree-core{background:#c2d9c8;border:2px solid #eff9ed;color:#142c27;border-radius:8px;box-shadow:0 0 18px #a4d2bc70}
+.tree-dialog .tree-path-label{background:#102922;color:#e6f0e4!important;border:1px solid #7b9f8b;box-shadow:0 3px 8px #0008}
+.tree-dialog .tree-orbit{stroke:#83a89b;stroke-opacity:.22}.tree-dialog .tree-link{stroke-opacity:.7}.tree-dialog .tree-link.is-lit{stroke:#a8d4b9;stroke-opacity:1}
+.tree-dialog .tree-sidebar{display:grid;gap:10px;min-width:0}.tree-dialog .tree-detail{display:flex;flex-direction:column;align-items:stretch;margin:0;padding:20px;background:#203a32;border:1px solid #648474;border-left:3px solid #b1d0ba;box-shadow:none}
+.tree-dialog .tree-detail h3{font:700 25px Georgia,serif;color:#f1f1df}.tree-dialog .tree-detail p{font-size:13px!important;line-height:1.5;color:#d3e0d4}.tree-dialog .tree-detail button{width:100%;margin-top:10px}
+.tree-dialog .skill-build-summary{margin:0;background:#1c302a;border:1px solid #567367;color:#dce9dc}.tree-dialog .skill-build-summary summary{min-height:44px;padding:14px}
+.tree-dialog .skill-actions{gap:8px;margin-top:14px}.tree-dialog .skill-actions button{min-height:44px;flex:1}
+.armory-dialog button:focus-visible,.tree-dialog button:focus-visible,.tree-dialog select:focus-visible{outline:3px solid #d7f1dd;outline-offset:3px}
+@media(max-width:700px){.armory-dialog,.tree-dialog{padding:14px}.armory-dialog .development-head,.tree-dialog .development-head{min-height:118px;margin:-14px -14px 14px;padding:16px}.armory-dialog .armory-grid{grid-template-columns:1fr}.armory-dialog .armory-card{flex-direction:row;min-height:118px}.armory-dialog .armory-art{width:82px;min-width:82px;height:auto;border-right:1px solid #4d6c5d;border-bottom:0}.armory-dialog .armory-card-body{padding:12px}.armory-dialog .armory-card h4{font-size:17px}.arsenal-tabs{margin:14px 0 10px}.skill-dialog .arsenal-tabs button{flex:1 1 90px;font-size:9px}.tree-dialog .tree-workspace{grid-template-columns:1fr}.tree-dialog .skill-tree{max-height:42dvh}.tree-dialog .tree-detail{padding:14px}.tree-dialog .tree-detail h3{font-size:20px}}
