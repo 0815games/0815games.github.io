@@ -3,29 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Iron Path — Field Prototype</title>
+  <title>Iron Path — Hold the Line</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261103-cinematic2">
+  <link rel="stylesheet" href="style.css?v=20261103-redesign1">
 </head>
 <body>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction">
     <div class="intro-card">
-      <div class="intro-topline"><span>0815 GAMES / FIELD REPORT</span><button id="introSkip" type="button">SKIP INTRO <span aria-hidden="true">→</span></button></div>
-      <div class="intro-scene" aria-hidden="true">
-        <div class="intro-sun"></div><div class="intro-hill intro-hill-back"></div><div class="intro-hill intro-hill-front"></div><div class="intro-road"></div>
-        <div class="intro-burst intro-burst-one">✹</div><div class="intro-burst intro-burst-two">✹</div><div class="intro-burst intro-burst-three">✹</div>
-        <svg class="intro-bunker" viewBox="0 0 190 125" xmlns="http://www.w3.org/2000/svg"><path d="M8 112V66L28 39h132l20 27v46z" fill="#829369" stroke="#29392c" stroke-width="6" stroke-linejoin="round"/><path d="M8 66l20-27h132l20 27z" fill="#afbc8e" stroke="#29392c" stroke-width="6" stroke-linejoin="round"/><path d="M28 77h104v18H28z" fill="#344736" stroke="#29392c" stroke-width="5"/><path d="M46 86h66" stroke="#9dad86" stroke-width="4"/><path d="M145 112V80h23v32" fill="#303f2f" stroke="#29392c" stroke-width="5"/><path d="M24 105h102" stroke="#677b55" stroke-width="3" stroke-dasharray="8 8"/></svg>
-        <svg class="intro-soldier" viewBox="0 0 100 115" xmlns="http://www.w3.org/2000/svg"><g stroke="#2d3a2c" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><g class="intro-leg intro-leg-back"><path d="M51 79l-8 17-13 5" fill="none"/></g><g class="intro-leg intro-leg-front"><path d="M57 79l12 14 12 2" fill="none"/></g><path d="M39 51l21-3 9 28-21 10-17-15z" fill="#718252"/><path d="M43 58l-10 15-13 2M61 57l12 8 11-8" fill="none"/><circle cx="52" cy="34" r="16" fill="#e8bd91"/><path d="M33 32l3-12q14-12 29 0l5 11z" fill="#718252"/><path d="M35 32h34" fill="none"/><path d="M58 36h1" fill="none"/></g></svg>
-        <div class="intro-title"><span>HOLD THE LINE</span><strong>IRON PATH</strong><small>THE LAST ROAD</small></div>
+      <div class="intro-scene">
+        <div class="intro-art" aria-hidden="true"></div><div class="intro-atmosphere" aria-hidden="true"></div>
+        <div class="intro-topline"><span>0815 GAMES <i> / </i> FIELD TRANSMISSION</span><button id="introSkip" type="button">SKIP INTRO <span aria-hidden="true">→</span></button></div>
+        <div class="intro-title"><span>THE VALLEY IS CALLING</span><strong>IRON PATH</strong><small>ONE ROAD. ONE LAST CHANCE.</small><div class="intro-rule" aria-hidden="true"></div><p>Hold the line. Bring them home.</p></div>
+        <div class="intro-footer"><span>THE BROKEN SIGNAL <b> / </b> A STORY OF SURVIVAL</span><span>PREPARING DEPLOYMENT<span class="intro-dots">...</span></span></div>
       </div>
-      <div class="intro-footer"><span>AN 0815 GAMES FIELD OPERATION</span><span>PREPARING DEPLOYMENT<span class="intro-dots">...</span></span></div>
     </div>
   </section>
   <noscript><style>#introOverlay{display:none!important}</style></noscript>
   <main>
-    <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-logo.png?v=20261102-logo1" width="1035" height="434" alt="Iron Path"></h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">SOLO · EARLY BUILD</span></header>
+    <header><div><span class="eyebrow">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-logo.png?v=20261102-logo1" width="1035" height="434" alt="Iron Path"></h1><p>Hold the line. Protect the bunker.</p></div><span class="badge">FIELD COMMAND / ONLINE</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
       <div id="loading"><h2>Connecting…</h2><p class="hint">Preparing your soldier.</p></div>
       <div id="connectionView" hidden><h2>Could not load soldier</h2><p class="hint">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button">RETRY</button><button id="errorLogout" type="button">SIGN OUT</button></div>
@@ -93,7 +90,7 @@
       </div><p id="fourPartyStatus" role="status" aria-live="polite"></p>
     </section>
     <section class="campaign panel" aria-labelledby="campaignTitle">
-      <div class="panel-heading"><span class="eyebrow">SOLO STORY</span><h2 id="campaignTitle">The Broken Signal</h2></div>
+      <div class="campaign-cover"><div class="campaign-cover-inner"><span class="campaign-kicker">SOLO CAMPAIGN <span> / </span> 12 MISSIONS</span><h2 id="campaignTitle">The Broken Signal</h2><p class="campaign-tagline">A signal lost. A valley at stake.</p></div><span class="campaign-cover-index" aria-hidden="true">FIELD REPORT / 01</span></div>
       <p>A lost signal, a missing patrol, and a valley facing a flood. Follow Ada, Voss, Ivo, Sera and Nia across three acts. Complete each mission to unlock the next.</p>
       <div class="campaign-controls"><label for="campaignSelect">OPERATION</label><select id="campaignSelect"><option value="free">Free play · random battlefield</option><option id="campaignOption0" value="lost-signal">01 · The Silent Signal</option><option id="campaignOption1" value="pinewood-rescue">02 · The Missing Patrol</option><option id="campaignOption2" value="blackout">03 · Blackout at the Outpost</option><option id="campaignOption3" value="supply-line">04 · The Relief Convoy</option><option id="campaignOption4" value="intercept">05 · Orders in the Ashes</option><option id="campaignOption5" value="bridge">06 · Hold the Bridge</option><option id="campaignOption6" value="dead-air">07 · Dead Air</option><option id="campaignOption7" value="white-noise">08 · White Noise</option><option id="campaignOption8" value="long-switch">09 · The Long Switch</option><option id="campaignOption9" value="city-of-glass">10 · A City Under Glass</option><option id="campaignOption10" value="tidelock">11 · Tidelock</option><option id="campaignOption11" value="last-transmission">12 · The Last Transmission</option></select><button id="campaignLoad" type="button">LOAD OPERATION</button></div>
       <p id="campaignBriefing" role="status" aria-live="polite"></p><div class="story-replays"><button id="storyReplayIntro" type="button" hidden>REPLAY BRIEFING</button><button id="storyReplayDebrief" type="button" hidden>REPLAY DEBRIEF</button></div><details class="story-journal"><summary>STORY SO FAR</summary><p id="storyJournal"></p></details><p class="hint">Campaign is solo; multiplayer uses its own match. Completed waves award the usual XP and loot. Move to the marked objectives during enemy waves.</p>
@@ -108,7 +105,7 @@
         <details class="help"><summary>How to play</summary><p>Tap a plus pad to choose a tower from the build panel. Tap a tower to see its range and open its upgrade and sell panel. Unaffordable choices are greyed out; tap them to read their details. Confirm builds in the details window and confirm upgrades in the tower panel. Selling returns half the total investment. Tap open ground to deselect and move your hero. Towers have six levels; choose a permanent specialization at level 3. Upgrade costs increase at each level. Tap open ground to move your hero; on desktop use WASD or arrow keys. The hero fires automatically. Choose a skill path ability in SKILLS; abilities normally recharge in 30 seconds of game time. Start each wave manually. Scouts are fast, tanks are armored, and aircraft fly along the same route as infantry. MGs and snipers excel against infantry; cannons counter tanks; Flak counters aircraft. All towers can hit all enemies, but with different damage.</p><button type="button" id="soundToggle" aria-pressed="false">SOUND: OFF</button><button type="button" id="tutorialReplay">REPLAY FIELD BRIEFING</button></details>
       </aside>
     </div>
-    <footer>PROTOTYPE BUILD · Soldier progress is saved online; battles are local. <a href="../">← 0815 Games</a></footer>
+    <footer>IRON PATH · Soldier progress is saved online. Solo battles run locally. <a href="../">← 0815 Games</a></footer>
     </div>
   </main>
   <dialog id="armoryDialog" class="skill-dialog armory-dialog" aria-labelledby="armoryTitle">
