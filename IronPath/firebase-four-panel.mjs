@@ -1,6 +1,6 @@
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261103-unified2';
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261103-recovery2';
 export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{}}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
@@ -17,7 +17,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     $('fourPartyStart').disabled=busy||!host||started||!ready();
     $('fourPartyLeave').hidden=started&&!host&&!joinFailed;
     $('fourPartyLeave').textContent=host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY';
-    for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
+    for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyResume','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
     if(joining)$('fourPartyLeave').disabled=true;
     const modes=availablePartyModes(party?1+Object.values(slots).filter(Boolean).length:0),signature=modes.join(',');
     if(!modes.includes(selectedMode))selectedMode=modes[0]||null;
@@ -90,6 +90,13 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const active=createLobby();lobby=active;const result=await active.request(code,getProfile().name);if(gen!==generation){await active.cancel(code);return;}
     party={...result,role:'pending'};status('Request sent. Waiting for approval.');watchParty(gen);
     addWatch(lobby.watchOwnRequest(code,value=>{if(gen===generation&&party?.role==='pending'&&value===null)status('Request closed. If not approved, leave and ask the host to try again.');},failed));render();
+  });
+  $('fourPartyResume').onclick=()=>run(async gen=>{
+    const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){status('Enter the four-digit party code.');return;}
+    if(!await confirmStart()||gen!==generation)return;
+    const active=createLobby();lobby=active;const result=await active.resumeHost(code);if(gen!==generation)return;
+    party={...result,role:'host'};started=true;watchParty(gen);watchMember(gen);render();status('Recovering the match…');
+    const ok=await onMatch(result);if(gen===generation&&ok===false)status('Could not recover the match. Close the party and try again.');
   });
   $('fourPartyMode').onchange=()=>{selectedMode=$('fourPartyMode').value;render();};
   $('fourPartyTeams').onchange=()=>{selectedTeams=Number($('fourPartyTeams').value);if(!teams[selectedTeams])selectedTeams=0;render();};

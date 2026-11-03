@@ -60,3 +60,6 @@ test('guest can cancel joining before an existing solo run is interrupted',async
   const f=fixture('guest'),doc={getElementById:f.$,createElement:()=>({append(){}})};let requested=false;const lobby={...f.lobby,async request(){requested=true;}};
   const panel=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles.bob,onMatch:()=>true,confirmStart:async()=>false});f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();assert.equal(requested,false);assert.equal(panel.isActive(),false);
 });
+test('host can re-enter a started match with the original party code',async()=>{
+ const f=fixture();f.lobby.resumeHost=async code=>{assert.equal(code,'0123');return {...manifest,partyId:'party',inviteCode:code,uid:'alice',teamRosters:[['alice','cara'],['bob','dan']],resumeGeneration:4};};f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyResume').onclick();assert.equal(f.panel.isActive(),true);assert.equal(f.joined.length,1);assert.equal(f.joined[0].resumeGeneration,4);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.panel.isActive(),false);
+});

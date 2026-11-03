@@ -80,7 +80,7 @@
       <p class="hint">Share one code. The host approves up to three players and chooses a mode. Two players can play co-op or 1 vs 1; three can play large-map co-op; four can play co-op or 2 vs 2. Versus is a survival race, not direct combat.</p>
       <div id="fourPartyEntry" class="party-entry">
         <button id="fourPartyCreate" class="primary" type="button">CREATE PARTY</button>
-        <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button></div></div>
+        <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button><button id="fourPartyResume" type="button">RESUME AS HOST</button></div></div>
       </div>
       <div id="fourPartyActive" hidden>
         <div id="fourPartyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="fourPartyCodeDisplay"></code><small>Share with your players</small></div>
@@ -169,5 +169,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261103-hardening2"></script>
+  <script type="module" src="account.js?v=20261103-recovery2"></script>
 </body></html>

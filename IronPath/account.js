@@ -1,5 +1,6 @@
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-hardening1';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-unified2';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-recovery2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-recovery2';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-recovery2';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261102-longterm1';
@@ -40,7 +41,7 @@ if(fourPlayerTest){
     confirmStart:()=>gameControl?.confirmParty()??false,confirmClose:()=>confirmation.ask({title:'Close multiplayer party?',text:'This ends the party and disconnects all players.',accept:'CLOSE PARTY'}),onLeaveMatch:()=>gameControl?.leaveCoop(),
     onMatch:party=>{const uid=auth.currentUser?.uid,version=sessionVersion,rewardQueues=new Map();
       const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?'Wave rewards could not be saved yet.':'Wave rewards saved.';gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
-      const joined=gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,partyId:party.partyId,partyRoot:'fourParties',hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,mapId:gameControl.getMapId(),teams:party.teamRosters,players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,party.playerIds.length===2?(i?800:850):1220,party.playerIds.length===2?450:270+i*60)),...callbacks,onWaveRewards:(mask,block=0)=>getRewards(block).observe(mask)}),()=>{},party.partyId)??false;
+      const joined=gameControl?.beginCoop(callbacks=>createFirebaseRecoverableGame({db,auth,sdk:partySdk,partyId:party.partyId,manifest:party,resumeGeneration:party.resumeGeneration??null,mapId:gameControl.getMapId(),players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,party.playerIds.length===2?(i?800:850):1220,party.playerIds.length===2?450:270+i*60)),...callbacks,onWaveRewards:(mask,block=0)=>getRewards(block).observe(mask)}),()=>{},party.partyId)??false;
       if(joined){fourPanel.hide();$('partyToggle').setAttribute('aria-expanded','false');}else for(const queue of rewardQueues.values())queue.close();return joined;
     }});
   $('partyToggle').hidden=false;$('partyToggle').onclick=()=>{const root=$('fourPartyPanel');if(root.hidden){partyPanel.collapse();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}else{fourPanel.hide();$('partyToggle').setAttribute('aria-expanded','false');}};
