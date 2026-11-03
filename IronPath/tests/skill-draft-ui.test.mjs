@@ -5,6 +5,7 @@ import {skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
 import {characterProgress} from '../progression.mjs';
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const start=source.indexOf('function canEditSkills()'),end=source.indexOf('\nfunction renderArmory()',start);assert.ok(start>0&&end>start);
+globalThis.window={matchMedia:()=>({matches:false})};
 const nodes=new Map();function $(id){if(!nodes.has(id))nodes.set(id,{textContent:'',value:'all',disabled:false,open:false,querySelector(){return null},showModal(){this.open=true},close(){this.open=false}});return nodes.get(id);}
 let lastRender,store={name:'Alice',gender:'female',xp:750,skills:'1,0,0,0,0;assault'},allow=false,resets=0,select,pristine=true;
 const confirmation={async ask(){return allow;}},gameControl={canEditSkills:()=>pristine,resetSkills(){resets++;}},skillMap={center(){}};

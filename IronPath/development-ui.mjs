@@ -1,51 +1,38 @@
 import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261102-results1';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady} from './skills.mjs?v=20261102-results1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261102-results1';
 const NS='http://www.w3.org/2000/svg';
-const icons=['✦','⚒','◆','✚','◎'];
-const colors=['#cb7656','#b0a75c','#cb9861','#81a78c','#849fb5'];
-const row=i=>165+i*245;
-const base=(i,rank)=>({x:[0,115,245,375][rank],y:row(i)});
-const specialist=(i,j)=>({x:[245,375][j],y:row(i)+75});
-const webPosition=(i,node)=>node.kind==='mastery'?{x:510+node.tier*130,y:row(i)}:{x:650+node.tier*150,y:row(i)+(node.kind==='hybrid'?75:150)};
+const colors=['#d89970','#d7bd71','#b4c682','#8ac7b1','#8eafcf'];
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
+// A browsable skill catalogue. Selection and progression are still owned by account.js.
 export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all'}){
-  const scrollLeft=container.scrollLeft,scrollTop=container.scrollTop;
-  const board=document.createElement('div');board.className='skill-tree-board';
-  const lines=svg(document,'svg',{viewBox:'0 0 1400 1400','aria-hidden':'true',class:'skill-tree-lines'});
-  const left=pointsLeft(build,level),related=relatedNodes(selected);
-  function nodeClasses(path,rank){const key=nodeKey(path,rank),matches=nodeMatches(build,level,path,rank,filter,pathFilter);return `${!matches&&key!==related.current?' is-filtered':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;}
-  function relationLabel(path,rank){const key=nodeKey(path,rank);return related.before.has(key)?', prerequisite of selected node':related.after.has(key)?', connected next node':'';}
-  function linkClass(path,rank,fromPath,fromRank,lit){const from=nodeKey(fromPath,fromRank),to=nodeKey(path,rank);return `tree-link${lit?' is-lit':''}${(to===related.current&&related.before.has(from))||(from===related.current&&related.after.has(to))?' is-related':''}`;}
-  function link(from,to,path,rank,fromPath,fromRank,lit,remote=false){lines.append(svg(document,'line',{x1:from.x,y1:from.y,x2:to.x,y2:to.y,stroke:colors[SKILL_PATHS.findIndex(p=>p.id===path)],class:linkClass(path,rank,fromPath,fromRank,lit)+(remote?' tree-remote':'')}));}
-  function card({path,rank,pos,color,title,kind,status,unlocked=false,active=false,extra=''}){
-    const button=document.createElement('button');button.type='button';button.className=`tree-node ${extra}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===path&&selected.rank===rank?' is-selected':''}${nodeClasses(path,rank)}`;
-    button.style.left=`${pos.x/14}%`;button.style.top=`${pos.y/14}%`;button.style.setProperty('--path-color',color);button.dataset.path=path;button.dataset.rank=String(rank);
-    const tag=document.createElement('span'),name=document.createElement('strong');tag.className='node-tag';tag.textContent=kind;name.className='node-name';name.textContent=title;button.append(tag,name);
-    button.setAttribute('aria-label',`${title}, ${status}${relationLabel(path,rank)}`);button.setAttribute('aria-pressed',String(selected.path===path&&selected.rank===rank));button.onclick=event=>onSelect({path,rank},event?.detail===0);board.append(button);
-  }
-  SKILL_PATHS.forEach((path,i)=>{
-    const strip=document.createElement('div');strip.className='tree-lane';strip.style.top=`${(row(i)-80)/14}%`;strip.style.setProperty('--path-color',colors[i]);board.append(strip);
-    const label=document.createElement('span');label.className='tree-path-label';label.style.top=`${(row(i)-53)/14}%`;label.style.setProperty('--path-color',colors[i]);label.textContent=`0${i+1}  /  ${icons[i]}  ${path.name.toUpperCase()}`;board.append(label);
-    for(let rank=1;rank<=3;rank++){
-      const pos=base(i,rank),unlocked=build[path.id]>=rank,active=rank===1&&build.active===path.id&&!build.variant;
-      if(rank>1)link(base(i,rank-1),pos,path.id,rank,path.id,rank-1,unlocked);
-      card({path:path.id,rank,pos,color:colors[i],title:rank===1?path.ability:`${path.name} ${rank}`,kind:rank===1?'MAIN ABILITY':`RANK ${rank} / 3`,status:active?'selected main skill':unlocked?'unlocked':rank===build[path.id]+1&&left>0?'available':'locked',unlocked,active,extra:rank===1?'tree-ability':'tree-rank'});
+  const scrollTop=container.scrollTop,related=relatedNodes(selected),left=pointsLeft(build,level);
+  const board=document.createElement('div');board.className='skills-catalogue';
+  function addGroup(title,subtitle,items){
+    const visible=items.filter(item=>nodeMatches(build,level,item.path,item.rank,filter,pathFilter));if(!visible.length)return;
+    const section=document.createElement('section'),heading=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),grid=document.createElement('div');
+    section.className='skill-group';heading.className='skill-group-heading';name.textContent=title;desc.textContent=subtitle;heading.append(name,desc);grid.className='skill-card-grid';section.append(heading,grid);board.append(section);
+    for(const item of visible){
+      const key=nodeKey(item.path,item.rank),button=document.createElement('button'),top=document.createElement('span'),tag=document.createElement('span'),state=document.createElement('span'),name=document.createElement('strong'),description=document.createElement('span'),requirement=document.createElement('span');
+      const active=item.active,unlocked=item.unlocked,available=item.available;
+      button.type='button';button.className=`tree-node skill-card${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===item.path&&selected.rank===item.rank?' is-selected':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;
+      button.dataset.path=item.path;button.dataset.rank=String(item.rank);button.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===item.path)]);
+      top.className='skill-card-top';tag.className='skill-card-tag';tag.textContent=item.tag;state.className='skill-card-state';state.textContent=active?'EQUIPPED':unlocked?'UNLOCKED':available?'AVAILABLE':'LOCKED';top.append(tag,state);
+      name.className='skill-card-name';name.textContent=item.title;description.className='skill-card-description';description.textContent=item.description;requirement.className='skill-card-requirement';requirement.textContent=item.requirement;
+      button.append(top,name,description,requirement);button.setAttribute('aria-label',`${item.title}, ${state.textContent.toLowerCase()}. ${item.requirement}${related.before.has(key)?' Prerequisite of selected skill.':related.after.has(key)?' Connected to selected skill.':''}`);button.setAttribute('aria-pressed',String(selected.path===item.path&&selected.rank===item.rank));button.onclick=event=>onSelect({path:item.path,rank:item.rank},event?.detail===0);grid.append(button);
     }
-    path.branches.forEach((branch,j)=>{
-      const rank=5+j,pos=specialist(i,j),unlocked=!!build.extra?.[i*2+j],active=unlocked&&build.active===path.id&&build.variant===j+1,available=build[path.id]>=2&&left>0;
-      link(base(i,2),pos,path.id,rank,path.id,2,unlocked);
-      card({path:path.id,rank,pos,color:colors[i],title:branch.ability,kind:`SPECIALIST ${j+1}`,status:active?'selected':unlocked?'unlocked':available?'available':'locked',unlocked,active,extra:'tree-specialist'});
-    });
-  });
-  WEB_NODES.forEach(node=>{
-    const i=SKILL_PATHS.findIndex(p=>p.id===node.path),pos=webPosition(i,node),unlocked=!!build.web?.[node.id],available=webReady(build,node)&&left>0,rank=100+node.id;
-    if(node.tier>0){const previous=WEB_NODES[node.id-1];link(webPosition(i,previous),pos,node.path,rank,node.path,rank-1,unlocked);}
-    else if(node.kind==='mastery')link(base(i,3),pos,node.path,rank,node.path,3,unlocked);
-    else {link(base(i,2),pos,node.path,rank,node.path,2,unlocked);const other=SKILL_PATHS.findIndex(p=>p.id===node.other);link(base(other,2),pos,node.path,rank,node.other,2,unlocked,true);}
-    card({path:node.path,rank,pos,color:colors[i],title:node.name,kind:node.kind==='mastery'?(node.tier===4?'CAPSTONE':`MASTERY ${node.tier+1}`):`${node.kind==='hybrid'?'COMBO':'CROSS'} / ${node.other.toUpperCase()}`,status:unlocked?'unlocked':available?'available':'locked',unlocked,extra:`tree-web ${node.kind==='mastery'?'tree-mastery':'tree-hybrid'}${node.kind==='mastery'&&node.tier===4?' tree-capstone':''}`});
-  });
-  board.prepend(lines);container.replaceChildren(board);if(Number.isFinite(scrollLeft))container.scrollLeft=scrollLeft;if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
+  }
+  for(const [i,path] of SKILL_PATHS.entries()){
+    if(pathFilter!=='all'&&pathFilter!==path.id)continue;
+    const core=[1,2,3].map(rank=>({path:path.id,rank,title:rank===1?path.ability:`${path.name} · Rank ${rank}`,tag:rank===1?'ACTIVE ABILITY':`PASSIVE / RANK ${rank}`,description:rank===1?path.description:path.passive,requirement:rank===1?'Starting ability':`Requires ${path.name} rank ${rank-1}`,unlocked:build[path.id]>=rank,active:rank===1&&build[path.id]>=1&&build.active===path.id&&!build.variant,available:rank===build[path.id]+1&&left>0}));
+    const specialists=path.branches.map((branch,j)=>({path:path.id,rank:5+j,title:branch.ability,tag:'SPECIALIST / ACTIVE',description:branch.abilityDescription,requirement:`Requires ${path.name} rank 2`,unlocked:!!build.extra?.[i*2+j],active:!!build.extra?.[i*2+j]&&build.active===path.id&&build.variant===j+1,available:!build.extra?.[i*2+j]&&build[path.id]>=2&&left>0}));
+    const mastery=WEB_NODES.filter(n=>n.path===path.id&&n.kind==='mastery').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:n.tier===4?'MASTERY / CAPSTONE':`MASTERY / ${n.tier+1}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
+    addGroup(`${path.name} training`,path.passive,core);addGroup('Specialist abilities','Alternative active skills',specialists);addGroup('Mastery','Advanced upgrades',mastery);
+  }
+  const combos=WEB_NODES.filter(n=>n.kind!=='mastery').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`COMBO / ${n.path.toUpperCase()} + ${n.other.toUpperCase()}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
+  addGroup('Cross-training','Combine two disciplines to unlock new bonuses',combos);
+  if(!board.children.length){const empty=document.createElement('p');empty.className='skill-empty';empty.textContent='No skills match this filter. Try another view.';board.append(empty);}
+  container.replaceChildren(board);if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;
 }
 const shapes={
  fortify:'M3 20h18v-3h-2v-6l-3-3H8l-3 3v6H3z M9 17v-4h6v4 M8 8V5h8v3',
