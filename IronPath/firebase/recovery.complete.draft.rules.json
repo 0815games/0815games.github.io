@@ -255,6 +255,9 @@
           },
           "$other": {
             ".validate": false
+          },
+          "recovery": {
+            ".validate": "newData.val() === true"
           }
         },
         "inputs": {

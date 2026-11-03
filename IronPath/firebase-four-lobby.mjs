@@ -8,8 +8,8 @@ const validParty=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);
 const validCode=code=>typeof code==='string'&&/^[0-9]{4}$/.test(code);
 export function fourTeamRosters(manifest){if(!manifest||!Array.isArray(manifest.playerIds)||!availablePartyModes(manifest.playerIds.length).includes(manifest.mode)||new Set(manifest.playerIds).size!==manifest.playerIds.length||manifest.playerIds.some(id=>!validUid(id))||manifest.hostId!==manifest.playerIds[0]||!validConfig(manifest))throw Error('Invalid started roster');return [0,1].map(team=>manifest.playerIds.filter((_,i)=>manifest.teams[i]===team));}
 function validConfig(config){return config&&['coop','versus','four-coop','two-vs-two'].includes(config.mode)&&Array.isArray(config.teams)&&config.teams.length===4&&config.teams.every(t=>t===0||t===1)&&config.teams.filter(t=>t===0).length===2;}
-export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
-  if(!db||!auth||!sdk||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function')throw Error('Invalid four-player lobby configuration');
+export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,recoveryEnabled=false}){
+  if(!db||!auth||!sdk||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function'||typeof recoveryEnabled!=='boolean')throw Error('Invalid four-player lobby configuration');
   const uid=auth.currentUser?.uid;if(!validUid(uid))throw Error('Sign in required');
   const check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Party identity changed');};
   const ref=path=>sdk.ref(db,path),party=(id,path)=>{if(!validParty(id))throw Error('Invalid party');return ref(`fourParties/${id}/${path}`);};
@@ -59,7 +59,7 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
       const players=[hostId,...[slots?.one,slots?.two,slots?.three].filter(Boolean)];if(hostId!==uid||started||!validConfig(config)||players.some(id=>!validUid(id))||new Set(players).size!==players.length||!availablePartyModes(players.length).includes(config.mode))throw Error('Party is not ready');
       const profiles=await Promise.all(players.map(id=>read(party(partyId,`profiles/${id}`))));
       if(!canStartParty({playerIds:players,profiles:Object.fromEntries(players.map((id,i)=>[id,profiles[i]])),mode:config.mode,teams:config.teams}))throw Error('Soldiers are not ready');for(let i=0;i<players.length;i++)createFourLobby(players[i],profiles[i]);
-      const manifest={hostId,playerIds:players,mode:config.mode,teams:config.teams};
+      const manifest={hostId,playerIds:players,mode:config.mode,teams:config.teams,...(recoveryEnabled?{recovery:true}:{})};
       // Rules must compare the manifest to the live slots/config/profiles at
       // commit time, otherwise a concurrent leave or approval can race this.
       const result=await transactionWithCache(party(partyId,'started'),value=>value===null?manifest:undefined);check();if(!result.committed)throw Error('Party already started or changed');return {...manifest,teamRosters:fourTeamRosters(manifest),profiles};
@@ -69,7 +69,7 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto}){
       const [hostId,partyId]=await Promise.all([read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);
       if(hostId!==uid||!validParty(partyId))throw Error('Host party unavailable');
       const [started,lease]=await Promise.all([read(party(partyId,'started')),read(party(partyId,'recovery/lease'))]);
-      if(!started||started.hostId!==uid||!Number.isSafeInteger(lease?.generation)||lease.generation<1)throw Error('No recoverable match');
+      if(!started||started.recovery!==true||started.hostId!==uid||!Number.isSafeInteger(lease?.generation)||lease.generation<1)throw Error('No recoverable match');
       return {...started,partyId,inviteCode,uid,teamRosters:fourTeamRosters(started),resumeGeneration:lease.generation};
     },
     async reconnect(partyId,inviteCode){
