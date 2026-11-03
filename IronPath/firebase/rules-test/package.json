@@ -8,7 +8,8 @@
   "scripts": {
     "test": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase.emulator.json 'node --test rules.test.mjs && node --test four-digit.test.mjs && node --test coop-xp.test.mjs'",
     "test:four": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-four.emulator.json 'node --test four-player.test.mjs && IRONPATH_COMBINED_RULES=1 node --test four-digit.test.mjs && IRONPATH_COMBINED_RULES=1 node --test coop-xp.test.mjs'",
-    "test:unified": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-unified.emulator.json 'node --test unified-lobby.test.mjs'"
+    "test:unified": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-unified.emulator.json 'node --test unified-lobby.test.mjs'",
+    "test:recovery": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-recovery.emulator.json 'node --test recovery-store.test.mjs'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",
