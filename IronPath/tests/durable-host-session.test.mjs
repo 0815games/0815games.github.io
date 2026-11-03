@@ -22,3 +22,14 @@ test('stopping while a publish is pending suppresses a late local acknowledgemen
 test('a recovered host rejects delayed inputs from an old generation',async()=>{
  const f=setup();await f.session.start();f.session.setPresence('alice',true);f.session.setPresence('bob',true);const input={version:1,seq:1,command:{type:'startWave'}};assert.equal(f.session.receive('bob',{generation:0,owner:'b'.repeat(32),envelope:input}).reason,'stale-generation');assert.equal(f.session.receive('bob',{generation:1,owner:'a'.repeat(32),envelope:input}).status,'queued');f.session.stop();
 });
+
+test('unchanged paused matches do not repeatedly write checkpoints',async()=>{
+ const f=setup();await f.session.start();for(let i=0;i<20;i++)assert.equal(await f.session.step(),true);assert.equal(f.frames.length,1,'no duplicate network commits');f.session.setConnections('alice',['a'.repeat(32)]);const changed=f.session.step();f.resolve();assert.equal(await changed,true);assert.equal(f.frames.length,2,'connection changes are still saved');for(let i=0;i<10;i++)assert.equal(await f.session.step(),true);assert.equal(f.frames.length,2);f.session.stop();
+});
+test('finished matches stop ticking but still commit presence changes',async()=>{
+ const f=setup();await f.session.start();f.session.setPresence('alice',true);f.session.setPresence('bob',true);const start=f.session.step();f.resolve();await start;assert.equal(f.session.receive('alice',{generation:1,owner:'a'.repeat(32),envelope:{version:1,seq:1,command:{type:'endRun'}}}).status,'queued');const end=f.session.step();f.resolve();await end;const tick=f.frames.at(-1).checkpoint.tick;assert.equal(f.frames.at(-1).checkpoint.match.ended,true);const count=f.frames.length;for(let i=0;i<20;i++)assert.equal(await f.session.step(),true);assert.equal(f.frames.length,count);assert.equal(f.host.checkpoint().tick,tick);f.session.setPresence('bob',false);const changed=f.session.step();f.resolve();await changed;assert.equal(f.frames.length,count+1);assert.equal(f.frames.at(-1).views.bob.ready,false);f.session.stop();
+});
+
+test('presence changes during a pending commit are saved on the following tick',async()=>{
+ const f=setup();await f.session.start();f.session.setPresence('alice',true);f.session.setPresence('bob',true);f.session.setConnections('alice',['a'.repeat(32)]);f.session.setConnections('bob',['b'.repeat(32)]);const inflight=f.session.step();f.session.setPresence('bob',false);f.resolve();assert.equal(await inflight,true);assert.equal(f.frames.at(-1).views.bob.ready,true,'first frame reflects its own checkpoint');const corrective=f.session.step();f.resolve();assert.equal(await corrective,true);assert.equal(f.frames.at(-1).views.bob.ready,false,'subsequent commit carries the disconnect');f.session.stop();
+});
