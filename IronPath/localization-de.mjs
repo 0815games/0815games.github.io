@@ -2,6 +2,9 @@
 export const germanText=Object.freeze({
   "SPEED: {speed}×": "TEMPO: {speed}×",
   "Your best: —": "Dein Bestwert: —",
+  "Online": "Online",
+  "Offline or using an older version": "Offline oder ältere Version",
+  "Online status unavailable": "Online-Status nicht verfügbar",
   "FULLSCREEN": "VOLLBILD",
   "EXIT FULLSCREEN": "VOLLBILD BEENDEN",
   "Fullscreen unavailable. Check your browser permissions or exit fullscreen and try again.": "Vollbild nicht verfügbar. Prüfe die Browserberechtigungen oder beende den Vollbildmodus und versuche es erneut.",

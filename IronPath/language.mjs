@@ -1,4 +1,4 @@
-import {germanText} from './localization-de.mjs?v=20261104-fullscreen1';
+import {germanText} from './localization-de.mjs?v=20261104-presence1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
