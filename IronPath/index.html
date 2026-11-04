@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261104-cardhover1">
+  <link rel="stylesheet" href="style.css?v=20261104-socialpopup1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261104-tutorial2">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
@@ -127,6 +127,10 @@
     <div class="leaderboard-filters" aria-label="Score filter"><button id="leaderboardAll" type="button" aria-pressed="true">EVERYONE</button><button id="leaderboardFriends" type="button" aria-pressed="false">FRIENDS</button></div>
     <p id="leaderboardBest" class="leaderboard-best"></p><p id="leaderboardStatus" role="status"></p><ol id="leaderboardRows" class="leaderboard-rows"></ol>
   </dialog>
+  <aside id="socialPopup" class="social-popup" hidden aria-label="Social notification">
+    <div role="status" aria-live="polite" aria-atomic="true"><strong id="socialPopupTitle"></strong><p id="socialPopupBody"></p></div>
+    <div class="social-popup-actions"><button id="socialPopupOpen" type="button">VIEW FRIENDS</button><button id="socialPopupDismiss" type="button" aria-label="Dismiss notification">✕</button></div>
+  </aside>
   <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
     <header><div><span class="friends-kicker">YOUR SQUAD</span><h2 id="friendsTitle">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends">✕</button></header>
     <p>Connect with your squad. To play together, share a multiplayer party code separately.</p>
@@ -198,5 +202,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-buildreservation1"></script>
+  <script type="module" src="account.js?v=20261104-socialpopup1"></script>
 </body></html>

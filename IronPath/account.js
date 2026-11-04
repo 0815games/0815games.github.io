@@ -1,6 +1,6 @@
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-leaderboards1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261104-directinvite1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-socialpopup1';
 import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-buildreservation1';

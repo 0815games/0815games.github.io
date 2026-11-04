@@ -30,11 +30,13 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     const visible=selector=>page.locator(selector).isVisible();
+    await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
+
     assert.equal(await page.locator('.mode-card b').count(),0,'operation cards have no arrows');
     assert.equal(await page.locator('#friendRequestNotification').isHidden(),true);
     await page.evaluate(()=>window.__friendUpdate({alice:{status:'pending',senderName:'Alice'},bob:{status:'accepted',senderName:'Bob'}}));
     assert.match(await page.locator('#friendRequestNotification').innerText(),/1 FRIEND REQUEST/);
-    await page.locator('#friendRequestNotification').click();assert.match(await page.locator('#friendRequests').innerText(),/Alice/);await page.locator('#friendRequests button').filter({hasText:'ACCEPT'}).click();await page.locator('#friendRequestNotification').waitFor({state:'hidden'});await page.locator('#friendsClose').click();
+    await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupOpen').click();assert.match(await page.locator('#friendRequests').innerText(),/Alice/);await page.locator('#friendRequests button').filter({hasText:'ACCEPT'}).click();await page.locator('#friendRequestNotification').waitFor({state:'hidden'});await page.locator('#friendsClose').click();
     await page.evaluate(()=>window.__friendUpdate({alice:{status:'pending',senderName:'Alice'},eve:{status:'pending',senderName:'Eve'}}));assert.match(await page.locator('#friendRequestNotification').innerText(),/2 FRIEND REQUESTS/);await page.evaluate(()=>window.__friendUpdate({}));await page.locator('#friendRequestNotification').waitFor({state:'hidden'});
     await page.locator('#menuCampaign').click(); await page.locator('#campaignBoard').waitFor({state:'visible'});
     assert.equal(await visible('.dashboard'),false,'campaign board is separate from the battlefield');

@@ -1,4 +1,4 @@
-// Invitations are delivered only between accepted friends. The lobby still requires host approval.
+// Invitations are delivered only between accepted friends; direct joins use lobby rules.
 export function createCoopInvites({db,auth,sdk}){
  const uid=auth.currentUser?.uid;if(!uid)throw Error('Sign in required');
  const check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Account changed');};
