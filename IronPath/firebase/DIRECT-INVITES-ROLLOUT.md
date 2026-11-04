@@ -1,0 +1,7 @@
+# Direct friend invitation rollout
+
+The draft `direct-invites.complete.draft.rules.json` is a complete replacement based on `leaderboards.complete.draft.rules.json`, not a fragment. Before publishing, export/back up the currently deployed Realtime Database rules and compare them with the previous complete draft; reconcile any production-only changes first. Review and publish the entire replacement in the Firebase console **before** deploying the corresponding client. Publishing is a separate manual operation; do not assume it has occurred. Old clients continue to use host approval. All players should reload after deployment.
+
+An accepted friend can claim an empty slot directly while an unexpired invitation, matching pending request, matching party/code/host, accepted friendship and open lobby all exist. Manual four-digit code requests still require host approval. A full, closed, started, revoked, expired or changed party fails closed. The guest removes their request after claiming; invite dismissal occurs only after successful join. Invitations are not presence or push notifications. Existing client-reported scores and player-hosted games are not cheat-proof.
+
+After deployment test with at least two real signed-in accounts and current clients: invite and join without host approval; start a match; try manual code approval; simultaneous invitations to the last slot; full/closed/started parties; expiry and revocation; leaving/rejoining; refresh, sign-out and mobile. Emulator tests cannot substitute for real online multiplayer testing.

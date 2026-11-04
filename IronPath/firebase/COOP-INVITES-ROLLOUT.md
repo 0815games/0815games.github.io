@@ -1,3 +1,5 @@
+> Historical rollout document: after the direct-invitations update, see [DIRECT-INVITES-ROLLOUT.md](DIRECT-INVITES-ROLLOUT.md) for the current flow and rules.
+
 # Friends and multiplayer invitations
 
 > Historical rollout note: search visibility was removed later; see `AUTOMATIC-FRIEND-SEARCH.md` for current behavior.

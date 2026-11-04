@@ -35,6 +35,18 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,re
       const [hostId,partyId]=await Promise.all([read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);if(!validUid(hostId)||hostId===uid||!validParty(partyId)||(expectedPartyId!==null&&partyId!==expectedPartyId))throw Error('Party unavailable');
       await sdk.set(ref(`fourCodes/${inviteCode}/requests/${uid}`),expectedPartyId?{name,expectedPartyId}:{name});check();return {partyId,inviteCode,hostId,uid};
     },
+    // A targeted, accepted invitation authorizes its recipient to claim one open
+    // slot atomically. Firebase rules recheck the invite and friendship at commit.
+    async claimInvitedSlot(partyId,inviteCode){
+      check();if(!validParty(partyId)||!validCode(inviteCode))throw Error('Invalid invitation');
+      const [linked,slots]=await Promise.all([read(ref(`fourCodes/${inviteCode}/partyId`)),read(party(partyId,'slots'))]);
+      if(linked!==partyId)throw Error('Invitation no longer available');if(Object.values(slots||{}).includes(uid))return true;
+      for(const slot of ['one','two','three']){
+        const node=party(partyId,`slots/${slot}`);if(slots?.[slot])continue;
+        try{const result=await transactionWithCache(node,current=>current===null?uid:undefined);check();if(result.committed||result.snapshot.val()===uid)return true;}
+        catch(error){check();const current=await read(party(partyId,'slots'));if(Object.values(current||{}).includes(uid))return true;if(current?.[slot])continue;throw error;}
+      }throw Error('Party full or invitation expired');
+    },
     async approve(partyId,inviteCode,guestId){
       check();if(!validCode(inviteCode)||!validUid(guestId)||guestId===uid)throw Error('Invalid approval');
       const [hostId,linked,started,request]=await Promise.all([read(party(partyId,'hostId')),read(ref(`fourCodes/${inviteCode}/partyId`)),read(party(partyId,'started')),read(ref(`fourCodes/${inviteCode}/requests/${guestId}`))]);
