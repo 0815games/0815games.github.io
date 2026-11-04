@@ -4,7 +4,7 @@ The 2026-11 implementation hardens cleanup after fatal multiplayer errors and ad
 
 ## Online playtest (requires people, accounts and devices)
 
-Use the GitHub Pages deployment, separate accounts and at least two devices. Everyone closes old tabs and reloads the current client before starting; old clients may misread or overwrite doctrine builds. Keep codes and credentials private. Record date/build, device, browser, network, mode, steps, expected result, actual result and timestamps. Never include credentials or invite codes in reports.
+Use the GitHub Pages deployment, separate accounts and at least two devices. Everyone closes old tabs and reloads the current client before starting; old clients may misread or overwrite doctrine builds and cannot safely issue commands after a host focus pause. Keep codes and credentials private. Record date/build, device, browser, network, mode, steps, expected result, actual result and timestamps. Never include credentials or invite codes in reports.
 
 | Case | Minimum exercise | Result |
 | --- | --- | --- |
@@ -17,6 +17,7 @@ Use the GitHub Pages deployment, separate accounts and at least two devices. Eve
 | Host reload | Normal party: no recovery promised. Separate short `?recovery=1` trial: host resume, with current clients only. | Not yet run live |
 | Fatal failure | Confirm failed client stops presenting itself online and versus peers pause. | Not yet run live |
 | Mobile and accessibility | Phone/tablet portrait and landscape, touch, reduced motion, sound, keyboard/focus, legibility. | Not yet run on devices |
+| Host focus pause | In every mode, hide/blur the host during a wave; verify all fields freeze and show why, then resume. Blur a guest and verify the match continues. Exercise mobile backgrounding and pending commands. | Not yet run live |
 | Network and cost | Short weak-network and background/sleep tests; monitor Firebase usage, especially recovery's full checkpoints. | Not yet measured live |
 
 ### Build-spot reservation: focused live test

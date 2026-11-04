@@ -31,9 +31,10 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
   return {
     start(){
       if(started||closed)throw new Error('Host session already started or closed');started=true;
-      unsubscribe=channel.watchInputs((id,packet)=>{if(!closed&&!failed&&packet?.epoch===epoch)host.receive(id,packet.envelope);});
+      unsubscribe=channel.watchInputs((id,packet)=>{if(!closed&&!failed&&packet?.epoch===epoch){const result=host.receive(id,packet.envelope);if(result.status==='cancelled')queueView();}});
       queueView();
     },
+    setFocusPaused(paused){if(!started||closed||failed||typeof host.setFocusPaused!=='function')return false;const changed=host.setFocusPaused(paused);if(changed)queueView();return changed;},
     setPresence(id,connected){if(!started||closed||failed)return false;const changed=host.setPresence(id,connected);if(changed)queueView();return changed;},
     setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
     // The host sees its authoritative state locally, while remote views are
@@ -42,7 +43,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
     localChannel(){
       if(!playerIds.includes(localPlayerId))throw new Error('Local player required');
       return {watchView(fn){localListener=fn;if(started)localView();return()=>{if(localListener===fn)localListener=null;};},
-        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='rejected')throw new Error(result.reason);},
+        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='cancelled')queueView();if(result.status==='rejected')throw new Error(result.reason);},
         async close(){localListener=null;}};
     },
     publish(){if(started&&!closed&&!failed)queueView();},
@@ -63,7 +64,7 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
     if(pending){
       const receipt=view.snapshot.receipts.find(item=>item?.seq===pending.seq);
       if(receipt?.status==='applied'){settle(pending,receipt.result);pending=null;}
-      else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:'Command cancelled when a player disconnected.'});pending=null;}
+      else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:receipt.reason==='host-paused'?'Command cancelled because the host paused the match.':'Command cancelled when a player disconnected.'});pending=null;}
     }
     onConnections(Array.isArray(view.connections)?view.connections.filter(id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id)).slice(0,64):[]);
     onState(pending?.settled?'syncing':view.ready?'ready':'waiting');onView(view.snapshot);
@@ -74,13 +75,13 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
       if(!started||closed||invalid||!latest?.ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});
       if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});
       const normalized=normalizeCommand(command);if(!normalized)return Promise.resolve({ok:false,reason:'Invalid command.'});
-      const seq=latest.snapshot.nextSeq,activeEpoch=epoch;
+      const seq=latest.snapshot.nextSeq,activeEpoch=epoch,focusGeneration=latest.snapshot.focusGeneration??0;
       return new Promise(resolve=>{
         const item={seq,resolve,settled:false,timer:null};pending=item;
         item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
         // A failed/disconnected write can still have reached Firebase. Keep the
         // sequence locked until a receipt or a new host epoch resolves it.
-        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command:normalized}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
+        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command:normalized,focusGeneration}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
       });
     },
     async stop(){if(closed)return;closed=true;unsubscribe?.();if(pending){settle(pending,{ok:false,reason:'Party closed.'});pending=null;}await channel.close();}

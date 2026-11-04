@@ -19,7 +19,7 @@ export function createDurableClientSession({channel,onView=()=>{},onState=()=>{}
     if(pending){
       const receipt=snapshot.receipts.find(r=>r?.seq===pending.seq);
       if(receipt?.status==='applied'){settle(pending,receipt.result);pending=null;}
-      else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:'Command cancelled when a player disconnected.'});pending=null;}
+      else if(receipt?.status==='cancelled'){settle(pending,{ok:false,reason:receipt.reason==='host-paused'?'Command cancelled because the host paused the match.':'Command cancelled when a player disconnected.'});pending=null;}
       else if(pending.generation!==lease.generation){
         if(snapshot.nextSeq===pending.seq){settle(pending,{ok:false,reason:'Command was not committed before recovery. Please retry.'});pending=null;}
         else {fail('Command outcome could not be reconciled after recovery.');return;}
@@ -30,9 +30,9 @@ export function createDurableClientSession({channel,onView=()=>{},onState=()=>{}
   return {
     start(){if(started||closed)throw Error('Client already started or closed');started=true;stops=[channel.watchLease(observeLease),channel.watchView(observeView)];onState(latest?.ready?'ready':'waiting');},
     command(command){
-      if(!started||closed||invalid||!latest?.ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});const normalized=normalizeCommand(command);if(!normalized)return Promise.resolve({ok:false,reason:'Invalid command.'});const active={...lease},seq=latest.snapshot.nextSeq;
+      if(!started||closed||invalid||!latest?.ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});const normalized=normalizeCommand(command);if(!normalized)return Promise.resolve({ok:false,reason:'Invalid command.'});const active={...lease},seq=latest.snapshot.nextSeq,focusGeneration=latest.snapshot.focusGeneration??0;
       return new Promise(resolve=>{const item={seq,generation:active.generation,resolve,settled:false,timer:null};pending=item;item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
-        Promise.resolve().then(()=>{if(closed||invalid||pending!==item||lease?.generation!==active.generation||lease?.owner!==active.owner)throw Error('Session changed');return channel.writeInput({generation:active.generation,owner:active.owner,envelope:{version:1,seq,command:normalized}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
+        Promise.resolve().then(()=>{if(closed||invalid||pending!==item||lease?.generation!==active.generation||lease?.owner!==active.owner)throw Error('Session changed');return channel.writeInput({generation:active.generation,owner:active.owner,envelope:{version:1,seq,command:normalized,focusGeneration}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
       });
     },
     async stop(){if(closed)return;closed=true;for(const stop of stops)stop?.();if(pending){settle(pending,{ok:false,reason:'Party closed.'});pending=null;}await channel.close();}
