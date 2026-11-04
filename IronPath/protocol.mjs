@@ -1,10 +1,11 @@
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261104-doctrines1';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261104-doctrines1';
+import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261104-buildreservation1';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261104-buildreservation1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261104-doctrines1';
-import { stepMatch } from './simulation.mjs?v=20261104-doctrines1';
+import { applyCommand } from './match.mjs?v=20261104-buildreservation1';
+import { stepMatch } from './simulation.mjs?v=20261104-buildreservation1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
@@ -12,7 +13,7 @@ const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
 const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{});
 const validCount=match=>isFour(match)?(match.mode==='four-coop'?[3,4].includes(matchIds(match).length):matchIds(match).length===4):matchIds(match).length>=1&&matchIds(match).length<=2;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -80,7 +81,7 @@ function makeHost(data){
   // removing their identity, towers or reconnect receipts from the match.
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
-    if(isFour(match))return setFourPresence(match,playerId,active);match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
+    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}

@@ -1,3 +1,4 @@
+import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
@@ -36,7 +37,7 @@ export function applyCommand(state, playerId, command) {
   switch(command.type){
     case 'leaveRun': {
       if(!state.individualSupplies||!state.hostId||playerId===state.hostId)return {ok:false,reason:'Only the guest can leave individually.'};
-      player.active=false;player.direction={x:0,y:0};player.target=null;state.pendingWave=0;return {ok:true};
+      player.active=false;player.direction={x:0,y:0};player.target=null;state.pendingWave=0;releaseBuildReservations(state,playerId);return {ok:true};
     }
     case 'endRun': {
       if(state.individualSupplies&&state.hostId&&playerId!==state.hostId)return {ok:false,reason:'Only the host can end the shared run. Leave the party to exit.'};
@@ -81,12 +82,24 @@ export function applyCommand(state, playerId, command) {
       if(!Number.isFinite(command.x)||!Number.isFinite(command.y)||command.x<12||command.x>(getMap(state.mapId).width||960)-12||command.y<12||command.y>(getMap(state.mapId).height||540)-12)return {ok:false,reason:'Invalid destination.'};
       player.direction={x:0,y:0};player.target={x:command.x,y:command.y};return {ok:true};
     }
+    case 'reserveBuild': {
+      const {pad}=command;
+      if(!Number.isInteger(pad)||pad<0||pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
+      if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
+      return reserveBuildPad(state,playerId,pad);
+    }
+    case 'releaseBuild': {
+      const {pad}=command;
+      if(!Number.isInteger(pad)||pad<0||pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
+      return releaseBuildPad(state,playerId,pad);
+    }
     case 'build': {
       const {pad,towerType}=command;
       if(!Number.isInteger(pad)||pad<0||pad>=getMap(state.mapId).pads.length||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
       if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
+      const reserved=state.buildReservations?.[pad];if(reserved&&reserved.playerId!==playerId)return {ok:false,reason:'Another player is choosing a tower here.'};
       const cost=TOWER_COSTS[towerType];if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
-      addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});return {ok:true};
+      addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});releaseBuildPad(state,playerId,pad);return {ok:true};
     }
     case 'upgrade': {
       if(!Number.isInteger(command.pad)||command.pad<0||command.pad>=getMap(state.mapId).pads.length)return {ok:false,reason:'Invalid pad.'};
