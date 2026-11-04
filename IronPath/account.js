@@ -1,4 +1,4 @@
-import {setupFriends} from './friends-ui.mjs?v=20261104-friends1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-friendsearch1';
 import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-patch67a';
@@ -15,7 +15,7 @@ import {rewardDelta} from './run-results.mjs?v=20261104-doctrines1';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261104-doctrines1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
@@ -29,7 +29,7 @@ const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',auth
 const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null;
 const confirmation=createConfirmation(document);
-const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue},getProfile:()=>profile});
+const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,query,orderByKey,startAfter,limitToFirst},getProfile:()=>profile});
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
 // Online alpha: requires the complete four-player Firebase rules to be published.

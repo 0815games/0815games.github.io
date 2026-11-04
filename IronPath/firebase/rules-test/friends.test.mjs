@@ -6,7 +6,7 @@ import {ref,set,get,remove,onValue} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
 import {createFriendService} from '../../friends.mjs';
 let env,alice,bob,eve,anon;const sdk={ref,set,get,remove,onValue};
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../friends.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();anon=env.unauthenticatedContext().database();});
+before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.FRIEND_SEARCH_RULES?'../friend-search.complete.draft.rules.json':'../friends.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();anon=env.unauthenticatedContext().database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();for(const [id,name] of [['alice','Alice'],['bob','Bob'],['eve','Eve']])await set(ref(db,`players/${id}`),{name,gender:'female',xp:0});});});after(async()=>env.cleanup());
 const service=(db,uid)=>createFriendService({db,auth:{currentUser:{uid}},sdk,crypto:webcrypto});
 test('send, accept and remove persist for both accounts without exposing private profiles',async()=>{
