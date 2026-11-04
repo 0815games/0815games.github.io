@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261104-friends1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-friendsearch1">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
 <body>
@@ -122,8 +122,8 @@
   <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
     <header><div><span class="friends-kicker">YOUR SQUAD</span><h2 id="friendsTitle">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends">✕</button></header>
     <p>Connect with your squad. To play together, share a multiplayer party code separately.</p>
-    <section class="friends-code"><label for="friendCode">YOUR FRIEND CODE</label><div><input id="friendCode" readonly aria-label="Your friend code"><button id="friendCopy" type="button">COPY</button></div><small>Share privately. Anyone with your code can send a request.</small></section>
-    <section class="friends-code"><label for="friendInput">ADD A FRIEND</label><div><input id="friendInput" maxlength="32" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="32-character friend code"><button id="friendSend" type="button">SEND</button></div></section>
+    <section class="friends-visibility"><div><strong>Search visibility</strong><small>When enabled, signed-in players can find your soldier name and send requests. No online status is shared.</small></div><button id="friendVisibility" type="button" aria-pressed="false" disabled>LOADING</button></section>
+    <section class="friends-code"><label for="friendInput">SEARCH EXACT SOLDIER NAME</label><div><input id="friendInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Enter soldier name"><button id="friendSearch" type="button">SEARCH</button></div><small>Matches ignore letter case. Your friend must enable search visibility.</small><ul id="friendResults" class="friend-results"></ul><button id="friendMore" type="button" hidden>MORE RESULTS</button></section>
     <p id="friendStatus" role="status" aria-live="polite"></p>
     <div class="friends-sections"><section><h3>Requests</h3><p id="requestsEmpty">No incoming requests.</p><ul id="friendRequests"></ul></section><section><h3>Friends</h3><p id="friendsEmpty">No friends yet.</p><ul id="friendList"></ul></section><section><h3>Sent requests</h3><p id="sentEmpty">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
@@ -183,5 +183,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-friends1"></script>
+  <script type="module" src="account.js?v=20261104-friendsearch1"></script>
 </body></html>

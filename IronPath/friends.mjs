@@ -1,6 +1,8 @@
 // Friends are consent-based account links, separate from four-digit match codes.
 // Firebase rules are the authorization boundary; the client is not a rate limiter.
 const codePattern=/^[a-f0-9]{32}$/;
+// Hex encoding keeps arbitrary soldier names safe in RTDB paths.
+export function friendNameKey(name){const value=String(name).trim().toLowerCase();if(value.length<2||value.length>24)throw Error('Enter the full soldier name (2–24 characters).');const bytes=new TextEncoder().encode(value);if(bytes.length>96)throw Error('Name is too long.');return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
 export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
  const uid=auth.currentUser?.uid;if(!uid||!crypto?.getRandomValues)throw Error('Sign in required');
  const path=p=>sdk.ref(db,p),check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Account changed');};
@@ -25,6 +27,20 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   if(!existing){try{await set(outgoing,{status:'pending',senderName:name,receiverName:person.name,code});}catch(error){const after=await read(outgoing);if(!after)throw error;}}
   return person.name;
  }
+ async function visibility(name){const key=friendNameKey(name),saved=await read(`friendPrivate/${uid}/searchKey`);if(!saved)return false;if(saved!==key)throw Error('Your search listing cannot be updated.');return !!(await read(`friendNames/${key}/${uid}`));}
+ async function setVisibility(name,enabled){
+  const key=friendNameKey(name),code=await ensureCode(name),old=await read(`friendPrivate/${uid}/searchKey`);
+  if(old&&old!==key)throw Error('Your search listing cannot be updated.');
+  if(!enabled){if(old)await remove(`friendNames/${key}/${uid}`);return false;}
+  if(!old){try{await set(`friendPrivate/${uid}/searchKey`,key);}catch(error){if(await read(`friendPrivate/${uid}/searchKey`)!==key)throw error;}}
+  await set(`friendNames/${key}/${uid}`,{name,code});return true;
+ }
+ async function search(name,after=null){
+  const key=friendNameKey(name);check();const q=after?sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.startAfter(after),sdk.limitToFirst(30)):sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.limitToFirst(30));
+  const snap=await sdk.get(q);check();const raw=snap.val()||{},ids=[];snap.forEach(child=>{ids.push(child.key);});const matches=[];
+  for(const id of ids){const item=raw[id];try{if(id!==uid&&typeof item?.name==='string'&&friendNameKey(item.name)===key&&codePattern.test(item.code))matches.push({id,name:item.name,code:item.code});}catch{}}
+  return {matches,next:ids.length===30?ids.at(-1):null};
+ }
  function watch(callback,onError){
   check();let closed=false,incoming={},outgoing={},edges={},edgeStops=new Map();
   const emit=()=>{if(!closed&&auth.currentUser?.uid===uid)callback({incoming,outgoing,edges});};
@@ -37,5 +53,5 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   },error);
   return ()=>{closed=true;unIn();unOut();for(const stop of edgeStops.values())stop();edgeStops.clear();};
  }
- return {ensureCode,send,watch,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
+ return {ensureCode,send,visibility,setVisibility,search,watch,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
 }
