@@ -31,6 +31,18 @@ const fs = require('node:fs');
         document.querySelector('#menuName').textContent = 'Field Commander'; document.querySelector('#menuLevel').textContent = 'LEVEL 12';
       });
       await check('#menuMultiplayer'); await check('#menuCampaign');
+      // A global hover shorthand previously reset the art to its natural size,
+      // exposing the source image border. Each card must retain its crop.
+      for(const id of ['menuCampaign','menuEndless','menuMultiplayer']){
+        await page.mouse.move(0,0);
+        const card=page.locator('#'+id);
+        const background=()=>card.evaluate(el=>{const s=getComputedStyle(el);return {image:s.backgroundImage,size:s.backgroundSize,position:s.backgroundPosition,repeat:s.backgroundRepeat};});
+        const normal=await background();await card.hover();const hovered=await background();
+        assert.match(normal.image,/url\(/,`${name}: ${id} needs artwork`);assert.ok(normal.size.split(',').every(size=>size.trim()==='cover'));assert.deepEqual(hovered,normal,`${name}: ${id} artwork crop must not shift on hover`);
+        if(name==='desktop')await page.screenshot({path:`browser-artifacts/${name}-${id}-hover.png`});
+      }
+      await page.mouse.move(0,0);
+
       await page.evaluate(()=>document.querySelector('#friendRequestNotification').hidden=false);await check('#friendRequestNotification');await page.evaluate(()=>document.querySelector('#friendRequestNotification').hidden=true);
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
       await page.evaluate(() => {
