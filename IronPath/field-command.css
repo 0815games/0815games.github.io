@@ -109,3 +109,6 @@ body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="o
  #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
  #gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
 }
+
+/* Reserve room for the flag beside the field menu. */
+#gameView .map-frame .dashboard{right:120px;max-width:calc(100% - 128px)}

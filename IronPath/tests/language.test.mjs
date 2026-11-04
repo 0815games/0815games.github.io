@@ -25,3 +25,9 @@ test('armory translations cover equipment and medals without changing source dat
  assert.equal(translateText('UPGRADE · {cost} SCRAP',{cost:90}),'VERBESSERN · 90 SCHROTT');assert.equal(translateText('UNLOCKS ON WAVE {wave}',{wave:12}),'FREI IN WELLE 12');assert.deepEqual(ITEMS,before);
  f.selector.value='en';f.selector.change();assert.equal(translateText('Field Scope'),'Field Scope');assert.equal(translateText('UPGRADE · {cost} SCRAP',{cost:90}),'UPGRADE · 90 SCRAP');
 });
+
+test('German core skill names, effects and specialist effects are translated without changing builds',async()=>{
+ const {SKILL_PATHS,parseBuild,encodeBuild}=await import('../skills.mjs');const f=fixture('de'),build=parseBuild('2,0,0,0,0;assault',3),before=encodeBuild(build);
+ for(const path of SKILL_PATHS){assert.notEqual(translateText(path.name),path.name);assert.notEqual(translateText(path.passive),path.passive);assert.notEqual(translateText(path.description),path.description);for(const branch of path.branches){assert.notEqual(translateText(branch.abilityDescription),branch.abilityDescription);assert.notEqual(translateText(branch.description),branch.description);}}
+ assert.equal(translateText('Requires {name} rank {rank}',{name:translateText('Recon'),rank:2}),'Benötigt Aufklärung Rang 2');assert.equal(encodeBuild(build),before);f.selector.value='en';f.selector.change();assert.equal(translateText('Suppression'),'Suppression');
+});
