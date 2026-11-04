@@ -143,6 +143,13 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function notice(text){$('message').textContent=text;}
   function storyRadio(text){const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadio').dataset.speaker=match?match[1].toLowerCase():'narrator';$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:'FIELD REPORT';$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;radioTime=7;sound.play('request');}
+  let dismissedPerk=null;
+  const perkKey=()=>state&&!state.ended&&state.pendingPerk?`${state.mapId}:${state.wave}:${state.pendingPerk}`:null;
+  function dismissPerk(){const key=perkKey();if(!key)return;dismissedPerk=key;updateUI();}
+  $('runPerkClose').onclick=dismissPerk;
+  $('runPerkReopen').onclick=()=>{dismissedPerk=null;updateUI();};
+  document.addEventListener('click',event=>{const panel=$('runPerkPanel');if(panel.hidden||panel.contains(event.target)||document.querySelector('dialog[open]'))return;dismissPerk();event.preventDefault();event.stopPropagation();},true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('runPerkPanel').hidden&&!document.querySelector('dialog[open]')){dismissPerk();event.preventDefault();}});
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?`${result.perk} acquired for this operation.`:result.reason);updateUI();});
   function updateUI(){
     renderCampaign();
@@ -155,7 +162,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if($('terrainBriefing')){$('terrainBriefing').hidden=!terrain;if(terrain&&$('terrainTitle'))$('terrainTitle').textContent=`${map.name} · Terrain effects`;if(terrain){const text=TERRAIN_BRIEFINGS[terrain]+(terrain==='urban'?(state.rubbleCleared?' Rubble is cleared.':` Rubble remaining: ${Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))} / 200.`):'');if($('terrainDescription').textContent!==text)$('terrainDescription').textContent=text;}}
     if($('runPerksStatus')){const ranks=state.runPerks||{},acquired=RUN_PERKS.filter(perk=>ranks[perk.key]);$('runPerksStatus').hidden=!acquired.length;const text=acquired.map(perk=>`${perk.name} ×${ranks[perk.key]}`).join(' · ');if($('runPerksList').textContent!==text)$('runPerksList').textContent=text;}
     if($('runPerkPanel')){
-      $('runPerkPanel').hidden=state.ended||!state.pendingPerk;if($('runPerkIntro'))$('runPerkIntro').textContent=state.mode==='versus'?'Choose a field upgrade for your own battlefield.':'One shared upgrade for this operation. Either player may choose.';
+      const key=perkKey();if(!key)dismissedPerk=null;const dismissed=!!key&&dismissedPerk===key;$('runPerkPanel').hidden=!key||dismissed;$('runPerkReopen').hidden=!key||!dismissed;if($('runPerkIntro'))$('runPerkIntro').textContent=state.mode==='versus'?'Choose a field upgrade for your own battlefield.':state.mode==='two-vs-two'?'One shared upgrade for your team. Either teammate may choose.':'One shared upgrade for this operation. Any active player may choose.';
       if(state.pendingPerk){const offers=perkOffers(state.mapId,state.pendingPerk);for(let i=0;i<3;i++){const button=$(`runPerk${i}`),perk=RUN_PERKS[offers[i]];const content=`${perk.rare?'★ RARE · ':''}${perk.name}<small>${perk.description}</small>`;if(button.innerHTML!==content)button.innerHTML=content;button.disabled=!!coop&&!coopReady;}}
     }
     if($('bossAlert')){
