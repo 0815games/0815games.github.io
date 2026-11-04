@@ -5,8 +5,9 @@ const assert = require('node:assert/strict');
 (async () => {
   const browser = await chromium.launch({headless:true});
   try {
-    const context = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+    const context = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
     const page = await context.newPage(), errors=[];
+    await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));
     const mocks = {
       'firebase-app.js': `export function initializeApp(){return {}}`,
@@ -57,7 +58,9 @@ const assert = require('node:assert/strict');
     await page.locator('#menuFriends').click();assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),true);assert.equal(await page.locator('#friendVisibility').count(),0);await page.locator('#friendInput').fill('Bob');await page.locator('#friendSearch').click();assert.match(await page.locator('#friendStatus').innerText(),/No players found/);assert.equal(await page.locator('#friendCode').count(),0);await page.mouse.click(1,1);assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),false);await page.locator('#menuFriends').click();assert.equal(await page.locator('#friendInput').inputValue(),'Bob','outside click preserves typed search');await page.locator('#friendsClose').click();
     await page.locator('#menuLeaderboard').click();assert.equal(await page.locator('#leaderboardDialog').evaluate(e=>e.open),true);assert.match(await page.locator('#leaderboardDialog').innerText(),/not verified/);await page.locator('#leaderboardCoop').click();assert.equal(await page.locator('#leaderboardCoop').getAttribute('aria-pressed'),'true');await page.locator('#leaderboardFriends').click();assert.equal(await page.locator('#leaderboardFriends').getAttribute('aria-pressed'),'true');await page.mouse.click(1,1);assert.equal(await page.locator('#leaderboardDialog').evaluate(e=>e.open),false);
     // Reproduce the reported case: a solo operation is already under way.
-    await page.locator('#menuEndless').click(); await page.locator('#start').click(); await page.locator('#backToCommand').click();
+    await page.locator('#menuEndless').click(); await page.locator('#start').click();
+    await page.evaluate(()=>window.__soldierFrames=[]);await page.locator('#game').click({position:{x:20,y:20}});await page.waitForFunction(()=>window.__soldierFrames.some(f=>f.sourceWidth===60&&f.sourceHeight===90&&Math.abs(f.rotation)>.001),null,{timeout:8000});
+    await page.locator('#backToCommand').click();
     await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
     assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true);
     assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),false);
