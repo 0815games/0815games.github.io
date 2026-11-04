@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261104-fieldcommand1';
+import {translateText as tr} from './language.mjs?v=20261106-armoryde1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createLeaderboardService} from './leaderboards.mjs?v=20261104-leaderboards1';
 export function setupLeaderboard({document,db,auth,sdk}){

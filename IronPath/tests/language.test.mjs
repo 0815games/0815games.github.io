@@ -17,3 +17,11 @@ test('localized accessible attributes and parameterized names retain their origi
  const selector={value:'',addEventListener(_t,fn){this.change=fn;}},notice={},attrs={'data-i18n-placeholder':'Enter soldier name'},input={getAttribute:k=>attrs[k],setAttribute:(k,v)=>attrs[k]=v},doc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:notice,querySelectorAll:q=>q==='[data-i18n-placeholder]'?[input]:[]};
  setupLanguage({document:doc});assert.equal(attrs.placeholder,'Enter soldier name');selector.value='de';selector.change();assert.equal(attrs.placeholder,'Soldatennamen eingeben');assert.equal(translateText('{name} invited you to a party.',{name:'<Pilot & Co>'}),'<Pilot & Co> hat dich in eine Gruppe eingeladen.');selector.value='en';selector.change();assert.equal(attrs.placeholder,'Enter soldier name');
 });
+
+test('armory translations cover equipment and medals without changing source data or placeholders',async()=>{
+ const {ITEMS}=await import('../armory.mjs'),{serviceMedals}=await import('../service-record.mjs');const before=structuredClone(ITEMS),f=fixture('de');
+ for(const item of ITEMS){assert.notEqual(translateText(item.name),item.name,item.name);assert.notEqual(translateText(item.description),item.description,item.name);}
+ for(const medal of serviceMedals({xp:0})){assert.notEqual(translateText(medal.name),medal.name,medal.name);assert.notEqual(translateText(medal.description),medal.description,medal.description);}
+ assert.equal(translateText('UPGRADE · {cost} SCRAP',{cost:90}),'VERBESSERN · 90 SCHROTT');assert.equal(translateText('UNLOCKS ON WAVE {wave}',{wave:12}),'FREI IN WELLE 12');assert.deepEqual(ITEMS,before);
+ f.selector.value='en';f.selector.change();assert.equal(translateText('Field Scope'),'Field Scope');assert.equal(translateText('UPGRADE · {cost} SCRAP',{cost:90}),'UPGRADE · 90 SCRAP');
+});

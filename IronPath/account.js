@@ -1,16 +1,16 @@
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261104-fieldcommand1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261106-armoryde1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-fieldcommand1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261106-armoryde1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261105-prestige1';
-import {createCommandCenter} from './command-center.mjs?v=20261105-prestige1';
+import {setupFriends} from './friends-ui.mjs?v=20261106-armoryde1';
+import {createCommandCenter} from './command-center.mjs?v=20261106-armoryde1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261105-prestige1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-fieldcommand1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261106-armoryde1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -27,7 +27,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261105-prestige1';
+import { startGame } from './game.js?v=20261106-armoryde1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261105-prestige1';
 import { createPlayer } from './match.mjs?v=20261105-prestige1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -38,7 +38,7 @@ const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',auth
 const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null;
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
-setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();if(profile)updateSkillPrompt(profile);}});
+setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();if(profile){updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();}}});
 setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 setupFieldMenu({document,onLanguageChange});
 const confirmation=createConfirmation(document);
@@ -140,35 +140,35 @@ function chooseArmoryCategory(category){
 }
 for(const [id,key] of [['armoryEquipmentTab','equipment'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']])$(id).onclick=()=>chooseArmoryCategory(key);
 function renderArmory(){
-  const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=`${a.scrap} SCRAP`;
-  const section=(name,caption,key)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';wrap.dataset.section=key;head.className='armory-section-head';title.textContent=name;sub.textContent=caption;head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
+  const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=translateText('{amount} SCRAP',{amount:a.scrap});
+  const section=(name,caption,key)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';wrap.dataset.section=key;head.className='armory-section-head';title.textContent=translateText(name);sub.textContent=translateText(caption);head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
   const add=(grid,{icon,title,description,eyebrow,label,disabled,action,state,rank})=>{
     const card=document.createElement('article'),art=document.createElement('div'),body=document.createElement('div'),meta=document.createElement('span'),heading=document.createElement('h4'),text=document.createElement('p'),button=document.createElement('button');
     card.className=`armory-card ${state||''}`;art.className='armory-art';art.dataset.item=icon;art.append(armoryIcon(document,icon));body.className='armory-card-body';meta.className='armory-meta';meta.textContent=eyebrow;heading.textContent=title;text.textContent=description;
     body.append(meta,heading,text);
-    if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',`Rank ${rank} of 3`);for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
+    if(rank!==undefined){const ticks=document.createElement('div');ticks.className='armory-ranks';ticks.setAttribute('aria-label',translateText('Rank {rank} of 3',{rank}));for(let i=0;i<3;i++){const tick=document.createElement('i');if(i<rank)tick.className='filled';ticks.append(tick);}body.append(ticks);}
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
   const medals=section('Service record','PERMANENT MEDALS','service');
-  for(const medal of serviceMedals(profile)){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${medal.name}`;text.textContent=medal.description;card.append(title,text);medals.append(card);}
-  const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent='Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.';medals.parentElement.append(veteran);
+  for(const medal of serviceMedals(profile)){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${translateText(medal.name)}`;text.textContent=translateText(medal.description);card.append(title,text);medals.append(card);}
+  const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent=translateText('Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.');medals.parentElement.append(veteran);
   const defenses=section('Bunker upgrades','SHARED DEFENSE','defenses');
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.'],['supply','Supply Relay','From wave 6, each active soldier receives 3 supplies per rank after each wave. Unlocks at soldier level 5.'],['safeguard','Emergency Bulwark','From wave 6, bunker takes 2% less damage per rank while below half health. Unlocks at soldier level 5.']]){
-    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:name,description:`${description} In co-op the highest player rank applies.`,eyebrow:'PERMANENT UPGRADE',rank,label:rank===3?'MAX RANK':locked?'UNLOCKS AT LEVEL 5':`UPGRADE · ${cost} SCRAP`,disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:`Upgrade ${name}?`,text:`Spend ${cost} scrap on ${name.toLowerCase()}?`,accept:"UPGRADE"})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
+    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:translateText('Upgrade {name}?',{name:translateText(name)}),text:translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:translateText('UPGRADE')})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
   const equipment=section('Your equipment','ONE SLOT','equipment');
-  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:item.name,description:item.description,eyebrow:equipped?'EQUIPPED':owned?'UNLOCKED':`WAVE ${item.wave} REWARD`,state:equipped?'is-equipped':owned?'':'is-locked',label:owned?(equipped?'EQUIPPED':'EQUIP'):`UNLOCKS ON WAVE ${item.wave}`,disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
-  const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent='UNEQUIP ITEM';unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));equipment.parentElement.append(unequip);chooseArmoryCategory(armoryCategory);
+  ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:translateText(item.name),description:translateText(item.description),eyebrow:equipped?translateText('EQUIPPED'):owned?translateText('UNLOCKED'):translateText('WAVE {wave} REWARD',{wave:item.wave}),state:equipped?'is-equipped':owned?'':'is-locked',label:owned?translateText(equipped?'EQUIPPED':'EQUIP'):translateText('UNLOCKS ON WAVE {wave}',{wave:item.wave}),disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
+  const unequip=document.createElement('button');unequip.type='button';unequip.className='armory-unequip';unequip.textContent=translateText('UNEQUIP ITEM');unequip.disabled=a.equipped===0;unequip.onclick=()=>void saveArmory(current=>equipArmory(current,0));equipment.parentElement.append(unequip);chooseArmoryCategory(armoryCategory);
 }
 async function saveArmory(change){
   if(savingArmory)return;
-  if(!canEditSkills()){$('armoryStatus').textContent='Finish the match and leave the party before changing your armory.';return;}
-  savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent='Saving…';
+  if(!canEditSkills()){$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
+  savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent=translateText('Saving…');
   try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{if(!current||!Number.isInteger(current.xp))return;const armory=change(current.armory);if(!armory)return;const old=readArmory(current.armory);if(characterProgress(current.xp).level<5&&(armory.supply>old.supply||armory.safeguard>old.safeguard))return;return {...current,armory};},{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
-    if(!result.committed){$('armoryStatus').textContent='Not enough scrap or the armory changed. Please try again.';return;}
-    profile=result.snapshot.val();commandCenter?.render();if(gameControl?.canEditSkills())gameControl.resetSkills();$('armoryStatus').textContent='Saved for your next match.';renderArmory();
-  }catch(error){if(version===sessionVersion)$('armoryStatus').textContent='Could not save. Check your connection and database rules.';}
+    if(!result.committed){$('armoryStatus').textContent=translateText('Not enough scrap or the armory changed. Please try again.');return;}
+    profile=result.snapshot.val();commandCenter?.render();if(gameControl?.canEditSkills())gameControl.resetSkills();$('armoryStatus').textContent=translateText('Saved for your next match.');renderArmory();
+  }catch(error){if(version===sessionVersion)$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}
   finally{if(version===sessionVersion)savingArmory=false;}
 }
 $('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to open the armory, or leave your party first.';return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};

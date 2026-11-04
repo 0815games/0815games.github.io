@@ -112,10 +112,10 @@
     </div></div>
   </main>
   <dialog id="armoryDialog" class="skill-dialog armory-dialog" aria-labelledby="armoryTitle">
-    <div class="development-head"><div><span class="eyebrow">FIELD EQUIPMENT / 02</span><h2 id="armoryTitle" data-i18n="armory.title">Armory & bunker</h2></div><button class="development-close" id="armoryClose" type="button" aria-label="Close armory">✕</button></div>
+    <div class="development-head"><div><span class="eyebrow" data-i18n-text="FIELD EQUIPMENT / 02">FIELD EQUIPMENT / 02</span><h2 id="armoryTitle" data-i18n="armory.title">Armory & bunker</h2></div><button class="development-close" id="armoryClose" type="button" aria-label="Close armory" data-i18n-aria-label="Close armory">✕</button></div>
     <div class="armory-wallet"><span data-i18n-text="YOUR RESOURCES">YOUR RESOURCES</span><strong id="armoryScrap"></strong><small data-i18n-text="+10 scrap per completed wave">+10 scrap per completed wave</small></div>
     <p class="development-hint">Upgrades and equipment apply in your next match. Duplicate equipment grants 10 extra scrap.</p>
-    <nav class="arsenal-tabs" aria-label="Armory categories"><button id="armoryEquipmentTab" data-i18n="armory.equipment" type="button" aria-pressed="true">EQUIPMENT</button><button id="armoryDefensesTab" data-i18n="armory.bunker" type="button" aria-pressed="false">BUNKER</button><button id="armoryServiceTab" data-i18n="armory.record" type="button" aria-pressed="false">SERVICE RECORD</button></nav>
+    <nav class="arsenal-tabs" aria-label="Armory categories" data-i18n-aria-label="Armory categories"><button id="armoryEquipmentTab" data-i18n="armory.equipment" type="button" aria-pressed="true">EQUIPMENT</button><button id="armoryDefensesTab" data-i18n="armory.bunker" type="button" aria-pressed="false">BUNKER</button><button id="armoryServiceTab" data-i18n="armory.record" type="button" aria-pressed="false">SERVICE RECORD</button></nav>
     <div id="armoryList" class="armory-list"></div><p id="armoryStatus" class="development-status" role="status"></p>
   </dialog>
   <dialog id="leaderboardDialog" class="leaderboard-dialog" aria-labelledby="leaderboardTitle">
@@ -205,5 +205,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261105-prestige1"></script>
+  <script type="module" src="account.js?v=20261106-armoryde1"></script>
 </body></html>
