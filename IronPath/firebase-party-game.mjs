@@ -6,8 +6,8 @@ import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261103-unified1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261104-buildreservation1';
-import {createPartyHost} from './party-host.mjs?v=20261104-buildreservation1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261104-hostpause1';
+import {createPartyHost} from './party-host.mjs?v=20261104-hostpause1';
 import {createMatch,STEP} from './simulation.mjs?v=20261104-buildreservation1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
@@ -20,7 +20,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   if(uid===hostId&&(!Array.isArray(players)||players.length!==count||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
   if(uid===hostId&&mode==='two-vs-two'&&(!Array.isArray(teams)||teams.length!==2||teams.some(t=>!Array.isArray(t)||t.length!==2)||new Set(teams.flat()).size!==4||teams.flat().some(id=>!playerIds.includes(id))))throw new Error('Invalid teams');
   if(![onState,onStatus,onSnapshot,onWaveRewards,clock].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
-  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null,releaseTab=null;
+  let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null,releaseTab=null,focusPaused=false;
   const online=new Map(playerIds.map(id=>[id,false]));
   function refresh(){
     const next=active&&!failed&&sessionReady&&localConnection!==null&&acknowledged.includes(localConnection)&&online.get(hostId)&&online.get(uid);
@@ -43,7 +43,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       try{
         if(uid===hostId){
           const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);const epoch=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
-          host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(mode==='two-vs-two'?createTwoVsTwo(players,hostId,teams):mode==='four-coop'?createFourCoop(players,hostId):mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
+          const core=createPartyHost(mode==='two-vs-two'?createTwoVsTwo(players,hostId,teams):mode==='four-coop'?createFourCoop(players,hostId):mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId});core.setFocusPaused(focusPaused);host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:core,playerIds,epoch,localPlayerId:uid,onError:fail});
         }
         const channel=host?host.localChannel():createFirebasePartyChannel(options);
         client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;const game=snapshot?.match;let fields;if(four){if(game?.mode!==mode||game.hostId!==hostId||Object.keys(game.members||{}).length!==count||playerIds.some(id=>!Object.hasOwn(game.members,id))){fail();return;}fields=mode==='four-coop'?[game.match]:game.lanes;if(mode==='two-vs-two'&&(!Array.isArray(game.teams)||game.teams.length!==2||new Set(game.teams.flat()).size!==4||game.teams.some((team,i)=>!Array.isArray(team)||team.length!==2||team.some(id=>!Object.hasOwn(game.lanes?.[i]?.players||{},id))))) {fail();return;}if(!Array.isArray(fields)||fields.length!==(mode==='four-coop'?1:2)||fields.some(lane=>lane?.mapId!==FOUR_PLAYER_MAP||lane.individualSupplies!==true)||playerIds.some(id=>fields.filter(lane=>Object.hasOwn(lane.players||{},id)).length!==1)){fail();return;}}else{if(!game||game.hostId!==hostId||(mode==='versus'?game.mode!=='versus':game.mode==='versus')||(game.mapId!==undefined&&!isMapId(game.mapId))||game.individualSupplies!==true||!game.players||Object.keys(game.players).length!==count||playerIds.some(id=>!Object.hasOwn(game.players,id))){fail();return;}fields=[game];}const playerFor=id=>fields.find(lane=>Object.hasOwn(lane.players||{},id))?.players[id];if(!playerIds.every(id=>Number.isFinite(playerFor(id)?.money)&&Number.isInteger(playerFor(id)?.completedWaveMask)&&playerFor(id).completedWaveMask>=0&&playerFor(id).completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const player=playerFor(uid),blocks=player.completedWaveBlocks||{};
@@ -56,6 +56,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       }catch(error){fail();}
       }});
     },
+    setFocusPaused(value){if(uid!==hostId||typeof value!=='boolean')return false;if(focusPaused===value)return true;focusPaused=value;ticker?.reset();host?.setFocusPaused(value);return true;},
     command(command){if(!active||failed||!ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});return client.command(command);},
     stop
   };

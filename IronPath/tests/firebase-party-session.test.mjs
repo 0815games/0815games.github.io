@@ -23,6 +23,8 @@ assert.match((await uncertain).reason,/unknown/);assert.equal(bobState,'syncing'
 holdInput=false;inputListener(held.id,held.packet);for(let i=0;i<6;i++)session.step();await flush();assert.equal(bobState,'ready');
 const wave=alice.command({type:'startWave'});await flush();for(let i=0;i<6;i++)session.step();await flush();assert.equal((await wave).waitingForGuest,true);assert.equal(bobView.match.wave,0);
 const approval=bob.command({type:'approveWave',requestId:bobView.match.waveRequestId});await flush();for(let i=0;i<6;i++)session.step();await flush();assert.equal((await approval).ok,true);assert.equal(bobView.match.wave,1);
+// A packet delayed across a pause is cancelled with a receipt, not replayed.
+holdInput=true;const late=bob.command({type:'move',x:500,y:300});await flush();assert.equal(held.packet.envelope.focusGeneration,0);session.setFocusPaused(true);await flush();assert.equal(bobView.hostPaused,true);session.setFocusPaused(false);await flush();holdInput=false;inputListener(held.id,held.packet);await flush();assert.match((await late).reason,/host paused/);assert.equal(bobView.match.players.bob.target,null);assert.equal(bobView.focusGeneration,1);assert.equal(bobState,'ready');
 // Guest disconnect cancels only their pending commands; the host continues.
 const sale=bob.command({type:'sell',pad:0});await flush();session.setPresence('bob',false);await flush();
 assert.match((await sale).reason,/cancelled/);assert.ok(session.step());assert.equal(bobView.match.towers.length,0);

@@ -66,14 +66,14 @@ function makeHost(data){
   }
   // Cancel unprocessed inputs and neutralize movement on transport disconnect.
   // The host must stop ticking until its disconnect policy permits resuming.
-  function suspendPlayer(playerId){
+  function suspendPlayer(playerId,reason='disconnected'){
     if(!Object.hasOwn(players,playerId))return false;
     const player=isFour(match)?(match.mode==='four-coop'?match.match.players[playerId]:match.lanes.find(lane=>Object.hasOwn(lane.players,playerId))?.players[playerId]):match.mode==='versus'?match.lanes[playerId].players[playerId]:match.players[playerId];if(!player)return false;player.direction={x:0,y:0};player.target=null;
     const remaining=[];
     for(const item of queue){
       if(item.playerId!==playerId){remaining.push(item);continue;}
       const receipt=players[playerId].receipts.find(r=>r.seq===item.seq);
-      receipt.response={status:'cancelled',seq:item.seq,reason:'disconnected'};
+      receipt.response={status:'cancelled',seq:item.seq,reason};
     }
     queue=remaining;return true;
   }

@@ -1,10 +1,11 @@
-// The shared simulation belongs to the host; a guest losing focus must never
-// pause it. This controller pauses only the local solo simulation.
-export function createFocusPause({window,document,onBlur=()=>{}}){
+// Tracks local focus only. The multiplayer adapter decides whether this browser
+// owns the shared simulation; guests cannot pause the host.
+export function createFocusPause({window,document,onBlur=()=>{},onChange=()=>{}}){
   let focused=document.hasFocus(),visible=!document.hidden;
-  const loseFocus=()=>{focused=false;onBlur();};
-  const gainFocus=()=>{focused=true;};
-  const visibility=()=>{visible=!document.hidden;if(!visible)onBlur();};
+  const notify=()=>onChange(!focused||!visible);
+  const loseFocus=()=>{focused=false;onBlur();notify();};
+  const gainFocus=()=>{focused=true;notify();};
+  const visibility=()=>{visible=!document.hidden;if(!visible)onBlur();notify();};
   window.addEventListener('blur',loseFocus);
   window.addEventListener('focus',gainFocus);
   document.addEventListener('visibilitychange',visibility);
