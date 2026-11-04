@@ -1,3 +1,4 @@
+import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
@@ -7,7 +8,7 @@ import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261102-terrain4';
-import {addSupplies} from './match.mjs?v=20261104-doctrines1';
+import {addSupplies} from './match.mjs?v=20261104-buildreservation1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -42,7 +43,7 @@ function rewardTeam(state,amount,enemyKill=false){
 }
 // Exactly one fixed step per call. Events are transient, not a record of validated rewards.
 export function stepMatch(state){
-  const events=[];if(state.ended)return events;const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map),paths=map.paths||[PATH],bunker=map.bunker||{x:900,y:400};
+  const events=[];if(state.ended)return events;advanceBuildReservations(state,STEP);const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map),paths=map.paths||[PATH],bunker=map.bunker||{x:900,y:400};
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);

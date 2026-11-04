@@ -25,8 +25,12 @@ match.enemies[0].bossClock=7;match.enemies.push({kind:'runner',hp:40,maxHp:40,x:
 match.wave=0;match.running=false;match.spawnLeft=0;match.enemies=[];opts.onSnapshot({match:structuredClone(match)});assert.equal(el('bossAlert').hidden,true);
 match.players.bob.skills.active='recon';opts.onSnapshot({match:structuredClone(match)});match.players.bob.cooldown=30;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+100);assert.ok(drawnText.includes('SUPPRESSION'),'teammate ability renders from a co-op view');
 opts.onStatus(false);opts.onStatus(true);drawnText.length=0;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+200);assert.ok(!drawnText.includes('SUPPRESSION'),'reconnect does not replay an old ability');await new Promise(resolve=>setTimeout(resolve,0));
-el('game').onclick({clientX:105,clientY:210});assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
-assert.equal(match.towers.length,1);assert.equal(el('money').textContent,75);
+// Another player's active reservation prevents opening the build sheet.
+assert.equal(applyCommand(match,'bob',{type:'reserveBuild',pad:0}).ok,true);opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});assert.match(el('message').textContent,/Another player/);assert.equal(el('radialMenu').hidden,true);
+applyCommand(match,'bob',{type:'releaseBuild',pad:0});opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});assert.equal(match.buildReservations[0].playerId,'alice');assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers.length,1);assert.equal(match.buildReservations[0],undefined,'building releases the reservation');assert.equal(el('money').textContent,75);
 // Availability updates live while the multiplayer tower sheet and details stay open.
 match.towers[0].level=2;match.players.alice.money=0;opts.onSnapshot({match:structuredClone(match)});
 el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();

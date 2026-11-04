@@ -19,8 +19,8 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261104-directinvite1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261104-doctrines1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261104-doctrines1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261104-buildreservation1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261104-buildreservation1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,deferTutorial=false}={}) {
@@ -206,8 +206,31 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const menu=$('radialMenu');
   const options=[0,1,2,3].map(i=>$('radial'+i));
   let menuMode='actions',menuTowerKey=null,detailAvailability=null;
+  let selectionEpoch=0,reservedPad=null,reservationQueue=Promise.resolve(),lastReservationRefresh=0;
+  function reservationCommand(session,input,command,cancelled=null){
+    const operation=reservationQueue.then(async()=>{
+      async function send(packet){
+        for(let attempts=0;attempts<40;attempts++){
+          if(coop!==session||coopInput!==input)return {ok:false,reason:'Party changed.'};
+          const result=await input.execute(packet);
+          if(result.reason!=='Wait for the previous action.')return result;
+          await new Promise(resolve=>setTimeout(resolve,100));
+        }
+        return {ok:false,reason:'Wait for the previous action and try again.'};
+      }
+      const result=await send(command);
+      // Clean up a late claim before the next queued reservation can run.
+      if(result.ok&&cancelled?.())await send({type:'releaseBuild',pad:command.pad});
+      return result;
+    });
+    reservationQueue=operation.catch(()=>{});return operation;
+  }
+  function releaseReservation(){
+    const pad=reservedPad,session=coop,input=coopInput;reservedPad=null;
+    if(pad!==null&&session&&input)void reservationCommand(session,input,{type:'releaseBuild',pad});
+  }
   const towerKey=t=>t?`${t.id??''}:${t.type}:${t.level}`:'empty';
-  function closeMenu(){menu.hidden=true;menuPad=null;menuTowerKey=null;detailAvailability=null;}
+  function closeMenu(){selectionEpoch++;releaseReservation();menu.hidden=true;menuPad=null;menuTowerKey=null;detailAvailability=null;}
   function showMenu(pad,mode='actions',refresh=false){
     const tower=state.towers.find(t=>t.pad===pad);menuPad=pad;menuMode=mode;state.selectedPad=tower?pad:null;
     if(!refresh){menuTowerKey=towerKey(tower);keys.clear();sendDirection();}
@@ -254,6 +277,14 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function refreshTowerMenu(){
     if(menu.hidden||menuPad===null)return;
+    if(reservedPad!==null&&state.buildReservations?.[reservedPad]?.playerId!==me()){
+      if(state.towers.some(t=>t.pad===reservedPad)){refreshDetails();return;}
+      if($('towerDetails').open)$('towerDetails').close();closeMenu();state.selectedPad=null;notice('Build reservation expired. Select the spot again.');return;
+    }
+    if(reservedPad!==null&&performance.now()-lastReservationRefresh>20000){
+      lastReservationRefresh=performance.now();const session=coop,input=coopInput,pad=reservedPad;
+      if(session&&input)void reservationCommand(session,input,{type:'reserveBuild',pad});
+    }
     if(towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey)showMenu(menuPad,menuMode,true);
     refreshDetails();
   }
@@ -264,13 +295,24 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
   $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
-  function selectBattlePoint(x,y){
+  async function selectBattlePoint(x,y){
+    selectionEpoch++;
     if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),map=getMap(state.mapId),view=battleViewport?.getViewport();
     if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
     const radius=Math.min(56,Math.max(28,22*canvas.width/rect.width/(view?.scale||1))),pads=map.pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
     if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min((map.width||960)-12,x)),y:Math.max(12,Math.min((map.height||540)-12,y))},result=>{notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
-    showMenu(index);
+    const selected=index;
+    if(coop&&!state.towers.some(t=>t.pad===selected)){
+      closeMenu();state.selectedPad=null;const epoch=selectionEpoch,session=coop,input=coopInput;
+      notice('Reserving build spot…');
+      const cancelled=()=>epoch!==selectionEpoch||coop!==session||!coopReady;
+      const result=await reservationCommand(session,input,{type:'reserveBuild',pad:selected},cancelled);
+      if(cancelled())return;
+      if(!result.ok){notice(result.reason||'Build spot could not be reserved.');return;}
+      reservedPad=selected;lastReservationRefresh=performance.now();
+    }else if(!menu.hidden||reservedPad!==null)closeMenu();
+    showMenu(selected);
     if(window.innerWidth<=850){
       const screenY=view?(pads[index].y-view.y)*view.scale:pads[index].y;
       const spotY=rect.top+screenY*rect.height/canvas.height;
@@ -279,7 +321,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       if(overlap>0)window.scrollBy({top:overlap,behavior:'auto'});
     }
   }
-  canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();selectBattlePoint((e.clientX-rect.left)*canvas.width/rect.width,(e.clientY-rect.top)*canvas.height/rect.height);});
+  canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();return selectBattlePoint((e.clientX-rect.left)*canvas.width/rect.width,(e.clientY-rect.top)*canvas.height/rect.height);});
   let uiElapsed=0;
   function update(dt){
     if(radioTime>0&&!cinematic){radioTime=Math.max(0,radioTime-dt);if(!radioTime)$('storyRadio').hidden=true;}
@@ -328,7 +370,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     activeMission=null;activeStory=null;selectedMap=nextMapId(selectedMap);hasCoopSnapshot=false;report=newReport(reportId||'test');coopReports.set(report.id,report);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();lastSnapshotAt=0;let client;
     try{
-      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error'||value==='duplicate')$('onlineConnecting').textContent=value==='error'?'Multiplayer connection failed. Open Party to leave or retry.':'This party is already open in another tab. Close it and retry.';if(value==='error')notice('Multiplayer connection failed. If the host reloaded, use Resume as Host in a recovery trial; otherwise create a new party.');if(value==='duplicate')notice('This party is already open in another tab. Close it before joining here.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':state.mode==='two-vs-two'?'2 vs 2 paused. Waiting for all players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;if(snapshot?.match?.mode==='four-coop'||snapshot?.match?.mode==='two-vs-two'){try{snapshot=projectFourGameView(snapshot,me());}catch{notice('Invalid four-player match snapshot.');return;}}hasCoopSnapshot=true;$('gameWorkspace').dataset.onlineReady='true';const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
+      client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error'||value==='duplicate')$('onlineConnecting').textContent=value==='error'?'Multiplayer connection failed. Open Party to leave or retry.':'This party is already open in another tab. Close it and retry.';if(value==='error')notice('Multiplayer connection failed. If the host reloaded, use Resume as Host in a recovery trial; otherwise create a new party.');if(value==='duplicate')notice('This party is already open in another tab. Close it before joining here.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){closeMenu();state.selectedPad=null;if($('towerDetails').open)$('towerDetails').close();combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':state.mode==='two-vs-two'?'2 vs 2 paused. Waiting for all players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;if(snapshot?.match?.mode==='four-coop'||snapshot?.match?.mode==='two-vs-two'){try{snapshot=projectFourGameView(snapshot,me());}catch{notice('Invalid four-player match snapshot.');return;}}hasCoopSnapshot=true;$('gameWorkspace').dataset.onlineReady='true';const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:1};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
       if(hadSnapshot&&(state.bunkerImpact?.seq||0)>oldImpact){const hit=state.bunkerImpact;notice(`${ENEMY_TYPES[hit.kind]?.label||'Enemy'} hit the bunker! −${Math.round(hit.damage*10)/10} health.`);}
       const newBoss=state.enemies.find(e=>e.boss&&e.hp>0);
       if(hadSnapshot&&coopReady&&newBoss?.boss==='bossBomber'&&newBoss.bossFlash>0&&oldBoss?.boss===newBoss.boss&&!(oldBoss.bossFlash>0)){sound.play('impact');notice('Bomber struck the bunker!');}

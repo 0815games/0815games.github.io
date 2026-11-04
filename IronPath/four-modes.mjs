@@ -1,7 +1,8 @@
+import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Experimental, transport-independent four-player rules. Not wired to live
 // Firebase: its current party and security rules only permit two players.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261104-doctrines1';
-import {applyCommand} from './match.mjs?v=20261104-doctrines1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261104-buildreservation1';
+import {applyCommand} from './match.mjs?v=20261104-buildreservation1';
 export const FOUR_PLAYER_MAP='four-front';
 function roster(players,hostId,count=[4]){
   if(!Array.isArray(players)||!count.includes(players.length)||new Set(players.map(p=>p?.id)).size!==players.length||!players.every(p=>typeof p?.id==='string'&&p.id.length>0)||!players.some(p=>p.id===hostId))throw new Error('Invalid roster: unique players including the host are required');
@@ -28,7 +29,7 @@ function finishTeam(s,winner,reason){s.ended=true;s.winnerTeam=winner;s.endReaso
 export function setFourPresence(s,id,active){
   if(!Object.hasOwn(s.members,id)||typeof active!=='boolean')return false;
   s.members[id].active=active;
-  for(const lane of lanes(s)){const p=lane.players[id];if(p){p.active=active;if(!active){p.direction={x:0,y:0};p.target=null;}}}
+  for(const lane of lanes(s)){const p=lane.players[id];if(p){p.active=active;if(!active){releaseBuildReservations(lane,id);p.direction={x:0,y:0};p.target=null;}}}
   if(!active)stopPending(s);
   if(!active&&id===s.hostId)for(const lane of lanes(s))for(const p of Object.values(lane.players)){p.direction={x:0,y:0};p.target=null;}
   return true;
