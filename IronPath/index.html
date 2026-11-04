@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261104-autosearch1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-leaderboards1">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
 <body>
@@ -48,10 +48,10 @@
       <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now. Signed-in players can find your soldier name and player ID in friend search.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><p id="friendIndexError" class="friend-index-error" role="status" hidden>Could not update your player search listing. <button id="friendIndexRetry" type="button">RETRY</button></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
+    <div id="gameView" hidden><p id="scoreSaveStatus" role="status"></p><p id="friendIndexError" class="friend-index-error" role="status" hidden>Could not update your player search listing. <button id="friendIndexRetry" type="button">RETRY</button></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
     <section id="commandCenter" class="command-center" aria-labelledby="commandTitle">
       <div class="command-hero"><div><span class="command-kicker">IRON PATH / FIELD HEADQUARTERS</span><h2 id="commandTitle">Command Center</h2><p>The valley is waiting. Choose your next operation.</p></div><span class="command-hero-label" aria-hidden="true">YOUR STORY CONTINUES HERE</span></div>
-      <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button><button type="button" id="menuFriends">FRIENDS</button></div></div></section>
+      <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button><button type="button" id="menuFriends">FRIENDS</button><button type="button" id="menuLeaderboard">HIGH SCORES</button></div></div></section>
       <section class="command-nav" aria-label="Choose your operation"><div class="command-nav-head"><span class="command-kicker">YOUR NEXT DEPLOYMENT</span><h3>Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><div class="mode-grid"><button type="button" id="menuCampaign" class="mode-card mode-campaign"><span class="mode-index">01 / STORY</span><strong>Campaign</strong><span id="menuCampaignProgress">The Broken Signal</span></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index">02 / SOLO</span><strong>Endless</strong><span>Survive wave after wave</span></button><button type="button" id="menuMultiplayer" class="mode-card mode-multiplayer"><span class="mode-index">03 / ONLINE</span><strong>Multiplayer</strong><span>One code. Your squad.</span></button></div><div class="command-utilities"><button type="button" id="menuTutorial">FIELD TUTORIAL <span>↗</span></button><button type="button" id="menuLogout">SIGN OUT <span>→</span></button></div></section></div>
     </section>
     <p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p>
@@ -120,6 +120,13 @@
     <nav class="arsenal-tabs" aria-label="Armory categories"><button id="armoryEquipmentTab" type="button" aria-pressed="true">EQUIPMENT</button><button id="armoryDefensesTab" type="button" aria-pressed="false">BUNKER</button><button id="armoryServiceTab" type="button" aria-pressed="false">SERVICE RECORD</button></nav>
     <div id="armoryList" class="armory-list"></div><p id="armoryStatus" class="development-status" role="status"></p>
   </dialog>
+  <dialog id="leaderboardDialog" class="leaderboard-dialog" aria-labelledby="leaderboardTitle">
+    <header><div><span class="friends-kicker">COMMUNITY RECORDS</span><h2 id="leaderboardTitle">High scores</h2></div><button id="leaderboardClose" type="button" aria-label="Close high scores">✕</button></header>
+    <p>Highest completed wave · all time. Scores are player-reported and <strong>not verified</strong>. No ranking rewards.</p>
+    <div class="leaderboard-filters" aria-label="Score mode"><button id="leaderboardSolo" type="button" aria-pressed="true">SOLO SURVIVAL</button><button id="leaderboardCoop" type="button" aria-pressed="false">CO-OP</button></div>
+    <div class="leaderboard-filters" aria-label="Score filter"><button id="leaderboardAll" type="button" aria-pressed="true">EVERYONE</button><button id="leaderboardFriends" type="button" aria-pressed="false">FRIENDS</button></div>
+    <p id="leaderboardBest" class="leaderboard-best"></p><p id="leaderboardStatus" role="status"></p><ol id="leaderboardRows" class="leaderboard-rows"></ol>
+  </dialog>
   <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
     <header><div><span class="friends-kicker">YOUR SQUAD</span><h2 id="friendsTitle">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends">✕</button></header>
     <p>Connect with your squad. To play together, share a multiplayer party code separately.</p>
@@ -183,5 +190,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-autosearch1"></script>
+  <script type="module" src="account.js?v=20261104-leaderboards1"></script>
 </body></html>
