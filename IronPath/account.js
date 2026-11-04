@@ -1,14 +1,14 @@
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261104-fullscreen1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261104-presence1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-fullscreen1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-presence1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261104-fullscreen1';
-import {createCommandCenter} from './command-center.mjs?v=20261104-fullscreen1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-presence1';
+import {createCommandCenter} from './command-center.mjs?v=20261104-presence1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-speedvote1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-fullscreen1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-presence1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -25,7 +25,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261104-fullscreen1';
+import { startGame } from './game.js?v=20261104-presence1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261104-speedvote1';
 import { createPlayer } from './match.mjs?v=20261104-buildreservation1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
@@ -40,7 +40,7 @@ setupLanguage({document,storage:languageStorage,onChange:()=>commandCenter?.rend
 setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 const confirmation=createConfirmation(document);
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
-const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
+const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
 // Online alpha: requires the complete four-player Firebase rules to be published.

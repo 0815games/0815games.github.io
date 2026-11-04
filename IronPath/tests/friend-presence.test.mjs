@@ -1,0 +1,14 @@
+import {test} from 'node:test';
+import {strict as assert} from 'node:assert';
+import {webcrypto} from 'node:crypto';
+import {createFriendPresence} from '../friend-presence.mjs';
+const flush=()=>new Promise(r=>setTimeout(r,0));
+function fixture(){
+ let now=1000000,register,release;const values=new Map([['.info/connected',true],['.info/serverTimeOffset',0]]),listeners=new Map(),ops=[];const notify=p=>{for(const cb of listeners.get(p)||[])cb({val:()=>values.get(p)??null});};
+ const sdk={ref:(_db,p)=>p,onValue(p,cb,err){if(!listeners.has(p))listeners.set(p,new Set());listeners.get(p).add(cb);cb({val:()=>values.get(p)??null});return()=>listeners.get(p).delete(cb)},onDisconnect(p){return {async remove(){ops.push(['disconnect',p]);if(register)await register;}}},async set(p,v){ops.push(['set',p]);values.set(p,v);notify(p)},async remove(p){ops.push(['remove',p]);values.delete(p);notify(p)},serverTimestamp:()=>now};
+ const auth={currentUser:{uid:'alice'}},create=()=>createFriendPresence({db:{},auth,sdk,crypto:webcrypto,clock:()=>now,heartbeatMs:20,expiryMs:100});
+ return {sdk,auth,ops,values,listeners,create,notify,set:(p,v)=>{values.set(p,v);notify(p)},delay:()=>{register=new Promise(r=>release=r)},release:()=>release(),advance:n=>now+=n};
+}
+test('presence requires registration, reports friends, expires stale entries and cleans up',async()=>{const f=fixture(),p=f.create();await flush();assert.deepEqual(f.ops.slice(0,2).map(x=>x[0]),['disconnect','set']);const own=f.ops[0][1];assert.match(own,/^friendPresence\/alice\/[a-f0-9]{32}$/);const states=[];const stop=p.watch('bob',s=>states.push(s));assert.deepEqual(states,['unknown','offline']);f.set('friendPresence/bob',{['b'.repeat(32)]:1000000});assert.equal(states.at(-1),'online');f.advance(200);await new Promise(r=>setTimeout(r,30));assert.equal(states.at(-1),'offline');f.set('.info/connected',false);assert.equal(states.at(-1),'unknown');stop();await p.stop();assert.equal([...f.listeners.values()].reduce((n,x)=>n+x.size,0),0);});
+test('disconnect or sign-out during registration never publishes a stale connection',async()=>{const f=fixture();f.delay();const p=f.create();f.set('.info/connected',false);f.release();await flush();assert.equal(f.ops.filter(x=>x[0]==='set').length,0);await p.stop();});
+test('reconnect uses a new per-tab connection; errors and unavailable clock remain unknown',async()=>{const f=fixture(),p=f.create();await flush();const states=[];p.watch('bob',s=>states.push(s));f.set('.info/serverTimeOffset',null);assert.equal(states.at(-1),'unknown');f.set('.info/connected',false);f.set('.info/connected',true);await flush();const registrations=f.ops.filter(x=>x[0]==='disconnect');assert.equal(registrations.length,2);assert.notEqual(registrations[0][1],registrations[1][1]);f.set('.info/serverTimeOffset',0);assert.equal(states.at(-1),'offline');await p.stop();assert.equal(f.ops.at(-1)[0],'remove');});
