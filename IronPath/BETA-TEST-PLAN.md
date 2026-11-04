@@ -19,6 +19,17 @@ Use the GitHub Pages deployment, separate accounts and at least two devices. Eve
 | Mobile and accessibility | Phone/tablet portrait and landscape, touch, reduced motion, sound, keyboard/focus, legibility. | Not yet run on devices |
 | Network and cost | Short weak-network and background/sleep tests; monitor Firebase usage, especially recovery's full checkpoints. | Not yet measured live |
 
+### Build-spot reservation: focused live test
+
+Run with two signed-in players on separate devices in **co-op**, then repeat with teammates in **four-player co-op** and **2v2**. Keep all players on the current client. Record actual results; do not treat these steps as completed until they are observed.
+
+1. Both players try the same empty pad nearly simultaneously. Only one build sheet should open; the other sees that the spot is occupied by a teammate's selection. The reserved player can inspect a tower without spending supplies.
+2. Close the owner's sheet without building. The other player should be able to select and build on that spot; check the owner's supplies were not charged. Repeat with backdrop dismissal, changing to another pad, and confirming a build.
+3. Leave the owner's build sheet open through several snapshots and a wave; the other player should remain blocked. Close it, then select it with the other player. Test an unavailable tower: a failed build must not spend supplies or give away the open reservation.
+4. Interrupt the selecting player's connection or close their tab, then reconnect. Their abandoned reservation should clear; the teammate must be able to select that pad. If a claim was processed during a brief connection loss, wait for synchronization and check the spot becomes available rather than staying locked until expiry.
+5. In 2v2, teammates contend for the same pad on their shared battlefield, but opponents on the other battlefield can reserve the corresponding pad independently. In 1v1 each opponent's battlefield is separate.
+6. Check both mouse and touch if available, and record any delay, stuck menu, incorrect supply change, duplicate tower, or disagreement between screens. Real network interruption and reconnect timing are important; automated tests cannot prove this case on production devices.
+
 For recovery's cost and limitations see `RECOVERY-ONLINE-TEST.md`. Host reload before the first checkpoint, the 64-takeover limit, abandoned records and network interruption remain known limitations. Invites are enumerable; the host must only approve known players. Client-controlled results, rewards and XP are not cheat-proof. Do not offer trusted rankings or rewards without server authority.
 
 ## Exit criteria
