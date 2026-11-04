@@ -19,12 +19,12 @@ export function completedWaves(state,id){
 }
 export function expectedXP(waves){return waves.reduce((sum,wave)=>sum+waveXP(wave),0);}
 export function waveRewardSummary(state,id){if(state?.individualSupplies){const waves=completedWaves(state,id);return {count:waves.length,xp:expectedXP(waves)};}const count=Number.isSafeInteger(state?.completedWave)&&state.completedWave>0?state.completedWave:0,n=Math.min(count,100);return {count,xp:20*n+5*n*(n+1)+(count-n)*1020};}
-export function nextSteps(profile){
-  if(!profile)return 'Sign in to review progression.';
+export function nextSteps(profile,tr=(text,values={})=>text.replace(/\{([A-Za-z]+)\}/g,(m,k)=>Object.hasOwn(values,k)?String(values[k]):m)){
+  if(!profile)return tr('Sign in to review progression.');
   const p=characterProgress(profile.xp||0),a=readArmory(profile.armory),next=ITEMS.find((item,i)=>!(a.owned&(1<<i)));
-  const left=pointsLeft(parseBuild(profile.skills,p.level),p.level),options=[`Level ${p.level}: ${p.required-p.current} XP to the next skill point.${left?` ${left} skill point${left===1?'':'s'} available in Skills.`:''}`];
-  if(next)options.push(`Next equipment: ${next.name} at wave ${next.wave}.`);
+  const left=pointsLeft(parseBuild(profile.skills,p.level),p.level),options=[tr('Level {level}: {xp} XP to the next skill point.',{level:p.level,xp:p.required-p.current})+(left?tr(left===1?' {count} skill point available in Skills.':' {count} skill points available in Skills.',{count:left}):'')];
+  if(next)options.push(tr('Next equipment: {name} at wave {wave}.',{name:tr(next.name),wave:next.wave}));
   const names={fortify:'Fortification',plating:'Plating',repair:'Repair Crew',gun:'Bunker Gun',supply:'Supply Relay',safeguard:'Emergency Bulwark'};const affordable=Object.keys(names).filter(k=>a[k]<3&&(p.level>=5||!['supply','safeguard'].includes(k))&&a.scrap>=(a[k]+1)*(['supply','safeguard'].includes(k)?50:30));
-  options.push(affordable.length?`Armory upgrades affordable: ${affordable.map(k=>names[k]+' rank '+(a[k]+1)).join(', ')} (${a.scrap} scrap available).`:`Armory: ${a.scrap} scrap available; complete waves for more.`);
+  options.push(affordable.length?tr('Armory upgrades affordable: {items} ({scrap} scrap available).',{items:affordable.map(k=>tr('{name} rank {rank}',{name:tr(names[k]),rank:a[k]+1})).join(', '),scrap:a.scrap}):tr('Armory: {scrap} scrap available; complete waves for more.',{scrap:a.scrap}));
   return options.join(' ');
 }

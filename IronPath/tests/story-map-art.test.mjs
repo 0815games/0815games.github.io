@@ -11,3 +11,11 @@ test('illustrated terrain keeps story landmarks and does not mutate gameplay dat
  assert.ok(calls.some(([op])=>op==='fillRect'),'mission landmarks remain');
  assert.deepEqual(map,before);
 });
+test('battlefield language changes repaint cached terrain without touching player names or match state',async()=>{
+ const {setupLanguage}=await import('../language.mjs?v=20261111-completede1');const selector={value:'',addEventListener(_t,fn){this.change=fn;}},doc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:{},querySelectorAll:()=>[]};setupLanguage({document:doc});
+ const map=structuredClone(getMap(CAMPAIGN[0].mapId)),canvases=[],calls=[],main=context(calls);main.canvas={ownerDocument:{createElement(tag){if(tag==='img')return {};const cs=[],ctx=context(cs),canvas={getContext:()=>ctx,calls:cs};canvases.push(canvas);return canvas;}}};
+ const state=createMatch([createPlayer('local',{name:'BUILD',gender:'female'})],map.id);state.wave=1;const before=structuredClone(state),opts={storyMission:CAMPAIGN[0],path:map.path,pads:map.pads,theme:map.theme,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'local',getTowerRange};
+ drawCartoonBattle(main,state,opts);assert.ok(canvases[0].calls.some(([op,text])=>op==='fillText'&&text==='WRECK'));assert.ok(calls.some(([op,text])=>op==='fillText'&&text==='BUILD'));
+ selector.value='de';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,2);assert.ok(canvases[1].calls.some(([op,text])=>op==='fillText'&&text==='WRACK'));assert.ok(calls.some(([op,text])=>op==='fillText'&&text==='BUILD'));assert.deepEqual(state,before);
+ selector.value='en';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3);
+});
