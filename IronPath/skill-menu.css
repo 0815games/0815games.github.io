@@ -21,3 +21,22 @@
 #skillDialog .skill-build-summary{margin:0;background:#192923;border:1px solid #3b5346;border-radius:7px;color:#d4e1d4}#skillDialog .skill-build-summary summary{min-height:44px;padding:14px;font-size:10px}#skillDialog .skill-build-summary small{color:#a4b9a8}
 #skillDialog .skills-footnote,#skillDialog .development-status{margin:4px 24px 10px;color:#9eb2a3;font-size:11px;line-height:1.5}#skillDialog .skill-actions{position:sticky;bottom:0;display:flex;gap:8px;margin:0;padding:12px 24px calc(12px + env(safe-area-inset-bottom,0px));background:#15231f;border-top:1px solid #364d40;z-index:5}#skillDialog .skill-actions button{flex:1;min-height:46px;margin:0;border:1px solid #5b7564;border-radius:5px;background:#2c4134;color:#e9f0e4;box-shadow:none}#skillDialog .skill-actions .primary{background:#d8c596;color:#1c2d21;border-color:#d8c596}
 @media(max-width:700px){#skillDialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}#skillDialog .skills-header{padding:19px 16px 15px}#skillDialog .skills-header h2{font-size:26px}#skillDialog .skills-overview{margin:12px 14px 0}#skillDialog .skills-overview-note{display:none}#skillDialog .skills-tabs{padding:12px 14px 4px}#skillDialog .skills-filter{padding:7px 14px 0}#skillDialog .skills-workspace{display:flex;flex-direction:column;gap:16px;padding:14px}#skillDialog .skills-sidebar{position:static;order:-1;width:100%}#skillDialog .skill-inspector{padding:14px}#skillDialog .skill-inspector h3{font-size:18px}#skillDialog .skill-inspector button{margin-top:10px}#skillDialog .skills-list{width:100%}#skillDialog .skill-card-grid{grid-template-columns:1fr}#skillDialog .skills-list .skill-card{min-height:128px}#skillDialog .skills-footnote,#skillDialog .development-status{margin-left:14px;margin-right:14px}#skillDialog .skill-actions{padding-left:14px;padding-right:14px}}
+/* Skill types and state use both labels and color; the equipped and viewed
+   outlines remain distinct even when they refer to the same ability. */
+#skillDialog .skill-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:14px 24px 0;color:#c3d2c7;font-size:11px;font-weight:700}
+#skillDialog .skill-legend span::before{content:'';display:inline-block;width:9px;height:9px;margin-right:5px;border-radius:2px;background:#71897a}
+#skillDialog .skill-legend .legend-main::before{background:#e2ba5f}
+#skillDialog .skill-legend .legend-equipped::before{background:#63dcc3}
+#skillDialog .skill-legend .legend-unlocked::before{background:#9bc585}
+#skillDialog .skill-legend .legend-viewing::before{background:#fff2ce}
+#skillDialog .skill-group-heading{border-left:4px solid var(--path-color,#839d8d);padding-left:10px}
+#skillDialog .skills-list .skill-card.is-main-ability{border-color:#c49d4e;background:#352f21}
+#skillDialog .is-main-ability .skill-card-tag{color:#f5d584}
+#skillDialog .skills-list .skill-card.is-specialist-ability{border-left:4px solid var(--path-color)}
+#skillDialog .skills-list .skill-card.is-unlocked:not(.is-active) .skill-card-state{color:#b4dc9e}
+#skillDialog .skills-list .skill-card.is-active{border:2px solid #63dcc3;background:#153d36;box-shadow:inset 0 0 0 1px #317e70}
+#skillDialog .skills-list .skill-card.is-active .skill-card-state{color:#8ff2db}
+#skillDialog .skills-list .skill-card.is-selected{outline:2px solid #fff0c7;outline-offset:-3px}
+#skillDialog .skill-card-grid>.skill-inspector{grid-column:1/-1;min-width:0;margin:0 0 8px;border-left:4px solid #e2ba5f}
+#skillDialog .skill-inspector[hidden]{display:none}
+@media(max-width:700px){#skillDialog .skill-legend{padding:12px 14px 0}#skillDialog .skills-sidebar{order:0}#skillDialog .skill-card-grid>.skill-inspector{margin:0 0 8px}}

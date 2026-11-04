@@ -22,6 +22,7 @@ export const germanArmory=Object.freeze({
   'Collect all six pieces of equipment.':'Sammle alle sechs Ausrüstungsgegenstände.', 'Collect all ten pieces of equipment.':'Sammle alle zehn Ausrüstungsgegenstände.',
   'Buy six total bunker upgrade ranks.':'Kaufe insgesamt sechs Ränge an Bunkerverbesserungen.', 'Buy twelve total bunker upgrade ranks.':'Kaufe insgesamt zwölf Ränge an Bunkerverbesserungen.',
   'Earn the Demolition Pouch at wave 14.':'Verdiene die Sprengstofftasche in Welle 14.', 'Earn the Quartermaster Badge at wave 18.':'Verdiene das Quartiermeister-Abzeichen in Welle 18.', 'Earn the Tank Spotter Kit at wave 20.':'Verdiene die Panzeraufklärer-Ausrüstung in Welle 20.',
+  'Skill highlights':'Fähigkeiten-Markierungen', 'Main ability':'Hauptfähigkeit', 'Equipped':'Ausgerüstet', 'Unlocked':'Freigeschaltet', 'Viewing':'Ausgewählt',
   'FIELD EQUIPMENT / 02':'FELDAUSRÜSTUNG / 02', 'Close armory':'Waffenkammer schließen', 'Armory categories':'Waffenkammer-Kategorien',
   'Service record':'Dienstakte', 'PERMANENT MEDALS':'DAUERHAFTE AUSZEICHNUNGEN', 'Bunker upgrades':'Bunkerverbesserungen', 'SHARED DEFENSE':'GEMEINSAME VERTEIDIGUNG', 'Your equipment':'Deine Ausrüstung', 'ONE SLOT':'EIN PLATZ',
   'Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.':'Auf Stufe 5 wird das Veteranen-Kit freigeschaltet, auf Stufe 10 der Bossjäger. Wähle eine Spezialisierung, wenn ein Turm Stufe 3 erreicht.',
