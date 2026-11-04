@@ -5,8 +5,8 @@ Work through the remaining items before stress and balance testing. Previously r
 - [ ] Continue the English/German translation incrementally. Untranslated content stays in English; incorporate feedback from testing.
 - [x] Add a fullscreen option for desktop browsers, with all controls needed to play available in fullscreen.
 - [ ] Validate fullscreen in real desktop browsers, including gameplay, dialogs, and exiting with Escape.
-- [ ] Check online status for invitations.
-- [ ] When new skill points are available, highlight the Skills button and show the number of unspent points. Do not show a separate message.
+- [x] Check online status for invitations. Real two-account testing remains needed.
+- [x] When new skill points are available, highlight the Skills button and show the number of unspent points. Do not show a separate message.
 - [ ] For new friend requests, highlight the Friends button and show the number of requests, rather than a separate notification.
 - [ ] Add a friend stats window so players can inspect a friend's level, armory, skills, and other relevant stats before playing together.
 - [ ] After the items above: stress and balance test single-player, Endless, and all multiplayer variants, including real-device testing.
