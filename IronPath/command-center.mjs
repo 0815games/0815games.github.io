@@ -1,4 +1,4 @@
-import {translate,translateText} from './language.mjs?v=20261110-storyde1';
+import {translate,translateText} from './language.mjs?v=20261111-completede1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261102-longterm1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261103-cinematic1';
@@ -12,10 +12,10 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  }
  function showBattle(pauseSolo=false,mode=null){const game=getGame(),workspace=$('gameWorkspace');workspace.dataset.screen=mode||(game?.isOnlineMatch?.()?'online':game?.getSoloMode?.()||'endless');workspace.dataset.online=String(!!game?.isOnlineMatch?.());$('commandCenter').hidden=true;workspace.hidden=false;game?.setMenuOpen(pauseSolo===true);}
  function showLobby(){showBattle(true,'lobby');}
- function showMenu(){if(isPartyActive()){$('saveStatus').textContent='Leave your multiplayer party before returning to the Command Center.';return false;}closeParty();getGame()?.setMenuOpen(true);$('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
+ function showMenu(){if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);$('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
  $('menuResume').onclick=()=>{if(isPartyActive()&&!getGame()?.isOnlineMatch?.()){showLobby();openParty();}else showBattle();};
- $('menuCampaign').onclick=()=>{if(isPartyActive()){$('saveStatus').textContent='Leave your multiplayer party before choosing a solo operation.';return;}showBattle(false,'campaign');getGame()?.chooseStory();};
- $('menuEndless').onclick=async()=>{if(isPartyActive()){$('saveStatus').textContent='Leave your multiplayer party before choosing a solo operation.';return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};
+ $('menuCampaign').onclick=()=>{if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(false,'campaign');getGame()?.chooseStory();};
+ $('menuEndless').onclick=async()=>{if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};
  $('menuMultiplayer').onclick=()=>{showLobby();openParty();};
  $('returnOnline').onclick=()=>{if(getGame()?.isOnlineMatch?.()){closeParty();showBattle();}};
  $('menuTutorial').onclick=()=>getGame()?.showTutorial();$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;

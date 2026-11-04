@@ -1,3 +1,4 @@
+import {translateText as tr} from './language.mjs?v=20261111-completede1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -35,7 +36,7 @@ export function prepareStoryArt(doc){
 function building(ctx,x,y,kind,s,art=null){
  const image=art?.get(kind);if(image){const scale=Math.min(64/(image.naturalWidth||256),56/(image.naturalHeight||256)),w=(image.naturalWidth||256)*scale,h=(image.naturalHeight||256)*scale;ctx.drawImage(image,x-w/2,y+20-h,w,h);return;}
  // Neutral field marker while the illustrated asset is unavailable.
- ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON'})[kind]||'SITE',x,y+4);ctx.restore();
+ ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(tr(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON'})[kind]||'SITE'),x,y+4);ctx.restore();
 }
 export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null,art=null){
  const s=storyMapStyle(mission?.id);if(!s)return false;ctx.save();ctx.fillStyle=s.ground;ctx.fillRect(0,0,width,height);

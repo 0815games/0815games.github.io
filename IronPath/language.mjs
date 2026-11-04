@@ -1,3 +1,4 @@
+import {germanFinal} from './localization-final-de.mjs?v=20261111-completede1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
@@ -72,11 +73,12 @@ const messages={
 };
 export const SUPPORTED_LANGUAGES=['en','de'];
 let active='en';
+export const getLanguage=()=>active;
 const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
   if(typeof text!=='string')return String(text??'');
-  const localized=active==='de'?(germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanCampaign[text]??germanCinematics[text]??text):text;
+  const localized=active==='de'?(germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
   return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){
@@ -89,7 +91,7 @@ export function setupLanguage({document,storage,onChange=()=>{}}){
   function render(){active=lang;document.documentElement.lang=lang;selector.value=lang;document.getElementById('languagePreviewNote').hidden=lang!=='de';
     for(const element of document.querySelectorAll('[data-i18n]')){const key=element.getAttribute('data-i18n');if(Object.hasOwn(messages,key))element.textContent=translate(key);}
     for(const element of document.querySelectorAll('[data-i18n-text]'))element.textContent=translateText(element.getAttribute('data-i18n-text'));
-    for(const attr of ['placeholder','aria-label'])for(const element of document.querySelectorAll(`[data-i18n-${attr}]`))element.setAttribute(attr,translateText(element.getAttribute(`data-i18n-${attr}`)));
+    for(const attr of ['placeholder','aria-label','title'])for(const element of document.querySelectorAll(`[data-i18n-${attr}]`))element.setAttribute(attr,translateText(element.getAttribute(`data-i18n-${attr}`)));
     onChange(lang);for(const listener of listeners)listener(lang);
   }
   selector.addEventListener('change',()=>{if(!SUPPORTED_LANGUAGES.includes(selector.value)){selector.value=lang;return;}lang=selector.value;try{storage?.setItem('ironpath:language',lang);}catch{}render();});

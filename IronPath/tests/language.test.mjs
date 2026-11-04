@@ -71,3 +71,11 @@ test('known command errors translate without changing simulation errors',async()
 test('account error templates preserve unknown codes',()=>{
  const f=fixture('de');assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es erneut. (auth/test)');f.selector.value='en';f.selector.change();assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Could not complete the request. Please try again. (auth/test)');
 });
+
+test('generated map names, accessibility titles and dynamic engine errors translate reversibly',async()=>{
+ const {MAPS}=await import('../maps.mjs');const {localizeGameMessage}=await import('../game-localization.mjs');const f=fixture('de');
+ for(const map of Object.values(MAPS))assert.notEqual(translateText(map.name),map.name,map.name);
+ assert.equal(translateText('BUILD'),'BAUEN');assert.equal(translateText('No skill'),'Keine Fähigkeit');assert.equal(translateText('Scrollable battlefield'),'Verschiebbares Schlachtfeld');
+ assert.equal(localizeGameMessage('Not enough supplies. This tower costs 130.',translateText),'Nicht genügend Vorräte. Dieser Turm kostet 130.');assert.equal(localizeGameMessage('Airstrike is recharging.',translateText),'Luftschlag lädt sich noch auf.');assert.equal(localizeGameMessage('Player <BUILD>',translateText),'Player <BUILD>');
+ f.selector.value='en';f.selector.change();assert.equal(localizeGameMessage('Not enough supplies. You need 42.',translateText),'Not enough supplies. You need 42.');
+});

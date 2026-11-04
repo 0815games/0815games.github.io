@@ -1,22 +1,22 @@
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261110-storyde1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261111-completede1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261110-storyde1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261111-completede1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261110-storyde1';
-import {createCommandCenter} from './command-center.mjs?v=20261110-storyde1';
+import {setupFriends} from './friends-ui.mjs?v=20261111-completede1';
+import {createCommandCenter} from './command-center.mjs?v=20261111-completede1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261105-prestige1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261110-storyde1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261111-completede1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
-import {createConfirmation} from './confirmation.mjs?v=20261110-storyde1';
+import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
@@ -28,7 +28,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261110-storyde1';
+import { startGame } from './game.js?v=20261111-completede1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261105-prestige1';
 import { createPlayer } from './match.mjs?v=20261105-prestige1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -160,7 +160,7 @@ function renderArmory(){
   const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent=translateText('Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.');medals.parentElement.append(veteran);
   const defenses=section('Bunker upgrades','SHARED DEFENSE','defenses');
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.'],['supply','Supply Relay','From wave 6, each active soldier receives 3 supplies per rank after each wave. Unlocks at soldier level 5.'],['safeguard','Emergency Bulwark','From wave 6, bunker takes 2% less damage per rank while below half health. Unlocks at soldier level 5.']]){
-    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:translateText('Upgrade {name}?',{name:translateText(name)}),text:translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:translateText('UPGRADE')})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
+    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:()=>translateText('Upgrade {name}?',{name:translateText(name)}),text:()=>translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:'UPGRADE'})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
   const equipment=section('Your equipment','ONE SLOT','equipment');
   ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:translateText(item.name),description:translateText(item.description),eyebrow:equipped?translateText('EQUIPPED'):owned?translateText('UNLOCKED'):translateText('WAVE {wave} REWARD',{wave:item.wave}),state:equipped?'is-equipped':owned?'':'is-locked',label:owned?translateText(equipped?'EQUIPPED':'EQUIP'):translateText('UNLOCKS ON WAVE {wave}',{wave:item.wave}),disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
@@ -177,8 +177,8 @@ async function saveArmory(change){
   }catch(error){if(version===sessionVersion)$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}
   finally{if(version===sessionVersion)savingArmory=false;}
 }
-$('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent='Return to the Command Center to open the armory, or leave your party first.';return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
-function closeArmory(){if(savingArmory){$('armoryStatus').textContent='Saving… Please wait before closing.';return;}if($('armoryDialog').open)$('armoryDialog').close();}
+$('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to open the armory, or leave your party first.');return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
+function closeArmory(){if(savingArmory){$('armoryStatus').textContent=translateText('Saving… Please wait before closing.');return;}if($('armoryDialog').open)$('armoryDialog').close();}
 $('armoryClose').onclick=closeArmory;
 $('armoryDialog').addEventListener('cancel',event=>{event.preventDefault();closeArmory();});
 bindDialogBackdrop($('armoryDialog'),closeArmory);
