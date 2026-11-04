@@ -54,3 +54,5 @@
  #gameView .battle-foot .radio-label{font-size:8px}
 }
 @media(min-width:851px){#gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
+/* The radio message is the last span; older mobile styles hid the old map label. */
+#gameView .battle-foot #message{display:block;min-width:0}
