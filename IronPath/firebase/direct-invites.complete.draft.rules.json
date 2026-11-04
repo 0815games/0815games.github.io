@@ -1,0 +1,530 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "players": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.exists()",
+        ".validate": "newData.hasChildren(['name', 'gender', 'xp']) && (!data.child('campaign').exists() || newData.child('campaign').exists()) && (!data.child('storyProgress').exists() || newData.child('storyProgress').exists())",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && (!data.exists() || newData.val() === data.val())"
+        },
+        "gender": {
+          ".validate": "(newData.val() === 'male' || newData.val() === 'female') && (!data.exists() || newData.val() === data.val())"
+        },
+        "xp": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10000000 && newData.val() % 1 === 0 && (!data.exists() ? newData.val() === 0 : newData.val() >= data.val())"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "coopRewards": {
+          "$partyId": {
+            ".validate": "$partyId.matches(/^[a-f0-9]{32}$/) && newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 1048575 && (!data.exists() || newData.val() >= data.val())"
+          }
+        },
+        "skills": {
+          ".validate": "newData.isString() && newData.val().matches(/^([0-3],){4}[0-3];(assault|engineer|logistics|medic|recon)(;[01]{10}(;[12]|;[012];[01]{40}([01]{15}([01]{20})?)?)?)?$/)"
+        },
+        "armory": {
+          ".validate": "newData.hasChildren(['scrap','fortify','plating','owned','equipped'])",
+          "$other": {
+            ".validate": false
+          },
+          "scrap": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 10000000"
+          },
+          "fortify": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "plating": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "repair": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "gun": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "owned": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 1023"
+          },
+          "equipped": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 10"
+          },
+          "supply": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          },
+          "safeguard": {
+            ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3"
+          }
+        },
+        "campaign": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 3 && (!data.exists() ? newData.val() <= 1 : (newData.val() >= data.val() && newData.val() <= data.val() + 1))"
+        },
+        "storyProgress": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 12 && (!data.exists() ? newData.val() <= 1 : (newData.val() >= data.val() && newData.val() <= data.val() + 1))"
+        }
+      }
+    },
+    "parties": {
+      "$partyId": {
+        "hostId": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/)",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && !data.exists() && newData.isString() && newData.val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "guestId": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('parties').child($partyId).child('hostId').exists()",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('parties').child($partyId).child('hostId').exists() && ((auth.uid === root.child('parties').child($partyId).child('hostId').val() && !data.exists() && newData.isString() && newData.val() !== auth.uid && (!root.child('parties').child($partyId).child('startedGuest').exists() || root.child('parties').child($partyId).child('startedGuest').val() === newData.val()) && root.child('partyCodes').child(root.child('parties').child($partyId).child('inviteCode').val()).child('hostId').val() === auth.uid && root.child('partyCodes').child(root.child('parties').child($partyId).child('inviteCode').val()).child('partyId').val() === $partyId && root.child('partyCodes').child(root.child('parties').child($partyId).child('inviteCode').val()).child('requests').child(newData.val()).exists()) || (auth.uid === data.val() && !newData.exists()))",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "inputs": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()) && ($uid === auth.uid || auth.uid === root.child('parties').child($partyId).child('hostId').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()))",
+            ".validate": "newData.isString() && newData.val().length <= 4096"
+          }
+        },
+        "views": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()))",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() && ($uid === root.child('parties').child($partyId).child('hostId').val() || $uid === root.child('parties').child($partyId).child('guestId').val() || $uid === root.child('parties').child($partyId).child('startedGuest').val())) && newData.exists()",
+            ".validate": "newData.isString() && newData.val().length <= 262144"
+          }
+        },
+        "presence": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())",
+            "$connection": {
+              ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && $connection.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()))",
+              ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 30000"
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        },
+        ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && data.exists() && !newData.exists() && data.child('hostId').val() === auth.uid",
+        "profiles": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val()) && ($uid === root.child('parties').child($partyId).child('hostId').val() || $uid === root.child('parties').child($partyId).child('guestId').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === $uid && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())) && (!newData.exists() || !root.child('parties').child($partyId).child('startedGuest').exists())",
+            ".validate": "newData.hasChildren(['name','gender','level'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+            },
+            "gender": {
+              ".validate": "newData.val() === 'male' || newData.val() === 'female'"
+            },
+            "level": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 1000"
+            },
+            "$other": {
+              ".validate": false
+            },
+            "skills": {
+              ".validate": "newData.isString() && newData.val().matches(/^([0-3],){4}[0-3];(assault|engineer|logistics|medic|recon)(;[01]{10}(;[12]|;[012];[01]{40}([01]{15}([01]{20})?)?)?)?$/)"
+            },
+            "loadout": {
+              ".validate": "newData.isString() && newData.val().matches(/^([0-3],){2}(10|[0-9])(;[0-3],[0-3](;[0-3],[0-3])?)?$/)"
+            }
+          }
+        },
+        "startedGuest": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === root.child('parties').child($partyId).child('hostId').val() && !data.exists() && newData.isString() && newData.val() === root.child('parties').child($partyId).child('guestId').val() && root.child('parties').child($partyId).child('profiles').child(auth.uid).exists() && root.child('parties').child($partyId).child('profiles').child(newData.val()).exists()",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "inviteCode": {
+          ".read": "auth != null && (auth.uid === root.child('parties').child($partyId).child('hostId').val() || auth.uid === root.child('parties').child($partyId).child('guestId').val())",
+          ".write": "auth != null && auth.uid === root.child('parties').child($partyId).child('hostId').val() && !data.exists() && newData.isString() && newData.val().matches(/^[0-9]{4}$/)",
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}$/)"
+        }
+      }
+    },
+    "partyCodes": {
+      "$code": {
+        ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && data.exists() && !newData.exists() && data.child('hostId').val() === auth.uid",
+        "hostId": {
+          ".read": "auth != null && $code.matches(/^[0-9]{4}$/)",
+          ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && !data.exists() && newData.isString() && newData.val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "partyId": {
+          ".read": "auth != null && $code.matches(/^[0-9]{4}$/)",
+          ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && !data.exists() && auth.uid === root.child('partyCodes').child($code).child('hostId').val() && newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/) && root.child('parties').child(newData.val()).child('hostId').val() === auth.uid && root.child('parties').child(newData.val()).child('inviteCode').val() === $code",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+        },
+        "requests": {
+          ".read": "auth != null && auth.uid === root.child('partyCodes').child($code).child('hostId').val()",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && root.child('partyCodes').child($code).child('partyId').exists() && (auth.uid === $uid || (auth.uid === root.child('partyCodes').child($code).child('hostId').val() && !newData.exists()))",
+            ".validate": "newData.hasChildren(['name']) && newData.child('name').val() === root.child('players').child($uid).child('name').val()",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "fourParties": {
+      "$partyId": {
+        ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && data.exists() && !newData.exists() && data.child('hostId').val() === auth.uid",
+        "hostId": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/)",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && !data.exists() && newData.isString() && newData.val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "inviteCode": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && !data.exists() && newData.isString() && newData.val().matches(/^[0-9]{4}$/)",
+          ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}$/)"
+        },
+        "slots": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && ((auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) || root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('requests').child(auth.uid).exists())",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && !root.child('fourParties').child($partyId).child('started').exists() && root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('hostId').val() === auth.uid && root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('partyId').val() === $partyId",
+          ".validate": "(!newData.child('one').exists() || !newData.child('two').exists() || newData.child('one').val() !== newData.child('two').val()) && (!newData.child('one').exists() || !newData.child('three').exists() || newData.child('one').val() !== newData.child('three').val()) && (!newData.child('two').exists() || !newData.child('three').exists() || newData.child('two').val() !== newData.child('three').val()) && (!newData.child('one').exists() || newData.child('one').val() === data.child('one').val() || root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('requests').child(newData.child('one').val()).exists()) && (!newData.child('three').exists() || newData.child('three').val() === data.child('three').val() || root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('requests').child(newData.child('three').val()).exists()) && (!newData.child('two').exists() || newData.child('two').val() === data.child('two').val() || root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('requests').child(newData.child('two').val()).exists())",
+          "$slot": {
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && $slot.matches(/^(one|two|three)$/) && !root.child('fourParties').child($partyId).child('started').exists() && ((data.val() === auth.uid && !newData.exists()) || (!data.exists() && newData.val() === auth.uid && root.child('fourParties').child($partyId).child('hostId').val() !== auth.uid && root.child('fourParties').child($partyId).child('slots/one').val() !== auth.uid && root.child('fourParties').child($partyId).child('slots/two').val() !== auth.uid && root.child('fourParties').child($partyId).child('slots/three').val() !== auth.uid && root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('hostId').val() === root.child('fourParties').child($partyId).child('hostId').val() && root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('partyId').val() === $partyId && root.child('fourCodes').child(root.child('fourParties').child($partyId).child('inviteCode').val()).child('requests').child(auth.uid).child('expectedPartyId').val() === $partyId && root.child('coopInvites').child(auth.uid).child(root.child('fourParties').child($partyId).child('hostId').val()).child('partyId').val() === $partyId && root.child('coopInvites').child(auth.uid).child(root.child('fourParties').child($partyId).child('hostId').val()).child('code').val() === root.child('fourParties').child($partyId).child('inviteCode').val() && root.child('coopInvites').child(auth.uid).child(root.child('fourParties').child($partyId).child('hostId').val()).child('createdAt').val() >= now - 1800000 && (root.child('friendships').child(auth.uid).child(root.child('fourParties').child($partyId).child('hostId').val()).child('status').val() === 'accepted' || root.child('friendships').child(root.child('fourParties').child($partyId).child('hostId').val()).child(auth.uid).child('status').val() === 'accepted')))",
+            ".validate": "$slot.matches(/^(one|two|three)$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 128 && newData.val() !== root.child('fourParties').child($partyId).child('hostId').val()"
+          }
+        },
+        "config": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && !root.child('fourParties').child($partyId).child('started').exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['mode','teams']) && (newData.child('mode').val() === 'coop' || newData.child('mode').val() === 'versus' || newData.child('mode').val() === 'four-coop' || newData.child('mode').val() === 'two-vs-two') && newData.child('teams').hasChildren(['0','1','2','3']) && (newData.child('teams/0').val() + newData.child('teams/1').val() + newData.child('teams/2').val() + newData.child('teams/3').val()) === 2",
+          "mode": {
+            ".validate": "newData.val() === 'coop' || newData.val() === 'versus' || newData.val() === 'four-coop' || newData.val() === 'two-vs-two'"
+          },
+          "teams": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-3]$/) && newData.isNumber() && (newData.val() === 0 || newData.val() === 1)"
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+        "profiles": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && ($uid === root.child('fourParties').child($partyId).child('hostId').val() || $uid === root.child('fourParties').child($partyId).child('slots/one').val() || $uid === root.child('fourParties').child($partyId).child('slots/two').val() || $uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === $uid && !root.child('fourParties').child($partyId).child('started').exists() && (!newData.exists() || (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()))",
+            ".validate": "newData.hasChildren(['name','gender','level'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && newData.val() === root.child('players').child($uid).child('name').val()"
+            },
+            "gender": {
+              ".validate": "(newData.val() === 'male' || newData.val() === 'female') && newData.val() === root.child('players').child($uid).child('gender').val()"
+            },
+            "level": {
+              ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 1000"
+            },
+            "$other": {
+              ".validate": false
+            },
+            "skills": {
+              ".validate": "newData.isString() && newData.val().matches(/^([0-3],){4}[0-3];(assault|engineer|logistics|medic|recon)(;[01]{10}(;[12]|;[012];[01]{40}([01]{15}([01]{20})?)?)?)?$/)"
+            },
+            "loadout": {
+              ".validate": "newData.isString() && newData.val().matches(/^([0-3],){2}(10|[0-9])(;[0-3],[0-3](;[0-3],[0-3])?)?$/)"
+            }
+          }
+        },
+        "started": {
+          ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+          ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && !data.exists() && newData.exists()",
+          ".validate": "newData.hasChildren(['hostId','playerIds','mode','teams']) && newData.child('playerIds').hasChildren(['0','1']) && newData.child('teams').hasChildren(['0','1','2','3']) && newData.child('hostId').val() === root.child('fourParties').child($partyId).child('hostId').val() && newData.child('playerIds/0').val() === root.child('fourParties').child($partyId).child('hostId').val() && newData.child('mode').val() === root.child('fourParties').child($partyId).child('config/mode').val() && newData.child('teams/0').val() === root.child('fourParties').child($partyId).child('config/teams/0').val() && newData.child('teams/1').val() === root.child('fourParties').child($partyId).child('config/teams/1').val() && newData.child('teams/2').val() === root.child('fourParties').child($partyId).child('config/teams/2').val() && newData.child('teams/3').val() === root.child('fourParties').child($partyId).child('config/teams/3').val() && ((root.child('fourParties').child($partyId).child('slots/one').exists() === false && root.child('fourParties').child($partyId).child('slots/two').exists() === false && root.child('fourParties').child($partyId).child('slots/three').exists() && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/three').val() && newData.child('playerIds/2').exists() === false && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && (newData.child('mode').val() === 'coop' || newData.child('mode').val() === 'versus')) || (root.child('fourParties').child($partyId).child('slots/one').exists() === false && root.child('fourParties').child($partyId).child('slots/two').exists() && root.child('fourParties').child($partyId).child('slots/three').exists() === false && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/two').val() && newData.child('playerIds/2').exists() === false && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && (newData.child('mode').val() === 'coop' || newData.child('mode').val() === 'versus')) || (root.child('fourParties').child($partyId).child('slots/one').exists() === false && root.child('fourParties').child($partyId).child('slots/two').exists() && root.child('fourParties').child($partyId).child('slots/three').exists() && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/two').val() && newData.child('playerIds/2').val() === root.child('fourParties').child($partyId).child('slots/three').val() && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/2').val()).exists() && (newData.child('mode').val() === 'four-coop')) || (root.child('fourParties').child($partyId).child('slots/one').exists() && root.child('fourParties').child($partyId).child('slots/two').exists() === false && root.child('fourParties').child($partyId).child('slots/three').exists() === false && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/one').val() && newData.child('playerIds/2').exists() === false && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && (newData.child('mode').val() === 'coop' || newData.child('mode').val() === 'versus')) || (root.child('fourParties').child($partyId).child('slots/one').exists() && root.child('fourParties').child($partyId).child('slots/two').exists() === false && root.child('fourParties').child($partyId).child('slots/three').exists() && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/one').val() && newData.child('playerIds/2').val() === root.child('fourParties').child($partyId).child('slots/three').val() && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/2').val()).exists() && (newData.child('mode').val() === 'four-coop')) || (root.child('fourParties').child($partyId).child('slots/one').exists() && root.child('fourParties').child($partyId).child('slots/two').exists() && root.child('fourParties').child($partyId).child('slots/three').exists() === false && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/one').val() && newData.child('playerIds/2').val() === root.child('fourParties').child($partyId).child('slots/two').val() && newData.child('playerIds/3').exists() === false && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/2').val()).exists() && (newData.child('mode').val() === 'four-coop')) || (root.child('fourParties').child($partyId).child('slots/one').exists() && root.child('fourParties').child($partyId).child('slots/two').exists() && root.child('fourParties').child($partyId).child('slots/three').exists() && newData.child('playerIds/1').val() === root.child('fourParties').child($partyId).child('slots/one').val() && newData.child('playerIds/2').val() === root.child('fourParties').child($partyId).child('slots/two').val() && newData.child('playerIds/3').val() === root.child('fourParties').child($partyId).child('slots/three').val() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/0').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/1').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/2').val()).exists() && root.child('fourParties').child($partyId).child('profiles').child(newData.child('playerIds/3').val()).exists() && (newData.child('mode').val() === 'four-coop' || newData.child('mode').val() === 'two-vs-two')))",
+          "hostId": {
+            ".validate": "newData.isString()"
+          },
+          "mode": {
+            ".validate": "newData.val() === 'coop' || newData.val() === 'versus' || newData.val() === 'four-coop' || newData.val() === 'two-vs-two'"
+          },
+          "playerIds": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-3]$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+            }
+          },
+          "teams": {
+            "$i": {
+              ".validate": "$i.matches(/^[0-3]$/) && newData.isNumber() && (newData.val() === 0 || newData.val() === 1)"
+            }
+          },
+          "$other": {
+            ".validate": false
+          },
+          "recovery": {
+            ".validate": "newData.val() === true"
+          }
+        },
+        "inputs": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && (auth.uid === $uid || auth.uid === root.child('fourParties').child($partyId).child('hostId').val()) && ($uid === root.child('fourParties').child($partyId).child('hostId').val() || $uid === root.child('fourParties').child($partyId).child('slots/one').val() || $uid === root.child('fourParties').child($partyId).child('slots/two').val() || $uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === $uid && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            ".validate": "newData.isString() && newData.val().length <= 4096"
+          }
+        },
+        "views": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === $uid && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && ($uid === root.child('fourParties').child($partyId).child('hostId').val() || $uid === root.child('fourParties').child($partyId).child('slots/one').val() || $uid === root.child('fourParties').child($partyId).child('slots/two').val() || $uid === root.child('fourParties').child($partyId).child('slots/three').val()) && newData.exists()",
+            ".validate": "newData.isString() && newData.val().length <= 262144"
+          }
+        },
+        "presence": {
+          "$uid": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && ($uid === root.child('fourParties').child($partyId).child('hostId').val() || $uid === root.child('fourParties').child($partyId).child('slots/one').val() || $uid === root.child('fourParties').child($partyId).child('slots/two').val() || $uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            "$connection": {
+              ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && $connection.matches(/^[a-f0-9]{32}$/) && auth.uid === $uid && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+              ".validate": "newData.isNumber() && newData.val() <= now + 5000 && newData.val() >= now - 30000"
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        },
+        "recovery": {
+          "lease": {
+            ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val())",
+            ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && newData.exists() && ((!data.exists() && newData.child('generation').val() === 1 && !newData.child('previousOwner').exists() && newData.child('history').val() === '') || (data.exists() && newData.child('generation').val() === data.child('generation').val() + 1 && newData.child('owner').val() !== data.child('owner').val() && newData.child('previousOwner').val() === data.child('owner').val() && newData.child('history').val() === (data.child('history').val() === '' ? data.child('owner').val() : data.child('history').val() + ',' + data.child('owner').val())))",
+            ".validate": "newData.hasChildren(['generation','owner','history'])",
+            "generation": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000000 && newData.val() % 1 === 0"
+            },
+            "owner": {
+              ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+            },
+            "history": {
+              ".validate": "newData.isString() && newData.val().length <= 4096"
+            },
+            "previousOwner": {
+              ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "sessions": {
+            "$owner": {
+              ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val()",
+              ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === root.child('fourParties').child($partyId).child('hostId').val() && $owner === root.child('fourParties').child($partyId).child('recovery').child('lease').child('owner').val() && newData.exists()",
+              ".validate": "newData.hasChildren(['generation','checkpoint','views']) && newData.child('generation').val() === root.child('fourParties').child($partyId).child('recovery').child('lease').child('generation').val() && newData.child('views').child(root.child('fourParties').child($partyId).child('started').child('playerIds').child('0').val()).exists() && newData.child('views').child(root.child('fourParties').child($partyId).child('started').child('playerIds').child('1').val()).exists() && (!root.child('fourParties').child($partyId).child('started').child('playerIds').child('2').exists() || newData.child('views').child(root.child('fourParties').child($partyId).child('started').child('playerIds').child('2').val()).exists()) && (!root.child('fourParties').child($partyId).child('started').child('playerIds').child('3').exists() || newData.child('views').child(root.child('fourParties').child($partyId).child('started').child('playerIds').child('3').val()).exists())",
+              "generation": {
+                ".validate": "newData.isNumber() && newData.val() >= 1"
+              },
+              "checkpoint": {
+                ".validate": "newData.isString() && newData.val().length <= 1048576"
+              },
+              "views": {
+                "$uid": {
+                  ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === $uid && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && $owner === root.child('fourParties').child($partyId).child('recovery').child('lease').child('owner').val()",
+                  ".validate": "($uid === root.child('fourParties').child($partyId).child('started').child('playerIds').child('0').val() || $uid === root.child('fourParties').child($partyId).child('started').child('playerIds').child('1').val() || $uid === root.child('fourParties').child($partyId).child('started').child('playerIds').child('2').val() || $uid === root.child('fourParties').child($partyId).child('started').child('playerIds').child('3').val()) && newData.isString() && newData.val().length <= 262144"
+                }
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          },
+          "inputs": {
+            "$owner": {
+              "$uid": {
+                ".read": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && (auth.uid === $uid || auth.uid === root.child('fourParties').child($partyId).child('hostId').val()) && ($uid === root.child('fourParties').child($partyId).child('hostId').val() || $uid === root.child('fourParties').child($partyId).child('slots/one').val() || $uid === root.child('fourParties').child($partyId).child('slots/two').val() || $uid === root.child('fourParties').child($partyId).child('slots/three').val()) && $owner === root.child('fourParties').child($partyId).child('recovery').child('lease').child('owner').val()",
+                ".write": "auth != null && $partyId.matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child($partyId).child('started').exists() && auth.uid === $uid && (auth.uid === root.child('fourParties').child($partyId).child('hostId').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/one').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/two').val() || auth.uid === root.child('fourParties').child($partyId).child('slots/three').val()) && $owner === root.child('fourParties').child($partyId).child('recovery').child('lease').child('owner').val()",
+                ".validate": "newData.isString() && newData.val().length <= 4096"
+              }
+            }
+          }
+        }
+      }
+    },
+    "fourCodes": {
+      "$code": {
+        ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && data.exists() && !newData.exists() && data.child('hostId').val() === auth.uid",
+        "hostId": {
+          ".read": "auth != null && $code.matches(/^[0-9]{4}$/)",
+          ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && !data.exists() && newData.isString() && newData.val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "partyId": {
+          ".read": "auth != null && $code.matches(/^[0-9]{4}$/)",
+          ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && !data.exists() && auth.uid === root.child('fourCodes').child($code).child('hostId').val() && newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/) && root.child('fourParties').child(newData.val()).child('hostId').val() === auth.uid && root.child('fourParties').child(newData.val()).child('inviteCode').val() === $code",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+        },
+        "requests": {
+          ".read": "auth != null && auth.uid === root.child('fourCodes').child($code).child('hostId').val()",
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && $code.matches(/^[0-9]{4}$/) && root.child('fourCodes').child($code).child('partyId').exists() && (auth.uid === $uid || (auth.uid === root.child('fourCodes').child($code).child('hostId').val() && !newData.exists()))",
+            ".validate": "newData.hasChildren(['name']) && newData.child('name').val() === root.child('players').child($uid).child('name').val() && (!newData.child('expectedPartyId').exists() || (newData.child('expectedPartyId').val() === root.child('fourCodes').child($code).child('partyId').val() && !root.child('fourParties').child(newData.child('expectedPartyId').val()).child('started').exists() && root.child('coopInvites').child($uid).child(root.child('fourCodes').child($code).child('hostId').val()).child('partyId').val() === newData.child('expectedPartyId').val() && root.child('coopInvites').child($uid).child(root.child('fourCodes').child($code).child('hostId').val()).child('code').val() === $code && root.child('coopInvites').child($uid).child(root.child('fourCodes').child($code).child('hostId').val()).child('createdAt').val() >= now - 1800000 && (root.child('friendships').child($uid).child(root.child('fourCodes').child($code).child('hostId').val()).child('status').val() === 'accepted' || root.child('friendships').child(root.child('fourCodes').child($code).child('hostId').val()).child($uid).child('status').val() === 'accepted')))",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+            },
+            "$other": {
+              ".validate": false
+            },
+            "expectedPartyId": {
+              ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+            }
+          }
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendCodes": {
+      "$code": {
+        ".read": "auth != null && $code.matches(/^[a-f0-9]{32}$/)",
+        ".write": "auth != null && $code.matches(/^[a-f0-9]{32}$/) && !data.exists() && newData.child('uid').val() === auth.uid && root.child('players').child(auth.uid).exists()",
+        ".validate": "newData.hasChildren(['uid','name']) && newData.child('name').val() === root.child('players').child(auth.uid).child('name').val()",
+        "uid": {
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "name": {
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+    "friendPrivate": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "code": {
+          ".write": "auth != null && auth.uid === $uid && !data.exists() && newData.isString() && root.child('friendCodes').child(newData.val()).child('uid').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+        },
+        "$other": {
+          ".validate": false
+        },
+        "searchKey": {
+          ".write": "auth != null && auth.uid === $uid && !data.exists() && root.child('players').child(auth.uid).exists()",
+          ".validate": "newData.isString() && newData.val().matches(/^([a-f0-9]{2}){1,96}$/)"
+        }
+      }
+    },
+    "friendOutgoing": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        "$other": {
+          ".write": "auth != null && auth.uid === $uid && $uid !== $other && (!newData.exists() || (newData.child('code').val().matches(/^[a-f0-9]{32}$/) && root.child('friendCodes').child(newData.child('code').val()).child('uid').val() === $other && root.child('friendCodes').child(newData.child('code').val()).child('name').val() === newData.child('name').val()))",
+          ".validate": "newData.hasChildren(['code','name'])",
+          "code": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "$extra": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "friendships": {
+      "$receiver": {
+        ".read": "auth != null && auth.uid === $receiver",
+        "$sender": {
+          ".read": "auth != null && (auth.uid === $sender || auth.uid === $receiver)",
+          ".write": "auth != null && $receiver !== $sender && ((!newData.exists() && data.exists() && (auth.uid === $sender || auth.uid === $receiver)) || (auth.uid === $sender && !data.exists() && newData.child('status').val() === 'pending' && root.child('friendCodes').child(newData.child('code').val()).child('uid').val() === $receiver && !root.child('friendships').child($sender).child($receiver).exists()) || (auth.uid === $receiver && data.child('status').val() === 'pending' && newData.child('status').val() === 'accepted' && newData.child('senderName').val() === data.child('senderName').val() && newData.child('receiverName').val() === data.child('receiverName').val() && newData.child('code').val() === data.child('code').val()))",
+          ".validate": "newData.hasChildren(['status','senderName','receiverName','code']) && newData.child('senderName').val() === root.child('players').child($sender).child('name').val() && newData.child('receiverName').val() === root.child('players').child($receiver).child('name').val()",
+          "status": {
+            ".validate": "newData.isString() && (newData.val() === 'pending' || newData.val() === 'accepted')"
+          },
+          "senderName": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "receiverName": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "code": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "friendNames": {
+      "$key": {
+        ".read": "auth != null && $key.matches(/^([a-f0-9]{2}){1,96}$/) && query.orderByKey && query.limitToFirst != null && query.limitToFirst <= 30",
+        "$uid": {
+          ".read": "auth != null && auth.uid === $uid",
+          ".write": "auth != null && auth.uid === $uid && $key.matches(/^([a-f0-9]{2}){1,96}$/) && (!newData.exists() || (root.child('friendPrivate').child($uid).child('searchKey').val() === $key && root.child('friendPrivate').child($uid).child('code').val() === newData.child('code').val() && root.child('friendCodes').child(newData.child('code').val()).child('uid').val() === $uid))",
+          ".validate": "newData.hasChildren(['name','code']) && newData.child('name').val() === root.child('players').child($uid).child('name').val()",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "code": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "coopInvites": {
+      "$receiver": {
+        ".read": "auth != null && auth.uid === $receiver",
+        "$sender": {
+          ".read": "auth != null && (auth.uid === $receiver || auth.uid === $sender)",
+          ".write": "auth != null && $receiver !== $sender && ((!newData.exists() && (auth.uid === $receiver || auth.uid === $sender)) || (auth.uid === $sender && (root.child('friendships').child($receiver).child($sender).child('status').val() === 'accepted' || root.child('friendships').child($sender).child($receiver).child('status').val() === 'accepted'))) ",
+          ".validate": "newData.hasChildren(['partyId','code','name','createdAt']) && newData.child('name').val() === root.child('players').child($sender).child('name').val() && root.child('fourParties').child(newData.child('partyId').val()).child('hostId').val() === $sender && root.child('fourParties').child(newData.child('partyId').val()).child('inviteCode').val() === newData.child('code').val() && !root.child('fourParties').child(newData.child('partyId').val()).child('started').exists() && root.child('fourCodes').child(newData.child('code').val()).child('partyId').val() === newData.child('partyId').val() && root.child('fourCodes').child(newData.child('code').val()).child('hostId').val() === $sender",
+          "partyId": {
+            ".validate": "newData.isString() && newData.val().matches(/^[a-f0-9]{32}$/)"
+          },
+          "code": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}$/)"
+          },
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    },
+    "leaderboards": {
+      "$mode": {
+        ".indexOn": [
+          "wave"
+        ],
+        ".read": "auth != null && ($mode === 'solo' || $mode === 'coop') && query.orderByChild === 'wave' && query.limitToLast != null && query.limitToLast <= 50",
+        "$uid": {
+          ".read": "auth != null && ($mode === 'solo' || $mode === 'coop')",
+          ".write": "auth != null && auth.uid === $uid && ($mode === 'solo' || $mode === 'coop') && root.child('players').child($uid).exists()",
+          ".validate": "newData.hasChildren(['name','wave']) && newData.child('name').val() === root.child('players').child($uid).child('name').val() && (!data.exists() || newData.child('wave').val() >= data.child('wave').val())",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24"
+          },
+          "wave": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 10000 && newData.val() % 1 === 0"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

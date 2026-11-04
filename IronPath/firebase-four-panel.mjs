@@ -73,7 +73,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     if(gen!==generation||party?.role!=='host')return;requests.replaceChildren();
     const current=party,active=lobby;
     for(const [uid,request] of Object.entries(values||{})){
-      if(!request||typeof request.name!=='string')continue;
+      if(!request||typeof request.name!=='string'||request.expectedPartyId)continue;
       const row=document.createElement('li'),name=document.createElement('span'),accept=document.createElement('button'),decline=document.createElement('button');
       name.textContent=request.name;accept.type=decline.type='button';accept.textContent='APPROVE';decline.textContent='DECLINE';
       accept.onclick=()=>run(async()=>{if(gen!==generation||party!==current)return;await active.approve(current.partyId,current.inviteCode,uid);if(gen===generation&&party===current)status('Player approved.');});
@@ -89,7 +89,11 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     if(!/^\d{4}$/.test(code)){status('Enter a four-digit code.');return false;}
     if(!await confirmStart()||gen!==generation)return false;
     const active=createLobby();lobby=active;const result=await active.request(code,getProfile().name,expectedPartyId);if(gen!==generation){await active.cancel(code);return false;}
-    party={...result,role:'pending'};status('Request sent. Waiting for approval.');watchParty(gen);
+    party={...result,role:'pending'};status(expectedPartyId?'Joining invited party…':'Request sent. Waiting for approval.');watchParty(gen);
+    if(expectedPartyId){
+      try{await active.claimInvitedSlot(result.partyId,code);if(gen!==generation){await active.leave(result.partyId).catch(()=>{});await active.cancel(code).catch(()=>{});return false;}await active.cancel(code).catch(()=>{});return true;}
+      catch{await active.cancel(code).catch(()=>{});if(gen===generation){clear();status('Invitation expired, the party is full, or the host closed it.');}return false;}
+    }
     addWatch(lobby.watchOwnRequest(code,value=>{if(gen===generation&&party?.role==='pending'&&value===null)status('Request closed. If not approved, leave and ask the host to try again.');},failed));render();return true;
   });}
   $('fourPartyJoin').onclick=()=>join($('fourPartyCodeInput').value.trim());

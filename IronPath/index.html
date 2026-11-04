@@ -74,7 +74,7 @@
     <section id="fourPartyPanel" class="firebase-party four-party" aria-label="Multiplayer party" hidden>
       <div class="party-heading"><strong>MULTIPLAYER PARTY</strong><span>ONLINE</span></div>
       <p class="hint">Share one code. The host approves up to three players and chooses a mode. Two players can play co-op or 1 vs 1; three can play large-map co-op; four can play co-op or 2 vs 2. Versus is a survival race, not direct combat.</p>
-      <button id="lobbyFriends" type="button" class="lobby-friends">FRIENDS / INVITATIONS</button><p class="hint">Create a party, open Friends, then invite an accepted friend. They join by sending a request for your approval.</p>
+      <button id="lobbyFriends" type="button" class="lobby-friends">FRIENDS / INVITATIONS</button><p class="hint">Create a party, open Friends, then invite an accepted friend. They can join directly; players using a party code still need approval.</p>
       <div id="fourPartyEntry" class="party-entry">
         <button id="fourPartyCreate" class="primary" type="button">CREATE PARTY</button>
         <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button><button id="fourPartyResume" type="button" hidden>RESUME AS HOST</button></div></div>
@@ -198,5 +198,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-tutorial2"></script>
+  <script type="module" src="account.js?v=20261104-directinvite1"></script>
 </body></html>
