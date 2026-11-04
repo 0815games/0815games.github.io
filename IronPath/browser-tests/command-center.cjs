@@ -31,6 +31,8 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     const visible=selector=>page.locator(selector).isVisible();
+    await page.locator('#languageSelect').selectOption('de');assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.locator('#languageSelect').selectOption('en');assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills').innerText(),'SKILLS');
+
     await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
 
     assert.equal(await page.locator('.mode-card b').count(),0,'operation cards have no arrows');
