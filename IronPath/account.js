@@ -1,4 +1,4 @@
-import {setupFriends} from './friends-ui.mjs?v=20261104-invites1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-autosearch1';
 import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-patch67a';

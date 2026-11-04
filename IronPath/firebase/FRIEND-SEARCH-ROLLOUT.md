@@ -1,5 +1,7 @@
 # Friend search rollout
 
+> Historical rollout note: search visibility was removed later; see `AUTOMATIC-FRIEND-SEARCH.md` for current behavior.
+
 This change replaces visible friend codes with exact, case-insensitive soldier-name search. Search is **opt-in**: each player must enable visibility in Friends before another signed-in player can find them. Matching accounts have distinct player IDs; a request still requires acceptance. Existing friendships and requests remain unchanged. Match invitations still use the separate four-digit party code.
 
 The complete `friend-search.complete.draft.rules.json` is based on `friends.complete.draft.rules.json`, which the user reported publishing; actual live rules have not been independently inspected. Firebase rules publication replaces the whole ruleset: back up and compare the live rules, merge any independent changes, review the full new file and emulator results, then publish the full replacement **before** deploying the client. Don't publish a fragment or an older complete ruleset.
