@@ -31,3 +31,33 @@ test('German core skill names, effects and specialist effects are translated wit
  for(const path of SKILL_PATHS){assert.notEqual(translateText(path.name),path.name);assert.notEqual(translateText(path.passive),path.passive);assert.notEqual(translateText(path.description),path.description);for(const branch of path.branches){assert.notEqual(translateText(branch.abilityDescription),branch.abilityDescription);assert.notEqual(translateText(branch.description),branch.description);}}
  assert.equal(translateText('Requires {name} rank {rank}',{name:translateText('Recon'),rank:2}),'Benötigt Aufklärung Rang 2');assert.equal(encodeBuild(build),before);f.selector.value='en';f.selector.change();assert.equal(translateText('Suppression'),'Suppression');
 });
+
+test('campaign and cinematics have complete authored German text without altering mission data',async()=>{
+ const {CAMPAIGN}=await import('../campaign.mjs'),{cinematicFrames,cinematicScene}=await import('../story-cinematics.mjs'),{germanCampaign}=await import('../localization-campaign-de.mjs'),{germanCinematics}=await import('../localization-cinematics-de.mjs');const before=structuredClone(CAMPAIGN),f=fixture('de');
+ for(const m of CAMPAIGN){for(const text of [m.act,m.title,m.briefing,m.success,...m.stages.flatMap(s=>[s.label,s.dialogue])])assert.ok(Object.hasOwn(germanCampaign,text),`${m.id}: ${text}`);for(const kind of ['intro','ending']){const scene=cinematicScene(m,kind);assert.ok(Object.hasOwn(germanCinematics,scene.place),scene.place);for(const frame of cinematicFrames(m,kind))assert.ok(Object.hasOwn(germanCinematics,frame.text)||Object.hasOwn(germanCampaign,frame.text),`${m.id}: ${frame.text}`);}}
+ assert.equal(translateText('OBJECTIVE {current} / {total}: {label}',{current:2,total:4,label:'Test'}),'ZIEL 2 / 4: Test');assert.deepEqual(CAMPAIGN,before);f.selector.value='en';f.selector.change();assert.equal(translateText(CAMPAIGN[0].briefing),CAMPAIGN[0].briefing);
+});
+
+test('advanced skills include German names, descriptions and prerequisites without changing builds',async()=>{
+ const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('2,0,0,0,0;assault',3),code=encodeBuild(build);
+ for(const n of WEB_NODES){for(const text of [n.name,n.description,webRequirement(n)])assert.ok(Object.hasOwn(germanAdvancedSkills,text),`${n.id}: ${text}`);assert.notEqual(translateText(n.description),n.description);}
+ assert.equal(encodeBuild(build),code);assert.deepEqual(WEB_NODES,before);f.selector.value='en';f.selector.change();assert.equal(translateText(WEB_NODES[0].description),WEB_NODES[0].description);
+});
+
+test('story status templates translate numbers and retain unknown text',async()=>{
+ const {translateStoryDetail}=await import('../story-localization.mjs');const f=fixture('de');assert.equal(translateStoryDetail('15s remaining. Protect the bunker. Mission time: 45s (runs during waves).',translateText),'Noch 15 s. Schütze den Bunker. Missionszeit: 45 s (läuft während Wellen).');assert.equal(translateStoryDetail('Player <Name>',translateText),'Player <Name>');f.selector.value='en';f.selector.change();assert.equal(translateStoryDetail('15s remaining. Protect the bunker.',translateText),'15s remaining. Protect the bunker.');
+});
+
+test('skill summary and next-step localization preserve numeric values and source data',async()=>{
+ const {parseBuild}=await import('../skills.mjs'),{skillBuildSummary}=await import('../skill-planner.mjs'),{localizeSkillSummary}=await import('../skill-summary-localization.mjs'),{nextSteps}=await import('../run-results.mjs');const f=fixture('de'),build=parseBuild('2,1,0,0,0;assault',5),original=structuredClone(build),raw=skillBuildSummary(build,5),summary=localizeSkillSummary(raw,translateText);
+ assert.ok(summary.values.every((v,i)=>v!==raw.values[i]),summary.values.join('\n'));assert.match(summary.values[0],/\+4/);assert.match(summary.active,/AKTIV/);assert.match(nextSteps({xp:0},translateText),/Stufe 1:/);assert.deepEqual(build,original);f.selector.value='en';f.selector.change();const english=localizeSkillSummary(raw,translateText);assert.deepEqual(english.values,raw.values);assert.equal(nextSteps({xp:0},translateText),nextSteps({xp:0}));
+});
+
+test('static German campaign, results and battlefield labels have translations',async()=>{
+ const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!['Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
+});
+
+
+test('battle templates preserve player names and tower values',()=>{
+ const f=fixture('de');assert.equal(translateText('Tower sold. {name} receives {amount} supplies.',{name:'<Alice & Bob>',amount:135}),'Turm verkauft. <Alice & Bob> erhält 135 Vorräte.');assert.equal(translateText('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:3}),'Prestige 3: Die angezeigte Stufe wird auf 1 zurückgesetzt; Stärke und Spezialisierung bleiben erhalten, der Schaden steigt.');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower sold. {name} receives {amount} supplies.',{name:'<Alice & Bob>',amount:135}),'Tower sold. <Alice & Bob> receives 135 supplies.');
+});

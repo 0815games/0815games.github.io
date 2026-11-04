@@ -1,3 +1,10 @@
+import {germanTowers} from './localization-towers-de.mjs?v=20261110-storyde1';
+import {germanStatic} from './localization-static-de.mjs?v=20261110-storyde1';
+import {germanBattle} from './localization-battle-de.mjs?v=20261110-storyde1';
+import {germanResults} from './localization-results-de.mjs?v=20261110-storyde1';
+import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261110-storyde1';
+import {germanCampaign} from './localization-campaign-de.mjs?v=20261110-storyde1';
+import {germanCinematics} from './localization-cinematics-de.mjs?v=20261110-storyde1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261109-flaglang1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-skillui1';
 import {germanText} from './localization-de.mjs?v=20261104-fieldcommand1';
@@ -66,7 +73,7 @@ const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
   if(typeof text!=='string')return String(text??'');
-  const localized=active==='de'?(germanText[text]??germanArmory[text]??germanSkills[text]??text):text;
+  const localized=active==='de'?(germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanTowers[text]??germanCampaign[text]??germanCinematics[text]??text):text;
   return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){

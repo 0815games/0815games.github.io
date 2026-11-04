@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261109-flaglang1';
+import {translateText as tr} from './language.mjs?v=20261110-storyde1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createLeaderboardService} from './leaderboards.mjs?v=20261104-leaderboards1';
 export function setupLeaderboard({document,db,auth,sdk}){
