@@ -314,3 +314,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 
 /* Pending requests live on the Friends button rather than a separate alert. */
 .soldier-actions #menuFriends.has-friend-requests,.firebase-party #lobbyFriends.has-friend-requests{display:flex;align-items:center;justify-content:center;gap:8px;background:#66582d;color:#fff5d4;border:2px solid #e9cb78;box-shadow:0 0 0 2px #dfc37633,0 0 14px #d7b85e55}
+
+/* Read-only squad dossier, opened above the Friends inbox. */
+.friend-stats-dialog .friend-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.friend-stats-dialog .friend-stats-grid section,.friend-stats-dialog .friend-stats-skills{background:#20392d;border:1px solid #58765e;border-radius:4px;padding:12px;margin-bottom:8px}.friend-stats-dialog h3{font-size:10px;letter-spacing:.1em;color:#e8d29b;margin:0 0 5px}.friend-stats-dialog p{color:#e3edda;overflow-wrap:anywhere;margin:0 0 10px;line-height:1.5}.friend-stats-dialog small{display:block}.friend-stats-dialog [hidden]{display:none}@media(max-width:450px){.friend-stats-dialog .friend-stats-grid{grid-template-columns:1fr}}

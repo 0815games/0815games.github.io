@@ -1,0 +1,7 @@
+# Friend stats rollout
+
+`friend-stats.complete.draft.rules.json` is a complete replacement based on the previously published friend-presence draft. Export/back up the current production rules and compare them with `friend-presence.complete.draft.rules.json`; reconcile any production-only differences before considering this replacement. Review and publish the full replacement in Firebase Realtime Database **before** deploying the client. Publication is a separate manual operation and must not be assumed.
+
+The only added permissions allow an accepted friend to read the other player's individual `xp`, `skills` and `armory` fields. Armory includes owned equipment, equipped item, bunker ranks and scrap. Full player records, gender, campaign history, co-op reward records and all writes remain private. Either direction of an accepted friendship grants access; pending or removed friendships do not. Friends can query the three permitted fields even outside the game; there is no separate sharing toggle. The stats UI shows a snapshot, not a verified competitive record.
+
+Test with real accounts after rollout: accepted friends in both directions, pending/unrelated and removed friends, profiles without skills or armory, updates, sign-out and different devices. Existing players do not need to update their client for their saved stats to be readable. Emulator tests are not a substitute for real-device testing.
