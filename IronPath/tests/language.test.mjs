@@ -61,3 +61,13 @@ test('static German campaign, results and battlefield labels have translations',
 test('battle templates preserve player names and tower values',()=>{
  const f=fixture('de');assert.equal(translateText('Tower sold. {name} receives {amount} supplies.',{name:'<Alice & Bob>',amount:135}),'Turm verkauft. <Alice & Bob> erhält 135 Vorräte.');assert.equal(translateText('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:3}),'Prestige 3: Die angezeigte Stufe wird auf 1 zurückgesetzt; Stärke und Spezialisierung bleiben erhalten, der Schaden steigt.');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower sold. {name} receives {amount} supplies.',{name:'<Alice & Bob>',amount:135}),'Tower sold. <Alice & Bob> receives 135 supplies.');
 });
+
+test('known command errors translate without changing simulation errors',async()=>{
+ const {readFile}=await import('node:fs/promises'),{germanGameErrors}=await import('../localization-game-errors-de.mjs'),f=fixture('de');
+ for(const file of ['match.mjs','coop-input.mjs','firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
+ assert.equal(translateText('unrecognized remote error'),'unrecognized remote error');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower not found.'),'Tower not found.');
+});
+
+test('account error templates preserve unknown codes',()=>{
+ const f=fixture('de');assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es erneut. (auth/test)');f.selector.value='en';f.selector.change();assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Could not complete the request. Please try again. (auth/test)');
+});

@@ -78,6 +78,7 @@ element('game').onclick({clientX:105,clientY:210});
 element('radial1').onclick();
 assert.match(element('towerDetailsTitle').textContent,/Cannon/);
 assert.match(element('towerDetailsText').textContent,/tanks/);
+const {setupLanguage}=await import('../language.mjs');const selector={value:'',addEventListener(_type,fn){this.change=fn;}},langDoc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:{},querySelectorAll:()=>[]};setupLanguage({document:langDoc});selector.value='de';selector.change();gameControl.refreshLanguage();assert.equal(element('towerDetailsTitle').textContent,'Kanone');assert.match(element('towerDetailsText').textContent,/Panzer/);assert.equal(element('money').textContent,65);assert.equal(element('towerDetails').open,true);selector.value='en';selector.change();gameControl.refreshLanguage();assert.equal(element('towerDetailsTitle').textContent,'Cannon');assert.match(element('towerDetailsText').textContent,/tanks/);
 assert.equal(element('towerDetailsConfirm').disabled,true);
 element('towerDetailsBack').onclick();
 element('radial0').onclick();element('towerDetailsConfirm').onclick();
