@@ -31,6 +31,7 @@ const fs = require('node:fs');
         document.querySelector('#menuName').textContent = 'Field Commander'; document.querySelector('#menuLevel').textContent = 'LEVEL 12';
       });
       await check('#menuMultiplayer'); await check('#menuCampaign');
+      await page.evaluate(()=>document.querySelector('#friendRequestNotification').hidden=false);await check('#friendRequestNotification');await page.evaluate(()=>document.querySelector('#friendRequestNotification').hidden=true);
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#commandCenter').hidden = true; document.querySelector('#gameWorkspace').hidden = false;
@@ -38,9 +39,13 @@ const fs = require('node:fs');
       });
       await check('#fourPartyCodeInput'); await check('#fourPartyJoin'); await check('#fourPartyCreate');
       await page.screenshot({ path: `browser-artifacts/${name}-lobby.png`, fullPage: true });
-      for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext']]) {
+      for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
         await page.evaluate(id => document.getElementById(id).showModal(), id);
         await check(`#${id}`); await check(control);
+        if(id==='friendsDialog'||id==='leaderboardDialog'){
+          const layout=await page.locator(control).evaluate(el=>{const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect(),style=getComputedStyle(el);return {rightGap:h.right-r.right,textAlign:style.textAlign,width:r.width,height:r.height};});
+          assert.ok(Math.abs(layout.rightGap)<2,`${name}: ${control} should align to the right edge of its header`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);
+        }
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
       }

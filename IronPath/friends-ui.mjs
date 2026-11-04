@@ -1,7 +1,7 @@
 import {createCoopInvites} from './coop-invites.mjs?v=20261104-invites1';
 import {createFriendService} from './friends.mjs?v=20261104-autosearch1';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto}){
- const $=id=>document.getElementById(id),dialog=$('friendsDialog');let generation=0,service=null,unsubscribe=null,busy=false,next=null,searchName='',invitations={},inviteService=null,stopInvites=null,indexPromise=null,indexSession=0;
+ const $=id=>document.getElementById(id),dialog=$('friendsDialog');let generation=0,service=null,unsubscribe=null,busy=false,next=null,searchName='',invitations={},inviteService=null,stopInvites=null,stopRequests=null,indexPromise=null,indexSession=0;
  function reset(){generation++;unsubscribe?.();unsubscribe=null;service=null;busy=false;if(dialog.open)dialog.close();$('friendInput').value='';$('friendResults').replaceChildren();$('friendMore').hidden=true;$('friendStatus').textContent='';next=null;searchName='';}
  function message(text){$('friendStatus').textContent=text;}
  async function action(fn){if(busy)return;busy=true;const current=generation;try{await fn(()=>current===generation);}catch(error){if(current===generation)message(error?.message||'Could not complete that action. Check your connection and try again.');}finally{if(current===generation)busy=false;}}
@@ -11,8 +11,8 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
   if(indexPromise)return indexPromise;const current=indexSession,profile=getProfile();if(!profile||!auth.currentUser)return Promise.resolve(false);
   indexPromise=Promise.resolve().then(()=>createFriendService({db,auth,sdk,crypto}).ensureSearchListing(profile.name)).then(()=>{if(current===indexSession)$('friendIndexError').hidden=true;return true;}).catch(()=>{if(current===indexSession){$('friendIndexError').hidden=false;if(dialog.open)message('Could not update your player search listing. Retry when connected.');}return false;}).finally(()=>{if(current===indexSession)indexPromise=null;});return indexPromise;
  }
- function start(){stopInvites?.();indexSession++;indexPromise=null;invitations={};inviteService=createCoopInvites({db,auth,sdk});stopInvites=inviteService.watch(values=>{invitations=values;const count=Object.keys(values).length;$('inviteNotification').hidden=!count;$('inviteNotification').textContent=`INVITATIONS · ${count}`;renderInvites();},()=>{if(dialog.open)message('Could not load invitations. Check your connection.');});void indexAccount();}
- function signOut(){indexSession++;indexPromise=null;stopInvites?.();stopInvites=null;inviteService=null;invitations={};$('inviteNotification').hidden=true;$('friendIndexError').hidden=true;reset();}
+ function start(){stopInvites?.();stopRequests?.();indexSession++;indexPromise=null;invitations={};const session=indexSession,uid=auth.currentUser?.uid;const indicator=$('friendRequestNotification');indicator.hidden=true;stopRequests=sdk.onValue(sdk.ref(db,`friendships/${uid}`),snapshot=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;const count=Object.values(snapshot.val()||{}).filter(edge=>edge?.status==='pending').length;indicator.hidden=!count;indicator.textContent=`${count} FRIEND REQUEST${count===1?'':'S'} · VIEW`;},()=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;indicator.hidden=false;indicator.textContent='FRIEND REQUESTS UNAVAILABLE · OPEN FRIENDS';});inviteService=createCoopInvites({db,auth,sdk});stopInvites=inviteService.watch(values=>{invitations=values;const count=Object.keys(values).length;$('inviteNotification').hidden=!count;$('inviteNotification').textContent=`INVITATIONS · ${count}`;renderInvites();},()=>{if(dialog.open)message('Could not load invitations. Check your connection.');});void indexAccount();}
+ function signOut(){indexSession++;indexPromise=null;stopInvites?.();stopInvites=null;stopRequests?.();stopRequests=null;$('friendRequestNotification').hidden=true;inviteService=null;invitations={};$('inviteNotification').hidden=true;$('friendIndexError').hidden=true;reset();}
  $('friendIndexRetry').onclick=()=>{void indexAccount();};
  function render({incoming,outgoing,edges}){
   const requests=$('friendRequests'),friends=$('friendList'),sent=$('friendSent');requests.replaceChildren();friends.replaceChildren();sent.replaceChildren();
@@ -32,7 +32,7 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
   if(!auth.currentUser||!getProfile())return;reset();const current=generation;dialog.showModal();message('Connecting…');
   try{service=createFriendService({db,auth,sdk,crypto});unsubscribe=service.watch(render,()=>{if(current===generation)message('Could not load friends. Check your connection and published rules.');});void indexAccount().then(ok=>{if(current===generation&&ok)message('Search for a soldier by name.');});}catch{message('Could not open friends. Check your connection.');}
  }
- $('menuFriends').onclick=open;$('lobbyFriends').onclick=open;$('inviteNotification').onclick=open;
+ $('menuFriends').onclick=open;$('friendRequestNotification').onclick=open;$('lobbyFriends').onclick=open;$('inviteNotification').onclick=open;
  $('friendsClose').onclick=reset;dialog.addEventListener('cancel',()=>reset());
  async function search(current,more){
   if(!service)return;const requested=more?searchName:$('friendInput').value;const result=await service.search(requested,more?next:null);if(!current())return;
