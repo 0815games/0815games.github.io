@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { createTutorial, TUTORIAL_STEPS } from '../tutorial.mjs';
 const nodes=new Map();
-const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},attrs:{},setAttribute(key,value){this.attrs[key]=value;},addEventListener(type,fn){this['on'+type]=fn;},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
+const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},attrs:{},setAttribute(key,value){this.attrs[key]=value;},addEventListener(type,fn){this['on'+type]=fn;},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:100}},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
 const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)};
 const changes=[];const tour=createTutorial({document,storage,onVisibilityChange:x=>changes.push(x)});
 const el=id=>document.getElementById(id);
@@ -19,6 +19,7 @@ assert.deepEqual([...saved.keys()],['ironpath:tutorial:v1:first'],'training neve
 tour.startIfNeeded('first');assert.equal(tour.isOpen(),false,'completed tutorial should not reopen');
 tour.startIfNeeded('second');assert.equal(tour.isOpen(),true,'different account should see tutorial');el('tutorialSkip').onclick();assert.equal(tour.isOpen(),false);
 tour.replay('first');for(let i=0;i<TUTORIAL_STEPS.length-2;i++)el('tutorialNext').onclick();assert.match(el('tutorialSkillPoints').textContent,/1 POINT/,'replay resets the practice');el('tutorialPracticeSkip').onclick();assert.equal(el('tutorialNext').disabled,false);el('tutorialNext').onclick();el('tutorialPracticeSkip').onclick();assert.equal(el('tutorialNext').disabled,false);el('tutorialNext').onclick();assert.equal(tour.isOpen(),false);
+tour.startIfNeeded('outside');const dialog=el('tutorialDialog'),outside={target:dialog,button:0,clientX:-1,clientY:-1,preventDefault(){}};dialog.onpointerdown(outside);dialog.onclick(outside);assert.equal(tour.isOpen(),false);tour.startIfNeeded('outside');assert.equal(tour.isOpen(),true,'outside dismissal does not mark tutorial complete');tour.stop();
 tour.replay('first');el('tutorialDialog').oncancel({preventDefault(){}});assert.equal(tour.isOpen(),false);assert.ok(changes.includes(true)&&changes.includes(false));
 const bad=createTutorial({document,storage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}});bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),true);el('tutorialSkip').onclick();bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),false);
 console.log('Interactive tutorial, safe practice and completion tests passed.');
