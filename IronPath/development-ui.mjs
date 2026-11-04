@@ -5,21 +5,22 @@ const NS='http://www.w3.org/2000/svg';
 const colors=['#d89970','#d7bd71','#b4c682','#8ac7b1','#8eafcf'];
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
 // A browsable skill catalogue. Selection and progression are still owned by account.js.
-export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all'}){
+export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all',inspector=null,inspectorHome=null}){
   const scrollTop=container.scrollTop,related=relatedNodes(selected),left=pointsLeft(build,level);
+  if(inspector&&inspectorHome){inspectorHome.append(inspector);inspector.hidden=true;}
   const board=document.createElement('div');board.className='skills-catalogue';
-  function addGroup(title,subtitle,items){
+  function addGroup(title,subtitle,items,pathId=null){
     const visible=items.filter(item=>nodeMatches(build,level,item.path,item.rank,filter,pathFilter));if(!visible.length)return;
     const section=document.createElement('section'),heading=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),grid=document.createElement('div');
-    section.className='skill-group';heading.className='skill-group-heading';name.textContent=title;desc.textContent=subtitle;heading.append(name,desc);grid.className='skill-card-grid';section.append(heading,grid);board.append(section);
+    section.className='skill-group';if(pathId){section.dataset.skillGroup=pathId;section.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===pathId)]);}heading.className='skill-group-heading';name.textContent=title;desc.textContent=subtitle;heading.append(name,desc);grid.className='skill-card-grid';section.append(heading,grid);board.append(section);
     for(const item of visible){
       const key=nodeKey(item.path,item.rank),button=document.createElement('button'),top=document.createElement('span'),tag=document.createElement('span'),state=document.createElement('span'),name=document.createElement('strong'),description=document.createElement('span'),requirement=document.createElement('span');
       const active=item.active,unlocked=item.unlocked,available=item.available;
-      button.type='button';button.className=`tree-node skill-card${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===item.path&&selected.rank===item.rank?' is-selected':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;
+      button.type='button';button.className=`tree-node skill-card${item.rank===1?' is-main-ability':item.rank===5||item.rank===6?' is-specialist-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===item.path&&selected.rank===item.rank?' is-selected':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;
       button.dataset.path=item.path;button.dataset.rank=String(item.rank);button.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===item.path)]);
       top.className='skill-card-top';tag.className='skill-card-tag';tag.textContent=item.tag;state.className='skill-card-state';state.textContent=active?'EQUIPPED':unlocked?'UNLOCKED':available?'AVAILABLE':'LOCKED';top.append(tag,state);
       name.className='skill-card-name';name.textContent=item.title;description.className='skill-card-description';description.textContent=item.description;requirement.className='skill-card-requirement';requirement.textContent=item.requirement;
-      button.append(top,name,description,requirement);button.setAttribute('aria-label',`${item.title}, ${state.textContent.toLowerCase()}. ${item.requirement}${related.before.has(key)?' Prerequisite of selected skill.':related.after.has(key)?' Connected to selected skill.':''}`);button.setAttribute('aria-pressed',String(selected.path===item.path&&selected.rank===item.rank));button.onclick=event=>onSelect({path:item.path,rank:item.rank},event?.detail===0);grid.append(button);
+      button.append(top,name,description,requirement);button.setAttribute('aria-label',`${item.title}, ${state.textContent.toLowerCase()}. ${item.requirement}${related.before.has(key)?' Prerequisite of selected skill.':related.after.has(key)?' Connected to selected skill.':''}`);button.setAttribute('aria-pressed',String(selected.path===item.path&&selected.rank===item.rank));if(inspector){button.setAttribute('aria-expanded',String(selected.path===item.path&&selected.rank===item.rank));if(selected.path===item.path&&selected.rank===item.rank)button.setAttribute('aria-controls','skillInspector');}button.onclick=event=>onSelect({path:item.path,rank:item.rank},event?.detail===0);grid.append(button);if(inspector&&selected.path===item.path&&selected.rank===item.rank){inspector.hidden=false;grid.append(inspector);}
     }
   }
   for(const [i,path] of SKILL_PATHS.entries()){
@@ -28,7 +29,7 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
     const specialists=path.branches.map((branch,j)=>({path:path.id,rank:5+j,title:branch.ability,tag:'SPECIALIST / ACTIVE',description:branch.abilityDescription,requirement:`Requires ${path.name} rank 2`,unlocked:!!build.extra?.[i*2+j],active:!!build.extra?.[i*2+j]&&build.active===path.id&&build.variant===j+1,available:!build.extra?.[i*2+j]&&build[path.id]>=2&&left>0}));
     const mastery=WEB_NODES.filter(n=>n.path===path.id&&n.kind==='mastery').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:n.tier===4?'MASTERY / CAPSTONE':`MASTERY / ${n.tier+1}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
     const doctrines=WEB_NODES.filter(n=>n.path===path.id&&n.kind==='doctrine').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`DOCTRINE / ${n.branch===0?'A':'B'}${n.tier+1}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
-    addGroup(`${path.name} training`,path.passive,core);addGroup('Specialist abilities','Alternative active skills',specialists);addGroup('Mastery','Advanced upgrades',mastery);addGroup('Specialist doctrines','Two specialist branches with two upgrades each',doctrines);
+    addGroup(`${path.name} training`,path.passive,core,path.id);addGroup(`${path.name} · Specialist abilities`,'Alternative active skills',specialists,path.id);addGroup(`${path.name} · Mastery`,'Advanced upgrades',mastery,path.id);addGroup(`${path.name} · Specialist doctrines`,'Two specialist branches with two upgrades each',doctrines,path.id);
   }
   const combos=WEB_NODES.filter(n=>n.kind==='hybrid'||n.kind==='cross').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`COMBO / ${n.path.toUpperCase()} + ${n.other.toUpperCase()}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
   addGroup('Cross-training','Combine two disciplines to unlock new bonuses',combos);

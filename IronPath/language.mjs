@@ -1,4 +1,4 @@
-import {germanArmory} from './localization-armory-de.mjs?v=20261106-armoryde1';
+import {germanArmory} from './localization-armory-de.mjs?v=20261107-skillui1';
 import {germanText} from './localization-de.mjs?v=20261104-fieldcommand1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the

@@ -1,22 +1,22 @@
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261106-armoryde1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261107-skillui1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261106-armoryde1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261107-skillui1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261106-armoryde1';
-import {createCommandCenter} from './command-center.mjs?v=20261106-armoryde1';
+import {setupFriends} from './friends-ui.mjs?v=20261107-skillui1';
+import {createCommandCenter} from './command-center.mjs?v=20261107-skillui1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261105-prestige1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261106-armoryde1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261107-skillui1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261104-dismissall1';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261104-doctrines1';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-skillui1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -27,7 +27,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261106-armoryde1';
+import { startGame } from './game.js?v=20261107-skillui1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261105-prestige1';
 import { createPlayer } from './match.mjs?v=20261105-prestige1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -92,7 +92,10 @@ function renderSkills(){
   const summary=skillBuildSummary(draftSkills,lvl);$('skillSummaryActive').textContent=`ACTIVE: ${summary.active} · ${summary.points} unspent point${summary.points===1?'':'s'}`;$('skillSummaryStats').textContent=summary.values.join('\n');$('skillSummaryCombos').textContent=summary.combos.length?`Combos: ${summary.combos.join(' · ')}`:'No hybrid combos unlocked.';$('skillSummaryCaps').textContent=summary.caps.length?`Capstones: ${summary.caps.join(' · ')}`:'No capstones unlocked.';
   if(!savingSkills)$('skillStatus').textContent=encodeBuild(draftSkills)===openedSkills?'Saved build unchanged.':'Unsaved draft — save to apply; closing discards these changes.';
 
-  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,onSelect:(value,keyboard)=>{selectedSkill=value;renderSkills();if(keyboard)$('skillPaths').querySelector(`[data-path="${value.path}"][data-rank="${value.rank}"]`)?.focus({preventScroll:true});else if(window.matchMedia('(max-width: 700px)').matches)document.querySelector('.skill-inspector')?.scrollIntoView({block:'nearest'});}});
+  const scroll=$('skillDialog').scrollTop,restoreActionFocus=document.activeElement===$('skillDetailAction');
+  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,inspector:$('skillInspector'),inspectorHome:$('skillInspectorHome'),onSelect:(value)=>{const selector=`[data-path="${value.path}"][data-rank="${value.rank}"]`,previous=$('skillPaths').querySelector(selector)?.getBoundingClientRect().top;selectedSkill=value;renderSkills();const current=$('skillPaths').querySelector(selector);if(current&&Number.isFinite(previous))$('skillDialog').scrollTop+=current.getBoundingClientRect().top-previous;current?.focus({preventScroll:true});}});
+  if(restoreActionFocus)$('skillDetailAction').focus({preventScroll:true});
+  if(Number.isFinite(scroll))$('skillDialog').scrollTop=scroll;
   const action=$('skillDetailAction');
   if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=node.kind==='doctrine'?'SPECIALIST DOCTRINE':node.kind!=='mastery'?'HYBRID COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY';$('skillDetailTitle').textContent=node.name;$('skillDetailText').textContent=`${node.description} ${webRequirement(node)} Each node costs one point.`;action.textContent=unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=savingSkills||unlocked||!ready||!left;action.onclick=()=>{if(!savingSkills&&!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
 $('skillDetailType').textContent=rank===1?'MAIN SKILL':`${path.name.toUpperCase()} / ${specialist?'SPECIAL SKILL':'PASSIVE'}`;

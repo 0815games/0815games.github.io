@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261106-armoryde1';
+import {translateText as tr} from './language.mjs?v=20261107-skillui1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -21,7 +21,7 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261106-armoryde1';
+import { createTutorial } from './tutorial.mjs?v=20261107-skillui1';
 import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-prestige1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-prestige1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';

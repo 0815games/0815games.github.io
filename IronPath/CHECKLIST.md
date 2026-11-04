@@ -11,3 +11,5 @@ Work through the remaining items before stress and balance testing. Previously r
 - [x] Add a friend stats window so players can inspect a friend's level, armory, skills, and other relevant stats before playing together. Real two-account validation remains needed.
 - [ ] Stress and balance test single-player, Endless, and all multiplayer variants, including real-device testing. Initial local stress results: [STRESS-REPORT.md](STRESS-REPORT.md); balance and real-device/network testing remain open.
 - [ ] Tower prestige prototype: repeatable level-6 prestige, visible shine and level reset while retaining power. Validate on real devices and balance the costs and damage before considering this complete.
+
+- [ ] Skill UI: validate inline expanded descriptions, scrolling and class/state highlights on real mobile and desktop devices.
