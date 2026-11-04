@@ -19,5 +19,34 @@ for(const [mode,count] of [['four-coop',3],['four-coop',4],['two-vs-two',4]]){
     await instances[count-1].stop();await wait(()=>statuses[partyIds[count-1]]===false,'guest disconnected');await wait(()=>mode==='four-coop'?statuses.alice===true:statuses.alice===false,`${mode} disconnect policy`);instances[count-1]=make(partyIds[count-1]);instances[count-1].start();await wait(()=>partyIds.every(id=>statuses[id]),`${mode} guest reconnected`);assert.deepEqual(errors,[]);
   }finally{await Promise.all(instances.map(instance=>instance.stop()));}
 }
+// A fatal corrupt packet must tear down presence immediately instead of leaving
+// the failed guest appearing online (and a competitive game stuck waiting).
+{
+ const partyIds=ids.slice(0,2),states=[],statuses={};
+ const host=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'alice'}},sdk,partyId:'fatal-cleanup',hostId:'alice',playerIds:partyIds,mode:'versus',players:profiles.slice(0,2),crypto,onStatus:value=>statuses.alice=value});
+ const guest=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'bob'}},sdk,partyId:'fatal-cleanup',hostId:'alice',playerIds:partyIds,mode:'versus',crypto,onState:value=>states.push(value),onStatus:value=>statuses.bob=value});
+ try{host.start();guest.start();await wait(()=>statuses.alice&&statuses.bob,'fatal test ready');
+  assert.ok([...values.keys()].some(p=>p.startsWith('parties/fatal-cleanup/presence/bob/')));
+  await sdk.set('parties/fatal-cleanup/views/bob','not-json');
+  await wait(()=>states.includes('error')&&!statuses.alice,'fatal guest causes host to pause');
+  await wait(()=>![...values.keys()].some(p=>p.startsWith('parties/fatal-cleanup/presence/bob/')),'fatal guest presence removed');
+  assert.equal((await guest.command({type:'startWave'})).ok,false);await guest.stop();await guest.stop();
+ }finally{await Promise.all([guest.stop(),host.stop()]);}
+}
+{
+ const partyIds=ids.slice(0,2),states=[],statuses={};
+ const host=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'alice'}},sdk,partyId:'fatal-host',hostId:'alice',playerIds:partyIds,mode:'versus',players:profiles.slice(0,2),crypto,onState:value=>states.push(value),onStatus:value=>statuses.alice=value});
+ const guest=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'bob'}},sdk,partyId:'fatal-host',hostId:'alice',playerIds:partyIds,mode:'versus',crypto,onStatus:value=>statuses.bob=value});
+ try{host.start();guest.start();await wait(()=>statuses.alice&&statuses.bob,'host failure test ready');await sdk.set('parties/fatal-host/inputs/bob','not-json');await wait(()=>states.includes('error')&&!statuses.bob,'host failure pauses guest');await wait(()=>![...values.keys()].some(p=>p.startsWith('parties/fatal-host/presence/alice/')),'failed host presence removed');assert.equal((await host.command({type:'startWave'})).ok,false);}
+ finally{await Promise.all([guest.stop(),host.stop()]);}
+}
+// A syntactically valid view from the wrong host must not reach gameplay.
+{
+ const partyIds=ids.slice(0,2),states=[],statuses={};
+ const host=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'alice'}},sdk,partyId:'bad-roster',hostId:'alice',playerIds:partyIds,mode:'coop',players:profiles.slice(0,2),crypto,onStatus:value=>statuses.alice=value});
+ const guest=createFirebasePartyGame({db:{},auth:{currentUser:{uid:'bob'}},sdk,partyId:'bad-roster',hostId:'alice',playerIds:partyIds,mode:'coop',crypto,onState:value=>states.push(value),onStatus:value=>statuses.bob=value});
+ try{host.start();guest.start();await wait(()=>statuses.alice&&statuses.bob,'roster test ready');const path='parties/bad-roster/views/bob',view=JSON.parse(values.get(path));view.snapshot.match.hostId='mallory';await sdk.set(path,JSON.stringify(view));await wait(()=>states.includes('error'),'wrong host rejected');await wait(()=>![...values.keys()].some(p=>p.startsWith('parties/bad-roster/presence/bob/')),'invalid view client cleanup');}
+ finally{await Promise.all([guest.stop(),host.stop()]);}
+}
 assert.throws(()=>createFirebasePartyGame({db:{},sdk,auth:{currentUser:{uid:'alice'}},partyId:'p',hostId:'alice',playerIds:ids,mode:'two-vs-two',players:profiles,teams:[['alice','bob'],['bob','dan']],crypto}),/Invalid teams/);
 console.log('Four-player full game adapter tested with in-memory Firebase SDK; no database rules or real devices.');

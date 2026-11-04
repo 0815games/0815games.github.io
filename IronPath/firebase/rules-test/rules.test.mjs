@@ -219,7 +219,7 @@ test('versus adapters isolate lanes, synchronize waves and pause on reconnect', 
   await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
   const ids=['alice','bob'],common={sdk,partyId:party,hostId:'alice',playerIds:ids};let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
   const a=createFirebasePartyGame({...common,mode:'versus',db:alice,auth:{currentUser:{uid:'alice'}},players:ids.map(id=>createPlayer(id,{name:id,gender:'female'})),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;}});
-  const b=createFirebasePartyGame({...common,db:bob,auth:{currentUser:{uid:'bob'}},onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;}});
+  const b=createFirebasePartyGame({...common,mode:'versus',db:bob,auth:{currentUser:{uid:'bob'}},onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;}});
   t.after(async()=>{goOnline(bob);await Promise.all([a.stop(),b.stop()]);});
   const until=async fn=>{const end=Date.now()+8000;while(!fn()){if(stateA==='error'||stateB==='error')throw Error(`Adapter error ${stateA}/${stateB}`);if(Date.now()>end)throw Error('Versus timed out');await new Promise(r=>setTimeout(r,25));}};
   a.start();b.start();await until(()=>readyA&&readyB&&viewA&&viewB);assert.equal(viewA.match.mode,'versus');assert.equal(viewB.match.mode,'versus');

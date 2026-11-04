@@ -27,8 +27,15 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
     if(next!==ready){ready=next;onStatus(ready);}
     if(active&&!failed){const state=ready?'ready':'waiting';if(state!==lastState){lastState=state;onState(state);}}
   }
-  function fail(reason='error'){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState(reason==='duplicate'?'duplicate':'error');}
+  function fail(reason='error'){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState(reason==='duplicate'?'duplicate':'error');queueMicrotask(()=>void stop());}
   const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:partyRoot||(four?'fourParties':'parties'),onError:fail};
+  let stopping=null;
+  function stop(){
+    if(stopping)return stopping;
+    if(!active&&!client)return Promise.resolve();active=false;sessionReady=false;refresh();if(timer)clearInterval(timer);timer=null;ticker=null;releaseTab?.();releaseTab=null;
+    const p=presence,c=client,h=host;presence=null;client=null;host=null;
+    stopping=Promise.allSettled([p?.stop(),c?.stop(),h?.stop()]).then(()=>{});return stopping;
+  }
   return {
     start(){
       if(started)throw new Error('Party game already started');started=true;active=true;onState('connecting');
@@ -39,22 +46,17 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
           host=createFirebasePartyHostSession({channel:createFirebasePartyChannel(options),host:createPartyHost(mode==='two-vs-two'?createTwoVsTwo(players,hostId,teams):mode==='four-coop'?createFourCoop(players,hostId):mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId),{hostId}),playerIds,epoch,localPlayerId:uid,onError:fail});
         }
         const channel=host?host.localChannel():createFirebasePartyChannel(options);
-        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;const game=snapshot?.match;let fields;if(four){if(game?.mode!==mode||game.hostId!==hostId||Object.keys(game.members||{}).length!==count||playerIds.some(id=>!Object.hasOwn(game.members,id))){fail();return;}fields=mode==='four-coop'?[game.match]:game.lanes;if(mode==='two-vs-two'&&(!Array.isArray(game.teams)||game.teams.length!==2||new Set(game.teams.flat()).size!==4||game.teams.some((team,i)=>!Array.isArray(team)||team.length!==2||team.some(id=>!Object.hasOwn(game.lanes?.[i]?.players||{},id))))) {fail();return;}if(!Array.isArray(fields)||fields.length!==(mode==='four-coop'?1:2)||fields.some(lane=>lane?.mapId!==FOUR_PLAYER_MAP||lane.individualSupplies!==true)||playerIds.some(id=>fields.filter(lane=>Object.hasOwn(lane.players||{},id)).length!==1)){fail();return;}}else{if((game?.mapId!==undefined&&!isMapId(game.mapId))||game?.individualSupplies!==true){fail();return;}fields=[game];}const playerFor=id=>fields.find(lane=>Object.hasOwn(lane.players||{},id))?.players[id];if(!playerIds.every(id=>Number.isFinite(playerFor(id)?.money)&&Number.isInteger(playerFor(id)?.completedWaveMask)&&playerFor(id).completedWaveMask>=0&&playerFor(id).completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const player=playerFor(uid),blocks=player.completedWaveBlocks||{};
+        client=createFirebasePartyClientSession({channel,onConnections:ids=>{acknowledged=ids;},onState:state=>{if(!active)return;if(state==='error'){fail();return;}sessionReady=state==='ready';refresh();},onView:snapshot=>{if(!active||failed)return;const game=snapshot?.match;let fields;if(four){if(game?.mode!==mode||game.hostId!==hostId||Object.keys(game.members||{}).length!==count||playerIds.some(id=>!Object.hasOwn(game.members,id))){fail();return;}fields=mode==='four-coop'?[game.match]:game.lanes;if(mode==='two-vs-two'&&(!Array.isArray(game.teams)||game.teams.length!==2||new Set(game.teams.flat()).size!==4||game.teams.some((team,i)=>!Array.isArray(team)||team.length!==2||team.some(id=>!Object.hasOwn(game.lanes?.[i]?.players||{},id))))) {fail();return;}if(!Array.isArray(fields)||fields.length!==(mode==='four-coop'?1:2)||fields.some(lane=>lane?.mapId!==FOUR_PLAYER_MAP||lane.individualSupplies!==true)||playerIds.some(id=>fields.filter(lane=>Object.hasOwn(lane.players||{},id)).length!==1)){fail();return;}}else{if(!game||game.hostId!==hostId||(mode==='versus'?game.mode!=='versus':game.mode==='versus')||(game.mapId!==undefined&&!isMapId(game.mapId))||game.individualSupplies!==true||!game.players||Object.keys(game.players).length!==count||playerIds.some(id=>!Object.hasOwn(game.players,id))){fail();return;}fields=[game];}const playerFor=id=>fields.find(lane=>Object.hasOwn(lane.players||{},id))?.players[id];if(!playerIds.every(id=>Number.isFinite(playerFor(id)?.money)&&Number.isInteger(playerFor(id)?.completedWaveMask)&&playerFor(id).completedWaveMask>=0&&playerFor(id).completedWaveMask<=MAX_WAVE_MASK)){fail();return;}const player=playerFor(uid),blocks=player.completedWaveBlocks||{};
         if(typeof blocks!=='object'||Array.isArray(blocks)||Object.entries(blocks).some(([key,value])=>!/^\d+$/.test(key)||!Number.isSafeInteger(Number(key))||Number(key)<1||!Number.isInteger(value)||value<0||value>MAX_WAVE_MASK)){fail();return;}
         onWaveRewards(player.completedWaveMask,0);for(const [block,mask] of Object.entries(blocks))onWaveRewards(mask,Number(block));onSnapshot(snapshot);}});
         client.start();host?.start();
         presence=createFirebasePartyPresence({...options,crypto,onConnections:(id,ids)=>{if(active)host?.setConnections(id,ids);},onPresence:(id,value)=>{if(!active)return;online.set(id,value);if(id===hostId)ticker?.reset();host?.setPresence(id,value);refresh();},onConnection:(connected,id)=>{if(!active)return;localConnection=connected?id:null;if(!connected){for(const id of playerIds)online.set(id,false);refresh();}}});
         presence.start();
         if(host){ticker=createFixedStepClock({step:STEP,now:clock,advance:()=>host.step()});timer=setInterval(()=>{if(active&&!failed)ticker.tick();},STEP*1000);}
-      }catch(error){fail();void this.stop();}
+      }catch(error){fail();}
       }});
     },
     command(command){if(!active||failed||!ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});return client.command(command);},
-    async stop(){
-      if(!active&&!client)return;active=false;sessionReady=false;refresh();if(timer)clearInterval(timer);timer=null;ticker=null;releaseTab?.();releaseTab=null;
-      // Stop presence first so the host pauses before channels are closed.
-      const p=presence,c=client,h=host;presence=null;client=null;host=null;
-      await Promise.allSettled([p?.stop(),c?.stop(),h?.stop()]);
-    }
+    stop
   };
 }

@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261103-skillsmenu3">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-patch67a">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
 <body>
@@ -79,6 +79,8 @@
         <div class="party-join"><label for="fourPartyCodeInput">JOIN WITH CODE</label><div class="party-join-controls"><input id="fourPartyCodeInput" type="text" maxlength="4" inputmode="numeric" pattern="[0-9]{4}" autocomplete="off" placeholder="0000"><button id="fourPartyJoin" type="button">JOIN</button><button id="fourPartyResume" type="button" hidden>RESUME AS HOST</button></div></div>
       </div>
       <p class="hint">Solo combat pauses while the lobby is open. Online matches continue independently.</p>
+      <details class="multiplayer-help"><summary>Connection &amp; safety tips</summary><ul><li>Everyone should reload the game after an update and use the same current version.</li><li>Four-digit codes can be guessed. Share them privately and approve only players you know.</li><li>Keep the host’s game open. Ordinary parties do not survive a host reload; host recovery is an experimental opt-in.</li><li>Competitive matches pause while someone is disconnected. Results and rewards are not server-verified or ranked.</li></ul></details>
+
       <div id="fourPartyActive" hidden>
         <div id="fourPartyCodeArea" class="party-code-card" hidden><span>YOUR PARTY CODE</span><code id="fourPartyCodeDisplay"></code><small>Share with your players</small></div>
         <ul id="fourPartyRequests" class="party-requests four-party-list" aria-label="Join requests"></ul>
@@ -173,5 +175,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-doctrines1"></script>
+  <script type="module" src="account.js?v=20261104-patch67a"></script>
 </body></html>

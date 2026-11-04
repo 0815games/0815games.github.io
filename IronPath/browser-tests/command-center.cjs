@@ -38,6 +38,7 @@ const assert = require('node:assert/strict');
     assert.equal(await visible('#campaignPanel'),false); assert.equal(await visible('#fourPartyPanel'),false);
     await page.locator('#backToCommand').click();
     await page.locator('#menuMultiplayer').click(); await page.locator('#fourPartyPanel').waitFor({state:'visible'});
+    await page.locator('.multiplayer-help summary').click(); assert.match(await page.locator('.multiplayer-help').innerText(),/codes can be guessed/i); assert.match(await page.locator('.multiplayer-help').innerText(),/host reload/i);
     assert.equal(await visible('.profile-bar'),false,'no soldier header in lobby'); assert.equal(await visible('#campaignPanel'),false);
     assert.equal(await visible('#game'),false,'no map in lobby'); assert.equal(await visible('.dashboard'),false);
     await page.locator('#backToCommand').click();
