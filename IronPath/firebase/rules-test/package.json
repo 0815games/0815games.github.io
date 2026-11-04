@@ -15,7 +15,8 @@
     "test:story": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-story.emulator.json 'IRONPATH_STORY_RULES=1 node --test story-rules.test.mjs && IRONPATH_STORY_RULES=1 node --test campaign-rules.test.mjs && IRONPATH_STORY_RULES=1 node --test unified-lobby.test.mjs && IRONPATH_STORY_RULES=1 node --test recovery-store.test.mjs'",
     "test:doctrines": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-doctrines.emulator.json 'node --test doctrines.test.mjs'",
     "test:friends": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friends.emulator.json 'node --test friends.test.mjs'",
-    "test:friend-search": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-search.emulator.json 'node --test friend-search.test.mjs && FRIEND_SEARCH_RULES=1 node --test friends.test.mjs'"
+    "test:friend-search": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-search.emulator.json 'node --test friend-search.test.mjs && FRIEND_SEARCH_RULES=1 node --test friends.test.mjs'",
+    "test:coop-invites": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-coop-invites.emulator.json 'node --test coop-invites.test.mjs && COOP_INVITES_RULES=1 node --test friend-search.test.mjs && COOP_INVITES_RULES=1 node --test friends.test.mjs'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",

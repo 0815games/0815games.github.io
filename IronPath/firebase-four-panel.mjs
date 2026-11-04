@@ -84,13 +84,15 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const active=createLobby();lobby=active;const result=await active.create(getProfile());if(gen!==generation){await active.close(result.partyId,result.inviteCode);return;}
     party={...result,role:'host'};status('Share the code and approve players. Start with two, three or four players.');watchParty(gen);watchMember(gen);addWatch(lobby.watchRequests(party.inviteCode,v=>showRequests(gen,v),failed));render();
   });
-  $('fourPartyJoin').onclick=()=>run(async gen=>{
-    const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){status('Enter a four-digit code.');return;}
-    if(!await confirmStart()||gen!==generation)return;
-    const active=createLobby();lobby=active;const result=await active.request(code,getProfile().name);if(gen!==generation){await active.cancel(code);return;}
+  async function join(code,expectedPartyId=null){return run(async gen=>{
+    if(party){status('Leave your current party first.');return false;}
+    if(!/^\d{4}$/.test(code)){status('Enter a four-digit code.');return false;}
+    if(!await confirmStart()||gen!==generation)return false;
+    const active=createLobby();lobby=active;const result=await active.request(code,getProfile().name,expectedPartyId);if(gen!==generation){await active.cancel(code);return false;}
     party={...result,role:'pending'};status('Request sent. Waiting for approval.');watchParty(gen);
-    addWatch(lobby.watchOwnRequest(code,value=>{if(gen===generation&&party?.role==='pending'&&value===null)status('Request closed. If not approved, leave and ask the host to try again.');},failed));render();
-  });
+    addWatch(lobby.watchOwnRequest(code,value=>{if(gen===generation&&party?.role==='pending'&&value===null)status('Request closed. If not approved, leave and ask the host to try again.');},failed));render();return true;
+  });}
+  $('fourPartyJoin').onclick=()=>join($('fourPartyCodeInput').value.trim());
   $('fourPartyResume').onclick=()=>run(async gen=>{
     const code=$('fourPartyCodeInput').value.trim();if(!/^\d{4}$/.test(code)){status('Enter the four-digit party code.');return;}
     if(!await confirmStart()||gen!==generation)return;
@@ -114,5 +116,5 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host')await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted)await active.cancel(old.inviteCode);})().catch(()=>{});
     let timer;await Promise.race([cleanup,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);
   }
-  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,leaveParty,leaveForLogout};
+  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,leaveForLogout};
 }
