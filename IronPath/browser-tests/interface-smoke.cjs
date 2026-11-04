@@ -38,7 +38,7 @@ const fs = require('node:fs');
         const card=page.locator('#'+id);
         const background=()=>card.evaluate(el=>{const s=getComputedStyle(el);return {image:s.backgroundImage,size:s.backgroundSize,position:s.backgroundPosition,repeat:s.backgroundRepeat};});
         const normal=await background();await card.hover();const hovered=await background();
-        assert.match(normal.image,/url\(/,`${name}: ${id} needs artwork`);assert.equal(normal.size,'cover');assert.deepEqual(hovered,normal,`${name}: ${id} artwork crop must not shift on hover`);
+        assert.match(normal.image,/url\(/,`${name}: ${id} needs artwork`);assert.ok(normal.size.split(',').every(size=>size.trim()==='cover'));assert.deepEqual(hovered,normal,`${name}: ${id} artwork crop must not shift on hover`);
         if(name==='desktop')await page.screenshot({path:`browser-artifacts/${name}-${id}-hover.png`});
       }
       await page.mouse.move(0,0);
