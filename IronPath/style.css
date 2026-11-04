@@ -282,3 +282,14 @@ body:has(#entry:not([hidden])){background-image:linear-gradient(#0d1918b8,#101d1
 /* The whole document enters fullscreen, preserving HUD, dialogs and scrolling. */
 .fullscreen-toggle{width:auto;margin:0;padding:4px 8px;font-size:11px;white-space:nowrap}.fullscreen-status{max-width:230px;color:#f5dfab;font-size:10px;line-height:1.2}.fullscreen-status[hidden],.fullscreen-toggle[hidden]{display:none}@media(max-width:850px){.fullscreen-toggle,.fullscreen-status{display:none}}
 :root:fullscreen{overflow:auto;background:#354536}
+/* Only the current flag is visible; the native selector remains keyboard and
+   screen-reader accessible. The menu labels identify the German preview. */
+.language-picker{top:calc(8px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));padding:0;background:transparent;border:0;gap:6px}
+.language-flag-control{position:relative;display:inline-grid;place-items:center;flex:none;width:44px;height:44px;background:#1c3028;border:1px solid #8a9c79;border-radius:5px;overflow:hidden}
+.language-flag-control .flag-icon{display:block;width:28px;height:18px;border:1px solid #ffffff80;background:center/cover no-repeat url('assets/flag-gb.svg')}
+html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/flag-de.svg')}
+.language-picker .language-flag-control select,.language-flag-control select{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;opacity:0;cursor:pointer;font-size:16px}
+.language-flag-control:focus-within{outline:2px solid #fff3c4;outline-offset:2px}
+.visually-hidden:not([hidden]){position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.field-language-flag{position:absolute;z-index:10;right:70px;top:calc(8px + env(safe-area-inset-top,0px))}
+#gameView .map-frame .dashboard{right:120px;max-width:calc(100% - 128px)}

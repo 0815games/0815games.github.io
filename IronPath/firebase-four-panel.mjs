@@ -1,4 +1,4 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261107-skillui1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261109-flaglang1';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
 import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261104-doctrines1';
