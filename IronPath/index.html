@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261104-fullscreen1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261104-friendbadge1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-friendstats1">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
   <link rel="stylesheet" href="field-command.css?v=20261104-fieldcommand2">
 </head>
@@ -136,6 +136,11 @@
     <p id="friendStatus" role="status" aria-live="polite"></p>
     <div class="friends-sections"><section><h3 data-i18n="friends.invites">Party invitations</h3><p id="coopInvitesEmpty" data-i18n-text="No party invitations.">No party invitations.</p><ul id="coopInviteList"></ul></section><section><h3 data-i18n="friends.requests">Requests</h3><p id="requestsEmpty" data-i18n-text="No incoming requests.">No incoming requests.</p><ul id="friendRequests"></ul></section><section><h3 data-i18n="friends.list">Friends</h3><p id="friendsEmpty" data-i18n-text="No friends yet.">No friends yet.</p><ul id="friendList"></ul></section><section><h3 data-i18n="friends.sent">Sent requests</h3><p id="sentEmpty" data-i18n-text="No sent requests.">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
+  <dialog id="friendStatsDialog" class="friends-dialog friend-stats-dialog" aria-labelledby="friendStatsTitle">
+    <header><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div><button id="friendStatsClose" type="button" aria-label="Close friend stats">✕</button></header>
+    <p id="friendStatsStatus" role="status" aria-live="polite"></p>
+    <div id="friendStatsContent" hidden><div class="friend-stats-grid"><section><h3 id="friendStatsLevelHeading">LEVEL</h3><p id="friendStatsLevel"></p><h3 id="friendStatsAbilityHeading">ACTIVE SKILL</h3><p id="friendStatsAbility"></p></section><section><h3 id="friendStatsEquipmentHeading">EQUIPMENT</h3><p id="friendStatsEquipment"></p><h3 id="friendStatsBunkerHeading">BUNKER UPGRADES</h3><p id="friendStatsBunker"></p></section></div><section class="friend-stats-skills"><h3 id="friendStatsSkillsHeading">SKILLS</h3><p id="friendStatsSkills"></p><p id="friendStatsSpecialists"></p><p id="friendStatsMasteries"></p><p id="friendStatsOwned"></p></section><small id="friendStatsNote">Snapshot of saved progression. Stats are player-reported and not verified.</small></div>
+  </dialog>
   <dialog id="skillDialog" class="skill-dialog tree-dialog" aria-labelledby="skillTitle">
     <div class="skills-header"><div><span class="skills-kicker">SOLDIER PROGRESSION</span><h2 id="skillTitle" data-i18n="skills.title">Skills</h2><p>Build a soldier that fits your strategy.</p></div><button class="skills-close" id="skillCancel" type="button" aria-label="Close skills">✕</button></div>
     <div class="skills-overview"><div><span data-i18n-text="YOUR POINTS">YOUR POINTS</span><strong id="skillPoints"></strong></div><span class="skills-overview-note">Changes apply next match</span></div>
@@ -200,5 +205,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-friendbadge1"></script>
+  <script type="module" src="account.js?v=20261104-friendstats1"></script>
 </body></html>

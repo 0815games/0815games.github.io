@@ -64,7 +64,7 @@ const fs = require('node:fs');
       assert.ok(hud.c.left>=-1 && hud.c.right<=width+1,`${name}: controls stay inside viewport`);
       await page.screenshot({path:`browser-artifacts/${name}-field-command.png`,fullPage:true});
       await page.evaluate(()=>document.querySelector('#fourPartyPanel').hidden=false);
-      for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
+      for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['friendStatsDialog', '#friendStatsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
         await page.evaluate(id => document.getElementById(id).showModal(), id);
         await check(`#${id}`); await check(control);
         if(id==='friendsDialog'||id==='leaderboardDialog'){
