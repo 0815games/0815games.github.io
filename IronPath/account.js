@@ -16,7 +16,7 @@ import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=2026110
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261104-dismissall1';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-skillui1';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261108-skillcards1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -93,7 +93,7 @@ function renderSkills(){
   if(!savingSkills)$('skillStatus').textContent=encodeBuild(draftSkills)===openedSkills?'Saved build unchanged.':'Unsaved draft — save to apply; closing discards these changes.';
 
   const scroll=$('skillDialog').scrollTop,restoreActionFocus=document.activeElement===$('skillDetailAction');
-  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,inspector:$('skillInspector'),inspectorHome:$('skillInspectorHome'),onSelect:(value)=>{const selector=`[data-path="${value.path}"][data-rank="${value.rank}"]`,previous=$('skillPaths').querySelector(selector)?.getBoundingClientRect().top;selectedSkill=value;renderSkills();const current=$('skillPaths').querySelector(selector);if(current&&Number.isFinite(previous))$('skillDialog').scrollTop+=current.getBoundingClientRect().top-previous;current?.focus({preventScroll:true});}});
+  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,inspector:$('skillInspector'),inspectorHome:$('skillInspectorHome'),onSelect:(value,keyboard)=>{const selector=`[data-path="${value.path}"][data-rank="${value.rank}"]`,previous=$('skillPaths').querySelector(selector)?.getBoundingClientRect().top;selectedSkill=value;renderSkills();const current=$('skillPaths').querySelector(selector);if(current&&Number.isFinite(previous))$('skillDialog').scrollTop+=current.getBoundingClientRect().top-previous;if(keyboard)current?.focus({preventScroll:true});}});
   if(restoreActionFocus)$('skillDetailAction').focus({preventScroll:true});
   if(Number.isFinite(scroll))$('skillDialog').scrollTop=scroll;
   const action=$('skillDetailAction');

@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261104-fullscreen1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261104-friendstats1">
-  <link rel="stylesheet" href="skill-menu.css?v=20261107-skillui1">
+  <link rel="stylesheet" href="skill-menu.css?v=20261108-skillcards1">
   <link rel="stylesheet" href="field-command.css?v=20261104-fieldcommand2">
 </head>
 <body>
@@ -146,7 +146,6 @@
     <div class="skills-overview"><div><span data-i18n-text="YOUR POINTS">YOUR POINTS</span><strong id="skillPoints"></strong></div><span class="skills-overview-note">Changes apply next match</span></div>
     <nav class="skills-tabs" aria-label="Skill categories"><button type="button" data-skill-path="assault" data-i18n-text="ASSAULT">ASSAULT</button><button type="button" data-skill-path="engineer" data-i18n-text="ENGINEER">ENGINEER</button><button type="button" data-skill-path="logistics" data-i18n-text="LOGISTICS">LOGISTICS</button><button type="button" data-skill-path="medic" data-i18n-text="MEDIC">MEDIC</button><button type="button" data-skill-path="recon" data-i18n-text="RECON">RECON</button><button type="button" data-skill-path="all" data-i18n-text="ALL">ALL</button></nav>
     <div class="skills-filter"><label for="skillFilter" data-i18n-text="SHOW">SHOW</label><select id="skillFilter" aria-controls="skillPaths"><option value="all">All skills</option><option value="available">Available to unlock</option><option value="unlocked">Unlocked</option><option value="active">Active abilities</option><option value="hybrid">Hybrid combos</option></select><select id="skillPathFilter" hidden aria-label="Skill category"><option value="all">All</option><option value="assault">Assault</option><option value="engineer">Engineer</option><option value="logistics">Logistics</option><option value="medic">Medic</option><option value="recon">Recon</option></select></div>
-    <div class="skill-legend" aria-label="Skill highlights" data-i18n-aria-label="Skill highlights"><span class="legend-main" data-i18n-text="Main ability">Main ability</span><span class="legend-equipped" data-i18n-text="Equipped">Equipped</span><span class="legend-unlocked" data-i18n-text="Unlocked">Unlocked</span><span class="legend-viewing" data-i18n-text="Viewing">Viewing</span></div>
     <div class="skills-workspace"><div id="skillPaths" class="skills-list" aria-label="Skills in the selected category"></div>
     <aside class="skills-sidebar"><div id="skillInspectorHome"><section id="skillInspector" class="skill-inspector" aria-live="polite" hidden><div><span id="skillDetailType" class="skills-kicker"></span><h3 id="skillDetailTitle"></h3><p id="skillDetailText"></p></div><button id="skillDetailAction" type="button"></button></section></div>
     <details class="skill-build-summary"><summary data-i18n-text="YOUR BUILD · COMBINED BONUSES">YOUR BUILD · COMBINED BONUSES</summary><div><p id="skillSummaryActive"></p><p id="skillSummaryStats"></p><p id="skillSummaryCombos"></p><p id="skillSummaryCaps"></p><small>Skill bonuses only; equipment, terrain, field upgrades and temporary effects are not included.</small></div></details></aside></div><p class="skills-footnote">Edits are a draft until saved. Reset refunds draft points; closing discards unsaved changes.</p>
@@ -206,5 +205,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261107-skillui1"></script>
+  <script type="module" src="account.js?v=20261108-skillcards1"></script>
 </body></html>

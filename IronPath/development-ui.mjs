@@ -1,4 +1,4 @@
-import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261104-doctrines1';
+import {nodeMatches} from './skill-planner.mjs?v=20261104-doctrines1';
 // Presentation only: all progression and transactions remain in the existing models.
 import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261104-doctrines1';
 const NS='http://www.w3.org/2000/svg';
@@ -6,7 +6,7 @@ const colors=['#d89970','#d7bd71','#b4c682','#8ac7b1','#8eafcf'];
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
 // A browsable skill catalogue. Selection and progression are still owned by account.js.
 export function renderSkillTree({document,container,build,level,selected,onSelect,filter='all',pathFilter='all',inspector=null,inspectorHome=null}){
-  const scrollTop=container.scrollTop,related=relatedNodes(selected),left=pointsLeft(build,level);
+  const scrollTop=container.scrollTop,left=pointsLeft(build,level);
   if(inspector&&inspectorHome){inspectorHome.append(inspector);inspector.hidden=true;}
   const board=document.createElement('div');board.className='skills-catalogue';
   function addGroup(title,subtitle,items,pathId=null){
@@ -14,13 +14,14 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
     const section=document.createElement('section'),heading=document.createElement('div'),name=document.createElement('h3'),desc=document.createElement('p'),grid=document.createElement('div');
     section.className='skill-group';if(pathId){section.dataset.skillGroup=pathId;section.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===pathId)]);}heading.className='skill-group-heading';name.textContent=title;desc.textContent=subtitle;heading.append(name,desc);grid.className='skill-card-grid';section.append(heading,grid);board.append(section);
     for(const item of visible){
-      const key=nodeKey(item.path,item.rank),button=document.createElement('button'),top=document.createElement('span'),tag=document.createElement('span'),state=document.createElement('span'),name=document.createElement('strong'),description=document.createElement('span'),requirement=document.createElement('span');
-      const active=item.active,unlocked=item.unlocked,available=item.available;
-      button.type='button';button.className=`tree-node skill-card${item.rank===1?' is-main-ability':item.rank===5||item.rank===6?' is-specialist-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${selected.path===item.path&&selected.rank===item.rank?' is-selected':''}${related.before.has(key)?' is-prerequisite':''}${related.after.has(key)?' is-dependent':''}`;
-      button.dataset.path=item.path;button.dataset.rank=String(item.rank);button.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===item.path)]);
-      top.className='skill-card-top';tag.className='skill-card-tag';tag.textContent=item.tag;state.className='skill-card-state';state.textContent=active?'EQUIPPED':unlocked?'UNLOCKED':available?'AVAILABLE':'LOCKED';top.append(tag,state);
-      name.className='skill-card-name';name.textContent=item.title;description.className='skill-card-description';description.textContent=item.description;requirement.className='skill-card-requirement';requirement.textContent=item.requirement;
-      button.append(top,name,description,requirement);button.setAttribute('aria-label',`${item.title}, ${state.textContent.toLowerCase()}. ${item.requirement}${related.before.has(key)?' Prerequisite of selected skill.':related.after.has(key)?' Connected to selected skill.':''}`);button.setAttribute('aria-pressed',String(selected.path===item.path&&selected.rank===item.rank));if(inspector){button.setAttribute('aria-expanded',String(selected.path===item.path&&selected.rank===item.rank));if(selected.path===item.path&&selected.rank===item.rank)button.setAttribute('aria-controls','skillInspector');}button.onclick=event=>onSelect({path:item.path,rank:item.rank},event?.detail===0);grid.append(button);if(inspector&&selected.path===item.path&&selected.rank===item.rank){inspector.hidden=false;grid.append(inspector);}
+      const shell=document.createElement('article'),button=document.createElement('button'),top=document.createElement('span'),tag=document.createElement('span'),state=document.createElement('span'),name=document.createElement('strong'),requirement=document.createElement('span');
+      const active=item.active,unlocked=item.unlocked,available=item.available,expanded=selected.path===item.path&&selected.rank===item.rank,locked=!active&&!unlocked&&!available;
+      const flags=`${item.rank===1?' is-main-ability':item.rank===5||item.rank===6?' is-specialist-ability':''}${unlocked?' is-unlocked':''}${active?' is-active':''}${locked?' is-locked':''}${expanded?' is-selected':''}`;
+      shell.className=`skill-card-shell${flags}`;button.type='button';button.className=`skill-card${flags}`;
+      button.dataset.path=item.path;button.dataset.rank=String(item.rank);shell.style.setProperty('--path-color',colors[SKILL_PATHS.findIndex(p=>p.id===item.path)]);
+      top.className='skill-card-top';tag.className='skill-card-tag';tag.textContent=item.rank===1?'MAIN ABILITY':item.tag;state.className='skill-card-state';state.textContent=active?'✓ EQUIPPED':unlocked?'UNLOCKED':available?'AVAILABLE':'LOCKED';top.append(tag,state);
+      name.className='skill-card-name';name.textContent=item.title;requirement.className='skill-card-requirement';requirement.textContent=item.requirement;requirement.hidden=!locked;
+      button.append(top,name,requirement);button.setAttribute('aria-label',`${item.title}, ${active?'equipped':state.textContent.toLowerCase()}. ${locked?item.requirement:''}`);button.setAttribute('aria-pressed',String(expanded));if(inspector){button.setAttribute('aria-expanded',String(expanded));if(expanded)button.setAttribute('aria-controls','skillInspector');}button.onclick=event=>onSelect({path:item.path,rank:item.rank},event?.detail===0);shell.append(button);if(inspector&&expanded){inspector.hidden=false;shell.append(inspector);}grid.append(shell);
     }
   }
   for(const [i,path] of SKILL_PATHS.entries()){

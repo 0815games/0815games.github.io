@@ -12,9 +12,9 @@ const lvl=xp=>characterProgress(xp).level,old='1,0,0,0,0;assault',candidate='2,0
 class Element{constructor(tag){this.tag=tag;this.children=[];this.attrs={};this.dataset={};this.style={setProperty(){}};}setAttribute(k,v){this.attrs[k]=v;}append(...x){this.children.push(...x);}prepend(...x){this.children.unshift(...x);}replaceChildren(...x){this.children=x;}}
 const doc={createElement:t=>new Element(t),createElementNS:(_,t)=>new Element(t)},container=new Element('div');container.scrollLeft=300;container.scrollTop=450;
 renderSkillTree({document:doc,container,build,level:20,selected:{path:'assault',rank:125},filter:'hybrid',pathFilter:'engineer',onSelect(){}});
-const board=container.children[0],nodes=board.children.flatMap(section=>section.children?.flatMap(child=>child.children?.filter(n=>n.tag==='button')||[])||[]),node=(p,r)=>nodes.find(n=>n.dataset.path===p&&n.dataset.rank===String(r));
-assert.equal(nodes.length,12,'hybrid filter shows combinations involving engineer');assert.ok(node('assault',125));assert.ok(node('assault',126).className.includes('is-dependent'));assert.equal(node('assault',100),undefined);assert.equal(container.scrollTop,450);
+const board=container.children[0],nodes=board.children.flatMap(section=>section.children?.flatMap(child=>child.children?.flatMap(shell=>shell.children?.filter(n=>n.tag==='button')||[])||[])||[]),node=(p,r)=>nodes.find(n=>n.dataset.path===p&&n.dataset.rank===String(r));
+assert.equal(nodes.length,12,'hybrid filter shows combinations involving engineer');assert.ok(node('assault',125));assert.ok(!node('assault',126).className.includes('is-dependent')); assert.equal(node('assault',100),undefined);assert.equal(container.scrollTop,450);
 renderSkillTree({document:doc,container,build,level:20,selected:{path:'assault',rank:125},filter:'all',pathFilter:'all',onSelect(){}});
-const all=container.children[0].children.flatMap(section=>section.children?.flatMap(child=>child.children?.filter(n=>n.tag==='button')||[])||[]);
-assert.equal(all.length,100);assert.ok(all.find(n=>n.dataset.path==='engineer'&&n.dataset.rank==='2').className.includes('is-prerequisite'));
+const all=container.children[0].children.flatMap(section=>section.children?.flatMap(child=>child.children?.flatMap(shell=>shell.children?.filter(n=>n.tag==='button')||[])||[])||[]);
+assert.equal(all.length,100);assert.ok(!all.find(n=>n.dataset.path==='engineer'&&n.dataset.rank==='2').className.includes('is-prerequisite'));
 console.log('Planner relationships, filters, summary, safe saving, and highlights passed.');

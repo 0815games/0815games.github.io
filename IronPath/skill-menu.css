@@ -40,3 +40,29 @@
 #skillDialog .skill-card-grid>.skill-inspector{grid-column:1/-1;min-width:0;margin:0 0 8px;border-left:4px solid #e2ba5f}
 #skillDialog .skill-inspector[hidden]{display:none}
 @media(max-width:700px){#skillDialog .skill-legend{padding:12px 14px 0}#skillDialog .skills-sidebar{order:0}#skillDialog .skill-card-grid>.skill-inspector{margin:0 0 8px}}
+/* Compact accordion cards: state is communicated by readable badges, not
+   prerequisite outlines or color alone. The inspector is part of the card. */
+#skillDialog .skill-card-grid{align-items:start}
+#skillDialog .skill-card-shell{min-width:0;border:1px solid #486355;border-left:4px solid var(--path-color,#708e7c);border-radius:8px;background:#1b2c25;overflow:hidden}
+#skillDialog .skill-card-shell.is-locked{background:#18241f;border-color:#364a3f;border-left-color:var(--path-color,#708e7c)}
+#skillDialog .skill-card-shell.is-active{background:#17362e;border-color:#4a9d87;border-left-color:#63d7b8}
+#skillDialog .skill-card-shell.is-selected{border-color:#a5b7a0;border-left-color:var(--path-color,#708e7c)}
+#skillDialog .skill-card-shell.is-active.is-selected{border-color:#63d7b8}
+#skillDialog .skills-list .skill-card{display:flex;min-height:0;padding:12px 14px;gap:7px;background:transparent;border:0;border-radius:0;outline:0;box-shadow:none;transform:none}
+#skillDialog .skills-list .skill-card:hover,#skillDialog .skills-list .skill-card.is-main-ability,#skillDialog .skills-list .skill-card.is-active,#skillDialog .skills-list .skill-card.is-selected{background:transparent;border:0;outline:0;box-shadow:none}
+#skillDialog .skills-list .skill-card:focus-visible{outline:2px solid #fff0c7;outline-offset:-3px}
+#skillDialog .skill-card-top{align-items:center;flex-wrap:wrap;gap:6px}
+#skillDialog .skill-card-tag,#skillDialog .skill-card-state{display:inline-block;padding:4px 7px;border-radius:4px;background:#2a3a32;color:#d5e3d6;font-size:10px;line-height:1.2;font-weight:800;letter-spacing:.04em}
+#skillDialog .is-main-ability .skill-card-tag{background:#e8c15e;color:#30270e}
+#skillDialog .is-active .skill-card-state{background:#70dfc0;color:#11372d}
+#skillDialog .is-unlocked:not(.is-active) .skill-card-state{background:#456b49;color:#e8f7df}
+#skillDialog .is-locked .skill-card-state{background:#35443b;color:#c2cdc1}
+#skillDialog .is-locked .skill-card-name{color:#b9c5b9}
+#skillDialog .skill-card-name{font-size:15px;line-height:1.25}
+#skillDialog .skill-card-requirement{margin:0;padding:0;border:0;color:#b7c4b8;font-size:11px;line-height:1.3}
+#skillDialog .skill-card-requirement[hidden]{display:none}
+#skillDialog .skill-card-shell>.skill-inspector{margin:0;padding:3px 14px 14px;border:0;border-radius:0;background:transparent}
+#skillDialog .skill-card-shell>.skill-inspector .skills-kicker,#skillDialog .skill-card-shell>.skill-inspector h3{display:none}
+#skillDialog .skill-card-shell>.skill-inspector p{color:#d0ddd0;font-size:13px;line-height:1.5}
+#skillDialog .skill-card-shell>.skill-inspector button{margin-top:12px}
+@media(max-width:700px){#skillDialog .skills-list .skill-card{min-height:0}#skillDialog .skill-group{margin-bottom:20px}}
