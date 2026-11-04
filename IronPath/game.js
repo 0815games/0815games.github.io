@@ -1,3 +1,4 @@
+import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-focus1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable} from './campaign.mjs?v=20261103-cinematic1';
@@ -294,8 +295,16 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     $('towerDetails').showModal();refreshDetails();
   }
   $('towerDetailsBack').onclick=()=>$('towerDetails').close();
-  $('radialClose').onclick=()=>{closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();};
+  function dismissTower(){if($('towerDetails').open)$('towerDetails').close();closeMenu();state.selectedPad=null;notice('Tower menu closed.');updateUI();}
+  $('radialClose').onclick=dismissTower;
+  bindDialogBackdrop($('towerDetails'),dismissTower);
+  $('towerDetails').addEventListener('cancel',event=>{event.preventDefault();dismissTower();});
+  document.addEventListener('click',event=>{
+    if(menu.hidden||$('towerDetails').open||document.querySelector('dialog[open]')||menu.contains(event.target))return;
+    dismissTower();event.preventDefault();event.stopPropagation();
+  },true);
   async function selectBattlePoint(x,y){
+    if(battleViewport&&!menu.hidden){dismissTower();return;}
     selectionEpoch++;
     if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),map=getMap(state.mapId),view=battleViewport?.getViewport();
     if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
