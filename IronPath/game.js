@@ -19,7 +19,7 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261104-directinvite1';
+import { createTutorial } from './tutorial.mjs?v=20261104-dismissall1';
 import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261104-buildreservation1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261104-buildreservation1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -54,7 +54,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function renderCinematic(){const {mission,kind,frames,index,finishLabel}=cinematic,frame=frames[index];$('cinematicProgress').max=frames.length;$('cinematicProgress').value=index+1;$('cinematicAct').textContent=`${mission.act} / ${kind==='intro'?'BRIEFING':'DEBRIEF'} · ${cinematicScene(mission,kind)?.place||''}`;$('cinematicCount').textContent=`${index+1} / ${frames.length}`;$('cinematicTitle').textContent=mission.title;$('cinematicSpeaker').textContent=frame.speaker==='NARRATOR'?'FIELD REPORT':frame.speaker;$('cinematicText').textContent=frame.text;$('cinematicInitial').textContent=frame.speaker==='NARRATOR'?'◆':frame.speaker[0];$('storyCinematic').dataset.speaker=frame.speaker.toLowerCase();$('cinematicPrevious').disabled=index===0;$('cinematicNext').textContent=index===frames.length-1?(finishLabel||(kind==='intro'?'DEPLOY':'VIEW RESULTS')):'NEXT →';}
   $('cinematicPrevious').onclick=()=>{if(cinematic&&cinematic.index>0){cinematic.index--;renderCinematic();}};
   $('cinematicNext').onclick=()=>{if(!cinematic)return;if(cinematic.index+1<cinematic.frames.length){cinematic.index++;renderCinematic();}else closeCinematic();};
-  $('cinematicSkip').onclick=()=>closeCinematic();$('storyCinematic').addEventListener('cancel',e=>{e.preventDefault();closeCinematic();});
+  $('cinematicSkip').onclick=()=>closeCinematic();$('storyCinematic').addEventListener('cancel',e=>{e.preventDefault();closeCinematic();});bindDialogBackdrop($('storyCinematic'),()=>closeCinematic());
   const me=()=>coop?account.getUserId():'local';
   let report=null,lastReport=null,hasCoopSnapshot=false;const coopReports=new Map();
   function newReport(id=null){return {id,mode:id?'coop':'solo',xp:0,scrap:0,items:[],levels:0,unlocks:[],pending:0,failed:false,confirmedEarlier:false,finished:false,snapshot:null,playerId:null};}
@@ -91,7 +91,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   $('storyReplayEnding').onclick=()=>{const target=lastReport;if(!target?.campaign||target.snapshot?.endReason!=='campaign-victory')return;$('runResults').close();showCinematic(target.campaign,'ending',()=>{if(lastReport===target&&target.accountId===account.getUserId()){renderResults(target);$('runResults').showModal();}});};
   $('resultsReplayMission').onclick=()=>loadResultMission();$('resultsNextMission').onclick=()=>loadResultMission(true);
-  $('resultsClose').onclick=$('resultsDone').onclick=()=>$('runResults').close();$('viewResults').onclick=()=>{if(lastReport){renderResults(lastReport);$('runResults').showModal();}};
+  $('resultsClose').onclick=$('resultsDone').onclick=()=>$('runResults').close();bindDialogBackdrop($('runResults'),()=>$('runResults').close());$('viewResults').onclick=()=>{if(lastReport){renderResults(lastReport);$('runResults').showModal();}};
 
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.

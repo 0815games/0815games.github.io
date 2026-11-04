@@ -21,6 +21,7 @@ export function createSocialNotifications({document,container,title,body,openBut
   function clear(){queue=[];current=null;container.hidden=true;}
   function reset(){clear();known={requests:new Map(),invites:new Map()};}
   dismissButton.onclick=()=>{current=null;paint();};
+  document.addEventListener('click',event=>{if(!container.hidden&&!container.contains(event.target))clear();},true);
   openButton.onclick=()=>{clear();onOpen();};
   for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('close',paint);
   return {update,clear,reset};
