@@ -2,11 +2,11 @@
 // recovery rules and host re-entry have been validated and published.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
-import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261104-hostpause1';
+import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261104-speedvote1';
 import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261104-hostpause1';
-import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261104-buildreservation1';
+import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261104-speedvote1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261104-hostpause1';
+import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261104-speedvote1';
 import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261104-buildreservation1';
 import {createVersus} from './versus.mjs?v=20261104-buildreservation1';
 import {createMatch} from './simulation.mjs?v=20261104-buildreservation1';

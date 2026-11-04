@@ -1,3 +1,4 @@
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261104-speedvote1';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261104-buildreservation1';
 import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261104-buildreservation1';
@@ -13,7 +14,8 @@ const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
 const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{});
 const validCount=match=>isFour(match)?(match.mode==='four-coop'?[3,4].includes(matchIds(match).length):matchIds(match).length===4):matchIds(match).length>=1&&matchIds(match).length<=2;
 const clone=value=>JSON.parse(JSON.stringify(value));
-const commandFields={endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const speedCommands=new Set(['requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
+const commandFields={requestSpeed:[],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:[],endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -28,7 +30,7 @@ export function normalizeCommand(command){
   return result;
 }
 function makeHost(data){
-  let {match,tick,players,queue}=data;
+  let {match,tick,players,queue}=data;const speedControl=createSpeedControl(match,data.speedControl);
   function receive(playerId,envelope){
     if(!Object.hasOwn(players,playerId))return {status:'rejected',reason:'unknown-player'};
     if(!envelope||envelope.version!==PROTOCOL_VERSION)return {status:'rejected',reason:'version'};
@@ -54,7 +56,7 @@ function makeHost(data){
   function advance(){
     tick++;const commands=[];
     for(const item of queue){
-      const result=isFour(match)?applyFourCommand(match,item.playerId,item.command):match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
+      const result=speedCommands.has(item.command.type)?speedControl.command(item.playerId,item.command):isFour(match)?applyFourCommand(match,item.playerId,item.command):match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
       const response={status:'applied',seq:item.seq,tick,result};
       const receipt=players[item.playerId].receipts.find(r=>r.seq===item.seq);
       receipt.response=clone(response);
@@ -62,7 +64,7 @@ function makeHost(data){
     }
     queue=[];
     const events=isFour(match)?stepFour(match):match.mode==='versus'?stepVersus(match):stepMatch(match);
-    return clone({version:PROTOCOL_VERSION,tick,commands,events});
+    speedControl.reconcile();return clone({version:PROTOCOL_VERSION,tick,commands,events});
   }
   // Cancel unprocessed inputs and neutralize movement on transport disconnect.
   // The host must stop ticking until its disconnect policy permits resuming.
@@ -81,17 +83,18 @@ function makeHost(data){
   // removing their identity, towers or reconnect receipts from the match.
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
+    if(!active)speedControl.reset();
     if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
-  function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue});}
+  function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint()});}
   // A reconnecting authenticated player receives a detached view and their own receipts.
   function snapshotFor(playerId){
     if(!Object.hasOwn(players,playerId))return null;
     const p=players[playerId];
-    return clone({version:PROTOCOL_VERSION,tick,match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
+    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
   }
-  return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive};
+  return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive,speed:()=>speedControl.snapshot().speed};
 }
 export function createHost(initialMatch){
   const match=clone(initialMatch),ids=matchIds(match);
