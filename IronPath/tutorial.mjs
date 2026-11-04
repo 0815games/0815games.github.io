@@ -1,3 +1,4 @@
+import {translateText as tr} from './language.mjs?v=20261104-i18n-preview2';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // Tutorial completion is per account and browser. The interactive exercises
 // use isolated example data; they never touch a soldier profile or Firebase.
@@ -24,23 +25,23 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{}}){
   function practiceDone(type){return skipped.has(type)||(type==='skills'?skill.upgraded&&skill.saved:type==='armory'?armory.equipped&&armory.upgraded:true);}
   function render(){
     const step=TUTORIAL_STEPS[index],practice=step.practice;
-    $('tutorialStep').textContent=`FIELD BRIEFING · ${index+1} / ${TUTORIAL_STEPS.length}`;$('tutorialTitle').textContent=step.title;$('tutorialText').textContent=step.text;$('tutorialCaption').textContent=step.caption;$('tutorialScene').dataset.scene=step.scene;
+    $('tutorialStep').textContent=tr('FIELD BRIEFING · {step} / {total}',{step:index+1,total:TUTORIAL_STEPS.length});$('tutorialTitle').textContent=tr(step.title);$('tutorialText').textContent=tr(step.text);$('tutorialCaption').textContent=tr(step.caption);$('tutorialScene').dataset.scene=step.scene;
     $('tutorialScene').hidden=!!practice;$('tutorialSkillsPractice').hidden=practice!=='skills';$('tutorialArmoryPractice').hidden=practice!=='armory';$('tutorialPracticeSkip').hidden=!practice||practiceDone(practice);
-    $('tutorialBack').disabled=index===0;$('tutorialNext').disabled=!!practice&&!practiceDone(practice);$('tutorialNext').textContent=index===TUTORIAL_STEPS.length-1?'FINISH':'NEXT →';
+    $('tutorialBack').disabled=index===0;$('tutorialNext').disabled=!!practice&&!practiceDone(practice);$('tutorialNext').textContent=index===TUTORIAL_STEPS.length-1?tr('FINISH'):tr('NEXT →');
     if(practice==='skills'){
-      $('tutorialSkillPoints').textContent=`${skill.upgraded?0:1} POINT${skill.upgraded?'S':''} AVAILABLE`;
-      $('tutorialSkillNode').setAttribute('aria-pressed',String(skill.inspected));$('tutorialSkillCardState').textContent=skill.upgraded?'EQUIPPED':'AVAILABLE';
-      $('tutorialSkillDetailTitle').textContent=skill.inspected?'Airstrike':'Select a skill';$('tutorialSkillDetailText').textContent=skill.inspected?'Deal 35 damage to all enemies. Spend one point to unlock this main skill.':'Choose the Airstrike card to inspect it.';
-      $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?'MAIN SKILL SELECTED':'UNLOCK · 1 POINT';
-      $('tutorialSkillSave').disabled=!skill.upgraded||skill.saved;$('tutorialSkillSave').textContent=skill.saved?'BUILD SAVED':'SAVE BUILD';
-      $('tutorialPracticeStatus').textContent=skipped.has('skills')?'Practice skipped. Your real build is unchanged.':!skill.inspected?'Select the Airstrike card.':!skill.upgraded?'Use the inspector to unlock this example skill.':!skill.saved?'Save the example build.':'Example saved. Your real build is unchanged.';
+      $('tutorialSkillPoints').textContent=tr(skill.upgraded?'{count} POINTS AVAILABLE':'{count} POINT AVAILABLE',{count:skill.upgraded?0:1});
+      $('tutorialSkillNode').setAttribute('aria-pressed',String(skill.inspected));$('tutorialSkillCardState').textContent=skill.upgraded?tr('EQUIPPED'):tr('AVAILABLE');
+      $('tutorialSkillDetailTitle').textContent=skill.inspected?tr('Airstrike'):tr('Select a skill');$('tutorialSkillDetailText').textContent=skill.inspected?tr('Deal 35 damage to all enemies. Spend one point to unlock this main skill.'):tr('Choose the Airstrike card to inspect it.');
+      $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?tr('MAIN SKILL SELECTED'):tr('UNLOCK · 1 POINT');
+      $('tutorialSkillSave').disabled=!skill.upgraded||skill.saved;$('tutorialSkillSave').textContent=skill.saved?tr('BUILD SAVED'):tr('SAVE BUILD');
+      $('tutorialPracticeStatus').textContent=skipped.has('skills')?tr('Practice skipped. Your real build is unchanged.'):!skill.inspected?tr('Select the Airstrike card.'):!skill.upgraded?tr('Use the inspector to unlock this example skill.'):!skill.saved?tr('Save the example build.'):tr('Example saved. Your real build is unchanged.');
     }else if(practice==='armory'){
-      $('tutorialScrap').textContent=`${armory.upgraded?30:60} SCRAP`;
+      $('tutorialScrap').textContent=tr('{count} SCRAP',{count:armory.upgraded?30:60});
       for(const [id,category] of [['tutorialEquipmentTab','equipment'],['tutorialBunkerTab','bunker'],['tutorialServiceTab','service']])$(id).setAttribute('aria-pressed',String(armory.category===category));
       $('tutorialEquipmentPanel').hidden=armory.category!=='equipment';$('tutorialBunkerPanel').hidden=armory.category!=='bunker';$('tutorialServicePanel').hidden=armory.category!=='service';
-      $('tutorialEquipState').textContent=armory.equipped?'EQUIPPED':'UNLOCKED';$('tutorialEquip').disabled=armory.equipped;$('tutorialEquip').textContent=armory.equipped?'EQUIPPED':'EQUIP';
-      $('tutorialBunkerUpgrade').disabled=armory.upgraded||armory.confirming;$('tutorialBunkerUpgrade').textContent=armory.upgraded?'UPGRADED':'UPGRADE · 30 SCRAP';$('tutorialBunkerConfirmArea').hidden=!armory.confirming;$('tutorialFortifyRank').textContent=`Rank ${armory.upgraded?1:0} of 3`;
-      $('tutorialPracticeStatus').textContent=skipped.has('armory')?'Practice skipped. Your real armory is unchanged.':!armory.equipped?'Open Equipment and equip the example Field Scope.':armory.confirming?'Confirm the example upgrade or cancel.':!armory.upgraded?'Open Bunker and upgrade example Fortification.':'Well done! Your real scrap and equipment are unchanged.';
+      $('tutorialEquipState').textContent=armory.equipped?tr('EQUIPPED'):tr('UNLOCKED');$('tutorialEquip').disabled=armory.equipped;$('tutorialEquip').textContent=armory.equipped?tr('EQUIPPED'):tr('EQUIP');
+      $('tutorialBunkerUpgrade').disabled=armory.upgraded||armory.confirming;$('tutorialBunkerUpgrade').textContent=armory.upgraded?tr('UPGRADED'):tr('UPGRADE · 30 SCRAP');$('tutorialBunkerConfirmArea').hidden=!armory.confirming;$('tutorialFortifyRank').textContent=tr('Rank {rank} of 3',{rank:armory.upgraded?1:0});
+      $('tutorialPracticeStatus').textContent=skipped.has('armory')?tr('Practice skipped. Your real armory is unchanged.'):!armory.equipped?tr('Open Equipment and equip the example Field Scope.'):armory.confirming?tr('Confirm the example upgrade or cancel.'):!armory.upgraded?tr('Open Bunker and upgrade example Fortification.'):tr('Well done! Your real scrap and equipment are unchanged.');
     }
     $('tutorialPracticeStatus').hidden=!practice;
   }

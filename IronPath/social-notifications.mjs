@@ -1,3 +1,4 @@
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261104-i18n-preview2';
 // Non-modal, in-page alerts. The inbox remains the source of truth; dismissing
 // an alert never accepts, declines or deletes a request or invitation.
 export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen}){
@@ -8,8 +9,9 @@ export function createSocialNotifications({document,container,title,body,openBut
     if(isBlocked()){container.hidden=true;return;}
     if(!current)current=queue.shift()||null;
     container.hidden=!current;
-    if(current){title.textContent=current.kind==='requests'?'FRIEND REQUEST':'PARTY INVITATION';body.textContent=current.kind==='requests'?`${current.name} wants to connect.`:`${current.name} invited you to a party.`;}
+    if(current){title.textContent=tr(current.kind==='requests'?'FRIEND REQUEST':'PARTY INVITATION');body.textContent=tr(current.kind==='requests'?'{name} wants to connect.':'{name} invited you to a party.',{name:current.name});}
   }
+  onLanguageChange(paint);
   function update(kind,items,{suppress=false}={}){
     if(!Object.hasOwn(known,kind))throw Error('Unknown notification type');
     const next=new Map(items.map(item=>[item.key,item]));

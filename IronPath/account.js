@@ -1,12 +1,13 @@
+import {setupLanguage} from './language.mjs?v=20261104-i18n-preview2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-dismissall1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-i18n-preview3';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261104-dismissall1';
-import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-i18n-preview3';
+import {createCommandCenter} from './command-center.mjs?v=20261104-i18n-preview2';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-speedvote1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-directinvite1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-i18n-preview2';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -23,7 +24,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261104-speedvote1';
+import { startGame } from './game.js?v=20261104-i18n-preview3';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261104-speedvote1';
 import { createPlayer } from './match.mjs?v=20261104-buildreservation1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
@@ -33,6 +34,8 @@ window.ironPathLoaded = true;
 const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
 const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null;
+let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
+setupLanguage({document,storage:languageStorage,onChange:()=>commandCenter?.render()});
 const confirmation=createConfirmation(document);
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
