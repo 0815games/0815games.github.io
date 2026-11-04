@@ -30,10 +30,10 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,re
         return {partyId,inviteCode,hostId:uid};
       }catch(error){if(inviteCode!==null)await sdk.remove(ref(`fourCodes/${inviteCode}`)).catch(()=>{});if(partyId)await sdk.remove(ref(`fourParties/${partyId}`)).catch(()=>{});throw error;}
     },
-    async request(inviteCode,name){
-      check();if(!validCode(inviteCode)||typeof name!=='string'||name.length<2||name.length>24)throw Error('Invalid request');
-      const [hostId,partyId]=await Promise.all([read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);if(!validUid(hostId)||hostId===uid||!validParty(partyId))throw Error('Party unavailable');
-      await sdk.set(ref(`fourCodes/${inviteCode}/requests/${uid}`),{name});check();return {partyId,inviteCode,hostId,uid};
+    async request(inviteCode,name,expectedPartyId=null){
+      check();if(!validCode(inviteCode)||typeof name!=='string'||name.length<2||name.length>24||(expectedPartyId!==null&&!validParty(expectedPartyId)))throw Error('Invalid request');
+      const [hostId,partyId]=await Promise.all([read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);if(!validUid(hostId)||hostId===uid||!validParty(partyId)||(expectedPartyId!==null&&partyId!==expectedPartyId))throw Error('Party unavailable');
+      await sdk.set(ref(`fourCodes/${inviteCode}/requests/${uid}`),expectedPartyId?{name,expectedPartyId}:{name});check();return {partyId,inviteCode,hostId,uid};
     },
     async approve(partyId,inviteCode,guestId){
       check();if(!validCode(inviteCode)||!validUid(guestId)||guestId===uid)throw Error('Invalid approval');

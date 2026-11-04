@@ -63,3 +63,9 @@ test('guest can cancel joining before an existing solo run is interrupted',async
 test('host can re-enter a started match with the original party code',async()=>{
  const f=fixture();f.lobby.resumeHost=async code=>{assert.equal(code,'0123');return {...manifest,partyId:'party',inviteCode:code,uid:'alice',teamRosters:[['alice','cara'],['bob','dan']],resumeGeneration:4};};f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyResume').onclick();assert.equal(f.panel.isActive(),true);assert.equal(f.joined.length,1);assert.equal(f.joined[0].resumeGeneration,4);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.panel.isActive(),false);
 });
+test('invitation uses the expected party and does not replace an active party',async()=>{
+ const f=fixture('guest');let request;f.lobby.request=async(...args)=>{request=args;return {hostId:'alice',partyId:'party',inviteCode:'0123',uid:'bob'};};assert.equal(await f.panel.joinInvite({code:'0123',partyId:'expected'}),true);assert.deepEqual(request,['0123','Bob','expected']);assert.equal(await f.panel.joinInvite({code:'9999',partyId:'other'}),false);assert.equal(f.panel.isActive(),true);
+});
+test('only a host with a free pre-match slot can invite',async()=>{
+ const f=fixture();assert.equal(f.panel.hostInvite(),null);await f.$('fourPartyCreate').onclick();assert.deepEqual(f.panel.hostInvite(),{partyId:'party',code:'0123'});f.w.slots({one:'bob',two:'cara',three:'dan'});assert.equal(f.panel.hostInvite(),null);
+});
