@@ -1,3 +1,4 @@
+import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261103-landmarks1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
 import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
@@ -62,12 +63,16 @@ function pad(ctx,p,tower,selected,types){
   const x=p.x,y=p.y;
   shape(ctx,[[x-23,y-11],[x-15,y-20],[x+15,y-20],[x+23,y-11],[x+23,y+11],[x+15,y+20],[x-15,y+20],[x-23,y+11]],tower?'#263b31':'#213a33',selected?'#b5d6ca':'#819f92',selected?2.5:1.5);
   if(!tower){line(ctx,[[x-12,y-8],[x+12,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText('BUILD',x,y+5);ctx.textAlign='start';return;}
+  const display=towerDisplay(tower.level);
+  // A static gold halo remains visible even when reduced motion is enabled.
+  if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,26,23,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
+    ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-25);ctx.textAlign='start';}
   // Preserve vector rendering only as an asset-loading fallback.
   const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type]);
   if(artwork)ctx.drawImage(artwork,x-24,y-25,48,40);
   else fallbackMarker(ctx,x,y-3,['MG','C','AA','S'][tower.type],types[tower.type].color,16,14);
   oval(ctx,x-15,y+13,7,7,'#263e30','#f1dfaa',1);ctx.fillStyle='#f6e9c6';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(['M','C','F','S'][tower.type],x-15,y+16);
-  oval(ctx,x+15,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(tower.level),x+15,y+17);ctx.textAlign='start';
+  oval(ctx,x+15,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+15,y+17);ctx.textAlign='start';
 }
 function soldier(ctx,p,own,pose={}){
   const x=p.x,y=p.y,artwork=sprite(ctx,'hero');

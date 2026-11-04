@@ -7,7 +7,7 @@ assert.deepEqual(characterProgress(750),{level:3,current:0,required:600});
 assert.deepEqual(characterProgress(1500),{level:4,current:150,required:750});
 assert.equal(characterProgress(10000000).current < characterProgress(10000000).required,true);
 assert.equal(MAX_TOWER_LEVEL,6);
-assert.deepEqual([1,2,3,4,5,6].map(upgradeCost),[70,120,180,260,360,null]);
+assert.deepEqual([1,2,3,4,5,6].map(upgradeCost),[70,120,180,260,360,450]);
 assert.equal(waveXP(1),30);
 assert.equal(waveXP(10),120);
 console.log('Character progression and tower upgrade tests passed.');

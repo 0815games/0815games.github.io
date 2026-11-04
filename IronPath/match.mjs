@@ -5,7 +5,7 @@ import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
 import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
-import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs';
+import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { waveFormation } from './combat.mjs?v=20261102-battle2';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 export const TOWER_COSTS = [50, 80, 65, 75];
@@ -13,9 +13,9 @@ export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
 // from trusted match state without accepting a price from a client.
 export function towerRefund(tower) {
-  let total=TOWER_COSTS[tower.type];
-  for(let level=1;level<tower.level;level++)total+=upgradeCost(level);
-  return Math.floor(total/2);
+  const investment=towerUpgradeInvestment(tower.level);
+  if(investment===null||!Number.isSafeInteger(investment+TOWER_COSTS[tower.type]))throw new Error('Invalid tower investment');
+  return Math.floor((TOWER_COSTS[tower.type]+investment)/2);
 }
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
@@ -106,7 +106,7 @@ export function applyCommand(state, playerId, command) {
       const tower=state.towers.find(t=>t.pad===command.pad);
       if(!tower)return {ok:false,reason:'Tower not found.'};
       if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
-      if(tower.level>=MAX_TOWER_LEVEL)return {ok:false,reason:'Tower is already at maximum level.'};
+      if(upgradeCost(tower.level)===null||towerUpgradeInvestment(tower.level+1)===null||!Number.isSafeInteger(TOWER_COSTS[tower.type]+towerUpgradeInvestment(tower.level+1)))return {ok:false,reason:'Tower cannot be upgraded further.'};
       if(tower.level===2&&![0,1,2,3].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
       if(tower.level===2&&command.branch===2&&player.level<5)return {ok:false,reason:'Veteran specialization unlocks at soldier level 5.'};
       if(tower.level===2&&command.branch===3&&player.level<10)return {ok:false,reason:'Boss Hunter specialization unlocks at soldier level 10.'};
