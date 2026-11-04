@@ -266,3 +266,6 @@ body:has(#entry:not([hidden])){background-image:linear-gradient(#0d1918b8,#101d1
 /* The global button hover background shorthand resets image sizing; keep the
    same crop and overlay in every state instead of showing the original image. */
 .mode-card,.mode-card:hover:not(:disabled){background-size:cover;background-position:center;background-repeat:no-repeat}
+
+/* Social alerts do not interrupt combat or automatically act on an inbox item. */
+.social-popup{position:fixed;z-index:1100;top:16px;right:16px;width:min(340px,calc(100vw - 32px));padding:14px;background:#eee3c1;color:#293d2e;border:2px solid #40583e;border-radius:12px;box-shadow:0 8px 24px #17271c55;display:flex;gap:12px;justify-content:space-between;align-items:center}.social-popup[hidden]{display:none}.social-popup strong{font-size:11px;letter-spacing:.08em}.social-popup p{font-size:13px;line-height:1.35;margin:4px 0 0;overflow-wrap:anywhere}.social-popup-actions{display:flex;align-items:center;gap:5px}.social-popup-actions button{margin:0;font-size:10px;padding:8px}.social-popup-actions button:last-child{min-width:36px;min-height:36px}@media(max-width:600px){.social-popup{top:max(10px,env(safe-area-inset-top));right:10px;width:min(340px,calc(100vw - 20px))}}
