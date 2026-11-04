@@ -1,3 +1,4 @@
+import {germanText} from './localization-de.mjs?v=20261104-i18n-preview2';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
@@ -59,6 +60,12 @@ const messages={
 };
 export const SUPPORTED_LANGUAGES=['en','de'];
 let active='en';
+const listeners=new Set();
+export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
+export function translateText(text,values={}){
+  const localized=active==='de'?(germanText[text]??text):text;
+  return localized.replace(/\{([A-Za-z]+)\}/g,(_,name)=>String(values[name]??''));
+}
 export function translate(key,values={}){
   const text=messages[key]?.[active]??messages[key]?.en??key;
   return text.replace(/\{([A-Za-z]+)\}/g,(_,name)=>String(values[name]??''));
@@ -68,7 +75,8 @@ export function setupLanguage({document,storage,onChange=()=>{}}){
   try{const saved=storage?.getItem('ironpath:language');if(SUPPORTED_LANGUAGES.includes(saved))lang=saved;}catch{}
   function render(){active=lang;document.documentElement.lang=lang;selector.value=lang;document.getElementById('languagePreviewNote').hidden=lang!=='de';
     for(const element of document.querySelectorAll('[data-i18n]')){const key=element.getAttribute('data-i18n');if(Object.hasOwn(messages,key))element.textContent=translate(key);}
-    onChange(lang);
+    for(const element of document.querySelectorAll('[data-i18n-text]'))element.textContent=translateText(element.getAttribute('data-i18n-text'));
+    onChange(lang);for(const listener of listeners)listener(lang);
   }
   selector.addEventListener('change',()=>{if(!SUPPORTED_LANGUAGES.includes(selector.value)){selector.value=lang;return;}lang=selector.value;try{storage?.setItem('ironpath:language',lang);}catch{}render();});
   render();return {getLanguage:()=>lang,translate};

@@ -1,3 +1,4 @@
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261104-i18n-preview2';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
 import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261104-doctrines1';
@@ -5,9 +6,9 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
-  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='';
-  function status(message){$('fourPartyStatus').textContent=message;}
-  function clear(){generation++;for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';requests.replaceChildren();roster.replaceChildren();render();}
+  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={};
+  function status(message){lastStatus=message;$('fourPartyStatus').textContent=tr(message);}
+  function clear(){generation++;for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requests.replaceChildren();roster.replaceChildren();render();}
   function render(){
     $('fourPartyEntry').hidden=!!party;$('fourPartyActive').hidden=!party;
     const host=party?.role==='host',pending=party?.role==='pending';
@@ -16,18 +17,18 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     $('fourPartyStart').hidden=!host||started;
     $('fourPartyStart').disabled=busy||!host||started||!ready();
     $('fourPartyLeave').hidden=started&&!host&&!joinFailed;
-    $('fourPartyLeave').textContent=host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY';
+    $('fourPartyLeave').textContent=tr(host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY');
     for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyResume','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
     if(joining)$('fourPartyLeave').disabled=true;
     const modes=availablePartyModes(party?1+Object.values(slots).filter(Boolean).length:0),signature=modes.join(',');
     if(!modes.includes(selectedMode))selectedMode=modes[0]||null;
-    if(signature!==renderedModes){renderedModes=signature;$('fourPartyMode').replaceChildren();for(const mode of modes){const option=document.createElement('option');option.value=mode;option.textContent=({coop:'Co-op · defend together',versus:'1 vs 1 · survival', 'four-coop':'Large-map co-op · two roads','two-vs-two':'2 vs 2 · survival'})[mode];$('fourPartyMode').append(option);}}
+    if(signature!==renderedModes){renderedModes=signature;$('fourPartyMode').replaceChildren();for(const mode of modes){const option=document.createElement('option');option.value=mode;option.textContent=tr(({coop:'Co-op · defend together',versus:'1 vs 1 · survival', 'four-coop':'Large-map co-op · two roads','two-vs-two':'2 vs 2 · survival'})[mode]);$('fourPartyMode').append(option);}}
     if(selectedMode)$('fourPartyMode').value=selectedMode;$('fourPartyTeams').value=String(selectedTeams);
     $('fourPartyTeamsLabel').hidden=$('fourPartyTeams').hidden=selectedMode!=='two-vs-two';
     roster.replaceChildren();if(!party||pending)return;
     [party.hostId,slots.one,slots.two,slots.three].forEach((id,index)=>{
       const item=document.createElement('li'),profile=id&&profiles[id],team=selectedMode==='two-vs-two'?` · Team ${teams[selectedTeams][index]===0?'A':'B'}`:'';
-      item.textContent=id?`${profile?.name||'Waiting for soldier'}${index===0?' · Host':''}${team}${profile?' · Ready':' · Not ready'}`:`Slot ${index+1} · Open`;roster.append(item);
+      item.textContent=id?`${profile?.name||tr('Waiting for soldier')}${index===0?' · '+tr('Host'):''}${team}${' · '+tr(profile?'Ready':'Not ready')}`:tr('Slot {number} · Open',{number:index+1});roster.append(item);
     });
   }
   function ready(){const ids=party?[party.hostId,slots.one,slots.two,slots.three].filter(Boolean):[];return !!config&&availablePartyModes(ids.length).includes(selectedMode)&&ids.every(id=>profiles[id]);}
@@ -70,12 +71,12 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     },failed));
   }
   function showRequests(gen,values){
-    if(gen!==generation||party?.role!=='host')return;requests.replaceChildren();
+    if(gen!==generation||party?.role!=='host')return;lastRequests=values||{};requests.replaceChildren();
     const current=party,active=lobby;
     for(const [uid,request] of Object.entries(values||{})){
       if(!request||typeof request.name!=='string'||request.expectedPartyId)continue;
       const row=document.createElement('li'),name=document.createElement('span'),accept=document.createElement('button'),decline=document.createElement('button');
-      name.textContent=request.name;accept.type=decline.type='button';accept.textContent='APPROVE';decline.textContent='DECLINE';
+      name.textContent=request.name;accept.type=decline.type='button';accept.textContent=tr('APPROVE');decline.textContent=tr('DECLINE');
       accept.onclick=()=>run(async()=>{if(gen!==generation||party!==current)return;await active.approve(current.partyId,current.inviteCode,uid);if(gen===generation&&party===current)status('Player approved.');});
       decline.onclick=()=>run(async()=>{if(gen!==generation||party!==current)return;await active.reject(current.inviteCode,uid);if(gen===generation&&party===current)status('Request declined.');});row.append(name,accept,decline);requests.append(row);
     }
@@ -120,5 +121,6 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host')await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted)await active.cancel(old.inviteCode);})().catch(()=>{});
     let timer;await Promise.race([cleanup,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);
   }
+  onLanguageChange(()=>{renderedModes='';render();status(lastStatus);if(party?.role==='host'&&!started)showRequests(generation,lastRequests);});
   root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,leaveForLogout};
 }

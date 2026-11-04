@@ -1,13 +1,13 @@
-import {setupLanguage} from './language.mjs?v=20261104-i18n-preview1';
+import {setupLanguage} from './language.mjs?v=20261104-i18n-preview2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-dismissall1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261104-dismissall1';
-import {createCommandCenter} from './command-center.mjs?v=20261104-i18n-preview1';
+import {createCommandCenter} from './command-center.mjs?v=20261104-i18n-preview2';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-buildreservation1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-directinvite1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-i18n-preview2';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -24,7 +24,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261104-movement1';
+import { startGame } from './game.js?v=20261104-i18n-preview2';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261104-buildreservation1';
 import { createPlayer } from './match.mjs?v=20261104-buildreservation1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
