@@ -1,6 +1,6 @@
 # Local stress test — 2026-11-04
 
-Run with `node IronPath/stress-tests/run.mjs` (Node 22). The script is deterministic apart from elapsed wall-clock timings, uses no network or Firebase, and is also run in CI. These results are from one x86-64 sandbox, not device frame rates or network capacity. No gameplay or balance values were changed.
+Run with `node IronPath/stress-tests/run.mjs` (Node 22). The script is deterministic apart from elapsed wall-clock timings, uses no network or Firebase, and is also run in CI. These results are from one x86-64 sandbox, not device frame rates or network capacity. They were recorded before the tower prestige prototype; the current harness now permits prestige upgrades, so current run timings and outcomes can differ.
 
 ## Automated playthroughs
 

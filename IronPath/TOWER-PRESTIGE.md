@@ -1,0 +1,7 @@
+# Tower prestige prototype
+
+After level 6, the next paid upgrade gives the tower prestige 1, displays level 1 and adds a gold glow and prestige count. The tower keeps its specialization, range and existing damage; this upgrade also adds the usual +0.3 base damage multiplier. Subsequent upgrades advance the displayed level to 6 again, after which another paid upgrade starts the next prestige cycle. Prestige can repeat (subject to JavaScript's safe-integer limits). Towers exist only for the current run.
+
+The original level 1–6 upgrade costs are unchanged: 70, 120, 180, 260, 360 supplies. The first prestige upgrade costs 450, then every upgrade costs 90 more than the previous one (540, 630, and so on). This is an initial balancing proposal, not a validated economy. Selling returns half the full build and upgrade investment, including prestige, to the original owner as before. Multiplayer upgrades retain the absolute internal level for stale-command protection; all players should reload to get the same version before starting a party, since older clients do not understand prestige. No server-side version gate is provided.
+
+The prototype is available in solo and multiplayer. Automated tests cover multiple cycles, damage, costs, refunds, stale simultaneous commands, four-player routing and checkpoint recovery. Human balance tests and visual/device testing, including real multiplayer, remain outstanding.

@@ -8,7 +8,7 @@ import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261102-fourviewport2';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261104-doctrines1';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261105-prestige1';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261104-doctrines1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-battle2';
 import {createBattleSound} from './battle-sound.mjs?v=20261102-battle2';
@@ -16,16 +16,16 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261104-movement1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261105-prestige1';
 import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261104-fieldcommand1';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261104-buildreservation1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261104-buildreservation1';
+import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-prestige1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-prestige1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
-import { MAX_TOWER_LEVEL, upgradeCost } from './progression.mjs?v=20261102-terrain4';
+import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay } from './progression.mjs?v=20261105-prestige1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,deferTutorial=false}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
@@ -277,17 +277,17 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       actions.push({label:'Cancel',summary:'Keep this tower.',description:'Cancel sale',run:()=>showMenu(pad)});
       menuNotice(`Confirm sale for half the investment, or cancel. ${coop?'Battle continues in co-op.':'Battle paused.'}`);
     }else{
-      const cost=upgradeCost(tower.level),max=tower.level>=MAX_TOWER_LEVEL,sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
-      actions.push({label:max?'Max level':tower.level===2?`Choose specialization · ${cost}`:`Confirm upgrade · ${cost}`,summary:max?'This tower is fully upgraded.':tower.level===2?'Choose a permanent specialization.':`Confirm purchase: +0.3 damage multiplier.${sharedUpgrade}`,disabled:max,unaffordable:!max&&supplies()<cost,description:max?'Maximum level':`View upgrade to level ${tower.level+1}, ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else notice('Not enough supplies to upgrade.');}});
+      const cost=upgradeCost(tower.level),max=cost===null,display=towerDisplay(tower.level),prestiging=display.level===MAX_TOWER_LEVEL,sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?` You pay for this upgrade; any sale refund goes to ${state.players[tower.ownerId]?.name||'the builder'}.`:'';
+      actions.push({label:max?'Upgrade unavailable':tower.level===2?`Choose specialization · ${cost}`:prestiging?`Prestige · ${cost}`:`Confirm upgrade · ${cost}`,summary:max?'This tower cannot be upgraded further.':tower.level===2?'Choose a permanent specialization.':prestiging?`Prestige ${display.prestige+1}: level resets to 1; power and specialization stay, and damage increases.${sharedUpgrade}`:`Confirm purchase: +0.3 damage multiplier.${sharedUpgrade}`,disabled:max,unaffordable:!max&&supplies()<cost,description:max?'Upgrade unavailable':`Upgrade to level ${towerDisplay(tower.level+1).level}, prestige ${towerDisplay(tower.level+1).prestige}, ${cost} supplies${supplies()<cost?'. Not enough supplies.':''}`,run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else notice('Not enough supplies to upgrade.');}});
       const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||'the owner';
       actions.push({label:mine?`Sell · +${towerRefund(tower)}`:'Sell tower',summary:mine?'Recover half of build and upgrade costs.':`Half the costs go to ${ownerName}.`,description:mine?`Sell tower for ${towerRefund(tower)} supplies`:`Sell tower; refund goes to ${ownerName}`, run:()=>showMenu(pad,'confirmSell')});
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
-      menuNotice(`${name} · level ${tower.level} · range ${Math.round(getTowerRange(tower))}. ${coop?"Battle continues in co-op.":"Battle paused."}`);
+      menuNotice(`${name} · level ${towerDisplay(tower.level).level}${towerDisplay(tower.level).prestige?` · prestige ${towerDisplay(tower.level).prestige}`:''} · range ${Math.round(getTowerRange(tower))}. ${coop?"Battle continues in co-op.":"Battle paused."}`);
     }
-    function upgrade(branch){dispatch({type:'upgrade',pad,branch,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=result.reason;else notice(result.reason);return;}if(!coop){combatFx.emit('upgrade',getMap(state.mapId).pads[pad],state);sound.play('upgrade');}notice(`Tower upgraded to level ${tower.level+(coop?1:0)}.`);if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();});}
+    function upgrade(branch){const next=towerDisplay(tower.level+1);dispatch({type:'upgrade',pad,branch,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=result.reason;else notice(result.reason);return;}if(!coop){combatFx.emit('upgrade',getMap(state.mapId).pads[pad],state);sound.play('upgrade');}notice(next.level===1?`Tower reached prestige ${next.prestige} · level 1.`:`Tower upgraded to level ${next.level}${next.prestige?` · prestige ${next.prestige}`:''}.`);if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();});}
     menu.dataset.mode=tower?'actions':'build';
     $('sheetMode').textContent=coop?'BATTLE CONTINUES':'BATTLE PAUSED';
-    $('sheetTitle').textContent=!tower?'Build defense':mode==='branches'?'Choose specialization':mode==='confirmSell'?'Sell tower?':`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} · Level ${tower.level}`;
+    $('sheetTitle').textContent=!tower?'Build defense':mode==='branches'?'Choose specialization':mode==='confirmSell'?'Sell tower?':`${tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name} · Level ${towerDisplay(tower.level).level}${towerDisplay(tower.level).prestige?` · Prestige ${towerDisplay(tower.level).prestige}`:''}`;
     $('sheetHint').textContent=!tower?'Choose a tower to inspect.':mode==='branches'?'This choice is permanent.':mode==='confirmSell'?'Confirm or cancel the sale.':`Range ${Math.round(getTowerRange(tower))} · tap an action for details`;
     options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.classList.toggle('unaffordable',!!(action?.unaffordable||action?.locked));$('menuName'+i).textContent=action?action.label:'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?' · Not enough supplies':''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
     menu.hidden=false;if(!refresh)updateUI();

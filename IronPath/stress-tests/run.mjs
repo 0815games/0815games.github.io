@@ -32,7 +32,7 @@ function spend(game,rotation){
   const pads=getMap(field.mapId).pads.length;
   // Spend only earned supplies; avoid global RNG or manipulating the simulation.
   let count=0;for(let i=0;i<pads&&count<2;i++){const pad=(i+rotation)%pads;if(!field.towers.some(t=>t.pad===pad)&&game.command(id,{type:'build',pad,towerType:(pad+rotation)%4}).ok)count++;}
-  for(const tower of [...field.towers])if(tower.ownerId===id&&tower.level<6){if(game.command(id,{type:'upgrade',pad:tower.pad,branch:0}).ok)break;}
+  for(const tower of [...field.towers])if(tower.ownerId===id){if(game.command(id,{type:'upgrade',pad:tower.pad,branch:0}).ok)break;}
  }
 }
 function prepareWave(game){

@@ -10,4 +10,4 @@ Work through the remaining items before stress and balance testing. Previously r
 - [x] For new friend requests, highlight the Friends button and show the number of requests, rather than a separate notification. Real two-account testing remains needed.
 - [x] Add a friend stats window so players can inspect a friend's level, armory, skills, and other relevant stats before playing together. Real two-account validation remains needed.
 - [ ] Stress and balance test single-player, Endless, and all multiplayer variants, including real-device testing. Initial local stress results: [STRESS-REPORT.md](STRESS-REPORT.md); balance and real-device/network testing remain open.
-- [ ] After testing: explore the tower prestige system after level 6, with a shine and displayed level reset to 1.
+- [ ] Tower prestige prototype: repeatable level-6 prestige, visible shine and level reset while retaining power. Validate on real devices and balance the costs and damage before considering this complete.
