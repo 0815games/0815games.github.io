@@ -1,6 +1,6 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261104-i18n-preview2';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261104-fullscreen1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createSocialNotifications} from './social-notifications.mjs?v=20261104-i18n-preview3';
+import {createSocialNotifications} from './social-notifications.mjs?v=20261104-fullscreen1';
 import {createCoopInvites} from './coop-invites.mjs?v=20261104-invites1';
 import {createFriendService} from './friends.mjs?v=20261104-autosearch1';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto}){

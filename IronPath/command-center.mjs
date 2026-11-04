@@ -1,4 +1,4 @@
-import {translate} from './language.mjs?v=20261104-i18n-preview2';
+import {translate} from './language.mjs?v=20261104-fullscreen1';
 import {characterProgress} from './progression.mjs?v=20261102-terrain4';
 import {readArmory,ITEMS} from './armory.mjs?v=20261102-longterm1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261103-cinematic1';

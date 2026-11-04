@@ -62,7 +62,13 @@ const assert = require('node:assert/strict');
     // Reproduce the reported case: a solo operation is already under way.
     await page.locator('#menuEndless').click(); await page.locator('#start').click();await page.locator('#languageSelect').selectOption('de');await page.waitForFunction(()=>document.getElementById('start').textContent==='WELLE LÄUFT');assert.equal(await page.locator('#moneyLabel').innerText(),'VORRÄTE');await page.locator('#languageSelect').selectOption('en');
     await page.evaluate(()=>window.__soldierFrames=[]);await page.locator('#game').click({position:{x:20,y:20}});await page.waitForFunction(()=>window.__soldierFrames.some(f=>f.sourceWidth===60&&f.sourceHeight===90&&Math.abs(f.rotation)>.001),null,{timeout:8000});
-    await page.locator('#backToCommand').click();
+    // Fullscreen the entire document: gameplay controls and native dialogs stay available.
+    await page.setViewportSize({width:1280,height:800});
+    await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
+    assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#game').isVisible(),true);assert.equal(await page.locator('#start').isVisible(),true);
+    await page.locator('#backToCommand').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
+    await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');
+    await page.setViewportSize({width:390,height:844});
     await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
     assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true);
     assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),false);

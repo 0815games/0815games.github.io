@@ -2,6 +2,9 @@
 export const germanText=Object.freeze({
   "SPEED: {speed}×": "TEMPO: {speed}×",
   "Your best: —": "Dein Bestwert: —",
+  "FULLSCREEN": "VOLLBILD",
+  "EXIT FULLSCREEN": "VOLLBILD BEENDEN",
+  "Fullscreen unavailable. Check your browser permissions or exit fullscreen and try again.": "Vollbild nicht verfügbar. Prüfe die Browserberechtigungen oder beende den Vollbildmodus und versuche es erneut.",
   "Could not load soldier": "Soldat konnte nicht geladen werden",
   "Check your connection and Firebase database rules, then retry.": "Prüfe deine Verbindung und die Firebase-Datenbankregeln und versuche es erneut.",
   "RETRY": "ERNEUT VERSUCHEN",
