@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {setupLanguage,translate} from '../language.mjs';
+import {setupLanguage,translate,translateText} from '../language.mjs';
 function fixture(saved){
  const values=new Map(saved?[['ironpath:language',saved]]:[]),selector={value:'',addEventListener(_type,fn){this.change=fn;}},notice={hidden:true},label={textContent:'',getAttribute:()=> 'command.title'},player={textContent:'Player <Name>'},doc={documentElement:{lang:''},getElementById:id=>id==='languageSelect'?selector:notice,querySelectorAll:query=>query==='[data-i18n]'?[label]:[]},storage={getItem:k=>values.get(k),setItem:(k,v)=>values.set(k,v)};let count=0;const language=setupLanguage({document:doc,storage,onChange:()=>count++});return {values,selector,notice,label,player,doc,language,getCount:()=>count};
 }
@@ -10,3 +10,5 @@ test('switching languages translates only marked UI and persists preference loca
 });
 test('preference loads and invalid values do not replace the current language',()=>{const f=fixture('de');assert.equal(f.language.getLanguage(),'de');assert.equal(f.label.textContent,'Kommandozentrale');f.selector.value='xx';f.selector.change();assert.equal(f.selector.value,'de');assert.equal(f.doc.documentElement.lang,'de');const bad=fixture('invalid');assert.equal(bad.language.getLanguage(),'en');});
 test('blocked storage does not prevent switching',()=>{const selector={value:'',addEventListener(_t,fn){this.change=fn;}},notice={},doc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:notice,querySelectorAll:()=>[]},storage={getItem(){throw Error('blocked')},setItem(){throw Error('blocked')}};const locale=setupLanguage({document:doc,storage});selector.value='de';selector.change();assert.equal(locale.getLanguage(),'de');});
+
+test('dynamic presentation preserves unknown text and formats placeholders safely',()=>{const f=fixture('de');assert.equal(translateText('Wave {wave}',{wave:7}),'Welle 7');assert.equal(translateText('Unknown {value}'),'Unknown {value}');assert.equal(translateText(undefined),'');f.selector.value='en';f.selector.change();assert.equal(translateText('Wave {wave}',{wave:7}),'Wave 7');});

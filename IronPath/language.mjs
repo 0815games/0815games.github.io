@@ -63,8 +63,9 @@ let active='en';
 const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
+  if(typeof text!=='string')return String(text??'');
   const localized=active==='de'?(germanText[text]??text):text;
-  return localized.replace(/\{([A-Za-z]+)\}/g,(_,name)=>String(values[name]??''));
+  return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){
   const text=messages[key]?.[active]??messages[key]?.en??key;
