@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261104-invites1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-autosearch1">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
 <body>
@@ -45,10 +45,10 @@
         </form>
         <div class="dossier-footer" aria-hidden="true"><span>FIELD RECORD · 01</span><span>HOLD THE LINE ★</span></div>
       </div>
-      <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
+      <div id="characterView" hidden><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow">NEW RECRUIT</span><h2>Create your soldier</h2><p class="hint">Your name and character choice are permanent for now. Signed-in players can find your soldier name and player ID in friend search.</p><form id="characterForm"><label for="soldierName">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name"><label for="gender">CHARACTER</label><select id="gender"><option value="female">Female soldier</option><option value="male">Male soldier</option></select><button class="primary" type="submit">ENLIST</button><button id="setupLogout" type="button">SIGN OUT</button></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
-    <div id="gameView" hidden><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
+    <div id="gameView" hidden><p id="friendIndexError" class="friend-index-error" role="status" hidden>Could not update your player search listing. <button id="friendIndexRetry" type="button">RETRY</button></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
     <section id="commandCenter" class="command-center" aria-labelledby="commandTitle">
       <div class="command-hero"><div><span class="command-kicker">IRON PATH / FIELD HEADQUARTERS</span><h2 id="commandTitle">Command Center</h2><p>The valley is waiting. Choose your next operation.</p></div><span class="command-hero-label" aria-hidden="true">YOUR STORY CONTINUES HERE</span></div>
       <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button><button type="button" id="menuFriends">FRIENDS</button></div></div></section>
@@ -123,8 +123,7 @@
   <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
     <header><div><span class="friends-kicker">YOUR SQUAD</span><h2 id="friendsTitle">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends">✕</button></header>
     <p>Connect with your squad. To play together, share a multiplayer party code separately.</p>
-    <section class="friends-visibility"><div><strong>Search visibility</strong><small>When enabled, signed-in players can find your soldier name and send requests. No online status is shared.</small></div><button id="friendVisibility" type="button" aria-pressed="false" disabled>LOADING</button></section>
-    <section class="friends-code"><label for="friendInput">SEARCH EXACT SOLDIER NAME</label><div><input id="friendInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Enter soldier name"><button id="friendSearch" type="button">SEARCH</button></div><small>Matches ignore letter case. Your friend must enable search visibility.</small><ul id="friendResults" class="friend-results"></ul><button id="friendMore" type="button" hidden>MORE RESULTS</button></section>
+    <section class="friends-code"><label for="friendInput">SEARCH EXACT SOLDIER NAME</label><div><input id="friendInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Enter soldier name"><button id="friendSearch" type="button">SEARCH</button></div><small>Names are searchable by signed-in players. Matches ignore letter case.</small><ul id="friendResults" class="friend-results"></ul><button id="friendMore" type="button" hidden>MORE RESULTS</button></section>
     <p id="friendStatus" role="status" aria-live="polite"></p>
     <div class="friends-sections"><section><h3>Party invitations</h3><p id="coopInvitesEmpty">No party invitations.</p><ul id="coopInviteList"></ul></section><section><h3>Requests</h3><p id="requestsEmpty">No incoming requests.</p><ul id="friendRequests"></ul></section><section><h3>Friends</h3><p id="friendsEmpty">No friends yet.</p><ul id="friendList"></ul></section><section><h3>Sent requests</h3><p id="sentEmpty">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
@@ -184,5 +183,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-invites1"></script>
+  <script type="module" src="account.js?v=20261104-autosearch1"></script>
 </body></html>

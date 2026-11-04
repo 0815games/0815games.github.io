@@ -1,5 +1,7 @@
 # Friends and multiplayer invitations
 
+> Historical rollout note: search visibility was removed later; see `AUTOMATIC-FRIEND-SEARCH.md` for current behavior.
+
 The host creates the existing unified multiplayer party, opens Friends from the lobby, and invites an **accepted friend**. The recipient sees an invitation while signed in, can join or decline, and joining sends the existing lobby request; the host must still approve it. The host chooses the co-op mode once the roster is ready. Search/add friends remains available inside the same Friends panel. No online presence is implied. Existing four-digit code joining and multiplayer modes remain available.
 
 `coop-invites.complete.draft.rules.json` is a full replacement based on `friend-search.complete.draft.rules.json`, previously reported published by the user. Back up and compare the actual live rules and merge independent changes before publishing. Run and review emulator and browser tests; publish the full replacement before deploying the client. The project cannot independently inspect or publish production rules from this workspace.

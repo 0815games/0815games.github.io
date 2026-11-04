@@ -11,3 +11,8 @@ test('service sends, observes, accepts and removes a friend request',async()=>{
 });
 
 test('name lookup normalizes case and safely encodes Firebase path characters',()=>{assert.equal(friendNameKey(' Bob '),friendNameKey('bob'));assert.match(friendNameKey('Ä/#.[]'),/^[a-f0-9]+$/);assert.throws(()=>friendNameKey('x'),/2–24/);});
+
+test('account listing is published automatically and restores a previously hidden listing',async()=>{
+ const store=makeStore(),crypto={getRandomValues(bytes){bytes.fill(9);}},alice=createFriendService({db:{},auth:{currentUser:{uid:'alice'}},sdk:store.sdk,crypto});const key=friendNameKey('Alice'),listing=`friendNames/${key}/alice`;
+ await alice.ensureSearchListing('Alice');assert.equal(store.values.get(listing).name,'Alice');const code=store.values.get(listing).code;await store.sdk.remove(listing);await alice.ensureSearchListing('Alice');assert.deepEqual(store.values.get(listing),{name:'Alice',code});
+});

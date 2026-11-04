@@ -27,13 +27,12 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   if(!existing){try{await set(outgoing,{status:'pending',senderName:name,receiverName:person.name,code});}catch(error){const after=await read(outgoing);if(!after)throw error;}}
   return person.name;
  }
- async function visibility(name){const key=friendNameKey(name),saved=await read(`friendPrivate/${uid}/searchKey`);if(!saved)return false;if(saved!==key)throw Error('Your search listing cannot be updated.');return !!(await read(`friendNames/${key}/${uid}`));}
- async function setVisibility(name,enabled){
+ // Called when an account loads, not when the Friends dialog is opened.
+ async function ensureSearchListing(name){
   const key=friendNameKey(name),code=await ensureCode(name),old=await read(`friendPrivate/${uid}/searchKey`);
   if(old&&old!==key)throw Error('Your search listing cannot be updated.');
-  if(!enabled){if(old)await remove(`friendNames/${key}/${uid}`);return false;}
   if(!old){try{await set(`friendPrivate/${uid}/searchKey`,key);}catch(error){if(await read(`friendPrivate/${uid}/searchKey`)!==key)throw error;}}
-  await set(`friendNames/${key}/${uid}`,{name,code});return true;
+  await set(`friendNames/${key}/${uid}`,{name,code});
  }
  async function search(name,after=null){
   const key=friendNameKey(name);check();const q=after?sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.startAfter(after),sdk.limitToFirst(30)):sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.limitToFirst(30));
@@ -53,5 +52,5 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   },error);
   return ()=>{closed=true;unIn();unOut();for(const stop of edgeStops.values())stop();edgeStops.clear();};
  }
- return {ensureCode,send,visibility,setVisibility,search,watch,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
+ return {ensureCode,send,ensureSearchListing,search,watch,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
 }
