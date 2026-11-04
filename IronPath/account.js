@@ -1,5 +1,6 @@
 import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261104-fieldcommand1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
+import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-fieldcommand1';
@@ -38,6 +39,7 @@ let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=fal
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
 setupLanguage({document,storage:languageStorage,onChange:()=>commandCenter?.render()});
 setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
+setupFieldMenu({document,onLanguageChange});
 const confirmation=createConfirmation(document);
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
