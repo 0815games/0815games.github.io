@@ -17,6 +17,7 @@ Use the GitHub Pages deployment, separate accounts and at least two devices. Eve
 | Host reload | Normal party: no recovery promised. Separate short `?recovery=1` trial: host resume, with current clients only. | Not yet run live |
 | Fatal failure | Confirm failed client stops presenting itself online and versus peers pause. | Not yet run live |
 | Mobile and accessibility | Phone/tablet portrait and landscape, touch, reduced motion, sound, keyboard/focus, legibility. | Not yet run on devices |
+| Multiplayer speed | During a wave, request 2× from each side; require every other player to approve. Decline, disconnect, pause, finish the wave, and verify no unintended speed-up or replay. Repeat all multiplayer modes on real devices. | Not yet run live |
 | Host focus pause | In every mode, hide/blur the host during a wave; verify all fields freeze and show why, then resume. Blur a guest and verify the match continues. Exercise mobile backgrounding and pending commands. | Not yet run live |
 | Network and cost | Short weak-network and background/sleep tests; monitor Firebase usage, especially recovery's full checkpoints. | Not yet measured live |
 

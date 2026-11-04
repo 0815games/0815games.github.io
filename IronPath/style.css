@@ -272,3 +272,5 @@ body:has(#entry:not([hidden])){background-image:linear-gradient(#0d1918b8,#101d1
 
 /* Centered battlefield choice; closing never discards the pending upgrade. */
 .map-frame .run-perk-panel{position:absolute;z-index:6;left:50%;top:50%;transform:translate(-50%,-50%);width:min(650px,calc(100% - 24px));max-height:calc(100% - 16px);overflow:auto;border:2px solid #9ba77b;border-radius:8px;box-shadow:0 12px 36px #0009;background:#20372e;color:#f2ead1;padding:14px;box-sizing:border-box}.run-perk-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}.run-perk-heading button{margin:0;width:40px;min-width:40px;min-height:40px;padding:5px;flex:0 0 40px}.run-perk-reopen{margin:8px}.map-frame .run-perk-choices button small{color:#d6e1cb}@media(max-width:600px){.map-frame .run-perk-panel{padding:8px}.map-frame .run-perk-choices button{min-height:44px}}
+/* Keep speed voting readable and tappable on narrow phones. */
+.speed-request{flex-wrap:wrap}.speed-request span{flex:1 1 100%;min-width:0}.speed-request button{flex:1 1 auto}

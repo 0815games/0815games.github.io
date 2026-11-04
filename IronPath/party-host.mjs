@@ -1,4 +1,4 @@
-import { createHost, restoreHost } from './protocol.mjs?v=20261104-hostpause1';
+import { createHost, restoreHost } from './protocol.mjs?v=20261104-speedvote1';
 
 // Local, player-hosted match core. The Firebase adapter must bind each player
 // ID to authenticated paths. The hosting browser is not an anti-cheat authority.
@@ -37,7 +37,8 @@ function wrapPartyHost(host,match,ids,hostId,{cancelPending=false}={}){
     if(!ready())return {status:'rejected',reason:'match-paused'};
     return host.receive(id,envelope);
   }
-  return {setPresence,setFocusPaused,ready,readyFor,receive,advance:()=>ready()?host.advance():null,snapshotFor:id=>{const snapshot=host.snapshotFor(id);return snapshot?{...snapshot,hostPaused:focusPaused,focusGeneration}:null;},checkpoint:()=>host.checkpoint()};
+  function advance(){if(!ready())return null;const first=host.advance();if(host.speed()!==2)return first;const second=host.advance();return {...second,commands:[...first.commands,...second.commands],events:[...first.events,...second.events]};}
+  return {setPresence,setFocusPaused,ready,readyFor,receive,advance,snapshotFor:id=>{const snapshot=host.snapshotFor(id);return snapshot?{...snapshot,hostPaused:focusPaused,focusGeneration}:null;},checkpoint:()=>host.checkpoint()};
 }
 export function createPartyHost(initialMatch,{hostId}={}){
   const ids=rosterOf(initialMatch);hostId=hostId??ids[0];if(!ids.includes(hostId))throw new Error('Host must be a party player');

@@ -1,5 +1,5 @@
 import {readRecoveryFromServer} from './firebase-recovery-server-read.mjs?v=20261103-recovery2';
-import {restorePartyHost} from './party-host.mjs?v=20261104-buildreservation1';
+import {restorePartyHost} from './party-host.mjs?v=20261104-speedvote1';
 // Experimental: not connected to the live game. Owner-specific paths fence
 // stale writers. A checkpoint and all recipient views are one atomic record.
 const validKey=v=>typeof v==='string'&&v.length>0&&v.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(v);
