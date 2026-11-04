@@ -177,15 +177,15 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .workspace-nav button:focus-visible{outline:3px solid #f1d891;outline-offset:3px}
 #gameWorkspace>.profile-bar{display:none}
 #gameWorkspace:not([data-screen="online"]) #partyToggle,#gameWorkspace:not([data-screen="lobby"][data-online="true"]) #returnOnline{display:none}
-#gameWorkspace[data-screen="lobby"]>.dashboard,#gameWorkspace[data-screen="lobby"]>.layout,#gameWorkspace[data-screen="lobby"]>#campaignPanel,#gameWorkspace[data-screen="lobby"]>#coopControls{display:none}
+#gameWorkspace[data-screen="lobby"]>.layout,#gameWorkspace[data-screen="lobby"]>#campaignPanel,#gameWorkspace[data-screen="lobby"]>#coopControls{display:none}
 #gameWorkspace[data-screen="endless"]>#campaignPanel,#gameWorkspace[data-screen="online"]>#campaignPanel{display:none}
-#gameWorkspace[data-screen="campaign"] #campaignPanel[data-board-open="true"]~.dashboard,#gameWorkspace[data-screen="campaign"] #campaignPanel[data-board-open="true"]~.layout{display:none}
+#gameWorkspace[data-screen="campaign"] #campaignPanel[data-board-open="true"]~.layout{display:none}
 #gameWorkspace[data-screen="campaign"] #campaignPanel[data-board-open="false"]>:not(.campaign-show-board){display:none}
 #gameWorkspace[data-screen="campaign"] #campaignPanel[data-board-open="false"]{border:0;background:transparent;box-shadow:none}
 #gameWorkspace[data-screen="campaign"] .campaign-quick-select{display:none}
 .online-connecting{display:none;margin:14px 0;padding:18px;background:#1c3027;color:#f0dfb3;border:1px solid #71876d}
 #gameWorkspace[data-screen="online"][data-online-ready="false"]>.online-connecting{display:block}
-#gameWorkspace[data-screen="online"][data-online-ready="false"]>.dashboard,#gameWorkspace[data-screen="online"][data-online-ready="false"]>.layout{display:none}
+#gameWorkspace[data-screen="online"][data-online-ready="false"]>.layout{display:none}
 #gameWorkspace[data-screen="lobby"] #fourPartyPanel{max-width:850px;margin:0 auto 20px}
 
 #gameView:has(#gameWorkspace:not([hidden])) > #skillNotice{display:none}

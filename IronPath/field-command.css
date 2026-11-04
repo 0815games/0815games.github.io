@@ -1,0 +1,58 @@
+/* Field Command: keep the existing simulation and input coordinates intact;
+   the interface is an overlay, not a resized or cropped canvas. */
+#gameView .layout{display:block;max-width:100%;}
+#gameView .battle{overflow:visible;position:relative;background:#13251d;border:1px solid #667f68;}
+#gameView .battle-head{display:flex;align-items:center;min-height:44px;padding:6px 14px;background:#192e25;border-bottom:1px solid #6a8067;}
+#gameView .battle-head h2{font-size:16px;line-height:1.2;margin:0;color:#f3e9cb}
+#gameView .battle-head .eyebrow{font-size:9px;line-height:1.2;display:block;color:#d8c487}
+#gameView .legend{font-size:9px}
+#gameView .map-frame{border:0;background:#0d1b14;position:relative;isolation:isolate}
+#gameView .map-viewport{background:#101d15;}
+#gameView .map-viewport canvas{margin:0 auto;}
+/* Small individual panels leave the world visible between them. */
+#gameView .map-frame .dashboard{position:absolute;z-index:3;top:10px;left:10px;right:65px;display:flex;align-items:stretch;gap:4px;width:max-content;max-width:calc(100% - 75px);margin:0;background:transparent;border:0;box-shadow:none;pointer-events:none}
+#gameView .map-frame .dashboard>div{display:flex;align-items:center;gap:7px;min-width:90px;padding:7px 10px;background:#11261fe8;border:1px solid #80977cb3;border-radius:3px;box-shadow:0 3px 12px #0008;}
+#gameView .map-frame .dashboard>div:last-child{border:1px solid #80977cb3}
+#gameView .map-frame .dashboard small{color:#bdd0b4;font-size:9px;letter-spacing:.1em;white-space:nowrap}
+#gameView .map-frame .dashboard strong{color:#f7edcf;font:700 19px Georgia,serif;line-height:1;margin:4px 0 0;white-space:nowrap}
+#gameView .map-frame .hud-icon{width:29px;height:29px;padding:5px;flex:none;background:#294538;border:1px solid #69816d;stroke:#e8d092}
+#gameView .map-frame .command{position:absolute;z-index:4;left:50%;bottom:12px;transform:translateX(-50%);width:min(690px,calc(100% - 24px));padding:7px;background:#10231eea;border:1px solid #81977c;border-radius:5px;box-shadow:0 5px 22px #000a}
+#gameView .map-frame .command .panel-heading{display:none}
+#gameView .map-frame .command-controls{display:flex;gap:6px}
+#gameView .map-frame .command-controls button{flex:1 1 0;min-width:0;min-height:46px;margin:0;padding:7px 8px;font-size:11px;line-height:1.15;letter-spacing:.03em;background:#2b4738;border:1px solid #7a9179;color:#f4ebd1;box-shadow:none}
+#gameView .map-frame .command-controls .primary{flex:1.5 1 0;background:#e4c980;color:#1b2c22;border-color:#e6d398}
+#gameView .map-frame .command-controls .end-run{flex:.8 1 0;background:#4d3630;border-color:#9a7565}
+#gameView .map-frame .command-controls button:hover:not(:disabled){filter:brightness(1.15)}
+#gameView .map-frame .wave-info{top:10px;right:10px;z-index:5}
+#gameView .map-frame .boss-alert{top:75px;z-index:3}
+#gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
+#gameView .battle-foot{display:flex;justify-content:flex-start;align-items:center;gap:10px;min-height:44px;padding:8px 14px;background:#142a22;border-top:1px solid #617a66;color:#e6e6ce;line-height:1.35}
+#gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em;border-right:1px solid #758872;padding-right:10px}
+#gameView .battle-foot #message{font-size:12px;letter-spacing:normal}
+#gameView .layout>aside{margin-top:8px}
+#gameView .help{background:#1a3027;border:1px solid #627e69;border-radius:4px}
+#gameView .help summary{min-height:38px;display:flex;align-items:center;color:#e8d39b}
+#gameView .help[open] button{width:auto;margin:6px 6px 0 0}
+@media(min-width:851px){
+ body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"])) main,body:has(#gameWorkspace:not([hidden])[data-screen="campaign"] #campaignPanel[data-board-open="false"]) main{max-width:none;padding:10px 14px 30px}
+ body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"])) main>header,body:has(#gameWorkspace:not([hidden])[data-screen="campaign"] #campaignPanel[data-board-open="false"]) main>header{display:none}
+ #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*1.777778));}
+}
+@media(max-width:850px){
+ #gameView .map-frame .dashboard{top:5px;left:5px;right:51px;gap:3px;max-width:calc(100% - 56px)}
+ #gameView .map-frame .dashboard>div{min-width:0;padding:5px 6px;gap:4px}
+ #gameView .map-frame .dashboard .hud-icon{display:none}
+ #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:0}
+ #gameView .map-frame .dashboard strong{font-size:14px;margin-top:2px}
+ #gameView .map-frame .command{position:fixed;bottom:0;left:0;right:0;transform:none;width:100%;padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));border-radius:0;z-index:10}
+ #gameView .map-frame .command-controls{gap:4px}
+ #gameView .map-frame .command-controls button{font-size:9px;min-height:48px;padding:5px 3px;overflow-wrap:anywhere;letter-spacing:0}
+ #gameView .map-frame .wave-info{top:5px;right:5px}
+ #gameView .map-frame .boss-alert{top:52px}
+ #gameView .map-frame .story-radio{bottom:12px}
+ #gameView .battle-foot{padding:7px;min-height:40px}
+ #gameView .battle-foot .radio-label{font-size:8px}
+}
+@media(min-width:851px){#gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
+/* The radio message is the last span; older mobile styles hid the old map label. */
+#gameView .battle-foot #message{display:block;min-width:0}
