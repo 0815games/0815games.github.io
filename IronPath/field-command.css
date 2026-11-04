@@ -56,3 +56,56 @@
 @media(min-width:851px){#gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
 /* The radio message is the last span; older mobile styles hid the old map label. */
 #gameView .battle-foot #message{display:block;min-width:0}
+
+/* Map-first field view. The lobby and campaign board retain normal page flow. */
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle{position:fixed;inset:0;z-index:11;border:0;overflow:hidden;background:#0c1811}
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{position:absolute;z-index:2;left:10px;bottom:calc(108px + env(safe-area-inset-bottom,0px));min-height:0;max-width:220px;background:#10231edb;border:1px solid #789078;padding:5px 8px;pointer-events:none}
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head h2{font-size:13px}
+#gameView .battle-head .legend{display:none}
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-frame{height:100%;width:100%}
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-viewport{height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain}
+#gameView .map-frame .dashboard{top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:70px;max-width:calc(100% - 78px)}
+#gameView .map-frame .dashboard>div{padding:6px 8px}
+#gameView .map-frame .wave-info{top:calc(60px + env(safe-area-inset-top,0px));right:8px}
+#gameView .map-frame .boss-alert{top:calc(80px + env(safe-area-inset-top,0px))}
+#gameView .map-frame .command{position:absolute;left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(690px,calc(100% - 16px));z-index:4;border-radius:5px;padding:6px}
+#gameView .map-frame .story-radio{bottom:calc(150px + env(safe-area-inset-bottom,0px));}
+#gameView .battle-foot{position:absolute;z-index:5;left:8px;bottom:calc(66px + env(safe-area-inset-bottom,0px));max-width:min(400px,calc(100% - 16px));min-height:0;padding:6px 9px;background:#11281fe8;border:1px solid #779378;box-shadow:0 3px 15px #0008;pointer-events:none}
+#gameView .battle-foot .radio-label{white-space:nowrap}
+#gameView .battle-foot #message{font-size:11px}
+#gameView .battle .wave-request:not([hidden]){position:absolute;z-index:8;left:8px;right:8px;bottom:calc(112px + env(safe-area-inset-bottom,0px));border:1px solid #cfbc82;background:#1c3529;color:#f7ecd0;border-radius:4px;box-shadow:0 4px 18px #0009}
+#gameView .battle .speed-request:not([hidden]){bottom:calc(168px + env(safe-area-inset-bottom,0px))}
+#gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
+#gameView .battle .solo-objective:not([hidden]),#gameView .battle .versus-status:not([hidden]){position:absolute;z-index:5;top:calc(65px + env(safe-area-inset-top,0px));left:8px;max-width:min(360px,calc(100% - 76px));margin:0;background:#183027ed}
+#gameView .map-frame .run-perk-panel{z-index:12}
+.field-ops{position:absolute;z-index:9;right:8px;top:calc(8px + env(safe-area-inset-top,0px));}
+.field-ops>summary{display:grid;place-items:center;min-width:56px;min-height:44px;padding:6px;background:#162d23ed;border:1px solid #a4b395;border-radius:3px;box-shadow:0 3px 12px #0008;color:#f2e2b0;font-size:10px;font-weight:bold;letter-spacing:.06em;cursor:pointer;list-style:none}
+.field-ops>summary::-webkit-details-marker{display:none}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}
+.field-ops-panel{position:absolute;right:0;top:50px;width:min(300px,calc(100vw - 16px));max-height:min(75dvh,650px);overflow:auto;padding:12px;background:#142b22f7;border:1px solid #96a985;box-shadow:0 10px 35px #000b;color:#f1ead3}
+.field-menu-title{display:block;color:#e2cb90;font-size:10px;letter-spacing:.15em;margin:0 0 8px}
+.field-ops-panel>button,.field-ops-panel select{width:100%;min-height:40px;margin:0 0 6px;padding:7px 10px;background:#304b3a;border:1px solid #7e9578;color:#f4edda;text-align:left;box-shadow:none}
+.field-ops-panel label{margin:8px 0 4px;color:#d4c894}
+.field-ops-panel .map-toolbar{display:flex;padding:0;gap:4px;background:transparent;margin-bottom:8px}
+.field-ops-panel .map-toolbar button{flex:1;min-width:0;min-height:40px;padding:5px;margin:0;font-size:9px}
+.field-ops-panel .threat-intel,.field-ops-panel .terrain-briefing,.field-ops-panel .help{margin:6px 0;background:#20382c;color:#dce4cf;border:1px solid #637e67}
+.field-ops-panel .help{padding:5px 10px}.field-ops-panel .help p{line-height:1.4}.field-ops-panel .help[open] button{width:100%;margin:6px 0 0}
+#gameWorkspace:not([data-screen="online"]) #fieldParty,#gameWorkspace:not([data-screen="campaign"]) #fieldMissionBoard{display:none}
+@media(max-width:850px){
+ #gameView .map-viewport.map-large canvas{height:100%;width:auto;max-width:none;flex:none}
+ #gameView .map-viewport:not(.map-large) canvas{height:auto;width:100%;max-width:none;flex:none}
+ #gameView .map-frame .dashboard>div{padding:5px 5px}
+ #gameView .map-frame .dashboard small{font-size:8px}
+ #gameView .map-frame .dashboard strong{font-size:14px}
+ #gameView .map-frame .dashboard .hud-icon{display:none}
+ #gameView .battle-head .eyebrow{display:none}
+ #gameView #fieldFullscreen{display:none}
+}
+@media(min-width:851px){
+ #gameView .map-viewport canvas{height:auto;width:min(100%,calc(100dvh * 1.777778));max-width:none;flex:none}
+ #gameView .map-viewport canvas[height="1100"]{width:min(100%,calc(100dvh * .872727))}
+}
+body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])))>.language-picker{display:none}
+@media(min-width:851px){
+ #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
+ #gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
+}
