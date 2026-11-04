@@ -42,6 +42,7 @@ const assert = require('node:assert/strict');
     assert.equal(await visible('.profile-bar'),false,'no soldier header in lobby'); assert.equal(await visible('#campaignPanel'),false);
     assert.equal(await visible('#game'),false,'no map in lobby'); assert.equal(await visible('.dashboard'),false);
     await page.locator('#backToCommand').click();
+    await page.locator('#menuFriends').click();assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),true);await page.waitForFunction(()=>document.querySelector('#friendCode').value.length===32);assert.equal(await page.locator('#friendsEmpty').isVisible(),true);await page.locator('#friendInput').fill('bad');await page.locator('#friendSend').click();assert.match(await page.locator('#friendStatus').innerText(),/full 32-character/);await page.locator('#friendsClose').click();
     // Reproduce the reported case: a solo operation is already under way.
     await page.locator('#menuEndless').click(); await page.locator('#start').click(); await page.locator('#backToCommand').click();
     await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
