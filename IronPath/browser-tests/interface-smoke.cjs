@@ -55,6 +55,14 @@ const fs = require('node:fs');
 
       await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#speedRequest').hidden=false;document.querySelector('#speedRequestText').textContent='A long soldier name requests 2× for wave 12. 1/3 approved.';});await check('#speedRequest');await check('#speedApprove');await check('#speedDecline');await page.evaluate(()=>{document.querySelector('#speedRequest').hidden=true;document.querySelector('#fourPartyPanel').hidden=false;});
       await page.screenshot({ path: `browser-artifacts/${name}-lobby.png`, fullPage: true });
+      // Inspect the actual battlefield layout independently of Firebase.
+      await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#gameWorkspace').dataset.screen='endless';});
+      await check('#game');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
+      const hud=await page.evaluate(()=>{const b=document.querySelector('#game').getBoundingClientRect(),d=document.querySelector('.dashboard').getBoundingClientRect(),c=document.querySelector('.command').getBoundingClientRect();return {b:{top:b.top,bottom:b.bottom,left:b.left,right:b.right},d:{top:d.top,bottom:d.bottom,left:d.left,right:d.right},c:{top:c.top,bottom:c.bottom,left:c.left,right:c.right}};});
+      assert.ok(hud.d.top>=hud.b.top-2 && hud.d.top<hud.b.bottom,`${name}: HUD overlays the battlefield`);
+      assert.ok(hud.c.left>=-1 && hud.c.right<=width+1,`${name}: controls stay inside viewport`);
+      await page.screenshot({path:`browser-artifacts/${name}-field-command.png`,fullPage:true});
+      await page.evaluate(()=>document.querySelector('#fourPartyPanel').hidden=false);
       for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
         await page.evaluate(id => document.getElementById(id).showModal(), id);
         await check(`#${id}`); await check(control);
