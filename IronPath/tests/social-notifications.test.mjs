@@ -3,9 +3,9 @@ import {strict as assert} from 'node:assert';
 import {createSocialNotifications} from '../social-notifications.mjs';
 import {setupFriends} from '../friends-ui.mjs';
 function fixture(){
- const nodes=new Map(),listeners=new Map(),dialogs=[];function el(id){if(!nodes.has(id))nodes.set(id,{id,hidden:true,open:false,textContent:'',value:'',children:[],addEventListener(name,cb){this['on'+name]=cb;},showModal(){this.open=true;},close(){this.open=false;this.onclose?.();},replaceChildren(){this.children=[];},append(...items){this.children.push(...items);}});return nodes.get(id);}
+ const nodes=new Map(),listeners=new Map(),dialogs=[];function el(id){if(!nodes.has(id))nodes.set(id,{id,hidden:true,open:false,textContent:'',value:'',children:[],contains(target){return target===this},addEventListener(name,cb){this['on'+name]=cb;},showModal(){this.open=true;},close(){this.open=false;this.onclose?.();},replaceChildren(){this.children=[];},append(...items){this.children.push(...items);}});return nodes.get(id);}
  const friends=el('friendsDialog'),other=el('otherDialog');dialogs.push(friends,other);
- const document={getElementById:el,createElement:()=>({children:[],append(...items){this.children.push(...items);}}),querySelector:()=>dialogs.find(d=>d.open)||null,querySelectorAll:()=>dialogs};
+ const document={getElementById:el,createElement:()=>({children:[],append(...items){this.children.push(...items);}}),querySelector:()=>dialogs.find(d=>d.open)||null,querySelectorAll:()=>dialogs,addEventListener(type,fn){this['on'+type]=fn;}};
  const sdk={ref:(_db,p)=>p,onValue(path,cb){if(!listeners.has(path))listeners.set(path,new Set());listeners.get(path).add(cb);return()=>listeners.get(path).delete(cb);},get:async()=>({val:()=>null}),set:async()=>{},remove:async()=>{},serverTimestamp:()=>Date.now()};
  const emit=(path,value)=>{for(const fn of listeners.get(path)||[])fn({val:()=>value});};return {document,el,sdk,emit,friends,other};
 }

@@ -1,7 +1,8 @@
+import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-leaderboards1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261104-dismissall1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261104-socialpopup1';
+import {setupFriends} from './friends-ui.mjs?v=20261104-dismissall1';
 import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-buildreservation1';
@@ -10,7 +11,7 @@ import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-dire
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261102-longterm1';
-import {createConfirmation} from './confirmation.mjs?v=20261104-dismiss1';
+import {createConfirmation} from './confirmation.mjs?v=20261104-dismissall1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261104-doctrines1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
@@ -22,11 +23,12 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261104-dismiss1';
+import { startGame } from './game.js?v=20261104-dismissall1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261104-buildreservation1';
 import { createPlayer } from './match.mjs?v=20261104-buildreservation1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
 
+bindDisclosureDismiss(document);
 window.ironPathLoaded = true;
 const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
 const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);

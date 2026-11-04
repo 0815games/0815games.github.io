@@ -1,3 +1,4 @@
+import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // Tutorial completion is per account and browser. The interactive exercises
 // use isolated example data; they never touch a soldier profile or Firebase.
 export const TUTORIAL_STEPS = [
@@ -58,5 +59,7 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{}}){
   $('tutorialBack').onclick=()=>{if(index>0){index--;render();}};
   $('tutorialSkip').onclick=()=>close(true);
   dialog.addEventListener('cancel',e=>{e.preventDefault();close(true);});
+  // Backdrop dismissal is not completion; the player can replay it later.
+  bindDialogBackdrop(dialog,()=>close(false));
   return {startIfNeeded(id){if(id&&!completed(id))open(id);},replay:open,stop(){close(false);},isOpen:()=>dialog.open};
 }
