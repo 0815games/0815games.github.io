@@ -1,7 +1,7 @@
 // Experimental, transport-independent four-player rules. Not wired to live
 // Firebase: its current party and security rules only permit two players.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261102-fourbase1';
-import {applyCommand} from './match.mjs?v=20261102-fourbase1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261104-doctrines1';
+import {applyCommand} from './match.mjs?v=20261104-doctrines1';
 export const FOUR_PLAYER_MAP='four-front';
 function roster(players,hostId,count=[4]){
   if(!Array.isArray(players)||!count.includes(players.length)||new Set(players.map(p=>p?.id)).size!==players.length||!players.every(p=>typeof p?.id==='string'&&p.id.length>0)||!players.some(p=>p.id===hostId))throw new Error('Invalid roster: unique players including the host are required');

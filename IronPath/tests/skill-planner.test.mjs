@@ -16,5 +16,5 @@ const board=container.children[0],nodes=board.children.flatMap(section=>section.
 assert.equal(nodes.length,12,'hybrid filter shows combinations involving engineer');assert.ok(node('assault',125));assert.ok(node('assault',126).className.includes('is-dependent'));assert.equal(node('assault',100),undefined);assert.equal(container.scrollTop,450);
 renderSkillTree({document:doc,container,build,level:20,selected:{path:'assault',rank:125},filter:'all',pathFilter:'all',onSelect(){}});
 const all=container.children[0].children.flatMap(section=>section.children?.flatMap(child=>child.children?.filter(n=>n.tag==='button')||[])||[]);
-assert.equal(all.length,80);assert.ok(all.find(n=>n.dataset.path==='engineer'&&n.dataset.rank==='2').className.includes('is-prerequisite'));
+assert.equal(all.length,100);assert.ok(all.find(n=>n.dataset.path==='engineer'&&n.dataset.rank==='2').className.includes('is-prerequisite'));
 console.log('Planner relationships, filters, summary, safe saving, and highlights passed.');

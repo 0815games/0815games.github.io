@@ -1,6 +1,6 @@
-import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261102-results1';
+import {nodeKey,relatedNodes,nodeMatches} from './skill-planner.mjs?v=20261104-doctrines1';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261102-results1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261104-doctrines1';
 const NS='http://www.w3.org/2000/svg';
 const colors=['#d89970','#d7bd71','#b4c682','#8ac7b1','#8eafcf'];
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}
@@ -27,9 +27,10 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
     const core=[1,2,3].map(rank=>({path:path.id,rank,title:rank===1?path.ability:`${path.name} · Rank ${rank}`,tag:rank===1?'ACTIVE ABILITY':`PASSIVE / RANK ${rank}`,description:rank===1?path.description:path.passive,requirement:rank===1?'Starting ability':`Requires ${path.name} rank ${rank-1}`,unlocked:build[path.id]>=rank,active:rank===1&&build[path.id]>=1&&build.active===path.id&&!build.variant,available:rank===build[path.id]+1&&left>0}));
     const specialists=path.branches.map((branch,j)=>({path:path.id,rank:5+j,title:branch.ability,tag:'SPECIALIST / ACTIVE',description:branch.abilityDescription,requirement:`Requires ${path.name} rank 2`,unlocked:!!build.extra?.[i*2+j],active:!!build.extra?.[i*2+j]&&build.active===path.id&&build.variant===j+1,available:!build.extra?.[i*2+j]&&build[path.id]>=2&&left>0}));
     const mastery=WEB_NODES.filter(n=>n.path===path.id&&n.kind==='mastery').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:n.tier===4?'MASTERY / CAPSTONE':`MASTERY / ${n.tier+1}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
-    addGroup(`${path.name} training`,path.passive,core);addGroup('Specialist abilities','Alternative active skills',specialists);addGroup('Mastery','Advanced upgrades',mastery);
+    const doctrines=WEB_NODES.filter(n=>n.path===path.id&&n.kind==='doctrine').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`DOCTRINE / ${n.branch===0?'A':'B'}${n.tier+1}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
+    addGroup(`${path.name} training`,path.passive,core);addGroup('Specialist abilities','Alternative active skills',specialists);addGroup('Mastery','Advanced upgrades',mastery);addGroup('Specialist doctrines','Two specialist branches with two upgrades each',doctrines);
   }
-  const combos=WEB_NODES.filter(n=>n.kind!=='mastery').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`COMBO / ${n.path.toUpperCase()} + ${n.other.toUpperCase()}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
+  const combos=WEB_NODES.filter(n=>n.kind==='hybrid'||n.kind==='cross').map(n=>({path:n.path,rank:100+n.id,title:n.name,tag:`COMBO / ${n.path.toUpperCase()} + ${n.other.toUpperCase()}`,description:n.description,requirement:webRequirement(n),unlocked:!!build.web?.[n.id],available:!build.web?.[n.id]&&webReady(build,n)&&left>0}));
   addGroup('Cross-training','Combine two disciplines to unlock new bonuses',combos);
   if(!board.children.length){const empty=document.createElement('p');empty.className='skill-empty';empty.textContent='No skills match this filter. Try another view.';board.append(empty);}
   container.replaceChildren(board);if(Number.isFinite(scrollTop))container.scrollTop=scrollTop;

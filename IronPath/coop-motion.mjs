@@ -1,4 +1,4 @@
-import {webBonuses} from './skills.mjs?v=20261102-results1';
+import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261102-terrain4';
 import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';

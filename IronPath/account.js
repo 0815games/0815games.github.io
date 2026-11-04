@@ -1,26 +1,26 @@
-import {createCommandCenter} from './command-center.mjs?v=20261103-modes1';
+import {createCommandCenter} from './command-center.mjs?v=20261104-doctrines1';
 import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-onlinebeta2';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261103-onlinebeta1';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261103-onlinebeta1';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261102-results1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261104-doctrines1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261104-doctrines1';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-doctrines1';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261104-doctrines1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261102-longterm1';
 import {createConfirmation} from './confirmation.mjs?v=20261102-controls7';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261103-skillsmenu3';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261104-doctrines1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261102-results1';
-import {rewardDelta} from './run-results.mjs?v=20261102-results1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261102-results1';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
+import {rewardDelta} from './run-results.mjs?v=20261104-doctrines1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261104-doctrines1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261102-results1';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261103-arsenal1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-hardening2';
-import { createPlayer } from './match.mjs?v=20261102-fourbase1';
+import { startGame } from './game.js?v=20261104-doctrines1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261104-doctrines1';
+import { createPlayer } from './match.mjs?v=20261104-doctrines1';
 import { characterProgress } from './progression.mjs?v=20261102-terrain4';
 
 window.ironPathLoaded = true;
@@ -78,7 +78,7 @@ function renderSkills(){
 
   renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,onSelect:(value,keyboard)=>{selectedSkill=value;renderSkills();if(keyboard)$('skillPaths').querySelector(`[data-path="${value.path}"][data-rank="${value.rank}"]`)?.focus({preventScroll:true});else if(window.matchMedia('(max-width: 700px)').matches)document.querySelector('.skill-inspector')?.scrollIntoView({block:'nearest'});}});
   const action=$('skillDetailAction');
-  if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=node.kind!=='mastery'?'HYBRID COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY';$('skillDetailTitle').textContent=node.name;$('skillDetailText').textContent=`${node.description} ${webRequirement(node)} Each node costs one point.`;action.textContent=unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=savingSkills||unlocked||!ready||!left;action.onclick=()=>{if(!savingSkills&&!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
+  if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=node.kind==='doctrine'?'SPECIALIST DOCTRINE':node.kind!=='mastery'?'HYBRID COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY';$('skillDetailTitle').textContent=node.name;$('skillDetailText').textContent=`${node.description} ${webRequirement(node)} Each node costs one point.`;action.textContent=unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT';action.disabled=savingSkills||unlocked||!ready||!left;action.onclick=()=>{if(!savingSkills&&!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
 $('skillDetailType').textContent=rank===1?'MAIN SKILL':`${path.name.toUpperCase()} / ${specialist?'SPECIAL SKILL':'PASSIVE'}`;
   $('skillDetailTitle').textContent=rank===1?path.ability:specialist?path.branches[rank-5].ability:`${path.name} · Rank ${rank}`;
   $('skillDetailText').textContent=rank===1?`${path.description} ${path.passive}. ${draftSkills[path.id]>=1?'Unlocked main skills can be selected for free.':'Spend one point to unlock this main skill.'}`:specialist?`${path.branches[rank-5].abilityDescription} Passive: ${path.branches[rank-5].description} Requires ${path.name} rank 2. Selecting it replaces your current active skill.`:`${path.passive}. Requires ${path.name} rank ${rank-1}. ${draftSkills[path.id]} of 3 ranks unlocked.`;
