@@ -311,3 +311,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .soldier-actions #menuSkills.has-skill-points,.profile-actions #skillOpen.has-skill-points{display:flex;align-items:center;justify-content:center;gap:8px;background:#66582d;color:#fff5d4;border:2px solid #e9cb78;box-shadow:0 0 0 2px #dfc37633,0 0 14px #d7b85e55}
 .skill-point-badge{display:inline-grid;place-items:center;min-width:23px;height:23px;padding:0 5px;border-radius:20px;background:#f0cf77;color:#1a2d22;font-size:11px;font-weight:800;letter-spacing:0;line-height:1}
 .skill-point-badge[hidden]{display:none}
+
+/* Pending requests live on the Friends button rather than a separate alert. */
+.soldier-actions #menuFriends.has-friend-requests,.firebase-party #lobbyFriends.has-friend-requests{display:flex;align-items:center;justify-content:center;gap:8px;background:#66582d;color:#fff5d4;border:2px solid #e9cb78;box-shadow:0 0 0 2px #dfc37633,0 0 14px #d7b85e55}
