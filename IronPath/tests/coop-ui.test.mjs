@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { createMatch } from '../simulation.mjs';
 import { createPlayer, applyCommand } from '../match.mjs';
 const nodes=new Map(),drawnText=[],ctx=new Proxy({}, {get:(_target,key)=>key==='fillText'?(text=>drawnText.push(text)):()=>{},set:()=>true});let frame;
-function el(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{toggle(){}},setAttribute(){},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return nodes.get(id);}
+function el(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{flags:{},toggle(name,on){this.flags[name]=on;}},setAttribute(){},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return nodes.get(id);}
 globalThis.document={hasFocus:()=>true,hidden:false,addEventListener(){},getElementById:el,activeElement:{tagName:'BODY'}};
 globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
 globalThis.requestAnimationFrame=fn=>{frame=fn;};
@@ -27,6 +27,16 @@ match.players.bob.skills.active='recon';opts.onSnapshot({match:structuredClone(m
 opts.onStatus(false);opts.onStatus(true);drawnText.length=0;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+200);assert.ok(!drawnText.includes('SUPPRESSION'),'reconnect does not replay an old ability');await new Promise(resolve=>setTimeout(resolve,0));
 el('game').onclick({clientX:105,clientY:210});assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.towers.length,1);assert.equal(el('money').textContent,75);
+// Availability updates live while the multiplayer tower sheet and details stay open.
+match.towers[0].level=2;match.players.alice.money=0;opts.onSnapshot({match:structuredClone(match)});
+el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();
+assert.equal(el('radial2').classList.flags.unaffordable,true,'level-locked specialization is grey');
+el('radial2').onclick();assert.equal(el('towerDetailsConfirm').disabled,true);assert.match(el('towerDetailsCost').textContent,/level 5/i);
+match.players.alice.money=1000;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,true,'funds alone do not bypass level lock');
+match.players.alice.level=5;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,false);assert.equal(el('radial2').classList.flags.unaffordable,false);
+match.players.alice.money=0;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,true);assert.match(el('towerDetailsCost').textContent,/Not enough supplies/);
+match.players.alice.money=1000;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,false,'new supplies enable the already-open confirmation');
+el('towerDetailsBack').onclick();el('radialClose').onclick();match.towers[0].level=1;match.players.alice.level=1;match.players.alice.money=75;opts.onSnapshot({match:structuredClone(match)});
 // A replacement made by the other player cannot be sold by an old open menu.
 el('game').onclick({clientX:105,clientY:210});el('radial1').onclick();
 assert.equal(applyCommand(match,'bob',{type:'sell',pad:0}).ok,true);
