@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261103-board1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261104-patch67a">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261104-friends1">
   <link rel="stylesheet" href="skill-menu.css?v=20261103-skillsmenu3">
 </head>
 <body>
@@ -51,7 +51,7 @@
     <div id="gameView" hidden>
     <section id="commandCenter" class="command-center" aria-labelledby="commandTitle">
       <div class="command-hero"><div><span class="command-kicker">IRON PATH / FIELD HEADQUARTERS</span><h2 id="commandTitle">Command Center</h2><p>The valley is waiting. Choose your next operation.</p></div><span class="command-hero-label" aria-hidden="true">YOUR STORY CONTINUES HERE</span></div>
-      <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button></div></div></section>
+      <div class="command-home-layout"><section class="soldier-dossier" aria-labelledby="soldierDossierTitle"><div class="soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span>PERSONNEL FILE / ACTIVE</span></div><div class="soldier-details"><span class="command-kicker" id="soldierDossierTitle">YOUR SOLDIER</span><h3 id="menuName"></h3><span id="menuLevel" class="soldier-level"></span><div class="soldier-xp-label"><span>EXPERIENCE</span><span id="menuXp"></span></div><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level"></progress><dl><div><dt>EQUIPMENT</dt><dd id="menuEquipment"></dd></div><div><dt>SCRAP</dt><dd id="menuScrap"></dd></div><div><dt>SKILL POINTS</dt><dd id="menuPoints"></dd></div></dl><div class="soldier-actions"><button type="button" id="menuArmory">ARMORY</button><button type="button" id="menuSkills">SKILLS</button><button type="button" id="menuFriends">FRIENDS</button></div></div></section>
       <section class="command-nav" aria-label="Choose your operation"><div class="command-nav-head"><span class="command-kicker">YOUR NEXT DEPLOYMENT</span><h3>Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><div class="mode-grid"><button type="button" id="menuCampaign" class="mode-card mode-campaign"><span class="mode-index">01 / STORY</span><strong>Campaign</strong><span id="menuCampaignProgress">The Broken Signal</span></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index">02 / SOLO</span><strong>Endless</strong><span>Survive wave after wave</span></button><button type="button" id="menuMultiplayer" class="mode-card mode-multiplayer"><span class="mode-index">03 / ONLINE</span><strong>Multiplayer</strong><span>One code. Your squad.</span></button></div><div class="command-utilities"><button type="button" id="menuTutorial">FIELD TUTORIAL <span>↗</span></button><button type="button" id="menuLogout">SIGN OUT <span>→</span></button></div></section></div>
     </section>
     <p id="skillNotice" class="skill-notice" role="status" hidden></p><p id="saveStatus" class="save-status" role="status"></p>
@@ -119,6 +119,14 @@
     <nav class="arsenal-tabs" aria-label="Armory categories"><button id="armoryEquipmentTab" type="button" aria-pressed="true">EQUIPMENT</button><button id="armoryDefensesTab" type="button" aria-pressed="false">BUNKER</button><button id="armoryServiceTab" type="button" aria-pressed="false">SERVICE RECORD</button></nav>
     <div id="armoryList" class="armory-list"></div><p id="armoryStatus" class="development-status" role="status"></p>
   </dialog>
+  <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
+    <header><div><span class="friends-kicker">YOUR SQUAD</span><h2 id="friendsTitle">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends">✕</button></header>
+    <p>Connect with your squad. To play together, share a multiplayer party code separately.</p>
+    <section class="friends-code"><label for="friendCode">YOUR FRIEND CODE</label><div><input id="friendCode" readonly aria-label="Your friend code"><button id="friendCopy" type="button">COPY</button></div><small>Share privately. Anyone with your code can send a request.</small></section>
+    <section class="friends-code"><label for="friendInput">ADD A FRIEND</label><div><input id="friendInput" maxlength="32" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="32-character friend code"><button id="friendSend" type="button">SEND</button></div></section>
+    <p id="friendStatus" role="status" aria-live="polite"></p>
+    <div class="friends-sections"><section><h3>Requests</h3><p id="requestsEmpty">No incoming requests.</p><ul id="friendRequests"></ul></section><section><h3>Friends</h3><p id="friendsEmpty">No friends yet.</p><ul id="friendList"></ul></section><section><h3>Sent requests</h3><p id="sentEmpty">No sent requests.</p><ul id="friendSent"></ul></section></div>
+  </dialog>
   <dialog id="skillDialog" class="skill-dialog tree-dialog" aria-labelledby="skillTitle">
     <div class="skills-header"><div><span class="skills-kicker">SOLDIER PROGRESSION</span><h2 id="skillTitle">Skills</h2><p>Build a soldier that fits your strategy.</p></div><button class="skills-close" id="skillCancel" type="button" aria-label="Close skills">✕</button></div>
     <div class="skills-overview"><div><span>YOUR POINTS</span><strong id="skillPoints"></strong></div><span class="skills-overview-note">Changes apply next match</span></div>
@@ -175,5 +183,5 @@
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261104-patch67a"></script>
+  <script type="module" src="account.js?v=20261104-friends1"></script>
 </body></html>
