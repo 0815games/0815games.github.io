@@ -8,6 +8,6 @@ Work through the remaining items before stress and balance testing. Previously r
 - [x] Check online status for invitations. Real two-account testing remains needed.
 - [x] When new skill points are available, highlight the Skills button and show the number of unspent points. Do not show a separate message.
 - [x] For new friend requests, highlight the Friends button and show the number of requests, rather than a separate notification. Real two-account testing remains needed.
-- [ ] Add a friend stats window so players can inspect a friend's level, armory, skills, and other relevant stats before playing together.
-- [ ] After the items above: stress and balance test single-player, Endless, and all multiplayer variants, including real-device testing.
+- [x] Add a friend stats window so players can inspect a friend's level, armory, skills, and other relevant stats before playing together. Real two-account validation remains needed.
+- [ ] Stress and balance test single-player, Endless, and all multiplayer variants, including real-device testing. Initial local stress results: [STRESS-REPORT.md](STRESS-REPORT.md); balance and real-device/network testing remain open.
 - [ ] After testing: explore the tower prestige system after level 6, with a shine and displayed level reset to 1.

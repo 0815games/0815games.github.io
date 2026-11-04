@@ -187,6 +187,8 @@ jobs:
           node-version: '22'
       - name: Run game tests
         run: node --test IronPath/tests/*.test.mjs
+      - name: Run deterministic local stress workloads
+        run: node IronPath/stress-tests/run.mjs
       - name: Install server dependencies
         run: npm ci --prefix IronPath/server --no-audit --no-fund
       - name: Run server tests
