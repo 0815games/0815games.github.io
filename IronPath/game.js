@@ -1,17 +1,17 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-firstrun2';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-firstrun3';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261112-free1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261112-firstrun2';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun3';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun2';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun3';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
@@ -28,8 +28,8 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261112-firstrun2';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-firstrun2';
+import { createTutorial } from './tutorial.mjs?v=20261112-firstrun3';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-firstrun3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -267,13 +267,25 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(!sandbox||!request)return false;
     sandbox.enter();
     try{
-     if(request==='armoryWorkshop'){openArmoryPractice('workshop');return true;}
-     if(request==='armoryPrestige'){openArmoryPractice('workshop');return true;}
+     if(request==='armoryWorkshop'||request==='armoryPrestige'){openArmoryPractice('workshop');return true;}
      if(request==='armory'){openArmoryPractice('equipment');return true;}
-     if(request==='skills'){$('skillOpen').onclick?.();return true;}
+     if(request==='skills'){openSkillsPractice();return true;}
     }catch{sandbox.leave();return false;}
     sandbox.leave();return false;
   }});
+  // The account reports practice as it happens and drops the sample soldier when the
+  // dialog closes; this hands the result to the tour, which waits on the step.
+  account.sandbox?.onPracticeChange?.(seen=>{
+   if(!seen)return;
+   tutorial.practiceResult('skills',seen.skills);
+   tutorial.practiceResult('armory',seen.armory);
+   tutorial.practiceResult('workshop',seen.workshop);
+  });
+  // The real Skills dialog, opened against the sample soldier.
+  function openSkillsPractice(){
+   const status=$('saveStatus');if(status)status.textContent=tr('Sample data: nothing is saved.');
+   $('skillOpen').onclick?.();
+  }
   function openArmoryPractice(category){
     closeMenu();keys.clear();
     const status=$('armoryStatus');if(status)status.textContent=tr('Sample data: nothing is saved.');

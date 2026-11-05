@@ -8,12 +8,12 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261110-storyde1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261112-firstrun2">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261112-firstrun3">
   <link rel="stylesheet" href="skill-menu.css?v=20261108-skillcards1">
   <link rel="stylesheet" href="field-command.css?v=20261105-sharp1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261105-soldier2">
-  <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun2">
+  <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun3">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -183,25 +183,6 @@
     <div class="tutorial-scene" id="tutorialScene" aria-hidden="true">
       <span class="scene-caption" id="tutorialCaption"></span></div>
     <h2 id="tutorialTitle"></h2><p id="tutorialText" class="tutorial-text"></p>
-    <div id="tutorialSkillsPractice" class="tutorial-practice tutorial-skills-demo" hidden aria-label="Skills practice" data-i18n-aria-label="Skills practice">
-      <div class="tutorial-demo-head"><span class="tutorial-practice-label" data-i18n-text="TRAINING EXAMPLE · LEVEL 2">TRAINING EXAMPLE · LEVEL 2</span><strong data-i18n-text="Skills">Skills</strong><small data-i18n-text="This is a practice build, not your soldier.">This is a practice build, not your soldier.</small></div>
-      <div class="tutorial-demo-points"><span data-i18n-text="YOUR POINTS">YOUR POINTS</span><strong id="tutorialSkillPoints"></strong></div>
-      <div class="tutorial-demo-skill-tabs" aria-label="Example category" data-i18n-aria-label="Example category"><span class="selected" data-i18n-text="ASSAULT">ASSAULT</span><span data-i18n-text="ENGINEER">ENGINEER</span><span data-i18n-text="LOGISTICS">LOGISTICS</span><span data-i18n-text="MEDIC">MEDIC</span><span data-i18n-text="RECON">RECON</span><span data-i18n-text="ALL">ALL</span></div>
-      <p class="tutorial-demo-filter"><span data-i18n-text="SHOW">SHOW</span> <span data-i18n-text="All skills ▾">All skills ▾</span></p>
-      <div class="tutorial-demo-workspace"><div class="tutorial-demo-list"><h3 data-i18n-text="Assault training">Assault training</h3><button id="tutorialSkillNode" type="button" class="tutorial-skill-card" aria-pressed="false"><span class="tutorial-skill-card-top"><span data-i18n-text="ACTIVE ABILITY">ACTIVE ABILITY</span><span id="tutorialSkillCardState" data-i18n-text="AVAILABLE">AVAILABLE</span></span><strong data-i18n-text="Airstrike">Airstrike</strong><span data-i18n-text="Deal 35 damage to all enemies.">Deal 35 damage to all enemies.</span><small data-i18n-text="Starting ability">Starting ability</small></button></div>
-        <section class="tutorial-demo-inspector"><span data-i18n-text="SELECTED SKILL">SELECTED SKILL</span><h3 id="tutorialSkillDetailTitle" data-i18n-text="Select a skill">Select a skill</h3><p id="tutorialSkillDetailText" data-i18n-text="Choose the Airstrike card to inspect it.">Choose the Airstrike card to inspect it.</p><button id="tutorialSkillUpgrade" type="button" disabled data-i18n-text="UNLOCK · 1 POINT">UNLOCK · 1 POINT</button><details><summary data-i18n-text="YOUR BUILD · COMBINED BONUSES">YOUR BUILD · COMBINED BONUSES</summary><p data-i18n-text="This summary shows the example build.">This summary shows the example build.</p></details></section></div>
-      <div class="tutorial-demo-actions"><span data-i18n-text="RESET POINTS">RESET POINTS</span><button id="tutorialSkillSave" type="button" disabled data-i18n-text="SAVE BUILD">SAVE BUILD</button></div>
-      <p class="practice-note" data-i18n-text="This example shows Assault. In the real Skills menu, choose any category and inspect a card. Use SHOW to filter skills; Your Build summarizes bonuses. Unlock specialist abilities after the required rank, and explore mastery, doctrines and cross-training. Save your draft to apply it next match; closing discards unsaved changes.">This example shows Assault. In the real Skills menu, choose any category and inspect a card. Use SHOW to filter skills; Your Build summarizes bonuses. Unlock specialist abilities after the required rank, and explore mastery, doctrines and cross-training. Save your draft to apply it next match; closing discards unsaved changes.</p>
-    </div>
-    <div id="tutorialArmoryPractice" class="tutorial-practice tutorial-armory-demo" hidden aria-label="Armory practice" data-i18n-aria-label="Armory practice">
-      <div class="tutorial-demo-head"><span class="tutorial-practice-label" data-i18n-text="TRAINING EXAMPLE · NOT YOUR INVENTORY">TRAINING EXAMPLE · NOT YOUR INVENTORY</span><strong data-i18n-text="Armory &amp; bunker">Armory &amp; bunker</strong><small data-i18n-text="Example only. Your real inventory is unchanged.">Example only. Your real inventory is unchanged.</small></div>
-      <div class="tutorial-demo-wallet"><span data-i18n-text="YOUR RESOURCES">YOUR RESOURCES</span><strong id="tutorialScrap"></strong><small data-i18n-text="+10 scrap per completed wave">+10 scrap per completed wave</small></div>
-      <nav class="tutorial-demo-armory-tabs" aria-label="Practice armory categories" data-i18n-aria-label="Practice armory categories"><button id="tutorialEquipmentTab" type="button" aria-pressed="true" data-i18n-text="EQUIPMENT">EQUIPMENT</button><button id="tutorialBunkerTab" type="button" aria-pressed="false" data-i18n-text="BUNKER">BUNKER</button><button id="tutorialServiceTab" type="button" aria-pressed="false" data-i18n-text="SERVICE RECORD">SERVICE RECORD</button></nav>
-      <section id="tutorialEquipmentPanel"><div class="tutorial-demo-section-head"><strong data-i18n-text="Your equipment">Your equipment</strong><span data-i18n-text="ONE SLOT">ONE SLOT</span></div><article class="tutorial-demo-armory-card"><div class="tutorial-demo-art optics" aria-hidden="true"></div><div><span id="tutorialEquipState" class="tutorial-demo-meta" data-i18n-text="UNLOCKED">UNLOCKED</span><h3 data-i18n-text="Field Scope">Field Scope</h3><p data-i18n-text="+3 soldier damage per shot.">+3 soldier damage per shot.</p><button id="tutorialEquip" type="button" data-i18n-text="EQUIP">EQUIP</button></div></article></section>
-      <section id="tutorialBunkerPanel" hidden><div class="tutorial-demo-section-head"><strong data-i18n-text="Bunker upgrades">Bunker upgrades</strong><span data-i18n-text="SHARED DEFENSE">SHARED DEFENSE</span></div><article class="tutorial-demo-armory-card"><div class="tutorial-demo-art bunker" aria-hidden="true"></div><div><span class="tutorial-demo-meta" data-i18n-text="PERMANENT UPGRADE">PERMANENT UPGRADE</span><h3 data-i18n-text="Fortification">Fortification</h3><p data-i18n-text="+10 maximum bunker health per rank.">+10 maximum bunker health per rank.</p><p id="tutorialFortifyRank">Rank 0 of 3</p><button id="tutorialBunkerUpgrade" type="button" data-i18n-text="UPGRADE · 30 SCRAP">UPGRADE · 30 SCRAP</button><div id="tutorialBunkerConfirmArea" hidden><p data-i18n-text="Spend 30 example scrap on fortification?">Spend 30 example scrap on fortification?</p><button id="tutorialBunkerConfirm" type="button" data-i18n-text="CONFIRM UPGRADE">CONFIRM UPGRADE</button><button id="tutorialBunkerCancel" type="button" data-i18n-text="CANCEL">CANCEL</button></div></div></article></section>
-      <section id="tutorialServicePanel" hidden><div class="tutorial-demo-section-head"><strong data-i18n-text="Service record">Service record</strong><span data-i18n-text="PERMANENT MEDALS">PERMANENT MEDALS</span></div><p data-i18n-text="Medals celebrate your progression. They are not equipment.">Medals celebrate your progression. They are not equipment.</p></section>
-      <p class="practice-note" data-i18n-text="Earn 10 scrap per completed wave and equipment on waves 2 through 20, every two waves. Armory changes save when you equip or confirm an upgrade and apply to your next match. Leave your party before editing. In co-op, the highest bunker upgrade rank applies.">Earn 10 scrap per completed wave and equipment on waves 2 through 20, every two waves. Armory changes save when you equip or confirm an upgrade and apply to your next match. Leave your party before editing. In co-op, the highest bunker upgrade rank applies.</p>
-    </div>
     <p id="tutorialPracticeStatus" class="tutorial-practice-status" role="status" hidden></p><button id="tutorialPracticeSkip" type="button" class="tutorial-practice-skip" hidden data-i18n-text="SKIP THIS PRACTICE">SKIP THIS PRACTICE</button>
     <div class="tutorial-actions"><button id="tutorialBack" type="button" data-i18n-text="← BACK">← BACK</button><button id="tutorialNext" class="primary" type="button" data-i18n-text="NEXT →">NEXT →</button></div><button id="tutorialSkip" class="tutorial-skip" type="button" data-i18n-text="SKIP BRIEFING">SKIP BRIEFING</button>
   </dialog>
@@ -248,8 +229,8 @@
     </div>
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
-  <script type="module" src="language-gate.mjs?v=20261112-firstrun2"></script>
-  <script type="module" src="intro.mjs?v=20261112-firstrun2"></script>
+  <script type="module" src="language-gate.mjs?v=20261112-firstrun3"></script>
+  <script type="module" src="intro.mjs?v=20261112-firstrun3"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261112-firstrun2"></script>
+  <script type="module" src="account.js?v=20261112-firstrun3"></script>
 </body></html>

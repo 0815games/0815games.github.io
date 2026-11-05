@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-firstrun2';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun3';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.
@@ -12,8 +12,8 @@ export const TUTORIAL_STEPS = [
   {title:'Start the battle',text:'Use Field Intel below the map to identify threats and tower counters. Start each wave with Deploy. Use Speed in solo. You start without an ability; unlock one after reaching level 2. Defeated enemies provide supplies; cleared waves earn XP and loot. After each boss choose a temporary field upgrade; rare upgrades can change how towers fight.',scene:'battle',caption:'HOLD THE LINE'},
   {title:'Find your way around',text:'Each new operation generates a different battlefield. On a phone, swipe the enlarged map sideways or use Entry and Bunker to jump around. Open Terrain effects for battlefield rules and watch the marked zones: dust, cover, ice and mud change combat. Open How to play for sound and this briefing. A co-op battle continues while the briefing is open.',scene:'map',caption:'SWIPE THE MAP'},
   {title:'Play together',text:'Open MULTIPLAYER to create a party for two to four players. Invite an accepted friend to join directly, or share the four-digit code and approve their join request. The host chooses a mode and requests waves; guests approve or choose Not Yet. Competitive modes pause if a player disconnects. Keep the host browser open.',scene:'hero',caption:'ONE PARTY · YOUR SQUAD'},
-  {title:'Practice the Skills menu',text:'At level 2, you earn your first skill point. Pick a category and select a skill card to see its details. Unlock it in the inspector, then save your build. Try it here: this example never changes your soldier.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills'},
-  {title:'Practice the Armory',text:'Use Equipment to equip unlocked rewards, Bunker to upgrade defenses, and Service Record to see medals. Practice with the example below; it will not change your real inventory.',scene:'armory',caption:'EXAMPLE ARMORY',practice:'armory'},
+  {title:'Practice the Skills menu',text:'At level 2, you earn your first skill point. Pick a category and select a skill card to see its details. Unlock it, then save your build. Try it here on a sample soldier: nothing you do is saved.',scene:'skills',caption:'EXAMPLE BUILD',practice:'skills',dialogs:['skills']},
+  {title:'Practice the Armory',text:'Use Equipment to equip unlocked rewards, Bunker to upgrade defenses, and Service Record to see medals. Try it on a sample soldier: nothing you do is saved.',scene:'armory',caption:'EXAMPLE ARMORY',practice:'armory',dialogs:['armory']},
   // These two open the REAL dialogs against a sample soldier. Nothing is saved.
   {title:'Your workshop',text:'The Armory has a WORKSHOP tab: craft gear from scrap and boss components, equip it, then install a modification. Try it on a sample soldier. Nothing you do here is saved.',scene:'armory',caption:'CRAFT · EQUIP · MODIFY',practice:'workshop',dialogs:['armoryWorkshop']},
   {title:'Prestige gear',text:'Finishing campaign missions awards prestige trophies: one per mission, never sold and never crafted. Locked trophies name the mission that unlocks them. Missions get harder as the story goes on, so the gear matters.',scene:'armory',caption:'EARNED IN THE CAMPAIGN',practice:'prestige',dialogs:['armoryPrestige']}
@@ -22,8 +22,8 @@ const memory=new Set();
 const keyFor=id=>`ironpath:tutorial:v1:${id}`;
 export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{},onFinish=()=>{}}){
   const $=id=>document.getElementById(id),dialog=$('tutorialDialog');
-  let index=0,activeUser=null,skill,armory,workshop,skipped,lastDialogs=-1;
-  function resetPractice(){skill={inspected:false,upgraded:false,saved:false};armory={equipped:false,upgraded:false,category:'equipment',confirming:false};workshop={crafted:false,equippedItem:false};skipped=new Set();}
+  let index=0,activeUser=null,skill,armory,workshop,skipped,lastDialogs=-1,pendingDialogs=-1;
+  function resetPractice(){skill={upgraded:false,saved:false};armory={equipped:false,upgraded:false};workshop={crafted:false,equippedItem:false};skipped=new Set();}
   resetPractice();
   function completed(id){if(memory.has(id))return true;try{return storage?.getItem(keyFor(id))==='done';}catch{return false;}}
   function markCompleted(id){memory.add(id);try{storage?.setItem(keyFor(id),'done');}catch{/* Continue in this session if storage is unavailable. */}}
@@ -31,42 +31,35 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{},onPra
   function render(){
     const step=TUTORIAL_STEPS[index],practice=step.practice;
     $('tutorialStep').textContent=tr('FIELD BRIEFING · {step} / {total}',{step:index+1,total:TUTORIAL_STEPS.length});$('tutorialTitle').textContent=tr(step.title);$('tutorialText').textContent=tr(step.text);$('tutorialCaption').textContent=tr(step.caption);$('tutorialScene').dataset.scene=step.scene;
-    $('tutorialScene').hidden=!!practice;$('tutorialSkillsPractice').hidden=practice!=='skills';$('tutorialArmoryPractice').hidden=practice!=='armory';$('tutorialPracticeSkip').hidden=!practice||practiceDone(practice);
+    $('tutorialScene').hidden=!!practice;$('tutorialPracticeSkip').hidden=!practice||practiceDone(practice);
     $('tutorialBack').disabled=index===0;$('tutorialNext').disabled=!!practice&&!practiceDone(practice);$('tutorialNext').textContent=index===TUTORIAL_STEPS.length-1?tr('FINISH'):tr('NEXT →');
     const wantDialogs=step.dialogs||[];
     if(wantDialogs.length&&lastDialogs!==index){
       lastDialogs=index;
-      try{onPractice(wantDialogs[0]);}catch{/* The mock screens below remain usable. */}
+      // A practice step opens the matching real dialog in sandbox mode (account.js),
+      // but not while the briefing itself is hidden: the topmost modal would swallow
+      // the tour. It opens as soon as the briefing is actually in front of the player.
+      if(!dialog.open)pendingDialogs=index;
+      else try{onPractice(wantDialogs[0]);}catch{/* The skip button still lets the tour continue. */}
     }
-    if(practice==='skills'){
-      $('tutorialSkillPoints').textContent=tr(skill.upgraded?'{count} POINTS AVAILABLE':'{count} POINT AVAILABLE',{count:skill.upgraded?0:1});
-      $('tutorialSkillNode').setAttribute('aria-pressed',String(skill.inspected));$('tutorialSkillCardState').textContent=skill.upgraded?tr('EQUIPPED'):tr('AVAILABLE');
-      $('tutorialSkillDetailTitle').textContent=skill.inspected?tr('Airstrike'):tr('Select a skill');$('tutorialSkillDetailText').textContent=skill.inspected?tr('Deal 35 damage to all enemies. Spend one point to unlock this main skill.'):tr('Choose the Airstrike card to inspect it.');
-      $('tutorialSkillUpgrade').disabled=!skill.inspected||skill.upgraded;$('tutorialSkillUpgrade').textContent=skill.upgraded?tr('MAIN SKILL SELECTED'):tr('UNLOCK · 1 POINT');
-      $('tutorialSkillSave').disabled=!skill.upgraded||skill.saved;$('tutorialSkillSave').textContent=skill.saved?tr('BUILD SAVED'):tr('SAVE BUILD');
-      $('tutorialPracticeStatus').textContent=skipped.has('skills')?tr('Practice skipped. Your real build is unchanged.'):!skill.inspected?tr('Select the Airstrike card.'):!skill.upgraded?tr('Use the inspector to unlock this example skill.'):!skill.saved?tr('Save the example build.'):tr('Example saved. Your real build is unchanged.');
-    }else if(practice==='armory'){
-      $('tutorialScrap').textContent=tr('{count} SCRAP',{count:armory.upgraded?30:60});
-      for(const [id,category] of [['tutorialEquipmentTab','equipment'],['tutorialBunkerTab','bunker'],['tutorialServiceTab','service']])$(id).setAttribute('aria-pressed',String(armory.category===category));
-      $('tutorialEquipmentPanel').hidden=armory.category!=='equipment';$('tutorialBunkerPanel').hidden=armory.category!=='bunker';$('tutorialServicePanel').hidden=armory.category!=='service';
-      $('tutorialEquipState').textContent=armory.equipped?tr('EQUIPPED'):tr('UNLOCKED');$('tutorialEquip').disabled=armory.equipped;$('tutorialEquip').textContent=armory.equipped?tr('EQUIPPED'):tr('EQUIP');
-      $('tutorialBunkerUpgrade').disabled=armory.upgraded||armory.confirming;$('tutorialBunkerUpgrade').textContent=armory.upgraded?tr('UPGRADED'):tr('UPGRADE · 30 SCRAP');$('tutorialBunkerConfirmArea').hidden=!armory.confirming;$('tutorialFortifyRank').textContent=tr('Rank {rank} of 3',{rank:armory.upgraded?1:0});
-      $('tutorialPracticeStatus').textContent=skipped.has('armory')?tr('Practice skipped. Your real armory is unchanged.'):!armory.equipped?tr('Open Equipment and equip the example Field Scope.'):armory.confirming?tr('Confirm the example upgrade or cancel.'):!armory.upgraded?tr('Open Bunker and upgrade example Fortification.'):tr('Well done! Your real scrap and equipment are unchanged.');
-    }
+    // Say what the step is waiting for, instead of leaving a disabled NEXT behind.
     $('tutorialPracticeStatus').hidden=!practice;
+    if(practice)$('tutorialPracticeStatus').textContent=practiceDone(practice)?tr('Practice complete. Continue when you are ready.'):tr('Use the real {making} on the sample soldier. Nothing is saved.',{making:practice==='skills'?tr('Skills menu'):tr('Armory')});
   }
-  function open(id){if(!id)return;activeUser=id;index=0;lastDialogs=-1;resetPractice();render();if(!dialog.open)dialog.showModal();onVisibilityChange(true);}
+  function open(id){if(!id)return;activeUser=id;index=0;lastDialogs=-1;pendingDialogs=-1;resetPractice();render();if(!dialog.open)dialog.showModal();flushPendingPractice();onVisibilityChange(true);}
+  // Opening the dialog from the menu is what makes a pending practice step runnable.
+  function flushPendingPractice(){
+    if(pendingDialogs<0||!dialog.open)return;
+    const step=TUTORIAL_STEPS[pendingDialogs],want=step?.dialogs||[];
+    pendingDialogs=-1;
+    if(!want.length)return;
+    lastDialogs=TUTORIAL_STEPS.indexOf(step);
+    try{onPractice(want[0]);}catch{/* The skip button still lets the tour continue. */}
+  }
+  dialog.addEventListener('close',()=>{if(pendingDialogs>=0)flushPendingPractice();});
   // `finished` distinguishes a completed walk from a dismissal: only a finished
   // tour hands the player on to the training contract.
   function close(mark,finished=false){if(!dialog.open)return;const user=activeUser;if(mark&&user)markCompleted(user);dialog.close();activeUser=null;onVisibilityChange(false);if(finished&&user){try{onFinish(user);}catch{/* The tour is over either way. */}}}
-  $('tutorialSkillNode').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'){skill.inspected=true;render();}};
-  $('tutorialSkillUpgrade').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'&&skill.inspected&&!skill.upgraded){skill.upgraded=true;render();}};
-  $('tutorialSkillSave').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'&&skill.upgraded&&!skill.saved){skill.saved=true;render();}};
-  for(const [id,category] of [['tutorialEquipmentTab','equipment'],['tutorialBunkerTab','bunker'],['tutorialServiceTab','service']])$(id).onclick=()=>{if(TUTORIAL_STEPS[index].practice==='armory'){armory.category=category;armory.confirming=false;render();}};
-  $('tutorialEquip').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='armory'&&armory.category==='equipment'&&!armory.equipped){armory.equipped=true;render();}};
-  $('tutorialBunkerUpgrade').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='armory'&&armory.category==='bunker'&&!armory.upgraded&&!armory.confirming){armory.confirming=true;render();}};
-  $('tutorialBunkerConfirm').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='armory'&&armory.category==='bunker'&&armory.confirming&&!armory.upgraded){armory.upgraded=true;armory.confirming=false;render();}};
-  $('tutorialBunkerCancel').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='armory'&&armory.confirming){armory.confirming=false;render();}};
   $('tutorialPracticeSkip').onclick=()=>{const practice=TUTORIAL_STEPS[index].practice;if(practice){skipped.add(practice);render();}};
   // The real dialogs report what happened here instead of a mock screen doing it.
   function practiceResult(type,detail){

@@ -9,11 +9,11 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261112-firstrun2';
+import {createMatch} from './simulation.mjs?v=20261112-firstrun3';
 import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-alpha1';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT} from './training-run.mjs?v=20261112-firstrun2';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT} from './training-run.mjs?v=20261112-firstrun3';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
  // The training contract is the only campaign-shaped deployment that is easier

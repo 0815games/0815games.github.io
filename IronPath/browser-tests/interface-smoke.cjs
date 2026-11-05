@@ -78,11 +78,11 @@ const fs = require('node:fs');
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
       }
-      for (const [panel,control] of [['tutorialSkillsPractice','#tutorialSkillNode'],['tutorialArmoryPractice','#tutorialEquip']]) {
-        await page.evaluate(id=>{document.querySelector('#tutorialScene').hidden=true;document.getElementById(id).hidden=false;document.querySelector('#tutorialDialog').showModal();},panel);
-        await check(control);await page.screenshot({path:`browser-artifacts/${name}-${panel}.png`});
-        await page.evaluate(id=>{document.querySelector('#tutorialDialog').close();document.getElementById(id).hidden=true;},panel);
-      }
+      // Practice drives the real dialogs, so the briefing card is checked on its own
+      // and the controls it points at are covered by the dialog loop above.
+      await page.evaluate(()=>{document.querySelector('#tutorialCaption').textContent='EXAMPLE BUILD';document.querySelector('#tutorialDialog').showModal();});
+      await check('#tutorialTitle');await page.screenshot({path:`browser-artifacts/${name}-tutorial-briefing.png`});
+      await page.evaluate(()=>document.querySelector('#tutorialDialog').close());
       console.log(`${name}: sign-in, command, lobby and dialogs fit the viewport`);
       await context.close();
     }

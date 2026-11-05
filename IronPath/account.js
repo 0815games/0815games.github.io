@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun2';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun2';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun3';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun3';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun2';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun3';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -12,9 +12,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
-import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261112-firstrun2';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun3';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun2';
+import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun3';
 import {missingPrestige} from './prestige.mjs';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-alpha3';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261105-workshop5';
@@ -24,8 +24,8 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
-import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun2';
-import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun2';
+import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun3';
+import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun3';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -72,7 +72,30 @@ const viewProfile=()=>sandbox?sandbox.profile:profile;
 class SandboxWrite extends Error{}
 function assertWritable(){if(inSandbox())throw new SandboxWrite('Sandbox mode: nothing is written to your soldier.');}
 const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>!inSandbox()&&canEditSkills()});
-armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:viewProfile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
+// Practice runs the workshop's own reducers against the sample soldier. It is a
+// separate service object rather than a relaxed `canEdit`: the real service can
+// never reach a transaction while the sandbox is on, so this cannot become a hole.
+const sandboxWorkshop={
+  async initialize(){return applySandboxWorkshop(p=>initializeWireWorkshop(p));},
+  async sync(){return applySandboxWorkshop(p=>syncPrestige(p));},
+  async command(command){return applySandboxWorkshop(p=>applyWireWorkshopCommand(p,command),command);},
+};
+function applySandboxWorkshop(reduce,command=null){
+  if(!inSandbox())return {status:'sandbox'};
+  const next=reduce(sandbox.profile);
+  if(!next)return {status:'rejected'};
+  sandboxAPI.apply(next);
+  if(command&&(command.type==='craft'||command.type==='equip'))sandboxAPI.markWorkshop(command);
+  return {status:'saved',profile:next};
+}
+const workshopService={
+  initialize:()=>inSandbox()?sandboxWorkshop.initialize():workshopAccount.initialize(),
+  command:command=>inSandbox()?sandboxWorkshop.command(command):workshopAccount.command(command),
+  sync:()=>inSandbox()?sandboxWorkshop.sync():workshopAccount.sync(),
+  hasPending:()=>inSandbox()?false:!!workshopAccount.hasPending?.(),
+  isBusy:()=>workshopAccount.isBusy(),
+};
+armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:viewProfile,service:workshopService,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
 soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
@@ -139,7 +162,7 @@ function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.i
 function renderSkills(){
   if(!viewProfile())return;
   document.querySelectorAll('[data-skill-path]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.skillPath===$('skillPathFilter').value)));
-  const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100,extraIndex=(index<0?0:index)*2+rank-5;
+  const lvl=level(viewProfile().xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100,extraIndex=(index<0?0:index)*2+rank-5;
   $('skillPoints').textContent=translateText(left===1?'LEVEL {level} · {points} POINT AVAILABLE':'LEVEL {level} · {points} POINTS AVAILABLE',{level:lvl,points:left});
   const summary=localizeSkillSummary(skillBuildSummary(draftSkills,lvl),translateText);$('skillSummaryActive').textContent=summary.active;$('skillSummaryStats').textContent=summary.values.join('\n');$('skillSummaryCombos').textContent=summary.combos;$('skillSummaryCaps').textContent=summary.caps;
   if(!savingSkills)$('skillStatus').textContent=translateText(encodeBuild(draftSkills)===openedSkills?'Saved build unchanged.':'Unsaved draft — save to apply; closing discards these changes.');
@@ -159,20 +182,30 @@ $('skillDetailType').textContent=rank===1?translateText('MAIN SKILL'):`${transla
 }
 document.querySelectorAll('[data-skill-path]').forEach(button=>{button.onclick=()=>{ $('skillPathFilter').value=button.dataset.skillPath; if(button.dataset.skillPath!=='all')selectedSkill={path:button.dataset.skillPath,rank:1}; $('skillPaths').scrollTop=0;renderSkills(); };});
 $('skillFilter').onchange=()=>renderSkills();$('skillPathFilter').onchange=()=>renderSkills();
-$('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to edit skills between deployments, or leave your party first.');return;}skillsOpenGeneration++;draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='assault';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
+$('skillOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to edit skills between deployments, or leave your party first.');return;}skillsOpenGeneration++;draftSkills=parseBuild(viewProfile().skills,level(viewProfile().xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='assault';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
 $('skillReset').onclick=async()=>{if(inSandbox())return;if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
 async function closeSkills(){
   if(!$('skillDialog').open||savingSkills||closingSkills)return;
-  if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();return;}
+  if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();if(inSandbox())sandboxAPI.leave();return;}
   const version=sessionVersion,opened=skillsOpenGeneration,draft=encodeBuild(draftSkills);closingSkills=true;
   try{const discard=await confirmation.ask({title:'Discard skill changes?',text:'Your unsaved skill changes will be lost. Keep editing or discard them.',accept:'DISCARD CHANGES'});
-    if(discard&&version===sessionVersion&&opened===skillsOpenGeneration&&$('skillDialog').open&&!savingSkills&&encodeBuild(draftSkills)===draft)$('skillDialog').close();
+    if(discard&&version===sessionVersion&&opened===skillsOpenGeneration&&$('skillDialog').open&&!savingSkills&&encodeBuild(draftSkills)===draft){$('skillDialog').close();if(inSandbox())sandboxAPI.leave();}
   }finally{if(version===sessionVersion&&opened===skillsOpenGeneration)closingSkills=false;}
 }
 $('skillCancel').onclick=closeSkills;
 $('skillDialog').addEventListener('cancel',event=>{event.preventDefault();void closeSkills();});
 bindDialogBackdrop($('skillDialog'),()=>void closeSkills());
-$('skillSave').onclick=async()=>{if(inSandbox()){$('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');return;}
+$('skillSave').onclick=async()=>{
+  // Sandbox: the draft is applied to the sample soldier so the tour can teach the
+  // real gesture. The player's own build is never touched.
+  if(inSandbox()){
+    const build=encodeBuild(draftSkills);
+    sandboxAPI.apply({...viewProfile(),skills:build});
+    sandboxAPI.markSkill({upgraded:pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
+    $('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');
+    $('skillDialog').close();
+    return;
+  }
   if(!canEditSkills()){$('skillStatus').textContent=translateText('Leave the party and finish the match before changing skills.');return;}
   if(savingSkills)return;const currentUser=user,version=sessionVersion,build=encodeBuild(draftSkills),expected=openedSkills;savingSkills=true;$('skillSave').disabled=true;$('skillReset').disabled=true;$('skillDetailAction').disabled=true;$('skillStatus').textContent=translateText('Saving…');
   try{
@@ -249,10 +282,14 @@ function exampleProfile(base){
   // Same initialiser the live save uses, so the example panel cannot drift from it.
   return initializeWireWorkshop(example)||example;
 }
+let sandboxPracticeListener=null;
+// Report practice the moment it happens, so the tour never has to poll and cannot
+// miss a save that is followed immediately by closing the dialog.
+function notifyPractice(){try{sandboxPracticeListener?.(sandboxAPI.practice());}catch{}}
 const sandboxAPI={
   enter({example}={}){
     if(inSandbox())return sandbox.profile;
-    sandbox={profile:example?exampleProfile(example):exampleProfile(profile)};
+    sandbox={profile:example?exampleProfile(example):exampleProfile(profile),practice:{skills:{upgraded:false,saved:false},armory:{equipped:false,upgraded:false}}};
     document.body.dataset.sandbox='1';
     $('sandboxBanner')?.removeAttribute('hidden');
     return sandbox.profile;
@@ -265,6 +302,37 @@ const sandboxAPI={
   },
   isActive:inSandbox,
   getProfile:viewProfile,
+  // The sample soldier is the whole save while practice runs: the real dialogs
+  // read and write it through these two calls, and it disappears on `leave`.
+  apply(next){
+    if(!inSandbox()||!next)return null;
+    sandbox.profile=next;
+    commandCenter?.render();soldierUI?.refresh();updateSkillPrompt(next);
+    if(armoryCategory==='workshop')renderWorkshop();
+    return sandbox.profile;
+  },
+  // What the player actually did in the real dialogs, for the tour's own steps.
+  markSkill({upgraded=false,saved=false}={}){
+    if(!inSandbox())return;
+    sandbox.practice.skills.upgraded||=upgraded;
+    sandbox.practice.skills.saved||=saved;
+    notifyPractice();
+  },
+  markWorkshop(command){
+    if(!inSandbox())return;
+    if(command.type==='craft')sandbox.practice.workshop.crafted=true;
+    if(command.type==='equip')sandbox.practice.workshop.equippedItem=true;
+    notifyPractice();
+  },
+  practice:()=>inSandbox()?{...sandbox.practice}:null,
+  // The tour subscribes instead of polling: a save is reported as it happens.
+  onPracticeChange(fn){sandboxPracticeListener=typeof fn==='function'?fn:null;},
+  markArmory({equipped=false,upgraded=false}={}){
+    if(!inSandbox())return;
+    sandbox.practice.armory.equipped||=equipped;
+    sandbox.practice.armory.upgraded||=upgraded;
+    notifyPractice();
+  },
   // Exposed so the tutorial (and the tests) can prove a write is refused.
   refuseWrite:assertWritable,
 };
@@ -391,7 +459,18 @@ function renderArmory(){
 }
 async function saveArmory(change){
   if(savingArmory)return;
-  if(inSandbox())return;
+  // Sandbox: the same change runs against the sample soldier, so practice feels
+  // real. Nothing is sent anywhere; the record is thrown away on `leave`.
+  if(inSandbox()){
+    const next=change(viewProfile()?.armory);
+    if(!next){$('armoryStatus').textContent=translateText('Not enough scrap for that in the sample.');return;}
+    const a=readArmory(next);
+    sandboxAPI.apply({...viewProfile(),armory:next});
+    sandboxAPI.markArmory({equipped:a.equipped>0,upgraded:['fortify','plating','repair','gun','supply','safeguard'].some(k=>a[k]>(readArmory(sandbox.profile.armory)[k]||0))});
+    $('armoryStatus').textContent=translateText('Sample data: nothing is saved.');
+    renderArmory();
+    return;
+  }
   if(!canEditSkills()){$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
   savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent=translateText('Saving…');
   try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{if(!current||!Number.isInteger(current.xp))return;const armory=change(current.armory);if(!armory)return;const old=readArmory(current.armory);if(characterProgress(current.xp).level<5&&(armory.supply>old.supply||armory.safeguard>old.safeguard))return;return {...current,armory};},{applyLocally:false});
@@ -401,8 +480,8 @@ async function saveArmory(change){
   }catch(error){if(version===sessionVersion)$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}
   finally{if(version===sessionVersion)savingArmory=false;}
 }
-$('armoryOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to open the armory, or leave your party first.');return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
-function closeArmory(){if(savingArmory){$('armoryStatus').textContent=translateText('Saving… Please wait before closing.');return;}if($('armoryDialog').open)$('armoryDialog').close();}
+$('armoryOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to open the armory, or leave your party first.');return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
+function closeArmory(){if(savingArmory){$('armoryStatus').textContent=translateText('Saving… Please wait before closing.');return;}if($('armoryDialog').open)$('armoryDialog').close();if(inSandbox())sandboxAPI.leave();}
 $('armoryClose').onclick=closeArmory;
 $('armoryDialog').addEventListener('cancel',event=>{event.preventDefault();closeArmory();});
 bindDialogBackdrop($('armoryDialog'),closeArmory);

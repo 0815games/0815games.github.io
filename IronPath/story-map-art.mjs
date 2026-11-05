@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-firstrun2';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun3';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={

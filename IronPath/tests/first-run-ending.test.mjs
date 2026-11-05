@@ -84,33 +84,44 @@ test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
  const sandbox=account.slice(account.indexOf('// --- Tutorial sandbox API'),account.indexOf('// --- First-run ending'));
  assert.match(sandbox,/refuseWrite:assertWritable/);
  for(const guard of ['saveCampaign','awardXP'])assert.match(account,new RegExp(`${guard}:[^\\n]{0,200}if\\(inSandbox\\(\\)\\)return`),`${guard} must refuse in the sandbox`);
+ // Practice is the one exception, and it is deliberately narrow: the same service
+ // methods run against the sample soldier through a local reducer, never a
+ // transaction. The real service still refuses while the sandbox is on.
+ assert.match(account,/canEdit:\(\)=>!inSandbox\(\)&&canEditSkills\(\)/,'the real service stays shut in the sandbox');
+ const local=account.slice(account.indexOf('const sandboxWorkshop={'),account.indexOf('const workshopService={'));
+ assert.ok(local.length>0,'practice has its own local service');
+ assert.equal(/runTransaction|\bref\(|\bset\(/.test(local),false,'practice never builds a transaction');
+ assert.match(account,/applySandboxWorkshop\(p=>applyWireWorkshopCommand\(p,command\),command\)/,'practice uses the workshop reducers');
+ // And the real build is only ever applied to the sample profile.
+ assert.match(account,/sandboxAPI\.apply\(\{\.\.\.viewProfile\(\),skills:build\}\)/);
 });
 
-test('account.js evaluates at load: nothing is named before it is initialised',()=>{
+test('the account literal never names something declared further down',()=>{
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
  // `const account={...}` is evaluated during module evaluation. Naming a `const`
- // declared further down (here: sandboxAPI) throws a temporal-dead-zone error and
- // takes the whole module - and the Command Center - down with it. Browser tests
- // catch it, but only in CI, so pin the invariant here as well.
+ // that is declared later (the bug was `sandbox:sandboxAPI`, declared 130 lines
+ // below) throws a temporal-dead-zone ReferenceError, which kills the whole module
+ // and with it the Command Center. References inside arrow bodies are deferred and
+ // therefore fine, so the check is limited to the shape that actually breaks: a
+ // property given a bare identifier, `name:IDENT`, or an eager call/short-circuit.
  const start=account.indexOf('const account={');
  assert.ok(start>0,'the account object is still a top-level literal');
- const end=account.indexOf('\n};',start);
- assert.ok(end>start);
- const literal=account.slice(start,end);
- assert.equal(/\bsandboxAPI\b/.test(literal),false,'the account literal must not reference sandboxAPI eagerly');
- const attach=account.indexOf('account.sandbox=sandboxAPI;');
- const declared=account.indexOf('const sandboxAPI=');
- assert.ok(declared>0&&attach>declared,'the sandbox is attached after it exists');
- // Guard the whole file for the same mistake: a top-level const/let used inside an
- // earlier top-level statement (closures are deferred, so only flag bare names).
- const top=account.slice(0,account.indexOf('onAuthStateChanged(auth'));
- // Names that arrive through `import` are already bound, so they are not TDZ risks.
- const imported=new Set([...account.matchAll(/^import\s*\{([^}]*)\}/gm)].flatMap(m=>m[1].split(',').map(part=>part.trim().split(/\s+as\s+/).pop())));
- for(const [,name] of top.matchAll(/^const ([A-Za-z_$][\w$]*)=/gm)){
-  if(name==='account'||imported.has(name))continue;
-  const at=top.indexOf(`const ${name}=`);
-  const before=top.slice(0,at),useBefore=before.match(new RegExp(`(?<![.\\w$'])${name}\\b`));
-  // Only a bare evaluation counts; a reference inside an arrow body runs later.
-  if(useBefore)assert.equal(/(=>|function|\.)[^\n]*$/.test(before.slice(0,useBefore.index+1).split('\n').pop()),true,`${name} is used before its declaration`);
+ // The literal ends at the first top-level statement after it; `const level=` sits
+ // above it in this file, so search forward only.
+ const tail=account.slice(start),stop=tail.search(/\n(?:const |function |let )/);
+ const literal=tail.slice(0,stop>0?stop:tail.length);
+ assert.ok(literal.length>500,'the account literal was found');
+ const declaredAfter=new Set([...account.slice(start).matchAll(/^(?:const|let|class) ([A-Za-z_$][\w$]*)/gm)].map(match=>match[1]));
+ for(const name of declaredAfter){
+  if(name==='account')continue;
+  // `name:IDENT` where IDENT is the late declaration is the fatal shape.
+  const eagerProp=new RegExp(`[{,]\\s*[A-Za-z_$][\\w$]*:${name}\\b`);
+  assert.equal(eagerProp.test(literal),false,`the account literal must not evaluate ${name} before its declaration`);
  }
+ // The live one is attached after it exists, where it is safe and obvious.
+ const attach=account.indexOf('account.sandbox=sandboxAPI;'),declared=account.indexOf('const sandboxAPI=');
+ assert.ok(declared>0&&attach>declared,'the sandbox is attached after it exists');
+ // And the game reads it from the account, not from a second global.
+ const game=readFileSync(new URL('../game.js',import.meta.url),'utf8');
+ assert.match(game,/const sandbox=account\.sandbox;/);
 });
