@@ -53,7 +53,7 @@
  #gameView .battle-foot{padding:7px;min-height:40px}
  #gameView .battle-foot .radio-label{font-size:8px}
 }
-@media(min-width:851px){#gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
+@media(min-width:851px){#gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
 /* The radio message is the last span; older mobile styles hid the old map label. */
 #gameView .battle-foot #message{display:block;min-width:0}
 
@@ -102,12 +102,12 @@
 }
 @media(min-width:851px){
  #gameView .map-viewport canvas{height:auto;width:min(100%,calc(100dvh * 1.777778));max-width:none;flex:none}
- #gameView .map-viewport canvas[height="1100"]{width:min(100%,calc(100dvh * .872727))}
+ #gameView .map-viewport canvas[data-lanes="versus"]{width:min(100%,calc(100dvh * .872727))}
 }
 body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])))>.language-picker{display:none}
 @media(min-width:851px){
  #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
- #gameView .map-viewport canvas[height="1100"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
+ #gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
 }
 
 /* Reserve room for the flag beside the field menu. */

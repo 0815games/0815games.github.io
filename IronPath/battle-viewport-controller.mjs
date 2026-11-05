@@ -2,12 +2,12 @@
 // drawing, and receives taps in world coordinates; the live game does not yet
 // instantiate this controller.
 import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen} from './battle-viewport.mjs?v=20261102-fourviewport2';
-export function createBattleViewportController({canvas,worldWidth,worldHeight,onChange=()=>{},onTap=()=>{}}){
+export function createBattleViewportController({canvas,worldWidth,worldHeight,screenWidth=canvas.width,screenHeight=canvas.height,onChange=()=>{},onTap=()=>{}}){
   if(!canvas||typeof canvas.addEventListener!=='function'||typeof canvas.removeEventListener!=='function'||typeof onChange!=='function'||typeof onTap!=='function')throw Error('Invalid viewport controller');
-  let view=createBattleViewport(worldWidth,worldHeight,canvas.width,canvas.height),gesture=false,origin=null,pinch=null,destroyed=false;
+  let view=createBattleViewport(worldWidth,worldHeight,screenWidth,screenHeight),gesture=false,origin=null,pinch=null,destroyed=false;
   const pointers=new Map(),oldTouchAction=canvas.style.touchAction;
   canvas.style.touchAction='none';
-  const point=e=>battleClientToScreen({x:e.clientX,y:e.clientY},canvas.getBoundingClientRect(),canvas.width,canvas.height);
+  const point=e=>battleClientToScreen({x:e.clientX,y:e.clientY},canvas.getBoundingClientRect(),screenWidth,screenHeight);
   const pair=()=>{const [a,b]=[...pointers.values()];return {center:{x:(a.x+b.x)/2,y:(a.y+b.y)/2},distance:Math.hypot(a.x-b.x,a.y-b.y)};};
   const changed=()=>onChange({...view});
   function down(e){
@@ -43,9 +43,9 @@ export function createBattleViewportController({canvas,worldWidth,worldHeight,on
   for(const [type,fn,options] of listeners)canvas.addEventListener(type,fn,options);
   return {
     getViewport:()=>({...view}),
-    zoom(factor,anchor={x:canvas.width/2,y:canvas.height/2}){if(destroyed)return;view=zoomBattleViewport(view,factor,anchor);changed();},
+    zoom(factor,anchor={x:screenWidth/2,y:screenHeight/2}){if(destroyed)return;view=zoomBattleViewport(view,factor,anchor);changed();},
     pan(dx,dy){if(destroyed)return;view=panBattleViewport(view,dx,dy);changed();},
-    reset(){if(destroyed)return;view=createBattleViewport(worldWidth,worldHeight,canvas.width,canvas.height);pointers.clear();gesture=false;origin=pinch=null;changed();},
+    reset(){if(destroyed)return;view=createBattleViewport(worldWidth,worldHeight,screenWidth,screenHeight);pointers.clear();gesture=false;origin=pinch=null;changed();},
     destroy(){if(destroyed)return;destroyed=true;for(const [type,fn,options] of listeners)canvas.removeEventListener(type,fn,options);pointers.clear();canvas.style.touchAction=oldTouchAction;}
   };
 }
