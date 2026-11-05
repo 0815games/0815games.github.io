@@ -20,7 +20,8 @@
     "test:leaderboards": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-leaderboards.emulator.json 'node --test leaderboards.test.mjs && LEADERBOARD_RULES=1 node --test coop-invites.test.mjs && LEADERBOARD_RULES=1 node --test friend-search.test.mjs && LEADERBOARD_RULES=1 node --test friends.test.mjs'",
     "test:direct-invites": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-direct-invites.emulator.json 'node --test direct-invites.test.mjs && DIRECT_INVITES_RULES=1 node --test leaderboards.test.mjs && DIRECT_INVITES_RULES=1 node --test coop-invites.test.mjs && DIRECT_INVITES_RULES=1 node --test friend-search.test.mjs && DIRECT_INVITES_RULES=1 node --test friends.test.mjs'",
     "test:friend-presence": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-presence.emulator.json 'node --test friend-presence.test.mjs'",
-    "test:friend-stats": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-stats.emulator.json 'node --test friend-stats.test.mjs'"
+    "test:friend-stats": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-stats.emulator.json 'node --test friend-stats.test.mjs'",
+    "test:workshop": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop.emulator.json 'node --test workshop-storage.test.mjs'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",

@@ -36,6 +36,9 @@ jobs:
             exit 1
           fi
 
+      - name: Run experimental workshop storage tests (emulator-only rules)
+        run: npm run test:workshop
+
       - name: Run four-player combined rules tests
         shell: bash
         run: |
