@@ -55,3 +55,12 @@ test('concurrent completed-wave replays credit a boss only once',async()=>{
   assert.equal(decodeWorkshop(saved.workshop).components,1);assert.equal(saved.coopRewards[receiptId],31);assert.equal(saved.coopRewards.abcd,31);assert.equal(saved.armory.fortify,3);
  }finally{stopA();stopB();}
 });
+
+test('workshop account service performs real emulator transactions',async()=>{
+ const {createWorkshopAccount}=await import('../../workshop-account.mjs');
+ const account=createWorkshopAccount({db:a,auth:{currentUser:{uid:'alice'}},sdk:{ref,onValue,runTransaction},canEdit:()=>true});
+ const reference=ref(a,'players/alice');await set(reference,base());
+ assert.equal((await account.initialize()).status,'saved');assert.equal((await account.command({type:'craft',item:'boots'})).status,'saved');
+ assert.equal((await account.command({type:'equip',slot:'gear',item:'boots'})).status,'saved');
+ const saved=(await get(reference)).val();assert.equal(saved.armory.scrap,10);assert.equal(decodeWorkshop(saved.workshop).equipped.gear,'boots');assert.equal(saved.armory.fortify,3);assert.deepEqual(saved.coopRewards,{abcd:31});
+});
