@@ -1,6 +1,6 @@
 // Reusable player-facing workshop panel. The account app does not mount it yet:
 // save rules and multiplayer version fencing are still required before rollout.
-import {RECIPES,migrateWorkshop,validLegacy} from './workshop-model.mjs';
+import {RECIPES,MOD_SCRAP,migrateWorkshop,validLegacy} from './workshop-model.mjs';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {readArmory,ITEMS} from './armory.mjs?v=20261102-longterm1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs';
@@ -33,7 +33,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
    if(!owned){card.append(el('small','',tr('{scrap} scrap · {components} boss components',{scrap:recipe.scrap,components:recipe.components})),button('CRAFT',armory.scrap<recipe.scrap||w.components<recipe.components,()=>run({type:'craft',item:id},{title:tr('Craft {name}?',{name:tr(data.name)}),text:tr('Spend {scrap} scrap and {components} boss components?',{scrap:recipe.scrap,components:recipe.components}),accept:tr('CRAFT')})));}
    else{
     card.append(button(equipped?'EQUIPPED':'EQUIP',equipped,()=>run({type:'equip',slot:recipe.slot,item:id})));
-    for(const [mod,info] of Object.entries(data.mods)){const chosen=w.mods[id]===mod,modRow=el('div','workshop-mod');modRow.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':'MODIFY · 40 SCRAP',chosen||armory.scrap<40,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend 40 scrap? This replaces the current modification.'),accept:tr('MODIFY')})));card.append(modRow);}
+    for(const [mod,info] of Object.entries(data.mods)){const chosen=w.mods[id]===mod,modRow=el('div','workshop-mod');modRow.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));card.append(modRow);}
    }grid.append(card);
   }
   section.append(grid);root.append(section);

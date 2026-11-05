@@ -17,6 +17,10 @@ This changes the trust model: completion and progression are client-reported, an
 
 The gated workshop UI now selects the existing direct Firebase transaction adapter again. It remains disabled: switching adapters is not a release or a complete alpha. The unused HTTP client and trusted service prototypes are retained for reference and are not required by this free-tier direction.
 
+## Alpha access (free tier)
+
+The compile-time gate stays `false`, but there are two free runtime switches: a local opt-in (`?workshop=alpha`, remembered per device) and a database allow-list entry `workshopAlpha/<uid> = true`. Both are visibility switches for playtesting only, not security. See `WORKSHOP-TESTING.md` for the tester script, and `firebase/WORKSHOP-ROLLOUT.md` before the allow-list path is used.
+
 ## Reward wiring (free tier, gated)
 
 Endless solo now has a client-transaction reward path behind the same `WORKSHOP_RELEASE_READY=false` gate: each run gets one random 32-hex receipt id (`workshop-run-receipt.mjs`), and the wave-cleared report calls `account.awardXP(..., runId)`. The transaction runs `applySoloWaveReward`, which initializes a missing workshop once (failing closed on a corrupt one) and credits legacy XP/loot, boss materials, preserved legacy unlocks and the receipt in that single write. Campaign reports, and all reports while the gate is off, keep the existing additive save with no new fields. Co-op/versus wave blocks use the same atomic reducer through `createCoopRewardQueue({..., workshop:true})`. Replayed or retried reports are no-ops. Full scrap or component balances clamp at the cap instead of rejecting the wave, so a maxed account still receives its XP. If a workshop write is rejected because the candidate rules are not deployed yet, the wave is saved once with the current legacy credit and that browser session stops sending receipts, so nothing is lost and no receipt can be replayed. This is still client-reported and is not anti-cheat; the candidate rules must be reviewed and deployed before the gate can be flipped.

@@ -3,10 +3,14 @@
 import {ITEMS,readArmory} from './armory.mjs?v=20261102-longterm1';
 const slots=['weapon','gear','gadget'];
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
+// One price source for both the reducer and the UI, so a re-tune cannot drift.
+export const MOD_SCRAP=60;
 export const RECIPES=Object.freeze({
- marksman:{slot:'weapon',scrap:60,components:1,mods:['precision','quick']},
- mechanic:{slot:'gear',scrap:60,components:1,mods:['tools','lightweight']},
- radio:{slot:'gadget',scrap:60,components:1,mods:['efficient','extended']},
+ // Provisional playtest costs: roughly eleven completed waves for a component
+ // item and four for boots, so crafting stays a goal. See workshop-economy.mjs.
+ marksman:{slot:'weapon',scrap:150,components:1,mods:['precision','quick']},
+ mechanic:{slot:'gear',scrap:150,components:1,mods:['tools','lightweight']},
+ radio:{slot:'gadget',scrap:150,components:1,mods:['efficient','extended']},
  boots:{slot:'gear',scrap:50,components:0,mods:['lightweight']},
 });
 const neutral={weapon:'standard',gear:'none',gadget:'none'};
@@ -34,6 +38,6 @@ export function equipWorkshop(workshop,slot,id){
  return {...workshop,equipped:{...workshop.equipped,[slot]:id}};
 }
 export function modifyWorkshop(armory,workshop,id,mod){
- const cost=40;if(!validLegacy(armory)||!validateWorkshop(workshop)||!owned(workshop,id)||!RECIPES[id]?.mods.includes(mod)||workshop.mods[id]===mod)return null;const a=readArmory(armory);if(a.scrap<cost)return null;
+ const cost=MOD_SCRAP;if(!validLegacy(armory)||!validateWorkshop(workshop)||!owned(workshop,id)||!RECIPES[id]?.mods.includes(mod)||workshop.mods[id]===mod)return null;const a=readArmory(armory);if(a.scrap<cost)return null;
  return {armory:{...a,scrap:a.scrap-cost},workshop:{...workshop,mods:{...workshop.mods,[id]:mod}}};
 }
