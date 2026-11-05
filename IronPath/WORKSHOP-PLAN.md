@@ -2,7 +2,7 @@
 
 ## Status
 
-The first deliverable is a read-only soldier dossier using the **current one-slot equipment system**. It does not yet add an inventory, new gear, crafting, boss components, modifications, competitive normalization, or change rewards. No account schema, match protocol, Firebase rules or gameplay values are changed by the dossier. The displayed values are base loadout values; terrain, enemies and temporary effects can change them. English and German are supported. A separate, unconnected `workshop-model.mjs` prototype exercises migration, crafting, slot assignment and modifications in memory; it is not used by the game and cannot award materials or alter account data. A separate experimental `workshop-rewards.mjs` now calculates boss bonuses from newly completed receipt bits, with replay and overflow tests. It is not connected to the live reward queue; it must run in the same transaction as the receipt and regular rewards. This is not the finished overhaul.
+The first deliverable is a read-only soldier dossier using the **current one-slot equipment system**. It does not yet add an inventory, new gear, crafting, boss components, modifications, competitive normalization, or change rewards. No account schema, match protocol, Firebase rules or gameplay values are changed by the dossier. The displayed values are base loadout values; terrain, enemies and temporary effects can change them. English and German are supported. A separate, unconnected `workshop-model.mjs` prototype exercises migration, crafting, slot assignment and modifications in memory; it is not used by the game and cannot award materials or alter account data. A separate experimental `workshop-rewards.mjs` now calculates boss bonuses from newly completed receipt bits, with replay and overflow tests. It is not connected to the live reward queue; it must run in the same transaction as the receipt and regular rewards. Experimental `workshop-transactions.mjs` also models one-time migration and craft/equip/modify commands against a current account snapshot, preserving unrelated fields and rejecting invalid or repeated commands. It is not wired to Firebase. This is not the finished overhaul.
 
 ## Proposed end state (not yet live)
 
@@ -13,6 +13,8 @@ The first deliverable is a read-only soldier dossier using the **current one-slo
 - Solo/co-op use each player's captured loadout. Competitive matches are intended to standardize equipment effects for both sides, while preserving cosmetic choices; this requires explicit, tested match-mode handling, not merely hiding UI bonuses.
 
 ## Safety gates before multiplayer or production rollout
+
+The prototype schema currently uses empty arrays and objects, which Firebase Realtime Database does not preserve as empty children. A production wire format and emulator round-trip tests are required before it can be persisted; do not write this prototype schema to live profiles.
 
 1. Inventory schema must be versioned, validated and migrated without discarding unknown/newer fields or losing scrap, bunker ranks, equipment or pending reward receipts. Malformed data must fail closed, not silently reset to a default account.
 2. Old clients currently send and expect a compact one-item loadout. They can overwrite newer data or disagree on combat. A reliable version gate across lobby, participants, match snapshots, recovery and reconnect is required before using new effects; simply changing the serializer or asking people to reload is not sufficient.
