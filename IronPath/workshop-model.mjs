@@ -27,7 +27,7 @@ export function migrateWorkshop(armory){
 // a transaction against the latest account, never on a cached balance.
 export function craftWorkshop(armory,workshop,id){
  const recipe=Object.hasOwn(RECIPES,id)?RECIPES[id]:null;if(!recipe||!validLegacy(armory)||!validateWorkshop(workshop)||owned(workshop,id))return null;const a=readArmory(armory);if(a.scrap<recipe.scrap||workshop.components<recipe.components)return null;
- return {armory:{...armory,scrap:a.scrap-recipe.scrap},workshop:{...workshop,components:workshop.components-recipe.components,owned:[...workshop.owned,id]}};
+ return {armory:{...a,scrap:a.scrap-recipe.scrap},workshop:{...workshop,components:workshop.components-recipe.components,owned:[...workshop.owned,id]}};
 }
 export function equipWorkshop(workshop,slot,id){
  if(!validateWorkshop(workshop)||!slots.includes(slot)||!owned(workshop,id)||!(id==='none'&&slot!=='weapon'||slotOf(id)===slot))return null;
@@ -35,5 +35,5 @@ export function equipWorkshop(workshop,slot,id){
 }
 export function modifyWorkshop(armory,workshop,id,mod){
  const cost=40;if(!validLegacy(armory)||!validateWorkshop(workshop)||!owned(workshop,id)||!RECIPES[id]?.mods.includes(mod)||workshop.mods[id]===mod)return null;const a=readArmory(armory);if(a.scrap<cost)return null;
- return {armory:{...armory,scrap:a.scrap-cost},workshop:{...workshop,mods:{...workshop.mods,[id]:mod}}};
+ return {armory:{...a,scrap:a.scrap-cost},workshop:{...workshop,mods:{...workshop.mods,[id]:mod}}};
 }

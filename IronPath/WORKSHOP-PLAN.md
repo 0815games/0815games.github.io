@@ -12,6 +12,8 @@ The first deliverable is a read-only soldier dossier using the **current one-slo
 - Deterministic recipes and one chosen mod per item. Preview costs and exact effects; confirm expenditure; perform ownership, affordability, currency debit and item/mod assignment atomically. No random rolls in the first version. Values and costs remain provisional until playtested.
 - Solo/co-op use each player's captured loadout. Competitive matches are intended to standardize equipment effects for both sides, while preserving cosmetic choices; this requires explicit, tested match-mode handling, not merely hiding UI bonuses.
 
+An emulator-only candidate full ruleset based on the repository friend-stats draft and its limitations are documented in `firebase/WORKSHOP-RULES-REVIEW.md`; it has not been verified against production and must not be deployed.
+
 ## Safety gates before multiplayer or production rollout
 
 The in-memory prototype uses empty arrays and objects, which Firebase Realtime Database does not preserve as empty children. An isolated versioned scalar-string codec and account command adapter now exercise a candidate wire format, and has passed Firebase emulator round-trip and concurrent-spending tests using deliberately minimal test-only rules. Those rules are not production-ready or a security review. Production rules, mixed-client protection and migration/rollback review remain required; do not write it to live profiles.
