@@ -78,10 +78,22 @@ const fs = require('node:fs');
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
       }
-      // Practice drives the real dialogs, so the briefing card is checked on its own
-      // and the controls it points at are covered by the dialog loop above.
-      await page.evaluate(()=>{document.querySelector('#tutorialCaption').textContent='EXAMPLE BUILD';document.querySelector('#tutorialDialog').showModal();});
-      await check('#tutorialTitle');await page.screenshot({path:`browser-artifacts/${name}-tutorial-briefing.png`});
+      // Scripts are blocked here, so the tour never fills its card in: give it the kind
+      // of text it renders and check the layout of the real markup and CSS.
+      await page.evaluate(()=>{
+        document.querySelector('#tutorialStep').textContent='FIELD BRIEFING · 8 / 11';
+        document.querySelector('#tutorialTitle').textContent='Practice the Skills menu';
+        document.querySelector('#tutorialText').textContent='At level 2, you earn your first skill point. Pick a category and select a skill card to see its details. Unlock it, then save your build. Try it here on a sample soldier: nothing you do is saved.';
+        document.querySelector('#tutorialCaption').textContent='EXAMPLE BUILD';
+        document.querySelector('#tutorialPracticeStatus').hidden=false;
+        document.querySelector('#tutorialPracticeStatus').textContent='Use the real Skills menu on the sample soldier. Nothing is saved.';
+        document.querySelector('#tutorialPracticeSkip').hidden=false;
+        document.querySelector('#tutorialDialog').showModal();
+      });
+      // Practice drives the real dialogs, so the briefing is checked on its own; the
+      // controls it points at are covered by the dialog loop above.
+      await check('#tutorialTitle');await check('#tutorialNext');await check('#tutorialPracticeSkip');
+      await page.screenshot({path:`browser-artifacts/${name}-tutorial-briefing.png`});
       await page.evaluate(()=>document.querySelector('#tutorialDialog').close());
       console.log(`${name}: sign-in, command, lobby and dialogs fit the viewport`);
       await context.close();
