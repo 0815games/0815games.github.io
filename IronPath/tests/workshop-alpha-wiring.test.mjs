@@ -33,6 +33,16 @@ test('the old equipment screens still exist and still save',()=>{
  for(const pattern of [/function renderArmory\(\)/,/async function saveArmory\(change\)/,/upgradeArmory,equipArmory,encodeLoadout/,/renderArmory\(\);\$\('armoryDialog'\)\.showModal\(\)/])assert.match(source,pattern);
 });
 
+test('armory state exists before the first language render',()=>{
+ // setupLanguage() renders once synchronously, so anything its onChange reads
+ // must already be initialised; a later `let` would throw on page load.
+ const setup=source.indexOf('setupLanguage({');
+ for(const pattern of [/let armoryCategory/,/commandCenter=null/,/profile=null/]){
+  const declaration=source.search(pattern);
+  assert.ok(declaration>=0&&declaration<setup,`${pattern} must be declared before setupLanguage()`);
+ }
+});
+
 test('the workshop view is cache-busted with the build',()=>{
  assert.match(source,/workshop-view\.mjs\?v=20261112-armory1/);
  assert.match(html,/account\.js\?v=20261112-armory1/);
