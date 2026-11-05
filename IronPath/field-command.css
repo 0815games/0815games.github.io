@@ -112,3 +112,27 @@ body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="o
 
 /* Reserve room for the flag beside the field menu. */
 #gameView .map-frame .dashboard{right:120px;max-width:calc(100% - 128px)}
+/* Responsive battlefield overview and accessible direct zoom. */
+#gameView .map-viewport{align-items:safe center}
+#gameView .map-viewport canvas{margin:auto;flex:none}
+#gameView .map-quick-zoom{display:none;position:absolute;z-index:6;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(68px + env(safe-area-inset-bottom,0px));width:auto;min-height:44px;margin:0;padding:6px 10px;font-size:10px;letter-spacing:.04em;background:#142b23ed;border:1px solid #98ad91;color:#f5e7ba;box-shadow:0 3px 12px #0009}
+@media(pointer:coarse){#gameView .map-quick-zoom{display:block}#gameView .map-viewport canvas{touch-action:pan-x pan-y}}
+@media(orientation:landscape) and (max-height:600px){
+ #gameView .map-frame .dashboard{top:calc(5px + env(safe-area-inset-top,0px));left:max(8px,env(safe-area-inset-left,0px));gap:3px;right:110px;max-width:calc(100% - 120px)}
+ #gameView .map-frame .dashboard>div{min-width:0;gap:4px;padding:4px 7px}
+ #gameView .map-frame .dashboard .hud-icon{display:none}
+ #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:.05em}
+ #gameView .map-frame .dashboard strong{font-size:15px;margin-top:2px}
+ #gameView .map-frame .command{bottom:calc(5px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 20px));padding:4px}
+ #gameView .map-frame .command-controls{gap:4px}
+ #gameView .map-frame .command-controls button{min-height:44px;padding:4px;font-size:10px}
+ #gameView .battle-foot{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));padding:4px 7px;max-width:min(310px,45vw)}
+ #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));max-width:180px;padding:3px 7px}
+ #gameView .battle-head .eyebrow{display:none}
+ #gameView .battle-head h2{font-size:11px}
+ #gameView .map-frame .wave-info{right:max(8px,env(safe-area-inset-right,0px));top:calc(55px + env(safe-area-inset-top,0px))}
+ #gameView .map-quick-zoom{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+ .field-ops{right:max(8px,env(safe-area-inset-right,0px))}
+}
+#gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(118px + env(safe-area-inset-bottom,0px))}
+@media(pointer:coarse){#gameView .battle-foot{max-width:calc(100% - 150px)}}
