@@ -32,6 +32,16 @@ falls back to the legacy wave credit. See `WORKSHOP-TESTING.md`.
 
 Endless solo uses a client-transaction reward path: each run gets one random 32-hex receipt id (`workshop-run-receipt.mjs`), and the wave-cleared report calls `account.awardXP(..., runId)`. The transaction runs `applySoloWaveReward`, which initializes a missing workshop once (failing closed on a corrupt one) and credits legacy XP/loot, boss materials, preserved legacy unlocks and the receipt in that single write. Campaign reports keep the existing additive save with no new fields. Co-op wave blocks use the same atomic reducer through `createCoopRewardQueue({..., workshop:true})`, so party runs pay boss components too. Versus does not credit XP and stays on the legacy path. Replayed or retried reports are no-ops. Full scrap or component balances clamp at the cap instead of rejecting the wave, so a maxed account still receives its XP. If a workshop write is rejected because the candidate rules are not deployed yet, the wave is saved once with the current legacy credit and that browser session stops sending receipts, so nothing is lost and no receipt can be replayed. This is still client-reported and is not anti-cheat. The candidate rules are in `firebase/WORKSHOP-RULES-TO-PUBLISH.json`; until they are published the workshop tab stays inert and waves use the legacy credit.
 
+## Campaign and prestige (shipped)
+
+Campaign missions now use the workshop loadout and carry a threat contract
+(`campaign-pressure.mjs`): 5–8 waves, up to 45% tougher units, surge waves and a
+bunker down to 55%, escalating from Standard in Act I to Legendary in Act III.
+Each mission awards one prestige trophy (`prestige.mjs`), written in the same
+transaction as story progress and backfilled for missions already finished. All
+twelve trophies live in the existing workshop string, so this needed no new
+field and no new rules. See `PRESTIGE.md` and `CAMPAIGN.md`.
+
 ## Before sharing a playable link
 
 1. Prefer isolated Firebase test data and identities within the available free-tier limits, plus a separate GitHub Pages alpha configuration that cannot accidentally write the live account. A second Firebase project is optional, not a paid service requirement. Preserve the existing public game and saves. A production profile copy requires a private, access-controlled backup and explicit operational review; do not put player data in Git.
