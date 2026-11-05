@@ -121,7 +121,7 @@ const assert = require('node:assert/strict');
     for(let i=0;i<20&&!/Fähigkeitenmenü/.test(await page.locator('#tutorialTitle').innerText());i++)await page.locator('#tutorialNext').click();
     assert.equal(await page.locator('#tutorialTitle').innerText(),'Übe das Fähigkeitenmenü');
     await page.waitForSelector('#skillDialog[open]');
-    assert.match(await page.locator('#sandboxBanner').innerText(),/NICHTS/,'the sandbox banner is translated too');
+    assert.match(await page.locator('#sandboxBanner').innerText(),/Nichts, was du hier tust, wird gespeichert/i,'the sandbox banner is translated too');
     await page.locator('#tutorialSkip').click();
     await page.locator('#languageSelect').selectOption('en');
     await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
