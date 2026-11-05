@@ -108,12 +108,11 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getPro
   // candidate rules are not deployed yet the write is rejected; the wave then
   // saves once with the legacy credit and this session stops sending receipts so
   // a missing receipt can never be replayed. Client-reported results, not anti-cheat.
-  let before=null;
   const fallback=workshopReceiptFallback;
   const outcome=await creditSoloWave({sdk:{runTransaction},profileRef:ref(db,`players/${currentUser.uid}`),amount,wave,runId:fallback?null:runId,rewardWave,subscribe:()=>new Promise((resolve,reject)=>{let stop;stop=onValue(ref(db,`players/${currentUser.uid}`),()=>resolve(stop||(()=>{})),reject);})});
   if(outcome.status==='error')throw outcome.error;
   if(version!==sessionVersion)return {committed:false};
-  if(outcome.status==='legacy-fallback'){workshopReceiptFallback=true;$('saveStatus').textContent=translateText('Rewards saved. Workshop storage is not enabled yet on this account.');}
+  if(outcome.status==='legacy-fallback'||outcome.status==='already-credited'){if(outcome.status==='legacy-fallback')workshopReceiptFallback=true;$('saveStatus').textContent=translateText('Rewards saved. Workshop storage is not enabled yet on this account.');}
   else $('saveStatus').textContent=outcome.committed?translateText('+{amount} XP and wave loot saved.',{amount}):translateText('XP and loot could not be saved.');
   return {committed:!!outcome.committed,delta:outcome.committed?rewardDelta(outcome.before,outcome.after):null,profile:outcome.committed?outcome.after:null};
  }catch(e){if(version===sessionVersion)$('saveStatus').textContent=translateText('XP and loot could not be saved. Check your connection and database rules.');return {committed:false};}}};
