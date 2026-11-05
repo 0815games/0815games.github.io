@@ -12,12 +12,14 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  }
  function showBattle(pauseSolo=false,mode=null){const game=getGame(),workspace=$('gameWorkspace');workspace.dataset.screen=mode||(game?.isOnlineMatch?.()?'online':game?.getSoloMode?.()||'endless');workspace.dataset.online=String(!!game?.isOnlineMatch?.());$('commandCenter').hidden=true;workspace.hidden=false;game?.setMenuOpen(pauseSolo===true);}
  function showLobby(){showBattle(true,'lobby');}
- function showMenu(){if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);$('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
+ function navigateToMenu(allowParty=false){if(isPartyActive()&&!allowParty){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);$('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
  $('menuResume').onclick=()=>{if(isPartyActive()&&!getGame()?.isOnlineMatch?.()){showLobby();openParty();}else showBattle();};
  $('menuCampaign').onclick=()=>{if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(false,'campaign');getGame()?.chooseStory();};
  $('menuEndless').onclick=async()=>{if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};
  $('menuMultiplayer').onclick=()=>{showLobby();openParty();};
  $('returnOnline').onclick=()=>{if(getGame()?.isOnlineMatch?.()){closeParty();showBattle();}};
  $('menuTutorial').onclick=()=>getGame()?.showTutorial();$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
- return {render,showBattle,showLobby,showMenu};
+ function showMenu(){return navigateToMenu();}
+ function showAfterEnd(){return navigateToMenu(true);}
+ return {render,showBattle,showLobby,showMenu,showAfterEnd};
 }

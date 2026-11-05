@@ -28,7 +28,7 @@ import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-prestige1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay } from './progression.mjs?v=20261105-prestige1';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,deferTutorial=false}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{}}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -91,7 +91,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function loadResultMission(next=false){
     const target=lastReport,mission=target?.soloMission,index=CAMPAIGN.indexOf(mission),destination=next?CAMPAIGN[index+1]:mission;
     if(!target||!mission||!destination||target.mode!=='solo'||coop||state!==target.snapshot||!state.ended||target.accountId!==account.getUserId()||target.pending||(target.campaign&&target.campaignSaved!==true)||(next&&!target.campaign)||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||!campaignAvailable(storyProfile(target),destination.id))return;
-    activeMission=destination;selectedMap=destination.mapId;$('campaignSelect').value=destination.id;reset();notice(destination.stages[0].dialogue);showCinematic(destination,'intro');
+    activeMission=destination;selectedMap=destination.mapId;$('campaignSelect').value=destination.id;reset();onResumeBattle();notice(destination.stages[0].dialogue);showCinematic(destination,'intro');
   }
   $('storyReplayEnding').onclick=()=>{const target=lastReport;if(!target?.campaign||target.snapshot?.endReason!=='campaign-victory')return;$('runResults').close();showCinematic(target.campaign,'ending',()=>{if(lastReport===target&&target.accountId===account.getUserId()){renderResults(target);$('runResults').showModal();}});};
   $('resultsReplayMission').onclick=()=>loadResultMission();$('resultsNextMission').onclick=()=>loadResultMission(true);
@@ -200,7 +200,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('waveDecline').onclick=()=>dispatch({type:'declineWave',requestId:state.waveRequestId},result=>{notice(result.ok?'Wave postponed. The host can request again when ready.':result.reason);updateUI();});
   $('endRun').onclick=async()=>{
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),teamMatch=state.fourInfo?.mode==='two-vs-two';
-    if(coop&&(state.ended||(state.mode==='versus'&&!coopReady))&&!guest){if(typeof leaveParty==='function')await leaveParty();else await leaveCoop();return;}
+    if(coop&&(state.ended||(state.mode==='versus'&&!coopReady))&&!guest){if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();onReturnToCommand();return;}
     if((state.ended&&!guest)||!menu.hidden||(coop&&!coopReady&&!guest))return;
     const session=coop,soloState=state,mapId=state.mapId;
     const confirmed=await confirmAction({title:guest?(state.mode==='versus'||teamMatch?'Leave match?':'Leave co-op?'):'End this run?',text:guest?(state.mode==='versus'||teamMatch?(coopReady?(teamMatch?'Leave this match? Your team forfeits and the other team wins. Completed-wave rewards are saved.':'Leave this match? You forfeit and the host wins. Completed-wave rewards are saved.'):'Leave while disconnected? Your opponent may not receive your forfeit; reconnect first if possible.'):coopReady?'Leave this co-op party? The host keeps playing. Completed-wave rewards are saved; the current unfinished wave earns no rewards.':'Leave while disconnected? Rewards not yet received from the host may require reconnecting. The host keeps playing.'):session?'This ends the shared run for all players. Completed-wave rewards are kept; the current unfinished wave earns no rewards. Battle continues until confirmed.':'End this run now? Completed-wave rewards are kept; the current unfinished wave earns no rewards.',accept:guest?(state.mode==='versus'||teamMatch?'LEAVE MATCH':'LEAVE CO-OP'):'END RUN'});
@@ -209,9 +209,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       // The host marks the guest inactive before the final reward snapshot is
       // delivered. This prevents a wave-clear race while leaving mid-battle.
       if(coopReady&&!state.ended){const result=await new Promise(resolve=>dispatch({type:'leaveRun'},resolve));if(coop!==session)return;if(!result.ok&&!state.ended){notice(result.reason);return;}}
-      const resultSnapshot=state,resultReport=report,resultId=me(),wasDisconnected=!coopReady;if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();resultReport.left=true;resultReport.disconnected=wasDisconnected;finishReport(resultReport,resultSnapshot,resultId);notice(teamMatch?'You left the match.':'You left co-op. The host can continue.');return;
+      const resultSnapshot=state,resultReport=report,resultId=me(),wasDisconnected=!coopReady;if(typeof leaveParty==='function'){if(!await leaveParty())return;}else await leaveCoop();resultReport.left=true;resultReport.disconnected=wasDisconnected;finishReport(resultReport,resultSnapshot,resultId);onReturnToCommand();notice(teamMatch?'You left the match.':'You left co-op. The host can continue.');return;
     }
-    dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();});
+    dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();onReturnToCommand();});
   };
   $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');if(result.combos?.length){combatFx.emit('combo',{x:player.comboCue.x,y:player.comboCue.y,comboLabel:result.combos.join(' + ')},state);sound.play('combo');}}notice(()=>tr('{ability} deployed!',{ability:tr(abilityName(state.players[me()]?.skills))})+(result.combos?.length?tr(' {combos} combo!',{combos:result.combos.map(x=>tr(x)).join(' + ')}):''));updateUI();});};
   function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(coop){const key=`${x},${y}`;if(key!==lastDirection){lastDirection=key;coopInput.direction({type:'direction',x,y});}}else applyCommand(state,'local',{type:'direction',x,y});}
