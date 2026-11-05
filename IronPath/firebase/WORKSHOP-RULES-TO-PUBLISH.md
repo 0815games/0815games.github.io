@@ -12,8 +12,9 @@ Run the backup and dry-run steps in `WORKSHOP-ROLLOUT.md` first. Publishing repl
 - `players/$uid/soloWorkshopReceipts/$receiptId`: 32-hex keys, 1–1048575, monotonic bits (a replay cannot clear progress).
 - `players/$uid/coopRewards`: kept, and now cannot be dropped from an existing profile.
 - `players/$uid`: refuses a write that deletes `campaign`, `storyProgress`, `workshop`, `soloWorkshopReceipts` or `coopRewards` once they exist; XP stays non-decreasing and capped.
-- `workshopAlpha/$uid`: read by the owner only, **not writable by anyone** (`.write: false`); set an entry with the console/admin SDK. Only the boolean `true` counts.
 - Everything else (parties, four-player, friends, invites, leaderboards, story) is the same as the other complete drafts in this folder.
+
+There is no longer an alpha allow-list (`workshopAlpha`): the workshop is part of the Armory for every signed-in account, so the rules only need to accept its two new fields.
 
 ## Before you publish, check one thing
 
@@ -25,6 +26,11 @@ node IronPath/scripts/rules-publish-dry-run.mjs ~/live-rules.json
 
 Exit `0` with no `BLOCK` lines means the candidate keeps everything live has. If it reports a blocker, send me the output (it contains rules text only, no player data) and I will merge those paths in.
 
-## If you publish before the code is live
+## Order does not matter (but it decides what works)
 
-Not a problem: the new rules accept the old client exactly as before, because the workshop fields are optional (`(!data.child('workshop').exists() || newData.child('workshop').exists())`). Order does not matter.
+The new rules accept the old client exactly as before, because the workshop fields are optional (`(!data.child('workshop').exists() || newData.child('workshop').exists())`). The client is already live, so:
+
+- **Before the rules are published:** Armory → WORKSHOP says it is not switched on for the account, nothing is changed, and a finished wave still pays the old reward once.
+- **After the rules are published:** preparing, crafting, equipping and modifying work, and endless solo uses the crafted loadout.
+
+Verified against the repository baseline: `node IronPath/scripts/rules-publish-dry-run.mjs IronPath/firebase/WORKSHOP-RULES-TO-PUBLISH.json` → 167 live paths, 167 candidate paths, 0 blockers, 0 review items.

@@ -7,4 +7,15 @@ test('enabled endless deployment uses and freezes the saved workshop loadout ins
  profile=applyWireWorkshopCommand(profile,{type:'equip',slot:'gear',item:'none'});assert.equal(equipmentForPlayer(state,state.players.local).movement,15);
 });
 test('legacy routing is unchanged for disabled workshop and deferred campaign',()=>{for(const options of [{workshopEnabled:false,campaign:false},{workshopEnabled:true,campaign:true}]){const state=createSoloDeployment({player:player(),profile:{workshop:'bad'},...options});assert.equal(state.players.local.loadout.equipped,1);assert.equal(equipmentForPlayer(state,state.players.local).damage,3);assert.equal(state.experimentalWorkshop,undefined);}});
-test('enabled endless rejects missing and unsupported workshop instead of silently falling back',()=>{for(const profile of [{},{workshop:'future'},null])assert.throws(()=>createSoloDeployment({player:player(),profile,workshopEnabled:true}),/valid workshop/);});
+test('an unreadable saved workshop never silently falls back to old equipment',()=>{
+ for(const profile of [{workshop:'future'},{workshop:'[9,0,[],[],[]]'}])assert.throws(()=>createSoloDeployment({player:player(),profile,workshopEnabled:true}),/valid workshop/);
+});
+test('a save without a workshop yet keeps playing with legacy equipment',()=>{
+ // Any live account that never opened the armory has no workshop field. It must
+ // still deploy instead of failing the match.
+ for(const profile of [{name:'Alice',xp:0},{name:'Alice',xp:0,armory:{scrap:0,owned:0,equipped:0}},undefined,null]){
+  const state=createSoloDeployment({player:player(),profile,workshopEnabled:true});
+  assert.equal(state.experimentalWorkshop,undefined,'no workshop effects without a workshop');
+  assert.equal(equipmentForPlayer(state,state.players.local).damage,3,'legacy loadout still applies');
+ }
+});

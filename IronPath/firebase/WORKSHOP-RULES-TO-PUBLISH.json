@@ -545,13 +545,6 @@
           ".validate": "newData.isNumber() && newData.val() === now"
         }
       }
-    },
-    "workshopAlpha": {
-      "$uid": {
-        ".read": "auth != null && auth.uid === $uid",
-        ".write": false,
-        ".validate": "newData.val() === true"
-      }
     }
   }
 }

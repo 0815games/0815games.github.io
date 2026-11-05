@@ -1,6 +1,6 @@
 # Publishing the workshop rules: dry run and rollout
 
-Status: **not published, not approved.** Nothing in this document has been run against the live database. The workshop stays behind `WORKSHOP_RELEASE_READY=false` until every gate below is signed off by the owner.
+Status: **not published, not approved.** Nothing in this document has been run against the live database. The workshop is already shipped in the client (Armory → WORKSHOP); it stays inert until these rules are published, because a write to the new fields is rejected. Preparing, crafting and equipping therefore only start working for players after the owner publishes them.
 
 Cost note: this uses the existing Firebase Auth + Realtime Database on the free (Spark) tier and GitHub Pages. No Cloud Functions, no paid backend, no billing account. Firebase free-tier quotas still apply, and free-tier availability is not guaranteed.
 
@@ -65,7 +65,7 @@ All must pass on the same file you are about to publish, with no edits afterward
 1. Paste the **complete** candidate JSON into the console rules editor. Do not paste a subtree.
 2. Publish, then immediately verify on a test identity, not on a real player:
    - sign in, load the existing profile, complete one solo wave → XP and scrap increase, no rules errors;
-   - craft/equip in the workshop with the gate temporarily on in a local build;
+   - open Armory → WORKSHOP, prepare it, craft and equip one item, reload and confirm it persisted;
    - a second, unready wave report earns nothing;
    - a maxed account (scrap or components at cap) still gains XP;
    - friends list, party join and leaderboard still load.
@@ -82,9 +82,10 @@ All must pass on the same file you are about to publish, with no edits afterward
 
 ## 6. Rollout order
 
-1. Publish rules (above), workshop still gated off. Verify nothing regressed for live players.
-2. Ship a build with the gate **on** for chosen test accounts only (allow-list on the client flag), verify the flow end to end on a phone.
-3. Only then consider enabling for everyone; keep the legacy armory working until workshop effects are the default.
+1. Publish rules (above). The client is already live, so the workshop becomes usable as soon as the rules accept the new fields. Verify nothing regressed for live players first: sign in, finish a solo wave, load friends and the leaderboard.
+2. Verify the flow end to end on a phone on a test identity: prepare, craft, equip, reload, then play a wave.
+3. Keep the legacy equipment and bunker tabs working; they are still the path for campaign and for accounts without a prepared workshop.
+If a step fails, roll back the rules. Players who never opened the workshop tab have no new fields, so a rollback leaves them exactly as they were.
 
 ## 7. Not part of this step
 
