@@ -54,7 +54,7 @@ test('skill summary and next-step localization preserve numeric values and sourc
 });
 
 test('static German campaign, results and battlefield labels have translations',async()=>{
- const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!['Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
+ const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!['CONTINUE','Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
 });
 
 
