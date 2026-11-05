@@ -15,3 +15,7 @@ test('lobby, online match and cancelled mode changes remain separate and preserv
  party=true;online=true;ui.showBattle();assert.equal(el('gameWorkspace').dataset.screen,'online');ui.showLobby();assert.equal(el('gameWorkspace').dataset.online,'true');el('returnOnline').onclick();assert.equal(el('gameWorkspace').dataset.screen,'online');assert.ok(closes>0);assert.equal(ui.showMenu(),false);
  online=false;ui.showLobby();assert.equal(el('gameWorkspace').dataset.online,'false');party=false;assert.equal(ui.showMenu(),true);
 });
+
+test('returning after ending a match keeps the party available and guards solo modes',async()=>{
+ const f=fixture();f.ui.showBattle();f.setParty(true);assert.equal(f.ui.showMenu(),false);assert.equal(f.ui.showAfterEnd(),true);assert.equal(f.el('gameWorkspace').hidden,true);assert.equal(f.el('commandCenter').hidden,false);assert.equal(f.el('menuResume').hidden,false);await f.el('menuEndless').onclick();assert.equal(f.el('commandCenter').hidden,false);assert.match(f.el('saveStatus').textContent,/Leave your multiplayer party/);
+});
