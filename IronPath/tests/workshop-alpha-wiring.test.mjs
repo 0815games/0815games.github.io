@@ -43,6 +43,12 @@ test('armory state exists before the first language render',()=>{
  }
 });
 
+test('repeated profile snapshots never restart the game or social listeners',()=>{
+ // showProfile() starts the game, the friend listener and the score reporter;
+ // running it again on every snapshot duplicated popups and leaderboard writes.
+ assert.match(source,/if\(first\)showProfile\(value\);else \{commandCenter\?\.render\(\);/);
+});
+
 test('the workshop view is cache-busted with the build',()=>{
  assert.match(source,/workshop-view\.mjs\?v=20261112-armory1/);
  assert.match(html,/account\.js\?v=20261112-armory1/);
