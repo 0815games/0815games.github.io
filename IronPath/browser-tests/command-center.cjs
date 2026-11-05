@@ -161,6 +161,8 @@ const assert = require('node:assert/strict');
     // Closing the armory ends the practice, so this step is skipped the way a player
     // who has seen enough would: the tour still has to let them through.
     await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
+    // `close()` fires its close event on a queued task, so give the sandbox a tick.
+    await page.locator('#sandboxBanner').waitFor({state:'hidden'});
     assert.equal(await visible('#sandboxBanner'),false,'closing the practice dialog leaves the sandbox');
     await page.locator('#tutorialPracticeSkip').click();
     await page.locator('#tutorialNext').click();
