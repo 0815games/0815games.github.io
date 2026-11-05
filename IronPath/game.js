@@ -1,16 +1,17 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-alpha1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-firstrun2';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261112-free1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261112-prestige1';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun2';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun2';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
@@ -27,12 +28,12 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261112-prestige1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
+import { createTutorial } from './tutorial.mjs?v=20261112-firstrun2';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-firstrun2';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{}}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
@@ -56,7 +57,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   ];
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
-  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false;
+  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false;
   let cinematic=null,radioTime=0,commandMenuOpen=false,missionBoardOpen=false;
   function closeCinematic(continueScene=true){if(!cinematic)return;const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
   function showCinematic(mission,kind,done=null,finishLabel=null){
@@ -79,9 +80,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function canReturnFromResults(target){return !!target&&(!target.campaign||target.campaignSaved===true)&&((target===report&&state.ended)||(target.left&&!coop&&!state.running&&state.wave===0&&state.towers.length===0));}
   function renderResults(target){
     const snapshot=target.snapshot;if(!snapshot)return;const waves=waveRewardSummary(snapshot,target.playerId),p=snapshot.players?.[target.playerId],damage=p?.towerDamage||[],combos=Object.entries(p?.comboCounts||{}).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]);
-    const outcome=snapshot.fourInfo?.mode==='two-vs-two'?(snapshot.fourInfo.winnerTeam===null?'Match ended in a draw':snapshot.fourInfo.winnerTeam===snapshot.fourInfo.team?'Victory!':'Defeat'):snapshot.mode==='versus'?(snapshot.winnerId?(snapshot.winnerId===target.playerId?'Victory!':'Defeat'):'Match ended'):(target.left?'You left the operation':snapshot.endReason==='retired'?'Operation ended':snapshot.endReason==='campaign-victory'?'Mission complete!':snapshot.endReason==='story-failure'?'Mission failed':'Bunker lost');
-    $('resultsTitle').textContent=tr(outcome);$('runResults').dataset.outcome=['Victory!','Mission complete!'].includes(outcome)?'victory':['Defeat','Mission failed','Bunker lost'].includes(outcome)?'defeat':'neutral';
-    $('resultsOutcome').textContent=target.soloMission?tr('CAMPAIGN · {title}',{title:tr(target.soloMission.title).toUpperCase()}):tr(snapshot.fourInfo?.mode==='two-vs-two'?'2 VS 2 · SURVIVAL':snapshot.fourInfo?.mode==='four-coop'?'FOUR-PLAYER CO-OP':snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION');
+    const outcome=snapshot.fourInfo?.mode==='two-vs-two'?(snapshot.fourInfo.winnerTeam===null?'Match ended in a draw':snapshot.fourInfo.winnerTeam===snapshot.fourInfo.team?'Victory!':'Defeat'):snapshot.mode==='versus'?(snapshot.winnerId?(snapshot.winnerId===target.playerId?'Victory!':'Defeat'):'Match ended'):(target.left?'You left the operation':snapshot.endReason==='retired'?'Operation ended':snapshot.endReason==='training-complete'?'Training complete!':snapshot.endReason==='campaign-victory'?'Mission complete!':snapshot.endReason==='story-failure'?'Mission failed':'Bunker lost');
+    $('resultsTitle').textContent=tr(outcome);$('runResults').dataset.outcome=['Victory!','Mission complete!','Training complete!'].includes(outcome)?'victory':['Defeat','Mission failed','Bunker lost'].includes(outcome)?'defeat':'neutral';
+    $('resultsOutcome').textContent=target.training?tr('TRAINING CONTRACT · FIRST DEPLOYMENT'):target.soloMission?tr('CAMPAIGN · {title}',{title:tr(target.soloMission.title).toUpperCase()}):tr(snapshot.fourInfo?.mode==='two-vs-two'?'2 VS 2 · SURVIVAL':snapshot.fourInfo?.mode==='four-coop'?'FOUR-PLAYER CO-OP':snapshot.mode==='versus'?'1 VS 1 · SURVIVAL':target.mode==='coop'?'CO-OP OPERATION':'SOLO OPERATION');
     $('resultsWaves').textContent=tr(waves.count===1?'{count} wave completed · reached wave {wave}':'{count} waves completed · reached wave {wave}',{count:waves.count,wave:snapshot.wave||0})+'\n'+tr('Wave reward value: {xp} XP',{xp:waves.xp})+'\n'+tr(target.mode==='coop'&&snapshot.mode!=='versus'?'{count} enemies defeated (team)':'{count} enemies defeated',{count:snapshot.lootKills||0});
     $('resultsRewards').textContent=tr('Confirmed during this session: +{xp} XP · +{scrap} scrap',{xp:target.xp,scrap:target.scrap})+(target.items.length?'\n'+tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'');
     $('resultsStatWaves').textContent=String(waves.count);$('resultsStatEnemies').textContent=String(snapshot.lootKills||0);$('resultsEnemiesLabel').textContent=tr(target.mode==='coop'&&snapshot.mode!=='versus'?'ENEMIES DEFEATED · TEAM':'ENEMIES DEFEATED');$('resultsStatDamage').textContent=String(Math.round(damage.reduce((sum,n)=>sum+(Number.isFinite(n)?n:0),0)));
@@ -164,13 +165,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('storyReplayIntro').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'intro',null,'CLOSE');};
   $('campaignLoad').onclick=async()=>{
     if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return false;
+    // Choosing any other operation ends the training contract for this session.
+    activeTraining=false;
     if(state.ended&&report?.campaign&&report.campaignSaved!==true){notice('Confirm or retry your story save before changing operations.');return false;}
     const id=$('campaignSelect').value,mission=id==='free'?null:campaignMission(id),currentState=state,currentUser=account.getUserId();if(id!=='free'&&(!mission||!campaignAvailable(account.getProfile(),id)))return false;
     if(!state.ended&&(state.wave>0||state.towers.length)&&!await confirmAction({title:'Change operation?',text:'This ends your current solo run. Completed-wave rewards remain saved.',accept:'CHANGE OPERATION'}))return false;
     if(coop||state!==currentState||account.getUserId()!==currentUser||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||(mission&&!campaignAvailable(account.getProfile(),id)))return false;
     activeMission=mission;selectedMap=mission?mission.mapId:nextMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeMission&&{id:activeMission.id,threat:activeMission.threat}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;
@@ -190,9 +193,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?tr('{name} acquired for this operation.',{name:tr(result.perk)}):result.reason);updateUI();});
   function updateUI(){
     renderCampaign();
-    const showObjective=!!activeMission&&!coop;$('soloObjective').hidden=!showObjective;
-    if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
-    if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
+    const showObjective=(!!activeMission||activeTraining)&&!coop;$('soloObjective').hidden=!showObjective;
+    if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
+    else if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
+    if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');$('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:tr(map.name);
     const canvasHeight=versus?1100:540;if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight);if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}syncBattleViewport(map,versus);
     $('versusStatus').hidden=!versus&&!teamMatch;if(teamMatch){const info=state.fourInfo;$('versusTitle').textContent=state.ended?(info.winnerTeam===null?tr('DRAW / MATCH ENDED'):info.winnerTeam===info.team?tr('VICTORY'):tr('DEFEAT')):tr('2 VS 2 · TEAM {team}',{team:info.team?'B':'A'});$('versusInfo').textContent=tr('YOUR BUNKER {health} · OTHER BUNKER {other}',{health:Math.max(0,Math.ceil(state.hp)),other:Math.max(0,Math.ceil(info.otherHealth))});}if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?tr('VICTORY'):tr('DEFEAT')):tr('DRAW / MATCH ENDED')):tr('1 VS 1 · SURVIVAL');$('versusInfo').textContent=tr('YOUR BUNKER {health} · {name} {other}',{health:Math.max(0,Math.ceil(state.hp)),name:state.players[state.rivalId]?.name||tr('OPPONENT'),other:Math.max(0,Math.ceil(state.rival.hp))})+(state.waitingForRival&&!state.ended?tr(' · WAITING FOR OPPONENT'):'');}
@@ -223,7 +227,11 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return tr('Wave {wave}',{wave})+(wave%5===0?tr(' · BOSS WAVE'):'')+' · '+Object.entries(counts).map(([kind,n])=>`${n} ${tr(ENEMY_TYPES[kind].label)}`).join(' · ')+(bossForWave(wave)?` · ${tr(bossForWave(wave).description)}`:'');}
   $('speed').onclick=()=>{if(coop){const vote=state.speedRequest,command=state.speed===2?{type:'slowSpeed'}:vote?{type:'cancelSpeed',requestId:vote.id}:{type:'requestSpeed'};dispatch(command,result=>{notice(result.ok?(command.type==='requestSpeed'?'Speed request sent. Waiting for every other player.':command.type==='cancelSpeed'?'Speed request cancelled.':'Speed returned to 1×.'):result.reason);updateUI();});return;}state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   for(const [id,type] of [['speedApprove','approveSpeed'],['speedDecline','declineSpeed']])$(id).onclick=()=>{const vote=state.speedRequest;if(!coop||!vote)return;dispatch({type,requestId:vote.id},result=>{notice(result.ok?(type==='approveSpeed'?'Speed approved.':'Speed request declined.'):result.reason);updateUI();});};
-  $('start').onclick=()=>{if(state.ended){if(!coop){reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
+  $('start').onclick=()=>{
+    // A finished training contract turns into a normal endless run: the player
+    // has already been handed on by the debrief, and pressing Deploy must not
+    // silently replay the shortened contract.
+    if(state.ended){if(!coop){if(activeTraining){activeTraining=false;activeMission=null;selectedMap=nextMapId(selectedMap);}reset(true);notice('New battlefield ready. Deploy when ready.');}return;}if(state.running)return;if(!coop)state.players.local.level=account.getLevel();
     const command=coop&&state.pendingWave?(state.hostId===me()?'cancelWave':'approveWave'):'startWave';
     dispatch(command==='startWave'?{type:command}:{type:command,requestId:state.waveRequestId},result=>{if(!result.ok){notice(result.reason);return;}if(!coop)sound.play(state.wave%5===0?'boss':'wave');notice(!coop?tr('Wave {wave} incoming: {summary}.',{wave:state.wave,summary:waveSummary(state.wave)}):command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest||result.waitingForPlayers?'Waiting for player approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
   };
@@ -251,7 +259,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   let tutorialStorage;try{tutorialStorage=window.localStorage;}catch{tutorialStorage=null;}
   // Practice steps drive the real dialogs. The sandbox comes from the account app,
   // which owns the write guard; without it the tutorial stays on mock screens.
-  const tutorial=createTutorial({document,storage:tutorialStorage,onPractice:request=>{
+  const tutorial=createTutorial({document,storage:tutorialStorage,
+   // A finished tour hands the new soldier straight to the training contract.
+   onFinish:id=>{if(trainingSeen(id,tutorialStorage))return;markTrainingSeen(id,tutorialStorage);window.setTimeout(()=>startTrainingRun(),400);},
+   onPractice:request=>{
     const sandbox=account.sandbox;
     if(!sandbox||!request)return false;
     sandbox.enter();
@@ -429,6 +440,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
         else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost. The operation has failed.');}
         else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');const target=report;target.pending++;Promise.resolve(account.awardXP(event.xp,event.wave,!experimentalWorkshop?null:runReceipt())).then(detail=>{target.pending--;if(detail?.committed)addReward(target,detail);else target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);});notice(event.wave%5===0?tr('Boss wave {wave} cleared! Choose a field upgrade. +{xp} XP.',{wave:event.wave,xp:event.xp}):tr('Wave cleared! +20 supplies and +{xp} XP. Prepare for the next wave.',{xp:event.xp}));}
       }
+      // The training contract ends itself after its last wave: six cleared waves
+      // pay level 2, which is the first real skill point. It is still a real run,
+      // so the XP was already credited wave by wave by the code above.
+      if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';notice(()=>tr('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:trainingXP()}));}
       if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyRadio(outcome.message);if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
       if(state.ended){accumulator=0;updateUI();break;}
     }
@@ -483,10 +498,22 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
   function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
+  // The first deployment of a new soldier: a real, shortened, weakened run that
+  // pays level 2 (see training-run.mjs). Offered once, from the tutorial handoff.
+  function startTrainingRun(){
+   if(activeTraining||trainingDone)return false;
+   closeMenu();keys.clear();sendDirection();activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
+   notice(()=>tr('Training contract: six waves. Enemies are weakened and your bunker is reinforced.'));return true;
+  }
   async function chooseEndless(){const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
   return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();renderViewportLabels();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,showTutorial:()=>{closeMenu();keys.clear();sendDirection();tutorial.replay(account.getUserId());},
   // First run: the account calls this once the Command Center is visible. That is
   // the first moment a tutorial can be shown at all, because the tutorial is keyed
   // by player id. A no-op for anyone who already finished or skipped it.
-  startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},getSoloMode:()=>activeMission?'campaign':'endless',getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?tr(activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
+  startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},
+   // The training contract is a real deployment, not a mock: six weakened waves
+   // that pay level 2. Called once by the account after the first-run tutorial.
+   startTrainingRun,
+   isTrainingRun:()=>activeTraining,getTrainingXP:trainingXP,
+   getSoloMode:()=>activeTraining?'training':activeMission?'campaign':'endless',getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?tr(activeTraining?'TRAINING CONTRACT':activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
 }

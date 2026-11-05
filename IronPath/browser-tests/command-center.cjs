@@ -111,10 +111,37 @@ const assert = require('node:assert/strict');
     await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"]').click();await page.locator('#skillDetailAction').click();assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"] .skill-card-name').innerText(),'Unterdrückung');assert.match(await page.locator('#skillDetailText').innerText(),/Verlangsame Gegner/);assert.match(await page.locator('#skillStatus').innerText(),/Ungespeicherter Entwurf/);assert.equal(await page.locator('#skillDetailAction').innerText(),'HAUPTFÄHIGKEIT AUSGEWÄHLT');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);
     await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),false,'outside a confirmation cancels instead of accepting');assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true,'cancel preserves the draft');
     await page.keyboard.press('Escape');assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),false);
-    await page.locator('#languageSelect').selectOption('de');await page.locator('#menuTutorial').click();assert.equal(await page.locator('#tutorialTitle').innerText(),'Willkommen, Soldat');for(let i=0;i<7;i++)await page.locator('#tutorialNext').click();assert.equal(await page.locator('#tutorialTitle').innerText(),'Übe das Fähigkeitenmenü');await page.locator('#tutorialSkillNode').click();await page.locator('#tutorialSkillUpgrade').click();await page.locator('#tutorialSkillSave').click();await page.locator('#tutorialNext').click();assert.equal(await page.locator('#tutorialTitle').innerText(),'Übe die Waffenkammer');await page.locator('#tutorialSkip').click();await page.locator('#languageSelect').selectOption('en');
+    await page.locator('#languageSelect').selectOption('de');await page.locator('#menuTutorial').click();assert.equal(await page.locator('#tutorialTitle').innerText(),'Willkommen, Soldat');
+    for(let i=0;i<20&&!/Fähigkeitenmenü/.test(await page.locator('#tutorialTitle').innerText());i++)await page.locator('#tutorialNext').click();
+    assert.equal(await page.locator('#tutorialTitle').innerText(),'Übe das Fähigkeitenmenü');
+    await page.waitForSelector('#skillDialog[open]');
+    assert.match(await page.locator('#sandboxBanner').innerText(),/NICHTS/,'the sandbox banner is translated too');
+    await page.locator('#tutorialSkip').click();
+    await page.locator('#languageSelect').selectOption('en');
     await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
-    for(let i=0;i<7;i++)await page.locator('#tutorialNext').click();assert.match(await page.locator('#tutorialTitle').innerText(),/Skills menu/);assert.equal(await page.locator('#tutorialSkillUpgrade').isDisabled(),true);await page.locator('#tutorialSkillNode').click();assert.equal(await page.locator('#tutorialSkillNode').getAttribute('aria-pressed'),'true');await page.locator('#tutorialSkillUpgrade').click();assert.equal(await page.locator('#tutorialNext').isDisabled(),true);await page.locator('#tutorialSkillSave').click();await page.locator('#tutorialNext').click();
-    assert.match(await page.locator('#tutorialTitle').innerText(),/Armory/);assert.equal(await page.locator('#tutorialEquipmentTab').getAttribute('aria-pressed'),'true');await page.locator('#tutorialEquip').click();await page.locator('#tutorialBunkerTab').click();assert.equal(await page.locator('#tutorialBunkerTab').getAttribute('aria-pressed'),'true');await page.locator('#tutorialBunkerUpgrade').click();await page.locator('#tutorialBunkerConfirm').click();assert.match(await page.locator('#tutorialScrap').innerText(),/30 SCRAP/);await page.locator('#tutorialNext').click();assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
+    // The tour walks into the REAL dialogs: a saved build, a workshop item, and the
+    // sandbox banner that promises nothing is stored.
+    const walkTo=async title=>{for(let i=0;i<20;i++){if(title.test(await page.locator('#tutorialTitle').innerText()))return true;await page.locator('#tutorialNext').click();}return title.test(await page.locator('#tutorialTitle').innerText());};
+    await page.locator('#menuTutorial').click();
+    assert.equal(await walkTo(/Skills/),true);
+    await page.waitForSelector('#skillDialog[open]');
+    assert.equal(await visible('#sandboxBanner'),true,'practice says it is sample data');
+    await page.locator('#skillDialog').evaluate(dialog=>dialog.close());
+    await page.locator('#tutorialPracticeSkip').click();
+    await page.locator('#tutorialNext').click();
+    assert.equal(await walkTo(/Armory/),true);await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();
+    assert.equal(await walkTo(/workshop/i),true);
+    await page.waitForSelector('#armoryDialog[open]');
+    assert.equal(await page.locator('#armoryWorkshopTab').getAttribute('aria-pressed'),'true');
+    await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
+    await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();
+    assert.equal(await walkTo(/Prestige/),true);
+    await page.waitForSelector('#armoryDialog[open]');
+    await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
+    await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
+    assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
+    await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
 
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.

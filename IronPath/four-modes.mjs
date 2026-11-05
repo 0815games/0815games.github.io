@@ -1,7 +1,7 @@
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Experimental, transport-independent four-player rules. Not wired to live
 // Firebase: its current party and security rules only permit two players.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261105-workshop3';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261112-firstrun2';
 import {applyCommand} from './match.mjs?v=20261105-workshop3';
 export const FOUR_PLAYER_MAP='four-front';
 function roster(players,hostId,count=[4]){

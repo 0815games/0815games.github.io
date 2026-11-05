@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-prestige1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-prestige1';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun2';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun2';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-prestige1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun2';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -12,9 +12,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
-import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261112-prestige1';
+import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261112-firstrun2';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-prestige1';
+import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun2';
 import {missingPrestige} from './prestige.mjs';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-alpha3';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261105-workshop5';
@@ -24,6 +24,8 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
+import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun2';
+import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -110,8 +112,8 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:false,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
-function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:false,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={sandbox:sandboxAPI,recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
    // finished mission can never grant one without the other.
@@ -266,8 +268,88 @@ const sandboxAPI={
   // Exposed so the tutorial (and the tests) can prove a write is refused.
   refuseWrite:assertWritable,
 };
-// First-run tutorial, once per account per browser. It is keyed by player id, so it
-// can only start after a profile exists - which is why it is not wired to page load.
+// --- First-run ending -----------------------------------------------------------
+// After the training contract the new soldier spends their first skill point in
+// the REAL Skills dialog, receives a dog tag (drawn, never stored) and opens the
+// workshop for the first time. Ordering and the once-per-account gate live in
+// first-run-ending.mjs; the dialogs stay here, where they already are.
+let endingRunning=false;
+const firstRunStorage=()=>{try{return window.localStorage;}catch{return null;}};
+// The tag is cosmetic: it is derived on every render and nothing is written back.
+function refreshDogTags(){
+ if(!profile)return;
+ const data={profile,accountId:user?.uid};
+ for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag')])if(container)renderDogTag(document,container,data);
+}
+const dialogOpen=id=>!!document.getElementById(id)?.open;
+// Wait for a dialog to open, then for the player to finish with it. Never hangs:
+// a timeout resolves so a broken screen cannot trap the first run.
+function waitFor(condition,{timeout=180000,interval=150}={}){
+ const start=Date.now();
+ return new Promise(resolve=>{
+  const tick=()=>{
+   let ok=false;
+   try{ok=condition()===true;}catch{ok=false;}
+   if(ok)return resolve(true);
+   if(Date.now()-start>timeout)return resolve(false);
+   setTimeout(tick,interval);
+  };
+  tick();
+ });
+}
+async function practiceSkills(){
+ const before=profile?.skills||'';
+ document.getElementById('skillOpen')?.click?.();
+ if(!await waitFor(()=>dialogOpen('skillDialog')))return false;
+ // A saved build with no points left is the proof that the point went somewhere.
+ const saved=await waitFor(()=>{
+  const after=profile?.skills||'',lvl=level(profile?.xp||0);
+  return after!==before&&pointsLeft(parseBuild(after,lvl),lvl)===0;
+ });
+ if(saved){await waitFor(()=>!dialogOpen('skillDialog'));return true;}
+ // Closing without saving is a decline, not a failure: the ending stays offered.
+ return false;
+}
+async function showDogTag(){
+ refreshDogTags();
+ soldierUI?.open();
+ if(!await waitFor(()=>dialogOpen('soldierDialog')))return true;
+ await waitFor(()=>!dialogOpen('soldierDialog'));
+ return true;
+}
+async function openWorkshopFirstTime(){
+ document.getElementById('armoryOpen')?.click?.();
+ if(await waitFor(()=>dialogOpen('armoryDialog')))document.getElementById('armoryWorkshopTab')?.click?.();
+ else return false;
+ await waitFor(()=>!dialogOpen('armoryDialog'));
+ return true;
+}
+function offerFirstRunEnding(){
+ const id=user?.uid;
+ if(!id||endingRunning)return;
+ if(endingDone(id,firstRunStorage()))return;
+ endingRunning=true;
+ void runFirstRunEnding({
+  id,storage:firstRunStorage(),
+  steps:{skills:practiceSkills,tag:showDogTag,workshop:openWorkshopFirstTime},
+  onDone:()=>{endingRunning=false;openFieldSchool();},
+  onStopped:()=>{endingRunning=false;},
+ });
+}
+// The Field School lists where the new soldier can go next. Each entry clicks an
+// existing control rather than opening a second path into a screen.
+function openFieldSchool(){
+ const fieldSchool=document.getElementById('fieldSchool');
+ if(!fieldSchool)return;
+ fieldSchool.hidden=false;
+ for(const entry of FIELD_SCHOOL_ENTRIES){
+  const button=document.getElementById(`fieldSchool-${entry.id}`);
+  if(button)button.onclick=()=>document.getElementById(entry.action)?.click?.();
+ }
+ fieldSchool.scrollIntoView?.({block:'nearest',behavior:'smooth'});
+ document.getElementById('fieldSchool-armory')?.focus?.();
+}
+const FIRST_RUN_TUTORIAL_KEY=id=>`ironpath:tutorial:v1:${id}`;
 function startFirstRunTutorial(){
   // Let the Command Center paint first; the tutorial is a modal over it.
   requestAnimationFrame(()=>{try{gameControl?.startTutorialIfNeeded?.();}catch{}});

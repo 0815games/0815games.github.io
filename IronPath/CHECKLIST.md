@@ -2,6 +2,8 @@
 
 Work through the remaining items before stress and balance testing. Previously released multiplayer features still need real-device validation; see [BETA-TEST-PLAN.md](BETA-TEST-PLAN.md).
 
+- [x] First run reworked: language gate on every device, the field briefing starts itself, practice drives the real dialogs in a sandbox, the training contract is six weakened waves, and the ending spends the first skill point for real, issues the dog tag and opens the workshop. See [TUTORIAL.md](TUTORIAL.md).
+- [ ] Validate the first run on a real phone and a real desktop browser: gate, briefing, six-wave contract, skill save, dog tag, workshop, Field School.
 - [ ] Continue the English/German translation incrementally. Untranslated content stays in English; incorporate feedback from testing.
 - [x] Add a fullscreen option for desktop browsers, with all controls needed to play available in fullscreen.
 - [ ] Validate fullscreen in real desktop browsers, including gameplay, dialogs, and exiting with Escape.

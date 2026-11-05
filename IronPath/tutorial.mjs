@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-prestige1';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun2';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.
@@ -20,7 +20,7 @@ export const TUTORIAL_STEPS = [
 ];
 const memory=new Set();
 const keyFor=id=>`ironpath:tutorial:v1:${id}`;
-export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{}}){
+export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{},onFinish=()=>{}}){
   const $=id=>document.getElementById(id),dialog=$('tutorialDialog');
   let index=0,activeUser=null,skill,armory,workshop,skipped,lastDialogs=-1;
   function resetPractice(){skill={inspected:false,upgraded:false,saved:false};armory={equipped:false,upgraded:false,category:'equipment',confirming:false};workshop={crafted:false,equippedItem:false};skipped=new Set();}
@@ -56,7 +56,9 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{},onPra
     $('tutorialPracticeStatus').hidden=!practice;
   }
   function open(id){if(!id)return;activeUser=id;index=0;lastDialogs=-1;resetPractice();render();if(!dialog.open)dialog.showModal();onVisibilityChange(true);}
-  function close(mark){if(!dialog.open)return;if(mark&&activeUser)markCompleted(activeUser);dialog.close();activeUser=null;onVisibilityChange(false);}
+  // `finished` distinguishes a completed walk from a dismissal: only a finished
+  // tour hands the player on to the training contract.
+  function close(mark,finished=false){if(!dialog.open)return;const user=activeUser;if(mark&&user)markCompleted(user);dialog.close();activeUser=null;onVisibilityChange(false);if(finished&&user){try{onFinish(user);}catch{/* The tour is over either way. */}}}
   $('tutorialSkillNode').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'){skill.inspected=true;render();}};
   $('tutorialSkillUpgrade').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'&&skill.inspected&&!skill.upgraded){skill.upgraded=true;render();}};
   $('tutorialSkillSave').onclick=()=>{if(TUTORIAL_STEPS[index].practice==='skills'&&skill.upgraded&&!skill.saved){skill.saved=true;render();}};
@@ -72,7 +74,7 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{},onPra
     if(type==='armory'&&detail){if(detail.equipped)armory.equipped=true;if(detail.upgraded)armory.upgraded=true;render();}
     if(type==='skills'&&detail){if(detail.upgraded)skill.upgraded=true;if(detail.saved)skill.saved=true;render();}
   }
-  $('tutorialNext').onclick=()=>{const practice=TUTORIAL_STEPS[index].practice;if(practice&&!practiceDone(practice))return;if(index<TUTORIAL_STEPS.length-1){index++;lastDialogs=-1;render();}else close(true);};
+  $('tutorialNext').onclick=()=>{const practice=TUTORIAL_STEPS[index].practice;if(practice&&!practiceDone(practice))return;if(index<TUTORIAL_STEPS.length-1){index++;lastDialogs=-1;render();}else close(true,true);};
   $('tutorialBack').onclick=()=>{if(index>0){index--;lastDialogs=-1;render();}};
   $('tutorialSkip').onclick=()=>close(true);
   dialog.addEventListener('cancel',e=>{e.preventDefault();close(true);});

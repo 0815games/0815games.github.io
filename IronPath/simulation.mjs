@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-firstrun2';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
@@ -10,7 +10,7 @@ import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261105-workshop3';
+import {addSupplies} from './match.mjs?v=20261112-firstrun2';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -58,7 +58,12 @@ export function stepMatch(state){
   if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
       // A campaign contract is harder by construction: tougher units, and extra
       // units on surge waves. Endless solo and multiplayer are untouched.
-      if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});state.spawnLeft--;state.spawnTimer=.8;}}
+      if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
+      // The training contract is the exception: a weakened first operation (see
+      // training-run.mjs). `bossUnit` only ever arrives with the training
+      // contract, so a story mission keeps its full-strength bosses.
+      if(state.campaignContract?.bossUnit&&enemy.boss)enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*state.campaignContract.bossUnit));
+      state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});state.spawnLeft--;state.spawnTimer=.8;}}
   if(theme==='scrub'){
     state.dustClouds=(state.dustClouds||[]).map(c=>({...c,life:c.life-dt})).filter(c=>c.life>0);
     state.dustTimer=(state.dustTimer||0)-dt;

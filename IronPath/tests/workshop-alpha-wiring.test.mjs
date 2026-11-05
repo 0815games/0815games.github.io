@@ -47,11 +47,11 @@ test('armory state exists before the first language render',()=>{
 test('repeated profile snapshots never restart the game or social listeners',()=>{
  // showProfile() starts the game, the friend listener and the score reporter;
  // running it again on every snapshot duplicated popups and leaderboard writes.
- assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
+ assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);refreshDogTags\(\);void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once; the tag is only re-drawn');
 });
 
 test('the workshop view is cache-busted with the build',()=>{
- assert.match(source,/workshop-view\.mjs\?v=20261112-prestige1/);
- assert.match(html,/account\.js\?v=20261112-prestige1/);
- assert.match(html,/workshop-view\.css\?v=20261112-prestige1/);
+ assert.match(source,/workshop-view\.mjs\?v=20261112-firstrun2/);
+ assert.match(html,/account\.js\?v=20261112-firstrun2/);
+ assert.match(html,/workshop-view\.css\?v=20261112-firstrun2/);
 });
