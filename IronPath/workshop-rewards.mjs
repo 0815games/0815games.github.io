@@ -20,7 +20,9 @@ export function applyBossRewards(profile,previousMask,completedMask,block=0){
  if(!Number.isInteger(previousMask)||previousMask<0||previousMask>MAX_WAVE_MASK||!Number.isInteger(completedMask)||completedMask<0||completedMask>MAX_WAVE_MASK||!Number.isSafeInteger(block)||block<0||!Number.isSafeInteger((block+1)*WAVE_COUNT))return null;
  const added=completedMask&~previousMask;let bosses=0;
  for(let index=0;index<WAVE_COUNT;index++)if((added&(1<<index))&&bossForWave(block*WAVE_COUNT+index+1))bosses++;
- const armory=readArmory(profile.armory),scrap=armory.scrap+bosses*BOSS_SCRAP,components=profile.workshop.components+bosses*BOSS_COMPONENTS;
- if(scrap>MAX_SCRAP||components>MAX_COMPONENTS)return null;
+ // Clamp at the caps like the live legacy reward does, so a player who already
+ // holds the maximum balance still receives the wave's XP instead of losing it.
+ const armory=readArmory(profile.armory),scrap=Math.min(MAX_SCRAP,armory.scrap+bosses*BOSS_SCRAP),components=Math.min(MAX_COMPONENTS,profile.workshop.components+bosses*BOSS_COMPONENTS);
+ if(!Number.isSafeInteger(scrap)||!Number.isSafeInteger(components))return null;
  return {profile:{...profile,armory:{...armory,scrap},workshop:{...profile.workshop,components}},receipt:previousMask|completedMask,bosses};
 }

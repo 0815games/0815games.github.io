@@ -17,5 +17,9 @@ test('uses actual waves across receipt blocks and does not award incomplete wave
 test('rejects malformed profiles, masks, future schema and balance overflow without mutation',()=>{
  const p=profile();assert.equal(applyBossRewards({...p,armory:{scrap:-1}},0,mask(5)),null);assert.equal(applyBossRewards({...p,workshop:{...p.workshop,version:2}},0,mask(5)),null);
  assert.equal(applyBossRewards(p,-1,mask(5)),null);assert.equal(applyBossRewards(p,0,2**20),null);assert.equal(applyBossRewards(p,0,mask(5),Number.MAX_SAFE_INTEGER),null);
- assert.equal(applyBossRewards({...p,armory:{...p.armory,scrap:9999990}},0,mask(5)),null);assert.equal(applyBossRewards({...p,workshop:{...p.workshop,components:1000000}},0,mask(5)),null);
+ // At the caps the balance is clamped and the wave is still credited, so the player
+ // never loses XP because of a full scrap or component balance.
+ const scrapCap=applyBossRewards({...p,armory:{...p.armory,scrap:9999990}},0,mask(5));assert.equal(scrapCap.profile.armory.scrap,10000000);assert.equal(scrapCap.receipt,mask(5));
+ const componentCap=applyBossRewards({...p,workshop:{...p.workshop,components:1000000}},0,mask(5));assert.equal(componentCap.profile.workshop.components,1000000);assert.equal(componentCap.bosses,1);
+ assert.equal(applyBossRewards({...p,armory:{...p.armory,scrap:'x'}},0,mask(5)),null);
 });
