@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop2';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';

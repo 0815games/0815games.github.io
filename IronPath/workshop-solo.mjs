@@ -1,5 +1,5 @@
 // Integration-test entry point only; not reachable from the production UI.
-import {createMatch} from './simulation.mjs?v=20261105-workshop2';
+import {createMatch} from './simulation.mjs?v=20261105-workshop3';
 import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs';
 export function createWorkshopSoloMatch(player,workshop,mapId){
  const snapshot=captureWorkshopLoadout(workshop,'solo');if(!snapshot||!player?.loadout)throw new Error('Invalid solo workshop loadout');
