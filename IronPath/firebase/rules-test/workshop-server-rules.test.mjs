@@ -21,3 +21,21 @@ test('trusted admin can run atomic workshop transactions after migration',async(
  await env.withSecurityRulesDisabled(async ctx=>{const r=ref(ctx.database(),'players/alice');await set(r,initializeWireWorkshop((await get(r)).val()));const stop=await ready(r);
  try{const result=await runTransaction(r,p=>applyWireWorkshopCommand(p,{type:'craft',item:'boots'})??undefined,{applyLocally:false});assert.equal(result.committed,true);assert.equal(result.snapshot.val().armory.scrap,50);assert.equal(result.snapshot.val().storyProgress,2);}finally{stop();}});
 });
+
+test('experimental authority binds identity and deduplicates real emulator transactions',async()=>{
+ const {createProgressionService}=await import('../../server/progression-service.mjs');
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.database(),reference=ref(db,'players/alice'),stop=await ready(reference);
+  const service=createProgressionService({verifyToken:async token=>token==='alice-token'?{uid:'alice'}:null,transact:(_uid,fn)=>runTransaction(reference,fn,{applyLocally:false}),isUnlocked:()=>true});
+  try{
+   const run=(requestId,command)=>service.execute({token:'alice-token',requestId,command});
+   assert.equal((await run('1'.repeat(32),{type:'initialize'})).status,'applied');
+   const cmd={type:'upgrade',kind:'fortify',expectedRank:3}; // already at cap
+   assert.equal((await run('2'.repeat(32),cmd)).status,'invalid');
+   const craft={type:'craft',item:'boots'},requestId='3'.repeat(32);
+   const results=await Promise.all([run(requestId,craft),run(requestId,craft)]);
+   assert.equal(results.filter(x=>x.status==='applied').length,1);assert.equal(results.filter(x=>x.status==='already-applied').length,1);
+   const saved=(await get(reference)).val();assert.equal(saved.armory.scrap,50);assert.equal(saved.storyProgress,2);assert.ok(saved.progressionRequests[requestId]);
+  }finally{stop();}
+ });
+});
