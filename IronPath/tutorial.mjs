@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261105-workshop4';
+import {translateText as tr} from './language.mjs?v=20261105-workshop5';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // Tutorial completion is per account and browser. The interactive exercises
 // use isolated example data; they never touch a soldier profile or Firebase.

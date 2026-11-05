@@ -1,4 +1,5 @@
 export const germanWorkshop=Object.freeze({
+ 'OPEN WORKSHOP':'WERKSTATT ÖFFNEN','FIELD WORKSHOP':'FELDWERKSTATT','Soldier workshop':'Soldatenwerkstatt','Craft, equip and modify your field gear.':'Stelle Feldausrüstung her, lege sie an und modifiziere sie.','Close workshop':'Werkstatt schließen',
  'Standard weapon':'Standardwaffe','Empty slot':'Leerer Platz','Unknown item':'Unbekannter Gegenstand',
  '{count} scrap':'{count} Schrott','{count} boss components':'{count} Bosskomponenten',
  'Prepare your workshop. Your existing equipment and bunker upgrades will be kept.':'Richte deine Werkstatt ein. Deine vorhandene Ausrüstung und Bunkerausbauten bleiben erhalten.',
