@@ -1,37 +1,56 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-// Static wiring checks for the alpha access switch. The account module needs a
-// browser and Firebase, so this asserts the important invariants at source level
-// and leaves behaviour to workshop-access.test.mjs.
+// The account module needs a browser and Firebase, so these assert the wiring
+// contract at source level; behaviour is covered by the workshop-* unit tests.
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 
-test('the release gate is on but never grants access by itself',()=>{
- assert.match(source,/const WORKSHOP_RELEASE_READY=true;/);
- // The gate must not be used directly for the UI or a game; only the resolved
- // access decision may open anything.
- assert.doesNotMatch(source,/experimentalWorkshop:WORKSHOP_RELEASE_READY/,'games must follow the runtime access decision');
- assert.doesNotMatch(source,/soldierWorkshop'\)\.hidden=!WORKSHOP_RELEASE_READY/);
- assert.match(source,/accessGranted\(\{releaseReady:WORKSHOP_RELEASE_READY,optIn:/);
+test('the workshop is a tab inside the armory, not a separate screen',()=>{
+ assert.match(html,/id="armoryWorkshopTab"/);
+ assert.match(html,/id="armoryWorkshop" class="workshop-content"/);
+ assert.doesNotMatch(html,/id="workshopDialog"/,'the separate workshop dialog is gone');
+ assert.doesNotMatch(html,/id="soldierWorkshop"/,'one button opens the armory, not two screens');
+ assert.match(source,/armoryTabs=\[\['armoryEquipmentTab','equipment'\],\['armoryWorkshopTab','workshop'\]/);
 });
 
-test('access is required by every workshop entry point',()=>{
- for(const pattern of [/canEdit:\(\)=>workshopAccess&&canEditSkills\(\)/,/onWorkshop:\(\)=>\{if\(!workshopAccess/,/experimentalWorkshop:workshopAccess/,/workshop:workshopAccess/])assert.match(source,pattern);
- assert.doesNotMatch(source,/soldierWorkshop'\)\.hidden=!WORKSHOP_RELEASE_READY/,'the button is no longer tied to the compile-time gate');
+test('opening the workshop tab prepares it once through the guarded service',()=>{
+ assert.match(source,/if\(!Object\.hasOwn\(profile\|\|\{\},'workshop'\)\)void prepareWorkshop\(\);/,'only the workshop tab prepares it');
+ assert.match(source,/workshopPrepare=workshopAccount\.initialize\(\)/,'the migration uses the same canEdit-guarded service');
+ assert.match(source,/const settle=\(status,error\)=>\{/);
+ assert.match(source,/if\(status==='rejected'\)/,'a rejected write is reported and nothing is claimed as prepared');
+ assert.match(source,/\.finally\(\(\)=>\{workshopPrepare=null;/,'the in-flight attempt is cleared');
+ assert.match(source,/if\(workshopPrepareFailed\)return \{status:'failed'\}/,'one attempt per session, not one write per render');
 });
 
-test('access is recomputed on profile load and reset on sign-out',()=>{
- assert.match(source,/\$\('soldierWorkshop'\)\.hidden=!granted/);
- assert.match(source,/if\(first\)void refreshWorkshopAccess\(currentUser\)/);
- assert.match(source,/workshopAccess=false;\$\('soldierWorkshop'\)\.hidden=true/);
+test('every workshop write goes through the account transaction and match state',()=>{
+ assert.match(source,/createWorkshopAccount\(\{db,auth,sdk:\{ref,onValue,runTransaction\},canEdit:\(\)=>canEditSkills\(\)\}\)/);
+ assert.match(source,/experimentalWorkshop:true,/,'endless solo uses the workshop effects');
+ assert.match(source,/creditSoloWave\(\{sdk:\{runTransaction\}/);
+ assert.match(source,/const fallback=workshopReceiptFallback;/,'a rules rejection falls back to the legacy save');
 });
 
-test('solo rewards only send receipts when access is granted, and stop after a rejection',()=>{
- assert.match(source,/const fallback=workshopReceiptFallback\|\|!workshopAccess;/);
- assert.match(source,/if\(outcome\.status==='legacy-fallback'\)workshopReceiptFallback=true/);
+test('the old equipment screens still exist and still save',()=>{
+ for(const pattern of [/function renderArmory\(\)/,/async function saveArmory\(change\)/,/upgradeArmory,equipArmory,encodeLoadout/,/renderArmory\(\);\$\('armoryDialog'\)\.showModal\(\)/])assert.match(source,pattern);
 });
 
-test('the opt-in is documented in the page and the module is cache-busted',()=>{
- assert.match(source,/workshop-access\.mjs\?v=20261112-free6/);
- assert.match(html,/<div class="workshop-content" id="workshopContent"><\/div>/,'the workshop dialog stays in the page for gated access');
+test('armory state exists before the first language render',()=>{
+ // setupLanguage() renders once synchronously, so anything its onChange reads
+ // must already be initialised; a later `let` would throw on page load.
+ const setup=source.indexOf('setupLanguage({');
+ for(const pattern of [/let armoryCategory/,/commandCenter=null/,/profile=null/]){
+  const declaration=source.search(pattern);
+  assert.ok(declaration>=0&&declaration<setup,`${pattern} must be declared before setupLanguage()`);
+ }
+});
+
+test('repeated profile snapshots never restart the game or social listeners',()=>{
+ // showProfile() starts the game, the friend listener and the score reporter;
+ // running it again on every snapshot duplicated popups and leaderboard writes.
+ assert.match(source,/if\(first\)showProfile\(value\);else \{commandCenter\?\.render\(\);/);
+});
+
+test('the workshop view is cache-busted with the build',()=>{
+ assert.match(source,/workshop-view\.mjs\?v=20261112-armory1/);
+ assert.match(html,/account\.js\?v=20261112-armory1/);
+ assert.match(html,/workshop-view\.css\?v=20261112-armory1/);
 });

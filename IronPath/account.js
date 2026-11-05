@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-alpha4';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261105-workshop5';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-armory1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-armory1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261105-workshop5';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-armory1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -26,7 +26,6 @@ import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequ
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261105-prestige1';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-free2';
-import {parseOptIn,rememberOptIn,rememberedOptIn,allowListed,accessGranted} from './workshop-access.mjs?v=20261112-free6';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
@@ -42,41 +41,24 @@ bindDisclosureDismiss(document);
 window.ironPathLoaded = true;
 const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
 const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
-let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null, soldierUI=null, workshopView=null;
+let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null, soldierUI=null;
+// Declared before setupLanguage() runs: its first onChange fires immediately.
+let armoryCategory='equipment';
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
-setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();if($('workshopDialog').open)workshopView?.render();if(profile){$('profileLevel').textContent=levelText(profile.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
+setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
 setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 setupFieldMenu({document,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
-// Release gate: never expose workshop writes until production rules, complete
-// multiplayer version fencing and migration/rollback have been reviewed.
-// Release gate: ON. This only makes the workshop *available*; who may open it is
-// still decided below by the alpha allow-list or the local `?workshop=alpha`
-// opt-in, so players who have not opted in keep the existing game and save path.
-const WORKSHOP_RELEASE_READY=true;
+// The armory workshop is open to every signed-in soldier (free tier: client
+// transactions, no backend). It is built into the Armory screen.
 // Set once a workshop award was rejected by rules, so later waves use the legacy
 // credit for the rest of the session instead of retrying (and replaying) receipts.
 let workshopReceiptFallback=false;
-// Alpha access: local opt-in (`?workshop=alpha`, remembered on this device) or the
-// database allow-list. Both are free; the release gate above still wins.
-let workshopAccess=false;
-let accessStorage=null;try{accessStorage=window.localStorage;}catch{accessStorage=null;}
-const queryOptIn=parseOptIn(window.location?.search??'');
-if(queryOptIn!==null)rememberOptIn(accessStorage,queryOptIn);
-async function refreshWorkshopAccess(currentUser){
- const granted=accessGranted({releaseReady:WORKSHOP_RELEASE_READY,optIn:rememberedOptIn(accessStorage),allowListed:await allowListed({get,ref},db,currentUser?.uid)});
- workshopAccess=granted;
- $('soldierWorkshop').hidden=!granted;
- if(!granted)closeWorkshop(true);
- return granted;
-}
-// Free-tier direction: use Firebase client transactions, with no paid backend.
-// The disabled release gate remains until rules, receipts and compatibility are reviewed.
-const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>workshopAccess&&canEditSkills()});
-workshopView=createWorkshopView({document,root:$('workshopContent'),getProfile:()=>profile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
-function closeWorkshop(force=false){if(!force&&workshopAccount.isBusy())return;if($('workshopDialog').open)$('workshopDialog').close();}
-$('workshopClose').onclick=()=>closeWorkshop();$('workshopDialog').addEventListener('cancel',e=>{e.preventDefault();closeWorkshop();});bindDialogBackdrop($('workshopDialog'),()=>closeWorkshop());
-soldierUI=createSoldierScreen({document,getProfile:()=>profile,translate:translateText,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick(),onWorkshop:()=>{if(!workshopAccess||!canEditSkills())return;workshopView.render();if(!$('workshopDialog').open)$('workshopDialog').showModal();}});$('menuSoldier').onclick=()=>soldierUI.open();
+let workshopPrepare=null,armoryView=null,workshopPrepareFailed=false;
+// Free-tier direction: Firebase client transactions, no paid backend.
+const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>canEditSkills()});
+armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:()=>profile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
+soldierUI=createSoldierScreen({document,getProfile:()=>profile,translate:translateText,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
 // Limited live alpha test: publicly accessible; not a security boundary.
@@ -88,13 +70,13 @@ const fourPlayerTest=true;
 const hostRecoveryEnabled=new URLSearchParams(window.location.search).get('recovery')==='1';
 $('fourPartyResume').hidden=!hostRecoveryEnabled;
 let fourPanel=null;
-const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>{if(fourPanel?.isActive())throw Error('Leave the four-player party first');return createFirebasePartyLobby({db,auth,sdk:partySdk});},getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>{const uid=auth.currentUser?.uid,version=sessionVersion;const rewardQueues=new Map();const rewardOptions={db,auth,sdk:partySdk,partyId:party.partyId,workshop:workshopAccess,onStatus:(status,detail,block)=>{if(version===sessionVersion&&auth.currentUser?.uid===uid){$('saveStatus').textContent=status==='error'?translateText('Co-op XP and loot could not be saved yet. Check Firebase rules and connection.'):translateText('Co-op wave XP and loot saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}};const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({...rewardOptions,block,onStatus:(status,detail)=>rewardOptions.onStatus(status,detail,block)}));return rewardQueues.get(block);};const joined=gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,mapId:gameControl.getMapId(),players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks,onWaveRewards:(mask,block=0)=>getRewards(block).observe(mask)}),onUpdate,party.partyId)??false;if(!joined)for(const queue of rewardQueues.values())queue.close();return joined;},confirmClose:()=>confirmation.ask({title:"Close party?",text:"This closes the multiplayer match for both players.",accept:"CLOSE PARTY"}),enabled:false});
+const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFourDigitLobby({db,auth,sdk:partySdk,lobby}),createLobby:()=>{if(fourPanel?.isActive())throw Error('Leave the four-player party first');return createFirebasePartyLobby({db,auth,sdk:partySdk});},getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),confirmMatch:()=>gameControl?.confirmParty()??false,onLeaveMatch:()=>gameControl?.leaveCoop(),onJoinMatch:(party,onUpdate)=>{const uid=auth.currentUser?.uid,version=sessionVersion;const rewardQueues=new Map();const rewardOptions={db,auth,sdk:partySdk,partyId:party.partyId,onStatus:(status,detail,block)=>{if(version===sessionVersion&&auth.currentUser?.uid===uid){$('saveStatus').textContent=status==='error'?translateText('Co-op XP and loot could not be saved yet. Check Firebase rules and connection.'):translateText('Co-op wave XP and loot saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}};const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({...rewardOptions,block,onStatus:(status,detail)=>rewardOptions.onStatus(status,detail,block)}));return rewardQueues.get(block);};const joined=gameControl?.beginCoop(callbacks=>createFirebasePartyGame({db,auth,sdk:partySdk,...party,mapId:gameControl.getMapId(),players:party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,i?800:850,450)),...callbacks,onWaveRewards:(mask,block=0)=>getRewards(block).observe(mask)}),onUpdate,party.partyId)??false;if(!joined)for(const queue of rewardQueues.values())queue.close();return joined;},confirmClose:()=>confirmation.ask({title:"Close party?",text:"This closes the multiplayer match for both players.",accept:"CLOSE PARTY"}),enabled:false});
 if(fourPlayerTest){
   fourPanel=createFourPlayerPanel({document,createLobby:()=>{if(partyPanel.isActive())throw Error('Leave the current party first');return createFirebaseFourLobby({db,auth,sdk:partySdk,recoveryEnabled:hostRecoveryEnabled});},
     getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),
     confirmStart:()=>gameControl?.confirmParty()??false,confirmClose:()=>confirmation.ask({title:'Close multiplayer party?',text:'This ends the party and disconnects all players.',accept:'CLOSE PARTY'}),onLeaveMatch:async()=>{await gameControl?.leaveCoop();if(user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
     onMatch:party=>{const uid=auth.currentUser?.uid,version=sessionVersion,rewardQueues=new Map();
-      const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,workshop:workshopAccess,onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
+      const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,createCoopRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
       const joined=gameControl?.beginCoop(callbacks=>{const players=party.profiles?.map((p,i)=>createPlayer(party.playerIds[i],p,party.playerIds.length===2?(i?800:850):1220,party.playerIds.length===2?450:270+i*60)),common={db,auth,sdk:partySdk,partyId:party.partyId,mapId:gameControl.getMapId(),players,...callbacks,onWaveRewards:(mask,block=0)=>{getRewards(block).observe(mask);if(party.mode==='coop'||party.mode==='four-coop')scoreReporter?.observe('coop',waveFromMask(mask,block));}};return party.recovery===true?createFirebaseRecoverableGame({...common,manifest:party,resumeGeneration:party.resumeGeneration??null}):createFirebasePartyGame({...common,partyRoot:'fourParties',hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,teams:party.teamRosters});},()=>{},party.partyId)??false;
       if(joined){commandCenter?.showBattle();fourPanel.hide();$('partyToggle').setAttribute('aria-expanded','false');}else for(const queue of rewardQueues.values())queue.close();return joined;
     }});
@@ -115,8 +97,8 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshWorkshopAccess(user);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:workshopAccess,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
-function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;if(first)void refreshWorkshopAccess(currentUser);updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first)showProfile(value);else {commandCenter?.render();soldierUI?.refresh();if($('workshopDialog').open)workshopView?.render();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first)showProfile(value);else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStory(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
@@ -124,7 +106,7 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getPro
   // candidate rules are not deployed yet the write is rejected; the wave then
   // saves once with the legacy credit and this session stops sending receipts so
   // a missing receipt can never be replayed. Client-reported results, not anti-cheat.
-  const fallback=workshopReceiptFallback||!workshopAccess;
+  const fallback=workshopReceiptFallback;
   const outcome=await creditSoloWave({sdk:{runTransaction},profileRef:ref(db,`players/${currentUser.uid}`),amount,wave,runId:fallback?null:runId,rewardWave,subscribe:()=>new Promise((resolve,reject)=>{let stop;stop=onValue(ref(db,`players/${currentUser.uid}`),()=>resolve(stop||(()=>{})),reject);})});
   if(outcome.status==='error')throw outcome.error;
   if(version!==sessionVersion)return {committed:false};
@@ -133,7 +115,7 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getPro
   return {committed:!!outcome.committed,delta:outcome.committed?rewardDelta(outcome.before,outcome.after):null,profile:outcome.committed?outcome.after:null};
  }catch(e){if(version===sessionVersion)$('saveStatus').textContent=translateText('XP and loot could not be saved. Check your connection and database rules.');return {committed:false};}}};
 let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false,savingArmory=false,closingSkills=false,skillsOpenGeneration=0;
-onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();closeWorkshop(true);workshopAccess=false;$('soldierWorkshop').hidden=true;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
+onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){
@@ -186,13 +168,56 @@ $('skillSave').onclick=async()=>{
   finally{if(version===sessionVersion){savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;if($('skillDialog').open){const message=$('skillStatus').textContent;renderSkills();$('skillStatus').textContent=message;}}}
 };
 
-let armoryCategory='equipment';
+const armoryTabs=[['armoryEquipmentTab','equipment'],['armoryWorkshopTab','workshop'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']];
+// The workshop is prepared the first time the player opens its tab, through the
+// same guarded account service the rest of the workshop uses. Nothing is written
+// until then, so a player who never opens it keeps exactly today's save, and a
+// rejected write (server rules not updated yet) leaves the account untouched.
+async function prepareWorkshop(){
+  if(!profile||!user)return {status:'signed-out'};
+  if(Object.hasOwn(profile,'workshop'))return {status:'ready'};
+  // One attempt per session: re-rendering the tab must not retry the write.
+  if(workshopPrepareFailed)return {status:'failed'};
+  if(workshopPrepare)return workshopPrepare;
+  const version=sessionVersion;
+  $('armoryStatus').textContent=translateText('Preparing your workshop…');
+  const settle=(status,error)=>{
+    if(version!==sessionVersion)return {status:'cancelled'};
+    if(status==='rejected'){workshopPrepareFailed=true;$('armoryStatus').textContent=translateText('Your saved equipment cannot be prepared for the workshop. Nothing was changed; the rest of the Armory still works.');return {status:'unchanged'};}
+    if(status==='locked'){$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing gear.');return {status:'locked'};}
+    const rejected=/permission|denied/i.test(String(error?.code||error?.message||''));
+    if(rejected)workshopPrepareFailed=true;
+    if(rejected)$('armoryStatus').textContent=translateText('The workshop is not switched on for this account yet. Nothing was changed; the rest of the Armory still works.');
+    else $('armoryStatus').textContent=translateText('Your workshop could not be prepared yet. Check your connection and try again.');
+    return {status:'failed'};
+  };
+  workshopPrepare=workshopAccount.initialize()
+    .then(result=>{
+      if(result.status==='saved'){
+        if(version!==sessionVersion)return {status:'cancelled'};
+        profile=result.profile;commandCenter?.render();soldierUI?.refresh();
+        $('armoryStatus').textContent=translateText('Workshop ready.');
+        return {status:'ready'};
+      }
+      return settle(result.status,result.error);
+    })
+    .catch(error=>settle('error',error))
+    .finally(()=>{workshopPrepare=null;if(armoryCategory==='workshop')renderWorkshop();});
+  return workshopPrepare;
+}
 function chooseArmoryCategory(category){
   armoryCategory=category;
-  for(const [id,key] of [['armoryEquipmentTab','equipment'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']])$(id).setAttribute('aria-pressed',String(key===category));
+  for(const [id,key] of armoryTabs){const tab=$(id);tab.setAttribute('aria-pressed',String(key===category));tab.setAttribute('aria-controls',key==='workshop'?'armoryWorkshop':'armoryList');}
   for(const section of $('armoryList').querySelectorAll('.armory-section'))section.hidden=section.dataset.section!==category;
+  const workshop=$('armoryWorkshop');workshop.hidden=category!=='workshop';$('armoryList').hidden=category==='workshop';
+  if(category==='workshop'){renderWorkshop();if(!Object.hasOwn(profile||{},'workshop'))void prepareWorkshop();}
 }
-for(const [id,key] of [['armoryEquipmentTab','equipment'],['armoryDefensesTab','defenses'],['armoryServiceTab','service']])$(id).onclick=()=>chooseArmoryCategory(key);
+function renderWorkshop(){
+  const root=$('armoryWorkshop');
+  if(armoryCategory!=='workshop'){root.hidden=true;return;}
+  root.hidden=false;armoryView?.render();
+}
+for(const [id,key] of armoryTabs)$(id).onclick=()=>chooseArmoryCategory(key);
 function renderArmory(){
   const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=translateText('{amount} SCRAP',{amount:a.scrap});
   const section=(name,caption,key)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';wrap.dataset.section=key;head.className='armory-section-head';title.textContent=translateText(name);sub.textContent=translateText(caption);head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};

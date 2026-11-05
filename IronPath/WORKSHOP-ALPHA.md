@@ -1,6 +1,6 @@
 # Endless workshop alpha: scope and safety
 
-The intended first playable test is on GitHub Pages for endless solo and multiplayer. Campaign workshop integration follows later. This is a target, **not an available build**: the workshop remains disabled and the experimental modules are not wired into live matches or saving.
+The workshop is now **live inside the Armory** on GitHub Pages (`Command Center → ARMORY → WORKSHOP`), for endless solo. Campaign workshop integration and multiplayer loadouts follow later. Progression stays client-reported: there is no anti-cheat, and the workshop writes depend on the candidate rules being published.
 
 ## Alpha must let the tester
 
@@ -15,15 +15,22 @@ The user requires **no paid services**. Use GitHub Pages for the static game and
 
 This changes the trust model: completion and progression are client-reported, and Firebase rules cannot validate our encoded inventory or fully prevent a malicious owner from deleting receipts or cheating. Transactions and receipts can reduce accidental duplication, not prove honest play. Old-client compatibility, account preservation, rules review and safe recovery still need work; these are not solved by accepting the anti-cheat limitation. The server prototypes remain research artifacts, not a deployment dependency.
 
-The gated workshop UI now selects the existing direct Firebase transaction adapter again. It remains disabled: switching adapters is not a release or a complete alpha. The unused HTTP client and trusted service prototypes are retained for reference and are not required by this free-tier direction.
+The workshop UI uses the direct Firebase transaction adapter (`workshop-account.mjs`): one guarded transaction per change, no backend. The unused HTTP client and trusted-service prototypes are retained for reference only.
 
-## Alpha access (free tier)
+## Access (free tier)
 
-The release gate is now **on** (armory alpha shipped), while who may open the workshop is decided by two free runtime switches: a local opt-in (`?workshop=alpha`, remembered per device) or a database allow-list entry `workshopAlpha/<uid> = true` (owner-readable, admin-written). Players who have not opted in keep the current game and the existing save path. These switches are visibility controls for playtesting, not security. See `WORKSHOP-TESTING.md` for the tester script and `firebase/WORKSHOP-ROLLOUT.md` for publishing the rules.
+There is no opt-in and no allow-list any more. The `WORKSHOP_RELEASE_READY` flag,
+`workshop-access.mjs`, the `?workshop=alpha` query switch, the remembered local
+storage entry and the `workshopAlpha/<uid>` database list are all removed. Any
+signed-in soldier can open the workshop tab; the only gate left is the normal
+in-game one (`canEditSkills()`), which already blocks armory edits during a party or
+a live match. If the rules that accept the workshop fields are not published yet,
+the write is rejected, the tab says so, the old save keeps working and the session
+falls back to the legacy wave credit. See `WORKSHOP-TESTING.md`.
 
-## Reward wiring (free tier, gated)
+## Reward wiring (free tier)
 
-Endless solo now has a client-transaction reward path behind the same `WORKSHOP_RELEASE_READY=false` gate: each run gets one random 32-hex receipt id (`workshop-run-receipt.mjs`), and the wave-cleared report calls `account.awardXP(..., runId)`. The transaction runs `applySoloWaveReward`, which initializes a missing workshop once (failing closed on a corrupt one) and credits legacy XP/loot, boss materials, preserved legacy unlocks and the receipt in that single write. Campaign reports, and all reports while the gate is off, keep the existing additive save with no new fields. Co-op/versus wave blocks use the same atomic reducer through `createCoopRewardQueue({..., workshop:true})`. Replayed or retried reports are no-ops. Full scrap or component balances clamp at the cap instead of rejecting the wave, so a maxed account still receives its XP. If a workshop write is rejected because the candidate rules are not deployed yet, the wave is saved once with the current legacy credit and that browser session stops sending receipts, so nothing is lost and no receipt can be replayed. This is still client-reported and is not anti-cheat; the candidate rules must be reviewed and deployed before the gate can be flipped.
+Endless solo uses a client-transaction reward path: each run gets one random 32-hex receipt id (`workshop-run-receipt.mjs`), and the wave-cleared report calls `account.awardXP(..., runId)`. The transaction runs `applySoloWaveReward`, which initializes a missing workshop once (failing closed on a corrupt one) and credits legacy XP/loot, boss materials, preserved legacy unlocks and the receipt in that single write. Campaign reports keep the existing additive save with no new fields. Co-op/versus wave blocks use the same atomic reducer through `createCoopRewardQueue({..., workshop:true})`. Replayed or retried reports are no-ops. Full scrap or component balances clamp at the cap instead of rejecting the wave, so a maxed account still receives its XP. If a workshop write is rejected because the candidate rules are not deployed yet, the wave is saved once with the current legacy credit and that browser session stops sending receipts, so nothing is lost and no receipt can be replayed. This is still client-reported and is not anti-cheat. The candidate rules are in `firebase/WORKSHOP-RULES-TO-PUBLISH.json`; until they are published the workshop tab stays inert and waves use the legacy credit.
 
 ## Before sharing a playable link
 
@@ -39,7 +46,7 @@ Campaign gameplay remains available in the existing live game. No campaign works
 
 ## Integration progress
 
-The actual solo deployment reset now routes through `solo-deployment.mjs`. With the release gate disabled it retains the old behavior; with an explicitly enabled valid workshop it captures the equipped loadout and replaces the old item effects for endless solo. Campaign deliberately remains on the legacy path. This is not an enablement switch: initialization/error UX, reward persistence, safe account migration and multiplayer are not connected yet. Do not flip the gate until those paths are complete and tested. The old armory still provides bunker upgrades and campaign equipment; removing it before replacements exist would break those functions.
+Solo deployment routes through `solo-deployment.mjs`. An endless run uses the captured workshop loadout when the profile has a readable workshop; a profile without one (any account that never opened the tab) plays with the legacy equipment instead of throwing, and a profile with an unreadable/newer workshop refuses to deploy rather than silently dropping the player's chosen gear. Campaign stays on the legacy path. The old equipment and bunker tabs remain in the same dialog, so nothing that used to work was removed.
 
 The Firebase party and experimental recovery adapters now accept an optional workshop lock, construct a workshop match, and reject mismatched workshop snapshot/checkpoint loadouts. This path is **not enabled by the lobby or release gate**: lock creation, verified ownership, durable authoritative manifest binding, old-client fencing and reward wiring are still missing. These structural checks do not make a client-controlled host authoritative or block older clients.
 

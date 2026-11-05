@@ -1,4 +1,4 @@
-import {germanWorkshop} from './localization-workshop-de.mjs?v=20261105-workshop5';
+import {germanWorkshop} from './localization-workshop-de.mjs?v=20261112-armory1';
 import {germanFinal} from './localization-final-de.mjs?v=20261105-soldier1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';
