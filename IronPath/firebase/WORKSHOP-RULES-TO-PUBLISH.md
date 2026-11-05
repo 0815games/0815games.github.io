@@ -1,5 +1,10 @@
 # Rules to paste into Firebase
 
+**Status: PUBLISHED (2026-11-05).** The live database now accepts the workshop
+fields, so the workshop in the live Armory is active. Keep this file as the exact
+copy that was published: rollback means pasting your saved export back, not this
+file.
+
 File to paste: **`IronPath/firebase/WORKSHOP-RULES-TO-PUBLISH.json`** (identical to `workshop.complete.draft.rules.json`, renamed so it is obvious which file goes into the console).
 
 Console: project `iron-path-dc727` → Realtime Database → **Rules** → select all → paste the **whole** file → Publish.

@@ -30,8 +30,9 @@ prices, effects and the look can change, and progression is client-reported.
 5. **Replay safety.** Close the run-results dialog mid-save, refresh during a wave
    report, or reopen an old result. A wave must never pay twice, and a lost save
    must never vanish silently.
-6. **Co-op.** Play a party run, finish a wave, disconnect and rejoin. Your completed
-   waves should be paid exactly once, both partners.
+6. **Co-op.** Play a party run, reach wave 5, disconnect and rejoin. Your completed
+   waves are paid exactly once for both partners, and the boss component shows up in
+   the Armory → WORKSHOP wallet.
 7. **Full wallet.** If you are near the scrap cap, a completed wave must still give
    its XP (the balance just stops growing).
 8. **Locked while playing.** Open the armory during a party or a match: it should
@@ -41,15 +42,19 @@ prices, effects and the look can change, and progression is client-reported.
 10. **Older account.** Try an account that has never opened the workshop, one with
     every item unlocked, and one with an old campaign save.
 
-## What "not enabled yet" looks like
+## Live now
 
-If the database rules that accept the workshop fields are not published yet, the
-workshop tab says that it is not switched on for this account and nothing was
-changed. The Armory, the game and your old save keep working. In that state a
-finished wave is saved once with the old reward and the browser stops sending
-workshop receipts for the rest of the session, so nothing is lost and no reward can
-be paid twice. Publishing the rules (`firebase/WORKSHOP-RULES-TO-PUBLISH.json`) is
-what turns the workshop on for everyone.
+The database rules are published, so the workshop is on for every signed-in
+account. There is no switch left to flip.
+
+- **If the tab says the workshop is not switched on for the account**, the write was
+  rejected by the database: the rules were rolled back, or that account is being
+  written with a field the current rules do not accept. Nothing is changed and the
+  rest of the Armory keeps working. A finished wave is then saved once with the old
+  reward and the browser stops sending workshop receipts for the rest of the
+  session, so nothing is lost and no reward is paid twice.
+- **`firebase/WORKSHOP-RULES-TO-PUBLISH.md`** records the exact ruleset that was
+  published; rollback is pasting your backup export back, not that file.
 
 ## Reporting
 
@@ -59,7 +64,8 @@ line showed an error. Do not share your password or your Firebase token.
 ## Known limits (not bugs)
 
 - You can cheat progression; that is accepted for the free-tier alpha.
-- Crafted loadouts apply to endless solo. Campaign keeps the old equipment, and the
-  live multiplayer lobby does not use workshop loadouts yet.
+- Crafted loadouts apply to endless solo. Campaign keeps the old equipment. Co-op
+  runs pay XP, scrap and boss components to the workshop, but multiplayer matches do
+  not yet use the crafted combat effects.
 - Prices and combat numbers are provisional and being balanced.
 - German and English text is provisional.

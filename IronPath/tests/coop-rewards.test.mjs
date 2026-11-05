@@ -1,4 +1,5 @@
 import {strict as assert} from 'node:assert';
+import {test} from 'node:test';
 import {createCoopRewardQueue} from '../coop-rewards.mjs';
 import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
@@ -39,3 +40,21 @@ const laterReconnect=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,blo
  const before=state.xp;queue.observe(31);await flushWait();assert.equal(state.xp,before,'a replayed workshop receipt earns nothing');queue.close();
 }
 console.log('Workshop co-op receipt tests passed.');
+
+test('co-op credits the workshop once, including boss components',async()=>{
+ // The live queue must pay the workshop path, not only the legacy scrap/XP path:
+ // without it, crafted gear never gets its boss components in multiplayer.
+ const state={name:'Alice',gender:'female',xp:0,armory:{scrap:0,owned:0,equipped:0}},statuses=[];
+ const workshopSdk={ref:(_db,path)=>path,onValue(_ref,callback){callback({val:()=>structuredClone(state)});return()=>{};},
+  async runTransaction(_ref,update){const next=update(structuredClone(state));if(next)Object.assign(state,next);return {committed:!!next,snapshot:{val:()=>structuredClone(state)}};}};
+ const queue=createCoopRewardQueue({db:{},auth:{currentUser:{uid:'a'}},sdk:workshopSdk,partyId:party,workshop:true,onStatus:status=>statuses.push(status)});
+ queue.observe(0b11111);await flush();
+ assert.equal(statuses.at(-1),'saved','the workshop transaction commits');
+ assert.ok(decodeWorkshop(state.workshop),'a workshop is created by the credit');
+ assert.equal(decodeWorkshop(state.workshop).components,1,'wave 5 is a boss wave and pays a component');
+ assert.equal(state.coopRewards[party],0b11111);
+ const paid=JSON.stringify(state);
+ queue.observe(0b11111);await flush();assert.equal(JSON.stringify(state),paid,'a replay pays nothing');
+ queue.observe(0b111111);await flush();
+ assert.equal(state.coopRewards[party],0b111111,'a later block still pays its own waves');
+});
