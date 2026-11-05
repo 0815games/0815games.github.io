@@ -1,14 +1,22 @@
-// Experimental solo-only bridge into the existing combat engine. This module is
+// Experimental bridge into the existing combat engine. This module is
 // not wired to account loading, live matchmaking, or any player-facing screen.
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
 import {workshopEffects} from './workshop-effects.mjs';
+import {decodeMatchLoadout} from './workshop-multiplayer.mjs';
 
 export function equipmentForPlayer(state,player){
  const lock=state.experimentalWorkshop;
  if(!lock)return legacyEquipmentEffects(player?.loadout?.equipped,state.wave);
  // Never silently fall back to old effects if a match contains a broken lock.
- if(state.individualSupplies||state.mode&&state.mode!=='solo'||Object.keys(state.players||{}).length!==1||!player||player.id!==lock.playerId||lock.snapshot?.mode!=='solo')throw new Error('Invalid experimental solo workshop lock');
- const effects=workshopEffects(lock.snapshot,state.wave);
+ let snapshot;
+ if(lock.mode){
+  if(!['coop','four-coop','versus','two-vs-two'].includes(lock.mode)||!lock.loadouts||typeof lock.loadouts!=='object'||!player||!Object.hasOwn(state.players,player.id)||!Object.hasOwn(lock.loadouts,player.id)||Object.keys(lock.loadouts).length!==Object.keys(state.players).length||Object.keys(state.players).some(id=>!Object.hasOwn(lock.loadouts,id)))throw new Error('Invalid experimental workshop match lock');
+  snapshot=decodeMatchLoadout(lock.loadouts[player.id],lock.mode);
+ }else{
+  if(state.individualSupplies||state.mode&&state.mode!=='solo'||Object.keys(state.players||{}).length!==1||!player||player.id!==lock.playerId||lock.snapshot?.mode!=='solo')throw new Error('Invalid experimental solo workshop lock');
+  snapshot=lock.snapshot;
+ }
+ const effects=workshopEffects(snapshot,state.wave);
  if(!effects)throw new Error('Invalid experimental workshop loadout');
  return effects;
 }

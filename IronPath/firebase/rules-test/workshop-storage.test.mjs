@@ -43,3 +43,15 @@ test('unsupported or corrupt workshop is never reset by a transaction',async()=>
  const reference=ref(a,'players/alice'),profile={...base(),workshop:'[2,0,[],[],[]]'};await set(reference,profile);const stop=await ready(reference);
  try{const result=await runTransaction(reference,current=>applyWireWorkshopCommand(current,{type:'craft',item:'boots'})??undefined,{applyLocally:false});assert.equal(result.committed,false);assert.deepEqual((await get(reference)).val(),profile);}finally{stop();}
 });
+
+test('concurrent completed-wave replays credit a boss only once',async()=>{
+ const {applyWorkshopWaveCredit}=await import('../../workshop-wave-credit.mjs');
+ const receiptId='0123456789abcdef0123456789abcdef',options={kind:'coop',receiptId,mask:31};
+ const ra=ref(a,'players/alice'),rb=ref(b,'players/alice');await set(ra,initializeWireWorkshop(base()));const stopA=await ready(ra),stopB=await ready(rb);
+ try{
+  const outcomes=await Promise.all([ra,rb].map(reference=>runTransaction(reference,current=>applyWorkshopWaveCredit(current,options)??undefined,{applyLocally:false})));
+  assert.equal(outcomes.filter(result=>result.committed).length,1);
+  const saved=(await get(ra)).val();assert.equal(saved.xp,260);assert.equal(saved.armory.scrap,150); // wave 2/4 duplicate legacy item adds 20
+  assert.equal(decodeWorkshop(saved.workshop).components,1);assert.equal(saved.coopRewards[receiptId],31);assert.equal(saved.coopRewards.abcd,31);assert.equal(saved.armory.fortify,3);
+ }finally{stopA();stopB();}
+});
