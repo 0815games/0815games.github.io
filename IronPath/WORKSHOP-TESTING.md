@@ -23,7 +23,7 @@ They then see **OPEN WORKSHOP** after signing in, with no new build and no query
 Two caveats, be deliberate:
 
 - This is a **test switch**, not security. It controls visibility only; rewards are still client-reported, and a determined player can write their own profile regardless. Do not treat it as access control for anything valuable.
-- The path needs a rules entry before it is useful. `workshop.complete.draft.rules.json` does not currently include `workshopAlpha`, so writes there are denied until it is added. Until then, only the local switch works. Adding it is part of the rules review in `firebase/WORKSHOP-ROLLOUT.md`, not a separate decision.
+- The path is covered by `workshopAlpha/$uid` in the rules that ship with this alpha (`firebase/WORKSHOP-RULES-TO-PUBLISH.json`). It is readable by the owner and **not writable by any client**, so you add entries in the console (or with the Admin SDK), and nobody can grant themselves access from the game.
 
 ## What to test, in order
 

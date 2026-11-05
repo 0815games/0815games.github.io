@@ -19,7 +19,7 @@ The gated workshop UI now selects the existing direct Firebase transaction adapt
 
 ## Alpha access (free tier)
 
-The compile-time gate stays `false`, but there are two free runtime switches: a local opt-in (`?workshop=alpha`, remembered per device) and a database allow-list entry `workshopAlpha/<uid> = true`. Both are visibility switches for playtesting only, not security. See `WORKSHOP-TESTING.md` for the tester script, and `firebase/WORKSHOP-ROLLOUT.md` before the allow-list path is used.
+The release gate is now **on** (armory alpha shipped), while who may open the workshop is decided by two free runtime switches: a local opt-in (`?workshop=alpha`, remembered per device) or a database allow-list entry `workshopAlpha/<uid> = true` (owner-readable, admin-written). Players who have not opted in keep the current game and the existing save path. These switches are visibility controls for playtesting, not security. See `WORKSHOP-TESTING.md` for the tester script and `firebase/WORKSHOP-ROLLOUT.md` for publishing the rules.
 
 ## Reward wiring (free tier, gated)
 
