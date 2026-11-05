@@ -32,6 +32,12 @@ const assert = require('node:assert/strict');
 
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
+    // The field briefing now starts itself for a new soldier, and a modal correctly
+    // holds back non-modal social alerts. Dismiss it the way a player does before
+    // expecting the party invitation to appear.
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true,'a fresh account is briefed automatically');
+    await page.locator('#tutorialSkip').click();
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
     await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
     // Exercise the standalone workshop with an in-memory transport; no account writes.
     await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-prestige1')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
