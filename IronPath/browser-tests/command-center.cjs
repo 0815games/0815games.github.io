@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 (async () => {
   const browser = await chromium.launch({headless:true});
   try {
-    const context = await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
+    const context = await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
     const page = await context.newPage(), errors=[];
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));
@@ -54,7 +54,7 @@ const assert = require('node:assert/strict');
     // Portrait starts fitted; direct zoom and orientation changes retain the run.
     await page.waitForFunction(()=>{const c=document.querySelector('#game'),v=document.querySelector('#mapViewport');return c.getBoundingClientRect().width<=v.clientWidth+1&&c.getBoundingClientRect().height<=v.clientHeight+1;});
     const fitWidth=await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width);assert.equal(await page.locator('#mapQuickZoom').isVisible(),true);
-    await page.locator('#mapQuickZoom').click();assert.match(await page.locator('#mapQuickZoom').innerText(),/FIT MAP/);assert.ok(await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width)>fitWidth*1.9);
+    await page.locator('#mapQuickZoom').click();assert.match(await page.locator('#mapQuickZoom').innerText(),/FIT MAP/);assert.ok(await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width)>fitWidth*1.9);await page.waitForFunction(()=>{const c=document.getElementById('game');return c.width>=Math.round(c.getBoundingClientRect().width*2)-2;});
     await page.setViewportSize({width:844,height:390});await page.waitForTimeout(150);assert.match(await page.locator('#mapQuickZoom').innerText(),/FIT MAP/);assert.equal(await page.locator('#wave').innerText(),'0 / ∞');
     await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);await page.locator('#mapQuickZoom').click();assert.match(await page.locator('#mapQuickZoom').innerText(),/ZOOM MAP/);assert.ok(await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width)<=fitWidth+1);
 

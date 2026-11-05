@@ -131,7 +131,7 @@ function getGroundImage(doc,theme){
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null}={}){
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
@@ -141,12 +141,12 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
     for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);
   }
   if(!doc?.createElement){paint(ctx);return;}
-  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}`;let cached=variants.get(key);
-  if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=width;canvas.height=height;const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
-  ctx.drawImage(cached.canvas,0,0);
+  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}`;let cached=variants.get(key);
+  if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
+  ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state);ctx.restore();
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state);ctx.restore();
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText(tr('ENEMY ENTRY'),15,75);if(paths.length>1)ctx.fillText(tr('ENEMY ENTRY'),15,height-75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}

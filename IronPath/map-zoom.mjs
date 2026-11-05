@@ -1,6 +1,6 @@
 // CSS-sized map zoom: preserve the simulation's existing canvas coordinates.
 // The scroll viewport owns panning, so single-finger drags remain native.
-export function createMapZoom({viewport,canvas,onChange=()=>{},isEnabled=()=>true}){
+export function createMapZoom({viewport,canvas,getLogicalSize=()=>({width:canvas.width,height:canvas.height}),onChange=()=>{},isEnabled=()=>true}){
  let factor=1,pinch=null,destroyed=false,suppressClickUntil=0;
  const distance=(a,b)=>Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);
  const center=(a,b)=>({x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2});
@@ -9,7 +9,7 @@ export function createMapZoom({viewport,canvas,onChange=()=>{},isEnabled=()=>tru
   const rect=viewport.getBoundingClientRect(),old=canvas.getBoundingClientRect();
   const point=anchor||{x:rect.left+rect.width/2,y:rect.top+rect.height/2};
   const wx=old.width?(point.x-old.left)/old.width:.5,wy=old.height?(point.y-old.top)/old.height:.5;
-  factor=next;const fit=Math.min(viewport.clientWidth,viewport.clientHeight*canvas.width/canvas.height);
+  factor=next;const logical=getLogicalSize(),fit=Math.min(viewport.clientWidth,viewport.clientHeight*logical.width/logical.height);
   if(!(fit>0))return;
   canvas.style.width=`${fit*factor}px`;canvas.style.height='auto';
   const after=canvas.getBoundingClientRect();viewport.scrollLeft+=(after.left+wx*after.width)-point.x;viewport.scrollTop+=(after.top+wy*after.height)-point.y;

@@ -19,3 +19,8 @@ test('battlefield language changes repaint cached terrain without touching playe
  selector.value='de';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,2);assert.ok(canvases[1].calls.some(([op,text])=>op==='fillText'&&text==='WRACK'));assert.ok(calls.some(([op,text])=>op==='fillText'&&text==='BUILD'));assert.deepEqual(state,before);
  selector.value='en';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3);
 });
+test('cached terrain is rasterized at display resolution and reused until resolution changes',()=>{
+ const map=structuredClone(getMap('forest')),canvases=[],main=context();main.canvas={ownerDocument:{createElement(tag){if(tag==='img')return {};const calls=[],ctx=context(calls),canvas={getContext:()=>ctx,calls};canvases.push(canvas);return canvas;}}};
+ const state=createMatch([createPlayer('local',{name:'Test',gender:'female'})],map.id),opts={path:map.path,pads:map.pads,theme:map.theme,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'local',getTowerRange,renderScale:2};
+ drawCartoonBattle(main,state,opts);assert.equal(canvases[0].width,1920);assert.equal(canvases[0].height,1080);assert.ok(canvases[0].calls.some(([op,x,y])=>op==='scale'&&x===2&&y===2));drawCartoonBattle(main,state,opts);assert.equal(canvases.length,1);drawCartoonBattle(main,state,{...opts,renderScale:2.5});assert.equal(canvases.length,2);assert.equal(canvases[1].width,2400);
+});
