@@ -75,3 +75,18 @@ test('candidate rules preserve representative legacy saves through migration and
   }finally{stop();}
  }
 });
+test('the alpha allow-list is owner-readable and cannot be self-granted',async()=>{
+ const {allowListed}=await import('../../workshop-access.mjs');
+ const mine=ref(alice,'workshopAlpha/alice');
+ // Writes are admin-only: a client can never grant itself access.
+ await assertFails(set(mine,true));
+ await assertFails(set(ref(bob,'workshopAlpha/alice'),true));
+ assert.equal(await allowListed({get,ref},alice,'alice'),false,'an absent entry is closed');
+ // Admin (rules-bypassing) writes model what the owner does in the console.
+ await env.withSecurityRulesDisabled(async ctx=>set(ref(ctx.database(),'workshopAlpha/alice'),true));
+ assert.equal(await allowListed({get,ref},alice,'alice'),true);
+ assert.equal((await get(mine)).val(),true);
+ await assertFails(get(ref(bob,'workshopAlpha/alice')),'another account cannot read the list');
+ await env.withSecurityRulesDisabled(async ctx=>set(ref(ctx.database(),'workshopAlpha/alice'),'true'));
+ assert.equal(await allowListed({get,ref},alice,'alice'),false,'only boolean true counts');
+});

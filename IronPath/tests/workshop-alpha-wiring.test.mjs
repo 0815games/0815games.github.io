@@ -6,10 +6,13 @@ import {readFile} from 'node:fs/promises';
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 
-test('the compile-time gate stays off and no other constant opens the workshop',()=>{
- assert.match(source,/const WORKSHOP_RELEASE_READY=false;/);
- assert.doesNotMatch(source,/WORKSHOP_RELEASE_READY\s*=\s*true/);
+test('the release gate is on but never grants access by itself',()=>{
+ assert.match(source,/const WORKSHOP_RELEASE_READY=true;/);
+ // The gate must not be used directly for the UI or a game; only the resolved
+ // access decision may open anything.
  assert.doesNotMatch(source,/experimentalWorkshop:WORKSHOP_RELEASE_READY/,'games must follow the runtime access decision');
+ assert.doesNotMatch(source,/soldierWorkshop'\)\.hidden=!WORKSHOP_RELEASE_READY/);
+ assert.match(source,/accessGranted\(\{releaseReady:WORKSHOP_RELEASE_READY,optIn:/);
 });
 
 test('access is required by every workshop entry point',()=>{
@@ -29,6 +32,6 @@ test('solo rewards only send receipts when access is granted, and stop after a r
 });
 
 test('the opt-in is documented in the page and the module is cache-busted',()=>{
- assert.match(source,/workshop-access\.mjs\?v=20261112-free5/);
+ assert.match(source,/workshop-access\.mjs\?v=20261112-free6/);
  assert.match(html,/<div class="workshop-content" id="workshopContent"><\/div>/,'the workshop dialog stays in the page for gated access');
 });

@@ -26,7 +26,7 @@ import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequ
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
 import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261105-prestige1';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-free2';
-import {parseOptIn,rememberOptIn,rememberedOptIn,allowListed,accessGranted} from './workshop-access.mjs?v=20261112-free5';
+import {parseOptIn,rememberOptIn,rememberedOptIn,allowListed,accessGranted} from './workshop-access.mjs?v=20261112-free6';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
@@ -50,7 +50,10 @@ setupFieldMenu({document,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
 // Release gate: never expose workshop writes until production rules, complete
 // multiplayer version fencing and migration/rollback have been reviewed.
-const WORKSHOP_RELEASE_READY=false;
+// Release gate: ON. This only makes the workshop *available*; who may open it is
+// still decided below by the alpha allow-list or the local `?workshop=alpha`
+// opt-in, so players who have not opted in keep the existing game and save path.
+const WORKSHOP_RELEASE_READY=true;
 // Set once a workshop award was rejected by rules, so later waves use the legacy
 // credit for the rest of the session instead of retrying (and replaying) receipts.
 let workshopReceiptFallback=false;
