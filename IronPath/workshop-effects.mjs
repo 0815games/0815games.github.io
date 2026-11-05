@@ -2,6 +2,7 @@
 // Numbers are provisional and require gameplay/balance testing. All bonuses
 // belong to the wearer except bunkerHealth, which is shared with their team.
 import {validateWorkshop} from './workshop-model.mjs';
+import {PRESTIGE,isPrestige} from './prestige.mjs';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
 
 const BASE=Object.freeze({damage:0,range:0,movement:0,cooldown:0,bunkerHealth:0,startSupplies:0,airstrikeDamage:0,shotIntervalMultiplier:1,waveSupplies:0,tankTowerMultiplier:1});
@@ -9,6 +10,21 @@ const ITEMS=Object.freeze({
  marksman:{damage:2,range:10},mechanic:{bunkerHealth:10,startSupplies:10},
  radio:{cooldown:3},boots:{movement:15}
 });
+// Campaign trophies. Same shape as a crafted item so nothing downstream cares
+// where an item came from; the values are tuned as the campaign finale answer.
+const TROPHY=Object.freeze(Object.fromEntries(Object.entries(PRESTIGE).map(([id,item])=>[id,item.bonus])));
+const TROPHY_MODS=Object.freeze(Object.fromEntries(Object.entries(PRESTIGE).map(([id,item])=>[id,Object.fromEntries(Object.entries(item.mods).map(([mod,info])=>[mod,modEffect(info.effect)]))])));
+// Read the numeric effect back out of the description we show the player, so the
+// catalogue text and the combat value cannot drift apart.
+function modEffect(text){
+ if(/damage/i.test(text))return {damage:Number(text.match(/(\d+)/)?.[1]||0)};
+ if(/angle|range/i.test(text))return {range:Number(text.match(/(\d+)/)?.[1]||0)};
+ if(/movement/i.test(text))return {movement:Number(text.match(/(\d+)/)?.[1]||0)};
+ if(/bunker/i.test(text))return {bunkerHealth:Number(text.match(/(\d+)/)?.[1]||0)};
+ if(/supplies/i.test(text))return {startSupplies:Number(text.match(/(\d+)/)?.[1]||0)};
+ if(/recharges/i.test(text))return {cooldown:Number(text.match(/(\d+)/)?.[1]||0)};
+ const percent=Number(text.match(/(\d+)%/)?.[1]||0);return percent?{shotIntervalMultiplier:1-percent/100}:{};
+}
 const MODS=Object.freeze({
  marksman:{precision:{range:10},quick:{shotIntervalMultiplier:.95}},
  mechanic:{tools:{startSupplies:5},lightweight:{movement:10}},
@@ -33,6 +49,6 @@ export function workshopEffects(snapshot,wave){
  for(const item of snapshot.items){if(item.mod!==null){if(Object.hasOwn(mods,item.id))return null;mods[item.id]=item.mod;}}
  const w={version:1,components:0,owned,equipped:Object.fromEntries(snapshot.items.map(i=>[i.slot,i.id])),mods};if(!validateWorkshop(w))return null;
  const result={...BASE};if(snapshot.mode==='versus'||snapshot.mode==='two-vs-two')return result;
- for(const {id,mod} of snapshot.items){if(id.startsWith('legacy-'))add(result,legacyEquipmentEffects(Number(id.slice(7)),wave));else add(result,ITEMS[id]);if(mod)add(result,MODS[id]?.[mod]);}
+ for(const {id,mod} of snapshot.items){if(id.startsWith('legacy-'))add(result,legacyEquipmentEffects(Number(id.slice(7)),wave));else if(isPrestige(id)){add(result,TROPHY[id]);if(mod)add(result,TROPHY_MODS[id]?.[mod]);}else{add(result,ITEMS[id]);if(mod)add(result,MODS[id]?.[mod]);}}
  return result;
 }

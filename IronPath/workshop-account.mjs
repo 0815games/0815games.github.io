@@ -1,6 +1,6 @@
 // Workshop transaction service, connected behind a disabled release gate.
 // Do not enable until compatible Firebase rules and mixed-client fencing exist.
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,syncPrestige} from './workshop-wire.mjs';
 
 export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
  if(!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||typeof canEdit!=='function')throw new Error('Invalid workshop account service');
@@ -22,5 +22,7 @@ export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
   }catch(error){return {status:'error',error};}
   finally{unwatch?.();busy=false;}
  }
- return {initialize:()=>transact(initializeWireWorkshop),command:command=>transact(p=>applyWireWorkshopCommand(p,command)),isBusy:()=>busy};
+ // Backfill campaign trophies for missions already finished. Free and
+ // idempotent: syncPrestige only adds what the stored story progress proves.
+ return {initialize:()=>transact(initializeWireWorkshop),command:command=>transact(p=>applyWireWorkshopCommand(p,command)),sync:()=>transact(syncPrestige),isBusy:()=>busy};
 }
