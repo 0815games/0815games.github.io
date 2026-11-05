@@ -140,7 +140,7 @@ const assert = require('node:assert/strict');
     // Clicking NEXT on a practice step does nothing until that step is done, so the
     // walk skips a practice step it is not testing yet and otherwise just advances.
     const walkTo=async title=>{for(let i=0;i<20;i++){if(title.test(await page.locator('#tutorialTitle').innerText()))return true;await closePractice();if(await page.locator('#tutorialPracticeSkip').isVisible())await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();}return title.test(await page.locator('#tutorialTitle').innerText());};
-    await page.locator('#menuTutorial').click();
+    // The tour is already open from the line above; walk it from here.
     assert.equal(await walkTo(/Skills/),true);
     await page.waitForSelector('#skillDialog[open]');
     assert.equal(await visible('#sandboxBanner'),true,'practice says it is sample data');
