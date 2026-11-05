@@ -1,4 +1,4 @@
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261105-soldier1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261105-soldier2';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
 import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261105-soldier1';
