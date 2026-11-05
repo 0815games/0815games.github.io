@@ -1,0 +1,10 @@
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {migrateWorkshop,validateWorkshop,craftWorkshop,equipWorkshop,modifyWorkshop} from '../workshop-model.mjs';
+test('migration preserves every legacy item and its currently equipped effect without mutating saves',()=>{
+ for(let equipped=0;equipped<=10;equipped++){const armory={scrap:99,owned:1023,equipped,fortify:3,plating:2},before=structuredClone(armory),w=migrateWorkshop(armory);assert.ok(validateWorkshop(w));assert.equal(w.owned.length,10);assert.equal(Object.values(w.equipped).includes(`legacy-${equipped}`),equipped>0);assert.deepEqual(armory,before);}
+ assert.equal(migrateWorkshop({scrap:-1}),null);assert.equal(migrateWorkshop({owned:0,equipped:3}),null);
+});
+test('craft, equip and mod are atomic pure operations and reject duplicate, invalid or unaffordable actions',()=>{
+ let armory={scrap:100,owned:1,equipped:1},w=migrateWorkshop(armory);w.components=1;const before=structuredClone({armory,w});const result=craftWorkshop(armory,w,'marksman');assert.equal(result.armory.scrap,40);assert.equal(result.workshop.components,0);assert.deepEqual({armory,w},before);assert.equal(craftWorkshop(result.armory,result.workshop,'marksman'),null);assert.equal(craftWorkshop(armory,{...w,components:0},'marksman'),null);
+ const equipped=equipWorkshop(result.workshop,'weapon','marksman');assert.equal(equipped.equipped.weapon,'marksman');assert.equal(equipWorkshop(equipped,'gear','marksman'),null);const mod=modifyWorkshop(result.armory,equipped,'marksman','precision');assert.equal(mod.armory.scrap,0);assert.equal(mod.workshop.mods.marksman,'precision');assert.equal(modifyWorkshop(mod.armory,mod.workshop,'marksman','quick'),null);assert.equal(modifyWorkshop(armory,w,'marksman','precision'),null);
+});
+test('unknown and corrupt future schemas fail closed',()=>{const w=migrateWorkshop(null);assert.equal(validateWorkshop({...w,version:2}),false);assert.equal(validateWorkshop({...w,equipped:{...w.equipped,weapon:'unknown'}}),false);assert.equal(craftWorkshop({scrap:100},{...w,version:2},'boots'),null);});

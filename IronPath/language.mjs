@@ -1,4 +1,4 @@
-import {germanFinal} from './localization-final-de.mjs?v=20261105-fieldfit1';
+import {germanFinal} from './localization-final-de.mjs?v=20261105-soldier1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
