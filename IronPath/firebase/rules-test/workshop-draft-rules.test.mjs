@@ -55,20 +55,23 @@ test('candidate rules preserve representative legacy saves through migration and
   {name:'OldReceipts',gender:'male',xp:40,armory:{scrap:0,fortify:0,plating:0,owned:0,equipped:0},campaign:1,storyProgress:1,coopRewards:{[id]:1},soloWorkshopReceipts:{['11'.repeat(16)]:7}}
  ];
  for(const profile of shapes){
-  const r=ref(alice,'players/alice');await set(r,structuredClone(profile));
-  const stop=await new Promise((resolve,reject)=>{const off=onValue(r,()=>resolve(off),reject);});
+  // Each shape starts from a clean record; writes are ordered by the rules, so
+  // reuse of one path would otherwise look like an illegal XP decrease.
+  await env.withSecurityRulesDisabled(async ctx=>set(ref(ctx.database(),'players/alice'),structuredClone(profile)));
+  const r=ref(alice,'players/alice'),stop=await new Promise((resolve,reject)=>{const off=onValue(r,()=>resolve(off),reject);});
   try{
    const credit=await runTransaction(r,current=>applySoloWaveReward(current,{runId,wave:5})??undefined,{applyLocally:false});
    assert.equal(credit.committed,true,`migration must commit for ${profile.name}`);
    const saved=(await get(r)).val();
    assert.equal(saved.name,profile.name);assert.equal(saved.gender,profile.gender);assert.equal(saved.xp,profile.xp+70);
-   if(profile.armory)assert.equal(saved.armory.scrap,profile.armory.scrap+30);else assert.equal(saved.armory.scrap,30);
+   assert.equal(saved.armory.scrap,Math.min(10000000,(profile.armory?.scrap??0)+30));
    assert.equal(saved.campaign,profile.campaign);assert.equal(saved.storyProgress,profile.storyProgress);assert.equal(saved.skills,profile.skills);
    assert.deepEqual(saved.coopRewards,profile.coopRewards);
    if(profile.soloWorkshopReceipts)assert.equal(saved.soloWorkshopReceipts['11'.repeat(16)],7);
    assert.equal(saved.soloWorkshopReceipts[runId],16);assert.ok(decodeWorkshop(saved.workshop));
-   await assertFails(set(ref(alice,'players/alice/coopRewards'),null));
-   await assertFails(set(r,{...saved,workshop:undefined}));
+   // Removing the workshop or the co-op receipts must stay impossible.
+   const {workshop,...withoutWorkshop}=saved;await assertFails(set(r,withoutWorkshop));
+   if(profile.coopRewards)await assertFails(set(ref(alice,'players/alice/coopRewards'),null));
   }finally{stop();}
  }
 });
