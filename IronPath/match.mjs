@@ -1,3 +1,4 @@
+import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
@@ -131,9 +132,9 @@ export function applyCommand(state, playerId, command) {
       }else if(!state.running)return {ok:false,reason:'This ability can only be used during a wave.'};
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
-      player.cooldown=Math.max(10,(player.skills?.extra?.[3]?25:30)-(player.loadout?.equipped===5?4:0)+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0)-webBonuses(player.skills).cooldown);
+      player.cooldown=Math.max(10,(player.skills?.extra?.[3]?25:30)-legacyEquipmentEffects(player.loadout?.equipped,state.wave).cooldown+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0)-webBonuses(player.skills).cooldown);
       if(active==='assault'){
-        const bonus=state.wave>=6&&player.loadout?.equipped===7?10:0;
+        const bonus=legacyEquipmentEffects(player.loadout?.equipped,state.wave).airstrikeDamage;
         if(variant===2){const target=state.enemies.filter(e=>e.hp>0).reduce((a,b)=>!a||b.hp>a.hp?b:a,null);if(target)target.hp-=80+bonus;}
         else {for(const enemy of state.enemies)enemy.hp-=(variant===1?25:35)+bonus;if(variant===1)state.suppression=Math.max(state.suppression||0,3);}
       }else if(active==='engineer'){player.overdrive=variant===1?15:variant===2?6:10;player.overdriveFactor=variant===1?1.35:variant===2?1.8:1.5;}
