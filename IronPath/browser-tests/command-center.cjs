@@ -91,7 +91,7 @@ const assert = require('node:assert/strict');
     await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true);await page.waitForTimeout(150);
     await page.locator('#armoryWorkshopTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),true); assert.equal(await page.locator('#armoryList').isVisible(),false);
     assert.match(await page.locator('#armoryWorkshop').innerText(),/PREPARE WORKSHOP|Field Scope/,'the workshop renders inside the armory');
-    await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),false); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
+    await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),false); assert.equal(await page.locator('#armoryList').isVisible(),true,'the equipment list comes back'); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
     assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true);
     assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),false);
     await page.locator('#armoryDefensesTab').click(); assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),true); assert.equal(await page.locator('#armoryDefensesTab').getAttribute('aria-pressed'),'true');

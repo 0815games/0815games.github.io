@@ -209,7 +209,7 @@ function chooseArmoryCategory(category){
   armoryCategory=category;
   for(const [id,key] of armoryTabs){const tab=$(id);tab.setAttribute('aria-pressed',String(key===category));tab.setAttribute('aria-controls',key==='workshop'?'armoryWorkshop':'armoryList');}
   for(const section of $('armoryList').querySelectorAll('.armory-section'))section.hidden=section.dataset.section!==category;
-  const workshop=$('armoryWorkshop');workshop.hidden=category!=='workshop';
+  const workshop=$('armoryWorkshop');workshop.hidden=category!=='workshop';$('armoryList').hidden=category==='workshop';
   if(category==='workshop'){renderWorkshop();if(!Object.hasOwn(profile||{},'workshop'))void prepareWorkshop();}
 }
 function renderWorkshop(){
