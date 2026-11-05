@@ -85,3 +85,32 @@ test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
  assert.match(sandbox,/refuseWrite:assertWritable/);
  for(const guard of ['saveCampaign','awardXP'])assert.match(account,new RegExp(`${guard}:[^\\n]{0,200}if\\(inSandbox\\(\\)\\)return`),`${guard} must refuse in the sandbox`);
 });
+
+test('account.js evaluates at load: nothing is named before it is initialised',()=>{
+ const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
+ // `const account={...}` is evaluated during module evaluation. Naming a `const`
+ // declared further down (here: sandboxAPI) throws a temporal-dead-zone error and
+ // takes the whole module - and the Command Center - down with it. Browser tests
+ // catch it, but only in CI, so pin the invariant here as well.
+ const start=account.indexOf('const account={');
+ assert.ok(start>0,'the account object is still a top-level literal');
+ const end=account.indexOf('\n};',start);
+ assert.ok(end>start);
+ const literal=account.slice(start,end);
+ assert.equal(/\bsandboxAPI\b/.test(literal),false,'the account literal must not reference sandboxAPI eagerly');
+ const attach=account.indexOf('account.sandbox=sandboxAPI;');
+ const declared=account.indexOf('const sandboxAPI=');
+ assert.ok(declared>0&&attach>declared,'the sandbox is attached after it exists');
+ // Guard the whole file for the same mistake: a top-level const/let used inside an
+ // earlier top-level statement (closures are deferred, so only flag bare names).
+ const top=account.slice(0,account.indexOf('onAuthStateChanged(auth'));
+ // Names that arrive through `import` are already bound, so they are not TDZ risks.
+ const imported=new Set([...account.matchAll(/^import\s*\{([^}]*)\}/gm)].flatMap(m=>m[1].split(',').map(part=>part.trim().split(/\s+as\s+/).pop())));
+ for(const [,name] of top.matchAll(/^const ([A-Za-z_$][\w$]*)=/gm)){
+  if(name==='account'||imported.has(name))continue;
+  const at=top.indexOf(`const ${name}=`);
+  const before=top.slice(0,at),useBefore=before.match(new RegExp(`(?<![.\\w$'])${name}\\b`));
+  // Only a bare evaluation counts; a reference inside an arrow body runs later.
+  if(useBefore)assert.equal(/(=>|function|\.)[^\n]*$/.test(before.slice(0,useBefore.index+1).split('\n').pop()),true,`${name} is used before its declaration`);
+ }
+});
