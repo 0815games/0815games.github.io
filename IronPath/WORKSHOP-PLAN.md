@@ -2,7 +2,7 @@
 
 ## Status
 
-The first deliverable is a read-only soldier dossier using the **current one-slot equipment system**. It does not yet add an inventory, new gear, crafting, boss components, modifications, competitive normalization, or change rewards. No account schema, match protocol, Firebase rules or gameplay values are changed by the dossier. The displayed values are base loadout values; terrain, enemies and temporary effects can change them. English and German are supported. A separate, unconnected `workshop-model.mjs` prototype exercises migration, crafting, slot assignment and modifications in memory; it is not used by the game and cannot award materials or alter account data. This is not the finished overhaul.
+The first deliverable is a read-only soldier dossier using the **current one-slot equipment system**. It does not yet add an inventory, new gear, crafting, boss components, modifications, competitive normalization, or change rewards. No account schema, match protocol, Firebase rules or gameplay values are changed by the dossier. The displayed values are base loadout values; terrain, enemies and temporary effects can change them. English and German are supported. A separate, unconnected `workshop-model.mjs` prototype exercises migration, crafting, slot assignment and modifications in memory; it is not used by the game and cannot award materials or alter account data. A separate experimental `workshop-rewards.mjs` now calculates boss bonuses from newly completed receipt bits, with replay and overflow tests. It is not connected to the live reward queue; it must run in the same transaction as the receipt and regular rewards. This is not the finished overhaul.
 
 ## Proposed end state (not yet live)
 

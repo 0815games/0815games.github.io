@@ -10,9 +10,9 @@ export const RECIPES=Object.freeze({
  boots:{slot:'gear',scrap:50,components:0,mods:['lightweight']},
 });
 const neutral={weapon:'standard',gear:'none',gadget:'none'};
-function validLegacy(value){if(value==null)return true;const a=readArmory(value);return ['scrap','fortify','plating','repair','gun','supply','safeguard','owned','equipped'].every(k=>value[k]===undefined||value[k]===a[k]);}
+export function validLegacy(value){if(value==null)return true;if(typeof value!=='object'||Array.isArray(value))return false;const a=readArmory(value);return ['scrap','fortify','plating','repair','gun','supply','safeguard','owned','equipped'].every(k=>value[k]===undefined||value[k]===a[k]);}
 function owned(w,id){if(id==='standard'||id==='none')return true;return w.owned.includes(id);}
-function slotOf(id){if(id==='standard')return 'weapon';if(id==='none')return null;if(RECIPES[id])return RECIPES[id].slot;const match=/^legacy-([1-9]|10)$/.exec(id);return match?legacySlots[Number(match[1])-1]:null;}
+function slotOf(id){if(id==='standard')return 'weapon';if(id==='none')return null;if(Object.hasOwn(RECIPES,id))return RECIPES[id].slot;const match=/^legacy-([1-9]|10)$/.exec(id);return match?legacySlots[Number(match[1])-1]:null;}
 export function validateWorkshop(w){
  if(!w||w.version!==1||!Number.isSafeInteger(w.components)||w.components<0||w.components>1000000||!Array.isArray(w.owned)||w.owned.length>100||new Set(w.owned).size!==w.owned.length||!w.equipped||!w.mods||typeof w.mods!=='object'||Array.isArray(w.mods))return false;
  if(w.owned.some(id=>typeof id!=='string'||!slotOf(id)))return false;
@@ -26,7 +26,7 @@ export function migrateWorkshop(armory){
 // All operations return a fresh value or null; the caller must run them inside
 // a transaction against the latest account, never on a cached balance.
 export function craftWorkshop(armory,workshop,id){
- const recipe=RECIPES[id];if(!recipe||!validLegacy(armory)||!validateWorkshop(workshop)||owned(workshop,id))return null;const a=readArmory(armory);if(a.scrap<recipe.scrap||workshop.components<recipe.components)return null;
+ const recipe=Object.hasOwn(RECIPES,id)?RECIPES[id]:null;if(!recipe||!validLegacy(armory)||!validateWorkshop(workshop)||owned(workshop,id))return null;const a=readArmory(armory);if(a.scrap<recipe.scrap||workshop.components<recipe.components)return null;
  return {armory:{...armory,scrap:a.scrap-recipe.scrap},workshop:{...workshop,components:workshop.components-recipe.components,owned:[...workshop.owned,id]}};
 }
 export function equipWorkshop(workshop,slot,id){
