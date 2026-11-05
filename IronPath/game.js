@@ -1,3 +1,4 @@
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-alpha1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
@@ -26,11 +27,11 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261105-workshop5';
-import { createMatch, stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{}}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{}}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
@@ -160,7 +161,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(coop||state!==currentState||account.getUserId()!==currentUser||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||(mission&&!campaignAvailable(account.getProfile(),id)))return false;
     activeMission=mission;selectedMap=mission?mission.mapId:nextMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.accountId=account.getUserId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;state=createMatch([createPlayer('local',{...account.getProfile(),level:account.getLevel()})],selectedMap);Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.accountId=account.getUserId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:!!activeMission});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;

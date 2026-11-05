@@ -20,3 +20,7 @@ The intended first playable test is on GitHub Pages for endless solo and multipl
 ## Campaign deferral
 
 Campaign gameplay remains available in the existing live game. No campaign workshop integration is included in this alpha. The current experimental server-only rules would block campaign progress for migrated accounts, so they cannot be applied to a shared/live profile merely because campaign integration is deferred. Any alpha must isolate its accounts or preserve campaign saves without unsafe bypasses. Do not silently remove campaign or offline/local play.
+
+## Integration progress
+
+The actual solo deployment reset now routes through `solo-deployment.mjs`. With the release gate disabled it retains the old behavior; with an explicitly enabled valid workshop it captures the equipped loadout and replaces the old item effects for endless solo. Campaign deliberately remains on the legacy path. This is not an enablement switch: initialization/error UX, reward persistence, safe account migration and multiplayer are not connected yet. Do not flip the gate until those paths are complete and tested. The old armory still provides bunker upgrades and campaign equipment; removing it before replacements exist would break those functions.
