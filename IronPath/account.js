@@ -12,6 +12,7 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
+import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261112-prestige1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-prestige1';
 import {missingPrestige} from './prestige.mjs';
@@ -58,9 +59,19 @@ const confirmation=createConfirmation(document,translateText);onLanguageChange((
 let workshopReceiptFallback=false;
 let workshopPrepare=null,armoryView=null,workshopPrepareFailed=false;
 // Free-tier direction: Firebase client transactions, no paid backend.
-const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>canEditSkills()});
-armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:()=>profile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
-soldierUI=createSoldierScreen({document,getProfile:()=>profile,translate:translateText,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
+// Tutorial sandbox. While it is on, the real Armory/Skills dialogs render from an
+// example soldier and every write is refused here, in one place, before any
+// transaction can be built. A bug in the tutorial therefore cannot touch a save.
+let sandbox=null;
+const inSandbox=()=>sandbox!==null;
+const viewProfile=()=>sandbox?sandbox.profile:profile;
+// Refuse instead of silently succeeding: the tutorial UI must never believe a
+// change was saved when nothing was written.
+class SandboxWrite extends Error{}
+function assertWritable(){if(inSandbox())throw new SandboxWrite('Sandbox mode: nothing is written to your soldier.');}
+const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>!inSandbox()&&canEditSkills()});
+armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:viewProfile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
+soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
 // Limited live alpha test: publicly accessible; not a security boundary.
@@ -99,12 +110,12 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
-function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:false,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+const account={sandbox:sandboxAPI,recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
    // finished mission can never grant one without the other.
-   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryWithPrestige(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryWithPrestige(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the
@@ -124,6 +135,7 @@ onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){
+  if(!viewProfile())return;
   document.querySelectorAll('[data-skill-path]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.skillPath===$('skillPathFilter').value)));
   const lvl=level(profile.xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100,extraIndex=(index<0?0:index)*2+rank-5;
   $('skillPoints').textContent=translateText(left===1?'LEVEL {level} · {points} POINT AVAILABLE':'LEVEL {level} · {points} POINTS AVAILABLE',{level:lvl,points:left});
@@ -146,7 +158,7 @@ $('skillDetailType').textContent=rank===1?translateText('MAIN SKILL'):`${transla
 document.querySelectorAll('[data-skill-path]').forEach(button=>{button.onclick=()=>{ $('skillPathFilter').value=button.dataset.skillPath; if(button.dataset.skillPath!=='all')selectedSkill={path:button.dataset.skillPath,rank:1}; $('skillPaths').scrollTop=0;renderSkills(); };});
 $('skillFilter').onchange=()=>renderSkills();$('skillPathFilter').onchange=()=>renderSkills();
 $('skillOpen').onclick=()=>{if(!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to edit skills between deployments, or leave your party first.');return;}skillsOpenGeneration++;draftSkills=parseBuild(profile.skills,level(profile.xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='assault';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
-$('skillReset').onclick=async()=>{if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
+$('skillReset').onclick=async()=>{if(inSandbox())return;if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
 async function closeSkills(){
   if(!$('skillDialog').open||savingSkills||closingSkills)return;
   if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();return;}
@@ -158,7 +170,7 @@ async function closeSkills(){
 $('skillCancel').onclick=closeSkills;
 $('skillDialog').addEventListener('cancel',event=>{event.preventDefault();void closeSkills();});
 bindDialogBackdrop($('skillDialog'),()=>void closeSkills());
-$('skillSave').onclick=async()=>{
+$('skillSave').onclick=async()=>{if(inSandbox()){$('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');return;}
   if(!canEditSkills()){$('skillStatus').textContent=translateText('Leave the party and finish the match before changing skills.');return;}
   if(savingSkills)return;const currentUser=user,version=sessionVersion,build=encodeBuild(draftSkills),expected=openedSkills;savingSkills=true;$('skillSave').disabled=true;$('skillReset').disabled=true;$('skillDetailAction').disabled=true;$('skillStatus').textContent=translateText('Saving…');
   try{
@@ -179,6 +191,7 @@ const armoryTabs=[['armoryEquipmentTab','equipment'],['armoryWorkshopTab','works
 // until then, so a player who never opens it keeps exactly today's save, and a
 // rejected write (server rules not updated yet) leaves the account untouched.
 async function prepareWorkshop(){
+  if(inSandbox())return {status:'sandbox'};
   if(!profile||!user)return {status:'signed-out'};
   if(Object.hasOwn(profile,'workshop'))return {status:'ready'};
   // One attempt per session: re-rendering the tab must not retry the write.
@@ -214,7 +227,7 @@ async function prepareWorkshop(){
 // already proved: the missing trophies are added through the same guarded account
 // transaction, once per sign-in, and only for completed missions.
 async function backfillPrestige(value){
-  if(!user||!value||!Object.hasOwn(value,'workshop'))return;
+  if(inSandbox()||!user||!value||!Object.hasOwn(value,'workshop'))return;
   const currentUser=user,version=sessionVersion;
   const owed=missingPrestige(value,decodeWorkshopSafe(value.workshop));
   if(!owed.length)return;
@@ -223,6 +236,41 @@ async function backfillPrestige(value){
    if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
    if(result.status==='saved'){profile=result.profile;commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}
   }catch{}
+}
+// --- Tutorial sandbox API -------------------------------------------------------
+// The tutorial opens the REAL dialogs against an example soldier. `enter` builds a
+// throwaway profile (never saved), `leave` restores the real one. Every write path
+// is already refused while `sandbox` is set, so this cannot touch a save.
+const SANDBOX_SCRAP=240;
+function exampleProfile(base){
+  const example={...(base||{name:'Example Soldier',gender:'male',xp:0}),xp:300,armory:{scrap:SANDBOX_SCRAP,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:1,equipped:1}};
+  // Same initialiser the live save uses, so the example panel cannot drift from it.
+  return initializeWireWorkshop(example)||example;
+}
+const sandboxAPI={
+  enter({example}={}){
+    if(inSandbox())return sandbox.profile;
+    sandbox={profile:example?exampleProfile(example):exampleProfile(profile)};
+    document.body.dataset.sandbox='1';
+    $('sandboxBanner')?.removeAttribute('hidden');
+    return sandbox.profile;
+  },
+  leave(){
+    if(!inSandbox())return;
+    sandbox=null;delete document.body.dataset.sandbox;
+    $('sandboxBanner')?.setAttribute('hidden','');
+    if(profile){commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}
+  },
+  isActive:inSandbox,
+  getProfile:viewProfile,
+  // Exposed so the tutorial (and the tests) can prove a write is refused.
+  refuseWrite:assertWritable,
+};
+// First-run tutorial, once per account per browser. It is keyed by player id, so it
+// can only start after a profile exists - which is why it is not wired to page load.
+function startFirstRunTutorial(){
+  // Let the Command Center paint first; the tutorial is a modal over it.
+  requestAnimationFrame(()=>{try{gameControl?.startTutorialIfNeeded?.();}catch{}});
 }
 function chooseArmoryCategory(category){
   armoryCategory=category;
@@ -238,7 +286,8 @@ function renderWorkshop(){
 }
 for(const [id,key] of armoryTabs)$(id).onclick=()=>chooseArmoryCategory(key);
 function renderArmory(){
-  const a=readArmory(profile.armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=translateText('{amount} SCRAP',{amount:a.scrap});
+  if(!viewProfile())return;
+  const a=readArmory(viewProfile().armory),list=$('armoryList');list.replaceChildren();$('armoryScrap').textContent=translateText('{amount} SCRAP',{amount:a.scrap});
   const section=(name,caption,key)=>{const wrap=document.createElement('section'),head=document.createElement('div'),title=document.createElement('h3'),sub=document.createElement('span'),grid=document.createElement('div');wrap.className='armory-section';wrap.dataset.section=key;head.className='armory-section-head';title.textContent=translateText(name);sub.textContent=translateText(caption);head.append(title,sub);grid.className='armory-grid';wrap.append(head,grid);list.append(wrap);return grid;};
   const add=(grid,{icon,title,description,eyebrow,label,disabled,action,state,rank})=>{
     const card=document.createElement('article'),art=document.createElement('div'),body=document.createElement('div'),meta=document.createElement('span'),heading=document.createElement('h4'),text=document.createElement('p'),button=document.createElement('button');
@@ -248,11 +297,11 @@ function renderArmory(){
     button.type='button';button.textContent=label;button.disabled=disabled;button.onclick=action;body.append(button);card.append(art,body);grid.append(card);
   };
   const medals=section('Service record','PERMANENT MEDALS','service');
-  for(const medal of serviceMedals(profile)){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${translateText(medal.name)}`;text.textContent=translateText(medal.description);card.append(title,text);medals.append(card);}
+  for(const medal of serviceMedals(viewProfile())){const card=document.createElement('article'),title=document.createElement('strong'),text=document.createElement('p');card.className=`service-medal${medal.unlocked?' is-earned':''}`;title.textContent=`${medal.unlocked?'★':'☆'} ${translateText(medal.name)}`;text.textContent=translateText(medal.description);card.append(title,text);medals.append(card);}
   const veteran=document.createElement('p');veteran.className='development-hint';veteran.textContent=translateText('Level 5 unlocks Veteran Kit; level 10 unlocks Boss Hunter. Choose one specialization when a tower reaches level 3.');medals.parentElement.append(veteran);
   const defenses=section('Bunker upgrades','SHARED DEFENSE','defenses');
   for(const [kind,name,description] of [['fortify','Fortification','+10 maximum bunker health per rank.'],['plating','Plating','10% less bunker damage per rank.'],['repair','Repair Crew','Restore 3 bunker health per rank after each cleared wave.'],['gun','Bunker Gun','Bunker fires for 5 damage per rank every 3 seconds at nearby enemies.'],['supply','Supply Relay','From wave 6, each active soldier receives 3 supplies per rank after each wave. Unlocks at soldier level 5.'],['safeguard','Emergency Bulwark','From wave 6, bunker takes 2% less damage per rank while below half health. Unlocks at soldier level 5.']]){
-    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(profile.xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:()=>translateText('Upgrade {name}?',{name:translateText(name)}),text:()=>translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:'UPGRADE'})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
+    const rank=a[kind],advanced=['supply','safeguard'].includes(kind),cost=(rank+1)*(advanced?50:30),locked=advanced&&level(viewProfile().xp)<5;add(defenses,{icon:kind,title:translateText(name),description:`${translateText(description)} ${translateText('In co-op the highest player rank applies.')}`,eyebrow:translateText('PERMANENT UPGRADE'),rank,label:rank===3?translateText('MAX RANK'):locked?translateText('UNLOCKS AT LEVEL 5'):translateText('UPGRADE · {cost} SCRAP',{cost}),disabled:rank===3||locked||a.scrap<cost,action:async()=>{const version=sessionVersion;if(await confirmation.ask({title:()=>translateText('Upgrade {name}?',{name:translateText(name)}),text:()=>translateText('Spend {cost} scrap on {name}?',{cost,name:translateText(name)}),accept:'UPGRADE'})&&version===sessionVersion)await saveArmory(current=>readArmory(current)[kind]===rank?upgradeArmory(current,kind):null);}});
   }
   const equipment=section('Your equipment','ONE SLOT','equipment');
   ITEMS.forEach((item,i)=>{const id=i+1,owned=!!(a.owned&(1<<i)),equipped=a.equipped===id;add(equipment,{icon:item.icon,title:translateText(item.name),description:translateText(item.description),eyebrow:equipped?translateText('EQUIPPED'):owned?translateText('UNLOCKED'):translateText('WAVE {wave} REWARD',{wave:item.wave}),state:equipped?'is-equipped':owned?'':'is-locked',label:owned?translateText(equipped?'EQUIPPED':'EQUIP'):translateText('UNLOCKS ON WAVE {wave}',{wave:item.wave}),disabled:!owned||equipped,action:()=>void saveArmory(current=>equipArmory(current,id))});});
@@ -260,6 +309,7 @@ function renderArmory(){
 }
 async function saveArmory(change){
   if(savingArmory)return;
+  if(inSandbox())return;
   if(!canEditSkills()){$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
   savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent=translateText('Saving…');
   try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{if(!current||!Number.isInteger(current.xp))return;const armory=change(current.armory);if(!armory)return;const old=readArmory(current.armory);if(characterProgress(current.xp).level<5&&(armory.supply>old.supply||armory.safeguard>old.safeguard))return;return {...current,armory};},{applyLocally:false});

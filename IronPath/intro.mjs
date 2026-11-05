@@ -14,4 +14,6 @@ export function startIntro({document,window,duration=4300}){
   timer=window.setTimeout(close,reduced?1200:duration);
   return close;
 }
-if(typeof document!=='undefined'&&typeof window!=='undefined')startIntro({document,window});
+// The intro must not play behind the first-run language gate: a player who has
+// not chosen yet would miss it entirely. Reloading after the choice re-runs this.
+if(typeof document!=='undefined'&&typeof window!=='undefined'&&document.documentElement.dataset.langGate!=='1')startIntro({document,window});

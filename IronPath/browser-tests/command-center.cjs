@@ -6,6 +6,8 @@ const assert = require('node:assert/strict');
   const browser = await chromium.launch({headless:true});
   try {
     const context = await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:2,hasTouch:true,isMobile:true,reducedMotion:'no-preference'});
+    // Pretend the language was already chosen: the first-run gate is tested on its own.
+    await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
     const page = await context.newPage(), errors=[];
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));

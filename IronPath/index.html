@@ -16,7 +16,22 @@
   <link rel="stylesheet" href="workshop-view.css?v=20261112-prestige1">
 </head>
 <body>
+  <!-- First paint: decide whether this device must choose a language before any
+       English text is shown. Runs inline so the gate never flashes in late. -->
+  <script>try{document.documentElement.dataset.langGate=(function(){var v=localStorage.getItem('ironpath:language');return v!=='en'&&v!=='de'?'1';})()?'1':'0';}catch(e){document.documentElement.dataset.langGate='1';}</script>
   <div class="language-picker"><button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-pressed="false" hidden>FULLSCREEN</button><span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span><span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache" aria-describedby="languagePreviewNote"><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch (Vorschau)</option></select></span><span id="languagePreviewNote" class="language-preview-note visually-hidden" role="status" hidden>Vorschau: Einige Inhalte sind noch auf Englisch.</span></div>
+  <section id="languageGate" class="language-gate" role="dialog" aria-modal="true" aria-labelledby="languageGateTitle">
+    <div class="language-gate-card">
+      <span class="language-gate-kicker">0815 GAMES · IRON PATH</span>
+      <h1 id="languageGateTitle" class="language-gate-title">CHOOSE YOUR LANGUAGE<br><span lang="de">SPRACHE WÄHLEN</span></h1>
+      <p class="language-gate-copy">Pick the language for this device. You can change it later at the top of the screen.<br><span lang="de">Wähle die Sprache für dieses Gerät. Du kannst sie später oben im Bildschirm ändern.</span></p>
+      <div class="language-gate-choices">
+        <button type="button" class="language-gate-button" data-language="en" lang="en"><span class="language-gate-flag" aria-hidden="true">🇬🇧</span><strong>English</strong><small>Continue in English</small></button>
+        <button type="button" class="language-gate-button" data-language="de" lang="de"><span class="language-gate-flag" aria-hidden="true">🇩🇪</span><strong>Deutsch</strong><small>Auf Deutsch fortfahren</small></button>
+      </div>
+      <p class="language-gate-note">German is a preview: some text may still appear in English.<br><span lang="de">Deutsch ist eine Vorschau: Einige Texte erscheinen noch auf Englisch.</span></p>
+    </div>
+  </section>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction" data-i18n-aria-label="Iron Path animated introduction">
     <div class="intro-card">
       <div class="intro-scene">
@@ -28,7 +43,8 @@
     </div>
   </section>
   <noscript><style>#introOverlay{display:none!important}</style></noscript>
-  <main>
+    <div id="sandboxBanner" class="sandbox-banner" role="status" hidden><strong data-i18n-text="TUTORIAL · SAMPLE DATA">TUTORIAL · SAMPLE DATA</strong><span data-i18n-text="Nothing you do here is saved. Your soldier is not changed.">Nothing you do here is saved. Your soldier is not changed.</span><button id="sandboxExit" type="button" data-i18n-text="LEAVE SAMPLE">LEAVE SAMPLE</button></div>
+<main>
     <header><div><span class="eyebrow" data-i18n-text="0815 GAMES / FIELD PROTOTYPE">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-brand-cutout.png?v=20261103-brand2" width="1000" height="351" alt="Iron Path"></h1><p data-i18n-text="Hold the line. Protect the bunker.">Hold the line. Protect the bunker.</p></div><span class="badge" data-i18n-text="FIELD COMMAND / ONLINE">FIELD COMMAND / ONLINE</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
       <div id="loading"><h2 data-i18n="loading.title">Connecting…</h2><p class="hint" data-i18n="loading.subtitle">Preparing your soldier.</p></div>
@@ -232,7 +248,8 @@
     </div>
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
-  <script type="module" src="intro.mjs?v=20261102-lastroad1"></script>
+  <script type="module" src="language-gate.mjs?v=20261112-firstrun1"></script>
+  <script type="module" src="intro.mjs?v=20261112-firstrun1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
   <script type="module" src="account.js?v=20261112-prestige1"></script>
 </body></html>

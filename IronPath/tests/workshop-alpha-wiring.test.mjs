@@ -23,7 +23,7 @@ test('opening the workshop tab prepares it once through the guarded service',()=
 });
 
 test('every workshop write goes through the account transaction and match state',()=>{
- assert.match(source,/createWorkshopAccount\(\{db,auth,sdk:\{ref,onValue,runTransaction\},canEdit:\(\)=>canEditSkills\(\)\}\)/);
+ assert.match(source,/createWorkshopAccount\(\{db,auth,sdk:\{ref,onValue,runTransaction\},canEdit:\(\)=>[^}]*canEditSkills\(\)\}\)/,'the service is canEdit-guarded, and the tutorial sandbox is refused first');
  assert.match(source,/experimentalWorkshop:true,/,'endless solo uses the workshop effects');
  assert.match(source,/const rewardOptions=\{db,auth,sdk:partySdk,partyId:party\.partyId,workshop:true,/,'co-op credits the workshop, not only legacy scrap');
  assert.match(source,/creditSoloWave\(\{sdk:\{runTransaction\}/);
@@ -47,7 +47,7 @@ test('armory state exists before the first language render',()=>{
 test('repeated profile snapshots never restart the game or social listeners',()=>{
  // showProfile() starts the game, the friend listener and the score reporter;
  // running it again on every snapshot duplicated popups and leaderboard writes.
- assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
+ assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
 });
 
 test('the workshop view is cache-busted with the build',()=>{

@@ -10,6 +10,8 @@ const fs = require('node:fs');
   try {
     for (const [name, width, height] of [['phone', 320, 700], ['phone-wide', 390, 844], ['desktop', 1440, 900]]) {
       const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+    // Pretend the language was already chosen: the first-run gate is tested on its own.
+    await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
       await context.route('**/*', route => {
         const url = new URL(route.request().url());
         if (url.hostname !== '127.0.0.1' || route.request().resourceType() === 'script') return route.abort();

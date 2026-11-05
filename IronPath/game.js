@@ -27,7 +27,7 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261105-workshop5';
+import { createTutorial } from './tutorial.mjs?v=20261112-prestige1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -249,7 +249,26 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
   const focusPause=createFocusPause({window,document,onBlur:()=>{keys.clear();sendDirection();accumulator=0;},onChange:paused=>coop?.setFocusPaused?.(paused)});
   let tutorialStorage;try{tutorialStorage=window.localStorage;}catch{tutorialStorage=null;}
-  const tutorial=createTutorial({document,storage:tutorialStorage});
+  // Practice steps drive the real dialogs. The sandbox comes from the account app,
+  // which owns the write guard; without it the tutorial stays on mock screens.
+  const tutorial=createTutorial({document,storage:tutorialStorage,onPractice:request=>{
+    const sandbox=account.sandbox;
+    if(!sandbox||!request)return false;
+    sandbox.enter();
+    try{
+     if(request==='armoryWorkshop'){openArmoryPractice('workshop');return true;}
+     if(request==='armoryPrestige'){openArmoryPractice('workshop');return true;}
+     if(request==='armory'){openArmoryPractice('equipment');return true;}
+     if(request==='skills'){$('skillOpen').onclick?.();return true;}
+    }catch{sandbox.leave();return false;}
+    sandbox.leave();return false;
+  }});
+  function openArmoryPractice(category){
+    closeMenu();keys.clear();
+    const status=$('armoryStatus');if(status)status.textContent=tr('Sample data: nothing is saved.');
+    $('armoryOpen').onclick?.();
+    $(category==='workshop'?'armoryWorkshopTab':'armoryEquipmentTab').onclick?.();
+  }
   $('tutorialReplay').onclick=()=>{closeMenu();state.selectedPad=null;keys.clear();sendDirection();tutorial.replay(account.getUserId());updateUI();};
   const menu=$('radialMenu');
   const options=[0,1,2,3].map(i=>$('radial'+i));
@@ -458,10 +477,16 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }catch{if(coop===client)void leaveCoop();notice('Co-op could not be started.');return false;}
   }
   $('coopToggle').onclick=async()=>{if(coop){void leaveCoop();notice('Returned to solo.');return;}if(await confirmParty()&&account.isReady()&&!coop)beginCoop(callbacks=>clientFactory({url:coopUrl,getToken:()=>account.getToken(),...callbacks}));};
-  account.onSessionChange(()=>{closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
+  account.onSessionChange(()=>{closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';// The first-run tutorial is started by the account once a soldier exists.
+  reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
+  // The first-run tutorial is started by the account once a soldier exists.
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
   function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
   async function chooseEndless(){const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
-  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();renderViewportLabels();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,showTutorial:()=>{closeMenu();keys.clear();sendDirection();tutorial.replay(account.getUserId());},getSoloMode:()=>activeMission?'campaign':'endless',getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?tr(activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
+  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();renderViewportLabels();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,showTutorial:()=>{closeMenu();keys.clear();sendDirection();tutorial.replay(account.getUserId());},
+  // First run: the account calls this once the Command Center is visible. That is
+  // the first moment a tutorial can be shown at all, because the tutorial is keyed
+  // by player id. A no-op for anyone who already finished or skipped it.
+  startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},getSoloMode:()=>activeMission?'campaign':'endless',getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?tr(activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
 }
