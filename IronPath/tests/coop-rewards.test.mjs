@@ -1,5 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {createCoopRewardQueue} from '../coop-rewards.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {createPlayer} from '../match.mjs';
 const party='ab'.repeat(16),profile={name:'Alice',gender:'female',level:1};
@@ -28,3 +29,13 @@ console.log('Co-op wave participation and idempotent reward queue tests passed.'
 uid.currentUser={uid:'a'};
 const later=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,block:1});later.observe(1);await flush();assert.equal(data.xp,700);assert.equal(data.armory.scrap,60);later.observe(1);await flush();assert.equal(data.xp,700);
 const laterReconnect=createCoopRewardQueue({db:{},auth:uid,sdk,partyId:party,block:1});laterReconnect.observe(1);await flush();assert.equal(data.xp,700,'wave 21 is not credited twice on reconnect');later.close();laterReconnect.close();
+// Gated workshop alpha: the same transaction credits components and keeps receipts.
+{
+ const flushWait=()=>new Promise(resolve=>setTimeout(resolve,0));
+ const state={xp:0,name:'Alice',gender:'female',armory:{scrap:0,fortify:0,plating:0,owned:0,equipped:0},workshop:initializeWireWorkshop({name:'Alice',xp:0}).workshop},deltas=[];
+ const sdk={ref:(_db,path)=>path,onValue:(_ref,callback)=>{callback({val:()=>structuredClone(state)});return()=>{};},async runTransaction(_ref,update){const next=update(structuredClone(state));if(next)Object.assign(state,next);return {committed:!!next,snapshot:{val:()=>structuredClone(state)}};}};
+ const auth={currentUser:{uid:'a'}},queue=createCoopRewardQueue({db:{},auth,sdk,partyId:party,workshop:true,onStatus:(status,detail)=>{if(status==='saved')deltas.push(detail.delta);}});
+ queue.observe(31);await flushWait();assert.equal(state.xp,250);assert.equal(state.armory.scrap,70,'five completed waves pay ten regular scrap each plus twenty for the boss');assert.ok(decodeWorkshop(state.workshop));assert.equal(decodeWorkshop(state.workshop).components,1);assert.equal(state.coopRewards[party],31);
+ const before=state.xp;queue.observe(31);await flushWait();assert.equal(state.xp,before,'a replayed workshop receipt earns nothing');queue.close();
+}
+console.log('Workshop co-op receipt tests passed.');

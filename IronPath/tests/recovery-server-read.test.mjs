@@ -35,7 +35,7 @@ test('takeover cannot restore an SDK-cached checkpoint after a server read fails
 function memoryRecovery(){
  const data=new Map(),uid='alice',partyId='c'.repeat(32),ids=['alice','bob'],host=createPartyHost(createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'}))),{hostId:uid}),views=Object.fromEntries(ids.map(id=>[id,{ready:false}]));
  const sdk={ref:(_db,path)=>path,onValue:(_p,cb)=>{queueMicrotask(cb);return ()=>{};},runTransaction:async(path,update)=>{const next=update(data.get(path)??null);if(next===undefined)return {committed:false};data.set(path,next);return {committed:true};}};
- const store=readFresh=>createFirebaseRecoveryStore({db:{},auth:{currentUser:{uid}},sdk,partyId,manifest:{hostId:uid,playerIds:ids,mode:'coop'},crypto:webcrypto,readFresh:readFresh??(async path=>data.get(path)??null)});
+ const store=(readFresh,validateCheckpoint=()=>true)=>createFirebaseRecoveryStore({db:{},auth:{currentUser:{uid}},sdk,partyId,manifest:{hostId:uid,playerIds:ids,mode:'coop'},crypto:webcrypto,readFresh:readFresh??(async path=>data.get(path)??null),validateCheckpoint});
  return {data,host,views,store,base:`fourParties/${partyId}/recovery`};
 }
 test('several interrupted takeovers recover the most recent committed generation',async()=>{
@@ -49,4 +49,13 @@ test('takeover does not skip a corrupt newer generation to restore older data',a
 });
 test('malformed history and exhausted generation limit fail without claiming a lease',async()=>{
  const f=memoryRecovery(),store=f.store();await store.initialize(f.host.checkpoint(),f.views);const leasePath=`${f.base}/lease`,lease=f.data.get(leasePath);f.data.set(leasePath,{...lease,history:'["malformed"]'});await assert.rejects(store.claim(1),/history invalid/);assert.equal(f.data.get(leasePath).generation,1);await assert.rejects(store.claim(65),/exhausted/);assert.equal(f.data.get(leasePath).generation,1);
+});
+
+test('checkpoint validation rejects a mismatched takeover before publishing a new session',async()=>{
+ const f=memoryRecovery(),normal=f.store(),first=await normal.initialize(f.host.checkpoint(),f.views);
+ const guarded=f.store(undefined,checkpoint=>checkpoint.match.experimentalWorkshop?.mode==='coop');
+ await assert.rejects(guarded.claim(first.generation),/Checkpoint validation failed/);
+ assert.equal(f.data.get(`${f.base}/lease`).generation,2);
+ assert.equal([...f.data.keys()].filter(k=>k.includes('/sessions/')).length,1);
+ await assert.rejects(guarded.publish(first,f.host.checkpoint(),f.views),/Checkpoint validation failed/);
 });

@@ -36,6 +36,15 @@ jobs:
             exit 1
           fi
 
+      - name: Run experimental workshop storage tests (emulator-only rules)
+        run: npm run test:workshop
+
+      - name: Run candidate workshop rules tests
+        run: npm run test:workshop-draft
+
+      - name: Test trusted-server workshop boundary
+        run: npm run test:workshop-server
+
       - name: Run four-player combined rules tests
         shell: bash
         run: |
