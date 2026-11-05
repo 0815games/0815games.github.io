@@ -186,10 +186,10 @@ $('skillOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').t
 $('skillReset').onclick=async()=>{if(inSandbox())return;if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
 async function closeSkills(){
   if(!$('skillDialog').open||savingSkills||closingSkills)return;
-  if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();if(inSandbox())sandboxAPI.leave();return;}
+  if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();return;}
   const version=sessionVersion,opened=skillsOpenGeneration,draft=encodeBuild(draftSkills);closingSkills=true;
   try{const discard=await confirmation.ask({title:'Discard skill changes?',text:'Your unsaved skill changes will be lost. Keep editing or discard them.',accept:'DISCARD CHANGES'});
-    if(discard&&version===sessionVersion&&opened===skillsOpenGeneration&&$('skillDialog').open&&!savingSkills&&encodeBuild(draftSkills)===draft){$('skillDialog').close();if(inSandbox())sandboxAPI.leave();}
+    if(discard&&version===sessionVersion&&opened===skillsOpenGeneration&&$('skillDialog').open&&!savingSkills&&encodeBuild(draftSkills)===draft)$('skillDialog').close();
   }finally{if(version===sessionVersion&&opened===skillsOpenGeneration)closingSkills=false;}
 }
 $('skillCancel').onclick=closeSkills;
@@ -336,6 +336,9 @@ const sandboxAPI={
   // Exposed so the tutorial (and the tests) can prove a write is refused.
   refuseWrite:assertWritable,
 };
+// However practice ends - the close button, Escape, the backdrop, or a save that
+// closes the dialog itself - the sample soldier goes with it.
+for(const id of ['skillDialog','armoryDialog'])$(id)?.addEventListener('close',()=>{if(inSandbox())sandboxAPI.leave();});
 // --- First-run ending -----------------------------------------------------------
 // After the training contract the new soldier spends their first skill point in
 // the REAL Skills dialog, receives a dog tag (drawn, never stored) and opens the
@@ -481,7 +484,7 @@ async function saveArmory(change){
   finally{if(version===sessionVersion)savingArmory=false;}
 }
 $('armoryOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to open the armory, or leave your party first.');return;}$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};
-function closeArmory(){if(savingArmory){$('armoryStatus').textContent=translateText('Saving… Please wait before closing.');return;}if($('armoryDialog').open)$('armoryDialog').close();if(inSandbox())sandboxAPI.leave();}
+function closeArmory(){if(savingArmory){$('armoryStatus').textContent=translateText('Saving… Please wait before closing.');return;}if($('armoryDialog').open)$('armoryDialog').close();}
 $('armoryClose').onclick=closeArmory;
 $('armoryDialog').addEventListener('cancel',event=>{event.preventDefault();closeArmory();});
 bindDialogBackdrop($('armoryDialog'),closeArmory);

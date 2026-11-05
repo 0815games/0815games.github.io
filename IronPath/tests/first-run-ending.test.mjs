@@ -94,6 +94,8 @@ test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
  assert.match(account,/applySandboxWorkshop\(p=>applyWireWorkshopCommand\(p,command\),command\)/,'practice uses the workshop reducers');
  // And the real build is only ever applied to the sample profile.
  assert.match(account,/sandboxAPI\.apply\(\{\.\.\.viewProfile\(\),skills:build\}\)/);
+ // Practice ends with the dialog however it is closed, not only via its buttons.
+ assert.match(account,/for\(const id of \['skillDialog','armoryDialog'\]\)\$\(id\)\?\.addEventListener\('close',\(\)=>\{if\(inSandbox\(\)\)sandboxAPI\.leave\(\);\}\);/,'the sandbox is bound to the dialog close event');
 });
 
 test('the account literal never names something declared further down',()=>{
