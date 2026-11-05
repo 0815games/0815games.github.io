@@ -19,10 +19,10 @@ Release a responsive soldier inventory and workshop with three equipment slots, 
 ## 2. Save schema, migration and recovery
 
 - [ ] Finalize the versioned workshop format and synchronize newly earned legacy items. Reject malformed or unknown future versions without resetting them. Retain unknown unrelated profile fields and all existing receipt data.
-- [ ] Migrate copies of representative old profiles: no armory, each existing equipped item, every bunker rank, maximum balances, partially missing optional fields and profiles with existing co-op receipts. Verify exact balances, item ownership and existing effects, including wave-dependent effects.
+- [ ] Migrate copies of representative old profiles (offline helpers and an emulator compare-and-swap rehearsal now exist; no production accounts have been touched): no armory, each existing equipped item, every bunker rank, maximum balances, partially missing optional fields and profiles with existing co-op receipts. Verify exact balances, item ownership and existing effects, including wave-dependent effects.
 - [ ] Define stable run and receipt identities for solo and every multiplayer mode, including wave blocks, disconnects, host recovery, retries and replay. Credit regular XP/loot, boss materials and the corresponding receipt in one durable transaction. A boss killed during an unfinished wave gives no permanent boss reward.
 - [ ] Define receipt retention and growth limits without making old rewards replayable. Test concurrent transactions, two tabs, offline/reconnect, duplicate observations and server restart.
-- [ ] Produce and rehearse backup, migration, reconciliation and rollback procedures on copies. After a player earns or spends new items, restoring an old snapshot can destroy legitimate progress: rollback must reconcile those changes or leave the migrated data intact, not blindly overwrite it.
+- [ ] Produce and rehearse backup, migration, reconciliation and rollback procedures on copies. An initial helper only permits rollback when the entire profile is unchanged; durable protected checkpoints and reconciliation are not implemented. After a player earns or spends new items, restoring an old snapshot can destroy legitimate progress: rollback must reconcile those changes or leave the migrated data intact, not blindly overwrite it.
 
 ## 3. Multiplayer protocol and old-client fencing
 

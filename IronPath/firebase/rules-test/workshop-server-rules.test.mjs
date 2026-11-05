@@ -39,3 +39,17 @@ test('experimental authority binds identity and deduplicates real emulator trans
   }finally{stop();}
  });
 });
+
+test('migration and unchanged rollback use compare-and-swap against real emulator snapshots',async()=>{
+ const {planMigration,applyPlannedMigration,rollbackUnchangedMigration}=await import('../../server/workshop-migration.mjs');
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const r=ref(ctx.database(),'players/alice'),stop=await ready(r);
+  try{
+   const original=(await get(r)).val(),plan=planMigration('alice',original);assert.equal(plan.status,'ready');
+   const migration=await runTransaction(r,current=>applyPlannedMigration('alice',current,plan)??undefined,{applyLocally:false});assert.equal(migration.committed,true);assert.equal((await get(r)).val().armory.scrap,100);
+   const rollback=await runTransaction(r,current=>rollbackUnchangedMigration('alice',current,plan.checkpoint)??undefined,{applyLocally:false});assert.equal(rollback.committed,true);assert.deepEqual((await get(r)).val(),original);
+   const repeat=await runTransaction(r,current=>applyPlannedMigration('alice',current,plan)??undefined,{applyLocally:false});assert.equal(repeat.committed,true);
+   await update(r,{xp:800});const blocked=await runTransaction(r,current=>rollbackUnchangedMigration('alice',current,plan.checkpoint)??undefined,{applyLocally:false});assert.equal(blocked.committed,false);assert.equal((await get(r)).val().xp,800);assert.ok((await get(r)).val().workshop);
+  }finally{stop();}
+ });
+});
