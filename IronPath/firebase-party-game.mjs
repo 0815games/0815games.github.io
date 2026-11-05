@@ -21,7 +21,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
   if(uid===hostId&&!isMapId(mapId))throw new Error('Invalid host map');
   if(uid===hostId&&(!Array.isArray(players)||players.length!==count||players.some((p,i)=>p?.id!==playerIds[i])))throw new Error('Host requires party players');
   if(uid===hostId&&mode==='two-vs-two'&&(!Array.isArray(teams)||teams.length!==2||teams.some(t=>!Array.isArray(t)||t.length!==2)||new Set(teams.flat()).size!==4||teams.flat().some(id=>!playerIds.includes(id))))throw new Error('Invalid teams');
-  if(workshopLock!==null&&!validWorkshopMatchLock(workshopLock,{partyId,mode,playerIds}))throw new Error('Invalid workshop match lock');
+  if(workshopLock!==null){if(!validWorkshopMatchLock(workshopLock,{partyId,mode,playerIds}))throw new Error('Invalid workshop match lock');workshopLock=structuredClone(workshopLock);}
   if(![onState,onStatus,onSnapshot,onWaveRewards,clock].every(fn=>typeof fn==='function'))throw new Error('Invalid callbacks');
   let active=false,started=false,failed=false,client=null,host=null,presence=null,timer=null,ticker=null,sessionReady=false,ready=false,localConnection=null,acknowledged=[],lastState=null,releaseTab=null,focusPaused=false;
   const online=new Map(playerIds.map(id=>[id,false]));
