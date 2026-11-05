@@ -1,4 +1,4 @@
-import {normalizeCommand} from './protocol.mjs?v=20261105-workshop1';
+import {normalizeCommand} from './protocol.mjs?v=20261105-workshop2';
 // Experimental generation-aware client. The channel must derive each view's
 // owner/generation from a rules-protected lease and owner-scoped view path, and
 // hosts must reject input envelopes from old generations. Not wired live.

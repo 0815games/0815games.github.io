@@ -1,4 +1,4 @@
-import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop2';
 import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {getMap} from './maps.mjs?v=20261102-fourbase1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261102-terrain4';
@@ -15,7 +15,7 @@ export function projectCoopMotion(state,age){
     let dx=p.direction?.x||0,dy=p.direction?.y||0;
     if(!dx&&!dy&&p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;}
     const len=Math.hypot(dx,dy);if(!len)return [id,p];
-    const mobile=p.mobileSupply?.remaining>0?p.mobileSupply.bonus*Math.min(dt,p.mobileSupply.remaining)/dt:0;const speed=(150+10*(p.skills?.recon||0)+webBonuses(p.skills).movement+mobile+legacyEquipmentEffects(p.loadout?.equipped,state.wave).movement)*soldierSpeedFactor(theme,p,path);
+    const mobile=p.mobileSupply?.remaining>0?p.mobileSupply.bonus*Math.min(dt,p.mobileSupply.remaining)/dt:0;const speed=(150+10*(p.skills?.recon||0)+webBonuses(p.skills).movement+mobile+equipmentForPlayer(state,p).movement)*soldierSpeedFactor(theme,p,path);
     const distance=p.direction?.x||p.direction?.y?speed*dt:Math.min(len,speed*dt);
     return [id,{...p,x:Math.max(12,Math.min((map.width||960)-12,p.x+dx/len*distance)),y:Math.max(12,Math.min((map.height||540)-12,p.y+dy/len*distance))}];
   }));
