@@ -25,6 +25,7 @@ test('opening the workshop tab prepares it once through the guarded service',()=
 test('every workshop write goes through the account transaction and match state',()=>{
  assert.match(source,/createWorkshopAccount\(\{db,auth,sdk:\{ref,onValue,runTransaction\},canEdit:\(\)=>canEditSkills\(\)\}\)/);
  assert.match(source,/experimentalWorkshop:true,/,'endless solo uses the workshop effects');
+ assert.match(source,/const rewardOptions=\{db,auth,sdk:partySdk,partyId:party\.partyId,workshop:true,/,'co-op credits the workshop, not only legacy scrap');
  assert.match(source,/creditSoloWave\(\{sdk:\{runTransaction\}/);
  assert.match(source,/const fallback=workshopReceiptFallback;/,'a rules rejection falls back to the legacy save');
 });
@@ -51,6 +52,6 @@ test('repeated profile snapshots never restart the game or social listeners',()=
 
 test('the workshop view is cache-busted with the build',()=>{
  assert.match(source,/workshop-view\.mjs\?v=20261112-armory1/);
- assert.match(html,/account\.js\?v=20261112-armory1/);
+ assert.match(html,/account\.js\?v=20261112-armory2/);
  assert.match(html,/workshop-view\.css\?v=20261112-armory1/);
 });
