@@ -14,7 +14,8 @@ test('the workshop is a tab inside the armory, not a separate screen',()=>{
 });
 
 test('opening the workshop tab prepares it once through the guarded service',()=>{
- assert.match(source,/if\(!Object\.hasOwn\(profile\|\|\{\},'workshop'\)\)void prepareWorkshop\(\);/,'only the workshop tab prepares it');
+ // The tutorial sandbox has no save to prepare, so practice never asks the service.
+ assert.match(source,/if\(!inSandbox\(\)&&!Object\.hasOwn\(profile\|\|\{\},'workshop'\)\)void prepareWorkshop\(\);/,'only the workshop tab prepares it, and never in the sandbox');
  assert.match(source,/workshopPrepare=workshopAccount\.initialize\(\)/,'the migration uses the same canEdit-guarded service');
  assert.match(source,/const settle=\(status,error\)=>\{/);
  assert.match(source,/if\(status==='rejected'\)/,'a rejected write is reported and nothing is claimed as prepared');

@@ -288,9 +288,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   function openArmoryPractice(category){
     closeMenu();keys.clear();
-    const status=$('armoryStatus');if(status)status.textContent=tr('Sample data: nothing is saved.');
     $('armoryOpen').onclick?.();
     $(category==='workshop'?'armoryWorkshopTab':'armoryEquipmentTab').onclick?.();
+    // Set after the real opener, which clears the status line as it opens.
+    const status=$('armoryStatus');if(status&&account.sandbox?.isActive?.())status.textContent=tr('Sample data: nothing is saved.');
   }
   $('tutorialReplay').onclick=()=>{closeMenu();state.selectedPad=null;keys.clear();sendDirection();tutorial.replay(account.getUserId());updateUI();};
   const menu=$('radialMenu');

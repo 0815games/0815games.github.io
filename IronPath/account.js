@@ -201,7 +201,7 @@ $('skillSave').onclick=async()=>{
   if(inSandbox()){
     const build=encodeBuild(draftSkills);
     sandboxAPI.apply({...viewProfile(),skills:build});
-    sandboxAPI.markSkill({upgraded:pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
+    sandboxAPI.markSkill({upgraded:viewProfile().skills!==''&&pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
     $('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');
     $('skillDialog').close();
     return;
@@ -278,7 +278,9 @@ async function backfillPrestige(value){
 // is already refused while `sandbox` is set, so this cannot touch a save.
 const SANDBOX_SCRAP=240;
 function exampleProfile(base){
-  const example={...(base||{name:'Example Soldier',gender:'male',xp:0}),xp:300,armory:{scrap:SANDBOX_SCRAP,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:1,equipped:1}};
+  // A fresh level 2 soldier: one point to spend, nothing unlocked. Practice has to
+  // teach the first skill point, so it must not inherit a build that already has one.
+  const example={...(base||{name:'Example Soldier',gender:'male',xp:0}),xp:300,skills:'',armory:{scrap:SANDBOX_SCRAP,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:1,equipped:1}};
   // Same initialiser the live save uses, so the example panel cannot drift from it.
   return initializeWireWorkshop(example)||example;
 }
@@ -430,7 +432,7 @@ function chooseArmoryCategory(category){
   for(const [id,key] of armoryTabs){const tab=$(id);tab.setAttribute('aria-pressed',String(key===category));tab.setAttribute('aria-controls',key==='workshop'?'armoryWorkshop':'armoryList');}
   for(const section of $('armoryList').querySelectorAll('.armory-section'))section.hidden=section.dataset.section!==category;
   const workshop=$('armoryWorkshop');workshop.hidden=category!=='workshop';$('armoryList').hidden=category==='workshop';
-  if(category==='workshop'){renderWorkshop();if(!Object.hasOwn(profile||{},'workshop'))void prepareWorkshop();}
+  if(category==='workshop'){renderWorkshop();if(!inSandbox()&&!Object.hasOwn(profile||{},'workshop'))void prepareWorkshop();}
 }
 function renderWorkshop(){
   const root=$('armoryWorkshop');
