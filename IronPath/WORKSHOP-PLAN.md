@@ -14,7 +14,7 @@ The first deliverable is a read-only soldier dossier using the **current one-slo
 
 ## Safety gates before multiplayer or production rollout
 
-The in-memory prototype uses empty arrays and objects, which Firebase Realtime Database does not preserve as empty children. An isolated versioned scalar-string codec and account command adapter now exercise a candidate wire format, but it has only JSON round-trip tests, not Firebase emulator tests. Rules, emulator round trips, mixed-client protection and migration/rollback review remain required; do not write it to live profiles.
+The in-memory prototype uses empty arrays and objects, which Firebase Realtime Database does not preserve as empty children. An isolated versioned scalar-string codec and account command adapter now exercise a candidate wire format, and has passed Firebase emulator round-trip and concurrent-spending tests using deliberately minimal test-only rules. Those rules are not production-ready or a security review. Production rules, mixed-client protection and migration/rollback review remain required; do not write it to live profiles.
 
 1. Inventory schema must be versioned, validated and migrated without discarding unknown/newer fields or losing scrap, bunker ranks, equipment or pending reward receipts. Malformed data must fail closed, not silently reset to a default account.
 2. Old clients currently send and expect a compact one-item loadout. They can overwrite newer data or disagree on combat. A reliable version gate across lobby, participants, match snapshots, recovery and reconnect is required before using new effects; simply changing the serializer or asking people to reload is not sufficient.
