@@ -4,6 +4,10 @@
 
 The candidate also refuses to drop an existing `coopRewards` map, matching its solo receipt protection. It permits a bounded workshop string on the player's private record, forbids removing that field once created, and permits a solo completed-wave receipt map with bounded masks and monotonic bits for non-deletion updates. It preserves the baseline's friend-stat visibility, private records, all other paths, and existing co-op receipts. Transactions and client code are still disabled in the public interface.
 
+## Dry run and rollout
+
+`IronPath/scripts/rules-publish-dry-run.mjs` compares an exported live ruleset with this candidate (blocking on any restriction or shipped feature that publishing would drop) and cross-checks every other complete draft in the repository. Step-by-step backup, verification and rollback instructions are in `WORKSHOP-ROLLOUT.md`. Neither has been run against live Firebase; nothing is published.
+
 ## Important limitations — release blockers
 
 - Realtime Database rules cannot inspect/validate the encoded JSON inventory or prove item ownership, costs, match completion, or boss kills. A malicious authenticated client can write arbitrary bounded strings and account progression. Client-reported game results are not anti-cheat.

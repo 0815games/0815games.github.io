@@ -43,7 +43,7 @@ Release a responsive soldier inventory and workshop with three equipment slots, 
 ## 5. Review rules and verify the complete build
 
 - [ ] Export and back up the **current live** Firebase rules; compare them with the complete repository baseline and merge production-only differences. Never publish a partial rules file. Review account, friend, lobby, presence, leaderboard and recovery permissions together.
-- [ ] Run the full rules emulator suite against the exact final candidate, including unauthorized writes, old-client attempts, receipt deletion/replay, concurrent spending and migration. Rules and service authorization must be reviewed together.
+- [ ] Run the full rules emulator suite against the exact final candidate, including unauthorized writes, old-client attempts, receipt deletion/replay, concurrent spending and migration. Rules and service authorization must be reviewed together. (The four-player, workshop, recovery, friends, leaderboard and story suites all pass in CI against `workshop.complete.draft.rules.json`; a live-database comparison still has to be run by hand with `scripts/rules-publish-dry-run.mjs` — see `firebase/WORKSHOP-ROLLOUT.md`.)
 - [ ] Run the entire game regression suite, browser tests, deterministic stress tests and integration tests with the real adapters. Verify no account/progression writes escape the chosen authority.
 - [ ] Use staging accounts on at least two devices to test all supported multiplayer modes, host recovery and disconnect/reconnect; test solo and mobile UI. Record failures and fixes. Simulations and emulator tests do not replace these checks.
 - [ ] Playtest costs, boss rewards, item effects and mod combinations; adjust and retest. Existing estimates are provisional, not validated balance.
