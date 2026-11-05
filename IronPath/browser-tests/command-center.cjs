@@ -30,6 +30,7 @@ const assert = require('node:assert/strict');
 
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
+    await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
     const visible=selector=>page.locator(selector).isVisible();
     assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);await page.locator('#languageSelect').selectOption('de');assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.locator('#languageSelect').selectOption('en');assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
 
@@ -38,7 +39,6 @@ const assert = require('node:assert/strict');
     await page.evaluate(()=>window.__profileUpdate({skills:'1,1,0,0,0;assault'}));await page.locator('#menuSkillBadge').waitFor({state:'hidden'});assert.equal(await page.locator('#menuSkills').evaluate(e=>e.classList.contains('has-skill-points')),false);
     await page.evaluate(()=>window.__profileUpdate({skills:'0,0,0,0,0;assault'}));await page.locator('#menuSkillBadge').waitFor({state:'visible'});assert.equal(await page.locator('#menuSkillBadge').innerText(),'2');
 
-    await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
 
     assert.equal(await page.locator('.mode-card b').count(),0,'operation cards have no arrows');
     assert.equal(await page.locator('#menuFriendBadge').isHidden(),true);
