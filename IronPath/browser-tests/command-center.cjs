@@ -51,6 +51,13 @@ const assert = require('node:assert/strict');
     await page.locator('#backToCommand').click();
     await page.locator('#menuEndless').click(); await page.locator('#gameWorkspace').waitFor({state:'visible'});
     assert.equal(await visible('#game'),true); assert.equal(await visible('#partyToggle'),false,'no multiplayer button in Endless');
+    // Portrait starts fitted; direct zoom and orientation changes retain the run.
+    await page.waitForFunction(()=>{const c=document.querySelector('#game'),v=document.querySelector('#mapViewport');return c.getBoundingClientRect().width<=v.clientWidth+1&&c.getBoundingClientRect().height<=v.clientHeight+1;});
+    const fitWidth=await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width);assert.equal(await page.locator('#mapQuickZoom').isVisible(),true);
+    await page.locator('#mapQuickZoom').click();assert.match(await page.locator('#mapQuickZoom').innerText(),/FIT MAP/);assert.ok(await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width)>fitWidth*1.9);
+    await page.setViewportSize({width:844,height:390});await page.waitForTimeout(150);assert.match(await page.locator('#mapQuickZoom').innerText(),/FIT MAP/);assert.equal(await page.locator('#wave').innerText(),'0 / ∞');
+    await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);await page.locator('#mapQuickZoom').click();assert.match(await page.locator('#mapQuickZoom').innerText(),/ZOOM MAP/);assert.ok(await page.locator('#game').evaluate(e=>e.getBoundingClientRect().width)<=fitWidth+1);
+
     assert.equal(await visible('#campaignPanel'),false); assert.equal(await visible('#fourPartyPanel'),false);
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;});await page.locator('#game').click({position:{x:5,y:5}});assert.equal(await page.locator('#radialMenu').isHidden(),true,'outside click closes the tower sheet');
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;document.querySelector('#towerDetails').showModal();});await page.mouse.click(1,1);assert.equal(await page.locator('#towerDetails').evaluate(e=>e.open),false,'backdrop closes tower details');assert.equal(await page.locator('#radialMenu').isHidden(),true);
