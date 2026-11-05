@@ -37,9 +37,14 @@ prices, effects and the look can change, and progression is client-reported.
    its XP (the balance just stops growing).
 8. **Locked while playing.** Open the armory during a party or a match: it should
    refuse with "finish the match and leave the party", never write mid-match.
-9. **German.** Switch the language to Deutsch: the workshop tab, wallet, item names,
+9. **Campaign.** Open Campaign: each mission card shows its threat and wave count.
+   Play an Elite or Legendary mission after crafting gear — the difference between
+   standard kit and a trophy should be obvious, not marginal. Finishing a mission
+   must add its trophy to Armory → WORKSHOP → Prestige gear, and re-finishing a
+   completed mission must not add a second one.
+10. **German.** Switch the language to Deutsch: the workshop tab, wallet, item names,
    buttons and status lines must all be German.
-10. **Older account.** Try an account that has never opened the workshop, one with
+11. **Older account.** Try an account that has never opened the workshop, one with
     every item unlocked, and one with an old campaign save.
 
 ## Live now
@@ -64,8 +69,10 @@ line showed an error. Do not share your password or your Firebase token.
 ## Known limits (not bugs)
 
 - You can cheat progression; that is accepted for the free-tier alpha.
-- Crafted loadouts apply to endless solo. Campaign keeps the old equipment. Co-op
-  runs pay XP, scrap and boss components to the workshop, but multiplayer matches do
-  not yet use the crafted combat effects.
-- Prices and combat numbers are provisional and being balanced.
+- Crafted and prestige loadouts apply to endless solo **and campaign missions**.
+  Co-op runs pay XP, scrap and boss components to the workshop, but multiplayer
+  matches do not yet use the crafted combat effects.
+- Prices, threat levels and combat numbers are provisional and being balanced.
+- A prestige trophy is a campaign reward, not an anti-cheat; story progress is
+  still client-reported, like every other progression value.
 - German and English text is provisional.

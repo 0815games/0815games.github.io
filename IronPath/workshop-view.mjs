@@ -3,7 +3,9 @@
 // Rendered inside the armory dialog so players find everything in one place.
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
-import {RECIPES,MOD_SCRAP,migrateWorkshop,validLegacy} from './workshop-model.mjs';
+import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs';
+import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from './prestige.mjs';
+import {CAMPAIGN,campaignProgress} from './campaign.mjs?v=20261103-cinematic1';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {readArmory,ITEMS} from './armory.mjs?v=20261102-longterm1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs';
@@ -20,6 +22,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   if(id==='standard')return tr('Standard weapon');
   if(id==='none')return tr('Empty slot');
   if(id.startsWith('legacy-'))return tr(ITEMS[Number(id.slice(7))-1]?.name||'Unknown item');
+  if(isPrestige(id))return tr(PRESTIGE[id].name);
   return tr(WORKSHOP_CATALOG[id]?.name||'Unknown item');
  };
  const button=(label,disabled,action,cls='')=>{const b=el('button','workshop-button',tr(label));if(cls)b.className+=` ${cls}`;b.type='button';b.disabled=disabled||working||(!!service.hasPending?.()&&!retryAllowed(label));b.onclick=action;return b;};
@@ -31,7 +34,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   try{
    if(confirmation&&!await confirm(confirmation))return;
    status=tr('Saving…');render();
-   result=command==='retry'?await service.retryPending():command?await service.command(command):await service.initialize();
+   result=command==='retry'?await service.retryPending():command?await service.command(command):(typeof service.sync==='function'?await service.sync():await service.initialize());
    if(result.status==='saved'){onProfile(result.profile);status=tr('Saved for your next match.');}
    else if(result.status==='locked')status=tr('Finish the match and leave the party before changing gear.');
    else status=tr('Workshop could not be saved. Check your connection and try again.');
@@ -92,6 +95,32 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
    grid.append(card);
   }
   section.append(grid);into.append(section);
+
+  // Campaign trophies: what the missions prove, never what scrap buys.
+  const progress=campaignProgress(p);
+  const trophies=el('section','workshop-prestige');
+  trophies.append(el('h3','',tr('Prestige gear')),el('p','workshop-note',tr('Earned by finishing campaign missions. Not sold, not crafted.')));
+  const trophyGrid=el('div','workshop-item-grid');
+  for(const id of PRESTIGE_IDS){
+   const item=PRESTIGE[id],mission=CAMPAIGN.find(m=>m.id===item.mission),earned=prestigeEarned(id,p),owned=workshop.owned.includes(id),equipped=workshop.equipped[item.slot]===id;
+   const card=el('article',`workshop-item${earned?'':' is-locked'}`);
+   card.append(el('span','workshop-tag',`${tr('TIER')} ${item.tier} · ${tr(item.slot.toUpperCase())}`),el('h4','',tr(item.name)),el('p','',tr(item.effect)));
+   if(!earned){
+    card.append(el('small','workshop-hint',tr('Locked · finish “{mission}”',{mission:tr(mission?.title||'')})));
+   }else if(!owned){
+    card.append(el('small','workshop-hint',tr('Earned. Reopen the workshop to collect it.')),button('COLLECT',false,()=>run(null)));
+   }else{
+    card.append(button(equipped?'EQUIPPED':'EQUIP',equipped,()=>run({type:'equip',slot:item.slot,item:id})));
+    for(const [mod,info] of Object.entries(item.mods)){
+     const chosen=workshop.mods[id]===mod,row=el('div','workshop-mod');
+     row.append(el('strong','',tr(info.name)),el('p','',tr(info.effect)),button(chosen?'INSTALLED':tr('MODIFY · {scrap} SCRAP',{scrap:MOD_SCRAP}),chosen||armory.scrap<MOD_SCRAP,()=>run({type:'modify',item:id,mod},{title:tr('Install {name}?',{name:tr(info.name)}),text:tr('Spend {scrap} scrap? This replaces the current modification.',{scrap:MOD_SCRAP}),accept:tr('MODIFY')})));
+     card.append(row);
+    }
+   }
+   trophyGrid.append(card);
+  }
+  trophies.append(trophyGrid);
+  into.append(trophies);
 
   const legacy=el('section','workshop-legacy');
   legacy.append(el('h3','',tr('Existing equipment')));

@@ -317,3 +317,13 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 
 /* Read-only squad dossier, opened above the Friends inbox. */
 .friend-stats-dialog .friend-stats-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.friend-stats-dialog .friend-stats-grid section,.friend-stats-dialog .friend-stats-skills{background:#20392d;border:1px solid #58765e;border-radius:4px;padding:12px;margin-bottom:8px}.friend-stats-dialog h3{font-size:10px;letter-spacing:.1em;color:#e8d29b;margin:0 0 5px}.friend-stats-dialog p{color:#e3edda;overflow-wrap:anywhere;margin:0 0 10px;line-height:1.5}.friend-stats-dialog small{display:block}.friend-stats-dialog [hidden]{display:none}@media(max-width:450px){.friend-stats-dialog .friend-stats-grid{grid-template-columns:1fr}}
+
+/* Campaign contracts: the difficulty is part of the mission card, not a surprise. */
+.mission-contract{display:block;margin-top:4px;font-size:9px;letter-spacing:.08em;color:#c8b98a;font-weight:bold}
+.mission-contract[hidden]{display:none}
+.mission-contract[data-threat="hardened"]{color:#e0b06a}
+.mission-contract[data-threat="elite"]{color:#e08a5c}
+.mission-contract[data-threat="legendary"]{color:#e2695b}
+.workshop-item.is-locked{opacity:.62}
+.workshop-prestige{margin-top:16px}
+.workshop-prestige .workshop-item h4{color:#f0d79a}

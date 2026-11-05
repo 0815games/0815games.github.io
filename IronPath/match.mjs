@@ -9,6 +9,7 @@ import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrin
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { waveFormation } from './combat.mjs?v=20261102-battle2';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
+import {campaignSurge} from './campaign-pressure.mjs';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
@@ -26,7 +27,11 @@ export function createPlayer(id, profile, x=850, y=450) {
 // Solo keeps its original shared balance; co-op stores separate player wallets.
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
 export function addSupplies(state,playerId,amount){if(state.individualSupplies){const player=state.players[playerId];if(!player)throw new Error('Unknown supplies owner');player.money+=amount;}else state.money+=amount;}
-function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;state.spawnLeft=waveFormation(state.wave).length;state.spawnIndex=0;state.spawnTimer=.2;}
+function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;
+ // A campaign surge wave arrives wider than its formation: the contract's squad
+ // bonus adds units, so a mission cannot be idled through by holding one lane.
+ state.spawnLeft=waveFormation(state.wave).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
+ state.spawnIndex=0;state.spawnTimer=.2;}
 // Shared pads; abilities, movement and co-op supplies are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.
 export function applyCommand(state, playerId, command) {

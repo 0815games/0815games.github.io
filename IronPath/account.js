@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-armory1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-armory1';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-prestige1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-prestige1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-armory1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-prestige1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -12,7 +12,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
-import {completeStory} from './campaign.mjs?v=20261103-cinematic1';
+// Story completion writes progress and the mission's prestige trophy together.
+import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-prestige1';
+import {missingPrestige} from './prestige.mjs';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-alpha3';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261105-workshop5';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
@@ -98,8 +100,11 @@ $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogo
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
 function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle()});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
-function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first)showProfile(value);else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStory(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
+   // Story progress and the mission's prestige trophy are written together, so a
+   // finished mission can never grant one without the other.
+   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryWithPrestige(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the
@@ -204,6 +209,20 @@ async function prepareWorkshop(){
     .catch(error=>settle('error',error))
     .finally(()=>{workshopPrepare=null;if(armoryCategory==='workshop')renderWorkshop();});
   return workshopPrepare;
+}
+// A player who finished missions before trophies existed keeps what the campaign
+// already proved: the missing trophies are added through the same guarded account
+// transaction, once per sign-in, and only for completed missions.
+async function backfillPrestige(value){
+  if(!user||!value||!Object.hasOwn(value,'workshop'))return;
+  const currentUser=user,version=sessionVersion;
+  const owed=missingPrestige(value,decodeWorkshopSafe(value.workshop));
+  if(!owed.length)return;
+  try{
+   const result=await workshopAccount.sync();
+   if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
+   if(result.status==='saved'){profile=result.profile;commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}
+  }catch{}
 }
 function chooseArmoryCategory(category){
   armoryCategory=category;

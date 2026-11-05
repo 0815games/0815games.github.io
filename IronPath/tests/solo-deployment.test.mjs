@@ -6,7 +6,19 @@ test('enabled endless deployment uses and freezes the saved workshop loadout ins
  const state=createSoloDeployment({player:player(),profile,workshopEnabled:true});assert.equal(state.players.local.loadout.equipped,0);assert.equal(equipmentForPlayer(state,state.players.local).damage,3);assert.equal(equipmentForPlayer(state,state.players.local).movement,15);
  profile=applyWireWorkshopCommand(profile,{type:'equip',slot:'gear',item:'none'});assert.equal(equipmentForPlayer(state,state.players.local).movement,15);
 });
-test('legacy routing is unchanged for disabled workshop and deferred campaign',()=>{for(const options of [{workshopEnabled:false,campaign:false},{workshopEnabled:true,campaign:true}]){const state=createSoloDeployment({player:player(),profile:{workshop:'bad'},...options});assert.equal(state.players.local.loadout.equipped,1);assert.equal(equipmentForPlayer(state,state.players.local).damage,3);assert.equal(state.experimentalWorkshop,undefined);}});
+test('a disabled workshop still plays the old equipment',()=>{
+ const state=createSoloDeployment({player:player(),profile:{workshop:'bad'},workshopEnabled:false});
+ assert.equal(state.players.local.loadout.equipped,1);assert.equal(equipmentForPlayer(state,state.players.local).damage,3);assert.equal(state.experimentalWorkshop,undefined);
+});
+test('a campaign mission now uses the workshop loadout and its contract',()=>{
+ // Missions used to be forced onto the legacy path, so no crafted gear mattered.
+ let profile=initializeWireWorkshop({xp:0,armory:{scrap:100,owned:1,equipped:1}});
+ profile=applyWireWorkshopCommand(profile,{type:'craft',item:'boots'});profile=applyWireWorkshopCommand(profile,{type:'equip',slot:'gear',item:'boots'});
+ const state=createSoloDeployment({player:player(),profile,workshopEnabled:true,campaign:{id:'bridge',threat:'elite'}});
+ assert.equal(equipmentForPlayer(state,state.players.local).movement,15,'the crafted item applies in a mission');
+ assert.equal(state.campaignContract.threat,'elite');assert.equal(state.campaignContract.waves,7);
+ assert.ok(state.maxHp<100,'an elite contract shrinks the bunker');
+});
 test('an unreadable saved workshop never silently falls back to old equipment',()=>{
  for(const profile of [{workshop:'future'},{workshop:'[9,0,[],[],[]]'}])assert.throws(()=>createSoloDeployment({player:player(),profile,workshopEnabled:true}),/valid workshop/);
 });
