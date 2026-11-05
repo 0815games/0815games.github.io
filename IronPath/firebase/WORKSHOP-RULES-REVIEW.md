@@ -13,7 +13,9 @@ The candidate permits a bounded workshop string on the player's private record, 
 
 The candidate rules are intentionally not sufficient to authorize release. They are a starting point for review, not an invitation to publish.
 
-## Server-owned alternative (experimental, do not deploy)
+## Server-owned alternative (experimental, not chosen — do not deploy)
+
+> **Note:** Under the project's free-tier direction (GitHub Pages + Firebase client SDK only, no paid backend), this server-owned alternative is not selected. Keep review focused on client-write rules (`workshop.complete.draft.rules.json`) while acknowledging its client-trust limits.
 
 `workshop-server-only.draft.rules.json` explores a stronger boundary: once an Admin-owned migration creates a workshop, **all client writes to that player record are denied**, including deleting receipts, changing gear, rewards, XP or skills. Admin SDK writes bypass rules, so all account mutations for migrated players must first be handled by an authenticated, durable trusted service. Clients also cannot self-migrate. Existing accounts without workshop remain governed by the baseline.
 

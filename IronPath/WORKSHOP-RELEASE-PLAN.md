@@ -1,5 +1,7 @@
 # Armory overhaul: release plan
 
+> **Direction update:** The user requires GitHub Pages and free-tier Firebase only, with no paid cloud service. The server-owned recommendation below is retained as historical research and is not the chosen release requirement. See `WORKSHOP-ALPHA.md` for the free-tier approach and its client-trust limitations. The workshop remains disabled while data preservation, rules and compatibility are unfinished.
+
 ## Goal and current status
 
 Release a responsive soldier inventory and workshop with three equipment slots, boss-wave materials, crafting and modifications, while preserving existing scrap, bunker ranks, owned gear, equipped effects and progress in solo and multiplayer. The GitHub Pages site remains the player-facing application.
