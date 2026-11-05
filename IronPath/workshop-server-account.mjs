@@ -28,5 +28,7 @@ export function createWorkshopServerAccount({auth,endpoint,storage,crypto=global
    return {status:'error'};
   }catch{return {status:'error'};}finally{if(timer)clearTimeout(timer);busy=false;}
  }
- return {initialize:()=>transact({type:'initialize'}),command:transact,isBusy:()=>busy};
+ function hasPending(){const uid=auth.currentUser?.uid;if(!uid)return false;try{return storage.getItem(key(uid))!==null;}catch{return true;}}
+ async function retryPending(){const uid=auth.currentUser?.uid;if(!uid)return {status:'signed-out'};try{const pending=JSON.parse(storage.getItem(key(uid)));if(!pending||typeof pending.command!=='string')return {status:'error'};return await transact(JSON.parse(pending.command));}catch{return {status:'error'};}}
+ return {initialize:()=>transact({type:'initialize'}),command:transact,isBusy:()=>busy,hasPending,retryPending};
 }

@@ -11,10 +11,10 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
  const el=(tag,cls,text)=>{const node=document.createElement(tag);if(cls)node.className=cls;if(text!==undefined)node.textContent=text;return node;};
  const tr=(text,values)=>translate(text,values);
  function name(id){if(id==='standard')return tr('Standard weapon');if(id==='none')return tr('Empty slot');if(id.startsWith('legacy-'))return tr(ITEMS[Number(id.slice(7))-1]?.name||'Unknown item');return tr(WORKSHOP_CATALOG[id]?.name||'Unknown item');}
- function button(label,disabled,action){const b=el('button','workshop-button',tr(label));b.type='button';b.disabled=disabled||working;b.onclick=action;return b;}
+ function button(label,disabled,action){const b=el('button','workshop-button',tr(label));b.type='button';b.disabled=disabled||working||(label!=='RETRY SAVE'&&!!service.hasPending?.());b.onclick=action;return b;}
  async function run(command,confirmation){
   if(working)return;working=true;render();let result;
-  try{if(confirmation&&!await confirm(confirmation))return;status=tr('Saving…');render();result=command?await service.command(command):await service.initialize();if(result.status==='saved'){onProfile(result.profile);status=tr('Saved for your next match.');}else status=tr('Workshop could not be saved. Check your connection and try again.');}catch{status=tr('Workshop could not be saved. Check your connection and try again.');}
+  try{if(confirmation&&!await confirm(confirmation))return;status=tr('Saving…');render();result=command==='retry'?await service.retryPending():command?await service.command(command):await service.initialize();if(result.status==='saved'){onProfile(result.profile);status=tr('Saved for your next match.');}else status=tr('Workshop could not be saved. Check your connection and try again.');}catch{status=tr('Workshop could not be saved. Check your connection and try again.');}
   finally{working=false;render();}
  }
  function render(){
@@ -22,6 +22,7 @@ export function createWorkshopView({document,root,getProfile,service,confirm,tra
   const has=Object.hasOwn(p,'workshop'),w=validLegacy(p.armory)?(has?decodeWorkshop(p.workshop):migrateWorkshop(p.armory)):null;
   if(!w){root.append(el('p','workshop-error',tr('Workshop data is invalid or requires a newer version.')));return;}
   const armory=readArmory(p.armory),wallet=el('div','workshop-wallet');wallet.append(el('strong','',tr('{count} scrap',{count:armory.scrap})),el('strong','',tr('{count} boss components',{count:w.components})));root.append(wallet);
+  if(service.hasPending?.()){const pending=el('section','workshop-intro');pending.append(el('p','',tr('A save needs confirmation. Retry it before making another change.')),button('RETRY SAVE',false,()=>run('retry')));root.append(pending);}
   if(!has){const note=el('section','workshop-intro');note.append(el('p','',tr('Prepare your workshop. Your existing equipment and bunker upgrades will be kept.')),button('PREPARE WORKSHOP',false,()=>run(null,{title:tr('Prepare workshop?'),text:tr('Your existing progress will be kept.'),accept:tr('PREPARE WORKSHOP')})));root.append(note);if(status){const message=el('p','workshop-status',status);message.setAttribute('role','status');root.append(message);}return;}
   const slots=el('section','workshop-slots');slots.append(el('h3','',tr('Equipped loadout')));const list=el('div','workshop-slot-grid');
   for(const slot of slotKeys){const card=el('div','workshop-slot');card.append(el('span','',tr(slot.toUpperCase())),el('strong','',name(w.equipped[slot])));if(w.equipped[slot]!== (slot==='weapon'?'standard':'none'))card.append(button('UNEQUIP',false,()=>run({type:'equip',slot,item:slot==='weapon'?'standard':'none'})));list.append(card);}slots.append(list);root.append(slots);

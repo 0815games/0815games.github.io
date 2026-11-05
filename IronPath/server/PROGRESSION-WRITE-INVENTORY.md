@@ -10,6 +10,7 @@ Repository search for `players/` write paths, reviewed 2026-11-05. These are liv
 | `account.js` skill save | Transaction checks expected build and point constraints. | Experimental server operation; durable match lock and client integration missing. |
 | `account.js` armory | `saveArmory` buys bunker ranks and equips/unequips owned legacy items. Advanced ranks require level 5. | Experimental server upgrade exists, but legacy equip/unequip and post-migration compatibility need completion. |
 | `coop-rewards.mjs` | Per-account receipt masks with XP, scrap and legacy unlocks in a transaction; client/host observations are not proof of completion. | No trusted game completion or durable cross-mode run identity; experimental workshop reducer is not connected. |
-| `workshop-account.mjs` | Experimental client transactions for initialization, craft, equip and modify, gated off. | Server operation prototype exists; no production connection or fencing. |
+| `workshop-account.mjs` | Experimental direct-client transaction prototype; no longer selected by the gated account UI. | Not suitable for server-owned production profiles. |
+| `workshop-server-account.mjs` | Gated workshop UI service client; trusted endpoint currently unset. | HTTP operation prototype exists; no deployed service, production fencing or complete account lifecycle. |
 
 Leaderboard scores, friends, party/lobby and presence use other database paths; they are not a substitute for trusted profile progression and need separate rules/protocol review. Client reads and in-memory changes are not included in this write inventory. Do not infer this inventory proves no dynamic or external writer exists.

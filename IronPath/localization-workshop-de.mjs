@@ -6,6 +6,7 @@ export const germanWorkshop=Object.freeze({
  'PREPARE WORKSHOP':'WERKSTATT EINRICHTEN','Prepare workshop?':'Werkstatt einrichten?','Your existing progress will be kept.':'Dein bisheriger Fortschritt bleibt erhalten.',
  'Workshop data is invalid or requires a newer version.':'Die Werkstattdaten sind ungültig oder benötigen eine neuere Version.',
  'Workshop could not be saved. Check your connection and try again.':'Die Werkstatt konnte nicht gespeichert werden. Prüfe deine Verbindung und versuche es erneut.',
+ 'A save needs confirmation. Retry it before making another change.':'Ein Speichervorgang muss bestätigt werden. Versuche ihn erneut, bevor du etwas anderes änderst.', 'RETRY SAVE':'SPEICHERN ERNEUT VERSUCHEN',
  'Equipped loadout':'Angelegte Ausrüstung','WEAPON':'WAFFE','GEAR':'AUSRÜSTUNG','GADGET':'GERÄT','UNEQUIP':'ABLEGEN',
  'Craft and equip':'Herstellen und ausrüsten','Existing equipment':'Vorhandene Ausrüstung','CRAFT':'HERSTELLEN','MODIFY':'MODIFIZIEREN','INSTALLED':'INSTALLIERT','MODIFY · 40 SCRAP':'MODIFIZIEREN · 40 SCHROTT',
  '{scrap} scrap · {components} boss components':'{scrap} Schrott · {components} Bosskomponenten','Craft {name}?':'{name} herstellen?','Spend {scrap} scrap and {components} boss components?':'{scrap} Schrott und {components} Bosskomponenten ausgeben?',

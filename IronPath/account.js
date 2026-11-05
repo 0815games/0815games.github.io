@@ -1,5 +1,6 @@
-import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261105-workshop5';
+import {createWorkshopServerAccount} from './workshop-server-account.mjs?v=20261112-alpha4';
+import {WORKSHOP_PROGRESSION_ENDPOINT} from './workshop-service-config.mjs?v=20261112-alpha4';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-alpha4';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261105-workshop5';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
@@ -49,7 +50,9 @@ const confirmation=createConfirmation(document,translateText);onLanguageChange((
 // Release gate: never expose workshop writes until production rules, complete
 // multiplayer version fencing and migration/rollback have been reviewed.
 const WORKSHOP_RELEASE_READY=false;
-const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransaction},canEdit:()=>WORKSHOP_RELEASE_READY&&canEditSkills()});
+// A missing endpoint or storage fails closed; never fall back to direct writes.
+let workshopAccount={initialize:async()=>({status:'error'}),command:async()=>({status:'error'}),isBusy:()=>false};
+if(WORKSHOP_PROGRESSION_ENDPOINT){try{workshopAccount=createWorkshopServerAccount({auth,endpoint:WORKSHOP_PROGRESSION_ENDPOINT,storage:window.sessionStorage,canEdit:()=>WORKSHOP_RELEASE_READY&&canEditSkills()});}catch{console.error('Workshop progression unavailable');}}
 workshopView=createWorkshopView({document,root:$('workshopContent'),getProfile:()=>profile,service:workshopAccount,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
 function closeWorkshop(force=false){if(!force&&workshopAccount.isBusy())return;if($('workshopDialog').open)$('workshopDialog').close();}
 $('workshopClose').onclick=()=>closeWorkshop();$('workshopDialog').addEventListener('cancel',e=>{e.preventDefault();closeWorkshop();});bindDialogBackdrop($('workshopDialog'),()=>closeWorkshop());
