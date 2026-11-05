@@ -12,7 +12,7 @@ The first deliverable is a read-only soldier dossier using the **current one-slo
 - Deterministic recipes and one chosen mod per item. Preview costs and exact effects; confirm expenditure; perform ownership, affordability, currency debit and item/mod assignment atomically. No random rolls in the first version. Values and costs remain provisional until playtested.
 - Solo/co-op use each player's captured loadout. Competitive matches are intended to standardize equipment effects for both sides, while preserving cosmetic choices; this requires explicit, tested match-mode handling, not merely hiding UI bonuses.
 
-An emulator-only candidate full ruleset based on the repository friend-stats draft and its limitations are documented in `firebase/WORKSHOP-RULES-REVIEW.md`; it has not been verified against production and must not be deployed.
+An emulator-only candidate full ruleset based on the repository friend-stats draft and its limitations are documented in `firebase/WORKSHOP-RULES-REVIEW.md`; it has not been verified against production and must not be deployed. A second experimental ruleset locks migrated accounts to trusted-server writes, blocking client deletion and stale overwrites; it requires a complete server-side progression service before migration can be safe.
 
 ## Safety gates before multiplayer or production rollout
 

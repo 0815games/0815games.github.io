@@ -12,3 +12,9 @@ The candidate permits a bounded workshop string on the player's private record, 
 - Tests use demo data and an emulator, not the real project. They do not establish whether the baseline matches live production or verify real devices. Before rollout also test copied-profile migration and rollback, concurrent spending, offline retries and two-device multiplayer.
 
 The candidate rules are intentionally not sufficient to authorize release. They are a starting point for review, not an invitation to publish.
+
+## Server-owned alternative (experimental, do not deploy)
+
+`workshop-server-only.draft.rules.json` explores a stronger boundary: once an Admin-owned migration creates a workshop, **all client writes to that player record are denied**, including deleting receipts, changing gear, rewards, XP or skills. Admin SDK writes bypass rules, so all account mutations for migrated players must first be handled by an authenticated, durable trusted service. Clients also cannot self-migrate. Existing accounts without workshop remain governed by the baseline.
+
+This closes the client-side receipt deletion and stale-account-overwrite paths only if the entire deployed ruleset matches the reviewed candidate and the server itself is secure. It does **not** gate old clients out of multiplayer, verify server requests, validate actual wave completion, solve server availability, provide durable processing, or integrate the current UI. It would break all existing progression for a migrated player without the required server. Never publish it or migrate production accounts in its current state.

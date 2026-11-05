@@ -42,6 +42,9 @@ jobs:
       - name: Run candidate workshop rules tests
         run: npm run test:workshop-draft
 
+      - name: Test trusted-server workshop boundary
+        run: npm run test:workshop-server
+
       - name: Run four-player combined rules tests
         shell: bash
         run: |
