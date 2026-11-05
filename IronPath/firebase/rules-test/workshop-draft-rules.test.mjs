@@ -27,3 +27,12 @@ test('wave credit transaction under candidate rules preserves workshop and exist
  const service=account();assert.equal((await service.initialize()).status,'saved');const r=ref(alice,'players/alice'),stop=await ready(r);
  try{const opts={kind:'solo',receiptId:id,mask:31};const credit=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(credit.committed,true);const again=await runTransaction(r,current=>applyWorkshopWaveCredit(current,opts)??undefined,{applyLocally:false});assert.equal(again.committed,false);const p=(await get(r)).val();assert.equal(p.xp,1000);assert.equal(p.armory.scrap,180);assert.equal(decodeWorkshop(p.workshop).components,1);assert.equal(p.soloWorkshopReceipts[id],31);assert.equal(p.coopRewards[id],3);assert.equal(p.storyProgress,2);}finally{stop();}
 });
+test('free-tier solo path initializes once and credits a run receipt under candidate rules',async()=>{
+ const {applySoloWaveReward}=await import('../../workshop-solo-reward.mjs');
+ const r=ref(alice,'players/alice'),stop=await ready(r),runId='cd'.repeat(16);
+ try{
+  const first=await runTransaction(r,current=>applySoloWaveReward(current,{runId,wave:5})??undefined,{applyLocally:false});assert.equal(first.committed,true);
+  const again=await runTransaction(r,current=>applySoloWaveReward(current,{runId,wave:5})??undefined,{applyLocally:false});assert.equal(again.committed,false,'a replayed report is not written');
+  const p=(await get(r)).val();assert.equal(p.xp,820);assert.equal(p.armory.scrap,130);assert.equal(p.armory.fortify,3);assert.equal(p.storyProgress,2);assert.equal(p.coopRewards[id],3);assert.ok(decodeWorkshop(p.workshop));assert.equal(p.soloWorkshopReceipts[runId],16);
+ }finally{stop();}
+});

@@ -2,7 +2,7 @@
 
 `workshop.complete.draft.rules.json` is a **candidate replacement** derived from the repository's `friend-stats.complete.draft.rules.json`. The live Firebase rules are not available or verified here. Before any publication, export and back up the entire live ruleset, compare it against this baseline, merge all production-only features, independently review the complete result, and run all relevant emulator suites against that final file. Publishing replaces the entire ruleset. User approval for publication must be obtained separately.
 
-The candidate permits a bounded workshop string on the player's private record, forbids removing that field once created, and permits a solo completed-wave receipt map with bounded masks and monotonic bits for non-deletion updates. It preserves the baseline's friend-stat visibility, private records, all other paths, and existing co-op receipts. Transactions and client code are still disabled in the public interface.
+The candidate also refuses to drop an existing `coopRewards` map, matching its solo receipt protection. It permits a bounded workshop string on the player's private record, forbids removing that field once created, and permits a solo completed-wave receipt map with bounded masks and monotonic bits for non-deletion updates. It preserves the baseline's friend-stat visibility, private records, all other paths, and existing co-op receipts. Transactions and client code are still disabled in the public interface.
 
 ## Important limitations — release blockers
 

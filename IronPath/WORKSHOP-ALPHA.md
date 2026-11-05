@@ -17,6 +17,10 @@ This changes the trust model: completion and progression are client-reported, an
 
 The gated workshop UI now selects the existing direct Firebase transaction adapter again. It remains disabled: switching adapters is not a release or a complete alpha. The unused HTTP client and trusted service prototypes are retained for reference and are not required by this free-tier direction.
 
+## Reward wiring (free tier, gated)
+
+Endless solo now has a client-transaction reward path behind the same `WORKSHOP_RELEASE_READY=false` gate: each run gets one random 32-hex receipt id (`workshop-run-receipt.mjs`), and the wave-cleared report calls `account.awardXP(..., runId)`. The transaction runs `applySoloWaveReward`, which initializes a missing workshop once (failing closed on a corrupt one) and credits legacy XP/loot, boss materials, preserved legacy unlocks and the receipt in that single write. Campaign reports, and all reports while the gate is off, keep the existing additive save with no new fields. Co-op/versus wave blocks use the same atomic reducer through `createCoopRewardQueue({..., workshop:true})`. Replayed or retried reports are no-ops. This is still client-reported and is not anti-cheat; the candidate rules must be reviewed and deployed before the gate can be flipped.
+
 ## Before sharing a playable link
 
 1. Prefer isolated Firebase test data and identities within the available free-tier limits, plus a separate GitHub Pages alpha configuration that cannot accidentally write the live account. A second Firebase project is optional, not a paid service requirement. Preserve the existing public game and saves. A production profile copy requires a private, access-controlled backup and explicit operational review; do not put player data in Git.
