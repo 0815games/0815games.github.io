@@ -5,7 +5,7 @@ import {test} from 'node:test';
 
 import {applyCommand, createPlayer} from '../match.mjs';
 import {createMatch, stepMatch} from '../simulation.mjs';
-import {encodeBuild, parseBuild, pointsLeft} from '../skills.mjs';
+import {DEFAULT_BUILD, encodeBuild, parseBuild, pointsLeft} from '../skills.mjs';
 import {strict as assert} from 'node:assert';
 
 test('builds validate, abilities fire and the passives reach solo and co-op',async()=>{
@@ -69,3 +69,12 @@ const assault=createMatch([player('assault','2,0,0,0,0;assault;1100000000')]);as
 const eng=createMatch([player('eng','0,2,0,0,0;engineer;0011000000')]);eng.running=true;eng.wave=1;eng.spawnLeft=1;eng.spawnTimer=100;eng.towers.push({id:1,pad:0,type:0,level:1,timer:0,ownerId:'eng'});eng.enemies.push({hp:1000,x:105,y:130,speed:0,segment:1,kind:'infantry',reward:1});assert.equal(applyCommand(eng,'eng',{type:'airstrike'}).ok,true);assert.equal(eng.players.eng.cooldown,25);stepMatch(eng);assert.equal(eng.towers[0].timer,.55*.9);
 console.log('Legacy migration, specialist prerequisites and solo/co-op effects passed.');
 });
+
+// A brand-new account has no saved build. Whatever parseBuild invents for it is
+// the loadout every first-run soldier deploys with, so pin that it is the plain
+// assault line and not, say, a path the player never chose.
+ test('a missing build falls back to the default loadout',()=>{
+  assert.equal(DEFAULT_BUILD,'0,0,0,0,0;assault');
+  assert.equal(encodeBuild(parseBuild(undefined,1)),DEFAULT_BUILD,'a missing build falls back to the default');
+  assert.equal(parseBuild(undefined,1).active,null,'and level one still has no ability');
+ });
