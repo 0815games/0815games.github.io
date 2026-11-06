@@ -151,6 +151,14 @@ const assert = require('node:assert/strict');
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
     assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
+    // Reported: "er muss einen Turm bauen, bevor er auf die nächste Seite kann." The
+    // card is a gate now. Before anything stands on the field NEXT is closed, says what
+    // is missing, and clicking it does nothing - the step cannot be skipped by tapping.
+    assert.equal(await page.locator('#coachNext').isDisabled(),true,'NEXT is closed until a tower stands');
+    assert.match(await page.locator('#coachAsk').innerText(),/Build one tower to continue/);
+    assert.equal(await page.locator('#coachAsk').isVisible(),true,'the card says what is missing');
+    await page.locator('#coachNext').click({force:true});
+    assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/,'a click on the gate does not skip the step');
     // Open the sheet a pad offers, and prove the card is not covering it.
     const sheetCheck=await page.evaluate(()=>{
       const card=document.getElementById('firstRunCoach');
@@ -165,6 +173,32 @@ const assert = require('node:assert/strict');
     assert.equal(sheetCheck.cardHidden,true,'the card steps aside while the tower sheet is open');
     assert.equal(sheetCheck.onSheet,true,'and the sheet is not covered by anything');
     assert.equal(await page.locator('#firstRunCoach').isHidden(),false,'it comes back when the sheet closes');
+    // Now do what the card asks, on the real field. This is the point of the gate: the
+    // step is finished by a tower that stands there, not by a click on NEXT.
+    // The card already points at the pad it wants (`#coachRing`). Tapping the ring is
+    // exactly what a player does, and it needs no test-only hook in the game.
+    const openPad = async () => {
+      const ring = await page.locator('#coachRing').boundingBox();
+      assert.ok(ring && ring.width > 10, 'the card marks the pad it is asking about');
+      await page.mouse.click(ring.x + ring.width / 2, ring.y + ring.height / 2);
+      await page.locator('#radialMenu').waitFor({state: 'visible', timeout: 10000});
+    };
+    await openPad();
+    await page.locator('.sheet-option').first().click();
+    await page.locator('#towerDetails').waitFor({state: 'visible'});
+    await page.locator('#towerDetailsConfirm').click();
+    // The card moves on because a tower exists - not because anything was clicked here.
+    await page.waitForFunction(() => /Upgrade it/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    assert.equal(await page.locator('#coachNext').isDisabled(),true,'the upgrade step gates NEXT too');
+    assert.match(await page.locator('#coachAsk').innerText(),/Upgrade that tower to continue/);
+    // Upgrade it: the same tower, through its own action sheet.
+    await openPad();
+    await page.locator('.sheet-option').first().click();
+    await page.locator('#towerDetails').waitFor({state: 'visible'});
+    await page.locator('#towerDetailsConfirm').click();
+    await page.waitForFunction(() => /Move your hero/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    assert.equal(await page.locator('#coachNext').isDisabled(),false,'nothing to prove for the hero card until the tap');
+    assert.equal(await page.locator('#coachAsk').isHidden(),true,'the gate is quiet while nothing is owed');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
     // Dismissing must not be the end of it: the field menu and the Command Center both

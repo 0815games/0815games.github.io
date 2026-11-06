@@ -67,6 +67,10 @@ const cardStrings = (coach, guide) => [
     [`coach.${step.id}.title`, step.title],
     [`coach.${step.id}.text`, step.text],
     [`coach.${step.id}.caption`, step.caption],
+    // The line the gate shows while it waits. It was added after this list existed and
+    // slipped through untranslated for exactly that reason: the guard only knew the
+    // three fields it had been written for.
+    [`coach.${step.id}.ask`, step.ask],
   ]),
   ...guide.STEPS.flatMap(step => [
     [`guide.${step.id}.title`, step.title],
@@ -160,8 +164,9 @@ test('the open card re-renders when the language is switched under it', async ()
   // switch to German and keep reading English until the next card appeared - so the card
   // here is opened in English *first* and has to turn German without being reopened.
   const nodes = new Map();
-  const make = id => ({ id, hidden: false, textContent: '', dataset: {}, addEventListener() {} });
-  for (const id of ['firstRunCoach', 'coachStep', 'coachTitle', 'coachText', 'coachCaption', 'coachNext', 'coachClose']) nodes.set(id, make(id));
+  const make = id => ({ id, hidden: false, disabled: false, textContent: '', dataset: {}, attrs: {},
+    addEventListener() {}, setAttribute(name, value) { this.attrs[name] = value; }, getAttribute(name) { return this.attrs[name] ?? null; } });
+  for (const id of ['firstRunCoach', 'coachStep', 'coachTitle', 'coachText', 'coachCaption', 'coachAsk', 'coachNext', 'coachClose']) nodes.set(id, make(id));
   const fakeDocument = { getElementById: id => nodes.get(id) ?? null, createElement: () => make('i') };
   await withLanguage(async (language, switchTo) => {
     const { createCoach } = await import('../first-run-coach.mjs?test=refresh');

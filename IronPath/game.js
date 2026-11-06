@@ -29,7 +29,7 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261118-settings1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261120-coachgate1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -281,6 +281,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(coop&&pending){$('waveRequestText').textContent=guest?tr('Host requests wave {wave}. Approve when ready.',{wave:state.pendingWave}):state.fourInfo?tr('Waiting for players to approve wave {wave} ({approved}/{required}).',{wave:state.pendingWave,approved:state.fourInfo.approved,required:state.fourInfo.required}):tr('Waiting for your {player} to approve wave {wave}.',{player:tr(versus?'opponent':'teammate'),wave:state.pendingWave});$('waveDecline').hidden=!guest;$('waveDecline').disabled=!coopReady;}
     $('start').textContent=state.ended?(coop?tr('MATCH ENDED'):tr('RESTART OPERATION')):state.running?tr('WAVE IN PROGRESS'):guest?(pending?tr('APPROVE WAVE'):state.fourInfo?.waitingForOthers?tr('WAIT FOR PLAYERS'):tr('WAIT FOR HOST')):host&&pending?tr('CANCEL REQUEST'):host&&versus&&state.waitingForRival?tr('WAIT FOR OPPONENT'):coop?(versus||Object.entries(state.players).some(([id,p])=>id!==state.hostId&&p.active!==false)?tr('REQUEST WAVE'):tr('START NEXT WAVE')):state.wave===0?tr('DEPLOY / START WAVE'):tr('START NEXT WAVE');
     $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)||(versus&&host&&state.waitingForRival)||(teamMatch&&host&&state.fourInfo?.otherNotReady)));
+    // The coach re-reads the field once per painted frame. That is what lets a gate
+    // open without a callback (a tower already standing when the card came up) and
+    // close again when the evidence disappears (the tower was sold).
+    try{if(coach.isOpen())coach.tick();}catch{/* A hint must never break the field. */}
   }
   function localizedBossSignal(signal){const labels={'shield-warning':'SHIELD RAISING · {seconds}s',shield:'SHIELD UP · DAMAGE REDUCED · {seconds}s','bomb-warning':'BOMB STRIKE IN · {seconds}s','repair-warning':'REPAIR IN · {seconds}s','rally-warning':'RALLY IN · {seconds}s',rally:'RALLY ACTIVE · {seconds}s'};return labels[signal.key]?tr(labels[signal.key],{seconds:signal.seconds}):signal.text;}
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return tr('Wave {wave}',{wave})+(wave%5===0?tr(' · BOSS WAVE'):'')+' · '+Object.entries(counts).map(([kind,n])=>`${n} ${tr(ENEMY_TYPES[kind].label)}`).join(' · ')+(bossForWave(wave)?` · ${tr(bossForWave(wave).description)}`:'');}
@@ -358,6 +362,14 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     return node?{element:node}:null;
    }
    return null;
+  },
+  // The coach proves a step by reading the field, not by trusting a callback. This
+  // is that view: the live towers (with their ids) and this soldier. Kept as a small
+  // object so the card never has to know the shape of a match.
+  observe:()=>{
+   if(!state)return null;
+   const player=state.players?.[me()]||null;
+   return {towers:state.towers,localId:me(),players:state.players,wave:state.wave,running:!!state.running,playerTarget:player?.target||null,x:player?.x,y:player?.y};
   }});
   // The account reports practice as it happens and drops the sample soldier when the
   // dialog closes; this hands the result to the tour, which waits on the step.
@@ -428,7 +440,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(!tower){
       types.forEach((type,i)=>actions.push({label:tr(type.name),summary:tr(type.description),unaffordable:supplies()<type.cost,description:tr('View {name}, {cost} supplies. {description}',{name:tr(type.name),cost:type.cost,description:tr(type.description)})+(supplies()<type.cost?tr('. Not enough supplies to build.'):'' ),run:()=>{
         showDetails(()=>tr(type.name),()=>tr('{description}. Base damage: {damage} per shot, firing interval: {interval} seconds, range: {range}. Damage varies by enemy type.',{description:tr(type.description),damage:type.damage,interval:type.interval,range:type.range}),type.cost,'BUILD',()=>{
-          dispatch({type:'build',pad,towerType:i},result=>{if(!result.ok){$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);return;}coach.event('build');if($('towerDetails').open)$('towerDetails').close();if(!coop){combatFx.emit('build',getMap(state.mapId).pads[pad],state);sound.play('build');}state.selectedPad=pad;closeMenu();notice(()=>tr('{name} built. Tap it to upgrade or sell.',{name:tr(type.name)}));updateUI();});
+          dispatch({type:'build',pad,towerType:i},result=>{if(!result.ok){$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);return;}// The id is what makes the evidence check meaningful: the card later asks the
+// field whether *this* tower still stands, so selling it takes the step back.
+          const built=state.towers.find(t=>t.pad===pad);
+          coach.event('build',{builtTowerId:built?built.id:null});if($('towerDetails').open)$('towerDetails').close();if(!coop){combatFx.emit('build',getMap(state.mapId).pads[pad],state);sound.play('build');}state.selectedPad=pad;closeMenu();notice(()=>tr('{name} built. Tap it to upgrade or sell.',{name:tr(type.name)}));updateUI();});
         });
       }}));
       menuNotice(coop?'Tap a tower for details. Grey options need more supplies. Battle continues in co-op.':'Tap a tower for details. Grey options need more supplies. Battle paused.');
@@ -449,7 +464,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
       menuNotice(()=>tr(towerDisplay(tower.level).prestige?'{name} · level {level} · prestige {prestige} · range {range}. {battle}':'{name} · level {level} · range {range}. {battle}',{name:tr(name),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige,range:Math.round(getTowerRange(tower)),battle:tr(coop?'Battle continues in co-op.':'Battle paused.')}));
     }
-    function upgrade(branch){const next=towerDisplay(tower.level+1);dispatch({type:'upgrade',pad,branch,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);else notice(result.reason);return;}coach.event('upgrade');if(!coop){combatFx.emit('upgrade',getMap(state.mapId).pads[pad],state);sound.play('upgrade');}notice(()=>next.level===1?tr('Tower reached prestige {prestige} · level 1.',{prestige:next.prestige}):tr(next.prestige?'Tower upgraded to level {level} · prestige {prestige}.':'Tower upgraded to level {level}.',{level:next.level,prestige:next.prestige}));if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();});}
+    function upgrade(branch){const next=towerDisplay(tower.level+1);dispatch({type:'upgrade',pad,branch,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);else notice(result.reason);return;}coach.event('upgrade',{builtTowerId:tower.id});if(!coop){combatFx.emit('upgrade',getMap(state.mapId).pads[pad],state);sound.play('upgrade');}notice(()=>next.level===1?tr('Tower reached prestige {prestige} · level 1.',{prestige:next.prestige}):tr(next.prestige?'Tower upgraded to level {level} · prestige {prestige}.':'Tower upgraded to level {level}.',{level:next.level,prestige:next.prestige}));if($('towerDetails').open)$('towerDetails').close();closeMenu();updateUI();});}
     menu.dataset.mode=tower?'actions':'build';
     $('sheetMode').textContent=tr(coop?'BATTLE CONTINUES':'BATTLE PAUSED');
     $('sheetTitle').textContent=!tower?tr('Build defense'):mode==='branches'?tr('Choose specialization'):mode==='confirmSell'?tr('Sell tower?'):tr(towerDisplay(tower.level).prestige?'{name} · Level {level} · Prestige {prestige}':'{name} · Level {level}',{name:tr(tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige});
@@ -498,7 +513,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
     const radius=Math.min(56,Math.max(28,22*logicalWidth/rect.width/(view?.scale||1))),pads=map.pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
-    if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min((map.width||960)-12,x)),y:Math.max(12,Math.min((map.height||540)-12,y))},result=>{if(result.ok)coach.event('move');notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
+    if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min((map.width||960)-12,x)),y:Math.max(12,Math.min((map.height||540)-12,y))},result=>{if(result.ok){const p=state.players[me()];coach.event('move',{moveFrom:{x:p?.x,y:p?.y}});}notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
     const selected=index;
     if(coop&&!state.towers.some(t=>t.pad===selected)){
       closeMenu();state.selectedPad=null;const epoch=selectionEpoch,session=coop,input=coopInput;

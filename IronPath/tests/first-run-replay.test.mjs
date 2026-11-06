@@ -36,7 +36,7 @@ function fakeDocument() {
     addEventListener() {}, replaceChildren() { this.children = []; this.childElementCount = 0; },
     setAttribute(key, value) { this[key] = value; }, getAttribute() { return null; }, toggleAttribute() {},
   });
-  for (const id of ['firstRunCoach', 'coachStep', 'coachTitle', 'coachText', 'coachCaption', 'coachNext', 'coachClose', 'coachPips', 'coachHighlight', 'coachRing']) nodes.set(id, make(id));
+  for (const id of ['firstRunCoach', 'coachStep', 'coachTitle', 'coachText', 'coachCaption', 'coachAsk', 'coachNext', 'coachClose', 'coachPips', 'coachHighlight', 'coachRing']) nodes.set(id, make(id));
   return { getElementById: id => nodes.get(id) ?? null, createElement: () => make('i'), querySelectorAll: () => [] };
 }
 
