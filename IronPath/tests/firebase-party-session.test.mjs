@@ -1,8 +1,11 @@
+import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createFirebasePartyHostSession,createFirebasePartyClientSession} from '../firebase-party-session.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {createMatch} from '../simulation.mjs';
 import {createPlayer} from '../match.mjs';
+
+test('the Firebase party session sequences, pauses and resyncs after an uncertain write',async()=>{
 const players=['alice','bob'];const host=createPartyHost(createMatch(players.map(id=>createPlayer(id,{name:id,gender:'female'}))));
 let inputListener=()=>{},listeners={},published=[],held=null,holdInput=false;
 const hostChannel={watchInputs(fn){inputListener=fn;return()=>{inputListener=()=>{};};},async publishViews(views){published.push(views);for(const id of players)listeners[id]?.(views[id]);},async close(){}};
@@ -56,3 +59,4 @@ assert.equal(sent.length,0);
 const mutable={type:'move',x:100,y:200},valid=validationClient.command(mutable);mutable.x=NaN;await flush();assert.equal(sent[0].envelope.command.x,100);
 validatedView({epoch:'safe',ready:true,snapshot:{tick:1,nextSeq:2,receipts:[{seq:1,status:'applied',result:{ok:true}}]}});
 assert.equal((await valid).ok,true);await validationClient.stop();
+});

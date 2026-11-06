@@ -1,7 +1,10 @@
+import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createPlayer } from '../match.mjs';
 import { createMatch } from '../simulation.mjs';
 import { createHost, restoreHost, PROTOCOL_VERSION, MAX_PENDING, RECEIPT_HISTORY } from '../protocol.mjs';
+
+test('the protocol orders commands, retries them, checkpoints and replays without drift',async()=>{
 const profile={name:'Soldier',gender:'female',level:2};
 const match=()=>createMatch([createPlayer('alice',profile),createPlayer('bob',profile)]);
 const message=(seq,command)=>({version:PROTOCOL_VERSION,seq,command});
@@ -56,4 +59,4 @@ assert.equal(disconnected.receive('alice',message(2,{type:'direction',x:1,y:0}))
 const position=disconnected.snapshotFor('alice').match.players.alice.x;disconnected.advance();
 assert.equal(disconnected.snapshotFor('alice').match.players.alice.x,position);
 assert.equal(disconnected.suspendPlayer('intruder'),false);
-console.log('Protocol ordering, retries, checkpoints and replay tests passed.');
+});

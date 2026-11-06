@@ -1,3 +1,4 @@
+import {test} from 'node:test';
 // Terrain effects on generated maps: range, damage, speed, ice and the drawn
 // battlefield. Both halves search the seeded map ids for the themes they need.
 
@@ -9,8 +10,7 @@ import {STEP, createMatch, stepMatch} from '../simulation.mjs';
 import {TERRAIN_BRIEFINGS, distanceToRoad, enemySpeedFactor, iceDamage, soldierSpeedFactor, targetingRange, terrainFor, weaponDamageFactor} from '../terrain.mjs';
 import {strict as assert} from 'node:assert';
 
-// ---- from terrain.test.mjs ----
-{
+test('terrain changes range, damage and speed on the generated maps',async()=>{
 const maps={};for(let i=0;Object.keys(maps).length<5&&i<10000;i++){const id=`g2-${(Math.imul(i,2654435761)>>>0).toString(16).padStart(8,'0')}`;const map=getMap(id);maps[map.theme]??=map;}
 assert.equal(Object.keys(maps).length,5);
 assert.equal(terrainFor(getMap('forest')),null);assert.equal(terrainFor(getMap('gen-00000000')),null);
@@ -44,10 +44,9 @@ console.log('Terrain mechanics, real combat, legacy maps and co-op reconnect pas
  const s=createMatch([player('a')],maps.arctic.id);s.players.a.direction={x:-1,y:0};stepMatch(s);assert.ok(Math.abs(s.players.a.x-(900-150*.75*STEP))<1e-8);
  const map=maps.marsh,m=createMatch([player('a')],map.id);m.running=true;m.wave=1;m.enemies=[{kind:'tank',x:map.path[0].x,y:map.path[0].y,hp:100,maxHp:100,speed:32,segment:1,reward:1,damage:1}];stepMatch(m);assert.ok(Math.abs(m.enemies[0].x-32*.75*STEP)<1e-8);
 }
-}
+});
 
-// ---- from terrain-expanded.test.mjs ----
-{
+test('the expanded themes keep their ice and forest rules on the drawn battlefield',async()=>{
 const maps={};for(let i=0;Object.keys(maps).length<5&&i<20000;i++){const m=getMap(`g2-${(Math.imul(i,2654435761)>>>0).toString(16).padStart(8,'0')}`);maps[m.theme]??=m;}
 assert.equal(Object.keys(maps).length,5);
 const p=id=>createPlayer(id,{name:id,gender:'female'},900,20);
@@ -79,4 +78,4 @@ console.log('Expanded terrain hazards, targeting, cover, rendering and reconnect
 
 // Legacy fixed forest maps must not show a zone that has no gameplay effect.
 {const m=getMap('forest'),state=createMatch([p('solo')],m.id),labels=[];const ctx=new Proxy({}, {get(target,key){if(key in target)return target[key];if(key==='fillText')return text=>labels.push(text);return ()=>{};},set(target,key,value){target[key]=value;return true;}});drawCartoonBattle(ctx,state,{path:m.path,pads:m.pads,types:[{color:'#000'}],me:'solo',getTowerRange:()=>0,theme:m.theme});assert.ok(!labels.includes('AMBUSH TRAIL'));}
-}
+});

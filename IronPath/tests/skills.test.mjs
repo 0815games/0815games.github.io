@@ -1,3 +1,4 @@
+import {test} from 'node:test';
 // Skill builds, abilities and the mastery web. Two files became one: both are
 // parseBuild()/encodeBuild() round trips, one for the starting build and one for
 // the expanded web. Separate scopes keep the two `player` helpers apart.
@@ -7,8 +8,7 @@ import {createMatch, stepMatch} from '../simulation.mjs';
 import {encodeBuild, parseBuild, pointsLeft} from '../skills.mjs';
 import {strict as assert} from 'node:assert';
 
-// ---- from skills.test.mjs ----
-{
+test('builds validate, abilities fire and the passives reach solo and co-op',async()=>{
 const player=(id,skills,level=10)=>createPlayer(id,{name:id,gender:'female',level,skills},100,130);
 assert.equal(encodeBuild(parseBuild('3,0,0,0,0;recon',3)),'0,0,0,0,0;assault','overspending is ignored');
 assert.equal(encodeBuild(parseBuild('invalid',10)),'0,0,0,0,0;assault');
@@ -52,10 +52,9 @@ for(const [i,build] of builds.entries()){
  if(i===8)assert.equal(m.suppression,12);
  if(i===9){assert.equal(m.suppression,7);assert.equal(m.enemies[0].hp,80);}
 }
-}
+});
 
-// ---- from expanded-skills.test.mjs ----
-{
+test('the expanded web accepts legacy saves and enforces its specialist prerequisites',async()=>{
 const old='2,0,0,0,0;assault';assert.equal(encodeBuild(parseBuild(old,3)),old,'legacy saves remain unchanged');
 const full='2,2,2,2,2;medic;1111111111';const build=parseBuild(full,21);assert.equal(encodeBuild(build),full);assert.equal(pointsLeft(build,21),0);
 assert.equal(encodeBuild(parseBuild(full,20)),'0,0,0,0,0;assault','cannot overspend');assert.equal(encodeBuild(parseBuild('1,0,0,0,0;assault;1000000000',20)),'0,0,0,0,0;assault','specialists require rank two');
@@ -69,4 +68,4 @@ const recon=createMatch([player('recon','0,0,0,0,2;recon;0000000011')]);recon.ru
 const assault=createMatch([player('assault','2,0,0,0,0;assault;1100000000')]);assault.running=true;assault.wave=1;assault.spawnLeft=1;assault.spawnTimer=100;assault.enemies.push({hp:1000,x:260,y:130,speed:0,segment:1,kind:'infantry',reward:1});stepMatch(assault);assert.ok(assault.enemies[0].hp<1000);assert.equal(assault.players.assault.shotTimer,.65*.85);
 const eng=createMatch([player('eng','0,2,0,0,0;engineer;0011000000')]);eng.running=true;eng.wave=1;eng.spawnLeft=1;eng.spawnTimer=100;eng.towers.push({id:1,pad:0,type:0,level:1,timer:0,ownerId:'eng'});eng.enemies.push({hp:1000,x:105,y:130,speed:0,segment:1,kind:'infantry',reward:1});assert.equal(applyCommand(eng,'eng',{type:'airstrike'}).ok,true);assert.equal(eng.players.eng.cooldown,25);stepMatch(eng);assert.equal(eng.towers[0].timer,.55*.9);
 console.log('Legacy migration, specialist prerequisites and solo/co-op effects passed.');
-}
+});

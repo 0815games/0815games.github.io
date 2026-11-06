@@ -1,6 +1,10 @@
+import {test} from 'node:test';
+// Minimal browser adapter to check that the existing solo UI still drives shared commands.
+
 import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
-// Minimal browser adapter to check that the existing solo UI still drives shared commands.
+
+test('the solo tower sheet and the tutorial still drive the shared command layer',async()=>{
 const elements=new Map();
 let lastArc, strokes=[], path=[];
 const ctx=new Proxy({}, {get(target,key){if(key==='beginPath')return ()=>{path=[];};if(key==='moveTo'||key==='lineTo')return (...args)=>path.push([key,...args]);if(key==='arc')return (...args)=>{lastArc=args;};if(key==='stroke')return ()=>strokes.push({arc:lastArc,path:[...path],style:target.strokeStyle});return target[key]||(()=>{});},set(target,key,value){target[key]=value;return true;}});
@@ -100,4 +104,4 @@ element('tutorialReplay').onclick();
 assert.equal(element('tutorialDialog').open,true);
 element('tutorialSkip').onclick();
 assert.equal(element('tutorialDialog').open,false);
-console.log('Solo tower sheet and tutorial smoke test passed.');
+});

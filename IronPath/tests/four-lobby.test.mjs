@@ -1,3 +1,4 @@
+import {test} from 'node:test';
 // The four-player lobby and its transport: roster slots, the wire contract and
 // the motion projection the guests receive.
 
@@ -12,8 +13,7 @@ import {createHost, restoreHost} from '../protocol.mjs';
 import {createMatch} from '../simulation.mjs';
 import {strict as assert} from 'node:assert';
 
-// ---- from four-lobby.test.mjs ----
-{
+test('the four-player lobby moves a roster through its transitions',async()=>{
 const profile=name=>({name,gender:'female',level:1});
 let lobby=createFourLobby('alice',profile('Alice'));const original=structuredClone(lobby);
 assert.equal(transition(lobby,'bob',{type:'approve',uid:'bob'}),null,'only host approves');
@@ -29,10 +29,9 @@ const departed=transition(lobby,'cara',{type:'leave'});assert.equal(departed.slo
 const removed=transition(lobby,'alice',{type:'remove',uid:'cara'});assert.equal(removed.slots[2],null);assert.equal(transition(lobby,'bob',{type:'remove',uid:'cara'}),null);
 const started=transition(lobby,'alice',{type:'start'});assert.equal(started.started,true);for(const cmd of [{type:'mode',mode:'four-coop'},{type:'approve',uid:'eve'},{type:'remove',uid:'bob'},{type:'teams',teams:[0,0,1,1]},{type:'start'}])assert.equal(transition(started,'alice',cmd),null,'roster, teams and mode lock at start');assert.equal(transition(started,'bob',{type:'leave'}),null,'match departure uses presence/forfeit, not roster replacement');
 console.log('Four-player lobby capacity, authorization decisions and immutable roster tests passed.');
-}
+});
 
-// ---- from four-transport.test.mjs ----
-{
+test('the transport carries commands between host and guests',async()=>{
 const ids=['alice','bob','cara','dan'],players=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
 const cmd=(seq,type,extra={})=>({version:1,seq,command:{type,...extra}});
 const duel=createTwoVsTwo(players,'alice',[['alice','bob'],['cara','dan']]);
@@ -64,11 +63,10 @@ assert.equal(views.cara.receipts.length,2);assert.equal(views.alice.receipts.len
 assert.ok(new TextEncoder().encode(values.get('fourParties/fourtest/views/dan')).length<262144,'four-player view fits current packet size in this scenario');
 for(const client of Object.values(clients))await client.stop();await session.stop();
 console.log('Four-player ordered host, reconnect and mock packet/session integration passed; Firebase rules not tested.');
-}
+});
 
-// ---- from four-motion.test.mjs ----
-{
+test('the motion projection reaches every guest without mutating the host',async()=>{
 const p=createPlayer('a',{name:'Alice',gender:'female'},1300,650),q=createPlayer('b',{name:'Bob',gender:'male'}),s=createMatch([p,q],'four-front');
 p.direction={x:1,y:1};s.players.a.direction=p.direction;s.enemies=[{kind:'infantry',road:1,x:10,y:580,segment:1,speed:100,hp:10}];const before=structuredClone(s),view=projectCoopMotion(s,.2);
 assert.ok(view.players.a.x>1300);assert.ok(view.players.a.y>650);assert.ok(view.enemies[0].x>10);assert.equal(view.enemies[0].y,580);assert.deepEqual(s,before,'visual prediction does not mutate simulation');console.log('Four-player visual prediction respects map bounds and road selection.');
-}
+});
