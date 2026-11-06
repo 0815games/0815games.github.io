@@ -16,6 +16,15 @@
 //
 // The cards are data. `STEPS` is exported so tests can check that every class is
 // explained and that no card points at an id that does not exist.
+//
+// The strings stay English here and are translated when they are written to the DOM.
+// That is deliberate: this file is the source of truth for *what* a card says, and
+// the German lives in `localization-firstrun-de.mjs` next to the first-run card's
+// German. Writing the raw strings to the screen was a real bug - the guide was the
+// one part of the first run with no German at all, because nobody ever asked for a
+// translation.
+import {translateText as tr} from './language.mjs?v=20261116-firstrunde1';
+
 export const STEPS = Object.freeze([
   Object.freeze({
     id: 'rewards',
@@ -91,9 +100,9 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     const current = step();
     if (!current) return hide();
     $('guideStep').textContent = `${index + 1} / ${STEPS.length}`;
-    $('guideTitle').textContent = current.title;
-    $('guideText').textContent = current.text;
-    $('guideCaption').textContent = current.caption;
+    $('guideTitle').textContent = tr(current.title);
+    $('guideText').textContent = tr(current.text);
+    $('guideCaption').textContent = tr(current.caption);
     $('guideNext').hidden = current.advance !== 'button';
     card.hidden = false;
     card.dataset.step = current.id;

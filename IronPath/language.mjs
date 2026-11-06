@@ -1,4 +1,9 @@
 import {germanWorkshop} from './localization-workshop-de.mjs?v=20261112-firstrun5';
+// The first run was the last translated part of the game and the first one a new
+// soldier sees: seven coach cards on the field, four cards after the match, four class
+// explanations. Kept in its own file so the next new card cannot ship untranslated
+// without tests/first-run-german.test.mjs noticing.
+import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261116-firstrunde1';
 import {germanFinal} from './localization-final-de.mjs?v=20261105-soldier1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';
@@ -79,7 +84,7 @@ const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
   if(typeof text!=='string')return String(text??'');
-  const localized=active==='de'?(germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
+  const localized=active==='de'?(germanFirstRun[text]??germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
   return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){
