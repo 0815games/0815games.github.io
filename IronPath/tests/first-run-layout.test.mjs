@@ -176,3 +176,41 @@ test('the measured header is the one the field really uses', () => {
   assert.ok(html.indexOf('id="gameView"') < dashboard, 'the dashboard lives inside #gameView');
   assert.match(field, /#gameView \.map-frame \.dashboard\{position:absolute/, 'and it is positioned in the field');
 });
+
+test('the training field shows one language flag, not two', () => {
+  // Reported from a phone: two flags in the top right. The field has its own switch
+  // (#fieldLanguage, left of the menu) and the page has the global picker - and the
+  // list that hides the global one did not include the training screen.
+  const training = field.slice(field.indexOf('data-field-menu="open"') > 0
+    ? field.indexOf('#gameView #gameWorkspace[data-screen="training"] .field-language-flag')
+    : 0);
+  assert.match(field, /#gameView #gameWorkspace\[data-screen="training"\] \.field-language-flag\{display:none\}/,
+    'the field flag is hidden on the training field');
+  // And the global picker must NOT be hidden there, or the screen has no switch at all.
+  const hideGlobal = field.match(/body:has\([^)]*[^}]*>\.language-picker\{display:none\}/);
+  assert.ok(hideGlobal, 'the global picker is hidden on the full-field screens');
+  assert.doesNotMatch(hideGlobal[0], /data-screen="training"/,
+    'training keeps exactly one language switch');
+});
+
+test('the coach caption counts five waves, like the contract it describes', () => {
+  const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
+  assert.match(coach, /caption:'WAVE 1 OF 5'/, 'the card says five waves');
+  assert.doesNotMatch(coach, /OF 6|of 6'/, 'and nothing still says six');
+});
+
+test('an open field menu puts the contract card and the HUD behind it', () => {
+  // The contract card sat at z-index 5 over a menu at 9 in the same stacking context,
+  // so "COMMAND CENTER" and "How to play" were covered by it and the menu looked
+  // stuck behind a permanent overlay.
+  for (const layer of ['.solo-objective', '.dashboard', '.versus-status', '.field-language-flag']) {
+    assert.ok(declares(field, `#gameView #gameWorkspace[data-field-menu="open"] ${layer}`, 'z-index', /^[12]$/),
+      `${layer} steps behind the open menu`);
+  }
+  assert.ok(declares(field, '#gameView #gameWorkspace[data-field-menu="open"] .field-ops', 'z-index', /^1[0-9]$/),
+    'the menu stays on top');
+  // The attribute is driven by the menu itself, so no layout code has to know.
+  const menu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  assert.match(menu, /dataset\.fieldMenu/, 'the menu publishes its open state');
+  assert.match(menu, /addEventListener\('toggle'/, 'and reacts to being opened and closed');
+});
