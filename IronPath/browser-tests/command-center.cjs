@@ -194,6 +194,10 @@ const assert = require('node:assert/strict');
     // End it the way a player can, through the confirmation dialog.
     await page.locator('#endRun').click();
     await page.locator('#gameConfirmAccept').click();
+    // Ending a run shows the debrief, which is modal: close it the way a player does.
+    await page.waitForSelector('#runResults[open]');
+    await page.locator('#resultsDone').click();
+    await page.waitForSelector('#runResults',{state:'hidden'});
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
     await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
