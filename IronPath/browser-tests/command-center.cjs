@@ -376,8 +376,10 @@ const assert = require('node:assert/strict');
       return key?localStorage.getItem(key):null;
     });
     assert.equal(trainingMarker,'done','a tour replay does not redeploy the one-time contract');
-    assert.equal(await page.locator('#commandCenter').isVisible(),true,'the tour closes back onto the Command Center');
-    await page.waitForSelector('#menuTutorial',{state:'visible'});
+    // The tour was opened from the field (`#tutorialReplay`), so closing it returns to
+    // the field - not to the Command Center it used to come from.
+    assert.equal(await visible('#game'),true,'the tour closes back onto the field it was opened over');
+    assert.equal(await page.locator('#commandCenter').isVisible(),false,'and does not jump to the Command Center unasked');
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.
@@ -404,6 +406,9 @@ const assert = require('node:assert/strict');
       await page.locator('#runResults').evaluate(dialog => dialog.close());
       await page.waitForSelector('#menuTutorial', {state: 'visible'});
     };
+    // Back to the Command Center: both restart buttons live there.
+    await page.evaluate(()=>window.testNav?.showMenu?.());
+    await page.waitForSelector('#menuTutorial',{state:'visible'});
     // (a) FIELD TUTORIAL in the Command Center: the whole first run, map and all.
     await restartOnce('field tutorial', async () => page.locator('#menuTutorial').click());
     // (b) The same thing from Settings, which also owns language, sound and graphics.
