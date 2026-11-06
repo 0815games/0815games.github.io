@@ -199,22 +199,18 @@ test('the coach caption counts five waves, like the contract it describes', () =
   assert.doesNotMatch(coach, /OF 6|of 6'/, 'and nothing still says six');
 });
 
-test('an open field menu puts the contract card and the HUD behind it', () => {
-  // The contract card sat at z-index 5 over a menu at 9 in the same stacking context,
-  // so "COMMAND CENTER" and "How to play" were covered by it and the menu looked
-  // stuck behind a permanent overlay.
-  for (const layer of ['.solo-objective', '.dashboard', '.versus-status', '.field-language-flag']) {
-    assert.ok(declares(field, `#gameView #gameWorkspace[data-field-menu="open"] ${layer}`, 'z-index', /^[12]$/),
-      `${layer} steps behind the open menu`);
-  }
-  // `.map-frame` is `isolation:isolate`, so the menu inside it can never overtake a
-  // sibling of the frame: the WHOLE frame has to rise above the contract card (5).
-  const frame = ruleOf(field, '#gameView #gameWorkspace[data-field-menu="open"] .map-frame');
+test('an open field menu paints above the contract card', () => {
+  // The contract card sat at z-index 5 over a menu at 9, so "COMMAND CENTER" and "How
+  // to play" were covered by it and the menu looked stuck behind a permanent overlay.
+  // The rule keys off the <details> itself, so it also holds where scripts are blocked.
+  assert.match(field, /#gameView #gameWorkspace:has\(#fieldOps\[open\]\)/,
+    'the open menu is detected in the stylesheet, not by a class a script must remember');
+  // `.map-frame` is `isolation:isolate`: the menu inside it cannot overtake a sibling
+  // of the frame, so the frame itself has to clear the contract card (5).
+  const frame = ruleOf(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .map-frame');
   assert.ok(Number(frame['z-index']) > 5, `the field frame rises above the contract card (${frame['z-index']})`);
-  assert.ok(declares(field, '#gameView #gameWorkspace[data-field-menu="open"] .field-ops', 'z-index', /^1[0-9]$/),
+  assert.ok(declares(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops', 'z-index', /^1[0-9]$/),
     'the menu stays on top inside the frame');
-  // The attribute is driven by the menu itself, so no layout code has to know.
-  const menu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
-  assert.match(menu, /dataset\.fieldMenu/, 'the menu publishes its open state');
-  assert.match(menu, /addEventListener\('toggle'/, 'and reacts to being opened and closed');
+  assert.ok(declares(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops-panel', 'z-index', /^1[0-9]$/),
+    'and so does its panel');
 });
