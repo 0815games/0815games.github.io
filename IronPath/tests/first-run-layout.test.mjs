@@ -89,13 +89,13 @@ test('the training-specific offset overrides the general one, in that order', ()
   const text = field.replace(/\/\*[\s\S]*?\*\//g, '');
   const general = text.indexOf('#gameView .battle .solo-objective:not([hidden]),' +
     '\n#gameView .battle .versus-status:not([hidden])');
-  const training = text.indexOf('[data-screen="training"] #gameView .battle .solo-objective:not([hidden])');
   assert.ok(general > 0, 'the general rule is there');
+  const training = text.indexOf('#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden])');
   assert.ok(training > general, 'the training override comes after it in the file');
-  const override = ruleOf(field, '#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden])');
-  assert.ok(override.top, 'the override sets a top offset');
-  assert.ok(declares(field, '#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden])',
-    'top', /--hud-bottom,calc\(8[0-9]px/), 'its floor clears a wrapped two-line status row');
+  const selector = '#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden])';
+  assert.ok(ruleOf(field, selector).top, 'the override sets a top offset');
+  assert.ok(declares(field, selector, 'top', /--hud-bottom,calc\(8[0-9]px/),
+    'its floor clears a wrapped two-line status row');
 });
 
 test('game.js publishes the measured header height relative to the field, not the page', () => {
@@ -134,6 +134,19 @@ test('the coach card and its pointer cannot be dragged by an ancestor containing
   // And the field loop re-marks on the two scrolls that do not fire `resize`.
   assert.match(game, /window\.addEventListener\('scroll',remarkCoach/, 'page scroll re-marks the ring');
   assert.match(game, /mapViewport\.addEventListener\('scroll',remarkCoach/, 'field pan re-marks the ring');
+});
+
+test('no selector asks for #gameView inside #gameWorkspace', () => {
+  // `#gameView` wraps `#gameWorkspace`. A descendant selector with them in that order
+  // matches nothing at all, which is how the training offset silently did not apply -
+  // twice, once as an order bug and once as a nesting bug, both caught in CI.
+  for (const file of ['field-command.css', 'interface-redesign.css']) {
+    const source = readFileSync(resolve(root, file), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+    for (const [, selector] of source.matchAll(/([^{}]+)\{/g)) {
+      assert.doesNotMatch(selector, /#gameWorkspace[^,{]*#gameView/,
+        `${file}: "${selector.trim().slice(0, 80)}" can never match`);
+    }
+  }
 });
 
 test('the measured header is the one the field really uses', () => {

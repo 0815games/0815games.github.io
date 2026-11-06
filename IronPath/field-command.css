@@ -164,7 +164,7 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
   border-bottom:1px solid #789078;pointer-events:none;
 }
 #gameWorkspace:not([hidden])[data-screen="training"] .battle-head h2{font-size:13px}
-#gameView[data-screen="training"] .battle-head .legend{display:none}
+#gameWorkspace[data-screen="training"] .battle-head .legend{display:none}
 #gameWorkspace:not([hidden])[data-screen="training"] .battle .map-frame{
   flex:1 1 auto;min-height:0;height:auto;width:100%;
 }
@@ -206,6 +206,9 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
    header is in flow above the field, so on the first frame - before the measurement
    exists - the card needs a taller floor. 84px covers the worst case on a 320px
    phone, where the status row wraps to two lines and ends around 70px. */
-#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden]){
+/* `#gameView` is the PARENT of `#gameWorkspace` (index.html), so it must never be
+   written after it in a descendant selector - that matches nothing. The screen label
+   lives on the workspace; hang the whole frame off that element. */
+#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]){
   top:calc(var(--hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);
 }
