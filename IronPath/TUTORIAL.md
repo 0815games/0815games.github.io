@@ -14,7 +14,7 @@ than against the code alone.
 | 4 | **Training field, built and drawn** — straight into the match, no briefing first | `game.js` + `training-run.mjs` | Once per account per browser |
 | 5 | **Coach cards, ON the field** (7 cards, no modal, never pauses) | `first-run-coach.mjs` | Once per account per browser |
 | 6 | **The pointer:** a ring on the pad the card names, a line from the card to it | `coach-highlight.mjs` | While a card is up |
-| 7 | Play waves 1–6 yourself; the boss of wave 6 ends the run | `game.js` + `training-run.mjs` | Same run |
+| 7 | Play waves 1–5 yourself; the boss of wave 5 ends the run and nothing follows it | `game.js` + `training-run.mjs` | Same run |
 | 8 | **Rewards** — XP for the level, and the dog tag, **won or lost** | `account.js` + `dog-tag.mjs` | Once per account |
 | 9 | **The reward card** explains what was just paid | `first-run-guide.mjs` | Once per account |
 | 10 | **Equipment on** in the real Armory, with the card explaining what gear does | `account.js` + `first-run-guide.mjs` | Once per account |
@@ -97,19 +97,20 @@ change, so an old client and a new client can share the same account.
 `training-run.mjs` is the single source of the numbers, and the tests read the
 same module:
 
-- **6 waves**, not an endless run. The boss of wave 6 is the finale — and it is
-  the only boss: the endless rhythm wakes a boss every fifth wave, so the contract
-  carries its own `bossEvery`, otherwise the run would end on wave 5.
+- **5 waves**, not an endless run. The boss of wave 5 is the finale, and nothing
+  follows it: `TRAINING_BOSS_EVERY` is pinned to the contract length instead of
+  borrowing the endless every-fifth-wave rhythm, so the finale cannot move if the
+  length ever changes.
 - **Enemies at 70% health** (`TRAINING_UNIT = 0.7`).
 - **The wave-5 boss at 60% of that** (`TRAINING_BOSS_UNIT = 0.6`).
 - **Bunker at 150% health** (`TRAINING_BUNKER = 1.5`, 100 → 150).
 - **A defeat still pays.** Losing ends the run with `FIRST_RUN_DEFEAT_XP` (330) and
   the dog tag anyway. The run is the tutorial, not an exam: the screens that follow
-  teach equipment and skills, and a player who bounced off wave six still has to be
+  teach equipment and skills, and a player who bounced off wave five still has to be
   given something to equip and a point to spend. Losing costs the surplus, not the
   lesson. (`game.js` used to fire the ending only on `training-end`, so a defeat
   finished with a debrief and no tag at all.)
-- **450 XP** on a win: the six waves pay 330 (30 + 40 + 50 + 60 + 70 + 80) and the
+- **450 XP** on a win: the five waves pay 250 (30 + 40 + 50 + 60 + 70) and the
   contract adds `trainingBonusXP() = 50` with the last wave. The bonus exists so
   the first skill point cannot drift away with a balance change; it is shown as a
   contract line, never as a silent round-up.
@@ -122,7 +123,7 @@ economy, real rewards, real save. It is not a scripted mock. Endless solo and
 story missions are untouched — a legendary mission still deploys at 55% bunker
 health and keeps its full-strength bosses.
 
-The run ends itself when the boss of wave 6 dies (`endReason:
+The run ends itself when the boss of wave 5 dies (`endReason:
 'training-complete'`) and the debrief calls the account back, which starts the
 ending. `trainingDone` is the win flag of the *current* run; it used to also block
 a second deployment, which left a dead Deploy button after the debrief.
@@ -136,7 +137,7 @@ point, answering every field-upgrade offer:
 | --- | --- |
 | Two starting towers, never upgrades | Bunker lost in wave 4 |
 | Builds whenever affordable, never upgrades | Bunker lost before the boss |
-| Fills the pads, then upgrades | **Clears all 6 waves in ~85 s with 100 / 150 bunker health** |
+| Fills the pads, then upgrades | **Clears all 5 waves in ~65 s with 100 / 150 bunker health** |
 
 So the contract is forgiving but not free: a new soldier who only builds loses,
 and one who builds *and* upgrades clears with room to spare. That is the
@@ -189,7 +190,7 @@ Drawn, never stored. `dogTag({profile, accountId, issued})` derives:
 - the issue date.
 
 It is cosmetic: no stat, no bonus, never equipped, always worn. It is **issued in
-its own popup** when the boss of wave 6 falls, then appears on the Soldier screen
+its own popup** when the boss of wave 5 falls, then appears on the Soldier screen
 and in the Armory.
 
 It is deliberately **not** an entry in `armory.mjs`'s `ITEMS`: `equipped` is a
@@ -239,7 +240,7 @@ player on a new browser is asked once and then goes straight in.
 | `tests/tutorial.test.mjs` | The replay tour, practice gates, real-dialog handoff, completion once per account, one owner for the marker key |
 | `tests/coach-highlight.test.mjs` | the ring lands on the pad, survives a panned/zoomed view, and can never capture a tap; the arrow is revealed by attribute (SVG has no `hidden` property) |
 | `tests/first-run-guide.test.mjs` | rewards → equip → skills → workshop in that order; an action card cannot be clicked past; the four classes are explained; not a modal |
-| `tests/training-run.test.mjs` | 6 waves, 70% / 150% / weakened boss, boss only on wave 6, 330 + 120 = 450 XP = level 2 with headroom, the boss must fall before the run ends, offered once per edition |
+| `tests/training-run.test.mjs` | 5 waves, 70% / 150% / weakened boss, boss only on wave 5, 250 + 200 = 450 XP = level 2 with headroom, the boss must fall before the run ends, offered once per edition |
 | `tests/dog-tag.test.mjs` | Serial and blood type derived, stable and spread over all eight, nothing persisted, SVG in the armory style |
 | `tests/first-run-ending.test.mjs` | Order (tag → equip → skills → workshop), once per account, decline stops without marking done, Field School uses existing controls |
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, and **every inline script in `index.html` compiles** |

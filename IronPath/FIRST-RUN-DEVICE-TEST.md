@@ -90,7 +90,7 @@ A fresh account now lands **on the battlefield**, not on a briefing. This sectio
 the whole reason the first run was rebuilt; test it before anything else.
 
 1. **Expected:** the training field is built and visible, and a small card appears
-   over its lower edge: **ERSTER EINSATZ · 1 / 6** with *Willkommen, Soldat*.
+   over its lower edge: **ERSTER EINSATZ · 1 / 7** with *Willkommen, Soldat*.
    It must appear **after** the field is drawn, never over an empty canvas.
 2. **The card is not a modal.** Tap the field while it is open. **Expected:** the
    tap goes through — a build marker opens, or your soldier moves. If the tap is
@@ -114,22 +114,22 @@ the whole reason the first run was rebuilt; test it before anything else.
 **Landscape (844 x 390):** the card moves to the right-hand side and leaves the
 build pads on the left. It must not cover them.
 
-## 3. Training contract (six waves, boss ends it)
+## 3. Training contract (five waves, boss ends it)
 
 1. **Expected:** the objective reads **AUSBILDUNGSVERTRAG · MIT VORSICHT** and
-   **WELLE 1 / 6**, with *"Noch 5 Welle(n) schaffen. Hier sind die Gegner
+   **WELLE 1 / 5**, with *"Noch 4 Welle(n) schaffen. Hier sind die Gegner
    geschwächt und dein Bunker ist verstärkt."*
 2. **Play it properly** — build towers, upgrade them, move your hero, use the
    ability when you get one. Note the time per wave and total.
 3. **Expected:** the bunker has more health than a normal run (150 instead of
-   100), enemies die noticeably faster, and **the boss of wave 6 is the last
-   thing you fight**. When it falls, the run ends by itself. Wave 5 has no boss and
+   100), enemies die noticeably faster, and **the boss of wave 5 is the last thing
+   you fight**. When it falls, the run ends by itself and nothing follows it. Wave 5
    must not ask you for a field upgrade — if it does, the run is stuck.
-4. **The boss card:** when the boss of wave 6 walks on, the card must switch to
+4. **The boss card:** when the boss of wave 5 walks on, the card must switch to
    *Der Boss ist da* even if you were still reading an earlier one.
 5. **Expected ending:** a notice reads *"Ausbildungsvertrag erfüllt! 450 XP
-   verdient. Willkommen auf dem Eisernen Pfad, Soldat."* — the waves pay 330 and
-   the contract adds 120, so the run always ends at level 2 with one point and
+   verdient. Willkommen auf dem Eisernen Pfad, Soldat."* — the waves pay 250 and
+   the contract adds 200, so the run always ends at level 2 with one point and
    150 XP of headroom towards level 3.
 6. **After the debrief, Deploy must work.** Close the debrief and press Deploy.
    **Expected:** a fresh battlefield. (The old build left a dead Deploy button
@@ -139,7 +139,7 @@ build pads on the left. It must not cover them.
    record exactly which wave and what was on the field.
 
 For reference, a headless simulation of the real command path (level 1, builds on
-every pad, upgrades when supplies allow) clears all six waves in about 85
+every pad, upgrades when supplies allow) clears all five waves in about 65
 seconds and ends the boss wave with 100 of 150 bunker health left.
 
 ## 4. The ending

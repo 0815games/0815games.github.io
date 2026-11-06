@@ -18,13 +18,13 @@ test('the device plan quotes the German the build actually shows',()=>{
  // plus its placeholders really produce.
  const translated=[
   ['contract title',translateText('TRAINING CONTRACT · HANDLE WITH CARE'),'AUSBILDUNGSVERTRAG · MIT VORSICHT'],
-  ['wave tally',translateText('WAVE {wave} / {total}',{wave:1,total:6}),'WELLE 1 / 6'],
-  ['wave status',translateText('Clear {remaining} more wave(s). Enemies are weakened here and your bunker is reinforced.',{remaining:5}),
-   'Noch 5 Welle(n) schaffen. Hier sind die Gegner geschwächt und dein Bunker ist verstärkt.'],
+  ['wave tally',translateText('WAVE {wave} / {total}',{wave:1,total:5}),'WELLE 1 / 5'],
+  ['wave status',translateText('Clear {remaining} more wave(s). Enemies are weakened here and your bunker is reinforced.',{remaining:4}),
+   'Noch 4 Welle(n) schaffen. Hier sind die Gegner geschwächt und dein Bunker ist verstärkt.'],
   ['contract complete',translateText('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:450}),
    'Ausbildungsvertrag erfüllt! 450 XP verdient. Willkommen auf dem Eisernen Pfad, Soldat.'],
   // The first-run cards replaced the 11-step modal, so the plan quotes those now.
-  ['coach tally',translateText('FIRST RUN · {step} / {total}',{step:1,total:6}),'ERSTER EINSATZ · 1 / 6'],
+  ['coach tally',translateText('FIRST RUN · {step} / {total}',{step:1,total:7}),'ERSTER EINSATZ · 1 / 7'],
   ['coach welcome',translateText('Welcome, soldier'),'Willkommen, Soldat'],
   ['coach build',translateText('Build a tower'),'Baue einen Turm'],
   ['coach boss',translateText('The boss is here'),'Der Boss ist da'],

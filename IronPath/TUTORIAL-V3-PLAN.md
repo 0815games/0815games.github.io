@@ -267,7 +267,7 @@ statt dreier unabhängiger Farbsätze:
 
 * **Karte:** Verlauf als Platte, Haarlinie unter dem Kicker, Rauten-Korn als
   Aufzählungszeichen, **Fortschrittsstriche** (`#coachPips`, ein Strich je Karte,
-  erledigte in Gold) statt nur der Zahl `1 / 6`.
+  erledigte in Gold) statt nur der Zahl `1 / 7`.
 * **Tour (nur noch Wiederholung aus der Hilfe):** Stempel-Kicker, Bild entsättigt,
   damit die Bildunterschrift gewinnt, Aktionsleiste mit 44-px-Knöpfen und
   Trennlinie, `::backdrop` mit leichtem Blur.

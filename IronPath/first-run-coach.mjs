@@ -28,13 +28,13 @@ import {createCoachHighlight} from './coach-highlight.mjs?v=20261112-coachptr1';
 //   {element:'#start'}  a real control, by selector
 //   null                nothing to point at (the boss card is an announcement)
 export const COACH_STEPS = Object.freeze([
-  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Six waves, and the boss of the last one ends the exercise. This is a real match: what you build now is what fights.',caption:'WAVE 1 OF 6',when:null,target:{pad:'first-free'}}),
+  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Five waves, and the boss of the last one ends the exercise. This is a real match: what you build now is what fights.',caption:'WAVE 1 OF 6',when:null,target:{pad:'first-free'}}),
   Object.freeze({id:'build',title:'Build a tower',text:'Tap a glowing build marker, pick a tower, then confirm. Towers shoot on their own; you only choose where they stand.',caption:'TAP THE RINGED MARKER',when:'build',target:{pad:'first-free'}}),
   Object.freeze({id:'upgrade',title:'Upgrade it',text:'Tap your tower to open its panel. Upgrade it there - a level 2 tower hits noticeably harder than a second level 1 - or sell it for half back.',caption:'TAP YOUR TOWER',when:'upgrade',target:{pad:'occupied'}}),
   Object.freeze({id:'hero',title:'Move your hero',text:'Tap open ground and your soldier walks there and fires on his own. He is not a tower: he can be anywhere, so put him where the road bends.',caption:'TAP OPEN GROUND',when:'move',target:null}),
   Object.freeze({id:'money',title:'Supplies',text:'Supplies pay for towers and only arrive when you clear a wave. That is why you build before you deploy, not after.',caption:'WATCH THE SUPPLY COUNT',when:null,target:{element:'#moneyPanel'}}),
   Object.freeze({id:'deploy',title:'Start the wave',text:'Deploy calls the next wave. Clearing it pays XP and supplies, so the field gets stronger only if you keep building.',caption:'PRESS DEPLOY',when:'deploy',target:{element:'#start'}}),
-  Object.freeze({id:'boss',title:'The boss is here',text:'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.',caption:'BOSS OF WAVE 6',when:'boss',target:null}),
+  Object.freeze({id:'boss',title:'The boss is here',text:'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.',caption:'BOSS OF WAVE 5',when:'boss',target:null}),
 ]);
 
 // The edition decides whether an existing soldier is shown the cards again. It is

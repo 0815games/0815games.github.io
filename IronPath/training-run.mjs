@@ -2,28 +2,22 @@
 //
 // It is a real solo run with real rewards, not a scripted mock. The contract is
 // deliberately kinder than a story mission so that a player who has never built a
-// tower before can finish it: six waves instead of an endless run, enemies at 70%
-// health, a bunker with half again as much health, and a weakened wave-6 boss.
-// **The boss of wave 6 ends the run**: that boss drops the soldier's dog tag,
-// which is the first piece of kit they ever own.
+// tower before can finish it: five waves instead of an endless run, enemies at 70%
+// health, a bunker with half again as much health, and a weakened wave-5 boss.
+// **The boss of wave 5 ends the run**: that boss drops the soldier's dog tag,
+// which is the first piece of kit they ever own. Nothing follows it.
 //
-// Six is not a round number, it is the amount of teaching the field has to do:
-// one wave for each thing the player has to learn to press (place, upgrade, move,
-// sell, hold a wave with two towers, then the boss). Five left one of those
-// without a wave of its own.
-//
-// Waves 1-6 pay 330 XP on their own, which is already past level 2 - but only by
-// 30, so a single balance change to `waveXP` would silently take the first skill
-// point away. The contract therefore pays a mission bonus up to FIRST_RUN_XP
-// (450): level 2 plus a third of the way to level 3, so the point is guaranteed
-// rather than inherited from a formula. The bonus is credited with the last wave
-// and shown as its own line in the debrief, never as a silent round-up.
+// Waves 1-5 pay 250 XP on their own, which is short of level 2. The contract pays a
+// mission bonus up to FIRST_RUN_XP (450) - level 2 plus a third of the way to level
+// 3 - so the first skill point is guaranteed rather than inherited from the wave
+// formula. The bonus is credited with the last wave and shown as its own line in the
+// debrief, never as a silent round-up.
 //
 // Pure maths, no state or DOM: the deployment, the game loop and the tests all
 // read the same numbers from here.
 import {waveXP} from './progression.mjs';
 
-export const TRAINING_WAVES=6;
+export const TRAINING_WAVES=5;
 // What the first run pays in total when the soldier wins. 300 is the level-2
 // threshold; the contract pays 450 so the first skill point does not depend on the
 // wave formula staying at 20+10n. Level 2, and a 150 XP head start on level 3.
@@ -37,9 +31,9 @@ export const TRAINING_UNIT=.7;
 export const TRAINING_BUNKER=1.5;
 export const TRAINING_BOSS_UNIT=.6;
 export const TRAINING_MISSION_ID='training-contract';
-// The contract's own boss rhythm. The endless rhythm is every fifth wave, which
-// would put a boss on wave 5 of a six-wave contract and end the run one wave
-// early. The contract teaches the boss on its last wave instead.
+// The contract's own boss rhythm: the boss walks with the last wave and nothing
+// follows it. Kept explicit rather than relying on the endless every-fifth-wave
+// rhythm, so a change to the contract length cannot silently move the finale.
 export const TRAINING_BOSS_EVERY=TRAINING_WAVES;
 export const TRAINING_MAP='road';
 
@@ -70,7 +64,7 @@ export function trainingWaveXP(){
   return total;
 }
 
-// The mission bonus that tops the six waves up to FIRST_RUN_XP. It is credited
+// The mission bonus that tops the five waves up to FIRST_RUN_XP. It is credited
 // with the last wave, so the skill point lands the moment the boss falls.
 export function trainingBonusXP(){
   return Math.max(0,FIRST_RUN_XP-trainingWaveXP());
@@ -97,7 +91,7 @@ export function trainingWon(state){
 // What the objective panel shows while the contract is running.
 export function trainingStatus(state,tr=(text,values={})=>text.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match)){
   const progress=trainingProgress(state);
-  if(!state?.wave)return {label:tr('Training contract'),detail:tr('Deploy the first wave to begin. Six waves, and the boss of wave six ends it.'),progress:0,max:TRAINING_WAVES,marker:null,dialogue:''};
+  if(!state?.wave)return {label:tr('Training contract'),detail:tr('Deploy the first wave to begin. Five waves, and the boss of wave five ends it.'),progress:0,max:TRAINING_WAVES,marker:null,dialogue:''};
   return {
     label:tr('Wave {wave} of {total}',{wave:progress.wave,total:progress.total}),
     detail:tr('Clear {remaining} more wave(s). Enemies are weakened here and your bunker is reinforced.',{remaining:progress.remaining}),
