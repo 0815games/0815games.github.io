@@ -422,9 +422,10 @@ function openFieldSchool(){
  fieldSchool.scrollIntoView?.({block:'nearest',behavior:'smooth'});
  document.getElementById('fieldSchool-armory')?.focus?.();
 }
-// Must match the tutorial's own key, including its edition, or the two disagree
-// about whether this account has been briefed.
-const FIRST_RUN_TUTORIAL_KEY=id=>`ironpath:tutorial:v2:${id}`;
+// The briefing's marker is owned by tutorial.mjs and nowhere else. A second copy of
+// the key here is what let the 11-step tour inherit the 8-step tour's completion
+// and hide itself from every existing account; use tutorial.completed() instead of
+// reading the key again.
 function startFirstRunTutorial(){
   // Let the Command Center paint first; the tutorial is a modal over it.
   requestAnimationFrame(()=>{try{gameControl?.startTutorialIfNeeded?.();}catch{}});

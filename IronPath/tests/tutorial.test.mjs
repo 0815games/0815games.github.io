@@ -114,11 +114,14 @@ test('an account that finished the old briefing is offered the new one',()=>{
  assert.equal(store.has('ironpath:tutorial:v1:old-account'),true,'the old marker is left alone');
 });
 
-test('the account and the tour agree on the marker key',()=>{
- const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
- const tour=readFileSync(new URL('../tutorial.mjs',import.meta.url),'utf8');
- const edition=tour.match(/const TUTORIAL_EDITION=(\d+);/)[1];
- assert.ok(account.includes(`ironpath:tutorial:v${edition}:`),`account.js must use v${edition}, not a stale edition`);
+test('only tutorial.mjs spells out the briefing marker',()=>{
+ // The bug was a second copy of the key that did not move when the tour changed,
+ // so the invariant worth pinning is that there is no second copy at all.
+ assert.match(readFileSync(new URL('../tutorial.mjs',import.meta.url),'utf8'),/const TUTORIAL_EDITION=\d+;/);
+ for(const name of ['account.js','game.js','first-run-ending.mjs','training-run.mjs','command-center.mjs']){
+  const source=readFileSync(new URL('../'+name,import.meta.url),'utf8');
+  assert.ok(!/ironpath:tutorial:v/.test(source),`${name} must not hard-code the briefing key`);
+ }
 });
 
 test('a replay walked to the end hands over the training contract, a skipped one does not',()=>{

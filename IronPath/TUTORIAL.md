@@ -34,8 +34,9 @@ The briefing marker carries the **edition** of the briefing it belongs to. The o
 11-step briefing first reused that key — so every existing account looked "already
 briefed" and never saw the new tour. `TUTORIAL_EDITION` in `tutorial.mjs` is now
 bumped whenever the briefing gains something a returning player should see; the
-legacy key is left untouched and simply stops mattering. `FIRST_RUN_TUTORIAL_KEY`
-in `account.js` must carry the same edition.
+legacy key is left untouched and simply stops mattering. The key is built in one
+place only, `keyFor` in `tutorial.mjs`; nothing else may spell it out, and the
+ending no longer keeps a second copy of it.
 
 The same reasoning applies to the training contract: `ironpath:training:v1` keeps
 its version because the contract is content that was never offered before, not a
