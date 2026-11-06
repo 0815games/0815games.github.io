@@ -1,6 +1,6 @@
 # First run v3 — play first, brief during play, dress last
 
-> **Status: umgesetzt.** Alle Patches 1–8 sind gebaut und getestet (398 Tests grün).
+> **Status: umgesetzt.** Alle Patches 1–8 sind gebaut und getestet (399 Tests grün).
 > Die Geräteprüfung (§9) bleibt offen, bis sie auf einem echten Telefon gelaufen
 > ist — §7 und §10 beschreiben den Stand, nicht mehr den Plan.
 > Die Entscheidungen aus §11 sind beantwortet: bestehende Accounts sehen den neuen
@@ -257,6 +257,38 @@ verschwinden.
 **Fertig wenn:** im Browser-Test bei 390 × 664, 360 × 480 und 1280 × 800 kein
 Popup die Seite scrollt (`document.documentElement.scrollHeight===clientHeight`),
 kein Knopf aus dem Viewport ragt, und alle Popup-Knöpfe ≥ 44 px sind.
+
+### Stand der Umsetzung
+
+Gebaut als **ein** Block `First-run dossier` am Ende von `interface-redesign.css`.
+Die drei Flächen (Karte, Wiederholungs-Tour, Hundemarke) teilen jetzt benannte
+Token (`--dossier-plate`, `--dossier-gold`, `--dossier-edge`, `--dossier-ink`)
+statt dreier unabhängiger Farbsätze:
+
+* **Karte:** Verlauf als Platte, Haarlinie unter dem Kicker, Rauten-Korn als
+  Aufzählungszeichen, **Fortschrittsstriche** (`#coachPips`, ein Strich je Karte,
+  erledigte in Gold) statt nur der Zahl `1 / 6`.
+* **Tour (nur noch Wiederholung aus der Hilfe):** Stempel-Kicker, Bild entsättigt,
+  damit die Bildunterschrift gewinnt, Aktionsleiste mit 44-px-Knöpfen und
+  Trennlinie, `::backdrop` mit leichtem Blur.
+* **Hundemarke:** dieselbe Kante, Prägung über Verlauf und Innenkante,
+  `overflow:auto` unter `max-height:calc(100dvh - 20px)`.
+* Unter `520 px` Höhe verschwindet das Tour-Bild — die Knöpfe sind wichtiger als
+  die Illustration, und genau diese Reihenfolge fehlte beim alten Popup.
+
+**Abweichung vom Plan:** Die alten Demo-Klassen (`.tutorial-practice`,
+`.tutorial-demo-*`) sind **nicht** gelöscht. Sie gehören zur Tour, und die Tour
+bleibt als Wiederholung aus der Hilfe bestehen (§8) — sie werden also weiter
+gebraucht. Der doppelte Farbsatz aus `style.css` ist geblieben, weil
+`interface-redesign.css` danach geladen wird und die Werte überschreibt; gelöscht
+wird dort erst, wenn die Tour ganz fällt.
+
+**Stattdessen abgesichert:** `tests/interface-redesign.test.mjs` prüft den Block
+selbst — dass alle drei Flächen drin sind, dass `max-height` **nie** ohne
+`overflow:auto` auftaucht (die Form des alten Fehlers), dass die 44 px bleiben,
+und dass die Karte ihre Striche zeichnet. Der Browser-Test prüft zusätzlich am
+echten Element, dass die Platte gemalt ist (Verlauf + Kante) und dass die Striche
+mit der Karte weiterlaufen.
 
 ---
 
