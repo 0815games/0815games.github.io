@@ -22,10 +22,15 @@ assert.equal(element('money').textContent,125);
 assert.equal(element('mapName').textContent,'The Last Road');
 assert.match(element('wavePreview').textContent,/Next: Wave 1/);
 window.devicePixelRatio=2;frame(performance.now());assert.equal(element('game').width,1920);assert.equal(element('game').height,1080);
-// A phone selection obscured by the fixed sheet scrolls only vertically.
+// The tower menu is a ring around the pad now, so nothing has to be scrolled to clear
+// it: the old behaviour (push the page until the bottom sheet no longer covers the
+// spot) would move the very pad the ring is centred on.
 element('radialMenu').getBoundingClientRect=()=>({top:220});
+const scrollsBefore=scrolls.length;
 element('game').onclick({clientX:105,clientY:210});
-assert.ok(scrolls[0].top>0);assert.equal('left' in scrolls[0],false);assert.equal(scrolls[0].behavior,'auto');
+assert.equal(scrolls.length,scrollsBefore,'selecting a pad never scrolls the page');
+assert.ok(element('radialMenu').style.top,'the ring is anchored to the pad');
+assert.equal(element('radialMenu').dataset.radius>0,true,'and publishes its radius');
 // Choose an unaffordable tower to inspect it without purchasing.
 assert.equal(element('radialMenu').hidden,false);
 assert.deepEqual(draw()[0].path[0],['moveTo',73,189], 'empty selected pad has a visible marker');

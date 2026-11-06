@@ -417,7 +417,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     const menuNotice=text=>{if(!refresh)notice(text);};
     const actions=[];
     if(!tower){
-      types.forEach((type,i)=>actions.push({label:`${tr(type.name)} · ${type.cost}`,summary:tr(type.description),unaffordable:supplies()<type.cost,description:tr('View {name}, {cost} supplies. {description}',{name:tr(type.name),cost:type.cost,description:tr(type.description)})+(supplies()<type.cost?tr('. Not enough supplies to build.'):'' ),run:()=>{
+      types.forEach((type,i)=>actions.push({label:tr(type.name),summary:tr(type.description),unaffordable:supplies()<type.cost,description:tr('View {name}, {cost} supplies. {description}',{name:tr(type.name),cost:type.cost,description:tr(type.description)})+(supplies()<type.cost?tr('. Not enough supplies to build.'):'' ),run:()=>{
         showDetails(()=>tr(type.name),()=>tr('{description}. Base damage: {damage} per shot, firing interval: {interval} seconds, range: {range}. Damage varies by enemy type.',{description:tr(type.description),damage:type.damage,interval:type.interval,range:type.range}),type.cost,'BUILD',()=>{
           dispatch({type:'build',pad,towerType:i},result=>{if(!result.ok){$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);return;}coach.event('build');if($('towerDetails').open)$('towerDetails').close();if(!coop){combatFx.emit('build',getMap(state.mapId).pads[pad],state);sound.play('build');}state.selectedPad=pad;closeMenu();notice(()=>tr('{name} built. Tap it to upgrade or sell.',{name:tr(type.name)}));updateUI();});
         });
@@ -425,7 +425,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       menuNotice(coop?'Tap a tower for details. Grey options need more supplies. Battle continues in co-op.':'Tap a tower for details. Grey options need more supplies. Battle paused.');
     }else if(mode==='branches'){
       const cost=upgradeCost(tower.level),sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):'';
-      branches[tower.type].forEach((branch,i)=>{const required=i===2?5:i===3?10:0,locked=(state.players[me()]?.level||1)<required;actions.push({label:`${tr(branch.name)} · ${cost}`,summary:tr(branch.description)+(locked?tr(' · LOCKED UNTIL LEVEL {level}',{level:required}):''),unaffordable:supplies()<cost,locked,description:tr('View {name}: {description}. {cost} supplies',{name:tr(branch.name),description:tr(branch.description),cost})+(locked?tr('. Unlocks at level {level}.',{level:required}):'')+(supplies()<cost?tr('. Not enough supplies.') :''),run:()=>showDetails(()=>tr(branch.name),()=>tr('{description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.',{description:tr(branch.description)})+(state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):''),cost,'UPGRADE',()=>upgrade(i),required)});});
+      branches[tower.type].forEach((branch,i)=>{const required=i===2?5:i===3?10:0,locked=(state.players[me()]?.level||1)<required;actions.push({icon:'branch',label:tr(branch.name),summary:tr(branch.description)+(locked?tr(' · LOCKED UNTIL LEVEL {level}',{level:required}):''),unaffordable:supplies()<cost,locked,description:tr('View {name}: {description}. {cost} supplies',{name:tr(branch.name),description:tr(branch.description),cost})+(locked?tr('. Unlocks at level {level}.',{level:required}):'')+(supplies()<cost?tr('. Not enough supplies.') :''),run:()=>showDetails(()=>tr(branch.name),()=>tr('{description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.',{description:tr(branch.description)})+(state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):''),cost,'UPGRADE',()=>upgrade(i),required)});});
       menuNotice(coop?'Tap a specialization to see its effects. Battle continues in co-op.':'Tap a specialization to see its effects. Battle paused.');
     }else if(mode==='confirmSell'){
       const ownerName=state.players[tower.ownerId]?.name||tr('tower owner'),mine=!state.individualSupplies||tower.ownerId===me();
@@ -434,9 +434,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       menuNotice(coop?'Confirm sale for half the investment, or cancel. Battle continues in co-op.':'Confirm sale for half the investment, or cancel. Battle paused.');
     }else{
       const cost=upgradeCost(tower.level),max=cost===null,display=towerDisplay(tower.level),prestiging=display.level===MAX_TOWER_LEVEL,sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):'';
-      actions.push({label:max?tr('Upgrade unavailable'):tr(tower.level===2?'Choose specialization · {cost}':prestiging?'Prestige · {cost}':'Confirm upgrade · {cost}',{cost}),summary:max?tr('This tower cannot be upgraded further.'):tower.level===2?tr('Choose a permanent specialization.'):(prestiging?tr('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:display.prestige+1}):tr('Confirm purchase: +0.3 damage multiplier.'))+sharedUpgrade,disabled:max,unaffordable:!max&&supplies()<cost,description:max?tr('Upgrade unavailable'):tr('Upgrade to level {level}, prestige {prestige}, {cost} supplies',{level:towerDisplay(tower.level+1).level,prestige:towerDisplay(tower.level+1).prestige,cost})+(supplies()<cost?tr('. Not enough supplies.'):''),run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else notice('Not enough supplies to upgrade.');}});
+      actions.push({icon:'upgrade',label:max?tr('Upgrade unavailable'):tr(tower.level===2?'Choose specialization · {cost}':prestiging?'Prestige · {cost}':'Confirm upgrade · {cost}',{cost}),summary:max?tr('This tower cannot be upgraded further.'):tower.level===2?tr('Choose a permanent specialization.'):(prestiging?tr('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:display.prestige+1}):tr('Confirm purchase: +0.3 damage multiplier.'))+sharedUpgrade,disabled:max,unaffordable:!max&&supplies()<cost,description:max?tr('Upgrade unavailable'):tr('Upgrade to level {level}, prestige {prestige}, {cost} supplies',{level:towerDisplay(tower.level+1).level,prestige:towerDisplay(tower.level+1).prestige,cost})+(supplies()<cost?tr('. Not enough supplies.'):''),run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else notice('Not enough supplies to upgrade.');}});
       const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||tr('the owner');
-      actions.push({label:mine?tr('Sell · +{amount}',{amount:towerRefund(tower)}):tr('Sell tower'),summary:mine?tr('Recover half of build and upgrade costs.'):tr('Half the costs go to {name}.',{name:ownerName}),description:mine?tr('Sell tower for {amount} supplies',{amount:towerRefund(tower)}):tr('Sell tower; refund goes to {name}',{name:ownerName}), run:()=>showMenu(pad,'confirmSell')});
+      actions.push({icon:'sell',label:mine?tr('Sell · +{amount}',{amount:towerRefund(tower)}):tr('Sell tower'),summary:mine?tr('Recover half of build and upgrade costs.'):tr('Half the costs go to {name}.',{name:ownerName}),description:mine?tr('Sell tower for {amount} supplies',{amount:towerRefund(tower)}):tr('Sell tower; refund goes to {name}',{name:ownerName}), run:()=>showMenu(pad,'confirmSell')});
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
       menuNotice(()=>tr(towerDisplay(tower.level).prestige?'{name} · level {level} · prestige {prestige} · range {range}. {battle}':'{name} · level {level} · range {range}. {battle}',{name:tr(name),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige,range:Math.round(getTowerRange(tower)),battle:tr(coop?'Battle continues in co-op.':'Battle paused.')}));
     }
@@ -445,7 +445,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     $('sheetMode').textContent=tr(coop?'BATTLE CONTINUES':'BATTLE PAUSED');
     $('sheetTitle').textContent=!tower?tr('Build defense'):mode==='branches'?tr('Choose specialization'):mode==='confirmSell'?tr('Sell tower?'):tr(towerDisplay(tower.level).prestige?'{name} · Level {level} · Prestige {prestige}':'{name} · Level {level}',{name:tr(tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige});
     $('sheetHint').textContent=!tower?tr('Choose a tower to inspect.'):mode==='branches'?tr('This choice is permanent.'):mode==='confirmSell'?tr('Confirm or cancel the sale.'):tr('Range {range} · tap an action for details',{range:Math.round(getTowerRange(tower))});
-    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;button.classList.toggle('unaffordable',!!(action?.unaffordable||action?.locked));$('menuName'+i).textContent=action?action.label:'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?tr(' · Not enough supplies'):''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
+    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;if(action?.icon)button.dataset.icon=action.icon;else delete button.dataset.icon;button.classList.toggle('unaffordable',!!(action?.unaffordable||action?.locked));$('menuName'+i).textContent=action?action.label:'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?tr(' · Not enough supplies'):''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
     menu.hidden=false;if(!refresh)updateUI();
   }
   function refreshDetails(){
@@ -504,24 +504,62 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       }finally{pendingClaims--;reconcileOrphanReservations();}
     }else if(!menu.hidden||reservedPad!==null)closeMenu();
     showMenu(selected);
-    if(window.innerWidth<=850){
-      const screenY=view?(pads[index].y-view.y)*view.scale:pads[index].y;
-      const spotY=rect.top+screenY*rect.height/logicalHeight;
-      const margin=48*(view?.scale||1)*rect.height/logicalHeight+12;
-      // The sheet itself is `position:fixed` (style.css); this nudge only clears the
-      // pad UNDER it. On the training field the page is deliberately held still
-      // (field-command.css), so a page scroll there is a no-op and the old code left
-      // the pad hidden behind the sheet. Move the field instead - it is the thing
-      // that can still move on that screen - and re-mark the coach ring, because the
-      // pad just changed places on the glass.
-      const overlap=spotY+margin-menu.getBoundingClientRect().top;
-      if(overlap>0){
-        const frozen=$('gameWorkspace')?.dataset?.screen==='training';
-        if(frozen&&mapViewport&&mapViewport.scrollHeight>mapViewport.clientHeight)mapViewport.scrollBy({top:overlap,behavior:'auto'});
-        else window.scrollBy({top:overlap,behavior:'auto'});
-        remarkCoach();
-      }
+    // The ring is placed around the pad that was just tapped, so the old "scroll the
+    // page until the sheet no longer covers the spot" nudge is gone with the sheet:
+    // nothing is anchored to the bottom edge any more.
+    anchorMenu(selected);
+  }
+
+  // Put the ring around the pad. The buttons must stay inside the field, so the anchor
+  // is CLAMPED rather than the ring being shrunk: on a 320px phone the ring is about
+  // 150px wide and a pad near the edge would otherwise push two buttons off screen.
+  // Returns the effective ring radius so the CSS and the geometry cannot disagree.
+  function anchorMenu(pad){
+    if(!menu||menu.hidden)return 0;
+    const index=Number.isInteger(pad)?pad:menuPad;
+    return placeMenu(index,menuSpace());
+  }
+  // Where the ring may go: the battlefield box, clipped to the viewport with an 8px
+  // margin. Every edge is derived defensively - a partial rect (or none at all) must
+  // fall back to the viewport instead of producing NaN and freezing the ring.
+  function menuSpace(){
+    const vw=window.innerWidth||1024,vh=window.innerHeight||768;
+    let box=null;
+    try{box=canvas.getBoundingClientRect();}catch{/* headless */} 
+    const num=value=>Number.isFinite(value)?value:null;
+    const left=Math.max(8,num(box?.left)??8);
+    const top=Math.max(8,num(box?.top)??8);
+    const right=Math.min(vw-8,num(box?.right)??((num(box?.width)!==null?left+box.width:vw-8)));
+    const bottom=Math.min(vh-8,num(box?.bottom)??((num(box?.height)!==null?top+box.height:vh-8)));
+    return {left,top,right,bottom,width:Math.max(0,right-left),height:Math.max(0,bottom-top)};
+  }
+  function placeMenu(index,space){
+    const pad=getMap(state.mapId).pads[index];
+    if(!pad)return 0;
+    const rect=canvas.getBoundingClientRect();
+    // The button size is the CSS custom property's business; read the live width when
+    // the DOM can give one, otherwise fall back to the same number the stylesheet uses.
+    const first=typeof menu.querySelector==='function'?menu.querySelector('.sheet-option'):null;
+    const measured=typeof first?.getBoundingClientRect==='function'?first.getBoundingClientRect().width:0;
+    const button=Math.round(measured||78);
+    const radius=Math.max(56,Math.min(104,Math.round(Math.min(space.width,space.height)/2-button*0.45)));
+    // The pan/zoom viewport (four-player maps) moves the world under the glass, so the
+    // pad's screen position has to be derived here rather than remembered from the tap.
+    const view=battleViewport?.getViewport?.()||null;
+    const scale=rect.height/logicalHeight;
+    const screenX=rect.left+(view?(pad.x-view.x)*view.scale:pad.x)*rect.width/logicalWidth;
+    const screenY=rect.top+(view?(pad.y-view.y)*view.scale:pad.y)*scale;
+    const half=radius+button/2+6;
+    const x=Math.min(space.right-half,Math.max(space.left+half,screenX));
+    const y=Math.min(space.bottom-half,Math.max(space.top+half,screenY));
+    menu.style.left=`${Math.round(x)}px`;
+    menu.style.top=`${Math.round(y)}px`;
+    if(typeof menu.style.setProperty==='function'){
+      menu.style.setProperty('--ring-radius',`${radius}px`);
+      menu.style.setProperty('--ring-size',`${button}px`);
     }
+    if(menu.dataset)menu.dataset.radius=String(radius);
+    return radius;
   }
   canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();return selectBattlePoint((e.clientX-rect.left)*logicalWidth/rect.width,(e.clientY-rect.top)*logicalHeight/rect.height);});
   let uiElapsed=0;

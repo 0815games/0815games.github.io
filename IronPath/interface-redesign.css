@@ -664,3 +664,104 @@ body:has(#runResults[open]) .first-run-coach{display:none}
   @keyframes guide-in{from{opacity:0}to{opacity:1}}
 }
 @media(prefers-reduced-motion:reduce){.first-run-guide{animation:none}}
+
+/* ---------------------------------------------------------------------------
+   The tower ring.
+
+   Reported: "Wenn man auf bauen klickt, muss man immer ganz weit … bis an den
+   Bildschirmrand fahren, um auszuwählen." True - the menu was a sheet along the bottom
+   edge, up to 70dvh tall, so picking a tower meant leaving the pad you had just tapped.
+
+   The four buttons now sit in a ring around that pad. Each one is a picture and a name
+   and nothing else: what the tower does and what it costs is answered by the existing
+   #towerDetails dialog, which opens on the click. The geometry comes from game.js,
+   which clamps the ring into the field and publishes `--ring-radius` /
+   `--ring-size`, so the CSS never has to guess where the pad is.
+   --------------------------------------------------------------------------- */
+.tower-sheet.tower-radial{
+  /* No longer anchored to the bottom edge: a zero-size box centred on the pad, with the
+     buttons absolutely placed around it. Nothing here scrolls. */
+  position:fixed;
+  z-index:20;
+  left:0;top:0;right:auto;bottom:auto;
+  width:0;height:0;max-height:none;
+  padding:0;border:0;border-radius:0;background:none;box-shadow:none;
+  overflow:visible;
+  backdrop-filter:none;
+  --ring-radius:96px;
+  --ring-size:78px;
+}
+.tower-sheet.tower-radial .sheet-options{
+  position:absolute;
+  left:0;top:0;width:0;height:0;
+  display:block;
+}
+.tower-sheet.tower-radial .sheet-option{
+  position:absolute;
+  width:var(--ring-size);height:var(--ring-size);
+  min-width:0;min-height:0;
+  margin:0;padding:5px 3px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  border-radius:50%;
+  background:#2e4839;
+  border:1px solid #718b6d;
+  box-shadow:0 4px 14px #000a;
+  text-align:center;
+  line-height:1.05;
+}
+/* Four cardinal points, offset by half the button so each is centred on the radius. */
+.tower-sheet.tower-radial #radial0{left:calc(-1 * var(--ring-size) / 2);top:calc(-1 * var(--ring-radius) - var(--ring-size) / 2)}
+.tower-sheet.tower-radial #radial1{left:calc(var(--ring-radius) - var(--ring-size) / 2);top:calc(-1 * var(--ring-size) / 2)}
+.tower-sheet.tower-radial #radial2{left:calc(-1 * var(--ring-size) / 2);top:calc(var(--ring-radius) - var(--ring-size) / 2)}
+.tower-sheet.tower-radial #radial3{left:calc(-1 * var(--ring-radius) - var(--ring-size) / 2);top:calc(-1 * var(--ring-size) / 2)}
+/* Only actions that exist are shown; an empty ring position must not leave a hole. */
+.tower-sheet.tower-radial .sheet-option[hidden]{display:none}
+.tower-sheet.tower-radial .sheet-art{
+  display:block;width:34px;height:34px;
+  background-position:center;background-size:contain;background-repeat:no-repeat;
+  filter:drop-shadow(0 1px 2px #0008);
+}
+.tower-sheet.tower-radial .sheet-name{
+  font-size:9px;font-weight:bold;letter-spacing:.02em;
+  color:#faedcf;
+  max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+/* Names for a mouse or a keyboard, still on the button, but not in the way. */
+.tower-sheet.tower-radial .sheet-description{display:none}
+.tower-sheet.tower-radial .sheet-option.unaffordable{background:#25362e;border-color:#5d6c5c}
+.tower-sheet.tower-radial .sheet-option.unaffordable .sheet-name{color:#9db39c}
+/* The header was the sheet's; a ring keeps only the close button, as a small badge on
+   the pad itself, because a title at the ring's corner would cover the field it sits on. */
+.tower-sheet.tower-radial .sheet-header{
+  position:absolute;
+  left:calc(-1 * var(--ring-size) / 2);top:calc(-1 * var(--ring-size) / 2);
+  width:var(--ring-size);height:var(--ring-size);
+  margin:0;padding:0;
+  display:block;
+}
+.tower-sheet.tower-radial .sheet-header>div{display:none}
+.tower-sheet.tower-radial .sheet-close{
+  width:var(--ring-size);height:var(--ring-size);min-width:0;min-height:0;
+  border-radius:50%;
+  background:#1b2c22e8;border:1px dashed #8a9c79;
+  color:#e9d7a4;font-size:20px;line-height:1;
+  box-shadow:inset 0 0 0 2px #0000;
+}
+.tower-sheet.tower-radial .sheet-close:hover{background:#314b3a;border-style:solid}
+/* Tower pictures for the ring come from the same sprites the field uses. */
+.tower-sheet.tower-radial[data-mode="build"] #radial0 .sheet-art{background-image:url('assets/mg-sprite.png')}
+.tower-sheet.tower-radial[data-mode="build"] #radial1 .sheet-art{background-image:url('assets/cannon-sprite.png')}
+.tower-sheet.tower-radial[data-mode="build"] #radial2 .sheet-art{background-image:url('assets/flak-sprite.png')}
+.tower-sheet.tower-radial[data-mode="build"] #radial3 .sheet-art{background-image:url('assets/sniper-sprite.png')}
+/* Upgrade / sell / specialization. `game.js` writes the icon name onto each button
+   (`data-icon`), because which action sits on which ring position depends on the
+   tower: a level-2 tower offers the specialization instead of an upgrade. */
+.tower-sheet.tower-radial .sheet-option[data-icon="upgrade"] .sheet-art{background-image:url('assets/icon-upgrade.svg')}
+.tower-sheet.tower-radial .sheet-option[data-icon="sell"] .sheet-art{background-image:url('assets/icon-sell.svg')}
+.tower-sheet.tower-radial .sheet-option[data-icon="branch"] .sheet-art{background-image:url('assets/icon-branch.svg')}
+@media(max-width:600px){
+  .tower-sheet.tower-radial{--ring-size:72px}
+  .tower-sheet.tower-radial .sheet-name{font-size:8px}
+  .tower-sheet.tower-radial .sheet-art{width:30px;height:30px}
+}

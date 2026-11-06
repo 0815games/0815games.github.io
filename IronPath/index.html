@@ -8,7 +8,7 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261110-storyde1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261112-tagworn1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261115-towerring1">
   <link rel="stylesheet" href="skill-menu.css?v=20261108-skillcards1">
   <link rel="stylesheet" href="field-command.css?v=20261113-fieldframe1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
@@ -273,13 +273,19 @@
   <dialog id="towerDetails" class="tower-details" aria-labelledby="towerDetailsTitle" aria-describedby="towerDetailsText">
     <span class="eyebrow" data-i18n-text="DEFENSE INTELLIGENCE">DEFENSE INTELLIGENCE</span><h2 id="towerDetailsTitle"></h2><p id="towerDetailsText"></p><p id="towerDetailsCost" class="tower-details-cost"></p><button id="towerDetailsConfirm" type="button" class="primary" data-i18n-text="CONFIRM">CONFIRM</button><button id="towerDetailsBack" type="button" data-i18n-text="BACK TO MENU">BACK TO MENU</button>
   </dialog>
-  <section id="radialMenu" class="tower-sheet" role="region" aria-label="Tower actions" data-i18n-aria-label="Tower actions" aria-labelledby="sheetTitle" hidden>
+  <!-- The tower menu is an ANCHORED RING, not a sheet along the bottom edge: on a phone
+       the old sheet meant a reach to the far bottom of the screen for every single
+       build. Four round buttons sit around the pad that was tapped, so choosing a
+       tower happens where the finger already is. Each button carries only a small
+       picture and the name; the details (what it does, what it costs) come from the
+       existing #towerDetails dialog, which the button opens. -->
+  <section id="radialMenu" class="tower-sheet tower-radial" role="region" aria-label="Tower actions" data-i18n-aria-label="Tower actions" aria-labelledby="sheetTitle" hidden>
     <div class="sheet-header"><div><span class="eyebrow" id="sheetMode">BATTLE PAUSED</span><h2 id="sheetTitle">Build defense</h2><p id="sheetHint"></p></div><button type="button" id="radialClose" class="sheet-close" aria-label="Close tower menu" data-i18n-aria-label="Close tower menu">✕</button></div>
     <div class="sheet-options">
-      <button type="button" id="radial0" class="sheet-option"><span class="sheet-name" id="menuName0"></span><span class="sheet-description" id="menuDesc0"></span></button>
-      <button type="button" id="radial1" class="sheet-option"><span class="sheet-name" id="menuName1"></span><span class="sheet-description" id="menuDesc1"></span></button>
-      <button type="button" id="radial2" class="sheet-option"><span class="sheet-name" id="menuName2"></span><span class="sheet-description" id="menuDesc2"></span></button>
-      <button type="button" id="radial3" class="sheet-option"><span class="sheet-name" id="menuName3"></span><span class="sheet-description" id="menuDesc3"></span></button>
+      <button type="button" id="radial0" class="sheet-option"><span class="sheet-art" id="menuArt0" aria-hidden="true"></span><span class="sheet-name" id="menuName0"></span><span class="sheet-description" id="menuDesc0"></span></button>
+      <button type="button" id="radial1" class="sheet-option"><span class="sheet-art" id="menuArt1" aria-hidden="true"></span><span class="sheet-name" id="menuName1"></span><span class="sheet-description" id="menuDesc1"></span></button>
+      <button type="button" id="radial2" class="sheet-option"><span class="sheet-art" id="menuArt2" aria-hidden="true"></span><span class="sheet-name" id="menuName2"></span><span class="sheet-description" id="menuDesc2"></span></button>
+      <button type="button" id="radial3" class="sheet-option"><span class="sheet-art" id="menuArt3" aria-hidden="true"></span><span class="sheet-name" id="menuName3"></span><span class="sheet-description" id="menuDesc3"></span></button>
     </div>
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>

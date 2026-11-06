@@ -59,6 +59,56 @@ const fs = require('node:fs');
       await page.screenshot({ path: `browser-artifacts/${name}-lobby.png`, fullPage: true });
       // Inspect the actual battlefield layout independently of Firebase.
       await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#gameWorkspace').dataset.screen='endless';});
+      // The tower ring: four round buttons around the pad that was tapped, each with a
+      // picture and a name, all of them inside the viewport, and the pad itself NOT
+      // covered - the whole point is that the finger stays where it is.
+      await page.evaluate(()=>{
+        const menu=document.getElementById('radialMenu');
+        const pad=document.getElementById('game').getBoundingClientRect();
+        menu.querySelectorAll('.sheet-option').forEach((button,index)=>{
+          button.hidden=false;button.disabled=false;
+          const name=document.getElementById('menuName'+index);
+          if(name)name.textContent=['MG Nest','Cannon','Flak','Sniper'][index];
+        });
+        // Centre of the field, as game.js would place it for a pad there.
+        menu.style.left=Math.round(pad.left+pad.width/2)+'px';
+        menu.style.top=Math.round(pad.top+pad.height/2)+'px';
+        // Build mode is what game.js sets for an empty pad; the sprites hang off it.
+        menu.dataset.mode='build';
+        menu.style.setProperty('--ring-radius','96px');
+        menu.style.setProperty('--ring-size','78px');
+        menu.hidden=false;
+      });
+      const ring=await page.evaluate(()=>{
+        const menu=document.getElementById('radialMenu');
+        const buttons=[...menu.querySelectorAll('.sheet-option')].map(button=>{
+          const box=button.getBoundingClientRect();
+          const style=getComputedStyle(button);
+          return {x:box.x,y:box.y,w:box.width,h:box.height,radius:style.borderRadius,
+            art:getComputedStyle(button.querySelector('.sheet-art')).backgroundImage,
+            desc:getComputedStyle(button.querySelector('.sheet-description')).display,
+            name:button.querySelector('.sheet-name').textContent};
+        });
+        const centre={x:parseFloat(menu.style.left),y:parseFloat(menu.style.top)};
+        return {buttons,centre};
+      });
+      const centreX=ring.centre.x,centreY=ring.centre.y;
+      ring.buttons.forEach((button,index)=>{
+        assert.ok(button.w>=44&&button.h>=44,`${name}: ring button ${index} is a touch target (${Math.round(button.w)}x${Math.round(button.h)})`);
+        assert.match(button.radius,/50%|\d+px/,`${name}: ring button ${index} is round`);
+        assert.match(button.art,/url\(/,`${name}: ring button ${index} shows a picture`);
+        assert.equal(button.desc,'none',`${name}: ring button ${index} shows a name, not a paragraph`);
+        assert.ok(button.name.length>0,`${name}: ring button ${index} is labelled`);
+        assert.ok(button.x>=-1&&button.x+button.w<=width+1,`${name}: ring button ${index} stays inside the width`);
+        assert.ok(button.y>=-1&&button.y+button.h<=height+1,`${name}: ring button ${index} stays inside the height`);
+        const dx=button.x+button.w/2-centreX,dy=button.y+button.h/2-centreY;
+        assert.ok(Math.hypot(dx,dy)>40,`${name}: ring button ${index} is really OFFSET from the pad, not on it`);
+      });
+      // Nothing overlaps the pad marker itself: the gap in the middle is the point.
+      const coversCentre=ring.buttons.some(button=>centreX>=button.x&&centreX<=button.x+button.w&&centreY>=button.y&&centreY<=button.y+button.h);
+      assert.equal(coversCentre,false,`${name}: the pad in the middle stays visible and tappable`);
+      await page.screenshot({path:`browser-artifacts/${name}-tower-ring.png`,fullPage:false});
+      await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=true;});
       await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
       const hud=await page.evaluate(()=>{const b=document.querySelector('#game').getBoundingClientRect(),d=document.querySelector('.dashboard').getBoundingClientRect(),c=document.querySelector('.command').getBoundingClientRect();return {b:{top:b.top,bottom:b.bottom,left:b.left,right:b.right},d:{top:d.top,bottom:d.bottom,left:d.left,right:d.right},c:{top:c.top,bottom:c.bottom,left:c.left,right:c.right}};});
       assert.ok(hud.d.top>=0 && hud.d.top<height/4,`${name}: HUD overlays the top of the battlefield`);
