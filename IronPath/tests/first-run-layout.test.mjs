@@ -207,8 +207,12 @@ test('an open field menu puts the contract card and the HUD behind it', () => {
     assert.ok(declares(field, `#gameView #gameWorkspace[data-field-menu="open"] ${layer}`, 'z-index', /^[12]$/),
       `${layer} steps behind the open menu`);
   }
+  // `.map-frame` is `isolation:isolate`, so the menu inside it can never overtake a
+  // sibling of the frame: the WHOLE frame has to rise above the contract card (5).
+  const frame = ruleOf(field, '#gameView #gameWorkspace[data-field-menu="open"] .map-frame');
+  assert.ok(Number(frame['z-index']) > 5, `the field frame rises above the contract card (${frame['z-index']})`);
   assert.ok(declares(field, '#gameView #gameWorkspace[data-field-menu="open"] .field-ops', 'z-index', /^1[0-9]$/),
-    'the menu stays on top');
+    'the menu stays on top inside the frame');
   // The attribute is driven by the menu itself, so no layout code has to know.
   const menu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
   assert.match(menu, /dataset\.fieldMenu/, 'the menu publishes its open state');

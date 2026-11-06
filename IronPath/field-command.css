@@ -243,6 +243,11 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
 #gameView #gameWorkspace[data-field-menu="open"] .story-radio{
   z-index:1;
 }
-/* The panel itself stays above them; 12 clears the field upgrade popup as well. */
+/* The menu lives INSIDE `.map-frame`, which is `isolation:isolate` - a stacking
+   context of its own. Raising `.field-ops` alone therefore cannot overtake the
+   contract card, which is a sibling of the frame. Lift the whole frame instead: the
+   contract card (5) and the header (2) are then behind the field, and inside the
+   frame the menu (14) beats the status row (3) and the flag (10) on its own. */
+#gameView #gameWorkspace[data-field-menu="open"] .map-frame{z-index:6}
 #gameView #gameWorkspace[data-field-menu="open"] .field-ops{z-index:14}
 #gameView #gameWorkspace[data-field-menu="open"] .field-ops-panel{z-index:14}
