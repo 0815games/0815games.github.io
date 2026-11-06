@@ -106,6 +106,10 @@ test('game.js publishes the measured header height relative to the field, not th
   // A headless harness (and a very early frame) has no layout: the loop must not throw.
   assert.match(measure, /try\s*\{[\s\S]*catch/, 'measuring never breaks the frame loop');
   assert.match(game, /window\.addEventListener\('resize',measureHud\)/, 'rotation re-measures');
+  assert.match(game, /--action-bar/, 'the action bar height is published too');
+  const bar = game.slice(game.indexOf('function measureActionBar'), game.indexOf('function measureActionBar') + 900);
+  assert.match(bar, /getBoundingClientRect\(\)/, 'measured, not assumed');
+  assert.match(bar, /catch/, 'and it cannot break the loop either');
 });
 
 test('the training screen owns the viewport so the page cannot scroll under the card', () => {
@@ -120,12 +124,26 @@ test('the training screen owns the viewport so the page cannot scroll under the 
 });
 
 test('the coach card and its pointer cannot be dragged by an ancestor containing block', () => {
-  const coach = ruleOf(redesign, '.first-run-coach');
+  // The BASE rule is the first one; the landscape block later in the file overrides
+  // `bottom` inside a media query, so merging every declaration would report that one.
+  const coachText = redesign.replace(/\/\*[\s\S]*?\*\//g, '');
+  const base = coachText.match(/(?:^|\})\s*\.first-run-coach\s*\{([^{}]*)\}/);
+  assert.ok(base, 'the card has a base rule');
+  const coach = Object.fromEntries(base[1].split(';').map(d => {
+    const at = d.indexOf(':');
+    return at < 0 ? null : [d.slice(0, at).trim(), d.slice(at + 1).trim()];
+  }).filter(Boolean));
   assert.equal(coach.position, 'fixed', 'the card is anchored to the viewport');
-  assert.match(coach.bottom, /^calc\(8px \+ env\(safe-area-inset-bottom/, 'and sits above the action bar');
+  // Above the measured action bar: a card that covers Deploy makes the first run
+  // untappable, which is exactly what the browser smoke caught.
+  assert.match(coach.bottom, /^calc\(var\(--action-bar,calc\(66px \+ env\(safe-area-inset-bottom,0px\)\)\) \+ 8px\)$/,
+    'and sits above the measured action bar, never on it');
   assert.ok(declares(redesign, '.first-run-coach', 'max-height', /^45dvh$/), 'it keeps the 45dvh cap the user asked for');
   // Landscape phones get a side column instead - still never the whole screen height.
   assert.ok(declares(redesign, '.first-run-coach', 'right', /^calc\(8px/), 'landscape moves it to a column');
+  // In landscape it is still above the bar, and it never assumes the full height.
+  assert.ok(declares(redesign, '.first-run-coach', 'bottom', /--action-bar/), 'landscape keeps it above the bar');
+  assert.ok(declares(redesign, '.first-run-coach', 'max-height', /100dvh - var\(--action-bar/), 'and shortens it by the bar');
   // The pointer is drawn from the card to the pad, so the card moving without the
   // ring is exactly how they lost each other.
   const highlight = ruleOf(redesign, '.coach-highlight');

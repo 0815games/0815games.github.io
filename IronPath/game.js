@@ -195,7 +195,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
   let storyRadioSource="";
   function storyRadio(text,refresh=false){storyRadioSource=text;text=tr(text);const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadio').dataset.speaker=match?match[1].toLowerCase():'narrator';$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:tr('FIELD REPORT');$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;if(!refresh){radioTime=7;sound.play('request');}}
-  let hudBottom='';
+  let hudBottom='',actionBar='';
   // Bottom edge of the status dashboard, measured against the battlefield box.
   // Re-measured only when the number actually moves, so scrolling never thrashes layout.
   function measureHud(){
@@ -208,6 +208,22 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       if(bottom>0&&`${bottom}px`!==hudBottom){hudBottom=`${bottom}px`;document.documentElement.style.setProperty('--hud-bottom',hudBottom);}
     }catch{/* a headless harness without layout must never break the frame loop */}
   }
+  // The coach card sits ABOVE the action bar, never on it: Deploy has to stay
+  // tappable with a card open, which is the whole reason the card is not a modal.
+  // The bar is `position:fixed;bottom:0` on phones and `absolute` on desktop, so its
+  // height is measured from the viewport bottom instead of assumed.
+  function measureActionBar(){
+    try{
+      const query=node=>typeof node?.querySelector==='function'?node.querySelector('.map-frame .command'):null;
+      const bar=query($('gameView'));
+      if(!bar||typeof bar.getBoundingClientRect!=='function')return;
+      const box=bar.getBoundingClientRect();
+      if(!box.height||!window.innerHeight)return;
+      const height=Math.round(box.height+Math.max(0,window.innerHeight-box.bottom));
+      if(height>0&&`${height}px`!==actionBar){actionBar=`${height}px`;document.documentElement.style.setProperty('--action-bar',actionBar);}
+    }catch{/* same rule as the header: a harness without layout must not break the loop */}
+  }
+  window.addEventListener('resize',measureActionBar);
   window.addEventListener('resize',measureHud);
   // Language switches re-render the whole panel, which re-runs updateUI() and re-measures.
   let dismissedPerk=null;
@@ -227,6 +243,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // relative to the battlefield box (the card is positioned inside that box), so the
     // stylesheet can place the card under it on every device and every screen size.
     if(showObjective)measureHud();
+    measureActionBar();
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
     else if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}

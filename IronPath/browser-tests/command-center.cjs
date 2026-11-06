@@ -90,6 +90,11 @@ const assert = require('node:assert/strict');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
+    // The card sits ABOVE the action bar, never on it: an open card that covers Deploy
+    // makes the first run look paused, which is the bug this whole card replaced.
+    const barBox=await page.locator('.map-frame .command').boundingBox();
+    assert.ok(coachBox.y+coachBox.height<=barBox.y+1,
+      `the card ends above the action bar (${Math.round(coachBox.y+coachBox.height)} <= ${Math.round(barBox.y)})`);
     // The reported bug: "Beim Scrollen bewegt sich das Tutorial quasi mit." The card
     // sat in the page flow, so a scroll dragged it away from the field it explains.
     // Scroll everything that can scroll and prove the card does not move a pixel.

@@ -435,7 +435,12 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
      the card drifted with the field, so its ring and arrow pointed at where the pad
      used to be. The card and its pointer now declare their own frame and the field
      page is held still while training runs, so no decoration can drag them. */
-  position:fixed;z-index:60;left:50%;bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  /* Above the action bar, never on it: `--action-bar` is the measured height of the
+     Deploy/Speed/Ability bar (game.js), so the player can still deploy with a card
+     open. The fallback covers the first frame and the desktop layout, where the bar
+     is `absolute` inside the field and the gap under it is 8px+safe-area. */
+  position:fixed;z-index:60;left:50%;
+  bottom:calc(var(--action-bar,calc(66px + env(safe-area-inset-bottom,0px))) + 8px);
   transform:translateX(-50%);
   width:min(520px,calc(100vw - 16px));
   max-height:45dvh;display:flex;flex-direction:column;gap:6px;
@@ -468,8 +473,10 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 /* Landscape phones (short viewports): a side column, never over the pads. */
 @media(max-height:420px){
   .first-run-coach{
-    left:auto;right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));
-    transform:none;width:min(340px,46vw);max-height:calc(100dvh - 16px);
+    left:auto;right:calc(8px + env(safe-area-inset-right,0px));
+    /* The bar is still at the bottom in landscape, so the card still sits above it. */
+    bottom:calc(var(--action-bar,calc(60px + env(safe-area-inset-bottom,0px))) + 6px);
+    transform:none;width:min(340px,46vw);max-height:calc(100dvh - var(--action-bar,60px) - 14px);
   }
   @keyframes coach-in{from{opacity:0}to{opacity:1}}
 }
