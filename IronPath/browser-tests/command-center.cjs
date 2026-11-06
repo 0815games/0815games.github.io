@@ -77,7 +77,14 @@ const assert = require('node:assert/strict');
     assert.ok(ringBox.x>=padOnScreen.left-5&&ringBox.x<=padOnScreen.left+padOnScreen.w,'the ring is inside the field horizontally');
     assert.ok(ringBox.y>=padOnScreen.top-5&&ringBox.y<=padOnScreen.top+padOnScreen.h+40,'the ring is on the field vertically');
     // And it is readable over a live battlefield: dashed line, gold ring.
-    assert.equal(await page.locator('#coachArrow').isVisible(),true,'the line from the card exists');
+    // The line is an SVG <line>: it has no layout box, so `isVisible()` is the wrong
+    // question. What matters is that it has length and connects card to ring.
+    const arrowGeometry=await page.locator('#coachArrow').evaluate(line=>{
+      const x1=+line.getAttribute('x1'),y1=+line.getAttribute('y1'),x2=+line.getAttribute('x2'),y2=+line.getAttribute('y2');
+      return {hidden:line.hasAttribute('hidden'),length:Math.hypot(x2-x1,y2-y1)};
+    });
+    assert.equal(arrowGeometry.hidden,false,'the line from the card is drawn');
+    assert.ok(arrowGeometry.length>40,`the line actually connects the card to the ring (${Math.round(arrowGeometry.length)}px)`);
     // It must never intercept a tap.
     assert.equal(await page.locator('#coachHighlight').evaluate(e=>getComputedStyle(e).pointerEvents),'none','the pointer lets taps through');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
