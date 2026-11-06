@@ -1,7 +1,14 @@
+import {test} from 'node:test';
+// Skill builds, abilities and the mastery web. Two files became one: both are
+// parseBuild()/encodeBuild() round trips, one for the starting build and one for
+// the expanded web. Separate scopes keep the two `player` helpers apart.
+
+import {applyCommand, createPlayer} from '../match.mjs';
+import {createMatch, stepMatch} from '../simulation.mjs';
+import {DEFAULT_BUILD, encodeBuild, parseBuild, pointsLeft} from '../skills.mjs';
 import {strict as assert} from 'node:assert';
-import {parseBuild,encodeBuild,pointsLeft} from '../skills.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
+
+test('builds validate, abilities fire and the passives reach solo and co-op',async()=>{
 const player=(id,skills,level=10)=>createPlayer(id,{name:id,gender:'female',level,skills},100,130);
 assert.equal(encodeBuild(parseBuild('3,0,0,0,0;recon',3)),'0,0,0,0,0;assault','overspending is ignored');
 assert.equal(encodeBuild(parseBuild('invalid',10)),'0,0,0,0,0;assault');
@@ -45,3 +52,29 @@ for(const [i,build] of builds.entries()){
  if(i===8)assert.equal(m.suppression,12);
  if(i===9){assert.equal(m.suppression,7);assert.equal(m.enemies[0].hp,80);}
 }
+});
+
+test('the expanded web accepts legacy saves and enforces its specialist prerequisites',async()=>{
+const old='2,0,0,0,0;assault';assert.equal(encodeBuild(parseBuild(old,3)),old,'legacy saves remain unchanged');
+const full='2,2,2,2,2;medic;1111111111';const build=parseBuild(full,21);assert.equal(encodeBuild(build),full);assert.equal(pointsLeft(build,21),0);
+assert.equal(encodeBuild(parseBuild(full,20)),'0,0,0,0,0;assault','cannot overspend');assert.equal(encodeBuild(parseBuild('1,0,0,0,0;assault;1000000000',20)),'0,0,0,0,0;assault','specialists require rank two');
+const player=(id,s)=>createPlayer(id,{name:id,gender:'male',level:21,skills:s},100,130);
+const alice=player('alice','2,0,2,0,0;logistics;0000110000'),bob=player('bob','0,0,0,2,2;medic;0000001111');
+const match=createMatch([alice,bob]);assert.equal(match.maxHp,120);match.running=true;match.wave=1;match.spawnLeft=3;match.spawnTimer=100;
+assert.equal(applyCommand(match,'alice',{type:'airstrike'}).ok,true);assert.equal(match.players.alice.money,170);assert.equal(match.players.bob.money,125);
+match.hp=80;assert.equal(applyCommand(match,'bob',{type:'airstrike'}).ok,true);assert.equal(match.hp,105);
+match.enemies.push({hp:0,x:0,y:130,speed:0,segment:1,reward:10});stepMatch(match);assert.equal(match.players.alice.money,179);assert.equal(match.players.bob.money,131);
+const recon=createMatch([player('recon','0,0,0,0,2;recon;0000000011')]);recon.running=true;recon.wave=1;recon.spawnLeft=1;recon.spawnTimer=100;recon.enemies.push({hp:1000,x:260,y:130,speed:0,segment:1,kind:'infantry',reward:1});assert.equal(applyCommand(recon,'recon',{type:'airstrike'}).ok,true);assert.equal(recon.suppression,11);stepMatch(recon);assert.ok(recon.enemies[0].hp<1000,'forward observer extends firing range');
+const assault=createMatch([player('assault','2,0,0,0,0;assault;1100000000')]);assault.running=true;assault.wave=1;assault.spawnLeft=1;assault.spawnTimer=100;assault.enemies.push({hp:1000,x:260,y:130,speed:0,segment:1,kind:'infantry',reward:1});stepMatch(assault);assert.ok(assault.enemies[0].hp<1000);assert.equal(assault.players.assault.shotTimer,.65*.85);
+const eng=createMatch([player('eng','0,2,0,0,0;engineer;0011000000')]);eng.running=true;eng.wave=1;eng.spawnLeft=1;eng.spawnTimer=100;eng.towers.push({id:1,pad:0,type:0,level:1,timer:0,ownerId:'eng'});eng.enemies.push({hp:1000,x:105,y:130,speed:0,segment:1,kind:'infantry',reward:1});assert.equal(applyCommand(eng,'eng',{type:'airstrike'}).ok,true);assert.equal(eng.players.eng.cooldown,25);stepMatch(eng);assert.equal(eng.towers[0].timer,.55*.9);
+console.log('Legacy migration, specialist prerequisites and solo/co-op effects passed.');
+});
+
+// A brand-new account has no saved build. Whatever parseBuild invents for it is
+// the loadout every first-run soldier deploys with, so pin that it is the plain
+// assault line and not, say, a path the player never chose.
+ test('a missing build falls back to the default loadout',()=>{
+  assert.equal(DEFAULT_BUILD,'0,0,0,0,0;assault');
+  assert.equal(encodeBuild(parseBuild(undefined,1)),DEFAULT_BUILD,'a missing build falls back to the default');
+  assert.equal(parseBuild(undefined,1).active,null,'and level one still has no ability');
+ });

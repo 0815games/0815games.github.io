@@ -1,6 +1,9 @@
+import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createFirebasePartyGame} from '../firebase-party-game.mjs';
 import {createPlayer} from '../match.mjs';
+
+test('the four-player adapter runs a whole match on the in-memory Firebase SDK',async()=>{
 const ids=['alice','bob','cara','dan'],profiles=ids.map(id=>createPlayer(id,{name:id,gender:'female'}));
 const values=new Map([['.info/connected',true],['.info/serverTimeOffset',0]]),listeners=new Map();
 function read(path){if(values.has(path))return values.get(path);const children={};for(const [key,value] of values)if(key.startsWith(path+'/')){const child=key.slice(path.length+1);if(!child.includes('/'))children[child]=value;}return Object.keys(children).length?children:null;}
@@ -57,4 +60,4 @@ for(const mode of ['coop','versus']){
  finally{await Promise.all([guest.stop(),host.stop()]);}
 }
 assert.throws(()=>createFirebasePartyGame({db:{},sdk,auth:{currentUser:{uid:'alice'}},partyId:'p',hostId:'alice',playerIds:ids,mode:'two-vs-two',players:profiles,teams:[['alice','bob'],['bob','dan']],crypto}),/Invalid teams/);
-console.log('Four-player full game adapter tested with in-memory Firebase SDK; no database rules or real devices.');
+});

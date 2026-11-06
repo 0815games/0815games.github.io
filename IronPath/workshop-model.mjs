@@ -8,7 +8,7 @@ const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gad
 export const MOD_SCRAP=60;
 export const RECIPES=Object.freeze({
  // Provisional playtest costs: roughly eleven completed waves for a component
- // item and four for boots, so crafting stays a goal. See workshop-economy.mjs.
+ // item and four for boots, so crafting stays a goal.
  marksman:{slot:'weapon',scrap:150,components:1,mods:['precision','quick']},
  mechanic:{slot:'gear',scrap:150,components:1,mods:['tools','lightweight']},
  radio:{slot:'gadget',scrap:150,components:1,mods:['efficient','extended']},

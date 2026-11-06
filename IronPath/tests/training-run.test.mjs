@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {
- TRAINING_WAVES,TRAINING_BOSS_EVERY,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_KEY,FIRST_RUN_XP,trainingWaveXP,trainingBonusXP,
+ TRAINING_WAVES,TRAINING_BOSS_EVERY,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_KEY,FIRST_RUN_XP,FIRST_RUN_DEFEAT_XP,trainingWaveXP,trainingBonusXP,
  trainingContract,trainingUnitScale,trainingXP,trainingProgress,trainingWon,trainingStatus,
  trainingSeen,markTrainingSeen,
 } from '../training-run.mjs';
@@ -50,6 +50,14 @@ test('clearing every wave of the contract pays exactly one level and one skill p
  assert.equal(characterProgress(trainingXP()).level,2);
  assert.equal(FIRST_RUN_XP,450,'the promise the ending relies on');
  assert.ok(characterProgress(trainingXP()).current>=150,'there is real headroom above the threshold');
+
+ // Losing the contract still has to leave the player with a point to spend: the
+ // screens after the debrief teach equipment and skills, and they are useless to
+ // someone who ended the run at level 1. That is why a defeat pays this number
+ // and not merely the waves it cleared. Pinned because it is money, not layout.
+ assert.equal(FIRST_RUN_DEFEAT_XP,330,'a defeat pays enough to reach level 2');
+ assert.ok(characterProgress(FIRST_RUN_DEFEAT_XP).level>=2,'a defeated first run still unlocks a skill point');
+ assert.ok(FIRST_RUN_DEFEAT_XP<FIRST_RUN_XP,'losing pays less than winning');
 });
 
 test('a training deployment is a real match with the contract attached',()=>{

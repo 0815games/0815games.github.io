@@ -10,5 +10,5 @@ assert.match(html,/Complete waves together to earn XP/);
 assert.doesNotMatch(html,/id="partyCopy"/);
 assert.match(html,/id="partyCodeArea"/);
 assert.match(await readFile(new URL('../style.css',import.meta.url),'utf8'),/party-code-card code\{[^}]*font-size:clamp\(38px/);
-assert.match(html,/account\.js\?v=20261118-settings1/);
+assert.match(html,new RegExp('account\\.js\\?v=\\d{8}-[a-z0-9]+'),'account.js is cache-busted per release');
 console.log('Live alpha party entry point checks passed.');

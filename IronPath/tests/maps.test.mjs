@@ -1,8 +1,11 @@
+import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {MAPS,getMap,isMapId,createRandomMapId} from '../maps.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {createPlayer,applyCommand} from '../match.mjs';
 import {createPartyHost} from '../party-host.mjs';
+
+test('generated maps are laid out, simulated, snapshotted and reconnected identically',async()=>{
 const player=id=>createPlayer(id,{name:id,gender:'female',level:1},850,450);
 const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy)};
 assert.deepEqual(Object.keys(MAPS),['road','forest','outpost']);assert.equal(isMapId('__proto__'),false);assert.throws(()=>createMatch([player('a')],'bad'),/Invalid map/);assert.equal(getMap('bad').id,'road');
@@ -58,3 +61,4 @@ assert.equal(themes.size,5);assert.ok(roads.size>2900);assert.deepEqual(getMap('
 const newState=createMatch([player('host'),player('guest')],'g2-12345678'),newHost=createPartyHost(newState,{hostId:'host'});
 newHost.setPresence('host',true);newHost.setPresence('guest',true);newHost.setPresence('guest',false);newHost.advance();newHost.setPresence('guest',true);
 assert.deepEqual(getMap(newHost.snapshotFor('guest').match.mapId),getMap('g2-12345678'));
+});

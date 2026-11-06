@@ -71,7 +71,7 @@ test('the page gates first, plays the intro only after a choice, and offers both
  const gateAt=html.indexOf('id="languageGate"'),introAt=html.indexOf('id="introOverlay"');
  assert.ok(bootstrapAt>0&&gateAt>bootstrapAt&&introAt>gateAt,'bootstrap, then the gate, then the intro');
  assert.match(html,/data-language="en"/);assert.match(html,/data-language="de"/);
- assert.match(html,/language-gate\.mjs\?v=20261112-firstrun5/);
+ assert.match(html,/language-gate\.mjs\?v=\d{8}-[a-z0-9]+/,'the gate module is cache-busted per release');
  assert.match(intro,/dataset\.langGate!=='1'/,'the intro waits for the choice');
  // Both languages must be on screen, so neither reader depends on the other's text.
  assert.match(html,/CHOOSE YOUR LANGUAGE/);assert.match(html,/SPRACHE WÄHLEN/);

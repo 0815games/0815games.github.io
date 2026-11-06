@@ -12,6 +12,9 @@ assert.equal(state.players.bob.target,null);
 assert.equal(cmd('bob',{type:'move',x:Infinity,y:2}).ok,false);
 assert.equal(cmd('alice',{type:'build',pad:1,towerType:0}).ok,true);
 assert.equal(state.money,300-TOWER_COSTS[0]);
+// Pin the whole table, not just the tower that happens to be built here: the
+// field menu, the sell refund and the armory all read these four numbers.
+assert.deepEqual(TOWER_COSTS,[50,80,65,75],'tower prices are the ones the field menu shows');
 assert.equal(state.towers[0].ownerId,'alice');
 const towerId=state.towers[0].id;
 assert.equal(cmd('bob',{type:'sell',pad:1,expectedTowerId:towerId+1,expectedLevel:1}).ok,false);

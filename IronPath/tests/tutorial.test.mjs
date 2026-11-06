@@ -2,6 +2,7 @@ import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
 import {createTutorial,TUTORIAL_STEPS} from '../tutorial.mjs';
 import {readFileSync,readdirSync} from 'node:fs';
+import {productionModuleUrl} from './production-module.mjs';
 const nodes=new Map();
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},attrs:{},setAttribute(key,value){this.attrs[key]=value;},addEventListener(type,fn){this['on'+type]=fn;},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:100}},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
 const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)};
@@ -63,7 +64,7 @@ tour.startIfNeeded('outside');const dialog=el('tutorialDialog'),outside={target:
 tour.replay('first');el('tutorialDialog').oncancel({preventDefault(){}});assert.equal(tour.isOpen(),false);assert.ok(changes.includes(true)&&changes.includes(false));
 const bad=createTutorial({document,storage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}});bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),true);el('tutorialSkip').onclick();bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),false);
 console.log('Interactive tutorial, safe practice and completion tests passed.');
-const {setupLanguage}=await import('../language.mjs?v=20261118-settings1');
+const {setupLanguage}=await import(productionModuleUrl('language.mjs'));
 const selector={value:'',addEventListener(_type,fn){this.change=fn;}},languageDoc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:{},querySelectorAll:()=>[]};setupLanguage({document:languageDoc,storage:{getItem:()=> 'de',setItem(){}}});
 tour=createTutorial({document,storage,onVisibilityChange:x=>changes.push(x)});tour.replay('first');assert.equal(el('tutorialTitle').textContent,'Willkommen, Soldat');assert.equal(el('tutorialStep').textContent,`FELDEINWEISUNG · 1 / ${TUTORIAL_STEPS.length}`,'the step count follows the real tour');// Jump straight to the Skills practice step, which the German run exercises.
 for(let i=0;i<TUTORIAL_STEPS.findIndex(step=>step.practice==='skills');i++)el('tutorialNext').onclick();assert.equal(el('tutorialTitle').textContent,'Übe das Fähigkeitenmenü');assert.equal(el('tutorialNext').disabled,true);
