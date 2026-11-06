@@ -381,15 +381,6 @@ const assert = require('node:assert/strict');
     assert.equal(await visible('#game'),true,'the tour closes back onto the field it was opened over');
     assert.equal(await page.locator('#commandCenter').isVisible(),false,'and does not jump to the Command Center unasked');
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
-    // Exercise the online handoff independently from Firebase: no stale solo
-    // battlefield appears until the first authoritative match snapshot arrives.
-    await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261117-firstrunde1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
-    assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
-    await page.evaluate(()=>{document.querySelector('#gameWorkspace').dataset.onlineReady='true';document.querySelector('#gameWorkspace').hidden=false;});
-    assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);
-    await page.evaluate(()=>window.testNav.showLobby());assert.equal(await visible('#gameWorkspace'),true,'the field is back in reach before the restart is tested');
-    assert.equal(await visible('#game'),false); assert.equal(await visible('#returnOnline'),true);
-    await page.evaluate(()=>window.__mockAuth(null));assert.equal(await page.evaluate(()=>window.__friendListenerCount()),0);assert.equal(await page.locator('#menuFriendBadge').isHidden(),true);
     // The restart, at the very end of the sweep: everything above that needs the
     // Command Center has already run, so leaving it for the training field now costs
     // nothing. Both entry points do the same thing.
@@ -406,8 +397,8 @@ const assert = require('node:assert/strict');
       await page.locator('#runResults').evaluate(dialog => dialog.close());
       await page.waitForSelector('#menuTutorial', {state: 'visible'});
     };
-    // Back to the Command Center: both restart buttons live there.
-    await page.evaluate(()=>window.testNav?.showMenu?.());
+    // Back to the Command Center with the real control: both restart buttons live there.
+    await page.locator('#backToCommand').click();
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     // (a) FIELD TUTORIAL in the Command Center: the whole first run, map and all.
     await restartOnce('field tutorial', async () => page.locator('#menuTutorial').click());
@@ -430,6 +421,15 @@ const assert = require('node:assert/strict');
       await page.locator('#gameConfirmAccept').click();
     });
     assert.equal(await page.evaluate(() => document.getElementById('settingsDialog').open), false, 'settings closed behind the replay');
+    // Exercise the online handoff independently from Firebase: no stale solo
+    // battlefield appears until the first authoritative match snapshot arrives.
+    await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261117-firstrunde1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
+    assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
+    await page.evaluate(()=>{document.querySelector('#gameWorkspace').dataset.onlineReady='true';document.querySelector('#gameWorkspace').hidden=false;});
+    assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);
+    await page.evaluate(()=>window.testNav.showLobby());assert.equal(await visible('#gameWorkspace'),true,'the field is back in reach before the restart is tested');
+    assert.equal(await visible('#game'),false); assert.equal(await visible('#returnOnline'),true);
+    await page.evaluate(()=>window.__mockAuth(null));assert.equal(await page.evaluate(()=>window.__friendListenerCount()),0);assert.equal(await page.locator('#menuFriendBadge').isHidden(),true);
     assert.deepEqual(errors,[],`browser exceptions: ${errors.join('\n')}`);
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
