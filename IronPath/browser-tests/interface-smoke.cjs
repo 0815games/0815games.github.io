@@ -94,8 +94,21 @@ const fs = require('node:fs');
       });
       assert.ok(training.battle.height>=height-2,`${name}: the training field fills the viewport (${Math.round(training.battle.height)} of ${height})`);
       assert.ok(training.scrollable<=2,`${name}: the page behind the training field does not scroll (${training.scrollable}px)`);
-      assert.ok(training.card.top>=training.dashboard.bottom-1,`${name}: the contract card starts below the status dashboard (${Math.round(training.card.top)} >= ${Math.round(training.dashboard.bottom)})`);
+      // The contract is a row of the frame now, so it sits ABOVE the field rather than
+      // below the status row. What matters is that it covers nothing: not the status
+      // row, not the battlefield, and it stays inside the width.
+      const covers=await page.evaluate(()=>{
+        const card=document.getElementById('soloObjective').getBoundingClientRect();
+        const dashboard=document.querySelector('#gameView .map-frame .dashboard').getBoundingClientRect();
+        const canvas=document.getElementById('game').getBoundingClientRect();
+        const overlaps=(a,b)=>Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>1;
+        return {dashboard:overlaps(card,dashboard),canvas:overlaps(card,canvas)};
+      });
+      assert.equal(covers.dashboard,false,`${name}: the contract card does not cover the status row`);
+      assert.equal(covers.canvas,false,`${name}: the contract card does not cover the battlefield`);
       assert.ok(training.card.right<=width+1,`${name}: the contract card stays inside the field`);
+      assert.ok(training.card.bottom-training.card.top<height*.25,
+        `${name}: the contract row stays a row (${Math.round(training.card.bottom-training.card.top)} of ${height})`);
       await page.screenshot({path:`browser-artifacts/${name}-training-field.png`,fullPage:false});
       // The coach card is a bottom strip that must not be dragged by a scroll.
       await page.evaluate(()=>{

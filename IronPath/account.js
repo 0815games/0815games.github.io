@@ -5,7 +5,7 @@ import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
 import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun6';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
+import {setupFieldMenu} from './field-menu.mjs?v=20261114-coachreplay1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
@@ -38,7 +38,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261113-hud1';
+import { startGame } from './game.js?v=20261114-coachreplay1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';

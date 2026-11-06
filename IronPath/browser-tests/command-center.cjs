@@ -119,17 +119,21 @@ const assert = require('node:assert/strict');
       const ringAfter=await page.locator('#coachRing').boundingBox();
       assert.ok(ringAfter&&ringAfter.width>10,'the ring is redrawn after the field pans');
     }
-    // The contract card must not cover the header above it. On the training field the
-    // objective sits under the measured status dashboard, not on top of it.
-    const overlap=await page.evaluate(()=>{
+    // The contract must not COVER anything. On the training field it is a row of the
+    // frame above the battlefield now, so the question is no longer "is it below the
+    // status row" but "does it overlap the status row or the field".
+    const covers=await page.evaluate(()=>{
       const card=document.getElementById('soloObjective');
-      const dashboard=document.querySelector('#gameView .map-frame .dashboard');
-      if(!card||!dashboard||card.hidden)return null;
-      const a=card.getBoundingClientRect(),b=dashboard.getBoundingClientRect();
-      return {cardTop:a.top,dashboardBottom:b.bottom,overlap:Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)};
+      if(!card||card.hidden)return null;
+      const a=card.getBoundingClientRect();
+      const hit=sel=>{const b=document.querySelector(sel)?.getBoundingClientRect();return !!b&&
+        Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>1;};
+      return {dashboard:hit('#gameView .map-frame .dashboard'),canvas:hit('#game')};
     });
-    if(overlap)assert.ok(overlap.cardTop>=overlap.dashboardBottom-1,
-      `the contract card starts below the status dashboard (${Math.round(overlap.cardTop)} >= ${Math.round(overlap.dashboardBottom)})`);
+    if(covers){
+      assert.equal(covers.dashboard,false,'the contract does not cover the status row');
+      assert.equal(covers.canvas,false,'the contract does not cover the battlefield');
+    }
     // And it does not pause. The card holds no focus and no pointer capture, so
     // Deploy is still clickable with it open — that alone was impossible with the
     // old modal. The tick then moves something the simulation owns.
@@ -141,11 +145,35 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there while the field runs');
     assert.ok(tickBefore!==undefined&&tickAfter!==undefined,'the headcount is rendered');
     // Playing the card's own instructions dismisses it.
+    // Reported: "Schließen des Tutorials war die einzige Option zu bauen." Opening the
+    // tower sheet has to be possible with the card up, and the card must get out of
+    // the way instead of sitting on the sheet.
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
     assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
+    // Open the sheet a pad offers, and prove the card is not covering it.
+    const sheetCheck=await page.evaluate(()=>{
+      const card=document.getElementById('firstRunCoach');
+      const sheet=document.getElementById('radialMenu');
+      const wasHidden=card.hidden;
+      sheet.hidden=false;
+      const cardNow=getComputedStyle(card).display;
+      const hit=(()=>{const b=sheet.getBoundingClientRect();return document.elementFromPoint(Math.round(b.left+b.width/2),Math.round(b.top+20));})();
+      sheet.hidden=true;
+      return {cardHidden:cardNow==='none',wasHidden,onSheet:!!hit&&sheet.contains(hit)};
+    });
+    assert.equal(sheetCheck.cardHidden,true,'the card steps aside while the tower sheet is open');
+    assert.equal(sheetCheck.onSheet,true,'and the sheet is not covered by anything');
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),false,'it comes back when the sheet closes');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
+    // Dismissing must not be the end of it: the field menu and the Command Center both
+    // replay the same seven cards. The old replay path opened the retired modal tour.
+    await page.locator('#fieldOps > summary').click();
+    await page.locator('#fieldCoachReplay').click();
+    await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/,'the replay starts at the first card');
+    await page.locator('#coachClose').click();
     // Back to the Command Center for the rest of the sweep. Ending a run opens the
     // debrief, which is modal, so close it before touching anything else.
     await page.locator('#endRun').click();

@@ -214,3 +214,64 @@ test('an open field menu paints above the contract card', () => {
   assert.ok(declares(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops-panel', 'z-index', /^1[0-9]$/),
     'and so does its panel');
 });
+
+test('the coach card steps aside for the tower sheet instead of covering it', () => {
+  // Reported: "Schließen des Tutorials war die einzige Option zu bauen." The card
+  // (bottom, up to 46dvh) and the sheet (fixed, bottom:0, up to 70dvh) overlap by
+  // construction - 115dvh of 100 - so no anchoring can separate them. The card must
+  // yield, and the ring must stay because it points at the sheet.
+  assert.match(redesign, /body:has\(#radialMenu:not\(\[hidden\]\)\) \.first-run-coach\{display:none\}/,
+    'the card hides while a tower is being chosen');
+  // A selector list: the same block covers the upgrade popup and the debrief.
+  assert.match(redesign, /body:has\(#runPerkPanel:not\(\[hidden\]\)\) \.first-run-coach,\s*\nbody:has\(#runResults\[open\]\) \.first-run-coach\{display:none\}/,
+    'and under the field upgrade popup');
+  assert.match(redesign, /body:has\(#runResults\[open\]\) \.first-run-coach\{display:none\}/,
+    'and under the debrief');
+  // Hiding the CARD must not hide the assertion that the pointer stays tappable.
+  assert.match(redesign, /\.coach-highlight\{[^}]*pointer-events:none/);
+});
+
+test('the contract card is a row in the training frame, not an overlay on the field', () => {
+  const row = ruleOf(field, '#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden])');
+  assert.equal(row.position, 'relative', 'it takes part in the layout');
+  assert.equal(row.top, 'auto', 'so nothing can overlap it from above');
+  assert.equal(row['max-width'], 'none', 'it spans the frame');
+  assert.match(row['border-bottom'] ?? '', /1px solid/, 'and reads as a header row');
+  // The hint line is dropped before the card is allowed to eat the field.
+  assert.match(field, /@media\(max-height:700px\)\{[\s\S]*solo-objective[^{]*p\{display:none\}/,
+    'short screens lose the hint, not the pads');
+});
+
+test('the coach can be reopened after it was dismissed', () => {
+  const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
+  // `start()` refuses a seen soldier on purpose. Dismissing a hint must not be a
+  // one-way door, so the replay path exists and ignores the marker.
+  assert.match(coach, /replay\(id\)\{/, 'the coach exposes a replay');
+  const replay = coach.slice(coach.indexOf('replay(id){'), coach.indexOf('stop(){hide()'));
+  assert.match(replay, /index=0/, 'which starts at the first card');
+  assert.doesNotMatch(replay, /coachSeen/, 'and does not ask the seen marker');
+  // One replay path only: the Command Center button and the field menu use the same
+  // thing, because two paths drift apart (the old one replayed the retired modal).
+  const game = readFileSync(resolve(root, 'game.js'), 'utf8');
+  const show = game.slice(game.indexOf('showTutorial:()=>'), game.indexOf('showTutorial:()=>') + 420);
+  assert.match(show, /coach\.replay/, 'the field tutorial action replays the coach');
+  assert.match(readFileSync(resolve(root, 'field-menu.mjs'), 'utf8'), /fieldCoachReplay/,
+    'and the field menu offers it in-match');
+  assert.match(html, /id="fieldCoachReplay"/);
+});
+
+test('sprites ask for a redraw when they finish loading', () => {
+  const art = readFileSync(resolve(root, 'cartoon-art.mjs'), 'utf8');
+  // The bug: sprites load on demand, the first frames draw the vector fallback, and
+  // nothing told the loop the PNG had arrived - so the terrain layer kept its cached
+  // fallback for the whole match. A phone decoded slowly enough to hit it every time.
+  assert.match(art, /image\.onload=\(\)=>\{entry\.ready=true;try\{notify\?\.\(\);\}/,
+    'a loaded sprite calls back into the renderer');
+  assert.match(art, /onSpritesReady=null\}/, 'drawCartoonBattle accepts the hook');
+  assert.match(art, /getLanguage\(\)\}:\$\{resolution\}:\$\{artVersion\}/,
+    'and the terrain cache key changes with it, or the cached ground stays a fallback');
+  const game = readFileSync(resolve(root, 'game.js'), 'utf8');
+  assert.match(game, /const onSpritesReady=\(\)=>\{artVersion\+\+;\}/,
+    'game.js bumps the version it feeds into that key');
+  assert.match(game, /artVersion,onSpritesReady,/, 'and passes both to the renderer');
+});

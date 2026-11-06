@@ -242,3 +242,41 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
 #gameView #gameWorkspace:has(#fieldOps[open]) .map-frame{z-index:6}
 #gameView #gameWorkspace:has(#fieldOps[open]) .field-ops{z-index:14}
 #gameView #gameWorkspace:has(#fieldOps[open]) .field-ops-panel{z-index:14}
+
+/* ---------------------------------------------------------------------------
+   The contract card belongs in the header row, not on the field.
+
+   On a phone the card took a third of the battlefield height and its own title
+   repeated the map name that the header already showed ("DIE LETZTE STRASSE" right
+   above "AUSBILDUNGSVERTRAG · MIT VORSICHT"). On top of that the open field menu now
+   covers it, so it spent much of the run half hidden.
+
+   The training frame gives it a real row under the header instead - in flow, full
+   width, no overlay - and shortens the copy to what a phone can show: the wave count,
+   the bar, and one line. The field starts below it, so nothing can be covered by it.
+   --------------------------------------------------------------------------- */
+#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]){
+  position:relative;
+  top:auto;left:auto;right:auto;
+  max-width:none;
+  margin:0;
+  padding:7px 12px 9px;
+  background:#14261f;
+  border:0;
+  border-bottom:1px solid #789078;
+  border-radius:0;
+  z-index:2;
+}
+#gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]) strong{
+  font-size:13px;
+  letter-spacing:.08em;
+}
+/* The hint line is the first thing to go when height is short: the pads matter more. */
+@media(max-height:700px){
+  #gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]) p{display:none}
+}
+
+/* The training header keeps the map name and drops its second line: the contract row
+   underneath says what this run is, and repeating it in the header cost a row of
+   battlefield on a phone. */
+#gameView #gameWorkspace[data-screen="training"] .battle-head .eyebrow{display:none}

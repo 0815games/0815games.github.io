@@ -450,6 +450,17 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
   animation:coach-in .12s ease-out;
 }
 .first-run-coach[hidden]{display:none}
+/* The card and the tower sheet cannot share the bottom of a phone: the card takes up
+   to 46% of the height and the sheet up to 70%, and the sheet is `position:fixed`
+   with `bottom:0`, so wherever the card is anchored the sheet covers it - which is
+   what "the tutorial is useless here, I had to close it to build" meant. The card is
+   a hint; the sheet is the thing being asked for. While the sheet is open the card
+   steps aside completely, and the ring stays, because it points AT the sheet. */
+body:has(#radialMenu:not([hidden])) .first-run-coach{display:none}
+/* Same for the field upgrade popup and the results debrief: both are modal in effect
+   (the run stops or the panel is in the way), so a hint underneath them is noise. */
+body:has(#runPerkPanel:not([hidden])) .first-run-coach,
+body:has(#runResults[open]) .first-run-coach{display:none}
 @keyframes coach-in{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 .coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .coach-step{font-size:10px;font-weight:bold;letter-spacing:.14em;color:#dec98e}
