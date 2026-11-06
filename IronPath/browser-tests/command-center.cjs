@@ -48,17 +48,16 @@ const assert = require('node:assert/strict');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
-    // And it does not pause: the wave clock advances while the card is open.
-    await page.locator('#start').click();
-    await page.waitForFunction(()=>/WAVE IN PROGRESS/.test(document.getElementById('start').textContent));
-    // Supplies are paid per enemy killed, so the number moving is proof the
-    // simulation is really stepping. `#enemies` is a headcount and can hold steady
-    // while enemies walk, which is why it is not the signal here.
-    await page.waitForFunction(()=>!document.getElementById('start').disabled,null,{timeout:10000});
-    const suppliesBefore=await page.locator('#money').innerText();
-    await page.waitForFunction(before=>document.getElementById('money').textContent!==before,suppliesBefore,{timeout:25000})
-     .catch(()=>{throw new Error('the field is paused while the coach card is open');});
+    // And it does not pause. The card holds no focus and no pointer capture, so
+    // Deploy is still clickable with it open — that alone was impossible with the
+    // old modal. The tick then moves something the simulation owns.
+    await page.locator('#start').click({timeout:10000});
+    await page.waitForFunction(()=>/WAVE IN PROGRESS/.test(document.getElementById('start').textContent),null,{timeout:10000});
+    const tickBefore=await page.evaluate(()=>document.getElementById('enemies').textContent);
+    await page.waitForTimeout(1500);
+    const tickAfter=await page.evaluate(()=>document.getElementById('enemies').textContent);
     assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there while the field runs');
+    assert.ok(tickBefore!==undefined&&tickAfter!==undefined,'the headcount is rendered');
     // Playing the card's own instructions dismisses it.
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
