@@ -176,3 +176,41 @@ test('the measured header is the one the field really uses', () => {
   assert.ok(html.indexOf('id="gameView"') < dashboard, 'the dashboard lives inside #gameView');
   assert.match(field, /#gameView \.map-frame \.dashboard\{position:absolute/, 'and it is positioned in the field');
 });
+
+test('the training field shows one language flag, not two', () => {
+  // Reported from a phone: two flags in the top right. The field has its own switch
+  // (#fieldLanguage, left of the menu) and the page has the global picker - and the
+  // list that hides the global one did not include the training screen.
+  const training = field.slice(field.indexOf('data-field-menu="open"') > 0
+    ? field.indexOf('#gameView #gameWorkspace[data-screen="training"] .field-language-flag')
+    : 0);
+  assert.match(field, /#gameView #gameWorkspace\[data-screen="training"\] \.field-language-flag\{display:none\}/,
+    'the field flag is hidden on the training field');
+  // And the global picker must NOT be hidden there, or the screen has no switch at all.
+  const hideGlobal = field.match(/body:has\([^)]*[^}]*>\.language-picker\{display:none\}/);
+  assert.ok(hideGlobal, 'the global picker is hidden on the full-field screens');
+  assert.doesNotMatch(hideGlobal[0], /data-screen="training"/,
+    'training keeps exactly one language switch');
+});
+
+test('the coach caption counts five waves, like the contract it describes', () => {
+  const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
+  assert.match(coach, /caption:'WAVE 1 OF 5'/, 'the card says five waves');
+  assert.doesNotMatch(coach, /OF 6|of 6'/, 'and nothing still says six');
+});
+
+test('an open field menu paints above the contract card', () => {
+  // The contract card sat at z-index 5 over a menu at 9, so "COMMAND CENTER" and "How
+  // to play" were covered by it and the menu looked stuck behind a permanent overlay.
+  // The rule keys off the <details> itself, so it also holds where scripts are blocked.
+  assert.match(field, /#gameView #gameWorkspace:has\(#fieldOps\[open\]\)/,
+    'the open menu is detected in the stylesheet, not by a class a script must remember');
+  // `.map-frame` is `isolation:isolate`: the menu inside it cannot overtake a sibling
+  // of the frame, so the frame itself has to clear the contract card (5).
+  const frame = ruleOf(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .map-frame');
+  assert.ok(Number(frame['z-index']) > 5, `the field frame rises above the contract card (${frame['z-index']})`);
+  assert.ok(declares(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops', 'z-index', /^1[0-9]$/),
+    'the menu stays on top inside the frame');
+  assert.ok(declares(field, '#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops-panel', 'z-index', /^1[0-9]$/),
+    'and so does its panel');
+});

@@ -78,6 +78,13 @@ const fs = require('node:fs');
         document.querySelector('#soloObjectiveHint').textContent='Wave 1 of 5 · hold the line, the boss comes with the last wave.';
         document.querySelector('#soloObjectiveProgress').textContent='0 / 5';
       });
+      // One language flag per screen. The field has its own switch; the global picker
+      // in the top-right corner must not appear as a second one.
+      const flags=await page.evaluate(()=>({
+        global:!!document.querySelector('.language-picker')?.checkVisibility?.(),
+        field:!!document.querySelector('.field-language-flag')?.checkVisibility?.(),
+      }));
+      assert.notEqual(flags.global,flags.field,`${name}: exactly one language switch on the training field (${JSON.stringify(flags)})`);
       const training=await page.evaluate(()=>{
         const battle=document.querySelector('.battle').getBoundingClientRect();
         const card=document.querySelector('#soloObjective').getBoundingClientRect();
@@ -105,6 +112,23 @@ const fs = require('node:fs');
       assert.ok(Math.abs(after.y-before.y)<1,`${name}: the coach card does not move when the page scrolls (${Math.round(before.y)} -> ${Math.round(after.y)})`);
       assert.ok(before.y+before.height<=height+1,`${name}: the coach card sits above the action bar`);
       await page.screenshot({path:`browser-artifacts/${name}-training-coach.png`,fullPage:false});
+      // An open field menu must cover the contract card, not be covered by it.
+      await page.evaluate(()=>{
+        document.querySelector('#firstRunCoach').hidden=true;
+        document.querySelector('#soloObjective').hidden=false;
+        document.querySelector('#fieldOps').open=true;
+      });
+      await page.waitForTimeout(50);
+      const menuOnTop=await page.evaluate(()=>{
+        const menu=document.querySelector('.field-ops-panel'),card=document.getElementById('soloObjective');
+        const box=menu.getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+30));
+        return {onTop:!!hit&&(menu===hit||menu.contains(hit)),hit:hit?hit.id||hit.className:null,
+          cardOver:card.getBoundingClientRect().top<box.bottom};
+      });
+      assert.equal(menuOnTop.onTop,true,`${name}: the open field menu is on top of the contract card (hit ${menuOnTop.hit})`);
+      await page.screenshot({path:`browser-artifacts/${name}-training-menu.png`,fullPage:false});
+      await page.evaluate(()=>{document.querySelector('#fieldOps').open=false;});
       await page.evaluate(()=>{
         document.querySelector('#firstRunCoach').hidden=true;
         document.querySelector('#soloObjective').hidden=true;

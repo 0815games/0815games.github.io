@@ -104,7 +104,14 @@
  #gameView .map-viewport canvas{height:auto;width:min(100%,calc(100dvh * 1.777778));max-width:none;flex:none}
  #gameView .map-viewport canvas[data-lanes="versus"]{width:min(100%,calc(100dvh * .872727))}
 }
+/* One language switch per screen. The field carries its own flag (#fieldLanguage,
+   left of the menu), so the global picker in the top-right corner is hidden here -
+   including on the training field, where both were visible at once and the right-hand
+   flag sat half under the menu.
+   On training the field flag is NOT available (the field menu hides it with the rest
+   of the field chrome), so the global picker stays: exactly one switch either way. */
 body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])))>.language-picker{display:none}
+#gameView #gameWorkspace[data-screen="training"] .field-language-flag{display:none}
 @media(min-width:851px){
  #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
  #gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
@@ -212,3 +219,26 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
 #gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]){
   top:calc(var(--hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);
 }
+
+/* ---------------------------------------------------------------------------
+   An open field menu owns the screen.
+
+   The menu is a popover over live gameplay. Everything else on the field is a small
+   overlay with its own z-index - the contract card at 5, the status row at 3, the
+   language flag at 10 - so the contract card was painted ON TOP of the menu, over
+   "COMMAND CENTER" and "How to play", and the menu read as if a permanent overlay
+   were stuck in front of it.
+
+   Why `:has()` and not a class: this is a pure paint order question, so it belongs in
+   the stylesheet, and the stylesheet can ask the `<details>` itself. No JavaScript has
+   to remember to set an attribute, and the rule holds in the static layout smoke,
+   where scripts are blocked.
+
+   Two levels, because `.map-frame` is `isolation:isolate`: the menu lives inside the
+   frame, so raising `.field-ops` alone can never overtake the contract card, a sibling
+   of the frame. The whole frame rises above the card, and inside the frame the menu's
+   own z-index already beats the status row (3) and the flag (10).
+   --------------------------------------------------------------------------- */
+#gameView #gameWorkspace:has(#fieldOps[open]) .map-frame{z-index:6}
+#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops{z-index:14}
+#gameView #gameWorkspace:has(#fieldOps[open]) .field-ops-panel{z-index:14}
