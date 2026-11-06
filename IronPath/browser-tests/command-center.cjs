@@ -9,6 +9,7 @@ const assert = require('node:assert/strict');
     // Pretend the language was already chosen: the first-run gate is tested on its own.
     await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
     const page = await context.newPage(), errors=[];
+    const visible=selector=>page.locator(selector).isVisible();
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));
     const mocks = {
@@ -69,7 +70,7 @@ const assert = require('node:assert/strict');
     await page.locator('#gameConfirmAccept').click();
     await page.locator('#runResults').waitFor({state:'visible'});
     await page.locator('#runResults').evaluate(dialog=>dialog.close());
-    assert.equal(await visible('#commandCenter'),true,'the debrief returns to the Command Center');
+    assert.equal(await page.locator('#commandCenter').isVisible(),true,'the debrief returns to the Command Center');
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'no card over the Command Center');
     await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
@@ -77,7 +78,6 @@ const assert = require('node:assert/strict');
     // Exercise the standalone workshop with an in-memory transport; no account writes.
     await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun5')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
     await page.locator('#workshopTestRoot').getByRole('button',{name:'PREPARE WORKSHOP'}).click();assert.match(await page.locator('#workshopTestRoot').innerText(),/Field Scope/);const boots=page.locator('#workshopTestRoot .workshop-item').filter({hasText:'Field Boots'});await boots.getByRole('button',{name:'CRAFT'}).click();assert.match(await page.locator('#workshopTestRoot .workshop-wallet').innerText(),/50 scrap/);await boots.getByRole('button',{name:'EQUIP',exact:true}).click();assert.match(await page.locator('#workshopTestRoot .workshop-slot-grid').innerText(),/Field Boots/);assert.equal(await page.locator('#workshopTestRoot').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));window.__workshopTest.render();});assert.match(await page.locator('#workshopTestRoot').innerText(),/Feldstiefel/,'the workshop follows the page language; if this fails, the test is likely importing a SECOND language.mjs instance with a stale cache-bust tag');await page.evaluate(()=>{window.__workshopTest.close();const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});
-    const visible=selector=>page.locator(selector).isVisible();
     // Practice opens a real modal in front of the tour, so the briefing is only
     // reachable again once that dialog is closed (which also ends the sandbox).
     const closePractice=async()=>{
