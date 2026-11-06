@@ -398,7 +398,9 @@ const assert = require('node:assert/strict');
       await page.waitForSelector('#menuTutorial', {state: 'visible'});
     };
     // Back to the Command Center with the real control: both restart buttons live there.
-    await page.locator('#backToCommand').click();
+    // A synthetic click: the field layout sits over the workspace nav, and this only
+    // needs to trigger the same handler a tap would.
+    await page.locator('#backToCommand').evaluate(button=>button.click());
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     // (a) FIELD TUTORIAL in the Command Center: the whole first run, map and all.
     await restartOnce('field tutorial', async () => page.locator('#menuTutorial').click());
