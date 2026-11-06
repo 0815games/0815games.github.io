@@ -180,8 +180,15 @@ const assert = require('node:assert/strict');
     const openPad = async () => {
       const ring = await page.locator('#coachRing').boundingBox();
       assert.ok(ring && ring.width > 10, 'the card marks the pad it is asking about');
+      // DIAGNOSE: was liegt an dieser Stelle wirklich?
+      const geometry = await page.evaluate(([x, y]) => {
+        const hit = document.elementFromPoint(x, y);
+        const r = id => { const e = document.getElementById(id); const b = e.getBoundingClientRect(); return {x:Math.round(b.left),y:Math.round(b.top),w:Math.round(b.width),h:Math.round(b.height),hidden:e.hidden}; };
+        return {point:{x,y},hit:hit?`${hit.tagName}#${hit.id||''}.${hit.className||''}`:null,
+          ring:r('coachRing'),card:r('firstRunCoach'),canvas:r('game'),highlight:r('coachHighlight')};
+      }, [Math.round(ring.x + ring.width / 2), Math.round(ring.y + ring.height / 2)]);
+      assert.fail('DIAGNOSE ' + JSON.stringify(geometry));
       await page.mouse.click(ring.x + ring.width / 2, ring.y + ring.height / 2);
-      await page.locator('#radialMenu').waitFor({state: 'visible', timeout: 10000});
     };
     await openPad();
     await page.locator('.sheet-option').first().click();
