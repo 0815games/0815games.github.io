@@ -141,11 +141,35 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there while the field runs');
     assert.ok(tickBefore!==undefined&&tickAfter!==undefined,'the headcount is rendered');
     // Playing the card's own instructions dismisses it.
+    // Reported: "Schließen des Tutorials war die einzige Option zu bauen." Opening the
+    // tower sheet has to be possible with the card up, and the card must get out of
+    // the way instead of sitting on the sheet.
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
     assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
+    // Open the sheet a pad offers, and prove the card is not covering it.
+    const sheetCheck=await page.evaluate(()=>{
+      const card=document.getElementById('firstRunCoach');
+      const sheet=document.getElementById('radialMenu');
+      const wasHidden=card.hidden;
+      sheet.hidden=false;
+      const cardNow=getComputedStyle(card).display;
+      const hit=(()=>{const b=sheet.getBoundingClientRect();return document.elementFromPoint(Math.round(b.left+b.width/2),Math.round(b.top+20));})();
+      sheet.hidden=true;
+      return {cardHidden:cardNow==='none',wasHidden,onSheet:!!hit&&sheet.contains(hit)};
+    });
+    assert.equal(sheetCheck.cardHidden,true,'the card steps aside while the tower sheet is open');
+    assert.equal(sheetCheck.onSheet,true,'and the sheet is not covered by anything');
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),false,'it comes back when the sheet closes');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
+    // Dismissing must not be the end of it: the field menu and the Command Center both
+    // replay the same seven cards. The old replay path opened the retired modal tour.
+    await page.locator('#fieldOps > summary').click();
+    await page.locator('#fieldCoachReplay').click();
+    await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/,'the replay starts at the first card');
+    await page.locator('#coachClose').click();
     // Back to the Command Center for the rest of the sweep. Ending a run opens the
     // debrief, which is modal, so close it before touching anything else.
     await page.locator('#endRun').click();

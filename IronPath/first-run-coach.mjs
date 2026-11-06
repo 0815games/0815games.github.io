@@ -175,6 +175,17 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
     // The last boss turning up raises the boss card, even if the player is
     // still on an earlier card: the run is about to end, and the hint matters.
     boss(){if(!open())return false;const target=COACH_STEPS.findIndex(s=>s.id==='boss');if(target<0||index>=target)return false;index=target;render();return true;},
+    // Walk the cards again on the live field, on request. `start()` deliberately
+    // refuses a soldier who already dismissed the card - that is what keeps the first
+    // run from nagging - but dismissing a hint must not be a one-way door, so the
+    // replay path ignores the seen marker. It does not clear it: the first run still
+    // stays finished for every automatic caller.
+    replay(id){
+      if(!id||!root)return false;
+      if(root.hidden)highlight.hide();
+      activeUser=id;index=0;announced=new Set();render();onVisibilityChange(true);
+      return true;
+    },
     stop(){hide();index=-1;activeUser=null;},
     refreshLanguage(){if(open())render();},
     // The engine calls this when the field moved under the ring (pan, zoom, rotate)

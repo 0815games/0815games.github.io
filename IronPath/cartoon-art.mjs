@@ -44,15 +44,35 @@ function fieldZone(ctx,path,state,theme){
 function brokenIce(ctx,path,state,theme){if(theme!=='arctic'||!state.iceBroken||path.length!==10)return;roadZone(ctx,path[4],path[5],{color:'#335e6d',edge:'#d2eff0',label:tr('BROKEN ICE'),detail:'ice'});}
 // Sprite images are strictly visual and load on demand; vector art remains a
 // fallback for offline loading failures and non-browser renderers.
+//
+// Why `notify`: this function is asked for an image on EVERY frame, and the first
+// frames run before the PNG has finished decoding. Returning null then is correct -
+// the vector fallback is drawn instead. But nothing used to tell the loop that the
+// image had arrived: the terrain layer caches `art` vs `fallback` in its revision
+// key, the sprites did not, so a soldier drawn during the first 50 ms of the match
+// stayed a vector "YOU" marker for the whole run, and an enemy stayed an "I". On a
+// phone the images decode slowly enough that this happened every time. `notify` is
+// the renderer's "something you were drawing has changed" hook; it is optional, so a
+// headless renderer without images still works.
 const spriteImages=new Map();
-function sprite(ctx,name){
+function sprite(ctx,name,notify){
   const doc=ctx.canvas?.ownerDocument;if(!doc?.createElement)return null;
-  if(!spriteImages.has(name)){const image=doc.createElement('img'),entry={image,ready:false};spriteImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}-sprite.png`;}
+  if(!spriteImages.has(name)){
+    const image=doc.createElement('img'),entry={image,ready:false};
+    spriteImages.set(name,entry);
+    image.onload=()=>{entry.ready=true;try{notify?.();}catch{/* a redraw hint must never throw */}};
+    image.onerror=()=>{entry.failed=true;};
+    image.src=`assets/${name}-sprite.png`;
+  }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
-function bunker(ctx,state){
+// The same "draw now, refine when the image lands" contract the terrain already
+// follows. Images that failed to load stay on the vector fallback instead of asking
+// for a redraw every frame.
+export function spritesPending(){for(const entry of spriteImages.values())if(!entry.ready&&!entry.failed)return true;return false;}
+function bunker(ctx,state,notify){
   const damage=state.hp/Math.max(1,state.maxHp||100),plating=state.plating||0;
-  const artwork=sprite(ctx,'bunker');
+  const artwork=sprite(ctx,'bunker',notify);
   if(artwork)ctx.drawImage(artwork,855,365,105,62);
   else fallbackMarker(ctx,908,400,'HQ','#e3cc92',33,22);
   if(plating>0){line(ctx,[[876,407],[940,407]],'#e5c883',3);for(let i=0;i<plating;i++)oval(ctx,887+i*8,412,2,2,'#f4d894',null);}
@@ -60,7 +80,7 @@ function bunker(ctx,state){
   if(damage<.35){line(ctx,[[928,390],[923,385],[926,379]],'#293a30',3);line(ctx,[[878,405],[884,410],[879,416]],'#293a30',2);oval(ctx,894,384,5,3,'#554d3d',null);}
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.fillText('BUNKER',849,350);
 }
-function pad(ctx,p,tower,selected,types){
+function pad(ctx,p,tower,selected,types,notify){
   const x=p.x,y=p.y;
   shape(ctx,[[x-23,y-11],[x-15,y-20],[x+15,y-20],[x+23,y-11],[x+23,y+11],[x+15,y+20],[x-15,y+20],[x-23,y+11]],tower?'#263b31':'#213a33',selected?'#b5d6ca':'#819f92',selected?2.5:1.5);
   if(!tower){line(ctx,[[x-12,y-8],[x+12,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
@@ -69,14 +89,14 @@ function pad(ctx,p,tower,selected,types){
   if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,26,23,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
     ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-25);ctx.textAlign='start';}
   // Preserve vector rendering only as an asset-loading fallback.
-  const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type]);
+  const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type],notify);
   if(artwork)ctx.drawImage(artwork,x-24,y-25,48,40);
   else fallbackMarker(ctx,x,y-3,['MG','C','AA','S'][tower.type],types[tower.type].color,16,14);
   oval(ctx,x-15,y+13,7,7,'#263e30','#f1dfaa',1);ctx.fillStyle='#f6e9c6';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(['M','C','F','S'][tower.type],x-15,y+16);
   oval(ctx,x+15,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+15,y+17);ctx.textAlign='start';
 }
-function soldier(ctx,p,own,pose={}){
-  const x=p.x,y=p.y,artwork=sprite(ctx,'hero');
+function soldier(ctx,p,own,pose={},notify){
+  const x=p.x,y=p.y,artwork=sprite(ctx,'hero',notify);
   oval(ctx,x,y+13,13,5,own?'#e5c783':'#87c4ce',null);
   if(pose.moving){
     // Small alternating boot scuffs communicate motion without changing hitboxes.
@@ -90,7 +110,7 @@ function soldier(ctx,p,own,pose={}){
   ctx.restore();
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||tr('HERO'),x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||tr('HERO'),x,y+29);ctx.textAlign='start';
 }
-function enemy(ctx,e,reducedMotion){
+function enemy(ctx,e,reducedMotion,notify){
   const x=e.x,y=e.y;
   if(e.boss){const phase=bossPhase(e);if(phase!=='normal'){
     const radius=phase==='rally'?45:phase==='shield'?31:28;
@@ -102,7 +122,7 @@ function enemy(ctx,e,reducedMotion){
   }}
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
   oval(ctx,x,y+10,11,4,'#8c8264',null);
-  const name=e.boss?(e.boss==='bossBomber'?'boss-plane':'boss-heavy'):e.kind==='tank'?'tank':e.kind==='plane'?'plane':e.kind==='infantry'||e.kind==='runner'?'infantry':null,artwork=name&&sprite(ctx,name);
+  const name=e.boss?(e.boss==='bossBomber'?'boss-plane':'boss-heavy'):e.kind==='tank'?'tank':e.kind==='plane'?'plane':e.kind==='infantry'||e.kind==='runner'?'infantry':null,artwork=name&&sprite(ctx,name,notify);
   if(!artwork)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
   else if(name==='tank'||name==='boss-heavy')ctx.drawImage(artwork,x-(e.boss?25:17),y-(e.boss?18:12),e.boss?50:34,e.boss?32:20);
   else if(name==='plane'||name==='boss-plane')ctx.drawImage(artwork,x-(e.boss?27:17),y-(e.boss?20:14),e.boss?54:34,e.boss?40:27);
@@ -131,7 +151,7 @@ function getGroundImage(doc,theme){
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1}={}){
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
@@ -141,18 +161,18 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
     for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);
   }
   if(!doc?.createElement){paint(ctx);return;}
-  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}`;let cached=variants.get(key);
+  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state);ctx.restore();
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,onSpritesReady=null}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state,onSpritesReady);ctx.restore();
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText(tr('ENEMY ENTRY'),15,75);if(paths.length>1)ctx.fillText(tr('ENEMY ENTRY'),15,height-75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
-  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types));
-  if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false){if(p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id]);}
+  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
+  if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false){if(p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }
@@ -167,7 +187,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     }
     if(e.boss==='bossBomber'&&e.bossFlash>0&&!reducedMotion)burst(ctx,bunkerPosition.x,bunkerPosition.y,20+(1-e.bossFlash)*12,'#ef9e68');
     if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
-    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}enemy(ctx,e,reducedMotion);ctx.restore();
+    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}enemy(ctx,e,reducedMotion,onSpritesReady);ctx.restore();
   }
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
   if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');ctx.restore();}}
