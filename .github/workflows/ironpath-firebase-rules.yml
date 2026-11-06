@@ -212,7 +212,11 @@ jobs:
           node-version: '22'
       - name: Install pinned browser test tooling
         run: |
-          if { npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1 && "$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright" install --with-deps chromium; } > /tmp/browser-install.log 2>&1; then
+          # The browser download is the only step that has ever hung: a slow mirror
+          # eats the job's whole 10 minutes and the run reports "exceeded the maximum
+          # execution time" with no annotation at all. Cap it so the failure names
+          # the download instead of the job limit.
+          if { timeout 300 npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1 && timeout 420 "$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright" install --with-deps chromium; } > /tmp/browser-install.log 2>&1; then
             cat /tmp/browser-install.log
           else
             cat /tmp/browser-install.log
