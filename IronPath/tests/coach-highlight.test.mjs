@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {padRing, elementRing, arrowBetween} from '../coach-highlight.mjs';
+import {padRing, elementRing, arrowBetween, createCoachHighlight} from '../coach-highlight.mjs';
 import {COACH_STEPS} from '../first-run-coach.mjs';
 
 const css = readFileSync(new URL('../interface-redesign.css', import.meta.url), 'utf8');
@@ -74,4 +74,32 @@ test('every element a card points at actually exists', () => {
     if (!selector) continue;
     assert.ok(html.includes(`id="${selector.slice(1)}"`), `${step.id} points at ${selector}, which must exist`);
   }
+});
+
+// The bug this test exists for: `line.hidden=false` does nothing on an SVG element.
+// `hidden` is an IDL property on HTML elements only; on SVG it is an expando, so the
+// attribute stays and the arrow never appears - while every unit test that checked
+// `.hidden` on a real node passed. The stub below behaves like a real <line>.
+test('the arrow is revealed by attribute, because SVG has no hidden property', () => {
+  const attributes = new Set(['hidden']);
+  const svgLine = {
+    id: 'coachArrow', style: {},
+    setAttribute: (name) => attributes.add(name),
+    removeAttribute: (name) => attributes.delete(name),
+    hasAttribute: (name) => attributes.has(name),
+    getAttribute: () => null,
+  };
+  const htmlNode = (id) => ({
+    id, hidden: false, style: {}, setAttribute() {}, removeAttribute() {},
+    getBoundingClientRect: () => ({left: 0, top: 0, width: 100, height: 50}),
+  });
+  const nodes = {
+    coachHighlight: htmlNode('layer'), coachRing: htmlNode('ring'),
+    coachArrow: svgLine, firstRunCoach: htmlNode('card'), game: htmlNode('canvas'),
+  };
+  const highlight = createCoachHighlight({document: {getElementById: (id) => nodes[id] ?? null}, window: {}});
+  highlight.markPad({x: 100, y: 100});
+  assert.equal(attributes.has('hidden'), false, 'the line is actually revealed');
+  highlight.hide();
+  assert.equal(attributes.has('hidden'), true, 'and hidden again by attribute');
 });

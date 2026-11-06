@@ -43,6 +43,16 @@ export function arrowBetween(from,to){
  return {x1:from.x,y1:from.y,x2:to.x,y2:to.y};
 }
 
+// SVG elements do NOT have the `hidden` IDL property: setting `line.hidden=false` only
+// creates an expando and leaves the attribute in place, so the arrow stayed invisible
+// for ever while every test using `hidden` on an HTML node passed. HTML nodes reflect
+// the property and the attribute, so setting the attribute is correct for both.
+function setHidden(node,hidden){
+ if(!node)return;
+ if(hidden)node.setAttribute('hidden','');
+ else node.removeAttribute('hidden');
+}
+
 export function createCoachHighlight({document,window}){
  const layer=document.getElementById('coachHighlight');
  const ring=document.getElementById('coachRing');
@@ -51,13 +61,13 @@ export function createCoachHighlight({document,window}){
  const enabled=()=>!!layer&&!layer.hidden;
 
  function hide(){
-  if(layer)layer.hidden=true;
-  if(ring)ring.hidden=true;
-  if(arrow)arrow.hidden=true;
+  setHidden(layer,true);
+  setHidden(ring,true);
+  setHidden(arrow,true);
  }
 
  function show(){
-  if(layer)layer.hidden=false;
+  setHidden(layer,false);
  }
 
  // Ring around a battlefield pad, arrow from the card's top edge to the ring.
@@ -83,7 +93,7 @@ export function createCoachHighlight({document,window}){
  }
 
  function draw(target,{diameter}){
-  ring.hidden=false;
+  setHidden(ring,false);
   ring.style.width=`${Math.round(diameter)}px`;
   ring.style.height=`${Math.round(diameter)}px`;
   ring.style.left=`${Math.round(target.x-diameter/2)}px`;
@@ -93,7 +103,7 @@ export function createCoachHighlight({document,window}){
    const cardBox=card.getBoundingClientRect();
    const line=arrowBetween({x:cardBox.left+cardBox.width/2,y:cardBox.top},{x:target.x,y:target.y});
    if(line){
-    arrow.hidden=false;
+    setHidden(arrow,false);
     arrow.setAttribute('x1',String(Math.round(line.x1)));
     arrow.setAttribute('y1',String(Math.round(line.y1)));
     arrow.setAttribute('x2',String(Math.round(line.x2)));
