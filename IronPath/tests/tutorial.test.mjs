@@ -63,7 +63,7 @@ tour.startIfNeeded('outside');const dialog=el('tutorialDialog'),outside={target:
 tour.replay('first');el('tutorialDialog').oncancel({preventDefault(){}});assert.equal(tour.isOpen(),false);assert.ok(changes.includes(true)&&changes.includes(false));
 const bad=createTutorial({document,storage:{getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}}});bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),true);el('tutorialSkip').onclick();bad.startIfNeeded('storage-blocked');assert.equal(bad.isOpen(),false);
 console.log('Interactive tutorial, safe practice and completion tests passed.');
-const {setupLanguage}=await import('../language.mjs?v=20261116-firstrunde1');
+const {setupLanguage}=await import('../language.mjs?v=20261118-settings1');
 const selector={value:'',addEventListener(_type,fn){this.change=fn;}},languageDoc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:{},querySelectorAll:()=>[]};setupLanguage({document:languageDoc,storage:{getItem:()=> 'de',setItem(){}}});
 tour=createTutorial({document,storage,onVisibilityChange:x=>changes.push(x)});tour.replay('first');assert.equal(el('tutorialTitle').textContent,'Willkommen, Soldat');assert.equal(el('tutorialStep').textContent,`FELDEINWEISUNG · 1 / ${TUTORIAL_STEPS.length}`,'the step count follows the real tour');// Jump straight to the Skills practice step, which the German run exercises.
 for(let i=0;i<TUTORIAL_STEPS.findIndex(step=>step.practice==='skills');i++)el('tutorialNext').onclick();assert.equal(el('tutorialTitle').textContent,'Übe das Fähigkeitenmenü');assert.equal(el('tutorialNext').disabled,true);

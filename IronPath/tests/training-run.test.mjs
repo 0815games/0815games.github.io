@@ -139,7 +139,11 @@ test('an account from the previous edition plays the new field, not the old tour
  const game = readFileSync(new URL('../game.js', import.meta.url), 'utf8');
  // The first run must be decided by the training marker alone. If a tutorial call
  // sits on the same path as the field, the modal is back in front of new soldiers.
- const start = game.slice(game.indexOf('function startFirstRun()'), game.indexOf('function startTrainingRun()'));
+ // The closing parenthesis is not part of the search: `startTrainingRun` takes an
+ // options object now (the Settings replay deploys it with the rewards switched off),
+ // and a test that pins the exact signature fails for a reason that has nothing to do
+ // with what it checks.
+ const start = game.slice(game.indexOf('function startFirstRun()'), game.indexOf('function startTrainingRun'));
  assert.match(start, /if\(!trainingSeen\(id,tutorialStorage\)\)\{/);
  assert.match(start, /return startTrainingRun\(\)/);
  assert.equal((start.match(/tutorial\./g) ?? []).length, 1, 'the tour is only the fallback after the field');

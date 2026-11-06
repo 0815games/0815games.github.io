@@ -1,4 +1,8 @@
 import {germanWorkshop} from './localization-workshop-de.mjs?v=20261112-firstrun5';
+// The Settings dialog is where a player switches the language in the first place, so
+// its copy cannot fall back to English. Own file, asked first, for the same reason as
+// the first-run dictionary below.
+import {germanSettings} from './localization-settings-de.mjs?v=20261118-settings1';
 // The first run was the last translated part of the game and the first one a new
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated
@@ -84,7 +88,7 @@ const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
   if(typeof text!=='string')return String(text??'');
-  const localized=active==='de'?(germanFirstRun[text]??germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
+  const localized=active==='de'?(germanSettings[text]??germanFirstRun[text]??germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
   return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){

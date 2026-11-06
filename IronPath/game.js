@@ -4,45 +4,54 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261116-firstrunde1';
+import {translateText as tr} from './language.mjs?v=20261118-settings1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun5';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261118-settings1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261105-prestige1';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261105-workshop3';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-battle2';
-import {createBattleSound} from './battle-sound.mjs?v=20261102-battle2';
+import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
 import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261117-firstrunde1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261118-settings1';
 import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261117-firstrunde1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261118-settings1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
   function setLogicalHeight(height){if(logicalHeight!==height){logicalHeight=height;canvas.height=Math.round(canvas.width*height/logicalWidth);}canvas.dataset.lanes=height===1100?'versus':'single';}
   function prepareCanvas(){const size=canvasResolution(logicalWidth,logicalHeight,canvas.getBoundingClientRect(),window.devicePixelRatio);if(canvas.width!==size.width)canvas.width=size.width;if(canvas.height!==size.height)canvas.height=size.height;ctx.setTransform(size.width/logicalWidth,0,0,size.height/logicalHeight,0,0);return size.width/logicalWidth;}
-  const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Reduced motion is either the operating system's wish or the player's own
+  // Graphics setting - the setting only ever makes it MORE reduced, never less, so a
+  // soldier who needs it for medical reasons is never overruled by a game default.
+  const systemReducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let graphicsReduced=!!reducedGraphics;
+  let reducedMotion=systemReducedMotion||graphicsReduced;
+  function applyGraphics(reduced){graphicsReduced=!!reduced;reducedMotion=systemReducedMotion||graphicsReduced;}
   const sound=createBattleSound(window.AudioContext||window.webkitAudioContext);let soundEnabled=false;
-  $('soundToggle').onclick=async()=>{soundEnabled=await sound.setEnabled(!soundEnabled);$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');$('soundToggle').setAttribute('aria-pressed',String(soundEnabled));if(soundEnabled)sound.play('clear');};
+  // The sound button inside the field briefing is the same switch the Settings dialog
+  // drives. Both read and write `soundEnabled`, so the two can never disagree.
+  function paintSound(){$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');$('soundToggle').setAttribute('aria-pressed',String(soundEnabled));}
+  $('soundToggle').onclick=async()=>{soundEnabled=await sound.setEnabled(!soundEnabled);paintSound();if(soundEnabled)sound.play('clear');};
   const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion();let lastSnapshotAt=0;
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
@@ -58,7 +67,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   ];
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.'});}
   const keys = new Set();
-  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false;
+  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false;
   let cinematic=null,radioTime=0,commandMenuOpen=false,missionBoardOpen=false;
   function closeCinematic(continueScene=true){if(!cinematic)return;const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
   function showCinematic(mission,kind,done=null,finishLabel=null){
@@ -599,15 +608,17 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       if(activeTraining&&state.ended&&!trainingDone&&state.endReason!=='retired'&&!state.endReason?.startsWith('training')){
        trainingDone=true;trainingBonusPaid=true;
        const xp=FIRST_RUN_DEFEAT_XP;
-       Promise.resolve(account.awardXP(xp,Math.max(1,state.completedWave||1))).catch(()=>{});
-       notice(()=>tr('Run over. {xp} XP for the attempt - the dog tag is yours anyway.',{xp}));
+       // A replay pays nothing: the first run can be restarted from Settings, and a
+       // reward that can be farmed by restarting the tutorial is not a reward.
+       if(trainingRewards)Promise.resolve(account.awardXP(xp,Math.max(1,state.completedWave||1))).catch(()=>{});
+       notice(()=>tr(trainingRewards?'Run over. {xp} XP for the attempt - the dog tag is yours anyway.':'Run over. This replay pays no XP - the first run already did.',{xp}));
       }
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
        // The five waves pay 250 XP; the contract tops that up to 450 so the first
        // skill point is guaranteed with headroom. Credited once, with the last wave.
        const bonus=trainingBonusXP();
-       if(bonus>0&&state.completedWave>=TRAINING_WAVES&&!trainingBonusPaid)Promise.resolve(account.awardXP(bonus,state.completedWave)).catch(()=>{});
+       if(trainingRewards&&bonus>0&&state.completedWave>=TRAINING_WAVES&&!trainingBonusPaid)Promise.resolve(account.awardXP(bonus,state.completedWave)).catch(()=>{});
        trainingBonusPaid=true;
        notice(()=>tr('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:trainingXP()}));
       }
@@ -695,8 +706,12 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // `trainingDone` is the win flag of the CURRENT run, not a "seen it" marker: it
   // used to block a second deployment after the debrief, which left a player who
   // chose "endless" from the results screen with a Deploy button that did nothing.
-  function startTrainingRun(){
-   if(activeTraining)return false;
+  // `restart` is the replay path: it is allowed to replace a run that is already the
+  // training contract. Without it the second tap on "play the first run again" did
+  // nothing, because `activeTraining` was still true from the first replay.
+  function startTrainingRun({rewards=true,restart=false}={}){
+   if(activeTraining&&!restart)return false;
+   trainingRewards=rewards!==false;
    closeMenu();keys.clear();sendDirection();activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;trainingBonusPaid=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
    notice(()=>tr('Training contract: five waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
    // The welcome card waits for a field that is actually drawn: the card has no
@@ -710,7 +725,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
    return true;
   }
   async function chooseEndless(){const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
-  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.
@@ -722,6 +737,30 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // by player id. A no-op for anyone who already finished or skipped it.
   startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},
   startFirstRun,
+  // "Play the first run again" from Settings. This is the whole thing, not just the
+  // cards: the training contract's seen marker is cleared so `startFirstRun` deploys
+  // the shortened contract on the training map again, the coach's marker is cleared
+  // so the seven cards start at the first one, and the run pays no second reward.
+  //
+  // Deliberately NOT cleared: the ending marker (dog tag, equip, skills, workshop).
+  // Those steps write to the real profile - replaying them would hand out a second
+  // dog tag and a second free point, so a replay teaches the field, not the economy.
+  replayFirstRun:()=>{
+   const id=account.getUserId();
+   if(!id)return false;
+   forgetTrainingSeen(id,tutorialStorage);
+   coach.reset?.(id);
+   closeMenu();keys.clear();sendDirection();
+   return startTrainingRun({rewards:false,restart:true});
+  },
+  // The Settings dialog owns the controls, the game owns the effects. These two hooks
+  // are the whole contract: no second copy of "is the sound on" or "are effects off"
+  // exists outside this closure.
+  setSoundEnabled:async value=>{soundEnabled=await sound.setEnabled(!!value);paintSound();return soundEnabled;},
+  isSoundEnabled:()=>soundEnabled,
+  setVolume:value=>{sound.setVolume(value);return sound.getVolume();},
+  setReducedGraphics:applyGraphics,
+  isReducedGraphics:()=>reducedMotion,
    // The training contract is a real deployment, not a mock: six weakened waves
    // that pay level 2. Called once by the account after the first-run tutorial.
    startTrainingRun,

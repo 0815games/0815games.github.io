@@ -19,3 +19,22 @@ console.log('Cartoon drawing covers towers, enemies, players and bunker without 
 const big=getMap('four-front'),bigState=createMatch([p,q],big.id),bigBefore=structuredClone(bigState);calls.length=0;drawCartoonBattle(ctx,bigState,{...opts,path:big.path,paths:big.paths,pads:big.pads,width:big.width,height:big.height,bunkerPosition:big.bunker});assert.ok(calls.some(([name,x,y,w,h])=>name==='fillRect'&&x===0&&y===0&&w===1440&&h===720));assert.equal(calls.filter(([name,text])=>name==='fillText'&&text==='ENEMY ENTRY').length,2);assert.ok(calls.some(([name,x,y])=>name==='translate'&&x===480&&y===-40));assert.ok(calls.some(([name,x,y])=>name==='moveTo'&&x===0&&y===580));assert.deepEqual(bigState,bigBefore);
 // Prestige remains legible with reduced motion and does not mutate simulation state.
 const prestige=createMatch([p]);prestige.towers=[{id:1,type:0,pad:0,level:13,branch:0,ownerId:'a'}];const prestigeBefore=structuredClone(prestige);calls.length=0;drawCartoonBattle(ctx,prestige,{...opts,reducedMotion:true});assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='★2'));assert.ok(calls.some(([name,text])=>name==='fillText'&&text==='1'));assert.deepEqual(prestige,prestigeBefore);
+
+// The hero exists before the first wave. He used to be drawn only while
+// `state.wave>0`, which made the very first movement order invisible: the tap was
+// accepted, the simulation walked him there, and the field showed nothing moving.
+{
+  const field = createMatch([p]);
+  assert.equal(field.wave, 0, 'the match starts before wave one');
+  calls.length = 0;
+  drawCartoonBattle(ctx, field, { ...opts, soldierPoses: {} });
+  assert.ok(calls.some(([name, text]) => name === 'fillText' && text === 'YOU'),
+    'the soldier is on the field before the first wave, so a movement order is visible');
+  // And after the wave starts he is still there, exactly once.
+  field.wave = 1;
+  calls.length = 0;
+  drawCartoonBattle(ctx, field, { ...opts, soldierPoses: {} });
+  assert.equal(calls.filter(([name, text]) => name === 'fillText' && text === 'YOU').length, 1,
+    'one hero, not two, once the wave started');
+  console.log('The hero is drawn before the first wave, not from wave one.');
+}

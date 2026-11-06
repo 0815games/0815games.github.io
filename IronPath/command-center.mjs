@@ -1,4 +1,4 @@
-import {translate,translateText} from './language.mjs?v=20261116-firstrunde1';
+import {translate,translateText} from './language.mjs?v=20261118-settings1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261102-longterm1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261103-cinematic1';
@@ -21,7 +21,12 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  $('menuEndless').onclick=async()=>{if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};
  $('menuMultiplayer').onclick=()=>{showLobby();openParty();};
  $('returnOnline').onclick=()=>{if(getGame()?.isOnlineMatch?.()){closeParty();showBattle();}};
- $('menuTutorial').onclick=()=>getGame()?.showTutorial();$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
+ // "Field tutorial" is the whole first run, not a slideshow over whatever screen the
+ // player happens to be on. That was the report: on the Command Center it opened the
+ // old pop-up tour, because `showTutorial` prefers the live coach only when a match is
+ // running and otherwise falls back to the modal briefing. `replayFirstRun` deploys the
+ // training contract again - map, cards, guide - and pays nothing for the second run.
+ $('menuTutorial').onclick=()=>{const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
  function showMenu(){return navigateToMenu();}
  function showAfterEnd(){return navigateToMenu(true);}
  return {render,showBattle,showLobby,showMenu,showAfterEnd};

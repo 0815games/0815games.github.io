@@ -98,27 +98,22 @@
  #gameView .map-frame .dashboard strong{font-size:14px}
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .battle-head .eyebrow{display:none}
- #gameView #fieldFullscreen{display:none}
 }
 @media(min-width:851px){
  #gameView .map-viewport canvas{height:auto;width:min(100%,calc(100dvh * 1.777778));max-width:none;flex:none}
  #gameView .map-viewport canvas[data-lanes="versus"]{width:min(100%,calc(100dvh * .872727))}
 }
-/* One language switch per screen. The field carries its own flag (#fieldLanguage,
-   left of the menu), so the global picker in the top-right corner is hidden here -
-   including on the training field, where both were visible at once and the right-hand
-   flag sat half under the menu.
-   On training the field flag is NOT available (the field menu hides it with the rest
-   of the field chrome), so the global picker stays: exactly one switch either way. */
-body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])))>.language-picker{display:none}
-#gameView #gameWorkspace[data-screen="training"] .field-language-flag{display:none}
+/* There is exactly one language control in the product, and it lives in the Settings
+   dialog. Two permanent flags (one in the page corner, one beside the field menu) are
+   gone: both were settings, and on a phone both sat over the battlefield. Nothing has
+   to be hidden per screen any more, because nothing is in the corner. */
 @media(min-width:851px){
  #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
  #gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
 }
 
-/* Reserve room for the flag beside the field menu. */
-#gameView .map-frame .dashboard{right:120px;max-width:calc(100% - 128px)}
+/* No flag beside the field menu any more, so the status row gets the width back. */
+#gameView .map-frame .dashboard{right:16px;max-width:calc(100% - 24px)}
 /* Responsive battlefield overview and accessible direct zoom. */
 #gameView .map-viewport{align-items:safe center}
 #gameView .map-viewport canvas{margin:auto;flex:none}

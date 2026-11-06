@@ -129,7 +129,10 @@ test('the dictionary is registered before the other German files can shadow it',
   assert.match(language, /import \{germanFirstRun\} from '\.\/localization-firstrun-de\.mjs\?v=/,
     'the first-run dictionary is imported');
   const chain = language.slice(language.indexOf("active==='de'?"), language.indexOf("active==='de'?") + 400);
-  assert.match(chain, /^active==='de'\?\(germanFirstRun\[text\]\?\?/, 'and asked first');
+  // The Settings dictionary sits in front of it: the dialog that switches the language
+  // must never fall back to English. The first-run dictionary is still asked before
+  // every generic file, which is what this test is actually about.
+  assert.match(chain, /^active==='de'\?\(germanSettings\[text\]\?\?germanFirstRun\[text\]\?\?/, 'and asked first');
 });
 
 test('the German strings keep the house style', async () => {
