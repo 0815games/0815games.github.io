@@ -73,6 +73,8 @@ const fs = require('node:fs');
         // Centre of the field, as game.js would place it for a pad there.
         menu.style.left=Math.round(pad.left+pad.width/2)+'px';
         menu.style.top=Math.round(pad.top+pad.height/2)+'px';
+        // Build mode is what game.js sets for an empty pad; the sprites hang off it.
+        menu.dataset.mode='build';
         menu.style.setProperty('--ring-radius','96px');
         menu.style.setProperty('--ring-size','78px');
         menu.hidden=false;
