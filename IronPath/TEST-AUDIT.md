@@ -1,6 +1,8 @@
 # Test-Audit — sind 152 Dateien / 453 Tests noch angemessen?
 
-Stand: `main` @ `174c285` · alle Zahlen hier gemessen, nicht geschätzt.
+Stand der Analyse: `main` @ `174c285` · alle Zahlen hier gemessen, nicht geschätzt.
+Umgesetzt in den Commits `6430285`, `ba60d11`, `35f1006` · **Ergebnis: 141 Dateien / 448 Tests.**
+
 Reproduzieren: `node --test IronPath/tests/*.test.mjs`
 
 ---
@@ -166,3 +168,29 @@ Ich würde 1–4 in *einem* Commit machen und 5 getrennt, damit der Diff prüfba
 - `server/test/*.mjs` (282 Zeilen, eigener CI-Schritt) und `stress-tests/`.
 - Die offenen Produktpunkte (vier Klassenbeschreibungen nirgends sichtbar, fünf Pfade vs. „four
   paths" im Text) — das sind Feature-Lücken, keine Testfragen.
+
+---
+
+## 10. Was davon umgesetzt ist
+
+| Schritt | Zustand | Ergebnis |
+|---|---|---|
+| 1. Tote Tests löschen | **erledigt** | `controls-stage1` (die beiden `confirmation`-Fälle wanderten vorher nach `confirmation-race`), `tree-zoom`, `workshop-economy` gelöscht, dazu die Module `drag-tree.mjs` und `workshop-economy.mjs` |
+| 2. Gruppen zusammenlegen | **erledigt** | 6 Gruppen, 152 → 141 Dateien, alle 385 Assertions erhalten |
+| 3. Drei Zusicherungen ergänzen | **erledigt** | `TOWER_COSTS`, `DEFAULT_BUILD`, `FIRST_RUN_DEFEAT_XP` — jede durch die Mutation geprüft, die sie gefunden hat |
+| 4. Cache-Token-Pins | **erledigt** | Assertions prüfen das Muster statt des Werts (Token fehlt → rot, Token gebumpt → grün); die 4 Test-Importe leiten den Token über `tests/production-module.mjs` aus `game.js` ab |
+| 5. `test()`-Umhüllung | **erledigt für die 10 größten** | 60 nackte Dateien → 52; die zusammengelegten Dateien melden je Herkunftsteil ein Ergebnis, deshalb **448** Tests statt 441 |
+
+**Was beim Umsetzen beinahe schiefging** (steht hier, weil es für den nächsten Umbau zählt):
+
+1. Ein naiver Umbenenner hat `p('a', …)` in `p('expandedA', …)` verwandelt — er traf
+   String-Literale. Gelöst ohne jeden Rename: jeder Herkunftsteil bekommt einen eigenen
+   Blockscope, damit kollidiert nichts.
+2. `git checkout -- <datei>` nahm eine **noch nicht committete** Zusicherung (`DEFAULT_BUILD`)
+   mit, als eine fehlgeschlagene Umhüllung zurückgesetzt werden musste. Aufgefallen ist das nur,
+   weil die Mutation danach erneut lief — nicht am Diff.
+3. Die 4 Token-Importe sind **nicht** kosmetisch: `language.mjs` hält die aktive Sprache, ein
+   eigener Token hätte eine unkonfigurierte Kopie erzeugt. Deshalb Ableitung statt Marker.
+
+**Bewusst offen gelassen:** die 52 noch nackten Dateien (klein genug, dass es jetzt Aufwand ohne
+Gewinn wäre), der Browser-Job, `server/test/*.mjs` und `stress-tests/`.
