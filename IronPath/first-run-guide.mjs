@@ -23,7 +23,7 @@
 // German. Writing the raw strings to the screen was a real bug - the guide was the
 // one part of the first run with no German at all, because nobody ever asked for a
 // translation.
-import {translateText as tr} from './language.mjs?v=20261116-firstrunde1';
+import {translateText as tr} from './language.mjs?v=20261118-settings1';
 
 export const STEPS = Object.freeze([
   Object.freeze({
@@ -78,6 +78,15 @@ export function guideSeen(id, storage) {
   if (!id) return false;
   if (memory.has(id)) return true;
   try { return storage?.getItem(keyFor(id)) === 'done'; } catch { return false; }
+}
+
+// Only the Settings replay calls this: the four cards after the match are marked as
+// seen per soldier, and a replay has to start at the first one again.
+export function forgetGuideSeen(id, storage) {
+  if (!id) return false;
+  memory.delete(id);
+  try { storage?.removeItem?.(keyFor(id)); } catch { /* the session copy is gone either way */ }
+  return true;
 }
 
 export function markGuideSeen(id, storage) {

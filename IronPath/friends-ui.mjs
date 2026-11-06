@@ -1,7 +1,7 @@
 import {loadFriendStats} from './friend-stats.mjs?v=20261105-prestige1';
 import {renderFriendIndicators} from './friend-indicator.mjs?v=20261104-friendbadge1';
 import {createFriendPresence} from './friend-presence.mjs?v=20261104-presence1';
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261116-firstrunde1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261118-settings1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createSocialNotifications} from './social-notifications.mjs?v=20261117-firstrunde1';
 import {createCoopInvites} from './coop-invites.mjs?v=20261104-invites1';

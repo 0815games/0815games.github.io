@@ -1,4 +1,4 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261116-firstrunde1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261118-settings1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261117-firstrunde1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
@@ -172,7 +172,12 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
-  if(state.wave>0)for(const p of Object.values(state.players))if(p.active!==false){if(p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);}
+  // The soldier is drawn from the first frame, not from wave one. He used to appear
+  // only while `state.wave>0`, and since the movement order itself was accepted
+  // before the first deploy (the simulation walks him there), the hero moved
+  // invisibly: the newest player tapped the ground, got "Hero moving to position",
+  // and watched nothing happen. A hero you cannot see is a hero you cannot command.
+  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }

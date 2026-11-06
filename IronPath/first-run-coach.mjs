@@ -15,7 +15,7 @@
 //
 // Copy is one sentence per card. Pictures belong to the reward popups, not to the
 // card that has to keep the field free.
-import {translateText as tr} from './language.mjs?v=20261116-firstrunde1';
+import {translateText as tr} from './language.mjs?v=20261118-settings1';
 import {createCoachHighlight} from './coach-highlight.mjs?v=20261112-coachptr1';
 
 // `when` is the engine event that finishes the card; `target` is what the pointer
@@ -187,6 +187,15 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
       return true;
     },
     stop(){hide();index=-1;activeUser=null;},
+    // Forget that this soldier has seen the coaching. Only the Settings replay calls
+    // this: every automatic path (`start`) treats the marker as permanent, which is
+    // what keeps the cards from nagging after they were dismissed.
+    reset(id){
+      if(!id)return false;
+      memory.delete(id);
+      try{storage?.removeItem?.(keyFor(id));}catch{/* the session copy is gone either way */}
+      return true;
+    },
     refreshLanguage(){if(open())render();},
     // The engine calls this when the field moved under the ring (pan, zoom, rotate)
     // or when the card's target changed without a new card.

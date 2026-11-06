@@ -128,13 +128,21 @@ const fs = require('node:fs');
         document.querySelector('#soloObjectiveHint').textContent='Wave 1 of 5 · hold the line, the boss comes with the last wave.';
         document.querySelector('#soloObjectiveProgress').textContent='0 / 5';
       });
-      // One language flag per screen. The field has its own switch; the global picker
-      // in the top-right corner must not appear as a second one.
+      // No language flag on the field at all any more. Both permanent switches are
+      // gone - language and fullscreen are settings now, reached from the menu - so the
+      // corner that used to hold them belongs to the battlefield. This replaces the old
+      // "exactly one of the two flags" check: the answer is now zero.
       const flags=await page.evaluate(()=>({
         global:!!document.querySelector('.language-picker')?.checkVisibility?.(),
         field:!!document.querySelector('.field-language-flag')?.checkVisibility?.(),
+        corner:!!document.querySelector('#fullscreenToggle')?.checkVisibility?.(),
       }));
-      assert.notEqual(flags.global,flags.field,`${name}: exactly one language switch on the training field (${JSON.stringify(flags)})`);
+      assert.deepEqual(flags,{global:false,field:false,corner:false},`${name}: nothing from Settings floats over the field (${JSON.stringify(flags)})`);
+      const settingsOnly=await page.evaluate(()=>({
+        selects:document.querySelectorAll('#languageSelect').length,
+        inDialog:!!document.querySelector('#settingsDialog #languageSelect'),
+      }));
+      assert.deepEqual(settingsOnly,{selects:1,inDialog:true},`${name}: exactly one language control, inside Settings`);
       const training=await page.evaluate(()=>{
         const battle=document.querySelector('.battle').getBoundingClientRect();
         const card=document.querySelector('#soloObjective').getBoundingClientRect();

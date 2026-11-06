@@ -123,3 +123,11 @@ export function markTrainingSeen(id,storage){
  trainingMemory.add(id);
  try{storage?.setItem(`${TRAINING_KEY}:${id}`,'done');}catch{/* Continue in this session if storage is unavailable. */}
 }
+// Only the Settings replay calls this. Every automatic path reads `trainingSeen`, which
+// is what keeps the contract from being offered twice on its own.
+export function forgetTrainingSeen(id,storage){
+ if(!id)return false;
+ trainingMemory.delete(id);
+ try{storage?.removeItem?.(`${TRAINING_KEY}:${id}`);}catch{/* the session copy is gone either way */}
+ return true;
+}

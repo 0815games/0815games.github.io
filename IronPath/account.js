@@ -3,9 +3,10 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun5';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun5';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261116-firstrunde1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261118-settings1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261114-coachreplay1';
+import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
+import {createSettings,readSettings} from './settings.mjs?v=20261118-settings1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261117-firstrunde1';
@@ -26,7 +27,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide} from './first-run-guide.mjs?v=20261116-firstrunde1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261118-settings1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -38,7 +39,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261117-firstrunde1';
+import { startGame } from './game.js?v=20261118-settings1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -52,9 +53,21 @@ let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=fal
 let armoryCategory='equipment';
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
 setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
-setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
-setupFieldMenu({document,onLanguageChange});
+const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
+// One dialog for language, sound, graphics and fullscreen, reached from the Command
+// Center menu and from the field menu. It owns no game state: language stays in
+// language.mjs, sound and effects live in game.js behind the hooks below.
+const storedSettings=readSettings(languageStorage);
+const settings=createSettings({
+ document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
+ onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
+ onResetFirstRun:()=>replayFirstRun(),
+});
+let settingsSoundEnabled=false;
+const openSettings=from=>{settings.apply();settings.open(from);};
+setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
+$('menuSettings').onclick=()=>openSettings($('menuSettings'));
 // The armory workshop is open to every signed-in soldier (free tier: client
 // transactions, no backend). It is built into the Armory screen.
 // Set once a workshop award was rejected by rules, so later waves use the legacy
@@ -136,7 +149,7 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
@@ -451,7 +464,29 @@ async function openWorkshopFirstTime(){
 // The guide for the post-match screens. It is created lazily: it needs the document
 // and nothing else, and a player who never reaches the ending never pays for it.
 let firstRunGuide=null;
+// "Play the first run again": forget that this device has seen the tutorial, then let
+// the game redeploy the training contract. Only the seen markers are cleared - the
+// rewards are switched off inside game.js, so a replay cannot mint XP or a dog tag.
 const firstRunStorageFor=()=>{try{return window.localStorage;}catch{return null;}};
+// "Play the first run again": forget that this device has seen the coaching and the
+// four cards after the match, then let the game redeploy the training contract. The
+// ending (dog tag popup, real armory, real skill tree) is deliberately NOT cleared:
+// those steps write to the profile, so a replay teaches the field, not the economy.
+function replayFirstRun(){
+ const id=user?.uid;
+ if(!id)return false;
+ firstRunGuide?.stop?.();
+ firstRunGuide=null;
+ const storage=firstRunStorageFor();
+ try{
+  forgetGuideSeen(id,storage);
+  for(const key of ['rewards','equip','skills','workshop'])storage?.removeItem?.(`ironpath:guide:v1:${key}`);
+ }catch{/* memory only: the session still replays */}
+ const started=gameControl?.replayFirstRun?.();
+ if(!started)return false;
+ commandCenter?.showBattle?.();
+ return true;
+}
 function guide(){
  if(!firstRunGuide)firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector)});
  return firstRunGuide;

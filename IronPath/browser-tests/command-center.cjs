@@ -195,7 +195,7 @@ const assert = require('node:assert/strict');
     await page.locator('#friendsClose').click();
     mark('standalone workshop');
     // Exercise the standalone workshop with an in-memory transport; no account writes.
-    await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261116-firstrunde1')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
+    await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261118-settings1')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
     await page.locator('#workshopTestRoot').getByRole('button',{name:'PREPARE WORKSHOP'}).click();assert.match(await page.locator('#workshopTestRoot').innerText(),/Field Scope/);const boots=page.locator('#workshopTestRoot .workshop-item').filter({hasText:'Field Boots'});await boots.getByRole('button',{name:'CRAFT'}).click();assert.match(await page.locator('#workshopTestRoot .workshop-wallet').innerText(),/50 scrap/);await boots.getByRole('button',{name:'EQUIP',exact:true}).click();assert.match(await page.locator('#workshopTestRoot .workshop-slot-grid').innerText(),/Field Boots/);assert.equal(await page.locator('#workshopTestRoot').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));window.__workshopTest.render();});assert.match(await page.locator('#workshopTestRoot').innerText(),/Feldstiefel/,'the workshop follows the page language; if this fails, the test is likely importing a SECOND language.mjs instance with a stale cache-bust tag');await page.evaluate(()=>{window.__workshopTest.close();const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});
     mark('replay tour');
     // Practice opens a real modal in front of the tour, so the briefing is only
@@ -214,7 +214,16 @@ const assert = require('node:assert/strict');
       if(await skip.isVisible())await skip.click();
       await page.locator('#tutorialNext').click();
     };
-    assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);await page.locator('#languageSelect').selectOption('de');assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.locator('#languageSelect').selectOption('en');assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
+    // Language is a setting now: open it from the menu, switch it, close it. Nothing
+    // sits in the page corner, and this is the only language control in the document.
+    assert.equal(await page.locator('.language-picker').count(),0,'no permanent picker in the corner');
+    await page.locator('#menuSettings').click();
+    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true);
+    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);
+    await page.locator('#languageSelect').selectOption('de');
+    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
+    await page.locator('#settingsClose').click();
+    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false);assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
 
     await page.locator('#menuSoldier').click();assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.open),true);assert.equal(await page.locator('#soldierWorkshop').count(),0,'one armory button, no second workshop screen');assert.equal(await page.locator('#soldierArmory').isVisible(),true);await page.locator('#soldierClose').click();assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.open),false);await page.locator('#menuSoldier').click();assert.equal(await page.locator('#soldierNameDisplay').innerText(),'Test Soldier');assert.equal(await page.locator('#soldierDamage').innerText(),'12');assert.equal(await page.locator('#soldierEquipped').innerText(),'No equipment');assert.equal(await page.locator('#soldierCollectionEmpty').isVisible(),true);await page.evaluate(()=>window.__profileUpdate({armory:{scrap:10,owned:3,equipped:1}}));assert.equal(await page.locator('#soldierCollectionList li').count(),2);assert.match(await page.locator('#soldierCollectionList li').first().innerText(),/Field Scope[\s\S]*EQUIPPED/);assert.equal(await page.locator('#soldierCollectionEmpty').isHidden(),true);assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const s=document.querySelector('#languageSelect');s.value='de';s.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#soldierScreenTitle').innerText(),'Dein Soldat');assert.equal(await page.locator('#soldierNameDisplay').innerText(),'Test Soldier');assert.match(await page.locator('#soldierCollectionList li').first().innerText(),/Zielfernrohr[\s\S]*AUSGERÜSTET/);await page.evaluate(()=>{const s=document.querySelector('#languageSelect');s.value='en';s.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#soldierClose').click();await page.evaluate(()=>window.__profileUpdate({armory:null}));
     assert.equal(await page.locator('#menuSkillBadge').innerText(),'2');assert.equal(await page.locator('#menuSkills').evaluate(e=>e.classList.contains('has-skill-points')),true);assert.match(await page.locator('#menuSkills').getAttribute('aria-label'),/2 unspent skill points/);assert.equal(await page.locator('#skillNotice').count(),0);
@@ -245,7 +254,7 @@ const assert = require('node:assert/strict');
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;});await page.locator('#game').click({position:{x:5,y:5}});assert.equal(await page.locator('#radialMenu').isHidden(),true,'outside click closes the tower sheet');
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;document.querySelector('#towerDetails').showModal();});await page.mouse.click(1,1);assert.equal(await page.locator('#towerDetails').evaluate(e=>e.open),false,'backdrop closes tower details');assert.equal(await page.locator('#radialMenu').isHidden(),true);
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();
-    await page.locator('#menuMultiplayer').click(); await page.locator('#fourPartyPanel').waitFor({state:'visible'});await page.locator('#languageSelect').selectOption('de');assert.equal(await page.locator('#fourPartyCreate').innerText(),'GRUPPE ERSTELLEN');assert.equal(await page.locator('label[for=fourPartyCodeInput]').innerText(),'MIT CODE BEITRETEN');await page.locator('#languageSelect').selectOption('en');await page.locator('#lobbyFriends').click();assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),true);await page.locator('#friendsClose').click();
+    await page.locator('#menuMultiplayer').click(); await page.locator('#fourPartyPanel').waitFor({state:'visible'});await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#fourPartyCreate').innerText(),'GRUPPE ERSTELLEN');assert.equal(await page.locator('label[for=fourPartyCodeInput]').innerText(),'MIT CODE BEITRETEN');await page.locator('#languageSelect').selectOption('en');await page.locator('#lobbyFriends').click();assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),true);await page.locator('#friendsClose').click();
     await page.locator('.multiplayer-help summary').click(); assert.match(await page.locator('.multiplayer-help').innerText(),/codes can be guessed/i); assert.match(await page.locator('.multiplayer-help').innerText(),/host reload/i);await page.locator('#fourPartyCodeInput').click();assert.equal(await page.locator('.multiplayer-help').evaluate(e=>e.open),false,'outside click closes disclosure');
     assert.equal(await visible('.profile-bar'),false,'no soldier header in lobby'); assert.equal(await visible('#campaignPanel'),false);
     assert.equal(await visible('#game'),false,'no map in lobby'); assert.equal(await visible('.dashboard'),false);
@@ -258,10 +267,10 @@ const assert = require('node:assert/strict');
     await page.evaluate(()=>window.__soldierFrames=[]);let moved=false;for(const position of [{x:5,y:5},{x:180,y:8},{x:360,y:8},{x:180,y:180}]){await page.locator('#game').click({position});if((await page.locator('#message').innerText()).includes('Hero moving')){moved=true;break;}await page.locator('#radialClose').evaluate(e=>e.click());}assert.equal(moved,true,'a tap on open ground issues a movement order');await page.waitForFunction(()=>window.__soldierFrames.some(f=>f.sourceWidth===60&&f.sourceHeight===90&&Math.abs(f.rotation)>.001),null,{timeout:8000});
     // Fullscreen the entire document: gameplay controls and native dialogs stay available.
     await page.setViewportSize({width:1280,height:800});
-    await page.locator('#fieldOps > summary').click();await page.locator('#fieldFullscreen').click();await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
+    await page.locator('#fieldOps > summary').click();await page.locator('#fieldSettings').click();await page.waitForFunction(()=>document.getElementById('settingsDialog')?.open===true);await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
     assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#game').isVisible(),true);assert.equal(await page.locator('#start').isVisible(),true);
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
-    await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');
+    await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');await page.locator('#settingsClose').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'the dialog the field menu opened closes again');
     await page.setViewportSize({width:390,height:844});
     mark('endless run');
     // Ending a solo run returns to the command center underneath its report.
@@ -289,7 +298,14 @@ const assert = require('node:assert/strict');
     await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"]').click();await page.locator('#skillDetailAction').click();assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"] .skill-card-name').innerText(),'Unterdrückung');assert.match(await page.locator('#skillDetailText').innerText(),/Verlangsame Gegner/);assert.match(await page.locator('#skillStatus').innerText(),/Ungespeicherter Entwurf/);assert.equal(await page.locator('#skillDetailAction').innerText(),'HAUPTFÄHIGKEIT AUSGEWÄHLT');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);
     await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),false,'outside a confirmation cancels instead of accepting');assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true,'cancel preserves the draft');
     await page.keyboard.press('Escape');assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),false);await page.evaluate(()=>{const dialog=document.querySelector('#skillDialog');dialog.dispatchEvent(new Event('close'));});
-    await page.locator('#languageSelect').selectOption('de');await page.locator('#menuTutorial').click();assert.equal(await page.locator('#tutorialTitle').innerText(),'Willkommen, Soldat');
+    // The eleven-step briefing is the Help tour now: the field opens it through its own
+    // replay button. `#menuTutorial` is a different thing on purpose - it restarts the
+    // whole first run, which is checked further down. Language is German here, so the
+    // tour has to be German too.
+    await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});
+    await page.locator('#tutorialReplay').evaluate(button=>button.click());
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
+    assert.equal(await page.locator('#tutorialTitle').innerText(),'Willkommen, Soldat');
     for(let i=0;i<20&&!/Fähigkeitenmenü/.test(await page.locator('#tutorialTitle').innerText());i++)await page.locator('#tutorialNext').click();
     assert.equal(await page.locator('#tutorialTitle').innerText(),'Übe das Fähigkeitenmenü');
     await page.waitForSelector('#skillDialog[open]');
@@ -297,8 +313,8 @@ const assert = require('node:assert/strict');
     // The practice dialog is modal and sits in front of the briefing: close it first.
     await page.locator('#skillDialog').evaluate(dialog=>dialog.close());
     await page.locator('#tutorialSkip').click();
-    await page.locator('#languageSelect').selectOption('en');
-    await page.locator('#menuTutorial').click(); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
+    await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});
+    await page.locator('#tutorialReplay').evaluate(button=>button.click()); assert.equal(await page.locator('#tutorialScene svg').count(),0); assert.match(await page.locator('#tutorialScene').evaluate(e=>getComputedStyle(e).backgroundImage),/tutorial-defend/); assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
     // The tour walks into the REAL dialogs: a saved build, a workshop item, and the
     // sandbox banner that promises nothing is stored.
     // Clicking NEXT on a practice step does nothing until that step is done, so the
@@ -347,7 +363,49 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#commandCenter').isVisible(),true,'the tour closes back onto the Command Center');
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
-    await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
+    // "Field tutorial" from the Command Center is the whole first run: it leaves the
+    // menu, deploys the training contract again and starts the coaching at card one.
+    await page.locator('#menuTutorial').click();
+    await page.waitForFunction(()=>document.getElementById('mapName')?.textContent==='The Last Road',null,{timeout:15000});
+    await page.waitForFunction(()=>{const card=document.getElementById('firstRunCoach');return card&&!card.hidden;},null,{timeout:15000});
+    assert.match(await page.locator('#coachStep').innerText(),/^1 \/ 7/,'the coaching starts at the first card again');
+    assert.match(await page.locator('#wave').innerText(),/^0 /,'on a fresh training field');
+
+    // Settings in the real browser: the dialog is the only home of these controls, the
+    // volume slider reaches the sound engine, and "play the first run again" deploys the
+    // training contract again - same map, cards from the first one - without paying.
+    mark('settings');
+    await page.evaluate(()=>{window.__xpAwards=0;});
+    await page.locator('#menuSettings').click();
+    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true,'the menu opens settings');
+    assert.equal(await page.evaluate(()=>document.querySelectorAll('#languageSelect').length),1,'exactly one language control');
+    const before=await page.locator('#soundVolumeStatus').innerText();
+    await page.locator('#soundVolume').fill('35');
+    assert.match(await page.locator('#soundVolumeStatus').innerText(),/35/,`the slider reports its value (was ${before})`);
+    // Graphics asks before it changes anything.
+    await page.locator('#graphicsQuality').selectOption('reduced');
+    await page.waitForSelector('#gameConfirm[open]');
+    assert.match(await page.locator('#gameConfirmText').innerText(),/effects/i);
+    await page.locator('#gameConfirmCancel').click();
+    assert.equal(await page.locator('#graphicsQuality').inputValue(),'full','a declined change snaps back');
+
+    // The replay: it has to leave the Command Center, deploy the training contract and
+    // put the first card back up.
+    await page.locator('#settingsTutorialReset').click();
+    await page.waitForSelector('#gameConfirm[open]');
+    await page.locator('#gameConfirmAccept').click();
+    await page.waitForFunction(()=>document.getElementById('mapName')?.textContent==='The Last Road',null,{timeout:15000});
+    await page.waitForFunction(()=>{const card=document.getElementById('firstRunCoach');return card&&!card.hidden&&document.getElementById('coachTitle')?.textContent?.length>0;},null,{timeout:15000});
+    const replay=await page.evaluate(()=>({
+      step:document.getElementById('coachStep')?.textContent||'',
+      title:document.getElementById('coachTitle')?.textContent||'',
+      wave:document.getElementById('wave')?.textContent||'',
+      cardOpen:!document.getElementById('firstRunCoach').hidden,
+    }));
+    assert.equal(replay.cardOpen,true,'the cards are back');
+    assert.match(replay.step,/1 \/ 7/,'and start at the first one');
+    assert.match(replay.wave,/^0 /,'on a freshly deployed training field, not mid-run');
+    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'settings closed behind the replay');
 
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.

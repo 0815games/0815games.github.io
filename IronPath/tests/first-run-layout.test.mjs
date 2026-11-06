@@ -177,20 +177,37 @@ test('the measured header is the one the field really uses', () => {
   assert.match(field, /#gameView \.map-frame \.dashboard\{position:absolute/, 'and it is positioned in the field');
 });
 
-test('the training field shows one language flag, not two', () => {
-  // Reported from a phone: two flags in the top right. The field has its own switch
-  // (#fieldLanguage, left of the menu) and the page has the global picker - and the
-  // list that hides the global one did not include the training screen.
-  const training = field.slice(field.indexOf('data-field-menu="open"') > 0
-    ? field.indexOf('#gameView #gameWorkspace[data-screen="training"] .field-language-flag')
-    : 0);
-  assert.match(field, /#gameView #gameWorkspace\[data-screen="training"\] \.field-language-flag\{display:none\}/,
-    'the field flag is hidden on the training field');
-  // And the global picker must NOT be hidden there, or the screen has no switch at all.
-  const hideGlobal = field.match(/body:has\([^)]*[^}]*>\.language-picker\{display:none\}/);
-  assert.ok(hideGlobal, 'the global picker is hidden on the full-field screens');
-  assert.doesNotMatch(hideGlobal[0], /data-screen="training"/,
-    'training keeps exactly one language switch');
+test('there is exactly one language control, and it is not in the page corner', () => {
+  // History: the page carried a fixed flag in the top-right corner, the field carried a
+  // second one beside its menu, and the training screen showed both at once. The fix
+  // then was CSS that hid one per screen. The fix now is that neither exists: language
+  // is a setting, and settings live in one dialog. A second control is the bug, so this
+  // counts controls in the markup instead of trusting a hide-list.
+  const html = readFileSync(resolve(root, 'index.html'), 'utf8');
+  const selects = html.match(/<select[^>]*id="languageSelect"/g) ?? [];
+  assert.equal(selects.length, 1, 'one language select in the document');
+  assert.doesNotMatch(html, /id="fieldLanguage"/, 'no second flag beside the field menu');
+  assert.doesNotMatch(html, /class="language-picker"/, 'no fixed picker in the page corner');
+  // It sits inside the Settings dialog, which is what the menu opens.
+  const settings = html.slice(html.indexOf('id="settingsDialog"'), html.indexOf('</dialog>', html.indexOf('id="settingsDialog"')));
+  assert.match(settings, /id="languageSelect"/, 'the one language control lives in Settings');
+  // And there is no per-screen hide list left to drift out of date.
+  for (const file of ['style.css', 'field-command.css', 'interface-redesign.css']) {
+    const css = readFileSync(resolve(root, file), 'utf8');
+    assert.doesNotMatch(css, /\.language-picker\{display:none\}/, `${file} still hides a picker that no longer exists`);
+    assert.doesNotMatch(css, /\.field-language-flag\{display:none\}/, `${file} still hides a field flag that no longer exists`);
+  }
+});
+
+test('FULLSCREEN is a setting, not a permanent chip in the corner', () => {
+  const html = readFileSync(resolve(root, 'index.html'), 'utf8');
+  const settings = html.slice(html.indexOf('id="settingsDialog"'), html.indexOf('</dialog>', html.indexOf('id="settingsDialog"')));
+  assert.match(settings, /id="fullscreenToggle"/, 'fullscreen lives in Settings');
+  assert.doesNotMatch(html, /class="language-picker"/, 'and nothing puts it back in the corner');
+  // The field menu opens the same dialog instead of carrying its own copy of the button.
+  const fieldMenu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  assert.match(fieldMenu, /fieldSettings/, 'the field menu has a settings entry');
+  assert.doesNotMatch(fieldMenu, /fieldFullscreen/, 'and no second fullscreen button');
 });
 
 test('the coach caption counts five waves, like the contract it describes', () => {
