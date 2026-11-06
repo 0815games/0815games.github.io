@@ -389,7 +389,9 @@ const assert = require('node:assert/strict');
       await open();
       await page.waitForFunction(() => document.getElementById('mapName')?.textContent === 'The Last Road', null, { timeout: 15000 });
       await page.waitForFunction(() => { const card = document.getElementById('firstRunCoach'); return card && !card.hidden; }, null, { timeout: 15000 });
-      assert.match(await page.locator('#coachStep').innerText(), /^1 \/ 7/, `${label}: the coaching starts at the first card again`);
+      // The step line reads "FIRST RUN · 1 / 7" (German: "ERSTER EINSATZ · 1 / 7"),
+      // so the card number has to be found inside it, not at the start of it.
+      assert.match(await page.locator('#coachStep').innerText(), /\b1 \/ 7\b/, `${label}: the coaching starts at the first card again`);
       assert.match(await page.locator('#wave').innerText(), /^0 /, `${label}: on a fresh training field`);
       await page.locator('#coachClose').click();
       await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();
