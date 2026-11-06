@@ -18,7 +18,7 @@
 <body>
   <!-- First paint: decide whether this device must choose a language before any
        English text is shown. Runs inline so the gate never flashes in late. -->
-  <script>try{document.documentElement.dataset.langGate=(function(){var v=localStorage.getItem('ironpath:language');return v!=='en'&&v!=='de'?'1';})()?'1':'0';}catch(e){document.documentElement.dataset.langGate='1';}</script>
+  <script>try{document.documentElement.dataset.langGate=(function(){var v=localStorage.getItem('ironpath:language');return v!=='en'&&v!=='de'?'1':'0';})();}catch(e){document.documentElement.dataset.langGate='1';}</script>
   <div class="language-picker"><button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-pressed="false" hidden>FULLSCREEN</button><span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span><span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache" aria-describedby="languagePreviewNote"><option value="en">🇬🇧 English</option><option value="de">🇩🇪 Deutsch (Vorschau)</option></select></span><span id="languagePreviewNote" class="language-preview-note visually-hidden" role="status" hidden>Vorschau: Einige Inhalte sind noch auf Englisch.</span></div>
   <section id="languageGate" class="language-gate" role="dialog" aria-modal="true" aria-labelledby="languageGateTitle">
     <div class="language-gate-card">

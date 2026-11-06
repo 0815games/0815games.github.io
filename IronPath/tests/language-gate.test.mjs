@@ -1,5 +1,7 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
 import {LANGUAGE_KEY,needsLanguageChoice,isSupportedLanguage,setupLanguageGate} from '../language-gate.mjs';
 
 const memory=(initial={})=>{const data={...initial};return {getItem:key=>Object.hasOwn(data,key)?data[key]:null,setItem:(key,value)=>{data[key]=String(value);},removeItem:key=>{delete data[key];},dump:()=>data};};
@@ -74,4 +76,24 @@ test('the page gates first, plays the intro only after a choice, and offers both
  // Both languages must be on screen, so neither reader depends on the other's text.
  assert.match(html,/CHOOSE YOUR LANGUAGE/);assert.match(html,/SPRACHE WÄHLEN/);
  assert.match(html,/Continue in English/);assert.match(html,/Auf Deutsch fortfahren/);
+});
+
+// The gate is the first thing every device runs, and it is an inline script in the
+// markup: if it does not parse, nobody sees the language or anything else. A stray
+// `?'1':'0'` after a complete expression shipped once and did exactly that.
+test('every inline script in index.html parses',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const scripts=[...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]).filter(code=>code.trim());
+ assert.ok(scripts.length>0,'the page still has its inline gate script');
+ for(const [index,code] of scripts.entries()){
+  assert.doesNotThrow(()=>new vm.Script(code,{filename:`inline-script-${index}.js`}),`inline script ${index} must parse`);
+ }
+});
+
+test('the gate marks the document before the CSS can hide the picker',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const script=[...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/g)].map(match=>match[1]).find(code=>code.includes('langGate'));
+ assert.ok(script,'the gate script is inline, so it runs before any module');
+ assert.match(script,/dataset\.langGate=/);
+ assert.doesNotMatch(script,/await |import /,'the gate cannot wait for a module to load');
 });
