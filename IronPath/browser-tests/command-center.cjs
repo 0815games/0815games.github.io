@@ -119,17 +119,21 @@ const assert = require('node:assert/strict');
       const ringAfter=await page.locator('#coachRing').boundingBox();
       assert.ok(ringAfter&&ringAfter.width>10,'the ring is redrawn after the field pans');
     }
-    // The contract card must not cover the header above it. On the training field the
-    // objective sits under the measured status dashboard, not on top of it.
-    const overlap=await page.evaluate(()=>{
+    // The contract must not COVER anything. On the training field it is a row of the
+    // frame above the battlefield now, so the question is no longer "is it below the
+    // status row" but "does it overlap the status row or the field".
+    const covers=await page.evaluate(()=>{
       const card=document.getElementById('soloObjective');
-      const dashboard=document.querySelector('#gameView .map-frame .dashboard');
-      if(!card||!dashboard||card.hidden)return null;
-      const a=card.getBoundingClientRect(),b=dashboard.getBoundingClientRect();
-      return {cardTop:a.top,dashboardBottom:b.bottom,overlap:Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)};
+      if(!card||card.hidden)return null;
+      const a=card.getBoundingClientRect();
+      const hit=sel=>{const b=document.querySelector(sel)?.getBoundingClientRect();return !!b&&
+        Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1&&Math.min(a.right,b.right)-Math.max(a.left,b.left)>1;};
+      return {dashboard:hit('#gameView .map-frame .dashboard'),canvas:hit('#game')};
     });
-    if(overlap)assert.ok(overlap.cardTop>=overlap.dashboardBottom-1,
-      `the contract card starts below the status dashboard (${Math.round(overlap.cardTop)} >= ${Math.round(overlap.dashboardBottom)})`);
+    if(covers){
+      assert.equal(covers.dashboard,false,'the contract does not cover the status row');
+      assert.equal(covers.canvas,false,'the contract does not cover the battlefield');
+    }
     // And it does not pause. The card holds no focus and no pointer capture, so
     // Deploy is still clickable with it open — that alone was impossible with the
     // old modal. The tick then moves something the simulation owns.
