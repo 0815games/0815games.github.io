@@ -151,6 +151,13 @@ player on a new browser is asked once and then goes straight in.
 | `tests/first-run-ending.test.mjs` | Order, once per account, decline stops without marking done, sandbox never reaches a transaction, Field School uses existing controls, no module-level TDZ |
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, and **every inline script in `index.html` compiles** |
 
+The first run still has to be played on a real phone and a real desktop browser.
+[FIRST-RUN-DEVICE-TEST.md](FIRST-RUN-DEVICE-TEST.md) is the script for that pass:
+ordered steps, the exact German to expect, the local-storage keys that reset a
+run, and what counts as a blocker. `tests/first-run-device-test.test.mjs` keeps
+the plan honest by asserting that every string it quotes is still what the build
+shows.
+
 `node --test IronPath/tests/*.test.mjs` is the gate. Browser checks
 (`browser-tests/command-center.cjs`) walk the tour into the real dialogs and
 assert the sandbox banner appears and disappears; they need Playwright and run in

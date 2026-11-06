@@ -79,3 +79,28 @@ test('generated map names, accessibility titles and dynamic engine errors transl
  assert.equal(localizeGameMessage('Not enough supplies. This tower costs 130.',translateText),'Nicht genügend Vorräte. Dieser Turm kostet 130.');assert.equal(localizeGameMessage('Airstrike is recharging.',translateText),'Luftschlag lädt sich noch auf.');assert.equal(localizeGameMessage('Player <BUILD>',translateText),'Player <BUILD>');
  f.selector.value='en';f.selector.change();assert.equal(localizeGameMessage('Not enough supplies. You need 42.',translateText),'Not enough supplies. You need 42.');
 });
+
+// The first run is the one place a player cannot skip past a language they do not
+// read, so every word of it must exist in German. The earlier scan only looked at
+// `tr('...')` call sites and so missed the tour's own steps, where the title, text
+// and caption are plain data. This walks them through the real lookup instead.
+test('the whole first-run briefing is translated',async()=>{
+ const f=fixture('de');
+ const {TUTORIAL_STEPS}=await import('../tutorial.mjs');
+ assert.ok(TUTORIAL_STEPS.length>=11);
+ // The ending's Field School is the last thing a new soldier reads, so it counts.
+ const {readFileSync}=await import('node:fs');
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const school=html.match(/<section id="fieldSchool"[\s\S]*?<\/section>/);
+ assert.ok(school,'the Field School markup exists');
+ for(const match of school[0].matchAll(/data-i18n-text="([^"]+)"/g)){
+  const key=match[1].replace(/&amp;/g,'&').replace(/&#39;/g,"'");
+  assert.notEqual(translateText(key),key,`the Field School shows "${key}" in English`);
+ }
+ for(const [index,step] of TUTORIAL_STEPS.entries()){
+  for(const field of ['title','text','caption']){
+   assert.notEqual(translateText(step[field]),step[field],`step ${index+1} ${field} is still English: ${step[field].slice(0,60)}`);
+  }
+ }
+ assert.equal(f.values.get('ironpath:language'),'de');
+});
