@@ -29,9 +29,14 @@ browser's local storage for the site:
 | Key | What it remembers |
 | --- | --- |
 | `ironpath:language` | the gate choice for this device |
-| `ironpath:tutorial:v1:<account id>` | the briefing was completed |
+| `ironpath:tutorial:v2:<account id>` | the briefing was completed |
 | `ironpath:training:v1:<account id>` | the training contract was offered |
 | `ironpath:firstrun:v1:<account id>` | the ending was offered |
+
+An account that predates the 11-step briefing holds `ironpath:tutorial:v1:`. That
+key is what hid the new tour from existing players for a while; it is now ignored,
+so **do not** clear it to test the fix — log in with an old account and the new
+briefing should start on its own.
 
 Clearing the language key also brings the gate back, which is what you want when
 re-testing step 1.

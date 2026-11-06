@@ -49,7 +49,7 @@ test('the device plan quotes the German the build actually shows',()=>{
 });
 
 test('the plan lists the keys a tester has to clear to repeat a first run',()=>{
- for(const key of ['ironpath:language','ironpath:tutorial:v1:','ironpath:training:v1:','ironpath:firstrun:v1:']){
+ for(const key of ['ironpath:language','ironpath:tutorial:v2:','ironpath:training:v1:','ironpath:firstrun:v1:']){
   assert.ok(plan.includes(key),`${key} must be documented, or a tester cannot repeat the run`);
  }
 });

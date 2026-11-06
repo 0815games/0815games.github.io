@@ -11,7 +11,7 @@ import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261
 import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261105-workshop3';
 import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261105-workshop3';
 import {createVersus} from './versus.mjs?v=20261105-workshop3';
-import {createMatch} from './simulation.mjs?v=20261112-firstrun3';
+import {createMatch} from './simulation.mjs?v=20261112-firstrun4';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,players,mapId=DEFAULT_MAP,workshopLock=null,resumeGeneration=null,crypto=globalThis.crypto,readFresh,lockManager=globalThis.navigator?.locks,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){

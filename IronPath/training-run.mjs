@@ -68,6 +68,11 @@ export function trainingStatus(state,tr=(text,values={})=>text.replace(/\{([A-Za
 
 // The contract is offered once per account per browser, like the tutorial and the
 // ending. The flag is local storage only: no server field, no rules change.
+//
+// The edition matters here more than anywhere else. This contract is where a new
+// soldier earns the first real skill point, so an account that never played it has
+// never had a point to spend. It is new content, not a re-offer: keep the edition
+// and raise it only when the contract itself changes.
 export const TRAINING_KEY='ironpath:training:v1';
 const trainingMemory=new Set();
 export function trainingSeen(id,storage){

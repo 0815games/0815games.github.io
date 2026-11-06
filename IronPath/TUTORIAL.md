@@ -24,9 +24,23 @@ Storage keys, all local and all per account where they concern a person:
 | Key | Written by | Meaning |
 | --- | --- | --- |
 | `ironpath:language` | `language.mjs`, `language-gate.mjs` | The chosen language, per device |
-| `ironpath:tutorial:v1:<uid>` | `tutorial.mjs` | The briefing was finished (or skipped) |
+| `ironpath:tutorial:v2:<uid>` | `tutorial.mjs` | The briefing was finished (or skipped) |
+| `ironpath:tutorial:v1:<uid>` | the old 8-step tour | Read-only legacy marker; ignored, never written |
 | `ironpath:training:v1:<uid>` | `training-run.mjs` | The training contract was offered |
 | `ironpath:firstrun:v1:<uid>` | `first-run-ending.mjs` | The ending (skills, tag, workshop) completed |
+
+The briefing marker carries the **edition** of the briefing it belongs to. The old
+8-step tour wrote `ironpath:tutorial:v1:<uid>` on finish *and* on skip, and the
+11-step briefing first reused that key — so every existing account looked "already
+briefed" and never saw the new tour. `TUTORIAL_EDITION` in `tutorial.mjs` is now
+bumped whenever the briefing gains something a returning player should see; the
+legacy key is left untouched and simply stops mattering. `FIRST_RUN_TUTORIAL_KEY`
+in `account.js` must carry the same edition.
+
+The same reasoning applies to the training contract: `ironpath:training:v1` keeps
+its version because the contract is content that was never offered before, not a
+re-offer. An account with no training marker is offered the contract after any
+completed briefing, including a replay from the Command Center.
 
 Nothing above is written to Firebase. There is no new database field and no rules
 change, so an old client and a new client can share the same account.
