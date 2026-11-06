@@ -429,6 +429,12 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
    * nothing here uses <dialog>, so no ::backdrop and no inert page.
    --------------------------------------------------------------------------- */
 .first-run-coach{
+  /* `position:fixed` anchors to the VIEWPORT only while no ancestor opens a
+     containing block. One `transform`, `filter` or `contain` above the card turns
+     it into an in-flow box that scrolls with the page - and that is what happened:
+     the card drifted with the field, so its ring and arrow pointed at where the pad
+     used to be. The card and its pointer now declare their own frame and the field
+     page is held still while training runs, so no decoration can drag them. */
   position:fixed;z-index:60;left:50%;bottom:calc(8px + env(safe-area-inset-bottom,0px));
   transform:translateX(-50%);
   width:min(520px,calc(100vw - 16px));

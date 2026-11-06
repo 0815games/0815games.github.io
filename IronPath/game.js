@@ -142,6 +142,12 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('mapBunker').addEventListener('click',()=>{battleViewport?battleViewport.pan(-1e6,0):mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'});remarkCoach();});
   portrait.addEventListener('change',()=>{if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());remarkCoach();});
   window.addEventListener('resize',remarkCoach);
+  // Two more ways the field moves under the card: the page itself is scrolled (the
+  // phone browser toolbar collapsing, a bounce at the end of a swipe), and the map
+  // viewport is scrolled sideways. `resize` does not fire for either, so the ring
+  // stayed on the old pad while the card stayed put - the two drifted apart.
+  window.addEventListener('scroll',remarkCoach,{passive:true});
+  mapViewport.addEventListener('scroll',remarkCoach,{passive:true});
   function syncBattleViewport(map,versus){
     const wanted=experimentalFourViewport&&map.fourPlayer&&!versus;
     if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');}
@@ -189,6 +195,21 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
   let storyRadioSource="";
   function storyRadio(text,refresh=false){storyRadioSource=text;text=tr(text);const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadio').dataset.speaker=match?match[1].toLowerCase():'narrator';$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:tr('FIELD REPORT');$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;if(!refresh){radioTime=7;sound.play('request');}}
+  let hudBottom='';
+  // Bottom edge of the status dashboard, measured against the battlefield box.
+  // Re-measured only when the number actually moves, so scrolling never thrashes layout.
+  function measureHud(){
+    try{
+      const query=node=>typeof node?.querySelector==='function'?node.querySelector('.dashboard'):null;
+      const battle=typeof $('gameView')?.querySelector==='function'?$('gameView').querySelector('.battle'):null;
+      const dashboard=query(battle);
+      if(!dashboard||typeof dashboard.getBoundingClientRect!=='function'||typeof battle.getBoundingClientRect!=='function')return;
+      const bottom=Math.round(dashboard.getBoundingClientRect().bottom-battle.getBoundingClientRect().top);
+      if(bottom>0&&`${bottom}px`!==hudBottom){hudBottom=`${bottom}px`;document.documentElement.style.setProperty('--hud-bottom',hudBottom);}
+    }catch{/* a headless harness without layout must never break the frame loop */}
+  }
+  window.addEventListener('resize',measureHud);
+  // Language switches re-render the whole panel, which re-runs updateUI() and re-measures.
   let dismissedPerk=null;
   const perkKey=()=>state&&!state.ended&&state.pendingPerk?`${state.mapId}:${state.wave}:${state.pendingPerk}`:null;
   function dismissPerk(){const key=perkKey();if(!key)return;dismissedPerk=key;updateUI();}
@@ -200,6 +221,12 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function updateUI(){
     renderCampaign();
     const showObjective=(!!activeMission||activeTraining)&&!coop;$('soloObjective').hidden=!showObjective;
+    // The objective card is positioned BELOW the status dashboard and the field menu
+    // instead of at a guessed offset: the dashboard's height depends on the number of
+    // stats, the language and the width of the phone. Publish its measured bottom edge,
+    // relative to the battlefield box (the card is positioned inside that box), so the
+    // stylesheet can place the card under it on every device and every screen size.
+    if(showObjective)measureHud();
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
     else if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
@@ -464,8 +491,19 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       const screenY=view?(pads[index].y-view.y)*view.scale:pads[index].y;
       const spotY=rect.top+screenY*rect.height/logicalHeight;
       const margin=48*(view?.scale||1)*rect.height/logicalHeight+12;
+      // The sheet itself is `position:fixed` (style.css); this nudge only clears the
+      // pad UNDER it. On the training field the page is deliberately held still
+      // (field-command.css), so a page scroll there is a no-op and the old code left
+      // the pad hidden behind the sheet. Move the field instead - it is the thing
+      // that can still move on that screen - and re-mark the coach ring, because the
+      // pad just changed places on the glass.
       const overlap=spotY+margin-menu.getBoundingClientRect().top;
-      if(overlap>0)window.scrollBy({top:overlap,behavior:'auto'});
+      if(overlap>0){
+        const frozen=$('gameWorkspace')?.dataset?.screen==='training';
+        if(frozen&&mapViewport&&mapViewport.scrollHeight>mapViewport.clientHeight)mapViewport.scrollBy({top:overlap,behavior:'auto'});
+        else window.scrollBy({top:overlap,behavior:'auto'});
+        remarkCoach();
+      }
     }
   }
   canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();return selectBattlePoint((e.clientX-rect.left)*logicalWidth/rect.width,(e.clientY-rect.top)*logicalHeight/rect.height);});

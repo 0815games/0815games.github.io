@@ -11,7 +11,7 @@ import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
-import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
+import {createCommandCenter} from './command-center.mjs?v=20261113-fieldframe1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun5';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun5';
@@ -38,7 +38,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-alpha1';
+import { startGame } from './game.js?v=20261113-hud1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';

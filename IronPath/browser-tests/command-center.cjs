@@ -90,6 +90,41 @@ const assert = require('node:assert/strict');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
+    // The reported bug: "Beim Scrollen bewegt sich das Tutorial quasi mit." The card
+    // sat in the page flow, so a scroll dragged it away from the field it explains.
+    // Scroll everything that can scroll and prove the card does not move a pixel.
+    const boxBefore=await page.locator('#firstRunCoach').boundingBox();
+    const scrollAttempt=await page.evaluate(()=>{
+      const before=window.scrollY;
+      window.scrollBy(0,400);
+      const pageScrolled=window.scrollY!==before;
+      const field=document.getElementById('mapViewport');
+      let fieldScrolled=false;
+      if(field){const wasField=field.scrollLeft;field.scrollLeft=field.scrollWidth;fieldScrolled=field.scrollLeft!==wasField;}
+      const card=document.getElementById('firstRunCoach');
+      const box=card.getBoundingClientRect();
+      return {pageScrolled,fieldScrolled,x:box.x,y:box.y,h:box.height,docScroll:window.scrollY};
+    });
+    assert.equal(scrollAttempt.pageScrolled,false,'the training field holds the page still');
+    assert.equal(scrollAttempt.docScroll,0,'the document did not scroll under the card');
+    assert.ok(scrollAttempt.x===boxBefore.x&&Math.abs(scrollAttempt.y-boxBefore.y)<1,
+      `the card stays put while scrolling (${Math.round(boxBefore.x)},${Math.round(boxBefore.y)} -> ${Math.round(scrollAttempt.x)},${Math.round(scrollAttempt.y)})`);
+    // And the pointer followed the field if the field could pan at all.
+    if(scrollAttempt.fieldScrolled){
+      const ringAfter=await page.locator('#coachRing').boundingBox();
+      assert.ok(ringAfter&&ringAfter.width>10,'the ring is redrawn after the field pans');
+    }
+    // The contract card must not cover the header above it. On the training field the
+    // objective sits under the measured status dashboard, not on top of it.
+    const overlap=await page.evaluate(()=>{
+      const card=document.getElementById('soloObjective');
+      const dashboard=document.querySelector('#gameView .map-frame .dashboard');
+      if(!card||!dashboard||card.hidden)return null;
+      const a=card.getBoundingClientRect(),b=dashboard.getBoundingClientRect();
+      return {cardTop:a.top,dashboardBottom:b.bottom,overlap:Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)};
+    });
+    if(overlap)assert.ok(overlap.cardTop>=overlap.dashboardBottom-1,
+      `the contract card starts below the status dashboard (${Math.round(overlap.cardTop)} >= ${Math.round(overlap.dashboardBottom)})`);
     // And it does not pause. The card holds no focus and no pointer capture, so
     // Deploy is still clickable with it open — that alone was impossible with the
     // old modal. The tick then moves something the simulation owns.
@@ -283,7 +318,7 @@ const assert = require('node:assert/strict');
 
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.
-    await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261103-modes1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
+    await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261113-fieldframe1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
     assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
     await page.evaluate(()=>document.querySelector('#gameWorkspace').dataset.onlineReady='true');
     assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);

@@ -105,10 +105,14 @@ the whole reason the first run was rebuilt; test it before anything else.
 5. **The cards follow what you do**, not a click sequence: build a tower → *Baue
    einen Turm* goes away; upgrade it → the next; move your soldier → the next;
    Deploy → the next. Each card is one sentence and at least 44 px per button.
-6. **German check:** every card must be German — `ERSTER EINSATZ · n / 6`,
+6. **The card does not move.** Scroll hard — swipe up and down on the field, on the
+   card, anywhere. **Expected:** the card stays at the bottom, the field moves, and
+   the ring stays on the pad. If the card drifts with the page, that is a blocker:
+   the card and its pointer then point at different things.
+7. **German check:** every card must be German — `ERSTER EINSATZ · n / 7`,
    *Willkommen, Soldat*, *Baue einen Turm*, *Der Boss ist da*, `VERSTANDEN`.
    Anything in English is a fail.
-7. **Dismiss:** the × must hide the card for good, and it must not come back on
+8. **Dismiss:** the × must hide the card for good, and it must not come back on
    reload. Nothing is written to your soldier.
 
 **Landscape (844 x 390):** the card moves to the right-hand side and leaves the
@@ -119,6 +123,10 @@ build pads on the left. It must not cover them.
 1. **Expected:** the objective reads **AUSBILDUNGSVERTRAG · MIT VORSICHT** and
    **WELLE 1 / 5**, with *"Noch 4 Welle(n) schaffen. Hier sind die Gegner
    geschwächt und dein Bunker ist verstärkt."*
+   It must sit **below** the status row (WAVE / BUNKER / SUPPLIES) and leave the
+   field menu on the right free. Nothing of it may be hidden behind either. On a
+   short screen (360 x 480) the hint line disappears and only the title and the
+   progress bar stay — that is intended, the pads matter more.
 2. **Play it properly** — build towers, upgrade them, move your hero, use the
    ability when you get one. Note the time per wave and total.
 3. **Expected:** the bunker has more health than a normal run (150 instead of
@@ -127,7 +135,10 @@ build pads on the left. It must not cover them.
    must not ask you for a field upgrade — if it does, the run is stuck.
 4. **The boss card:** when the boss of wave 5 walks on, the card must switch to
    *Der Boss ist da* even if you were still reading an earlier one.
-5. **Expected ending:** a notice reads *"Ausbildungsvertrag erfüllt! 450 XP
+5. **The page does not scroll away.** On the training field a swipe must move the
+   map, never the page behind it: with the document scrolling, the coach card and
+   its ring leave the screen while the battle keeps running.
+6. **Expected ending:** a notice reads *"Ausbildungsvertrag erfüllt! 450 XP
    verdient. Willkommen auf dem Eisernen Pfad, Soldat."* — the waves pay 250 and
    the contract adds 200, so the run always ends at level 2 with one point and
    150 XP of headroom towards level 3.

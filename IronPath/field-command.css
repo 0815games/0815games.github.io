@@ -136,3 +136,75 @@ body:has(#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="o
 }
 #gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(118px + env(safe-area-inset-bottom,0px))}
 @media(pointer:coarse){#gameView .battle-foot{max-width:calc(100% - 150px)}}
+
+/* ---------------------------------------------------------------------------
+   The training screen owns the viewport, like the endless screen already does.
+
+   `data-screen` was never set for the shortened contract run, so the first run
+   fell through to the LAYOUT page: the document scrolled under a field that is
+   only part of it. On a phone that means the welcome card and its pointer stay
+   in place while the field - the thing they are pointing at - slides away. The
+   coach then explains a pad that is no longer where the ring says it is.
+
+   Endless and the online field are already pinned; training gets the same frame,
+   and the page behind it is held still so nothing can scroll it at all.
+   --------------------------------------------------------------------------- */
+body:has(#gameWorkspace:not([hidden])[data-screen="training"]),
+body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
+  overflow:hidden;
+  height:100%;
+  overscroll-behavior:none;
+}
+#gameWorkspace:not([hidden])[data-screen="training"] .battle{
+  position:fixed;inset:0;z-index:11;border:0;overflow:hidden;background:#0c1811;
+  display:flex;flex-direction:column;
+}
+#gameWorkspace:not([hidden])[data-screen="training"] .battle-head{
+  position:relative;z-index:2;min-height:0;padding:4px 10px;background:#10231e;
+  border-bottom:1px solid #789078;pointer-events:none;
+}
+#gameWorkspace:not([hidden])[data-screen="training"] .battle-head h2{font-size:13px}
+#gameView[data-screen="training"] .battle-head .legend{display:none}
+#gameWorkspace:not([hidden])[data-screen="training"] .battle .map-frame{
+  flex:1 1 auto;min-height:0;height:auto;width:100%;
+}
+#gameWorkspace:not([hidden])[data-screen="training"] .map-viewport{
+  height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain;
+}
+
+/* In the training frame the header sits in flow above the field, so the very first
+   frame - before `--hud-bottom` exists - needs a taller fallback than the endless
+   frame, or the card is briefly painted over the status dashboard. */
+[data-screen="training"] #gameView .battle .solo-objective:not([hidden]){
+  top:calc(var(--hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);
+}
+
+/* ---------------------------------------------------------------------------
+   The contract card must not sit on the things above it.
+
+   It used to be pinned at a guessed `top:65px`, which ran under the status
+   dashboard and the field menu on every phone. The card now sits below the
+   header that `game.js` measures (`--hud-bottom`), and it gives up its hint line
+   on short viewports instead of growing down over the build pads.
+   --------------------------------------------------------------------------- */
+#gameView .battle .solo-objective:not([hidden]),
+#gameView .battle .versus-status:not([hidden]){
+  /* `--hud-bottom` is measured, so it already contains the notch: do not add
+     `safe-area-inset-top` a second time. Only the pre-measurement fallback needs it. */
+  top:calc(var(--hud-bottom,calc(52px + env(safe-area-inset-top,0px))) + 8px);
+  left:8px;
+  right:calc(64px + env(safe-area-inset-right,0px));
+  max-width:min(340px,calc(100% - 72px));
+  margin:0;
+  background:#183027ed;
+}
+#gameView .battle .solo-objective:not([hidden]) p{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+@media(max-height:560px){
+  #gameView .battle .solo-objective:not([hidden]){
+    top:calc(var(--hud-bottom,calc(46px + env(safe-area-inset-top,0px))) + 4px);
+    max-width:min(300px,calc(100% - 64px));
+  }
+  #gameView .battle .solo-objective:not([hidden]) p{display:none}
+}
