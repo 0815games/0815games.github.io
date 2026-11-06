@@ -9,31 +9,37 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261105-workshop3';
+import {createMatch} from './simulation.mjs?v=20261112-firstrun3';
 import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-alpha1';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT} from './training-run.mjs?v=20261112-firstrun3';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
- const threat=threatFor(campaign?.threat);
+ // The training contract is the only campaign-shaped deployment that is easier
+ // than endless, so it is read from its own module rather than the threat table.
+ const training=campaign?.threat==='training';
+ const threat=training?{bunker:TRAINING_BUNKER,squad:0}:threatFor(campaign?.threat);
  const contract=!!campaign;
  if(workshopEnabled&&profile&&Object.hasOwn(profile,'workshop')){
   const workshop=decodeWorkshop(profile.workshop);
   if(!workshop)throw new Error('A valid workshop is required for a workshop deployment');
   const state=createWorkshopSoloMatch(player,workshop,mapId);
-  if(contract)applyContract(state,campaign,threat);
+  if(contract)applyContract(state,campaign,threat,training);
   return state;
  }
  const state=createMatch([player],mapId);
- if(contract)applyContract(state,campaign,threat);
+ if(contract)applyContract(state,campaign,threat,training);
  return state;
 }
 // A mission's pressure is applied after the match is built, so endless solo and
 // multiplayer keep their existing numbers. The bunker is re-scaled from its base
 // health (upgrades and equipment already included), never below a floor.
-function applyContract(state,campaign,threat){
+function applyContract(state,campaign,threat,training=false){
  const base=state.maxHp;
  state.maxHp=campaignBunker(base,threat.bunker);
  state.hp=Math.min(state.hp,state.maxHp);
- state.campaignContract={missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad};
+ state.campaignContract=training
+  ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT}
+  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad};
 }

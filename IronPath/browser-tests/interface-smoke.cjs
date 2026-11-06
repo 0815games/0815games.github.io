@@ -10,6 +10,8 @@ const fs = require('node:fs');
   try {
     for (const [name, width, height] of [['phone', 320, 700], ['phone-wide', 390, 844], ['desktop', 1440, 900]]) {
       const context = await browser.newContext({ viewport: { width, height }, reducedMotion: 'reduce' });
+    // Pretend the language was already chosen: the first-run gate is tested on its own.
+    await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
       await context.route('**/*', route => {
         const url = new URL(route.request().url());
         if (url.hostname !== '127.0.0.1' || route.request().resourceType() === 'script') return route.abort();
@@ -76,11 +78,23 @@ const fs = require('node:fs');
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
       }
-      for (const [panel,control] of [['tutorialSkillsPractice','#tutorialSkillNode'],['tutorialArmoryPractice','#tutorialEquip']]) {
-        await page.evaluate(id=>{document.querySelector('#tutorialScene').hidden=true;document.getElementById(id).hidden=false;document.querySelector('#tutorialDialog').showModal();},panel);
-        await check(control);await page.screenshot({path:`browser-artifacts/${name}-${panel}.png`});
-        await page.evaluate(id=>{document.querySelector('#tutorialDialog').close();document.getElementById(id).hidden=true;},panel);
-      }
+      // Scripts are blocked here, so the tour never fills its card in: give it the kind
+      // of text it renders and check the layout of the real markup and CSS.
+      await page.evaluate(()=>{
+        document.querySelector('#tutorialStep').textContent='FIELD BRIEFING · 8 / 11';
+        document.querySelector('#tutorialTitle').textContent='Practice the Skills menu';
+        document.querySelector('#tutorialText').textContent='At level 2, you earn your first skill point. Pick a category and select a skill card to see its details. Unlock it, then save your build. Try it here on a sample soldier: nothing you do is saved.';
+        document.querySelector('#tutorialCaption').textContent='EXAMPLE BUILD';
+        document.querySelector('#tutorialPracticeStatus').hidden=false;
+        document.querySelector('#tutorialPracticeStatus').textContent='Use the real Skills menu on the sample soldier. Nothing is saved.';
+        document.querySelector('#tutorialPracticeSkip').hidden=false;
+        document.querySelector('#tutorialDialog').showModal();
+      });
+      // Practice drives the real dialogs, so the briefing is checked on its own; the
+      // controls it points at are covered by the dialog loop above.
+      await check('#tutorialTitle');await check('#tutorialNext');await check('#tutorialPracticeSkip');
+      await page.screenshot({path:`browser-artifacts/${name}-tutorial-briefing.png`});
+      await page.evaluate(()=>document.querySelector('#tutorialDialog').close());
       console.log(`${name}: sign-in, command, lobby and dialogs fit the viewport`);
       await context.close();
     }

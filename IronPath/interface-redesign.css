@@ -327,3 +327,67 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .workshop-item.is-locked{opacity:.62}
 .workshop-prestige{margin-top:16px}
 .workshop-prestige .workshop-item h4{color:#f0d79a}
+
+/* ── First-run language gate ──────────────────────────────────────────────
+   Shown before the intro and before sign-in, because a player who cannot read
+   the page cannot find the language selector. Hidden by default and only
+   revealed by the inline bootstrap when this device has no stored choice. */
+.language-gate{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(ellipse at 50% 12%,#4a5f41 0,#2b3c30 42%,#1b2621 100%)}
+html:not([data-lang-gate="1"]) .language-gate{display:none}
+.language-gate-card{width:min(560px,100%);padding:26px 24px;background:#ece0bd;border:3px solid #334834;border-radius:5px 11px 7px 9px;box-shadow:6px 7px 0 #1b2621;color:#33482f;text-align:center}
+.language-gate-kicker{display:block;font-size:10px;letter-spacing:.22em;color:#6b7f53;font-weight:bold}
+.language-gate-title{margin:10px 0 6px;font:700 clamp(20px,5.4vw,27px)/1.15 Georgia,serif;letter-spacing:.02em;color:#2f4632}
+.language-gate-title span{display:block;margin-top:4px;font-size:.72em;letter-spacing:.06em;color:#5d7350}
+.language-gate-copy{margin:0 auto 18px;max-width:44ch;font-size:12px;line-height:1.5;color:#4a5e42}
+.language-gate-copy span{display:block;margin-top:4px;font-style:italic}
+.language-gate-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.language-gate-button{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:96px;margin:0;padding:14px 10px;background:#33482f;border:2px solid #22331f;border-radius:4px;color:#f4eccf;cursor:pointer}
+.language-gate-button:hover,.language-gate-button:focus-visible{background:#3f5a39;border-color:#b2cdbd;outline:none}
+.language-gate-flag{font-size:26px;line-height:1}
+.language-gate-button strong{font:700 16px Georgia,serif;letter-spacing:.02em}
+.language-gate-button small{font-size:10px;letter-spacing:.04em;color:#c9d6bd}
+.language-gate-note{margin:16px 0 0;font-size:10px;line-height:1.45;color:#6b7f53}
+.language-gate-note span{display:block;margin-top:3px;font-style:italic}
+@media(max-width:420px){.language-gate-card{padding:20px 16px}.language-gate-choices{grid-template-columns:1fr}.language-gate-button{min-height:76px;flex-direction:row;justify-content:center;gap:10px}.language-gate-button small{display:none}}
+@media(prefers-reduced-motion:no-preference){.language-gate-card{animation:language-gate-in .28s ease-out}@keyframes language-gate-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
+
+/* ── Tutorial sandbox banner ────────────────────────────────────────────────
+   Always visible while the real dialogs show example data, so nobody mistakes
+   the sample soldier for their own. */
+.sandbox-banner{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 8px;padding:7px 12px;background:#7a4a26;color:#fff3d6;border:2px solid #a9713c;border-radius:4px;font-size:11px;line-height:1.35}
+.sandbox-banner[hidden]{display:none}
+.sandbox-banner strong{letter-spacing:.12em;font-size:10px;color:#ffd89a}
+.sandbox-banner span{flex:1 1 180px;min-width:0}
+.sandbox-banner button{width:auto;min-height:34px;margin:0;padding:6px 10px;background:#a9713c;border:1px solid #ffd89a;color:#20140a;font-size:9px;letter-spacing:.1em}
+@media(max-width:600px){.sandbox-banner{padding:6px 8px;font-size:10px}.sandbox-banner strong{display:none}}
+
+/* --- First run: dog tag -------------------------------------------------------
+   Drawn, not stored. The tag sits on the Soldier screen and in the Armory, and
+   is styled as a stamped metal plate so it reads as an object, not a badge to
+   unlock. */
+.dog-tag-slot{display:flex;justify-content:center;margin:0 0 1rem}
+.dog-tag-slot-armory{justify-content:flex-start;margin-bottom:.75rem}
+.dog-tag{position:relative;display:grid;gap:.35rem;min-width:15rem;padding:.9rem 1.1rem .8rem;border:1px solid var(--line,rgba(255,255,255,.22));border-radius:.35rem 1.2rem .35rem 1.2rem;background:linear-gradient(150deg,rgba(255,255,255,.08),rgba(0,0,0,.25));box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 6px 18px rgba(0,0,0,.35);color:inherit;text-align:left}
+.dog-tag::after{content:"";position:absolute;top:-.55rem;right:1.6rem;width:1rem;height:.6rem;border:1px solid var(--line,rgba(255,255,255,.22));border-bottom:0;border-radius:.5rem .5rem 0 0;opacity:.7}
+.dog-tag-top{display:flex;align-items:center;justify-content:space-between;gap:.6rem}
+.dog-tag-brand{font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+.dog-tag-gender{width:1.1rem;height:1.1rem;opacity:.85}
+.dog-tag-name{font-size:1.1rem;letter-spacing:.06em;text-transform:uppercase}
+.dog-tag-serial{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;letter-spacing:.28em;opacity:.9}
+.dog-tag-bottom{display:flex;align-items:center;gap:.45rem;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;opacity:.72}
+.dog-tag-stamp .armory-icon{width:.9rem;height:.9rem}
+@media (max-width:520px){.dog-tag{min-width:100%}.dog-tag-serial{letter-spacing:.2em}}
+
+/* --- First run: Field School ---------------------------------------------------
+   Four ways onward after the training contract. Hidden until the ending runs, so
+   a returning player keeps the Command Center they know. */
+.field-school{margin:0 0 1rem;padding:.9rem 1rem 1rem;border:1px solid var(--line,rgba(255,255,255,.16));border-radius:.6rem;background:rgba(0,0,0,.22)}
+.field-school[hidden]{display:none}
+.field-school-head{display:flex;flex-direction:column;gap:.15rem;margin-bottom:.7rem}
+.field-school-head h3{margin:0;font-size:1rem}
+.field-school-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.55rem}
+.field-school-card{display:flex;flex-direction:column;gap:.25rem;padding:.65rem .7rem;border:1px solid var(--line,rgba(255,255,255,.16));border-radius:.45rem;background:rgba(255,255,255,.04);color:inherit;text-align:left;cursor:pointer}
+.field-school-card strong{font-size:.85rem;letter-spacing:.04em}
+.field-school-card span{font-size:.72rem;line-height:1.35;opacity:.78}
+.field-school-card:hover,.field-school-card:focus-visible{border-color:var(--accent,#e0b062);background:rgba(255,255,255,.09)}
+@media (prefers-reduced-motion:reduce){.field-school{scroll-behavior:auto}}
