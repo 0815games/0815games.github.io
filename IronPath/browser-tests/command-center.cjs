@@ -53,12 +53,12 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
     assert.equal(await page.locator('#game').isVisible(),true);
     assert.match(await page.locator('#coachTitle').innerText(),/Welcome, soldier/);
-    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 6/);
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/);
     // The card leaves the field playable: it is anchored to the bottom and takes
     // less than half the viewport, unlike the 450px modal it replaced.
     // The dossier dressing is real styling, not decoration in a dead file: the
     // card must paint its own plate and draw one tick per step.
-    assert.equal(await page.locator('#coachPips i').count(),6,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i').count(),7,'a tick per coach card');
     assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
     const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
     assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
