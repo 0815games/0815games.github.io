@@ -65,6 +65,51 @@ const fs = require('node:fs');
       const mapView=await page.locator('#mapViewport').boundingBox();assert.ok(mapView.height>=height-2,`${name}: battlefield fills the viewport`);await check('#fieldOps > summary');
       assert.ok(hud.c.left>=-1 && hud.c.right<=width+1,`${name}: controls stay inside viewport`);
       await page.screenshot({path:`browser-artifacts/${name}-field-command.png`,fullPage:true});
+      // The training field (the first run) is a different frame: it owns the viewport,
+      // the page behind it must not scroll, and the contract card must sit BELOW the
+      // status dashboard instead of on top of it. Scripts are blocked here, so this
+      // also proves the pre-measurement fallback offset is already correct.
+      await page.evaluate(()=>{
+        const workspace=document.querySelector('#gameWorkspace');
+        workspace.dataset.screen='training';
+        const objective=document.querySelector('#soloObjective');
+        objective.hidden=false;
+        document.querySelector('#soloObjectiveTitle').textContent='TRAINING CONTRACT · HANSA';
+        document.querySelector('#soloObjectiveHint').textContent='Wave 1 of 5 · hold the line, the boss comes with the last wave.';
+        document.querySelector('#soloObjectiveProgress').textContent='0 / 5';
+      });
+      const training=await page.evaluate(()=>{
+        const battle=document.querySelector('.battle').getBoundingClientRect();
+        const card=document.querySelector('#soloObjective').getBoundingClientRect();
+        const dashboard=document.querySelector('#gameView .map-frame .dashboard').getBoundingClientRect();
+        const doc=document.documentElement;
+        return {battle:{top:battle.top,height:battle.height},card:{top:card.top,bottom:card.bottom,left:card.left,right:card.right},dashboard:{bottom:dashboard.bottom},scrollable:doc.scrollHeight-window.innerHeight};
+      });
+      assert.ok(training.battle.height>=height-2,`${name}: the training field fills the viewport (${Math.round(training.battle.height)} of ${height})`);
+      assert.ok(training.scrollable<=2,`${name}: the page behind the training field does not scroll (${training.scrollable}px)`);
+      assert.ok(training.card.top>=training.dashboard.bottom-1,`${name}: the contract card starts below the status dashboard (${Math.round(training.card.top)} >= ${Math.round(training.dashboard.bottom)})`);
+      assert.ok(training.card.right<=width+1,`${name}: the contract card stays inside the field`);
+      await page.screenshot({path:`browser-artifacts/${name}-training-field.png`,fullPage:false});
+      // The coach card is a bottom strip that must not be dragged by a scroll.
+      await page.evaluate(()=>{
+        const card=document.querySelector('#firstRunCoach');
+        card.hidden=false;
+        document.querySelector('#coachTitle').textContent='Welcome, soldier';
+        document.querySelector('#coachText').textContent='Tap a build marker to place your first tower.';
+        window.scrollBy(0,600);
+      });
+      const before=await page.locator('#firstRunCoach').boundingBox();
+      await page.evaluate(()=>window.scrollBy(0,600));
+      const after=await page.locator('#firstRunCoach').boundingBox();
+      assert.ok(before&&after,`${name}: the coach card is laid out`);
+      assert.ok(Math.abs(after.y-before.y)<1,`${name}: the coach card does not move when the page scrolls (${Math.round(before.y)} -> ${Math.round(after.y)})`);
+      assert.ok(before.y+before.height<=height+1,`${name}: the coach card sits above the action bar`);
+      await page.screenshot({path:`browser-artifacts/${name}-training-coach.png`,fullPage:false});
+      await page.evaluate(()=>{
+        document.querySelector('#firstRunCoach').hidden=true;
+        document.querySelector('#soloObjective').hidden=true;
+        document.querySelector('#gameWorkspace').dataset.screen='endless';
+      });
       await page.evaluate(()=>document.querySelector('#fourPartyPanel').hidden=false);
       for (const [id, control] of [['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['friendStatsDialog', '#friendStatsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
         await page.evaluate(id => document.getElementById(id).showModal(), id);
