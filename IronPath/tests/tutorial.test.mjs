@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
 import {createTutorial,TUTORIAL_STEPS} from '../tutorial.mjs';
-import {readFileSync} from 'node:fs';
+import {readFileSync,readdirSync} from 'node:fs';
 const nodes=new Map();
 const document={getElementById(id){if(!nodes.has(id))nodes.set(id,{open:false,dataset:{},attrs:{},setAttribute(key,value){this.attrs[key]=value;},addEventListener(type,fn){this['on'+type]=fn;},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:100}},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);}};
 const saved=new Map(),storage={getItem:k=>saved.get(k),setItem:(k,v)=>saved.set(k,v)};
@@ -143,4 +143,25 @@ test('a replay walked to the end hands over the training contract, a skipped one
  // game.js owns the "already offered" half of the rule.
  const game=readFileSync(new URL('../game.js',import.meta.url),'utf8');
  assert.match(game,/onFinish:id=>\{if\(trainingSeen\(id,tutorialStorage\)\)return;markTrainingSeen/);
+});
+
+test('every import of a module agrees on that module cache token',()=>{
+ // A stale `?v=` means browsers keep running the old copy of one module. That is how
+ // the briefing fix nearly shipped while game.js still asked for the old tour: the
+ // token had been bumped everywhere but in the one import that loads the tour.
+ const files=readdirSync(new URL('..',import.meta.url)).filter(f=>/\.(mjs|js|html)$/.test(f));
+ const tokens=new Map();
+ for(const file of files){
+  const source=readFileSync(new URL('../'+file,import.meta.url),'utf8');
+  for(const [,target,token] of source.matchAll(/['"`]\.\/([\w./-]+\.mjs)\?v=([a-z0-9-]+)/g)){
+   if(!tokens.has(target))tokens.set(target,new Map());
+   const seen=tokens.get(target);
+   if(!seen.has(token))seen.set(token,[]);
+   seen.get(token).push(file);
+  }
+ }
+ const split=[...tokens].filter(([,seen])=>seen.size>1);
+ assert.deepEqual(split.map(([target,seen])=>`${target}: ${[...seen.keys()].join(' vs ')} (${[...seen.values()].flat().join(', ')})`),[],
+  'importers of one module must share its cache token');
+ assert.ok(tokens.get('tutorial.mjs')?.size===1,'the tour is imported through a token');
 });
