@@ -60,8 +60,9 @@ const assert = require('node:assert/strict');
     // card must paint its own plate and draw one tick per step.
     assert.equal(await page.locator('#coachPips i').count(),6,'a tick per coach card');
     assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
-    const plate=await page.locator('#firstRunCoach').evaluate(e=>getComputedStyle(e).backgroundColor);
-    assert.notEqual(plate,'rgba(0, 0, 0, 0)','the card is a painted plate, not bare text over the field');
+    const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
+    assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
+    assert.doesNotMatch(plate,/0px/,'the plate has an edge');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
@@ -269,4 +270,8 @@ const assert = require('node:assert/strict');
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
   } finally {await browser.close();}
-})().catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{
+  // A failed assertion used to leave Chromium running, so the job sat until
+  // GitHub's 10 minute ceiling and reported a timeout instead of the real error.
+  process.exit(process.exitCode||0);
+});
