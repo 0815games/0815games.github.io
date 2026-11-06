@@ -147,7 +147,7 @@ const assert = require('node:assert/strict');
     // sandbox banner that promises nothing is stored.
     // Clicking NEXT on a practice step does nothing until that step is done, so the
     // walk skips a practice step it is not testing yet and otherwise just advances.
-    await advance();
+    const walkTo=async title=>{for(let i=0;i<20;i++){if(title.test(await page.locator('#tutorialTitle').innerText()))return true;await advance();}return title.test(await page.locator('#tutorialTitle').innerText());};
     // The tour is already open from the line above; walk it from here.
     assert.equal(await walkTo(/Skills/),true);
     await page.waitForSelector('#skillDialog[open]');
