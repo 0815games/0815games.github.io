@@ -10,6 +10,14 @@ const assert = require('node:assert/strict');
     await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
     const page = await context.newPage(), errors=[];
     const visible=selector=>page.locator(selector).isVisible();
+    // This script is long and linear, and the CI job dies at 10 minutes with no
+    // clue which step was slow. Fail fast per action, and name the stage we were
+    // in if the whole thing overruns, so a hang is diagnosable from the annotation.
+    page.setDefaultTimeout(15000);
+    let stage='boot';
+    const mark=name=>{stage=name;};
+    const watchdog=setTimeout(()=>{console.error(`HUNG in stage: ${stage}`);process.exit(1);},8*60*1000);
+    watchdog.unref?.();
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));
     const mocks = {
@@ -23,9 +31,11 @@ const assert = require('node:assert/strict');
       if(url.hostname!=='127.0.0.1')return route.abort();
       return route.continue();
     });
+    mark('load');
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
     // A first login now opens on the training FIELD, not on the Command Center:
     // that move is the fix under test below. Wait for the field, then for its board.
+    mark('first-run field');
     await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
     await page.waitForFunction(()=>window.__firebaseWrites?.some(p=>p.startsWith('friendNames/')&&p.endsWith('/mock-user'))); // indexed without opening Friends
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
@@ -72,6 +82,7 @@ const assert = require('node:assert/strict');
     await page.locator('#runResults').evaluate(dialog=>dialog.close());
     assert.equal(await page.locator('#commandCenter').isVisible(),true,'the debrief returns to the Command Center');
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'no card over the Command Center');
+    mark('command center');
     await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
     // The popup dismisses itself on any click outside it (by design: it is a
@@ -82,9 +93,11 @@ const assert = require('node:assert/strict');
     await page.locator('#friendsDialog').waitFor({state:'visible',timeout:10000});
     assert.match(await page.locator('#coopInviteList').innerText(),/Alice/,'the invitation survived the first run');
     await page.locator('#friendsClose').click();
+    mark('standalone workshop');
     // Exercise the standalone workshop with an in-memory transport; no account writes.
     await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun6')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
     await page.locator('#workshopTestRoot').getByRole('button',{name:'PREPARE WORKSHOP'}).click();assert.match(await page.locator('#workshopTestRoot').innerText(),/Field Scope/);const boots=page.locator('#workshopTestRoot .workshop-item').filter({hasText:'Field Boots'});await boots.getByRole('button',{name:'CRAFT'}).click();assert.match(await page.locator('#workshopTestRoot .workshop-wallet').innerText(),/50 scrap/);await boots.getByRole('button',{name:'EQUIP',exact:true}).click();assert.match(await page.locator('#workshopTestRoot .workshop-slot-grid').innerText(),/Field Boots/);assert.equal(await page.locator('#workshopTestRoot').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));window.__workshopTest.render();});assert.match(await page.locator('#workshopTestRoot').innerText(),/Feldstiefel/,'the workshop follows the page language; if this fails, the test is likely importing a SECOND language.mjs instance with a stale cache-bust tag');await page.evaluate(()=>{window.__workshopTest.close();const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});
+    mark('replay tour');
     // Practice opens a real modal in front of the tour, so the briefing is only
     // reachable again once that dialog is closed (which also ends the sandbox).
     const closePractice=async()=>{
@@ -150,6 +163,7 @@ const assert = require('node:assert/strict');
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
     await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');
     await page.setViewportSize({width:390,height:844});
+    mark('endless run');
     // Ending a solo run returns to the command center underneath its report.
     await page.locator('#menuResume').click();await page.locator('#endRun').click();await page.locator('#gameConfirmCancel').click();assert.equal(await visible('#game'),true,'cancelling keeps the run');
     await page.locator('#endRun').click();await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#runResults').evaluate(e=>e.open),true);assert.equal(await page.locator('#gameWorkspace').isHidden(),true);assert.equal(await visible('#commandCenter'),true);assert.match(await page.locator('#resultsTitle').innerText(),/Operation ended/);assert.equal(await page.locator('#runResults').getAttribute('data-outcome'),'neutral');assert.match(await page.locator('#resultsRewardXp').innerText(),/^\+0 XP$/);assert.equal(await page.locator('#resultsProgressLevel').innerText(),'LEVEL 3');assert.equal(await page.locator('#runResults').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'report has no horizontal overflow on mobile');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#resultsDone').innerText(),'ZURÜCK ZUR KOMMANDOZENTRALE');assert.match(await page.locator('#resultsProgressText').innerText(),/EP bis zur nächsten Stufe/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#resultsDone').click();assert.equal(await visible('#commandCenter'),true);
