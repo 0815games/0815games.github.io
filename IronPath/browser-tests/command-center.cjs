@@ -32,12 +32,40 @@ const assert = require('node:assert/strict');
 
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    // The field briefing now starts itself for a new soldier, and a modal correctly
-    // holds back non-modal social alerts. Dismiss it the way a player does before
-    // expecting the party invitation to appear.
-    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true,'a fresh account is briefed automatically');
-    await page.locator('#tutorialSkip').click();
-    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
+    // A first login now builds the training field FIRST and briefs on top of it,
+    // without a modal and without pausing. This is the phone bug: a modal brief
+    // over a paused field meant the first run could not be played at all.
+    await page.locator('#firstRunCoach').waitFor({state:'visible'});
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false,'no modal briefing on the first run');
+    assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
+    assert.equal(await page.locator('#game').isVisible(),true);
+    assert.match(await page.locator('#coachTitle').innerText(),/Welcome, soldier/);
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 6/);
+    // The card leaves the field playable: it is anchored to the bottom and takes
+    // less than half the viewport, unlike the 450px modal it replaced.
+    const coachBox=await page.locator('#firstRunCoach').boundingBox();
+    const viewport=page.viewportSize();
+    assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
+    // And it does not pause: the wave clock advances while the card is open.
+    await page.locator('#start').click();
+    await page.waitForFunction(()=>/WAVE IN PROGRESS/.test(document.getElementById('start').textContent));
+    const waveBefore=await page.locator('#enemies').innerText();
+    await page.waitForTimeout(1200);
+    assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there');
+    assert.notEqual(await page.locator('#enemies').innerText(),waveBefore,'enemies move while the card is open');
+    // Playing the card's own instructions dismisses it.
+    await page.locator('#coachNext').click();
+    assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
+    await page.locator('#coachClose').click();
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
+    // Back to the Command Center for the rest of the sweep. Ending a run opens the
+    // debrief, which is modal, so close it before touching anything else.
+    await page.locator('#endRun').click();
+    await page.locator('#gameConfirmAccept').click();
+    await page.locator('#runResults').waitFor({state:'visible'});
+    await page.locator('#runResults').evaluate(dialog=>dialog.close());
+    assert.equal(await visible('#commandCenter'),true,'the debrief returns to the Command Center');
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'no card over the Command Center');
     await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
     // Exercise the standalone workshop with an in-memory transport; no account writes.
     await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun5')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});

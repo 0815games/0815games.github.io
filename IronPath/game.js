@@ -277,8 +277,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // The first-run coach runs ON TOP of the training run, without pausing it. This
   // is the "play first, read while you play" path; the modal tour above stays for
   // the replay button in Help.
-  const coach=createCoach({document,storage:tutorialStorage,
-   onDone:id=>{if(typeof account.markFirstRunComplete==='function')try{account.markFirstRunComplete(id);}catch{/* the ending is still offered */}}});
+  // Finishing the cards hands nothing on by itself: the run's own debrief (via
+  // onTrainingComplete) owns the ending, so there is exactly one path into it.
+  const coach=createCoach({document,storage:tutorialStorage});
   // The account reports practice as it happens and drops the sample soldier when the
   // dialog closes; this hands the result to the tour, which waits on the step.
   account.sandbox?.onPracticeChange?.(seen=>{
@@ -529,6 +530,21 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
   function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
   function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
+  // What a first login does now: the field first, the briefing *on* the field.
+  // The 11-step modal tour used to run here, which meant a new soldier read about
+  // a battlefield they had never seen - and on a phone it covered the very field
+  // it was explaining. The tour is only the fallback for an account that already
+  // played the contract before the cards existed.
+  function startFirstRun(){
+   const id=account.getUserId();
+   if(!id)return false;
+   if(!trainingSeen(id,tutorialStorage)){
+    markTrainingSeen(id,tutorialStorage);
+    return startTrainingRun();
+   }
+   tutorial.startIfNeeded(id);
+   return false;
+  }
   // The first deployment of a new soldier: a real, shortened, weakened run that
   // pays level 2 (see training-run.mjs). Offered once, from the tutorial handoff.
   // `trainingDone` is the win flag of the CURRENT run, not a "seen it" marker: it
@@ -554,6 +570,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // the first moment a tutorial can be shown at all, because the tutorial is keyed
   // by player id. A no-op for anyone who already finished or skipped it.
   startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},
+  startFirstRun,
    // The training contract is a real deployment, not a mock: six weakened waves
    // that pay level 2. Called once by the account after the first-run tutorial.
    startTrainingRun,
