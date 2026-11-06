@@ -23,7 +23,9 @@ const assert = require('node:assert/strict');
       return route.continue();
     });
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
-    await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
+    // A first login now opens on the training FIELD, not on the Command Center:
+    // that move is the fix under test below. Wait for the field, then for its board.
+    await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
     await page.waitForFunction(()=>window.__firebaseWrites?.some(p=>p.startsWith('friendNames/')&&p.endsWith('/mock-user'))); // indexed without opening Friends
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
     const artwork=['soldier-workbench.jpg','debrief-battlefield.jpg','terrain-forest.jpg','terrain-city.jpg','terrain-desert.jpg','terrain-snow.jpg','terrain-marsh.jpg','tutorial-defend.jpg','tutorial-build.jpg','tutorial-soldier.jpg','armory-kit.jpg','armory-optics.jpg','bunker-sprite.png','hero-sprite.png','tank-sprite.png','boss-heavy-sprite.png','boss-plane-sprite.png','landmark-radio-sprite.png','landmark-transformer-sprite.png','landmark-bridge-sprite.png','landmark-truck-sprite.png','landmark-wreck-sprite.png','landmark-shelter-sprite.png','landmark-prison-sprite.png','landmark-dam-sprite.png'];
@@ -66,6 +68,8 @@ const assert = require('node:assert/strict');
     await page.locator('#runResults').evaluate(dialog=>dialog.close());
     assert.equal(await visible('#commandCenter'),true,'the debrief returns to the Command Center');
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'no card over the Command Center');
+    await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
+    assert.equal(await page.locator('#friendIndexError').isHidden(),true);
     await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
     // Exercise the standalone workshop with an in-memory transport; no account writes.
     await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun5')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
