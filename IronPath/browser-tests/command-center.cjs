@@ -372,59 +372,52 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('#commandCenter').isVisible(),true,'the tour closes back onto the Command Center');
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
-    // "Field tutorial" from the Command Center is the whole first run: it leaves the
-    // menu, deploys the training contract again and starts the coaching at card one.
-    await page.locator('#menuTutorial').click();
-    await page.waitForFunction(()=>document.getElementById('mapName')?.textContent==='The Last Road',null,{timeout:15000});
-    await page.waitForFunction(()=>{const card=document.getElementById('firstRunCoach');return card&&!card.hidden;},null,{timeout:15000});
-    assert.match(await page.locator('#coachStep').innerText(),/^1 \/ 7/,'the coaching starts at the first card again');
-    assert.match(await page.locator('#wave').innerText(),/^0 /,'on a fresh training field');
-
-    // Settings in the real browser: the dialog is the only home of these controls, the
-    // volume slider reaches the sound engine, and "play the first run again" deploys the
-    // training contract again - same map, cards from the first one - without paying.
-    mark('settings');
-    await page.evaluate(()=>{window.__xpAwards=0;});
-    await page.locator('#menuSettings').click();
-    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true,'the menu opens settings');
-    assert.equal(await page.evaluate(()=>document.querySelectorAll('#languageSelect').length),1,'exactly one language control');
-    const before=await page.locator('#soundVolumeStatus').innerText();
-    await page.locator('#soundVolume').fill('35');
-    assert.match(await page.locator('#soundVolumeStatus').innerText(),/35/,`the slider reports its value (was ${before})`);
-    // Graphics asks before it changes anything.
-    await page.locator('#graphicsQuality').selectOption('reduced');
-    await page.waitForSelector('#gameConfirm[open]');
-    assert.match(await page.locator('#gameConfirmText').innerText(),/effects/i);
-    await page.locator('#gameConfirmCancel').click();
-    assert.equal(await page.locator('#graphicsQuality').inputValue(),'full','a declined change snaps back');
-
-    // The replay: it has to leave the Command Center, deploy the training contract and
-    // put the first card back up.
-    await page.locator('#settingsTutorialReset').click();
-    await page.waitForSelector('#gameConfirm[open]');
-    await page.locator('#gameConfirmAccept').click();
-    await page.waitForFunction(()=>document.getElementById('mapName')?.textContent==='The Last Road',null,{timeout:15000});
-    await page.waitForFunction(()=>{const card=document.getElementById('firstRunCoach');return card&&!card.hidden&&document.getElementById('coachTitle')?.textContent?.length>0;},null,{timeout:15000});
-    const replay=await page.evaluate(()=>({
-      step:document.getElementById('coachStep')?.textContent||'',
-      title:document.getElementById('coachTitle')?.textContent||'',
-      wave:document.getElementById('wave')?.textContent||'',
-      cardOpen:!document.getElementById('firstRunCoach').hidden,
-    }));
-    assert.equal(replay.cardOpen,true,'the cards are back');
-    assert.match(replay.step,/1 \/ 7/,'and start at the first one');
-    assert.match(replay.wave,/^0 /,'on a freshly deployed training field, not mid-run');
-    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'settings closed behind the replay');
-
     // Exercise the online handoff independently from Firebase: no stale solo
     // battlefield appears until the first authoritative match snapshot arrives.
     await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261117-firstrunde1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
     assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
-    await page.evaluate(()=>document.querySelector('#gameWorkspace').dataset.onlineReady='true');
+    await page.evaluate(()=>document.querySelector('#gameWorkspace').dataset.onlineReady='true');document.querySelector('#gameWorkspace').hidden=false;
     assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);
-    await page.evaluate(()=>window.testNav.showLobby());
+    await page.evaluate(()=>window.testNav.showLobby());assert.equal(await visible('#gameWorkspace'),true,'the field is back in reach before the restart is tested');
     assert.equal(await visible('#game'),false); assert.equal(await visible('#returnOnline'),true);
     await page.evaluate(()=>window.__mockAuth(null));assert.equal(await page.evaluate(()=>window.__friendListenerCount()),0);assert.equal(await page.locator('#menuFriendBadge').isHidden(),true);
+    // The restart, at the very end of the sweep: everything above that needs the
+    // Command Center has already run, so leaving it for the training field now costs
+    // nothing. Both entry points do the same thing.
+    mark('first run again');
+    const restartOnce = async (label, open) => {
+      await open();
+      await page.waitForFunction(() => document.getElementById('mapName')?.textContent === 'The Last Road', null, { timeout: 15000 });
+      await page.waitForFunction(() => { const card = document.getElementById('firstRunCoach'); return card && !card.hidden; }, null, { timeout: 15000 });
+      assert.match(await page.locator('#coachStep').innerText(), /^1 \/ 7/, `${label}: the coaching starts at the first card again`);
+      assert.match(await page.locator('#wave').innerText(), /^0 /, `${label}: on a fresh training field`);
+      await page.locator('#coachClose').click();
+      await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();
+      await page.locator('#runResults').waitFor({state: 'visible'});
+      await page.locator('#runResults').evaluate(dialog => dialog.close());
+      await page.waitForSelector('#menuTutorial', {state: 'visible'});
+    };
+    // (a) FIELD TUTORIAL in the Command Center: the whole first run, map and all.
+    await restartOnce('field tutorial', async () => page.locator('#menuTutorial').click());
+    // (b) The same thing from Settings, which also owns language, sound and graphics.
+    await restartOnce('settings', async () => {
+      await page.locator('#menuSettings').click();
+      assert.equal(await page.locator('#settingsDialog').evaluate(e => e.open), true, 'the menu opens settings');
+      assert.equal(await page.evaluate(() => document.querySelectorAll('#languageSelect').length), 1, 'exactly one language control');
+      assert.equal(await page.evaluate(() => document.querySelectorAll('.language-picker').length), 0, 'nothing in the page corner');
+      const before = await page.locator('#soundVolumeStatus').innerText();
+      await page.locator('#soundVolume').fill('35');
+      assert.match(await page.locator('#soundVolumeStatus').innerText(), /35/, `the slider reports its value (was ${before})`);
+      await page.locator('#graphicsQuality').selectOption('reduced');
+      await page.waitForSelector('#gameConfirm[open]');
+      assert.match(await page.locator('#gameConfirmText').innerText(), /effects/i);
+      await page.locator('#gameConfirmCancel').click();
+      assert.equal(await page.locator('#graphicsQuality').inputValue(), 'full', 'a declined change snaps back');
+      await page.locator('#settingsTutorialReset').click();
+      await page.waitForSelector('#gameConfirm[open]');
+      await page.locator('#gameConfirmAccept').click();
+    });
+    assert.equal(await page.evaluate(() => document.getElementById('settingsDialog').open), false, 'settings closed behind the replay');
     assert.deepEqual(errors,[],`browser exceptions: ${errors.join('\n')}`);
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
