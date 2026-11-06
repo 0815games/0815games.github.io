@@ -1,17 +1,17 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-firstrun4';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-firstrun3';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261112-free1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261112-firstrun4';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun3';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun4';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun3';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
@@ -28,8 +28,8 @@ import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261112-firstrun4';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-firstrun4';
+import { createTutorial } from './tutorial.mjs?v=20261112-firstrun3';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-firstrun3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -293,18 +293,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // Set after the real opener, which clears the status line as it opens.
     const status=$('armoryStatus');if(status&&account.sandbox?.isActive?.())status.textContent=tr('Sample data: nothing is saved.');
   }
-  // Both entry points share one path, so replaying from the Command Center and from
-  // the battle Help panel cannot drift apart. `state` is only touched when a battle
-  // is loaded: the Command Center reaches this before the first run ever starts.
-  function replayTutorial(){
-   closeMenu();keys.clear();sendDirection();
-   if(state){state.selectedPad=null;updateUI();}
-   tutorial.replay(account.getUserId());
-  }
-  // A replay hands the player back to the Command Center instead of the battlefield,
-  // because a replay started from the menu has no battle behind it.
-  function showTutorialFromMenu(){closeMenu();keys.clear();sendDirection();tutorial.replay(account.getUserId());}
-  $('tutorialReplay').onclick=()=>replayTutorial();
+  $('tutorialReplay').onclick=()=>{closeMenu();state.selectedPad=null;keys.clear();sendDirection();tutorial.replay(account.getUserId());updateUI();};
   const menu=$('radialMenu');
   const options=[0,1,2,3].map(i=>$('radial'+i));
   let menuMode='actions',menuTowerKey=null,detailAvailability=null,detailContent=null;
@@ -535,9 +524,6 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // the first moment a tutorial can be shown at all, because the tutorial is keyed
   // by player id. A no-op for anyone who already finished or skipped it.
   startTutorialIfNeeded:()=>{closeMenu();keys.clear();sendDirection();tutorial.startIfNeeded(account.getUserId());},
-  // The Command Center's field-tutorial button. Without this the menu button threw,
-  // and the only way back into the briefing was the Help panel inside a battle.
-  showTutorial:()=>showTutorialFromMenu(),
    // The training contract is a real deployment, not a mock: six weakened waves
    // that pay level 2. Called once by the account after the first-run tutorial.
    startTrainingRun,
