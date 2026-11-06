@@ -1,5 +1,13 @@
 # First run v3 — play first, brief during play, dress last
 
+> **Status: umgesetzt.** Alle Patches 1–8 sind gebaut und getestet (398 Tests grün).
+> Die Geräteprüfung (§9) bleibt offen, bis sie auf einem echten Telefon gelaufen
+> ist — §7 und §10 beschreiben den Stand, nicht mehr den Plan.
+> Die Entscheidungen aus §11 sind beantwortet: bestehende Accounts sehen den neuen
+> Ablauf einmal (`TUTORIAL_EDITION` bleibt 2, weil der Coach eine eigene Edition
+> hat), der Bonus ist fest auf Level 2 gesetzt, die Blutgruppe ist abgeleitet, und
+> die Karte sitzt unten über der Aktionsleiste.
+
 Der Patchplan für den Umbau des Ersteinstiegs. Jeder Punkt sagt, **warum** er
 nötig ist, **welche Datei** er anfasst und **wann** er als fertig gilt.
 

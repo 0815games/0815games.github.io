@@ -2,8 +2,9 @@
 
 Work through the remaining items before stress and balance testing. Previously released multiplayer features still need real-device validation; see [BETA-TEST-PLAN.md](BETA-TEST-PLAN.md).
 
-- [x] First run reworked: language gate on every device, the field briefing starts itself, practice drives the real dialogs in a sandbox, the training contract is six weakened waves, and the ending spends the first skill point for real, issues the dog tag and opens the workshop. See [TUTORIAL.md](TUTORIAL.md).
-- [ ] Validate the first run on a real phone and a real desktop browser: gate, briefing, six-wave contract, skill save, dog tag, workshop, Field School. **Script: [FIRST-RUN-DEVICE-TEST.md](FIRST-RUN-DEVICE-TEST.md)** — steps, exact German strings, and what counts as a blocker.
+- [x] First run reworked, v2: language gate on every device, and the briefing is no longer a modal over a paused field. A first login builds the training field and briefs **on** it with six cards that never pause and stay under half the screen. Practice still drives the real dialogs in a sandbox.
+- [x] First run reworked, v3: the contract is **five waves and the boss of wave 5 ends it**; the run tops up to 300 XP so the point is guaranteed; the dog tag (with a derived blood type) is issued in its own popup as the boss reward; the ending then runs tag → equipment → skill point → workshop. See [TUTORIAL.md](TUTORIAL.md) and [TUTORIAL-V3-PLAN.md](TUTORIAL-V3-PLAN.md).
+- [ ] Validate the first run on a real phone and a real desktop browser: gate, field-first cards, five-wave contract, dog tag award, equipment, skill save, workshop, Field School. **Script: [FIRST-RUN-DEVICE-TEST.md](FIRST-RUN-DEVICE-TEST.md)** — steps, exact German strings, and what counts as a blocker. The phone layout is the open question: CI proves the card is under half the viewport and that the wave clock keeps running, but not how it feels in the hand.
 - [ ] Continue the English/German translation incrementally. Untranslated content stays in English; incorporate feedback from testing.
 - [x] Add a fullscreen option for desktop browsers, with all controls needed to play available in fullscreen.
 - [ ] Validate fullscreen in real desktop browsers, including gameplay, dialogs, and exiting with Escape. Covered by section 5 of [FIRST-RUN-DEVICE-TEST.md](FIRST-RUN-DEVICE-TEST.md).
