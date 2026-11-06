@@ -26,6 +26,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
+import {createGuide} from './first-run-guide.mjs?v=20261112-guide1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -353,6 +354,29 @@ function refreshDogTags(){
  if(!profile)return;
  const data={profile,accountId:user?.uid};
  for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag')])if(container)renderDogTag(document,container,data);
+ refreshProfileTag(data);
+}
+// The dog tag is a piece of kit the soldier WEARS, not a stat: once the first run is
+// over it hangs beside the name in the Command Center. `ENDING_KEY` is the record of
+// "this soldier has been issued one", so the badge and the award dialog can never
+// disagree - no new profile field, no Firebase rules change.
+function refreshProfileTag(data){
+ const badge=document.getElementById('profileTag');
+ if(!badge)return;
+ const issued=!!user?.uid&&endingDone(user.uid,firstRunStorage());
+ badge.hidden=!issued;
+ if(!issued){badge.replaceChildren();return;}
+ const tag=dogTag(data);
+ badge.replaceChildren();
+ const serial=document.createElement('span');
+ serial.className='profile-tag-serial';
+ serial.textContent=tag.serial;
+ badge.append(serial);
+ const blood=document.createElement('span');
+ blood.className='profile-tag-blood';
+ blood.textContent=tag.bloodType||'';
+ badge.append(blood);
+ badge.title=`${tag.serial} · ${tag.bloodType}`;
 }
 const dialogOpen=id=>!!document.getElementById(id)?.open;
 // Wait for a dialog to open, then for the player to finish with it. Never hangs:
@@ -372,6 +396,9 @@ function waitFor(condition,{timeout=180000,interval=150}={}){
 }
 async function practiceSkills(){
  const before=profile?.skills||'';
+ // The skills card explains the four classes before the tree opens: a new soldier
+ // has never heard of Assault or Engineer, and the tree does not say what they buy.
+ guide().event?.('equip');
  document.getElementById('skillOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('skillDialog')))return false;
  // A saved build with no points left is the proof that the point went somewhere.
@@ -388,6 +415,7 @@ async function practiceSkills(){
 // in a menu nobody had opened yet. It gets its own popup, full size.
 async function showDogTag(){
  refreshDogTags();
+ guide().start(user?.uid);
  const dialog=document.getElementById('dogTagAward'),slot=document.getElementById('dogTagAwardSlot'),close=document.getElementById('dogTagAwardClose');
  if(!dialog||!slot)return true;
  renderDogTag(document,slot,{profile:viewProfile(),accountId:user?.uid});
@@ -403,6 +431,7 @@ async function showDogTag(){
 // Step 2 of the ending: put on what the run earned, in the REAL armory. This is
 // the player's own soldier, not the practice sandbox, so the save is real.
 async function equipFirstRewards(){
+ guide().next?.();
  document.getElementById('armoryOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
  document.getElementById('armoryEquipmentTab')?.click?.();
@@ -412,11 +441,20 @@ async function equipFirstRewards(){
  return true;
 }
 async function openWorkshopFirstTime(){
+ guide().event?.('skills');
  document.getElementById('armoryOpen')?.click?.();
  if(await waitFor(()=>dialogOpen('armoryDialog')))document.getElementById('armoryWorkshopTab')?.click?.();
  else return false;
  await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
+}
+// The guide for the post-match screens. It is created lazily: it needs the document
+// and nothing else, and a player who never reaches the ending never pays for it.
+let firstRunGuide=null;
+const firstRunStorageFor=()=>{try{return window.localStorage;}catch{return null;}};
+function guide(){
+ if(!firstRunGuide)firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector)});
+ return firstRunGuide;
 }
 function offerFirstRunEnding(){
  const id=user?.uid;
@@ -426,7 +464,8 @@ function offerFirstRunEnding(){
  void runFirstRunEnding({
   id,storage:firstRunStorage(),
   steps:{tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime},
-  onDone:()=>{endingRunning=false;openFieldSchool();},
+
+  onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();refreshDogTags();openFieldSchool();},
   onStopped:()=>{endingRunning=false;},
  });
 }

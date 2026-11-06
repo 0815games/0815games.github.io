@@ -42,7 +42,11 @@ test('the card opens on the welcome and moves on what the player does',()=>{
  assert.equal(coach.step().id,'build');
  coach.event('build');assert.equal(coach.step().id,'upgrade');
  coach.event('upgrade');assert.equal(coach.step().id,'hero');
- coach.event('move');assert.equal(coach.step().id,'deploy');
+ coach.event('move');assert.equal(coach.step().id,'money');
+ // Two cards are read rather than earned: the greeting and the explanation of what
+ // supplies are. They advance on their own button, or they would block the run.
+ const next=()=>document.getElementById('coachNext').onclick();
+ next();assert.equal(coach.step().id,'deploy');
  coach.event('deploy');assert.equal(coach.step().id,'boss');
  assert.deepEqual(changes,[true],'one open, and no pause events anywhere');
 });

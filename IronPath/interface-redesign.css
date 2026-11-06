@@ -556,3 +556,87 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 @media(prefers-reduced-motion:reduce){
   .tutorial-dialog,.dog-tag-award{animation:none}
 }
+/* ---------------------------------------------------------------------------
+   The first-run pointer: a ring around the thing to tap and a line from the card
+   to it. This is the "highlight" the cards were missing - an instruction the player
+   has to hunt for on an unfamiliar battlefield is a puzzle, not an explanation.
+
+   It must never intercept a tap, and it must never dim the field: the whole point
+   of the first run is that the player is playing, so this is a marker, not a modal
+   backdrop.
+   --------------------------------------------------------------------------- */
+.coach-highlight{position:fixed;inset:0;z-index:59;pointer-events:none}
+.coach-highlight[hidden]{display:none}
+.coach-highlight-arrow{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.coach-highlight-arrow line{stroke:#e4ca89;stroke-width:2;stroke-dasharray:5 5;opacity:.9;animation:coach-march 1s linear infinite}
+@keyframes coach-march{to{stroke-dashoffset:-10}}
+.coach-ring{
+  position:absolute;border:3px solid #e4ca89;border-radius:50%;
+  box-shadow:0 0 0 4px #14251e66,0 0 18px #e4ca8980;
+  animation:coach-pulse 1.4s ease-in-out infinite;
+}
+.coach-ring[hidden]{display:none}
+@keyframes coach-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.75}}
+/* A marked control keeps its outline too, so the ring reads as "this one" even if
+   the element is wider than the ring. */
+.coach-target{outline:2px solid #e4ca89;outline-offset:3px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){
+  .coach-ring{animation:none}
+  .coach-highlight-arrow line{animation:none;stroke-dasharray:none}
+}
+/* The issued dog tag, worn beside the soldier's name. It is a piece of kit, not a
+   statistic: a stamped plate that hangs off the name row, with the serial and the
+   blood type a real tag carries. Hidden until the first run is over, because until
+   then the soldier does not own one. */
+.profile-name-row{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.profile-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:2px 7px 2px 6px;
+  background:linear-gradient(#2b3a2c,#1d2a20);color:#e7d6a6;
+  border:1px solid #7b8a6b;border-radius:2px 8px 8px 2px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;letter-spacing:.12em;
+  box-shadow:inset 0 0 0 1px #ffffff12,0 1px 3px #0006;
+  position:relative;
+}
+/* The punched hole: the one detail that makes it read as a tag rather than a chip. */
+.profile-tag::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:#0f1a13;box-shadow:inset 0 1px 1px #000a;flex:none;
+}
+.profile-tag[hidden]{display:none}
+.profile-tag-serial{letter-spacing:.16em}
+.profile-tag-blood{color:#e4ca89;font-weight:bold;letter-spacing:.1em}
+.profile-tag-blood:empty{display:none}
+@media(max-width:520px){
+  .profile-tag{font-size:8px;padding:1px 6px 1px 5px;gap:4px}
+  .profile-tag::before{width:5px;height:5px}
+}
+/* ---------------------------------------------------------------------------
+   The guide for the screens after the match. It sits at the top of the screen, out
+   of the way of the dialog it describes, and it is not modal: the player has to be
+   able to press the thing it is talking about while it is still up.
+   --------------------------------------------------------------------------- */
+.first-run-guide{
+  position:fixed;z-index:70;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+  width:min(560px,calc(100vw - 16px));max-height:min(40dvh,340px);
+  display:flex;flex-direction:column;gap:6px;
+  padding:12px 14px;background:linear-gradient(#16281f,#12201a);color:#f1ead4;
+  border:1px solid #7d9270;border-radius:4px;box-shadow:0 14px 40px #000b;
+  animation:guide-in .12s ease-out;
+}
+.first-run-guide[hidden]{display:none}
+@keyframes guide-in{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.guide-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:5px;border-bottom:1px solid #ffffff14}
+.guide-step{font-size:10px;font-weight:bold;letter-spacing:.14em;color:#e4ca89}
+.guide-caption{font-size:9px;font-weight:bold;letter-spacing:.12em;color:#9fb79b}
+.first-run-guide h2{margin:0;font:700 17px Georgia,serif;color:#f6e9ca}
+.guide-text{margin:0;font-size:12px;line-height:1.45;color:#d8e3c9;overflow:auto;min-height:0}
+.guide-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:2px}
+.guide-foot button{min-height:44px;min-width:96px;margin:0;padding:0 16px;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
+.first-run-guide button:focus-visible{outline:2px solid #f6e9ca;outline-offset:2px}
+@media(max-width:600px){.first-run-guide{padding:10px 12px;gap:4px;max-height:42dvh}.first-run-guide h2{font-size:15px}.guide-text{font-size:11.5px}}
+/* Landscape: the card moves aside so it never covers the dialog it explains. */
+@media(max-height:460px){
+  .first-run-guide{left:auto;right:8px;top:8px;transform:none;width:min(330px,46vw);max-height:calc(100dvh - 16px)}
+  @keyframes guide-in{from{opacity:0}to{opacity:1}}
+}
+@media(prefers-reduced-motion:reduce){.first-run-guide{animation:none}}

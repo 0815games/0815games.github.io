@@ -24,10 +24,15 @@
 import {waveXP} from './progression.mjs';
 
 export const TRAINING_WAVES=6;
-// What the first run pays in total. 300 is the level-2 threshold; the contract
-// pays 450 so the first skill point does not depend on the wave formula staying
-// at 20+10n. Level 2, and a 150 XP head start on level 3.
+// What the first run pays in total when the soldier wins. 300 is the level-2
+// threshold; the contract pays 450 so the first skill point does not depend on the
+// wave formula staying at 20+10n. Level 2, and a 150 XP head start on level 3.
 export const FIRST_RUN_XP=450;
+// What the first run pays when the soldier LOSES. The run is the tutorial, not an
+// exam: a player who loses still walks away with the dog tag and enough XP to reach
+// level 2 and spend the point, because the screens that follow teach equipment and
+// skills and both need something to teach. Losing costs the surplus, not the lesson.
+export const FIRST_RUN_DEFEAT_XP=330;
 export const TRAINING_UNIT=.7;
 export const TRAINING_BUNKER=1.5;
 export const TRAINING_BOSS_UNIT=.6;
@@ -71,7 +76,7 @@ export function trainingBonusXP(){
   return Math.max(0,FIRST_RUN_XP-trainingWaveXP());
 }
 
-// What the contract pays in total, and what that buys (level 2, one point).
+// What the contract pays in total when won, and what that buys (level 2, one point).
 export function trainingXP(){
   return trainingWaveXP()+trainingBonusXP();
 }

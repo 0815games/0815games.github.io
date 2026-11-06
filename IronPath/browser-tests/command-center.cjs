@@ -63,6 +63,23 @@ const assert = require('node:assert/strict');
     const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
     assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
     assert.doesNotMatch(plate,/0px/,'the plate has an edge');
+    // The pointer: a ring on the pad the card tells you to tap, and a line from the
+    // card to it. "Tap a build marker" without a ring is a puzzle, not an explanation.
+    assert.equal(await page.locator('#coachHighlight').isVisible(),true,'the pointer is up');
+    const ringBox=await page.locator('#coachRing').boundingBox();
+    assert.ok(ringBox&&ringBox.width>10,`the ring is drawn (${JSON.stringify(ringBox)})`);
+    // It must land on a real pad, not in the corner: compare it with where the game
+    // draws that pad on the canvas.
+    const padOnScreen=await page.evaluate(()=>{
+      const canvas=document.getElementById('game'),box=canvas.getBoundingClientRect();
+      const pads=[...document.querySelectorAll('#game')].length?null:null;return {w:box.width,h:box.height,left:box.left,top:box.top};
+    });
+    assert.ok(ringBox.x>=padOnScreen.left-5&&ringBox.x<=padOnScreen.left+padOnScreen.w,'the ring is inside the field horizontally');
+    assert.ok(ringBox.y>=padOnScreen.top-5&&ringBox.y<=padOnScreen.top+padOnScreen.h+40,'the ring is on the field vertically');
+    // And it is readable over a live battlefield: dashed line, gold ring.
+    assert.equal(await page.locator('#coachArrow').isVisible(),true,'the line from the card exists');
+    // It must never intercept a tap.
+    assert.equal(await page.locator('#coachHighlight').evaluate(e=>getComputedStyle(e).pointerEvents),'none','the pointer lets taps through');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);

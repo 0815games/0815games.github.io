@@ -16,17 +16,25 @@
 // Copy is one sentence per card. Pictures belong to the reward popups, not to the
 // card that has to keep the field free.
 import {translateText as tr} from './language.mjs?v=20261112-firstrun6';
+import {createCoachHighlight} from './coach-highlight.mjs?v=20261112-coachptr1';
 
-// `when` is the engine event that dismisses the card; `hint` is shown until then.
-// Order is deliberate: the first card is the welcome, and it appears only after
-// the first frame of the training field has been drawn.
+// `when` is the engine event that finishes the card; `target` is what the pointer
+// rings while the card is up. Every card explains one thing the player has to do,
+// and the pointer shows them where - a card without a target is a card the player
+// has to translate into a search on an unfamiliar field.
+//
+// `target` is one of:
+//   {pad:'first-free'}  a build marker with nothing on it - the next tower goes here
+//   {element:'#start'}  a real control, by selector
+//   null                nothing to point at (the boss card is an announcement)
 export const COACH_STEPS = Object.freeze([
-  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Six waves, and the boss of the last one ends the exercise. Tap a build marker to place your first tower.',caption:'FIVE WAVES',when:null}),
-  Object.freeze({id:'build',title:'Build a tower',text:'Tap a glowing build marker, choose a tower, then confirm. Supplies only grow while waves run.',caption:'TAP A BUILD MARKER',when:'build'}),
-  Object.freeze({id:'upgrade',title:'Upgrade or sell',text:'Tap your tower to see its range. Upgrade it in that panel, or sell it for half the investment.',caption:'CHOOSE AN ACTION',when:'upgrade'}),
-  Object.freeze({id:'hero',title:'Move your hero',text:'Tap open ground to move. Your hero fires at nearby enemies on their own once deployed.',caption:'MOVE INTO POSITION',when:'move'}),
-  Object.freeze({id:'deploy',title:'Start the battle',text:'Deploy calls the next wave. Clearing a wave pays XP and supplies, so build before you deploy.',caption:'HOLD THE LINE',when:'deploy'}),
-  Object.freeze({id:'boss',title:'The boss is here',text:'The last boss drops your dog tag. Weaken it with towers before it reaches the bunker.',caption:'BOSS OF WAVE FIVE',when:'boss'}),
+  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Six waves, and the boss of the last one ends the exercise. This is a real match: what you build now is what fights.',caption:'WAVE 1 OF 6',when:null,target:{pad:'first-free'}}),
+  Object.freeze({id:'build',title:'Build a tower',text:'Tap a glowing build marker, pick a tower, then confirm. Towers shoot on their own; you only choose where they stand.',caption:'TAP THE RINGED MARKER',when:'build',target:{pad:'first-free'}}),
+  Object.freeze({id:'upgrade',title:'Upgrade it',text:'Tap your tower to open its panel. Upgrade it there - a level 2 tower hits noticeably harder than a second level 1 - or sell it for half back.',caption:'TAP YOUR TOWER',when:'upgrade',target:{pad:'occupied'}}),
+  Object.freeze({id:'hero',title:'Move your hero',text:'Tap open ground and your soldier walks there and fires on his own. He is not a tower: he can be anywhere, so put him where the road bends.',caption:'TAP OPEN GROUND',when:'move',target:null}),
+  Object.freeze({id:'money',title:'Supplies',text:'Supplies pay for towers and only arrive when you clear a wave. That is why you build before you deploy, not after.',caption:'WATCH THE SUPPLY COUNT',when:null,target:{element:'#moneyPanel'}}),
+  Object.freeze({id:'deploy',title:'Start the wave',text:'Deploy calls the next wave. Clearing it pays XP and supplies, so the field gets stronger only if you keep building.',caption:'PRESS DEPLOY',when:'deploy',target:{element:'#start'}}),
+  Object.freeze({id:'boss',title:'The boss is here',text:'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.',caption:'BOSS OF WAVE 6',when:'boss',target:null}),
 ]);
 
 // The edition decides whether an existing soldier is shown the cards again. It is
@@ -54,9 +62,14 @@ export function markCoachSeen(id,storage){
 // The card's own state machine. Deliberately tiny and DOM-thin: the engine calls
 // `event('build')` and the card moves on. `onHide` is what the engine uses to know
 // that a hint is no longer owed.
-export function createCoach({document,storage,onVisibilityChange=()=>{},onDone=()=>{}}={}){
+// `resolveTarget` is supplied by the engine: the coach must not guess where a free
+// pad is, because that depends on the live match. It returns either
+// `{pad:{x,y}}` for a battlefield marker or `{element:node}` for a control, or null
+// when there is nothing honest to point at.
+export function createCoach({document,window:win,storage,resolveTarget=()=>null,onVisibilityChange=()=>{},onDone=()=>{}}={}){
   const $=id=>document.getElementById(id);
   const root=$('firstRunCoach');
+  const highlight=createCoachHighlight({document,window:win});
   let index=-1,activeUser=null,announced=new Set();
 
   const step=()=>COACH_STEPS[index]||null;
@@ -83,10 +96,34 @@ export function createCoach({document,storage,onVisibilityChange=()=>{},onDone=(
     }
     root.hidden=false;
     root.dataset.step=current.id;
+    pointAt(current);
+  }
+
+  // Show the player the thing the card is talking about. A missing target hides the
+  // pointer instead of throwing: the card must still be readable on a dead frame.
+  function pointAt(current){
+    try{
+      if(current?.target){
+        const found=resolveTarget(current.target);
+        if(found?.pad){highlight.markPad(found.pad);return true;}
+        if(found?.element){highlight.markElement(found.element);return true;}
+      }
+    }catch{/* The pointer is decoration; never let it break the card. */}
+    highlight.hide();
+    return false;
+  }
+
+  // The field pans, the phone rotates, the window resizes. Re-marking is cheap and
+  // keeps the ring on the thing it named instead of on where it used to be.
+  function remark(){
+    if(!open())return;
+    const current=step();
+    if(current)pointAt(current);
   }
 
   function hide(){
     if(root)root.hidden=true;
+    highlight.hide();
     onVisibilityChange(false);
   }
 
@@ -140,5 +177,8 @@ export function createCoach({document,storage,onVisibilityChange=()=>{},onDone=(
     boss(){if(!open())return false;const target=COACH_STEPS.findIndex(s=>s.id==='boss');if(target<0||index>=target)return false;index=target;render();return true;},
     stop(){hide();index=-1;activeUser=null;},
     refreshLanguage(){if(open())render();},
+    // The engine calls this when the field moved under the ring (pan, zoom, rotate)
+    // or when the card's target changed without a new card.
+    remark,
   };
 }

@@ -11,7 +11,7 @@ import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261103-cinematic1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun5';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen} from './training-run.mjs?v=20261112-firstrun5';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
@@ -133,10 +133,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   if(touchDevice.matches)touchZoom=createMapZoom({viewport:mapViewport,canvas,getLogicalSize:()=>({width:logicalWidth,height:logicalHeight}),isEnabled:()=>!battleViewport,onChange:factor=>{largeMap=factor>1.01;zoomButton.setAttribute('aria-pressed',String(largeMap));$('mapQuickZoom').textContent=tr(largeMap?'FIT MAP':'ZOOM MAP');zoomButton.textContent=tr(largeMap?'MAP: FIT':'MAP: ZOOM');}});
   $('mapQuickZoom').addEventListener('click',()=>zoomButton.click());
   if(touchZoom&&typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
-  zoomButton.addEventListener('click',()=>{if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else battleViewport.zoom(2);return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
-  $('mapEntry').addEventListener('click',()=>battleViewport?battleViewport.pan(1e6,0):mapViewport.scrollTo({left:0,behavior:'smooth'}));
-  $('mapBunker').addEventListener('click',()=>battleViewport?battleViewport.pan(-1e6,0):mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'}));
-  portrait.addEventListener('change',()=>{if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());});
+  // The pointer is anchored to a world position, not to a pixel: whenever the field
+  // moves under it, re-mark. Cheap, and the ring must never point at where the pad
+  // used to be.
+  const remarkCoach=()=>{try{coach.remark();}catch{}};
+  zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else battleViewport.zoom(2);return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
+  $('mapEntry').addEventListener('click',()=>{battleViewport?battleViewport.pan(1e6,0):mapViewport.scrollTo({left:0,behavior:'smooth'});remarkCoach();});
+  $('mapBunker').addEventListener('click',()=>{battleViewport?battleViewport.pan(-1e6,0):mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'});remarkCoach();});
+  portrait.addEventListener('change',()=>{if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());remarkCoach();});
+  window.addEventListener('resize',remarkCoach);
   function syncBattleViewport(map,versus){
     const wanted=experimentalFourViewport&&map.fourPlayer&&!versus;
     if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');}
@@ -279,7 +284,28 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // the replay button in Help.
   // Finishing the cards hands nothing on by itself: the run's own debrief (via
   // onTrainingComplete) owns the ending, so there is exactly one path into it.
-  const coach=createCoach({document,storage:tutorialStorage});
+  // The coach asks the engine where to point, because only the engine knows which
+  // pads are free in the live match. A card that says "tap a build marker" without
+  // a ring around one is a puzzle, not an explanation.
+  const coach=createCoach({document,window,storage:tutorialStorage,resolveTarget:target=>{
+   if(!state)return null;
+   if(target?.pad==='first-free'){
+    const map=getMap(state.mapId);
+    const index=map.pads.findIndex((pad,i)=>!state.towers.some(t=>(t.pad??t.padId)===i));
+    return index<0?null:{pad:map.pads[index]};
+   }
+   if(target?.pad==='occupied'){
+    const tower=state.towers[0];
+    if(!tower)return null;
+    const map=getMap(state.mapId);
+    return {pad:map.pads[tower.pad??tower.padId]};
+   }
+   if(target?.element){
+    const node=document.querySelector(target.element);
+    return node?{element:node}:null;
+   }
+   return null;
+  }});
   // The account reports practice as it happens and drops the sample soldier when the
   // dialog closes; this hands the result to the tour, which waits on the step.
   account.sandbox?.onPracticeChange?.(seen=>{
@@ -464,6 +490,18 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       // The boss of wave 6 ends the training contract: six cleared waves, and the
       // dog tag is handed over in the debrief. `trainingWon` waits for the boss to
       // actually die, so the run cannot end with the boss still standing.
+      // The first run ends in the reward screen either way. Winning tops the run up
+      // to FIRST_RUN_XP; losing still pays FIRST_RUN_DEFEAT_XP, and both reach
+      // level 2 - the screens that follow teach equipment and skills, and a player
+      // who bounced off wave six still has to be given something to equip and a
+      // point to spend. This used to fire on `trainingWon` only, so a defeat ended
+      // the run with the debrief and no dog tag at all.
+      if(activeTraining&&state.ended&&!trainingDone&&state.endReason!=='retired'&&!state.endReason?.startsWith('training')){
+       trainingDone=true;trainingBonusPaid=true;
+       const xp=FIRST_RUN_DEFEAT_XP;
+       Promise.resolve(account.awardXP(xp,Math.max(1,state.completedWave||1))).catch(()=>{});
+       notice(()=>tr('Run over. {xp} XP for the attempt - the dog tag is yours anyway.',{xp}));
+      }
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
        // The six waves pay 330 XP; the contract tops that up to 450 so the first
