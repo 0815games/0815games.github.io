@@ -55,7 +55,7 @@ export function stepMatch(state){
     else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave,state.campaignContract?.bossEvery),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
       // A campaign contract is harder by construction: tougher units, and extra
       // units on surge waves. Endless solo and multiplayer are untouched.
       if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
@@ -126,7 +126,14 @@ export function stepMatch(state){
       const block=Math.floor((state.wave-1)/WAVE_COUNT),bit=1<<((state.wave-1)%WAVE_COUNT);
       if(block===0)player.completedWaveMask|=bit;else{const blocks=player.completedWaveBlocks||(player.completedWaveBlocks={});blocks[block]=(blocks[block]||0)|bit;}
     }
-    rewardTeam(state,20);for(const id of activePlayers(state)){const p=state.players[id];if(p.skills?.web?.[14]){addSupplies(state,id,10);comboCue(p,'War Economy');events.push({type:'skillCombo',name:'War Economy',x:p.x,y:p.y});}}if(state.wave>=6){for(const id of activePlayers(state))addSupplies(state,id,3*(state.supply||0)+equipmentForPlayer(state,state.players[id]).waveSupplies);}if(state.wave%5===0)state.pendingPerk=state.wave;
+    rewardTeam(state,20);for(const id of activePlayers(state)){const p=state.players[id];if(p.skills?.web?.[14]){addSupplies(state,id,10);comboCue(p,'War Economy');events.push({type:'skillCombo',name:'War Economy',x:p.x,y:p.y});}}if(state.wave>=6){for(const id of activePlayers(state))addSupplies(state,id,3*(state.supply||0)+equipmentForPlayer(state,state.players[id]).waveSupplies);}// A field upgrade is offered on every fifth cleared wave. It used to be a bare
+      // `wave % 5`, which meant wave 5 of the six-wave training contract asked a new
+      // soldier to pick an upgrade - and `startWave` refuses to deploy while one is
+      // pending, so the run stopped dead one wave before the boss. The contract
+      // carries its own rhythm now (training-run.mjs), so nothing is offered between
+      // its last two waves.
+      const perkEvery=state.campaignContract?.bossEvery||5;
+      if(state.wave%perkEvery===0&&state.wave!==state.campaignContract?.waves)state.pendingPerk=state.wave;
     events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory:false});
   }
   return events;

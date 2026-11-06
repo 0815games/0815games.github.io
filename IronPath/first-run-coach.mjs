@@ -21,15 +21,22 @@ import {translateText as tr} from './language.mjs?v=20261112-firstrun6';
 // Order is deliberate: the first card is the welcome, and it appears only after
 // the first frame of the training field has been drawn.
 export const COACH_STEPS = Object.freeze([
-  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Five waves, and the boss of the last one ends the exercise. Tap a build marker to place your first tower.',caption:'FIVE WAVES',when:null}),
+  Object.freeze({id:'welcome',title:'Welcome, soldier',text:'Six waves, and the boss of the last one ends the exercise. Tap a build marker to place your first tower.',caption:'FIVE WAVES',when:null}),
   Object.freeze({id:'build',title:'Build a tower',text:'Tap a glowing build marker, choose a tower, then confirm. Supplies only grow while waves run.',caption:'TAP A BUILD MARKER',when:'build'}),
   Object.freeze({id:'upgrade',title:'Upgrade or sell',text:'Tap your tower to see its range. Upgrade it in that panel, or sell it for half the investment.',caption:'CHOOSE AN ACTION',when:'upgrade'}),
   Object.freeze({id:'hero',title:'Move your hero',text:'Tap open ground to move. Your hero fires at nearby enemies on their own once deployed.',caption:'MOVE INTO POSITION',when:'move'}),
   Object.freeze({id:'deploy',title:'Start the battle',text:'Deploy calls the next wave. Clearing a wave pays XP and supplies, so build before you deploy.',caption:'HOLD THE LINE',when:'deploy'}),
-  Object.freeze({id:'boss',title:'The boss is here',text:'The wave-five boss drops your dog tag. Weaken it with towers before it reaches the bunker.',caption:'BOSS OF WAVE FIVE',when:'boss'}),
+  Object.freeze({id:'boss',title:'The boss is here',text:'The last boss drops your dog tag. Weaken it with towers before it reaches the bunker.',caption:'BOSS OF WAVE FIVE',when:'boss'}),
 ]);
 
-const EDITION=1;
+// The edition decides whether an existing soldier is shown the cards again. It is
+// versioned exactly like the briefing and the ending: a dismissed card is a "seen
+// it" marker, so without a bump an account that closed the old card once would
+// never be shown the explanations again, not even on the new field.
+//
+// v2 is the six-wave contract, with the last wave as the boss wave and the dog tag
+// coming from that boss rather than from wave five.
+const EDITION=2;
 const keyFor=id=>`ironpath:coach:v${EDITION}:${id}`;
 const memory=new Set();
 
@@ -128,7 +135,7 @@ export function createCoach({document,storage,onVisibilityChange=()=>{},onDone=(
     // The engine reports what happened. Anything unknown is ignored, so wiring a
     // new event cannot break the card.
     event(name){return reach(name);},
-    // The wave-five boss turning up raises the boss card, even if the player is
+    // The last boss turning up raises the boss card, even if the player is
     // still on an earlier card: the run is about to end, and the hint matters.
     boss(){if(!open())return false;const target=COACH_STEPS.findIndex(s=>s.id==='boss');if(target<0||index>=target)return false;index=target;render();return true;},
     stop(){hide();index=-1;activeUser=null;},

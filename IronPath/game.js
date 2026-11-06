@@ -461,13 +461,13 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
         else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost. The operation has failed.');}
         else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');const target=report;target.pending++;Promise.resolve(account.awardXP(event.xp,event.wave,!experimentalWorkshop?null:runReceipt())).then(detail=>{target.pending--;if(detail?.committed)addReward(target,detail);else target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);});notice(event.wave%5===0?tr('Boss wave {wave} cleared! Choose a field upgrade. +{xp} XP.',{wave:event.wave,xp:event.xp}):tr('Wave cleared! +20 supplies and +{xp} XP. Prepare for the next wave.',{xp:event.xp}));}
       }
-      // The boss of wave 5 ends the training contract: five cleared waves, and the
+      // The boss of wave 6 ends the training contract: six cleared waves, and the
       // dog tag is handed over in the debrief. `trainingWon` waits for the boss to
       // actually die, so the run cannot end with the boss still standing.
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
-       // The five waves pay 250 XP; the contract tops that up to exactly 300 so the
-       // first skill point is guaranteed. Credited once, with the last wave.
+       // The six waves pay 330 XP; the contract tops that up to 450 so the first
+       // skill point is guaranteed with headroom. Credited once, with the last wave.
        const bonus=trainingBonusXP();
        if(bonus>0&&state.completedWave>=TRAINING_WAVES&&!trainingBonusPaid)Promise.resolve(account.awardXP(bonus,state.completedWave)).catch(()=>{});
        trainingBonusPaid=true;
@@ -533,8 +533,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // What a first login does now: the field first, the briefing *on* the field.
   // The 11-step modal tour used to run here, which meant a new soldier read about
   // a battlefield they had never seen - and on a phone it covered the very field
-  // it was explaining. The tour is only the fallback for an account that already
-  // played the contract before the cards existed.
+  // it was explaining.
+  //
+  // The old fallback was `trainingSeen ? tour : field`, and it was wrong twice.
+  // An account that played the contract in the previous edition was sent to the
+  // eleven-step modal - the exact thing this redesign removed - and never saw the
+  // new first run at all. `TRAINING_KEY` is versioned for that reason: a new
+  // contract edition is new content, so every account plays the field again. The
+  // tour is now only what an account that skipped everything gets from the Help
+  // button, which is where a replay belongs.
   function startFirstRun(){
    const id=account.getUserId();
    if(!id)return false;
@@ -553,7 +560,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function startTrainingRun(){
    if(activeTraining)return false;
    closeMenu();keys.clear();sendDirection();activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;trainingBonusPaid=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
-   notice(()=>tr('Training contract: five waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
+   notice(()=>tr('Training contract: six waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
    // The welcome card waits for a field that is actually drawn: the card has no
    // meaning over an empty canvas, and the player must see the pads it points at.
    const id=account.getUserId();

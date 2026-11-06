@@ -13,7 +13,7 @@ than against the code alone.
 | 3 | Sign in, create the soldier | `account.js` | — |
 | 4 | **Training field, built and drawn** | `game.js` + `training-run.mjs` | Once per account per browser |
 | 5 | **Coach cards, ON the field** (6 cards, no modal, never pauses) | `first-run-coach.mjs` | Once per account per browser |
-| 6 | Play waves 1–5 yourself; the boss of wave 5 ends the run | `game.js` + `training-run.mjs` | Same run |
+| 6 | Play waves 1–6 yourself; the boss of wave 6 ends the run | `game.js` + `training-run.mjs` | Same run |
 | 7 | **Dog tag issued** in its own popup | `dog-tag.mjs` + `account.js` | Once, after the boss |
 | 8 | **Equipment on**, real Armory | `account.js` | Once per account per browser |
 | 9 | **First skill point**, real Skills dialog, saved | `account.js` | Once per account per browser |
@@ -59,8 +59,8 @@ Storage keys, all local and all per account where they concern a person:
 | `ironpath:language` | `language.mjs`, `language-gate.mjs` | The chosen language, per device |
 | `ironpath:tutorial:v2:<uid>` | `tutorial.mjs` | The briefing was finished (or skipped) |
 | `ironpath:tutorial:v1:<uid>` | the old 8-step tour | Read-only legacy marker; ignored, never written |
-| `ironpath:coach:v1:<uid>` | `first-run-coach.mjs` | The first-run cards were shown |
-| `ironpath:training:v1:<uid>` | `training-run.mjs` | The training contract was offered |
+| `ironpath:coach:v2:<uid>` | `first-run-coach.mjs` | The first-run cards were shown |
+| `ironpath:training:v2:<uid>` | `training-run.mjs` | The training contract was offered |
 | `ironpath:firstrun:v2:<uid>` | `first-run-ending.mjs` | The ending (tag, equip, skills, workshop) completed |
 | `ironpath:firstrun:v1:<uid>` | the old ending order | Read-only legacy marker; ignored (skills came first, no tag) |
 
@@ -73,10 +73,14 @@ legacy key is left untouched and simply stops mattering. The key is built in one
 place only, `keyFor` in `tutorial.mjs`; nothing else may spell it out, and the
 ending no longer keeps a second copy of it.
 
-The same reasoning applies to the training contract: `ironpath:training:v1` keeps
-its version because the contract is content that was never offered before, not a
-re-offer. An account with no training marker is offered the contract after any
-completed briefing, including a replay from the Command Center.
+The same reasoning applies to the training contract and the cards, and this is
+where the first build got it wrong. `ironpath:training:v1` said "this soldier
+played the contract", so every existing account was told it had already done it
+and was handed the old eleven-step modal instead — the exact screen the redesign
+removes. The contract changed shape (five waves became six, and the boss with it),
+so `TRAINING_KEY` is `v2` and every account plays the new field once. The cards
+follow the same rule: `ironpath:coach:v2`, because a dismissed card is a "seen it"
+marker and would otherwise suppress the new explanations for ever.
 
 Nothing above is written to Firebase. There is no new database field and no rules
 change, so an old client and a new client can share the same account.
@@ -86,11 +90,13 @@ change, so an old client and a new client can share the same account.
 `training-run.mjs` is the single source of the numbers, and the tests read the
 same module:
 
-- **5 waves**, not an endless run. The boss of wave 5 is the finale.
+- **6 waves**, not an endless run. The boss of wave 6 is the finale — and it is
+  the only boss: the endless rhythm wakes a boss every fifth wave, so the contract
+  carries its own `bossEvery`, otherwise the run would end on wave 5.
 - **Enemies at 70% health** (`TRAINING_UNIT = 0.7`).
 - **The wave-5 boss at 60% of that** (`TRAINING_BOSS_UNIT = 0.6`).
 - **Bunker at 150% health** (`TRAINING_BUNKER = 1.5`, 100 → 150).
-- **300 XP** in total: the five waves pay 250 (30 + 40 + 50 + 60 + 70) and the
+- **450 XP** in total: the six waves pay 330 (30 + 40 + 50 + 60 + 70 + 80) and the
   contract adds `trainingBonusXP() = 50` with the last wave. The bonus exists so
   the first skill point cannot drift away with a balance change; it is shown as a
   contract line, never as a silent round-up.
@@ -103,7 +109,7 @@ economy, real rewards, real save. It is not a scripted mock. Endless solo and
 story missions are untouched — a legendary mission still deploys at 55% bunker
 health and keeps its full-strength bosses.
 
-The run ends itself when the boss of wave 5 dies (`endReason:
+The run ends itself when the boss of wave 6 dies (`endReason:
 'training-complete'`) and the debrief calls the account back, which starts the
 ending. `trainingDone` is the win flag of the *current* run; it used to also block
 a second deployment, which left a dead Deploy button after the debrief.
@@ -116,8 +122,8 @@ point, answering every field-upgrade offer:
 | Play style | Result |
 | --- | --- |
 | Two starting towers, never upgrades | Bunker lost in wave 4 |
-| Builds whenever affordable, never upgrades | Bunker lost in wave 5 |
-| Fills the pads, then upgrades | **Clears all 5 waves in ~200 s with 90 / 150 bunker health** |
+| Builds whenever affordable, never upgrades | Bunker lost before the boss |
+| Fills the pads, then upgrades | **Clears all 6 waves in ~85 s with 100 / 150 bunker health** |
 
 So the contract is forgiving but not free: a new soldier who only builds loses,
 and one who builds *and* upgrades clears with room to spare. That is the
@@ -170,7 +176,7 @@ Drawn, never stored. `dogTag({profile, accountId, issued})` derives:
 - the issue date.
 
 It is cosmetic: no stat, no bonus, never equipped, always worn. It is **issued in
-its own popup** when the boss of wave 5 falls, then appears on the Soldier screen
+its own popup** when the boss of wave 6 falls, then appears on the Soldier screen
 and in the Armory.
 
 It is deliberately **not** an entry in `armory.mjs`'s `ITEMS`: `equipped` is a
@@ -218,7 +224,7 @@ player on a new browser is asked once and then goes straight in.
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, gate → intro order, single reload |
 | `tests/first-run-coach.test.mjs` | Cards follow real actions, no modal, **the coach is in no pause condition**, boss jumps the queue, dismissed stays dismissed |
 | `tests/tutorial.test.mjs` | The replay tour, practice gates, real-dialog handoff, completion once per account, one owner for the marker key |
-| `tests/training-run.test.mjs` | 5 waves, 70% / 150% / weakened boss, 250 + 50 = 300 XP = level 2, the boss must fall before the run ends, offered once |
+| `tests/training-run.test.mjs` | 6 waves, 70% / 150% / weakened boss, boss only on wave 6, 330 + 120 = 450 XP = level 2 with headroom, the boss must fall before the run ends, offered once per edition |
 | `tests/dog-tag.test.mjs` | Serial and blood type derived, stable and spread over all eight, nothing persisted, SVG in the armory style |
 | `tests/first-run-ending.test.mjs` | Order (tag → equip → skills → workshop), once per account, decline stops without marking done, Field School uses existing controls |
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, and **every inline script in `index.html` compiles** |

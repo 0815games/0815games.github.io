@@ -18,11 +18,11 @@ test('the device plan quotes the German the build actually shows',()=>{
  // plus its placeholders really produce.
  const translated=[
   ['contract title',translateText('TRAINING CONTRACT · HANDLE WITH CARE'),'AUSBILDUNGSVERTRAG · MIT VORSICHT'],
-  ['wave tally',translateText('WAVE {wave} / {total}',{wave:1,total:5}),'WELLE 1 / 5'],
-  ['wave status',translateText('Clear {remaining} more wave(s). Enemies are weakened here and your bunker is reinforced.',{remaining:4}),
-   'Noch 4 Welle(n) schaffen. Hier sind die Gegner geschwächt und dein Bunker ist verstärkt.'],
-  ['contract complete',translateText('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:300}),
-   'Ausbildungsvertrag erfüllt! 300 XP verdient. Willkommen auf dem Eisernen Pfad, Soldat.'],
+  ['wave tally',translateText('WAVE {wave} / {total}',{wave:1,total:6}),'WELLE 1 / 6'],
+  ['wave status',translateText('Clear {remaining} more wave(s). Enemies are weakened here and your bunker is reinforced.',{remaining:5}),
+   'Noch 5 Welle(n) schaffen. Hier sind die Gegner geschwächt und dein Bunker ist verstärkt.'],
+  ['contract complete',translateText('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:450}),
+   'Ausbildungsvertrag erfüllt! 450 XP verdient. Willkommen auf dem Eisernen Pfad, Soldat.'],
   // The first-run cards replaced the 11-step modal, so the plan quotes those now.
   ['coach tally',translateText('FIRST RUN · {step} / {total}',{step:1,total:6}),'ERSTER EINSATZ · 1 / 6'],
   ['coach welcome',translateText('Welcome, soldier'),'Willkommen, Soldat'],
@@ -61,7 +61,7 @@ test('the device plan quotes the German the build actually shows',()=>{
 });
 
 test('the plan lists the keys a tester has to clear to repeat a first run',()=>{
- for(const key of ['ironpath:language','ironpath:tutorial:v2:','ironpath:training:v1:','ironpath:firstrun:v1:']){
+ for(const key of ['ironpath:language','ironpath:tutorial:v2:','ironpath:training:v2:','ironpath:coach:v2:','ironpath:firstrun:v2:']){
   assert.ok(plan.includes(key),`${key} must be documented, or a tester cannot repeat the run`);
  }
 });

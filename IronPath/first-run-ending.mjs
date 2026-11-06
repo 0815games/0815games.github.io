@@ -1,4 +1,4 @@
-// The first-run ending: what happens after the boss of wave 5 falls.
+// The first-run ending: what happens after the boss of the last wave falls.
 //
 // Four steps, in this order, and each one is a real screen rather than a mock-up:
 //   1. TAG     the dog tag is issued (drawn from the soldier, never stored);
@@ -8,7 +8,7 @@
 //   4. WORKSHOP the workshop is opened for the first time, on the real Armory tab.
 // Then the Field School lists where to go next.
 //
-// Equipment comes before skills on purpose. The boss of wave 5 is the first thing
+// Equipment comes before skills on purpose. The last boss is the first thing
 // the player ever wins, and putting it on is a reward they can see; a skill tree
 // means nothing before there is gear to fight with.
 //
