@@ -51,6 +51,14 @@ const assert = require('node:assert/strict');
         if(await dialog.count()&&await dialog.evaluate(e=>e.open))await dialog.evaluate(e=>e.close());
       }
     };
+    // One briefing step forward. A practice step needs its skip button first, unless
+    // the step is already satisfied (prestige always is), where skip is hidden.
+    const advance=async()=>{
+      await closePractice();
+      const skip=page.locator('#tutorialPracticeSkip');
+      if(await skip.isVisible())await skip.click();
+      await page.locator('#tutorialNext').click();
+    };
     assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);await page.locator('#languageSelect').selectOption('de');assert.match(await page.locator('.language-picker .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.locator('#languageSelect').selectOption('en');assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
 
     await page.locator('#menuSoldier').click();assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.open),true);assert.equal(await page.locator('#soldierWorkshop').count(),0,'one armory button, no second workshop screen');assert.equal(await page.locator('#soldierArmory').isVisible(),true);await page.locator('#soldierClose').click();assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.open),false);await page.locator('#menuSoldier').click();assert.equal(await page.locator('#soldierNameDisplay').innerText(),'Test Soldier');assert.equal(await page.locator('#soldierDamage').innerText(),'12');assert.equal(await page.locator('#soldierEquipped').innerText(),'No equipment');assert.equal(await page.locator('#soldierCollectionEmpty').isVisible(),true);await page.evaluate(()=>window.__profileUpdate({armory:{scrap:10,owned:3,equipped:1}}));assert.equal(await page.locator('#soldierCollectionList li').count(),2);assert.match(await page.locator('#soldierCollectionList li').first().innerText(),/Field Scope[\s\S]*EQUIPPED/);assert.equal(await page.locator('#soldierCollectionEmpty').isHidden(),true);assert.equal(await page.locator('#soldierDialog').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const s=document.querySelector('#languageSelect');s.value='de';s.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#soldierScreenTitle').innerText(),'Dein Soldat');assert.equal(await page.locator('#soldierNameDisplay').innerText(),'Test Soldier');assert.match(await page.locator('#soldierCollectionList li').first().innerText(),/Zielfernrohr[\s\S]*AUSGERÜSTET/);await page.evaluate(()=>{const s=document.querySelector('#languageSelect');s.value='en';s.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#soldierClose').click();await page.evaluate(()=>window.__profileUpdate({armory:null}));
@@ -139,7 +147,7 @@ const assert = require('node:assert/strict');
     // sandbox banner that promises nothing is stored.
     // Clicking NEXT on a practice step does nothing until that step is done, so the
     // walk skips a practice step it is not testing yet and otherwise just advances.
-    const walkTo=async title=>{for(let i=0;i<20;i++){if(title.test(await page.locator('#tutorialTitle').innerText()))return true;await closePractice();if(await page.locator('#tutorialPracticeSkip').isVisible())await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();}return title.test(await page.locator('#tutorialTitle').innerText());};
+    await advance();
     // The tour is already open from the line above; walk it from here.
     assert.equal(await walkTo(/Skills/),true);
     await page.waitForSelector('#skillDialog[open]');
@@ -164,18 +172,26 @@ const assert = require('node:assert/strict');
     // `close()` fires its close event on a queued task, so give the sandbox a tick.
     await page.locator('#sandboxBanner').waitFor({state:'hidden'});
     assert.equal(await visible('#sandboxBanner'),false,'closing the practice dialog leaves the sandbox');
-    await page.locator('#tutorialPracticeSkip').click();
-    await page.locator('#tutorialNext').click();
+    await advance();
     assert.equal(await walkTo(/workshop/i),true);
     await page.waitForSelector('#armoryDialog[open]');
     assert.equal(await page.locator('#armoryWorkshopTab').getAttribute('aria-pressed'),'true');
     await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
-    await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();
+    await advance();
     assert.equal(await walkTo(/Prestige/),true);
     await page.waitForSelector('#armoryDialog[open]');
     await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
-    await page.locator('#tutorialPracticeSkip').click();await page.locator('#tutorialNext').click();
+    await advance();
+    // Finishing the tour hands a new soldier the training contract, which is a real
+    // deployment rather than a mock: the briefing closes and a battlefield takes over
+    // the Command Center. This test does not play six waves, so it retires the run.
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
+    await page.waitForSelector('#gameView:not([hidden])');
+    assert.equal(await page.locator('#soloObjectiveTitle').innerText(),'TRAINING CONTRACT · HANDLE WITH CARE');
+    // End it the way a player can, through the confirmation dialog.
+    await page.locator('#endRun').click();
+    await page.locator('#gameConfirmAccept').click();
+    await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
     await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
 
