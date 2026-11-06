@@ -163,3 +163,16 @@ test('nothing offers a field upgrade between the last two waves of the contract'
  const contract = trainingContract();
  assert.equal(contract.bossEvery, TRAINING_WAVES);
 });
+
+// The CI browser install hung three times on apt. Both fixes are easy to undo by
+// accident, so they are pinned here: no `--with-deps` on the fast path, and a probe
+// that resolves the module by path (NODE_PATH is exported for the NEXT step only).
+test('the CI browser install never waits for apt unless it has to', () => {
+ const flow = readFileSync(new URL('../../.github/workflows/ironpath-firebase-rules.yml', import.meta.url), 'utf8');
+ const install = flow.slice(flow.indexOf('Install pinned browser test tooling'), flow.indexOf('Check static interface'));
+ assert.match(install, /"\$PLAYWRIGHT" install chromium;/,'chromium first, without system packages');
+ assert.doesNotMatch(install, /playwright" install --with-deps chromium;/,'no apt on the fast path');
+ assert.match(install, /process\.env\.RUNNER_TEMP\+"\/ironpath-browser\/node_modules\/playwright"/,'the probe resolves by path');
+ assert.match(install, /install-deps chromium/,'the slow path still exists for a runner that needs it');
+ assert.match(install, /timeout 300|timeout 420/,'every download is capped, so a slow mirror names itself');
+});

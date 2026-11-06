@@ -229,7 +229,10 @@ jobs:
             exit 1
           fi
           # A launch probe decides whether apt is needed at all, instead of guessing.
-          if timeout 60 node -e 'require("playwright").chromium.launch({headless:true}).then(b=>b.close())' > /tmp/browser-probe.log 2>&1; then
+          # Resolve the module by path, not by name: NODE_PATH is only exported for
+          # the following step, so a bare require() here always failed and sent every
+          # run into the apt branch even when nothing was missing.
+          if timeout 60 node -e 'require(process.env.RUNNER_TEMP+"/ironpath-browser/node_modules/playwright").chromium.launch({headless:true}).then(b=>b.close()).catch(e=>{console.error(e.message);process.exit(1)})' > /tmp/browser-probe.log 2>&1; then
             cat /tmp/browser-install.log; echo 'chromium launches without system packages'
           else
             cat /tmp/browser-probe.log
