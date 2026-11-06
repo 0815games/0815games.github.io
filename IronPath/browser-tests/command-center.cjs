@@ -51,10 +51,14 @@ const assert = require('node:assert/strict');
     // And it does not pause: the wave clock advances while the card is open.
     await page.locator('#start').click();
     await page.waitForFunction(()=>/WAVE IN PROGRESS/.test(document.getElementById('start').textContent));
-    const waveBefore=await page.locator('#enemies').innerText();
-    await page.waitForTimeout(1200);
-    assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there');
-    assert.notEqual(await page.locator('#enemies').innerText(),waveBefore,'enemies move while the card is open');
+    // Supplies are paid per enemy killed, so the number moving is proof the
+    // simulation is really stepping. `#enemies` is a headcount and can hold steady
+    // while enemies walk, which is why it is not the signal here.
+    await page.waitForFunction(()=>!document.getElementById('start').disabled,null,{timeout:10000});
+    const suppliesBefore=await page.locator('#money').innerText();
+    await page.waitForFunction(before=>document.getElementById('money').textContent!==before,suppliesBefore,{timeout:25000})
+     .catch(()=>{throw new Error('the field is paused while the coach card is open');});
+    assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there while the field runs');
     // Playing the card's own instructions dismisses it.
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
