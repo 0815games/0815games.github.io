@@ -82,6 +82,22 @@ test('the contract card is placed below the measured header, never at a guessed 
   assert.match(body['-webkit-line-clamp'] ?? body.display, /2|none/);
 });
 
+test('the training-specific offset overrides the general one, in that order', () => {
+  // Same specificity trap that the browser smoke caught: the training rule first
+  // appeared ABOVE the general rule and lost, so on a 320px phone the fallback was
+  // 52px and the card was painted 10px inside the two-line status dashboard.
+  const text = field.replace(/\/\*[\s\S]*?\*\//g, '');
+  const general = text.indexOf('#gameView .battle .solo-objective:not([hidden]),' +
+    '\n#gameView .battle .versus-status:not([hidden])');
+  const training = text.indexOf('[data-screen="training"] #gameView .battle .solo-objective:not([hidden])');
+  assert.ok(general > 0, 'the general rule is there');
+  assert.ok(training > general, 'the training override comes after it in the file');
+  const override = ruleOf(field, '#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden])');
+  assert.ok(override.top, 'the override sets a top offset');
+  assert.ok(declares(field, '#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden])',
+    'top', /--hud-bottom,calc\(8[0-9]px/), 'its floor clears a wrapped two-line status row');
+});
+
 test('game.js publishes the measured header height relative to the field, not the page', () => {
   assert.match(game, /--hud-bottom/, 'the measurement is published as a custom property');
   const measure = game.slice(game.indexOf('function measureHud'), game.indexOf('function measureHud') + 900);

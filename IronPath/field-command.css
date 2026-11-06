@@ -172,13 +172,6 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
   height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain;
 }
 
-/* In the training frame the header sits in flow above the field, so the very first
-   frame - before `--hud-bottom` exists - needs a taller fallback than the endless
-   frame, or the card is briefly painted over the status dashboard. */
-[data-screen="training"] #gameView .battle .solo-objective:not([hidden]){
-  top:calc(var(--hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);
-}
-
 /* ---------------------------------------------------------------------------
    The contract card must not sit on the things above it.
 
@@ -207,4 +200,12 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
     max-width:min(300px,calc(100% - 64px));
   }
   #gameView .battle .solo-objective:not([hidden]) p{display:none}
+}
+
+/* The training frame's own fallback, AFTER the general rule so it actually wins: its
+   header is in flow above the field, so on the first frame - before the measurement
+   exists - the card needs a taller floor. 84px covers the worst case on a 320px
+   phone, where the status row wraps to two lines and ends around 70px. */
+#gameWorkspace:not([hidden])[data-screen="training"] #gameView .battle .solo-objective:not([hidden]){
+  top:calc(var(--hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);
 }
