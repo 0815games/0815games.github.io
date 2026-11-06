@@ -1,4 +1,4 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-firstrun5';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-firstrun6';
 // Non-modal, in-page alerts. The inbox remains the source of truth; dismissing
 // an alert never accepts, declines or deletes a request or invitation.
 export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen}){
@@ -20,10 +20,14 @@ export function createSocialNotifications({document,container,title,body,openBut
     if(!suppress)for(const [key,item] of next)if(!known[kind].has(key))queue.push({...item,kind,valid:true});
     known[kind]=next;paint();
   }
-  function clear(){queue=[];current=null;container.hidden=true;}
-  function reset(){clear();known={requests:new Map(),invites:new Map()};}
+  // Dismissing an alert must not delete it. It used to clear the queue, so the
+  // same invitation never came back - not after closing a dialog, not after the
+  // first run ended. The inbox still owns the request; the alert is just quiet.
+  function clear(){current=null;container.hidden=true;}
+  // A new session may re-announce everything, so this one really forgets.
+  function reset(){queue=[];current=null;container.hidden=true;known={requests:new Map(),invites:new Map()};}
   dismissButton.onclick=()=>{current=null;paint();};
-  document.addEventListener('click',event=>{if(!container.hidden&&!container.contains(event.target))clear();},true);
+  document.addEventListener('click',event=>{if(!container.hidden&&!container.contains(event.target)){current=null;paint();}},true);
   openButton.onclick=()=>{clear();onOpen();};
   for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('close',paint);
   return {update,clear,reset};
