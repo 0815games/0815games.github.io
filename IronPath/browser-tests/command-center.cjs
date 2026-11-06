@@ -368,7 +368,14 @@ const assert = require('node:assert/strict');
     // must NOT deploy a second time. The briefing closes, the Command Center stays.
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
     await page.waitForTimeout(700); // longer than the 400ms handoff timer
-    assert.equal(await visible('#soloObjective'),false,'a replay does not redeploy the one-time contract');
+    // Read the marker instead of the objective strip: the strip is also on screen while
+    // a training run is merely still active, which has nothing to do with whether a
+    // second contract was handed over. The marker is the thing `startFirstRun` checks.
+    const trainingMarker=await page.evaluate(()=>{
+      const key=Object.keys(localStorage).find(name=>name.startsWith('ironpath:training:'));
+      return key?localStorage.getItem(key):null;
+    });
+    assert.equal(trainingMarker,'done','a tour replay does not redeploy the one-time contract');
     assert.equal(await page.locator('#commandCenter').isVisible(),true,'the tour closes back onto the Command Center');
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
