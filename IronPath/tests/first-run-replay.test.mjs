@@ -99,7 +99,11 @@ test('the button starts the whole first run, not just the cards', () => {
   const replay = game.slice(game.indexOf('replayFirstRun:'), game.indexOf('// The Settings dialog owns the controls'));
   assert.match(replay, /forgetTrainingSeen\(id,tutorialStorage\)/, 'the contract is offered again');
   assert.match(replay, /coach\.reset\?\.\(id\)/, 'and the cards start at the first one');
-  assert.match(replay, /startTrainingRun\(\{rewards:false\}\)/, 'on the training map, without pay');
+  assert.match(replay, /startTrainingRun\(\{rewards:false,restart:true\}\)/, 'on the training map, without pay');
+  // And a second tap has to work: while the first replay is still the active run,
+  // `activeTraining` is true, so without `restart` the button silently did nothing.
+  assert.match(game, /function startTrainingRun\(\{rewards=true,restart=false\}=\{\}\)\{/, 'the replay may replace a running training contract');
+  assert.match(game, /if\(activeTraining&&!restart\)return false/, 'while a real deployment still refuses to be replaced');
   const account = readFileSync(resolve(root, 'account.js'), 'utf8');
   assert.match(account, /gameControl\?\.replayFirstRun\?\.\(\)/, 'reached through the game control');
   assert.match(account, /onResetFirstRun:\(\)=>replayFirstRun\(\)/, 'and wired to the Settings button');

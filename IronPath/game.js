@@ -706,8 +706,11 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // `trainingDone` is the win flag of the CURRENT run, not a "seen it" marker: it
   // used to block a second deployment after the debrief, which left a player who
   // chose "endless" from the results screen with a Deploy button that did nothing.
-  function startTrainingRun({rewards=true}={}){
-   if(activeTraining)return false;
+  // `restart` is the replay path: it is allowed to replace a run that is already the
+  // training contract. Without it the second tap on "play the first run again" did
+  // nothing, because `activeTraining` was still true from the first replay.
+  function startTrainingRun({rewards=true,restart=false}={}){
+   if(activeTraining&&!restart)return false;
    trainingRewards=rewards!==false;
    closeMenu();keys.clear();sendDirection();activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;trainingBonusPaid=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
    notice(()=>tr('Training contract: five waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
@@ -748,7 +751,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
    forgetTrainingSeen(id,tutorialStorage);
    coach.reset?.(id);
    closeMenu();keys.clear();sendDirection();
-   return startTrainingRun({rewards:false});
+   return startTrainingRun({rewards:false,restart:true});
   },
   // The Settings dialog owns the controls, the game owns the effects. These two hooks
   // are the whole contract: no second copy of "is the sound on" or "are effects off"
