@@ -385,7 +385,7 @@ const assert = require('node:assert/strict');
     // battlefield appears until the first authoritative match snapshot arrives.
     await page.evaluate(async()=>{const {createCommandCenter}=await import('./command-center.mjs?v=20261117-firstrunde1');window.testNav=createCommandCenter({document,getProfile:()=>null,getGame:()=>({setMenuOpen(){},isOnlineMatch:()=>true}),isPartyActive:()=>true,openParty(){},closeParty(){},signOut(){}});document.querySelector('#gameWorkspace').dataset.onlineReady='false';window.testNav.showBattle();});
     assert.equal(await visible('.online-connecting'),true); assert.equal(await visible('#game'),false); assert.equal(await visible('#partyToggle'),true);
-    await page.evaluate(()=>document.querySelector('#gameWorkspace').dataset.onlineReady='true');document.querySelector('#gameWorkspace').hidden=false;
+    await page.evaluate(()=>{document.querySelector('#gameWorkspace').dataset.onlineReady='true';document.querySelector('#gameWorkspace').hidden=false;});
     assert.equal(await visible('#game'),true); assert.equal(await visible('#campaignPanel'),false);
     await page.evaluate(()=>window.testNav.showLobby());assert.equal(await visible('#gameWorkspace'),true,'the field is back in reach before the restart is tested');
     assert.equal(await visible('#game'),false); assert.equal(await visible('#returnOnline'),true);
