@@ -1,25 +1,28 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {runFirstRunEnding,endingDone,markEndingDone,endingKey,ENDING_STEPS,ENDING_KEY,FIELD_SCHOOL_ENTRIES} from '../first-run-ending.mjs';
+import {runFirstRunEnding,endingDone,markEndingDone,endingKey,ENDING_STEPS,ENDING_KEY,ENDING_EDITION,FIELD_SCHOOL_ENTRIES} from '../first-run-ending.mjs';
 
 const storage=()=>{const store=new Map();return {store,getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)};};
 
-test('the ending runs once per account: skills, tag, workshop, in that order',async()=>{
+test('the ending runs once per account: tag, equip, skills, workshop, in that order',async()=>{
  const store=storage(),seen=[];
  const result=await runFirstRunEnding({
   id:'soldier-a',storage:store,
   steps:{
    skills:async()=>{seen.push('skills');return true;},
    tag:async()=>{seen.push('tag');return true;},
+   equip:async()=>{seen.push('equip');return true;},
    workshop:async()=>{seen.push('workshop');return true;},
   },
  });
- assert.deepEqual(result,{status:'done',completed:3});
- assert.deepEqual(seen,['skills','tag','workshop'],'the skill point is spent before the tag is issued');
+ assert.deepEqual(result,{status:'done',completed:4});
+ // The tag is the boss reward, the gear it earned goes on next, and only then is
+ // there a point worth spending.
+ assert.deepEqual(seen,['tag','equip','skills','workshop'],'tag, then equipment, then the skill point');
  assert.equal(store.store.get(endingKey('soldier-a')),'done');
  assert.equal(endingDone('soldier-a',store),true);
- const again=await runFirstRunEnding({id:'soldier-a',storage:store,steps:{skills:()=>{throw Error('must not run');}}});
+ const again=await runFirstRunEnding({id:'soldier-a',storage:store,steps:{tag:()=>{throw Error('must not run');}}});
  assert.deepEqual(again,{status:'done',completed:0},'a finished ending never runs twice');
 });
 
@@ -27,24 +30,24 @@ test('declining a step stops the sequence without marking it done',async()=>{
  const store=storage(),seen=[];
  const result=await runFirstRunEnding({
   id:'soldier-b',storage:store,
-  steps:{skills:async()=>{seen.push('skills');return true;},tag:async()=>{seen.push('tag');return false;},workshop:async()=>{seen.push('workshop');return true;}},
+  steps:{tag:async()=>{seen.push('tag');return true;},equip:async()=>{seen.push('equip');return false;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
  });
  assert.equal(result.status,'stopped');
- assert.equal(result.step,'tag');
+ assert.equal(result.step,'equip');
  assert.equal(result.reason,'declined');
- assert.deepEqual(seen,['skills','tag'],'the workshop is not opened behind a declined step');
+ assert.deepEqual(seen,['tag','equip'],'the skill dialog is not opened behind a declined step');
  assert.equal(endingDone('soldier-b',store),false,'the ending can be offered again');
 });
 
 test('a throwing step is a stop, not a crash',async()=>{
- const result=await runFirstRunEnding({id:'soldier-c',storage:storage(),steps:{skills:async()=>{throw Error('no dialog');},tag:async()=>true,workshop:async()=>true}});
+ const result=await runFirstRunEnding({id:'soldier-c',storage:storage(),steps:{tag:async()=>{throw Error('no dialog');},equip:async()=>true,skills:async()=>true,workshop:async()=>true}});
  assert.equal(result.status,'stopped');
  assert.equal(result.reason,'declined');
 });
 
 test('a missing step stops the sequence cleanly',async()=>{
- const result=await runFirstRunEnding({id:'soldier-d',storage:storage(),steps:{skills:async()=>true}});
- assert.deepEqual({status:result.status,step:result.step,reason:result.reason},{status:'stopped',step:'tag',reason:'unavailable'});
+ const result=await runFirstRunEnding({id:'soldier-d',storage:storage(),steps:{tag:async()=>true}});
+ assert.deepEqual({status:result.status,step:result.step,reason:result.reason},{status:'stopped',step:'equip',reason:'unavailable'});
 });
 
 test('no account means no ending, and storage failures do not break it',async()=>{
@@ -53,8 +56,8 @@ test('no account means no ending, and storage failures do not break it',async()=
  markEndingDone('soldier-e',broken);
  assert.equal(endingDone('soldier-e',broken),true,'the session remembers even without storage');
  assert.equal(endingDone('someone-else',broken),false);
- assert.equal(ENDING_STEPS.join(','),'skills,tag,workshop');
- assert.equal(ENDING_KEY,'ironpath:firstrun:v1','a versioned key, so a future ending can differ');
+ assert.equal(ENDING_STEPS.join(','),'tag,equip,skills,workshop');
+ assert.equal(ENDING_KEY,'ironpath:firstrun:v2','the edition moved with the new order, so old accounts see it');
 });
 
 test('the Field School points at existing controls, not a second way in',()=>{

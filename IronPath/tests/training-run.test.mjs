@@ -2,11 +2,12 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {
- TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_KEY,
+ TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_KEY,FIRST_RUN_XP,trainingWaveXP,trainingBonusXP,
  trainingContract,trainingUnitScale,trainingXP,trainingProgress,trainingWon,trainingStatus,
  trainingSeen,markTrainingSeen,
 } from '../training-run.mjs';
 import {characterProgress} from '../progression.mjs';
+import {bossForWave} from '../combat.mjs';
 import {createSoloDeployment} from '../solo-deployment.mjs';
 import {createPlayer} from '../match.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
@@ -15,10 +16,11 @@ const profile=()=>({name:'Rook',gender:'male',xp:0,armory:{scrap:0,owned:0,equip
 const player=()=>createPlayer('local',{name:'Rook',gender:'male',level:1,loadout:'0,0,0'});
 const deploy=()=>createSoloDeployment({player:player(),profile:profile(),mapId:'road',workshopEnabled:false,campaign:{id:'training-contract',threat:'training'}});
 
-test('the training contract is six waves, softer enemies and a reinforced bunker',()=>{
+test('the training contract is five waves ending in the boss, softer enemies and a reinforced bunker',()=>{
  const contract=trainingContract();
  assert.equal(contract.waves,TRAINING_WAVES);
- assert.equal(TRAINING_WAVES,6,'six waves, not the three the old tour used');
+ assert.equal(TRAINING_WAVES,5,'five waves: the boss of wave 5 is the finale');
+ assert.ok(bossForWave(TRAINING_WAVES),'the last wave of the contract is a boss wave');
  assert.ok(TRAINING_UNIT<1,'enemies are weakened');
  assert.ok(TRAINING_BUNKER>1,'the bunker is reinforced');
  assert.ok(TRAINING_BOSS_UNIT<TRAINING_UNIT,'the boss is weakened further than the rank and file');
@@ -31,15 +33,19 @@ test('clearing every wave of the contract pays exactly one level and one skill p
  let fiveWaves=0;
  for(let wave=1;wave<=5;wave++)fiveWaves+=20+wave*10;
  assert.equal(fiveWaves,250,'five waves are 250 XP');
- assert.equal(characterProgress(fiveWaves).level,1,'the fifth wave alone does not reach level 2');
- assert.equal(trainingXP(),330,'30+40+50+60+70+80');
+ assert.equal(characterProgress(fiveWaves).level,1,'five waves alone do not reach level 2');
+ assert.equal(trainingWaveXP(),250,'30+40+50+60+70');
+ assert.equal(trainingBonusXP(),50,'the contract bonus tops the run up to exactly 300');
+ assert.equal(trainingXP(),300,'level 2, so the first skill point is guaranteed');
+ assert.equal(characterProgress(trainingXP()).level,2);
+ assert.equal(FIRST_RUN_XP,300,'the promise the ending relies on');
 });
 
 test('a training deployment is a real match with the contract attached',()=>{
  const state=deploy();
  assert.equal(state.maxHp,150,'100 base health at 150%');
  assert.equal(state.campaignContract.threat,'training');
- assert.equal(state.campaignContract.waves,6);
+ assert.equal(state.campaignContract.waves,5);
  assert.equal(state.campaignContract.unit,TRAINING_UNIT);
  assert.ok(state.campaignContract.bossUnit>0,'the boss weakening travels with the contract');
  // Endless solo and story missions keep their own numbers.
@@ -65,14 +71,16 @@ test('training enemies really spawn weaker than the same wave of endless',()=>{
  assert.equal(trainingEnemy.campaign,true);
 });
 
-test('the contract ends itself after the last wave',()=>{
+test('the contract ends when the boss of wave five falls, not before',()=>{
  let state=deploy();
  assert.equal(trainingWon(state),false,'not before the first deploy');
- state.wave=1;state.running=true;assert.equal(trainingWon(state),false);
- state.running=false;state.wave=5;assert.equal(trainingWon(state),false,'wave 5 is the boss, not the end');
- state.wave=6;assert.equal(trainingWon(state),true);
+ state.wave=5;state.running=true;assert.equal(trainingWon(state),false,'the boss is still walking');
+ // The wave is still running, so the boss is alive: no victory yet.
+ state.running=false;state.completedWave=5;assert.equal(trainingWon(state),true,'a cleared wave five ends the contract');
+ // And a wave that was never cleared cannot win: completedWave is the honest marker.
+ state.completedWave=4;assert.equal(trainingWon(state),false,'wave five was not cleared');
  state.ended=true;assert.equal(trainingWon(state),false,'an ended run is handled by the results screen');
- assert.deepEqual(trainingProgress({wave:3}),{wave:3,total:6,remaining:3});
+ assert.deepEqual(trainingProgress({wave:3}),{wave:3,total:5,remaining:2});
  assert.equal(trainingProgress({}).wave,0);
 });
 
@@ -82,8 +90,9 @@ test('the objective panel speaks plainly about the contract',()=>{
  assert.match(before.detail,/first wave/);
  const during=trainingStatus({wave:2},tr);
  assert.equal(during.progress,2);
- assert.equal(during.max,6);
- assert.match(during.label,/Wave 2 of 6/);
+ assert.equal(during.max,5);
+ assert.match(during.label,/Wave 2 of 5/);
+ assert.match(before.detail,/boss of wave five/,'the panel says the boss ends the contract');
 });
 
 test('the training run is offered once per account and browser',()=>{

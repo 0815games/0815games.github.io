@@ -13,7 +13,7 @@ import {createMatch} from './simulation.mjs?v=20261105-workshop3';
 import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-alpha1';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT} from './training-run.mjs?v=20261112-firstrun4';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT} from './training-run.mjs?v=20261112-firstrun5';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
  // The training contract is the only campaign-shaped deployment that is easier

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {dogTag,dogTagSerial,dogTagIssueDate,DOG_TAG_BRAND,renderDogTag} from '../dog-tag.mjs';
+import {dogTag,dogTagSerial,dogTagIssueDate,dogTagBloodType,DOG_TAG_BRAND,renderDogTag} from '../dog-tag.mjs';
 
 const soldier={name:'Ada Vale',gender:'female'};
 
@@ -74,4 +74,26 @@ test('the caller can only render; the tag has no store of its own',()=>{
  const source=readFileSync(new URL('../dog-tag.mjs',import.meta.url),'utf8');
  assert.equal(/localStorage|sessionStorage|setItem|runTransaction|\.set\(/.test(source),false,'the dog tag never persists anything');
  assert.equal(/fetch\(|XMLHttpRequest/.test(source),false,'and it never asks a server');
+});
+
+test('the blood type is derived, spread over all eight types, and never stored',async()=>{
+ const {BLOOD_TYPES}=await import('../dog-tag.mjs');
+ assert.equal(BLOOD_TYPES.length,8);
+ assert.deepEqual([...BLOOD_TYPES],['0 RH+','0 RH−','A RH+','A RH−','B RH+','B RH−','AB RH+','AB RH−']);
+ const ids=Array.from({length:400},(_,i)=>`uid-${i}`);
+ const seen=new Set(ids.map(id=>dogTag({accountId:id}).bloodType));
+ assert.equal(seen.size,8,'every type actually occurs; the spread is not lopsided to one or two');
+ for(const id of ids.slice(0,20))assert.equal(dogTag({accountId:id}).bloodType,dogTag({accountId:id}).bloodType,'the same soldier always reads the same');
+ // No account id, no invented blood type.
+ assert.equal(dogTagBloodType(null),null);
+ assert.equal(dogTagBloodType(''),null);
+ assert.equal(dogTag({profile:soldier}).bloodType,null,'a signed-out preview draws no blood type');
+});
+
+test('the blood type is not simply a slice of the serial',()=>{
+ // Two accounts whose serials collide must still be able to differ, otherwise the
+ // line would be decoration that leaks nothing but also says nothing new.
+ const tags=Array.from({length:200},(_,i)=>dogTag({accountId:`acct-${i}`}));
+ const pairs=tags.map(tag=>`${tag.serial}|${tag.bloodType}`);
+ assert.ok(new Set(pairs).size>=190,'serial and blood type vary independently');
 });

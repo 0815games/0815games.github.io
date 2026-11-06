@@ -63,7 +63,12 @@ export function stepMatch(state){
       // training-run.mjs). `bossUnit` only ever arrives with the training
       // contract, so a story mission keeps its full-strength bosses.
       if(state.campaignContract?.bossUnit&&enemy.boss)enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*state.campaignContract.bossUnit));
-      state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});state.spawnLeft--;state.spawnTimer=.8;}}
+      state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});
+      // A boss arriving is worth its own event: the first-run coach and the
+      // presentation both want to react to it, and inferring it from the enemy
+      // list would mean guessing which frame it appeared on.
+      if(enemy.boss)events.push({type:'bossSpawn',boss:enemy.boss,wave:state.wave});
+      state.spawnLeft--;state.spawnTimer=.8;}}
   if(theme==='scrub'){
     state.dustClouds=(state.dustClouds||[]).map(c=>({...c,life:c.life-dt})).filter(c=>c.life>0);
     state.dustTimer=(state.dustTimer||0)-dt;

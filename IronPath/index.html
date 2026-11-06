@@ -8,12 +8,12 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261110-storyde1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261112-firstrun4">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261112-firstrun5">
   <link rel="stylesheet" href="skill-menu.css?v=20261108-skillcards1">
   <link rel="stylesheet" href="field-command.css?v=20261105-sharp1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261105-soldier2">
-  <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun4">
+  <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -178,6 +178,16 @@
     <details class="skill-build-summary"><summary data-i18n-text="YOUR BUILD · COMBINED BONUSES">YOUR BUILD · COMBINED BONUSES</summary><div><p id="skillSummaryActive"></p><p id="skillSummaryStats"></p><p id="skillSummaryCombos"></p><p id="skillSummaryCaps"></p><small data-i18n-text="Skill bonuses only; equipment, terrain, field upgrades and temporary effects are not included.">Skill bonuses only; equipment, terrain, field upgrades and temporary effects are not included.</small></div></details></aside></div><p class="skills-footnote" data-i18n-text="Edits are a draft until saved. Reset refunds draft points; closing discards unsaved changes.">Edits are a draft until saved. Reset refunds draft points; closing discards unsaved changes.</p>
     <p id="skillStatus" class="development-status" role="status"></p><div class="skill-actions"><button id="skillReset" data-i18n="skills.reset" type="button">RESET POINTS</button><button id="skillSave" data-i18n="skills.save" class="primary" type="button">SAVE BUILD</button></div>
   </dialog>
+  <!-- First-run coach. Deliberately NOT a <dialog>: a modal would capture every
+       tap on the battlefield, and the game pauses while one is open. This card
+       sits above the action bar, keeps the field tappable, and never stops the
+       simulation. See first-run-coach.mjs. -->
+  <aside id="firstRunCoach" class="first-run-coach" role="dialog" aria-modal="false" aria-labelledby="coachTitle" aria-describedby="coachText" hidden>
+    <div class="coach-head"><span class="coach-step" id="coachStep"></span><button id="coachClose" class="coach-close" type="button" aria-label="Dismiss hint" data-i18n-aria-label="Dismiss hint">×</button></div>
+    <h2 id="coachTitle"></h2>
+    <p id="coachText" class="coach-text"></p>
+    <div class="coach-foot"><span class="coach-caption" id="coachCaption"></span><button id="coachNext" class="primary coach-next" type="button" data-i18n-text="NEXT →">NEXT →</button></div>
+  </aside>
   <dialog id="tutorialDialog" class="tutorial-dialog" aria-labelledby="tutorialTitle" aria-describedby="tutorialText">
     <span class="eyebrow" id="tutorialStep"></span>
     <div class="tutorial-scene" id="tutorialScene" aria-hidden="true">
@@ -185,6 +195,17 @@
     <h2 id="tutorialTitle"></h2><p id="tutorialText" class="tutorial-text"></p>
     <p id="tutorialPracticeStatus" class="tutorial-practice-status" role="status" hidden></p><button id="tutorialPracticeSkip" type="button" class="tutorial-practice-skip" hidden data-i18n-text="SKIP THIS PRACTICE">SKIP THIS PRACTICE</button>
     <div class="tutorial-actions"><button id="tutorialBack" type="button" data-i18n-text="← BACK">← BACK</button><button id="tutorialNext" class="primary" type="button" data-i18n-text="NEXT →">NEXT →</button></div><button id="tutorialSkip" class="tutorial-skip" type="button" data-i18n-text="SKIP BRIEFING">SKIP BRIEFING</button>
+  </dialog>
+  <!-- The dog tag is awarded, not filed away: it gets its own popup at the end of
+       the first run. Modal is right here — the run is over and nothing behind this
+       needs tapping. -->
+  <dialog id="dogTagAward" class="dog-tag-award" aria-labelledby="dogTagAwardTitle" aria-describedby="dogTagAwardText">
+    <span class="eyebrow" data-i18n-text="IDENTITY TAG">IDENTITY TAG</span>
+    <h2 id="dogTagAwardTitle" data-i18n-text="Your dog tag">Your dog tag</h2>
+    <p id="dogTagAwardText" data-i18n-text="Earned from the boss of wave five. Wear it for as long as you serve.">Earned from the boss of wave five. Wear it for as long as you serve.</p>
+    <div id="dogTagAwardSlot" class="dog-tag-slot dog-tag-issued"></div>
+    <small class="dog-tag-note" data-i18n-text="Derived, not recorded.">Derived, not recorded.</small>
+    <div class="dog-tag-award-actions"><button id="dogTagAwardClose" type="button" class="primary" data-i18n-text="WEAR IT">WEAR IT</button></div>
   </dialog>
   <dialog id="storyCinematic" class="story-cinematic" aria-labelledby="cinematicTitle" aria-describedby="cinematicText">
     <div class="cinematic-scene" aria-hidden="true"><div class="cinematic-landscape"></div><div class="cinematic-vignette"></div><div class="cinematic-weather"></div><div class="cinematic-signal"></div><div class="cinematic-portrait"><span id="cinematicInitial">◆</span></div><div class="cinematic-label">IRON PATH / FIELD TRANSMISSION <span id="cinematicLocation"></span></div></div>
@@ -229,8 +250,8 @@
     </div>
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
-  <script type="module" src="language-gate.mjs?v=20261112-firstrun4"></script>
-  <script type="module" src="intro.mjs?v=20261112-firstrun4"></script>
+  <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
+  <script type="module" src="intro.mjs?v=20261112-firstrun5"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261112-firstrun4"></script>
+  <script type="module" src="account.js?v=20261112-firstrun5"></script>
 </body></html>

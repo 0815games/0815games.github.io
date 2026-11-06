@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun4';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun4';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun5';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun5';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun4';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun5';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -12,9 +12,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun4';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun5';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun4';
+import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun5';
 import {missingPrestige} from './prestige.mjs';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-alpha3';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261105-workshop5';
@@ -24,8 +24,8 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
-import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun4';
-import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun4';
+import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
+import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -383,11 +383,32 @@ async function practiceSkills(){
  // Closing without saving is a decline, not a failure: the ending stays offered.
  return false;
 }
+// Step 1 of the ending: the tag is ISSUED. Until now the dog tag only existed
+// inside the soldier screen, which meant the reward for the first boss was a line
+// in a menu nobody had opened yet. It gets its own popup, full size.
 async function showDogTag(){
  refreshDogTags();
- soldierUI?.open();
- if(!await waitFor(()=>dialogOpen('soldierDialog')))return true;
- await waitFor(()=>!dialogOpen('soldierDialog'));
+ const dialog=document.getElementById('dogTagAward'),slot=document.getElementById('dogTagAwardSlot'),close=document.getElementById('dogTagAwardClose');
+ if(!dialog||!slot)return true;
+ renderDogTag(document,slot,{profile:viewProfile(),accountId:user?.uid});
+ if(!dialog.open)dialog.showModal();
+ await new Promise(resolve=>{
+  const done=()=>{dialog.removeEventListener('close',done);close?.removeEventListener?.('click',onClose);resolve();};
+  const onClose=()=>{if(dialog.open)dialog.close();};
+  dialog.addEventListener('close',done);
+  close?.addEventListener?.('click',onClose);
+ });
+ return true;
+}
+// Step 2 of the ending: put on what the run earned, in the REAL armory. This is
+// the player's own soldier, not the practice sandbox, so the save is real.
+async function equipFirstRewards(){
+ document.getElementById('armoryOpen')?.click?.();
+ if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
+ document.getElementById('armoryEquipmentTab')?.click?.();
+ // The step is done once gear is equipped, or when the player closes the armory:
+ // a soldier who already owns everything should not be trapped in a dialog.
+ await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
 }
 async function openWorkshopFirstTime(){
@@ -404,7 +425,7 @@ function offerFirstRunEnding(){
  endingRunning=true;
  void runFirstRunEnding({
   id,storage:firstRunStorage(),
-  steps:{skills:practiceSkills,tag:showDogTag,workshop:openWorkshopFirstTime},
+  steps:{tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime},
   onDone:()=>{endingRunning=false;openFieldSchool();},
   onStopped:()=>{endingRunning=false;},
  });
