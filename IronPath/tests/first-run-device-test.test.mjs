@@ -42,15 +42,22 @@ test('the device plan quotes the German the build actually shows',()=>{
  const gate=html.match(/<section id="languageGate"[\s\S]*?<\/section>/)?.[0]??'';
  const flatGate=gate.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
  for(const sentence of [
-  'Pick the language for this device. You can change it later at the top of the screen.',
-  'Wähle die Sprache für dieses Gerät. Du kannst sie später oben im Bildschirm ändern.',
+  'You can change this later at the top of the screen.',
+  'Du kannst die Sprache später oben im Bildschirm ändern.',
   'SPRACHE WÄHLEN',
  ]){
   assert.ok(flatGate.includes(sentence),`the gate must show: ${sentence}`);
   assert.ok(plan.replace(/\s+/g,' ').includes(sentence),`the plan must quote the gate sentence: ${sentence}`);
  }
- // And the German line really is marked as German for screen readers and fonts.
- assert.match(gate,/<span lang="de">Wähle die Sprache/);
+ // The German line really is marked as German for screen readers and fonts, and
+ // it is the FIRST thing after the tiles so a German reader finds it without
+ // reading the English sentence above it.
+ assert.match(gate,/<span lang="de">Du kannst die Sprache/);
+ // The flags are images, not emoji: Windows renders flag emoji as the bare
+ // letters "GB"/"DE", which is the opposite of recognising a language quickly.
+ assert.match(gate,/<img src="assets\/flag-gb\.svg"/);
+ assert.match(gate,/<img src="assets\/flag-de\.svg"/);
+ assert.doesNotMatch(gate,/\u{1F1EC}\u{1F1E7}|\u{1F1E9}\u{1F1EA}/u,'no flag emoji in the gate');
 });
 
 test('the plan lists the keys a tester has to clear to repeat a first run',()=>{

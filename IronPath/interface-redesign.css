@@ -340,15 +340,38 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 .language-gate-title span{display:block;margin-top:4px;font-size:.72em;letter-spacing:.06em;color:#5d7350}
 .language-gate-copy{margin:0 auto 18px;max-width:44ch;font-size:12px;line-height:1.5;color:#4a5e42}
 .language-gate-copy span{display:block;margin-top:4px;font-style:italic}
-.language-gate-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.language-gate-button{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:96px;margin:0;padding:14px 10px;background:#33482f;border:2px solid #22331f;border-radius:4px;color:#f4eccf;cursor:pointer}
+/* The choice, sized to be recognised rather than read: a 60x30 flag (the real
+   SVG, so Windows cannot turn it into the letters "GB"), the code beside it, and
+   the language name in its own language. Two tiles, side by side, 44px minimum
+   targets - the same thumb rule as the first-run card. */
+.language-gate-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
+.language-gate-button{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 12px;min-height:88px;margin:0;padding:12px 14px;background:#33482f;border:2px solid #22331f;border-radius:4px;color:#f4eccf;cursor:pointer;text-align:left}
 .language-gate-button:hover,.language-gate-button:focus-visible{background:#3f5a39;border-color:#b2cdbd;outline:none}
-.language-gate-flag{font-size:26px;line-height:1}
-.language-gate-button strong{font:700 16px Georgia,serif;letter-spacing:.02em}
+.language-gate-flag{grid-row:1/span 2;display:block;width:60px;height:30px;border:1px solid #00000059;border-radius:2px;overflow:hidden;box-shadow:0 2px 6px #0006}
+.language-gate-flag img{display:block;width:100%;height:100%;object-fit:cover}
+.language-gate-code{position:absolute;top:6px;right:8px;font-size:9px;font-weight:bold;letter-spacing:.16em;color:#c9d6bd;opacity:.85}
+.language-gate-button strong{font:700 17px Georgia,serif;letter-spacing:.02em}
 .language-gate-button small{font-size:10px;letter-spacing:.04em;color:#c9d6bd}
+.language-gate-button:hover .language-gate-code,.language-gate-button:focus-visible .language-gate-code{opacity:1}
 .language-gate-note{margin:16px 0 0;font-size:10px;line-height:1.45;color:#6b7f53}
 .language-gate-note span{display:block;margin-top:3px;font-style:italic}
-@media(max-width:420px){.language-gate-card{padding:20px 16px}.language-gate-choices{grid-template-columns:1fr}.language-gate-button{min-height:76px;flex-direction:row;justify-content:center;gap:10px}.language-gate-button small{display:none}}
+/* Narrow screens: the tiles stack, but the flag stays BESIDE the name rather than
+   above it - sideways is how a flag is recognised fastest, and two columns of
+   ~145px would squeeze "English" to 45px. */
+@media(max-width:520px){
+  .language-gate-card{padding:20px 16px}
+  .language-gate-choices{grid-template-columns:1fr;gap:10px}
+  .language-gate-button{min-height:76px}
+}
+/* Short screens too: take it out of the heading, never out of the tiles. */
+@media(max-height:560px){
+  .language-gate-title{font-size:18px}
+  .language-gate-title span{font-size:.8em}
+  .language-gate-card{padding:16px 14px}
+  .language-gate-flag{width:48px;height:24px}
+  .language-gate-button{min-height:64px;padding:8px 12px}
+  .language-gate-note{margin-top:10px}
+}
 @media(prefers-reduced-motion:no-preference){.language-gate-card{animation:language-gate-in .28s ease-out}@keyframes language-gate-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 
 /* ── Tutorial sandbox banner ────────────────────────────────────────────────

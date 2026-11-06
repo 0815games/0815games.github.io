@@ -95,7 +95,28 @@ const fs = require('node:fs');
       await check('#tutorialTitle');await check('#tutorialNext');await check('#tutorialPracticeSkip');
       await page.screenshot({path:`browser-artifacts/${name}-tutorial-briefing.png`});
       await page.evaluate(()=>document.querySelector('#tutorialDialog').close());
-      console.log(`${name}: sign-in, command, lobby and dialogs fit the viewport`);
+      // The language gate: the one screen a player cannot skip. It is opened here on
+      // purpose (the context pretends a language was chosen), because it is the only
+      // place the flags actually have to paint.
+      await page.evaluate(()=>{document.documentElement.dataset.langGate='1';document.querySelector('#languageGate').hidden=false;});
+      for(const code of ['gb','de']){
+        const flag=page.locator(`.language-gate-button[data-language="${code==='gb'?'en':'de'}"] .language-gate-flag img`);
+        assert.equal(await flag.evaluate(img=>img.complete&&img.naturalWidth>0),true,`${name}: the ${code} flag is a real painted image`);
+      }
+      // Both tiles are inside the screen and tall enough for a thumb, on all three
+      // viewports - including 320px, where the tiles stack instead of splitting.
+      for(const lang of ['en','de']){
+        const tile=page.locator(`.language-gate-button[data-language="${lang}"]`);
+        const box=await tile.boundingBox();
+        assert.ok(box&&box.width>0,'the tile is laid out');
+        assert.ok(box.x>=-1&&box.x+box.width<=width+1,`${name}: the ${lang} tile is inside the viewport`);
+        assert.ok(box.height>=44,`${name}: the ${lang} tile is ${Math.round(box.height)}px tall, under the 44px thumb rule`);
+      }
+      // Nothing in the gate may be cut off: no button may hang below the fold.
+      const lastTile=await page.locator('.language-gate-button[data-language="de"]').boundingBox();
+      assert.ok(lastTile.y+lastTile.height<=height+1,`${name}: the gate fits ${height}px without scrolling`);
+      await page.screenshot({path:`browser-artifacts/${name}-language-gate.png`});
+      console.log(`${name}: sign-in, command, lobby, dialogs and the language gate fit the viewport`);
       await context.close();
     }
   } finally { await browser.close(); }
