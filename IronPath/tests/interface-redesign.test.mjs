@@ -28,3 +28,28 @@ test('redesign covers the lobby, combat menus, progression and debrief without c
   assert.match(css, /@media\(max-width:520px\)/);
   assert.doesNotMatch(css, /\.tree-node\s*\{/); // Leave the skill-map geometry to the existing renderer.
 });
+
+// The first run is the only part of the game that has to work on a phone before
+// the player has learned anything about it. These three surfaces were designed
+// separately and it showed; the dossier block is what makes them one thing. The
+// overflow rule is a regression guard: the old briefing was clipped on a 360x480
+// screen because it set a max-height and nothing else.
+test('the first-run surfaces share one visual language and stay inside a phone', () => {
+  const dossier = css.slice(css.indexOf('First-run dossier'));
+  assert.ok(dossier.length > 500, 'the dossier block is present');
+  for (const surface of ['.first-run-coach', '.tutorial-dialog', '.dog-tag-award']) {
+    assert.ok(dossier.includes(surface), `the dossier styles ${surface}`);
+  }
+  // A max-height without overflow is exactly the bug that made the first run
+  // unplayable: content taller than the box, and no way to reach the buttons.
+  assert.match(dossier, /\.dog-tag-award\{[^}]*overflow:auto/);
+  assert.match(dossier, /max-height:calc\(100dvh/);
+  // The 44px thumb rule survives any restyle.
+  assert.match(dossier, /\.tutorial-dialog \.tutorial-actions button\{min-height:44px\}/);
+  // One gold, one plate, one edge - named, not sprinkled.
+  assert.match(dossier, /--dossier-gold:#e4ca89/);
+  assert.match(dossier, /@media\(max-height:520px\)/);
+  // And the coach draws its own progress ticks instead of a bare number.
+  assert.match(html, /id="coachPips"/);
+  assert.match(dossier, /\.coach-pips i\[data-done\]/);
+});

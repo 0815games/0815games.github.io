@@ -56,6 +56,12 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('#coachStep').innerText(),/1 \/ 6/);
     // The card leaves the field playable: it is anchored to the bottom and takes
     // less than half the viewport, unlike the 450px modal it replaced.
+    // The dossier dressing is real styling, not decoration in a dead file: the
+    // card must paint its own plate and draw one tick per step.
+    assert.equal(await page.locator('#coachPips i').count(),6,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
+    const plate=await page.locator('#firstRunCoach').evaluate(e=>getComputedStyle(e).backgroundColor);
+    assert.notEqual(plate,'rgba(0, 0, 0, 0)','the card is a painted plate, not bare text over the field');
     const coachBox=await page.locator('#firstRunCoach').boundingBox();
     const viewport=page.viewportSize();
     assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
@@ -72,6 +78,7 @@ const assert = require('node:assert/strict');
     // Playing the card's own instructions dismisses it.
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
+    assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
     // Back to the Command Center for the rest of the sweep. Ending a run opens the

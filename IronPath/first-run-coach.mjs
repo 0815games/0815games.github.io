@@ -65,6 +65,15 @@ export function createCoach({document,storage,onVisibilityChange=()=>{},onDone=(
     $('coachCaption').textContent=tr(current.caption);
     // The card is a hint, not a wall: the only control is "understood".
     $('coachNext').textContent=index===COACH_STEPS.length-1?tr('GOT IT'):tr('NEXT →');
+    // Ticks, not a counter: the player should see how much of the briefing is left
+    // without reading a number. Built once, then only re-marked on each step.
+    const pips=$('coachPips');
+    if(pips){
+      if(pips.childElementCount!==COACH_STEPS.length){
+        pips.replaceChildren(...COACH_STEPS.map(()=>document.createElement('i')));
+      }
+      [...pips.children].forEach((pip,at)=>pip.toggleAttribute('data-done',at<=index));
+    }
     root.hidden=false;
     root.dataset.step=current.id;
   }

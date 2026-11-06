@@ -465,3 +465,71 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 .dog-tag-award .dog-tag-note{display:block;margin:10px 0 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
 .dog-tag-award-actions button{min-height:44px;width:100%;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
 @media(max-width:480px){.dog-tag-award{padding:16px}.dog-tag-award h2{font-size:20px}}
+/* ---------------------------------------------------------------------------
+   First-run dossier: one visual language for every first-run surface.
+
+   Its three surfaces used to look like three different apps — a modal tour with
+   a photo banner, a bare card, and a plain dialog wearing the old army-green.
+   They are now one artefact: a field dossier stamped onto the screen. Same
+   paper, same rule, same stencil type, same gold.
+
+   Rules that keep the phone playable, unchanged from the coach fix:
+   - nothing here is a <dialog> except the award, which comes after the run;
+   - the replay tour keeps `overflow:auto`, so a 360x480 screen can scroll it;
+   - every control stays at least 44px.
+   --------------------------------------------------------------------------- */
+:root{
+  --dossier-ink:#d8e3c9;
+  --dossier-dim:#9fb79b;
+  --dossier-gold:#e4ca89;
+  --dossier-plate:#12201a;
+  --dossier-edge:#7d9270;
+}
+/* A stencil header and a hairline rule: the thing that makes the three
+   surfaces read as one document rather than three widgets. */
+.first-run-coach{background:linear-gradient(#16281f,#12201a);border-color:var(--dossier-edge)}
+.coach-head{padding-bottom:6px;border-bottom:1px solid #ffffff14}
+.coach-step{display:flex;align-items:center;gap:6px}
+.coach-step::before{content:"";width:6px;height:6px;background:var(--dossier-gold);border-radius:1px;transform:rotate(45deg)}
+.first-run-coach h2{letter-spacing:.01em}
+.coach-text{color:var(--dossier-ink)}
+.coach-caption{color:var(--dossier-dim)}
+/* Step ticks: the player can see how much briefing is left without a counter. */
+.coach-pips{display:flex;gap:4px;margin-top:2px}
+.coach-pips i{width:14px;height:3px;background:#ffffff26;border-radius:1px}
+.coach-pips i[data-done]{background:var(--dossier-gold)}
+@media(max-width:600px){.coach-pips i{width:10px}}
+
+.tutorial-dialog{
+  background:linear-gradient(#ecdfb9,#e4d5ab);border:1px solid #6d8260;
+  box-shadow:5px 7px 0 #263a2c,0 18px 80px #000b;
+}
+.tutorial-dialog .eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:2px 8px 2px 6px;background:#3c503a;color:#f0e2bb;border-radius:2px;
+  font-size:10px;letter-spacing:.16em;
+}
+.tutorial-dialog .eyebrow::before{content:"";width:5px;height:5px;background:var(--dossier-gold);border-radius:1px;transform:rotate(45deg)}
+.tutorial-dialog h2{letter-spacing:.01em}
+.tutorial-dialog .tutorial-actions{gap:8px;padding-top:4px;border-top:1px solid #00000014}
+.tutorial-dialog .tutorial-actions button{min-height:44px}
+.tutorial-scene{border-radius:2px 8px 3px 5px;filter:saturate(.85) contrast(1.05)}
+.tutorial-scene .scene-caption{
+  background:#14251ee6;border-left:2px solid var(--dossier-gold);color:#fff1ca;
+}
+/* The replay tour is the only modal left, so it wears the backdrop. */
+.tutorial-dialog::backdrop{background:#07110dd9;backdrop-filter:blur(1.5px)}
+
+/* The award is the one first-run dialog that is allowed to be modal: the run is
+   over, the field behind it is frozen, and there is nothing to tap. */
+.dog-tag-award{border-color:var(--dossier-edge)}
+.dog-tag-issued .dog-tag{filter:saturate(.9)}
+.dog-tag-blood{letter-spacing:.18em}
+/* Short screens: the award must scroll rather than clip, same lesson as the tour. */
+@media(max-height:520px){
+  .dog-tag-award{max-height:calc(100dvh - 20px);overflow:auto}
+  .tutorial-dialog .tutorial-scene{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .tutorial-dialog,.dog-tag-award{animation:none}
+}
