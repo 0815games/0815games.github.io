@@ -212,16 +212,35 @@ jobs:
           node-version: '22'
       - name: Install pinned browser test tooling
         run: |
-          # The browser download is the only step that has ever hung: a slow mirror
-          # eats the job's whole 10 minutes and the run reports "exceeded the maximum
-          # execution time" with no annotation at all. Cap it so the failure names
-          # the download instead of the job limit.
-          if { timeout 300 npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1 && timeout 420 "$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright" install --with-deps chromium; } > /tmp/browser-install.log 2>&1; then
-            cat /tmp/browser-install.log
-          else
+          # This step has hung three times, always on `--with-deps`: it calls apt,
+          # and when the Azure package mirror is slow the job burns its whole 10
+          # minutes and reports "exceeded the maximum execution time" with no
+          # annotation. Two changes:
+          #
+          #   1. install Chromium WITHOUT the system packages first. The runner
+          #      image already carries the libraries a headless Chromium needs, so
+          #      the apt trip is usually unnecessary;
+          #   2. only if Chromium will not launch, fetch the packages - with a cap,
+          #      so the failure names the mirror instead of the job limit.
+          PLAYWRIGHT="$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright"
+          if ! { timeout 300 npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1 && timeout 240 "$PLAYWRIGHT" install chromium; } > /tmp/browser-install.log 2>&1; then
             cat /tmp/browser-install.log
             python3 -c "from pathlib import Path; s=Path('/tmp/browser-install.log').read_text()[-3500:]; print('::error title=Browser install::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
+          fi
+          # A launch probe decides whether apt is needed at all, instead of guessing.
+          if timeout 60 node -e 'require("playwright").chromium.launch({headless:true}).then(b=>b.close())' > /tmp/browser-probe.log 2>&1; then
+            cat /tmp/browser-install.log; echo 'chromium launches without system packages'
+          else
+            cat /tmp/browser-probe.log
+            echo '::warning title=Browser deps::chromium needs system packages, fetching them the slow way'
+            if timeout 420 "$PLAYWRIGHT" install-deps chromium > /tmp/browser-deps.log 2>&1; then
+              cat /tmp/browser-deps.log
+            else
+              cat /tmp/browser-deps.log
+              python3 -c "from pathlib import Path; s=Path('/tmp/browser-deps.log').read_text()[-3500:]; print('::error title=Browser system packages::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+              exit 1
+            fi
           fi
       - name: Check static interface at phone and desktop sizes
         env:
