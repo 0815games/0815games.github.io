@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
+import {productionModuleUrl} from './production-module.mjs';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
@@ -191,7 +192,7 @@ test('the dialog that switches the language is German itself', async () => {
     ...[...source.matchAll(/accept: '([^']+)'/g)].map(match => match[1]),
   ];
   const english = [' the ', ' and ', ' your ', ' you ', ' this '];
-  const language = await import('../language.mjs?v=20261118-settings1');
+  const language = await import(productionModuleUrl('language.mjs'));
   const storage = memory({ 'ironpath:language': 'de' });
   const node = () => ({ value: '', textContent: '', hidden: false, classList: { toggle() {}, add() {}, remove() {} }, setAttribute() {}, addEventListener() {}, dispatchEvent() {}, getAttribute() { return null; } });
   const saved = globalThis.document;

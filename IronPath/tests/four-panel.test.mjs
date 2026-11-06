@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
+import {productionModuleUrl} from './production-module.mjs';
 import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
 const profiles={alice:{name:'Alice',gender:'female',level:1},bob:{name:'Bob',gender:'male',level:1},cara:{name:'Cara',gender:'female',level:1},dan:{name:'Dan',gender:'male',level:1}};
 const manifest={hostId:'alice',playerIds:['alice','bob','cara','dan'],mode:'two-vs-two',teams:[0,1,0,1]};
@@ -74,7 +75,7 @@ test('invited request does not ask the host for another approval',async()=>{cons
 test('failed invitation leaves no pending party',async()=>{const f=fixture('guest');f.lobby.claimInvitedSlot=async()=>{throw Error('full');};assert.equal(await f.panel.joinInvite({code:'0123',partyId:'expected'}),false);assert.equal(f.panel.isActive(),false);assert.match(f.$('fourPartyStatus').textContent,/expired|full/);assert.ok(f.calls.some(c=>c[0]==='cancel'));});
 
 test('changing language refreshes the live lobby without changing party settings or player names',async()=>{
- const {setupLanguage}=await import('../language.mjs?v=20261118-settings1');
+ const {setupLanguage}=await import(productionModuleUrl('language.mjs'));
  const select={value:'',addEventListener(_type,callback){this.change=callback;}},note={},doc={documentElement:{},getElementById:id=>id==='languageSelect'?select:note,querySelectorAll:()=>[]};setupLanguage({document:doc,storage:null});
  const f=fixture();await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});f.$('fourPartyMode').value='two-vs-two';f.$('fourPartyMode').onchange();f.$('fourPartyTeams').value='1';f.$('fourPartyTeams').onchange();f.w.requests({eve:{name:'<b>Not HTML</b>'}});
  select.value='de';select.change();assert.equal(f.$('fourPartyMode').value,'two-vs-two');assert.equal(f.$('fourPartyTeams').value,'1');assert.equal(f.$('fourPartyMode').children.find(o=>o.value==='two-vs-two').textContent,'2 gegen 2 · Überleben');assert.match(f.$('fourPartyRoster').children[2].textContent,/Cara · Team A · Bereit/);assert.equal(f.$('fourPartyRequests').children[0].children[0].textContent,'<b>Not HTML</b>');assert.equal(f.$('fourPartyRequests').children[0].children[1].textContent,'BESTÄTIGEN');assert.equal(f.$('fourPartyLeave').textContent,'GRUPPE SCHLIESSEN');assert.equal(f.panel.isActive(),true);

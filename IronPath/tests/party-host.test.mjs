@@ -1,7 +1,13 @@
-import { strict as assert } from 'node:assert';
-import { createPartyHost } from '../party-host.mjs';
-import { createMatch } from '../simulation.mjs';
-import { createPlayer } from '../match.mjs';
+// The party host loop: roster, commands and the wave-approval round trip that
+// decides when a shared match may start the next wave.
+
+import {createPlayer} from '../match.mjs';
+import {createPartyHost} from '../party-host.mjs';
+import {createMatch} from '../simulation.mjs';
+import {strict as assert} from 'node:assert';
+
+// ---- from party-host.test.mjs ----
+{
 const match=createMatch([createPlayer('host',{name:'Host',gender:'male'}),createPlayer('guest',{name:'Guest',gender:'female'})]);
 const host=createPartyHost(match);
 const command=(seq,type,fields={})=>({version:1,seq,command:{type,...fields}});
@@ -47,3 +53,28 @@ const focusMatch=createMatch([createPlayer('host',{name:'Host',gender:'male'}),c
 focusHost.receive('host',command(1,'direction',{x:1,y:0}));focusHost.receive('guest',command(1,'move',{x:500,y:300}));focusHost.advance();focusHost.receive('guest',command(2,'build',{pad:0,towerType:0}));const beforeFocus=focusHost.checkpoint().tick;
 assert.equal(focusHost.setFocusPaused(true),true);assert.equal(focusHost.ready(),false);assert.equal(focusHost.advance(),null);assert.equal(focusHost.checkpoint().tick,beforeFocus);const paused=focusHost.snapshotFor('guest');assert.equal(paused.hostPaused,true);assert.equal(paused.receipts.at(-1).reason,'host-paused');assert.equal(paused.receipts.at(-1).status,'cancelled');assert.deepEqual(paused.match.players.host.direction,{x:0,y:0});assert.equal(paused.match.players.guest.target,null);assert.equal(paused.match.players.guest.active,true);assert.equal(focusHost.receive('guest',command(3,'build',{pad:0,towerType:0})).reason,'host-paused');
 focusHost.setFocusPaused(false);assert.equal(focusHost.ready(),true);assert.equal(focusHost.snapshotFor('guest').hostPaused,false);assert.deepEqual(focusHost.advance().commands,[]);assert.equal(focusHost.snapshotFor('guest').match.towers.length,0,'cancelled actions never replay');assert.equal(focusHost.receive('guest',command(4,'build',{pad:0,towerType:0})).status,'cancelled','late pre-pause input cannot execute after resume');assert.equal(focusHost.receive('guest',{...command(5,'build',{pad:0,towerType:0}),focusGeneration:1}).status,'queued');assert.equal(focusHost.advance().commands[0].result.ok,true);
+}
+
+// ---- from wave-approval.test.mjs ----
+{
+const h=createPartyHost(createMatch(['h','g'].map(id=>createPlayer(id,{name:id,gender:'female'}))),{hostId:'h'});
+h.setPresence('h',true);h.setPresence('g',true);const seq={h:0,g:0};
+function cmd(id,type,fields={}){assert.equal(h.receive(id,{version:1,seq:++seq[id],command:{type,...fields}}).status,'queued');return h.advance().commands[0].result;}
+const view=()=>h.snapshotFor('h').match;
+assert.equal(cmd('g','approveWave',{requestId:1}).ok,false);
+assert.equal(cmd('g','startWave').ok,false);
+assert.equal(cmd('h','startWave').waitingForGuest,true);assert.equal(view().wave,0);
+const first=view().waveRequestId;
+assert.equal(cmd('h','approveWave',{requestId:first}).ok,false);
+assert.equal(cmd('g','declineWave',{requestId:first}).ok,true);assert.equal(view().pendingWave,0);
+assert.equal(cmd('h','startWave').waitingForGuest,true);const second=view().waveRequestId;assert.notEqual(second,first);
+assert.equal(cmd('g','approveWave',{requestId:first}).ok,false,'stale approval cannot start a later request');
+assert.equal(cmd('h','cancelWave',{requestId:first}).ok,false);assert.equal(cmd('h','cancelWave',{requestId:second}).ok,true);
+assert.equal(cmd('h','startWave').waitingForGuest,true);h.setPresence('g',false);assert.equal(view().pendingWave,0);assert.equal(view().wave,0,'disconnect never auto-starts a pending request');
+h.setPresence('g',true);assert.equal(cmd('g','approveWave',{requestId:view().waveRequestId}).ok,false,'reconnection does not resurrect a request');
+assert.equal(cmd('h','startWave').waitingForGuest,true);assert.equal(cmd('g','approveWave',{requestId:view().waveRequestId}).ok,true);assert.equal(view().wave,1);
+assert.equal(cmd('g','approveWave',{requestId:view().waveRequestId}).ok,false);
+assert.equal(cmd('g','leaveRun').ok,true);assert.equal(view().players.g.active,false);assert.equal(view().ended,false);assert.equal(cmd('h','endRun').ok,true);
+const solo=createPartyHost(createMatch(['h','g'].map(id=>createPlayer(id,{name:id,gender:'male'}))),{hostId:'h'});solo.setPresence('h',true);solo.receive('h',{version:1,seq:1,command:{type:'startWave'}});assert.equal(solo.advance().commands[0].result.ok,true);assert.equal(solo.snapshotFor('h').match.wave,1,'host can explicitly start while guest is absent');
+console.log('Host wave requests, stale approvals, cancellation, disconnect and individual leaving passed.');
+}
