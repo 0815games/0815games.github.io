@@ -11,14 +11,21 @@ than against the code alone.
 | 1 | Language gate (English / German, each written in both languages) | `language-gate.mjs` | Once per device, before anything else paints |
 | 2 | Intro overlay | `intro.mjs` | Once per page load, skipped behind the gate |
 | 3 | Sign in, create the soldier | `account.js` | — |
-| 4 | **Training field, built and drawn** | `game.js` + `training-run.mjs` | Once per account per browser |
-| 5 | **Coach cards, ON the field** (6 cards, no modal, never pauses) | `first-run-coach.mjs` | Once per account per browser |
-| 6 | Play waves 1–6 yourself; the boss of wave 6 ends the run | `game.js` + `training-run.mjs` | Same run |
-| 7 | **Dog tag issued** in its own popup | `dog-tag.mjs` + `account.js` | Once, after the boss |
-| 8 | **Equipment on**, real Armory | `account.js` | Once per account per browser |
-| 9 | **First skill point**, real Skills dialog, saved | `account.js` | Once per account per browser |
-| 10 | Workshop opened for the first time | `account.js` | Once per account per browser |
-| 11 | Field School menu: Armory & Workshop, Skills, Campaign, Multiplayer | `account.js` + `index.html` | Shown after the ending |
+| 4 | **Training field, built and drawn** — straight into the match, no briefing first | `game.js` + `training-run.mjs` | Once per account per browser |
+| 5 | **Coach cards, ON the field** (7 cards, no modal, never pauses) | `first-run-coach.mjs` | Once per account per browser |
+| 6 | **The pointer:** a ring on the pad the card names, a line from the card to it | `coach-highlight.mjs` | While a card is up |
+| 7 | Play waves 1–6 yourself; the boss of wave 6 ends the run | `game.js` + `training-run.mjs` | Same run |
+| 8 | **Rewards** — XP for the level, and the dog tag, **won or lost** | `account.js` + `dog-tag.mjs` | Once per account |
+| 9 | **The reward card** explains what was just paid | `first-run-guide.mjs` | Once per account |
+| 10 | **Equipment on** in the real Armory, with the card explaining what gear does | `account.js` + `first-run-guide.mjs` | Once per account |
+| 11 | **First skill point**, with the card naming Assault / Engineer / Recon / Command | `account.js` + `first-run-guide.mjs` | Once per account |
+| 12 | Workshop opened, with the card saying where gear comes from | `account.js` + `first-run-guide.mjs` | Once per account |
+| 13 | Field School menu: Armory & Workshop, Skills, Campaign, Multiplayer | `account.js` + `index.html` | Shown after the ending |
+
+The order is the point. The old build briefed first and played second, and the
+briefing was a modal over the very field it described. Now the field comes first,
+the cards explain it **while it runs**, and the screens after the match explain
+themselves. See §"Why the field comes before the briefing".
 
 The order of 7–9 is the fix a player asked for and it is deliberate: the boss
 reward goes **on** first, the skill point is spent **after**. A skill tree means
@@ -96,7 +103,13 @@ same module:
 - **Enemies at 70% health** (`TRAINING_UNIT = 0.7`).
 - **The wave-5 boss at 60% of that** (`TRAINING_BOSS_UNIT = 0.6`).
 - **Bunker at 150% health** (`TRAINING_BUNKER = 1.5`, 100 → 150).
-- **450 XP** in total: the six waves pay 330 (30 + 40 + 50 + 60 + 70 + 80) and the
+- **A defeat still pays.** Losing ends the run with `FIRST_RUN_DEFEAT_XP` (330) and
+  the dog tag anyway. The run is the tutorial, not an exam: the screens that follow
+  teach equipment and skills, and a player who bounced off wave six still has to be
+  given something to equip and a point to spend. Losing costs the surplus, not the
+  lesson. (`game.js` used to fire the ending only on `training-end`, so a defeat
+  finished with a debrief and no tag at all.)
+- **450 XP** on a win: the six waves pay 330 (30 + 40 + 50 + 60 + 70 + 80) and the
   contract adds `trainingBonusXP() = 50` with the last wave. The bonus exists so
   the first skill point cannot drift away with a balance change; it is shown as a
   contract line, never as a silent round-up.
@@ -224,6 +237,8 @@ player on a new browser is asked once and then goes straight in.
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, gate → intro order, single reload |
 | `tests/first-run-coach.test.mjs` | Cards follow real actions, no modal, **the coach is in no pause condition**, boss jumps the queue, dismissed stays dismissed |
 | `tests/tutorial.test.mjs` | The replay tour, practice gates, real-dialog handoff, completion once per account, one owner for the marker key |
+| `tests/coach-highlight.test.mjs` | the ring lands on the pad, survives a panned/zoomed view, and can never capture a tap; the arrow is revealed by attribute (SVG has no `hidden` property) |
+| `tests/first-run-guide.test.mjs` | rewards → equip → skills → workshop in that order; an action card cannot be clicked past; the four classes are explained; not a modal |
 | `tests/training-run.test.mjs` | 6 waves, 70% / 150% / weakened boss, boss only on wave 6, 330 + 120 = 450 XP = level 2 with headroom, the boss must fall before the run ends, offered once per edition |
 | `tests/dog-tag.test.mjs` | Serial and blood type derived, stable and spread over all eight, nothing persisted, SVG in the armory style |
 | `tests/first-run-ending.test.mjs` | Order (tag → equip → skills → workshop), once per account, decline stops without marking done, Field School uses existing controls |
