@@ -23,20 +23,25 @@ screen size, and whether it was portrait or landscape.** Without those, a report
 cannot be reproduced. Use a fresh browser profile or a private window so the
 language gate and the briefing both appear — the game remembers both per device.
 
-To repeat a first run on the same device afterwards, clear these four keys in the
+To repeat a first run on the same device afterwards, clear these keys in the
 browser's local storage for the site:
 
 | Key | What it remembers |
 | --- | --- |
 | `ironpath:language` | the gate choice for this device |
-| `ironpath:tutorial:v2:<account id>` | the briefing was completed |
-| `ironpath:training:v1:<account id>` | the training contract was offered |
-| `ironpath:firstrun:v1:<account id>` | the ending was offered |
+| `ironpath:coach:v2:<account id>` | the first-run cards were shown |
+| `ironpath:training:v2:<account id>` | the training contract was offered |
+| `ironpath:firstrun:v2:<account id>` | the ending was offered |
+| `ironpath:tutorial:v2:<account id>` | the *replay* briefing (Help panel) was seen |
 
-An account that predates the 11-step briefing holds `ironpath:tutorial:v1:`. That
-key is what hid the new tour from existing players for a while; it is now ignored,
-so **do not** clear it to test the fix — log in with an old account and the new
-briefing should start on its own.
+Older keys you may still find, and what they mean now:
+
+- `ironpath:tutorial:v1:` — the 8-step tour. Ignored. It once hid the new briefing
+  from every existing account; leaving it in place is the point, so **do not**
+  clear it to test anything.
+- `ironpath:firstrun:v1:` — the old ending order (skills first, no dog tag).
+  Ignored since the ending moved to v2, which is why an old account still gets the
+  new ending once.
 
 Clearing the language key also brings the gate back, which is what you want when
 re-testing step 1.
@@ -57,15 +62,19 @@ into a report.
 ## 1. Language gate (both languages, both devices)
 
 1. Open the site in a fresh profile. **Expected:** the gate appears before
-   anything else, with **CHOOSE YOUR LANGUAGE / SPRACHE WÄHLEN** as the heading
-   and the same sentence in both languages: *"Pick the language for this device.
-   You can change it later at the top of the screen."* / *"Wähle die Sprache für
-   dieses Gerät. Du kannst sie später oben im Bildschirm ändern."*
-2. **Check no English reader is stuck:** both buttons must be readable and
-   tappable — **English** / *Continue in English* and **Deutsch** / *Weiter auf
-   Deutsch*.
-3. **Check no German reader is stuck:** the German sentence must be complete and
-   in correct German. If it is not, that is a fail even if you read English.
+   anything else, with **CHOOSE YOUR LANGUAGE / SPRACHE WÄHLEN** as the heading.
+   The note under the tiles reads *"You can change this later at the top of the
+   screen."* in English and the German line directly beneath it.
+   **First thing to check:** both tiles show a **real flag image**, not the
+   letters `GB` / `DE` — Windows renders flag emoji as bare letters, so a gate
+   that looks right on your phone can look broken on a Windows laptop.
+2. **Check no English reader is stuck:** both tiles must be readable and
+   tappable — **English** / *Continue in English* and **Deutsch** / *Auf Deutsch
+   fortfahren*.
+3. **Check no German reader is stuck:** the German sentence *"Du kannst die
+   Sprache später oben im Bildschirm ändern."* must be complete and in correct
+   German. If it is not, that is a fail even if you read English. It sits
+   directly under the tiles, so nobody has to read the English line first.
 4. Pick **Deutsch**. **Expected:** the whole gate disappears at once — no flash of
    English underneath, no half-translated screen.
 5. Reload. **Expected:** no gate; the game opens straight in German.
@@ -75,82 +84,86 @@ into a report.
 **On a phone specifically:** the gate must fit without scrolling on a 320 px wide
 screen, and both buttons must be reachable with a thumb.
 
-## 2. Briefing (11 steps, real dialogs)
+## 2. Field first, then the cards (the phone fix)
 
-A fresh account gets the briefing automatically after signing in. You do not open
-it.
+A fresh account now lands **on the battlefield**, not on a briefing. This section is
+the whole reason the first run was rebuilt; test it before anything else.
 
-1. **Expected:** the briefing opens by itself over the Command Center. It does not
-   appear *before* sign-in, and it does not appear twice.
-2. Walk through all 11 steps. **Expected step count:** **FELDEINWEISUNG · 7 / 11**
-   and so on — 11 in total. The last four practice steps open **real dialogs**, not
-   pictures.
-3. **German check, the whole way through.** Every title, body text and scene
-   caption must be German, including the last four steps. The ones that matter
-   most are the four newest: *Fähigkeitenmenü*, *Waffenkammer*, *Deine Werkstatt*,
-   *Prestigewaffen*. Anything in English here is a fail — it is the one place a
-   German reader has no escape hatch.
-4. **Practice steps 8–11:** each one opens a real dialog over the briefing, with a
-   banner reading **EINWEISUNG · BEISPIELDATEN** and *"Nichts, was du hier tust,
-   wird gespeichert. Dein Soldat bleibt unverändert."* (English: *TUTORIAL ·
-   SAMPLE DATA*).
-5. **Step 8, do the practice.** Open **Skills**, unlock a skill, save. **Expected:**
-   the briefing only lets you continue after the save; before that, continuing is
-   blocked. Then close the dialog and check the banner is gone.
-6. **Step 9, armory.** Equip something and upgrade something on the sample. Note
-   whether you could tell it was sample data and not your own soldier.
-7. **Step 10, workshop.** Craft and equip on the sample.
-8. **Step 11, prestige.** View the locked trophies. **Expected:** each locked
-   trophy names the mission that unlocks it.
-9. **Skip path:** on a practice step, the *DIESE ÜBUNG ÜBERSPRINGEN* button must
-   let you move on. It should be obvious what it does.
-10. **Touch check:** on a phone, no control in the briefing should require a
-    pinch, and nothing should be cut off in portrait.
+1. **Expected:** the training field is built and visible, and a small card appears
+   over its lower edge: **ERSTER EINSATZ · 1 / 7** with *Willkommen, Soldat*.
+   It must appear **after** the field is drawn, never over an empty canvas.
+2. **The card is not a modal.** Tap the field while it is open. **Expected:** the
+   tap goes through — a build marker opens, or your soldier moves. If the tap is
+   swallowed, that is a blocker.
+3. **The game does not pause.** Deploy a wave with the card still open and watch
+   the enemies. **Expected:** they walk. The old build froze the field here, which
+   is what made the first run unplayable.
+4. **The card is small.** At 390 x 664 it must take less than half the screen and
+   never cover the Deploy button or the build pads. Try 360 x 480 as well: the
+   card may scroll *inside* itself, but its **NEXT** button must stay reachable
+   without scrolling the page.
+5. **The cards follow what you do**, not a click sequence: build a tower → *Baue
+   einen Turm* goes away; upgrade it → the next; move your soldier → the next;
+   Deploy → the next. Each card is one sentence and at least 44 px per button.
+6. **German check:** every card must be German — `ERSTER EINSATZ · n / 6`,
+   *Willkommen, Soldat*, *Baue einen Turm*, *Der Boss ist da*, `VERSTANDEN`.
+   Anything in English is a fail.
+7. **Dismiss:** the × must hide the card for good, and it must not come back on
+   reload. Nothing is written to your soldier.
 
-## 3. Training contract (six waves, real deployment)
+**Landscape (844 x 390):** the card moves to the right-hand side and leaves the
+build pads on the left. It must not cover them.
 
-Finishing the briefing hands you a real battlefield — the Command Center is
-replaced, not overlaid.
+## 3. Training contract (five waves, boss ends it)
 
 1. **Expected:** the objective reads **AUSBILDUNGSVERTRAG · MIT VORSICHT** and
-   **WELLE 1 / 6**, with *"Noch 5 Welle(n) schaffen. Hier sind die Gegner
+   **WELLE 1 / 5**, with *"Noch 4 Welle(n) schaffen. Hier sind die Gegner
    geschwächt und dein Bunker ist verstärkt."*
 2. **Play it properly** — build towers, upgrade them, move your hero, use the
    ability when you get one. Note the time per wave and total.
 3. **Expected:** the bunker has more health than a normal run (150 instead of
-   100), enemies die noticeably faster, and the wave-5 boss does not end the run.
-4. **Expected ending:** after wave 6, a notice reads *"Ausbildungsvertrag erfüllt!
-   330 XP verdient. Willkommen auf dem Eisernen Pfad, Soldat."* and the run ends
-   itself. You do not need to press END RUN.
-5. **The pass/fail question that no automated test can answer:** did it feel like
-   a tutorial or like a punishment? If a new player loses this, that is a
-   blocker — record exactly which wave and what was on the field.
+   100), enemies die noticeably faster, and **the boss of wave 5 is the last thing
+   you fight**. When it falls, the run ends by itself and nothing follows it. Wave 5
+   must not ask you for a field upgrade — if it does, the run is stuck.
+4. **The boss card:** when the boss of wave 5 walks on, the card must switch to
+   *Der Boss ist da* even if you were still reading an earlier one.
+5. **Expected ending:** a notice reads *"Ausbildungsvertrag erfüllt! 450 XP
+   verdient. Willkommen auf dem Eisernen Pfad, Soldat."* — the waves pay 250 and
+   the contract adds 200, so the run always ends at level 2 with one point and
+   150 XP of headroom towards level 3.
+6. **After the debrief, Deploy must work.** Close the debrief and press Deploy.
+   **Expected:** a fresh battlefield. (The old build left a dead Deploy button
+   here.)
+7. **The pass/fail question no automated test can answer:** did it feel like a
+   tutorial or like a punishment? If a new player loses this, that is a blocker —
+   record exactly which wave and what was on the field.
 
-For reference, a headless simulation of the real command path gives:
-
-| Play style | Result |
-| --- | --- |
-| Two starting towers, never upgrades | Bunker lost in wave 4 |
-| Builds whenever affordable, never upgrades | Bunker lost in wave 5 |
-| Fills the build pads, then upgrades | Clears in ~2 minutes, 70 of 150 bunker health left |
-
-If your real experience is much harder than that, something is wrong — say so.
+For reference, a headless simulation of the real command path (level 1, builds on
+every pad, upgrades when supplies allow) clears all five waves in about 65
+seconds and ends the boss wave with 100 of 150 bunker health left.
 
 ## 4. The ending
 
-1. **Expected order:** debrief → the skill point is spent for real → the dog tag is
-   shown → the workshop opens for the first time → the Field School appears.
-2. **Skill point:** spend it and save. Reload and open **Skills** again.
+1. **Expected order:** debrief → **dog tag** → **equipment** → **skill point** →
+   workshop → Field School. Gear comes before skills on purpose: the boss reward
+   goes on first, the point is spent after.
+2. **Dog tag popup:** the heading reads **Deine Hundemarke**, full size, with your
+   soldier's name, a gender pictogram, a
+   serial like `DBD6-B90A`, a blood type like `A RH+`, `0815 GAMES · IRON PATH`,
+   the issue date, and the note *Abgeleitet, nicht erfasst.* Press **ANLEGEN**.
+3. **Check it is stable:** note serial **and blood type**, reload, and check both
+   are identical. They are derived from the account, never stored, so they must
+   never change. If the blood type looks like a real medical record to you, say
+   so — the label is meant to prevent exactly that.
+4. **Equipment:** the real Armory opens on the Equipment tab. Put on what the run
+   earned. **Expected:** it saves to your soldier (this is not the practice
+   sandbox), and the step ends when you close the armory.
+5. **Skill point:** spend it and save. Reload and open **Skills** again.
    **Expected:** the build is still there. If it reverted, that is a blocker.
-3. **Dog tag:** it should show your soldier's name, a gender pictogram, a serial
-   like `DBD6-B90A`, `0815 GAMES · IRON PATH`, and the issue date. It is cosmetic
-   and always worn — there is nothing to press.
-4. **Check it is stable:** note the serial, reload, and check it is identical. It
-   is derived from the account, never stored, so it must never change.
-5. **Field School:** four entries — **Waffenkammer & Werkstatt**, **Fähigkeiten**,
+6. **Field School:** four entries — **Waffenkammer & Werkstatt**, **Fähigkeiten**,
    **Kampagne**, **Mehrspieler**. Tap each one and confirm it opens the real
    screen, not a second copy of anything.
-6. **Decline path (optional, needs a second fresh account):** when the ending
+7. **Decline path (optional, needs a second fresh account):** when the ending
    offers a step, decline it. **Expected:** the sequence stops cleanly, nothing is
    marked as done, and you are not trapped in a dialog.
 
@@ -186,11 +199,14 @@ If your real experience is much harder than that, something is wrong — say so.
 Fix before inviting anyone else:
 
 - The gate hides the language a reader needs, or the German sentence is wrong.
-- Any briefing step shows English text to a German reader.
-- Practice writes to the real save, or the sample banner is missing.
+- A first-run card shows English text to a German reader.
+- A first-run card blocks a tap on the field, or the wave clock stops while it is
+  open.
+- The equipment step writes to the practice sandbox, or the sample banner is
+  missing.
 - The training contract cannot be completed by a reasonable new player.
 - The skill point or the build is lost on reload.
-- The dog tag changes between visits.
+- The dog tag or its blood type changes between visits.
 - Any screen traps the player: a dialog that cannot be closed, a disabled Next
   with no way forward, a lost Escape.
 

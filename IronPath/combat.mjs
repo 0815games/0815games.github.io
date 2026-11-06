@@ -66,11 +66,18 @@ export const BOSSES=Object.freeze([
  {kind:'bossCommander',label:'War Commander',base:'tank',hp:6,speed:.8,damage:2.5,reward:140,description:'Command aura speeds nearby ground troops; a rally periodically extends its range.'}
 ]);
 for(const boss of BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};
-export function bossForWave(wave){return wave>0&&wave%5===0?BOSSES[(Math.floor(wave/5)-1)%BOSSES.length]:null;}
-export function waveFormation(wave){
+// Bosses arrive every fifth wave, which is the endless rhythm and stays that way.
+// The first-run contract teaches the boss on its own last wave instead, so the
+// callers that know about a contract pass `bossEvery` (see training-run.mjs).
+export const BOSS_EVERY=5;
+export function bossForWave(wave,bossEvery=BOSS_EVERY){
+ if(!(wave>0)||!(bossEvery>0)||wave%bossEvery!==0)return null;
+ return BOSSES[(Math.floor(wave/bossEvery)-1)%BOSSES.length];
+}
+export function waveFormation(wave,bossEvery=BOSS_EVERY){
  if(!Number.isSafeInteger(wave)||wave<1)throw new Error('Invalid wave');
  const base=wave<=WAVE_COUNT?[...WAVES[wave-1]]:Array.from({length:Math.min(72,36+Math.floor((wave-21)/2))},(_,i)=>['tank','runner','plane','infantry','tank','plane'][(i+wave)%6]);
- const boss=bossForWave(wave);if(boss)base.push(boss.kind);return base;
+ const boss=bossForWave(wave,bossEvery);if(boss)base.push(boss.kind);return base;
 }
 
 // Readable field-manual roles, matching the existing damage multipliers.

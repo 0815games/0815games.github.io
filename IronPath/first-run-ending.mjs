@@ -1,19 +1,29 @@
-// The first-run ending: what happens after the training contract is cleared.
+// The first-run ending: what happens after the boss of the last wave falls.
 //
-// Three things, in this order, and each one is a real screen rather than a
-// mock-up:
-//   1. the first skill point is spent in the real Skills dialog and SAVED, so
-//      the build the player picks is active from their first real mission;
-//   2. the dog tag is issued (drawn from the soldier, never stored);
-//   3. the workshop is opened for the first time, on the real Armory tab.
+// Four steps, in this order, and each one is a real screen rather than a mock-up:
+//   1. TAG     the dog tag is issued (drawn from the soldier, never stored);
+//   2. EQUIP   the equipment the run earned is put on, in the real Armory;
+//   3. SKILLS  the first skill point is spent in the real Skills dialog and SAVED,
+//              so the build the player picks is active from their first mission;
+//   4. WORKSHOP the workshop is opened for the first time, on the real Armory tab.
 // Then the Field School lists where to go next.
+//
+// Equipment comes before skills on purpose. The last boss is the first thing
+// the player ever wins, and putting it on is a reward they can see; a skill tree
+// means nothing before there is gear to fight with.
 //
 // The sequence is storage-gated per account, so it runs once. Every step is
 // injected: this module owns the ordering and the gate, the account owns the
 // dialogs. If a step is declined the sequence stops without marking itself done,
 // so it can be offered again instead of silently disappearing.
-export const ENDING_KEY='ironpath:firstrun:v1';
-export const ENDING_STEPS=Object.freeze(['skills','tag','workshop']);
+//
+// `ENDING_EDITION` follows the same rule as the briefing edition in tutorial.mjs:
+// the ending gained the tag and swapped the first two steps, so accounts that
+// finished the old order are offered the new one. Reusing the old key would mean
+// nobody who played the previous first run ever sees the dog tag.
+export const ENDING_EDITION=2;
+export const ENDING_KEY=`ironpath:firstrun:v${ENDING_EDITION}`;
+export const ENDING_STEPS=Object.freeze(['tag','equip','skills','workshop']);
 
 const keyFor=id=>`${ENDING_KEY}:${id}`;
 const memory=new Set();

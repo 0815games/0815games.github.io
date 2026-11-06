@@ -1,9 +1,9 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261105-workshop5';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun4';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun4';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-firstrun5';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-firstrun5';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun4';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-firstrun6';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261104-fieldcommand2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
@@ -12,9 +12,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261105-workshop5';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261105-workshop5';
 import {createCommandCenter} from './command-center.mjs?v=20261105-workshop5';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun4';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-firstrun5';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun4';
+import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-firstrun5';
 import {missingPrestige} from './prestige.mjs';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-alpha3';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261105-workshop5';
@@ -24,8 +24,9 @@ import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
 import {serviceMedals} from './service-record.mjs?v=20261105-prestige1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
-import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun4';
-import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun4';
+import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
+import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
+import {createGuide} from './first-run-guide.mjs?v=20261112-guide1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -135,7 +136,7 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:false,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
@@ -353,6 +354,29 @@ function refreshDogTags(){
  if(!profile)return;
  const data={profile,accountId:user?.uid};
  for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag')])if(container)renderDogTag(document,container,data);
+ refreshProfileTag(data);
+}
+// The dog tag is a piece of kit the soldier WEARS, not a stat: once the first run is
+// over it hangs beside the name in the Command Center. `ENDING_KEY` is the record of
+// "this soldier has been issued one", so the badge and the award dialog can never
+// disagree - no new profile field, no Firebase rules change.
+function refreshProfileTag(data){
+ const badge=document.getElementById('profileTag');
+ if(!badge)return;
+ const issued=!!user?.uid&&endingDone(user.uid,firstRunStorage());
+ badge.hidden=!issued;
+ if(!issued){badge.replaceChildren();return;}
+ const tag=dogTag(data);
+ badge.replaceChildren();
+ const serial=document.createElement('span');
+ serial.className='profile-tag-serial';
+ serial.textContent=tag.serial;
+ badge.append(serial);
+ const blood=document.createElement('span');
+ blood.className='profile-tag-blood';
+ blood.textContent=tag.bloodType||'';
+ badge.append(blood);
+ badge.title=`${tag.serial} · ${tag.bloodType}`;
 }
 const dialogOpen=id=>!!document.getElementById(id)?.open;
 // Wait for a dialog to open, then for the player to finish with it. Never hangs:
@@ -372,6 +396,9 @@ function waitFor(condition,{timeout=180000,interval=150}={}){
 }
 async function practiceSkills(){
  const before=profile?.skills||'';
+ // The skills card explains the four classes before the tree opens: a new soldier
+ // has never heard of Assault or Engineer, and the tree does not say what they buy.
+ guide().event?.('equip');
  document.getElementById('skillOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('skillDialog')))return false;
  // A saved build with no points left is the proof that the point went somewhere.
@@ -383,19 +410,51 @@ async function practiceSkills(){
  // Closing without saving is a decline, not a failure: the ending stays offered.
  return false;
 }
+// Step 1 of the ending: the tag is ISSUED. Until now the dog tag only existed
+// inside the soldier screen, which meant the reward for the first boss was a line
+// in a menu nobody had opened yet. It gets its own popup, full size.
 async function showDogTag(){
  refreshDogTags();
- soldierUI?.open();
- if(!await waitFor(()=>dialogOpen('soldierDialog')))return true;
- await waitFor(()=>!dialogOpen('soldierDialog'));
+ guide().start(user?.uid);
+ const dialog=document.getElementById('dogTagAward'),slot=document.getElementById('dogTagAwardSlot'),close=document.getElementById('dogTagAwardClose');
+ if(!dialog||!slot)return true;
+ renderDogTag(document,slot,{profile:viewProfile(),accountId:user?.uid});
+ if(!dialog.open)dialog.showModal();
+ await new Promise(resolve=>{
+  const done=()=>{dialog.removeEventListener('close',done);close?.removeEventListener?.('click',onClose);resolve();};
+  const onClose=()=>{if(dialog.open)dialog.close();};
+  dialog.addEventListener('close',done);
+  close?.addEventListener?.('click',onClose);
+ });
+ return true;
+}
+// Step 2 of the ending: put on what the run earned, in the REAL armory. This is
+// the player's own soldier, not the practice sandbox, so the save is real.
+async function equipFirstRewards(){
+ guide().next?.();
+ document.getElementById('armoryOpen')?.click?.();
+ if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
+ document.getElementById('armoryEquipmentTab')?.click?.();
+ // The step is done once gear is equipped, or when the player closes the armory:
+ // a soldier who already owns everything should not be trapped in a dialog.
+ await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
 }
 async function openWorkshopFirstTime(){
+ guide().event?.('skills');
  document.getElementById('armoryOpen')?.click?.();
  if(await waitFor(()=>dialogOpen('armoryDialog')))document.getElementById('armoryWorkshopTab')?.click?.();
  else return false;
  await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
+}
+// The guide for the post-match screens. It is created lazily: it needs the document
+// and nothing else, and a player who never reaches the ending never pays for it.
+let firstRunGuide=null;
+const firstRunStorageFor=()=>{try{return window.localStorage;}catch{return null;}};
+function guide(){
+ if(!firstRunGuide)firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector)});
+ return firstRunGuide;
 }
 function offerFirstRunEnding(){
  const id=user?.uid;
@@ -404,8 +463,9 @@ function offerFirstRunEnding(){
  endingRunning=true;
  void runFirstRunEnding({
   id,storage:firstRunStorage(),
-  steps:{skills:practiceSkills,tag:showDogTag,workshop:openWorkshopFirstTime},
-  onDone:()=>{endingRunning=false;openFieldSchool();},
+  steps:{tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime},
+
+  onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();refreshDogTags();openFieldSchool();},
   onStopped:()=>{endingRunning=false;},
  });
 }
@@ -427,8 +487,10 @@ function openFieldSchool(){
 // and hide itself from every existing account; use tutorial.completed() instead of
 // reading the key again.
 function startFirstRunTutorial(){
-  // Let the Command Center paint first; the tutorial is a modal over it.
-  requestAnimationFrame(()=>{try{gameControl?.startTutorialIfNeeded?.();}catch{}});
+  // Let the Command Center paint first. On a first login this builds the training
+  // field and starts the coach cards on top of it; the modal tour is only the
+  // fallback for an account that played the contract before the cards existed.
+  requestAnimationFrame(()=>{try{gameControl?.startFirstRun?.()??gameControl?.startTutorialIfNeeded?.();}catch{}});
 }
 function chooseArmoryCategory(category){
   armoryCategory=category;

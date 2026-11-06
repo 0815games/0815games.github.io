@@ -30,7 +30,7 @@ export function addSupplies(state,playerId,amount){if(state.individualSupplies){
 function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;
  // A campaign surge wave arrives wider than its formation: the contract's squad
  // bonus adds units, so a mission cannot be idled through by holding one lane.
- state.spawnLeft=waveFormation(state.wave).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
+ state.spawnLeft=waveFormation(state.wave,state.campaignContract?.bossEvery).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
  state.spawnIndex=0;state.spawnTimer=.2;}
 // Shared pads; abilities, movement and co-op supplies are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.

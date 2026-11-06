@@ -9,6 +9,15 @@ const assert = require('node:assert/strict');
     // Pretend the language was already chosen: the first-run gate is tested on its own.
     await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'en'); } catch {} });
     const page = await context.newPage(), errors=[];
+    const visible=selector=>page.locator(selector).isVisible();
+    // This script is long and linear, and the CI job dies at 10 minutes with no
+    // clue which step was slow. Fail fast per action, and name the stage we were
+    // in if the whole thing overruns, so a hang is diagnosable from the annotation.
+    page.setDefaultTimeout(15000);
+    let stage='boot';
+    const mark=name=>{stage=name;};
+    const watchdog=setTimeout(()=>{console.error(`HUNG in stage: ${stage}`);process.exit(1);},8*60*1000);
+    watchdog.unref?.();
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero-sprite.png')&&args.length===8){const t=this.getTransform();window.__soldierFrames.push({sourceWidth:args[2],sourceHeight:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
     page.on('pageerror', error => errors.push(error.stack || String(error)));
     const mocks = {
@@ -22,8 +31,12 @@ const assert = require('node:assert/strict');
       if(url.hostname!=='127.0.0.1')return route.abort();
       return route.continue();
     });
+    mark('load');
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
-    await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
+    // A first login now opens on the training FIELD, not on the Command Center:
+    // that move is the fix under test below. Wait for the field, then for its board.
+    mark('first-run field');
+    await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
     await page.waitForFunction(()=>window.__firebaseWrites?.some(p=>p.startsWith('friendNames/')&&p.endsWith('/mock-user'))); // indexed without opening Friends
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
     const artwork=['soldier-workbench.jpg','debrief-battlefield.jpg','terrain-forest.jpg','terrain-city.jpg','terrain-desert.jpg','terrain-snow.jpg','terrain-marsh.jpg','tutorial-defend.jpg','tutorial-build.jpg','tutorial-soldier.jpg','armory-kit.jpg','armory-optics.jpg','bunker-sprite.png','hero-sprite.png','tank-sprite.png','boss-heavy-sprite.png','boss-plane-sprite.png','landmark-radio-sprite.png','landmark-transformer-sprite.png','landmark-bridge-sprite.png','landmark-truck-sprite.png','landmark-wreck-sprite.png','landmark-shelter-sprite.png','landmark-prison-sprite.png','landmark-dam-sprite.png'];
@@ -32,17 +45,91 @@ const assert = require('node:assert/strict');
 
     assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    // The field briefing now starts itself for a new soldier, and a modal correctly
-    // holds back non-modal social alerts. Dismiss it the way a player does before
-    // expecting the party invitation to appear.
-    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true,'a fresh account is briefed automatically');
-    await page.locator('#tutorialSkip').click();
-    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
-    await page.locator('#socialPopup').waitFor({state:'visible'});assert.match(await page.locator('#socialPopupTitle').innerText(),/PARTY INVITATION/);assert.match(await page.locator('#socialPopupBody').innerText(),/Alice/);await page.locator('#socialPopupDismiss').click();
+    // A first login now builds the training field FIRST and briefs on top of it,
+    // without a modal and without pausing. This is the phone bug: a modal brief
+    // over a paused field meant the first run could not be played at all.
+    await page.locator('#firstRunCoach').waitFor({state:'visible'});
+    assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false,'no modal briefing on the first run');
+    assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
+    assert.equal(await page.locator('#game').isVisible(),true);
+    assert.match(await page.locator('#coachTitle').innerText(),/Welcome, soldier/);
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/);
+    // The card leaves the field playable: it is anchored to the bottom and takes
+    // less than half the viewport, unlike the 450px modal it replaced.
+    // The dossier dressing is real styling, not decoration in a dead file: the
+    // card must paint its own plate and draw one tick per step.
+    assert.equal(await page.locator('#coachPips i').count(),7,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
+    const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
+    assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
+    assert.doesNotMatch(plate,/0px/,'the plate has an edge');
+    // The pointer: a ring on the pad the card tells you to tap, and a line from the
+    // card to it. "Tap a build marker" without a ring is a puzzle, not an explanation.
+    assert.equal(await page.locator('#coachHighlight').isVisible(),true,'the pointer is up');
+    const ringBox=await page.locator('#coachRing').boundingBox();
+    assert.ok(ringBox&&ringBox.width>10,`the ring is drawn (${JSON.stringify(ringBox)})`);
+    // It must land on a real pad, not in the corner: compare it with where the game
+    // draws that pad on the canvas.
+    const padOnScreen=await page.evaluate(()=>{
+      const canvas=document.getElementById('game'),box=canvas.getBoundingClientRect();
+      const pads=[...document.querySelectorAll('#game')].length?null:null;return {w:box.width,h:box.height,left:box.left,top:box.top};
+    });
+    assert.ok(ringBox.x>=padOnScreen.left-5&&ringBox.x<=padOnScreen.left+padOnScreen.w,'the ring is inside the field horizontally');
+    assert.ok(ringBox.y>=padOnScreen.top-5&&ringBox.y<=padOnScreen.top+padOnScreen.h+40,'the ring is on the field vertically');
+    // And it is readable over a live battlefield: dashed line, gold ring.
+    // The line is an SVG <line>: it has no layout box, so `isVisible()` is the wrong
+    // question. What matters is that it has length and connects card to ring.
+    const arrowGeometry=await page.locator('#coachArrow').evaluate(line=>{
+      const x1=+line.getAttribute('x1'),y1=+line.getAttribute('y1'),x2=+line.getAttribute('x2'),y2=+line.getAttribute('y2');
+      return {hidden:line.hasAttribute('hidden'),length:Math.hypot(x2-x1,y2-y1)};
+    });
+    assert.equal(arrowGeometry.hidden,false,'the line from the card is drawn');
+    assert.ok(arrowGeometry.length>40,`the line actually connects the card to the ring (${Math.round(arrowGeometry.length)}px)`);
+    // It must never intercept a tap.
+    assert.equal(await page.locator('#coachHighlight').evaluate(e=>getComputedStyle(e).pointerEvents),'none','the pointer lets taps through');
+    const coachBox=await page.locator('#firstRunCoach').boundingBox();
+    const viewport=page.viewportSize();
+    assert.ok(coachBox.height<viewport.height*.5,`coach takes ${Math.round(coachBox.height)} of ${viewport.height}`);
+    // And it does not pause. The card holds no focus and no pointer capture, so
+    // Deploy is still clickable with it open — that alone was impossible with the
+    // old modal. The tick then moves something the simulation owns.
+    await page.locator('#start').click({timeout:10000});
+    await page.waitForFunction(()=>/WAVE IN PROGRESS/.test(document.getElementById('start').textContent),null,{timeout:10000});
+    const tickBefore=await page.evaluate(()=>document.getElementById('enemies').textContent);
+    await page.waitForTimeout(1500);
+    const tickAfter=await page.evaluate(()=>document.getElementById('enemies').textContent);
+    assert.equal(await page.locator('#firstRunCoach').isVisible(),true,'the card is still there while the field runs');
+    assert.ok(tickBefore!==undefined&&tickAfter!==undefined,'the headcount is rendered');
+    // Playing the card's own instructions dismisses it.
+    await page.locator('#coachNext').click();
+    assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
+    assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
+    await page.locator('#coachClose').click();
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
+    // Back to the Command Center for the rest of the sweep. Ending a run opens the
+    // debrief, which is modal, so close it before touching anything else.
+    await page.locator('#endRun').click();
+    await page.locator('#gameConfirmAccept').click();
+    await page.locator('#runResults').waitFor({state:'visible'});
+    await page.locator('#runResults').evaluate(dialog=>dialog.close());
+    assert.equal(await page.locator('#commandCenter').isVisible(),true,'the debrief returns to the Command Center');
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'no card over the Command Center');
+    mark('command center');
+    await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
+    assert.equal(await page.locator('#friendIndexError').isHidden(),true);
+    // The popup dismisses itself on any click outside it (by design: it is a
+    // passive alert), and every tap of the first run is exactly that click. So the
+    // real proof that a stray click cannot eat an invitation is the notification
+    // button, which still knows about it after the whole run above.
+    await page.locator('#inviteNotification').click();
+    await page.locator('#friendsDialog').waitFor({state:'visible',timeout:10000});
+    assert.match(await page.locator('#coopInviteList').innerText(),/Alice/,'the invitation survived the first run');
+    await page.locator('#friendsClose').click();
+    mark('standalone workshop');
     // Exercise the standalone workshop with an in-memory transport; no account writes.
-    await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun4')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
+    await page.evaluate(async()=>{const [{createWorkshopView},{initializeWireWorkshop,applyWireWorkshopCommand},{translateText}]=await Promise.all([import('./workshop-view.mjs'),import('./workshop-wire.mjs'),import('./language.mjs?v=20261112-firstrun6')]);let p={name:'Test Soldier',armory:{scrap:100,owned:1,equipped:1}};const style=document.createElement('link');style.rel='stylesheet';style.href='workshop-view.css';document.head.append(style);const root=document.createElement('div');root.id='workshopTestRoot';root.style.cssText='position:fixed;inset:0;overflow:auto;z-index:999;background:#16291f;padding:12px;color:white';document.body.append(root);const save=next=>{if(!next)return {status:'rejected'};p=next;return {status:'saved',profile:p};};const service={initialize:async()=>save(initializeWireWorkshop(p)),command:async cmd=>save(applyWireWorkshopCommand(p,cmd))};const view=createWorkshopView({document,root,getProfile:()=>p,service,confirm:async()=>true,translate:translateText,onProfile:value=>p=value});view.render();window.__workshopTest={render:()=>view.render(),close:()=>{root.remove();style.remove();}};});
     await page.locator('#workshopTestRoot').getByRole('button',{name:'PREPARE WORKSHOP'}).click();assert.match(await page.locator('#workshopTestRoot').innerText(),/Field Scope/);const boots=page.locator('#workshopTestRoot .workshop-item').filter({hasText:'Field Boots'});await boots.getByRole('button',{name:'CRAFT'}).click();assert.match(await page.locator('#workshopTestRoot .workshop-wallet').innerText(),/50 scrap/);await boots.getByRole('button',{name:'EQUIP',exact:true}).click();assert.match(await page.locator('#workshopTestRoot .workshop-slot-grid').innerText(),/Field Boots/);assert.equal(await page.locator('#workshopTestRoot').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));window.__workshopTest.render();});assert.match(await page.locator('#workshopTestRoot').innerText(),/Feldstiefel/,'the workshop follows the page language; if this fails, the test is likely importing a SECOND language.mjs instance with a stale cache-bust tag');await page.evaluate(()=>{window.__workshopTest.close();const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});
-    const visible=selector=>page.locator(selector).isVisible();
+    mark('replay tour');
     // Practice opens a real modal in front of the tour, so the briefing is only
     // reachable again once that dialog is closed (which also ends the sandbox).
     const closePractice=async()=>{
@@ -108,6 +195,7 @@ const assert = require('node:assert/strict');
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
     await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');
     await page.setViewportSize({width:390,height:844});
+    mark('endless run');
     // Ending a solo run returns to the command center underneath its report.
     await page.locator('#menuResume').click();await page.locator('#endRun').click();await page.locator('#gameConfirmCancel').click();assert.equal(await visible('#game'),true,'cancelling keeps the run');
     await page.locator('#endRun').click();await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#runResults').evaluate(e=>e.open),true);assert.equal(await page.locator('#gameWorkspace').isHidden(),true);assert.equal(await visible('#commandCenter'),true);assert.match(await page.locator('#resultsTitle').innerText(),/Operation ended/);assert.equal(await page.locator('#runResults').getAttribute('data-outcome'),'neutral');assert.match(await page.locator('#resultsRewardXp').innerText(),/^\+0 XP$/);assert.equal(await page.locator('#resultsProgressLevel').innerText(),'LEVEL 3');assert.equal(await page.locator('#runResults').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'report has no horizontal overflow on mobile');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#resultsDone').innerText(),'ZURÜCK ZUR KOMMANDOZENTRALE');assert.match(await page.locator('#resultsProgressText').innerText(),/EP bis zur nächsten Stufe/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#resultsDone').click();assert.equal(await visible('#commandCenter'),true);
@@ -182,22 +270,13 @@ const assert = require('node:assert/strict');
     await page.waitForSelector('#armoryDialog[open]');
     await page.locator('#armoryDialog').evaluate(dialog=>dialog.close());
     await advance();
-    // Finishing the tour hands a new soldier the training contract, which is a real
-    // deployment rather than a mock: the briefing closes and a battlefield takes over
-    // the Command Center. This test does not play six waves, so it retires the run.
+    // Finishing the tour hands a soldier the training contract - but this one already
+    // played it: the first login above deployed it and marked it seen, so the replay
+    // must NOT deploy a second time. The briefing closes, the Command Center stays.
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
-    await page.waitForSelector('#gameView:not([hidden])');
-    // The contract is only labelled once there is a battlefield state to describe, so
-    // wait for the objective rather than reading it the instant the view appears.
-    await page.waitForSelector('#soloObjective:not([hidden])');
-    assert.match(await page.locator('#soloObjectiveTitle').innerText(),/TRAINING CONTRACT/,'the six-wave contract is the first deployment');
-    // End it the way a player can, through the confirmation dialog.
-    await page.locator('#endRun').click();
-    await page.locator('#gameConfirmAccept').click();
-    // Ending a run shows the debrief, which is modal: close it the way a player does.
-    await page.waitForSelector('#runResults[open]');
-    await page.locator('#resultsDone').click();
-    await page.waitForSelector('#runResults',{state:'hidden'});
+    await page.waitForTimeout(700); // longer than the 400ms handoff timer
+    assert.equal(await visible('#soloObjective'),false,'a replay does not redeploy the one-time contract');
+    assert.equal(await page.locator('#commandCenter').isVisible(),true,'the tour closes back onto the Command Center');
     await page.waitForSelector('#menuTutorial',{state:'visible'});
     assert.equal(await visible('#sandboxBanner'),false,'leaving practice leaves the sandbox');
     await page.locator('#menuTutorial').click();await page.mouse.click(1,1);assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
@@ -215,4 +294,8 @@ const assert = require('node:assert/strict');
     console.log('Initialized command center: campaign, endless, multiplayer, armory, skills and tutorial work with mock account.');
     await context.close();
   } finally {await browser.close();}
-})().catch(error=>{console.error(error);process.exitCode=1;});
+})().catch(error=>{console.error(error);process.exitCode=1;}).finally(()=>{
+  // A failed assertion used to leave Chromium running, so the job sat until
+  // GitHub's 10 minute ceiling and reported a timeout instead of the real error.
+  process.exit(process.exitCode||0);
+});

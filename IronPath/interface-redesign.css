@@ -340,15 +340,38 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 .language-gate-title span{display:block;margin-top:4px;font-size:.72em;letter-spacing:.06em;color:#5d7350}
 .language-gate-copy{margin:0 auto 18px;max-width:44ch;font-size:12px;line-height:1.5;color:#4a5e42}
 .language-gate-copy span{display:block;margin-top:4px;font-style:italic}
-.language-gate-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.language-gate-button{display:flex;flex-direction:column;align-items:center;gap:3px;min-height:96px;margin:0;padding:14px 10px;background:#33482f;border:2px solid #22331f;border-radius:4px;color:#f4eccf;cursor:pointer}
+/* The choice, sized to be recognised rather than read: a 60x30 flag (the real
+   SVG, so Windows cannot turn it into the letters "GB"), the code beside it, and
+   the language name in its own language. Two tiles, side by side, 44px minimum
+   targets - the same thumb rule as the first-run card. */
+.language-gate-choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0 0}
+.language-gate-button{position:relative;display:grid;grid-template-columns:auto 1fr;align-items:center;gap:2px 12px;min-height:88px;margin:0;padding:12px 14px;background:#33482f;border:2px solid #22331f;border-radius:4px;color:#f4eccf;cursor:pointer;text-align:left}
 .language-gate-button:hover,.language-gate-button:focus-visible{background:#3f5a39;border-color:#b2cdbd;outline:none}
-.language-gate-flag{font-size:26px;line-height:1}
-.language-gate-button strong{font:700 16px Georgia,serif;letter-spacing:.02em}
+.language-gate-flag{grid-row:1/span 2;display:block;width:60px;height:30px;border:1px solid #00000059;border-radius:2px;overflow:hidden;box-shadow:0 2px 6px #0006}
+.language-gate-flag img{display:block;width:100%;height:100%;object-fit:cover}
+.language-gate-code{position:absolute;top:6px;right:8px;font-size:9px;font-weight:bold;letter-spacing:.16em;color:#c9d6bd;opacity:.85}
+.language-gate-button strong{font:700 17px Georgia,serif;letter-spacing:.02em}
 .language-gate-button small{font-size:10px;letter-spacing:.04em;color:#c9d6bd}
+.language-gate-button:hover .language-gate-code,.language-gate-button:focus-visible .language-gate-code{opacity:1}
 .language-gate-note{margin:16px 0 0;font-size:10px;line-height:1.45;color:#6b7f53}
 .language-gate-note span{display:block;margin-top:3px;font-style:italic}
-@media(max-width:420px){.language-gate-card{padding:20px 16px}.language-gate-choices{grid-template-columns:1fr}.language-gate-button{min-height:76px;flex-direction:row;justify-content:center;gap:10px}.language-gate-button small{display:none}}
+/* Narrow screens: the tiles stack, but the flag stays BESIDE the name rather than
+   above it - sideways is how a flag is recognised fastest, and two columns of
+   ~145px would squeeze "English" to 45px. */
+@media(max-width:520px){
+  .language-gate-card{padding:20px 16px}
+  .language-gate-choices{grid-template-columns:1fr;gap:10px}
+  .language-gate-button{min-height:76px}
+}
+/* Short screens too: take it out of the heading, never out of the tiles. */
+@media(max-height:560px){
+  .language-gate-title{font-size:18px}
+  .language-gate-title span{font-size:.8em}
+  .language-gate-card{padding:16px 14px}
+  .language-gate-flag{width:48px;height:24px}
+  .language-gate-button{min-height:64px;padding:8px 12px}
+  .language-gate-note{margin-top:10px}
+}
 @media(prefers-reduced-motion:no-preference){.language-gate-card{animation:language-gate-in .28s ease-out}@keyframes language-gate-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 
 /* ── Tutorial sandbox banner ────────────────────────────────────────────────
@@ -391,3 +414,229 @@ html:not([data-lang-gate="1"]) .language-gate{display:none}
 .field-school-card span{font-size:.72rem;line-height:1.35;opacity:.78}
 .field-school-card:hover,.field-school-card:focus-visible{border-color:var(--accent,#e0b062);background:rgba(255,255,255,.09)}
 @media (prefers-reduced-motion:reduce){.field-school{scroll-behavior:auto}}
+
+/* ---------------------------------------------------------------------------
+   First-run coach (and the popup family it belongs to).
+
+   The old briefing was a modal <dialog> over the battlefield, and the game
+   pauses while one is open. On a phone that covered the field with an
+   unscrollable 450px card and made the first run unplayable. These rules are
+   written for a 360x480 phone first and scale up from there:
+
+   * the card is anchored bottom, at most 45% of the viewport;
+   * its body scrolls, its footer does not, so NEXT is always reachable;
+   * every control is at least 44px, the thumb rule;
+   * nothing here uses <dialog>, so no ::backdrop and no inert page.
+   --------------------------------------------------------------------------- */
+.first-run-coach{
+  position:fixed;z-index:60;left:50%;bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);
+  width:min(520px,calc(100vw - 16px));
+  max-height:45dvh;display:flex;flex-direction:column;gap:6px;
+  padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));
+  background:#14251e;color:#f1ead4;border:1px solid #899b7b;border-radius:4px;
+  box-shadow:0 14px 40px #000b;
+  animation:coach-in .12s ease-out;
+}
+.first-run-coach[hidden]{display:none}
+@keyframes coach-in{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.coach-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.coach-step{font-size:10px;font-weight:bold;letter-spacing:.14em;color:#dec98e}
+.coach-close{
+  display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;
+  margin:-10px -10px -6px 0;padding:0;background:transparent;border:0;
+  color:#e5d09c;font-size:24px;line-height:1;cursor:pointer;
+}
+.first-run-coach h2{margin:0;font:700 18px Georgia,serif;color:#f6e9ca}
+.coach-text{margin:0;font-size:13px;line-height:1.45;color:#d4dfcc;overflow:auto;min-height:0}
+.coach-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:4px}
+.coach-caption{flex:1;font-size:9px;font-weight:bold;letter-spacing:.12em;color:#a9c6b5}
+.coach-next{min-height:44px;min-width:96px;margin:0;padding:0 16px;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
+.first-run-coach button:focus-visible{outline:2px solid #f6e9ca;outline-offset:2px}
+/* Portrait phones: smaller type, tighter gaps, still 44px targets. */
+@media(max-width:600px){
+  .first-run-coach{padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));gap:4px;max-height:46dvh}
+  .first-run-coach h2{font-size:16px}
+  .coach-text{font-size:12px;line-height:1.4}
+}
+/* Landscape phones (short viewports): a side column, never over the pads. */
+@media(max-height:420px){
+  .first-run-coach{
+    left:auto;right:calc(8px + env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));
+    transform:none;width:min(340px,46vw);max-height:calc(100dvh - 16px);
+  }
+  @keyframes coach-in{from{opacity:0}to{opacity:1}}
+}
+@media(prefers-reduced-motion:reduce){.first-run-coach{animation:none}}
+/* The old modal briefing keeps its styles for the help-panel replay until it is
+   retired, but it must never be taller than the phone it runs on. */
+.tutorial-dialog{overflow:auto}
+/* The blood type line on the tag, and the "issued" state in the debrief. */
+.dog-tag-blood{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.78rem;letter-spacing:.18em;color:#e4ca89}
+.dog-tag-issued{display:grid;gap:.5rem;justify-items:center;text-align:center}
+.dog-tag-issued .dog-tag{transform:rotate(-1.5deg);box-shadow:0 10px 30px #0008,inset 0 0 0 1px #ffffff14}
+.dog-tag-issued small{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+/* The dog tag award popup. Modal is right here: the run is over. */
+.dog-tag-award{
+  width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;
+  padding:20px;background:#172b23;color:#f1ead4;border:1px solid #899b7b;border-radius:4px;
+  box-shadow:0 22px 85px #000d;text-align:center;
+}
+.dog-tag-award::backdrop{background:#07110dd9}
+.dog-tag-award h2{margin:6px 0 4px;font:700 24px Georgia,serif;color:#f6e9ca}
+.dog-tag-award p{margin:0 0 14px;font-size:13px;line-height:1.5;color:#d4dfcc}
+.dog-tag-award .dog-tag-note{display:block;margin:10px 0 14px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
+.dog-tag-award-actions button{min-height:44px;width:100%;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
+@media(max-width:480px){.dog-tag-award{padding:16px}.dog-tag-award h2{font-size:20px}}
+/* ---------------------------------------------------------------------------
+   First-run dossier: one visual language for every first-run surface.
+
+   Its three surfaces used to look like three different apps — a modal tour with
+   a photo banner, a bare card, and a plain dialog wearing the old army-green.
+   They are now one artefact: a field dossier stamped onto the screen. Same
+   paper, same rule, same stencil type, same gold.
+
+   Rules that keep the phone playable, unchanged from the coach fix:
+   - nothing here is a <dialog> except the award, which comes after the run;
+   - the replay tour keeps `overflow:auto`, so a 360x480 screen can scroll it;
+   - every control stays at least 44px.
+   --------------------------------------------------------------------------- */
+:root{
+  --dossier-ink:#d8e3c9;
+  --dossier-dim:#9fb79b;
+  --dossier-gold:#e4ca89;
+  --dossier-plate:#12201a;
+  --dossier-edge:#7d9270;
+}
+/* A stencil header and a hairline rule: the thing that makes the three
+   surfaces read as one document rather than three widgets. */
+.first-run-coach{background:linear-gradient(#16281f,#12201a);border-color:var(--dossier-edge)}
+.coach-head{padding-bottom:6px;border-bottom:1px solid #ffffff14}
+.coach-step{display:flex;align-items:center;gap:6px}
+.coach-step::before{content:"";width:6px;height:6px;background:var(--dossier-gold);border-radius:1px;transform:rotate(45deg)}
+.first-run-coach h2{letter-spacing:.01em}
+.coach-text{color:var(--dossier-ink)}
+.coach-caption{color:var(--dossier-dim)}
+/* Step ticks: the player can see how much briefing is left without a counter. */
+.coach-pips{display:flex;gap:4px;margin-top:2px}
+.coach-pips i{width:14px;height:3px;background:#ffffff26;border-radius:1px}
+.coach-pips i[data-done]{background:var(--dossier-gold)}
+@media(max-width:600px){.coach-pips i{width:10px}}
+
+.tutorial-dialog{
+  background:linear-gradient(#ecdfb9,#e4d5ab);border:1px solid #6d8260;
+  box-shadow:5px 7px 0 #263a2c,0 18px 80px #000b;
+}
+.tutorial-dialog .eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:2px 8px 2px 6px;background:#3c503a;color:#f0e2bb;border-radius:2px;
+  font-size:10px;letter-spacing:.16em;
+}
+.tutorial-dialog .eyebrow::before{content:"";width:5px;height:5px;background:var(--dossier-gold);border-radius:1px;transform:rotate(45deg)}
+.tutorial-dialog h2{letter-spacing:.01em}
+.tutorial-dialog .tutorial-actions{gap:8px;padding-top:4px;border-top:1px solid #00000014}
+.tutorial-dialog .tutorial-actions button{min-height:44px}
+.tutorial-scene{border-radius:2px 8px 3px 5px;filter:saturate(.85) contrast(1.05)}
+.tutorial-scene .scene-caption{
+  background:#14251ee6;border-left:2px solid var(--dossier-gold);color:#fff1ca;
+}
+/* The replay tour is the only modal left, so it wears the backdrop. */
+.tutorial-dialog::backdrop{background:#07110dd9;backdrop-filter:blur(1.5px)}
+
+/* The award is the one first-run dialog that is allowed to be modal: the run is
+   over, the field behind it is frozen, and there is nothing to tap. */
+.dog-tag-award{border-color:var(--dossier-edge)}
+.dog-tag-issued .dog-tag{filter:saturate(.9)}
+.dog-tag-blood{letter-spacing:.18em}
+/* Short screens: the award must scroll rather than clip, same lesson as the tour. */
+@media(max-height:520px){
+  .dog-tag-award{max-height:calc(100dvh - 20px);overflow:auto}
+  .tutorial-dialog .tutorial-scene{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  .tutorial-dialog,.dog-tag-award{animation:none}
+}
+/* ---------------------------------------------------------------------------
+   The first-run pointer: a ring around the thing to tap and a line from the card
+   to it. This is the "highlight" the cards were missing - an instruction the player
+   has to hunt for on an unfamiliar battlefield is a puzzle, not an explanation.
+
+   It must never intercept a tap, and it must never dim the field: the whole point
+   of the first run is that the player is playing, so this is a marker, not a modal
+   backdrop.
+   --------------------------------------------------------------------------- */
+.coach-highlight{position:fixed;inset:0;z-index:59;pointer-events:none}
+.coach-highlight[hidden]{display:none}
+.coach-highlight-arrow{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.coach-highlight-arrow line{stroke:#e4ca89;stroke-width:2;stroke-dasharray:5 5;opacity:.9;animation:coach-march 1s linear infinite}
+@keyframes coach-march{to{stroke-dashoffset:-10}}
+.coach-ring{
+  position:absolute;border:3px solid #e4ca89;border-radius:50%;
+  box-shadow:0 0 0 4px #14251e66,0 0 18px #e4ca8980;
+  animation:coach-pulse 1.4s ease-in-out infinite;
+}
+.coach-ring[hidden]{display:none}
+@keyframes coach-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.75}}
+/* A marked control keeps its outline too, so the ring reads as "this one" even if
+   the element is wider than the ring. */
+.coach-target{outline:2px solid #e4ca89;outline-offset:3px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){
+  .coach-ring{animation:none}
+  .coach-highlight-arrow line{animation:none;stroke-dasharray:none}
+}
+/* The issued dog tag, worn beside the soldier's name. It is a piece of kit, not a
+   statistic: a stamped plate that hangs off the name row, with the serial and the
+   blood type a real tag carries. Hidden until the first run is over, because until
+   then the soldier does not own one. */
+.profile-name-row{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.profile-tag{
+  display:inline-flex;align-items:center;gap:6px;padding:2px 7px 2px 6px;
+  background:linear-gradient(#2b3a2c,#1d2a20);color:#e7d6a6;
+  border:1px solid #7b8a6b;border-radius:2px 8px 8px 2px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;letter-spacing:.12em;
+  box-shadow:inset 0 0 0 1px #ffffff12,0 1px 3px #0006;
+  position:relative;
+}
+/* The punched hole: the one detail that makes it read as a tag rather than a chip. */
+.profile-tag::before{
+  content:"";width:6px;height:6px;border-radius:50%;
+  background:#0f1a13;box-shadow:inset 0 1px 1px #000a;flex:none;
+}
+.profile-tag[hidden]{display:none}
+.profile-tag-serial{letter-spacing:.16em}
+.profile-tag-blood{color:#e4ca89;font-weight:bold;letter-spacing:.1em}
+.profile-tag-blood:empty{display:none}
+@media(max-width:520px){
+  .profile-tag{font-size:8px;padding:1px 6px 1px 5px;gap:4px}
+  .profile-tag::before{width:5px;height:5px}
+}
+/* ---------------------------------------------------------------------------
+   The guide for the screens after the match. It sits at the top of the screen, out
+   of the way of the dialog it describes, and it is not modal: the player has to be
+   able to press the thing it is talking about while it is still up.
+   --------------------------------------------------------------------------- */
+.first-run-guide{
+  position:fixed;z-index:70;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+  width:min(560px,calc(100vw - 16px));max-height:min(40dvh,340px);
+  display:flex;flex-direction:column;gap:6px;
+  padding:12px 14px;background:linear-gradient(#16281f,#12201a);color:#f1ead4;
+  border:1px solid #7d9270;border-radius:4px;box-shadow:0 14px 40px #000b;
+  animation:guide-in .12s ease-out;
+}
+.first-run-guide[hidden]{display:none}
+@keyframes guide-in{from{opacity:0;transform:translateX(-50%) translateY(-8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.guide-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:5px;border-bottom:1px solid #ffffff14}
+.guide-step{font-size:10px;font-weight:bold;letter-spacing:.14em;color:#e4ca89}
+.guide-caption{font-size:9px;font-weight:bold;letter-spacing:.12em;color:#9fb79b}
+.first-run-guide h2{margin:0;font:700 17px Georgia,serif;color:#f6e9ca}
+.guide-text{margin:0;font-size:12px;line-height:1.45;color:#d8e3c9;overflow:auto;min-height:0}
+.guide-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:2px}
+.guide-foot button{min-height:44px;min-width:96px;margin:0;padding:0 16px;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
+.first-run-guide button:focus-visible{outline:2px solid #f6e9ca;outline-offset:2px}
+@media(max-width:600px){.first-run-guide{padding:10px 12px;gap:4px;max-height:42dvh}.first-run-guide h2{font-size:15px}.guide-text{font-size:11.5px}}
+/* Landscape: the card moves aside so it never covers the dialog it explains. */
+@media(max-height:460px){
+  .first-run-guide{left:auto;right:8px;top:8px;transform:none;width:min(330px,46vw);max-height:calc(100dvh - 16px)}
+  @keyframes guide-in{from{opacity:0}to{opacity:1}}
+}
+@media(prefers-reduced-motion:reduce){.first-run-guide{animation:none}}
