@@ -24,9 +24,24 @@ Storage keys, all local and all per account where they concern a person:
 | Key | Written by | Meaning |
 | --- | --- | --- |
 | `ironpath:language` | `language.mjs`, `language-gate.mjs` | The chosen language, per device |
-| `ironpath:tutorial:v1:<uid>` | `tutorial.mjs` | The briefing was finished (or skipped) |
+| `ironpath:tutorial:v2:<uid>` | `tutorial.mjs` | The briefing was finished (or skipped) |
+| `ironpath:tutorial:v1:<uid>` | the old 8-step tour | Read-only legacy marker; ignored, never written |
 | `ironpath:training:v1:<uid>` | `training-run.mjs` | The training contract was offered |
 | `ironpath:firstrun:v1:<uid>` | `first-run-ending.mjs` | The ending (skills, tag, workshop) completed |
+
+The briefing marker carries the **edition** of the briefing it belongs to. The old
+8-step tour wrote `ironpath:tutorial:v1:<uid>` on finish *and* on skip, and the
+11-step briefing first reused that key — so every existing account looked "already
+briefed" and never saw the new tour. `TUTORIAL_EDITION` in `tutorial.mjs` is now
+bumped whenever the briefing gains something a returning player should see; the
+legacy key is left untouched and simply stops mattering. The key is built in one
+place only, `keyFor` in `tutorial.mjs`; nothing else may spell it out, and the
+ending no longer keeps a second copy of it.
+
+The same reasoning applies to the training contract: `ironpath:training:v1` keeps
+its version because the contract is content that was never offered before, not a
+re-offer. An account with no training marker is offered the contract after any
+completed briefing, including a replay from the Command Center.
 
 Nothing above is written to Firebase. There is no new database field and no rules
 change, so an old client and a new client can share the same account.
@@ -55,6 +70,22 @@ The run ends itself when the last wave is cleared (`endReason:
 'training-complete'`) and the debrief calls the account back, which starts the
 ending.
 
+### Measured difficulty (headless simulation)
+
+Driven through `applyCommand` + `stepMatch` with a level 1 soldier and no skill
+point, answering every field-upgrade offer:
+
+| Play style | Result |
+| --- | --- |
+| Two starting towers, never upgrades | Bunker lost in wave 4 (~75 s) |
+| Builds whenever affordable, never upgrades | Bunker lost in wave 5 (~94 s) |
+| Fills the pads, then upgrades | **Clears in 123 s with 70 / 150 bunker health** |
+
+So the contract is forgiving but not free: a new soldier who only builds loses,
+and one who builds *and* upgrades clears with room to spare. That is the
+behaviour step 4 promises. It is still worth confirming with a real player on a
+real device, because the simulation never moves the hero or fires an ability.
+
 ## Why practice uses the real dialogs
 
 The tour used to show two cosy mock panels. They taught the layout of a screen
@@ -62,19 +93,29 @@ that no longer existed, and they could not fail in the ways the real screen can.
 Now practice opens the genuine Armory, Workshop, Skills and Campaign dialogs
 against a **sandbox**:
 
-- `account.sandbox.enter()` swaps in an example soldier (`SANDBOX_SCRAP = 240`,
-  level 2, a legacy item equipped) and shows the banner
-  `TUTORIAL · SAMPLE DATA / Nothing you do here is saved.`
-- Every write path checks `inSandbox()` and returns or throws **before** a
-  transaction is even built. `canEdit` is `() => !inSandbox() && canEditSkills()`,
-  so the workshop service, the skill save, the armory save, the campaign save and
-  XP crediting all refuse.
-- `SandboxWrite` is thrown rather than returning quietly, so the UI can never
-  believe a change was saved when nothing was written.
-- Leaving the tour calls `sandbox.leave()` and restores the real profile.
+- `account.sandbox.enter()` swaps in a **fresh level 2 soldier** — one unspent
+  skill point, nothing unlocked, 240 scrap — and shows the banner
+  `TUTORIAL · SAMPLE DATA / Nothing you do here is saved.` The sample is fresh on
+  purpose: a player who already owns a main skill must still be able to *spend the
+  point* in practice, because that is the gesture the step teaches.
+- Practice is playable, not a slideshow. Saving the sample build and equipping or
+  upgrading sample gear go through the same reducers the real screens use, and
+  land in `sandbox.profile` through a local, transaction-free service
+  (`sandboxWorkshop`). The real workshop service keeps
+  `canEdit: () => !inSandbox() && canEditSkills()`, so practice can never reach a
+  transaction.
+- Everything that touches the save itself — campaign progress, XP crediting,
+  rewards, receipts — checks `inSandbox()` and returns or throws **before** a
+  transaction is built.
+- The account records what the player actually did and reports it through
+  `sandbox.onPracticeChange`; the tour only advances when the real save gesture
+  happened.
+- The sandbox ends with the practice dialog, however it closes: the close button,
+  Escape, the backdrop, or a save that closes it. It is bound to the dialogs' own
+  `close` event, not to any single button.
 
-The safety property the tests assert: with the sandbox on, no write can reach the
-account.
+Two properties the tests assert: with the sandbox on, no write can reach the
+account save; and the player's own build is byte-identical after practicing.
 
 ## The dog tag
 
@@ -122,7 +163,15 @@ player on a new browser is asked once and then goes straight in.
 | `tests/tutorial.test.mjs` | 11 steps, practice gates, real-dialog handoff, completion once per account |
 | `tests/training-run.test.mjs` | 6 waves, 70% / 150% / weakened boss, 330 XP = level 2, weaker spawns in a real match, offered once |
 | `tests/dog-tag.test.mjs` | Serial derived and stable, nothing persisted, SVG in the armory style |
-| `tests/first-run-ending.test.mjs` | Order, once per account, decline stops without marking done, sandbox refuses writes, Field School uses existing controls |
+| `tests/first-run-ending.test.mjs` | Order, once per account, decline stops without marking done, sandbox never reaches a transaction, Field School uses existing controls, no module-level TDZ |
+| `tests/language-gate.test.mjs` | Gate once per device, both languages printed, and **every inline script in `index.html` compiles** |
+
+The first run still has to be played on a real phone and a real desktop browser.
+[FIRST-RUN-DEVICE-TEST.md](FIRST-RUN-DEVICE-TEST.md) is the script for that pass:
+ordered steps, the exact German to expect, the local-storage keys that reset a
+run, and what counts as a blocker. `tests/first-run-device-test.test.mjs` keeps
+the plan honest by asserting that every string it quotes is still what the build
+shows.
 
 `node --test IronPath/tests/*.test.mjs` is the gate. Browser checks
 (`browser-tests/command-center.cjs`) walk the tour into the real dialogs and

@@ -1,7 +1,7 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-firstrun3';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-firstrun4';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261104-doctrines1';
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261104-directinvite1';
 export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{}}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');

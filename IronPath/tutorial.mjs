@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-firstrun3';
+import {translateText as tr} from './language.mjs?v=20261112-firstrun4';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.
@@ -19,7 +19,15 @@ export const TUTORIAL_STEPS = [
   {title:'Prestige gear',text:'Finishing campaign missions awards prestige trophies: one per mission, never sold and never crafted. Locked trophies name the mission that unlocks them. Missions get harder as the story goes on, so the gear matters.',scene:'armory',caption:'EARNED IN THE CAMPAIGN',practice:'prestige',dialogs:['armoryPrestige']}
 ];
 const memory=new Set();
-const keyFor=id=>`ironpath:tutorial:v1:${id}`;
+// The marker carries the edition of the briefing it belongs to, because the tour
+// changes what a returning player has seen. The old 8-step tour wrote
+// `ironpath:tutorial:v1:<id>`, so reusing that key meant every account that
+// finished it looked "already briefed" for ever and never saw the new briefing -
+// there was no way to reach it, because the replay button is inside another dialog.
+// Bump this whenever the briefing gains content worth showing a returning player;
+// a new edition is offered once, and skipping it is remembered like finishing.
+const TUTORIAL_EDITION=2;
+const keyFor=id=>`ironpath:tutorial:v${TUTORIAL_EDITION}:${id}`;
 export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{},onFinish=()=>{}}){
   const $=id=>document.getElementById(id),dialog=$('tutorialDialog');
   let index=0,activeUser=null,skill,armory,workshop,skipped,lastDialogs=-1,pendingDialogs=-1;
@@ -73,5 +81,11 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{},onPra
   dialog.addEventListener('cancel',e=>{e.preventDefault();close(true);});
   // Backdrop dismissal is not completion; the player can replay it later.
   bindDialogBackdrop(dialog,()=>close(false));
-  return {practiceResult,currentStep:()=>TUTORIAL_STEPS[index]||null,stepDialogs:()=>TUTORIAL_STEPS[index]?.dialogs||[],startIfNeeded(id){if(id&&!completed(id))open(id);},replay:open,stop(){close(false);},refreshLanguage(){if(dialog.open)render();},isOpen:()=>dialog.open};
+  return {practiceResult,currentStep:()=>TUTORIAL_STEPS[index]||null,stepDialogs:()=>TUTORIAL_STEPS[index]?.dialogs||[],startIfNeeded(id){if(id&&!completed(id))open(id);},
+   // A replay that is walked to the end hands over the training contract like a first
+   // run does (`finished`), while skipping one stays a skip. `trainingSeen` decides
+   // whether that is a fresh offer, so an account that never had the contract gets it
+   // from whichever route it takes.
+   replay:open,
+   stop(){close(false);},refreshLanguage(){if(dialog.open)render();},isOpen:()=>dialog.open};
 }
