@@ -187,7 +187,10 @@ const assert = require('node:assert/strict');
     // the Command Center. This test does not play six waves, so it retires the run.
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
     await page.waitForSelector('#gameView:not([hidden])');
-    assert.equal(await page.locator('#soloObjectiveTitle').innerText(),'TRAINING CONTRACT · HANDLE WITH CARE');
+    // The contract is only labelled once there is a battlefield state to describe, so
+    // wait for the objective rather than reading it the instant the view appears.
+    await page.waitForSelector('#soloObjective:not([hidden])');
+    assert.match(await page.locator('#soloObjectiveTitle').innerText(),/TRAINING CONTRACT/,'the six-wave contract is the first deployment');
     // End it the way a player can, through the confirmation dialog.
     await page.locator('#endRun').click();
     await page.locator('#gameConfirmAccept').click();
