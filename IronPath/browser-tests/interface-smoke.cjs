@@ -107,7 +107,8 @@ const fs = require('node:fs');
       assert.equal(covers.dashboard,false,`${name}: the contract card does not cover the status row`);
       assert.equal(covers.canvas,false,`${name}: the contract card does not cover the battlefield`);
       assert.ok(training.card.right<=width+1,`${name}: the contract card stays inside the field`);
-      assert.ok(training.card.height<height*.25,`${name}: the contract row stays a row (${Math.round(training.card.height)} of ${height})`);
+      assert.ok(training.card.bottom-training.card.top<height*.25,
+        `${name}: the contract row stays a row (${Math.round(training.card.bottom-training.card.top)} of ${height})`);
       await page.screenshot({path:`browser-artifacts/${name}-training-field.png`,fullPage:false});
       // The coach card is a bottom strip that must not be dragged by a scroll.
       await page.evaluate(()=>{
