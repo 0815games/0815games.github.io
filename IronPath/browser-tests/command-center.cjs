@@ -269,6 +269,10 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width:1280,height:800});
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldSettings').click();await page.waitForFunction(()=>document.getElementById('settingsDialog')?.open===true);await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
     assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('#game').isVisible(),true);assert.equal(await page.locator('#start').isVisible(),true);
+    // Fullscreen is not a reason to lose the dialog that switched it: close it, then
+    // go back to the field with the menu like a player would.
+    assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true,'settings stays open through a fullscreen change');
+    await page.locator('#settingsClose').click();
     await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
     await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');await page.locator('#settingsClose').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'the dialog the field menu opened closes again');
     await page.setViewportSize({width:390,height:844});
