@@ -57,7 +57,9 @@ const assert = require('node:assert/strict');
     // The soldier's own level is on the field HUD now: the specialization ring
     // locks two of its four choices behind soldier levels 5 and 10, and without
     // the number on screen "Lv 5" has nothing to compare against.
-    assert.equal(await page.locator('#level').innerText(), '1', 'the soldier level is on the field HUD');
+    // The mock soldier carries 750 XP, which is level 3 - the HUD must agree with
+    // the account, not with a guess about what a new player has.
+    assert.equal(await page.locator('#level').innerText(), '3', 'the soldier level is on the field HUD');
     // The card leaves the field playable: it is anchored to the bottom and takes
     // less than half the viewport, unlike the 450px modal it replaced.
     // The dossier dressing is real styling, not decoration in a dead file: the
