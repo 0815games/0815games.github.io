@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {MAPS,getMap,isMapId,createRandomMapId} from '../maps.mjs';
+import {MAPS,getMap,isMapId,createRandomMapId,sectorOf,SECTOR_SPECS} from '../maps.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {createPlayer,applyCommand} from '../match.mjs';
 import {createPartyHost} from '../party-host.mjs';
@@ -40,7 +40,10 @@ assert.ok(paths.size>1500,'generated seeds must produce a wide variety of roads'
 assert.equal(isMapId('gen-abcdefgh'),false);assert.equal(isMapId('gen-000000000'),false);
 
 const fixedRandom={getRandomValues(bytes){bytes[0]=0;return bytes;}};
-assert.equal(createRandomMapId(undefined,fixedRandom),'g2-00000000');assert.equal(createRandomMapId('g2-00000000',fixedRandom),'g2-00000001','restarts cannot reuse the immediately previous seed');
+assert.equal(createRandomMapId(undefined,fixedRandom),'g3-000000000');
+assert.equal(createRandomMapId('g3-000000000',fixedRandom),'g3-000000001','restarts cannot reuse the immediately previous seed');
+assert.equal(createRandomMapId(undefined,fixedRandom,3),'g3-200000000','the sector rides in the id');
+assert.equal(isMapId('g3-00000000'),false);assert.equal(isMapId('g3-0000000000'),false);assert.equal(isMapId('g3-0000000g'),false);assert.equal(isMapId('g3-'),false);
 
 const themes=new Set(),roads=new Set();let saved;
 for(let i=0;i<3000;i++){
@@ -61,4 +64,54 @@ assert.equal(themes.size,5);assert.ok(roads.size>2900);assert.deepEqual(getMap('
 const newState=createMatch([player('host'),player('guest')],'g2-12345678'),newHost=createPartyHost(newState,{hostId:'host'});
 newHost.setPresence('host',true);newHost.setPresence('guest',true);newHost.setPresence('guest',false);newHost.advance();newHost.setPresence('guest',true);
 assert.deepEqual(getMap(newHost.snapshotFor('guest').match.mapId),getMap('g2-12345678'));
+});
+
+test('grid-walk sector maps: a fresh road every seed, valid in every sector',()=>{
+const player=id=>createPlayer(id,{name:id,gender:'female',level:1},850,450);
+const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);};
+for(const [index,spec] of SECTOR_SPECS.entries()){
+ const sector=index+1,unique=new Set();let multi=0;
+ for(let i=0;i<120;i++){
+  const id=`g3-${index.toString(16)}${(Math.imul(i+1,2654435761)>>>0).toString(16).padStart(8,'0')}`,map=getMap(id);
+  assert.equal(isMapId(id),true);assert.equal(map.sector,sector);assert.equal(sectorOf(id),sector);
+  assert.equal(map.width,spec.width);assert.equal(map.height,spec.height);assert.equal(map.pads.length,spec.pads);
+  const paths=map.paths||[map.path];
+  assert.ok(paths.length>=1&&paths.length<=spec.roads,`${id} road count`);
+  if(paths.length>1)multi++;
+  assert.equal(map.path[0].x,0);assert.deepEqual(map.path.at(-1),map.bunker);
+  assert.equal(map.bunker.x,map.width-30);
+  let length=0;
+  for(const road of paths)for(let j=1;j<road.length;j++){
+   length+=Math.hypot(road[j].x-road[j-1].x,road[j].y-road[j-1].y);
+   assert.ok(road[j].x>=0&&road[j].x<=map.width&&road[j].y>=30&&road[j].y<=map.height-30,`${id} road in bounds`);
+  }
+  assert.ok(length>=map.width*1.2,`${id} road meanders (x${(length/map.width).toFixed(2)})`);
+  for(const [j,p] of map.pads.entries()){
+   const d=paths.reduce((min,road)=>Math.min(min,...road.slice(1).map((b,k)=>distance(p,road[k],b))),Infinity);
+   assert.ok(d>=62&&d<=150,`${id} pad ${j} sits beside the road (${Math.round(d)})`);
+   assert.ok(p.x>=25&&p.x<=map.width-25&&p.y>=25&&p.y<=map.height-25,`${id} pad in bounds`);
+   assert.ok(Math.hypot(p.x-map.bunker.x,p.y-map.bunker.y)>=78,`${id} pad clear of the bunker`);
+   for(const q of map.pads.slice(j+1))assert.ok(Math.hypot(p.x-q.x,p.y-q.y)>=68,`${id} pads do not overlap`);
+  }
+  for(const d of map.deco){
+   assert.ok(d.x>=20&&d.x<=map.width-20&&d.y>=20&&d.y<=map.height-20,`${id} building in bounds`);
+   const r=paths.reduce((min,road)=>Math.min(min,...road.slice(1).map((b,k)=>distance(d,road[k],b))),Infinity);
+   assert.ok(r>=40,`${id} building off the tar (${Math.round(r)})`);
+   assert.ok(map.pads.every(p=>Math.hypot(p.x-d.x,p.y-d.y)>=58),`${id} building clear of pads`);
+   assert.ok(Math.hypot(d.x-map.bunker.x,d.y-map.bunker.y)>=95,`${id} building clear of the bunker`);
+  }
+  assert.ok(map.deco.length>=spec.gates+Math.round(spec.ruins*.5),`${id} carries buildings`);
+  unique.add(JSON.stringify(map.path));
+ }
+ assert.ok(unique.size>=118,`sector ${sector}: seeds produce distinct roads (${unique.size}/120)`);
+ if(spec.roads>1)assert.ok(multi>=90,`sector ${sector}: most fields carry both roads (${multi}/120)`);
+}
+// Deterministic under cache eviction, and snapshots carry the id untouched.
+const once=getMap('g3-119e3779b1');
+assert.deepEqual(getMap('g3-119e3779b1'),once);
+const pair=createMatch([player('host'),player('guest')],'g3-1096af9a3'),host=createPartyHost(pair,{hostId:'host'});
+host.setPresence('host',true);host.setPresence('guest',true);host.setPresence('guest',false);host.advance();host.setPresence('guest',true);
+assert.equal(host.snapshotFor('guest').match.mapId,'g3-1096af9a3');
+assert.deepEqual(getMap(host.snapshotFor('guest').match.mapId),getMap('g3-1096af9a3'));
+console.log('Grid-walk sector maps passed.');
 });

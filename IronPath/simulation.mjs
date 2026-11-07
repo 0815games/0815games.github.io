@@ -5,12 +5,12 @@ import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261102-terrain4';
-import {getMap,isMapId,DEFAULT_MAP} from './maps.mjs?v=20261102-fourbase1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf} from './maps.mjs?v=20261123-sector1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261105-workshop3';
+import {addSupplies} from './match.mjs?v=20261123-sector1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -45,7 +45,7 @@ function rewardTeam(state,amount,enemyKill=false){
 }
 // Exactly one fixed step per call. Events are transient, not a record of validated rewards.
 export function stepMatch(state){
-  const events=[];if(state.ended)return events;advanceBuildReservations(state,STEP);const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map),paths=map.paths||[PATH],bunker=map.bunker||{x:900,y:400};
+  const events=[];if(state.ended)return events;advanceBuildReservations(state,STEP);const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map),paths=map.paths||[PATH],bunker=map.bunker||{x:900,y:400},sector=sectorOf(state.mapId);
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);
@@ -55,7 +55,11 @@ export function stepMatch(state){
     else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave,state.campaignContract?.bossEvery),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave,state.campaignContract?.bossEvery),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];
+      // A retreat buys a longer road, and the enemy pays for it: every sector
+      // past the first toughens each unit, so a bigger field is never an easier
+      // one. Bosses included - they already scale with their wave.
+      if(sector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(sector-1))));enemy.speed*=1+.05*(sector-1)};if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
       // A campaign contract is harder by construction: tougher units, and extra
       // units on surge waves. Endless solo and multiplayer are untouched.
       if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
@@ -134,6 +138,10 @@ export function stepMatch(state){
       // its last two waves.
       const perkEvery=state.campaignContract?.bossEvery||5;
       if(state.wave%perkEvery===0&&state.wave!==state.campaignContract?.waves)state.pendingPerk=state.wave;
+      // Every tenth cleared wave a solo endless run falls back to the next
+      // sector. Missions, training and every multiplayer mode hold their map
+      // for the whole match: only a g3 solo field retreats.
+      if(state.wave%10===0&&sector>0&&!state.individualSupplies&&!state.hostId){state.pendingSector=state.wave+1;events.push({type:'sectorClear',wave:state.wave,sector});}
     events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory:false});
   }
   return events;
