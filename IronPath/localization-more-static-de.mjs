@@ -89,4 +89,5 @@ export const germanMoreStatic=Object.freeze({
   "Your dog tag": "Deine Hundemarke",
   "Earned from the last boss of the training contract. Wear it for as long as you serve.": "Vom letzten Boss des Ausbildungsvertrags. Trage sie, solange du dienst.",
   "WEAR IT": "ANLEGEN",
+  "Earned from the boss of wave five. Wear it for as long as you serve.": "Verdient im Kampf gegen den Boss der fünften Welle. Trage sie, solange du dienst.",
 });
