@@ -147,7 +147,10 @@ test('the boss card can jump the queue, and finishing is remembered once',()=>{
  assert.equal(coach.start('soldier-b'),true,'a different soldier gets their own');
 });
 
-test('closing the card ends the coaching without pretending it was finished',()=>{
+test('closing the card puts the task away without ending the coaching',()=>{
+ // Reported: "wenn man die Aufgabe wegklickt, hat man keine Möglichkeit, sie
+ // nachzuschauen." Closing is a pause now, not a skip: the card keeps its place,
+ // a recall brings it back at that step, and only finishing writes the marker.
  const document=makeDocument(),storage=store();
  let done=0;
  const coach=createCoach({document,storage,onDone:()=>done++});
@@ -155,8 +158,17 @@ test('closing the card ends the coaching without pretending it was finished',()=
  document.getElementById('coachClose').onclick();
  assert.equal(document.getElementById('firstRunCoach').hidden,true);
  assert.equal(coach.isOpen(),false);
- assert.equal(coachSeen('soldier-c',storage),true,'a skipped hint is not repeated');
+ assert.equal(coach.dismissed(),true,'the card is put away, not forgotten');
+ assert.equal(coachSeen('soldier-c',storage),false,'a put-away card is not a finished briefing');
  assert.equal(done,0,'the ending is a separate step, not this card');
+ assert.equal(coach.reopen(),true,'the recall brings the card back');
+ assert.equal(coach.isOpen(),true);
+ assert.match(document.getElementById('coachStep').textContent,/1 \/ 7/,'it comes back at the card it was on');
+ assert.equal(coach.dismissed(),false,'an open card is not dismissed');
+ assert.equal(coach.reopen(),false,'reopening an open card is a no-op');
+ // And the put-away card still finishes by playing, not only by being reopened:
+ document.getElementById('coachClose').onclick();
+ assert.equal(coach.dismissed(),true);
 });
 
 test('the coach never pauses the field and is not a modal dialog',()=>{

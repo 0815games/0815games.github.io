@@ -7,8 +7,8 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="style.css?v=20261110-storyde1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261121-ringprice1">
+  <link rel="stylesheet" href="style.css?v=20261121-taskback1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261121-taskback1">
   <link rel="stylesheet" href="skill-menu.css?v=20261108-skillcards1">
   <link rel="stylesheet" href="field-command.css?v=20261113-fieldframe1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
@@ -27,7 +27,7 @@
        (#languageSelect, #languagePreviewNote, #fullscreenToggle, #fullscreenStatus)
        moved into the dialog unchanged - language.mjs and fullscreen.mjs still drive
        the same ids, so there is still exactly one language control in the product. -->
-  <dialog id="settingsDialog" class="settings-dialog" aria-labelledby="settingsTitle">
+  <dialog id="settingsDialog" tabindex="-1" class="settings-dialog" aria-labelledby="settingsTitle">
     <div class="settings-head"><span class="eyebrow" data-i18n-text="SETTINGS">SETTINGS</span><button id="settingsClose" class="settings-close" type="button" aria-label="Close settings" data-i18n-aria-label="Close settings">×</button></div>
     <h2 id="settingsTitle" data-i18n-text="Settings">Settings</h2>
     <div class="settings-row">
@@ -242,11 +242,15 @@
     <div class="coach-pips" id="coachPips" aria-hidden="true"></div>
     <div class="coach-foot"><span class="coach-caption" id="coachCaption"></span><button id="coachNext" class="primary coach-next" type="button" data-i18n-text="NEXT →">NEXT →</button></div>
   </aside>
+  <!-- Bringing the task back: closing the card above puts it away, it must not
+       throw the task away. A put-away card leaves this recall behind, so a player
+       who forgets what to do can read it again. -->
+  <button id="coachRecall" class="coach-recall" type="button" hidden data-i18n-text="SHOW TASK">SHOW TASK</button>
   <!-- The guide for the screens AFTER the match: rewards, armory, skills, workshop.
        Same discipline as the first-run card - not a dialog, no focus trap, the screen
        behind stays usable - because the player is supposed to be using that screen
        while reading this. See first-run-guide.mjs. -->
-  <aside id="firstRunGuide" class="first-run-guide" role="dialog" aria-modal="false" aria-labelledby="guideTitle" aria-describedby="guideText" hidden>
+  <aside id="firstRunGuide" class="first-run-guide" popover="manual" role="dialog" aria-modal="false" aria-labelledby="guideTitle" aria-describedby="guideText" hidden>
     <div class="guide-head"><span class="guide-step" id="guideStep"></span><span class="guide-caption" id="guideCaption"></span></div>
     <h2 id="guideTitle"></h2>
     <p id="guideText" class="guide-text"></p>
@@ -323,5 +327,5 @@
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
   <script type="module" src="intro.mjs?v=20261112-firstrun5"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261121-ringlevel1"></script>
+  <script type="module" src="account.js?v=20261121-taskback1"></script>
 </body></html>

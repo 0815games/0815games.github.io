@@ -114,6 +114,12 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     $('guideCaption').textContent = tr(current.caption);
     $('guideNext').hidden = current.advance !== 'button';
     card.hidden = false;
+    // A modal dialog (the armory, the skill tree) is always above every z-index -
+    // the card spent its life under their backdrops, which is why the screens after
+    // the dog tag "came without explanation". The popover layer is the only layer
+    // above a modal dialog, so the card is shown as a manual popover where the
+    // browser has one; without it, the old fixed-position behaviour stands.
+    try { card.showPopover?.(); } catch { /* older browsers keep the old layering */ }
     card.dataset.step = current.id;
     // Which screen the player now has to act on. Set here, once, so `event()` cannot
     // disagree with what is on the card.
@@ -142,6 +148,7 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
   }
 
   function hide() {
+    try { card.hidePopover?.(); } catch { /* not shown as a popover */ }
     if (card) card.hidden = true;
     const layer = document.getElementById('coachHighlight');
     if (layer) layer.hidden = true;
@@ -159,6 +166,16 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     isOpen: open,
     step,
     steps: STEPS,
+    // The account calls this after the screen the card describes has OPENED: a
+    // modal dialog joins the top layer above a popover that is already up, so the
+    // card has to re-join above it. Without this, the armory covered the card that
+    // was supposed to explain the armory.
+    raise() {
+      if (!open()) return false;
+      try { if (card.matches?.(':popover-open')) card.hidePopover?.(); } catch {}
+      try { card.showPopover?.(); } catch {}
+      return true;
+    },
     start(id) {
       if (!id || guideSeen(id, storage)) return false;
       activeUser = id; index = 0; render(); onVisibilityChange(true); return true;

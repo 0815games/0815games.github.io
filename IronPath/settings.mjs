@@ -132,8 +132,10 @@ export function createSettings({
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.open = true;
     }
-    // The language select is the first thing a player usually wants here.
-    $('languageSelect')?.focus?.();
+    // Focus lands on the dialog itself, never on the language select: focusing a
+    // <select> opens its picker on a phone, so the settings opened straight into
+    // the language dropdown. Reported exactly that way.
+    try { dialog.focus?.(); } catch { /* focus is a courtesy, not a requirement */ }
     return true;
   }
 

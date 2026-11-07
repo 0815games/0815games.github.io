@@ -47,7 +47,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 /* Armory, skill planner and debrief form a matching set of dossiers. */
 .skill-dialog{background:linear-gradient(145deg,#22392e,#14271f);color:#f2ead4;border:1px solid #879b7b;border-radius:4px;box-shadow:0 22px 85px #000c}
 .skill-dialog::backdrop,.tower-details::backdrop,.tutorial-dialog::backdrop{background:#07110dd9}
-.skill-dialog .development-head{margin:-20px -20px 14px;padding:20px;border-bottom:1px solid #8b997355;background:linear-gradient(90deg,#192f26ed,#1d342ad9),url('assets/story-outpost.jpg') center 47%/cover}
+.skill-dialog .development-head{margin:calc(-1 * var(--sheet-pad, 20px)) calc(-1 * var(--sheet-pad, 20px)) 14px;padding:var(--sheet-pad, 20px);border-bottom:1px solid #8b997355;background:linear-gradient(90deg,#192f26ed,#1d342ad9),url('assets/story-outpost.jpg') center 47%/cover}
 .skill-dialog .development-head h2{font:700 28px Georgia,serif;color:#f7ebce}
 .skill-dialog .development-head .eyebrow{color:#e1c98b}
 .skill-dialog .development-close{background:#2a4233;color:#f5e8c8;border:1px solid #98a486;border-radius:3px;box-shadow:none}
@@ -542,6 +542,20 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .coach-text{color:var(--dossier-ink)}
 .coach-caption{color:var(--dossier-dim)}
 /* Step ticks: the player can see how much briefing is left without a counter. */
+/* The recall for a put-away task card: small, out of the way, above the action
+   bar where the card itself lives. Same anchor discipline as the card. */
+.coach-recall{
+  position:fixed;z-index:60;
+  left:max(10px,env(safe-area-inset-left,0px));
+  bottom:calc(var(--action-bar,calc(66px + env(safe-area-inset-bottom,0px))) + 10px);
+  width:auto;max-width:fit-content;
+  min-height:44px;margin:0;padding:9px 14px;
+  background:#e4ca89;border:1px solid #e8d49a;border-radius:999px;
+  color:#1b3024;font-size:11px;font-weight:bold;letter-spacing:.08em;
+  box-shadow:0 6px 18px #0007;
+}
+.coach-recall[hidden]{display:none}
+.coach-recall:active{transform:translateY(1px)}
 .coach-ask{
   margin:0;padding:6px 8px;font-size:11px;font-weight:bold;letter-spacing:.06em;
   color:#f3e2b4;background:#ffffff10;border-left:3px solid var(--dossier-gold);border-radius:2px;
@@ -650,8 +664,11 @@ body:has(#runResults[open]) .first-run-coach{display:none}
    of the way of the dialog it describes, and it is not modal: the player has to be
    able to press the thing it is talking about while it is still up.
    --------------------------------------------------------------------------- */
+/* Shown as a manual popover when the browser has one, so it can sit ABOVE the
+   modal dialogs it explains (a z-index cannot). The popover default styles centre
+   the element and stretch it - undone here, the card keeps its own place. */
 .first-run-guide{
-  position:fixed;z-index:70;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+  position:fixed;z-index:70;inset:auto;right:auto;bottom:auto;margin:0;left:50%;top:calc(8px + env(safe-area-inset-top,0px));transform:translateX(-50%);
   width:min(560px,calc(100vw - 16px));max-height:min(40dvh,340px);
   display:flex;flex-direction:column;gap:6px;
   padding:12px 14px;background:linear-gradient(#16281f,#12201a);color:#f1ead4;

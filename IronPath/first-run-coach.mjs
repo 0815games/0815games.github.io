@@ -251,7 +251,11 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
       announced.add('acknowledged');
       advance();
     };
-    $('coachClose').onclick=()=>{const user=activeUser;hide();index=-1;activeUser=null;if(user)markCoachSeen(user,storage);};
+    // Putting the card away is not finishing the coaching. Reported: "wenn man die
+    // Aufgabe wegklickt, hat man keine Möglichkeit, sie nachzuschauen." The card
+    // keeps its place; the recall button brings it back, and only `finish()` writes
+    // the seen marker - a dismissed card is a paused card, not a skipped briefing.
+    $('coachClose').onclick=()=>{hide();};
     // Escape is a hint dismissal too, never a pause.
     root.addEventListener('keydown',event=>{if(event.key==='Escape'){event.stopPropagation();$('coachClose').onclick();}});
   }
@@ -291,6 +295,13 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
       activeUser=id;index=0;announced=new Set();seen={};render();onVisibilityChange(true);
       return true;
     },
+    // The card was put away but the coaching is not over: the engine shows the
+    // recall button for exactly this state.
+    dismissed(){return !!root&&root.hidden&&index>=0&&activeUser!=null;},
+    // Brings the put-away card back at the step it was on. The gate re-reads the
+    // field on the next tick, so a player who built while the card was away comes
+    // back to an open gate, not to an accusation.
+    reopen(){if(!root||!root.hidden||index<0||activeUser==null)return false;render();onVisibilityChange(true);return true;},
     stop(){hide();index=-1;activeUser=null;},
     // Forget that this soldier has seen the coaching. Only the Settings replay calls
     // this: every automatic path (`start`) treats the marker as permanent, which is

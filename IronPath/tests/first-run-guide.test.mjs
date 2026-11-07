@@ -93,3 +93,33 @@ test('the guide never becomes a modal', () => {
   assert.match(guide, /top:calc\(8px/, 'it sits at the top, clear of the dialog body');
   assert.match(block, /@media\(max-height:460px\)/);
 });
+
+test('the card outranks the modal dialogs it explains, and re-raises above them',()=>{
+ // Reported: "nach dem Erhalt der dog tag wird man einfach ins nächste Menü
+ // geschossen ohne Erklärung." The card was there all along - under the dark
+ // backdrop of the armory dialog, because a z-index cannot cross the top layer.
+ // A manual popover can, so the card is shown as one wherever the browser has
+ // them, and `raise()` re-joins above a dialog that opened after it.
+ const calls=[];
+ const document=makeDocument();
+ const card=document.getElementById('firstRunGuide');
+ card.showPopover=()=>{calls.push('show');};
+ card.hidePopover=()=>{calls.push('hide');};
+ card.matches=selector=>selector===':popover-open'&&calls[calls.length-1]==='show';
+ const guide=createGuide({document,storage:store(),resolve:()=>({getBoundingClientRect:()=>({left:5,top:5,width:100,height:80})})});
+ assert.equal(guide.start('soldier-x'),true);
+ assert.deepEqual(calls,['show'],'showing the card shows the popover');
+ // The armory opens above it; the account re-raises the card.
+ guide.raise();
+ assert.deepEqual(calls,['show','hide','show'],'raise re-joins the top layer above the dialog');
+ // Putting the card away closes the popover and hides the element.
+ guide.stop();
+ assert.deepEqual(calls,['show','hide','show','hide']);
+ assert.equal(card.hidden,true);
+ // Without the popover API nothing breaks: the old layering simply stands.
+ const plain=makeDocument();
+ const plainGuide=createGuide({document:plain,storage:store(),resolve:()=>null});
+ assert.equal(plainGuide.start('soldier-y'),true);
+ assert.equal(plainGuide.raise(),true);
+ plainGuide.stop();
+});
