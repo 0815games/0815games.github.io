@@ -19,11 +19,42 @@ function ground(ctx,theme='road',width=960,height=540){
   for(let i=0;i<75;i++){const x=(i*163+47)%width,y=(i*113+31)%height;oval(ctx,x,y,14+(i%4)*6,4+(i%3)*3,i%2?'#182a23':'#d7d3b1',null);}
   ctx.restore();
 }
+// V2 field art: the road is ground, not a ribbon - a soft earthen berm, a
+// compacted surface, wheel ruts that follow the actual bends, and wear
+// scattered ALONG the geometry instead of at nine hard-coded spots.
 function drawRoad(ctx,path,theme,texture=null){
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle='#303d30';ctx.lineWidth=73;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#a5c2c0':theme==='urban'?'#77766d':theme==='marsh'?'#8e795c':theme==='scrub'?'#bd8765':'#b19a70';ctx.lineWidth=65;ctx.stroke();ctx.strokeStyle=theme==='arctic'?'#c4d9d4':theme==='urban'?'#aaa69a':theme==='marsh'?'#b29b74':theme==='scrub'?'#dda77f':'#cbb58a';ctx.lineWidth=55;ctx.stroke();
-  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.3;ctx.strokeStyle=pattern;ctx.lineWidth=52;ctx.stroke();ctx.restore();}}
-  ctx.strokeStyle='#756a53';ctx.lineWidth=1;ctx.setLineDash([5,18]);ctx.stroke();ctx.setLineDash([]);
-  for(const [x,y] of [[50,119],[160,140],[206,220],[230,328],[350,311],[480,250],[600,157],[709,278],[775,409]]){line(ctx,[[x-7,y+8],[x-2,y+7],[x+2,y+9]],'#ac986f',2);line(ctx,[[x+6,y-7],[x+11,y-8]],'#a08a66',2);}
+  const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:['#544a34','#716244','#8d7c5b'];
+  const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
+  trace(86,'rgba(26,30,24,.32)');
+  trace(78,tones[0]);
+  trace(68,tones[1]);
+  trace(58,tones[2]);
+  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.28;ctx.strokeStyle=pattern;ctx.lineWidth=52;ctx.stroke();ctx.restore();}}
+  // Wheel ruts on both sides of the lane, following every actual bend.
+  ctx.strokeStyle='rgba(28,24,16,.26)';ctx.lineWidth=5;
+  for(const side of [-1,1])for(let i=1;i<path.length;i++){
+    const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
+    if(!l)continue;
+    const px=-dy/l*15*side,py=dx/l*15*side;
+    ctx.beginPath();ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);ctx.stroke();
+  }
+  ctx.save();ctx.globalAlpha=.16;trace(9,'#efe6cd');ctx.restore();
+  // Pebbles and track marks along the real arclength - deterministic, so the
+  // cached terrain layer stays reproducible.
+  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
+  let k=0;
+  for(let i=1;i<path.length;i++){
+    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
+    if(!len)continue;
+    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+    for(let s=26;s<len-12;s+=44){
+      const j1=hash(++k),j2=hash(k+57.3),off=(j1-.5)*44;
+      const x=a.x+ux*s+px*off,y=a.y+uy*s+py*off;
+      if(j2<.45)oval(ctx,x,y,2+j1*2.5,1.4+j2*1.4,j2<.2?'#6d5c42':'#a6906c',null);
+      else if(j2<.7){const d=3+j1*4;line(ctx,[[x-px*d,y-py*d],[x+px*d,y+py*d]],'rgba(30,26,18,.22)',2);}
+      else oval(ctx,x,y,1.6,1.1,'#c9b992',null);
+    }
+  }
 }
 // Presentation only: the marked segment retains the simulation's exact endpoints.
 function roadZone(ctx,a,b,{color,edge,label,detail}){
@@ -76,8 +107,8 @@ function bunker(ctx,state,notify,approach=0){
   // translates to the map's bunker coordinates: the sprite finally stands
   // where the road ends, on every sector size - the old fixed 855/365 only
   // ever fit the 960x540 field.
-  const artwork=sprite(ctx,'bunker',notify);
-  if(artwork)ctx.drawImage(artwork,-52,-31,105,62);
+  const artwork=sprite(ctx,'bunker2',notify);
+  if(artwork)ctx.drawImage(artwork,-62,-44,124,86);
   else fallbackMarker(ctx,0,0,'HQ','#e3cc92',33,22);
   if(plating>0){line(ctx,[[-32,7],[32,7]],'#e5c883',3);for(let i=0;i<plating;i++)oval(ctx,-21+i*8,12,2,2,'#f4d894',null);}
   if(damage<.7){line(ctx,[[-3,2],[-7,7],[-2,10],[-7,17]],'#293a30',2);}
@@ -100,24 +131,28 @@ function bunker(ctx,state,notify,approach=0){
 }
 function pad(ctx,p,tower,selected,types,notify){
   const x=p.x,y=p.y;
-  // Reported: the drawn towers read as foreign bodies on the new maps. The pad
-  // is now a proper piece of ground: a wider stone-edged plate in the map
-  // palette, a soft shadow, sandbags around the base - the tower stands ON
-  // the field, not on a UI chip. Letter chips are gone; the level badge
-  // stays, it carries information.
-  shape(ctx,[[x-28,y-13],[x-19,y-24],[x+19,y-24],[x+28,y-13],[x+28,y+13],[x+19,y+24],[x-19,y+24],[x-28,y+13]],tower?'#28402f':'#1f3830',selected?'#cfe3d6':'#7fa08f',selected?3:2);
-  shape(ctx,[[x-22,y-9],[x-15,y-18],[x+15,y-18],[x+22,y-9],[x+22,y+9],[x+15,y+18],[x-15,y+18],[x-22,y+9]],tower?'#223a2c':'#1a322b',null,0);
-  // Chiselled rim stones on the plate corners.
-  for(const [sx,sy] of [[-24,-11],[24,-11],[-24,11],[24,11]])oval(ctx,x+sx,y+sy,4,2.5,'#93ab9c',null);
+  // V2 field art: the build plate is a painted concrete weapons emplacement -
+  // part of the ground, in the same rendered look as the buildings. The
+  // vector plate below stays as the asset-loading fallback; letter chips stay
+  // gone, the level badge stays.
+  const plate=sprite(ctx,'gunpit',notify);
+  if(plate)ctx.drawImage(plate,x-31,y-19,62,38);
+  else{
+    shape(ctx,[[x-28,y-13],[x-19,y-24],[x+19,y-24],[x+28,y-13],[x+28,y+13],[x+19,y+24],[x-19,y+24],[x-28,y+13]],tower?'#28402f':'#1f3830',selected?'#cfe3d6':'#7fa08f',selected?3:2);
+    shape(ctx,[[x-22,y-9],[x-15,y-18],[x+15,y-18],[x+22,y-9],[x+22,y+9],[x+15,y+18],[x-15,y+18],[x-22,y+9]],tower?'#223a2c':'#1a322b',null,0);
+    for(const [sx,sy] of [[-24,-11],[24,-11],[-24,11],[24,11]])oval(ctx,x+sx,y+sy,4,2.5,'#93ab9c',null);
+  }
+  if(selected){ctx.save();ctx.strokeStyle='#cfe3d6';ctx.lineWidth=2.5;ctx.setLineDash([7,6]);ctx.beginPath();ctx.ellipse(x,y,33,23,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(!tower){line(ctx,[[x-13,y-8],[x+13,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
   const display=towerDisplay(tower.level);
   // A static gold halo remains visible even when reduced motion is enabled.
   if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
     ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
-  // Ground shadow first, then the sandbag base, then the tower sprite: the
-  // stacking order is what makes the tower sit IN the scene.
-  oval(ctx,x,y+17,25,7,'rgba(24,32,26,.28)',null);
-  for(const [sx,sy,r] of [[-17,13,7],[0,16,8],[17,13,7]])oval(ctx,x+sx,y+sy,r,r*.62,'#c3ab7d','#8f7a52',1);
+  // Contact shadow grounds the tower on the plate; sandbag dressing only
+  // exists for the vector fallback plate, the painted emplacement brings
+  // its own base.
+  oval(ctx,x,y+16,20,6,'rgba(24,32,26,.25)',null);
+  if(!plate)for(const [sx,sy,r] of [[-17,13,7],[0,16,8],[17,13,7]])oval(ctx,x+sx,y+sy,r,r*.62,'#c3ab7d','#8f7a52',1);
   // Preserve vector rendering only as an asset-loading fallback.
   const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type],notify);
   if(artwork)ctx.drawImage(artwork,x-28,y-34,56,47);
@@ -176,7 +211,7 @@ const terrainCache=new WeakMap();
 // loads; no simulation data, map geometry, or hit targets are touched.
 const groundImages=new Map();
 function getGroundImage(doc,theme){
-  const name=({forest:'terrain-forest.jpg',urban:'terrain-city.jpg',outpost:'terrain-city.jpg',scrub:'terrain-desert.jpg',arctic:'terrain-snow.jpg',marsh:'terrain-marsh.jpg'})[theme]||'endless-ground.jpg';
+  const name=({forest:'terrain2-forest.jpg',urban:'terrain2-city.jpg',outpost:'terrain2-city.jpg',scrub:'terrain2-desert.jpg',arctic:'terrain2-snow.jpg',marsh:'terrain2-marsh.jpg'})[theme]||'endless-ground.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
@@ -190,18 +225,63 @@ const ZONE_STYLES=Object.freeze({
  ambush:{fill:'rgba(71,91,67,.55)',edge:'#b0c4a1',label:'AMBUSH TRAIL'},
  dust:{fill:'rgba(168,137,94,.4)',edge:'#e0c9a4',label:'DUST'}
 });
+// Reported idea: "Fackeln als Straßen Rand in guten Abständen" - warm light
+// posts at regular intervals make the enemy route readable at a glance and
+// put life on the field. Every theme gets its own post: war torches in the
+// wild, oil lanterns in the ruins, frosted lanterns on the ice. The painted
+// sprites land asset-wise; the vector post below is the loading fallback.
+function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
+  if(!torches||!torches.length)return;
+  const kind=theme==='arctic'?'icelantern':theme==='urban'||theme==='outpost'?'lantern':'torch';
+  const artwork=sprite(ctx,kind,notify),t0=Number.isFinite(time)?time:0,warm=kind==='icelantern';
+  for(const [i,p] of torches.entries()){
+    const flick=reducedMotion?1:1+.15*Math.sin(t0*11+i*2.4)+.09*Math.sin(t0*23+i*1.7);
+    ctx.save();
+    ctx.globalAlpha=.15;oval(ctx,p.x,p.y+2,26,16,warm?'#cfe3f2':'#ffca7a',null);
+    ctx.globalAlpha=.09;oval(ctx,p.x,p.y+2,42,26,warm?'#cfe3f2':'#ffca7a',null);
+    ctx.globalAlpha=1;
+    if(artwork){const h=36,w=h*artwork.width/artwork.height;ctx.drawImage(artwork,p.x-w/2,p.y+2-h,w,h);}
+    else{
+      // Painted fallback post until the artwork lands.
+      oval(ctx,p.x,p.y+3,7,3,'rgba(20,26,20,.35)',null);
+      ctx.fillStyle='#4c3b28';ctx.fillRect(p.x-2.5,p.y-26,5,28);
+      ctx.fillStyle='#6a533a';ctx.fillRect(p.x-2.5,p.y-26,2,28);
+      ctx.fillStyle='#3a3a3c';ctx.fillRect(p.x-3,p.y-13,6,2);
+    }
+    if(warm){oval(ctx,p.x,p.y-30,5,6*flick,'#dceef7','#93b2c4',1);oval(ctx,p.x,p.y-30,2.5,3*flick,'#fff6df',null);}
+    else{oval(ctx,p.x,p.y-31,4.5*flick,7.5*flick,'#ff9d3d',null);oval(ctx,p.x,p.y-29.5,2.6*flick,4.6*flick,'#ffe9b0',null);}
+    ctx.restore();
+  }
+}
+// Zones are organic patches of ground, not geometric markers: a wobbling
+// closed blob derived from the zone id - deterministic, never a bare circle.
+function zoneBlob(ctx,zone,scale=1){
+  const wob=(zone.id||0)*2.399+1.7;
+  ctx.beginPath();
+  for(let k=0;k<=12;k++){
+    const a=k/12*Math.PI*2,rr=zone.r*scale*(1+.13*Math.sin(a*3+wob)+.08*Math.sin(a*5-wob*2));
+    const x=zone.x+Math.cos(a)*rr,y=zone.y+Math.sin(a)*rr*.74;
+    k?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.closePath();
+}
 function drawZone(ctx,zone){
  const style=ZONE_STYLES[zone.kind]||ZONE_STYLES.rubble;
- ctx.save();ctx.beginPath();ctx.ellipse(zone.x,zone.y,zone.r,zone.r*.72,0,0,Math.PI*2);
- ctx.fillStyle=style.fill;ctx.fill();ctx.setLineDash([9,6]);ctx.strokeStyle=style.edge;ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
- ctx.fillStyle='rgba(29,48,40,.85)';ctx.fillRect(zone.x-47,zone.y-zone.r*.72-19,94,15);
- ctx.fillStyle='#f1e7c4';ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.fillText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
- ctx.restore();
+ // Reported: "Gebiete wie Sumpf sehen auch aus als passen sie nicht mehr
+ // rein, der nur Kreis" - the zone becomes part of the ground: an organic
+ // blotch, a whisper of a border, a soft label instead of a sign plate.
+ ctx.save();zoneBlob(ctx,zone,.96);
+ ctx.fillStyle=style.fill;ctx.fill();
+ ctx.setLineDash([7,9]);ctx.globalAlpha=.6;ctx.strokeStyle=style.edge;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+ ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(241,231,196,.75)';
+ ctx.strokeText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
+ ctx.fillStyle='rgba(29,48,40,.85)';ctx.fillText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
+ ctx.textAlign='start';ctx.restore();
 }
 function drawZoneStates(ctx,zones,state){
  for(const zone of zones||[]){
   if(zone.kind==='ice'&&state?.zoneBroken?.[zone.id]){
-   ctx.save();ctx.beginPath();ctx.ellipse(zone.x,zone.y,zone.r,zone.r*.72,0,0,Math.PI*2);
+   ctx.save();zoneBlob(ctx,zone);
    ctx.fillStyle='rgba(51,94,109,.55)';ctx.fill();ctx.strokeStyle='#d2eff0';ctx.lineWidth=2;ctx.stroke();
    ctx.fillStyle='#d2eff0';ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.fillText(tr('BROKEN ICE'),zone.x,zone.y+4);ctx.restore();
   }else if(zone.kind==='rubble'&&state&&!state.zoneCleared?.[zone.id]&&(state.zoneDamage?.[zone.id]||0)>0){
@@ -283,9 +363,10 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],onSpritesReady=null}){
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   ctx.save();ctx.translate(bunkerPosition.x,bunkerPosition.y);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
+  drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   // Enemy entries live where the roads actually cross the border - any of
   // the four edges - instead of two fixed labels on the left rim.

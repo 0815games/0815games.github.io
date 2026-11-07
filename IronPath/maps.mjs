@@ -97,6 +97,40 @@ export const SECTOR_SPECS=Object.freeze([
 export function sectorOf(mapId){return /^g3-[0-9a-f]{9}$/.test(mapId||'')?Math.min(4,parseInt(mapId[3],16)+1):0;}
 // Which marked patch (if any) covers a field position.
 export function zoneAt(map,x,y){for(const zone of map?.zones||[])if(Math.hypot(x-zone.x,y-zone.y)<=zone.r)return zone;return null;}
+// Roadside torches - the reported idea: "Fackeln als Straßen Rand in guten
+// Abständen". Warm light at regular intervals makes the enemy route readable
+// at a glance. This is a PURE derivation from the finished geometry (no rng
+// calls at all), so no existing field changes by a single coordinate.
+function torchesFor(paths,pads,deco,bunker,width,height){
+  const torches=[],road=p=>paths.reduce((min,path)=>Math.min(min,...path.slice(1).map((b,i)=>pointDistance(p,path[i],b))),Infinity);
+  const free=p=>p.x>=16&&p.x<=width-16&&p.y>=16&&p.y<=height-16
+    &&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=115
+    &&road(p)>=30
+    // Buildings crowd the roadside band the torches live in - a slim post
+    // only needs a small gap, gate wings keep their distance.
+    &&(!deco||deco.every(d=>Math.hypot(p.x-d.x,p.y-d.y)>=(d.kind==='gate'?56:34)))
+    &&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=40)
+    &&torches.every(t=>Math.hypot(p.x-t.x,p.y-t.y)>=100);
+  paths.forEach((path,ri)=>{
+    // Roads start on opposite rims so the first torch of each does too.
+    let side=ri%2?1:-1,arc=140,cum=0;
+    for(let i=1;i<path.length;i++){
+      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
+      if(!len){cum+=0;continue;}
+      const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+      // Positions are measured over the WHOLE road, not per segment: the
+      // grid walk leaves short staircase steps and those would never see a
+      // torch at all. 140 in clears the entry marker; 165 apart after that.
+      while(arc<=cum+len){
+        const s=arc-cum,p={x:a.x+ux*s+px*46*side,y:a.y+uy*s+py*46*side};
+        if(free(p))torches.push(p);
+        side=-side;arc+=165;
+      }
+      cum+=len;
+    }
+  });
+  return torches;
+}
 function buildGridMap(id){
   const sector=Math.min(4,parseInt(id[3],16)+1),spec=SECTOR_SPECS[sector-1],random=rng(parseInt(id.slice(4),16));
   const cell=60,cols=spec.width/cell,rows=spec.height/cell;
@@ -293,7 +327,8 @@ function buildGridMap(id){
     if(zones.some(z=>Math.hypot(z.x-point.x,z.y-point.y)<260))continue;
     zones.push({id:zones.length,kind:zoneKinds[zones.length],x:point.x,y:point.y,r:78+8*Math.floor(random()*3)});
   }
-  return {id,name,theme,path:paths[0],...(paths.length>1?{paths}:{}),pads,deco:decoFor(paths,pads),zones,width:spec.width,height:spec.height,bunker,sector};
+  const deco=decoFor(paths,pads);
+  return {id,name,theme,path:paths[0],...(paths.length>1?{paths}:{}),pads,deco,zones,width:spec.width,height:spec.height,bunker,sector,torches:torchesFor(paths,pads,deco,bunker,spec.width,spec.height)};
   }
   throw new Error('Could not generate a sector battlefield');
 }
