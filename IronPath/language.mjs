@@ -14,14 +14,14 @@ import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-sto
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
 import {germanTowers} from './localization-towers-de.mjs?v=20261110-storyde1';
 import {germanStatic} from './localization-static-de.mjs?v=20261110-storyde1';
-import {germanBattle} from './localization-battle-de.mjs?v=20261110-storyde1';
+import {germanBattle} from './localization-battle-de.mjs?v=20261121-ringlevel1';
 import {germanResults} from './localization-results-de.mjs?v=20261105-debrief1';
 import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261110-storyde1';
 import {germanCampaign} from './localization-campaign-de.mjs?v=20261110-storyde1';
 import {germanCinematics} from './localization-cinematics-de.mjs?v=20261110-storyde1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261109-flaglang1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-skillui1';
-import {germanText} from './localization-de.mjs?v=20261104-fieldcommand1';
+import {germanText} from './localization-de.mjs?v=20261121-ringlevel1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
