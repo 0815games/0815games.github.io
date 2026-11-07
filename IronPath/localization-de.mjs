@@ -428,5 +428,11 @@ export const germanText=Object.freeze({
   "SECTOR {number} CLEARED": "SEKTOR {number} GERÄUMT",
   "FALL BACK →": "RÜCKZUG →",
   "Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.": "Fall jetzt zurück. Deine Türme gehen im Rückzug verloren; als Abriss-Entschädigung führst du {refund} Vorräte mit.",
-  "Sector {number}: a longer road, a meaner enemy. Demolition refund: {refund} supplies.": "Sektor {number}: eine längere Straße, ein härterer Gegner. Abriss-Erstattung: {refund} Vorräte."
+  "Sector {number}: a longer road, a meaner enemy. Demolition refund: {refund} supplies.": "Sektor {number}: eine längere Straße, ein härterer Gegner. Abriss-Erstattung: {refund} Vorräte.",
+  "{map} · Field zones": "{map} · Feldzonen",
+  "Thin ice: tanks crack it after 4 tank-seconds. Broken, it deals 20 HP per second instead of 10 and slows tanks by 25%.": "Dünnes Eis: Panzer brechen es nach 4 Panzer-Sekunden. Gebrochen verursacht es 20 LP statt 10 pro Sekunde und verlangsamt Panzer um 25 %.",
+  "Deep bog: tanks crawl at half speed; reeds hide infantry and scouts from fire beyond 100 units (-20%).": "Tiefer Sumpf: Panzer kriechen mit halbem Tempo; Schilf verbirgt Infanterie und Spähe vor Feuer von mehr als 100 Einheiten (−20 %).",
+  "Rubble: towers and soldiers deal 25% less damage beyond 110 units. 200 direct damage inside clears it for this run.": "Trümmer: Türme und Soldaten verursachen jenseits von 110 Einheiten 25 % weniger Schaden. 200 direkter Schaden darin räumt sie für diesen Einsatz.",
+  "Ambush trail: infantry and scouts move 15% faster and take 20% less damage under forest cover.": "Hinterhaltspfad: Infanterie und Spähe bewegen sich 15 % schneller und nehmen unter Walddecke 20 % weniger Schaden.",
+  "Dust: tanks raise clouds that cut targeting range by 25%. Sniper towers ignore dust.": "Staub: Panzer wirbeln Wolken auf, die die Zielreichweite um 25 % senken. Scharfschützentürne ignorieren Staub."
 });

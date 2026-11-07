@@ -4,13 +4,13 @@ import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buil
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
-import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261102-terrain4';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf} from './maps.mjs?v=20261123-sector1';
+import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt} from './maps.mjs?v=20261124-zones1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261123-sector1';
+import {addSupplies} from './match.mjs?v=20261124-zones1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -46,6 +46,9 @@ function rewardTeam(state,amount,enemyKill=false){
 // Exactly one fixed step per call. Events are transient, not a record of validated rewards.
 export function stepMatch(state){
   const events=[];if(state.ended)return events;advanceBuildReservations(state,STEP);const bonuses=Object.fromEntries(Object.entries(state.players).map(([id,p])=>[id,webBonuses(p.skills)]));const dt=STEP,map=getMap(state.mapId),{path:PATH,pads:PADS}=map,theme=terrainFor(map),paths=map.paths||[PATH],bunker=map.bunker||{x:900,y:400},sector=sectorOf(state.mapId);
+  // Marked patches (g3): effects key off the enemy's position, not fixed path
+  // indices - that is what lets one field mix several terrains.
+  const zones=map.zones||null,zoneInfoOf=enemy=>{if(!zones)return null;const zone=zoneAt(map,enemy.x,enemy.y);return zone?{kind:zone.kind,broken:!!state.zoneBroken?.[zone.id],cleared:!!state.zoneCleared?.[zone.id]}:null;};
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);
@@ -73,16 +76,24 @@ export function stepMatch(state){
       // list would mean guessing which frame it appeared on.
       if(enemy.boss)events.push({type:'bossSpawn',boss:enemy.boss,wave:state.wave});
       state.spawnLeft--;state.spawnTimer=.8;}}
-  if(theme==='scrub'){
+  if(theme==='scrub'||zones){
     state.dustClouds=(state.dustClouds||[]).map(c=>({...c,life:c.life-dt})).filter(c=>c.life>0);
     state.dustTimer=(state.dustTimer||0)-dt;
     if(state.dustTimer<=0){
-      const tanks=state.enemies.filter(e=>e.kind==='tank'&&e.hp>0&&e.speed>0&&e.segment<PATH.length);
+      const tanks=state.enemies.filter(e=>e.kind==='tank'&&e.hp>0&&e.speed>0&&e.segment<PATH.length&&(theme==='scrub'||zoneAt(map,e.x,e.y)?.kind==='dust'));
       if(tanks.length){const start=(state.dustCursor||0)%tanks.length;for(let i=0;i<Math.min(3,tanks.length);i++){const e=tanks[(start+i)%tanks.length];state.dustClouds.push({x:e.x,y:e.y,life:2});}state.dustCursor=(start+3)%tanks.length;}
       state.dustClouds=state.dustClouds.slice(-12);state.dustTimer=.75;
     }
   }
   function hitRubble(target,damage){
+    if(zones){
+      const zone=zoneAt(map,target.x,target.y);
+      if(zone?.kind==='rubble'&&!state.zoneCleared?.[zone.id]&&damage>0){
+        state.zoneDamage={...state.zoneDamage,[zone.id]:Math.min(200,(state.zoneDamage?.[zone.id]||0)+Math.min(damage,Math.max(0,target.hp)))};
+        if(state.zoneDamage[zone.id]>=200){(state.zoneCleared||(state.zoneCleared={}))[zone.id]=true;events.push({type:'rubbleCleared'});}
+      }
+      return;
+    }
     if(theme!=='urban'||state.rubbleCleared||target.segment!==3||damage<=0)return;
     state.rubbleDamage=Math.min(200,(state.rubbleDamage||0)+Math.min(damage,Math.max(0,target.hp)));
     if(state.rubbleDamage>=200){state.rubbleCleared=true;events.push({type:'rubbleCleared'});}
@@ -98,17 +109,25 @@ export function stepMatch(state){
     }
   }
   const commander=state.enemies.find(e=>e.boss==='bossCommander'&&e.hp>0),rally=commander&&bossPhase(commander)==='rally';
+  if(zones)for(const zone of zones){
+    if(zone.kind!=='ice'||state.zoneBroken?.[zone.id])continue;
+    const tanks=state.enemies.filter(e=>e.hp>0&&e.kind==='tank'&&Math.hypot(e.x-zone.x,e.y-zone.y)<=zone.r).length;
+    if(tanks){
+      state.zoneStress={...state.zoneStress,[zone.id]:(state.zoneStress?.[zone.id]||0)+tanks*dt};
+      if(state.zoneStress[zone.id]>=4){(state.zoneBroken||(state.zoneBroken={}))[zone.id]=true;events.push({type:'iceBroken'});}
+    }
+  }
   if(theme==='arctic'&&!state.iceBroken){
     const tanks=state.enemies.filter(e=>e.hp>0&&e.kind==='tank'&&e.segment===5).length;
     if(tanks){state.iceStress=(state.iceStress||0)+tanks*dt;if(state.iceStress>=4){state.iceBroken=true;events.push({type:'iceBroken'});}}
   }
-  for(const e of state.enemies){const PATH=paths[e.road]||paths[0];if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
+  for(const e of state.enemies){const PATH=paths[e.road]||paths[0],zi=zoneInfoOf(e);if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken,zi);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e,zi)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
   if(state.gun>0&&state.running){
     state.gunTimer=Math.max(0,(state.gunTimer||0)-dt);
     if(state.gunTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-bunker.x,e.y-bunker.y)<=170);if(target){target.hp-=5*state.gun;state.gunTimer=3;state.shots.push({x:bunker.x,y:bunker.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}
   }
   for(const tower of state.towers){tower.timer-=dt;const type=towerStats[tower.type],p=PADS[tower.pad],branch=tower.level>=3?branchStats[tower.type][tower.branch]:null;if(tower.timer<=0){const target=state.enemies.filter(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<=targetingRange(theme,getTowerRange(tower),e,state.enemies,{sniper:tower.type===3,clouds:state.dustClouds||[]})).sort((a,b)=>b.segment-a.segment)[0];if(target){const owner=state.players[tower.ownerId];const perks=state.runPerks||{};tower.shotCount=(tower.shotCount||0)+1;
-      const dealt=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.1*(perks.damage||0))*(target.kind==='tank'&&(tower.type===1||tower.type===3)?1+.2*(perks.tankhunter||0):1)*(tower.type===3&&tower.shotCount%4===0?1+.75*(perks.critical||0):1)*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(owner?.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared})*(1+.1*(owner?.skills?.engineer||0)+.01*(bonuses[tower.ownerId]?.tower||0)+(state.suppression>0&&owner?.active!==false?.08*comboTier(owner?.skills,52):0))*(target.kind==='tank'?equipmentForPlayer(state,owner).tankTowerMultiplier:1)*(tower.branch===3&&target.boss?1.5:1)*(owner?.active!==false&&owner?.overdrive>0?(owner.overdriveFactor||1.5):1);
+      const dealt=towerDamage(tower.type,tower.level,tower.level>=3?tower.branch:null,target.kind)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.1*(perks.damage||0))*(target.kind==='tank'&&(tower.type===1||tower.type===3)?1+.2*(perks.tankhunter||0):1)*(tower.type===3&&tower.shotCount%4===0?1+.75*(perks.critical||0):1)*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(owner?.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)})*(1+.1*(owner?.skills?.engineer||0)+.01*(bonuses[tower.ownerId]?.tower||0)+(state.suppression>0&&owner?.active!==false?.08*comboTier(owner?.skills,52):0))*(target.kind==='tank'?equipmentForPlayer(state,owner).tankTowerMultiplier:1)*(tower.branch===3&&target.boss?1.5:1)*(owner?.active!==false&&owner?.overdrive>0?(owner.overdriveFactor||1.5):1);
       hitRubble(target,dealt);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,target.hp),dealt);}target.hp-=dealt;
       if(owner?.active!==false&&comboTier(owner?.skills,25)&&target.hp>0){const marks=target.siegeMarks||(target.siegeMarks=[]),mark=marks.find(m=>m.id===tower.ownerId);if(mark)mark.time=5;else marks.push({id:tower.ownerId,time:5});}
       if(owner?.active!==false&&owner?.skills?.web?.[9]&&tower.shotCount%4===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=100);if(other){if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(20,Math.max(0,other.hp));}other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(owner,'War Machine',other.x,other.y);events.push({type:'skillCombo',name:'War Machine',x:other.x,y:other.y});}}
@@ -116,7 +135,7 @@ export function stepMatch(state){
       if(tower.type===0&&perks.pinning&&target.kind!=='plane')target.pinned=Math.max(target.pinned||0,2+perks.pinning-1);
       if(tower.type===2&&perks.chain){const other=state.enemies.find(e=>e!==target&&e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-target.x,e.y-target.y)<=85);if(other){const chain=dealt*.3*perks.chain*bossWeaponFactor(other);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,other.hp),chain);}other.hp-=chain;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#8cc0a6'});}}tower.timer=type.interval*Math.max(.5,1-(bonuses[tower.ownerId]?.towerSpeed||0)/100)*(branch?branch.interval:1)*(owner?.skills?.extra?.[2] ? .9 : 1)*Math.pow(.92,state.runPerks?.speed||0);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:tower.type,color:type.color});}}}
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+(p.skills?.extra?.[1]?25:0)+(p.skills?.extra?.[8]?25:0)+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+2*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared});hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
+    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+(p.skills?.extra?.[1]?25:0)+(p.skills?.extra?.[8]?25:0)+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+2*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)});hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
       if(p.skills?.web?.[4]&&p.heroShotCount%5===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=120);if(other){other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(p,'War Hero',other.x,other.y);events.push({type:'skillCombo',name:'War Hero',x:other.x,y:other.y});}}
       if(p.skills?.web?.[24]&&p.heroShotCount%4===0&&target.hp>0){target.pinned=Math.max(target.pinned||0,3);comboCue(p,'Ghost Operative',target.x,target.y);events.push({type:'skillCombo',name:'Ghost Operative',x:target.x,y:target.y});}
       p.shotTimer=.65*Math.max(.5,1-bonuses[id].heroSpeed/100)*(p.skills?.extra?.[0] ? .85 : 1)*equipmentForPlayer(state,p).shotIntervalMultiplier;state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}
