@@ -123,3 +123,40 @@ test('the card outranks the modal dialogs it explains, and re-raises above them'
  assert.equal(plainGuide.raise(),true);
  plainGuide.stop();
 });
+
+test('a dismissed guide keeps its place, still counts the screen, and returns at the next step', () => {
+  const document = makeDocument(), storage = store();
+  const seen = [];
+  const guide = createGuide({ document, storage, resolve: () => ({ getBoundingClientRect: () => ({ left: 5, top: 5, width: 100, height: 80 }) }), onVisibilityChange: open => seen.push(open) });
+  guide.start('soldier-d');
+  guide.next(); // rewards -> equip (action card)
+  assert.equal(guide.step().id, 'equip');
+  // Reported: "Bei Fähigkeiten, Armory etc. soll die Mission auch ausgeblendet
+  // werden können und wieder aufgerufen werden." ✕ puts it away - a pause.
+  assert.equal(guide.dismiss(), true);
+  assert.equal(guide.isOpen(), false);
+  assert.equal(guide.dismissed(), true);
+  assert.equal(storage.getItem('ironpath:guide:v1:soldier-d'), null, 'a dismissed guide is not finished');
+  // The recall brings it back at the step it was on; reopening an open card is a no-op.
+  assert.equal(guide.reopen(), true);
+  assert.equal(guide.isOpen(), true);
+  assert.equal(guide.step().id, 'equip', 'it comes back at the SAME step, not restarted');
+  assert.equal(guide.reopen(), false, 'nothing to recall while it is already open');
+  guide.dismiss();
+  // The screen still counts while the card is away - and the card comes back
+  // BY ITSELF at the next step, the same principle as the field card at 5/7.
+  assert.equal(guide.event('equip'), true);
+  assert.equal(guide.step().id, 'skills');
+  assert.equal(document._nodes.get('firstRunGuide').hidden, false, 'it returns at the next step');
+  assert.equal(guide.dismissed(), false);
+  // Dismissed again, then recalled by hand: same step, not restarted.
+  guide.dismiss();
+  assert.equal(guide.event('skills'), true);
+  guide.dismiss();
+  assert.equal(guide.reopen(), true);
+  assert.equal(guide.step().id, 'workshop');
+  guide.next();
+  assert.equal(guide.isOpen(), false);
+  assert.equal(guide.dismissed(), false, 'a finished guide has no recall state');
+  assert.equal(storage.getItem('ironpath:guide:v1:soldier-d'), 'done');
+});

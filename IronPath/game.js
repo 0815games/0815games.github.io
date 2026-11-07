@@ -29,7 +29,7 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261122-minimized1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261126-guidefull1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261124-zones1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261124-zones1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -665,6 +665,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       }
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
+       coach.complete();
        // The five waves pay 250 XP; the contract tops that up to 450 so the first
        // skill point is guaranteed with headroom. Credited once, with the last wave.
        const bonus=trainingBonusXP();

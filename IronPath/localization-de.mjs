@@ -124,6 +124,7 @@ export const germanText=Object.freeze({
   "ENEMIES": "GEGNER",
   "SOLDIER": "SOLDAT",
   "SHOW TASK": "AUFGABE ZEIGEN",
+  "Put the guide away": "Anleitung weglegen",
   "Battle controls": "Gefechtssteuerung",
   "DEPLOY / START WAVE": "EINSATZ / WELLE STARTEN",
   "SPEED: 1×": "TEMPO: 1×",

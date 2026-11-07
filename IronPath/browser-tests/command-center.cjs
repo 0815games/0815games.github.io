@@ -432,6 +432,14 @@ const assert = require('node:assert/strict');
       return {dialog:{l:dialog.left,t:dialog.top,r:dialog.right,b:dialog.bottom},close:{l:close.left,t:close.top,r:close.right,b:close.bottom}};
     });
     assert.ok(armoryFrame.close.r<=armoryFrame.dialog.r+1&&armoryFrame.close.l>=armoryFrame.dialog.l-1&&armoryFrame.close.t>=armoryFrame.dialog.t-1&&armoryFrame.close.b<=armoryFrame.dialog.b+1,`the armory X sits inside the frame (${JSON.stringify(armoryFrame)})`);
+    // Reported: "Wieso wird das Fenster nicht auf die gesamte Screen-Größe
+    // gerendert? Selbes gilt für armory etc." On a phone the armory covers the
+    // viewport edge to edge - no floating frame, no rounded margins.
+    const armoryFull=await page.evaluate(()=>{
+      const box=document.getElementById('armoryDialog').getBoundingClientRect();
+      return {w:box.width,h:box.height,vw:innerWidth,vh:innerHeight};
+    });
+    assert.ok(armoryFull.w>=armoryFull.vw-2&&armoryFull.h>=armoryFull.vh-2,`the armory covers the phone screen edge to edge (${JSON.stringify(armoryFull)})`);
     // Reported: "das X (welches oben rechts ist und von der Aufgabe verdeckt
     // wird)". The ending's guide card sits ABOVE modal dialogs (as a popover,
     // the only layer above them) - so it has to keep the top-right corner
@@ -482,6 +490,16 @@ const assert = require('node:assert/strict');
         .map(c=>({part:c.className||c.id,squash:c.scrollHeight-c.clientHeight}));
     });
     assert.ok(squashed.every(s=>s.squash<=1),`no part of the skills dialog is squeezed by the list (${JSON.stringify(squashed.filter(s=>s.squash>1))})`);
+    // Reported: "Fähigkeiten, die man auswählen muss, sind im Fenster 2cm groß,
+    // der Rest ist alles fix." The skills dialog covers the phone screen edge to
+    // edge, so the selectable list is what profits from every saved millimetre.
+    const skillFull=await page.evaluate(()=>{
+      const box=document.getElementById('skillDialog').getBoundingClientRect();
+      const workspace=document.querySelector('#skillDialog .skills-workspace').getBoundingClientRect();
+      return {w:box.width,h:box.height,vw:innerWidth,vh:innerHeight,workspace:Math.round(workspace.height)};
+    });
+    assert.ok(skillFull.w>=skillFull.vw-2&&skillFull.h>=skillFull.vh-2,`the skills dialog covers the phone screen edge to edge (${JSON.stringify(skillFull)})`);
+    assert.ok(skillFull.workspace>=skillFull.vh*.45,`the selectable list takes most of the screen (${skillFull.workspace}px of ${skillFull.vh})`);
     const equipped=page.locator('#skillPaths .skill-card[data-path="assault"][data-rank="1"]');assert.equal(await equipped.evaluate(e=>e.classList.contains('is-main-ability')&&e.classList.contains('is-active')),true);assert.equal(await equipped.locator('.skill-card-state').innerText(),'✓ EQUIPPED');assert.equal(await equipped.getAttribute('aria-expanded'),'true');assert.equal(await equipped.locator('.skill-card-tag').innerText(),'MAIN ABILITY');assert.equal(await page.locator('#skillPaths .is-prerequisite, #skillPaths .is-dependent').count(),0);assert.equal(await equipped.locator('.skill-card-description').count(),0);assert.equal(await page.locator('#skillInspector').evaluate(e=>e.parentElement.classList.contains('skill-card-shell')&&e.previousElementSibling?.dataset.rank==='1'),true);
     assert.equal(await page.locator('[data-skill-path="assault"]').getAttribute('aria-pressed'),'true');
     assert.ok(await page.locator('#skillPaths .skill-card').count()>10);assert.equal(await page.locator('.skill-tree-board').count(),0,'no map to pan or zoom');

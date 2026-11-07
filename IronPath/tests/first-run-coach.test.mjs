@@ -220,3 +220,22 @@ test('a minimized card still counts the field, and comes back on its own',()=>{
  assert.match(document.getElementById('coachTitle').textContent,/Supplies/);
  assert.equal(coachSeen('soldier-e',storage),false,'still not a finished briefing');
 });
+
+test('winning the training contract completes the coaching - no SHOW TASK button outlives it',()=>{
+ const document=makeDocument(),storage=store(),field=makeField();
+ const coach=createCoach({document,storage,observe:field.observe});
+ coach.start('soldier-f');
+ document.getElementById('coachNext').onclick();
+ coach.event('build',{builtTowerId:field.build()});
+ field.upgrade();coach.event('upgrade',{builtTowerId:7});
+ document.getElementById('coachClose').onclick();
+ assert.equal(coach.dismissed(),true,'mid-coaching, the put-away card is only paused');
+ // The tutorial is WON with cards still waiting: whatever they asked for will
+ // never be proven on this field. Reported: the SHOW TASK button stayed forever.
+ assert.equal(coach.complete(),true);
+ assert.equal(coach.dismissed(),false,'no recall state after completing');
+ assert.equal(coach.awaiting(),'');
+ assert.equal(coachSeen('soldier-f',storage),true,'completing writes the seen marker');
+ assert.equal(coach.complete(),false,'a second call is a no-op');
+ assert.equal(coach.start('soldier-f'),false,'and no automatic caller nags afterwards');
+});
