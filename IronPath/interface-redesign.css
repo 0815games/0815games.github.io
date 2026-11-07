@@ -141,13 +141,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tree-dialog .tree-detail h3{color:#fae7b9}.tree-dialog .tree-detail p{color:#d5dfcd}
 .tree-dialog .skill-build-summary{background:#1c3026;border:1px solid #70856b;color:#ebead5}.tree-dialog .skill-build-summary small{color:#b8cbb4}
 .armory-dialog button:focus-visible,.tree-dialog button:focus-visible,.tree-dialog select:focus-visible{outline:3px solid #fff2bc;outline-offset:3px}
-@media(max-width:700px){
-  /* Reported: "Wieso wird das Fenster nicht auf die gesamte Screen-Größe
-     gerendert?" The armory used to float with margins and a rounded frame,
-     which cost a third of a phone screen. It now covers the viewport edge to
-     edge; its own scrolling is untouched. */
-  .armory-dialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}
-}
 @media(max-width:600px){.armory-dialog,.tree-dialog{padding:12px}.armory-dialog .development-head,.tree-dialog .development-head{min-height:110px;margin:-12px -12px 14px;padding:16px}.armory-dialog .armory-grid{grid-template-columns:1fr}.armory-dialog .armory-art{width:70px;min-width:70px}.armory-dialog .armory-card{min-height:120px}.armory-dialog .armory-card-body{padding:12px}.tree-dialog .tree-detail{padding:12px}.intro-title .intro-brand{width:100%}}
 
 /* Fully illustrated briefings replace the former cartoon SVG scene. */
@@ -824,4 +817,13 @@ body:has(#runResults[open]) .first-run-coach{display:none}
   .tower-sheet.tower-radial{--ring-size:72px}
   .tower-sheet.tower-radial .sheet-name{font-size:8px}
   .tower-sheet.tower-radial .sheet-art{width:30px;height:30px}
+}
+
+@media(max-width:700px){
+  /* Reported: "Wieso wird das Fenster nicht auf die gesamte Screen-Größe
+     gerendert?" The armory used to float with margins and a rounded frame,
+     which cost a third of a phone screen. It now covers the viewport edge to
+     edge; its own scrolling is untouched. dialog.armory-dialog outranks the
+     .armory-dialog width rules above, wherever they sit in this file. */
+  dialog.armory-dialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}
 }
