@@ -8,7 +8,7 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261118-settings
 // explanations. Kept in its own file so the next new card cannot ship untranslated
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261120-coachgate1';
-import {germanFinal} from './localization-final-de.mjs?v=20261121-translation1';
+import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261121-translation1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261127-tutlock1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
