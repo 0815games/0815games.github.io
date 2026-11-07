@@ -29,7 +29,13 @@
   /* [open] matters: an author display on the bare ID would beat the browser's
      dialog:not([open]){display:none} and paint a closed dialog into the page. */
   #skillDialog[open]{display:flex;flex-direction:column;overflow:hidden;width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}
-  #skillDialog[open] .skills-workspace{flex:1 1 auto;min-height:0;overflow-y:auto}#skillDialog .skills-header{padding:19px 16px 15px}#skillDialog .skills-header h2{font-size:26px}#skillDialog .skills-overview{margin:12px 14px 0}#skillDialog .skills-overview-note{display:none}#skillDialog .skills-tabs{padding:12px 14px 4px}#skillDialog .skills-filter{padding:7px 14px 0}#skillDialog .skills-workspace{display:flex;flex-direction:column;gap:16px;padding:14px}#skillDialog .skills-sidebar{position:static;order:-1;width:100%}#skillDialog .skill-inspector{padding:14px}#skillDialog .skill-inspector h3{font-size:18px}#skillDialog .skill-inspector button{margin-top:10px}#skillDialog .skills-list{width:100%}#skillDialog .skill-card-grid{grid-template-columns:1fr}#skillDialog .skills-list .skill-card{min-height:128px}#skillDialog .skills-footnote,#skillDialog .development-status{margin-left:14px;margin-right:14px}#skillDialog .skill-actions{padding-left:14px;padding-right:14px}}
+  /* Reported: "UI in den Fähigkeiten teilweise verschoben." The workspace had
+     flex-basis:auto and every sibling could shrink, so a long skill list
+     squeezed the header, tabs and buttons out of shape. Fixed children now
+     keep their height no matter how long the list gets; the workspace takes
+     exactly what is left (basis 0, not auto). */
+  #skillDialog[open]>*{flex:0 0 auto}
+  #skillDialog[open] .skills-workspace{flex:1 1 0;min-height:0;overflow-y:auto}#skillDialog .skills-header{padding:19px 16px 15px}#skillDialog .skills-header h2{font-size:26px}#skillDialog .skills-overview{margin:12px 14px 0}#skillDialog .skills-overview-note{display:none}#skillDialog .skills-tabs{padding:12px 14px 4px}#skillDialog .skills-filter{padding:7px 14px 0}#skillDialog .skills-workspace{display:flex;flex-direction:column;gap:16px;padding:14px}#skillDialog .skills-sidebar{position:static;width:100%}#skillDialog .skill-inspector{padding:14px}#skillDialog .skill-inspector h3{font-size:18px}#skillDialog .skill-inspector button{margin-top:10px}#skillDialog .skills-list{width:100%}#skillDialog .skill-card-grid{grid-template-columns:1fr}#skillDialog .skills-list .skill-card{min-height:128px}#skillDialog .skills-footnote,#skillDialog .development-status{margin-left:14px;margin-right:14px}#skillDialog .skill-actions{padding-left:14px;padding-right:14px}}
 /* Skill types and state use both labels and color; the equipped and viewed
    outlines remain distinct even when they refer to the same ability. */
 #skillDialog .skill-legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:14px 24px 0;color:#c3d2c7;font-size:11px;font-weight:700}
@@ -48,7 +54,7 @@
 #skillDialog .skills-list .skill-card.is-selected{outline:2px solid #fff0c7;outline-offset:-3px}
 #skillDialog .skill-card-grid>.skill-inspector{grid-column:1/-1;min-width:0;margin:0 0 8px;border-left:4px solid #e2ba5f}
 #skillDialog .skill-inspector[hidden]{display:none}
-@media(max-width:700px){#skillDialog .skill-legend{padding:12px 14px 0}#skillDialog .skills-sidebar{order:0}#skillDialog .skill-card-grid>.skill-inspector{margin:0 0 8px}}
+@media(max-width:700px){#skillDialog .skill-legend{padding:12px 14px 0}#skillDialog .skill-card-grid>.skill-inspector{margin:0 0 8px}}
 /* Compact accordion cards: state is communicated by readable badges, not
    prerequisite outlines or color alone. The inspector is part of the card. */
 #skillDialog .skill-card-grid{align-items:start}

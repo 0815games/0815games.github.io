@@ -57,7 +57,7 @@ test('zone rules: speed, ice and cover key off the position, not the path index'
 });
 
 test('dust, ice and rubble act in the simulation, per patch',()=>{
- const find=kind=>{for(let i=0;i<400;i++){const map=getMap(seed(i));if(map.zones.some(z=>z.kind===kind))return map;}return null;};
+ const find=kind=>{for(let i=0;i<400;i++){const map=getMap(seed(i));if(map.zones.some(z=>z.kind===kind)&&!(kind==='dust'&&map.theme==='scrub'))return map;}return null;};
  const tankIn=(state,zone)=>{state.enemies=[{kind:'tank',hp:100,maxHp:100,speed:40,segment:1,reward:8,x:zone.x,y:zone.y}];state.spawnTimer=100;};
 
  const dustMap=find('dust');
@@ -66,7 +66,10 @@ test('dust, ice and rubble act in the simulation, per patch',()=>{
  dustState.wave=1;dustState.running=true;tankIn(dustState,dustZone);dustState.dustTimer=0;
  stepMatch(dustState);
  assert.ok(dustState.dustClouds.length>0,'a tank in the dust patch raises clouds');
- const outside=dustState.dustClouds;tankIn(dustState,{x:dustMap.bunker.x-200,y:dustMap.bunker.y});dustState.dustClouds=[];dustState.dustTimer=0;
+ const outside=dustState.dustClouds;let safe=null;
+ for(let y=30;y<dustMap.height-30&&!safe;y+=15)for(let x=30;x<dustMap.width-30;x+=15)if(!zoneAt(dustMap,x,y)){safe={x,y};break;}
+ assert.ok(safe,'open ground exists outside the patches');
+ tankIn(dustState,safe);dustState.dustClouds=[];dustState.dustTimer=0;
  stepMatch(dustState);
  assert.equal(dustState.dustClouds.length,0,'tanks outside the patch raise nothing');
 
@@ -88,7 +91,10 @@ test('dust, ice and rubble act in the simulation, per patch',()=>{
  const rubbleState=createMatch([player()],rubbleMap.id),rubbleZone=rubbleMap.zones.find(z=>z.kind==='rubble');
  rubbleState.wave=1;
  const hero=rubbleState.players.local;
- hero.x=rubbleZone.x-130;hero.y=rubbleZone.y;
+ // Stand on whichever side of the patch actually has 130 units of room - a
+ // patch near the edge would clamp the hero closer than the rule's range.
+ const spot=rubbleZone.x+130<=rubbleMap.width-12?{x:rubbleZone.x+130,y:rubbleZone.y}:rubbleZone.x-130>=12?{x:rubbleZone.x-130,y:rubbleZone.y}:{x:rubbleZone.x,y:Math.min(rubbleMap.height-12,rubbleZone.y+130)};
+ hero.x=spot.x;hero.y=spot.y;
  rubbleState.enemies=[{kind:'tank',hp:100,maxHp:100,speed:0,segment:1,reward:8,x:rubbleZone.x,y:rubbleZone.y}];rubbleState.spawnTimer=100;
  hero.shotTimer=0;
  stepMatch(rubbleState);

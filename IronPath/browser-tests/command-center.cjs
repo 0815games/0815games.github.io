@@ -473,6 +473,15 @@ const assert = require('node:assert/strict');
     assert.ok(skillScroll.dialog<=1,'the skills dialog itself does not scroll');
     assert.ok(skillScroll.workspace>1,'the skill list is the one scroll region');
     assert.equal(skillScroll.saveVisible,true,'SAVE stays visible without scrolling');
+    // Reported: "UI in den Fähigkeiten teilweise verschoben." A long skill list
+    // must never squeeze the fixed parts of the dialog out of shape: every
+    // child except the scrolling workspace keeps its own height.
+    const squashed=await page.evaluate(()=>{
+      const dialog=document.getElementById('skillDialog');
+      return [...dialog.children].filter(c=>!c.classList.contains('skills-workspace'))
+        .map(c=>({part:c.className||c.id,squash:c.scrollHeight-c.clientHeight}));
+    });
+    assert.ok(squashed.every(s=>s.squash<=1),`no part of the skills dialog is squeezed by the list (${JSON.stringify(squashed.filter(s=>s.squash>1))})`);
     const equipped=page.locator('#skillPaths .skill-card[data-path="assault"][data-rank="1"]');assert.equal(await equipped.evaluate(e=>e.classList.contains('is-main-ability')&&e.classList.contains('is-active')),true);assert.equal(await equipped.locator('.skill-card-state').innerText(),'✓ EQUIPPED');assert.equal(await equipped.getAttribute('aria-expanded'),'true');assert.equal(await equipped.locator('.skill-card-tag').innerText(),'MAIN ABILITY');assert.equal(await page.locator('#skillPaths .is-prerequisite, #skillPaths .is-dependent').count(),0);assert.equal(await equipped.locator('.skill-card-description').count(),0);assert.equal(await page.locator('#skillInspector').evaluate(e=>e.parentElement.classList.contains('skill-card-shell')&&e.previousElementSibling?.dataset.rank==='1'),true);
     assert.equal(await page.locator('[data-skill-path="assault"]').getAttribute('aria-pressed'),'true');
     assert.ok(await page.locator('#skillPaths .skill-card').count()>10);assert.equal(await page.locator('.skill-tree-board').count(),0,'no map to pan or zoom');
