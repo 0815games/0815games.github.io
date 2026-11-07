@@ -178,14 +178,20 @@ const assert = require('node:assert/strict');
     // The card already points at the pad it wants (`#coachRing`). Tapping the ring is
     // exactly what a player does, and it needs no test-only hook in the game: the pad
     // hit radius on this field is ~54 logical units, and the ring centre is the pad.
-    const tapRing = async () => {
+    const tapRing = async mode => {
       const ring = await page.locator('#coachRing').boundingBox();
       assert.ok(ring && ring.width > 10, 'the card marks the pad it is asking about');
       await page.mouse.click(ring.x + ring.width / 2, ring.y + ring.height / 2);
-      await page.locator('#radialMenu').waitFor({state: 'visible', timeout: 10000});
+      // The sheet is a zero-size anchor centred on the pad - the buttons around it
+      // carry the box, the sheet itself never has one - so "visible" is the wrong
+      // signal. Its mode says which actions the tap actually produced.
+      await page.waitForFunction(expected => {
+        const sheet = document.getElementById('radialMenu');
+        return sheet && !sheet.hidden && sheet.dataset.mode === expected;
+      }, mode, {timeout: 10000});
     };
     // Build what the card asks for: pad, tower option, confirm the price.
-    await tapRing();
+    await tapRing('build');
     await page.locator('.sheet-option').first().click();
     await page.locator('#towerDetails').waitFor({state: 'visible'});
     await page.locator('#towerDetailsConfirm').click();
@@ -195,7 +201,7 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('#coachAsk').innerText(),/Upgrade that tower to continue/);
     // Upgrade it: the card rings the built tower now. A level 1 tower upgrades
     // straight from its action sheet - no price dialog - so the tap is the action.
-    await tapRing();
+    await tapRing('actions');
     await page.locator('.sheet-option').first().click();
     await page.waitForFunction(() => /Move your hero/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
     // The hero step gates as well: nobody has moved yet, so NEXT stays closed.
