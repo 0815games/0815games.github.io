@@ -685,7 +685,18 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .guide-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:2px}
 .guide-foot button{min-height:44px;min-width:96px;margin:0;padding:0 16px;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
 .first-run-guide button:focus-visible{outline:2px solid #f6e9ca;outline-offset:2px}
-@media(max-width:600px){.first-run-guide{padding:10px 12px;gap:4px;max-height:42dvh}.first-run-guide h2{font-size:15px}.guide-text{font-size:11.5px}}
+@media(max-width:600px){
+  .first-run-guide{
+    /* Reported: the X of the dialog below sat under this card. The card gives
+       up the top-right corner on phones: it anchors left and reserves the
+       corner where every dialog carries its close button. */
+    left:max(8px,env(safe-area-inset-left,0px));
+    right:calc(96px + env(safe-area-inset-right,0px));
+    transform:none;width:auto;
+    padding:10px 12px;gap:4px;max-height:42dvh;
+  }
+  .first-run-guide h2{font-size:15px}.guide-text{font-size:11.5px}
+}
 /* Landscape: the card moves aside so it never covers the dialog it explains. */
 @media(max-height:460px){
   .first-run-guide{left:auto;right:8px;top:8px;transform:none;width:min(330px,46vw);max-height:calc(100dvh - 16px)}

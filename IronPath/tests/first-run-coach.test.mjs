@@ -186,3 +186,37 @@ test('the coach never pauses the field and is not a modal dialog',()=>{
   assert.equal(/coach\.isOpen\(\)/.test(line),false,'the coach must never be part of a pause condition');
  }
 });
+
+test('a minimized card still counts the field, and comes back on its own',()=>{
+ // Reported: "Ist das Aufgaben Fenster minimiert, registriert er die Bewegung
+ // des Soldaten nicht... das Schritt vier von sieben als abgeschlossen zählt,
+ // die Aufgabe wieder groß wird mit Schritt fünf von sieben." Putting the card
+ // away is a pause, not a deaf ear: events still record, the tick still reads
+ // the field, and a completed step brings the card back by itself.
+ const document=makeDocument(),storage=store(),field=makeField();
+ const coach=createCoach({document,storage,observe:field.observe});
+ coach.start('soldier-e');
+ // Walk to the hero card (step 4): welcome -> build -> upgrade -> hero.
+ document.getElementById('coachNext').onclick();          // welcome
+ coach.event('build',{builtTowerId:field.build()});       // build
+ field.upgrade();coach.event('upgrade',{builtTowerId:7}); // upgrade: the engine applies, THEN reports
+ assert.match(document.getElementById('coachTitle').textContent,/Move your hero/);
+ // Minimize. The card is gone but the coaching is not over.
+ document.getElementById('coachClose').onclick();
+ assert.equal(coach.dismissed(),true,'the card is put away');
+ assert.equal(coach.isOpen(),false);
+ // The move happens while minimized: the engine still reports it...
+ coach.event('move',{moveFrom:{x:field.field.x,y:field.field.y}});
+ assert.equal(coach.dismissed(),true,'reporting a move does not un-minimize the card');
+ assert.equal(coach.isOpen(),false,'and nothing pops up mid-walk');
+ // ...the soldier walks...
+ field.walkTo(240);
+ // ...and the next tick adopts the field: step 4 counts, the card comes back
+ // at step 5 - not at 4, not from scratch.
+ assert.equal(coach.tick(),true,'the minimized card advances on the field');
+ assert.equal(coach.isOpen(),true,'the card is big again by itself');
+ assert.equal(coach.dismissed(),false,'no recall pill for a card that is up');
+ assert.match(document.getElementById('coachStep').textContent,/5 \/ 7/,'it returns at the NEXT step');
+ assert.match(document.getElementById('coachTitle').textContent,/Supplies/);
+ assert.equal(coachSeen('soldier-e',storage),false,'still not a finished briefing');
+});

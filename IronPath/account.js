@@ -39,7 +39,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261121-translation1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261121-translation1';
+import { startGame } from './game.js?v=20261122-minimized1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -451,8 +451,22 @@ async function equipFirstRewards(){
  if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
  document.getElementById('armoryEquipmentTab')?.click?.();
  guide().raise?.();
- // The step is done once gear is equipped, or when the player closes the armory:
- // a soldier who already owns everything should not be trapped in a dialog.
+ // Reported: "Legt ein Spieler das item an, passiert nichts. Die Mission geht
+ // nicht automatisch weiter." The step used to wait for the armory to be
+ // CLOSED, and its only close button sat under the guide card on a phone.
+ // The step now completes on the equip itself: the ending closes the armory
+ // and walks on to the skills screen. Closing without equipping still ends
+ // the step the old way - a soldier who owns everything is not trapped.
+ const before=readArmory(viewProfile()?.armory).equipped;
+ const equipped=await waitFor(()=>{
+  const now=readArmory(viewProfile()?.armory).equipped;
+  return (now!==before&&now!==0)||!dialogOpen('armoryDialog');
+ });
+ if(equipped&&dialogOpen('armoryDialog')){
+  await waitFor(()=>!savingArmory,{timeout:10000});
+  document.getElementById('armoryClose')?.click?.();
+  return await waitFor(()=>!dialogOpen('armoryDialog'),{timeout:5000});
+ }
  await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
 }
