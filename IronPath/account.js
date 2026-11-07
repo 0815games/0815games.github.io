@@ -37,9 +37,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261121-translation1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261121-taskback1';
+import { startGame } from './game.js?v=20261121-translation1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';

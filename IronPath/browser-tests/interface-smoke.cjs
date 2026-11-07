@@ -130,6 +130,24 @@ const fs = require('node:fs');
       await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
       const hud=await page.evaluate(()=>{const b=document.querySelector('#game').getBoundingClientRect(),d=document.querySelector('.dashboard').getBoundingClientRect(),c=document.querySelector('.command').getBoundingClientRect();return {b:{top:b.top,bottom:b.bottom,left:b.left,right:b.right},d:{top:d.top,bottom:d.bottom,left:d.left,right:d.right},c:{top:c.top,bottom:c.bottom,left:c.left,right:c.right}};});
       assert.ok(hud.d.top>=0 && hud.d.top<height/4,`${name}: HUD overlays the top of the battlefield`);
+      // All five status chips (wave, bunker, supplies, enemies, soldier) have to
+      // FIT, not merely exist: the dashboard sizes itself to its content and the
+      // phone media query only shrinks the padding. A chip that overflows would
+      // push the row past the wave-info flag or off the screen.
+      const chips=await page.evaluate(()=>{
+        const board=document.querySelector('.dashboard');
+        const chipBoxes=[...board.children].map(chip=>{
+          const box=chip.getBoundingClientRect();
+          return {left:box.left,right:box.right,text:chip.textContent.trim().replace(/\s+/g,' ')};
+        });
+        return {scroll:board.scrollWidth,client:board.clientWidth,boxes:chipBoxes};
+      });
+      assert.ok(chips.scroll<=chips.client+1,`${name}: the status row does not overflow (${chips.scroll} > ${chips.client})`);
+      for(const chip of chips.boxes){
+        assert.ok(chip.right<=width+1,`${name}: status chip '${chip.text}' stays on screen (right ${Math.round(chip.right)} > ${width})`);
+        assert.ok(chip.left>=-1,`${name}: status chip '${chip.text}' starts on screen`);
+      }
+      assert.equal(chips.boxes.length,5,`${name}: five status chips, one per readout`);
       const mapView=await page.locator('#mapViewport').boundingBox();assert.ok(mapView.height>=height-2,`${name}: battlefield fills the viewport`);await check('#fieldOps > summary');
       assert.ok(hud.c.left>=-1 && hud.c.right<=width+1,`${name}: controls stay inside viewport`);
       await page.screenshot({path:`browser-artifacts/${name}-field-command.png`,fullPage:true});

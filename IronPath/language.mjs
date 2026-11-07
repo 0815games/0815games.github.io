@@ -8,8 +8,8 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261118-settings
 // explanations. Kept in its own file so the next new card cannot ship untranslated
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261120-coachgate1';
-import {germanFinal} from './localization-final-de.mjs?v=20261105-soldier1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
+import {germanFinal} from './localization-final-de.mjs?v=20261121-translation1';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261121-translation1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
 import {germanTowers} from './localization-towers-de.mjs?v=20261110-storyde1';
@@ -21,7 +21,7 @@ import {germanCampaign} from './localization-campaign-de.mjs?v=20261110-storyde1
 import {germanCinematics} from './localization-cinematics-de.mjs?v=20261110-storyde1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261109-flaglang1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-skillui1';
-import {germanText} from './localization-de.mjs?v=20261121-taskback1';
+import {germanText} from './localization-de.mjs?v=20261121-translation1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
