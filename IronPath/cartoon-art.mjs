@@ -309,12 +309,17 @@ function drawZoneStates(ctx,zones,state){
 // vector branches below stay as the asset-loading fallback, exactly like the
 // tower pads keep theirs.
 const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34};
+// V2 field art: the set dressing is realistically painted now, matching
+// bunker, emplacements, torches and actors. The kind keeps its map identity
+// (the generator is untouched); only the artwork reference moves to the
+// painted file - the same cache-busting rename every V2 sprite got.
+const DECO_SPRITE={cabin:'cabin2',barn:'barn2',stand:'stand2',stilt:'stilt2',shed:'shed2',ruin:'ruin2',wall:'wall2',factory:'factory2',gate:'gate2'};
 function drawDeco(ctx,deco,theme,notify){
   const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
   const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
-    const artwork=sprite(ctx,d.kind,notify);
+    const artwork=sprite(ctx,DECO_SPRITE[d.kind]||d.kind,notify);
     if(artwork){
       // Painted building, anchored like the towers: bottom-centre on the deco
       // point, soft contact shadow, upright whatever the road does - a gate
