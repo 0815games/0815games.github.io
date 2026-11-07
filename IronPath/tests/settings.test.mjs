@@ -156,7 +156,11 @@ test('the dialog opens and closes over the game without becoming a second menu',
   const opener = { focused: false, focus() { this.focused = true; } };
   settings.open(opener);
   assert.equal(document.nodes.get('settingsDialog').open, true);
-  assert.equal(document.nodes.get('languageSelect').focused, true, 'the language is the first thing focused');
+  // Focus goes to the dialog, never to the language select: focusing a <select>
+  // opens its picker on a phone, so the settings used to open straight into the
+  // language dropdown. Reported exactly that way.
+  assert.equal(document.nodes.get('settingsDialog').focused, true, 'the dialog takes the focus');
+  assert.notEqual(document.nodes.get('languageSelect').focused, true, 'the language picker must not open by itself');
   settings.close();
   assert.equal(document.nodes.get('settingsDialog').open, false);
   assert.equal(opener.focused, true, 'closing returns the player where they were');

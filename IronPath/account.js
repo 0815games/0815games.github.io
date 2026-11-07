@@ -6,7 +6,7 @@ import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindic
 import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261118-settings1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
-import {createSettings,readSettings} from './settings.mjs?v=20261118-settings1';
+import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261117-firstrunde1';
@@ -27,7 +27,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261118-settings1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261121-taskback1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -39,7 +39,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261102-versus1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261121-ringlevel1';
+import { startGame } from './game.js?v=20261121-taskback1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261105-workshop3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -414,6 +414,7 @@ async function practiceSkills(){
  guide().event?.('equip');
  document.getElementById('skillOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('skillDialog')))return false;
+ guide().raise?.();
  // A saved build with no points left is the proof that the point went somewhere.
  const saved=await waitFor(()=>{
   const after=profile?.skills||'',lvl=level(profile?.xp||0);
@@ -433,6 +434,7 @@ async function showDogTag(){
  if(!dialog||!slot)return true;
  renderDogTag(document,slot,{profile:viewProfile(),accountId:user?.uid});
  if(!dialog.open)dialog.showModal();
+ guide().raise?.();
  await new Promise(resolve=>{
   const done=()=>{dialog.removeEventListener('close',done);close?.removeEventListener?.('click',onClose);resolve();};
   const onClose=()=>{if(dialog.open)dialog.close();};
@@ -448,6 +450,7 @@ async function equipFirstRewards(){
  document.getElementById('armoryOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
  document.getElementById('armoryEquipmentTab')?.click?.();
+ guide().raise?.();
  // The step is done once gear is equipped, or when the player closes the armory:
  // a soldier who already owns everything should not be trapped in a dialog.
  await waitFor(()=>!dialogOpen('armoryDialog'));
@@ -458,6 +461,7 @@ async function openWorkshopFirstTime(){
  document.getElementById('armoryOpen')?.click?.();
  if(await waitFor(()=>dialogOpen('armoryDialog')))document.getElementById('armoryWorkshopTab')?.click?.();
  else return false;
+ guide().raise?.();
  await waitFor(()=>!dialogOpen('armoryDialog'));
  return true;
 }

@@ -95,6 +95,7 @@ export const germanText=Object.freeze({
   "YOUR SUPPLIES": "DEINE VORRÄTE",
   "ENEMIES": "GEGNER",
   "SOLDIER": "SOLDAT",
+  "SHOW TASK": "AUFGABE ZEIGEN",
   "Battle controls": "Gefechtssteuerung",
   "DEPLOY / START WAVE": "EINSATZ / WELLE STARTEN",
   "SPEED: 1×": "TEMPO: 1×",

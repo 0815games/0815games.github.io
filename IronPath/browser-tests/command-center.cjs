@@ -269,6 +269,18 @@ const assert = require('node:assert/strict');
     await page.keyboard.press('Escape');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
+    // Reported: "wenn man die Aufgabe wegklickt, hat man keine Möglichkeit, sie
+    // nachzuschauen." Closing is a pause now: a recall stays on the field and
+    // brings the card back at the step it was on - here the supplies card (4/7
+    // done, because build, upgrade and move were played above).
+    await page.locator('#coachRecall').waitFor({state:'visible',timeout:5000});
+    assert.match(await page.locator('#coachRecall').innerText(),/SHOW TASK/,'the recall names what it brings back');
+    await page.locator('#coachRecall').click();
+    await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
+    assert.match(await page.locator('#coachTitle').innerText(),/Supplies/,'the card comes back at the card it was on');
+    assert.equal(await page.locator('#coachRecall').isHidden(),true,'an open card needs no recall');
+    await page.locator('#coachClose').click();
+    await page.locator('#coachRecall').waitFor({state:'visible',timeout:5000});
     // Dismissing must not be the end of it: the field menu and the Command Center both
     // replay the same seven cards. The old replay path opened the retired modal tour.
     await page.locator('#fieldOps > summary').click();
@@ -321,6 +333,17 @@ const assert = require('node:assert/strict');
     assert.equal(await page.locator('.language-picker').count(),0,'no permanent picker in the corner');
     await page.locator('#menuSettings').click();
     assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),true);
+    // Reported: "beim Öffnen der Settings wird direkt das Auswahl Fenster für die
+    // Sprache getriggert." Focus must land on the dialog, never on the select -
+    // focusing a <select> opens its picker on a phone.
+    assert.notEqual(await page.evaluate(() => document.activeElement?.id),'languageSelect','the language picker does not open by itself');
+    // And the X sits inside the dialog frame, not hanging over its edge.
+    const settingsFrame=await page.evaluate(() => {
+      const dialog=document.getElementById('settingsDialog').getBoundingClientRect();
+      const close=document.getElementById('settingsClose').getBoundingClientRect();
+      return {dialog:{l:dialog.left,t:dialog.top,r:dialog.right,b:dialog.bottom},close:{l:close.left,t:close.top,r:close.right,b:close.bottom}};
+    });
+    assert.ok(settingsFrame.close.r<=settingsFrame.dialog.r+1&&settingsFrame.close.l>=settingsFrame.dialog.l-1&&settingsFrame.close.t>=settingsFrame.dialog.t-1&&settingsFrame.close.b<=settingsFrame.dialog.b+1,'the settings X sits inside the dialog frame');
     assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);
     await page.locator('#languageSelect').selectOption('de');
     assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.match(await page.locator('#languagePreviewNote').innerText(),/noch auf Englisch/);assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
@@ -388,7 +411,19 @@ const assert = require('node:assert/strict');
     await page.locator('#menuResume').click();await page.locator('#endRun').click();await page.locator('#gameConfirmCancel').click();assert.equal(await visible('#game'),true,'cancelling keeps the run');
     await page.locator('#endRun').click();await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#runResults').evaluate(e=>e.open),true);assert.equal(await page.locator('#gameWorkspace').isHidden(),true);assert.equal(await visible('#commandCenter'),true);assert.match(await page.locator('#resultsTitle').innerText(),/Operation ended/);assert.equal(await page.locator('#runResults').getAttribute('data-outcome'),'neutral');assert.match(await page.locator('#resultsRewardXp').innerText(),/^\+0 XP$/);assert.equal(await page.locator('#resultsProgressLevel').innerText(),'LEVEL 3');assert.equal(await page.locator('#runResults').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,'report has no horizontal overflow on mobile');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#resultsDone').innerText(),'ZURÜCK ZUR KOMMANDOZENTRALE');assert.match(await page.locator('#resultsProgressText').innerText(),/EP bis zur nächsten Stufe/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#resultsDone').click();assert.equal(await visible('#commandCenter'),true);
     // The workshop is a tab in the real armory, so the browser test can open it there.
-    await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true);await page.waitForTimeout(150);
+    await page.locator('#menuArmory').click(); assert.ok(await page.locator('#armoryList .armory-art[data-item]').count()>0); assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),true);
+    // Reported: "bei vielen popup Fenstern das Problem mit dem X Button, das es
+    // falsch sitzt." The armory's header bleeds into the dialog padding, and the
+    // phone media query shrinks that padding from 20 to 12 - the header (and the X
+    // in it) used to keep its -20px margin and hang 8px over the frame. This runs
+    // at 390px, squarely inside that query, so measure it where it broke.
+    const armoryFrame=await page.evaluate(() => {
+      const dialog=document.getElementById('armoryDialog').getBoundingClientRect();
+      const close=document.getElementById('armoryClose').getBoundingClientRect();
+      return {dialog:{l:dialog.left,t:dialog.top,r:dialog.right,b:dialog.bottom},close:{l:close.left,t:close.top,r:close.right,b:close.bottom}};
+    });
+    assert.ok(armoryFrame.close.r<=armoryFrame.dialog.r+1&&armoryFrame.close.l>=armoryFrame.dialog.l-1&&armoryFrame.close.t>=armoryFrame.dialog.t-1&&armoryFrame.close.b<=armoryFrame.dialog.b+1,`the armory X sits inside the frame (${JSON.stringify(armoryFrame)})`);
+    await page.waitForTimeout(150);
     await page.locator('#armoryWorkshopTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),true); assert.equal(await page.locator('#armoryList').isVisible(),false);
     assert.match(await page.locator('#armoryWorkshop').innerText(),/PREPARE WORKSHOP|Field Scope/,'the workshop renders inside the armory');
     await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),false); assert.equal(await page.locator('#armoryList').isVisible(),true,'the equipment list comes back'); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
