@@ -69,6 +69,11 @@ const fs = require('node:fs');
           button.hidden=false;button.disabled=false;
           const name=document.getElementById('menuName'+index);
           if(name)name.textContent=['MG Nest','Cannon','Flak','Sniper'][index];
+          // As game.js renders them: the price under the name, and the one ring
+          // position the wallet cannot cover flagged unaffordable.
+          const price=document.getElementById('menuPrice'+index);
+          if(price)price.textContent=['50','80','65','75'][index];
+          button.classList.toggle('unaffordable',index===1);
         });
         // Centre of the field, as game.js would place it for a pad there.
         menu.style.left=Math.round(pad.left+pad.width/2)+'px';
@@ -84,9 +89,14 @@ const fs = require('node:fs');
         const buttons=[...menu.querySelectorAll('.sheet-option')].map(button=>{
           const box=button.getBoundingClientRect();
           const style=getComputedStyle(button);
+          const priceStyle=button.querySelector('.sheet-price')?getComputedStyle(button.querySelector('.sheet-price')):null;
           return {x:box.x,y:box.y,w:box.width,h:box.height,radius:style.borderRadius,
             art:getComputedStyle(button.querySelector('.sheet-art')).backgroundImage,
+            artOpacity:getComputedStyle(button.querySelector('.sheet-art')).opacity,
             desc:getComputedStyle(button.querySelector('.sheet-description')).display,
+            price:button.querySelector('.sheet-price')?.textContent??'',
+            priceColor:priceStyle?priceStyle.color:'',
+            unaffordable:button.classList.contains('unaffordable'),
             name:button.querySelector('.sheet-name').textContent};
         });
         const centre={x:parseFloat(menu.style.left),y:parseFloat(menu.style.top)};
@@ -98,12 +108,20 @@ const fs = require('node:fs');
         assert.match(button.radius,/50%|\d+px/,`${name}: ring button ${index} is round`);
         assert.match(button.art,/url\(/,`${name}: ring button ${index} shows a picture`);
         assert.equal(button.desc,'none',`${name}: ring button ${index} shows a name, not a paragraph`);
+        assert.ok(/^\d+$/.test(button.price),`${name}: ring button ${index} shows its price (${button.price})`);
         assert.ok(button.name.length>0,`${name}: ring button ${index} is labelled`);
         assert.ok(button.x>=-1&&button.x+button.w<=width+1,`${name}: ring button ${index} stays inside the width`);
         assert.ok(button.y>=-1&&button.y+button.h<=height+1,`${name}: ring button ${index} stays inside the height`);
         const dx=button.x+button.w/2-centreX,dy=button.y+button.h/2-centreY;
         assert.ok(Math.hypot(dx,dy)>40,`${name}: ring button ${index} is really OFFSET from the pad, not on it`);
       });
+      // The afford signal: the unaffordable option must differ from an affordable
+      // one in more than a shade of green - different price colour, dimmed art.
+      // Reported: "Circle Upgrade menu shows all upgrade options. We need some
+      // indication of I can build the tower or not."
+      assert.equal(ring.buttons[1].unaffordable,true,`${name}: the unaffordable flag is on the ring`);
+      assert.notEqual(ring.buttons[1].priceColor,ring.buttons[0].priceColor,`${name}: the unaffordable price reads differently`);
+      assert.ok(parseFloat(ring.buttons[1].artOpacity)<parseFloat(ring.buttons[0].artOpacity),`${name}: the unaffordable art is dimmed`);
       // Nothing overlaps the pad marker itself: the gap in the middle is the point.
       const coversCentre=ring.buttons.some(button=>centreX>=button.x&&centreX<=button.x+button.w&&centreY>=button.y&&centreY<=button.y+button.h);
       assert.equal(coversCentre,false,`${name}: the pad in the middle stays visible and tappable`);

@@ -742,6 +742,17 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .tower-sheet.tower-radial .sheet-description{display:none}
 .tower-sheet.tower-radial .sheet-option.unaffordable{background:#25362e;border-color:#5d6c5c}
 .tower-sheet.tower-radial .sheet-option.unaffordable .sheet-name{color:#9db39c}
+/* The price sits under the name and is the afford signal: gold when the wallet
+   covers it, warning red when it does not, with the art dimmed so the ring
+   answers "can I build this?" before anything is tapped. Locked specializations
+   borrow the same look, because "not yet" reads the same as "not now". */
+.tower-sheet.tower-radial .sheet-price{
+  display:block;
+  font-size:10px;font-weight:700;letter-spacing:.02em;line-height:1;
+  color:#e8c86a;
+}
+.tower-sheet.tower-radial .sheet-option.unaffordable .sheet-price{color:#ff9f87}
+.tower-sheet.tower-radial .sheet-option.unaffordable .sheet-art{opacity:.45;filter:grayscale(.5)}
 /* The header was the sheet's; a ring keeps only the close button, as a small badge on
    the pad itself, because a title at the ring's corner would cover the field it sits on. */
 .tower-sheet.tower-radial .sheet-header{
