@@ -192,6 +192,15 @@ const assert = require('node:assert/strict');
     };
     // Build what the card asks for: pad, tower option, confirm the price.
     await tapRing('build');
+    // The ring answers "can I afford this?" before anything is tapped: every
+    // build option carries its price, and the training wallet (150) covers all
+    // four, so none of them may show the unaffordable state.
+    const buildRing=await page.evaluate(()=>[...document.querySelectorAll('#radialMenu .sheet-option')].filter(button=>!button.hidden).map(button=>({
+      price:button.querySelector('.sheet-price')?.textContent??'',
+      unaffordable:button.classList.contains('unaffordable')})));
+    assert.equal(buildRing.length,4,'four tower choices on the ring');
+    assert.deepEqual(buildRing.map(option=>option.price),['50','80','65','75'],'every build option shows its price');
+    assert.equal(buildRing.some(option=>option.unaffordable),false,'the training wallet covers every tower');
     await page.locator('.sheet-option').first().click();
     await page.locator('#towerDetails').waitFor({state: 'visible'});
     await page.locator('#towerDetailsConfirm').click();
@@ -202,6 +211,10 @@ const assert = require('node:assert/strict');
     // Upgrade it: the card rings the built tower now. A level 1 tower upgrades
     // straight from its action sheet - no price dialog - so the tap is the action.
     await tapRing('actions');
+    // The upgrade option carries its price too - and after the 50-supply build,
+    // 100 remain, so the 70 upgrade is affordable and must not read as closed.
+    assert.equal(await page.evaluate(() => document.getElementById('menuPrice0')?.textContent??''),'70','the upgrade option shows its price');
+    assert.equal(await page.locator('#radial0').evaluate(button => button.classList.contains('unaffordable')),false,'the upgrade is affordable with 100 left');
     await page.locator('.sheet-option').first().click();
     await page.waitForFunction(() => /Move your hero/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
     // The hero step gates as well: nobody has moved yet, so NEXT stays closed.
