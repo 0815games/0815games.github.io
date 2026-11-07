@@ -9,7 +9,8 @@ import {
 import {characterProgress} from '../progression.mjs';
 import {bossForWave,BOSS_EVERY} from '../combat.mjs';
 import {createSoloDeployment} from '../solo-deployment.mjs';
-import {createPlayer} from '../match.mjs';
+import {createPlayer,applyCommand,TOWER_COSTS} from '../match.mjs';
+import {upgradeCost} from '../progression.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 
 const profile=()=>({name:'Rook',gender:'male',xp:0,armory:{scrap:0,owned:0,equipped:0}});
@@ -187,4 +188,29 @@ test('the CI browser install never waits for apt unless it has to', () => {
  assert.match(install, /process\.env\.RUNNER_TEMP\+"\/ironpath-browser\/node_modules\/playwright"/,'the probe resolves by path');
  assert.match(install, /install-deps chromium/,'the slow path still exists for a runner that needs it');
  assert.match(install, /timeout 300|timeout 420/,'every download is capped, so a slow mirror names itself');
+});
+
+test('the first run can afford to build and then upgrade EVERY tower in the sheet',()=>{
+ // Reported: "Building Cannon -> then upgrading it does not work. We got too
+ // little supplies." The coach gates the upgrade card on the field, so a start
+ // that only covers the cheapest tower parks every other choice in front of a
+ // closed gate. This walks all four towers - the check that should have existed
+ // before the gate shipped.
+ const firstUpgrade=upgradeCost(1);
+ assert.equal(firstUpgrade,70,'the pinned price the budget is built around');
+ for(let type=0;type<TOWER_COSTS.length;type++){
+  const state=deploy();
+  assert.ok(state.money>=TOWER_COSTS[type]+firstUpgrade,
+    `tower ${type} (${TOWER_COSTS[type]}) plus upgrade ${firstUpgrade} fits the start (${state.money})`);
+  const built=applyCommand(state,'local',{type:'build',pad:0,towerType:type});
+  assert.equal(built.ok,true,`tower ${type} can be built`);
+  const upgraded=applyCommand(state,'local',{type:'upgrade',pad:0});
+  assert.equal(upgraded.ok,true,`tower ${type} (${TOWER_COSTS[type]}) can be upgraded after being built: ${upgraded.reason??''}`);
+ }
+ // The raise is the training's alone: endless solo and story missions keep the
+ // endless start, so this stays a tutorial fix and not a balance change.
+ const endless=createSoloDeployment({player:player(),profile:profile(),mapId:'road',workshopEnabled:false});
+ assert.equal(endless.money,125,'endless solo keeps its own start');
+ const mission=createSoloDeployment({player:player(),profile:profile(),mapId:'road',workshopEnabled:false,campaign:{id:'bridge',threat:'elite'}});
+ assert.equal(mission.money,125,'a story mission keeps its own start');
 });

@@ -13,7 +13,7 @@ import {createMatch} from './simulation.mjs?v=20261105-workshop3';
 import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-alpha1';
 import {decodeWorkshop} from './workshop-wire.mjs';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs';
-import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY} from './training-run.mjs?v=20261118-settings1';
+import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
  // The training contract is the only campaign-shaped deployment that is easier
@@ -42,4 +42,10 @@ function applyContract(state,campaign,threat,training=false){
  state.campaignContract=training
   ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT,bossEvery:TRAINING_BOSS_EVERY}
   :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad};
+ // Only the training contract raises the wallet: its coach gates the upgrade card
+ // on the field, and the endless start (125) could not buy the dearest tower AND
+ // its first upgrade. A floor, not an override - equipment that grants start
+ // supplies keeps every unit it pays above the floor. Story missions and endless
+ // solo keep their own numbers.
+ if(training&&!state.individualSupplies)state.money=Math.max(state.money,TRAINING_SUPPLIES);
 }
