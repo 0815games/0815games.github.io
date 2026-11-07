@@ -15,19 +15,19 @@ assert.equal(getSupplies(state,'host'),5);assert.equal(getSupplies(state,'guest'
 // Players may sell a teammate's tower to free a pad, but the builder gets the refund.
 const sale=applyCommand(state,'guest',{type:'sell',pad:0});assert.equal(sale.refund,60);assert.equal(sale.refundTo,'host');
 assert.equal(getSupplies(state,'host'),65);assert.equal(getSupplies(state,'guest'),45);
-// Each active player receives 65% of base rewards while both are present.
+// Each active player receives 70% of base rewards while both are present.
 state.wave=1;state.running=true;state.spawnLeft=1;state.spawnTimer=100;
 state.enemies=[{hp:0,reward:12,speed:0,segment:1,x:10,y:130,damage:1}];stepMatch(state);
-assert.equal(getSupplies(state,'host'),72);assert.equal(getSupplies(state,'guest'),52);
+assert.equal(getSupplies(state,'host'),73);assert.equal(getSupplies(state,'guest'),53);
 state.players.guest.active=false;state.enemies=[{hp:0,reward:8,speed:0,segment:1,x:10,y:130,damage:1}];stepMatch(state);
-assert.equal(getSupplies(state,'host'),80);assert.equal(getSupplies(state,'guest'),52,'absent player does not earn');
+assert.equal(getSupplies(state,'host'),81);assert.equal(getSupplies(state,'guest'),53,'absent player does not earn');
 state.players.guest.active=true;state.spawnLeft=0;state.enemies=[];stepMatch(state);
-assert.equal(getSupplies(state,'host'),93);assert.equal(getSupplies(state,'guest'),65,'active players get wave bonus');
+assert.equal(getSupplies(state,'host'),95);assert.equal(getSupplies(state,'guest'),67,'active players get wave bonus');
 // The same balances survive disconnect and reconnect within the host session.
 const host=createPartyHost(state,{hostId:'host'});host.setPresence('host',true);host.setPresence('guest',true);
-assert.equal(host.snapshotFor('guest').match.players.guest.money,65);
+assert.equal(host.snapshotFor('guest').match.players.guest.money,67);
 host.setPresence('guest',false);host.advance();host.setPresence('guest',true);
-assert.equal(host.snapshotFor('guest').match.players.guest.money,65);
+assert.equal(host.snapshotFor('guest').match.players.guest.money,67);
 // Solo keeps the existing starting balance, rewards and sales behavior.
 const solo=createMatch([createPlayer('local',profile)]);assert.equal(getSupplies(solo,'local'),125);
 assert.ok(applyCommand(solo,'local',{type:'build',pad:0,towerType:0}).ok);assert.equal(solo.money,75);

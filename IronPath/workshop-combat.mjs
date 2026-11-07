@@ -1,8 +1,8 @@
 // Experimental bridge into the existing combat engine. This module is
 // not wired to account loading, live matchmaking, or any player-facing screen.
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
-import {workshopEffects} from './workshop-effects.mjs?v=20261107-balance1';
-import {decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261107-balance1';
+import {workshopEffects} from './workshop-effects.mjs?v=20261108-balance2';
+import {decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261108-balance2';
 
 export function equipmentForPlayer(state,player){
  const lock=state.experimentalWorkshop;

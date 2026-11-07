@@ -1,8 +1,8 @@
 // Experimental protocol contract only. NOT wired to lobby, recovery, Firebase,
 // or live matches. Participant declarations and hosts are client-controlled;
 // this does not prove item ownership and is not an anti-cheat boundary.
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261107-balance1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261107-balance1';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-balance2';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261108-balance2';
 const protocol=1,slots=['weapon','gear','gadget'];
 const counts={solo:[1],coop:[2],versus:[2],'four-coop':[3,4],'two-vs-two':[4]};
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);

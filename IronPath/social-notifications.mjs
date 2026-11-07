@@ -1,4 +1,4 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261107-balance1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261108-balance2';
 // Non-modal, in-page alerts. The inbox remains the source of truth; dismissing
 // an alert never accepts, declines or deletes a request or invitation.
 export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen}){

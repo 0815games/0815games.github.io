@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261107-balance1';
+import {CAMPAIGN} from './campaign.mjs?v=20261108-balance2';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 // The authored opening and closing frames in story-cinematics.mjs. The other
 // frames are translated via the campaign text dictionary.

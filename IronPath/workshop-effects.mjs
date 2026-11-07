@@ -1,8 +1,8 @@
 // Experimental loadout effects, not connected to live combat or networking.
 // Numbers are provisional and require gameplay/balance testing. All bonuses
 // belong to the wearer except bunkerHealth, which is shared with their team.
-import {validateWorkshop} from './workshop-model.mjs?v=20261107-balance1';
-import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261107-balance1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
+import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-balance2';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 
 const BASE=Object.freeze({damage:0,range:0,movement:0,cooldown:0,bunkerHealth:0,startSupplies:0,airstrikeDamage:0,shotIntervalMultiplier:1,waveSupplies:0,tankTowerMultiplier:1});
@@ -49,6 +49,19 @@ export function workshopEffects(snapshot,wave){
  for(const item of snapshot.items){if(item.mod!==null){if(Object.hasOwn(mods,item.id))return null;mods[item.id]=item.mod;}}
  const w={version:1,components:0,owned,equipped:Object.fromEntries(snapshot.items.map(i=>[i.slot,i.id])),mods};if(!validateWorkshop(w))return null;
  const result={...BASE};if(snapshot.mode==='versus'||snapshot.mode==='two-vs-two')return result;
- for(const {id,mod} of snapshot.items){if(id.startsWith('legacy-'))add(result,legacyEquipmentEffects(Number(id.slice(7)),wave));else if(isPrestige(id)){add(result,TROPHY[id]);if(mod)add(result,TROPHY_MODS[id]?.[mod]);}else{add(result,ITEMS[id]);if(mod)add(result,MODS[id]?.[mod]);}}
+ // Crafted and earned gear follows the same long-run curve as the legacy
+ // armory (see equipment-effects.mjs): flat combat bonuses grow from wave 6 so
+ // a damage item keeps its share of output next to upgraded towers. Legacy
+ // items scale inside legacyEquipmentEffects and must not be scaled twice.
+ const late=Math.max(0,wave-5);
+ const grow=source=>{
+  if(!late||!source||!source.damage&&!source.airstrikeDamage&&!source.waveSupplies)return source;
+  const scaled={...source};
+  if(scaled.damage)scaled.damage+=Math.floor(late/3);
+  if(scaled.airstrikeDamage)scaled.airstrikeDamage+=Math.floor(late/2);
+  if(scaled.waveSupplies)scaled.waveSupplies+=Math.floor(late/8);
+  return scaled;
+ };
+ for(const {id,mod} of snapshot.items){if(id.startsWith('legacy-'))add(result,legacyEquipmentEffects(Number(id.slice(7)),wave));else if(isPrestige(id)){add(result,grow(TROPHY[id]));if(mod)add(result,grow(TROPHY_MODS[id]?.[mod]));}else{add(result,grow(ITEMS[id]));if(mod)add(result,grow(MODS[id]?.[mod]));}}
  return result;
 }
