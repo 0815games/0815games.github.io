@@ -284,7 +284,7 @@ test('sprites ask for a redraw when they finish loading', () => {
   // fallback for the whole match. A phone decoded slowly enough to hit it every time.
   assert.match(art, /image\.onload=\(\)=>\{entry\.ready=true;try\{notify\?\.\(\);\}/,
     'a loaded sprite calls back into the renderer');
-  assert.match(art, /onSpritesReady=null\}/, 'drawCartoonBattle accepts the hook');
+  assert.match(art, /onSpritesReady=null,groundSeed=0\}\)/, 'drawCartoonBattle accepts the hook');
   assert.match(art, /getLanguage\(\)\}:\$\{resolution\}:\$\{artVersion\}/,
     'and the terrain cache key changes with it, or the cached ground stays a fallback');
   const game = readFileSync(resolve(root, 'game.js'), 'utf8');
