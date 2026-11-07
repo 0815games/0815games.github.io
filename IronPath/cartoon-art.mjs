@@ -154,13 +154,16 @@ function pad(ctx,p,tower,selected,types,notify){
   oval(ctx,x,y+16,20,6,'rgba(24,32,26,.25)',null);
   if(!plate)for(const [sx,sy,r] of [[-17,13,7],[0,16,8],[17,13,7]])oval(ctx,x+sx,y+sy,r,r*.62,'#c3ab7d','#8f7a52',1);
   // Preserve vector rendering only as an asset-loading fallback.
-  const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type],notify);
-  if(artwork)ctx.drawImage(artwork,x-28,y-34,56,47);
+  // V2: the four towers are painted positions now - sandbagged MG nest,
+  // dug-in howitzer, flak platform, camouflaged sniper hide - anchored on
+  // the emplacement plate, sized from each artwork's own aspect.
+  const artwork=sprite(ctx,['mg2','cannon2','flak2','sniper2'][tower.type],notify);
+  if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
   oval(ctx,x+18,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+18,y+17);ctx.textAlign='start';
 }
 function soldier(ctx,p,own,pose={},notify){
-  const x=p.x,y=p.y,artwork=sprite(ctx,'hero',notify);
+  const x=p.x,y=p.y,artwork=sprite(ctx,'hero2',notify);
   oval(ctx,x,y+13,13,5,own?'#e5c783':'#87c4ce',null);
   if(pose.moving){
     // Small alternating boot scuffs communicate motion without changing hitboxes.
@@ -169,7 +172,9 @@ function soldier(ctx,p,own,pose={},notify){
   ctx.save();ctx.translate(x,y+(pose.bob||0));ctx.rotate(pose.lean||0);ctx.scale(pose.facing===-1?-1:1,1);
   // The legacy asset contains two repeated soldiers side by side. Display just
   // one figure rather than squeezing both into a single player marker.
-  if(artwork)ctx.drawImage(artwork,0,0,60,90,-11,-18,22,33);
+  // V2: a single painted soldier - the legacy asset carried two figures
+  // side by side and had to be cropped every frame.
+  if(artwork)ctx.drawImage(artwork,-11,-19,22,33);
   else fallbackMarker(ctx,0,0,own?'YOU':'ALLY',own?'#e5c783':'#87c4ce',12,12);
   ctx.restore();
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||tr('HERO'),x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||tr('HERO'),x,y+29);ctx.textAlign='start';
@@ -186,11 +191,13 @@ function enemy(ctx,e,reducedMotion,notify){
   }}
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
   oval(ctx,x,y+10,11,4,'#8c8264',null);
-  const name=e.boss?(e.boss==='bossBomber'?'boss-plane':'boss-heavy'):e.kind==='tank'?'tank':e.kind==='plane'?'plane':e.kind==='infantry'||e.kind==='runner'?'infantry':null,artwork=name&&sprite(ctx,name,notify);
+  // V2: painted enemies - muddy tank, camouflaged prop plane, riflemen.
+  // The bosses keep their artwork until the next art stage.
+  const name=e.boss?(e.boss==='bossBomber'?'boss-plane':'boss-heavy'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
   if(!artwork)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
-  else if(name==='tank'||name==='boss-heavy')ctx.drawImage(artwork,x-(e.boss?25:17),y-(e.boss?18:12),e.boss?50:34,e.boss?32:20);
-  else if(name==='plane'||name==='boss-plane')ctx.drawImage(artwork,x-(e.boss?27:17),y-(e.boss?20:14),e.boss?54:34,e.boss?40:27);
-  else ctx.drawImage(artwork,x-8,y-13,16,24);
+  else if(name==='tank2'||name==='boss-heavy')ctx.drawImage(artwork,x-(e.boss?25:20),y-(e.boss?18:13),e.boss?50:40,e.boss?32:25);
+  else if(name==='plane2'||name==='boss-plane')ctx.drawImage(artwork,x-(e.boss?27:21),y-(e.boss?20:14),e.boss?54:42,e.boss?40:26);
+  else ctx.drawImage(artwork,x-10,y-12,20,20);
   if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':e.hp/e.maxHp<.3?'#ed9b74':'#dce59c';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
   if(e.boss){const names={bossIronclad:'IRONCLAD',bossBomber:'DREAD BOMBER',bossJuggernaut:'JUGGERNAUT',bossCommander:'WAR COMMANDER'};ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(tr(names[e.boss]||'BOSS'),x,y-29);ctx.fillStyle='#ffe1a0';ctx.fillText(tr(names[e.boss]||'BOSS'),x,y-29);ctx.textAlign='start';}
