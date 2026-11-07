@@ -4,7 +4,7 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261111-completede1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261118-settings1';
+import {translateText as tr} from './language.mjs?v=20261128-randomends1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -21,9 +21,9 @@ import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-batt
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261125-roadside1';
-import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261124-zones1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261128-randomends1';
+import {createCombatEffects} from './combat-fx.mjs?v=20261128-randomends1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261128-randomends1';
 import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
@@ -147,8 +147,18 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // used to be.
   const remarkCoach=()=>{try{coach.remark();}catch{}};
   zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else battleViewport.zoom(2);return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
-  $('mapEntry').addEventListener('click',()=>{battleViewport?battleViewport.pan(1e6,0):mapViewport.scrollTo({left:0,behavior:'smooth'});remarkCoach();});
-  $('mapBunker').addEventListener('click',()=>{battleViewport?battleViewport.pan(-1e6,0):mapViewport.scrollTo({left:mapViewport.scrollWidth,behavior:'smooth'});remarkCoach();});
+  // Reported: "Bunker und Straßen Endpunkte passen nicht" - the quick-jump
+  // buttons pinned to the left and right rim. Start and bunker sit wherever
+  // the generated map puts them, so both buttons now aim at the real world
+  // coordinates: the road's entry point and the bunker it ends in.
+  const aimViewport=target=>{
+    if(battleViewport){const v=battleViewport.getViewport(),visW=v.width/v.scale,visH=v.height/v.scale;
+      battleViewport.pan((v.x+visW/2-target.x)*v.scale,(v.y+visH/2-target.y)*v.scale);return;}
+    const m=getMap(state.mapId),fx=Math.max(0,Math.min(1,target.x/m.width)),fy=Math.max(0,Math.min(1,target.y/m.height));
+    mapViewport.scrollTo({left:fx*(mapViewport.scrollWidth-mapViewport.clientWidth),top:fy*(mapViewport.scrollHeight-mapViewport.clientHeight),behavior:'smooth'});
+  };
+  $('mapEntry').addEventListener('click',()=>{aimViewport(getMap(state.mapId).path[0]);remarkCoach();});
+  $('mapBunker').addEventListener('click',()=>{aimViewport(getMap(state.mapId).bunker);remarkCoach();});
   portrait.addEventListener('change',()=>{if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());remarkCoach();});
   window.addEventListener('resize',remarkCoach);
   // Two more ways the field moves under the card: the page itself is scrolled (the

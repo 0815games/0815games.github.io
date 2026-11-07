@@ -29,7 +29,7 @@ export function getMap(id){
 const generated=new Map(),MAX_CACHED=128;
 const seeded=id=>/^(?:gen|g2)-[0-9a-f]{8}$|^g3-[0-9a-f]{9}$/.test(id);
 function rng(seed){let x=seed>>>0;return ()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296;};}
-function pointDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
+function pointDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy,t=len2?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/len2)):0;return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function buildGenerated(id){
   const random=rng(parseInt(id.slice(4),16)),pick=(min,max,step=10)=>min+step*Math.floor(random()*((max-min)/step+1));
   const x1=pick(160,240),x2=pick(390,500),x3=pick(650,750),pattern=Math.floor(random()*3);
@@ -101,43 +101,67 @@ function buildGridMap(id){
   const sector=Math.min(4,parseInt(id[3],16)+1),spec=SECTOR_SPECS[sector-1],random=rng(parseInt(id.slice(4),16));
   const cell=60,cols=spec.width/cell,rows=spec.height/cell;
   const themes=[['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arctic Tundra & Frozen Lake'],['marsh','Marshland & Delta Mudflats']],[theme,name]=themes[Math.floor(random()*themes.length)];
-  const bunkerRow=1+Math.floor(random()*(rows-2)),bunker={x:spec.width-cell/2,y:bunkerRow*cell+cell/2};
+  // Reported: "Anfang irgendwo am Rand der Karte halt" - and the bunker is no
+  // longer glued to the right edge either. The end cell keeps two cells of
+  // distance to every edge so the gate and the bunker always sit fully on the
+  // field; the start is any cell on any of the four borders.
+  const bc=2+Math.floor(random()*(cols-5)),br=2+Math.floor(random()*(rows-5)),bunker={x:bc*cell+cell/2,y:br*cell+cell/2};
   const key=(c,r)=>r*cols+c,centre=(c,r)=>({x:c*cell+cell/2,y:r*cell+cell/2});
+  const pickStart=edge=>edge==='W'?[0,1+Math.floor(random()*(rows-2))]:edge==='E'?[cols-1,1+Math.floor(random()*(rows-2))]:edge==='N'?[1+Math.floor(random()*(cols-2)),0]:[1+Math.floor(random()*(cols-2)),rows-1];
+  const edgeCells=()=>{
+    const cells=[];
+    for(let r=1;r<rows-1;r++){cells.push([0,r,'W'],[cols-1,r,'E']);}
+    for(let c=1;c<cols-1;c++){cells.push([c,0,'N'],[c,rows-1,'S']);}
+    for(let i=cells.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[cells[i],cells[j]]=[cells[j],cells[i]];}
+    return cells;
+  };
   const roadDistance=(p,paths)=>paths.reduce((min,path)=>Math.min(min,...path.slice(1).map((b,i)=>pointDistance(p,path[i],b))),Infinity);
-  // Weighted depth-first walk: east is preferred, vertical meanders are welcome,
-  // visited cells are refused and dead ends backtrack, so a road can never cross
-  // itself and always reaches the bunker cell. The road also never hugs itself:
-  // a candidate cell is refused when any orthogonal neighbour is already road
-  // (the cell being left aside). Parallel stretches keep one clear cell between
-  // them - two 65-unit roads 60 units apart would visually melt into one.
-  function walk(startRow,blocked,minCells,shared=null){
-    const visited=new Set(blocked),stack=[[0,startRow]];visited.add(key(0,startRow));
-    let c=0,r=startRow,guard=cols*rows*3;
+  // Weighted depth-first walk from the border start to the bunker cell: steps
+  // that close in on the bunker are preferred, away-steps still happen - that
+  // is where the meanders come from. Visited cells are refused and dead ends
+  // backtrack, so a road can never cross itself. The road also never hugs
+  // itself: a candidate cell is refused when any orthogonal neighbour is
+  // already road. Parallel stretches keep one clear cell between them - two
+  // 65-unit roads 60 units apart would visually melt into one.
+  function walk(startCell,blocked,minCells,shared=null){
+    const visited=new Set(blocked),onPath=new Set(),stack=[startCell];
+    visited.add(key(startCell[0],startCell[1]));onPath.add(key(startCell[0],startCell[1]));
+    // Warm-up: the first 40-70% of the road wanders direction-free - only
+    // afterwards does the walk lock onto the bunker. That is where the
+    // meanders come from, no matter where start and bunker sit.
+    let c=startCell[0],r=startCell[1],steps=0,wander=Math.round(minCells*(.4+random()*.3)),guard=cols*rows*8;
     while(guard-->0){
-      if(c===cols-1&&r===bunkerRow)return stack.length>=minCells?stack.map(([cc,rr])=>key(cc,rr)):null;
+      if(c===bc&&r===br)return stack.length>=minCells?stack.map(([cc,rr])=>key(cc,rr)):null;
       const options=[];
-      const offer=(dc,dr,weight)=>{const nc=c+dc,nr=r+dr;
+      const offer=(dc,dr)=>{const nc=c+dc,nr=r+dr;
         if(nc<0||nc>=cols||nr<1||nr>=rows-1)return;
+        // Own road first: a shared cell the walk itself already occupies is
+        // closed, otherwise the funnel would let the road double back onto
+        // itself and leave zero-length segments in the polyline.
+        if(onPath.has(key(nc,nr)))return;
         // The bunker cell and the shared funnel are always enterable: both roads
         // are allowed to merge into one final approach, exactly like the
         // four-player frontier funnels two lanes into one gate.
-        if((nc===cols-1&&nr===bunkerRow)||(shared&&shared.has(key(nc,nr)))){options.push([nc,nr,8]);return;}
+        if((nc===bc&&nr===br)||(shared&&shared.has(key(nc,nr)))){options.push([nc,nr,9]);return;}
         if(visited.has(key(nc,nr)))return;
-        for(const [ac,ad] of [[1,0],[-1,0],[0,1],[0,-1]]){const ax=nc+ac,ay=nr+ad;if(ax===c&&ay===r)continue;if(ax>=0&&ax<cols&&ay>=0&&ay<rows&&visited.has(key(ax,ay)))return;}
-        options.push([nc,nr,weight]);};
-      offer(1,0,5);
-      if(bunkerRow>=r)offer(0,1,2+Math.min(3,bunkerRow-r));else offer(0,-1,2+Math.min(3,r-bunkerRow));
-      if(bunkerRow>=r)offer(0,-1,1);else offer(0,1,1);
-      offer(-1,0,.4);
-      if(!options.length){stack.pop();if(!stack.length)return null;[c,r]=stack[stack.length-1];continue;}
+        // Anti-hug counts only the ROAD - cells a backtrack abandoned are not
+        // road, so a dead end must not poison the neighbourhood forever.
+        for(const [ac,ad] of [[1,0],[-1,0],[0,1],[0,-1]]){const ax=nc+ac,ay=nr+ad;if(ax===c&&ay===r)continue;if(ax>=0&&ax<cols&&ay>=0&&ay<rows&&onPath.has(key(ax,ay)))return;}
+        const toward=(dc*(bc-c)+dr*(br-r))/Math.max(1,Math.hypot(bc-c,br-r));
+        options.push([nc,nr,steps<wander?1:.4+2.6*Math.max(0,toward)]);};
+      offer(1,0);offer(-1,0);offer(0,1);offer(0,-1);
+      if(!options.length){stack.pop();onPath.delete(key(c,r));if(!stack.length)return null;[c,r]=stack[stack.length-1];continue;}
       let total=0;for(const o of options)total+=o[2];let pick=random()*total,chosen=options[options.length-1];
       for(const o of options){pick-=o[2];if(pick<=0){chosen=o;break;}}
-      c=chosen[0];r=chosen[1];visited.add(key(c,r));stack.push([c,r]);
+      c=chosen[0];r=chosen[1];steps++;visited.add(key(c,r));onPath.add(key(c,r));stack.push([c,r]);
     }
     return null;
   }
-  const polyline=cells=>{
-    const pts=cells.map(k=>centre(k%cols,Math.floor(k/cols))),out=[{x:0,y:pts[0].y}];
+  const polyline=(cells,edge)=>{
+    const pts=cells.map(k=>centre(k%cols,Math.floor(k/cols))),first=pts[0];
+    // The road begins OUTSIDE the field: enemies pour in through the border,
+    // and the entry gate has ground to stand on.
+    const out=[edge==='W'?{x:-54,y:first.y}:edge==='E'?{x:spec.width+54,y:first.y}:edge==='N'?{x:first.x,y:-54}:{x:first.x,y:spec.height+54}];
     for(let i=1;i<pts.length-1;i++){
       const a=pts[i-1],b=pts[i],c=pts[i+1];
       if((a.x===b.x&&b.x===c.x)||(a.y===b.y&&b.y===c.y))continue;
@@ -151,11 +175,22 @@ function buildGridMap(id){
   function padsFor(paths){
     // Candidates are sampled on a fine grid, not on the walk cells: the cell
     // centres alone skip half of the roadside ring, which is exactly the band
-    // the pads are supposed to come from.
+    // the pads are supposed to come from. The spread zones run along the ROAD,
+    // not along the map: with a random start and a random bunker the route no
+    // longer crosses every map third, but it always crosses its own.
+    const marks=paths.map(path=>{let l=0;const m=[0];for(let i=1;i<path.length;i++){l+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);m.push(l);}return m;});
+    const total=marks.reduce((sum,m)=>sum+m[m.length-1],0)||1;
     const candidates=[];
     for(let x=25;x<=spec.width-25;x+=12)for(let y=25;y<=spec.height-25;y+=12){
-      const p={x,y},d=roadDistance(p,paths);
-      if(d>=62&&d<=150&&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=78)candidates.push({x,y,d});
+      if(Math.hypot(x-bunker.x,y-bunker.y)<78)continue;
+      let best=Infinity,pos=0;
+      for(let ri=0;ri<paths.length;ri++)for(let i=1;i<paths[ri].length;i++){
+        const a=paths[ri][i-1],b=paths[ri][i],dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy;
+        const t=len2?Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/len2)):0;
+        const d=Math.hypot(x-a.x-t*dx,y-a.y-t*dy);
+        if(d<best){best=d;pos=marks[ri][i-1]+t*Math.sqrt(len2)+(ri>0?marks[ri-1][marks[ri-1].length-1]:0);}
+      }
+      if(best>=62&&best<=150)candidates.push({x,y,d:best,pos});
     }
     for(let i=candidates.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
     // Reported: "Tower Platzierung voll für den Arsch. Muss schon AN der
@@ -163,9 +198,17 @@ function buildGridMap(id){
     // from the road centre, i.e. touching the tar) fills the quotas, the
     // wider rings only exist so a rare seed can still place every pad.
     const ranked=[...candidates.filter(c=>c.d<=92),...candidates.filter(c=>c.d>92&&c.d<=120),...candidates.filter(c=>c.d>120)];
-    const quotas=sector===1?[3,3,4]:sector===2?[4,5,5]:sector===3?[6,6,6]:[7,7,8],pads=[],zone=x=>Math.min(2,Math.floor(x*3/spec.width));
-    for(let z=0;z<3;z++)for(const p of ranked)if(zone(p.x)===z&&quotas[z]>0&&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68)){pads.push(p);quotas[z]--;}
+    const quotas=sector===1?[3,3,4]:sector===2?[4,5,5]:sector===3?[6,6,6]:[7,7,8],pads=[],zone=c=>Math.min(2,Math.floor(c.pos/total*3));
+    for(let z=0;z<3;z++)for(const p of ranked)if(zone(p)===z&&quotas[z]>0&&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68)){pads.push(p);quotas[z]--;}
     for(const p of ranked){if(pads.length>=spec.pads)break;if(pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68))pads.push(p);}
+    // Upgrade pass: a pad that had to fall back outside the ring is swapped
+    // for an unused ring candidate whenever one still fits the plate spacing -
+    // at most one pad per field may sit outside the roadside ring at all.
+    for(const [i,p] of pads.entries()){
+      if(p.d<=92)continue;
+      const better=ranked.find(q=>q.d<=92&&q!==p&&!pads.includes(q)&&pads.every((o,j)=>j===i||Math.hypot(q.x-o.x,q.y-o.y)>=68));
+      if(better)pads[i]=better;
+    }
     return pads.length>=spec.pads?pads.map(({x,y})=>({x,y})):null;
   }
   // Ruins and buildings: a few gates the road squeezes through, plus sheds and
@@ -182,9 +225,12 @@ function buildGridMap(id){
       if(Math.hypot(mx-bunker.x,my-bunker.y)<150||Math.hypot(mx-entry.x,my-entry.y)<130)continue;
       if(pads.some(p=>Math.hypot(p.x-mx,p.y-my)<115)||deco.some(d=>Math.hypot(d.x-mx,d.y-my)<130))continue;
       const length=Math.hypot(b.x-a.x,b.y-a.y)||1,nx=-(b.y-a.y)/length,ny=(b.x-a.x)/length;
-      // A gate only stands when BOTH flanks stay inside the field.
-      if([-1,1].some(side=>mx+side*nx*52<24||mx+side*nx*52>spec.width-24||my+side*ny*52<24||my+side*ny*52>spec.height-24))continue;
-      for(const side of [-1,1])deco.push({kind:'gate',x:mx+side*nx*52,y:my+side*ny*52,rot:a.x===b.x?1:0,shade:random()});
+      // A gate only stands when BOTH flanks stay inside the field - and clear
+      // of every road segment: a wing that lands on the neighbouring lane of
+      // a funnel or a hairpin would stand in the middle of the tar.
+      const wings=[-1,1].map(side=>({x:mx+side*nx*52,y:my+side*ny*52}));
+      if(wings.some(w=>w.x<24||w.x>spec.width-24||w.y<24||w.y>spec.height-24||roadDistance(w,paths)<46))continue;
+      for(const w of wings)deco.push({kind:'gate',x:w.x,y:w.y,rot:a.x===b.x?1:0,shade:random()});
       gates++;
     }
     const spots=[];
@@ -204,37 +250,33 @@ function buildGridMap(id){
     return deco;
   }
   for(let attempt=0;attempt<80;attempt++){
-    const first=walk(1+Math.floor(random()*(rows-2)),[],Math.round(cols*1.5));
+    const edges=['W','E','N','S'],firstEdge=edges[Math.floor(random()*edges.length)];
+    const first=walk(pickStart(firstEdge),[],Math.round(cols*1.3));
     if(!first)continue;
-    let roadKeys=[first];
+    let roadKeys=[first],roadEdges=[firstEdge];
     if(spec.roads>1){
       // A second road keeps one clear cell to the first at all times, so the two
-      // never touch or merge; only the bunker cell is shared.
+      // never touch or merge; only the bunker approach is shared.
       const blocked=new Set();
       for(const k of first){const c=k%cols,r=Math.floor(k/cols);for(const [dc,dr] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]])blocked.add(key(c+dc,r+dr));}
-      blocked.delete(key(cols-1,bunkerRow));
-      let second=null;
-      // The funnel: the last stretch of the bunker approach belongs to both
-      // roads, so the second one can always finish no matter how the first
-      // wedged itself against the right edge.
+      // The funnel: the two cells around the bunker belong to both roads, so
+      // the second one can always finish no matter where the first wedged
+      // itself. Every border cell is tried, in random order.
       const shared=new Set();
-      for(let c=cols-4;c<cols;c++)shared.add(key(c,bunkerRow));
-      const startRows=[];
-      for(let r=1;r<rows-1;r++)startRows.push(r);
-      for(let i=startRows.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[startRows[i],startRows[j]]=[startRows[j],startRows[i]];}
-      for(const startRow of startRows){
-        if(blocked.has(key(0,startRow)))continue;
-        second=walk(startRow,blocked,Math.round(cols*1.05),shared);
-        if(second)break;
+      for(let dc=-2;dc<=2;dc++)for(let dr=-2;dr<=2;dr++)shared.add(key(bc+dc,br+dr));
+      let second=null,secondEdge=null;
+      for(const [ec,er,e] of edgeCells()){
+        if(blocked.has(key(ec,er)))continue;
+        const road=walk([ec,er],blocked,Math.round(cols*1.05),shared);
+        if(road){second=road;secondEdge=e;break;}
       }
       // A rare seed keeps one road instead of none: the battlefield is still
       // valid, only quieter. Determinism is untouched - the id decides. The
       // first sixty attempts insist on the twin road before settling.
       if(!second&&attempt<60)continue;
-      roadKeys=[first];
-      if(second)roadKeys.push(second);
+      if(second){roadKeys.push(second);roadEdges.push(secondEdge);}
     }
-    const paths=roadKeys.map(polyline),pads=padsFor(paths);
+    const paths=roadKeys.map((cells,i)=>polyline(cells,roadEdges[i])),pads=padsFor(paths);
     if(!pads)continue;
     // Mixed ground: a few marked patches the road runs through. Each carries
   // one of the five terrain rules (thin ice, deep bog, rubble, ambush trail,

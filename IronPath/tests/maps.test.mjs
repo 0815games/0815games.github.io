@@ -70,7 +70,7 @@ test('grid-walk sector maps: a fresh road every seed, valid in every sector',()=
 const player=id=>createPlayer(id,{name:id,gender:'female',level:1},850,450);
 const distance=(p,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,t=Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/(dx*dx+dy*dy)));return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);};
 for(const [index,spec] of SECTOR_SPECS.entries()){
- const sector=index+1,unique=new Set();let multi=0;
+ const sector=index+1,unique=new Set();let multi=0;const edges=new Set();
  for(let i=0;i<120;i++){
   const id=`g3-${index.toString(16)}${(Math.imul(i+1,2654435761)>>>0).toString(16).padStart(8,'0')}`,map=getMap(id);
   assert.equal(isMapId(id),true);assert.equal(map.sector,sector);assert.equal(sectorOf(id),sector);
@@ -78,12 +78,21 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
   const paths=map.paths||[map.path];
   assert.ok(paths.length>=1&&paths.length<=spec.roads,`${id} road count`);
   if(paths.length>1)multi++;
-  assert.equal(map.path[0].x,0);assert.deepEqual(map.path.at(-1),map.bunker);
-  assert.equal(map.bunker.x,map.width-30);
+  // Reported: start and end are random. The road begins OUTSIDE the field on
+  // any of the four borders (enemies pour in through the border) and it ALWAYS
+  // ends in the bunker - every single road of a multi-road field.
+  const start=map.path[0],outside=start.x<0?'W':start.x>map.width?'E':start.y<0?'N':start.y>map.height?'S':null;
+  assert.ok(outside,`${id} road starts outside the field`);
+  assert.ok(start.x<=-40||start.x>=map.width+40||start.y<=-40||start.y>=map.height+40,`${id} entry reaches past the border`);
+  edges.add(outside);
+  for(const road of paths)assert.deepEqual(road.at(-1),map.bunker,`${id} road ends in the bunker`);
+  // The bunker keeps its distance from every edge so gate and sprite always
+  // sit fully on the field, whatever the seed rolls.
+  assert.ok(map.bunker.x>=140&&map.bunker.x<=map.width-140&&map.bunker.y>=140&&map.bunker.y<=map.height-140,`${id} bunker clear of the borders`);
   let length=0;
   for(const road of paths)for(let j=1;j<road.length;j++){
    length+=Math.hypot(road[j].x-road[j-1].x,road[j].y-road[j-1].y);
-   assert.ok(road[j].x>=0&&road[j].x<=map.width&&road[j].y>=30&&road[j].y<=map.height-30,`${id} road in bounds`);
+   assert.ok(road[j].x>=-60&&road[j].x<=map.width+60&&road[j].y>=-60&&road[j].y<=map.height+60,`${id} road in bounds`);
   }
   assert.ok(length>=map.width*1.2,`${id} road meanders (x${(length/map.width).toFixed(2)})`);
   let far=0;
@@ -107,6 +116,7 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
   unique.add(JSON.stringify(map.path));
  }
  assert.ok(unique.size>=118,`sector ${sector}: seeds produce distinct roads (${unique.size}/120)`);
+ assert.equal(edges.size,4,`sector ${sector}: starts use all four borders (${[...edges].join(',')})`);
  if(spec.roads>1)assert.ok(multi>=90,`sector ${sector}: most fields carry both roads (${multi}/120)`);
 }
 // Deterministic under cache eviction, and snapshots carry the id untouched.

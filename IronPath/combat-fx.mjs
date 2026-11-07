@@ -1,3 +1,4 @@
+import {getMap} from './maps.mjs?v=20261128-randomends1';
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
   let effects=[],cooldowns=null,comboSeqs=null,previous=null;
@@ -15,7 +16,11 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
       if(!match?.players)return [];
       const changes=[];
       const next=new Map(),nextCombos=new Map();
-      if(previous&&(match.bunkerImpact?.seq||0)>(previous.bunkerImpact?.seq||0)){const hit=match.bunkerImpact;emit('bunkerHit',{x:900,y:400,comboLabel:`−${Math.round(hit.damage*10)/10}`},match);changes.push('impact');}
+      if(previous&&(match.bunkerImpact?.seq||0)>(previous.bunkerImpact?.seq||0)){const hit=match.bunkerImpact;
+        // The bunker sits wherever the generated map put it, not at the old
+        // fixed 900/400 of the first three maps.
+        let at={x:900,y:400};try{at=getMap(match.mapId).bunker||at;}catch{}
+        emit('bunkerHit',{x:at.x,y:at.y,comboLabel:`−${Math.round(hit.damage*10)/10}`},match);changes.push('impact');}
       for(const [id,p] of Object.entries(match.players)){
         const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);const seq=p.comboCue?.seq||0;nextCombos.set(id,seq);if(comboSeqs?.has(id)&&seq>comboSeqs.get(id)&&p.active!==false){emit('combo',{x:p.comboCue.x,y:p.comboCue.y,comboLabel:p.comboCue.name},match);changes.push('combo');}
         if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',p,previous||match);changes.push('ability');}

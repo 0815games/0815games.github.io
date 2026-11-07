@@ -1,4 +1,4 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261118-settings1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261128-randomends1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261117-firstrunde1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
@@ -70,30 +70,59 @@ function sprite(ctx,name,notify){
 // follows. Images that failed to load stay on the vector fallback instead of asking
 // for a redraw every frame.
 export function spritesPending(){for(const entry of spriteImages.values())if(!entry.ready&&!entry.failed)return true;return false;}
-function bunker(ctx,state,notify){
+function bunker(ctx,state,notify,approach=0){
   const damage=state.hp/Math.max(1,state.maxHp||100),plating=state.plating||0;
+  // Everything is drawn around the bunker centre (0,0) and the caller
+  // translates to the map's bunker coordinates: the sprite finally stands
+  // where the road ends, on every sector size - the old fixed 855/365 only
+  // ever fit the 960x540 field.
   const artwork=sprite(ctx,'bunker',notify);
-  if(artwork)ctx.drawImage(artwork,855,365,105,62);
-  else fallbackMarker(ctx,908,400,'HQ','#e3cc92',33,22);
-  if(plating>0){line(ctx,[[876,407],[940,407]],'#e5c883',3);for(let i=0;i<plating;i++)oval(ctx,887+i*8,412,2,2,'#f4d894',null);}
-  if(damage<.7){line(ctx,[[905,402],[901,407],[906,410],[901,417]],'#293a30',2);}
-  if(damage<.35){line(ctx,[[928,390],[923,385],[926,379]],'#293a30',3);line(ctx,[[878,405],[884,410],[879,416]],'#293a30',2);oval(ctx,894,384,5,3,'#554d3d',null);}
-  ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.fillText('BUNKER',849,350);
+  if(artwork)ctx.drawImage(artwork,-52,-31,105,62);
+  else fallbackMarker(ctx,0,0,'HQ','#e3cc92',33,22);
+  if(plating>0){line(ctx,[[-32,7],[32,7]],'#e5c883',3);for(let i=0;i<plating;i++)oval(ctx,-21+i*8,12,2,2,'#f4d894',null);}
+  if(damage<.7){line(ctx,[[-3,2],[-7,7],[-2,10],[-7,17]],'#293a30',2);}
+  if(damage<.35){line(ctx,[[20,-10],[15,-15],[18,-21]],'#293a30',3);line(ctx,[[-30,5],[-24,10],[-29,16]],'#293a30',2);oval(ctx,-14,-16,5,3,'#554d3d',null);}
+  // The gate: the road ALWAYS ends in the bunker, so the bunker receives it
+  // with an open gate facing the approach - wooden posts, a crossbeam and
+  // sandbags in the map's own palette, standing upright whatever the
+  // direction the road arrives from.
+  const ux=Math.cos(approach),uy=Math.sin(approach),px=-uy,py=ux;
+  const gate={x:ux*38,y:uy*38};
+  const post=side=>({x:gate.x+px*13*side,y:gate.y+py*13*side});
+  const [p1,p2]=[post(1),post(-1)];
+  for(const q of [p1,p2]){
+    oval(ctx,q.x,q.y+9,7,3,'#c3ab7d','#8f7a52',1);
+    line(ctx,[[q.x,q.y+7],[q.x,q.y-19]],'#5c4a33',5);
+    oval(ctx,q.x,q.y-21,3,3,'#6b563c',null);
+  }
+  line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
+  ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
 function pad(ctx,p,tower,selected,types,notify){
   const x=p.x,y=p.y;
-  shape(ctx,[[x-23,y-11],[x-15,y-20],[x+15,y-20],[x+23,y-11],[x+23,y+11],[x+15,y+20],[x-15,y+20],[x-23,y+11]],tower?'#263b31':'#213a33',selected?'#b5d6ca':'#819f92',selected?2.5:1.5);
-  if(!tower){line(ctx,[[x-12,y-8],[x+12,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
+  // Reported: the drawn towers read as foreign bodies on the new maps. The pad
+  // is now a proper piece of ground: a wider stone-edged plate in the map
+  // palette, a soft shadow, sandbags around the base - the tower stands ON
+  // the field, not on a UI chip. Letter chips are gone; the level badge
+  // stays, it carries information.
+  shape(ctx,[[x-28,y-13],[x-19,y-24],[x+19,y-24],[x+28,y-13],[x+28,y+13],[x+19,y+24],[x-19,y+24],[x-28,y+13]],tower?'#28402f':'#1f3830',selected?'#cfe3d6':'#7fa08f',selected?3:2);
+  shape(ctx,[[x-22,y-9],[x-15,y-18],[x+15,y-18],[x+22,y-9],[x+22,y+9],[x+15,y+18],[x-15,y+18],[x-22,y+9]],tower?'#223a2c':'#1a322b',null,0);
+  // Chiselled rim stones on the plate corners.
+  for(const [sx,sy] of [[-24,-11],[24,-11],[-24,11],[24,11]])oval(ctx,x+sx,y+sy,4,2.5,'#93ab9c',null);
+  if(!tower){line(ctx,[[x-13,y-8],[x+13,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
   const display=towerDisplay(tower.level);
   // A static gold halo remains visible even when reduced motion is enabled.
-  if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,26,23,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
-    ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-25);ctx.textAlign='start';}
+  if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
+    ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
+  // Ground shadow first, then the sandbag base, then the tower sprite: the
+  // stacking order is what makes the tower sit IN the scene.
+  oval(ctx,x,y+17,25,7,'rgba(24,32,26,.28)',null);
+  for(const [sx,sy,r] of [[-17,13,7],[0,16,8],[17,13,7]])oval(ctx,x+sx,y+sy,r,r*.62,'#c3ab7d','#8f7a52',1);
   // Preserve vector rendering only as an asset-loading fallback.
   const artwork=sprite(ctx,['mg','cannon','flak','sniper'][tower.type],notify);
-  if(artwork)ctx.drawImage(artwork,x-24,y-25,48,40);
-  else fallbackMarker(ctx,x,y-3,['MG','C','AA','S'][tower.type],types[tower.type].color,16,14);
-  oval(ctx,x-15,y+13,7,7,'#263e30','#f1dfaa',1);ctx.fillStyle='#f6e9c6';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(['M','C','F','S'][tower.type],x-15,y+16);
-  oval(ctx,x+15,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+15,y+17);ctx.textAlign='start';
+  if(artwork)ctx.drawImage(artwork,x-28,y-34,56,47);
+  else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
+  oval(ctx,x+18,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+18,y+17);ctx.textAlign='start';
 }
 function soldier(ctx,p,own,pose={},notify){
   const x=p.x,y=p.y,artwork=sprite(ctx,'hero',notify);
@@ -239,9 +268,23 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],onSpritesReady=null}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state,onSpritesReady);ctx.restore();
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+  ctx.save();ctx.translate(bunkerPosition.x,bunkerPosition.y);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
-  ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText(tr('ENEMY ENTRY'),15,75);if(paths.length>1)ctx.fillText(tr('ENEMY ENTRY'),15,height-75);
+  // Enemy entries live where the roads actually cross the border - any of
+  // the four edges - instead of two fixed labels on the left rim.
+  ctx.font='bold 12px Georgia';
+  for(const road of paths){
+    const a=road[0],b=road[1]||{x:a.x+1,y:a.y};
+    const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,ux=dx/len,uy=dy/len;
+    // Three chevrons pointing down the road, just inside the border.
+    for(let k=0;k<3;k++){const cx=a.x+ux*(64+k*13),cy=a.y+uy*(64+k*13);
+      line(ctx,[[cx-uy*8-ux*7,cy+ux*8-uy*7],[cx,cy],[cx+uy*8-ux*7,cy-ux*8-uy*7]],'#2f4237',4);}
+    // The label sits beside the road, never on the tar, with a paper halo so
+    // it stays readable on every ground.
+    const lx=a.x+ux*88-uy*34,ly=a.y+uy*88+ux*34;
+    ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle=paper;ctx.strokeText(tr('ENEMY ENTRY'),lx,ly);ctx.fillStyle='#344231';ctx.fillText(tr('ENEMY ENTRY'),lx,ly);ctx.textAlign='start';
+  }
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
