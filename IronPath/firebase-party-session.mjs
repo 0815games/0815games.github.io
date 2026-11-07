@@ -1,4 +1,4 @@
-import {normalizeCommand} from './protocol.mjs?v=20261130-v2field1';
+import {normalizeCommand} from './protocol.mjs?v=20261205-torchfix1';
 // Experimental session logic, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.

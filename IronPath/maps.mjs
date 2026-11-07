@@ -103,32 +103,46 @@ export function zoneAt(map,x,y){for(const zone of map?.zones||[])if(Math.hypot(x
 // calls at all), so no existing field changes by a single coordinate.
 function torchesFor(paths,pads,deco,bunker,width,height){
   const torches=[],road=p=>paths.reduce((min,path)=>Math.min(min,...path.slice(1).map((b,i)=>pointDistance(p,path[i],b))),Infinity);
-  const free=p=>p.x>=16&&p.x<=width-16&&p.y>=16&&p.y<=height-16
-    &&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=115
-    &&road(p)>=30
-    // Buildings crowd the roadside band the torches live in - a slim post
-    // only needs a small gap, gate wings keep their distance.
-    &&(!deco||deco.every(d=>Math.hypot(p.x-d.x,p.y-d.y)>=(d.kind==='gate'?56:34)))
-    &&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=40)
-    &&torches.every(t=>Math.hypot(p.x-t.x,p.y-t.y)>=100);
-  paths.forEach((path,ri)=>{
-    // Roads start on opposite rims so the first torch of each does too.
-    let side=ri%2?1:-1,arc=140,cum=0;
-    for(let i=1;i<path.length;i++){
-      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
-      if(!len){cum+=0;continue;}
-      const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-      // Positions are measured over the WHOLE road, not per segment: the
-      // grid walk leaves short staircase steps and those would never see a
-      // torch at all. 140 in clears the entry marker; 165 apart after that.
-      while(arc<=cum+len){
-        const s=arc-cum,p={x:a.x+ux*s+px*46*side,y:a.y+uy*s+py*46*side};
-        if(free(p))torches.push(p);
-        side=-side;arc+=165;
+  // A rare seed crowds every strict torch spot (hairpin returns, buildings,
+  // pads, the bunker). The relaxed second pass only runs when the strict one
+  // placed nothing, so no existing field changes by a single torch: it keeps
+  // the reported promise that no map ever goes dark. Still pure derivation
+  // from the finished geometry - no rng, no map change.
+  const pass=relaxed=>{
+    torches.length=0;
+    const m=relaxed?{road:26,deco:22,gate:44,pad:30,bunker:95}:{road:30,deco:34,gate:56,pad:40,bunker:115};
+    const free=p=>p.x>=16&&p.x<=width-16&&p.y>=16&&p.y<=height-16
+      &&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=m.bunker
+      &&road(p)>=m.road
+      // Buildings crowd the roadside band the torches live in - a slim post
+      // only needs a small gap, gate wings keep their distance.
+      &&(!deco||deco.every(d=>Math.hypot(p.x-d.x,p.y-d.y)>=(d.kind==='gate'?m.gate:m.deco)))
+      &&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=m.pad)
+      &&torches.every(t=>Math.hypot(p.x-t.x,p.y-t.y)>=100);
+    paths.forEach((path,ri)=>{
+      // Roads start on opposite rims so the first torch of each does too.
+      let side=ri%2?1:-1,arc=140,cum=0;
+      for(let i=1;i<path.length;i++){
+        const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
+        if(!len){cum+=0;continue;}
+        const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+        // Positions are measured over the WHOLE road, not per segment: the
+        // grid walk leaves short staircase steps and those would never see a
+        // torch at all. 140 in clears the entry marker; 165 apart after that.
+        while(arc<=cum+len){
+          const s=arc-cum,p={x:a.x+ux*s+px*46*side,y:a.y+uy*s+py*46*side};
+          if(free(p))torches.push(p);
+          // Relaxed pass: if the alternating side is taken, try the other
+          // rim of the road before giving up on the spot.
+          else if(relaxed){const q={x:a.x+ux*s-px*46*side,y:a.y+uy*s-py*46*side};if(free(q))torches.push(q);}
+          side=-side;arc+=165;
+        }
+        cum+=len;
       }
-      cum+=len;
-    }
-  });
+    });
+  };
+  pass(false);
+  if(!torches.length)pass(true);
   return torches;
 }
 function buildGridMap(id){

@@ -1,8 +1,8 @@
 // Experimental integration-test entry point. Not connected to live lobbies,
 // Firebase or recovery. A validated lock does not establish trusted ownership.
-import {createMatch} from './simulation.mjs?v=20261130-v2field1';
-import {createVersus} from './versus.mjs?v=20261130-v2field1';
-import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261130-v2field1';
+import {createMatch} from './simulation.mjs?v=20261205-torchfix1';
+import {createVersus} from './versus.mjs?v=20261205-torchfix1';
+import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261205-torchfix1';
 import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs';
 import {workshopEffects} from './workshop-effects.mjs';
 function attach(lane,lock){

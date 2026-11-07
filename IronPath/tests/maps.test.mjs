@@ -128,6 +128,11 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
  assert.equal(edges.size,4,`sector ${sector}: starts use all four borders (${[...edges].join(',')})`);
  if(spec.roads>1)assert.ok(multi>=90,`sector ${sector}: most fields carry both roads (${multi}/120)`);
 }
+// Regression: a rare seed crowds every strict torch spot (hairpin returns,
+// buildings, pads, the bunker) - the relaxed second pass keeps that field
+// lit too, because no map may ever go dark.
+const crowded=getMap('g3-0b9f45231');
+assert.ok(crowded.torches.length>=1,'the crowded seed still gets its torches');
 // Deterministic under cache eviction, and snapshots carry the id untouched.
 const once=getMap('g3-119e3779b1');
 assert.deepEqual(getMap('g3-119e3779b1'),once);

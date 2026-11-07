@@ -1,6 +1,6 @@
 import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261130-v2field1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261205-torchfix1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
 import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrines1';
