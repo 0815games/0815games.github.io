@@ -548,6 +548,7 @@ body:has(#runResults[open]) .first-run-coach{display:none}
   position:fixed;z-index:60;
   left:max(10px,env(safe-area-inset-left,0px));
   bottom:calc(var(--action-bar,calc(66px + env(safe-area-inset-bottom,0px))) + 10px);
+  width:auto;max-width:fit-content;
   min-height:44px;margin:0;padding:9px 14px;
   background:#e4ca89;border:1px solid #e8d49a;border-radius:999px;
   color:#1b3024;font-size:11px;font-weight:bold;letter-spacing:.08em;
