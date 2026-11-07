@@ -104,6 +104,15 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
    assert.ok(Math.hypot(p.x-map.bunker.x,p.y-map.bunker.y)>=78,`${id} pad clear of the bunker`);
    for(const q of map.pads.slice(j+1))assert.ok(Math.hypot(p.x-q.x,p.y-q.y)>=68,`${id} pads do not overlap`);
   }
+  // Reported idea: "Fackeln als Straßen Rand in guten Abständen" - every
+  // field carries torch posts at the roadside, clear of pads and tar.
+  assert.ok(map.torches.length>=1,`${id} torches line the road (${map.torches.length})`);
+  for(const t of map.torches){
+   const d=paths.reduce((min,road)=>Math.min(min,...road.slice(1).map((b,k)=>distance(t,road[k],b))),Infinity);
+   assert.ok(d>=28&&d<=62,`${id} torch stands at the roadside (${Math.round(d)})`);
+   assert.ok(t.x>=10&&t.x<=map.width-10&&t.y>=10&&t.y<=map.height-10,`${id} torch in bounds`);
+   assert.ok(map.pads.every(q=>Math.hypot(t.x-q.x,t.y-q.y)>=38),`${id} torch clear of pads`);
+  }
   for(const d of map.deco){
    assert.ok(d.x>=20&&d.x<=map.width-20&&d.y>=20&&d.y<=map.height-20,`${id} building in bounds`);
    const r=paths.reduce((min,road)=>Math.min(min,...road.slice(1).map((b,k)=>distance(d,road[k],b))),Infinity);

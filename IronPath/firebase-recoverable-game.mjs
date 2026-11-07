@@ -1,18 +1,18 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261112-alpha2';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261130-v2field1';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-alpha2';
 // Experimental integration adapter. It is not enabled in the live lobby until
 // recovery rules and host re-entry have been validated and published.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
-import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261105-workshop3';
+import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261130-v2field1';
 import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261104-hostpause1';
-import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261112-alpha3';
+import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261130-v2field1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261105-workshop3';
-import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261105-workshop3';
-import {createVersus} from './versus.mjs?v=20261105-workshop3';
-import {createMatch} from './simulation.mjs?v=20261124-zones1';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261128-randomends1';
+import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261130-v2field1';
+import {createFourCoop,createTwoVsTwo,FOUR_PLAYER_MAP} from './four-modes.mjs?v=20261130-v2field1';
+import {createVersus} from './versus.mjs?v=20261130-v2field1';
+import {createMatch} from './simulation.mjs?v=20261130-v2field1';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261130-v2field1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,players,mapId=DEFAULT_MAP,workshopLock=null,resumeGeneration=null,crypto=globalThis.crypto,readFresh,lockManager=globalThis.navigator?.locks,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){
  const uid=auth?.currentUser?.uid,hostId=manifest?.hostId,ids=manifest?.playerIds,mode=manifest?.mode,teams=manifest?.teamRosters,four=mode==='four-coop'||mode==='two-vs-two';
