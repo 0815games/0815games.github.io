@@ -213,11 +213,27 @@ function drawZoneStates(ctx,zones,state){
 // Sector maps carry their own ruins, sheds and gatehouses. They are pure set
 // dressing drawn into the cached terrain layer: they never cover a pad (the
 // generator keeps them clear) and they never touch game state.
-function drawDeco(ctx,deco,theme){
+// Reported: the buildings, ruins etc. of the new map rendering should have the
+// same look as towers and field - rendered artwork, not flat vector boxes. The
+// vector branches below stay as the asset-loading fallback, exactly like the
+// tower pads keep theirs.
+const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34};
+function drawDeco(ctx,deco,theme,notify){
   const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
   const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
+    const artwork=sprite(ctx,d.kind,notify);
+    if(artwork){
+      // Painted building, anchored like the towers: bottom-centre on the deco
+      // point, soft contact shadow, upright whatever the road does - a gate
+      // pillar must never lie on its side, so it ignores the deco rotation.
+      const w=DECO_ART[d.kind]||58,h=w*artwork.height/artwork.width;
+      ctx.save();ctx.translate(d.x,d.y);if(d.rot&&d.kind!=='gate')ctx.rotate(Math.PI/2);
+      oval(ctx,0,10,w*.42,Math.max(4,h*.09),'rgba(24,32,26,.22)',null);
+      ctx.drawImage(artwork,-w/2,13-h,w,h);
+      ctx.restore();continue;
+    }
     ctx.save();ctx.translate(d.x,d.y);if(d.rot)ctx.rotate(Math.PI/2);
     if(d.kind==='ruin'){
       // A broken wall: jagged roofline, a gap, and rubble at the foot.
@@ -253,14 +269,14 @@ function drawDeco(ctx,deco,theme){
     ctx.restore();
   }
 }
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[]}={}){
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
       if(img){target.save();target.globalAlpha=.92;target.drawImage(img,0,0,width,height);target.restore();}
     }
-    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme);
+    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme,notify);
   }
   if(!doc?.createElement){paint(ctx);return;}
   let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
@@ -268,7 +284,7 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],onSpritesReady=null}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   ctx.save();ctx.translate(bunkerPosition.x,bunkerPosition.y);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   // Enemy entries live where the roads actually cross the border - any of
