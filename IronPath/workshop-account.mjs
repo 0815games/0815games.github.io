@@ -1,6 +1,6 @@
 // Workshop transaction service, connected behind a disabled release gate.
 // Do not enable until compatible Firebase rules and mixed-client fencing exist.
-import {initializeWireWorkshop,applyWireWorkshopCommand,syncPrestige} from './workshop-wire.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,syncPrestige} from './workshop-wire.mjs?v=20261107-balance1';
 
 export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
  if(!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||typeof canEdit!=='function')throw new Error('Invalid workshop account service');

@@ -1,15 +1,15 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261107-balance1';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261205-torchfix1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
-import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
-import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrines1';
+import {parseLoadout} from './armory.mjs?v=20261107-balance1';
+import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261107-balance1';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { waveFormation } from './combat.mjs?v=20261102-battle2';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
-import {campaignSurge} from './campaign-pressure.mjs';
+import {campaignSurge} from './campaign-pressure.mjs?v=20261107-balance1';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
@@ -166,14 +166,18 @@ export function applyCommand(state, playerId, command) {
       if(active==='engineer'&&!state.towers.some(t=>t.ownerId===playerId))return {ok:false,reason:'Build a tower first.'};
       if(active==='medic'&&state.hp>=(state.maxHp??100))return {ok:false,reason:'Bunker health is already full.'};
       player.cooldown=Math.max(10,(player.skills?.extra?.[3]?25:30)-equipmentForPlayer(state,player).cooldown+((active==='logistics'||active==='medic'||active==='recon')&&variant===1?8:0)-webBonuses(player.skills).cooldown);
+      // Flat ability numbers grow with the wave curve from wave 6, so an
+      // unlocked skill path stays a real option in long runs instead of
+      // becoming a rounding error next to upgraded towers.
+      const waveNow=state.wave||0,abilityScale=1+Math.max(0,waveNow-5)*.04;
       if(active==='assault'){
         const bonus=equipmentForPlayer(state,player).airstrikeDamage;
-        if(variant===2){const target=state.enemies.filter(e=>e.hp>0).reduce((a,b)=>!a||b.hp>a.hp?b:a,null);if(target)target.hp-=80+bonus;}
-        else {for(const enemy of state.enemies)enemy.hp-=(variant===1?25:35)+bonus;if(variant===1)state.suppression=Math.max(state.suppression||0,3);}
+        if(variant===2){const target=state.enemies.filter(e=>e.hp>0).reduce((a,b)=>!a||b.hp>a.hp?b:a,null);if(target)target.hp-=Math.round((80+bonus)*abilityScale);}
+        else {const burst=Math.round((variant===1?25:35)*abilityScale)+bonus;for(const enemy of state.enemies)enemy.hp-=burst;if(variant===1)state.suppression=Math.max(state.suppression||0,3);}
       }else if(active==='engineer'){player.overdrive=variant===1?15:variant===2?6:10;player.overdriveFactor=variant===1?1.35:variant===2?1.8:1.5;}
       else if(active==='logistics'){addSupplies(state,playerId,(variant===1?45:variant===2?20:30)+(player.skills?.extra?.[5]?15:0));if(variant===2)state.hp=Math.min(state.maxHp??100,state.hp+6);}
-      else if(active==='medic'){state.hp=Math.min(state.maxHp??100,state.hp+(variant===1?25:variant===2?10:15)+(player.skills?.extra?.[7]?10:0));if(variant===2)addSupplies(state,playerId,12);}
-      else if(active==='recon'){state.suppression=(variant===1?12:variant===2?4:8)+(player.skills?.extra?.[9]?3:0);if(variant===2)for(const enemy of state.enemies)enemy.hp-=20;}
+      else if(active==='medic'){state.hp=Math.min(state.maxHp??100,state.hp+(variant===1?25:variant===2?10:15)+(player.skills?.extra?.[7]?10:0)+Math.floor(Math.max(0,waveNow-5)/6));if(variant===2)addSupplies(state,playerId,12);}
+      else if(active==='recon'){state.suppression=(variant===1?12:variant===2?4:8)+(player.skills?.extra?.[9]?3:0);if(variant===2)for(const enemy of state.enemies)enemy.hp-=Math.round(20*abilityScale);}
       const combos=activateCombos(state,playerId,active,addSupplies);return {ok:true,combos};
     }
     default:return {ok:false,reason:'Unknown command.'};

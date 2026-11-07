@@ -1,8 +1,8 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
-import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261105-workshop1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261107-balance1';
+import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
-import {webBonuses} from './skills.mjs?v=20261104-doctrines1';
+import {webBonuses} from './skills.mjs?v=20261107-balance1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt} from './maps.mjs?v=20261205-torchfix1';
@@ -10,7 +10,7 @@ import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt} from './maps.mjs?v=20261205-
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261205-torchfix1';
+import {addSupplies} from './match.mjs?v=20261107-balance1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -37,8 +37,14 @@ export function createMatch(players,mapId=DEFAULT_MAP){
 export const COOP_REWARD_RATE=.65;
 export const COOP_ENEMY_HEALTH=1.5;
 function activePlayers(state){return Object.keys(state.players).sort().filter(id=>state.players[id].active!==false);}
+// Assault ranks pay +2 damage per rank; from wave 6 the rank grows by +1 every
+// six waves (capped at +3) so the skill path stays relevant next to towers in
+// long endless runs instead of fading behind the wave curve.
+function assaultRankDamage(wave){return 2+(wave>=6?Math.min(3,1+Math.floor((wave-6)/6)):0);}
 function rewardTeam(state,amount,enemyKill=false){
-  const active=activePlayers(state),salvage=enemyKill?(state.runPerks?.salvage||0):0,base=state.individualSupplies&&active.length>1?Math.floor(amount*(active.length>2?.4:COOP_REWARD_RATE)):amount;
+  // Larger squads split each reward, but the team total grows with the enemy
+  // health bill: 65% each for two, 50% for three, 45% for four soldiers.
+  const active=activePlayers(state),salvage=enemyKill?(state.runPerks?.salvage||0):0,base=state.individualSupplies&&active.length>1?Math.floor(amount*(active.length>2?(active.length>3?.45:.5):COOP_REWARD_RATE)):amount;
   if(state.individualSupplies){for(const id of active)addSupplies(state,id,base+salvage+(enemyKill?((state.players[id].skills?.logistics||0)+(state.players[id].skills?.extra?.[4]?1:0)+webBonuses(state.players[id].skills).supplies):0));}
   else state.money+=base+salvage+(enemyKill?((Object.values(state.players)[0]?.skills?.logistics||0)+(Object.values(state.players)[0]?.skills?.extra?.[4]?1:0)+webBonuses(Object.values(state.players)[0]?.skills).supplies):0);
   return base;
@@ -135,12 +141,12 @@ export function stepMatch(state){
       if(tower.type===0&&perks.pinning&&target.kind!=='plane')target.pinned=Math.max(target.pinned||0,2+perks.pinning-1);
       if(tower.type===2&&perks.chain){const other=state.enemies.find(e=>e!==target&&e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-target.x,e.y-target.y)<=85);if(other){const chain=dealt*.3*perks.chain*bossWeaponFactor(other);if(owner){const stats=owner.towerDamage||(owner.towerDamage=[0,0,0,0]);stats[tower.type]+=Math.min(Math.max(0,other.hp),chain);}other.hp-=chain;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#8cc0a6'});}}tower.timer=type.interval*Math.max(.5,1-(bonuses[tower.ownerId]?.towerSpeed||0)/100)*(branch?branch.interval:1)*(owner?.skills?.extra?.[2] ? .9 : 1)*Math.pow(.92,state.runPerks?.speed||0);state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:tower.type,color:type.color});}}}
   for(const id of Object.keys(state.players).sort()){
-    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+(p.skills?.extra?.[1]?25:0)+(p.skills?.extra?.[8]?25:0)+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+2*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)});hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
+    const p=state.players[id];if(p.active===false)continue;p.shotTimer-=dt;if(state.wave>0&&p.shotTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-p.x,e.y-p.y)<targetingRange(theme,150+bonuses[id].heroRange+(p.skills?.extra?.[1]?25:0)+(p.skills?.extra?.[8]?25:0)+equipmentForPlayer(state,p).range,e,state.enemies,{clouds:state.dustClouds||[]}));if(target){const dealt=(10+Math.min(p.level-1,20)+assaultRankDamage(state.wave)*(p.skills?.assault||0)+bonuses[id].damage+equipmentForPlayer(state,p).damage)*(target.boss==='bossIronclad'?.8:1)*bossWeaponFactor(target)*(1+.15*(state.runPerks?.hero||0))*weaponDamageFactor(theme,target,Math.hypot(target.x-p.x,target.y-p.y),{recon:(p.skills?.recon||0)>0,rubbleCleared:state.rubbleCleared,zoneInfo:zoneInfoOf(target)});hitRubble(target,dealt);target.hp-=dealt;p.heroShotCount=(p.heroShotCount||0)+1;
       if(p.skills?.web?.[4]&&p.heroShotCount%5===0){const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=120);if(other){other.hp-=20;state.shots.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:shotDuration,duration:shotDuration,kind:2,color:'#f8a466'});comboCue(p,'War Hero',other.x,other.y);events.push({type:'skillCombo',name:'War Hero',x:other.x,y:other.y});}}
       if(p.skills?.web?.[24]&&p.heroShotCount%4===0&&target.hp>0){target.pinned=Math.max(target.pinned||0,3);comboCue(p,'Ghost Operative',target.x,target.y);events.push({type:'skillCombo',name:'Ghost Operative',x:target.x,y:target.y});}
       p.shotTimer=.65*Math.max(.5,1-bonuses[id].heroSpeed/100)*(p.skills?.extra?.[0] ? .85 : 1)*equipmentForPlayer(state,p).shotIntervalMultiplier;state.shots.push({x:p.x,y:p.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}
   }
-  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){if(Number.isFinite(e.x)&&Number.isFinite(e.y)){const pops=state.combatPops||(state.combatPops=[]);pops.push({x:e.x,y:e.y,life:.65,boss:!!e.boss});if(pops.length>20)pops.shift();}rewardTeam(state,e.reward,true);state.lootKills=(state.lootKills||0)+1;if(state.lootKills%5===0){const cacheReward=rewardTeam(state,15);if(state.individualSupplies)for(const p of Object.values(state.players))if(p.active!==false)p.lootCaches=(p.lootCaches||0)+1;events.push({type:'lootDrop',supplies:cacheReward});}return false;}if(e.segment>=PATH.length){const damage=e.damage*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);state.hp-=damage;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:e.boss||e.kind,damage};events.push({type:'bunkerHit',kind:e.boss||e.kind,damage});return false;}return true;});
+  state.enemies=state.enemies.filter(e=>{if(e.hp<=0){if(Number.isFinite(e.x)&&Number.isFinite(e.y)){const pops=state.combatPops||(state.combatPops=[]);pops.push({x:e.x,y:e.y,life:.65,boss:!!e.boss});if(pops.length>20)pops.shift();}rewardTeam(state,e.reward,true);state.lootKills=(state.lootKills||0)+1;if(state.lootKills%5===0){const cacheReward=rewardTeam(state,15);if(state.individualSupplies)for(const p of Object.values(state.players))if(p.active!==false)p.lootCaches=(p.lootCaches||0)+1;events.push({type:'lootDrop',supplies:cacheReward});}return false;}if(e.segment>=PATH.length){const damage=e.damage*(state.campaignContract?.damage||1)*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);state.hp-=damage;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:e.boss||e.kind,damage};events.push({type:'bunkerHit',kind:e.boss||e.kind,damage});return false;}return true;});
   if(state.running&&state.hp>0&&state.hp<state.maxHp*.3)for(const id of activePlayers(state)){const p=state.players[id];if(p.skills?.web?.[19]&&p.guardWave!==state.wave){p.guardWave=state.wave;state.hp=Math.min(state.maxHp,state.hp+20);comboCue(p,'Bunker Guardian',bunker.x+10,bunker.y);events.push({type:'skillCombo',name:'Bunker Guardian',x:bunker.x+10,y:bunker.y});}}
   if(state.hp<=0){state.ended=true;state.running=false;events.push({type:'defeat'});}
   else if(state.running&&state.spawnLeft===0&&state.enemies.length===0){
@@ -160,7 +166,7 @@ export function stepMatch(state){
       // Every tenth cleared wave a solo endless run falls back to the next
       // sector. Missions, training and every multiplayer mode hold their map
       // for the whole match: only a g3 solo field retreats.
-      if(state.wave%10===0&&sector>0&&!state.individualSupplies&&!state.hostId){state.pendingSector=state.wave+1;events.push({type:'sectorClear',wave:state.wave,sector});}
+      if(state.wave%10===0&&sector>0&&!state.individualSupplies&&!state.hostId&&!state.campaignContract){state.pendingSector=state.wave+1;events.push({type:'sectorClear',wave:state.wave,sector});}
     events.push({type:'waveCleared',wave:state.wave,xp:waveXP(state.wave),victory:false});
   }
   return events;

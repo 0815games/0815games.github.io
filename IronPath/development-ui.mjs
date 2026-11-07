@@ -1,6 +1,6 @@
-import {nodeMatches} from './skill-planner.mjs?v=20261104-doctrines1';
+import {nodeMatches} from './skill-planner.mjs?v=20261107-balance1';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261104-doctrines1';
+import {SKILL_PATHS,pointsLeft,WEB_NODES,webReady,webRequirement} from './skills.mjs?v=20261107-balance1';
 const NS='http://www.w3.org/2000/svg';
 const colors=['#d89970','#d7bd71','#b4c682','#8ac7b1','#8eafcf'];
 function svg(document,tag,attrs){const node=document.createElementNS(NS,tag);for(const [k,v] of Object.entries(attrs))node.setAttribute(k,String(v));return node;}

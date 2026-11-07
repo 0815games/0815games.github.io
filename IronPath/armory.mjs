@@ -5,15 +5,15 @@
 // overflow the format, so the dog tag is NOT an armory item: it is issued by the
 // first-run debrief (see first-run-ending.mjs) and drawn by dog-tag.mjs.
 export const ITEMS=[
-  {name:'Field Scope',description:'+3 soldier damage per shot.',wave:2,icon:'scope'},
+  {name:'Field Scope',description:'+3 soldier damage per shot, +1 more every three waves from wave 6.',wave:2,icon:'scope'},
   {name:'Reinforced Vest',description:'+10 shared bunker maximum health.',wave:4,icon:'vest'},
   {name:'Combat Boots',description:'+20 soldier movement speed.',wave:6,icon:'boots'},
   {name:'Spotter Binoculars',description:'+30 soldier firing range.',wave:8,icon:'binoculars'},
   {name:'Field Radio',description:'Your active ability recharges 4 seconds faster.',wave:10,icon:'radio'},
   {name:'Supply Satchel',description:'+25 starting supplies for its wearer.',wave:12,icon:'satchel'},
-  {name:'Demolition Pouch',description:'From wave 6, Assault Airstrike deals 45 instead of 35 damage.',wave:14,icon:'pouch'},
+  {name:'Demolition Pouch',description:'From wave 6, Assault Airstrike deals 45 instead of 35 damage, +1 more every two waves.',wave:14,icon:'pouch'},
   {name:'Field Manual',description:'From wave 6, your soldier fires 10% faster.',wave:16,icon:'manual'},
-  {name:'Quartermaster Badge',description:'From wave 6, gain 8 personal supplies after each completed wave.',wave:18,icon:'badge'},
+  {name:'Quartermaster Badge',description:'From wave 6, gain 8 personal supplies after each completed wave, +1 more every eight waves.',wave:18,icon:'badge'},
   {name:'Tank Spotter Kit',description:'From wave 6, your towers deal 10% more damage to tanks.',wave:20,icon:'tankkit'}
 ];
 export const DEFAULT_ARMORY={scrap:0,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:0,equipped:0};

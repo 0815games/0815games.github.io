@@ -5,7 +5,7 @@
 // the issue date of the first run), so an old save, an old client and a new
 // client all draw the same tag without a migration, a database field or a rules
 // change. It is cosmetic: no stat, no bonus, never equipped, always worn.
-import {armoryIcon} from './development-ui.mjs';
+import {armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 
 const SALT='0815-IRON-PATH';
 export const DOG_TAG_BRAND='0815 GAMES · IRON PATH';

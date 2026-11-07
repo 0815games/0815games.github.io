@@ -1,14 +1,14 @@
 // Presentation strings only: item IDs, ranks, prices and saved profiles stay unchanged.
 export const germanArmory=Object.freeze({
-  'Field Scope':'Zielfernrohr', '+3 soldier damage per shot.':'+3 Soldatenschaden pro Schuss.',
+  'Field Scope':'Zielfernrohr', '+3 soldier damage per shot, +1 more every three waves from wave 6.':'+3 Soldatenschaden pro Schuss, ab Welle 6 +1 mehr alle drei Wellen.',
   'Reinforced Vest':'Verstärkte Weste', '+10 shared bunker maximum health.':'+10 maximale Lebenspunkte für den gemeinsamen Bunker.',
   'Combat Boots':'Kampfstiefel', '+20 soldier movement speed.':'+20 Bewegungsgeschwindigkeit für den Soldaten.',
   'Spotter Binoculars':'Beobachtungsfernglas', '+30 soldier firing range.':'+30 Schussreichweite für den Soldaten.',
   'Field Radio':'Feldfunkgerät', 'Your active ability recharges 4 seconds faster.':'Deine aktive Fähigkeit lädt sich 4 Sekunden schneller auf.',
   'Supply Satchel':'Versorgungstasche', '+25 starting supplies for its wearer.':'+25 Startvorräte für den Träger.',
-  'Demolition Pouch':'Sprengstofftasche', 'From wave 6, Assault Airstrike deals 45 instead of 35 damage.':'Ab Welle 6 verursacht der Sturm-Luftschlag 45 statt 35 Schaden.',
+  'Demolition Pouch':'Sprengstofftasche', 'From wave 6, Assault Airstrike deals 45 instead of 35 damage, +1 more every two waves.':'Ab Welle 6 verursacht der Sturm-Luftschlag 45 statt 35 Schaden, zusätzlich +1 alle zwei Wellen.',
   'Field Manual':'Feldhandbuch', 'From wave 6, your soldier fires 10% faster.':'Ab Welle 6 schießt dein Soldat 10 % schneller.',
-  'Quartermaster Badge':'Quartiermeister-Abzeichen', 'From wave 6, gain 8 personal supplies after each completed wave.':'Ab Welle 6 erhältst du nach jeder abgeschlossenen Welle 8 persönliche Vorräte.',
+  'Quartermaster Badge':'Quartiermeister-Abzeichen', 'From wave 6, gain 8 personal supplies after each completed wave, +1 more every eight waves.':'Ab Welle 6 erhältst du nach jeder abgeschlossenen Welle 8 persönliche Vorräte, zusätzlich +1 alle acht Wellen.',
   'Tank Spotter Kit':'Panzeraufklärer-Ausrüstung', 'From wave 6, your towers deal 10% more damage to tanks.':'Ab Welle 6 verursachen deine Türme 10 % mehr Schaden an Panzern.',
   'Fortification':'Befestigung', '+10 maximum bunker health per rank.':'+10 maximale Bunker-Lebenspunkte pro Rang.',
   'Plating':'Panzerung', '10% less bunker damage per rank.':'10 % weniger Bunkerschaden pro Rang.',

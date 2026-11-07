@@ -9,10 +9,10 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261205-torchfix1';
-import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261205-torchfix1';
-import {decodeWorkshop} from './workshop-wire.mjs';
-import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs';
+import {createMatch} from './simulation.mjs?v=20261107-balance1';
+import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261107-balance1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261107-balance1';
+import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261107-balance1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
@@ -41,7 +41,7 @@ function applyContract(state,campaign,threat,training=false){
  state.hp=Math.min(state.hp,state.maxHp);
  state.campaignContract=training
   ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT,bossEvery:TRAINING_BOSS_EVERY}
-  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad};
+  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad,damage:threat.damage};
  // Only the training contract raises the wallet: its coach gates the upgrade card
  // on the field, and the endless start (125) could not buy the dearest tower AND
  // its first upgrade. A floor, not an override - equipment that grants start

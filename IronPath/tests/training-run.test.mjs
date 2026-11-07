@@ -73,7 +73,7 @@ test('a training deployment is a real match with the contract attached',()=>{
  assert.equal(endless.campaignContract,undefined);
  assert.equal(endless.maxHp,100);
  const legendary=createSoloDeployment({player:player(),profile:profile(),mapId:'road',workshopEnabled:false,campaign:{id:'tidelock',threat:'legendary'}});
- assert.equal(legendary.maxHp,55);
+ assert.equal(legendary.maxHp,68);
  assert.equal(legendary.campaignContract.bossUnit,undefined,'only training weakens bosses');
 });
 

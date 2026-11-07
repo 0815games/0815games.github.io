@@ -1,4 +1,4 @@
-import {soldierProfile} from './soldier-profile.mjs?v=20261105-soldier1';
+import {soldierProfile} from './soldier-profile.mjs?v=20261107-balance1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 export function createSoldierScreen({document,getProfile,translate:tr,onArmory,onSkills}){
  const $=id=>document.getElementById(id),dialog=$('soldierDialog');

@@ -1,6 +1,6 @@
 // Integration-test entry point only; not reachable from the production UI.
-import {createMatch} from './simulation.mjs?v=20261205-torchfix1';
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs';
+import {createMatch} from './simulation.mjs?v=20261107-balance1';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261107-balance1';
 export function createWorkshopSoloMatch(player,workshop,mapId){
  const snapshot=captureWorkshopLoadout(workshop,'solo');if(!snapshot||!player?.loadout)throw new Error('Invalid solo workshop loadout');
  // The new loadout replaces, rather than stacks with, the old equipped field.

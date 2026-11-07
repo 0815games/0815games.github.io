@@ -1,4 +1,4 @@
-import {SKILL_PATHS,WEB_NODES,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild} from './skills.mjs?v=20261104-doctrines1';
+import {SKILL_PATHS,WEB_NODES,webReady,webBonuses,pointsLeft,abilityName,parseBuild,encodeBuild} from './skills.mjs?v=20261107-balance1';
 import {COMBOS,CAPSTONES,comboTier} from './skill-combos.mjs?v=20261102-results1';
 export const nodeKey=(path,rank)=>`${path}:${rank}`;
 export function prerequisites(path,rank){

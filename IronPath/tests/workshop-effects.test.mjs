@@ -18,7 +18,9 @@ test('crafted equipment stacks across slots and applies only the equipped modifi
 test('competitive modes standardize effects while keeping visual choices',()=>{
  const w=migrateWorkshop({owned:1,equipped:1}),solo=captureWorkshopLoadout(w,'solo');
  for(const mode of ['versus','two-vs-two']){const snap=captureWorkshopLoadout(w,mode);assert.deepEqual(snap.items,solo.items);assert.deepEqual(workshopEffects(snap,20),baseline);}
- assert.equal(effect(w,20,'coop').damage,3);assert.equal(effect(w,20,'four-coop').damage,3);
+ // Migrated legacy gear keeps its early value and grows with the wave curve
+ // from wave 6 (see equipment-effects.mjs): scope damage 3 + 5 at wave 20.
+ assert.equal(effect(w,20,'coop').damage,8);assert.equal(effect(w,20,'four-coop').damage,8);
 });
 test('match snapshot is detached, immutable and malformed input is rejected',()=>{
  const w=migrateWorkshop({owned:1,equipped:1}),snap=captureWorkshopLoadout(w,'solo');w.equipped.gadget='none';assert.equal(workshopEffects(snap,1).damage,3);assert.ok(Object.isFrozen(snap.items[2]));
