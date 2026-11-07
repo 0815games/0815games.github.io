@@ -256,10 +256,9 @@ const assert = require('node:assert/strict');
       return sheet && !sheet.hidden && sheet.dataset.mode === 'actions';
     }, null, {timeout: 10000});
     await page.locator('#radial0').click();
-    await page.waitForFunction(() => {
-      const sheet = document.getElementById('radialMenu');
-      return sheet && !sheet.hidden && sheet.dataset.mode === 'branches';
-    }, null, {timeout: 10000});
+    // The sheet's data-mode only knows 'build' and 'actions' - the specialization
+    // view is named by its title instead.
+    await page.waitForFunction(() => document.getElementById('sheetTitle')?.textContent === 'Choose specialization', null, {timeout: 10000});
     const branches = await page.evaluate(() => [...document.querySelectorAll('#radialMenu .sheet-option')].filter(button => !button.hidden).map(button => ({
       price: button.querySelector('.sheet-price')?.textContent ?? '',
       locked: button.classList.contains('locked'),
