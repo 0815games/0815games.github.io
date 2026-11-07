@@ -310,6 +310,10 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
     // back to an open gate, not to an accusation.
     reopen(){if(!root||!root.hidden||index<0||activeUser==null)return false;render();onVisibilityChange(true);return true;},
     stop(){hide();index=-1;activeUser=null;},
+    // The training contract is WON: whatever cards remain will never be proven on
+    // this field. Reported: the SHOW TASK button outlived the finished tutorial.
+    // Completing writes the seen marker, so no automatic caller nags either.
+    complete(){if(activeUser==null)return false;finish();return true;},
     // Forget that this soldier has seen the coaching. Only the Settings replay calls
     // this: every automatic path (`start`) treats the marker as permanent, which is
     // what keeps the cards from nagging after they were dismissed.

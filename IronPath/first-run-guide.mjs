@@ -100,10 +100,15 @@ export function markGuideSeen(id, storage) {
 export function createGuide({ document, storage, resolve = () => null, onVisibilityChange = () => {} } = {}) {
   const card = document.getElementById('firstRunGuide');
   const $ = id => document.getElementById(id);
-  let index = -1, activeUser = null, waiting = null;
+  let index = -1, activeUser = null;
 
   const step = () => STEPS[index] || null;
   const open = () => !!card && !card.hidden;
+  // Active runs from `start` to the last card - including while the card was put
+  // away. Same prove-of-state principle as the field card: dismissing is a pause,
+  // never an end, and the evidence of a screen still counts while it is hidden.
+  const active = () => index >= 0 && activeUser != null;
+  const isDismissed = () => !!card && card.hidden && active();
 
   function render() {
     const current = step();
@@ -121,9 +126,6 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     // browser has one; without it, the old fixed-position behaviour stands.
     try { card.showPopover?.(); } catch { /* older browsers keep the old layering */ }
     card.dataset.step = current.id;
-    // Which screen the player now has to act on. Set here, once, so `event()` cannot
-    // disagree with what is on the card.
-    waiting = current.advance === 'action' ? current.id : null;
     ringTarget(current);
   }
 
@@ -152,7 +154,6 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     if (card) card.hidden = true;
     const layer = document.getElementById('coachHighlight');
     if (layer) layer.hidden = true;
-    waiting = null;
     onVisibilityChange(false);
   }
 
@@ -189,13 +190,21 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
       return open();
     },
     // The account calls this when the screen did what the card asked (gear put on,
-    // a skill saved). Only the card waiting for that screen advances.
+    // a skill saved). Only the card waiting for that screen advances - and it
+    // advances while put away too: the card comes back at the NEXT step, exactly
+    // like the field card returns at 5/7. Reported: "soll die Mission auch
+    // ausgeblendet werden können und wieder aufgerufen - gleiches Prinzip wie
+    // davor." The account offers the recall pill for the put-away state.
     event(name) {
-      if (!open() || waiting !== step()?.id) return false;
-      if (name !== waiting) return false;
+      const current = step();
+      if (!active() || current?.advance !== 'action' || current.id !== name) return false;
       go();
       return true;
     },
+    // Putting the card away is not finishing the guide. It keeps its place.
+    dismiss() { if (!open()) return false; hide(); return true; },
+    dismissed: isDismissed,
+    reopen() { if (!isDismissed()) return false; render(); onVisibilityChange(true); return true; },
     stop() { hide(); index = -1; activeUser = null; },
     refreshLanguage() { if (open()) render(); },
   };

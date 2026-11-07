@@ -8,8 +8,8 @@
   <link rel="alternate icon" href="assets/favicon.ico">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="style.css?v=20261121-taskback1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261122-minimized1">
-  <link rel="stylesheet" href="skill-menu.css?v=20261125-roadside1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261126-guidefull1">
+  <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261113-fieldframe1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261105-soldier2">
@@ -246,6 +246,7 @@
        throw the task away. A put-away card leaves this recall behind, so a player
        who forgets what to do can read it again. -->
   <button id="coachRecall" class="coach-recall" type="button" hidden data-i18n-text="SHOW TASK">SHOW TASK</button>
+  <button id="guideRecall" class="coach-recall guide-recall" popover="manual" type="button" hidden data-i18n-text="SHOW TASK">SHOW TASK</button>
   <!-- The guide for the screens AFTER the match: rewards, armory, skills, workshop.
        Same discipline as the first-run card - not a dialog, no focus trap, the screen
        behind stays usable - because the player is supposed to be using that screen
@@ -254,7 +255,7 @@
     <div class="guide-head"><span class="guide-step" id="guideStep"></span><span class="guide-caption" id="guideCaption"></span></div>
     <h2 id="guideTitle"></h2>
     <p id="guideText" class="guide-text"></p>
-    <div class="guide-foot"><button id="guideNext" class="primary" type="button" data-i18n-text="NEXT →">NEXT →</button></div>
+    <div class="guide-foot"><button id="guideNext" class="primary" type="button" data-i18n-text="NEXT →">NEXT →</button><button id="guideClose" class="guide-close" type="button" aria-label="Put the guide away" data-i18n-aria-label="Put the guide away">✕</button></div>
   </aside>
   <dialog id="tutorialDialog" class="tutorial-dialog" aria-labelledby="tutorialTitle" aria-describedby="tutorialText">
     <span class="eyebrow" id="tutorialStep"></span>
@@ -327,5 +328,5 @@
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
   <script type="module" src="intro.mjs?v=20261112-firstrun5"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261124-zones1"></script>
+  <script type="module" src="account.js?v=20261126-guidefull1"></script>
 </body></html>

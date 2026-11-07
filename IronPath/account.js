@@ -27,7 +27,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261110-storyde1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261112-firstrun5';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261121-taskback1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261126-guidefull1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261102-longterm1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261104-doctrines1';
 import {rewardDelta} from './run-results.mjs?v=20261105-prestige1';
@@ -39,7 +39,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261104-doctrines1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261121-translation1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261124-zones1';
+import { startGame } from './game.js?v=20261126-guidefull1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-alpha3';
 import { createPlayer } from './match.mjs?v=20261124-zones1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -505,8 +505,24 @@ function replayFirstRun(){
  commandCenter?.showBattle?.();
  return true;
 }
+function syncGuideRecall(){
+ const pill=document.getElementById('guideRecall');if(!pill)return;
+ // The pill has to live ABOVE the modal dialogs the guide explains, so it is a
+ // popover itself - the only layer above a dialog. Older browsers keep the
+ // fixed-position pill, which still works outside dialogs.
+ const show=!!firstRunGuide?.dismissed?.();
+ pill.hidden=!show;
+ try{show?pill.showPopover?.():pill.hidePopover?.();}catch{/* fixed pill stands */}
+}
 function guide(){
- if(!firstRunGuide)firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector)});
+ if(!firstRunGuide){
+  firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector),onVisibilityChange:()=>syncGuideRecall()});
+  // The card's own buttons: NEXT advances a read card, ✕ puts the guide away
+  // (a pause, not an end - the recall pill brings it back), the pill recalls it.
+  const next=document.getElementById('guideNext');if(next)next.onclick=()=>{firstRunGuide?.next?.();};
+  const close=document.getElementById('guideClose');if(close)close.onclick=()=>{firstRunGuide?.dismiss?.();};
+  const pill=document.getElementById('guideRecall');if(pill)pill.onclick=()=>{firstRunGuide?.reopen?.();};
+ }
  return firstRunGuide;
 }
 function offerFirstRunEnding(){
