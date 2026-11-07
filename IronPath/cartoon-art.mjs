@@ -210,8 +210,9 @@ const terrainCache=new WeakMap();
 // Same-origin illustrated ground is cosmetic. Cache a new terrain layer once it
 // loads; no simulation data, map geometry, or hit targets are touched.
 const groundImages=new Map();
-function getGroundImage(doc,theme){
-  const name=({forest:'terrain2-forest.jpg',urban:'terrain2-city.jpg',outpost:'terrain2-city.jpg',scrub:'terrain2-desert.jpg',arctic:'terrain2-snow.jpg',marsh:'terrain2-marsh.jpg'})[theme]||'endless-ground.jpg';
+function getGroundImage(doc,theme,variant=0){
+  const base=({forest:'terrain2-forest',urban:'terrain2-city',outpost:'terrain2-city',scrub:'terrain2-desert',arctic:'terrain2-snow',marsh:'terrain2-marsh'})[theme];
+  const name=base?(variant?base+'-b.jpg':base+'.jpg'):'endless-ground.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
@@ -240,7 +241,7 @@ function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
     ctx.globalAlpha=.15;oval(ctx,p.x,p.y+2,26,16,warm?'#cfe3f2':'#ffca7a',null);
     ctx.globalAlpha=.09;oval(ctx,p.x,p.y+2,42,26,warm?'#cfe3f2':'#ffca7a',null);
     ctx.globalAlpha=1;
-    if(artwork){const h=36,w=h*artwork.width/artwork.height;ctx.drawImage(artwork,p.x-w/2,p.y+2-h,w,h);}
+    if(artwork){const h=42,w=h*artwork.width/artwork.height;ctx.drawImage(artwork,p.x-w/2,p.y+2-h,w,h);}
     else{
       // Painted fallback post until the artwork lands.
       oval(ctx,p.x,p.y+3,7,3,'rgba(20,26,20,.35)',null);
@@ -248,8 +249,11 @@ function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
       ctx.fillStyle='#6a533a';ctx.fillRect(p.x-2.5,p.y-26,2,28);
       ctx.fillStyle='#3a3a3c';ctx.fillRect(p.x-3,p.y-13,6,2);
     }
-    if(warm){oval(ctx,p.x,p.y-30,5,6*flick,'#dceef7','#93b2c4',1);oval(ctx,p.x,p.y-30,2.5,3*flick,'#fff6df',null);}
-    else{oval(ctx,p.x,p.y-31,4.5*flick,7.5*flick,'#ff9d3d',null);oval(ctx,p.x,p.y-29.5,2.6*flick,4.6*flick,'#ffe9b0',null);}
+    // The living flame core rides at the top of whichever post is drawn -
+    // painted artwork or vector fallback.
+    const top=p.y+2-(artwork?42:28);
+    if(warm){oval(ctx,p.x,top+5,5,6*flick,'#dceef7','#93b2c4',1);oval(ctx,p.x,top+5,2.5,3*flick,'#fff6df',null);}
+    else{oval(ctx,p.x,top+4,4.5*flick,7.5*flick,'#ff9d3d',null);oval(ctx,p.x,top+5.5,2.6*flick,4.6*flick,'#ffe9b0',null);}
     ctx.restore();
   }
 }
@@ -349,12 +353,69 @@ function drawDeco(ctx,deco,theme,notify){
     ctx.restore();
   }
 }
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null}={}){
-  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme):null;
+// Deterministic per-map detail stream: xorshift32 seeded by the map seed.
+function detailRng(seed){let s=(seed>>>0)||1;return ()=>{s=(s^(s<<13))>>>0;s=(s^(s>>>17))>>>0;s=(s^(s<<5))>>>0;return s/4294967296;};}
+// Reported: "Wir sollten das so aufbauen das wirklich jede Karte immer andere
+// Details hat" - the ground tells a per-map story: big soft patches plus theme
+// scatter (tufts, stones, cracks, puddles, reeds, drifts), all derived from
+// the map seed alone. Pure presentation - roads, zones, pads and buildings
+// paint over whatever lands beneath them.
+const GROUND_TINTS=['#d9b98a','#9db3c4','#a8b48a','#c4a9a0','#b7a9c0'];
+export function drawGroundDetails(ctx,theme,width,height,seed){
+  const r=detailRng(seed);
+  const P={
+    forest:{patch:['#1e2c1c','#39492f'],items:(x,y,k,r2)=>{
+      if(k<.34){ctx.strokeStyle='#4e6b3f';ctx.lineWidth=1.5;ctx.beginPath();for(let i=-1;i<=1;i++){ctx.moveTo(x,y);ctx.lineTo(x+i*3.2,y-5-r2()*4);}ctx.stroke();}
+      else if(k<.58){ctx.fillStyle=r2()<.5?'#5a4a2e':'#6b5a35';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(x+r2()*8-4,y+r2()*6-3,1.3+r2(),0,Math.PI*2);ctx.fill();}}
+      else if(k<.8){ctx.strokeStyle='rgba(40,32,20,.22)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+8+r2()*10,y+3+r2()*5);ctx.lineTo(x+16+r2()*14,y+1+r2()*6);ctx.stroke();}
+      else oval(ctx,x,y,4+r2()*4,2.5+r2()*2,'rgba(60,90,50,.18)',null);}},
+    urban:{patch:['#33332e','#4a4a44'],items:(x,y,k,r2)=>{
+      if(k<.3){ctx.strokeStyle='rgba(25,25,22,.28)';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+4+r2()*6,y+2-r2()*4);ctx.lineTo(x+9+r2()*8,y+3+r2()*4);ctx.lineTo(x+14+r2()*10,y-1-r2()*3);ctx.stroke();}
+      else if(k<.55){ctx.save();ctx.globalAlpha=.14;oval(ctx,x,y,7+r2()*9,4+r2()*5,'#211f1b',null);ctx.restore();}
+      else if(k<.8){ctx.fillStyle='#6e6a5e';for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(x+r2()*10-5,y+r2()*8-4,.9+r2()*.9,0,Math.PI*2);ctx.fill();}}
+      else{ctx.strokeStyle='rgba(200,190,150,.2)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+10+r2()*8,y);ctx.stroke();}}},
+    arctic:{patch:['#8ea6ad','#e8eee9'],items:(x,y,k,r2)=>{
+      if(k<.4){ctx.save();ctx.globalAlpha=.22;oval(ctx,x,y,10+r2()*16,4+r2()*6,'#f4f8f4',null);ctx.restore();}
+      else if(k<.65){ctx.save();ctx.globalAlpha=.16;oval(ctx,x,y,6+r2()*8,3+r2()*4,'#9fb2b8',null);ctx.restore();}
+      else if(k<.88){ctx.fillStyle='#f6f9f2';for(let i=0;i<3;i++){ctx.beginPath();ctx.arc(x+r2()*9-4,y+r2()*7-3,.7+r2()*.7,0,Math.PI*2);ctx.fill();}}
+      else{ctx.strokeStyle='rgba(160,190,200,.3)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+6+r2()*10,y+2-r2()*4);ctx.stroke();}}},
+    marsh:{patch:['#241f16','#3a3222'],items:(x,y,k,r2)=>{
+      if(k<.34){ctx.save();ctx.globalAlpha=.3;oval(ctx,x,y,8+r2()*12,4+r2()*6,'#5d6b58',null);ctx.restore();ctx.strokeStyle='rgba(30,36,28,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y,8+r2()*12,4+r2()*6,0,0,Math.PI*2);ctx.stroke();}
+      else if(k<.62){ctx.strokeStyle='#5d6b46';ctx.lineWidth=1.4;ctx.beginPath();for(let i=0;i<4;i++){const a=-.3+r2()*.6;ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(a)*3,y-7-r2()*5);}ctx.stroke();}
+      else if(k<.85){ctx.save();ctx.globalAlpha=.16;oval(ctx,x,y,9+r2()*10,3+r2()*3,'#171410',null);ctx.restore();}
+      else oval(ctx,x,y,1.5+r2(),1+r2()*.6,'#7a744e',null);}},
+    scrub:{patch:['#4a3a26','#6b5638'],items:(x,y,k,r2)=>{
+      if(k<.36){ctx.strokeStyle='#a08a5c';ctx.lineWidth=1.4;ctx.beginPath();for(let i=-1;i<=1;i++){ctx.moveTo(x,y);ctx.lineTo(x+i*3.5,y-4-r2()*4);}ctx.stroke();}
+      else if(k<.62){oval(ctx,x+1,y+1,3+r2()*3,2+r2()*2,'rgba(30,26,18,.25)',null);oval(ctx,x,y,3+r2()*3,2+r2()*2,'#8a8274',null);}
+      else if(k<.86){ctx.strokeStyle='rgba(40,30,16,.24)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+5+r2()*8,y+1-r2()*3);ctx.lineTo(x+10+r2()*10,y+2+r2()*4);ctx.stroke();}
+      else oval(ctx,x,y,1.4+r2(),1+r2()*.5,'#b5a075',null);}}
+  }[theme]||{patch:['#2a2a20','#443f2c'],items:(x,y,k,r2)=>{
+    if(k<.4){ctx.strokeStyle='#7d8a5f';ctx.lineWidth=1.4;ctx.beginPath();for(let i=-1;i<=1;i++){ctx.moveTo(x,y);ctx.lineTo(x+i*3,y-4-r2()*4);}ctx.stroke();}
+    else if(k<.7){oval(ctx,x,y,2+r2()*2,1.2+r2(),'#8a8074',null);}
+    else{ctx.save();ctx.globalAlpha=.12;oval(ctx,x,y,6+r2()*8,3+r2()*4,'#242018',null);ctx.restore();}}};
+  const n=10+Math.floor(r()*7);
+  for(let i=0;i<n;i++){ctx.save();ctx.globalAlpha=.04+r()*.05;ctx.beginPath();ctx.ellipse(r()*width,r()*height,60+r()*110,36+r()*80,r()*Math.PI,0,Math.PI*2);ctx.fillStyle=r()<.5?P.patch[0]:P.patch[1];ctx.fill();ctx.restore();}
+  const m=Math.round((width*height)/(960*540)*(55+r()*40));
+  for(let i=0;i<m;i++)P.items(r()*width,r()*height,r(),r);
+}
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
+  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
-      if(img){target.save();target.globalAlpha=.92;target.drawImage(img,0,0,width,height);target.restore();}
+      if(img){
+        // Every field shows its own section of its theme plate, mirrored or
+        // not - two maps of the same theme never share a ground.
+        const over=.18,ow=width*(1+over),oh=height*(1+over),vr=detailRng((groundSeed^0x9e3779b9)>>>0);
+        const ox=width*over*vr(),oy=height*over*vr(),flipX=vr()<.5,flipY=vr()<.5;
+        target.save();target.globalAlpha=.92;
+        target.translate(flipX?width:0,flipY?height:0);target.scale(flipX?-1:1,flipY?-1:1);
+        target.drawImage(img,-ox,-oy,ow,oh);
+        target.restore();
+      }
+      const tr=detailRng((groundSeed^0x85ebca6b)>>>0);
+      target.save();target.globalAlpha=.05+tr()*.04;target.fillStyle=GROUND_TINTS[Math.floor(tr()*GROUND_TINTS.length)];target.fillRect(0,0,width,height);target.restore();
+      drawGroundDetails(target,theme,width,height,groundSeed);
     }
     for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme,notify);
   }
@@ -363,8 +424,8 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   ctx.save();ctx.translate(bunkerPosition.x,bunkerPosition.y);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}

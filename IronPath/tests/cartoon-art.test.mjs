@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {drawCartoonBattle} from '../cartoon-art.mjs';
+import {drawCartoonBattle,drawGroundDetails} from '../cartoon-art.mjs';
 import {getMap} from '../maps.mjs';
 import {createPlayer} from '../match.mjs';
 import {createMatch,PATH,PADS,getTowerRange} from '../simulation.mjs';
@@ -38,3 +38,20 @@ const prestige=createMatch([p]);prestige.towers=[{id:1,type:0,pad:0,level:13,bra
     'one hero, not two, once the wave started');
   console.log('The hero is drawn before the first wave, not from wave one.');
 }
+
+// V2 ground variety (reported: "wirklich jede Karte immer andere Details"):
+// the per-map scatter is derived from the map seed alone - deterministic per
+// seed, different between seeds, on every theme.
+{
+  const record=()=>{const calls=[];const ctx=new Proxy({},{get(t,k){if(k in t)return t[k];return (...a)=>{calls.push([k,...a.map(v=>typeof v==='number'?Math.round(v*100)/100:v)]);};},set(t,k,v){t[k]=v;return true;}});return {calls,ctx};};
+  for(const theme of ['forest','urban','arctic','marsh','scrub','road']){
+    const a=record(),b=record(),c=record();
+    drawGroundDetails(a.ctx,theme,960,540,12345);
+    drawGroundDetails(b.ctx,theme,960,540,54321);
+    drawGroundDetails(c.ctx,theme,960,540,12345);
+    assert.ok(a.calls.length>50,`${theme} scatters ground details (${a.calls.length})`);
+    assert.notEqual(JSON.stringify(a.calls),JSON.stringify(b.calls),`${theme}: different seeds scatter different details`);
+    assert.equal(JSON.stringify(a.calls),JSON.stringify(c.calls),`${theme}: the same seed is deterministic`);
+  }
+}
+console.log('Ground variety: per-seed details are deterministic and distinct.');
