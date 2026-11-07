@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261107-balance1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261108-balance2';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
@@ -10,7 +10,7 @@ import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt} from './maps.mjs?v=20261205-
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261107-balance1';
+import {addSupplies} from './match.mjs?v=20261108-balance2';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -34,7 +34,9 @@ export function createMatch(players,mapId=DEFAULT_MAP){
 // Co-op rewards are personal: when both players are active, each gets 65% of
 // the base reward (rounded down); the owner's Logistics bonus remains intact.
 // An absent guest earns nothing; the remaining host receives the solo base rate.
-export const COOP_REWARD_RATE=.65;
+// Two soldiers each earn 70% (140% for the pair against 1.5x enemy health), so
+// a new pair keeps pace with the endless curve - the friendliest team size.
+export const COOP_REWARD_RATE=.7;
 export const COOP_ENEMY_HEALTH=1.5;
 function activePlayers(state){return Object.keys(state.players).sort().filter(id=>state.players[id].active!==false);}
 // Assault ranks pay +2 damage per rank; from wave 6 the rank grows by +1 every

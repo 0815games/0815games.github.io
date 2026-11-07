@@ -9,7 +9,7 @@
 // Effects follow the existing workshop vocabulary (damage, range, movement,
 // bunkerHealth, startSupplies, cooldown, shotIntervalMultiplier) so the live
 // reducer and the match effects treat them like any other item.
-import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261107-balance1';
+import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261108-balance2';
 
 export const PRESTIGE=Object.freeze({
   'prestige-relay':{
@@ -26,8 +26,8 @@ export const PRESTIGE=Object.freeze({
   },
   'prestige-chargekey':{
     slot:'weapon',mission:'blackout',name:'Detonator Key',tier:'II',
-    effect:'A key from the outpost charges. +3 soldier damage.',
-    mods:{shaped:{name:'Shaped Charge',effect:'+2 soldier damage.'},pinned:{name:'Pinned Line',effect:'Soldier shot interval is 6% shorter.'}},
+    effect:'A key from the outpost charges. +3 soldier damage. From wave 6, the damage grows with the waves.',
+    mods:{shaped:{name:'Shaped Charge',effect:'+2 soldier damage. From wave 6, this grows with the waves.'},pinned:{name:'Pinned Line',effect:'Soldier shot interval is 6% shorter.'}},
     bonus:{damage:3},
   },
   'prestige-convoy-plate':{
@@ -56,8 +56,8 @@ export const PRESTIGE=Object.freeze({
   },
   'prestige-icekey':{
     slot:'weapon',mission:'white-noise',name:'Ice Station Key',tier:'IV',
-    effect:'The authorization key, cut from the ice station. +4 soldier damage and +10 firing range.',
-    mods:{cipher:{name:'Cipher Break',effect:'+2 soldier damage.'},window:{name:'Short Window',effect:'Soldier shot interval is 6% shorter.'}},
+    effect:'The authorization key, cut from the ice station. +4 soldier damage and +10 firing range. From wave 6, the damage grows with the waves.',
+    mods:{cipher:{name:'Cipher Break',effect:'+2 soldier damage. From wave 6, this grows with the waves.'},window:{name:'Short Window',effect:'Soldier shot interval is 6% shorter.'}},
     bonus:{damage:4,range:10},
   },
   'prestige-transformer-coil':{
@@ -68,7 +68,7 @@ export const PRESTIGE=Object.freeze({
   },
   'prestige-nia-badge':{
     slot:'gadget',mission:'city-of-glass',name:'Reyes Badge',tier:'IV',
-    effect:'Nia’s controller badge. +4 soldier damage and the active ability recharges 3 seconds faster.',
+    effect:'Nia’s controller badge. +4 soldier damage and the active ability recharges 3 seconds faster. From wave 6, the damage grows with the waves.',
     mods:{override:{name:'Override',effect:'+10 firing range.'},access:{name:'Access Code',effect:'+10 starting supplies.'}},
     bonus:{damage:4,cooldown:3},
   },
@@ -80,8 +80,8 @@ export const PRESTIGE=Object.freeze({
   },
   'prestige-override-flag':{
     slot:'weapon',mission:'last-transmission',name:'Override Flag',tier:'V',
-    effect:'The last pull at the industrial tower, kept as a trophy. +6 soldier damage and +15 firing range.',
-    mods:{victory:{name:'Victory Plate',effect:'+2 soldier damage.'},last:{name:'Last Cable',effect:'Soldier shot interval is 8% shorter.'}},
+    effect:'The last pull at the industrial tower, kept as a trophy. +6 soldier damage and +15 firing range. From wave 6, the damage grows with the waves.',
+    mods:{victory:{name:'Victory Plate',effect:'+2 soldier damage. From wave 6, this grows with the waves.'},last:{name:'Last Cable',effect:'Soldier shot interval is 8% shorter.'}},
     bonus:{damage:6,range:15},
   },
 });

@@ -96,9 +96,18 @@ function resolveStages(mission){
   const spots=fieldSpots(path,pads,bunker,stages);
   const hash=[...mission.id].reduce((h,c)=>Math.imul(h^c.charCodeAt(0),16777619)>>>0,2166136261);
   const order=spots.map((p,i)=>({p,k:(hash+Math.imul(i+1,2654435761))>>>0})).sort((a,b)=>a.k-b.k).map(e=>e.p);
+  // Contested objectives must sit where the road can actually reach them: a
+  // protected asset 250px from every enemy is a free stage, and a secure
+  // position beyond the contest radius is never contested. Those stages pick
+  // a spot inside a contested band (passing enemies can reach, the player can
+  // still clear them); other field anchors keep the plain spread rules.
+  const roadDistance=p=>{let m=1e9;for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy,t=l2?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l2)):0;m=Math.min(m,Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy));}return m;};
   let fallback=0;
   for(const stage of stages)if(stage.at==='field'){
-    const p=order.find(q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=180))||order[fallback++%Math.max(1,order.length)]||{x:Math.round(path[0].x),y:Math.round(path[0].y)};
+    const band=stage.type==='protect'?[80,95]:stage.type==='secure'?[58,105]:null;
+    const inBand=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]&&d<=band[1];};
+    const spread=q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=180);
+    const p=order.find(q=>spread(q)&&inBand(q))||(band?order.find(inBand):null)||order.find(spread)||order[fallback++%Math.max(1,order.length)]||{x:Math.round(path[0].x),y:Math.round(path[0].y)};
     Object.assign(stage,{x:p.x,y:p.y});
   }
   for(const stage of stages)delete stage.at;

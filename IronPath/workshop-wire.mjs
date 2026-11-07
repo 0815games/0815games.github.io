@@ -1,11 +1,11 @@
 // Experimental RTDB-safe wire format, not used by production accounts.
 // The single string preserves empty arrays/objects that RTDB removes as nodes.
 // Rules must be reviewed before this field can be written to production.
-import {validateWorkshop} from './workshop-model.mjs?v=20261107-balance1';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261107-balance1';
-import {unlockPrestige} from './workshop-model.mjs?v=20261107-balance1';
-import {isPrestige,prestigeEarned,PRESTIGE_IDS,PRESTIGE} from './prestige.mjs?v=20261107-balance1';
-import {completeStory} from './campaign.mjs?v=20261107-balance1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-balance2';
+import {unlockPrestige} from './workshop-model.mjs?v=20261108-balance2';
+import {isPrestige,prestigeEarned,PRESTIGE_IDS,PRESTIGE} from './prestige.mjs?v=20261108-balance2';
+import {completeStory} from './campaign.mjs?v=20261108-balance2';
 const PRESTIGE_BY_MISSION=Object.fromEntries(PRESTIGE_IDS.map(id=>[PRESTIGE[id].mission,{...PRESTIGE[id],id}]));
 const LIMIT=2048;
 const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray(value) && Object.keys(value).length===keys.length && keys.every(k=>Object.hasOwn(value,k));

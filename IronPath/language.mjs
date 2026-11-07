@@ -1,4 +1,4 @@
-import {germanWorkshop} from './localization-workshop-de.mjs?v=20261112-firstrun5';
+import {germanWorkshop} from './localization-workshop-de.mjs?v=20261108-balance2';
 // The Settings dialog is where a player switches the language in the first place, so
 // its copy cannot fall back to English. Own file, asked first, for the same reason as
 // the first-run dictionary below.
@@ -17,8 +17,8 @@ import {germanStatic} from './localization-static-de.mjs?v=20261110-storyde1';
 import {germanBattle} from './localization-battle-de.mjs?v=20261121-ringlevel1';
 import {germanResults} from './localization-results-de.mjs?v=20261105-debrief1';
 import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261107-balance1';
-import {germanCampaign} from './localization-campaign-de.mjs?v=20261107-balance1';
-import {germanCinematics} from './localization-cinematics-de.mjs?v=20261107-balance1';
+import {germanCampaign} from './localization-campaign-de.mjs?v=20261108-balance2';
+import {germanCinematics} from './localization-cinematics-de.mjs?v=20261108-balance2';
 import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
 import {germanText} from './localization-de.mjs?v=20261127-tutlock1';
