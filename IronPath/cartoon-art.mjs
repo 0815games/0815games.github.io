@@ -151,6 +151,36 @@ function getGroundImage(doc,theme){
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
+// Marked terrain patches: a tinted ellipse on the road with its field label.
+// The state overlays (broken ice, rubble remaining) are drawn per frame in
+// drawZoneStates, so the cached layer below stays valid for the whole run.
+const ZONE_STYLES=Object.freeze({
+ ice:{fill:'rgba(107,154,163,.5)',edge:'#d7ece9',label:'THIN ICE'},
+ bog:{fill:'rgba(88,77,54,.55)',edge:'#c0b694',label:'DEEP BOG'},
+ rubble:{fill:'rgba(100,95,84,.5)',edge:'#d0c9b4',label:'RUBBLE'},
+ ambush:{fill:'rgba(71,91,67,.55)',edge:'#b0c4a1',label:'AMBUSH TRAIL'},
+ dust:{fill:'rgba(168,137,94,.4)',edge:'#e0c9a4',label:'DUST'}
+});
+function drawZone(ctx,zone){
+ const style=ZONE_STYLES[zone.kind]||ZONE_STYLES.rubble;
+ ctx.save();ctx.beginPath();ctx.ellipse(zone.x,zone.y,zone.r,zone.r*.72,0,0,Math.PI*2);
+ ctx.fillStyle=style.fill;ctx.fill();ctx.setLineDash([9,6]);ctx.strokeStyle=style.edge;ctx.lineWidth=3;ctx.stroke();ctx.setLineDash([]);
+ ctx.fillStyle='rgba(29,48,40,.85)';ctx.fillRect(zone.x-47,zone.y-zone.r*.72-19,94,15);
+ ctx.fillStyle='#f1e7c4';ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.fillText(tr(style.label),zone.x,zone.y-zone.r*.72-8);
+ ctx.restore();
+}
+function drawZoneStates(ctx,zones,state){
+ for(const zone of zones||[]){
+  if(zone.kind==='ice'&&state?.zoneBroken?.[zone.id]){
+   ctx.save();ctx.beginPath();ctx.ellipse(zone.x,zone.y,zone.r,zone.r*.72,0,0,Math.PI*2);
+   ctx.fillStyle='rgba(51,94,109,.55)';ctx.fill();ctx.strokeStyle='#d2eff0';ctx.lineWidth=2;ctx.stroke();
+   ctx.fillStyle='#d2eff0';ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.fillText(tr('BROKEN ICE'),zone.x,zone.y+4);ctx.restore();
+  }else if(zone.kind==='rubble'&&state&&!state.zoneCleared?.[zone.id]&&(state.zoneDamage?.[zone.id]||0)>0){
+   ctx.save();ctx.fillStyle='#d0c9b4';ctx.font='bold 10px Georgia';ctx.textAlign='center';
+   ctx.fillText(tr('RUBBLE {amount}',{amount:Math.max(0,Math.ceil(200-state.zoneDamage[zone.id]))}),zone.x,zone.y+4);ctx.restore();
+  }
+ }
+}
 // Sector maps carry their own ruins, sheds and gatehouses. They are pure set
 // dressing drawn into the cached terrain layer: they never cover a pad (the
 // generator keeps them clear) and they never touch game state.
@@ -194,22 +224,22 @@ function drawDeco(ctx,deco,theme){
     ctx.restore();
   }
 }
-function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[]}={}){
+function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[]}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
       if(img){target.save();target.globalAlpha=.92;target.drawImage(img,0,0,width,height);target.restore();}
     }
-    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);drawDeco(target,deco,theme);
+    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme);
   }
   if(!doc?.createElement){paint(ctx);return;}
   let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],onSpritesReady=null}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco});fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state,onSpritesReady);ctx.restore();
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],onSpritesReady=null}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);ctx.save();ctx.translate(bunkerPosition.x-900,bunkerPosition.y-400);bunker(ctx,state,onSpritesReady);ctx.restore();
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   ctx.fillStyle='#344231';ctx.font='bold 12px Georgia';ctx.fillText(tr('ENEMY ENTRY'),15,75);if(paths.length>1)ctx.fillText(tr('ENEMY ENTRY'),15,height-75);
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];ctx.beginPath();ctx.arc(p.x,p.y,getTowerRange(selected),0,Math.PI*2);ctx.fillStyle='rgba(129,179,164,.10)';ctx.fill();ctx.strokeStyle='#b1d3c6';ctx.lineWidth=1.5;ctx.setLineDash([5,7]);ctx.stroke();ctx.setLineDash([]);}

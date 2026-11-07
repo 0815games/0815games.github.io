@@ -95,6 +95,8 @@ export const SECTOR_SPECS=Object.freeze([
   {width:2040,height:1140,pads:22, roads:2, ruins:15,gates:4},
 ]);
 export function sectorOf(mapId){return /^g3-[0-9a-f]{9}$/.test(mapId||'')?Math.min(4,parseInt(mapId[3],16)+1):0;}
+// Which marked patch (if any) covers a field position.
+export function zoneAt(map,x,y){for(const zone of map?.zones||[])if(Math.hypot(x-zone.x,y-zone.y)<=zone.r)return zone;return null;}
 function buildGridMap(id){
   const sector=Math.min(4,parseInt(id[3],16)+1),spec=SECTOR_SPECS[sector-1],random=rng(parseInt(id.slice(4),16));
   const cell=60,cols=spec.width/cell,rows=spec.height/cell;
@@ -228,7 +230,22 @@ function buildGridMap(id){
     }
     const paths=roadKeys.map(polyline),pads=padsFor(paths);
     if(!pads)continue;
-    return {id,name,theme,path:paths[0],...(paths.length>1?{paths}:{}),pads,deco:decoFor(paths,pads),width:spec.width,height:spec.height,bunker,sector};
+    // Mixed ground: a few marked patches the road runs through. Each carries
+  // one of the five terrain rules (thin ice, deep bog, rubble, ambush trail,
+  // dust), so one battlefield can hold several - that is the point.
+  const zoneKinds=['ice','bog','rubble','ambush','dust'];
+  for(let i=zoneKinds.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[zoneKinds[i],zoneKinds[j]]=[zoneKinds[j],zoneKinds[i]];}
+  const zoneCount=[1,2,2,3][sector-1],zones=[],roadPoints=[];
+  for(const road of paths)for(let i=1;i<road.length-1;i++)roadPoints.push(road[i]);
+  for(let i=roadPoints.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[roadPoints[i],roadPoints[j]]=[roadPoints[j],roadPoints[i]];}
+  for(const point of roadPoints){
+    if(zones.length>=zoneCount)break;
+    if(point.x<70||point.x>spec.width-70||point.y<70||point.y>spec.height-70)continue;
+    if(Math.hypot(point.x-bunker.x,point.y-bunker.y)<170||Math.hypot(point.x-paths[0][0].x,point.y-paths[0][0].y)<150)continue;
+    if(zones.some(z=>Math.hypot(z.x-point.x,z.y-point.y)<260))continue;
+    zones.push({id:zones.length,kind:zoneKinds[zones.length],x:point.x,y:point.y,r:78+8*Math.floor(random()*3)});
+  }
+  return {id,name,theme,path:paths[0],...(paths.length>1?{paths}:{}),pads,deco:decoFor(paths,pads),zones,width:spec.width,height:spec.height,bunker,sector};
   }
   throw new Error('Could not generate a sector battlefield');
 }

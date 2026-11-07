@@ -1,5 +1,5 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261123-sector1';
-import {applyCommand} from './match.mjs?v=20261123-sector1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261124-zones1';
+import {applyCommand} from './match.mjs?v=20261124-zones1';
 import {WAVE_COUNT} from './combat.mjs?v=20261102-battle2';
 
 // Two isolated, identically generated battlefields, advanced on the host's

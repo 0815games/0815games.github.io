@@ -19,15 +19,40 @@ export function distanceToRoad(point,path){
 // segment 5 is a horizontal route section on every g2 map, drawn as thin ice.
 export const onThinIce=enemy=>enemy.segment===5;
 export function soldierSpeedFactor(theme,player,path){return theme==='arctic'&&distanceToRoad(player,path)>36?.75:1;}
-export function enemySpeedFactor(theme,enemy){if(theme==='forest'&&enemy.segment===3&&(enemy.kind==='infantry'||enemy.kind==='runner'))return 1.15;return theme==='marsh'&&enemy.kind==='tank'?(enemy.segment===7?.5:.75):1;}
-export function iceDamage(theme,enemy,dt,broken=false){return theme==='arctic'&&enemy.kind==='tank'&&onThinIce(enemy)?(broken?20:10)*dt:0;}
+export function enemySpeedFactor(theme,enemy,zoneInfo=null){
+ if(zoneInfo){
+  if(enemy.kind==='tank'&&zoneInfo.kind==='bog')return .5;
+  if(enemy.kind==='tank'&&zoneInfo.kind==='ice'&&zoneInfo.broken)return .75;
+  if((enemy.kind==='infantry'||enemy.kind==='runner')&&zoneInfo.kind==='ambush')return 1.15;
+  return 1;
+ }
+ if(theme==='forest'&&enemy.segment===3&&(enemy.kind==='infantry'||enemy.kind==='runner'))return 1.15;return theme==='marsh'&&enemy.kind==='tank'?(enemy.segment===7?.5:.75):1;
+}
+export function iceDamage(theme,enemy,dt,broken=false,zoneInfo=null){
+ if(zoneInfo)return zoneInfo.kind==='ice'&&enemy.kind==='tank'?(zoneInfo.broken?20:10)*dt:0;
+ return theme==='arctic'&&enemy.kind==='tank'&&onThinIce(enemy)?(broken?20:10)*dt:0;
+}
 export function targetingRange(theme,range,target,enemies,{sniper=false,clouds=[]}={}){
  if(theme==='scrub'&&!sniper&&(enemies.some(e=>e.kind==='tank'&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=75)||clouds.some(c=>c.life>0&&Math.hypot(c.x-target.x,c.y-target.y)<=75)))return range*.75;
  return range;
 }
-export function weaponDamageFactor(theme,enemy,distance,{recon=false,rubbleCleared=false}={}){
+export function weaponDamageFactor(theme,enemy,distance,{recon=false,rubbleCleared=false,zoneInfo=null}={}){
+ if(zoneInfo){
+  if(zoneInfo.kind==='ambush'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&!recon)return .8;
+  if(zoneInfo.kind==='bog'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&distance>100)return .8;
+  if(zoneInfo.kind==='rubble'&&!zoneInfo.cleared&&distance>110)return .75;
+  return 1;
+ }
  if(theme==='forest'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&!recon)return .8;
  if(theme==='urban'&&distance>110&&!(rubbleCleared&&enemy.segment===3))return .75;
  if(theme==='marsh'&&(enemy.kind==='infantry'||enemy.kind==='runner')&&distance>100)return .8;
  return 1;
 }
+// The marked patches of a sector map (g3): one line each for the field menu.
+export const ZONE_BRIEFINGS=Object.freeze({
+ ice:'Thin ice: tanks crack it after 4 tank-seconds. Broken, it deals 20 HP per second instead of 10 and slows tanks by 25%.',
+ bog:'Deep bog: tanks crawl at half speed; reeds hide infantry and scouts from fire beyond 100 units (-20%).',
+ rubble:'Rubble: towers and soldiers deal 25% less damage beyond 110 units. 200 direct damage inside clears it for this run.',
+ ambush:'Ambush trail: infantry and scouts move 15% faster and take 20% less damage under forest cover.',
+ dust:'Dust: tanks raise clouds that cut targeting range by 25%. Sniper towers ignore dust.'
+});
