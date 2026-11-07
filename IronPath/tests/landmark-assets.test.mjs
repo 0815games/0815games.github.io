@@ -22,6 +22,6 @@ test('art readiness invalidates cached story terrain once without growing cache 
  const state=createMatch([createPlayer('local',{name:'Test',gender:'female'})],map.id),before=structuredClone(state),opts={path:map.path,pads:map.pads,theme:map.theme,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'local',getTowerRange,storyMission:mission};
  drawCartoonBattle(main,state,opts);assert.equal(canvases.length,1);
  const ground=images.find(i=>i.src?.includes('endless-ground'));assert.ok(ground);ground.onload();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,2);
- const landmark=images.find(i=>i.src?.includes('landmark-wreck'));assert.ok(landmark);landmark.onload();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3,'story cache refreshes when a landmark arrives');assert.ok(canvases[2].calls.some(([op,img])=>op==='drawImage'&&img===landmark));
+ const landmark=images.find(i=>i.src?.includes('landmark2-wreck'));assert.ok(landmark);landmark.onload();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3,'story cache refreshes when a landmark arrives');assert.ok(canvases[2].calls.some(([op,img])=>op==='drawImage'&&img===landmark));
  drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3,'stable assets reuse terrain');assert.deepEqual(state,before);
 });

@@ -1,6 +1,6 @@
 import {translateText as tr,getLanguage} from './language.mjs?v=20261128-randomends1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261117-firstrunde1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261204-v2final1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
 import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -193,10 +193,10 @@ function enemy(ctx,e,reducedMotion,notify){
   oval(ctx,x,y+10,11,4,'#8c8264',null);
   // V2: painted enemies - muddy tank, camouflaged prop plane, riflemen.
   // The bosses keep their artwork until the next art stage.
-  const name=e.boss?(e.boss==='bossBomber'?'boss-plane':'boss-heavy'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
+  const name=e.boss?(e.boss==='bossBomber'?'bossplane2':'bossheavy2'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
   if(!artwork)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
-  else if(name==='tank2'||name==='boss-heavy')ctx.drawImage(artwork,x-(e.boss?25:20),y-(e.boss?18:13),e.boss?50:40,e.boss?32:25);
-  else if(name==='plane2'||name==='boss-plane')ctx.drawImage(artwork,x-(e.boss?27:21),y-(e.boss?20:14),e.boss?54:42,e.boss?40:26);
+  else if(name==='tank2'||name==='bossheavy2')ctx.drawImage(artwork,x-(e.boss?30:20),y-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
+  else if(name==='plane2'||name==='bossplane2')ctx.drawImage(artwork,x-(e.boss?30:21),y-(e.boss?18:14),e.boss?60:42,e.boss?28:26);
   else ctx.drawImage(artwork,x-10,y-12,20,20);
   if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':e.hp/e.maxHp<.3?'#ed9b74':'#dce59c';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
