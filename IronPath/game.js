@@ -31,7 +31,7 @@ import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
 import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261126-guidefull1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261124-zones1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261124-zones1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261127-tutlock1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
@@ -473,7 +473,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     const menuNotice=text=>{if(!refresh)notice(text);};
     const actions=[];
     if(!tower){
-      types.forEach((type,i)=>actions.push({label:tr(type.name),price:type.cost,summary:tr(type.description),unaffordable:supplies()<type.cost,description:tr('View {name}, {cost} supplies. {description}',{name:tr(type.name),cost:type.cost,description:tr(type.description)})+(supplies()<type.cost?tr('. Not enough supplies to build.'):'' ),run:()=>{
+      const tutorialLock=trainingBuildLocked(state);
+      types.forEach((type,i)=>actions.push({label:tr(type.name),price:type.cost,summary:tr(type.description)+(tutorialLock?tr(' · One tower, one upgrade in training'):''),unaffordable:supplies()<type.cost,locked:tutorialLock,description:tr('View {name}, {cost} supplies. {description}',{name:tr(type.name),cost:type.cost,description:tr(type.description)})+(tutorialLock?tr('. The training contract walks one tower and its upgrade first.'):'')+(supplies()<type.cost?tr('. Not enough supplies to build.'):'' ),run:()=>{
         showDetails(()=>tr(type.name),()=>tr('{description}. Base damage: {damage} per shot, firing interval: {interval} seconds, range: {range}. Damage varies by enemy type.',{description:tr(type.description),damage:type.damage,interval:type.interval,range:type.range}),type.cost,'BUILD',()=>{
           dispatch({type:'build',pad,towerType:i},result=>{if(!result.ok){$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);return;}// The id is what makes the evidence check meaningful: the card later asks the
 // field whether *this* tower still stands, so selling it takes the step back.
