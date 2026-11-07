@@ -149,19 +149,24 @@ function buildGridMap(id){
   // Build pads from the cells beside the road: close enough to matter, never on
   // the tar, spread over the whole route instead of bunching at the entry.
   function padsFor(paths){
-    const roadCells=new Set();
-    for(const path of paths)for(let c=0;c<cols;c++)for(let r=1;r<rows-1;r++){const p=centre(c,r);if(roadDistance(p,[path])<cell*.9)roadCells.add(key(c,r));}
+    // Candidates are sampled on a fine grid, not on the walk cells: the cell
+    // centres alone skip half of the roadside ring, which is exactly the band
+    // the pads are supposed to come from.
     const candidates=[];
-    for(let c=0;c<cols;c++)for(let r=1;r<rows-1;r++){
-      if(roadCells.has(key(c,r)))continue;
-      const p=centre(c,r),d=roadDistance(p,paths);
-      if(d>=62&&d<=150&&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=78)candidates.push(p);
+    for(let x=25;x<=spec.width-25;x+=12)for(let y=25;y<=spec.height-25;y+=12){
+      const p={x,y},d=roadDistance(p,paths);
+      if(d>=62&&d<=150&&Math.hypot(p.x-bunker.x,p.y-bunker.y)>=78)candidates.push({x,y,d});
     }
     for(let i=candidates.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[candidates[i],candidates[j]]=[candidates[j],candidates[i]];}
+    // Reported: "Tower Platzierung voll für den Arsch. Muss schon AN der
+    // Straße sein." Pads are picked nearest-first: the roadside ring (62-92
+    // from the road centre, i.e. touching the tar) fills the quotas, the
+    // wider rings only exist so a rare seed can still place every pad.
+    const ranked=[...candidates.filter(c=>c.d<=92),...candidates.filter(c=>c.d>92&&c.d<=120),...candidates.filter(c=>c.d>120)];
     const quotas=sector===1?[3,3,4]:sector===2?[4,5,5]:sector===3?[6,6,6]:[7,7,8],pads=[],zone=x=>Math.min(2,Math.floor(x*3/spec.width));
-    for(let z=0;z<3;z++)for(const p of candidates)if(zone(p.x)===z&&quotas[z]>0&&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68)){pads.push(p);quotas[z]--;}
-    for(const p of candidates){if(pads.length>=spec.pads)break;if(pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68))pads.push(p);}
-    return pads.length>=spec.pads?pads.slice(0,spec.pads):null;
+    for(let z=0;z<3;z++)for(const p of ranked)if(zone(p.x)===z&&quotas[z]>0&&pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68)){pads.push(p);quotas[z]--;}
+    for(const p of ranked){if(pads.length>=spec.pads)break;if(pads.every(q=>Math.hypot(p.x-q.x,p.y-q.y)>=68))pads.push(p);}
+    return pads.length>=spec.pads?pads.map(({x,y})=>({x,y})):null;
   }
   // Ruins and buildings: a few gates the road squeezes through, plus sheds and
   // broken walls along the way. Purely decoration - they never cover a pad.
@@ -189,9 +194,10 @@ function buildGridMap(id){
     for(const p of spots){
       if(ruins>=spec.ruins)break;
       const d=roadDistance(p,paths);
-      if(d<58||d>170)continue;
+      if(d<58||d>190)continue;
+      // Pads own the roadside ring (62-92); buildings keep a working gap to a pad plate (66) rather than the old 80, which the tighter pads starved.
       if(Math.hypot(p.x-bunker.x,p.y-bunker.y)<120||Math.hypot(p.x-entry.x,p.y-entry.y)<110)continue;
-      if(pads.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<80)||deco.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<85))continue;
+      if(pads.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<66)||deco.some(q=>Math.hypot(p.x-q.x,p.y-q.y)<85))continue;
       deco.push({kind:kinds[Math.floor(random()*kinds.length)],x:p.x,y:p.y,rot:random()<.5?0:1,shade:random()});
       ruins++;
     }

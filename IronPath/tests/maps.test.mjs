@@ -86,9 +86,11 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
    assert.ok(road[j].x>=0&&road[j].x<=map.width&&road[j].y>=30&&road[j].y<=map.height-30,`${id} road in bounds`);
   }
   assert.ok(length>=map.width*1.2,`${id} road meanders (x${(length/map.width).toFixed(2)})`);
+  let far=0;
   for(const [j,p] of map.pads.entries()){
    const d=paths.reduce((min,road)=>Math.min(min,...road.slice(1).map((b,k)=>distance(p,road[k],b))),Infinity);
-   assert.ok(d>=62&&d<=150,`${id} pad ${j} sits beside the road (${Math.round(d)})`);
+   if(d>92)far++;
+   assert.ok(d>=62&&d<=120,`${id} pad ${j} sits at the road: ring 62-92, rare fallback to 120 (${Math.round(d)})`);
    assert.ok(p.x>=25&&p.x<=map.width-25&&p.y>=25&&p.y<=map.height-25,`${id} pad in bounds`);
    assert.ok(Math.hypot(p.x-map.bunker.x,p.y-map.bunker.y)>=78,`${id} pad clear of the bunker`);
    for(const q of map.pads.slice(j+1))assert.ok(Math.hypot(p.x-q.x,p.y-q.y)>=68,`${id} pads do not overlap`);
@@ -100,6 +102,7 @@ for(const [index,spec] of SECTOR_SPECS.entries()){
    assert.ok(map.pads.every(p=>Math.hypot(p.x-d.x,p.y-d.y)>=58),`${id} building clear of pads`);
    assert.ok(Math.hypot(d.x-map.bunker.x,d.y-map.bunker.y)>=95,`${id} building clear of the bunker`);
   }
+  assert.ok(far<=1,`${id} at most one pad may fall outside the roadside ring (${far})`);
   assert.ok(map.deco.length>=spec.gates+Math.round(spec.ruins*.5),`${id} carries buildings`);
   unique.add(JSON.stringify(map.path));
  }
