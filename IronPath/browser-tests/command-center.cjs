@@ -207,11 +207,12 @@ const assert = require('node:assert/strict');
     // The hero step gates as well: nobody has moved yet, so NEXT stays closed.
     assert.equal(await page.locator('#coachNext').isDisabled(),true,'the hero step gates NEXT until the soldier moves');
     assert.match(await page.locator('#coachAsk').innerText(),/Send your soldier somewhere/);
-    // Move: tap open ground. Field units are 960x540 and (787,420) is far from every
-    // build pad on this map, so the tap is a move order, not a build menu.
+    // Move: tap open ground. Field units are 960x540; (480,281) is mid-field, more
+    // than a pad-radius from every build pad on this map, below the status row and
+    // above the card - which grew upward when it started carrying the ask line.
     const ground = await page.evaluate(() => {
       const box = document.getElementById('game').getBoundingClientRect();
-      const point = { x: box.x + 787 / 960 * box.width, y: box.y + 420 / 540 * box.height };
+      const point = { x: box.x + 480 / 960 * box.width, y: box.y + 281 / 540 * box.height };
       const hit = document.elementFromPoint(point.x, point.y);
       return { ...point, hit: hit ? hit.tagName + '#' + (hit.id || '') : null };
     });
