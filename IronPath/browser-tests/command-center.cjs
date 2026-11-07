@@ -226,6 +226,12 @@ const assert = require('node:assert/strict');
     // The hero step gates as well: nobody has moved yet, so NEXT stays closed.
     assert.equal(await page.locator('#coachNext').isDisabled(),true,'the hero step gates NEXT until the soldier moves');
     assert.match(await page.locator('#coachAsk').innerText(),/Send your soldier somewhere/);
+    // Reported: "Ist das Aufgaben Fenster minimiert, registriert er die Bewegung
+    // des Soldaten nicht." The card goes away, the move still has to count, and
+    // the card has to come back BY ITSELF at the next step - not at the old one.
+    await page.locator('#coachClose').click();
+    await page.locator('#coachRecall').waitFor({state:'visible',timeout:5000});
+    assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'the card is put away, not gone');
     // Move: tap open ground. Field units are 960x540; (480,281) is mid-field, more
     // than a pad-radius from every build pad on this map, below the status row and
     // above the card - which grew upward when it started carrying the ask line.
@@ -237,8 +243,11 @@ const assert = require('node:assert/strict');
     });
     assert.equal(ground.hit, 'CANVAS#game', 'the open-ground tap reaches the battlefield');
     await page.mouse.click(ground.x, ground.y);
-    // The card follows the walk, and the supplies card after it owes nothing.
+    // The card follows the walk while put away, and comes back on its own.
     await page.waitForFunction(() => /Supplies/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
+    assert.match(await page.locator('#coachStep').innerText(),/5 \/ 7/,'it returns at the NEXT step, not the one it left');
+    assert.equal(await page.locator('#coachRecall').isHidden(),true,'no recall pill once the card is back');
     assert.equal(await page.locator('#coachNext').isDisabled(),false,'an announcement card owes nothing');
     assert.equal(await page.locator('#coachAsk').isHidden(),true,'the gate is quiet while nothing is owed');
     // The level gate on the specialization ring. The tower is level 2 now, so its
@@ -423,6 +432,25 @@ const assert = require('node:assert/strict');
       return {dialog:{l:dialog.left,t:dialog.top,r:dialog.right,b:dialog.bottom},close:{l:close.left,t:close.top,r:close.right,b:close.bottom}};
     });
     assert.ok(armoryFrame.close.r<=armoryFrame.dialog.r+1&&armoryFrame.close.l>=armoryFrame.dialog.l-1&&armoryFrame.close.t>=armoryFrame.dialog.t-1&&armoryFrame.close.b<=armoryFrame.dialog.b+1,`the armory X sits inside the frame (${JSON.stringify(armoryFrame)})`);
+    // Reported: "das X (welches oben rechts ist und von der Aufgabe verdeckt
+    // wird)". The ending's guide card sits ABOVE modal dialogs (as a popover,
+    // the only layer above them) - so it has to keep the top-right corner
+    // free. Fabricate the card the way the ending shows it, then prove the
+    // armory's X is still the thing under the finger.
+    const guideClearsX=await page.evaluate(()=>{
+      const card=document.getElementById('firstRunGuide');
+      const wasHidden=card.hidden;
+      card.hidden=false;
+      try{card.showPopover?.();}catch{/* older engines: fixed position stands */}
+      const close=document.getElementById('armoryClose');
+      const box=close.getBoundingClientRect();
+      const hit=document.elementFromPoint(box.left+box.width/2,box.top+box.height/2);
+      const coveredByCard=!!hit&&card.contains(hit);
+      try{card.hidePopover?.();}catch{/* not shown as a popover */}
+      card.hidden=wasHidden;
+      return {coveredByCard,hit:hit?hit.id||hit.tagName:null};
+    });
+    assert.equal(guideClearsX.coveredByCard,false,`the guide card leaves the armory X tappable (hit: ${guideClearsX.hit})`);
     await page.waitForTimeout(150);
     await page.locator('#armoryWorkshopTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),true); assert.equal(await page.locator('#armoryList').isVisible(),false);
     assert.match(await page.locator('#armoryWorkshop').innerText(),/PREPARE WORKSHOP|Field Scope/,'the workshop renders inside the armory');
@@ -434,13 +462,24 @@ const assert = require('node:assert/strict');
     await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#armoryServiceTab').getAttribute('aria-pressed'),'true');assert.equal(await page.locator('.armory-section[data-section="service"] h3').innerText(),'Dienstakte');assert.equal(await page.locator('.armory-section[data-section="service"] .service-medal strong').first().innerText(),'☆ Erfahrener Soldat');await page.locator('#armoryEquipmentTab').click();assert.equal(await page.locator('.armory-section[data-section="equipment"] h4').first().innerText(),'Zielfernrohr');assert.match(await page.locator('.armory-section[data-section="equipment"] p').first().innerText(),/Soldatenschaden/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('.armory-section[data-section="equipment"] h4').first().innerText(),'Field Scope');
     await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true); await page.mouse.click(1,1);assert.equal(await page.locator('#armoryDialog').evaluate(e=>e.open),false,'backdrop closes armory');
     await page.evaluate(()=>window.__profileUpdate({skills:'1,0,0,0,0;assault'}));await page.locator('#menuSkills').click(); assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);
+    // Reported: "Bei den Skills hat man 2 Scrollbalken, Fenster in Fenster." On a
+    // phone the dialog is a flex column that never scrolls itself; the workspace
+    // below the tabs is the one scroll region, and SAVE stays in reach.
+    const skillScroll=await page.evaluate(()=>{
+      const dialog=document.getElementById('skillDialog'),workspace=dialog.querySelector('.skills-workspace');
+      return {dialog:dialog.scrollHeight-dialog.clientHeight,workspace:workspace.scrollHeight-workspace.clientHeight,
+        saveVisible:!!document.querySelector('.skill-actions')?.getBoundingClientRect().height};
+    });
+    assert.ok(skillScroll.dialog<=1,'the skills dialog itself does not scroll');
+    assert.ok(skillScroll.workspace>1,'the skill list is the one scroll region');
+    assert.equal(skillScroll.saveVisible,true,'SAVE stays visible without scrolling');
     const equipped=page.locator('#skillPaths .skill-card[data-path="assault"][data-rank="1"]');assert.equal(await equipped.evaluate(e=>e.classList.contains('is-main-ability')&&e.classList.contains('is-active')),true);assert.equal(await equipped.locator('.skill-card-state').innerText(),'✓ EQUIPPED');assert.equal(await equipped.getAttribute('aria-expanded'),'true');assert.equal(await equipped.locator('.skill-card-tag').innerText(),'MAIN ABILITY');assert.equal(await page.locator('#skillPaths .is-prerequisite, #skillPaths .is-dependent').count(),0);assert.equal(await equipped.locator('.skill-card-description').count(),0);assert.equal(await page.locator('#skillInspector').evaluate(e=>e.parentElement.classList.contains('skill-card-shell')&&e.previousElementSibling?.dataset.rank==='1'),true);
     assert.equal(await page.locator('[data-skill-path="assault"]').getAttribute('aria-pressed'),'true');
     assert.ok(await page.locator('#skillPaths .skill-card').count()>10);assert.equal(await page.locator('.skill-tree-board').count(),0,'no map to pan or zoom');
     await page.locator('[data-skill-path="recon"]').tap();assert.equal(await page.locator('[data-skill-path="recon"]').getAttribute('aria-pressed'),'true');
     assert.match(await page.locator('#skillPaths').innerText(),/Suppression/);
     await page.locator('#skillFilter').selectOption('hybrid'); assert.ok(await page.locator('#skillPaths .skill-card').count()>0);assert.equal(await page.locator('#skillPaths .skill-card[data-rank="1"]').count(),0);
-    await page.locator('#skillFilter').selectOption('all');const deep=page.locator('#skillPaths .skill-card[data-path="recon"]').last();await deep.scrollIntoViewIfNeeded();const beforeScroll=await page.locator('#skillDialog').evaluate(e=>e.scrollTop),beforeTop=await deep.evaluate(e=>e.getBoundingClientRect().top);assert.ok(beforeScroll>100,'test starts well below the top');const deepRank=await deep.getAttribute('data-rank');await deep.tap();const afterScroll=await page.locator('#skillDialog').evaluate(e=>e.scrollTop);assert.ok(afterScroll>100,`selection jumped to the top from ${beforeScroll} to ${afterScroll}`);const afterTop=await deep.evaluate(e=>e.getBoundingClientRect().top);assert.ok(Math.abs(afterTop-beforeTop)<40,`selected card moved from ${beforeTop} to ${afterTop}`);assert.equal(await page.locator('#skillInspector').evaluate(e=>e.previousElementSibling?.dataset.rank),deepRank,'details expand inside selected card');assert.equal(await page.locator('#skillPaths .skill-card.is-selected').getAttribute('aria-expanded'),'true');const node=page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="2"]');await node.scrollIntoViewIfNeeded();await node.tap();assert.equal(await node.getAttribute('aria-pressed'),'true');assert.match(await page.locator('#skillDetailText').innerText(),/Requires Recon rank 1/);
+    await page.locator('#skillFilter').selectOption('all');const deep=page.locator('#skillPaths .skill-card[data-path="recon"]').last();await deep.scrollIntoViewIfNeeded();const beforeScroll=await page.locator('#skillDialog .skills-workspace').evaluate(e=>e.scrollTop),beforeTop=await deep.evaluate(e=>e.getBoundingClientRect().top);assert.ok(beforeScroll>100,'test starts well below the top');const deepRank=await deep.getAttribute('data-rank');await deep.tap();const afterScroll=await page.locator('#skillDialog .skills-workspace').evaluate(e=>e.scrollTop);assert.ok(afterScroll>100,`selection jumped to the top from ${beforeScroll} to ${afterScroll}`);const afterTop=await deep.evaluate(e=>e.getBoundingClientRect().top);assert.ok(Math.abs(afterTop-beforeTop)<40,`selected card moved from ${beforeTop} to ${afterTop}`);assert.equal(await page.locator('#skillInspector').evaluate(e=>e.previousElementSibling?.dataset.rank),deepRank,'details expand inside selected card');assert.equal(await page.locator('#skillPaths .skill-card.is-selected').getAttribute('aria-expanded'),'true');const node=page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="2"]');await node.scrollIntoViewIfNeeded();await node.tap();assert.equal(await node.getAttribute('aria-pressed'),'true');assert.match(await page.locator('#skillDetailText').innerText(),/Requires Recon rank 1/);
     await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"]').click();await page.locator('#skillDetailAction').click();assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#skillPaths .skill-card[data-path="recon"][data-rank="1"] .skill-card-name').innerText(),'Unterdrückung');assert.match(await page.locator('#skillDetailText').innerText(),/Verlangsame Gegner/);assert.match(await page.locator('#skillStatus').innerText(),/Ungespeicherter Entwurf/);assert.equal(await page.locator('#skillDetailAction').innerText(),'HAUPTFÄHIGKEIT AUSGEWÄHLT');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.match(await page.locator('#skillStatus').innerText(),/Unsaved draft/);
     await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),false,'outside a confirmation cancels instead of accepting');assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true,'cancel preserves the draft');
     await page.keyboard.press('Escape');assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),false);await page.evaluate(()=>{const dialog=document.querySelector('#skillDialog');dialog.dispatchEvent(new Event('close'));});

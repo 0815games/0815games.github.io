@@ -29,7 +29,7 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261121-taskback1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261122-minimized1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
@@ -284,7 +284,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // The coach re-reads the field once per painted frame. That is what lets a gate
     // open without a callback (a tower already standing when the card came up) and
     // close again when the evidence disappears (the tower was sold).
-    try{if(coach.isOpen())coach.tick();}catch{/* A hint must never break the field. */}
+    try{if(coach.isOpen()||coach.dismissed())coach.tick();}catch{/* A hint must never break the field. */}
     const coachRecall=$('coachRecall');if(coachRecall)coachRecall.hidden=!coach.dismissed();
   }
   function localizedBossSignal(signal){const labels={'shield-warning':'SHIELD RAISING · {seconds}s',shield:'SHIELD UP · DAMAGE REDUCED · {seconds}s','bomb-warning':'BOMB STRIKE IN · {seconds}s','repair-warning':'REPAIR IN · {seconds}s','rally-warning':'RALLY IN · {seconds}s',rally:'RALLY ACTIVE · {seconds}s'};return labels[signal.key]?tr(labels[signal.key],{seconds:signal.seconds}):signal.text;}

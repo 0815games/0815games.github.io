@@ -111,6 +111,11 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
 
   const step=()=>COACH_STEPS[index]||null;
   const open=()=>!!root&&!root.hidden;
+  // The coaching is *active* from `start` to `finish` - including while the card
+  // is put away. Reported: "Ist das Aufgaben Fenster minimiert, registriert er
+  // die Bewegung des Soldaten nicht." Gates, events and ticks used to stop the
+  // moment the card was hidden, so a step done in private never counted.
+  const active=()=>index>=0&&activeUser!=null;
 
   function render(){
     const current=step();
@@ -186,7 +191,7 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
   // condition itself is re-read below. A successful build that the player immediately
   // sells must not count, and a move the player cancels must not count either.
   function reach(name){
-    if(!open())return false;
+    if(!active())return false;
     const current=step();
     if(!current)return false;
     if(current.when!==name)return false;
@@ -204,18 +209,20 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
   // by another route (a tower built before the card came up, a wave started from a
   // hotkey) and closes again if the evidence disappears.
   function settle(){
-    if(!open())return false;
+    if(!active())return false;
     const current=step();
     if(!current)return false;
     const waiting=required(current);
     // Only repaint when the answer actually changed. This is called once per painted
     // frame, and a card that re-renders 60 times a second would restart its own
-    // entrance animation and never settle on the screen.
+    // entrance animation and never settle on the screen. And never while put away:
+    // rendering unhides the card, which would un-minimize it without a step being
+    // done. Advancing - the case below - is the one un-hiding that is wanted.
     const wasWaiting=root?.dataset.awaiting||'';
     if(waiting){
       // The requirement came back (the tower was sold). Say so instead of leaving a
       // button that silently stopped working.
-      if(wasWaiting!==current.id)render();
+      if(root&&!root.hidden&&wasWaiting!==current.id)render();
       return false;
     }
     // Only the cards that ask for an action advance by themselves. The two
@@ -283,7 +290,7 @@ export function createCoach({document,window:win,storage,resolveTarget=()=>null,
     awaiting(){const current=step();return required(current)?(current?.ask||current?.id||''):'';},
     // The last boss turning up raises the boss card, even if the player is
     // still on an earlier card: the run is about to end, and the hint matters.
-    boss(){if(!open())return false;const target=COACH_STEPS.findIndex(s=>s.id==='boss');if(target<0||index>=target)return false;index=target;render();return true;},
+    boss(){if(!active())return false;const target=COACH_STEPS.findIndex(s=>s.id==='boss');if(target<0||index>=target)return false;index=target;render();return true;},
     // Walk the cards again on the live field, on request. `start()` deliberately
     // refuses a soldier who already dismissed the card - that is what keeps the first
     // run from nagging - but dismissing a hint must not be a one-way door, so the
