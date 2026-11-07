@@ -542,6 +542,17 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .coach-text{color:var(--dossier-ink)}
 .coach-caption{color:var(--dossier-dim)}
 /* Step ticks: the player can see how much briefing is left without a counter. */
+.coach-ask{
+  margin:0;padding:6px 8px;font-size:11px;font-weight:bold;letter-spacing:.06em;
+  color:#f3e2b4;background:#ffffff10;border-left:3px solid var(--dossier-gold);border-radius:2px;
+}
+.coach-ask[hidden]{display:none}
+/* The gate. A disabled NEXT is the one place the card says "you are not done yet",
+   so it has to look unmistakably closed and keep its 44px target. */
+.coach-next:disabled{
+  background:transparent;border-color:#4d5f52;color:#89977f;cursor:not-allowed;
+}
+.coach-next:disabled:hover{background:transparent}
 .coach-pips{display:flex;gap:4px;margin-top:2px}
 .coach-pips i{width:14px;height:3px;background:#ffffff26;border-radius:1px}
 .coach-pips i[data-done]{background:var(--dossier-gold)}

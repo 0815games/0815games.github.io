@@ -7,7 +7,7 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261118-settings
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated
 // without tests/first-run-german.test.mjs noticing.
-import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261116-firstrunde1';
+import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261120-coachgate1';
 import {germanFinal} from './localization-final-de.mjs?v=20261105-soldier1';
 import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261110-storyde1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261110-storyde1';

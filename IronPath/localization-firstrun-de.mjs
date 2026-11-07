@@ -23,16 +23,19 @@ export const germanFirstRun=Object.freeze({
   'Tap a glowing build marker, pick a tower, then confirm. Towers shoot on their own; you only choose where they stand.':
     'Tippe auf einen leuchtenden Bauplatz, wähle einen Turm und bestätige. Türme schießen von allein; du entscheidest nur, wo sie stehen.',
   'TAP THE RINGED MARKER':'TIPPE AUF DEN MARKIERTEN PLATZ',
+  'Build one tower to continue':'Baue einen Turm, um weiterzukommen',
 
   'Upgrade it':'Verbessere ihn',
   'Tap your tower to open its panel. Upgrade it there - a level 2 tower hits noticeably harder than a second level 1 - or sell it for half back.':
     'Tippe deinen Turm an, um sein Menü zu öffnen. Verbessere ihn dort – ein Turm auf Stufe 2 trifft deutlich härter als ein zweiter auf Stufe 1 – oder verkaufe ihn für die Hälfte zurück.',
   'TAP YOUR TOWER':'TIPPE DEINEN TURM AN',
+  'Upgrade that tower to continue':'Verbessere diesen Turm, um weiterzukommen',
 
   'Move your hero':'Bewege deinen Helden',
   'Tap open ground and your soldier walks there and fires on his own. He is not a tower: he can be anywhere, so put him where the road bends.':
     'Tippe auf freies Gelände und dein Soldat läuft dorthin und feuert selbst. Er ist kein Turm: er kann überall stehen, also stell ihn dorthin, wo die Straße sich biegt.',
   'TAP OPEN GROUND':'TIPPE AUF FREIES GELÄNDE',
+  'Send your soldier somewhere':'Schicke deinen Soldaten woandershin',
 
   'Supplies':'Vorräte',
   'Supplies pay for towers and only arrive when you clear a wave. That is why you build before you deploy, not after.':
@@ -43,6 +46,7 @@ export const germanFirstRun=Object.freeze({
   'Deploy calls the next wave. Clearing it pays XP and supplies, so the field gets stronger only if you keep building.':
     'Einsatz ruft die nächste Welle. Eine geschaffte Welle bringt EP und Vorräte – das Feld wird also nur stärker, wenn du weiter baust.',
   'PRESS DEPLOY':'DRÜCKE EINSATZ',
+  'Press Deploy to start the wave':'Drücke Einsatz, um die Welle zu starten',
 
   'The boss is here':'Der Boss ist da',
   'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.':

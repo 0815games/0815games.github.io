@@ -151,6 +151,14 @@ const assert = require('node:assert/strict');
     await page.locator('#coachNext').click();
     assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/);
     assert.equal(await page.locator('#coachPips i[data-done]').count(),2,'the ticks follow the card');
+    // Reported: "er muss einen Turm bauen, bevor er auf die nächste Seite kann." The
+    // card is a gate now. Before anything stands on the field NEXT is closed, says what
+    // is missing, and clicking it does nothing - the step cannot be skipped by tapping.
+    assert.equal(await page.locator('#coachNext').isDisabled(),true,'NEXT is closed until a tower stands');
+    assert.match(await page.locator('#coachAsk').innerText(),/Build one tower to continue/);
+    assert.equal(await page.locator('#coachAsk').isVisible(),true,'the card says what is missing');
+    await page.locator('#coachNext').click({force:true});
+    assert.match(await page.locator('#coachTitle').innerText(),/Build a tower/,'a click on the gate does not skip the step');
     // Open the sheet a pad offers, and prove the card is not covering it.
     const sheetCheck=await page.evaluate(()=>{
       const card=document.getElementById('firstRunCoach');
@@ -165,6 +173,55 @@ const assert = require('node:assert/strict');
     assert.equal(sheetCheck.cardHidden,true,'the card steps aside while the tower sheet is open');
     assert.equal(sheetCheck.onSheet,true,'and the sheet is not covered by anything');
     assert.equal(await page.locator('#firstRunCoach').isHidden(),false,'it comes back when the sheet closes');
+    // Now do what the card asks, on the real field. This is the point of the gate: the
+    // step is finished by a tower that stands there, not by a click on NEXT.
+    // The card already points at the pad it wants (`#coachRing`). Tapping the ring is
+    // exactly what a player does, and it needs no test-only hook in the game: the pad
+    // hit radius on this field is ~54 logical units, and the ring centre is the pad.
+    const tapRing = async mode => {
+      const ring = await page.locator('#coachRing').boundingBox();
+      assert.ok(ring && ring.width > 10, 'the card marks the pad it is asking about');
+      await page.mouse.click(ring.x + ring.width / 2, ring.y + ring.height / 2);
+      // The sheet is a zero-size anchor centred on the pad - the buttons around it
+      // carry the box, the sheet itself never has one - so "visible" is the wrong
+      // signal. Its mode says which actions the tap actually produced.
+      await page.waitForFunction(expected => {
+        const sheet = document.getElementById('radialMenu');
+        return sheet && !sheet.hidden && sheet.dataset.mode === expected;
+      }, mode, {timeout: 10000});
+    };
+    // Build what the card asks for: pad, tower option, confirm the price.
+    await tapRing('build');
+    await page.locator('.sheet-option').first().click();
+    await page.locator('#towerDetails').waitFor({state: 'visible'});
+    await page.locator('#towerDetailsConfirm').click();
+    // The card moves on because a tower stands there now - nothing was clicked on it.
+    await page.waitForFunction(() => /Upgrade it/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    assert.equal(await page.locator('#coachNext').isDisabled(),true,'the upgrade step gates NEXT too');
+    assert.match(await page.locator('#coachAsk').innerText(),/Upgrade that tower to continue/);
+    // Upgrade it: the card rings the built tower now. A level 1 tower upgrades
+    // straight from its action sheet - no price dialog - so the tap is the action.
+    await tapRing('actions');
+    await page.locator('.sheet-option').first().click();
+    await page.waitForFunction(() => /Move your hero/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    // The hero step gates as well: nobody has moved yet, so NEXT stays closed.
+    assert.equal(await page.locator('#coachNext').isDisabled(),true,'the hero step gates NEXT until the soldier moves');
+    assert.match(await page.locator('#coachAsk').innerText(),/Send your soldier somewhere/);
+    // Move: tap open ground. Field units are 960x540; (480,281) is mid-field, more
+    // than a pad-radius from every build pad on this map, below the status row and
+    // above the card - which grew upward when it started carrying the ask line.
+    const ground = await page.evaluate(() => {
+      const box = document.getElementById('game').getBoundingClientRect();
+      const point = { x: box.x + 480 / 960 * box.width, y: box.y + 281 / 540 * box.height };
+      const hit = document.elementFromPoint(point.x, point.y);
+      return { ...point, hit: hit ? hit.tagName + '#' + (hit.id || '') : null };
+    });
+    assert.equal(ground.hit, 'CANVAS#game', 'the open-ground tap reaches the battlefield');
+    await page.mouse.click(ground.x, ground.y);
+    // The card follows the walk, and the supplies card after it owes nothing.
+    await page.waitForFunction(() => /Supplies/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
+    assert.equal(await page.locator('#coachNext').isDisabled(),false,'an announcement card owes nothing');
+    assert.equal(await page.locator('#coachAsk').isHidden(),true,'the gate is quiet while nothing is owed');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
     // Dismissing must not be the end of it: the field menu and the Command Center both
