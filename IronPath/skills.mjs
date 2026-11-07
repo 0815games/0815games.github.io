@@ -2,20 +2,20 @@ import {COMBOS,CAPSTONES} from './skill-combos.mjs?v=20261102-results1';
 // Existing five-rank builds remain valid. Optional bits add two specialist
 // branches per path without changing or refunding existing investments.
 export const SKILL_PATHS=[
-  {id:'assault',name:'Assault',passive:'+2 soldier damage per rank',ability:'Airstrike',description:'Deal 35 damage to all enemies.',branches:[{name:'Quick Trigger',description:'Soldier fires 15% faster.'},{name:'Long Sight',description:'+25 soldier firing range.'}]},
+  {id:'assault',name:'Assault',passive:'+2 soldier damage per rank, +1 more per rank every six waves from wave 6',ability:'Airstrike',description:'Deal 35 damage to all enemies. From wave 6, the strike grows with every wave.',branches:[{name:'Quick Trigger',description:'Soldier fires 15% faster.'},{name:'Long Sight',description:'+25 soldier firing range.'}]},
   {id:'engineer',name:'Engineer',passive:'+10% damage for your towers per rank',ability:'Overdrive',description:'Your towers deal 50% extra damage for 10 seconds.',branches:[{name:'Field Mechanic',description:'Your towers fire 10% faster.'},{name:'Rapid Orders',description:'Your ability cooldown is 5 seconds shorter.'}]},
   {id:'logistics',name:'Logistics',passive:'+1 supply per enemy defeated per rank',ability:'Supply Drop',description:'Gain 30 supplies during a wave.',branches:[{name:'Scavenger',description:'+1 supply per enemy defeated.'},{name:'Extra Rations',description:'Supply Drop grants 15 extra supplies.'}]},
-  {id:'medic',name:'Medic',passive:'+5 maximum bunker health per rank',ability:'Field Repair',description:'Restore 15 bunker health during a wave.',branches:[{name:'Reinforced Aid',description:'+10 shared bunker maximum health.'},{name:'Field Surgeon',description:'Field Repair restores 10 extra health.'}]},
+  {id:'medic',name:'Medic',passive:'+5 maximum bunker health per rank',ability:'Field Repair',description:'Restore 15 bunker health during a wave. From wave 6, the repair grows every six waves.',branches:[{name:'Reinforced Aid',description:'+10 shared bunker maximum health.'},{name:'Field Surgeon',description:'Field Repair restores 10 extra health.'}]},
   {id:'recon',name:'Recon',passive:'+10 soldier movement speed per rank',ability:'Suppression',description:'Slow enemies by 50% for 8 seconds.',branches:[{name:'Forward Observer',description:'+25 soldier firing range.'},{name:'Pinning Fire',description:'Suppression lasts 3 seconds longer.'}]}
 ];
 
 // Each specialist preserves its passive bonus and offers an alternative active.
 const VARIANTS={
- assault:[['Suppressive Bombardment','Deal 25 damage to all enemies and slow them for 3 seconds.'],['Precision Strike','Deal 80 damage to the strongest enemy.']],
+ assault:[['Suppressive Bombardment','Deal 25 damage to all enemies and slow them for 3 seconds. From wave 6, the strike grows with every wave.'],['Precision Strike','Deal 80 damage to the strongest enemy. From wave 6, the strike grows with every wave.']],
  engineer:[['Sustained Overdrive','Your towers deal 35% more damage for 15 seconds.'],['Surge Overdrive','Your towers deal 80% more damage for 6 seconds.']],
  logistics:[['Heavy Airdrop','Gain 45 supplies; cooldown is 8 seconds longer.'],['Emergency Supply','Gain 20 supplies and repair the bunker by 6.']],
- medic:[['Heavy Repair','Restore 25 bunker health; cooldown is 8 seconds longer.'],['Triage','Restore 10 bunker health and gain 12 supplies.']],
- recon:[['Extended Suppression','Slow enemies by 50% for 12 seconds; cooldown is 8 seconds longer.'],['Targeted Disruption','Deal 20 damage to enemies and slow them for 4 seconds.']]
+ medic:[['Heavy Repair','Restore 25 bunker health; cooldown is 8 seconds longer. From wave 6, the repair grows every six waves.'],['Triage','Restore 10 bunker health and gain 12 supplies. From wave 6, the repair grows every six waves.']],
+ recon:[['Extended Suppression','Slow enemies by 50% for 12 seconds; cooldown is 8 seconds longer.'],['Targeted Disruption','Deal 20 damage to enemies and slow them for 4 seconds. From wave 6, the strike grows with every wave.']]
 };
 for(const path of SKILL_PATHS)path.branches.forEach((branch,i)=>{[branch.ability,branch.abilityDescription]=VARIANTS[path.id][i];});
 // Five deep mastery chains and five bridges between neighboring disciplines.

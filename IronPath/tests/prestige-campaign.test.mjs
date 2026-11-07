@@ -25,7 +25,7 @@ test('a harder threat means tougher units, wider surges and a smaller bunker',()
  assert.ok(campaignUnitScale('legendary',1)>campaignUnitScale('elite',1));
  assert.ok(campaignUnitScale('elite',1)>campaignUnitScale('hardened',1));
  assert.equal(campaignBunker(100,THREATS.standard.bunker),100);
- assert.equal(campaignBunker(100,THREATS.legendary.bunker),55);
+ assert.equal(campaignBunker(100,THREATS.legendary.bunker),68);
  assert.equal(campaignBunker(10,THREATS.legendary.bunker),20,'the bunker never drops below a playable floor');
  assert.equal(campaignSurge('standard',3),0,'a standard contract has no surge');
  assert.equal(campaignSurge('legendary',3),3,'a legendary contract adds units on odd waves');
@@ -40,7 +40,7 @@ test('a mission deploys with the crafted gear and its contract; endless stays a 
  const mission=createSoloDeployment({player:player(),profile,mapId:'road',workshopEnabled:true,campaign:{id:'tidelock',threat:'legendary'}});
  const endless=createSoloDeployment({player:player(),profile,mapId:'road',workshopEnabled:true});
  assert.equal(mission.campaignContract.threat,'legendary');
- assert.equal(mission.maxHp,55,'a legendary bunker is 55% of the base health');
+ assert.equal(mission.maxHp,68,'a legendary bunker is 68% of the base health');
  assert.equal(endless.campaignContract,undefined,'endless solo has no contract');
  assert.equal(endless.maxHp,100,'endless keeps its own numbers');
 });

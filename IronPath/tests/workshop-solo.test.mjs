@@ -5,9 +5,12 @@ function prepare(state,wave=6){state.wave=wave;state.running=true;state.spawnLef
 test('actual solo engine applies stacked workshop equipment, mods and ability cooldown',()=>{
  const w=migrateWorkshop(null);w.owned=['marksman','mechanic','radio'];w.equipped={weapon:'marksman',gear:'mechanic',gadget:'radio'};w.mods={marksman:'precision',mechanic:'lightweight',radio:'efficient'};
  const state=prepare(createWorkshopSoloMatch(player(1),w));assert.equal(state.maxHp,110);assert.equal(state.money,135);assert.equal(state.players.p.loadout.equipped,0,'old slot is not stacked');
- state.players.p.direction={x:1,y:0};const predicted=projectCoopMotion(state,1/30);stepMatch(state);assert.equal(state.enemies[0].hp,985);assert.ok(Math.abs(state.players.p.x-predicted.players.p.x)<1e-9);assert.ok(state.players.p.x>105);
+ state.players.p.direction={x:1,y:0};const predicted=projectCoopMotion(state,1/30);stepMatch(state);assert.equal(state.enemies[0].hp,984);assert.ok(Math.abs(state.players.p.x-predicted.players.p.x)<1e-9);assert.ok(state.players.p.x>105);
  assert.equal(applyCommand(state,'p',{type:'airstrike'}).ok,true);assert.equal(state.players.p.cooldown,25);
- w.equipped.weapon='standard';state.players.p.shotTimer=0;stepMatch(state);assert.equal(state.enemies[0].hp,935,'match retains captured marksman after account changes');
+ w.equipped.weapon='standard';state.players.p.shotTimer=0;stepMatch(state);
+ // The ability keeps the wave curve at this point: the strike has grown from
+ // 35 to 38 by this wave, so the pin moved with it (see match.mjs).
+ assert.equal(state.enemies[0].hp,932,'match retains captured marksman after account changes');
 });
 test('all migrated legacy items match old solo mechanics at waves five and six',()=>{
  for(let item=1;item<=10;item++)for(const wave of [5,6]){

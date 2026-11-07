@@ -11,7 +11,7 @@ const player=(id,loadout='0,0,0',level=10)=>createPlayer(id,{name:id,gender:'mal
 const duo=createMatch([player('a','0,0,9;0,0;1,2'),player('b','0,0,0;0,0;3,1')]);assert.equal(duo.supply,3);assert.equal(duo.safeguard,2);
 for(const wave of [1,6]){const s=createMatch([player('a','0,0,9;0,0;3,0')]);s.wave=wave;s.running=true;s.spawnLeft=0;s.enemies=[];stepMatch(s);assert.equal(s.money,wave===1?145:162,'new rewards start only at wave 6');}
 const inactive=createMatch([player('a','0,0,9;0,0;3,0'),player('b','0,0,9;0,0;0,0')]);inactive.wave=6;inactive.running=true;inactive.players.b.active=false;stepMatch(inactive);assert.equal(inactive.players.a.money,162);assert.equal(inactive.players.b.money,125);
-for(const wave of [1,6]){const s=createMatch([player('a','0,0,7')]);s.wave=wave;s.enemies=[{hp:100}];assert.equal(applyCommand(s,'a',{type:'airstrike'}).ok,true);assert.equal(s.enemies[0].hp,wave===1?65:55);}
+for(const wave of [1,6]){const s=createMatch([player('a','0,0,7')]);s.wave=wave;s.enemies=[{hp:100}];assert.equal(applyCommand(s,'a',{type:'airstrike'}).ok,true);assert.equal(s.enemies[0].hp,wave===1?65:54);}
 const low=createMatch([player('a','0,0,0',9)]);low.money=1000;assert.equal(applyCommand(low,'a',{type:'build',pad:0,towerType:0}).ok,true);assert.equal(applyCommand(low,'a',{type:'upgrade',pad:0}).ok,true);assert.equal(applyCommand(low,'a',{type:'upgrade',pad:0,branch:3}).ok,false);low.players.a.level=10;assert.equal(applyCommand(low,'a',{type:'upgrade',pad:0,branch:3}).ok,true);
 console.log('Long-term equipment, bunker choices, unlocks and achievements passed.');
 // New effects are deliberately inactive in the opening waves.

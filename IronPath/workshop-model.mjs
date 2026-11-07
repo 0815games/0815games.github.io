@@ -1,7 +1,7 @@
 // Experimental, pure data model. NOT connected to accounts, rewards or combat.
 // Production migration requires rules, mixed-client protection and receipts.
-import {ITEMS,readArmory} from './armory.mjs?v=20261102-longterm1';
-import {PRESTIGE,isPrestige} from './prestige.mjs';
+import {ITEMS,readArmory} from './armory.mjs?v=20261107-balance1';
+import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261107-balance1';
 const slots=['weapon','gear','gadget'];
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 // One price source for both the reducer and the UI, so a re-tune cannot drift.

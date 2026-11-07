@@ -1,6 +1,6 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {ITEMS,readArmory} from './armory.mjs?v=20261102-longterm1';
-import {SKILL_PATHS,WEB_NODES,parseBuild,pointsLeft,abilityName} from './skills.mjs?v=20261104-doctrines1';
+import {ITEMS,readArmory} from './armory.mjs?v=20261107-balance1';
+import {SKILL_PATHS,WEB_NODES,parseBuild,pointsLeft,abilityName} from './skills.mjs?v=20261107-balance1';
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 // Individual child reads intentionally do not grant access to the full profile.
 export async function loadFriendStats({db,auth,sdk,id}){

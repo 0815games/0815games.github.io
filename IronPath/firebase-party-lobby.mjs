@@ -1,4 +1,4 @@
-import {parseBuild,encodeBuild} from './skills.mjs?v=20261104-doctrines1';
+import {parseBuild,encodeBuild} from './skills.mjs?v=20261107-balance1';
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
 // Experimental player-hosted Firebase lobby primitives. Access control MUST be
 // provided by Realtime Database rules; this module is not itself authorization.

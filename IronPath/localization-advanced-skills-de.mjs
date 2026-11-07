@@ -1,5 +1,5 @@
-import {WEB_NODES,webRequirement,SKILL_PATHS} from './skills.mjs?v=20261104-doctrines1';
-import {germanSkills} from './localization-skills-de.mjs?v=20261109-flaglang1';
+import {WEB_NODES,webRequirement,SKILL_PATHS} from './skills.mjs?v=20261107-balance1';
+import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 // These labels describe existing nodes only; their IDs and bonuses remain canonical.
 const mastery=['Scharfschütze','Gefechtsübungen','Veteranenziel','Tödlicher Fokus','Kriegsheld','Kalibrierung','Verstärkte Geschütze','Fortgeschrittene Mechanik','Meisteringenieur','Kriegsmaschine','Bergungsrouten','Versorgungslinien','Quartiermeister','Ressourcennetz','Kriegswirtschaft','Erstversorgung','Feldlazarett','Gefechtsmedizin','Lebensretter','Bunkerwächter','Wegbereiter','Vorhutspäher','Schnelle Verlegung','Pfadfinder','Schattenagent'];
 const comboNames=['Belagerungskommando','Gefechtslogistik','Humanitäre Versorgung','Schnelle Reaktion','Vorhut','Versorgungsschlag','Gefechtsanitäter','Mobile Versorgung','Gefechtslazarett','Aufklärungstechnik'];

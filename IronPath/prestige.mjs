@@ -9,7 +9,7 @@
 // Effects follow the existing workshop vocabulary (damage, range, movement,
 // bunkerHealth, startSupplies, cooldown, shotIntervalMultiplier) so the live
 // reducer and the match effects treat them like any other item.
-import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs';
+import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261107-balance1';
 
 export const PRESTIGE=Object.freeze({
   'prestige-relay':{
