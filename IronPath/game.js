@@ -21,19 +21,19 @@ import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261102-batt
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261102-terrain4';
-import {getMap,createRandomMapId} from './maps.mjs?v=20261102-fourbase1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261123-sector1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261102-battle2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261118-settings1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261123-sector1';
 import {abilityName} from './skills.mjs?v=20261104-doctrines1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
 import { createTutorial } from './tutorial.mjs?v=20261117-firstrunde1';
 import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261122-minimized1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261105-workshop3';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261105-workshop3';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261123-sector1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS } from './match.mjs?v=20261123-sector1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261102-battle2';
-import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress } from './progression.mjs?v=20261105-prestige1';
+import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
@@ -158,7 +158,10 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   window.addEventListener('scroll',remarkCoach,{passive:true});
   mapViewport.addEventListener('scroll',remarkCoach,{passive:true});
   function syncBattleViewport(map,versus){
-    const wanted=experimentalFourViewport&&map.fourPlayer&&!versus;
+    // Oversized fields (the endless retreat sectors) get the pan-and-zoom
+    // viewport the four-player frontier uses; phone maps stay as they are.
+    const oversized=(map.width||960)>960||(map.height||540)>540;
+    const wanted=!versus&&((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer));
     if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');}
     else if(!wanted&&battleViewport){battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);}
   }
@@ -243,6 +246,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   document.addEventListener('click',event=>{const panel=$('runPerkPanel');if(panel.hidden||panel.contains(event.target)||document.querySelector('dialog[open]'))return;dismissPerk();event.preventDefault();event.stopPropagation();},true);
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('runPerkPanel').hidden&&!document.querySelector('dialog[open]')){dismissPerk();event.preventDefault();}});
   for(let i=0;i<3;i++)if($(`runPerk${i}`))$(`runPerk${i}`).onclick=()=>dispatch({type:'choosePerk',index:i},result=>{notice(result.ok?tr('{name} acquired for this operation.',{name:tr(result.perk)}):result.reason);updateUI();});
+  // The retreat panel: every tenth cleared wave a solo endless run falls back
+  // to the next sector. It is a panel over the field, like the perk choices -
+  // never a modal dialog that could cover anything.
+  $('sectorAdvance').onclick=()=>dispatch({type:'advanceSector'},result=>{
+    if(!result.ok){notice(result.reason);return;}
+    state.selectedPad=null;closeMenu();combatFx.clear();sound.play('clear');
+    notice(tr('Sector {number}: a longer road, a meaner enemy. Demolition refund: {refund} supplies.',{number:result.sector,refund:result.refund}));
+    updateUI();
+  });
   function updateUI(){
     renderCampaign();
     const showObjective=(!!activeMission||activeTraining)&&!coop;$('soloObjective').hidden=!showObjective;
@@ -256,7 +268,8 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
     else if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
-    const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');$('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:tr(map.name);
+    const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
+    $('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
     const canvasHeight=versus?1100:540;if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight);if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}syncBattleViewport(map,versus);
     $('versusStatus').hidden=!versus&&!teamMatch;if(teamMatch){const info=state.fourInfo;$('versusTitle').textContent=state.ended?(info.winnerTeam===null?tr('DRAW / MATCH ENDED'):info.winnerTeam===info.team?tr('VICTORY'):tr('DEFEAT')):tr('2 VS 2 · TEAM {team}',{team:info.team?'B':'A'});$('versusInfo').textContent=tr('YOUR BUNKER {health} · OTHER BUNKER {other}',{health:Math.max(0,Math.ceil(state.hp)),other:Math.max(0,Math.ceil(info.otherHealth))});}if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?tr('VICTORY'):tr('DEFEAT')):tr('DRAW / MATCH ENDED')):tr('1 VS 1 · SURVIVAL');$('versusInfo').textContent=tr('YOUR BUNKER {health} · {name} {other}',{health:Math.max(0,Math.ceil(state.hp)),name:state.players[state.rivalId]?.name||tr('OPPONENT'),other:Math.max(0,Math.ceil(state.rival.hp))})+(state.waitingForRival&&!state.ended?tr(' · WAITING FOR OPPONENT'):'');}
     if($('terrainBriefing')){$('terrainBriefing').hidden=!terrain;if(terrain&&$('terrainTitle'))$('terrainTitle').textContent=tr('{map} · Terrain effects',{map:tr(map.name)});if(terrain){const text=tr(TERRAIN_BRIEFINGS[terrain])+(terrain==='urban'?(state.rubbleCleared?tr(' Rubble is cleared.'):tr(' Rubble remaining: {remaining} / 200.',{remaining:Math.max(0,Math.ceil(200-(state.rubbleDamage||0)))})):'');if($('terrainDescription').textContent!==text)$('terrainDescription').textContent=text;}}
@@ -264,6 +277,16 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if($('runPerkPanel')){
       const key=perkKey();if(!key)dismissedPerk=null;const dismissed=!!key&&dismissedPerk===key;$('runPerkPanel').hidden=!key||dismissed;$('runPerkReopen').hidden=!key||!dismissed;if($('runPerkIntro'))$('runPerkIntro').textContent=state.mode==='versus'?tr('Choose a field upgrade for your own battlefield.'):state.mode==='two-vs-two'?tr('One shared upgrade for your team. Either teammate may choose.'):tr('One shared upgrade for this operation. Any active player may choose.');
       if(state.pendingPerk){const offers=perkOffers(state.mapId,state.pendingPerk);for(let i=0;i<3;i++){const button=$(`runPerk${i}`),perk=RUN_PERKS[offers[i]];const content=`${perk.rare?tr('★ RARE · '):''}${tr(perk.name)}<small>${tr(perk.description)}</small>`;if(button.innerHTML!==content)button.innerHTML=content;button.disabled=!!coop&&!coopReady;}}
+    }
+    if($('sectorPanel')){
+      // The retreat waits until the perk choice is done: wave ten clears both
+      // at once, and one panel at a time keeps the field readable.
+      const waiting=!coop&&!state.ended&&!!state.pendingSector&&!state.pendingPerk;
+      $('sectorPanel').hidden=!waiting;
+      if(waiting){
+        $('sectorTitle').textContent=tr('SECTOR {number} CLEARED',{number:sectorOf(state.mapId)});
+        $('sectorText').textContent=tr('Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0))),0)});
+      }
     }
     if($('bossAlert')){
       const boss=state.enemies.find(e=>e.boss&&e.hp>0),incoming=state.running&&state.wave%5===0&&state.spawnLeft>0?bossForWave(state.wave):null,info=boss?BOSSES.find(b=>b.kind===boss.boss):incoming;
@@ -280,7 +303,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     $('waveRequest').hidden=!coop||!pending||state.ended;
     if(coop&&pending){$('waveRequestText').textContent=guest?tr('Host requests wave {wave}. Approve when ready.',{wave:state.pendingWave}):state.fourInfo?tr('Waiting for players to approve wave {wave} ({approved}/{required}).',{wave:state.pendingWave,approved:state.fourInfo.approved,required:state.fourInfo.required}):tr('Waiting for your {player} to approve wave {wave}.',{player:tr(versus?'opponent':'teammate'),wave:state.pendingWave});$('waveDecline').hidden=!guest;$('waveDecline').disabled=!coopReady;}
     $('start').textContent=state.ended?(coop?tr('MATCH ENDED'):tr('RESTART OPERATION')):state.running?tr('WAVE IN PROGRESS'):guest?(pending?tr('APPROVE WAVE'):state.fourInfo?.waitingForOthers?tr('WAIT FOR PLAYERS'):tr('WAIT FOR HOST')):host&&pending?tr('CANCEL REQUEST'):host&&versus&&state.waitingForRival?tr('WAIT FOR OPPONENT'):coop?(versus||Object.entries(state.players).some(([id,p])=>id!==state.hostId&&p.active!==false)?tr('REQUEST WAVE'):tr('START NEXT WAVE')):state.wave===0?tr('DEPLOY / START WAVE'):tr('START NEXT WAVE');
-    $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)||(versus&&host&&state.waitingForRival)||(teamMatch&&host&&state.fourInfo?.otherNotReady)));
+    $('start').disabled=(state.running&&!state.ended)||!!state.pendingPerk||!!state.pendingSector||!menu.hidden||(!!coop&&(!coopReady||state.ended||(!host&&!guest)||(guest&&!pending)||(versus&&host&&state.waitingForRival)||(teamMatch&&host&&state.fourInfo?.otherNotReady)));
     // The coach re-reads the field once per painted frame. That is what lets a gate
     // open without a callback (a tower already standing when the card came up) and
     // close again when the evidence disappears (the tower was sold).
@@ -651,7 +674,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     // over a live battlefield, and adding it here is what made the first run
     // unplayable on a phone.
     const paused=!!coop&&!coopReady||!coop&&(focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});
-    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,...(battleViewport?{paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker}:{})});
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,...(battleViewport?{paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker}:{})});
 
     if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#14221b';ctx.fillRect(point.x-48,point.y-61,96,20);ctx.fillStyle='#d8e9da';ctx.textAlign='center';ctx.font='bold 12px sans-serif';ctx.fillText(tr(point.type==='protect'?'PROTECT':'OBJECTIVE'),point.x,point.y-47);if(point.type==='protect'){ctx.fillStyle='#1c2b20';ctx.fillRect(point.x-25,point.y+43,50,7);ctx.fillStyle=activeStory.assetHealth<30?'#f28f73':'#b6dd8b';ctx.fillRect(point.x-24,point.y+44,48*Math.max(0,activeStory.assetHealth)/100,5);}ctx.restore();}}
 
@@ -665,7 +688,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     }}
     }
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawOwn);else drawOwn();
-    if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0});ctx.restore();}
+    if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco});ctx.restore();}
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop(){$('gameWorkspace').dataset.onlineReady='false';if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;coopHasBaseline=false;needStop=false;orphanReleases.clear();coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent=tr('JOIN CO-OP (TEST)');$('coopStatus').textContent=tr('SOLO');if(account.isReady())reset(true);return Promise.resolve(stopping);}

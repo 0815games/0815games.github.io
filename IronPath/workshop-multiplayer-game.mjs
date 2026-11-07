@@ -1,6 +1,6 @@
 // Experimental integration-test entry point. Not connected to live lobbies,
 // Firebase or recovery. A validated lock does not establish trusted ownership.
-import {createMatch} from './simulation.mjs?v=20261105-workshop3';
+import {createMatch} from './simulation.mjs?v=20261123-sector1';
 import {createVersus} from './versus.mjs?v=20261105-workshop3';
 import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261105-workshop3';
 import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs';

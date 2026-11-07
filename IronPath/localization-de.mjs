@@ -423,5 +423,10 @@ export const germanText=Object.freeze({
   "Speed is already active or awaiting approval.": "Das Tempo ist bereits aktiv oder wartet auf Bestätigung.",
   "Match paused: the host left the game window.": "Spiel pausiert: Der Host hat das Spielfenster verlassen.",
   "Host returned. The match has resumed.": "Der Host ist zurück. Das Spiel läuft weiter.",
-  "Host returned. Waiting for players to reconnect.": "Der Host ist zurück. Warte auf die erneute Verbindung der Spieler."
+  "Host returned. Waiting for players to reconnect.": "Der Host ist zurück. Warte auf die erneute Verbindung der Spieler.",
+  "SECTOR {number}": "SEKTOR {number}",
+  "SECTOR {number} CLEARED": "SEKTOR {number} GERÄUMT",
+  "FALL BACK →": "RÜCKZUG →",
+  "Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.": "Fall jetzt zurück. Deine Türme gehen im Rückzug verloren; als Abriss-Entschädigung führst du {refund} Vorräte mit.",
+  "Sector {number}: a longer road, a meaner enemy. Demolition refund: {refund} supplies.": "Sektor {number}: eine längere Straße, ein härterer Gegner. Abriss-Erstattung: {refund} Vorräte."
 });

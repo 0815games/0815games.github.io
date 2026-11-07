@@ -1,6 +1,6 @@
 import {equipmentForPlayer} from './workshop-combat.mjs?v=20261105-workshop3';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {getMap} from './maps.mjs?v=20261102-fourbase1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261123-sector1';
 import {activateCombos} from './skill-combos.mjs?v=20261102-results1';
 import {parseLoadout} from './armory.mjs?v=20261102-longterm1';
 import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261104-doctrines1';
@@ -18,6 +18,21 @@ export function towerRefund(tower) {
   const investment=towerUpgradeInvestment(tower.level);
   if(investment===null||!Number.isSafeInteger(investment+TOWER_COSTS[tower.type]))throw new Error('Invalid tower investment');
   return Math.floor((TOWER_COSTS[tower.type]+investment)/2);
+}
+// The retreat: every tenth cleared wave a solo endless campaign falls back to
+// a fresh, bigger sector. Towers do not travel - the soldier carries a 60%
+// demolition refund instead - and the bunker is patched up to three quarters.
+// Multiplayer and missions never retreat: their map stays for the whole match.
+export function advanceSector(state,nextMapId){
+  if(!state||state.individualSupplies||state.hostId||!state.pendingSector||sectorOf(state.mapId)<1)return null;
+  const refund=state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0))),0);
+  const factory=typeof nextMapId==='function'?nextMapId:createRandomMapId;
+  const mapId=factory(state.mapId,globalThis.crypto,sectorOf(state.mapId)+1),map=getMap(mapId);
+  state.mapId=mapId;state.pendingSector=0;state.towers=[];state.shots=[];state.enemies=[];state.spawnLeft=0;state.dustClouds=[];state.money=(state.money||0)+refund;
+  for(const id of Object.keys(state.players))releaseBuildReservations(state,id);
+  state.hp=Math.max(state.hp,Math.round(state.maxHp*.75));
+  for(const player of Object.values(state.players)){player.x=Math.max(90,map.bunker.x-90);player.y=Math.min(map.height-60,map.bunker.y+60);player.target=null;player.direction={x:0,y:0};}
+  return {sector:sectorOf(mapId),refund};
 }
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
@@ -51,7 +66,7 @@ export function applyCommand(state, playerId, command) {
       return {ok:true};
     }
     case 'startWave': {
-      if(state.running||state.pendingPerk||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
+      if(state.running||state.pendingPerk||state.pendingSector||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingSector?'Order the retreat to the next sector first.':state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
       if(state.individualSupplies&&state.hostId){
         if(playerId!==state.hostId)return {ok:false,reason:'Only the host can request the next wave.'};
         if(state.pendingWave)return {ok:false,reason:'Waiting for your teammate to approve.'};
@@ -59,6 +74,11 @@ export function applyCommand(state, playerId, command) {
         if(teammate&&state.players[teammate].active!==false){state.waveRequestId=(state.waveRequestId||0)+1;state.pendingWave=state.wave+1;return {ok:true,waitingForGuest:true};}
       }
       startNextWave(state);return {ok:true};
+    }
+    case 'advanceSector': {
+      const retreat=advanceSector(state);
+      if(!retreat)return {ok:false,reason:'No sector is waiting for this field.'};
+      return {ok:true,sector:retreat.sector,refund:retreat.refund};
     }
     case 'approveWave': {
       if(!state.individualSupplies||!state.hostId||playerId===state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.pendingWave!==state.wave+1||state.running||state.pendingPerk||state.players[state.hostId]?.active===false)return {ok:false,reason:'No wave is waiting for your approval.'};
