@@ -34,6 +34,13 @@ export function advanceSector(state,nextMapId){
   for(const player of Object.values(state.players)){player.x=Math.max(90,map.bunker.x-90);player.y=Math.min(map.height-60,map.bunker.y+60);player.target=null;player.direction={x:0,y:0};}
   return {sector:sectorOf(mapId),refund};
 }
+// The training wallet is sized for ONE tower plus its first upgrade. A second
+// tower in that window strands the soldier short of the upgrade money, and the
+// only way out is selling at a loss - reported as a tutorial deadlock:
+// "2 Türme = nicht genug Geld für ein Upgrade, auch nicht nach Verkauf."
+export function trainingBuildLocked(state){
+  return state?.campaignContract?.threat==='training'&&state.towers.length>=1&&!state.towers.some(tower=>tower.level>=2);
+}
 export function createPlayer(id, profile, x=850, y=450) {
   if(typeof id!=='string'||!id||!profile||!['male','female'].includes(profile.gender)||typeof profile.name!=='string'||!Number.isFinite(x)||!Number.isFinite(y)) throw new Error('Invalid player');
   const level=Number.isInteger(profile.level)&&profile.level>0?profile.level:1;
@@ -123,6 +130,7 @@ export function applyCommand(state, playerId, command) {
       const {pad,towerType}=command;
       if(!Number.isInteger(pad)||pad<0||pad>=getMap(state.mapId).pads.length||!Number.isInteger(towerType)||towerType<0||towerType>=TOWER_COSTS.length)return {ok:false,reason:'Invalid build selection.'};
       if(state.towers.some(t=>t.pad===pad))return {ok:false,reason:'Pad already occupied.'};
+      if(trainingBuildLocked(state))return {ok:false,reason:'Training contract: upgrade your first tower before building another one.'};
       const reserved=state.buildReservations?.[pad];if(reserved&&reserved.playerId!==playerId)return {ok:false,reason:'Another player is choosing a tower here.'};
       const cost=TOWER_COSTS[towerType];if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. This tower costs ${cost}.`};
       addSupplies(state,playerId,-cost);state.nextTowerId=(state.nextTowerId||0)+1;state.towers.push({id:state.nextTowerId,pad,type:towerType,level:1,timer:0,ownerId:playerId});releaseBuildPad(state,playerId,pad);return {ok:true};

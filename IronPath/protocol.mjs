@@ -5,7 +5,7 @@ import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261105-worksho
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261124-zones1';
+import { applyCommand } from './match.mjs?v=20261127-tutlock1';
 import { stepMatch } from './simulation.mjs?v=20261124-zones1';
 export const PROTOCOL_VERSION=1;
 export const MAX_PENDING=128;

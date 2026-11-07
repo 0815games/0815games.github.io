@@ -125,6 +125,8 @@ export const germanText=Object.freeze({
   "SOLDIER": "SOLDAT",
   "SHOW TASK": "AUFGABE ZEIGEN",
   "Put the guide away": "Anleitung weglegen",
+  " · One tower, one upgrade in training": " · Im Training: ein Turm, ein Upgrade",
+  ". The training contract walks one tower and its upgrade first.": ". Der Trainingsvertrag führt zuerst durch einen Turm und sein Upgrade.",
   "Battle controls": "Gefechtssteuerung",
   "DEPLOY / START WAVE": "EINSATZ / WELLE STARTEN",
   "SPEED: 1×": "TEMPO: 1×",
