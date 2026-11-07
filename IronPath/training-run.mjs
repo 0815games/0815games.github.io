@@ -36,6 +36,14 @@ export const TRAINING_MISSION_ID='training-contract';
 // rhythm, so a change to the contract length cannot silently move the finale.
 export const TRAINING_BOSS_EVERY=TRAINING_WAVES;
 export const TRAINING_MAP='road';
+// What the first run starts with. The coach gates its cards on the field now:
+// build a tower, then upgrade THAT tower. The dearest tower in the sheet costs 80
+// and the first upgrade costs 70, so the endless start of 125 only covered the
+// cheapest tower - a new soldier who picked the Cannon sat on 45 supplies and the
+// upgrade card would not let them past. 150 lets every tower in the sheet be built
+// AND upgraded; the surplus after the cheapest path (MG: 30 left) is the same
+// lesson in scarcity the card below teaches.
+export const TRAINING_SUPPLIES=150;
 
 // The contract shape `createSoloDeployment` already understands, so the training
 // run reuses the campaign deployment path instead of a parallel one.
