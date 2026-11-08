@@ -103,7 +103,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261108-v3art1`;
+    image.src=`assets/${name}-sprite.png?v=20261108-v3art2`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -361,17 +361,24 @@ const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,facto
 // (the generator is untouched); only the artwork reference moves to the
 // painted file - the same cache-busting rename every V2 sprite got.
 const DECO_SPRITE={cabin:'cabin2',barn:'barn2',stand:'stand2',stilt:'stilt2',shed:'shed2',ruin:'ruin2',wall:'wall2',factory:'factory2',gate:'gate2'};
-// Arctic fields get their OWN buildings: a forest cabin and a brick ruin have
-// no business standing in deep snow. The snow variants carry the same kinds,
-// painted for the winter field (reported: "Normale Gebaeude im Schnee?
-// Schwachsinn!").
-const SNOW_SPRITE={cabin:'cabin2snow',ruin:'ruin2snow'};
+// Every field type gets its OWN buildings (reported: not just snow - all five
+// map kinds): forest structures overgrown with moss, marsh dwellings on
+// reed-thatched stilts, sun-bleached scrub shacks, snow-buried cabins. Urban
+// keeps the brick set. Same kinds, same silhouettes, painted for their field.
+const THEME_SPRITE={
+  forest:{cabin:'cabin2forest',barn:'barn2forest',stand:'stand2forest'},
+  arctic:{cabin:'cabin2snow',ruin:'ruin2snow'},
+  marsh:{stilt:'stilt2marsh',ruin:'ruin2marsh'},
+  scrub:{shed:'shed2scrub',ruin:'ruin2scrub',wall:'wall2scrub'},
+  urban:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
+  outpost:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
+};
 function drawDeco(ctx,deco,theme,notify){
   const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
   const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
-    const artwork=sprite(ctx,(theme==='arctic'&&SNOW_SPRITE[d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);
+    const artwork=sprite(ctx,(THEME_SPRITE[theme]&&THEME_SPRITE[theme][d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);
     if(artwork){
       // Painted building, anchored like the towers: bottom-centre on the deco
       // point, soft contact shadow, upright whatever the road does - a gate
@@ -462,36 +469,67 @@ export function drawGroundDetails(ctx,theme,width,height,seed){
   const m=Math.round((width*height)/(960*540)*(55+r()*40));
   for(let i=0;i<m;i++)P.items(r()*width,r()*height,r(),r);
 }
-// V3 ground: the field is a MOSAIC, not a stretched plate. The theme plate is
-// sliced into tiles; every map stamps its own seeded patchwork of feathered,
-// overlapping tiles - interlocking like oil-paint patches, and two maps of the
-// same theme never share a ground. Deterministic from the field's seed.
+// V3.2 ground: an organic painted patchwork, not soft rectangles. Each patch
+// is a plate sample clipped to a seeded wobbly BLOB and feathered, laid in
+// three octaves (base cover, mid variety, small accents) with per-patch
+// mirror, offset and hue/brightness jitter - the patches interlock like oil
+// paint and every field composes its own ground from its own seed.
+function blobPath(c,cx,cy,rx,ry,rng){
+  const n=11,wob=[];for(let k=0;k<n;k++)wob.push(.86+rng()*.28);
+  c.beginPath();
+  for(let k=0;k<=n;k++){
+    const a=k/n*Math.PI*2,r=wob[k%n];
+    const x=cx+Math.cos(a)*rx*r,y=cy+Math.sin(a)*ry*r;
+    k?c.lineTo(x,y):c.moveTo(x,y);
+  }
+  c.closePath();
+}
 function paintTileMosaic(target,img,width,height,rng,doc){
   const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
   if(!iw||!ih)return;
-  const cols=6,rows=4,tw=Math.floor(iw/cols),th=Math.floor(ih/rows);
-  const ts=Math.max(150,Math.round(width/4)),td=Math.round(ts*th/tw);
-  const overlap=Math.round(ts*.34),stepX=ts-overlap,stepY=td-overlap;
-  const across=Math.ceil((width+overlap)/stepX)+1,down=Math.ceil((height+overlap)/stepY)+1;
-  const makeTile=()=>{
-    const canvas=doc.createElement('canvas');canvas.width=ts;canvas.height=td;
-    const c=canvas.getContext('2d');if(!c)return null;
-    const sx=Math.floor(rng()*cols)*tw,sy=Math.floor(rng()*rows)*th;
+  const sample=Math.min(iw,ih);
+  const scratch={};
+  const getScratch=(ts,td)=>{const key=ts+'x'+td;if(!scratch[key]){const c=doc.createElement('canvas');c.width=ts;c.height=td;scratch[key]=c;}return scratch[key];};
+  const patch=(ts,td)=>{
+    const canvas=getScratch(ts,td),c=canvas.getContext('2d');if(!c)return null;
+    c.clearRect(0,0,ts,td);
+    const ss=sample*(.36+rng()*.3),sx=rng()*Math.max(0,iw-ss),sy=rng()*Math.max(0,ih-ss);
     c.save();
-    c.translate(rng()<.5?ts:0,rng()<.5?td:0);c.scale(rng()<.5?1:-1,rng()<.5?1:-1);
-    c.drawImage(img,sx,sy,tw,th,0,0,ts,td);
+    const mx=rng()<.5,my=rng()<.5;c.translate(mx?ts:0,my?td:0);c.scale(mx?-1:1,my?-1:1);
+    c.drawImage(img,sx,sy,ss,ss,0,0,ts,td);
     c.restore();
-    // Feathered edges: the tile melts into its neighbours instead of boxing.
+    // Clip to the blob and feather its rim: destination-in with a radial
+    // gradient INSIDE the blob shape.
     c.globalCompositeOperation='destination-in';
-    const fade=c.createRadialGradient(ts/2,td/2,Math.min(ts,td)*.18,ts/2,td/2,Math.max(ts,td)*.62);
-    fade.addColorStop(0,'rgba(0,0,0,1)');fade.addColorStop(.72,'rgba(0,0,0,.96)');fade.addColorStop(1,'rgba(0,0,0,0)');
-    c.fillStyle=fade;c.fillRect(0,0,ts,td);
+    c.save();blobPath(c,ts/2,td/2,ts*.54,td*.56,rng);
+    const g=c.createRadialGradient(ts/2,td/2,Math.min(ts,td)*.2,ts/2,td/2,Math.max(ts,td)*.55);
+    g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(.72,'rgba(0,0,0,.97)');g.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=g;c.fill();c.restore();
+    c.globalCompositeOperation='source-over';
     return canvas;
   };
-  for(let j=0;j<down;j++)for(let i=0;i<across;i++){
-    const tile=makeTile();if(!tile)continue;
-    target.drawImage(tile,i*stepX-overlap,j*stepY-overlap);
+  const octaves=[
+    {size:width/3.1,alpha:1,cover:1},
+    {size:width/5.4,alpha:.85,cover:.6},
+    {size:width/8.6,alpha:.68,cover:.38},
+  ];
+  for(const o of octaves){
+    const ts=Math.round(o.size),td=Math.round(ts*.72);
+    const overlap=Math.round(ts*.44),stepX=ts-overlap,stepY=td-overlap;
+    const across=Math.ceil((width+overlap)/stepX)+1,down=Math.ceil((height+overlap)/stepY)+1;
+    for(let j=0;j<down;j++)for(let i=0;i<across;i++){
+      if(i+j>0&&rng()>o.cover)continue;
+      const tile=patch(ts,td);if(!tile)continue;
+      const jx=Math.round((rng()-.5)*overlap*.6),jy=Math.round((rng()-.5)*overlap*.6);
+      target.save();
+      target.globalAlpha=o.alpha;
+      // Per-patch tint jitter: each patch breathes a little differently.
+      try{target.filter=`hue-rotate(${Math.round((rng()-.5)*16)}deg) brightness(${(1+(rng()-.5)*.12).toFixed(3)})`;}catch{/* filter is decorative */}
+      target.drawImage(tile,i*stepX-overlap+jx,j*stepY-overlap+jy);
+      target.restore();
+    }
   }
+  try{target.filter='none';}catch{/* nothing to reset on old engines */}
 }
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
