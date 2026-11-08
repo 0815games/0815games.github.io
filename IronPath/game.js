@@ -133,6 +133,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
   let largeMap=false, battleViewport=null, savedLargeMap=false, touchZoom=null;
+  // V3 impact tracking: the bunker-hit camera shake is presentation only -
+  // the seq comes from the authoritative state, the wobble is local.
+  let lastImpactSeq=0, shakeStart=-1e9;
   function renderViewportLabels(){if(touchZoom&&!battleViewport){const zoomed=touchZoom.getFactor()>1.01;zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);zoomButton.textContent=tr(v.scale>fit+1e-8?'MAP: FIT':'MAP: ZOOM');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');}else{zoomButton.textContent=tr(largeMap?'MAP: LARGE':'MAP: FIT');$('mapHint').textContent=tr(largeMap?'Swipe the map left or right to see the battlefield. Tap to build or move.':'Full map view. Tap MAP: FIT to enlarge it.');}}
   function setMapZoom(large){largeMap=large;mapViewport.classList.toggle('map-large',large);zoomButton.setAttribute('aria-pressed',String(large));renderViewportLabels();}
   setMapZoom(largeMap);
@@ -702,7 +705,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // Every map tells its own ground story: the seed drives plate section,
   // flip, tint and scatter, so no two fields look alike (V2 field art).
   const groundSeedOf=id=>[...id].reduce((h,c)=>(Math.imul(h,31)+c.charCodeAt(0))|0,7)>>>0;
-  function draw(){const map=getMap(state.mapId),{path,pads,theme}=map;const renderScale=prepareCanvas();ctx.clearRect(0,0,logicalWidth,logicalHeight);const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state;
+  function draw(){const map=getMap(state.mapId),{path,pads,theme}=map;const renderScale=prepareCanvas();ctx.clearRect(0,0,logicalWidth,logicalHeight);
+    // V3 impact: a bunker hit shakes the camera - a short decaying wobble over
+    // the whole battlefield frame. Never in reduced-motion mode, never a
+    // simulation value: the seq only triggers it, the shake paints over the
+    // already-cleared canvas like any other effect.
+    const impactSeq=state?.bunkerImpact?.seq||0;
+    if(impactSeq>lastImpactSeq){lastImpactSeq=impactSeq;shakeStart=performance.now();}
+    const shakeAge=(performance.now()-shakeStart)/450;
+    if(shakeAge>=0&&shakeAge<1&&!reducedMotion){const amp=4.5*(1-shakeAge);ctx.translate(amp*Math.sin(shakeAge*47),amp*Math.cos(shakeAge*39));}const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state;
     // The first-run coach is NOT part of this list, by design: its card is a hint
     // over a live battlefield, and adding it here is what made the first run
     // unplayable on a phone.
