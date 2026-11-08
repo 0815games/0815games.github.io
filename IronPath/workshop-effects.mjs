@@ -2,8 +2,8 @@
 // and co-op; competitive modes standardize to neutral. Values are covered by
 // the balance suite. All bonuses belong to the wearer except bunkerHealth,
 // which is shared with their team.
-import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
-import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-balance2';
+import {validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
+import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-squadmaps1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 
 const BASE=Object.freeze({damage:0,range:0,movement:0,cooldown:0,bunkerHealth:0,startSupplies:0,airstrikeDamage:0,shotIntervalMultiplier:1,waveSupplies:0,tankTowerMultiplier:1});

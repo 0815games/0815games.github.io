@@ -1,22 +1,54 @@
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Transport-independent four-player rules, live through the Firebase party
-// game: three- and four-player squads and 2v2 teams play on the four-player
-// frontier map.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261108-balance2';
-import {applyCommand} from './match.mjs?v=20261108-balance2';
+// game: three- and four-player squads and 2v2 teams play on the squad fields.
+import {createMatch,stepMatch} from './simulation.mjs?v=20261108-squadmaps1';
+import {applyCommand} from './match.mjs?v=20261108-squadmaps1';
+import {getMap} from './maps.mjs?v=20261108-squadmaps1';
 export const FOUR_PLAYER_MAP='four-front';
+// Squad fields mix the hand-built frontier with vetted generated retreat
+// sectors: every entry carries two roads and enough pads for four wallets,
+// and every entry is balanced by the headless harness (tests/balance-suite).
+export const SQUAD_MAP_POOL=Object.freeze([FOUR_PLAYER_MAP,'g3-29e3779b1','g3-3f1bbcd88','g3-3cc623a9b']);
+// The field is drawn from the party id, not the host's choice: host and every
+// client compute the same map from the same party id, so the snapshot needs
+// no extra wiring and a reloaded host restores the same field.
+export function squadMapFor(partyId){
+  if(typeof partyId!=='string'||!/^[a-f0-9]{32}$/.test(partyId))return FOUR_PLAYER_MAP;
+  let h=2166136261;for(const ch of partyId)h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
+  return SQUAD_MAP_POOL[h%SQUAD_MAP_POOL.length];
+}
+function pathLength(path){let l=0;for(let i=1;i<path.length;i++)l+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);return l;}
+function pointAlong(path,t){let total=0;for(let i=1;i<path.length;i++)total+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);let left=total*t;for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],seg=Math.hypot(b.x-a.x,b.y-a.y);if(left<=seg)return {x:a.x+(b.x-a.x)*(left/seg),y:a.y+(b.y-a.y)*(left/seg)};left-=seg;}return {...path[path.length-1]};}
+// On a generated field nobody tuned fixed spawn coordinates: the squad starts
+// spread across the roads (round-robin, two depths), like the harness anchors.
+// The hand-built frontier keeps the positions the caller chose.
+function anchorSquad(map,players){
+  const roads=(map.paths||[map.path]).slice().sort((a,b)=>pathLength(b)-pathLength(a));
+  players.forEach((player,i)=>{
+    const road=roads[i%roads.length],depth=[.35,.6,.5][Math.min(2,Math.floor(i/roads.length))];
+    const p=pointAlong(road,depth);
+    player.x=p.x;player.y=p.y;player.target=null;player.direction={x:0,y:0};
+  });
+}
+function squadField(players,mapId){
+  const map=getMap(mapId);
+  // Anchor before the match copies the players: createMatch stores copies of
+  // the roster it receives, so the anchors must be on the objects it copies.
+  if(!map.fourPlayer)anchorSquad(map,players);
+  return createMatch(players,mapId);
+}
 function roster(players,hostId,count=[4]){
   if(!Array.isArray(players)||!count.includes(players.length)||new Set(players.map(p=>p?.id)).size!==players.length||!players.every(p=>typeof p?.id==='string'&&p.id.length>0)||!players.some(p=>p.id===hostId))throw new Error('Invalid roster: unique players including the host are required');
   return Object.fromEntries(players.map(p=>[p.id,{id:p.id,active:true}]));
 }
-export function createFourCoop(players,hostId){
-  const members=roster(players,hostId,[3,4]),match=createMatch(players,FOUR_PLAYER_MAP);
+export function createFourCoop(players,hostId,mapId=FOUR_PLAYER_MAP){
+  const members=roster(players,hostId,[3,4]),match=squadField(players,mapId);
   return {mode:'four-coop',hostId,members,match,pending:null,nextRequest:1};
 }
-export function createTwoVsTwo(players,hostId,teams){
+export function createTwoVsTwo(players,hostId,teams,mapId=FOUR_PLAYER_MAP){
   const members=roster(players,hostId),ids=Object.keys(members);
   if(!Array.isArray(teams)||teams.length!==2||teams.some(t=>!Array.isArray(t)||t.length!==2)||new Set(teams.flat()).size!==4||teams.flat().some(id=>!Object.hasOwn(members,id)))throw new Error('Two teams of two distinct roster players are required');
-  const lanes=teams.map(team=>createMatch(team.map(id=>players.find(p=>p.id===id)),FOUR_PLAYER_MAP));
+  const lanes=teams.map(team=>squadField(team.map(id=>players.find(p=>p.id===id)),mapId));
   return {mode:'two-vs-two',hostId,members,teams:teams.map(t=>[...t]),lanes,pending:null,nextRequest:1,ended:false,winnerTeam:null};
 }
 const teamOf=(s,id)=>s.teams.findIndex(team=>team.includes(id));

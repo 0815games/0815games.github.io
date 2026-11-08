@@ -166,9 +166,9 @@ export function runVersus(mapId,gear=GEARS.rookie,maxWaves=25){
   const results=driveLanes(ctxs,()=>stepVersus(v));
   return {mode:'versus',mapId,gear:gear.label,waves:results.map(r=>r.wave),ended:v.ended?v.endReason:'running',lanes:results};
 }
-export function runTwoVsTwo(gear=GEARS.rookie,maxWaves=25){
+export function runTwoVsTwo(gear=GEARS.rookie,maxWaves=25,mapId){
   const players=['a','b','c','d'].map(id=>createPlayer(id,profile(gear),850,450));
-  const s=createTwoVsTwo(players,'a',[['a','b'],['c','d']]);
+  const s=createTwoVsTwo(players,'a',[['a','b'],['c','d']],mapId);
   const cmd=(id,command)=>applyFourCommand(s,id,command);
   const ctxs=[makeCtx(s.lanes[0],['a','b'],`2v2-team1 ${gear.label}`,maxWaves,cmd),
               makeCtx(s.lanes[1],['c','d'],`2v2-team2 ${gear.label}`,maxWaves,cmd)];
@@ -177,9 +177,9 @@ export function runTwoVsTwo(gear=GEARS.rookie,maxWaves=25){
   const results=driveLanes(ctxs,()=>stepFour(s));
   return {mode:'2v2',gear:gear.label,waves:results.map(r=>r.wave),ended:s.ended?s.endReason:'running',lanes:results};
 }
-export function runFourCoop(count,gear=GEARS.rookie,maxWaves=25){
+export function runFourCoop(count,gear=GEARS.rookie,maxWaves=25,mapId){
   const players=Array.from({length:count},(_,i)=>createPlayer(`p${i+1}`,profile(gear),850,450));
-  const s=createFourCoop(players,'p1');
+  const s=createFourCoop(players,'p1',mapId);
   const cmd=(id,command)=>applyFourCommand(s,id,command);
   const ctx=makeCtx(s.match,players.map(p=>p.id),`four${count} ${gear.label}`,maxWaves,cmd);
   ctx.sync=()=>{if(s.pending)for(const id of s.pending.required)if(!s.pending.approved.includes(id))applyFourCommand(s,id,{type:'approveWave',requestId:s.pending.id});};

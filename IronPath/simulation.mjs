@@ -1,16 +1,16 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261108-balance2';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261108-squadmaps1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt} from './maps.mjs?v=20261205-torchfix1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261108-squadmaps1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261108-balance2';
+import {addSupplies} from './match.mjs?v=20261108-squadmaps1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -21,7 +21,7 @@ export function getTowerRange(tower){
 }
 export function createMatch(players,mapId=DEFAULT_MAP){
   if(!isMapId(mapId))throw new Error('Invalid map');
-  if(!Array.isArray(players)||players.length<1||players.length>(getMap(mapId).fourPlayer?4:2)||new Set(players.map(p=>p.id)).size!==players.length)throw new Error('Invalid match roster');
+  if(!Array.isArray(players)||players.length<1||players.length>mapPlayerCap(mapId)||new Set(players.map(p=>p.id)).size!==players.length)throw new Error('Invalid match roster');
   const individualSupplies=players.length>1;
   // The shared bunker uses the strongest purchased upgrade of each type;
   // equipment and Medic bonuses from each player stack.

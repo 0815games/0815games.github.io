@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261107-balance1';
-import {getMap} from './maps.mjs?v=20261205-torchfix1';
+import {getMap} from './maps.mjs?v=20261108-squadmaps1';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.

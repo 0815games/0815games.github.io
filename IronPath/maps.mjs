@@ -7,13 +7,16 @@ export const MAPS=Object.freeze({
 });
 // The oversized squad fields. The four-player frontier is selected by the
 // live game for 3p/4p co-op and 2v2 (formerly EXPERIMENTAL_MAPS).
+const FOUR_FRONT_ROADS=[[{x:0,y:140},{x:260,y:140},{x:260,y:260},{x:560,y:260},{x:560,y:120},{x:880,y:120},{x:880,y:270},{x:1150,y:270},{x:1150,y:360},{x:1380,y:360}],
+                       [{x:0,y:580},{x:260,y:580},{x:260,y:460},{x:560,y:460},{x:560,y:600},{x:880,y:600},{x:880,y:450},{x:1150,y:450},{x:1150,y:360},{x:1380,y:360}]];
+const FOUR_FRONT_PADS=[{x:110,y:210},{x:330,y:185},{x:440,y:315},{x:640,y:190},{x:760,y:195},{x:960,y:190},{x:1050,y:300},{x:1250,y:285},
+                       {x:110,y:510},{x:330,y:535},{x:440,y:405},{x:640,y:530},{x:760,y:525},{x:960,y:530},{x:1050,y:420},{x:1250,y:435}];
 export const SQUAD_MAPS=Object.freeze({
   'four-front':{id:'four-front',name:'Twin Roads Frontier',theme:'road',fourPlayer:true,width:1440,height:720,bunker:{x:1380,y:360},
-    path:[{x:0,y:140},{x:260,y:140},{x:260,y:260},{x:560,y:260},{x:560,y:120},{x:880,y:120},{x:880,y:270},{x:1150,y:270},{x:1150,y:360},{x:1380,y:360}],
-    paths:[[{x:0,y:140},{x:260,y:140},{x:260,y:260},{x:560,y:260},{x:560,y:120},{x:880,y:120},{x:880,y:270},{x:1150,y:270},{x:1150,y:360},{x:1380,y:360}],
-           [{x:0,y:580},{x:260,y:580},{x:260,y:460},{x:560,y:460},{x:560,y:600},{x:880,y:600},{x:880,y:450},{x:1150,y:450},{x:1150,y:360},{x:1380,y:360}]],
-    pads:[{x:110,y:210},{x:330,y:185},{x:440,y:315},{x:640,y:190},{x:760,y:195},{x:960,y:190},{x:1050,y:300},{x:1250,y:285},
-          {x:110,y:510},{x:330,y:535},{x:440,y:405},{x:640,y:530},{x:760,y:525},{x:960,y:530},{x:1050,y:420},{x:1250,y:435}]}
+    path:FOUR_FRONT_ROADS[0],paths:FOUR_FRONT_ROADS,pads:FOUR_FRONT_PADS,
+    // The same roadside torches as the generated fields, derived the same
+    // way, so the classic frontier carries the V2 roadside look too.
+    torches:torchesFor(FOUR_FRONT_ROADS,FOUR_FRONT_PADS,[],{x:1380,y:360},1440,720)}
 });
 export const DEFAULT_MAP='road';
 export function isMapId(id){return typeof id==='string'&&(Object.hasOwn(MAPS,id)||Object.hasOwn(SQUAD_MAPS,id)||seeded(id));}
@@ -96,6 +99,10 @@ export const SECTOR_SPECS=Object.freeze([
   {width:2040,height:1140,pads:22, roads:2, ruins:15,gates:4},
 ]);
 export function sectorOf(mapId){return /^g3-[0-9a-f]{9}$/.test(mapId||'')?Math.min(4,parseInt(mapId[3],16)+1):0;}
+// How many soldiers a field can carry: the squad frontier by flag, generated
+// retreat sectors from the second onward (they have the pads and the room),
+// everything else - including generated sector one - stays a duo field.
+export function mapPlayerCap(mapId){return getMap(mapId).fourPlayer||sectorOf(mapId)>=2?4:2;}
 // Which marked patch (if any) covers a field position.
 export function zoneAt(map,x,y){for(const zone of map?.zones||[])if(Math.hypot(x-zone.x,y-zone.y)<=zone.r)return zone;return null;}
 // Roadside torches - the reported idea: "Fackeln als Straßen Rand in guten

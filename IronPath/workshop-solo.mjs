@@ -1,7 +1,7 @@
 // Builds a solo match that carries the account's workshop loadout; reached
 // from solo-deployment for endless solo and campaign missions.
-import {createMatch} from './simulation.mjs?v=20261108-balance2';
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-balance2';
+import {createMatch} from './simulation.mjs?v=20261108-squadmaps1';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-squadmaps1';
 export function createWorkshopSoloMatch(player,workshop,mapId){
  const snapshot=captureWorkshopLoadout(workshop,'solo');if(!snapshot||!player?.loadout)throw new Error('Invalid solo workshop loadout');
  // The new loadout replaces, rather than stacks with, the old equipped field.
