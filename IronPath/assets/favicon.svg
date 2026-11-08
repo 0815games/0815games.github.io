@@ -1,6 +1,36 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect x="2" y="2" width="60" height="60" rx="13" fill="#344b36" stroke="#d9ca97" stroke-width="4"/>
-  <path d="M10 49V33l8-11h28l8 11v16H10z" fill="#94a77a" stroke="#1f3024" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M10 33h44M24 49V37h16v12" fill="#40543a" stroke="#1f3024" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M32 8l2 4 5 .7-3.5 3.4.8 4.9-4.3-2.3-4.3 2.3.8-4.9-3.5-3.4 5-.7z" fill="#ebd9a2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Iron Path">
+  <!-- Full-bleed icon: the painted master (road to the camo bunker, flanking
+       torches, gold star) as a vector, so the tab favicon matches the
+       iOS home-screen icon. -->
+  <rect width="64" height="64" fill="#344b36"/>
+  <ellipse cx="16" cy="10" rx="11" ry="6" fill="#3d5740"/>
+  <ellipse cx="50" cy="15" rx="9" ry="5" fill="#2c4030"/>
+  <ellipse cx="7" cy="57" rx="8" ry="5" fill="#2c4030"/>
+  <ellipse cx="56" cy="54" rx="10" ry="6" fill="#3d5740"/>
+  <ellipse cx="50" cy="58" rx="4" ry="2.4" fill="#6a6d5f"/>
+  <ellipse cx="9" cy="21" rx="3" ry="2" fill="#565a4c"/>
+  <!-- road: from the bottom edge up to the bunker door -->
+  <path d="M25 66 C21 54 19 49 26 45 C29 43.4 30.5 43 32 43" fill="none" stroke="#6e5f43" stroke-width="12" stroke-linecap="round"/>
+  <path d="M25 66 C21 54 19 49 26 45 C29 43.4 30.5 43 32 43" fill="none" stroke="#a58f60" stroke-width="8.5" stroke-linecap="round"/>
+  <path d="M26 60 C23 53 22 50 26.5 46.5" fill="none" stroke="#f1e7c4" stroke-width="1.4" stroke-dasharray="3.5 3.5"/>
+  <!-- roadside torches -->
+  <g>
+    <circle cx="12" cy="36" r="6.5" fill="#ff9a3c" opacity="0.25"/>
+    <rect x="10.8" y="40" width="2.4" height="11" rx="1" fill="#6f4a2a" stroke="#1f3024" stroke-width="1.2"/>
+    <path d="M12 32 C15.5 35.5 15.8 38 12 40.2 C8.2 38 8.5 35.5 12 32 Z" fill="#ff9a3c"/>
+    <path d="M12 34.8 C13.6 36.4 13.7 37.8 12 39 C10.3 37.8 10.4 36.4 12 34.8 Z" fill="#ffe19a"/>
+  </g>
+  <g>
+    <circle cx="52" cy="33" r="6.5" fill="#ff9a3c" opacity="0.25"/>
+    <rect x="50.8" y="37" width="2.4" height="11" rx="1" fill="#6f4a2a" stroke="#1f3024" stroke-width="1.2"/>
+    <path d="M52 29 C55.5 32.5 55.8 35 52 37.2 C48.2 35 48.5 32.5 52 29 Z" fill="#ff9a3c"/>
+    <path d="M52 31.8 C53.6 33.4 53.7 34.8 52 36 C50.3 34.8 50.4 33.4 52 31.8 Z" fill="#ffe19a"/>
+  </g>
+  <!-- bunker with the gold star -->
+  <g stroke="#1f3024" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M26 19 L38 19 L42 27 L22 27 Z" fill="#5d7350"/>
+    <path d="M20 27 L44 27 L48 43 L16 43 Z" fill="#94a77a"/>
+  </g>
+  <rect x="27" y="30" width="10" height="3.5" rx="1.75" fill="#17251b"/>
+  <path d="M32 34.7 L32.91 37.25 L35.62 37.32 L34.47 38.98 L34.23 41.57 L32 40.05 L29.77 41.57 L29.53 38.98 L28.38 37.32 L31.09 37.25 Z" fill="#f0d68a" stroke="#1f3024" stroke-width="1.1" stroke-linejoin="round"/>
 </svg>
