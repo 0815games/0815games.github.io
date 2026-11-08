@@ -522,14 +522,14 @@ function paintTileMosaic(target,img,width,height,rng,doc){
       const tile=patch(ts,td);if(!tile)continue;
       const jx=Math.round((rng()-.5)*overlap*.6),jy=Math.round((rng()-.5)*overlap*.6);
       target.save();
-      target.globalAlpha=o.alpha;
-      // Per-patch tint jitter: each patch breathes a little differently.
-      try{target.filter=`hue-rotate(${Math.round((rng()-.5)*16)}deg) brightness(${(1+(rng()-.5)*.12).toFixed(3)})`;}catch{/* filter is decorative */}
+      // Per-patch alpha jitter: each patch breathes a little differently.
+      // (A ctx.filter hue/brightness jitter was tried here - canvas filters
+      // are slow enough to matter when a whole map paints at once.)
+      target.globalAlpha=Math.min(1,o.alpha*(0.9+rng()*.2));
       target.drawImage(tile,i*stepX-overlap+jx,j*stepY-overlap+jy);
       target.restore();
     }
   }
-  try{target.filter='none';}catch{/* nothing to reset on old engines */}
 }
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
@@ -566,7 +566,14 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
     target.fillRect(0,0,width,height);target.restore();
   }
   if(!doc?.createElement){paint(ctx);return;}
-  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
+  let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}
+  // The terrain layer's raster resolution is FIXED PER MAP. It used to follow
+  // renderScale, which includes the battle-viewport zoom - so every zoom step
+  // re-rastered the whole mosaic into a fresh canvas (up to 3x = ~80MB for a
+  // sector map) and the game hung while zooming (reported: 'Game haengt beim
+  // Zoomen'). The layer is scaled by the ctx transform instead; painted ground
+  // stays crisp to 2x and only softens gently beyond.
+  const resolution=Math.max(1,Math.min(2,Math.sqrt(6000000/(width*height)))),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }

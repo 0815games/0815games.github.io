@@ -19,8 +19,16 @@ test('battlefield language changes repaint cached terrain without touching playe
  selector.value='de';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,2);assert.ok(canvases[1].calls.some(([op,text])=>op==='fillText'&&text==='WRACK'));assert.ok(calls.some(([op,text])=>op==='fillText'&&text==='BUILD'));assert.deepEqual(state,before);
  selector.value='en';selector.change();drawCartoonBattle(main,state,opts);assert.equal(canvases.length,3);
 });
-test('cached terrain is rasterized at display resolution and reused until resolution changes',()=>{
+test('cached terrain rasterizes once per map and zooming never re-rasters it',()=>{
+ // The terrain layer's resolution is FIXED PER MAP. It used to follow
+ // renderScale - which includes the battle-viewport zoom - so every zoom step
+ // re-rasterized the whole mosaic into a fresh canvas (up to ~80MB for a
+ // sector map) and the game hung while zooming. The pin: zoom-scale changes
+ // reuse the cached layer.
  const map=structuredClone(getMap('forest')),canvases=[],main=context();main.canvas={ownerDocument:{createElement(tag){if(tag==='img')return {};const calls=[],ctx=context(calls),canvas={getContext:()=>ctx,calls};canvases.push(canvas);return canvas;}}};
  const state=createMatch([createPlayer('local',{name:'Test',gender:'female'})],map.id),opts={path:map.path,pads:map.pads,theme:map.theme,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'local',getTowerRange,renderScale:2};
- drawCartoonBattle(main,state,opts);assert.equal(canvases[0].width,1920);assert.equal(canvases[0].height,1080);assert.ok(canvases[0].calls.some(([op,x,y])=>op==='scale'&&x===2&&y===2));drawCartoonBattle(main,state,opts);assert.equal(canvases.length,1);drawCartoonBattle(main,state,{...opts,renderScale:2.5});assert.equal(canvases.length,2);assert.equal(canvases[1].width,2400);
+ drawCartoonBattle(main,state,opts);assert.equal(canvases[0].width,1920);assert.equal(canvases[0].height,1080);assert.ok(canvases[0].calls.some(([op,x,y])=>op==='scale'&&x===2&&y===2));
+ drawCartoonBattle(main,state,opts);assert.equal(canvases.length,1,'the same frame reuses the cached layer');
+ drawCartoonBattle(main,state,{...opts,renderScale:3});assert.equal(canvases.length,1,'zooming in must NOT re-raster the terrain');
+ drawCartoonBattle(main,state,{...opts,renderScale:1});assert.equal(canvases.length,1,'zooming out must NOT re-raster the terrain');
 });
