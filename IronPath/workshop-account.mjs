@@ -1,5 +1,6 @@
-// Workshop transaction service, connected behind a disabled release gate.
-// Do not enable until compatible Firebase rules and mixed-client fencing exist.
+// Workshop transaction service, live for every signed-in soldier through the
+// armory. Writes fail closed when the workshop rules are not published; the
+// legacy path keeps working in that case.
 import {initializeWireWorkshop,applyWireWorkshopCommand,syncPrestige} from './workshop-wire.mjs?v=20261108-balance2';
 
 export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){

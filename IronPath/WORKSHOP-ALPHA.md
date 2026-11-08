@@ -1,6 +1,6 @@
 # Endless workshop alpha: scope and safety
 
-The workshop is now **live inside the Armory** on GitHub Pages (`Command Center → ARMORY → WORKSHOP`), for endless solo. Campaign workshop integration and multiplayer loadouts follow later. Progression stays client-reported: there is no anti-cheat, and the workshop writes depend on the candidate rules being published.
+The workshop is **live inside the Armory** on GitHub Pages (`Command Center → ARMORY → WORKSHOP`) for endless solo and campaign missions, and co-op runs credit workshop rewards; multiplayer matches carry the captured loadouts, standardized to neutral in versus modes. Progression stays client-reported: there is no anti-cheat, and the workshop writes depend on the candidate rules being published.
 
 ## Alpha must let the tester
 

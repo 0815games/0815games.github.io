@@ -1,5 +1,5 @@
-// Experimental transaction reducers; not connected to the production account.
-// Call only inside a transaction using its current profile, not a cached copy.
+// Transaction reducers for the production workshop account. Call only inside
+// a transaction using its current profile, not a cached copy.
 import {migrateWorkshop,validateWorkshop,craftWorkshop,equipWorkshop,modifyWorkshop,validLegacy} from './workshop-model.mjs?v=20261108-balance2';
 
 function validProfile(profile){

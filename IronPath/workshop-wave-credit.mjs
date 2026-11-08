@@ -1,5 +1,5 @@
-// Experimental account-transaction reducer, not wired to production queues.
-// It cannot prove a wave was completed. Call inside a single transaction against
+// Account-transaction reducer for the live co-op reward queues. It cannot
+// prove a wave was completed. Call inside a single transaction against
 // the latest account and use a stable per-run/receipt identity for retries.
 import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';

@@ -1,5 +1,6 @@
-// Experimental integration-test entry point. Not connected to live lobbies,
-// Firebase or recovery. A validated lock does not establish trusted ownership.
+// Builds a multiplayer match that carries validated workshop loadouts; used
+// by the live Firebase party game and the recovery path. A validated lock
+// does not establish trusted ownership.
 import {createMatch} from './simulation.mjs?v=20261108-balance2';
 import {createVersus} from './versus.mjs?v=20261108-balance2';
 import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261108-balance2';

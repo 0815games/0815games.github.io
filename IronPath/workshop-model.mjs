@@ -1,5 +1,6 @@
-// Experimental, pure data model. NOT connected to accounts, rewards or combat.
-// Production migration requires rules, mixed-client protection and receipts.
+// Pure workshop data model: validation and crafting rules, no Firebase, combat
+// or account imports. Live callers are the armory view and the account
+// transaction service; safety lives in the rules and the receipts there.
 import {ITEMS,readArmory} from './armory.mjs?v=20261107-balance1';
 import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-balance2';
 const slots=['weapon','gear','gadget'];

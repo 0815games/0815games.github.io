@@ -1,6 +1,7 @@
-// Experimental protocol contract only. NOT wired to lobby, recovery, Firebase,
-// or live matches. Participant declarations and hosts are client-controlled;
-// this does not prove item ownership and is not an anti-cheat boundary.
+// Wire contract for match loadouts, live through the party game and the
+// combat equipment path. Participant declarations and hosts are
+// client-controlled; this does not prove item ownership and is not an
+// anti-cheat boundary.
 import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-balance2';
 import {decodeWorkshop} from './workshop-wire.mjs?v=20261108-balance2';
 const protocol=1,slots=['weapon','gear','gadget'];

@@ -1,6 +1,7 @@
-// Experimental only: not wired to live gameplay. The host may advance locally,
-// but no host-local view or receipt is delivered until the checkpoint and all
-// recipient views are durably committed together. A failed write is terminal.
+// Host session for the opt-in host-recovery trial. The host may advance
+// locally, but no host-local view or receipt is delivered until the checkpoint
+// and all recipient views are durably committed together. A failed write is
+// terminal.
 export function createDurableHostSession({host,store,playerIds,onCommitted=()=>{},onError=()=>{}}){
   if(!host||!store||!['initialize','publish'].every(k=>typeof store[k]==='function')||!['checkpoint','snapshotFor','advance','receive','setPresence','readyFor'].every(k=>typeof host[k]==='function')||!Array.isArray(playerIds)||playerIds.length<2||new Set(playerIds).size!==playerIds.length||typeof onCommitted!=='function'||typeof onError!=='function')throw Error('Invalid durable host configuration');
   let started=false,closed=false,failed=false,busy=false,fence=null,lastCommitted=null,focusFlush=false;const connections=new Map(playerIds.map(id=>[id,[]]));

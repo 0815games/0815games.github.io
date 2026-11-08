@@ -1,5 +1,6 @@
-// Experimental transport for the recovery protocol. Lease changes switch the
-// subscription to the new owner-scoped view. Not wired into live gameplay.
+// Durable transport for the recovery protocol, reached through the opt-in
+// host-recovery trial (?recovery=1). Lease changes switch the subscription
+// to the new owner-scoped view.
 const key=v=>typeof v==='string'&&v.length>0&&v.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(v),owner=v=>typeof v==='string'&&/^[a-f0-9]{32}$/.test(v),enc=new TextEncoder();
 export function createFirebaseDurableChannel({db,auth,sdk,partyId,hostId,playerIds,onError=()=>{}}){
  const uid=auth?.currentUser?.uid;if(!db||!key(uid)||!key(hostId)||! /^[a-f0-9]{32}$/.test(partyId)||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||!playerIds.includes(uid)||!playerIds.includes(hostId)||!playerIds.every(key)||!sdk||!['ref','onValue','set'].every(k=>typeof sdk[k]==='function')||typeof onError!=='function')throw Error('Invalid durable channel');

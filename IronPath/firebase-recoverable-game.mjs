@@ -1,7 +1,8 @@
 import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261108-balance2';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261108-balance2';
-// Experimental integration adapter. It is not enabled in the live lobby until
-// recovery rules and host re-entry have been validated and published.
+// Integration adapter for the opt-in host-recovery trial: the host opens the
+// lobby with ?recovery=1, the party is marked recoverable, and this adapter
+// rebuilds the match from the latest durable checkpoint after a reload.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
 import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261108-balance2';

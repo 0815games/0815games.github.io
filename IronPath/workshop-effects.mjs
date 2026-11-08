@@ -1,6 +1,7 @@
-// Experimental loadout effects, not connected to live combat or networking.
-// Numbers are provisional and require gameplay/balance testing. All bonuses
-// belong to the wearer except bunkerHealth, which is shared with their team.
+// Loadout effects for captured workshop snapshots, live in solo, campaign
+// and co-op; competitive modes standardize to neutral. Values are covered by
+// the balance suite. All bonuses belong to the wearer except bunkerHealth,
+// which is shared with their team.
 import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
 import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-balance2';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
