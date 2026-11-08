@@ -4,7 +4,7 @@
 // rules and mixed-client protection have been reviewed.
 import {WAVE_COUNT,MAX_WAVE_MASK,bossForWave} from './combat.mjs?v=20261102-battle2';
 import {readArmory} from './armory.mjs?v=20261107-balance1';
-import {validLegacy,validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
+import {validLegacy,validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
 
 export const BOSS_SCRAP=20;
 export const BOSS_COMPONENTS=1;

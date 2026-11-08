@@ -3,11 +3,11 @@
 // Writes require the published workshop rules (see
 // firebase/WORKSHOP-RULES-TO-PUBLISH.json); without them saves are rejected
 // and the legacy path keeps working.
-import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-balance2';
-import {unlockPrestige} from './workshop-model.mjs?v=20261108-balance2';
-import {isPrestige,prestigeEarned,PRESTIGE_IDS,PRESTIGE} from './prestige.mjs?v=20261108-balance2';
-import {completeStory} from './campaign.mjs?v=20261108-balance2';
+import {validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-squadmaps1';
+import {unlockPrestige} from './workshop-model.mjs?v=20261108-squadmaps1';
+import {isPrestige,prestigeEarned,PRESTIGE_IDS,PRESTIGE} from './prestige.mjs?v=20261108-squadmaps1';
+import {completeStory} from './campaign.mjs?v=20261108-squadmaps1';
 const PRESTIGE_BY_MISSION=Object.fromEntries(PRESTIGE_IDS.map(id=>[PRESTIGE[id].mission,{...PRESTIGE[id],id}]));
 const LIMIT=2048;
 const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray(value) && Object.keys(value).length===keys.length && keys.every(k=>Object.hasOwn(value,k));
