@@ -1,4 +1,4 @@
-// Geometry for the experimental large battlefield. Coordinates are in logical
+// Geometry for the large four-player battlefield. Coordinates are in logical
 // canvas pixels, independent of CSS size and device pixel ratio.
 const finitePositive=n=>Number.isFinite(n)&&n>0;
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));

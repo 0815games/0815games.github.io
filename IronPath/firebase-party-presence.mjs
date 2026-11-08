@@ -1,5 +1,5 @@
-// Experimental Firebase presence adapter. It depends on rules restricting each
-// participant to their own presence path; these rules have not been deployed.
+// Firebase presence adapter for live parties. It depends on rules restricting
+// each participant to their own presence path.
 const validKey=value=>typeof value==='string'&&value.length>0&&value.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(value);
 export function createFirebasePartyPresence({db,auth,sdk,partyId,playerIds,partyRoot='parties',crypto=globalThis.crypto,onPresence=()=>{},onConnections=()=>{},onConnection=()=>{},onError=()=>{},heartbeatMs=5000,expiryMs=20000,clock=Date.now}){
   if(!['parties','fourParties'].includes(partyRoot)||!db||!auth||!sdk||!['ref','onValue','onDisconnect','set','remove','serverTimestamp'].every(key=>typeof sdk[key]==='function')||!validKey(partyId)||!Array.isArray(playerIds)||!(partyRoot==='fourParties'?[2,3,4].includes(playerIds.length):playerIds.length===2)||new Set(playerIds).size!==playerIds.length||playerIds.some(id=>!validKey(id))||typeof crypto?.getRandomValues!=='function'||![onPresence,onConnections,onConnection,onError,clock].every(fn=>typeof fn==='function')||!Number.isFinite(heartbeatMs)||heartbeatMs<100||!Number.isFinite(expiryMs)||expiryMs<heartbeatMs*2)throw new Error('Invalid party presence configuration');

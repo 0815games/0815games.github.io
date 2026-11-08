@@ -1,8 +1,8 @@
 import {parseBuild,encodeBuild} from './skills.mjs?v=20261107-balance1';
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
-// Experimental player-hosted Firebase lobby primitives. Access control MUST be
-// provided by Realtime Database rules; this module is not itself authorization.
-// No game UI should enable these operations until those rules are tested.
+// Player-hosted Firebase lobby primitives, live behind the party panel.
+// Access control MUST be provided by Realtime Database rules; this module is
+// not itself authorization.
 const CODE=/^[a-f0-9]{32}$/;
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto}){

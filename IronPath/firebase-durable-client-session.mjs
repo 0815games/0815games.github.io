@@ -1,7 +1,8 @@
 import {normalizeCommand} from './protocol.mjs?v=20261108-balance2';
-// Experimental generation-aware client. The channel must derive each view's
-// owner/generation from a rules-protected lease and owner-scoped view path, and
-// hosts must reject input envelopes from old generations. Not wired live.
+// Generation-aware client for the opt-in host-recovery trial. The channel
+// must derive each view's owner/generation from a rules-protected lease and
+// owner-scoped view path, and hosts must reject input envelopes from old
+// generations.
 export function createDurableClientSession({channel,onView=()=>{},onState=()=>{},onConnections=()=>{},timeoutMs=15000}){
   if(!channel||!['watchLease','watchView','writeInput','close'].every(k=>typeof channel[k]==='function')||typeof onView!=='function'||typeof onState!=='function'||typeof onConnections!=='function'||!Number.isFinite(timeoutMs)||timeoutMs<=0)throw Error('Invalid durable client');
   let started=false,closed=false,invalid=false,lease=null,latest=null,maxTick=-1,pending=null,stops=[];

@@ -121,6 +121,11 @@ test('endless solo stays challenging but fair for a rookie',()=>{
   assert.ok(runSolo('road',GEARS.rookie,45).wave>=15,'a competent rookie reaches the mid game');
   for(const mapId of ['forest','g3-0d3e7f521']){
     const result=runSolo(mapId,GEARS.rookie,45);
+    // The live game draws a crypto-random retreat map; the harness derives it
+    // from the field it leaves (see retreatMapFor), so the same run must
+    // always produce the same number - otherwise these pins are a lottery.
+    const repeat=runSolo(mapId,GEARS.rookie,45);
+    assert.equal(repeat.wave,result.wave,`${mapId}: the harness retreat is deterministic`);
     assert.ok(result.wave<45,`${mapId}: the endless curve eventually wins`);
     assert.ok(result.wave>=12,`${mapId}: a rookie still gets a real run`);
   }

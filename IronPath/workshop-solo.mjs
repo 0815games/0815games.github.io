@@ -1,4 +1,5 @@
-// Integration-test entry point only; not reachable from the production UI.
+// Builds a solo match that carries the account's workshop loadout; reached
+// from solo-deployment for endless solo and campaign missions.
 import {createMatch} from './simulation.mjs?v=20261108-balance2';
 import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-balance2';
 export function createWorkshopSoloMatch(player,workshop,mapId){

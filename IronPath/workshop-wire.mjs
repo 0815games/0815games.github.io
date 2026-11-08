@@ -1,6 +1,8 @@
-// Experimental RTDB-safe wire format, not used by production accounts.
-// The single string preserves empty arrays/objects that RTDB removes as nodes.
-// Rules must be reviewed before this field can be written to production.
+// RTDB-safe wire format for the workshop stored on production accounts. The
+// single string preserves empty arrays/objects that RTDB removes as nodes.
+// Writes require the published workshop rules (see
+// firebase/WORKSHOP-RULES-TO-PUBLISH.json); without them saves are rejected
+// and the legacy path keeps working.
 import {validateWorkshop} from './workshop-model.mjs?v=20261108-balance2';
 import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-balance2';
 import {unlockPrestige} from './workshop-model.mjs?v=20261108-balance2';

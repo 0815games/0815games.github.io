@@ -1,6 +1,6 @@
-// Experimental input adapter. The caller applies the viewport transform when
-// drawing, and receives taps in world coordinates; the live game does not yet
-// instantiate this controller.
+// Input adapter for the large battlefield viewport, instantiated by the game
+// for every oversized field. The caller applies the viewport transform when
+// drawing, and receives taps in world coordinates.
 import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen} from './battle-viewport.mjs?v=20261102-fourviewport2';
 export function createBattleViewportController({canvas,worldWidth,worldHeight,screenWidth=canvas.width,screenHeight=canvas.height,onChange=()=>{},onTap=()=>{}}){
   if(!canvas||typeof canvas.addEventListener!=='function'||typeof canvas.removeEventListener!=='function'||typeof onChange!=='function'||typeof onTap!=='function')throw Error('Invalid viewport controller');

@@ -3,7 +3,7 @@
 // far each map/mode/gear combination survives. Used to tune difficulty:
 //   node tests/balance-harness.mjs solo|coop|versus|twovtwo|campaign|all
 import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand,getSupplies,TOWER_COSTS} from '../match.mjs';
+import {createPlayer,applyCommand,advanceSector,getSupplies,TOWER_COSTS} from '../match.mjs';
 import {getMap} from '../maps.mjs';
 import {RUN_PERKS,perkOffers} from '../run-perks.mjs';
 import {upgradeCost} from '../progression.mjs';
@@ -78,6 +78,19 @@ function spend(ctx,id){
     break;
   }
 }
+// Deterministic retreat: the live game draws a crypto-random next sector
+// (createRandomMapId in maps.mjs). Balance runs must be reproducible, so the
+// harness derives the next seed from the field it leaves - same id always
+// yields the same retreat. Multiplayer and missions never retreat, so only
+// the endless solo path is affected.
+export function retreatMapFor(previous,_random,sector){
+  let h=2166136261;for(const ch of String(previous))h=Math.imul(h^ch.charCodeAt(0),16777619)>>>0;
+  const value=Math.imul(h,2654435761)>>>0;
+  const tag=(Math.max(1,Math.min(4,Math.round(sector)))-1).toString(16);
+  let id=`g3-${tag}${value.toString(16).padStart(8,'0')}`;
+  if(id===previous)id=`g3-${tag}${((value+1)>>>0).toString(16).padStart(8,'0')}`;
+  return id;
+}
 function pilot(ctx){
   const s=ctx.state;
   if(s.ended)return;
@@ -86,7 +99,7 @@ function pilot(ctx){
     const mid=roadPoint(ctx.map,.55);
     for(const id of ctx.ids){const p=s.players[id];p.x=mid.x;p.y=mid.y;p.target=null;p.direction={x:0,y:0};}
   }
-  if(s.pendingSector){ctx.command(ctx.ids[0],{type:'advanceSector'});return;}
+  if(s.pendingSector){advanceSector(s,retreatMapFor);return;}
   if(s.pendingPerk&&!s.running)ctx.command(ctx.ids[0],{type:'choosePerk',index:choosePerk(ctx)});
   if(s.pendingWave){const guest=ctx.ids.find(id=>id!==s.hostId);if(guest){ctx.command(guest,{type:'approveWave',requestId:s.waveRequestId});return;}}
   if(!s.running&&!s.pendingPerk&&!s.pendingSector&&!s.pendingWave&&s.wave<ctx.maxWaves)
