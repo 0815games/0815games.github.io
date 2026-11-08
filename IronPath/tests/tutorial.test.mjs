@@ -166,3 +166,18 @@ test('every import of a module agrees on that module cache token',()=>{
   'importers of one module must share its cache token');
  assert.ok(tokens.get('tutorial.mjs')?.size===1,'the tour is imported through a token');
 });
+
+// The SHOW TASK pills (battlefield coach + command-center guide) must end with
+// the tutorial, however it ends. The wiring lives in browser-bound code
+// (game.js tick, account.js ending runner), so it is pinned on the source -
+// the behavior itself is exercised by the browser suite.
+{
+ const game=readFileSync(new URL('../game.js',import.meta.url),'utf8');
+ // Retreating out of the training run (END RUN) parks the coach for good.
+ assert.match(game,/endReason==='retired'\)\{\s*trainingDone=true;coach\.stop\(\);/,'an abandoned tutorial stops the coach');
+ // Losing the bunker ends the coaching as finished: no card can be proven on a dead field.
+ assert.match(game,/trainingBonusPaid=true;coach\.complete\(\);/,'a lost tutorial completes the coach');
+ const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
+ // A declined or broken ending step must not leave the guide pill behind.
+ assert.match(account,/onStopped:\(\)=>\{endingRunning=false;firstRunGuide\?\.stop\?\.\(\);syncGuideRecall\(\);\}/,'a stopped ending stops the guide and hides its pill');
+}

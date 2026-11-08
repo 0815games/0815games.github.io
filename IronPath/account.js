@@ -535,7 +535,10 @@ function offerFirstRunEnding(){
   steps:{tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime},
 
   onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();refreshDogTags();openFieldSchool();},
-  onStopped:()=>{endingRunning=false;},
+  // A declined or unavailable step stops the walkthrough - and the guide with
+  // it. Reported: the SHOW TASK pill outlived an abandoned ending and floated
+  // over every Command Center view with nothing left to show.
+  onStopped:()=>{endingRunning=false;firstRunGuide?.stop?.();syncGuideRecall();},
  });
 }
 // The Field School lists where the new soldier can go next. Each entry clicks an

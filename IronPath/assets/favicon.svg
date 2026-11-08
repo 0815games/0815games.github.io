@@ -1,36 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Iron Path">
-  <!-- Full-bleed icon: the painted master (road to the camo bunker, flanking
-       torches, gold star) as a vector, so the tab favicon matches the
-       iOS home-screen icon. -->
+  <!-- Full-bleed icon matching the painted master: an iron cross pattée with
+       a silver rim and the gold field star on the olive battlefield. -->
   <rect width="64" height="64" fill="#344b36"/>
   <ellipse cx="16" cy="10" rx="11" ry="6" fill="#3d5740"/>
-  <ellipse cx="50" cy="15" rx="9" ry="5" fill="#2c4030"/>
-  <ellipse cx="7" cy="57" rx="8" ry="5" fill="#2c4030"/>
-  <ellipse cx="56" cy="54" rx="10" ry="6" fill="#3d5740"/>
-  <ellipse cx="50" cy="58" rx="4" ry="2.4" fill="#6a6d5f"/>
-  <ellipse cx="9" cy="21" rx="3" ry="2" fill="#565a4c"/>
-  <!-- road: from the bottom edge up to the bunker door -->
-  <path d="M25 66 C21 54 19 49 26 45 C29 43.4 30.5 43 32 43" fill="none" stroke="#6e5f43" stroke-width="12" stroke-linecap="round"/>
-  <path d="M25 66 C21 54 19 49 26 45 C29 43.4 30.5 43 32 43" fill="none" stroke="#a58f60" stroke-width="8.5" stroke-linecap="round"/>
-  <path d="M26 60 C23 53 22 50 26.5 46.5" fill="none" stroke="#f1e7c4" stroke-width="1.4" stroke-dasharray="3.5 3.5"/>
-  <!-- roadside torches -->
-  <g>
-    <circle cx="12" cy="36" r="6.5" fill="#ff9a3c" opacity="0.25"/>
-    <rect x="10.8" y="40" width="2.4" height="11" rx="1" fill="#6f4a2a" stroke="#1f3024" stroke-width="1.2"/>
-    <path d="M12 32 C15.5 35.5 15.8 38 12 40.2 C8.2 38 8.5 35.5 12 32 Z" fill="#ff9a3c"/>
-    <path d="M12 34.8 C13.6 36.4 13.7 37.8 12 39 C10.3 37.8 10.4 36.4 12 34.8 Z" fill="#ffe19a"/>
-  </g>
-  <g>
-    <circle cx="52" cy="33" r="6.5" fill="#ff9a3c" opacity="0.25"/>
-    <rect x="50.8" y="37" width="2.4" height="11" rx="1" fill="#6f4a2a" stroke="#1f3024" stroke-width="1.2"/>
-    <path d="M52 29 C55.5 32.5 55.8 35 52 37.2 C48.2 35 48.5 32.5 52 29 Z" fill="#ff9a3c"/>
-    <path d="M52 31.8 C53.6 33.4 53.7 34.8 52 36 C50.3 34.8 50.4 33.4 52 31.8 Z" fill="#ffe19a"/>
-  </g>
-  <!-- bunker with the gold star -->
-  <g stroke="#1f3024" stroke-width="2.5" stroke-linejoin="round">
-    <path d="M26 19 L38 19 L42 27 L22 27 Z" fill="#5d7350"/>
-    <path d="M20 27 L44 27 L48 43 L16 43 Z" fill="#94a77a"/>
-  </g>
-  <rect x="27" y="30" width="10" height="3.5" rx="1.75" fill="#17251b"/>
-  <path d="M32 34.7 L32.91 37.25 L35.62 37.32 L34.47 38.98 L34.23 41.57 L32 40.05 L29.77 41.57 L29.53 38.98 L28.38 37.32 L31.09 37.25 Z" fill="#f0d68a" stroke="#1f3024" stroke-width="1.1" stroke-linejoin="round"/>
+  <ellipse cx="50" cy="14" rx="9" ry="5" fill="#2c4030"/>
+  <ellipse cx="8" cy="52" rx="8" ry="5" fill="#2c4030"/>
+  <ellipse cx="55" cy="55" rx="10" ry="6" fill="#3d5740"/>
+  <ellipse cx="50" cy="59" rx="4" ry="2.4" fill="#6a6d5f"/>
+  <ellipse cx="10" cy="24" rx="3" ry="2" fill="#565a4c"/>
+  <ellipse cx="54" cy="44" rx="2.6" ry="1.8" fill="#565a4c"/>
+  <!-- iron cross pattée: arms flare wide at the ends, pinched at the center -->
+  <path d="M22 8 H42 L37 27 L56 22 V42 L37 37 L42 56 H22 L27 37 L8 42 V22 L27 27 Z"
+        fill="#1d2120" stroke="#d9dde1" stroke-width="3.5" stroke-linejoin="miter"/>
+  <path d="M22 8 H42 L37 27 L56 22 V42 L37 37 L42 56 H22 L27 37 L8 42 V22 L27 27 Z"
+        fill="none" stroke="#3f4440" stroke-width="1.1" stroke-linejoin="miter"
+        transform="translate(32 32) scale(0.78) translate(-32 -32)"/>
+  <!-- the gold field star at the heart of the cross -->
+  <path d="M32 26 L33.41 30.06 L37.71 30.15 L34.28 32.74 L35.53 36.85 L32 34.4 L28.47 36.85 L29.72 32.74 L26.29 30.15 L30.59 30.06 Z"
+        fill="#f0d68a" stroke="#1f3024" stroke-width="1" stroke-linejoin="round"/>
 </svg>

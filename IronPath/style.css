@@ -21,7 +21,12 @@
 .sheet-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px}.sheet-header h2{font-size:17px;margin:3px 0}.sheet-header p{color:var(--muted);font-size:11px;line-height:1.35;margin:3px 0}.sheet-close{width:44px;height:44px;min-width:44px;margin:0;padding:0;font-size:17px}.sheet-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.sheet-option{min-height:64px;margin:0;padding:9px 10px;text-align:left;letter-spacing:0;background:#2a3828;border-color:#647b59}.sheet-name,.sheet-description{display:block}.sheet-name{font-size:12px;color:#edf1df;font-weight:bold}.sheet-description{font-size:10px;line-height:1.3;color:#aebda6;margin-top:4px;font-weight:normal}.sheet-option.unaffordable{background:#252c24;border-color:#4b5749}.sheet-option.unaffordable .sheet-name,.sheet-option.unaffordable .sheet-description{color:#929b8e}.sheet-option:focus-visible,.sheet-close:focus-visible{outline:2px solid #e5efa0;outline-offset:2px}@media(min-width:851px){.tower-sheet{left:auto;right:24px;bottom:24px;width:min(620px,calc(100vw - 48px));border-radius:16px}.sheet-options{grid-template-columns:repeat(2,minmax(0,1fr))}}
 /* Disable double-tap zoom while retaining ordinary scrolling and pinch-to-zoom. */
 body, button, summary, a, dialog, .tower-sheet { touch-action: manipulation; }
-.map-viewport canvas { touch-action: pan-x pan-y pinch-zoom; }
+/* The battlefield owns its pinch: the touch-zoom path and the battle-viewport
+   controller both handle two fingers themselves. Allowing the browser pinch
+   here let Safari zoom the PAGE instead of the field - reported after the
+   wave-10 fallback, where the player was left staring at a third of the map
+   with a zoom that "did nothing". */
+.map-viewport canvas { touch-action: pan-x pan-y; }
 .coop-controls{display:flex;align-items:center;gap:10px;margin:0 0 8px}.coop-controls button{width:auto;min-height:40px;margin:0}.coop-controls span{font-size:11px;color:var(--muted)}
 
 .firebase-party{padding:10px;margin-bottom:8px;background:var(--panel);border:1px solid var(--line)}.firebase-party>strong{font-size:11px;letter-spacing:.08em}.firebase-party button{width:auto;min-height:40px;margin:4px 4px 0 0}.firebase-party input{max-width:100%;width:260px;min-height:40px;padding:8px;background:#111a11;border:1px solid #566348;color:#eef1e6;font-size:16px}.firebase-party label{display:inline;margin:0 4px}.firebase-party code{display:block;overflow-wrap:anywhere;margin-top:8px;color:var(--accent)}.firebase-party #partyStatus{font-size:12px;color:var(--muted);margin:7px 0 0}

@@ -827,3 +827,52 @@ body:has(#runResults[open]) .first-run-coach{display:none}
      .armory-dialog width rules above, wherever they sit in this file. */
   dialog.armory-dialog{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;margin:0;border:0;border-radius:0}
 }
+
+/* ── V3 emblem pass: the interface wears the iron cross ───────────────────
+   Dark iron plates with a polished silver rim, the gold field star as the
+   accent, stamped buttons with a real bevel - the same identity as the new
+   game icon. Appended last so it layers over the field-dossier theme.     */
+:root{
+  --iron-plate:#1c231e;
+  --iron-deep:#141a15;
+  --iron-mid:#2a312b;
+  --iron-rim:#8d979b;
+  --iron-rim-strong:#d9dde1;
+  --iron-gold:#f0d68a;
+  --iron-shadow:rgba(8,12,9,.5);
+}
+.panel,.battle,.entry,.campaign.panel{
+  background:linear-gradient(180deg,var(--iron-plate),var(--iron-deep));
+  border-color:#39433c;
+  border-top-color:#525c54;
+  box-shadow:inset 0 1px 0 rgba(217,221,225,.09),0 4px 12px var(--iron-shadow);
+}
+.panel-heading .eyebrow,h1,.brand-title{color:var(--iron-rim-strong);text-shadow:0 1px 0 #0b0f0c}
+/* Stamped iron buttons: a raised bevel, silver rim on hover, pressed state. */
+/* Not the mode cards: their painted artwork IS their background. */
+button:not(.primary):not([disabled]):not(.mode-card),.map-toolbar button:not([disabled]){
+  background:linear-gradient(180deg,var(--iron-mid),#1e251f);
+  border:1px solid #4c564e;
+  border-top-color:#6d766e;
+  box-shadow:0 2px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.14);
+  color:#e9ecdf;
+}
+button:not(.primary):not([disabled]):not(.mode-card):hover{
+  border-color:var(--iron-rim);
+  border-top-color:var(--iron-rim-strong);
+  color:#fff;
+}
+button:not(.primary):not([disabled]):not(.mode-card):active{transform:translateY(1px);box-shadow:0 1px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.1)}
+.primary{
+  background:linear-gradient(180deg,#41523e,#2d3b2d);
+  border:1px solid #71806b;
+  border-top-color:#9aa792;
+  box-shadow:0 2px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.18);
+  color:var(--iron-gold);
+}
+.primary:hover{border-top-color:var(--iron-rim-strong)}
+/* The HUD stat icons pick up the emblem's gold. */
+.hud-icon{color:var(--iron-gold)}
+/* The map toolbar sits on the iron band. */
+.map-toolbar{background:linear-gradient(180deg,#232a24,var(--iron-deep));border-bottom:1px solid #39433c}
+.map-toolbar button{background:var(--iron-mid)}
