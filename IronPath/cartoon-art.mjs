@@ -190,8 +190,15 @@ function soldier(ctx,p,own,pose={},notify){
   ctx.restore();
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||tr('HERO'),x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||tr('HERO'),x,y+29);ctx.textAlign='start';
 }
-function enemy(ctx,e,reducedMotion,notify){
+function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0){
   const x=e.x,y=e.y;
+  // V3 movement: the vehicles fly and drive where they are going. The heading
+  // comes from the road geometry (the caller reads it off the next path
+  // point), the plane banks into the bend ahead - both deterministic, so the
+  // same frame always paints the same picture.
+  const flies=e.kind==='plane'||e.boss==='bossBomber',drives=e.kind==='tank'||e.boss==='bossJuggernaut'||e.boss==='bossCommander';
+  const angle=Number.isFinite(heading)?heading:0,lean=Number.isFinite(bank)?Math.max(-.5,Math.min(.5,bank))*.7:0;
+  const t0=Number.isFinite(time)?time:0;
   if(e.boss){const phase=bossPhase(e);if(phase!=='normal'){
     const radius=phase==='rally'?45:phase==='shield'?31:28;
     ctx.save();ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.strokeStyle=phase==='shield'?'#a5d9e3':phase==='repair-warning'?'#addb8b':'#f3c776';ctx.lineWidth=3;ctx.setLineDash(reducedMotion?[]:[5,5]);ctx.stroke();
@@ -201,14 +208,37 @@ function enemy(ctx,e,reducedMotion,notify){
     ctx.restore();
   }}
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
-  castShadow(ctx,x,y+10,12,4.5);
+  // A plane rides high: its shadow drifts lower, smaller and fainter than a
+  // grounded machine's - the cheapest height illusion there is.
+  if(flies){ctx.save();ctx.globalAlpha=.14;oval(ctx,x+7,y+17,11,3.5,'#0c120e',null);ctx.restore();}
+  else castShadow(ctx,x,y+10,12,4.5);
   // V2: painted enemies - muddy tank, camouflaged prop plane, riflemen.
   // The bosses keep their artwork until the next art stage.
   const name=e.boss?(e.boss==='bossBomber'?'bossplane2':'bossheavy2'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
   if(!artwork)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
-  else if(name==='tank2'||name==='bossheavy2')ctx.drawImage(artwork,x-(e.boss?30:20),y-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
-  else if(name==='plane2'||name==='bossplane2')ctx.drawImage(artwork,x-(e.boss?30:21),y-(e.boss?18:14),e.boss?60:42,e.boss?28:26);
-  else ctx.drawImage(artwork,x-10,y-12,20,20);
+  else if(drives){
+    // The tank turns into the road: artwork rotated to its heading, with a
+    // rolling wobble on the move and dust kicked up behind the hull.
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+    if(!reducedMotion&&e.hp>0)ctx.translate(0,Math.sin(t0*7+x*.05)*.7);
+    ctx.drawImage(artwork,-(e.boss?30:20),-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
+    ctx.restore();
+    if(!reducedMotion&&e.hp>0){for(let i=0;i<2;i++){const back=angle+Math.PI,side=angle+Math.PI/2*(i?1:-1),ph=((t0*.9+i*.5+x*.01)%1+1)%1;
+      ctx.save();ctx.globalAlpha=.16*(1-ph);oval(ctx,x+Math.cos(back)*(20+ph*14)+Math.cos(side)*6,y+Math.sin(back)*(20+ph*14)+Math.sin(side)*4+8,4+ph*5,2.5+ph*3,'#b7a67e',null);ctx.restore();}}
+  }
+  else if(flies){
+    // The plane flies nose-first and banks into the coming bend.
+    ctx.save();ctx.translate(x,y);ctx.rotate(angle+lean);
+    if(!reducedMotion&&e.hp>0)ctx.translate(0,Math.sin(t0*4+x*.04)*1.4);
+    ctx.drawImage(artwork,-(e.boss?30:21),-(e.boss?18:14),e.boss?60:42,e.boss?28:26);
+    ctx.restore();
+  }
+  else{
+    // Infantry marches with a squash step - the sprite breathes around its
+    // feet instead of sliding stiffly along the road.
+    const sq=reducedMotion?0:.05*Math.sin((e.kind==='runner'?t0*13:t0*8.5)+(x+y)*.05);
+    ctx.save();ctx.translate(x,y+10);ctx.scale(1+sq*.6,1-sq);ctx.drawImage(artwork,-10,-22,20,20);ctx.restore();
+  }
   if(!e.boss&&ENEMY_INTEL[e.kind]){const bx=x+(e.kind==='tank'?18:15),by=y+10;oval(ctx,bx,by,7,7,'#344a3b','#f7e5b5',1);ctx.fillStyle='#fff3d2';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(ENEMY_INTEL[e.kind].symbol,bx,by+3);ctx.textAlign='start';}
   const w=e.boss?52:28;ctx.fillStyle=ink;ctx.fillRect(x-w/2,y-22,w,5);ctx.fillStyle=e.boss?'#eea35f':e.hp/e.maxHp<.3?'#ed9b74':'#dce59c';ctx.fillRect(x-w/2+1,y-21,(w-2)*Math.max(0,Math.min(1,e.hp/e.maxHp)),3);
   if(e.boss){const names={bossIronclad:'IRONCLAD',bossBomber:'DREAD BOMBER',bossJuggernaut:'JUGGERNAUT',bossCommander:'WAR COMMANDER'};ctx.font='bold 10px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(tr(names[e.boss]||'BOSS'),x,y-29);ctx.fillStyle='#ffe1a0';ctx.fillText(tr(names[e.boss]||'BOSS'),x,y-29);ctx.textAlign='start';}
@@ -462,7 +492,12 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
 }
 export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
-  ctx.save();ctx.translate(bunkerPosition.x,bunkerPosition.y);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
+  // The bunker flinches when it takes a hit - the impact effect carries the
+  // timing, the shake is a decaying wobble around the flinch.
+  const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');
+  const flinch=hit?Math.max(0,1-(hit.progress||0))*3.2:0;
+  const fx=flinch?flinch*Math.sin((hit.progress||0)*34):0,fy=flinch?flinch*Math.cos((hit.progress||0)*29):0;
+  ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   // Enemy entries live where the roads actually cross the border - any of
@@ -502,10 +537,26 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     }
     if(e.boss==='bossBomber'&&e.bossFlash>0&&!reducedMotion)burst(ctx,bunkerPosition.x,bunkerPosition.y,20+(1-e.bossFlash)*12,'#ef9e68');
     if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
-    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}enemy(ctx,e,reducedMotion,onSpritesReady);ctx.restore();
+    ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}// Where is this unit going? The next path point gives the heading, the
+    // bend after it gives the bank - read from geometry, never stored.
+    const road=paths[e.road]||paths[0];let heading=0,bank=0;
+    if(road&&Array.isArray(road)&&road.length>1&&Number.isFinite(e.segment)){
+      const at=Math.max(0,Math.min(road.length-1,e.segment)),from=road[Math.max(0,at-1)],to=road[at],next=road[Math.min(road.length-1,at+1)];
+      const dx=to.x-from.x,dy=to.y-from.y,nd=next.x-to.x,ny=next.y-to.y;
+      if(Math.hypot(dx,dy)>1)heading=Math.atan2(dy,dx);
+      if(Math.hypot(nd,ny)>1){let turn=Math.atan2(ny,nd)-heading;while(turn>Math.PI)turn-=Math.PI*2;while(turn<-Math.PI)turn+=Math.PI*2;bank=turn;}
+    }
+    enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0);ctx.restore();
   }
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
-  if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');ctx.restore();}}
+  if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');
+    // V3 deaths: embers fly outward in the emblem's metals and a smoke wisp
+    // rises off the wreck - a kill reads as a strike, not a popped bubble.
+    const age=1-life/.65;
+    for(let i=0;i<6;i++){const a=i/6*Math.PI*2+pop.x*.013,d=age*(pop.boss?34:17),ex=pop.x+Math.cos(a)*d,ey=pop.y+Math.sin(a)*d-age*age*10;
+      ctx.beginPath();ctx.arc(ex,ey,2.2*(1-age)+.6,0,Math.PI*2);ctx.fillStyle=i%2?'#f0d68a':'#d9dde1';ctx.fill();}
+    oval(ctx,pop.x+Math.sin(age*7)*2,pop.y-8-age*16,5+age*7,4+age*5,`rgba(78,84,78,${(.34*(1-age)).toFixed(3)})`,null);
+    ctx.restore();}}
   if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);
   ctx.restore();
 }
@@ -528,6 +579,9 @@ function drawShot(ctx,s,age,reduced){
   line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,s.kind===1?6:4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',s.kind===1?4:2);ctx.restore();
   if(reduced)return;
   const scale=s.kind===1?1.35:s.kind===3?.75:1;
+  // V3: the first beat of a shot is a muzzle flash at the barrel - a gold
+  // spark in a silver ring, right where the tracer leaves the tower.
+  if(progress<.22){star(ctx,s.x,s.y,(5+9*(1-progress/.22))*scale);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=1.6;ctx.stroke();}
   if(progress<.65)burst(ctx,s.x,s.y,(7+(1-progress)*4)*scale,'#ffe39b');
   if(progress>.12){ctx.save();ctx.globalAlpha=Math.max(.2,1-progress*.65);ctx.beginPath();ctx.arc(s.tx,s.ty,(5+progress*9)*scale,0,Math.PI*2);ctx.strokeStyle=s.kind===1?'#f0aa72':'#d9dde1';ctx.lineWidth=2;ctx.stroke();ctx.restore();burst(ctx,s.tx,s.ty,(5+progress*8)*scale,s.kind===1?'#e89964':'#f6d787');}
 }
