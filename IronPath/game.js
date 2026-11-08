@@ -140,6 +140,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // precise inspection without changing the world coordinates or game state.
   const touchDevice=window.matchMedia('(pointer: coarse)');
   if(touchDevice.matches)touchZoom=createMapZoom({viewport:mapViewport,canvas,getLogicalSize:()=>({width:logicalWidth,height:logicalHeight}),isEnabled:()=>!battleViewport,onChange:factor=>{largeMap=factor>1.01;zoomButton.setAttribute('aria-pressed',String(largeMap));$('mapQuickZoom').textContent=tr(largeMap?'FIT MAP':'ZOOM MAP');zoomButton.textContent=tr(largeMap?'MAP: FIT':'MAP: ZOOM');}});
+  // The startup labels were painted before touchZoom existed, so a phone open
+  // showed the desktop hint until the first zoom. One repaint fixes that.
+  renderViewportLabels();
   $('mapQuickZoom').addEventListener('click',()=>zoomButton.click());
   if(touchZoom&&typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
   // The pointer is anchored to a world position, not to a pixel: whenever the field
@@ -666,8 +669,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
       // who bounced off wave five still has to be given something to equip and a
       // point to spend. This used to fire on `trainingWon` only, so a defeat ended
       // the run with the debrief and no dog tag at all.
-      if(activeTraining&&state.ended&&!trainingDone&&state.endReason!=='retired'&&!state.endReason?.startsWith('training')){
-       trainingDone=true;trainingBonusPaid=true;
+      // However the training contract ends - abandoned, bunker lost, or the boss
+      // down - the field coaching ends with it. Reported: the SHOW TASK pill
+      // outlived a lost or abandoned tutorial and floated over the Command
+      // Center (Game, Skills and Armory alike) with nothing left to recall.
+      if(activeTraining&&state.ended&&!trainingDone&&state.endReason==='retired'){
+       trainingDone=true;coach.stop();
+      }
+      if(activeTraining&&state.ended&&!trainingDone&&!state.endReason?.startsWith('training')){
+       trainingDone=true;trainingBonusPaid=true;coach.complete();
        const xp=FIRST_RUN_DEFEAT_XP;
        // A replay pays nothing: the first run can be restarted from Settings, and a
        // reward that can be farmed by restarting the tutorial is not a reward.
