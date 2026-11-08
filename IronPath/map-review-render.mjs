@@ -1,8 +1,17 @@
-// Renders each campaign mission's generated field to a PNG review sheet:
-// road, pads, bunker, zones, deco, torches and resolved stage markers.
-// Pure node (zlib + hand-rolled PNG chunks), no canvas dependency.
+// Renders battlefields to PNG review sheets: pure node (zlib + hand-rolled
+// PNG chunks), no canvas dependency.
+//
+//   node map-review-render.mjs                      campaign sheets (12 missions)
+//   node map-review-render.mjs <mapId> [more ids]   plain field sheets
+//   node map-review-render.mjs --versus <mapId>     the 1v1 split-screen sheet
+//   node map-review-render.mjs --out <dir> ...      write sheets somewhere else
+//
+// The versus sheet mirrors game.js: a 960x1100 canvas - your battlefield on
+// top, the 20px opponent divider strip, the rival's battlefield below (the
+// live rival render is translated to y=560 there; the strip carries the
+// opponent's name in the real game).
 import {deflateSync} from 'node:zlib';
-import {mkdirSync} from 'node:fs';
+import {mkdirSync,writeFileSync} from 'node:fs';
 import {getMap} from './maps.mjs?v=20261108-squadmaps1';
 import {CAMPAIGN} from './campaign.mjs?v=20261108-squadmaps1';
 
@@ -25,9 +34,10 @@ function encodePNG(width,height,rgba){
 
 // ---------------------------------------------------------------- canvas ---
 class Canvas{
-  constructor(w,h){this.w=w;this.h=h;this.data=Buffer.alloc(w*h*4);for(let i=0;i<w*h;i++){this.data[i*4]=26;this.data[i*4+1]=31;this.data[i*4+2]=24;this.data[i*4+3]=255;}}
+  constructor(w,h){this.w=w;this.h=h;this.ox=0;this.oy=0;this.data=Buffer.alloc(w*h*4);for(let i=0;i<w*h;i++){this.data[i*4]=26;this.data[i*4+1]=31;this.data[i*4+2]=24;this.data[i*4+3]=255;}}
+  at(ox,oy){const c=new Canvas(this.w,this.h);c.data=this.data;c.ox=ox;c.oy=oy;return c;}
   blend(x,y,[r,g,b,a=255]){
-    x=Math.round(x);y=Math.round(y);
+    x=Math.round(x+this.ox);y=Math.round(y+this.oy);
     if(x<0||y<0||x>=this.w||y>=this.h)return;
     const i=(y*this.w+x)*4,d=this.data,ai=a/255;
     d[i]=Math.round(r*ai+d[i]*(1-ai));d[i+1]=Math.round(g*ai+d[i+1]*(1-ai));d[i+2]=Math.round(b*ai+d[i+2]*(1-ai));d[i+3]=255;
@@ -43,37 +53,55 @@ class Canvas{
 // ----------------------------------------------------------------- draw ----
 const ZONE_TINT={ambush:[255,80,80,40],rubble:[160,160,160,45],ice:[120,190,255,45]};
 const STAGE_COLORS=[[255,85,85],[255,210,74],[74,215,255],[255,122,217]];
-const STAGE_TYPE_GLYPH={hold:'ring',escort:'ring',secure:'ring',protect:'disc',defend:'none',eliminate:'none'};
 
-// Output directory: argv[2], or a folder outside the repository by default so
-// review sheets never end up in a commit.
-const outDir=process.argv[2]||new URL('../../map-review/',import.meta.url).pathname;
-mkdirSync(outDir,{recursive:true});
-for(const [index,mission] of CAMPAIGN.entries()){
-  const map=getMap(mission.mapId),c=new Canvas(map.width,map.height);
+// One battlefield drawn onto a canvas view (offset via view.at for the
+// split-screen sheet). Stage markers are optional - versus fields carry none.
+function drawField(view,map,stages=[]){
   for(const zone of map.zones||[]){
-    c.disc(zone.x,zone.y,zone.r,ZONE_TINT[zone.kind]||[200,200,120,35]);
-    c.ring(zone.x,zone.y,zone.r,[220,220,220,120]);
+    view.disc(zone.x,zone.y,zone.r,ZONE_TINT[zone.kind]||[200,200,120,35]);
+    view.ring(zone.x,zone.y,zone.r,[220,220,220,120]);
   }
-  for(let i=1;i<map.path.length;i++)c.segment(map.path[i-1],map.path[i],9,[38,44,34]);
-  for(let i=1;i<map.path.length;i++)c.segment(map.path[i-1],map.path[i],7,[122,106,74]);
-  c.disc(map.path[0].x,map.path[0].y,5,[240,240,240]);
-  for(const d of map.deco||[]){c.disc(d.x,d.y,5,[86,88,78]);c.disc(d.x,d.y,2,[54,56,48]);}
-  for(const t of map.torches||[]){c.disc(t.x,t.y,4,[255,154,60]);c.disc(t.x,t.y,1.6,[255,232,160]);}
-  for(const p of map.pads){c.rect(p.x,p.y,24,[104,116,88]);c.rect(p.x,p.y,18,[50,69,45]);}
-  const b=map.bunker;c.rect(b.x,b.y,30,[226,216,170]);c.rect(b.x,b.y,20,[120,110,72]);
-  let marker=0;
-  for(const stage of mission.stages){
-    if(!Number.isFinite(stage.x))continue;
+  for(let i=1;i<map.path.length;i++)view.segment(map.path[i-1],map.path[i],9,[38,44,34]);
+  for(let i=1;i<map.path.length;i++)view.segment(map.path[i-1],map.path[i],7,[122,106,74]);
+  view.disc(map.path[0].x,map.path[0].y,5,[240,240,240]);
+  for(const d of map.deco||[]){view.disc(d.x,d.y,5,[86,88,78]);view.disc(d.x,d.y,2,[54,56,48]);}
+  for(const t of map.torches||[]){view.disc(t.x,t.y,4,[255,154,60]);view.disc(t.x,t.y,1.6,[255,232,160]);}
+  for(const p of map.pads){view.rect(p.x,p.y,24,[104,116,88]);view.rect(p.x,p.y,18,[50,69,45]);}
+  const b=map.bunker;view.rect(b.x,b.y,30,[226,216,170]);view.rect(b.x,b.y,20,[120,110,72]);
+  stages.forEach((stage,marker)=>{
+    if(!Number.isFinite(stage?.x))return;
     const color=STAGE_COLORS[marker%4];
-    c.disc(stage.x,stage.y,15,[250,250,250]);
-    c.disc(stage.x,stage.y,12,color);
-    c.disc(stage.x,stage.y,3,[24,26,22]);
-    for(let pip=1;pip<=marker%4+1&&pip<5;pip++)c.disc(stage.x-6*(marker%4)/1+ (pip-1)*6-3*((marker%4)>0?1:0), stage.y+18,1.8,[250,250,250]);
-    marker++;
+    view.disc(stage.x,stage.y,15,[250,250,250]);
+    view.disc(stage.x,stage.y,12,color);
+    view.disc(stage.x,stage.y,3,[24,26,22]);
+  });
+}
+
+function save(file,canvas){writeFileSync(file,encodePNG(canvas.w,canvas.h,canvas.data));console.log(file.replace(outDir+'/',''));}
+
+// ------------------------------------------------------------------ run ----
+// Output directory: --out flag, or a folder outside the repository by default
+// so review sheets never end up in a commit.
+const flag=name=>{const i=process.argv.indexOf(name);return i>=0?process.argv.splice(i,2)[1]:null;};
+const outDir=(flag('--out')||new URL('../../map-review/',import.meta.url).pathname).replace(/\/$/,'');
+mkdirSync(outDir,{recursive:true});
+const versusMap=flag('--versus');
+if(versusMap){
+  // The 1v1 duel sheet: one shared generated field, both battlefields stacked
+  // with the opponent divider - the layout game.js renders live.
+  const map=getMap(versusMap);
+  if(map.width!==960||map.height!==540)throw new Error('Versus fields are 960x540 sector-one maps');
+  const sheet=new Canvas(960,1100);
+  drawField(sheet.at(0,0),map);
+  for(let x=0;x<960;x++)for(let y=540;y<560;y++)sheet.blend(x,y,y===540||y===559?[241,231,196,200]:[52,75,54,255]);
+  drawField(sheet.at(0,560),map);
+  save(`${outDir}/versus-${map.id}.png`,sheet);
+}else if(process.argv.length>2){
+  for(const id of process.argv.slice(2)){const map=getMap(id);const c=new Canvas(map.width,map.height);drawField(c,map);save(`${outDir}/${id}.png`,c);}
+}else{
+  for(const [index,mission] of CAMPAIGN.entries()){
+    const map=getMap(mission.mapId),c=new Canvas(map.width,map.height);
+    drawField(c,map,mission.stages);
+    save(`${outDir}/${String(index+1).padStart(2,'0')}-${mission.id}.png`,c);
   }
-  const file=`${outDir.replace(/\/$/,'')}/${String(index+1).padStart(2,'0')}-${mission.id}.png`;
-  const {writeFileSync}=await import('node:fs');
-  writeFileSync(file,encodePNG(map.width,map.height,c.data));
-  console.log(file.replace(outDir.replace(/\/$/,'')+'/',''),map.theme,'bunker',b.x+'/'+b.y,'stages:',mission.stages.map(s=>Number.isFinite(s.x)?`${s.x},${s.y}`:s.type).join(' | '));
 }
