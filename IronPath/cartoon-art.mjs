@@ -361,12 +361,17 @@ const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,facto
 // (the generator is untouched); only the artwork reference moves to the
 // painted file - the same cache-busting rename every V2 sprite got.
 const DECO_SPRITE={cabin:'cabin2',barn:'barn2',stand:'stand2',stilt:'stilt2',shed:'shed2',ruin:'ruin2',wall:'wall2',factory:'factory2',gate:'gate2'};
+// Arctic fields get their OWN buildings: a forest cabin and a brick ruin have
+// no business standing in deep snow. The snow variants carry the same kinds,
+// painted for the winter field (reported: "Normale Gebaeude im Schnee?
+// Schwachsinn!").
+const SNOW_SPRITE={cabin:'cabin2snow',ruin:'ruin2snow'};
 function drawDeco(ctx,deco,theme,notify){
   const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
   const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
-    const artwork=sprite(ctx,DECO_SPRITE[d.kind]||d.kind,notify);
+    const artwork=sprite(ctx,(theme==='arctic'&&SNOW_SPRITE[d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);
     if(artwork){
       // Painted building, anchored like the towers: bottom-centre on the deco
       // point, soft contact shadow, upright whatever the road does - a gate
@@ -457,14 +462,51 @@ export function drawGroundDetails(ctx,theme,width,height,seed){
   const m=Math.round((width*height)/(960*540)*(55+r()*40));
   for(let i=0;i<m;i++)P.items(r()*width,r()*height,r(),r);
 }
+// V3 ground: the field is a MOSAIC, not a stretched plate. The theme plate is
+// sliced into tiles; every map stamps its own seeded patchwork of feathered,
+// overlapping tiles - interlocking like oil-paint patches, and two maps of the
+// same theme never share a ground. Deterministic from the field's seed.
+function paintTileMosaic(target,img,width,height,rng,doc){
+  const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height;
+  if(!iw||!ih)return;
+  const cols=6,rows=4,tw=Math.floor(iw/cols),th=Math.floor(ih/rows);
+  const ts=Math.max(150,Math.round(width/4)),td=Math.round(ts*th/tw);
+  const overlap=Math.round(ts*.34),stepX=ts-overlap,stepY=td-overlap;
+  const across=Math.ceil((width+overlap)/stepX)+1,down=Math.ceil((height+overlap)/stepY)+1;
+  const makeTile=()=>{
+    const canvas=doc.createElement('canvas');canvas.width=ts;canvas.height=td;
+    const c=canvas.getContext('2d');if(!c)return null;
+    const sx=Math.floor(rng()*cols)*tw,sy=Math.floor(rng()*rows)*th;
+    c.save();
+    c.translate(rng()<.5?ts:0,rng()<.5?td:0);c.scale(rng()<.5?1:-1,rng()<.5?1:-1);
+    c.drawImage(img,sx,sy,tw,th,0,0,ts,td);
+    c.restore();
+    // Feathered edges: the tile melts into its neighbours instead of boxing.
+    c.globalCompositeOperation='destination-in';
+    const fade=c.createRadialGradient(ts/2,td/2,Math.min(ts,td)*.18,ts/2,td/2,Math.max(ts,td)*.62);
+    fade.addColorStop(0,'rgba(0,0,0,1)');fade.addColorStop(.72,'rgba(0,0,0,.96)');fade.addColorStop(1,'rgba(0,0,0,0)');
+    c.fillStyle=fade;c.fillRect(0,0,ts,td);
+    return canvas;
+  };
+  for(let j=0;j<down;j++)for(let i=0;i<across;i++){
+    const tile=makeTile();if(!tile)continue;
+    target.drawImage(tile,i*stepX-overlap,j*stepY-overlap);
+  }
+}
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
   const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
-      if(img){
-        // Every field shows its own section of its theme plate, mirrored or
-        // not - two maps of the same theme never share a ground.
+      if(img&&doc?.createElement){
+        // The seeded tile mosaic: interlocking feathered patches, a different
+        // whole-map composition for every field.
+        target.save();target.globalAlpha=.94;
+        paintTileMosaic(target,img,width,height,detailRng((groundSeed^0x9e3779b9)>>>0),doc);
+        target.restore();
+      }
+      else if(img){
+        // No DOM (headless tests): the plate itself, as before.
         const over=.18,ow=width*(1+over),oh=height*(1+over),vr=detailRng((groundSeed^0x9e3779b9)>>>0);
         const ox=width*over*vr(),oy=height*over*vr(),flipX=vr()<.5,flipY=vr()<.5;
         target.save();target.globalAlpha=.92;
