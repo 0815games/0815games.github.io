@@ -7,6 +7,13 @@ import {bossPhase} from './boss-mechanics.mjs?v=20261102-battle2';
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
 function shape(ctx,points,fill,stroke=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}
+// V3 depth pass: one light from the top-left, so every shadow on the field
+// falls the same way. A soft ellipse reads as a painted shadow without a
+// per-entity blur pass.
+function castShadow(ctx,x,y,rx,ry){ctx.save();ctx.globalAlpha=.2;ctx.beginPath();ctx.ellipse(x+rx*.24,y+ry*.55,rx*1.18,ry,0,0,Math.PI*2);ctx.fillStyle='#0c120e';ctx.fill();ctx.restore();}
+// Radial light with a safe fallback: headless test contexts return nothing
+// from createRadialGradient, and a light effect must never crash a field.
+function radial(ctx,a,b,c,d,e,f){try{const g=ctx.createRadialGradient(a,b,c,d,e,f);return g&&typeof g.addColorStop==='function'?g:null;}catch{return null;}}
 function oval(ctx,x,y,rx,ry,fill,stroke=ink,width=2){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke();}}
 // Legible tactical silhouettes replace cartoon drawings if an image cannot load.
 function fallbackMarker(ctx,x,y,label,color='#d9c08a',rx=15,ry=13){
@@ -164,6 +171,7 @@ function pad(ctx,p,tower,selected,types,notify){
 }
 function soldier(ctx,p,own,pose={},notify){
   const x=p.x,y=p.y,artwork=sprite(ctx,'hero2',notify);
+  castShadow(ctx,x,y+12,15,5.5);
   oval(ctx,x,y+13,13,5,own?'#e5c783':'#87c4ce',null);
   if(pose.moving){
     // Small alternating boot scuffs communicate motion without changing hitboxes.
@@ -190,7 +198,7 @@ function enemy(ctx,e,reducedMotion,notify){
     ctx.restore();
   }}
   if(e.boss){ctx.save();ctx.beginPath();ctx.arc(x,y,e.boss==='bossCommander'?36:24,0,Math.PI*2);ctx.fillStyle='rgba(180,69,48,.22)';ctx.fill();ctx.strokeStyle='#a83d30';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.stroke();ctx.restore();}
-  oval(ctx,x,y+10,11,4,'#8c8264',null);
+  castShadow(ctx,x,y+10,12,4.5);
   // V2: painted enemies - muddy tank, camouflaged prop plane, riflemen.
   // The bosses keep their artwork until the next art stage.
   const name=e.boss?(e.boss==='bossBomber'?'bossplane2':'bossheavy2'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
@@ -218,8 +226,12 @@ const terrainCache=new WeakMap();
 // loads; no simulation data, map geometry, or hit targets are touched.
 const groundImages=new Map();
 function getGroundImage(doc,theme,variant=0){
-  const base=({forest:'terrain2-forest',urban:'terrain2-city',outpost:'terrain2-city',scrub:'terrain2-desert',arctic:'terrain2-snow',marsh:'terrain2-marsh'})[theme];
-  const name=base?(variant?base+'-b.jpg':base+'.jpg'):'endless-ground.jpg';
+  // V3 field art: one painted plate per theme in the iron-cross icon's
+  // painting style - bolder contrast, olive grading, painted shadow shapes.
+  // The per-field section, mirror and offset below already keep two maps of
+  // the same theme from sharing ground, so the old second plates retired.
+  const base=({forest:'terrain3-forest',urban:'terrain3-city',outpost:'terrain3-city',scrub:'terrain3-desert',arctic:'terrain3-snow',marsh:'terrain3-marsh'})[theme];
+  const name=base?base+'.jpg':'endless-ground3.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
@@ -245,9 +257,11 @@ function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
   for(const [i,p] of torches.entries()){
     const flick=reducedMotion?1:1+.15*Math.sin(t0*11+i*2.4)+.09*Math.sin(t0*23+i*1.7);
     ctx.save();
-    ctx.globalAlpha=.15;oval(ctx,p.x,p.y+2,26,16,warm?'#cfe3f2':'#ffca7a',null);
-    ctx.globalAlpha=.09;oval(ctx,p.x,p.y+2,42,26,warm?'#cfe3f2':'#ffca7a',null);
-    ctx.globalAlpha=1;
+    // V3: the torch is a light source, not a sticker - a radial glow that
+    // breathes with the flame and lays warm light on the ground around it.
+    const glow=radial(ctx,p.x,p.y+2,3,p.x,p.y+2,46);
+    if(glow){glow.addColorStop(0,warm?'rgba(198,226,244,.36)':'rgba(255,198,118,.4)');glow.addColorStop(1,warm?'rgba(198,226,244,0)':'rgba(255,198,118,0)');ctx.save();ctx.globalAlpha=.5+.4*(flick-.9);ctx.beginPath();ctx.arc(p.x,p.y+2,46,0,Math.PI*2);ctx.fillStyle=glow;ctx.fill();ctx.restore();}
+    else{ctx.globalAlpha=.15;oval(ctx,p.x,p.y+2,26,16,warm?'#cfe3f2':'#ffca7a',null);ctx.globalAlpha=.09;oval(ctx,p.x,p.y+2,42,26,warm?'#cfe3f2':'#ffca7a',null);ctx.globalAlpha=1;}
     if(artwork){const h=42,w=h*artwork.width/artwork.height;ctx.drawImage(artwork,p.x-w/2,p.y+2-h,w,h);}
     else{
       // Painted fallback post until the artwork lands.
@@ -430,6 +444,13 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
     for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme,notify);
+    // V3 grade: an olive cast with a painted vignette - the frame darkens,
+    // the field centre stays bright, and the eye lands where the fighting is.
+    target.save();target.globalAlpha=.14;target.fillStyle='#2c4232';target.fillRect(0,0,width,height);target.globalAlpha=1;
+    const vig=radial(target,width/2,height/2,Math.min(width,height)*.44,width/2,height/2,Math.max(width,height)*.74);
+    if(vig){vig.addColorStop(0,'rgba(9,13,10,0)');vig.addColorStop(1,'rgba(9,13,10,.36)');target.fillStyle=vig;}
+    else{target.globalAlpha=.16;target.fillStyle='#090d0a';}
+    target.fillRect(0,0,width,height);target.restore();
   }
   if(!doc?.createElement){paint(ctx);return;}
   let variants=terrainCache.get(path);if(!variants){variants=new Map();terrainCache.set(path,variants);}const resolution=Math.max(1,Math.min(3,Math.sqrt(6000000/(width*height)),Math.ceil(renderScale*2)/2)),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
@@ -487,8 +508,13 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
 }
 
 function burst(ctx,x,y,r,fill){
-  const points=[];for(let i=0;i<16;i++){const a=Math.PI*i/8,d=i%2?r*.52:r;points.push([x+Math.cos(a)*d,y+Math.sin(a)*d]);}shape(ctx,points,fill,ink,2);
+  const points=[];for(let i=0;i<16;i++){const a=Math.PI*i/8,d=i%2?r*.52:r;points.push([x+Math.cos(a)*d,y+Math.sin(a)*d]);}
+  // V3: the emblem language - every flash carries the polished silver rim.
+  shape(ctx,points,fill,'#d9dde1',3.5);
+  ctx.beginPath();points.forEach(([px,py],i)=>i?ctx.lineTo(px,py):ctx.moveTo(px,py));ctx.closePath();ctx.strokeStyle=ink;ctx.lineWidth=1.25;ctx.stroke();
 }
+// The gold field star - the emblem's heart - as an FX flash shape.
+function star(ctx,x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,d=i%2?r*.45:r;const px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();}
 function drawShot(ctx,s,age,reduced){
   const life=(Number.isFinite(s.life)?s.life:.12)-age;if(life<=0)return;
   const duration=s.duration||.12,progress=1-Math.max(0,Math.min(1,life/duration));
@@ -500,10 +526,24 @@ function drawShot(ctx,s,age,reduced){
 }
 function drawAbility(ctx,e){
   const t=e.progress,fade=Math.max(0,1-t);ctx.save();ctx.globalAlpha=fade;
-  if(e.kind==='bunkerHit'){burst(ctx,e.x,e.y,20+18*t,'#f27f59');ctx.fillStyle='#fff1ca';ctx.strokeStyle=ink;ctx.lineWidth=4;ctx.font='bold 16px Georgia';ctx.textAlign='center';ctx.strokeText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);ctx.fillText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);
+  if(e.kind==='bunkerHit'){
+    // V3: iron smoke rising off the hit, the flash in emblem colours.
+    ctx.beginPath();ctx.arc(e.x,e.y,10+30*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3.5-2.5*t;ctx.stroke();
+    burst(ctx,e.x,e.y,16+16*t,'#f0b47a');
+    for(let i=0;i<3;i++){const rise=t*34,side=(i-1)*11;oval(ctx,e.x+side+Math.sin(t*6+i)*3,e.y-14-rise-i*7,7+4*t,5+3*t,`rgba(78,84,78,${(.4*fade).toFixed(3)})`,null);}
+    ctx.fillStyle='#fff1ca';ctx.strokeStyle=ink;ctx.lineWidth=4;ctx.font='bold 16px Georgia';ctx.textAlign='center';ctx.strokeText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);ctx.fillText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);
   }else if(e.kind==='combo'){const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};burst(ctx,e.x,e.y-20,14+15*t,palette[e.label]||'#88e3d3');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label?e.label.split(' + ').map(name=>tr(name)).join(' + '):tr('COMBO!'),e.x,e.y-43-12*t);
   }else if(e.kind==='assault'){
-    const targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];for(const p of targets){burst(ctx,p.x,p.y,12+20*t,'#ef9e68');oval(ctx,p.x,p.y,6+12*t,4+8*t,'#f9dc91',ink,2);}
+    // V3: the airstrike wears the emblem - a silver shock ring, warm light on
+    // the ground, then the gold field star burning out where it landed.
+    const targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];
+    for(const p of targets){
+      ctx.beginPath();ctx.arc(p.x,p.y,6+26*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+      const g=radial(ctx,p.x,p.y,1,p.x,p.y,14+22*t);
+      if(g){g.addColorStop(0,'rgba(255,236,170,.85)');g.addColorStop(1,'rgba(255,190,110,0)');ctx.fillStyle=g;}else ctx.fillStyle='#f9dc91';
+      ctx.beginPath();ctx.arc(p.x,p.y,14+22*t,0,Math.PI*2);ctx.fill();
+      star(ctx,p.x,p.y,9+13*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
+    }
   }else if(e.kind==='build'||e.kind==='upgrade'){
     burst(ctx,e.x,e.y-12,13+15*t,e.kind==='upgrade'?'#f4d982':'#b8d69d');
     ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr(e.kind==='build'?'BUILT':'UPGRADED'),e.x,e.y-38-12*t);
