@@ -100,7 +100,10 @@ function sprite(ctx,name,notify){
     spriteImages.set(name,entry);
     image.onload=()=>{entry.ready=true;try{notify?.();}catch{/* a redraw hint must never throw */}};
     image.onerror=()=>{entry.failed=true;};
-    image.src=`assets/${name}-sprite.png`;
+    // V3 art ships under the same file names as V2: without a version query a
+    // returning player's browser serves the old sprite from its HTTP cache and
+    // the new emblems never land. Bump this with every art re-issue.
+    image.src=`assets/${name}-sprite.png?v=20261108-v3art1`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -518,11 +521,15 @@ function star(ctx,x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/
 function drawShot(ctx,s,age,reduced){
   const life=(Number.isFinite(s.life)?s.life:.12)-age;if(life<=0)return;
   const duration=s.duration||.12,progress=1-Math.max(0,Math.min(1,life/duration));
-  ctx.save();if(s.kind===3)ctx.setLineDash([9,5]);line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,s.kind===1?6:4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',s.kind===1?4:2);ctx.restore();
+  // V3: the tracer casts its own thin shadow on the ground, and the impact
+  // ring is polished silver - the shot reads as a struck spark, not a noodle.
+  ctx.save();if(s.kind===3)ctx.setLineDash([9,5]);
+  ctx.globalAlpha=.22;line(ctx,[[s.x+2,s.y+3],[s.tx+2,s.ty+3]],'#0c120e',s.kind===1?6:4);ctx.globalAlpha=1;
+  line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,s.kind===1?6:4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',s.kind===1?4:2);ctx.restore();
   if(reduced)return;
   const scale=s.kind===1?1.35:s.kind===3?.75:1;
   if(progress<.65)burst(ctx,s.x,s.y,(7+(1-progress)*4)*scale,'#ffe39b');
-  if(progress>.12){ctx.save();ctx.globalAlpha=Math.max(.2,1-progress*.65);ctx.beginPath();ctx.arc(s.tx,s.ty,(5+progress*9)*scale,0,Math.PI*2);ctx.strokeStyle=s.kind===1?'#f0aa72':'#fff0b8';ctx.lineWidth=2;ctx.stroke();ctx.restore();burst(ctx,s.tx,s.ty,(5+progress*8)*scale,s.kind===1?'#e89964':'#f6d787');}
+  if(progress>.12){ctx.save();ctx.globalAlpha=Math.max(.2,1-progress*.65);ctx.beginPath();ctx.arc(s.tx,s.ty,(5+progress*9)*scale,0,Math.PI*2);ctx.strokeStyle=s.kind===1?'#f0aa72':'#d9dde1';ctx.lineWidth=2;ctx.stroke();ctx.restore();burst(ctx,s.tx,s.ty,(5+progress*8)*scale,s.kind===1?'#e89964':'#f6d787');}
 }
 function drawAbility(ctx,e){
   const t=e.progress,fade=Math.max(0,1-t);ctx.save();ctx.globalAlpha=fade;
@@ -532,7 +539,17 @@ function drawAbility(ctx,e){
     burst(ctx,e.x,e.y,16+16*t,'#f0b47a');
     for(let i=0;i<3;i++){const rise=t*34,side=(i-1)*11;oval(ctx,e.x+side+Math.sin(t*6+i)*3,e.y-14-rise-i*7,7+4*t,5+3*t,`rgba(78,84,78,${(.4*fade).toFixed(3)})`,null);}
     ctx.fillStyle='#fff1ca';ctx.strokeStyle=ink;ctx.lineWidth=4;ctx.font='bold 16px Georgia';ctx.textAlign='center';ctx.strokeText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);ctx.fillText(e.label||tr('BUNKER HIT'),e.x,e.y-45-15*t);
-  }else if(e.kind==='combo'){const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};burst(ctx,e.x,e.y-20,14+15*t,palette[e.label]||'#88e3d3');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label?e.label.split(' + ').map(name=>tr(name)).join(' + '):tr('COMBO!'),e.x,e.y-43-12*t);
+  }else if(e.kind==='combo'){
+    // V3: the combo wears the emblem - a silver ring with the gold star at
+    // its heart, the pair's own tint glowing underneath.
+    const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};
+    const tint=palette[e.label]||'#88e3d3',cy=e.y-20;
+    const g=radial(ctx,e.x,cy,2,e.x,cy,20+16*t);
+    if(g){g.addColorStop(0,tint);g.addColorStop(1,'rgba(120,140,120,0)');ctx.fillStyle=g;}else ctx.fillStyle=tint;
+    ctx.beginPath();ctx.arc(e.x,cy,20+16*t,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(e.x,cy,15+14*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=2.5-1.5*t;ctx.stroke();
+    star(ctx,e.x,cy,8+5*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label?e.label.split(' + ').map(name=>tr(name)).join(' + '):tr('COMBO!'),e.x,e.y-43-12*t);
   }else if(e.kind==='assault'){
     // V3: the airstrike wears the emblem - a silver shock ring, warm light on
     // the ground, then the gold field star burning out where it landed.
@@ -545,16 +562,39 @@ function drawAbility(ctx,e){
       star(ctx,p.x,p.y,9+13*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
     }
   }else if(e.kind==='build'||e.kind==='upgrade'){
-    burst(ctx,e.x,e.y-12,13+15*t,e.kind==='upgrade'?'#f4d982':'#b8d69d');
+    // V3: a stamp in the emblem's metal - silver ring, iron smoke for a new
+    // emplacement, the gold star for a level gained.
+    ctx.beginPath();ctx.arc(e.x,e.y-12,12+14*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+    if(e.kind==='build'){burst(ctx,e.x,e.y-12,9+8*t,'#b8d69d');for(let i=0;i<2;i++)oval(ctx,e.x+(i?7:-7),e.y-22-t*16,4+2*t,3+2*t,`rgba(78,84,78,${(.35*fade).toFixed(3)})`,null);}
+    else{star(ctx,e.x,e.y-12,8+6*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();}
     ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr(e.kind==='build'?'BUILT':'UPGRADED'),e.x,e.y-38-12*t);
   }else if(e.kind==='engineer'){
-    burst(ctx,e.x,e.y-20,12+15*t,'#eed475');ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('OVERDRIVE',e.x,e.y-42-12*t);
+    // V3: overdrive as a struck iron plate - double silver ring, hot centre.
+    ctx.beginPath();ctx.arc(e.x,e.y-20,10+16*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+    ctx.beginPath();ctx.arc(e.x,e.y-20,16+22*t,0,Math.PI*2);ctx.strokeStyle=`rgba(217,221,225,${(.6*fade).toFixed(3)})`;ctx.lineWidth=2;ctx.stroke();
+    const g=radial(ctx,e.x,e.y-20,1,e.x,e.y-20,10+10*t);
+    if(g){g.addColorStop(0,'#ffe9a8');g.addColorStop(1,'rgba(238,212,117,0)');ctx.fillStyle=g;}else ctx.fillStyle='#eed475';
+    ctx.beginPath();ctx.arc(e.x,e.y-20,10+10*t,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('OVERDRIVE',e.x,e.y-42-12*t);
   }else if(e.kind==='logistics'){
-    const y=e.y-24-12*t;shape(ctx,[[e.x-12,y-9],[e.x+12,y-9],[e.x+12,y+9],[e.x-12,y+9]],'#d7b276');line(ctx,[[e.x-11,y],[e.x+11,y]],ink,2);line(ctx,[[e.x,y-9],[e.x,y+9]],ink,2);ctx.fillStyle=ink;ctx.font='bold 14px Georgia';ctx.textAlign='center';ctx.fillText('+30',e.x,y-15);
+    // V3: the supply drop as a stamped iron crate.
+    const y=e.y-24-12*t;
+    oval(ctx,e.x,y+11,13,4,'rgba(12,18,14,.28)',null);
+    shape(ctx,[[e.x-12,y-9],[e.x+12,y-9],[e.x+12,y+9],[e.x-12,y+9]],'#d7b276','#d9dde1',3);
+    line(ctx,[[e.x-11,y],[e.x+11,y]],ink,2);line(ctx,[[e.x,y-9],[e.x,y+9]],ink,2);
+    star(ctx,e.x,y,5);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=ink;ctx.font='bold 14px Georgia';ctx.textAlign='center';ctx.fillText('+30',e.x,y-15);
   }else if(e.kind==='medic'){
-    oval(ctx,e.x,e.y,22+12*t,22+12*t,'#cee6a6',ink,2);shape(ctx,[[e.x-4,e.y-12],[e.x+4,e.y-12],[e.x+4,e.y-4],[e.x+12,e.y-4],[e.x+12,e.y+4],[e.x+4,e.y+4],[e.x+4,e.y+12],[e.x-4,e.y+12],[e.x-4,e.y+4],[e.x-12,e.y+4],[e.x-12,e.y-4],[e.x-4,e.y-4]],'#f1e6c4');
+    // V3: the medic ring in emblem metal around the field dressing.
+    ctx.beginPath();ctx.arc(e.x,e.y,26+14*t,0,Math.PI*2);ctx.strokeStyle=`rgba(217,221,225,${(.75*fade).toFixed(3)})`;ctx.lineWidth=2.5;ctx.stroke();
+    const g=radial(ctx,e.x,e.y,4,e.x,e.y,22+12*t);
+    if(g){g.addColorStop(0,'rgba(206,230,166,.85)');g.addColorStop(1,'rgba(206,230,166,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,22+12*t,0,Math.PI*2);ctx.fill();}
+    oval(ctx,e.x,e.y,22+12*t,22+12*t,'#cee6a6',null,0);shape(ctx,[[e.x-4,e.y-12],[e.x+4,e.y-12],[e.x+4,e.y-4],[e.x+12,e.y-4],[e.x+12,e.y+4],[e.x+4,e.y+4],[e.x+4,e.y+12],[e.x-4,e.y+12],[e.x-4,e.y+4],[e.x-12,e.y+4],[e.x-12,e.y-4],[e.x-4,e.y-4]],'#f1e6c4');
   }else if(e.kind==='recon'){
-    for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(e.x,e.y,16+36*t+i*15,0,Math.PI*2);ctx.strokeStyle='#b8e0d1';ctx.lineWidth=4-i;ctx.stroke();}ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SUPPRESSION'),e.x,e.y-35-12*t);
+    // V3: suppression ripples out in polished silver, the inner tick in gold.
+    for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(e.x,e.y,16+36*t+i*15,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3.5-i;ctx.stroke();}
+    ctx.beginPath();ctx.arc(e.x,e.y,10+36*t,0,Math.PI*2);ctx.setLineDash([6,5]);ctx.strokeStyle='#f0d68a';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SUPPRESSION'),e.x,e.y-35-12*t);
   }
   ctx.restore();
 }
