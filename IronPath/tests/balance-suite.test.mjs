@@ -15,7 +15,7 @@ import {createPlayer} from '../match.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 
 test('every mission resolves valid objectives on its generated field',()=>{
-  assert.equal(CAMPAIGN.length,12);
+  assert.equal(CAMPAIGN.length,18);
   for(const mission of CAMPAIGN){
     const map=getMap(mission.mapId);
     assert.equal(map.id,mission.mapId,`${mission.id} deploys on its own map`);
@@ -41,7 +41,7 @@ test('act finales gate a rookie and carried relics complete the story',()=>{
   // the first act relic clears acts I-II; full gear plus all earned relics
   // clears everything, including the legendary finale (see campaign.mjs).
   const finale=mission=>CAMPAIGN.indexOf(mission)===actEndIndex(actOf(mission));
-  for(const mission of CAMPAIGN.slice(0,9)){
+  for(const mission of CAMPAIGN.slice(0,15)){
     if(finale(mission))continue;
     const result=runCampaign(mission,GEARS.rookie);
     assert.equal(result.won,true,`${mission.id} must be winnable for a rookie`);
@@ -54,7 +54,7 @@ test('act finales gate a rookie and carried relics complete the story',()=>{
     const mission=CAMPAIGN.find(m=>m.id===id);
     assert.equal(runCampaign(mission,GEARS.rookie).won,false,`${id} gates a rookie`);
   }
-  for(const mission of CAMPAIGN.slice(0,9)){
+  for(const mission of CAMPAIGN.slice(0,10)){
     const result=runCampaign(mission,GEARS.veteran);
     assert.equal(result.won,true,`${mission.id} must be winnable with mid gear and the first relic`);
   }

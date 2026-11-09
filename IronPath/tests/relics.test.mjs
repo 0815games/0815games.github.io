@@ -71,8 +71,8 @@ test('the prestige trophies are melted: no grants, no effects, stripped on sync'
   assert.equal(workshopAfter.equipped.gadget,'none');
   assert.deepEqual({...workshopAfter.mods},{});
   // Completing a mission melts instead of granting: no trophy returns.
-  const completed=completeStoryMission({storyProgress:3,workshop:encoded},'supply-line');
-  assert.equal(completed.storyProgress,4);
+  const completed=completeStoryMission({storyProgress:9,storyCampaign:1,workshop:encoded},'supply-line');
+  assert.equal(completed.storyProgress,10);
   assert.ok(!decodeWorkshop(completed.workshop).owned.some(id=>PRESTIGE_IDS.includes(id)));
   // Old snapshots with a prestige id resolve to no effect at all.
   const snapshot=captureWorkshopLoadout(workshop(),'solo');

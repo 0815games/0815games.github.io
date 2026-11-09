@@ -4,8 +4,14 @@ import {translateText as tr} from './language.mjs?v=20261108-squadmaps1';
 const STYLES={
  'lost-signal':{ground:'#7d9169',light:'#aab88a',dark:'#506a50',water:'#86a9a0',weather:'mist',feature:'wreck',accent:'#e6ca83'},
  'pinewood-rescue':{ground:'#66865c',light:'#a2b682',dark:'#395d45',water:'#7eaaa0',weather:'mist',feature:'shelter',accent:'#d5c389'},
- 'blackout':{ground:'#998970',light:'#c2ae87',dark:'#635e4e',water:'#7c8a79',weather:'embers',feature:'antenna',accent:'#e7a570'},
- 'supply-line':{ground:'#708e64',light:'#afbd8c',dark:'#47654d',water:'#86aaa0',weather:'mist',feature:'convoy',accent:'#ead398'},
+ 'ghost-frequency':{ground:'#6d8a63',light:'#a4b884',dark:'#3d5c46',water:'#7eaaa0',weather:'mist',feature:'mast',accent:'#e0cd8e'},
+'blackout':{ground:'#998970',light:'#c2ae87',dark:'#635e4e',water:'#7c8a79',weather:'embers',feature:'antenna',accent:'#e7a570'},
+ 'ash-market':{ground:'#8d8676',light:'#bfb69c',dark:'#5c5a4c',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#e7b077'},
+'the-list':{ground:'#718769',light:'#a6bb96',dark:'#4a6452',water:'#78a19c',weather:'rain',feature:'hospital',accent:'#dbd38d'},
+'brothers-keeper':{ground:'#c4d9d4',light:'#e6efe3',dark:'#80a6a8',water:'#87b8c1',weather:'snow',feature:'satchel',accent:'#e4bd75'},
+'quiet-road':{ground:'#9b8168',light:'#c9a988',dark:'#6e5c48',water:'#8b9887',weather:'embers',feature:'timetable',accent:'#ecb37b'},
+'signal-home':{ground:'#5f7f5a',light:'#9cb281',dark:'#35523f',water:'#7ba89f',weather:'mist',feature:'broadcast',accent:'#ead18b'},
+'supply-line':{ground:'#708e64',light:'#afbd8c',dark:'#47654d',water:'#86aaa0',weather:'mist',feature:'convoy',accent:'#ead398'},
  'intercept':{ground:'#93816b',light:'#c0a588',dark:'#675b4a',water:'#85958b',weather:'embers',feature:'dispatch',accent:'#e9ac73'},
  'bridge':{ground:'#83916b',light:'#b2be8a',dark:'#536b51',water:'#739d99',weather:'rain',feature:'bridge',accent:'#ead398'},
  'dead-air':{ground:'#718a6f',light:'#a6b99a',dark:'#4b6656',water:'#78a19c',weather:'rain',feature:'receiver',accent:'#d9d08b'},
@@ -26,7 +32,7 @@ function disk(ctx,x,y,rx,ry,color){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Mat
 function stroke(ctx,x1,y1,x2,y2,color,width=2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
 // Load illustrated landmark art once. A version change invalidates cached terrain
 // as images arrive, while missing assets retain a clear functional fallback.
-const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',transformer:'transformer',convoy:'truck',dispatch:'truck',wreck:'wreck',bridge:'bridge',dam:'dam',shelter:'shelter',prison:'prison'};
+const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',transformer:'transformer',convoy:'truck',dispatch:'truck',wreck:'wreck',bridge:'bridge',dam:'dam',shelter:'shelter',prison:'prison',mast:'radio',broadcast:'radio',satchel:'truck',timetable:'truck',hospital:'shelter',market:'wreck'};
 const artEntries=new Map();let artVersion=0;
 export function prepareStoryArt(doc){
  if(!doc?.createElement)return {version:0,get:()=>null};
@@ -36,7 +42,7 @@ export function prepareStoryArt(doc){
 function building(ctx,x,y,kind,s,art=null){
  const image=art?.get(kind);if(image){const scale=Math.min(64/(image.naturalWidth||256),56/(image.naturalHeight||256)),w=(image.naturalWidth||256)*scale,h=(image.naturalHeight||256)*scale;ctx.drawImage(image,x-w/2,y+20-h,w,h);return;}
  // Neutral field marker while the illustrated asset is unavailable.
- ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(tr(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON'})[kind]||'SITE'),x,y+4);ctx.restore();
+ ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(tr(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON',mast:'MAST',broadcast:'RELAY',satchel:'SATCHEL',timetable:'TIMETABLE',hospital:'AID POST',market:'MARKET'})[kind]||'SITE'),x,y+4);ctx.restore();
 }
 export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null,art=null){
  const s=storyMapStyle(mission?.id);if(!s)return false;ctx.save();ctx.fillStyle=s.ground;ctx.fillRect(0,0,width,height);
@@ -45,7 +51,7 @@ export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,text
  if(!texture)for(let i=0;i<42;i++){const x=(i*197+41)%width,y=(i*131+33)%height;ctx.globalAlpha=.22;disk(ctx,x,y,20+(i%4)*8,7+(i%3)*4,i%2?s.light:s.dark);ctx.globalAlpha=.65;stroke(ctx,x-9,y+1,x-3,y-3,s.dark,1.4);stroke(ctx,x+4,y+3,x+10,y-1,s.light,1.5);}ctx.globalAlpha=1;
  const spots=layout(mission,path,pads);
  // Place two distinct mission landmarks away from paths, build pads and objectives.
- const locations=spots.filter((_,i)=>i%4===0);if(locations.length){const a=locations[Math.floor(locations.length/3)],b=locations[Math.floor(locations.length*2/3)];building(ctx,a.x,a.y,s.feature,s,art);if(b!==a){const second={wreck:'antenna',shelter:'convoy',antenna:'wreck',convoy:'shelter',dispatch:'antenna',bridge:'convoy',receiver:'shelter',station:'receiver',transformer:'station',prison:'antenna',relay:'bridge',dam:'relay'};building(ctx,b.x,b.y,second[s.feature],s,art);}}
+ const locations=spots.filter((_,i)=>i%4===0);if(locations.length){const a=locations[Math.floor(locations.length/3)],b=locations[Math.floor(locations.length*2/3)];building(ctx,a.x,a.y,s.feature,s,art);if(b!==a){const second={wreck:'antenna',shelter:'convoy',antenna:'wreck',convoy:'shelter',dispatch:'antenna',bridge:'convoy',receiver:'shelter',station:'receiver',transformer:'station',prison:'antenna',relay:'bridge',dam:'relay',mast:'broadcast',broadcast:'mast',satchel:'timetable',timetable:'satchel',hospital:'shelter',market:'antenna'};building(ctx,b.x,b.y,second[s.feature],s,art);}}
  ctx.restore();return true;
 }
 export function drawStoryAtmosphere(ctx,mission,time,reducedMotion=false,width=960,height=540,path=[],pads=[]){

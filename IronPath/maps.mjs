@@ -85,6 +85,16 @@ function buildRoadside(id){
   throw new Error('Could not generate a roadside battlefield');
 }
 // --- The sector campaign (g3): grid-walk maps -------------------------------
+// Act I story fields (Talwald). The ids are fixed campaign mapIds; everything
+// below the look is generated from the seed exactly like a free-play field.
+const STORY_FIELDS=Object.freeze({
+  'g3-0b3f01a77':{theme:'talwald',name:'The Relay Line'},
+  'g3-0c5d2e19b':{theme:'urban',name:'The Ash Market'},
+  'g3-0d7a4b35c':{theme:'marsh',name:'The Field Hospital'},
+  'g3-0e9c6f21d':{theme:'arctic',name:'The Ice Road'},
+  'g3-0f1a8b44e':{theme:'scrub',name:'The Night Heath'},
+  'g3-002000003':{theme:'talwald',name:'The Main Relay'}
+});
 // Endless and multiplayer draw their battlefield from a seed: the road is
 // walked cell by cell from the left edge to the bunker, so it can meander,
 // hook and squeeze between buildings instead of always running the same four
@@ -156,7 +166,14 @@ function torchesFor(paths,pads,deco,bunker,width,height){
 function buildGridMap(id){
   const sector=Math.min(4,parseInt(id[3],16)+1),spec=SECTOR_SPECS[sector-1],random=rng(parseInt(id.slice(4),16));
   const cell=60,cols=spec.width/cell,rows=spec.height/cell;
-  const themes=[['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arctic Tundra & Frozen Lake'],['marsh','Marshland & Delta Mudflats']],[theme,name]=themes[Math.floor(random()*themes.length)];
+  const themes=[['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arctic Tundra & Frozen Lake'],['marsh','Marshland & Delta Mudflats']];
+  const picked=themes[Math.floor(random()*themes.length)];
+  // Campaign-only story fields: the Act I missions play on named battlefields.
+  // The seed still decides every coordinate (road, pads, bunker, zones); only
+  // the look - theme and name - is authored, so the story never touches the
+  // generator and free play keeps its five rotating themes.
+  const story=STORY_FIELDS[id];
+  const theme=story?story.theme:picked[0],name=story?story.name:picked[1];
   // Reported: "Anfang irgendwo am Rand der Karte halt" - and the bunker is no
   // longer glued to the right edge either. The end cell keeps two cells of
   // distance to every edge so the gate and the bunker always sit fully on the
@@ -270,7 +287,7 @@ function buildGridMap(id){
   // Ruins and buildings: a few gates the road squeezes through, plus sheds and
   // broken walls along the way. Purely decoration - they never cover a pad.
   function decoFor(paths,pads){
-    const deco=[],kinds={forest:['cabin','barn','stand'],arctic:['cabin','ruin'],marsh:['stilt','ruin'],scrub:['shed','ruin','wall'],urban:['ruin','wall','factory']}[theme]||['ruin'];
+    const deco=[],kinds={forest:['cabin','barn','stand'],arctic:['cabin','ruin'],marsh:['stilt','ruin'],scrub:['shed','ruin','wall'],urban:['ruin','wall','factory'],talwald:['mast','forester','cross','wreck']}[theme]||['ruin'];
     const entry=paths[0][0],segments=[];
     for(const path of paths)for(let i=1;i<path.length;i++)if(Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y)>=150)segments.push([path[i-1],path[i]]);
     for(let i=segments.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[segments[i],segments[j]]=[segments[j],segments[i]];}
