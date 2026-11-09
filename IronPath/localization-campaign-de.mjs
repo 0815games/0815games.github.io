@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261210-actiii1';
+import {CAMPAIGN} from './campaign.mjs?v=20261211-actiii2';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -85,6 +85,16 @@ const data={
  'city-of-glass':['Eine Stadt unter Glas','Die besetzte Industriestadt ist voller verdeckter Sichtlinien und Patrouillen. Finde Nia Reyes, bevor Rook sie verlegt. Sie hat die zweite Sperre entworfen und weiß, warum er die Überflutung des Tals für notwendig hält.',[
  ['Schalte die Gefängniseskorte aus','VOSS: Schalte die Eskorte aus und erreiche dann den Haftort. Nia ist unser einziger Zugang zur zweiten Sperre.'],['Befreie Nia Reyes','NIA: Rook sagt, der Damm werde brechen, wenn er ihn nicht öffnet. Er irrt sich – aber das Tor ist bereits beschädigt.'],['Eskortiere Nia zur Kommandozentrale','NIA: Halt sie mir vom Leib. Ich kann beweisen, dass sich das Tor stabilisieren lässt, ohne das Tal zu überfluten.']],
  'NIA: Rook hatte den Befehl, das Tal aufzugeben. Er entschied sich, es zu überfluten, statt seine eigenen Leute zu gefährden. Das Tor lässt sich noch stoppen, aber jemand muss die Steuerleitung halten.'],
+ 'workshop-of-ghosts':['Werkstatt der Geister','Rook antwortet auf den Verlust des Fahrplans mit einem Umbaubefehl: Ambroses Schmiede soll auf Kriegsproduktion umgerüstet werden. Sabotiert die Umrüstung, solange die Präzisionsbank läuft – ist sie erst ausgebaut, folgen die Werkstätten der ganzen Stadt.',[
+ ['Halte die Schmiede-Tore','AMBROSE: Seine Ingenieure stehen an den Toren. Die Umbaumannschaft arbeitet schnell – haltet sie vom Werkstattdboden fern.'],
+ ['Schütze die Präzisionsbank','IVO: Die Bank ist das Herz der Schmiede. Solange sie läuft, kann der Umbau nicht beginnen – und meine Korrektionsteile lassen sich fertigen.'],
+ ['Halte die Stellung, bis der Umbau rückgängig ist','VOSS: Die Mannschaften weichen. Haltet den Hof, bis jede Maschine sicher ist.']],
+ 'AMBROSE: Die Schmiede ist noch eine Schmiede. IVO: Und sie fertigt mehr als Teile – die Torverstrebungen für Nias Leitung sind fertig. NIA: Dann nehmen wir uns die Steuerleitung im Marschland vor.'],
+ 'night-shift':['Nachtschicht','Die Arbeiter der Stadt legen die Werkzeuge nieder: Ohne ihre Hände sind Rooks Umbaubefehle Papier. Er antwortet mit angemieteten Schlägertrupps. Schützt die Streikkolonne – die Marsch-Straße muss für den Nachtmarsch offen bleiben.',[
+ ['Marschiere mit der Streikkolonne','ARBEITER: Die ganze Nachtschicht ist draußen. Geht mit uns – eine so laute Kolonne fassen sie nicht an.'],
+ ['Sichere das Tor zur Marsch-Straße','VOSS: Das Tor ist der Engpass. Räumt es, dann erreicht die Kolonne das Marschland vor Morgengrauen.'],
+ ['Halte die Straße, bis die Kolonne durch ist','SERA: Eure Lazarettreihen füllen sich mit ihren Familien. Haltet die Straße – heute Nacht kommt jeder durch.']],
+ 'VOSS: Die Kolonne ist durch, und die Nachtschicht hält. NIA: Die Steuerleitung im Marschland wartet – und Adas Beweise mit ihr. ADA: Noch eine Sendung – macht sie zählend.'],
  'tidelock':['Tidelock','Nia kennt über eine Steuerleitung im Marschland einen Weg ins Dammnetz. Ada wird Rooks Truppen die Beweise senden, während du das Tor isolierst. Der Empfänger muss lange genug überleben, um sie zu übertragen.',[
  ['Verbinde die Steuerleitung','NIA: Das Tor steht unter Druck. Wenn wir den Strom zu schnell abschalten, öffnet es sich von selbst.'],['Schütze das Senderelais','ADA: Hier ist Ada Vale. Im Tal sind noch Zivilisten. Rooks Befehle werden sie ertränken. Bitte hört zu.'],['Isoliere die Torsteuerung','NIA: Einige seiner Einheiten stellen den Kampf ein. Räume die Steuerstellung; ich kann das Tor isolieren.']],
  'ROOK: Mein Befehl war, meine Truppen zu retten. VOSS: Dann hilf uns, alle zu retten. ROOK: Die letzte Übersteuerung liegt am Industrieturm. Von hier aus kann ich sie nicht stoppen.'],
@@ -126,7 +136,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

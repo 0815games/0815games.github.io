@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261210-actiii1';
+import {translateText as tr} from './language.mjs?v=20261211-actiii2';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -28,6 +28,8 @@ const STYLES={
  // where the original timetable survived.
  'paper-war':{ground:'#7f8378',light:'#b3b39b',dark:'#4f5a52',water:'#7d9e9c',weather:'rain',feature:'dispatch',accent:'#e3cd8e'},
  'the-mentor':{ground:'#7a7468',light:'#ada288',dark:'#4c463c',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#ecb377'},
+ 'workshop-of-ghosts':{ground:'#6f6a60',light:'#a89d82',dark:'#453f35',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#eeb67a'},
+ 'night-shift':{ground:'#5c665f',light:'#8fa08e',dark:'#38443c',water:'#6f9c96',weather:'rain',feature:'convoy',accent:'#e6cf8f'},
  'city-of-glass':{ground:'#8a8d80',light:'#b7b6a0',dark:'#59665d',water:'#7d9e9c',weather:'rain',feature:'prison',accent:'#e2b876'},
  'tidelock':{ground:'#728b75',light:'#a8b9a0',dark:'#4b675c',water:'#6e9da0',weather:'rain',feature:'relay',accent:'#ead48a'},
  'last-transmission':{ground:'#879188',light:'#bec3ab',dark:'#52645c',water:'#739da3',weather:'mist',feature:'dam',accent:'#ead18b'}
