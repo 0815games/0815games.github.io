@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261218-junction1';
+import {CAMPAIGN} from './campaign.mjs?v=20261219-trains1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -187,6 +187,21 @@ const data={
  ['Haltet die Schein-Position','NIA: Der Ring dreht seine Geschütze auf das falsche Tor. Haltet die Täuschung am Leben – Lärm, Licht, alles.'],
  ['Halte die Stellung, bis das echte Tor aufgeht','VOSS: Nias Schlüssel dreht sich. Das echte Tor öffnet sich knirschend – haltet den Ring, bis unsere Leute durch sind.']],
  'NIA: Der äußere Ring ist offen. VOSS: Und die Geschütze des Knotens starren weiter auf eine leere Straße. ADA: Drinnen ist der Kern. Und im Kern ist mein Bruder.'],
+ 'night-of-lights':['Nacht der Lichter','Ada kapert die Signalkette der Straße und sendet das Beweismaterial des Tals in jede Garnison – inklusive Rooks Original-Befehl, ungekürzt: Auch ihn hatte man zum Sterben zurückgelassen. Haltet den Masten, während die Wahrheit hinausgeht – und dann den Hof, während die Garnisonen entscheiden.',[
+ ['Nimm den Signalmasten','ADA: Die Signalkette ist das Nervensystem der Straße. Ein Mast, eine Nacht, jede Garnison zuhört – nehmt ihn.'],
+ ['Schützt die Sendung','ADA: Alles, was das Tal erlitten hat, geht heute Nacht über ihre eigenen Frequenzen hinaus – ungekürzt, unsigniert, unleugbar. Haltet die Kette, solange sie sendet.'],
+ ['Halte die Stellung, bis die Garnisonen antworten','VOSS: Manche werden härter kämpfen. Manche werden aufhören. Alle wissen jetzt, was die Straße mit den eigenen Soldaten macht – haltet, bis die Antworten da sind.']],
+ 'ADA: Jede Garnison an der Leitung hat es jetzt gehört – auch Rooks eigenen Befehl, seine Nachhut aufzugeben. VOSS: Die Telefonlinien des Knotens glühen. WREN: Eine Armee, die weiß, dass sie verausgabbar ist, verteidigt nicht lange.'],
+ 'the-prison-train':['Der Gefangenzug','Arbeitszüge rollen in den Kern – Elias Vale ist an Bord. Nehmt den Zug in Fahrt: die Lok statt der Wagen, und Adas Stimme die ganze Mission im Ohr. Niemand reitet heute Nacht bis ans Ende dieser Strecke.',[
+ ['Erreicht den Trittbretter-Einstieg','ADA: Der Gefangenzug hält nicht – er kann nicht angehalten werden. Erreicht ihn am Bahnübergang und steigt auf.'],
+ ['Räumt die Geleitwagen','VOSS: Geleitwagen, Dachschützen. Räumt sie Wagen für Wagen – die Passagiere sind heute Nacht nicht der Feind.'],
+ ['Bringt den Zug aus dem Kern heraus','ADA: Elias. Hier ist Ada. Es war immer Ada. Holt meinen Bruder von diesem Zug.']],
+ 'ELIAS: Ada? … Ich weiß. Ich weiß es seit dem Relais. Übernehmt die Regler – ich fahre jetzt in der Lok. ADA: Voss – der Kern. Solange sie noch glauben, der Zug gehört ihnen. Bringt uns heim.'],
+ 'rooks-line':['Rooks Linie','Rook zieht jede loyale Einheit in eine Verteidigungslinie vor den Kern – die letzte konventionelle Schlacht des Krieges. Seine Ansprache läuft auf allen Kanälen: ein Mann, der seine Armee bittet, für eine Straße zu sterben, die ihn längst aufgegeben hat.',[
+ ['Bricht die Verteidigungslinie','VOSS: Eine Linie, jeder loyale Soldat, der ihm geblieben ist. Brecht sie in der Mitte, und die Flanken falten wie Papier.'],
+ ['Sichere den Gefechtsstand','IVO: Sein Feldschreibtisch – Karten, Chiffren, der letzte signierte Befehl. Nehmt ihn unversehrt: Die Tore des Kerns antworten darauf.'],
+ ['Halte die Stellung, bis die Linie bricht','WREN: Seine Rede läuft noch auf jedem Kanal. Lasst ihn ausreden – dann zeigt seiner Armee, was übrig ist.']],
+ 'ROOK: Linie … zurückgenommen. Alle Einheiten … zurückgenommen. VOSS: Die letzte konventionelle Armee der Eisernen Straße ist fort. NIA: Und dahinter: der Kern. ADA: Und hinter dem Kern: zu Hause.'],
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;
@@ -223,7 +238,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät','Blasting crew':'Sprengkommando','Demo charges':'Sprengladungen','Punch machine':'Stanzmaschine','Litter train':'Tragekolonne','Station clock':'Bahnhofsuhr',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät','Blasting crew':'Sprengkommando','Demo charges':'Sprengladungen','Punch machine':'Stanzmaschine','Litter train':'Tragekolonne','Station clock':'Bahnhofsuhr','Signal chain':'Signalkette',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

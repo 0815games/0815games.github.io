@@ -1,6 +1,6 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261218-junction1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261219-trains1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261218-junction1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261219-trains1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261217-stormgate';
 import {bossPhase} from './boss-mechanics.mjs?v=20261217-stormgate';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -240,7 +240,7 @@ function soldier(ctx,p,own,pose={},notify){
   ctx.restore();
   ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle=ink;ctx.strokeText(p.name||tr('HERO'),x,y+29);ctx.fillStyle=paper;ctx.fillText(p.name||tr('HERO'),x,y+29);ctx.textAlign='start';
 }
-function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0){
+function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0,rail=false){
   const x=e.x,y=e.y;
   // V3 movement: the vehicles fly and drive where they are going. The heading
   // comes from the road geometry (the caller reads it off the next path
@@ -265,16 +265,20 @@ function enemy(ctx,e,reducedMotion,notify,heading=0,bank=0,time=0){
   // V2: painted enemies - muddy tank, camouflaged prop plane, riflemen.
   // The bosses keep their artwork until the next art stage.
   const name=e.boss?(e.boss==='bossBomber'?'bossplane2':'bossheavy2'):e.kind==='tank'?'tank2':e.kind==='plane'?'plane2':e.kind==='infantry'||e.kind==='runner'?'infantry2':null,artwork=name&&sprite(ctx,name,notify);
-  if(!artwork)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
+  // Act V: on junction fields the ground convoys run as rail engines instead
+  // of tanks - same road, same rules, different machine.
+  const train=rail&&drives&&!e.boss?sprite(ctx,'train2',notify):null;
+  if(!artwork&&!train)fallbackMarker(ctx,x,y,e.boss?'BOSS':(ENEMY_INTEL[e.kind]?.symbol||'!'),'#e6a182',e.boss?22:12,e.boss?16:10);
   else if(drives){
     // The tank turns into the road: artwork rotated to its heading, with a
     // rolling wobble on the move and dust kicked up behind the hull.
     ctx.save();ctx.translate(x,y);ctx.rotate(angle);
     if(!reducedMotion&&e.hp>0)ctx.translate(0,Math.sin(t0*7+x*.05)*.7);
-    ctx.drawImage(artwork,-(e.boss?30:20),-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
+    if(train)ctx.drawImage(train,-26,-12,52,24);
+    else ctx.drawImage(artwork,-(e.boss?30:20),-(e.boss?22:13),e.boss?60:40,e.boss?38:25);
     ctx.restore();
     if(!reducedMotion&&e.hp>0){for(let i=0;i<2;i++){const back=angle+Math.PI,side=angle+Math.PI/2*(i?1:-1),ph=((t0*.9+i*.5+x*.01)%1+1)%1;
-      ctx.save();ctx.globalAlpha=.16*(1-ph);oval(ctx,x+Math.cos(back)*(20+ph*14)+Math.cos(side)*6,y+Math.sin(back)*(20+ph*14)+Math.sin(side)*4+8,4+ph*5,2.5+ph*3,'#b7a67e',null);ctx.restore();}}
+      ctx.save();ctx.globalAlpha=.16*(1-ph);oval(ctx,x+Math.cos(back)*(20+ph*14)+Math.cos(side)*6,y+Math.sin(back)*(20+ph*14)+Math.sin(side)*4+8,4+ph*5,2.5+ph*3,train?'#9aa39b':'#b7a67e',null);ctx.restore();}}
   }
   else if(flies){
     // The plane flies nose-first and banks into the coming bend.
@@ -705,7 +709,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
       if(Math.hypot(dx,dy)>1)heading=Math.atan2(dy,dx);
       if(Math.hypot(nd,ny)>1){let turn=Math.atan2(ny,nd)-heading;while(turn>Math.PI)turn-=Math.PI*2;while(turn<-Math.PI)turn+=Math.PI*2;bank=turn;}
     }
-    enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0);ctx.restore();
+    enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0,theme==='junction');ctx.restore();
   }
   if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
   if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');

@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261218-junction1';
+import {translateText as tr} from './language.mjs?v=20261219-trains1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -34,6 +34,9 @@ const STYLES={
  // counterfeit key forging.
  // Act IV - the long winter: the pass climb, the burning moor depot and the
  // frozen warm-line relay.
+ 'night-of-lights':{ground:'#43484a',light:'#75797a',dark:'#24272a',water:'#54696d',weather:'mist',feature:'broadcast',accent:'#e8cf8f'},
+ 'the-prison-train':{ground:'#4d524d',light:'#7e827b',dark:'#2b2e2b',water:'#5a7370',weather:'embers',feature:'convoy',accent:'#e6bb7f'},
+ 'rooks-line':{ground:'#4f544e',light:'#80847c',dark:'#2c2f2b',water:'#5b746e',weather:'rain',feature:'antenna',accent:'#e4ca8c'},
  'the-descent':{ground:'#565a52',light:'#8b8d7f',dark:'#33362f',water:'#5f7a74',weather:'mist',feature:'station',accent:'#e6cd8b'},
  'dead-timetable':{ground:'#4e534f',light:'#7f837b',dark:'#2c2f2b',water:'#5c7570',weather:'mist',feature:'timetable',accent:'#ecd692'},
  'the-quartermaster':{ground:'#585245',light:'#8a8272',dark:'#34302a',water:'#5f7568',weather:'embers',feature:'market',accent:'#e8b97a'},
