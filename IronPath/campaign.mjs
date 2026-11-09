@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261108-squadmaps1';
+import {getMap} from './maps.mjs?v=20261206-acttwo1';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -59,18 +59,38 @@ const MISSIONS=[
    briefing:'The orders are incomplete. An enemy dispatch unit is moving through the ruined outpost with the rest. Break its escort, recover the case, and learn what Tidelock means before the next transmission.',
    stages:[{type:'eliminate',count:8,label:'Break the dispatch escort',dialogue:'VOSS: Clear the escort. We need the case intact, not another crater.'},{type:'hold',at:.3,seconds:4,label:'Recover the dispatch case',dialogue:'ADA: Escort is broken. I see the case at the junction—move in.'},{type:'hold',at:'bunker',seconds:2,label:'Deliver the orders',dialogue:'IVO: The seal is marked TIDELOCK. Bring it back; I can break the cipher.'}],
    success:'IVO: Tidelock opens the floodgates and drowns the valley road. The order is signed by Commander Rook. The evacuation has to move now.'},
+  {id:'high-water',act:'ACT II · THE FLOOD',title:'High Water',mapId:'g3-000000005',threat:'elite',
+   briefing:'The river is rising weeks early. A village is cut off behind the flooded road, and Rook’s pioneer squads are already wiring the dyke - blowing it would drown the resistance’s last supply line and everyone still waiting on the upper floors.',
+   stages:[{type:'hold',at:.55,seconds:5,label:'Reach the cut-off village',dialogue:'SERA: The water took the road behind them. The villagers are on the school’s upper floor - get there before the river does.'},{type:'secure',at:'field',seconds:8,label:'Clear the dyke approach',dialogue:'VOSS: Rook’s pioneers are wiring the dyke. Clear them off it - that wall is all that keeps the marsh out.'},{type:'escort',at:'bunker',seconds:4,label:'Walk the villagers to the high road',dialogue:'VILLAGERS: We can carry the children. Keep the water and the soldiers off our backs.'}],
+   success:'SERA: Everyone is across and the dyke holds - for now. Rook will not forget who stopped his demolition. IVO: Neither will the river. It comes back with the thaw.',},
+  {id:'ward-line',act:'ACT II · THE FLOOD',title:'Ward Line',mapId:'g3-000000007',threat:'elite',
+   briefing:'The city hospital’s generator is down to fumes. A fuel convoy must cross the occupied streets before dark - and Rook’s street patrols know exactly which road it has to take.',
+   stages:[{type:'protect',at:'field',asset:'Fuel skid',seconds:22,label:'Protect the fuel skid',dialogue:'SERA: The fuel skid has to stay whole. One burst hose and the operating theatre goes dark.'},{type:'hold',at:.4,seconds:5,label:'Hold the canal crossing',dialogue:'VOSS: The canal crossing is the only way east. Hold it open until the convoy is through.'},{type:'escort',at:'bunker',seconds:4,label:'Walk the fuel to the hospital wing',dialogue:'SERA: Slow and steady. The patients are already gathered on the stairs, waiting for the light.'}],
+   success:'SERA: The generator is humming. Tonight the theatre has power and every name on my list is still written in ink - not on a casualty board.',},
   {id:'bridge',act:'ACT II · THE FLOOD',title:'Hold the Bridge',mapId:'g3-0f519f70a',threat:'elite',
    briefing:'The evacuation is crossing the only bridge out of the valley. Rook’s advance guard is closing in. Secure the approach long enough for Sera’s convoy to cross; enemies near the position will contest it.',
    stages:[{type:'secure',at:.3,seconds:12,label:'Secure the bridge approach',dialogue:'VOSS: Hold the approach. If the enemy reaches your position, clear it before the convoy moves.'},{type:'defend',seconds:30,label:'Cover the evacuation',dialogue:'SERA: First truck is across. There are children in the second—give us a little longer.'},{type:'hold',at:'bunker',seconds:2,label:'Confirm the evacuation',dialogue:'SERA: Last truck is clear. Return to command and confirm the count.'}],
    success:'SERA: Everyone on my list is across. ADA: I intercepted Rook: “The bridge was never the target.” Ivo, what else feeds the dam?'},
+  {id:'the-count',act:'ACT II · THE FLOOD',title:'The Count',mapId:'g3-000000001',threat:'elite',
+   briefing:'After the bridge, Sera’s count is one name short: a driver turned back into the night marsh for a family that was never on the manifest. He is still out there - and so are the patrols hunting him.',
+   stages:[{type:'eliminate',count:10,label:'Break the night patrol',dialogue:'VOSS: Their night patrol is hunting him with dogs and flares. Break it before it finds him first.'},{type:'hold',at:.5,seconds:5,label:'Find the driver’s truck',dialogue:'VOSS: Axle-deep in the bog - headlights on, doors open. He is close.'},{type:'escort',at:'bunker',seconds:4,label:'Bring the driver and the family home',dialogue:'DRIVER: I could not leave them behind. I know what the list says. Take us back.'}],
+   success:'SERA: The count is even again - and tonight it grew by three. A driver, a mother, a child. That is the whole point of the list.',},
   {id:'dead-air',act:'ACT II · THE FLOOD',title:'Dead Air',mapId:'g3-0afd9d5ab',threat:'elite',
    briefing:'Ivo traces the second signal into the flooded marsh. Ada offers to operate a portable receiver from the field, knowing Rook can hear her. Protect the receiver while she locates the dam’s control frequency.',
    stages:[{type:'hold',at:'field',seconds:4,label:'Set up the receiver',dialogue:'ADA: This receiver will draw attention. I need a clean position and enough time to listen.'},{type:'protect',at:'field',asset:'Receiver',seconds:22,label:'Protect Ada’s receiver',dialogue:'ADA: I have a carrier signal. Do not let them reach the receiver while I isolate it.'},{type:'hold',at:'bunker',seconds:2,label:'Return the frequency',dialogue:'ADA: Found it. The control channel comes from the northern ice station.'}],
    success:'ROOK: You can stop the gate or save your people. You cannot do both. VOSS: He is trying to split us. We go north together.'},
+  {id:'ice-run',act:'ACT II · THE FLOOD',title:'Ice Run',mapId:'g3-000000008',threat:'elite',
+   briefing:'Medicine for the northern stations has to cross the pass before it closes for the winter. The convoy drives blind through the white, and Rook’s spotters are already dug in along the ridge.',
+   stages:[{type:'hold',at:.3,seconds:5,label:'Lead the convoy into the white',dialogue:'IVO: Stay ahead of the lead truck. In the whiteout they follow your tracks or nothing at all.'},{type:'protect',at:'field',asset:'Medicine sledge',seconds:25,label:'Protect the medicine sledge',dialogue:'SERA: The sledge must not be hit. Six stations are holding their winter on this run.'},{type:'hold',at:'bunker',seconds:4,label:'See the convoy over the ridge',dialogue:'VOSS: One more ridge. Do not let them take the last stretch from us.'}],
+   success:'IVO: The convoy is through and the pass is ours until the thaw. SERA: Six stations will see spring. The list grows shorter when the north holds.',},
   {id:'white-noise',act:'ACT II · THE FLOOD',title:'White Noise',mapId:'g3-006bc5304',threat:'elite',timeLimit:125,
    briefing:'The northern ice station transmits a short authorization window. Reach its equipment before it closes and bring Ivo the key. The clock runs only while a wave is active; do not waste the opening.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the ice station',dialogue:'IVO: The station cycles its authorization key. We have one window before it changes.'},{type:'secure',at:'field',seconds:8,label:'Secure the transmitter',dialogue:'ADA: I can read the key, but enemies near the transmitter are corrupting the signal.'},{type:'hold',at:'bunker',seconds:2,label:'Return with the key',dialogue:'IVO: That is the key. Get it back before the window closes.'}],
    success:'IVO: The key works, but there are two locks. One is at the power substation. The other is in a city Rook has already occupied.'},
+  {id:'cold-start',act:'ACT II · THE FLOOD',title:'Cold Start',mapId:'g3-000000009',threat:'elite',
+   briefing:'A winter lock chokes the frozen rail junction: Rook’s garrison holds the switch house and the north line with it. Beyond the far track, Ada photographs a prison transport rolling north through the snow.',
+   stages:[{type:'secure',at:'field',seconds:8,label:'Take the switch house',dialogue:'VOSS: The switch house is the lock on the whole junction. Take it and the north line opens.'},{type:'eliminate',count:12,label:'Break the garrison reserve',dialogue:'VOSS: Their reserve is coming across the ice. Break it before it digs in around the switches.'},{type:'hold',at:'bunker',seconds:5,label:'Hold the junction through the night',dialogue:'ADA: I have the transport on film - faces, numbers, everything. Hold the junction so it reaches Voss.'}],
+   success:'ADA: The junction is ours and the film is out. Somewhere on that train is a car with Elias’s name on it - and now we know which one.',},
   {id:'long-switch',act:'ACT II · THE FLOOD',title:'The Long Switch',mapId:'g3-0935170bb',threat:'veteran',
    briefing:'The dam’s first lock depends on a remote substation in the scorched scrubland. Ivo must reroute power without cutting the hospital’s supply. Secure the junctions and defend the transformer while he works.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Open the power junction',dialogue:'IVO: The hospital and the dam share this line. Pull the wrong switch and Sera loses her patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the switching yard',dialogue:'SERA: I have the lights for now. Clear the yard so Ivo can reroute the line.'},{type:'protect',at:'field',asset:'Transformer',seconds:25,label:'Protect the transformer',dialogue:'IVO: Reroute in progress. If they destroy the transformer, the hospital goes dark.'}],
@@ -176,12 +196,18 @@ export function campaignWaveContract(mission){return campaignWaves(mission?.thre
 // older formats forward, old mission boundary by old mission boundary, so an
 // account never loses an earned act or relic when the story grows. The table
 // below maps the twelve-mission story onto the five-act order.
-export const STORY_FORMAT=1;
+export const STORY_FORMAT=2;
+// Format 1 shipped eighteen missions; Act II grows to twenty-three. The five
+// new operations slot BETWEEN the old ones, so a format-1 boundary maps to the
+// new index of the very same mission: an account never loses an earned act or
+// relic, and the new missions simply count as played where they were skipped.
+const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,21,22,23];
 const LEGACY_STORY_PROGRESS=[0,1,2,4,10,11,12,13,14,15,16,17,18];
 export function campaignProgress(profile){
-  const raw=profile?.storyProgress;
+  const raw=profile?.storyProgress,format=profile?.storyCampaign;
   if(!Number.isInteger(raw)||raw<0)return 0;
-  if(Number.isInteger(profile?.storyCampaign)&&profile.storyCampaign>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(Number.isInteger(format)&&format>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(format===1)return raw>18?0:FORMAT_1_PROGRESS[raw]??0;
   if(raw>12)return 0;
   return LEGACY_STORY_PROGRESS[raw];
 }

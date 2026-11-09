@@ -17,6 +17,13 @@ const STYLES={
  'dead-air':{ground:'#718a6f',light:'#a6b99a',dark:'#4b6656',water:'#78a19c',weather:'rain',feature:'receiver',accent:'#d9d08b'},
  'white-noise':{ground:'#c2d8d3',light:'#e3ece0',dark:'#7da3a5',water:'#85b6bf',weather:'snow',feature:'station',accent:'#e6be74'},
  'long-switch':{ground:'#b77959',light:'#dca17b',dark:'#785946',water:'#99a592',weather:'embers',feature:'transformer',accent:'#efd484'},
+ // Act II - the Marsch & Eis region: dyke, hospital, night truck, sledge
+ // shelter and the prison transport's frozen junction.
+ 'high-water':{ground:'#6e8a6c',light:'#a4bb98',dark:'#486350',water:'#7aa39e',weather:'rain',feature:'dam',accent:'#d9d08b'},
+ 'ward-line':{ground:'#7c7f74',light:'#adb3a2',dark:'#515549',water:'#84989b',weather:'rain',feature:'hospital',accent:'#e0cf95'},
+ 'the-count':{ground:'#5f7a68',light:'#93ac8e',dark:'#3a5548',water:'#6f9c96',weather:'rain',feature:'truck',accent:'#cfcc86'},
+ 'ice-run':{ground:'#c6dad5',light:'#e8f0e5',dark:'#82a8aa',water:'#8ab9c2',weather:'snow',feature:'shelter',accent:'#e6be74'},
+ 'cold-start':{ground:'#b9d1cc',light:'#dfe9e2',dark:'#78a0a2',water:'#84b4bd',weather:'snow',feature:'prison',accent:'#e2bb72'},
  'city-of-glass':{ground:'#8a8d80',light:'#b7b6a0',dark:'#59665d',water:'#7d9e9c',weather:'rain',feature:'prison',accent:'#e2b876'},
  'tidelock':{ground:'#728b75',light:'#a8b9a0',dark:'#4b675c',water:'#6e9da0',weather:'rain',feature:'relay',accent:'#ead48a'},
  'last-transmission':{ground:'#879188',light:'#bec3ab',dark:'#52645c',water:'#739da3',weather:'mist',feature:'dam',accent:'#ead18b'}
@@ -32,7 +39,7 @@ function disk(ctx,x,y,rx,ry,color){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Mat
 function stroke(ctx,x1,y1,x2,y2,color,width=2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
 // Load illustrated landmark art once. A version change invalidates cached terrain
 // as images arrive, while missing assets retain a clear functional fallback.
-const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',transformer:'transformer',convoy:'truck',dispatch:'truck',wreck:'wreck',bridge:'bridge',dam:'dam',shelter:'shelter',prison:'prison',mast:'radio',broadcast:'radio',satchel:'truck',timetable:'truck',hospital:'shelter',market:'wreck'};
+const artFiles={antenna:'radio',receiver:'radio',relay:'radio',station:'radio',transformer:'transformer',convoy:'truck',dispatch:'truck',truck:'truck',wreck:'wreck',bridge:'bridge',dam:'dam',shelter:'shelter',prison:'prison',mast:'radio',broadcast:'radio',satchel:'truck',timetable:'truck',hospital:'shelter',market:'wreck'};
 const artEntries=new Map();let artVersion=0;
 export function prepareStoryArt(doc){
  if(!doc?.createElement)return {version:0,get:()=>null};
@@ -42,7 +49,7 @@ export function prepareStoryArt(doc){
 function building(ctx,x,y,kind,s,art=null){
  const image=art?.get(kind);if(image){const scale=Math.min(64/(image.naturalWidth||256),56/(image.naturalHeight||256)),w=(image.naturalWidth||256)*scale,h=(image.naturalHeight||256)*scale;ctx.drawImage(image,x-w/2,y+20-h,w,h);return;}
  // Neutral field marker while the illustrated asset is unavailable.
- ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(tr(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON',mast:'MAST',broadcast:'RELAY',satchel:'SATCHEL',timetable:'TIMETABLE',hospital:'AID POST',market:'MARKET'})[kind]||'SITE'),x,y+4);ctx.restore();
+ ctx.save();ctx.fillStyle='#1b3028';ctx.fillRect(x-21,y-13,42,29);ctx.strokeStyle=s.accent;ctx.lineWidth=2;ctx.strokeRect(x-21,y-13,42,29);ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillStyle='#f4e8c3';ctx.fillText(tr(({antenna:'RADIO',receiver:'RADIO',relay:'RELAY',station:'STATION',transformer:'POWER',convoy:'CONVOY',dispatch:'TRUCK',truck:'TRUCK',wreck:'WRECK',bridge:'BRIDGE',dam:'DAM',shelter:'AID',prison:'PRISON',mast:'MAST',broadcast:'RELAY',satchel:'SATCHEL',timetable:'TIMETABLE',hospital:'AID POST',market:'MARKET'})[kind]||'SITE'),x,y+4);ctx.restore();
 }
 export function drawStoryTerrain(ctx,mission,path,pads,width=960,height=540,texture=null,art=null){
  const s=storyMapStyle(mission?.id);if(!s)return false;ctx.save();ctx.fillStyle=s.ground;ctx.fillRect(0,0,width,height);

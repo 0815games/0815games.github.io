@@ -252,6 +252,12 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 .story-cinematic[data-location="night-heath"] .cinematic-landscape{background-image:url('assets/story-night-heath.jpg')}
 .story-cinematic[data-location="main-relay"] .cinematic-landscape{background-image:url('assets/story-main-relay.jpg')}
 .story-cinematic[data-location="forest-convoy"] .cinematic-landscape{background-image:url('assets/story-forest-convoy.jpg')}
+/* Act II - the Marsch & Eis region carries its own briefing motifs. */
+.story-cinematic[data-location="flood-village"] .cinematic-landscape{background-image:url('assets/story-flood-village.jpg')}
+.story-cinematic[data-location="hospital-row"] .cinematic-landscape{background-image:url('assets/story-hospital-row.jpg')}
+.story-cinematic[data-location="night-count"] .cinematic-landscape{background-image:url('assets/story-night-count.jpg')}
+.story-cinematic[data-location="white-passage"] .cinematic-landscape{background-image:url('assets/story-white-passage.jpg')}
+.story-cinematic[data-location="frozen-junction"] .cinematic-landscape{background-image:url('assets/story-frozen-junction.jpg')}
 /* Act I key art and the relict handover's detail shot. */
 .story-cinematic[data-location="act1-dawn"] .cinematic-landscape{background-image:url('assets/story-act1-dawn.jpg')}
 .story-cinematic[data-location="act1-relic"] .cinematic-landscape{background-image:url('assets/story-act1-relic.jpg')}

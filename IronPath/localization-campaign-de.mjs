@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261101-campaign1';
+import {CAMPAIGN} from './campaign.mjs?v=20261206-acttwo1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -35,15 +35,40 @@ const data={
  'intercept':['Befehle in der Asche','Die Befehle sind unvollständig. Eine feindliche Kuriereinheit trägt den Rest durch den zerstörten Außenposten. Schalte ihre Eskorte aus, sichere den Koffer und finde vor der nächsten Übertragung heraus, was Tidelock bedeutet.',[
  ['Schalte die Kuriereskorte aus','VOSS: Schalte die Eskorte aus. Wir brauchen den Koffer unversehrt, keinen weiteren Krater.'],['Berge den Kurierkoffer','ADA: Die Eskorte ist ausgeschaltet. Ich sehe den Koffer an der Kreuzung – rück vor.'],['Überbringe die Befehle','IVO: Das Siegel trägt die Aufschrift TIDELOCK. Bring es zurück; ich kann die Verschlüsselung knacken.']],
  'IVO: Tidelock öffnet die Fluttore und überflutet die Talstraße. Der Befehl ist von Commander Rook unterzeichnet. Die Evakuierung muss sofort beginnen.'],
+ 'high-water':['Hochwasser','Der Fluss steigt Wochen zu früh. Ein Dorf ist hinter der überfluteten Straße abgeschnitten, und Rooks Pioniertrupps verlegen bereits die Sprengladungen am Deich – die Detonation würde die letzte Versorgungslinie des Widerstands ertränken und alle, die noch in den Obergeschossen warten.',[
+ ['Erreiche das abgeschnittene Dorf','SERA: Das Wasser hat ihnen die Straße weggenommen. Die Dorfbewohner sind im Obergeschoss der Schule – komm an, bevor der Fluss es tut.'],
+ ['Räume den Deich-Zugang frei','VOSS: Rooks Pioniere verkabeln den Deich. Räum sie herunter – diese Wand ist alles, was das Marschland draußen hält.'],
+ ['Geleite die Dorfbewohner zur Hochstraße','DORFBEWOHNER: Wir können die Kinder tragen. Halte uns das Wasser und die Soldaten vom Leib.']],
+ 'SERA: Alle sind drüben, und der Deich hält – vorerst. Rook wird nicht vergessen, wer seine Sprengung gestoppt hat. IVO: Der Fluss auch nicht. Er kommt mit der Schneeschmelze zurück.'],
+ 'ward-line':['Station Strom','Der Generator des Stadtkrankenhauses ist kurz vor dem Leerlauf. Ein Treibstoffkonvoi muss vor Einbruch der Dunkelheit durch die besetzten Straßen – und Rooks Straßenpatrouillen wissen genau, welche Straße er nehmen muss.',[
+ ['Schütze den Treibstoffschlitten','SERA: Der Treibstoffschlitten muss heil bleiben. Ein platzender Schlauch – und der Operationssaal wird dunkel.'],
+ ['Halte den Kanalübergang','VOSS: Der Kanalübergang ist der einzige Weg nach Osten. Halte ihn offen, bis der Konvoi durch ist.'],
+ ['Geleite den Treibstoff zum Krankenhausflügel','SERA: Langsam und ruhig. Die Patienten versammeln sich schon auf der Treppe und warten auf das Licht.']],
+ 'SERA: Der Generator summt. Heute Nacht hat der Operationssaal Strom, und jeder Name auf meiner Liste steht noch in Tinte – nicht auf einer Verlustliste.'],
  'bridge':['Halte die Brücke','Die Evakuierung führt über die einzige Brücke aus dem Tal. Rooks Vorhut rückt näher. Sichere die Zufahrt, bis Seras Konvoi übergesetzt hat; Gegner nahe der Stellung blockieren den Fortschritt.',[
  ['Sichere die Brückenzufahrt','VOSS: Halte die Zufahrt. Wenn der Feind deine Stellung erreicht, räume sie, bevor der Konvoi weiterfährt.'],['Decke die Evakuierung','SERA: Der erste Lastwagen ist drüben. Im zweiten sind Kinder – gebt uns noch etwas Zeit.'],['Bestätige die Evakuierung','SERA: Der letzte Lastwagen ist durch. Kehre zur Kommandozentrale zurück und bestätige die Anzahl.']],
  'SERA: Alle auf meiner Liste sind drüben. ADA: Ich habe Rook abgefangen: „Die Brücke war nie das Ziel.“ Ivo, was versorgt den Damm noch?'],
+ 'the-count':['Die Zählung','Nach der Brücke fehlt Seras Zählung ein Name: Ein Fahrer ist für eine Familie umgekehrt, die auf keinem Manifest stand. Er ist noch da draußen – und die Patrouillen, die ihn jagen, auch.',[
+ ['Brich die Nachtpatrouille','VOSS: Ihre Nachtpatrouille jagt ihn mit Hunden und Leuchtkugeln. Brich sie, bevor sie ihn findet.'],
+ ['Finde den Lastwagen des Fahrers','VOSS: Achseltief im Sumpf – Scheinwerfer an, Türen offen. Er ist nah.'],
+ ['Bring den Fahrer und die Familie nach Hause','FAHRER: Ich konnte sie nicht zurücklassen. Ich weiß, was die Liste sagt. Bring uns zurück.']],
+ 'SERA: Die Zählung geht wieder auf – und heute Nacht ist sie um drei gewachsen. Ein Fahrer, eine Mutter, ein Kind. Genau dafür ist die Liste da.'],
  'dead-air':['Totenstille','Ivo verfolgt das zweite Signal bis ins überflutete Marschland. Ada bietet an, im Feld einen tragbaren Empfänger zu bedienen, obwohl Rook sie hören kann. Schütze den Empfänger, während sie die Steuerfrequenz des Damms findet.',[
  ['Stelle den Empfänger auf','ADA: Dieser Empfänger wird Aufmerksamkeit erregen. Ich brauche eine freie Stellung und genug Zeit zum Abhören.'],['Schütze Adas Empfänger','ADA: Ich habe ein Trägersignal. Lass sie nicht an den Empfänger, während ich es isoliere.'],['Bringe die Frequenz zurück','ADA: Gefunden. Der Steuerkanal kommt von der nördlichen Eisstation.']],
  'ROOK: Ihr könnt das Tor stoppen oder eure Leute retten. Nicht beides. VOSS: Er will uns spalten. Wir gehen gemeinsam nach Norden.'],
+ 'ice-run':['Eislauf','Medizin für die Nordstationen muss den Pass überqueren, bevor er für den Winter schließt. Der Konvoi fährt blind durch den Weißen – und Rooks Beobachter sind schon entlang des Kamms eingegraben.',[
+ ['Führe den Konvoi in den Weißen','IVO: Bleib vor dem führenden LKW. Im Schneetreiben folgen sie deiner Spur – oder gar keiner.'],
+ ['Schütze den Medizinschlitten','SERA: Der Schlitten darf nicht getroffen werden. Sechs Stationen hängen an dieser Fahrt.'],
+ ['Sieh den Konvoi über den Kamm','VOSS: Noch ein Kamm. Lass sie dir das letzte Stück nicht nehmen.']],
+ 'IVO: Der Konvoi ist durch, und der Pass gehört bis zur Schneeschmelze uns. SERA: Sechs Stationen werden den Frühling sehen. Die Liste wird kürzer, wenn der Norden hält.'],
  'white-noise':['Weißes Rauschen','Die nördliche Eisstation sendet nur kurz ein Autorisierungsfenster. Erreiche ihre Geräte, bevor es sich schließt, und bring Ivo den Schlüssel. Die Uhr läuft nur während einer aktiven Welle; verschwende die Gelegenheit nicht.',[
  ['Erreiche die Eisstation','IVO: Die Station wechselt ihren Autorisierungsschlüssel. Wir haben ein Zeitfenster, bevor er sich ändert.'],['Sichere den Sender','ADA: Ich kann den Schlüssel lesen, aber Gegner in Sendernähe stören das Signal.'],['Kehre mit dem Schlüssel zurück','IVO: Das ist der Schlüssel. Bring ihn zurück, bevor sich das Zeitfenster schließt.']],
  'IVO: Der Schlüssel funktioniert, aber es gibt zwei Sperren. Eine liegt am Umspannwerk. Die andere befindet sich in einer Stadt, die Rook bereits besetzt hat.'],
+ 'cold-start':['Kaltstart','Ein Winterriegel blockiert den gefrorenen Bahnknoten: Rooks Garnison hält das Stellwerk – und damit die Nordstrecke. Jenseits des ferneren Gleises fotografiert Ada einen Gefangenentransport auf dem Weg nach Norden.',[
+ ['Nimm das Stellwerk','VOSS: Das Stellwerk ist das Schloss des ganzen Knotens. Nimm es, und die Nordstrecke öffnet sich.'],
+ ['Brich die Garnisonsreserve','VOSS: Ihre Reserve kommt über das Eis. Brich sie, bevor sie sich an den Weichen eingräbt.'],
+ ['Halte den Knoten über die Nacht','ADA: Ich habe den Transport auf Film – Gesichter, Nummern, alles. Halte den Knoten, damit es Voss erreicht.']],
+ 'ADA: Der Knoten ist unser und der Film ist draußen. Irgendwo in diesem Zug fährt ein Waggon mit Elias’ Namen darauf – und jetzt wissen wir welcher.'],
  'long-switch':['Die lange Umschaltung','Die erste Sperre des Damms hängt von einem abgelegenen Umspannwerk im verbrannten Buschland ab. Ivo muss den Strom umleiten, ohne das Krankenhaus abzuschalten. Sichere die Knotenpunkte und verteidige den Transformator, während er arbeitet.',[
  ['Öffne den Stromknoten','IVO: Das Krankenhaus und der Damm teilen sich diese Leitung. Leg den falschen Schalter um und Sera verliert ihre Patienten.'],['Sichere die Schaltanlage','SERA: Noch haben wir Licht. Räume die Anlage, damit Ivo die Leitung umschalten kann.'],['Schütze den Transformator','IVO: Umschaltung läuft. Wenn sie den Transformator zerstören, geht im Krankenhaus das Licht aus.']],
  'SERA: Das Licht ist an geblieben. IVO: Die erste Sperre ist isoliert. Der zweite Schlüssel gehört der gefangenen Anlagenleiterin der Stadt, Nia Reyes.'],
@@ -91,7 +116,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Broadcast relay':'Senderelais',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'
