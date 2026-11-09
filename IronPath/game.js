@@ -191,7 +191,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function renderCampaign(){
     const profile=account.getProfile(),progress=campaignProgress(profile),selection=$('campaignSelect').value,mission=campaignMission(selection);
     const blocked=!!coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo());
-    CAMPAIGN.forEach((m,i)=>{const locked=i>progress,complete=i<progress,card=$(`missionCard${i}`);$(`campaignOption${i}`).disabled=locked;$(`campaignOption${i}`).textContent=`${String(i+1).padStart(2,'0')} · ${locked?tr('CLASSIFIED'):tr(m.title)}`;card.disabled=blocked||locked;card.dataset.status=locked?'locked':complete?'complete':'available';card.setAttribute('aria-pressed',String(selection===m.id));$(`missionTitle${i}`).textContent=locked?tr('CLASSIFIED'):tr(m.title);$(`missionStatus${i}`).textContent=tr(locked?'LOCKED':complete?'COMPLETED':'NEXT MISSION');
+    CAMPAIGN.forEach((m,i)=>{const locked=i>progress,complete=i<progress,card=$(`missionCard${i}`);$(`campaignOption${i}`).disabled=locked;$(`campaignOption${i}`).textContent=`${String(i+1).padStart(2,'0')} · ${locked?tr('CLASSIFIED'):tr(m.title)}`;card.disabled=blocked||locked;card.dataset.status=locked?'locked':complete?'complete':'available';card.setAttribute('aria-pressed',String(selection===m.id));$(`missionTitle${i}`).textContent=locked?tr('CLASSIFIED'):tr(m.title);$(`missionStatus${i}`).textContent=tr(locked?'LOCKED':complete?'COMPLETED':'NEXT MISSION');const stamp=$(`missionStamp${i}`);if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
      // The contract is visible before you commit: act, threat and wave count.
      const contract=$(`missionContract${i}`);
      if(contract){const difficulty=campaignDifficulty(m);contract.textContent=locked?'':tr('{threat} · {waves} waves',{threat:tr(difficulty.label.toUpperCase()),waves:campaignWaveContract(m)});contract.dataset.threat=locked?'':m.threat;contract.hidden=locked;}
@@ -221,7 +221,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     for(const title of [...new Set(CAMPAIGN.map(m=>m.act))]){
       const cards=CAMPAIGN.map((mission,i)=>({mission,i})).filter(({mission})=>mission.act===title).map(({mission,i})=>{
         const numberText=`MISSION ${String(i+1).padStart(2,'0')}`;
-        return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span></button>`;
+        return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span><b id="missionStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`;
       }).join('');
       html+=`<section class="mission-act" aria-label="${title}"><h4 data-i18n-text="${title}">${tr(title)}</h4><div class="mission-grid">${cards}</div></section>`;
     }
