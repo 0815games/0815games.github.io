@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261216-winter2';
+import {CAMPAIGN} from './campaign.mjs?v=20261217-stormgate';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -161,6 +161,12 @@ const data={
  ['Schütze die Tragekolonne','SERA: Der Galeriemund ist nah und die Geschütze näher. Haltet mir den Himmel vom Leib.'],
  ['Sichere den Galeriemund','VOSS: Die Galerie nimmt sie alle. Dann versiegeln wir den Mund hinter der letzten Trage.']],
  'SERA: Jeder Name auf meiner zweiten Liste liegt unter Stein und ist in Sicherheit. VOSS: Und das Berglazarett hält. WREN: Der Winter ist lang – aber wir auch.'],
+ 'storm-gate':['Das Sturmtor','Rook hat das Sturmtor hinter sich zugeschlagen: „Der Knoten ist wieder meiner. Wer mir folgt, stirbt im Schnee.“ Nia hat ihre eigene Brücke gesprengt, um seine Straße abzukürzen – nehmt das Bergtor im Schneesturm, während die ausgehungerte Garnison wankt, und dahinter füllt sich das Tal mit den Lichtern des Hauptknotens.',[
+ ['Nimm den Tor-Zugang','NIA: Meine Brücke hat uns diese Straße erkauft. Das Sturmtor ist die letzte Mauer vor dem Knoten – nehmt seinen Zugang im Schneesturm.'],
+ ['Brich die Torwache auf','WREN: Verhungert, erfroren – und immer noch auf der Mauer. Brecht sie, bevor der Sturm uns bricht.'],
+ ['Sichere das Sturmtor','VOSS: Das Torhaus gehört uns. Räumt es und haltet es frei – nichts schließt diese Tür hinter uns.'],
+ ['Halte die Stellung, bis das Tor fällt','IVO: Das Letzte, was diesen Pass herunterkommt, ist kein Konvoi. Er ist es – der Zugsmeister. Haltet, bis der Tormechanismus fertig ist.']],
+ 'NIA: Das Sturmtor fällt auf! VOSS: Und das Tal dahinter ist voller Lichter – der Knoten, näher als jede Karte je zeigte. WREN: Der lange Winter ist vorüber. Der eiserne Weg beginnt.'],
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;

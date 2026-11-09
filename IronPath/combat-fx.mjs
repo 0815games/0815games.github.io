@@ -1,4 +1,4 @@
-import {getMap} from './maps.mjs?v=20261216-winter2';
+import {getMap} from './maps.mjs?v=20261217-stormgate';
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
   let effects=[],cooldowns=null,comboSeqs=null,previous=null;

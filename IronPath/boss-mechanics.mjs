@@ -8,6 +8,14 @@ export function bossPhase(enemy){
   case 'bossCommander': return clock%16>=10&&clock%16<14?'rally':'normal';
   case 'bossRiegel': return clock%18>=12?'jam':'normal';
   case 'bossKolt': return clock%18>=12?'flood':'normal';
+  case 'bossZugsmeister': {
+   // Guard of the Pass: signal wire -> exposed guns -> uncoupled loco. Health
+   // thresholds like A-7, so co-op snapshots and reconnects agree for free.
+   const hp=Math.max(0,enemy?.hp||0),max=Math.max(1,enemy?.maxHp||1);
+   if(hp>max*2/3)return 'wire';
+   if(hp>max/3)return 'guns';
+   return 'loco';
+  }
   case 'bossA7': {
    // Werk -> Torso -> Kern is a damage race, not a timer: the phase is read
    // straight off the boss health, so co-op snapshots and reconnects agree
@@ -20,7 +28,7 @@ export function bossPhase(enemy){
   default:return 'normal';
  }
 }
-export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:phase==='werk'?.5:phase==='kern'?1.25:1;}
+export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:phase==='werk'?.5:phase==='wire'?.5:phase==='kern'||phase==='loco'?1.25:1;}
 export function bossPhaseLabel(enemy){
  switch(bossPhase(enemy)){
   case 'shield':return 'SHIELD UP · weapon damage reduced';
@@ -31,6 +39,9 @@ export function bossPhaseLabel(enemy){
   case 'flood':return 'FLOOD PULSE · every enemy surges, Kolt is shielded';
   case 'werk':return 'WORKS SHELL · weapon damage halved';
   case 'torso':return 'TORSO EXPOSED · full damage, A-7 accelerates';
+  case 'wire':return 'SIGNAL WIRE · rail guns halve weapon damage';
+  case 'guns':return 'GUNS EXPOSED · full damage, artillery accelerates';
+  case 'loco':return 'UNCOUPLED · bonus damage - strike now!';
   case 'kern':return 'CORE OPEN · bonus damage - strike now!';
   default:return '';
  }
@@ -58,6 +69,15 @@ export function bossTelegraph(enemy){
  }else if(enemy.boss==='bossKolt'){
   const t=clock%18;if(t>=10&&t<12){key='flood-warning';seconds=Math.ceil(12-t);message='FLOOD PULSE IN';warning=true;}
   else if(phase==='flood'){key='flood';seconds=Math.ceil(18-t);message='FLOOD PULSE ACTIVE · KOLT SHIELDED';}
+ }else if(enemy.boss==='bossZugsmeister'){
+  // Rail guns fire on the boss clock - every 18 seconds behind the signal
+  // wire, every 12 once the guns stand exposed, never again once uncoupled.
+  const zphase=bossPhase(enemy),period=zphase==='wire'?18:zphase==='guns'?12:0;
+  if(period){const t=clock%period;
+   if(t>=period-4){key='rail-warning';seconds=Math.ceil(period-t);message='RAIL GUNS LOADING';warning=true;}
+   else if(zphase==='wire'){key='wire';seconds=Math.ceil(period-4-t);message='SIGNAL WIRE ACTIVE · WEAPON DAMAGE HALVED';}
+   else{key='guns';seconds=Math.ceil(period-4-t);message='RAIL GUNS ACCELERATING · HOLD THE BUNKER';}
+  }
  }
  return key?{key,warning,seconds,text:`${message} · ${seconds}s`}:null;
 }

@@ -11,7 +11,7 @@
 // Bonus keys follow the equipment vocabulary (see equipment-effects.mjs).
 // waveRepair, towerDamage and towerRange extend it for acts IV and V and are
 // neutral in every merge until those relics can be earned.
-import {actEndIndex,campaignProgress} from './campaign.mjs?v=20261216-winter2';
+import {actEndIndex,campaignProgress} from './campaign.mjs?v=20261217-stormgate';
 
 export const RELICS=Object.freeze({
   'relic-open-line':{act:1,bearer:'Ada Vale',name:'The Open Line',
