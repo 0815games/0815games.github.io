@@ -1,4 +1,4 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261215-winter1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261216-winter2';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createLeaderboardService} from './leaderboards.mjs?v=20261212-actiii3';
 export function setupLeaderboard({document,db,auth,sdk}){

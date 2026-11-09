@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261215-winter1';
+import {translateText as tr} from './language.mjs?v=20261216-winter2';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -34,6 +34,12 @@ const STYLES={
  // counterfeit key forging.
  // Act IV - the long winter: the pass climb, the burning moor depot and the
  // frozen warm-line relay.
+ 'the-work-camp':{ground:'#a5bfb9',light:'#d2e1da',dark:'#638e91',water:'#7cacb5',weather:'snow',feature:'prison',accent:'#e0b976'},
+ 'avalanche':{ground:'#bccfca',light:'#e0ebe6',dark:'#7fa3a4',water:'#84b5be',weather:'snow',feature:'dam',accent:'#e8c57c'},
+ 'the-long-span':{ground:'#a9c2bd',light:'#d6e5df',dark:'#699495',water:'#7fb0b9',weather:'snow',feature:'bridge',accent:'#ecc97e'},
+ 'rooks-trail':{ground:'#8a7f6a',light:'#bcae94',dark:'#5b5342',water:'#84968c',weather:'embers',feature:'antenna',accent:'#ecab72'},
+ 'iron-yard':{ground:'#7c8177',light:'#afb29c',dark:'#4d5349',water:'#7d9e9c',weather:'snow',feature:'station',accent:'#e9cd8d'},
+ 'the-second-list':{ground:'#9fbab4',light:'#cfe0da',dark:'#67908f',water:'#7aacb5',weather:'snow',feature:'hospital',accent:'#e4d494'},
  'the-pass':{ground:'#b7d0cb',light:'#dceae5',dark:'#75a0a2',water:'#83b4bd',weather:'snow',feature:'shelter',accent:'#e5c077'},
  'wrens-fire':{ground:'#a9c3be',light:'#d5e4de',dark:'#679295',water:'#7fb0b9',weather:'embers',feature:'dispatch',accent:'#efa96a'},
  'frozen-relay':{ground:'#c0d6d1',light:'#e4ede1',dark:'#7ea4a6',water:'#86b7c0',weather:'snow',feature:'relay',accent:'#e2bd75'},

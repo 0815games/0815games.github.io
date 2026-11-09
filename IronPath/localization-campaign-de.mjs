@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261215-winter1';
+import {CAMPAIGN} from './campaign.mjs?v=20261216-winter2';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -131,6 +131,36 @@ const data={
  ['Schütze das Abhörgerät','ADA: Das Gerät zeichnet alles auf der Leitung auf. Wenn sie es zerschlagen, werden wir mitten im Satz taub.'],
  ['Bestätige die selbstversandten Befehle','ADA: Hört zu: Die Disposition stellt Befehle ohne Autor aus. Der Fahrplan gibt jetzt die Kommandos. Er führt sich selbst.']],
  'ADA: Befehle ohne Unterschrift, pünktlich auf die Minute. IVO: Meine Korrektur muss bis zur Stanzmaschine vordringen – oder nichts ändert sich. NIA: Dann steigen wir höher auf.'],
+ 'the-work-camp':['Das Arbeitslager','Ein Winterlager treibt Gefangene zu Straßenausbesserungen am Pass. Schlagt es auf – und mit den ersten befreiten Männern kommt ein Flüstern heraus: Ein „Vale“ wurde zum Hauptknoten verlegt.',[
+ ['Brich die Lagerwache auf','WREN: Zuerst die Wachtürme. Je schneller die Wache stirbt, desto weniger Gefangene erfrieren im Freien.'],
+ ['Öffne den Zwinger','GEFANGENE: Das Schloss ist alt, aber die Kälte hat es zugeschweißt. Kauft uns eine Minute.'],
+ ['Geleite die befreiten Männer hinaus','VOSS: Jeder Mann raus, dann verbrennen wir die Listen. Rook zählt seine Sklaven; wir zählen seine Verluste.']],
+ 'GEFANGENE: Ein „Vale“ – sie haben ihn zum Hauptknoten verlegt, Sondertransport. ADA: Elias. Am Leben, und pünktlich. IVO: Dann ist der Fahrplan jetzt unsere Karte.'],
+ 'avalanche':['Lawine','Rooks Vorhut stößt über das Moor vor. Wrens Antwort ist der Berg selbst: Sprengkommandos steigen zur Bahnhälfte hinauf, um den Hang loszubrechen. Schützt sie auf dem Aufstieg – die Vorhut darf die Ladungen nicht erreichen.',[
+ ['Decke die Sprengkommandos','WREN: Meine Leute steigen mit den Ladungen hinauf. Haltet die Straße unten, damit ihnen nichts folgt.'],
+ ['Schütze das Sprengkommando','WREN: Sie legen, wir halten. Erreicht die Vorhut sie, bleibt der Berg stehen – und wir nicht.'],
+ ['Sichere den Zündpunkt am Hang','VOSS: Der Hang ist verdrahtet. Nehmt den Zündpunkt und haltet ihn, bis Wren das Zeichen gibt.']],
+ 'WREN: Zündet – im Namen aller, die sie hier oben begraben haben. VOSS: Die Straße unten ist weg – und Rooks Vorhut mit ihr. Der Berg hütet unser Geheimnis.'],
+ 'the-long-span':['Der große Bogen','Nias stolzeste Brücke trägt die schwersten Versorgungszüge der Eisernen Straße. Sie muss fallen: Schützt die Sprengladungen an den Pfeilern, bis sie zünden – und haltet die Spanne, während die Zünder ihre Linie ziehen.',[
+ ['Nimm den Pfeiler-Zugang','NIA: Ich habe diese Brücke gebaut, um Züge zu tragen, nicht Armeen. Öffnet den Zugang zu den Pfeilern.'],
+ ['Schütze die Sprengladungen','NIA: Die Ladungen sitzen an den Pfeilern. Ihre Pioniere versuchen, sie zu kappen – hält jede Ladung am Leben.'],
+ ['Halte die Stellung, bis die Spanne fällt','VOSS: Die Zünder laufen. Haltet die Spanne – nichts überquert sie, nichts kommt durch.']],
+ 'NIA: Sie fällt gerade, in die Schlucht, genau dort, wo ich sie gezeichnet habe. Meine Brücke, meine Hand am Schalter. WREN: Und die Eiserne Straße hat soeben ihre schwerste Straße verloren.'],
+ 'rooks-trail':['Rooks Spur','Ausgebrannte Wegstationen markieren Rooks Aufstieg: Er versengt die Relaiskette nach oben – seiner Garnison zum Beweis, dem Widerstand zur Falle. Seine Nachhut wartet in der Asche. Haltet sie auf.',[
+ ['Brich die Nachhut auf','VOSS: Seine Nachhut ist in der Asche eingegraben. Gräbt sie aus.'],
+ ['Halte die verbrannte Station','ADA: Die verbrannten Relais hallen noch nach. Er steuert auf das Sturmtor zu – um es hinter sich zuzuschlagen.'],
+ ['Halte die Spur geschlossen','WREN: Die Spur bleibt unsere. Lasst ihn allein klettern.']],
+ 'ROOK: Der Knoten ist wieder meiner. Wer mir folgt, stirbt im Schnee. VOSS: Dann folgen wir. NIA: Durch das Tor, das er zu schließen versucht.'],
+ 'iron-yard':['Der Eisenhof','Im Bergbahnhof wechselt die Eiserne Straße ihre Züge – und stempelt hier den Winterfahrplan. Ivos Gegen-Fahrplan muss in die Stanzmaschine, bevor der Stempellauf endet.',[
+ ['Sichere die Stanzhalle','IVO: Die Stanzhalle stempelt jeden Konvoi des Winters. Nehmt sie, dann stempeln wir unseren.'],
+ ['Schütze die Stanzmaschine','IVO: Mein Gegen-Fahrplan liegt jetzt in der Maschine. Zerschlagen sie sie, läuft der Winter nach Rooks Fahrplan.'],
+ ['Halte die Stellung, bis der Stempellauf endet','VOSS: Haltet den Hof, bis die letzte Karte gestanzt und versandt ist.']],
+ 'IVO: Der Winterfahrplan trägt jetzt meine Korrektur – jeder Konvoi der Eisernen Straße liest sie. ADA: Auch der, der meinen Bruder transportiert.'],
+ 'the-second-list':['Die zweite Liste','Seras Passlazarett pflegt Partisanen und Gefangene gleichermaßen. Die Antwort des Knotens: Bombardement. Bringt die Streckkolonnen in die alte Stollengalerie, bevor die Geschütze ihre Schussweite finden.',[
+ ['Bring die Streckkolonnen hinein','SERA: Die Kolonnen bewegen sich im Schritttempo – das ist das Tempo der Verwundeten. Geht mit ihnen.'],
+ ['Schütze die Tragekolonne','SERA: Der Galeriemund ist nah und die Geschütze näher. Haltet mir den Himmel vom Leib.'],
+ ['Sichere den Galeriemund','VOSS: Die Galerie nimmt sie alle. Dann versiegeln wir den Mund hinter der letzten Trage.']],
+ 'SERA: Jeder Name auf meiner zweiten Liste liegt unter Stein und ist in Sicherheit. VOSS: Und das Berglazarett hält. WREN: Der Winter ist lang – aber wir auch.'],
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;
@@ -167,7 +197,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät','Blasting crew':'Sprengkommando','Demo charges':'Sprengladungen','Punch machine':'Stanzmaschine','Litter train':'Tragekolonne',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

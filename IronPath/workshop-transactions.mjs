@@ -1,6 +1,6 @@
 // Transaction reducers for the production workshop account. Call only inside
 // a transaction using its current profile, not a cached copy.
-import {migrateWorkshop,validateWorkshop,craftWorkshop,equipWorkshop,modifyWorkshop,validLegacy} from './workshop-model.mjs?v=20261215-winter1';
+import {migrateWorkshop,validateWorkshop,craftWorkshop,equipWorkshop,modifyWorkshop,validLegacy} from './workshop-model.mjs?v=20261216-winter2';
 
 function validProfile(profile){
  return profile && typeof profile==='object' && !Array.isArray(profile) && validLegacy(profile.armory);

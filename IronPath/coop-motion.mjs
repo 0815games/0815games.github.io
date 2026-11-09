@@ -1,6 +1,6 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261215-winter1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261216-winter2';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
-import {getMap} from './maps.mjs?v=20261215-winter1';
+import {getMap} from './maps.mjs?v=20261216-winter2';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261124-zones1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261212-actiii3';
 

@@ -32,7 +32,13 @@ const OPENINGS={
 'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']],
 'the-pass':[['NIA','The valley road dies in winter. My old building pass is the only way to the source.'],['VOSS','Then we take the lower station and start the climb. Slowly, and together.']],
 'wrens-fire':[['WREN','Wren. High moor partisans. Tonight we burn a depot — your armor would be welcome.'],['VOSS','We hold the gate while your people work. Nobody gets left in the snow.']],
-'frozen-relay':[['IVO','A warm-line relay, intact, in the middle of the snowfield. If we take it quietly, we hear the Iron Path think.'],['ADA','Then let me listen. This is the closest I have ever been to my brother’s road.']]
+'frozen-relay':[['IVO','A warm-line relay, intact, in the middle of the snowfield. If we take it quietly, we hear the Iron Path think.'],['ADA','Then let me listen. This is the closest I have ever been to my brother’s road.']],
+'the-work-camp':[['WREN','A labor camp on the pass road. Prisoners keep the winter schedule alive with their hands.'],['VOSS','Then tonight the schedule freezes. We break the camp open.']],
+'avalanche':[['WREN','Rook’s vanguard crosses the moor below us. My answer is the mountain itself.'],['VOSS','Then we protect your blasting crews all the way up. Nobody climbs alone.']],
+'the-long-span':[['NIA','My proudest bridge carries his heaviest trains. It has to fall.'],['VOSS','Your bridge, your switch. We hold the piers until it does.']],
+'rooks-trail':[['ADA','He is burning the relay chain as he climbs — a trail of ash straight to the storm gate.'],['VOSS','Then his rearguard learns what the ash feels like. Hold them back.']],
+'iron-yard':[['IVO','The iron yard stamps the winter timetable. My counter-timetable goes into that machine tonight.'],['VOSS','Then we hold the punch hall until the last card is out.']],
+'the-second-list':[['SERA','My pass hospital is full of partisans and prisoners — and the junction has found it.'],['VOSS','Then we walk your stretcher columns into the stone before the guns do.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -67,7 +73,13 @@ const CODAS={
 'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']],
 'the-pass':[['NARRATOR','The lower station falls without a wasted shot; the climb stands open.'],['NARRATOR','Winter does not take sides. It only takes the unprepared.']],
 'wrens-fire':[['NARRATOR','The depot burns down to its nails; the sleds vanish into the moor.'],['NARRATOR','Trust is sleds-full of stolen fuel. The moor has paid its first installment.']],
-'frozen-relay':[['NARRATOR','The relay speaks into Ada’s recorder: orders with no author, minute-perfect.'],['NARRATOR','The machine commands the army now. Nobody is driving.']]
+'frozen-relay':[['NARRATOR','The relay speaks into Ada’s recorder: orders with no author, minute-perfect.'],['NARRATOR','The machine commands the army now. Nobody is driving.']],
+'the-work-camp':[['NARRATOR','The stockade opens; the freed men carry a whisper out with them.'],['NARRATOR','A name moves to the main junction — and a sister writes it down twice.']],
+'avalanche':[['NARRATOR','The slope goes, and the road below it simply stops existing.'],['NARRATOR','The mountain does not take sides either. It only answers.']],
+'the-long-span':[['NARRATOR','The long span falls straight into the gorge, exactly where its builder drew it.'],['NARRATOR','Some debts are paid in steel. The heaviest road of the Iron Path is gone.']],
+'rooks-trail':[['NARRATOR','The rearguard holds the ash, and loses it. The trail stays closed behind Rook.'],['NARRATOR','A man climbing alone toward a gate he means to shut.']],
+'iron-yard':[['NARRATOR','The punch hall stamps the winter — and the winter carries Ivo’s correction.'],['NARRATOR','Every convoy of the enemy now reads a timetable its master did not approve.']],
+'the-second-list':[['NARRATOR','The last stretcher crosses under stone, and the gallery mouth seals behind it.'],['NARRATOR','The second list is complete. Nobody was left to the guns.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -103,7 +115,13 @@ const SCENES={
  'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}],
  'the-pass':[{art:'mountain-pass',place:'THE LOWER STATION',weather:'snow'},{art:'ice',place:'THE CLIMB AHEAD',weather:'snow'}],
  'wrens-fire':[{art:'moor-depot',place:'THE BURNING DEPOT',weather:'embers'},{art:'ice',place:'THE MOOR GATE',weather:'snow'}],
- 'frozen-relay':[{art:'ice',place:'THE WARM-LINE RELAY',weather:'snow'},{art:'outpost',place:'THE LISTENING POST',weather:'snow'}]
+ 'frozen-relay':[{art:'ice',place:'THE WARM-LINE RELAY',weather:'snow'},{art:'outpost',place:'THE LISTENING POST',weather:'snow'}],
+ 'the-work-camp':[{art:'work-camp',place:'THE WORK CAMP',weather:'snow'},{art:'ice',place:'THE FREED COLUMN',weather:'snow'}],
+ 'avalanche':[{art:'mountain-pass',place:'THE CLIMB TO THE RAIL',weather:'snow'},{art:'ice',place:'THE SLOPE GOES',weather:'snow'}],
+ 'the-long-span':[{art:'long-span',place:'THE LONG SPAN',weather:'snow'},{art:'valley',place:'THE GORGE BELOW',weather:'snow'}],
+ 'rooks-trail':[{art:'night-heath',place:'THE BURNED STATIONS',weather:'embers'},{art:'outpost',place:'THE ASH TRAIL',weather:'embers'}],
+ 'iron-yard':[{art:'iron-yard',place:'THE IRON YARD',weather:'snow'},{art:'city',place:'THE PUNCH HALL',weather:'snow'}],
+ 'the-second-list':[{art:'marsh-hospital',place:'THE PASS HOSPITAL',weather:'snow'},{art:'ice',place:'THE OLD GALLERY',weather:'snow'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic
