@@ -1,6 +1,6 @@
 // Solo-only scripted objectives, separate from multiplayer combat. Story progress
 // is client-reported and is not a trusted record of gameplay.
-import {MISSION_DECISIONS,MISSION_EVENTS} from './story-events.mjs?v=20261111-events1';
+import {MISSION_DECISIONS,MISSION_EVENTS} from './story-events.mjs?v=20261206-acttwo1';
 export function createStoryMission(mission){if(!mission||!Array.isArray(mission.stages)||!mission.stages.length)throw Error('Invalid story mission');return {mission,stage:0,elapsed:0,killBaseline:null,patrolHealth:100,assetHealth:100,timeRemaining:mission.timeLimit??null,finished:false,failureMessage:null,
   // Mission accompaniment (see story-events.mjs). The decision stays *pending*
   // until the player picks a choice - nothing blocks on it: the field keeps

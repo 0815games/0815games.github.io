@@ -93,7 +93,14 @@ const STORY_FIELDS=Object.freeze({
   'g3-0d7a4b35c':{theme:'marsh',name:'The Field Hospital'},
   'g3-0e9c6f21d':{theme:'arctic',name:'The Ice Road'},
   'g3-0f1a8b44e':{theme:'scrub',name:'The Night Heath'},
-  'g3-002000003':{theme:'talwald',name:'The Main Relay'}
+  'g3-002000003':{theme:'talwald',name:'The Main Relay'},
+  // Act II · THE FLOOD - the Marsch & Eis region: cut-off village, hospital
+  // corridor, night marsh, white passage and the frozen rail junction.
+  'g3-000000005':{theme:'marsh',name:'The Cut-Off Village'},
+  'g3-000000007':{theme:'urban',name:'The Hospital Corridor'},
+  'g3-000000001':{theme:'marsh',name:'The Night Count'},
+  'g3-000000008':{theme:'arctic',name:'The White Passage'},
+  'g3-000000009':{theme:'arctic',name:'The Frozen Junction'}
 });
 // Endless and multiplayer draw their battlefield from a seed: the road is
 // walked cell by cell from the left edge to the bunker, so it can meander,

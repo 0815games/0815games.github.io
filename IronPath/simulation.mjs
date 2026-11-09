@@ -5,7 +5,7 @@ import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261112-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261108-squadmaps1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261206-acttwo1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261112-finale1';

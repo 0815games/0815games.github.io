@@ -29,15 +29,17 @@ test('relics are earned exactly at act completion and merge as passives',()=>{
   assert.deepEqual(earnedRelicIds(profile(0)),[]);
   assert.deepEqual(earnedRelicIds(profile(3)),[]);
   assert.deepEqual(earnedRelicIds(profile(4)),['relic-open-line']);
-  assert.deepEqual(earnedRelicIds(profile(9)),['relic-open-line','relic-the-list']);
-  assert.deepEqual(earnedRelicIds(profile(12)),['relic-open-line','relic-the-list','relic-timetable']);
-  assert.ok(!relicEarned('relic-blueprint',profile(12)),'act IV relic stays locked until act IV ships');
-  assert.ok(!relicEarned('relic-iron-path',profile(12)),'act V relic stays locked until act V ships');
-  const bonus=relicBonus(profile(12));
+  assert.deepEqual(earnedRelicIds(profile(9)),['relic-open-line'],'act II grew to ten missions: legacy 9 no longer completes it');
+  const act2={storyProgress:20,storyCampaign:2},act3={storyProgress:23,storyCampaign:2};
+  assert.deepEqual(earnedRelicIds(act2),['relic-open-line','relic-the-list']);
+  assert.deepEqual(earnedRelicIds(act3),['relic-open-line','relic-the-list','relic-timetable']);
+  assert.ok(!relicEarned('relic-blueprint',act3),'act IV relic stays locked until act IV ships');
+  assert.ok(!relicEarned('relic-iron-path',act3),'act V relic stays locked until act V ships');
+  const bonus=relicBonus(act3);
   assert.equal(bonus.cooldown,4);assert.equal(bonus.bunkerHealth,25);assert.equal(bonus.startSupplies,15);
   assert.equal(bonus.damage,2);assert.equal(bonus.shotIntervalMultiplier,.92);
   assert.equal(bonus.waveRepair,0);assert.equal(bonus.towerDamage,1);assert.equal(bonus.towerRange,0);
-  const merged=applyRelicBonus({damage:1,shotIntervalMultiplier:.9,range:5},relicBonus(profile(12)));
+  const merged=applyRelicBonus({damage:1,shotIntervalMultiplier:.9,range:5},relicBonus(act3));
   assert.equal(merged.damage,3);assert.equal(merged.shotIntervalMultiplier,.9*.92);assert.equal(merged.range,5);
   assert.deepEqual(applyRelicBonus({damage:1},null),{damage:1});
 });
@@ -45,12 +47,12 @@ test('relics are earned exactly at act completion and merge as passives',()=>{
 test('relics ride the solo snapshot and standardize for competitive modes',()=>{
   const bare=captureWorkshopLoadout(workshop(),'solo');
   assert.deepEqual(bare.relics,[]);
-  const carried=captureWorkshopLoadout(workshop(),'solo',{storyProgress:12});
+  const carried=captureWorkshopLoadout(workshop(),'solo',{storyProgress:23,storyCampaign:2});
   assert.deepEqual(carried.relics,['relic-open-line','relic-the-list','relic-timetable']);
   const effects=workshopEffects(carried,0);
   assert.equal(effects.cooldown,4);assert.equal(effects.damage,2);assert.equal(effects.bunkerHealth,25);
   // Versus stays standardized: no relics attach and none apply.
-  const versus=captureWorkshopLoadout(workshop(),'versus',{storyProgress:12});
+  const versus=captureWorkshopLoadout(workshop(),'versus',{storyProgress:23,storyCampaign:2});
   assert.deepEqual(versus.relics,[]);
   const neutral=workshopEffects({version:1,mode:'versus',items:carried.items,relics:['relic-open-line']},0);
   assert.equal(neutral.cooldown,0);

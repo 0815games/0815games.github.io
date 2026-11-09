@@ -13,7 +13,7 @@ import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261108-squa
 import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261108-squadmaps1';
 import {createVersus} from './versus.mjs?v=20261108-squadmaps1';
 import {createMatch} from './simulation.mjs?v=20261108-squadmaps1';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261108-squadmaps1';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261206-acttwo1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261112-finale1';
 export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,players,mapId=DEFAULT_MAP,workshopLock=null,resumeGeneration=null,crypto=globalThis.crypto,readFresh,lockManager=globalThis.navigator?.locks,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){
  const uid=auth?.currentUser?.uid,hostId=manifest?.hostId,ids=manifest?.playerIds,mode=manifest?.mode,teams=manifest?.teamRosters,four=mode==='four-coop'||mode==='two-vs-two';

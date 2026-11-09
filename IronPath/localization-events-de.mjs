@@ -1,4 +1,4 @@
-import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261111-events1';
+import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
 // German for the mission accompaniment (radio decisions, field events, stage
 // captions). Matched to authored strings only - never stored in profiles or
 // fed back into mission rules. The import itself validates coverage, so a new
@@ -67,6 +67,32 @@ const data={
  'Bonus objective missed: {label}':'Bonusziel verpasst: {label}',
  '+{amount} supplies':'+{amount} Vorräte',
  'Reinforcements: {count} extra units on the field':'Verstärkung: {count} zusätzliche Einheiten auf dem Feld',
+ // Act II - die Region Marsch & Eis (high-water, ward-line, the-count, ice-run, cold-start).
+ 'high-water':'Das Schützenhaus ist unser. Wir können die Flut in den alten Kanal ableiten und ihren Tritt versumpfen – oder alle Tore versiegeln und den Deich in voller Stärke halten. Deine Entscheidung.',
+ 'Open the sluice':'Schleuse öffnen','+40 supplies now · the drained channel brings 4 units':'+40 Vorräte jetzt · der trockengelegte Kanal bringt 4 Einheiten ins Feld','SERA: Sluice open. The ground is soft - and they will use the dry bed to come at you.':'SERA: Schleuse offen. Der Boden ist weich – und sie werden das trockene Bett nutzen, um euch anzugreifen.',
+ 'Seal the gates':'Tore versiegeln','Bonus objective: clear the dyke approach within 70s (+80 supplies)':'Nebenziel: Räume den Deich-Zugang innerhalb von 70 s (+80 Vorräte)','SERA: Gates sealed. The dyke takes everything they have - clear their pioneers off it in seventy seconds and we are even.':'SERA: Tore versiegelt. Der Deich schluckt alles, was sie haben – räum ihre Pioniere in siebzig Sekunden herunter, und wir sind quitt.',
+ 'Clear the dyke approach within 70s':'Räume den Deich-Zugang innerhalb von 70 s',
+ 'The river just broke their culvert - whatever was crossing that road is gone. Press on!':'Der Fluss hat gerade ihre Durchlass weggerissen – was immer auf dieser Straße stand, ist fort. Weiter!',
+ 'ward-line':'Wir können den Reservebehälter des Konvois anzapfen oder jeden Tropfen für das Krankenhaus behalten. Die Reserve kauft euch Zeit; die Station braucht das Licht. Deine Entscheidung.',
+ 'Tap the reserve':'Reserve anzapfen','+30 supplies now · the short convoy draws 3 street patrols':'+30 Vorräte jetzt · der verkürzte Konvoi zieht 3 Straßenpatrouillen an','IVO: Tapped. Mind the patrols - they heard the pump.':'IVO: Angezapft. Vorsicht vor den Patrouillen – sie haben die Pumpe gehört.',
+ 'Every drop for the ward':'Jeder Tropfen für die Station','Bonus objective: the fuel skid survives with at least 75% health (+80 supplies)':'Nebenziel: Der Treibstoffschlitten übersteht mit mindestens 75 % Gesundheit (+80 Vorräte)','IVO: All of it for the ward. Keep that skid above three quarters and Sera owes you her whole night shift.':'IVO: Alles für die Station. Halte den Schlitten über drei Vierteln, und Sera schuldet dir ihre ganze Nachtschicht.',
+ 'Fuel skid survives with at least 75% health':'Treibstoffschlitten übersteht mit mindestens 75 % Gesundheit',
+ 'Street patrol rerouting to the crossing. They know our timetable - hold anyway.':'Straßenpatrouille biegt zum Übergang ab. Die kennen unseren Fahrplan – haltet trotzdem.',
+ 'the-count':'Wir können das Marschland mit Leuchtkugeln erhellen und das hier schnell beenden – oder verdunkeln und ihr Suchmuster lesen. Das Licht findet ihn früher. Und alles andere auch. Deine Entscheidung.',
+ 'Light the marsh':'Marschland erleuchten','+35 supplies now · the flares draw 4 hunters':'+35 Vorräte jetzt · die Leuchtkugeln ziehen 4 Jäger an','VOSS: Flares up. You will see them coming - all of them.':'VOSS: Leuchtkugeln hoch. Du wirst sie kommen sehen – alle.',
+ 'Go dark':'Verdunkeln','Bonus objective: break 12 units before the driver is found (+75 supplies)':'Nebenziel: Brich 12 Einheiten, bevor der Fahrer gefunden ist (+75 Vorräte)','VOSS: Dark it is. Break twelve of theirs before we reach the truck and the night is ours.':'VOSS: Dann dunkel. Brich zwölf von ihnen, bevor wir den Lastwagen erreichen, und die Nacht gehört uns.',
+ 'Break 12 units before the driver is found':'Brich 12 Einheiten, bevor der Fahrer gefunden ist',
+ 'Listen - the bog just swallowed their gun nest whole. Even the ground is on our side tonight.':'Hört – der Sumpf hat gerade ihr MG-Nest komplett geschluckt. Heute Nacht ist selbst der Boden auf unserer Seite.',
+ 'ice-run':'Wir können die Hälfte der Ladung abwerfen und die Eskorte bewaffnen – oder den Schlitten voll laufen lassen und auf den Pass vertrauen. Deine Entscheidung.',
+ 'Arm the escort':'Eskorte bewaffnen','+35 supplies now · the lighter sledge draws 4 raiders':'+35 Vorräte jetzt · der leichtere Schlitten zieht 4 Räuber an','SERA: Armed. They will come for the light load - meet them.':'SERA: Bewaffnet. Die Räuber kommen der leichten Ladung wegen – erwartet sie.',
+ 'Run the sledge heavy':'Schlitten voll laden','Bonus objective: the medicine sledge survives with at least 80% health (+85 supplies)':'Nebenziel: Der Medizinschlitten übersteht mit mindestens 80 % Gesundheit (+85 Vorräte)','SERA: Heavy it is. Keep that sledge above four fifths and every station gets its full share.':'SERA: Dann voll. Halte den Schlitten über vier Fünfteln, und jede Station bekommt ihren vollen Anteil.',
+ 'Medicine sledge survives with at least 80% health':'Medizinschlitten übersteht mit mindestens 80 % Gesundheit',
+ 'Spotters on the far ridge - they called the convoy in. Watch the high ground.':'Beobachter am fernen Kamm – sie haben den Konvoi gemeldet. Achtung, Höhengelände.',
+ 'cold-start':'Das Treibstoffdepot der Garnison ist unbewacht. Zündet es an, und sie kämpfen kalt und blind – oder lasst es stehen und fotografiert ihre Umplanung. Deine Entscheidung.',
+ 'Burn the depot':'Depot anzünden','+40 supplies now · the smoke column brings 4 to the junction':'+40 Vorräte jetzt · die Rauchsäule bringt 4 an den Knoten','ADA: Depot burning. They will see it from the next valley - be ready.':'ADA: Depot brennt. Vom nächsten Tal aus sieht man die Rauchsäule – seid bereit.',
+ 'Photograph the reschedule':'Umplanung fotografieren','Bonus objective: take the switch house within 80s (+80 supplies)':'Nebenziel: Nimm das Stellwerk innerhalb von 80 s (+80 Vorräte)','ADA: Quietly, then. The switch house in eighty seconds and their timetable is mine.':'ADA: Dann leise. Das Stellwerk in achtzig Sekunden, und ihr Fahrplan gehört mir.',
+ 'Take the switch house within 80s':'Nimm das Stellwerk innerhalb von 80 s',
+ 'A frozen switch just split their reserve train - half of it is stranded on the far track. Hit them now!':'Eine gefrorene Weiche hat gerade ihren Reservezug geteilt – die Hälfte steht auf dem fernen Gleis fest. Schlagt jetzt zu!',
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;};
