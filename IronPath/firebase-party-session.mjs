@@ -1,4 +1,4 @@
-import {normalizeCommand} from './protocol.mjs?v=20261217-stormgate';
+import {normalizeCommand} from './protocol.mjs?v=20261218-junction1';
 // Session logic for live parties, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.

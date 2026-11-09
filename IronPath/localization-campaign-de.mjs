@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261217-stormgate';
+import {CAMPAIGN} from './campaign.mjs?v=20261218-junction1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -167,6 +167,26 @@ const data={
  ['Sichere das Sturmtor','VOSS: Das Torhaus gehört uns. Räumt es und haltet es frei – nichts schließt diese Tür hinter uns.'],
  ['Halte die Stellung, bis das Tor fällt','IVO: Das Letzte, was diesen Pass herunterkommt, ist kein Konvoi. Er ist es – der Zugsmeister. Haltet, bis der Tormechanismus fertig ist.']],
  'NIA: Das Sturmtor fällt auf! VOSS: Und das Tal dahinter ist voller Lichter – der Knoten, näher als jede Karte je zeigte. WREN: Der lange Winter ist vorüber. Der eiserne Weg beginnt.'],
+ 'the-descent':['Der Abstieg','Unter dem Sturmtor öffnet sich das Tal: Die Rangierbahnhöfe des Knotens, beleuchtet wie ein Fest, versorgen den Krieg, als gäbe es ihn nicht. Erster Kontakt auf dem Abstieg – die Straße lebt, und sie weiß nicht, dass ihr hier seid.',[
+ ['Nimm die Abstiegsstraße','NIA: Die Serpentinen führen uns hinab zu den Höfen. Setzt den Fuß auf die Abstiegsstraße und haltet sie – das Tal darf nicht merken, dass wir kommen.'],
+ ['Sichere den Rangierbahnhof','VOSS: Das erste Abstellgleis gehört uns. Räumt es und haltet es frei – hier stellt der Knoten seinen Krieg zusammen.'],
+ ['Melde die Hof-Lichter','ADA: Jede Weiche, jedes Signal, jedes Licht – ich kartiere sie von eurer Position aus. Bringt den Bericht heim.']],
+ 'ADA: Die Hof-Karte ist fertig. VOSS: Und da unten verdächtigt uns niemand. NIA: Genießt das. Es ist die letzte stille Stunde dieses Tals.'],
+ 'dead-timetable':['Toter Fahrplan','Ivos Gegen-Fahrplan muss an die Bahnhofsuhr – dort liest ihn jeder Konvoi des Netzes. Eine falsche Karte, und jeder Zug des Netzes konvergiert auf den Widerstand – füttert die Uhr und haltet den Bahnsteig, während das Netz seinen Fahrplan neu lernt.',[
+ ['Erreicht die Bahnhofsuhr','IVO: Das Zifferblatt ist die einzige Wahrheit des Netzes. Wir erreichen es – und schreiben die Wahrheit um.'],
+ ['Schützt die Bahnhofsuhr','IVO: Das Werk ist alt und ehrlich. Haltet mir ihre Pioniere vom Leib, während meine Karte eingelegt wird.'],
+ ['Bestätigt die Schein-Abfahrt','ADA: Das Netz antwortet: umgeleitet, neu geplant, verteilt. Die Konvois laufen uns jetzt davon.']],
+ 'IVO: Jeder Zug des Netzes liest jetzt meine Korrektur. VOSS: Und die wichtigen meiden dieses Tal. WREN: Ihr eigener Fahrplan kämpft jetzt für uns.'],
+ 'the-quartermaster':['Der Quartiermeister','Der Knoten hat den Krieg jahrelang aus seinen Tresor-Depots gefüttert. Heute Nacht knackt ihr eines: Der Widerstand isst, der Feind hungert – und eine ausgehungerte Garnison macht Fehler.',[
+ ['Brich die Depotwache auf','VOSS: Tresorwache, keine Linieninfanterie. Sie haben noch nie einen Kampf verloren. Zeigt ihnen, wie sich das anfühlt.'],
+ ['Öffne den Tresor','IVO: Stiftscheiben, keine Geschütztürme. Gebt mir eine Minute mit dem Schloss, dann isst der Krieg heute Nacht aus unserer Hand.'],
+ ['Geleite die Vorratskolonne','WREN: Schlitten und Karren, alles, was sie tragen können. Bringt sie hinaus – der Winter endet heute Nacht für unsere Leute.']],
+ 'WREN: Volle Schlitten, warme Feuer, volle Magazine. VOSS: Und irgendwo im Knoten zählt ein Quartiermeister nach, was er nicht mehr hat. SERA: Meine Lazarette nehmen den Rest.'],
+ 'two-keys':['Zwei Schlüssel','Nias Stadtschlüssel und Ivos Fahrplan-Karte öffnen den äußeren Ring des Knotens – aber die Leser lernen dazu. Füttert zuerst die Falschkarte, lasst den Ring das falsche Tor verteidigen und nehmt das echte, während er es tut.',[
+ ['Füttert die Falschkarte','IVO: Die Leser erkennen Muster: letzte Nacht das Gleis, heute Nacht der Ring. Lasst sie die Karte eines Tores lesen, das wir nicht anfassen werden.'],
+ ['Haltet die Schein-Position','NIA: Der Ring dreht seine Geschütze auf das falsche Tor. Haltet die Täuschung am Leben – Lärm, Licht, alles.'],
+ ['Halte die Stellung, bis das echte Tor aufgeht','VOSS: Nias Schlüssel dreht sich. Das echte Tor öffnet sich knirschend – haltet den Ring, bis unsere Leute durch sind.']],
+ 'NIA: Der äußere Ring ist offen. VOSS: Und die Geschütze des Knotens starren weiter auf eine leere Straße. ADA: Drinnen ist der Kern. Und im Kern ist mein Bruder.'],
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;
@@ -203,7 +223,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät','Blasting crew':'Sprengkommando','Demo charges':'Sprengladungen','Punch machine':'Stanzmaschine','Litter train':'Tragekolonne',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät','Blasting crew':'Sprengkommando','Demo charges':'Sprengladungen','Punch machine':'Stanzmaschine','Litter train':'Tragekolonne','Station clock':'Bahnhofsuhr',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

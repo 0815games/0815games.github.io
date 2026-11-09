@@ -1,6 +1,6 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261217-stormgate';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261218-junction1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261217-stormgate';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261218-junction1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261217-stormgate';
 import {bossPhase} from './boss-mechanics.mjs?v=20261217-stormgate';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -20,7 +20,7 @@ function fallbackMarker(ctx,x,y,label,color='#d9c08a',rx=15,ry=13){
  ctx.save();oval(ctx,x,y,rx,ry,'#1c3029',color,2);ctx.fillStyle=color;ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.fillText(label,x,y+3);ctx.restore();
 }
 function ground(ctx,theme='road',width=960,height=540){
-  ctx.fillStyle=({forest:'#354b3c',outpost:'#5b5748',urban:'#555a55',scrub:'#6f5445',arctic:'#a8c1c3',marsh:'#41594b'})[theme]||'#455740';ctx.fillRect(0,0,width,height);
+  ctx.fillStyle=({forest:'#354b3c',outpost:'#5b5748',urban:'#555a55',scrub:'#6f5445',arctic:'#a8c1c3',marsh:'#41594b',junction:'#3b4340'})[theme]||'#455740';ctx.fillRect(0,0,width,height);
   // Restrained map-like contour detail while a texture is unavailable.
   ctx.save();ctx.globalAlpha=.12;
   for(let i=0;i<75;i++){const x=(i*163+47)%width,y=(i*113+31)%height;oval(ctx,x,y,14+(i%4)*6,4+(i%3)*3,i%2?'#182a23':'#d7d3b1',null);}
@@ -29,7 +29,57 @@ function ground(ctx,theme='road',width=960,height=540){
 // V2 field art: the road is ground, not a ribbon - a soft earthen berm, a
 // compacted surface, wheel ruts that follow the actual bends, and wear
 // scattered ALONG the geometry instead of at nine hard-coded spots.
+// Act V: in the junction the roads are rails - a ballast bed, timber
+// sleepers and twin steel lines, with the odd signal mast along the way.
+// Painted along the exact geometry the enemies drive on, purely cosmetic:
+// the simulation path and every hit target stay untouched.
+function drawRail(ctx,path){
+  const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
+  trace(88,'rgba(20,24,22,.34)');
+  trace(78,'#3f4440');
+  trace(66,'#4c524d');
+  trace(54,'#5a5f58');
+  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
+  // Sleepers: dark timber ties set across the ballast, following every bend.
+  ctx.lineCap='butt';ctx.strokeStyle='#2c2922';ctx.lineWidth=7;
+  let k=0;
+  for(let i=1;i<path.length;i++){
+    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+    for(let s=9;s<len-4;s+=17){
+      const x=a.x+ux*s,y=a.y+uy*s;
+      ctx.beginPath();ctx.moveTo(x-px*22,y-py*22);ctx.lineTo(x+px*22,y+py*22);ctx.stroke();
+    }
+  }
+  // Twin steel rails, each with its own shadow line - readable at a glance.
+  ctx.lineCap='round';
+  for(const side of [-1,1])for(const [w,style] of [[3.4,'rgba(16,18,16,.5)'],[1.8,'#b6bab0']]){
+    ctx.beginPath();let first=true;
+    for(let i=1;i<path.length;i++){
+      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+      const px=-(b.y-a.y)/len*13*side,py=(b.x-a.x)/len*13*side;
+      if(first){ctx.moveTo(a.x+px,a.y+py);first=false;}
+      ctx.lineTo(b.x+px,b.y+py);
+    }
+    ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineJoin='round';ctx.stroke();
+  }
+  // Signal masts at readable intervals, deterministic per path.
+  for(let i=1;i<path.length;i++){
+    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+    for(let s=60;s<len-30;s+=190){
+      const j=hash(++k),side=j<.5?-1:1,off=36+j*8;
+      const x=a.x+ux*s+px*off*side,y=a.y+uy*s+py*off*side;
+      line(ctx,[[x,y+10],[x,y-14]],'#3a3f3a',3);
+      ctx.fillStyle='#22261f';ctx.fillRect(x-4,y-22,8,10);
+      oval(ctx,x,y-19.5,1.7,1.7,j<.35?'#e05a4e':'#7ec97a',null);
+      oval(ctx,x,y-16,1.7,1.7,j<.35?'#5a6f57':'#c9c05a',null);
+    }
+  }
+  ctx.lineCap='round';
+}
 function drawRoad(ctx,path,theme,texture=null){
+  if(theme==='junction'){drawRail(ctx,path);return;}
   const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:theme==='talwald'?['#48563a','#65734c','#828e5e']:['#544a34','#716244','#8d7c5b'];
   const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
   trace(86,'rgba(26,30,24,.32)');
@@ -249,7 +299,7 @@ function ambient(ctx,theme,time,width,height){
   const t=Number.isFinite(time)?time:0;ctx.save();ctx.globalAlpha=.23;
   if(theme==='arctic'){for(let i=0;i<32;i++){const x=(i*137+t*8)%width,y=(i*71+t*24)%height;oval(ctx,x,y,1.5,1.5,'#f4f6e9',null);}}
   else if(theme==='marsh'){for(let i=0;i<22;i++){const x=(i*83+t*60)%width,y=(i*127+t*125)%height;line(ctx,[[x,y],[x-4,y+9]],'#d7e7d6',1);}}
-  else if(theme==='urban'||theme==='outpost'||theme==='scrub'){for(let i=0;i<22;i++){const x=(i*109+t*6)%width,y=((i*83-t*14)%height+height)%height;oval(ctx,x,y,1.4,1.4,'#f3d092',null);}}
+  else if(theme==='urban'||theme==='outpost'||theme==='scrub'||theme==='junction'){for(let i=0;i<22;i++){const x=(i*109+t*6)%width,y=((i*83-t*14)%height+height)%height;oval(ctx,x,y,1.4,1.4,'#f3d092',null);}}
   else{for(let i=0;i<4;i++){const x=((i*270+t*7)%(width+220))-110;oval(ctx,x,80+i*(height/4),85,13,'#d9ddbd',null);}}
   ctx.restore();
 }
@@ -263,7 +313,7 @@ function getGroundImage(doc,theme,variant=0){
   // painting style - bolder contrast, olive grading, painted shadow shapes.
   // The per-field section, mirror and offset below already keep two maps of
   // the same theme from sharing ground, so the old second plates retired.
-  const base=({forest:'terrain3-forest',urban:'terrain3-city',outpost:'terrain3-city',scrub:'terrain3-desert',arctic:'terrain3-snow',marsh:'terrain3-marsh',talwald:'terrain3-talwald'})[theme];
+  const base=({forest:'terrain3-forest',urban:'terrain3-city',outpost:'terrain3-city',scrub:'terrain3-desert',arctic:'terrain3-snow',marsh:'terrain3-marsh',talwald:'terrain3-talwald',junction:'terrain3-junction'})[theme];
   const name=base?base+'.jpg':'endless-ground3.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
@@ -285,7 +335,7 @@ const ZONE_STYLES=Object.freeze({
 // sprites land asset-wise; the vector post below is the loading fallback.
 function drawTorches(ctx,torches,theme,time,reducedMotion,notify){
   if(!torches||!torches.length)return;
-  const kind=theme==='arctic'?'icelantern':theme==='urban'||theme==='outpost'?'lantern':'torch';
+  const kind=theme==='arctic'?'icelantern':theme==='urban'||theme==='outpost'||theme==='junction'?'lantern':'torch';
   const artwork=sprite(ctx,kind,notify),t0=Number.isFinite(time)?time:0,warm=kind==='icelantern';
   for(const [i,p] of torches.entries()){
     const flick=reducedMotion?1:1+.15*Math.sin(t0*11+i*2.4)+.09*Math.sin(t0*23+i*1.7);
@@ -376,12 +426,15 @@ const THEME_SPRITE={
   // wayside crosses and the downed courier machine never appear in free play -
   // free play keeps its five rotating themes (see maps.mjs STORY_FIELDS).
   talwald:{mast:'funk2',forester:'forester2',cross:'cross2',wreck:'landmark2-wreck'},
+  // Act V (the junction): rail-yard industry - the same brick set as the
+  // occupied city, so the knot reads as one built world. Campaign only.
+  junction:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
 };
 function drawDeco(ctx,deco,theme,notify,scale=1){
   // `scale` grows the dressing with the field: a fixed 60px barn reads fine on
   // a 960 map but drowns on a 2040 sector field.
-  const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268',talwald:'#6f7a58'}[theme]||'#8a7d64';
-  const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340',talwald:'#3f4c34'}[theme]||'#54432f';
+  const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268',talwald:'#6f7a58',junction:'#86867e'}[theme]||'#8a7d64';
+  const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340',talwald:'#3f4c34',junction:'#51524b'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
     const artwork=sprite(ctx,(THEME_SPRITE[theme]&&THEME_SPRITE[theme][d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);
@@ -456,6 +509,11 @@ export function drawGroundDetails(ctx,theme,width,height,seed){
       else if(k<.55){ctx.save();ctx.globalAlpha=.14;oval(ctx,x,y,7+r2()*9,4+r2()*5,'#211f1b',null);ctx.restore();}
       else if(k<.8){ctx.fillStyle='#6e6a5e';for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(x+r2()*10-5,y+r2()*8-4,.9+r2()*.9,0,Math.PI*2);ctx.fill();}}
       else{ctx.strokeStyle='rgba(200,190,150,.2)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+10+r2()*8,y);ctx.stroke();}}},
+    junction:{patch:['#2c302e','#434845'],items:(x,y,k,r2)=>{
+      if(k<.3){ctx.fillStyle='#6a6e66';for(let i=0;i<4;i++){ctx.beginPath();ctx.arc(x+r2()*9-4,y+r2()*7-3,.8+r2()*.8,0,Math.PI*2);ctx.fill();}}
+      else if(k<.55){ctx.save();ctx.globalAlpha=.15;oval(ctx,x,y,8+r2()*10,4+r2()*5,'#191d1b',null);ctx.restore();}
+      else if(k<.8){ctx.save();ctx.translate(x,y);ctx.rotate(r2()*Math.PI);ctx.fillStyle='rgba(40,36,28,.3)';ctx.fillRect(-6,-2,12,4);ctx.restore();}
+      else{ctx.strokeStyle='rgba(190,196,184,.2)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+8+r2()*8,y+1-r2()*2);ctx.stroke();}}},
     arctic:{patch:['#8ea6ad','#e8eee9'],items:(x,y,k,r2)=>{
       if(k<.4){ctx.save();ctx.globalAlpha=.22;oval(ctx,x,y,10+r2()*16,4+r2()*6,'#f4f8f4',null);ctx.restore();}
       else if(k<.65){ctx.save();ctx.globalAlpha=.16;oval(ctx,x,y,6+r2()*8,3+r2()*4,'#9fb2b8',null);ctx.restore();}

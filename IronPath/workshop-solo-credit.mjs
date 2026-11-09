@@ -5,7 +5,7 @@
 // once with exactly the current legacy credit (no new fields). The caller must
 // keep a session flag and use the legacy path for later waves after a fallback,
 // so a missing receipt can never be replayed into repeated credit.
-import {applySoloWaveReward} from './workshop-solo-reward.mjs?v=20261217-stormgate';
+import {applySoloWaveReward} from './workshop-solo-reward.mjs?v=20261218-junction1';
 import {receiptForBlock,waveCredit} from './workshop-run-receipt.mjs';
 
 const MAX_XP=10000000;

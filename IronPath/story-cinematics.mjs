@@ -39,7 +39,11 @@ const OPENINGS={
 'rooks-trail':[['ADA','He is burning the relay chain as he climbs — a trail of ash straight to the storm gate.'],['VOSS','Then his rearguard learns what the ash feels like. Hold them back.']],
 'iron-yard':[['IVO','The iron yard stamps the winter timetable. My counter-timetable goes into that machine tonight.'],['VOSS','Then we hold the punch hall until the last card is out.']],
 'the-second-list':[['SERA','My pass hospital is full of partisans and prisoners — and the junction has found it.'],['VOSS','Then we walk your stretcher columns into the stone before the guns do.']],
-'storm-gate':[['NIA','The storm gate. Rook slammed it shut behind him and called it a victory.'],['VOSS','Then we open it. In the blizzard, in the dark, with everything we have left.']]
+'storm-gate':[['NIA','The storm gate. Rook slammed it shut behind him and called it a victory.'],['VOSS','Then we open it. In the blizzard, in the dark, with everything we have left.']],
+'the-descent':[['NIA','Below the gate the valley opens like a lit map. The junction does not know we are coming.'],['VOSS','Then we descend quietly. First contact on the shunting yards - the road is alive tonight.']],
+'dead-timetable':[['IVO','The station clock is the network’s only truth. Tonight, my card goes into the truth.'],['VOSS','Then we hold the platform while the network learns a new schedule.']],
+'the-quartermaster':[['VOSS','A vault depot. The war has eaten from this hand for years.'],['WREN','Tonight the hand opens. We eat - and they learn to count losses.']],
+'two-keys':[['NIA','My city key. His timetable card. Together they open the outer ring.'],['IVO','But the readers learn. We feed them a false map first - they will defend the wrong gate all night.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -81,7 +85,11 @@ const CODAS={
 'rooks-trail':[['NARRATOR','The rearguard holds the ash, and loses it. The trail stays closed behind Rook.'],['NARRATOR','A man climbing alone toward a gate he means to shut.']],
 'iron-yard':[['NARRATOR','The punch hall stamps the winter — and the winter carries Ivo’s correction.'],['NARRATOR','Every convoy of the enemy now reads a timetable its master did not approve.']],
 'the-second-list':[['NARRATOR','The last stretcher crosses under stone, and the gallery mouth seals behind it.'],['NARRATOR','The second list is complete. Nobody was left to the guns.']],
-'storm-gate':[['NARRATOR','The storm gate stands open, and the blizzard pours through it like a held breath let go.'],['NARRATOR','Below the pass the whole valley glitters: junction lights, signal lights, the Iron Path awake and burning.'],['ADA','To everyone still climbing: the winter is behind us, and the junction is next. This is Ada Vale, signing off.']]
+'storm-gate':[['NARRATOR','The storm gate stands open, and the blizzard pours through it like a held breath let go.'],['NARRATOR','Below the pass the whole valley glitters: junction lights, signal lights, the Iron Path awake and burning.'],['ADA','To everyone still climbing: the winter is behind us, and the junction is next. This is Ada Vale, signing off.']],
+'the-descent':[['NARRATOR','The first siding falls without a shout. The yards keep marshalling their war, unaware.'],['NARRATOR','From the switchbacks, the junction glitters like a festival that never ends.']],
+'dead-timetable':[['NARRATOR','The clock face turns, and with it every convoy of the network.'],['NARRATOR','Somewhere a dispatcher reads a schedule nobody wrote - and obeys it anyway.']],
+'the-quartermaster':[['NARRATOR','The vault stands open, its sleds heavy with the junction’s years.'],['NARRATOR','A starving garrison is a garrison that makes mistakes. Soon, it will make them.']],
+'two-keys':[['NARRATOR','The false map burns down to ash, and the real gate stands open behind it.'],['NARRATOR','Inside the ring, the core of the Iron Path waits - and with it, a name on a transport list.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -124,7 +132,11 @@ const SCENES={
  'rooks-trail':[{art:'night-heath',place:'THE BURNED STATIONS',weather:'embers'},{art:'outpost',place:'THE ASH TRAIL',weather:'embers'}],
  'iron-yard':[{art:'iron-yard',place:'THE IRON YARD',weather:'snow'},{art:'city',place:'THE PUNCH HALL',weather:'snow'}],
  'the-second-list':[{art:'marsh-hospital',place:'THE PASS HOSPITAL',weather:'snow'},{art:'ice',place:'THE OLD GALLERY',weather:'snow'}],
- 'storm-gate':[{art:'storm-gate',place:'THE STORM GATE',weather:'snow'},{art:'valley',place:'THE JUNCTION LIGHTS',weather:'snow'}]
+ 'storm-gate':[{art:'storm-gate',place:'THE STORM GATE',weather:'snow'},{art:'valley',place:'THE JUNCTION LIGHTS',weather:'snow'}],
+ 'the-descent':[{art:'the-descent',place:'THE SHUNTING YARD',weather:'mist'},{art:'city',place:'THE VALLEY MOUTH',weather:'mist'}],
+ 'dead-timetable':[{art:'dead-timetable',place:'THE STATION CLOCK',weather:'mist'},{art:'tower',place:'THE PLATFORM',weather:'mist'}],
+ 'the-quartermaster':[{art:'the-quartermaster',place:'THE VAULT DEPOT',weather:'embers'},{art:'city',place:'THE FULL SLEDS',weather:'mist'}],
+ 'two-keys':[{art:'two-keys',place:'THE OUTER RING',weather:'rain'},{art:'city',place:'THE FALSE MAP FEED',weather:'rain'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic

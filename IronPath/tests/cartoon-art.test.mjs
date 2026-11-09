@@ -44,7 +44,7 @@ const prestige=createMatch([p]);prestige.towers=[{id:1,type:0,pad:0,level:13,bra
 // seed, different between seeds, on every theme.
 {
   const record=()=>{const calls=[];const ctx=new Proxy({},{get(t,k){if(k in t)return t[k];return (...a)=>{calls.push([k,...a.map(v=>typeof v==='number'?Math.round(v*100)/100:v)]);};},set(t,k,v){t[k]=v;return true;}});return {calls,ctx};};
-  for(const theme of ['forest','urban','arctic','marsh','scrub','road']){
+  for(const theme of ['forest','urban','arctic','marsh','scrub','road','junction']){
     const a=record(),b=record(),c=record();
     drawGroundDetails(a.ctx,theme,960,540,12345);
     drawGroundDetails(b.ctx,theme,960,540,54321);
