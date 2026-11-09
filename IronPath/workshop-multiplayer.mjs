@@ -2,8 +2,8 @@
 // combat equipment path. Participant declarations and hosts are
 // client-controlled; this does not prove item ownership and is not an
 // anti-cheat boundary.
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261217-stormgate';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261217-stormgate';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261218-junction1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261218-junction1';
 const protocol=1,slots=['weapon','gear','gadget'];
 const counts={solo:[1],coop:[2],versus:[2],'four-coop':[3,4],'two-vs-two':[4]};
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);

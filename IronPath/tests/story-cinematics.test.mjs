@@ -7,16 +7,18 @@ const MOTIFS=['dawn-road','pinewood-trail','relay-line','outpost-fire','market-r
 const ACT2=['flood-village','hospital-row','night-count','white-passage','frozen-junction'];
 const ACT3=['registry-hall','city-forge','night-strike'];
 const ACT4=['mountain-pass','moor-depot','work-camp','long-span','iron-yard','storm-gate'];
-test('all scenes have authored, valid locations for both briefings and debriefs',()=>{const introArts=new Set();for(const mission of CAMPAIGN){for(const kind of ['intro','ending']){const scene=cinematicScene(mission,kind);assert.ok(scene?.place);assert.ok(POOL.concat(MOTIFS,ACT2,ACT3,ACT4).includes(scene.art),`${mission.id} ${kind} art ${scene.art}`);assert.ok(['rain','snow','mist','embers'].includes(scene.weather));if(kind==='intro')introArts.add(scene.art);}}
+const ACT5=['the-descent','dead-timetable','the-quartermaster','two-keys'];
+test('all scenes have authored, valid locations for both briefings and debriefs',()=>{const introArts=new Set();for(const mission of CAMPAIGN){for(const kind of ['intro','ending']){const scene=cinematicScene(mission,kind);assert.ok(scene?.place);assert.ok(POOL.concat(MOTIFS,ACT2,ACT3,ACT4,ACT5).includes(scene.art),`${mission.id} ${kind} art ${scene.art}`);assert.ok(['rain','snow','mist','embers'].includes(scene.weather));if(kind==='intro')introArts.add(scene.art);}}
  // Every Act I, II and III briefing carries its own painted motif; the acts
  // beyond keep the shared pool until their regions ship.
  assert.deepEqual([...introArts].filter(a=>MOTIFS.includes(a)).sort(),[...MOTIFS].sort());
  assert.deepEqual([...introArts].filter(a=>ACT2.includes(a)).sort(),[...ACT2].sort());
  assert.deepEqual([...introArts].filter(a=>ACT3.includes(a)).sort(),[...ACT3].sort());
  assert.deepEqual([...introArts].filter(a=>ACT4.includes(a)).sort(),[...ACT4].sort());
+ assert.deepEqual([...introArts].filter(a=>ACT5.includes(a)).sort(),[...ACT5].sort());
  assert.equal(cinematicScene(null,'intro'),null);assert.equal(cinematicScene(CAMPAIGN[0],'invalid'),null);});
 
-test('each scene illustration is present and wired into the cinematic stylesheet',async()=>{const css=await readFile(new URL('../style.css',import.meta.url),'utf8');for(const art of [...POOL,...MOTIFS,...ACT2,...ACT3,...ACT4,'act1-dawn','act1-relic']){const file=await readFile(new URL(`../assets/story-${art}.jpg`,import.meta.url));assert.ok(file.length>1000,art);assert.ok(css.includes(`assets/story-${art}.jpg`),art);}});
+test('each scene illustration is present and wired into the cinematic stylesheet',async()=>{const css=await readFile(new URL('../style.css',import.meta.url),'utf8');for(const art of [...POOL,...MOTIFS,...ACT2,...ACT3,...ACT4,...ACT5,'act1-dawn','act1-relic']){const file=await readFile(new URL(`../assets/story-${art}.jpg`,import.meta.url));assert.ok(file.length>1000,art);assert.ok(css.includes(`assets/story-${art}.jpg`),art);}});
 
 test('the speaker portrait set is painted and wired for every planned voice',async()=>{const css=await readFile(new URL('../style.css',import.meta.url),'utf8');for(const speaker of ['voss','ada','ivo','sera','nia','rook','elias','wren']){const file=await readFile(new URL(`../assets/story-${speaker}.jpg`,import.meta.url));assert.ok(file.length>1000,speaker);assert.ok(css.includes(`data-speaker="${speaker}"`),speaker);}});
 

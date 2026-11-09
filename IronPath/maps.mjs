@@ -120,7 +120,11 @@ const STORY_FIELDS=Object.freeze({
   'g3-00000001b':{theme:'scrub',name:'The Burned Heath'},
   'g3-00000001c':{theme:'urban',name:'The Iron Yard'},
   'g3-00000001d':{theme:'arctic',name:'The Gallery Mouth'},
-  'g3-00000001e':{theme:'arctic',name:'The Storm Gate'}
+  'g3-00000001e':{theme:'arctic',name:'The Storm Gate'},
+  'g3-00000001f':{theme:'junction',name:'The Shunting Yard'},
+  'g3-000000020':{theme:'junction',name:'The Station Clock'},
+  'g3-000000021':{theme:'junction',name:'The Vault Depot'},
+  'g3-000000022':{theme:'junction',name:'The Outer Ring'}
 });
 // Endless and multiplayer draw their battlefield from a seed: the road is
 // walked cell by cell from the left edge to the bunker, so it can meander,

@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261217-stormgate';
+import {translateText as tr} from './language.mjs?v=20261218-junction1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -34,6 +34,10 @@ const STYLES={
  // counterfeit key forging.
  // Act IV - the long winter: the pass climb, the burning moor depot and the
  // frozen warm-line relay.
+ 'the-descent':{ground:'#565a52',light:'#8b8d7f',dark:'#33362f',water:'#5f7a74',weather:'mist',feature:'station',accent:'#e6cd8b'},
+ 'dead-timetable':{ground:'#4e534f',light:'#7f837b',dark:'#2c2f2b',water:'#5c7570',weather:'mist',feature:'timetable',accent:'#ecd692'},
+ 'the-quartermaster':{ground:'#585245',light:'#8a8272',dark:'#34302a',water:'#5f7568',weather:'embers',feature:'market',accent:'#e8b97a'},
+ 'two-keys':{ground:'#4a4f4c',light:'#7b807a',dark:'#282b28',water:'#59726c',weather:'rain',feature:'dam',accent:'#e2c98e'},
  'storm-gate':{ground:'#9db8b2',light:'#cadcd6',dark:'#5f8b8d',water:'#78a9b2',weather:'snow',feature:'dam',accent:'#e8c87e'},
  'the-work-camp':{ground:'#a5bfb9',light:'#d2e1da',dark:'#638e91',water:'#7cacb5',weather:'snow',feature:'prison',accent:'#e0b976'},
  'avalanche':{ground:'#bccfca',light:'#e0ebe6',dark:'#7fa3a4',water:'#84b5be',weather:'snow',feature:'dam',accent:'#e8c57c'},

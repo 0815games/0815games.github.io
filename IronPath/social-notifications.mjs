@@ -1,4 +1,4 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261217-stormgate';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261218-junction1';
 // Non-modal, in-page alerts. The inbox remains the source of truth; dismissing
 // an alert never accepts, declines or deletes a request or invitation.
 export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen}){

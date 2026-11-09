@@ -1,6 +1,6 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261217-stormgate';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261218-junction1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
-import {getMap} from './maps.mjs?v=20261217-stormgate';
+import {getMap} from './maps.mjs?v=20261218-junction1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261124-zones1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261217-stormgate';
 
