@@ -1,8 +1,8 @@
 import {translateText as tr,getLanguage} from './language.mjs?v=20261111-events1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261206-acttwo1';
-import {ENEMY_INTEL} from './combat.mjs?v=20261112-finale1';
-import {bossPhase} from './boss-mechanics.mjs?v=20261112-finale1';
+import {ENEMY_INTEL} from './combat.mjs?v=20261208-kolt1';
+import {bossPhase} from './boss-mechanics.mjs?v=20261208-kolt1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}

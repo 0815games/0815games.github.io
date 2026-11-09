@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261206-acttwo1';
+import {CAMPAIGN} from './campaign.mjs?v=20261208-kolt1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={

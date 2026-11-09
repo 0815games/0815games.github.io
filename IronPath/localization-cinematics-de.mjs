@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261206-acttwo1';
+import {CAMPAIGN} from './campaign.mjs?v=20261208-kolt1';
 import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261206-acttwo1';
 // The authored opening and closing frames in story-cinematics.mjs. The other
 // frames are translated via the campaign text dictionary.

@@ -41,7 +41,7 @@ assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
  const riegel=makeEnemy('bossRiegel',7);
  assert.equal(riegel.boss,'bossRiegel');assert.equal(riegel.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossRiegel'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,1);
+ assert.equal(STORY_BOSSES.length,2,'Riegel closes Act I, Kolt closes Act II');
 }
 {
  const s=setup('bossRiegel',18-STEP/2);s.players.solo.cooldown=5;const events=stepMatch(s);
@@ -56,6 +56,35 @@ assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
  const open=setup('bossRiegel',3);open.players.solo.cooldown=5;stepMatch(open);
  assert.ok(open.players.solo.cooldown<5,'recharge resumes once the field is down');
 }
+// Kolt, the Deichbrecher, closes Act II: while his flood pulse runs, every
+// remaining enemy surges and he shields behind the water. The answer is kill
+// order and pulse rhythm - thin the wave, strike between the pulses.
+assert.equal(bossPhase({boss:'bossKolt',bossClock:11.9}),'normal');
+assert.equal(bossPhase({boss:'bossKolt',bossClock:12}),'flood');
+assert.equal(bossWeaponFactor({boss:'bossKolt',bossClock:12}),.5);
+assert.equal(bossWeaponFactor({boss:'bossKolt',bossClock:5}),1);
+assert.match(bossPhaseLabel({boss:'bossKolt',bossClock:14}),/surge/);
+assert.equal(bossTelegraph({boss:'bossKolt',bossClock:11}).key,'flood-warning');
+assert.equal(bossTelegraph({boss:'bossKolt',bossClock:11}).warning,true);
+assert.equal(bossTelegraph({boss:'bossKolt',bossClock:14}).key,'flood');
+{
+ const kolt=makeEnemy('bossKolt',7);
+ assert.equal(kolt.boss,'bossKolt');assert.equal(kolt.kind,'tank');
+ assert.equal(BOSSES.find(b=>b.kind==='bossKolt'),undefined,'story bosses never join the endless rotation');
+ assert.equal(STORY_BOSSES.length,2);
+}
+{
+ const surge=()=>{const s=setup('bossKolt',13);s.enemies.push({kind:'infantry',x:s.enemies[0].x+150,y:s.enemies[0].y,hp:100,maxHp:100,speed:30,segment:1,reward:1,damage:1});const enemy=s.enemies[1],x=enemy.x;stepMatch(s);return Math.abs(enemy.x-x);};
+ const during=surge(),off=(()=>{const s=setup('bossKolt',5);s.enemies.push({kind:'infantry',x:s.enemies[0].x+150,y:s.enemies[0].y,hp:100,maxHp:100,speed:30,segment:1,reward:1,damage:1});const enemy=s.enemies[1],x=enemy.x;stepMatch(s);return Math.abs(enemy.x-x);})();
+ assert.ok(Math.abs(during-off*1.45)<1e-8,'the flood pulse surges every wave remnant');
+ const boss=setup('bossKolt',13),calm=setup('bossKolt',5);
+ assert.equal(Math.abs(boss.enemies[0].x-300),0,'the surge never carries Kolt himself');
+}
+{
+ const s=setup('bossKolt',18-STEP/2);const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='flood').length,1);
+ assert.equal(stepMatch(s).filter(e=>e.type==='bossAbility'&&e.ability==='flood').length,0,'the pulse fires once per cycle');
+}
 // The mission formation carries the story boss on the contract's final wave,
 // replacing the rotation boss instead of stacking on it.
 assert.equal(missionFormation(7,{waves:7,bossFinal:'bossRiegel'}).at(-1),'bossRiegel');
@@ -64,4 +93,5 @@ assert.equal(missionFormation(10,{waves:10,bossFinal:'bossRiegel'}).filter(k=>k.
 assert.equal(missionFormation(5,{waves:7,bossFinal:'bossRiegel'}).includes('bossRiegel'),false,'earlier waves keep the endless rhythm');
 assert.deepEqual(missionFormation(5,{}),waveFormation(5,undefined),'contracts without a story boss are the endless rhythm exactly');
 assert.equal(missionFormation(7,{}).includes('bossRiegel'),false);
+assert.equal(missionFormation(7,{waves:7,bossFinal:'bossKolt'}).at(-1),'bossKolt','Kolt closes Act II on the veteran contract');
 console.log('Boss timings, telegraphs, abilities and co-op snapshots passed.');
