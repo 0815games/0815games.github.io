@@ -7,10 +7,11 @@ export function bossPhase(enemy){
   case 'bossJuggernaut': return clock%10>=8?'repair-warning':'normal';
   case 'bossCommander': return clock%16>=10&&clock%16<14?'rally':'normal';
   case 'bossRiegel': return clock%18>=12?'jam':'normal';
+  case 'bossKolt': return clock%18>=12?'flood':'normal';
   default:return 'normal';
  }
 }
-export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:1;}
+export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:1;}
 export function bossPhaseLabel(enemy){
  switch(bossPhase(enemy)){
   case 'shield':return 'SHIELD UP · weapon damage reduced';
@@ -18,6 +19,7 @@ export function bossPhaseLabel(enemy){
   case 'repair-warning':return 'REPAIR CYCLE · heal incoming!';
   case 'rally':return 'RALLY · nearby ground troops surge!';
   case 'jam':return 'JAM FIELD · ability recharge blocked';
+  case 'flood':return 'FLOOD PULSE · every enemy surges, Kolt is shielded';
   default:return '';
  }
 }
@@ -41,6 +43,9 @@ export function bossTelegraph(enemy){
  }else if(enemy.boss==='bossRiegel'){
   const t=clock%18;if(t>=10&&t<12){key='jam-warning';seconds=Math.ceil(12-t);message='JAM FIELD RISING';warning=true;}
   else if(phase==='jam'){key='jam';seconds=Math.ceil(18-t);message='JAM FIELD ACTIVE · ABILITY BLOCKED';}
+ }else if(enemy.boss==='bossKolt'){
+  const t=clock%18;if(t>=10&&t<12){key='flood-warning';seconds=Math.ceil(12-t);message='FLOOD PULSE IN';warning=true;}
+  else if(phase==='flood'){key='flood';seconds=Math.ceil(18-t);message='FLOOD PULSE ACTIVE · KOLT SHIELDED';}
  }
  return key?{key,warning,seconds,text:`${message} · ${seconds}s`}:null;
 }

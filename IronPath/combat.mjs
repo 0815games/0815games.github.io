@@ -70,7 +70,8 @@ for(const boss of BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label
 // rotation: only `missionFormation` can spawn them, on a contract's final wave,
 // where the story boss replaces the rotation boss instead of stacking on it.
 export const STORY_BOSSES=Object.freeze([
- {kind:'bossRiegel',label:'Riegel',base:'tank',hp:6,speed:.6,damage:1.5,reward:160,description:'Night Warden: his jam field periodically blocks your ability recharge and dampens weapon damage; interceptor swarms cover the open windows.'}
+ {kind:'bossRiegel',label:'Riegel',base:'tank',hp:6,speed:.6,damage:1.5,reward:160,description:'Night Warden: his jam field periodically blocks your ability recharge and dampens weapon damage; interceptor swarms cover the open windows.'},
+ {kind:'bossKolt',label:'Kolt',base:'tank',hp:6,speed:.55,damage:1.8,reward:170,description:'Deichbrecher: every 18 seconds a flood pulse surges all remaining enemies while he raises his shield at the dyke. Thin the wave in order and strike between the pulses.'}
 ]);
 const BOSS_CATALOG=[...BOSSES,...STORY_BOSSES];
 for(const boss of STORY_BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};

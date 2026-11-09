@@ -15,7 +15,7 @@ import {decodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261101-campaign1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
 import {relicBonus} from './relics.mjs?v=20261101-campaign1';
-import {storyBossKind} from './combat.mjs?v=20261112-finale1';
+import {storyBossKind} from './combat.mjs?v=20261208-kolt1';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
  // Reported: "Soldier starts every time at the bunker!" A story mission

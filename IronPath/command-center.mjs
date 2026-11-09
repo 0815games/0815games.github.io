@@ -1,7 +1,7 @@
 import {translate,translateText} from './language.mjs?v=20261111-events1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261107-balance1';
-import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261206-acttwo1';
+import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261208-kolt1';
 import {parseBuild,pointsLeft} from './skills.mjs?v=20261107-balance1';
 // Navigation only: online matches and account mutations remain with their existing owners.
 export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut}){

@@ -14,7 +14,7 @@ import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=2026
 import {createVersus} from './versus.mjs?v=20261108-squadmaps1';
 import {createMatch} from './simulation.mjs?v=20261108-squadmaps1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261206-acttwo1';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261112-finale1';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261208-kolt1';
 export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,players,mapId=DEFAULT_MAP,workshopLock=null,resumeGeneration=null,crypto=globalThis.crypto,readFresh,lockManager=globalThis.navigator?.locks,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){
  const uid=auth?.currentUser?.uid,hostId=manifest?.hostId,ids=manifest?.playerIds,mode=manifest?.mode,teams=manifest?.teamRosters,four=mode==='four-coop'||mode==='two-vs-two';
  if(!['coop','versus','four-coop','two-vs-two'].includes(mode)||!Array.isArray(ids)||!ids.includes(uid)||ids[0]!==hostId||new Set(ids).size!==ids.length||!(mode==='four-coop'?[3,4].includes(ids.length):mode==='two-vs-two'?ids.length===4:ids.length===2)||!isMapId(mapId)||typeof crypto?.getRandomValues!=='function'||![onState,onStatus,onSnapshot,onWaveRewards].every(f=>typeof f==='function'))throw Error('Invalid recoverable match');

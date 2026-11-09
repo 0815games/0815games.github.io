@@ -9,7 +9,7 @@ import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261206-acttwo1';
-import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex} from './campaign.mjs?v=20261206-acttwo1';
+import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex} from './campaign.mjs?v=20261208-kolt1';
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261101-campaign1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
@@ -19,7 +19,7 @@ import {createBattleViewportController} from './battle-viewport-controller.mjs?v
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261107-balance1';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261108-squadmaps1';
-import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261112-finale1';
+import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261208-kolt1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
@@ -34,7 +34,7 @@ import { createTutorial } from './tutorial.mjs?v=20261108-squadmaps1';
 import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261108-squadmaps1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261108-squadmaps1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261108-squadmaps1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261112-finale1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261208-kolt1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
@@ -394,7 +394,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     try{if(coach.isOpen()||coach.dismissed())coach.tick();}catch{/* A hint must never break the field. */}
     const coachRecall=$('coachRecall');if(coachRecall)coachRecall.hidden=!coach.dismissed();
   }
-  function localizedBossSignal(signal){const labels={'shield-warning':'SHIELD RAISING · {seconds}s',shield:'SHIELD UP · DAMAGE REDUCED · {seconds}s','bomb-warning':'BOMB STRIKE IN · {seconds}s','repair-warning':'REPAIR IN · {seconds}s','rally-warning':'RALLY IN · {seconds}s',rally:'RALLY ACTIVE · {seconds}s','jam-warning':'JAM FIELD RISING · {seconds}s',jam:'JAM FIELD ACTIVE · {seconds}s'};return labels[signal.key]?tr(labels[signal.key],{seconds:signal.seconds}):signal.text;}
+  function localizedBossSignal(signal){const labels={'shield-warning':'SHIELD RAISING · {seconds}s',shield:'SHIELD UP · DAMAGE REDUCED · {seconds}s','bomb-warning':'BOMB STRIKE IN · {seconds}s','repair-warning':'REPAIR IN · {seconds}s','rally-warning':'RALLY IN · {seconds}s',rally:'RALLY ACTIVE · {seconds}s','jam-warning':'JAM FIELD RISING · {seconds}s',jam:'JAM FIELD ACTIVE · {seconds}s','flood-warning':'FLOOD PULSE IN · {seconds}s',flood:'FLOOD PULSE ACTIVE · {seconds}s'};return labels[signal.key]?tr(labels[signal.key],{seconds:signal.seconds}):signal.text;}
   function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return tr('Wave {wave}',{wave})+(wave%5===0?tr(' · BOSS WAVE'):'')+' · '+Object.entries(counts).map(([kind,n])=>`${n} ${tr(ENEMY_TYPES[kind].label)}`).join(' · ')+(bossForWave(wave)?` · ${tr(bossForWave(wave).description)}`:'');}
   $('speed').onclick=()=>{if(coop){const vote=state.speedRequest,command=state.speed===2?{type:'slowSpeed'}:vote?{type:'cancelSpeed',requestId:vote.id}:{type:'requestSpeed'};dispatch(command,result=>{notice(result.ok?(command.type==='requestSpeed'?'Speed request sent. Waiting for every other player.':command.type==='cancelSpeed'?'Speed request cancelled.':'Speed returned to 1×.'):result.reason);updateUI();});return;}state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   for(const [id,type] of [['speedApprove','approveSpeed'],['speedDecline','declineSpeed']])$(id).onclick=()=>{const vote=state.speedRequest;if(!coop||!vote)return;dispatch({type,requestId:vote.id},result=>{notice(result.ok?(type==='approveSpeed'?'Speed approved.':'Speed request declined.'):result.reason);updateUI();});};
