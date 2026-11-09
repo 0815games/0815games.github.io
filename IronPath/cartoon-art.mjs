@@ -373,19 +373,26 @@ const THEME_SPRITE={
   urban:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
   outpost:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
 };
-function drawDeco(ctx,deco,theme,notify){
+function drawDeco(ctx,deco,theme,notify,scale=1){
+  // `scale` grows the dressing with the field: a fixed 60px barn reads fine on
+  // a 960 map but drowns on a 2040 sector field.
   const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
   const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
     const artwork=sprite(ctx,(THEME_SPRITE[theme]&&THEME_SPRITE[theme][d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);
     if(artwork){
-      // Painted building, anchored like the towers: bottom-centre on the deco
-      // point, soft contact shadow, upright whatever the road does - a gate
-      // pillar must never lie on its side, so it ignores the deco rotation.
-      const w=DECO_ART[d.kind]||58,h=w*artwork.height/artwork.width;
-      ctx.save();ctx.translate(d.x,d.y);if(d.rot&&d.kind!=='gate')ctx.rotate(Math.PI/2);
-      oval(ctx,0,10,w*.42,Math.max(4,h*.09),'rgba(24,32,26,.22)',null);
+      // Painted buildings stand UPRIGHT, always. The old 90-degree deco
+      // rotation was made for the abstract vector shapes; applied to the
+      // painted sprites it tipped whole buildings onto their side - reported
+      // as "Gebaeude sehr schlecht erkennbar".
+      const w=(DECO_ART[d.kind]||58)*scale,h=w*artwork.height/artwork.width;
+      ctx.save();ctx.translate(d.x,d.y);
+      // Grounding: a dark earth clearing under the building plus a directional
+      // contact shadow (light from the top-left) separates it from the busy
+      // tile mosaic behind it - the building reads as a solid object.
+      oval(ctx,0,10,w*.56,Math.max(5,h*.14),'rgba(15,21,16,.24)',null);
+      oval(ctx,w*.1,11,w*.44,Math.max(4,h*.1),'rgba(10,15,11,.3)',null);
       ctx.drawImage(artwork,-w/2,13-h,w,h);
       ctx.restore();continue;
     }
@@ -556,7 +563,10 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
       target.save();target.globalAlpha=.05+tr()*.04;target.fillStyle=GROUND_TINTS[Math.floor(tr()*GROUND_TINTS.length)];target.fillRect(0,0,width,height);target.restore();
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
-    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);drawDeco(target,deco,theme,notify);
+    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
+    // Field dressing grows with the map (capped: it must not swallow the road
+    // it was placed clear of).
+    drawDeco(target,deco,theme,notify,Math.max(1,Math.min(1.45,width/1100)));
     // V3 grade: an olive cast with a painted vignette - the frame darkens,
     // the field centre stays bright, and the eye lands where the fighting is.
     target.save();target.globalAlpha=.14;target.fillStyle='#2c4232';target.fillRect(0,0,width,height);target.globalAlpha=1;
