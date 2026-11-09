@@ -1,4 +1,4 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261108-squadmaps1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261111-events1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261108-squadmaps1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261102-battle2';
