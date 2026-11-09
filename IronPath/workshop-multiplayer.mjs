@@ -2,8 +2,8 @@
 // combat equipment path. Participant declarations and hosts are
 // client-controlled; this does not prove item ownership and is not an
 // anti-cheat boundary.
-import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261108-squadmaps1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261108-squadmaps1';
+import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261101-campaign1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
 const protocol=1,slots=['weapon','gear','gadget'];
 const counts={solo:[1],coop:[2],versus:[2],'four-coop':[3,4],'two-vs-two':[4]};
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
@@ -11,7 +11,10 @@ const validMatchId=id=>typeof id==='string'&&/^[a-f0-9]{32}$/.test(id);
 const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===keys.length&&keys.every(k=>Object.hasOwn(o,k));
 
 export function encodeMatchLoadout(snapshot){
- if(!exact(snapshot,['version','mode','items'])||!Array.isArray(snapshot.items)||!snapshot.items.every(item=>exact(item,['slot','id','mod']))||!workshopEffects(snapshot,0))return null;
+ // `relics` is an optional fourth key (solo snapshots carry it); the wire
+ // format does not serialize it - co-op relics get their own protocol bump.
+ const snapshotKeys=Object.keys(snapshot||{});
+ if(!snapshotKeys.every(k=>['version','mode','items','relics'].includes(k))||!snapshotKeys.includes('version')||!snapshotKeys.includes('mode')||!snapshotKeys.includes('items')||Object.hasOwn(snapshot,'relics')&&!Array.isArray(snapshot.relics)||!Array.isArray(snapshot.items)||!snapshot.items.every(item=>exact(item,['slot','id','mod']))||!workshopEffects(snapshot,0))return null;
  return JSON.stringify([protocol,snapshot.mode,snapshot.items.map(i=>[i.id,i.mod])]);
 }
 export function decodeMatchLoadout(encoded,mode){

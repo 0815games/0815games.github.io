@@ -18,11 +18,14 @@ const BUILD_ROTATION=[0,1,0,2,0,1,3,0,2,1];
 const TOWER_CAP=12; // stop upgrading here; costs outrun income naturally
 
 export const GEARS={
-  rookie:{label:'rookie',level:1,skills:'0,0,0,0,0;assault',loadout:'0,0,0'},
-  veteran:{label:'veteran',level:12,skills:'2,2,1,0,0;assault',loadout:'1,1,1'},
-  elite:{label:'elite',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10'},
+  // storyProgress models the relics the account has earned: a veteran has
+  // finished act I (relic I), an elite soldier has finished the shipped story
+  // (relics I-III). The relics ride into the match via createSoloDeployment.
+  rookie:{label:'rookie',level:1,skills:'0,0,0,0,0;assault',loadout:'0,0,0',storyProgress:0},
+  veteran:{label:'veteran',level:12,skills:'2,2,1,0,0;assault',loadout:'1,1,1',storyProgress:4},
+  elite:{label:'elite',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10',storyProgress:12},
 };
-const profile=gear=>({gender:'male',name:'Soldier',level:gear.level,skills:gear.skills,loadout:gear.loadout});
+const profile=gear=>({gender:'male',name:'Soldier',level:gear.level,skills:gear.skills,loadout:gear.loadout,storyProgress:gear.storyProgress||0});
 
 // ------------------------------------------------------------- geometry ----
 function pathLength(path){let l=0;for(let i=1;i<path.length;i++)l+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);return l;}
@@ -187,7 +190,7 @@ export function runFourCoop(count,gear=GEARS.rookie,maxWaves=25,mapId){
 }
 export function runCampaign(mission,gear=GEARS.rookie){
   const player=createPlayer('p1',profile(gear),850,450);
-  const state=createSoloDeployment({player,mapId:mission.mapId,workshopEnabled:false,campaign:{id:mission.id,threat:mission.threat}});
+  const state=createSoloDeployment({player,mapId:mission.mapId,profile:profile(gear),workshopEnabled:false,campaign:{id:mission.id,threat:mission.threat}});
   const maxWaves=state.campaignContract.waves;
   const result=driveLanes([makeCtx(state,['p1'],`${mission.id}(${mission.threat}) ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c))],()=>stepMatch(state))[0];
   return {...result,won:!state.ended&&state.wave>=maxWaves,map:mission.mapId};

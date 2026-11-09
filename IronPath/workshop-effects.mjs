@@ -3,18 +3,21 @@
 // the balance suite. All bonuses belong to the wearer except bunkerHealth,
 // which is shared with their team.
 import {validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
-import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261108-squadmaps1';
+import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261101-campaign1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
+import {RELICS,isRelic,earnedRelicIds} from './relics.mjs?v=20261101-campaign1';
 
-const BASE=Object.freeze({damage:0,range:0,movement:0,cooldown:0,bunkerHealth:0,startSupplies:0,airstrikeDamage:0,shotIntervalMultiplier:1,waveSupplies:0,tankTowerMultiplier:1});
+const BASE=Object.freeze({damage:0,range:0,movement:0,cooldown:0,bunkerHealth:0,startSupplies:0,airstrikeDamage:0,shotIntervalMultiplier:1,waveSupplies:0,tankTowerMultiplier:1,waveRepair:0,towerDamage:1,towerRange:0});
 const ITEMS=Object.freeze({
  marksman:{damage:2,range:10},mechanic:{bunkerHealth:10,startSupplies:10},
  radio:{cooldown:3},boots:{movement:15}
 });
-// Campaign trophies. Same shape as a crafted item so nothing downstream cares
-// where an item came from; the values are tuned as the campaign finale answer.
-const TROPHY=Object.freeze(Object.fromEntries(Object.entries(PRESTIGE).map(([id,item])=>[id,item.bonus])));
-const TROPHY_MODS=Object.freeze(Object.fromEntries(Object.entries(PRESTIGE).map(([id,item])=>[id,Object.fromEntries(Object.entries(item.mods).map(([mod,info])=>[mod,modEffect(info.effect)]))])));
+// Campaign trophies were MELTED into the act relics (see relics.mjs): they can
+// no longer be earned or equipped. Old snapshots that still carry a prestige id
+// resolve to no effect at all - neutral, never a crash - and syncPrestige
+// strips them from the stored workshop on the next account sync.
+const TROPHY=Object.freeze({});
+const TROPHY_MODS=Object.freeze({});
 // Read the numeric effect back out of the description we show the player, so the
 // catalogue text and the combat value cannot drift apart.
 function modEffect(text){
@@ -37,10 +40,14 @@ function add(target,source){for(const [key,value] of Object.entries(source||{}))
 
 // A match captures only the selected items and mods, not a mutable account.
 // Competitively standardized effects are neutral; visual choices remain.
-export function captureWorkshopLoadout(workshop,mode){
+export function captureWorkshopLoadout(workshop,mode,profile=null){
  if(!validateWorkshop(workshop)||!modes.has(mode))return null;
  const items=['weapon','gear','gadget'].map(slot=>{const id=workshop.equipped[slot];return Object.freeze({slot,id,mod:workshop.mods[id]||null});});
- return Object.freeze({version:1,mode,items:Object.freeze(items)});
+ // Act relics ride along on the snapshot for every mode that keeps account
+ // progression. The multiplayer wire format does not carry them yet, so they
+ // are attached for solo only until co-op grows its own protocol field.
+ const relics=mode==='solo'&&profile?Object.freeze(earnedRelicIds(profile).slice()):Object.freeze([]);
+ return Object.freeze({version:1,mode,items:Object.freeze(items),relics});
 }
 export function workshopEffects(snapshot,wave){
  if(!snapshot||snapshot.version!==1||!modes.has(snapshot.mode)||!Array.isArray(snapshot.items)||snapshot.items.length!==3||!Number.isSafeInteger(wave)||wave<0)return null;
@@ -50,6 +57,8 @@ export function workshopEffects(snapshot,wave){
  for(const item of snapshot.items){if(item.mod!==null){if(Object.hasOwn(mods,item.id))return null;mods[item.id]=item.mod;}}
  const w={version:1,components:0,owned,equipped:Object.fromEntries(snapshot.items.map(i=>[i.slot,i.id])),mods};if(!validateWorkshop(w))return null;
  const result={...BASE};if(snapshot.mode==='versus'||snapshot.mode==='two-vs-two')return result;
+ // Act relics are flat account passives: no wave growth, merged after items.
+ if(Array.isArray(snapshot.relics))for(const id of snapshot.relics){if(isRelic(id))add(result,RELICS[id].bonus);}
  // Crafted and earned gear follows the same long-run curve as the legacy
  // armory (see equipment-effects.mjs): flat combat bonuses grow from wave 6 so
  // a damage item keeps its share of output next to upgraded towers. Legacy

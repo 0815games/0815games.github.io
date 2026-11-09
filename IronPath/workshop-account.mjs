@@ -1,7 +1,7 @@
 // Workshop transaction service, live for every signed-in soldier through the
 // armory. Writes fail closed when the workshop rules are not published; the
 // legacy path keeps working in that case.
-import {initializeWireWorkshop,applyWireWorkshopCommand,syncPrestige} from './workshop-wire.mjs?v=20261108-squadmaps1';
+import {initializeWireWorkshop,applyWireWorkshopCommand,meltPrestige} from './workshop-wire.mjs?v=20261101-campaign1';
 
 export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
  if(!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||typeof canEdit!=='function')throw new Error('Invalid workshop account service');
@@ -24,6 +24,6 @@ export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
   finally{unwatch?.();busy=false;}
  }
  // Backfill campaign trophies for missions already finished. Free and
- // idempotent: syncPrestige only adds what the stored story progress proves.
- return {initialize:()=>transact(initializeWireWorkshop),command:command=>transact(p=>applyWireWorkshopCommand(p,command)),sync:()=>transact(syncPrestige),isBusy:()=>busy};
+ // idempotent: meltPrestige only adds what the stored story progress proves.
+ return {initialize:()=>transact(initializeWireWorkshop),command:command=>transact(p=>applyWireWorkshopCommand(p,command)),sync:()=>transact(meltPrestige),isBusy:()=>busy};
 }

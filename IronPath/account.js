@@ -13,10 +13,10 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261108-squadmaps1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
 import {setupFriends} from './friends-ui.mjs?v=20261108-squadmaps1';
 import {createCommandCenter} from './command-center.mjs?v=20261108-squadmaps1';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261108-squadmaps1';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261101-campaign1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261108-squadmaps1';
-import {missingPrestige} from './prestige.mjs?v=20261108-squadmaps1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261101-campaign1';
+import {missingPrestige} from './prestige.mjs?v=20261101-campaign1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261108-squadmaps1';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261108-squadmaps1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
@@ -91,7 +91,7 @@ const workshopAccount=createWorkshopAccount({db,auth,sdk:{ref,onValue,runTransac
 // never reach a transaction while the sandbox is on, so this cannot become a hole.
 const sandboxWorkshop={
   async initialize(){return applySandboxWorkshop(p=>initializeWireWorkshop(p));},
-  async sync(){return applySandboxWorkshop(p=>syncPrestige(p));},
+  async sync(){return applySandboxWorkshop(p=>meltPrestige(p));},
   async command(command){return applySandboxWorkshop(p=>applyWireWorkshopCommand(p,command),command);},
 };
 function applySandboxWorkshop(reduce,command=null){
@@ -154,7 +154,7 @@ function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscri
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
    // finished mission can never grant one without the other.
-   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryWithPrestige(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryMission(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the

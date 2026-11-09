@@ -4,8 +4,8 @@
 import {createMatch} from './simulation.mjs?v=20261108-squadmaps1';
 import {createVersus} from './versus.mjs?v=20261108-squadmaps1';
 import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261108-squadmaps1';
-import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261108-squadmaps1';
-import {workshopEffects} from './workshop-effects.mjs?v=20261108-squadmaps1';
+import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261101-campaign1';
+import {workshopEffects} from './workshop-effects.mjs?v=20261101-campaign1';
 function attach(lane,lock){
  const entries=Object.keys(lane.players).map(id=>lock.players.find(p=>p.id===id));
  if(entries.some(e=>!e))throw new Error('Workshop player missing');

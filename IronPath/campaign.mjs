@@ -1,4 +1,4 @@
-import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261107-balance1';
+import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
 import {getMap} from './maps.mjs?v=20261108-squadmaps1';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
@@ -27,11 +27,11 @@ const MISSIONS=[
    briefing:'Ivo identifies the old outpost transmitter as the source of the jamming. Destroying it may reopen the road, but it will also tell the enemy exactly where the resistance is hiding.',
    stages:[{type:'hold',at:.3,seconds:3,label:'Plant the first charge',dialogue:'IVO: Two charges. One at the junction and one on the feed. Neither is worth your life.'},{type:'hold',at:.72,seconds:3,label:'Plant the second charge',dialogue:'ADA: First charge is answering. Ivo, are you sure the second will not bring down our relay too?'},{type:'defend',seconds:40,label:'Defend until detonation',dialogue:'IVO: I am sure enough. Charges armed—hold the bunker until they fire.'}],
    success:'VOSS: The jammer is down. ADA: Wait. A second signal just woke up. Someone wanted us to destroy that transmitter.'},
-  {id:'supply-line',act:'ACT I · THE SILENCE',title:'The Relief Convoy',mapId:'g3-0e6d5c492',threat:'hardened',
+  {id:'supply-line',act:'ACT I · THE SILENCE',title:'The Relief Convoy',mapId:'g3-0e6d5c492',threat:'elite',
    briefing:'The blackout exposed a relief convoy trapped in the forest. Medic Sera Malik is with them. Voss orders the supplies recovered, but Sera refuses to leave anyone behind.',
    stages:[{type:'hold',at:'field',seconds:4,label:'Recover the medical supplies',dialogue:'SERA: The northern crate has antibiotics. Without it, the wounded will not survive the night.'},{type:'hold',at:.55,seconds:4,label:'Find the convoy survivors',dialogue:'SERA: Thank you. The drivers are sheltering on the southern road; we leave together.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the convoy survivors',dialogue:'SURVIVORS: We can walk. Keep the enemy away and we will follow you.'}],
    success:'SERA: Everyone made it. One of the drivers found sealed orders in an enemy truck: TIDELOCK. Ivo, tell me that is not the dam.'},
-  {id:'intercept',act:'ACT II · THE FLOOD',title:'Orders in the Ashes',mapId:'g3-0f1bbcd88',threat:'hardened',
+  {id:'intercept',act:'ACT II · THE FLOOD',title:'Orders in the Ashes',mapId:'g3-0f1bbcd88',threat:'elite',
    briefing:'The orders are incomplete. An enemy dispatch unit is moving through the ruined outpost with the rest. Break its escort, recover the case, and learn what Tidelock means before the next transmission.',
    stages:[{type:'eliminate',count:8,label:'Break the dispatch escort',dialogue:'VOSS: Clear the escort. We need the case intact, not another crater.'},{type:'hold',at:.3,seconds:4,label:'Recover the dispatch case',dialogue:'ADA: Escort is broken. I see the case at the junction—move in.'},{type:'hold',at:'bunker',seconds:2,label:'Deliver the orders',dialogue:'IVO: The seal is marked TIDELOCK. Bring it back; I can break the cipher.'}],
    success:'IVO: Tidelock opens the floodgates and drowns the valley road. The order is signed by Commander Rook. The evacuation has to move now.'},
@@ -47,11 +47,11 @@ const MISSIONS=[
    briefing:'The northern ice station transmits a short authorization window. Reach its equipment before it closes and bring Ivo the key. The clock runs only while a wave is active; do not waste the opening.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the ice station',dialogue:'IVO: The station cycles its authorization key. We have one window before it changes.'},{type:'secure',at:'field',seconds:8,label:'Secure the transmitter',dialogue:'ADA: I can read the key, but enemies near the transmitter are corrupting the signal.'},{type:'hold',at:'bunker',seconds:2,label:'Return with the key',dialogue:'IVO: That is the key. Get it back before the window closes.'}],
    success:'IVO: The key works, but there are two locks. One is at the power substation. The other is in a city Rook has already occupied.'},
-  {id:'long-switch',act:'ACT II · THE FLOOD',title:'The Long Switch',mapId:'g3-0935170bb',threat:'elite',
+  {id:'long-switch',act:'ACT II · THE FLOOD',title:'The Long Switch',mapId:'g3-0935170bb',threat:'veteran',
    briefing:'The dam’s first lock depends on a remote substation in the scorched scrubland. Ivo must reroute power without cutting the hospital’s supply. Secure the junctions and defend the transformer while he works.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Open the power junction',dialogue:'IVO: The hospital and the dam share this line. Pull the wrong switch and Sera loses her patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the switching yard',dialogue:'SERA: I have the lights for now. Clear the yard so Ivo can reroute the line.'},{type:'protect',at:'field',asset:'Transformer',seconds:25,label:'Protect the transformer',dialogue:'IVO: Reroute in progress. If they destroy the transformer, the hospital goes dark.'}],
    success:'SERA: The lights stayed on. IVO: First lock is isolated. The second key belongs to the city’s captured controller, Nia Reyes.'},
-  {id:'city-of-glass',act:'ACT III · THE LAST LIGHT',title:'A City Under Glass',mapId:'g3-0d891921a',threat:'legendary',
+  {id:'city-of-glass',act:'ACT III · THE LAST LIGHT',title:'A City Under Glass',mapId:'g3-0d891921a',threat:'veteran',
    briefing:'The occupied industrial city is full of broken sightlines and patrols. Find Nia Reyes before Rook moves her. She designed the second lock; she also knows why he believes flooding the valley is necessary.',
    stages:[{type:'eliminate',count:10,label:'Break the prison escort',dialogue:'VOSS: Clear the escort, then reach the holding site. Nia is our only way into the second lock.'},{type:'hold',at:'field',seconds:5,label:'Free Nia Reyes',dialogue:'NIA: Rook says the dam will fail unless he opens it. He is wrong—but the gate is already damaged.'},{type:'escort',at:'bunker',seconds:3,label:'Escort Nia to command',dialogue:'NIA: Keep them off me. I can prove the gate can be stabilized without flooding the valley.'}],
    success:'NIA: Rook was ordered to abandon the valley. He chose to flood it instead of risking his own people. The gate can still be stopped, but someone must hold the control line.'},
@@ -114,6 +114,21 @@ function resolveStages(mission){
   return stages.map(s=>Object.freeze(s));
 }
 export const CAMPAIGN=Object.freeze(MISSIONS.map(m=>Object.freeze({...m,stages:Object.freeze(resolveStages(m))})));
+// The five-act structure. Acts IV and V ship their missions in later builds;
+// an act without missions has no finale index yet and can neither be completed
+// nor earn its relic. Region keys map to the campaign-exclusive battlefields.
+export const ACTS=Object.freeze([
+  {n:1,key:'silence', title:'ACT I · THE SILENCE',     character:'Ada Vale',  region:'talwald',  regionLabel:'Valley Forest', relic:'relic-open-line'},
+  {n:2,key:'flood',   title:'ACT II · THE FLOOD',      character:'Sera Malik',region:'marsch',   regionLabel:'Flooded Marsh', relic:'relic-the-list'},
+  {n:3,key:'light',   title:'ACT III · THE LAST LIGHT',character:'Ivo Chen', region:'stadt',    regionLabel:'Occupied City', relic:'relic-timetable'},
+  {n:4,key:'winter',  title:'ACT IV · THE LONG WINTER',character:'Nia Reyes',region:'pass',     regionLabel:'The Pass',      relic:'relic-blueprint'},
+  {n:5,key:'iron',    title:'ACT V · THE IRON PATH',   character:'Rook',     region:'knoten',   regionLabel:'The Junction',  relic:'relic-iron-path'},
+].map(a=>Object.freeze(a)));
+export function actOf(mission){return ACTS.find(a=>mission?.act===a.title)||null;}
+// Index of the act's final mission in CAMPAIGN order, or -1 while the act has
+// no missions yet. Completing past this index completes the act.
+export function actEndIndex(act){const n=typeof act==='number'?act:act?.n;let end=-1;CAMPAIGN.forEach((m,i)=>{if(actOf(m)?.n===n)end=i;});return end;}
+export function actComplete(profile,act){const end=actEndIndex(act);return end>=0&&campaignProgress(profile)>end;}
 // A mission's threat decides its difficulty (see campaign-pressure.mjs): tougher
 // units, wider surge waves, a smaller bunker and a fixed wave contract, so the
 // last three missions expect prestige gear rather than standard kit.

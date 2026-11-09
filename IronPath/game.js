@@ -1,4 +1,4 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261108-squadmaps1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261101-campaign1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261112-free1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
@@ -9,7 +9,8 @@ import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
-import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract} from './campaign.mjs?v=20261108-squadmaps1';
+import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex} from './campaign.mjs?v=20261101-campaign1';
+import {RELICS,earnedRelicIds} from './relics.mjs?v=20261101-campaign1';
 import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261121-supplies1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
@@ -118,7 +119,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
 
   }
   function finishReport(target,snapshot,id,open=true){if(!target||!snapshot)return;target.finished=true;closeMenu();keys.clear();if($('towerDetails').open)$('towerDetails').close();target.snapshot=snapshot;target.playerId=id;lastReport=target;$('viewResults').hidden=false;renderResults(target);if(open&&!$('runResults').open)$('runResults').showModal();}
-  $('campaignRetry').onclick=async()=>{const target=lastReport;if(!target?.campaign||target.campaignSaved!==false||target.accountId!==account.getUserId()||typeof account.saveCampaign!=='function')return;target.campaignSaved=null;renderResults(target);const result=await account.saveCampaign(target.campaign.id);target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();};
+  $('campaignRetry').onclick=async()=>{const target=lastReport;if(!target?.campaign||target.campaignSaved!==false||target.accountId!==account.getUserId()||typeof account.saveCampaign!=='function')return;target.campaignSaved=null;renderResults(target);const result=await account.saveCampaign(target.campaign.id);target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();};
   function loadResultMission(next=false){
     const target=lastReport,mission=target?.soloMission,index=CAMPAIGN.indexOf(mission),destination=next?CAMPAIGN[index+1]:mission;
     if(!target||!mission||!destination||target.mode!=='solo'||coop||state!==target.snapshot||!state.ended||target.accountId!==account.getUserId()||target.pending||(target.campaign&&target.campaignSaved!==true)||(next&&!target.campaign)||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||!campaignAvailable(storyProfile(target),destination.id))return;
@@ -191,11 +192,41 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
      if(contract){const difficulty=campaignDifficulty(m);contract.textContent=locked?'':tr('{threat} · {waves} waves',{threat:tr(difficulty.label.toUpperCase()),waves:campaignWaveContract(m)});contract.dataset.threat=locked?'':m.threat;contract.hidden=locked;}
     });
     $('campaignBoard').hidden=!mission||!missionBoardOpen;$('campaignShowBoard').hidden=!mission||missionBoardOpen;$('campaignShowBoard').disabled=blocked;$('campaignCloseBoard').hidden=!activeMission;$('campaignPanel').dataset.boardOpen=String(missionBoardOpen);$('campaignOverall').textContent=progress===CAMPAIGN.length?tr('The valley is safe. Revisit any completed mission.'):progress?tr('Your next mission awaits. {done} of {total} missions completed.',{done:progress,total:CAMPAIGN.length}):tr('A lost signal is only the beginning.');$('campaignProgressText').textContent=tr('{done} / {total} COMPLETED',{done:progress,total:CAMPAIGN.length});$('campaignProgressBar').max=CAMPAIGN.length;$('campaignProgressBar').value=progress;$('campaignContinue').disabled=blocked;$('campaignContinue').textContent=tr(progress===CAMPAIGN.length?'REPLAY FINAL MISSION →':progress?'CONTINUE STORY →':'BEGIN STORY →');$('campaignSelectedAct').textContent=tr(mission?.act||'');$('campaignSelectedTitle').textContent=tr(mission?.title||'Select a mission');$('campaignQuickLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);$('campaignQuickStatus').textContent=tr(blocked?'Leave your party before changing solo operations.':mission?'Select a mission on the board or load this selection.':'Free play: random map and endless waves.');
+    const strip=$('relicStrip');
+    if(strip){
+      strip.innerHTML=ACTS.map(act=>{
+        const relic=RELICS[act.relic],earned=earnedRelicIds(profile).includes(act.relic),end=actEndIndex(act);
+        const state=earned?'earned':end>=0?'locked':'upcoming';
+        const name=earned?tr(relic.name):tr(act.title);
+        const detail=earned?tr(relic.effect):end>=0?tr('Complete {act} to earn this relic.',{act:tr(act.title)}):tr('This act lies ahead.');
+        return `<div class="relic-slot" data-state="${state}" role="listitem"><strong>${name}</strong><span>${detail}</span></div>`;
+      }).join('');
+    }
     const journal=progress?CAMPAIGN.slice(0,progress).map(m=>`${tr(m.act)} · ${tr(m.title)}\n${tr(m.success)}`).join('\n\n'):tr('No transmissions recorded yet. Start The Silent Signal to begin the story.');if($('storyJournal').textContent!==journal)$('storyJournal').textContent=journal;
     $('storyReplayDebrief').hidden=!mission||CAMPAIGN.indexOf(mission)>=progress;$('storyReplayDebrief').disabled=blocked;$('storyReplayIntro').hidden=!mission;$('storyReplayIntro').disabled=blocked||!mission||!campaignAvailable(profile,mission.id);$('campaignSelect').disabled=blocked;$('campaignLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);
     $('campaignBriefing').textContent=blocked?tr('Leave your party before changing solo operations.'):mission?`${tr(mission.act)} · ${tr(mission.title)} — ${tr(mission.briefing)}${CAMPAIGN.indexOf(mission)>0&&campaignAvailable(profile,mission.id)?` ${tr('Previously: {text}',{text:tr(CAMPAIGN[CAMPAIGN.indexOf(mission)-1].success)})}`:''} ${tr(campaignAvailable(profile,mission.id)?'Available.':'Complete the previous mission first.')}`:tr('Free play: random map and endless waves. Campaign: {done} / {total} operations complete.',{done:progress,total:CAMPAIGN.length});
   }
+  // The mission board, its act sections and the quick-select options are
+  // generated from CAMPAIGN: a new act ships by adding missions, never by
+  // hand-editing markup. Cards keep their historic ids so the handlers and
+  // the renderer above stay untouched.
+  function buildMissionBoard(){
+    const acts=$('missionActs'),select=$('campaignSelect');
+    let html='';
+    for(const title of [...new Set(CAMPAIGN.map(m=>m.act))]){
+      const cards=CAMPAIGN.map((mission,i)=>({mission,i})).filter(({mission})=>mission.act===title).map(({mission,i})=>{
+        const numberText=`MISSION ${String(i+1).padStart(2,'0')}`;
+        return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span></button>`;
+      }).join('');
+      html+=`<section class="mission-act" aria-label="${title}"><h4 data-i18n-text="${title}">${tr(title)}</h4><div class="mission-grid">${cards}</div></section>`;
+    }
+    acts.innerHTML=html;
+    // The quick select keeps free play first; option labels come from the
+    // renderer. Rebuilding replaces the whole list, ids stay stable.
+    select.innerHTML=`<option value="free" data-i18n-text="Free play · random battlefield">${tr('Free play · random battlefield')}</option>`+CAMPAIGN.map((mission,i)=>`<option id="campaignOption${i}" value="${mission.id}"></option>`).join('');
+  }
   function setMissionBoard(open){missionBoardOpen=!!open;keys.clear();sendDirection();accumulator=0;renderCampaign();}
+  buildMissionBoard();
   $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
   $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
   CAMPAIGN.forEach((mission,i)=>{$(`missionCard${i}`).onclick=()=>{if(!coop&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo())){$('campaignSelect').value=mission.id;renderCampaign();}};});
@@ -697,7 +728,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
        trainingBonusPaid=true;
        notice(()=>tr('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:trainingXP()}));
       }
-      if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyRadio(outcome.message);if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
+      if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyRadio(outcome.message);if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
       if(state.ended){accumulator=0;updateUI();break;}
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}

@@ -54,6 +54,8 @@ export const germanStatic=Object.freeze({
   "ACT I · THE SILENCE": "AKT I · DIE STILLE",
   "ACT II · THE FLOOD": "AKT II · DIE FLUT",
   "ACT III · THE LAST LIGHT": "AKT III · DAS LETZTE LICHT",
+  "ACT IV · THE LONG WINTER": "AKT IV · DER LANGE WINTER",
+  "ACT V · THE IRON PATH": "AKT V · DER EISERNE WEG",
   "Scene progress": "Szenenfortschritt",
   "Campaign missions completed": "Abgeschlossene Kampagnenmissionen",
   "Current objective progress": "Fortschritt des aktuellen Ziels",

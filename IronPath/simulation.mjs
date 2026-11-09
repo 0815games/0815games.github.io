@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261108-squadmaps1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261101-campaign1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
