@@ -1,16 +1,16 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261211-actiii2';
-import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261211-actiii2';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261212-actiii3';
+import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261212-actiii3';
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
-import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261211-actiii2';
-import {createVersus} from './versus.mjs?v=20261211-actiii2';
+import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261212-actiii3';
+import {createVersus} from './versus.mjs?v=20261212-actiii3';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261206-acttwo1';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261208-kolt1';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261212-actiii3';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261212-actiii3';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261103-unified1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261211-actiii2';
-import {createPartyHost} from './party-host.mjs?v=20261211-actiii2';
-import {createMatch,STEP} from './simulation.mjs?v=20261211-actiii2';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261212-actiii3';
+import {createPartyHost} from './party-host.mjs?v=20261212-actiii3';
+import {createMatch,STEP} from './simulation.mjs?v=20261212-actiii3';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.

@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261211-actiii2';
+import {translateText as tr} from './language.mjs?v=20261212-actiii3';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -30,6 +30,11 @@ const STYLES={
  'the-mentor':{ground:'#7a7468',light:'#ada288',dark:'#4c463c',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#ecb377'},
  'workshop-of-ghosts':{ground:'#6f6a60',light:'#a89d82',dark:'#453f35',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#eeb67a'},
  'night-shift':{ground:'#5c665f',light:'#8fa08e',dark:'#38443c',water:'#6f9c96',weather:'rain',feature:'convoy',accent:'#e6cf8f'},
+ // Act III - the road to the tower: the marsh council, the relay trace and the
+ // counterfeit key forging.
+ 'the-confession':{ground:'#63806c',light:'#98b092',dark:'#3e5749',water:'#6f9c96',weather:'rain',feature:'shelter',accent:'#e3d291'},
+ 'the-signal-above':{ground:'#8a7f68',light:'#bcae90',dark:'#5b5240',water:'#83958b',weather:'embers',feature:'antenna',accent:'#ecb37b'},
+ 'counterfeit-key':{ground:'#767b70',light:'#a9ac96',dark:'#484f47',water:'#7d9e9c',weather:'rain',feature:'dispatch',accent:'#e6c98c'},
  'city-of-glass':{ground:'#8a8d80',light:'#b7b6a0',dark:'#59665d',water:'#7d9e9c',weather:'rain',feature:'prison',accent:'#e2b876'},
  'tidelock':{ground:'#728b75',light:'#a8b9a0',dark:'#4b675c',water:'#6e9da0',weather:'rain',feature:'relay',accent:'#ead48a'},
  'last-transmission':{ground:'#879188',light:'#bec3ab',dark:'#52645c',water:'#739da3',weather:'mist',feature:'dam',accent:'#ead18b'}

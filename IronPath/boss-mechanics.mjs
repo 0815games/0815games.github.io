@@ -8,10 +8,19 @@ export function bossPhase(enemy){
   case 'bossCommander': return clock%16>=10&&clock%16<14?'rally':'normal';
   case 'bossRiegel': return clock%18>=12?'jam':'normal';
   case 'bossKolt': return clock%18>=12?'flood':'normal';
+  case 'bossA7': {
+   // Werk -> Torso -> Kern is a damage race, not a timer: the phase is read
+   // straight off the boss health, so co-op snapshots and reconnects agree
+   // without extra state.
+   const hp=Math.max(0,enemy?.hp||0),max=Math.max(1,enemy?.maxHp||1);
+   if(hp>max*2/3)return 'werk';
+   if(hp>max/3)return 'torso';
+   return 'kern';
+  }
   default:return 'normal';
  }
 }
-export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:1;}
+export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:phase==='werk'?.5:phase==='kern'?1.25:1;}
 export function bossPhaseLabel(enemy){
  switch(bossPhase(enemy)){
   case 'shield':return 'SHIELD UP · weapon damage reduced';
@@ -20,6 +29,9 @@ export function bossPhaseLabel(enemy){
   case 'rally':return 'RALLY · nearby ground troops surge!';
   case 'jam':return 'JAM FIELD · ability recharge blocked';
   case 'flood':return 'FLOOD PULSE · every enemy surges, Kolt is shielded';
+  case 'werk':return 'WORKS SHELL · weapon damage halved';
+  case 'torso':return 'TORSO EXPOSED · full damage, A-7 accelerates';
+  case 'kern':return 'CORE OPEN · bonus damage - strike now!';
   default:return '';
  }
 }

@@ -100,7 +100,16 @@ const STORY_FIELDS=Object.freeze({
   'g3-000000007':{theme:'urban',name:'The Hospital Corridor'},
   'g3-000000001':{theme:'marsh',name:'The Night Count'},
   'g3-000000008':{theme:'arctic',name:'The White Passage'},
-  'g3-000000009':{theme:'arctic',name:'The Frozen Junction'}
+  'g3-000000009':{theme:'arctic',name:'The Frozen Junction'},
+  // Act III · THE LAST LIGHT - the occupied city: registry, forge, strike night,
+  // the marsh council and the relay trace to the Iron Path.
+  'g3-00000000b':{theme:'urban',name:'The Records Office'},
+  'g3-00000000c':{theme:'urban',name:'The City Forge'},
+  'g3-00000000d':{theme:'urban',name:'The Conversion Floor'},
+  'g3-00000000e':{theme:'urban',name:'The Strike Street'},
+  'g3-000000012':{theme:'marsh',name:'The Assembly Hall'},
+  'g3-000000013':{theme:'scrub',name:'The Beacon Heath'},
+  'g3-000000014':{theme:'urban',name:'The Cutting Bench'}
 });
 // Endless and multiplayer draw their battlefield from a seed: the road is
 // walked cell by cell from the left edge to the bunker, so it can meander,

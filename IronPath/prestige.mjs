@@ -16,7 +16,7 @@
 // passive per completed act, never equipped. This module keeps its data only
 // so old workshop strings still decode, display their names and get stripped
 // by meltPrestige() on the next account sync. Nothing here grants anything.
-import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261211-actiii2';
+import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261212-actiii3';
 
 export const PRESTIGE=Object.freeze({
   'prestige-relay':{

@@ -26,6 +26,9 @@ const OPENINGS={
 'workshop-of-ghosts':[['AMBROSE','Rook’s answer is a conversion order: my forge is to make his war.'],['IVO','Then the forge fights back. We hold the floor while the bench still runs.']],
 'night-shift':[['WORKERS','The whole night shift lays down its tools tonight. Rook will send his strikebreakers.'],['VOSS','Then we walk beside you. No column gets broken up on our watch.']],
  'tidelock':[['NIA','The gate is damaged, but it can be stabilized. Rook has to hear the truth.'],['ADA','I will tell his soldiers myself. Keep the broadcast relay alive.']],
+'the-confession':[['IVO','Tonight the valley decides whether the man who wrote the timetable stays.'],['VOSS','Then the vote happens in a hall that still stands. Nobody breaks it with a squad.']],
+'the-signal-above':[['ADA','Every order Rook gave arrived as a relay from one source. I want a bearing on it.'],['VOSS','Then we raise the finder and follow the beam — wherever it ends.']],
+'counterfeit-key':[['NIA','The tower’s reader checks the key it is given. So we give it a lie.'],['IVO','A counterfeit that opens the door and refuses the override. One blank, one chance.']],
 'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']]
 };
 const CODAS={
@@ -55,6 +58,9 @@ const CODAS={
 'workshop-of-ghosts':[['NARRATOR','The conversion order dies in the forge—and the bench keeps machining its careful parts.'],['NARRATOR','A workshop that refuses the war is worth more than a depot that burns.']],
 'night-shift':[['NARRATOR','The night shift marches, loud and unbroken, and the marsh road stays open behind it.'],['NARRATOR','Paper orders cannot retool a city whose hands stay closed.']],
  'tidelock':[['NARRATOR','Rook’s soldiers have heard Ada. Now the tower must be reached.'],['NARRATOR','The broadcast has reached Rook. His answer leaves one last task.']],
+'the-confession':[['NARRATOR','The council keeps the correction — and its author. The valley chooses to repair, not to banish.'],['NARRATOR','A confession is not an acquittal. It is a work order.']],
+'the-signal-above':[['NARRATOR','The bearing is confirmed: one source, one road, one junction at the end of it.'],['NARRATOR','The Iron Path is real — and it runs itself.']],
+'counterfeit-key':[['NARRATOR','The counterfeit is cut: a key that opens the door and lies to the lock.'],['NARRATOR','One tower, one transmission, one climb left.']],
 'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
@@ -85,6 +91,9 @@ const SCENES={
  'workshop-of-ghosts':[{art:'city-forge',place:'THE FORGE FLOOR',weather:'embers'},{art:'city',place:'THE SILENT WORKSHOPS',weather:'rain'}],
  'night-shift':[{art:'night-strike',place:'THE NIGHT MARCH',weather:'rain'},{art:'city',place:'THE MARSH ROAD GATE',weather:'rain'}],
  'tidelock':[{art:'marsh',place:'THE MARSH CONTROL LINE',weather:'rain'},{art:'tower',place:'THE INDUSTRIAL TOWER',weather:'rain'}],
+ 'the-confession':[{art:'marsh',place:'THE ASSEMBLY HALL',weather:'rain'},{art:'valley',place:'THE VERDICT',weather:'mist'}],
+ 'the-signal-above':[{art:'night-heath',place:'THE BEACON HEATH',weather:'embers'},{art:'outpost',place:'THE RELAY TRACE',weather:'embers'}],
+ 'counterfeit-key':[{art:'city',place:'THE CUTTING BENCH',weather:'rain'},{art:'tower',place:'THE READER IN THE TOWER',weather:'rain'}],
  'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
