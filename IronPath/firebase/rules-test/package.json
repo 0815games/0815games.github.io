@@ -23,7 +23,8 @@
     "test:friend-stats": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-stats.emulator.json 'node --test friend-stats.test.mjs'",
     "test:workshop": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop.emulator.json 'node --test workshop-storage.test.mjs'",
     "test:workshop-draft": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop-draft.emulator.json 'node --test workshop-draft-rules.test.mjs'",
-    "test:workshop-server": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop-server.emulator.json 'node --test workshop-server-rules.test.mjs'"
+    "test:workshop-server": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop-server.emulator.json 'node --test workshop-server-rules.test.mjs'",
+    "test:publish": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-publish.emulator.json 'node --test publish-rules.test.mjs'"
   },
   "dependencies": {
     "@firebase/rules-unit-testing": "3.0.4",

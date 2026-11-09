@@ -1,6 +1,6 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261111-events1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261209-savefix1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261206-acttwo1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261209-savefix1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261208-kolt1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261208-kolt1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
