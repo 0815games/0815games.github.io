@@ -4,14 +4,15 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261108-squadmaps1';
+import {translateText as tr} from './language.mjs?v=20261111-events1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex} from './campaign.mjs?v=20261101-campaign1';
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261101-campaign1';
-import {createStoryMission,storyStatus,stepStory} from './story-mission.mjs?v=20261103-cinematic1';
+import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
+import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261111-events1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261121-supplies1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
@@ -127,6 +128,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   $('storyReplayEnding').onclick=()=>{const target=lastReport;if(!target?.campaign||target.snapshot?.endReason!=='campaign-victory')return;$('runResults').close();showCinematic(target.campaign,'ending',()=>{if(lastReport===target&&target.accountId===account.getUserId()){renderResults(target);$('runResults').showModal();}});};
   $('resultsReplayMission').onclick=()=>loadResultMission();$('resultsNextMission').onclick=()=>loadResultMission(true);
+  $('storyChoice0').onclick=()=>pickDecision(0);$('storyChoice1').onclick=()=>pickDecision(1);
   $('resultsClose').onclick=()=>$('runResults').close();$('resultsDone').onclick=()=>{const go=canReturnFromResults(lastReport);$('runResults').close();if(go)onReturnToCommand();};bindDialogBackdrop($('runResults'),()=>$('runResults').close());$('viewResults').onclick=()=>{if(lastReport){renderResults(lastReport);$('runResults').showModal();}};
 
   const supplies=()=>getSupplies(state,me());
@@ -244,7 +246,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(coop||state!==currentState||account.getUserId()!==currentUser||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo())||(mission&&!campaignAvailable(account.getProfile(),id)))return false;
     activeMission=mission;selectedMap=mission?mission.mapId:nextMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false){closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if($('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=nextMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop;
@@ -252,8 +254,21 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   }
   let lastNotice=null;
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
-  let storyRadioSource="";
-  function storyRadio(text,refresh=false){storyRadioSource=text;text=tr(text);const match=text.match(/^([A-Z]+):\s*(.*)$/);$('storyRadio').dataset.speaker=match?match[1].toLowerCase():'narrator';$('storyRadioSpeaker').textContent=match?`${match[1]} / RADIO`:tr('FIELD REPORT');$('storyRadioText').textContent=match?match[2]:text;$('storyRadio').hidden=false;if(!refresh){radioTime=7;sound.play('request');}}
+  let storyRadioSource="";let storyRadioCard=null;
+  function storyRadio(text,refresh=false,card=null,speaker=null){storyRadioSource=text;storyRadioCard=card;const raw=text;text=tr(text);const match=raw.match(/^([A-Z]+):\s*(.*)$/),who=speaker||(match&&match[1]);$('storyRadio').dataset.speaker=who?who.toLowerCase():'narrator';$('storyRadioSpeaker').textContent=who?`${who} / RADIO`:tr('FIELD REPORT');$('storyRadioText').textContent=speaker?text:match?match[2]:text;
+   // Tutorial-style stage card: the caption says what to do, the pips show how
+   // much of the mission is still asking for it. Plain radio lines clear both.
+   const caption=$('storyRadioCaption'),pips=$('storyRadioPips');
+   caption.hidden=!card?.caption;caption.textContent=card?.caption?tr(card.caption):'';
+   pips.hidden=!card||!card.steps;pips.replaceChildren(...(card?.steps||[]).map((_,i)=>{const pip=document.createElement('i');if(i<=card.step)pip.toggleAttribute('data-done',true);return pip;}));
+   $('storyRadio').hidden=false;if(!refresh){radioTime=7;sound.play('request');}}
+  function storyStageCard(){const stage=activeMission?.stages[Math.min(activeStory.stage,activeMission.stages.length-1)];storyRadio(stage?.dialogue||'',false,{caption:STAGE_CAPTIONS[stage?.type]||null,steps:activeMission?.stages,step:activeStory.stage});}
+  // Field decisions: offered once per authored moment, non-modal. The field
+  // keeps running while the card waits; picking applies run-local effects only.
+  let decisionChoices=null;
+  function showDecisionPanel(entry){decisionChoices=entry.choices;$('storyDecisionSpeaker').textContent=`${entry.speaker} / ${tr(EVENT_TEMPLATES.decisionTitle)}`;$('storyDecisionText').textContent=tr(entry.text);$('storyDecisionNote').textContent=tr(EVENT_TEMPLATES.decisionPending);entry.choices.slice(0,2).forEach((choice,index)=>{const button=$('storyChoice'+index);button.replaceChildren();const label=document.createElement('b');label.textContent=tr(choice.label);const detail=document.createElement('small');detail.textContent=tr(choice.detail);button.append(label,detail);});$('storyDecision').hidden=false;}
+  function hideDecisionPanel(){$('storyDecision').hidden=true;decisionChoices=null;}
+  function pickDecision(index){if(!activeStory||!decisionChoices||state?.ended)return;const choice=decisionChoices[index];if(choice)resolveStoryDecision(activeStory,state,choice.id);}
   let hudBottom='',actionBar='';
   // Bottom edge of the status dashboard, measured against the battlefield box.
   // Re-measured only when the number actually moves, so scrolling never thrashes layout.
@@ -313,7 +328,18 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(showObjective)measureHud();
     measureActionBar();
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
-    else if(showObjective){const status=storyStatus(activeStory,state);$('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
+    else if(showObjective){const status=storyStatus(activeStory,state);
+    // The accompaniment's open side objective rides under the main objective;
+    // closed ones had their radio moment and step aside for the next.
+    const bonus=status.bonus;
+    if(bonus&&!bonus.max)bonus.text=tr(EVENT_TEMPLATES.bonusLine,{label:tr(bonus.label)});
+    else if(bonus&&bonus.kind==='asset')bonus.text=tr(EVENT_TEMPLATES.bonusAsset,{label:tr(bonus.label),percent:bonus.progress});
+    else if(bonus)bonus.text=tr(EVENT_TEMPLATES.bonusProgress,{label:tr(bonus.label),progress:bonus.progress,max:bonus.max});
+    $('soloBonus').hidden=!bonus;$('soloBonus').textContent=bonus?.text||'';
+    // A decision card never outlives its mission: the field ending (victory,
+    // failure, bunker loss) or leaving the story closes it.
+    if(!$('storyDecision').hidden&&(!activeStory.decision?.pending||state.ended))hideDecisionPanel();
+    $('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
     $('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
@@ -728,7 +754,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
        trainingBonusPaid=true;
        notice(()=>tr('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:trainingXP()}));
       }
-      if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyRadio(outcome.message);if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
+      if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);
+       for(const entry of drainStoryNotifications(activeStory)){
+        if(entry.type==='decision')showDecisionPanel(entry);
+        else if(entry.type==='decisionResolved'){hideDecisionPanel();if(entry.confirm)storyRadio(entry.confirm);if(entry.supplies)notice(tr(EVENT_TEMPLATES.suppliesGranted,{amount:entry.supplies}));}
+        else if(entry.type==='setpiece'){storyRadio(entry.text,false,null,entry.speaker);sound.play('strike');}
+        else if(entry.type==='reinforce')storyRadio(entry.text?entry.text:tr(EVENT_TEMPLATES.reinforcements,{count:entry.count}),false,null,entry.speaker);
+        else if(entry.type==='side')storyRadio(entry.outcome==='complete'?tr(EVENT_TEMPLATES.bonusComplete,{label:tr(entry.label),reward:entry.reward}):tr(EVENT_TEMPLATES.bonusMissed,{label:tr(entry.label)}));
+       }
+       if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyStageCard();if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
       if(state.ended){accumulator=0;updateUI();break;}
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}
@@ -842,7 +876,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
    return true;
   }
   async function chooseEndless(){const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
-  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.

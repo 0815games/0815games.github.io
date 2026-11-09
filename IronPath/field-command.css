@@ -26,6 +26,10 @@
 #gameView .map-frame .wave-info{top:10px;right:10px;z-index:5}
 #gameView .map-frame .boss-alert{top:75px;z-index:3}
 #gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
+/* The field decision takes the radio's slot; the radio lifts above it while the
+   call is open. Both stay clear of the command bar they must never cover. */
+#gameView .map-frame .story-decision{bottom:80px;z-index:5;max-width:min(360px,calc(100% - 24px))}
+#gameView .map-frame:has(.story-decision:not([hidden])) .story-radio{bottom:270px}
 #gameView .battle-foot{display:flex;justify-content:flex-start;align-items:center;gap:10px;min-height:44px;padding:8px 14px;background:#142a22;border-top:1px solid #617a66;color:#e6e6ce;line-height:1.35}
 #gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em;border-right:1px solid #758872;padding-right:10px}
 #gameView .battle-foot #message{font-size:12px;letter-spacing:normal}
@@ -50,6 +54,8 @@
  #gameView .map-frame .wave-info{top:5px;right:5px}
  #gameView .map-frame .boss-alert{top:52px}
  #gameView .map-frame .story-radio{bottom:12px}
+ #gameView .map-frame .story-decision{bottom:12px}
+ #gameView .map-frame:has(.story-decision:not([hidden])) .story-radio{bottom:202px}
  #gameView .battle-foot{padding:7px;min-height:40px}
  #gameView .battle-foot .radio-label{font-size:8px}
 }
@@ -70,6 +76,8 @@
 #gameView .map-frame .boss-alert{top:calc(80px + env(safe-area-inset-top,0px))}
 #gameView .map-frame .command{position:absolute;left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(690px,calc(100% - 16px));z-index:4;border-radius:5px;padding:6px}
 #gameView .map-frame .story-radio{bottom:calc(150px + env(safe-area-inset-bottom,0px));}
+#gameView .map-frame .story-decision{bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:5}
+#gameView .map-frame:has(.story-decision:not([hidden])) .story-radio{bottom:calc(340px + env(safe-area-inset-bottom,0px))}
 #gameView .battle-foot{position:absolute;z-index:5;left:8px;bottom:calc(66px + env(safe-area-inset-bottom,0px));max-width:min(400px,calc(100% - 16px));min-height:0;padding:6px 9px;background:#11281fe8;border:1px solid #779378;box-shadow:0 3px 15px #0008;pointer-events:none}
 #gameView .battle-foot .radio-label{white-space:nowrap}
 #gameView .battle-foot #message{font-size:11px}

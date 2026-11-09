@@ -1,4 +1,4 @@
-import {translate,translateText} from './language.mjs?v=20261108-squadmaps1';
+import {translate,translateText} from './language.mjs?v=20261111-events1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261107-balance1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261101-campaign1';

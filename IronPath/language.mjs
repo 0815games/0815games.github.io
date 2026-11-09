@@ -19,6 +19,7 @@ import {germanResults} from './localization-results-de.mjs?v=20261105-debrief1';
 import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261107-balance1';
 import {germanCampaign} from './localization-campaign-de.mjs?v=20261108-squadmaps1';
 import {germanCinematics} from './localization-cinematics-de.mjs?v=20261108-squadmaps1';
+import {germanEvents} from './localization-events-de.mjs?v=20261111-events1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
 import {germanText} from './localization-de.mjs?v=20261127-tutlock1';
@@ -88,7 +89,7 @@ const listeners=new Set();
 export function onLanguageChange(listener){listeners.add(listener);return ()=>listeners.delete(listener);}
 export function translateText(text,values={}){
   if(typeof text!=='string')return String(text??'');
-  const localized=active==='de'?(germanSettings[text]??germanFirstRun[text]??germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??text):text;
+  const localized=active==='de'?(germanSettings[text]??germanFirstRun[text]??germanWorkshop[text]??germanText[text]??germanArmory[text]??germanSkills[text]??germanAdvancedSkills[text]??germanResults[text]??germanBattle[text]??germanStatic[text]??germanMoreStatic[text]??germanTowers[text]??germanAccount[text]??germanGameErrors[text]??germanFinal[text]??germanCampaign[text]??germanCinematics[text]??germanEvents[text]??text):text;
   return localized.replace(/\{([A-Za-z]+)\}/g,(match,name)=>Object.hasOwn(values,name)?String(values[name]):match);
 }
 export function translate(key,values={}){
