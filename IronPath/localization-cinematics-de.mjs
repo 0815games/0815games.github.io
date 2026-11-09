@@ -1,5 +1,5 @@
 import {CAMPAIGN} from './campaign.mjs?v=20261101-campaign1';
-import {cinematicFrames,cinematicScene} from './story-cinematics.mjs?v=20261103-cinematic2';
+import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261112-finale1';
 // The authored opening and closing frames in story-cinematics.mjs. The other
 // frames are translated via the campaign text dictionary.
 const lines={
@@ -22,7 +22,7 @@ const lines={
  'tidelock':[['Das Tor ist beschädigt, lässt sich aber stabilisieren. Rook muss die Wahrheit erfahren.','Ich werde es seinen Soldaten selbst sagen. Haltet das Senderelais am Leben.'],['Rooks Soldaten haben Ada gehört. Jetzt müssen wir den Turm erreichen.','Die Übertragung hat Rook erreicht. Seine Antwort lässt eine letzte Aufgabe.']],
  'last-transmission':[['Die automatische Übersteuerung ist noch verbunden. Wenn sie auslöst, wird das Tal überflutet.','Eine letzte Linie, die wir halten müssen. Alle, die es bis hierher geschafft haben, zählen auf uns.'],['Als die Funkgeräte wieder still werden, liegt es nicht an einem verlorenen Signal. Endlich sind die Kämpfe vorbei.','Die Straße bleibt gezeichnet, und die Gefallenen werden nicht vergessen.','An alle, die noch zuhören: Das Tal ist in Sicherheit. Hier spricht Ada Vale. Ende.']]
 };
-const places={'THE VALLEY ROAD':'DIE TALSTRASSE','PINEWOOD APPROACH':'ZUGANG NACH PINEWOOD','PINEWOOD CROSSING':'DER ÜBERGANG VON PINEWOOD','THE RETURN ROAD':'DER RÜCKWEG','THE BROKEN OUTPOST':'DER ZERSTÖRTE AUSSENPOSTEN','THE SIGNAL RETURNS':'DAS SIGNAL KEHRT ZURÜCK','THE FOREST CONVOY':'DER WALDKONVOI','THE DISPATCH ROUTE':'DIE KURIERROUTE','THE VALLEY BELOW':'DAS TAL UNTEN','THE EVACUATION BRIDGE':'DIE EVAKUIERUNGSBRÜCKE','THE ROAD TO TIDELOCK':'DER WEG NACH TIDELOCK','THE FLOODED MARSH':'DAS ÜBERFLUTETE MARSCHLAND','THE NORTHERN SIGNAL':'DAS NÖRDLICHE SIGNAL','THE ICE STATION':'DIE EISSTATION','THE NORTHERN RIDGE':'DER NÖRDLICHE KAMM','THE POWER SUBSTATION':'DAS UMSPANNWERK','THE OCCUPIED CITY':'DIE BESETZTE STADT','THE INDUSTRIAL DISTRICT':'DAS INDUSTRIEVIERTEL','THE GATE AHEAD':'DAS TOR VORAUS','THE MARSH CONTROL LINE':'DIE STEUERLEITUNG IM MARSCHLAND','THE INDUSTRIAL TOWER':'DER INDUSTRIETURM','THE FINAL OVERRIDE':'DIE LETZTE ÜBERSTEUERUNG','THE VALLEY AT DAWN':'DAS TAL IM MORGENGRAUEN','THE TALWALD RELAY LINE':'DIE RELAISLINIE IM TALWALD','THE LOOP ANSWERS':'DIE SCHLEIFE ANTWORTET','THE ASH MARKET':'DER ASCHMARKT','THE BUYER’S TENT':'DAS ZELT DES KÄUFERS','THE MARSH HOSPITAL':'DAS MARSCHLAZARETT','THE LAST LITTER OUT':'DIE LETZTE TRAGE HINAUS','THE ICE ROAD':'DIE EISSTRASSE','THE RELAY POST':'DER RELAISPOSTEN','THE NIGHT HEATH':'DIE NACHT-HEIDE','THE COUNTING POST':'DER ZÄHLPOSTEN','THE MAIN RELAY':'DAS HAUPTRELAIS','THE VALLEY LISTENS':'DAS TAL HÖRT ZU'};
+const places={'THE VALLEY ROAD':'DIE TALSTRASSE','PINEWOOD APPROACH':'ZUGANG NACH PINEWOOD','PINEWOOD CROSSING':'DER ÜBERGANG VON PINEWOOD','THE RETURN ROAD':'DER RÜCKWEG','THE BROKEN OUTPOST':'DER ZERSTÖRTE AUSSENPOSTEN','THE SIGNAL RETURNS':'DAS SIGNAL KEHRT ZURÜCK','THE FOREST CONVOY':'DER WALDKONVOI','THE DISPATCH ROUTE':'DIE KURIERROUTE','THE VALLEY BELOW':'DAS TAL UNTEN','THE EVACUATION BRIDGE':'DIE EVAKUIERUNGSBRÜCKE','THE ROAD TO TIDELOCK':'DER WEG NACH TIDELOCK','THE FLOODED MARSH':'DAS ÜBERFLUTETE MARSCHLAND','THE NORTHERN SIGNAL':'DAS NÖRDLICHE SIGNAL','THE ICE STATION':'DIE EISSTATION','THE NORTHERN RIDGE':'DER NÖRDLICHE KAMM','THE POWER SUBSTATION':'DAS UMSPANNWERK','THE OCCUPIED CITY':'DIE BESETZTE STADT','THE INDUSTRIAL DISTRICT':'DAS INDUSTRIEVIERTEL','THE GATE AHEAD':'DAS TOR VORAUS','THE MARSH CONTROL LINE':'DIE STEUERLEITUNG IM MARSCHLAND','THE INDUSTRIAL TOWER':'DER INDUSTRIETURM','THE FINAL OVERRIDE':'DIE LETZTE ÜBERSTEUERUNG','THE VALLEY AT DAWN':'DAS TAL IM MORGENGRAUEN','THE TALWALD RELAY LINE':'DIE RELAISLINIE IM TALWALD','THE LOOP ANSWERS':'DIE SCHLEIFE ANTWORTET','THE ASH MARKET':'DER ASCHMARKT','THE BUYER’S TENT':'DAS ZELT DES KÄUFERS','THE MARSH HOSPITAL':'DAS MARSCHLAZARETT','THE LAST LITTER OUT':'DIE LETZTE TRAGE HINAUS','THE ICE ROAD':'DIE EISSTRASSE','THE RELAY POST':'DER RELAISPOSTEN','THE NIGHT HEATH':'DIE NACHT-HEIDE','THE COUNTING POST':'DER ZÄHLPOSTEN','THE MAIN RELAY':'DAS HAUPTRELAIS','THE VALLEY LISTENS':'DAS TAL HÖRT ZU','THE OPEN LINE':'DIE OFFENE LEITUNG'};
 const result={...places};
 for(const mission of CAMPAIGN){const pair=lines[mission.id];if(!pair)throw Error(`Missing cinematic translation: ${mission.id}`);
  const opening=cinematicFrames(mission,'intro').slice(1,3),closing=cinematicFrames(mission,'ending').slice(-pair[1].length);
@@ -30,4 +30,24 @@ for(const mission of CAMPAIGN){const pair=lines[mission.id];if(!pair)throw Error
  opening.forEach((frame,i)=>result[frame.text]=pair[0][i]);closing.forEach((frame,i)=>result[frame.text]=pair[1][i]);
  for(const kind of ['intro','ending']){const place=cinematicScene(mission,kind)?.place;if(place&&!Object.hasOwn(places,place))throw Error(`Missing scene location: ${place}`);}
 }
+// The relict handovers of the act finales.
+const relicLines={
+ 'The valley road at dawn. The first free transmission of the war is still humming down the wire.':'Die Talstraße im Morgengrauen. Die erste freie Sendung des Krieges rauscht noch immer durch die Leitung.',
+ 'You held the line when nobody else could hear me. Take my old field jack - it has carried every word since the silence began.':'Du hast die Leitung gehalten, als mich sonst niemand hören konnte. Nimm meinen alten Feldanschluss – er hat jedes Wort getragen, seit das Schweigen begann.',
+ 'While you carry it, your strike call answers four seconds sooner. An open line, always.':'Solange du ihn bei dir trägst, kommt dein Angriffsruf vier Sekunden schneller. Eine offene Leitung, immer.',
+ 'Somewhere north, a transport runs on schedule. Ada keeps the line open - and waits.':'Irgendwo im Norden fährt ein Transport nach Fahrplan. Ada hält die Leitung offen – und wartet.',
+ 'The flood is held back for another night. In the marsh hospital, Sera closes her notebook and holds it out.':'Die Flut wird noch eine Nacht zurückgehalten. Im Marschlazarett klappt Sera ihr Notizbuch zu und hält es dir hin.',
+ 'Every name in here is someone the water did not take. Keep it with the one who held the line.':'Jeder Name hier ist jemand, den das Wasser nicht genommen hat. Bewahr sie bei dem auf, der die Linie gehalten hat.',
+ 'My stitches hold in the bunker walls now, and the quartermaster owes you a fuller pack. The list pays its debts.':'Meine Nähte halten jetzt in den Bunkerwänden, und der Quartiermeister schuldet dir einen volleren Rucksack. Die Liste begleicht ihre Schulden.',
+ 'Downstream, the water waits for its turn. The list is ready for it.':'Unterhalb des Deichs wartet das Wasser auf seinen Moment. Die Liste ist bereit dafür.',
+ 'The last transmission ends in static. In the occupied city, Ivo finally lays his timetable on the table.':'Die letzte Sendung endet im Rauschen. In der besetzten Stadt legt Ivo endlich seinen Fahrplan auf den Tisch.',
+ 'I wrote the schedule that floods this valley. Now I am rewriting it - and your soldiers will keep my correction.':'Ich habe den Fahrplan geschrieben, der dieses Tal überflutet. Jetzt schreibe ich ihn um – und deine Soldaten halten meine Korrektur.',
+ 'Faster hands, straighter shots. Read the rhythm, not the orders.':'Schnellere Hände, gerade Schüsse. Lies den Takt, nicht die Befehle.',
+ 'The correction holds. The valley buys itself one more dawn.':'Die Korrektur hält. Das Tal erkauft sich ein Morgengrauen mehr.'
+};
+for(const [text,de] of Object.entries(relicLines))result[text]=de;
+for(const mission of CAMPAIGN){for(const frame of relicHandover(mission)){
+ if(!Object.hasOwn(result,frame.text))throw Error(`Missing relic scene translation: ${mission.id}`);
+ if(!Object.hasOwn(places,frame.place))throw Error(`Missing relic scene location: ${frame.place}`);
+}}
 export const germanCinematics=Object.freeze(result);

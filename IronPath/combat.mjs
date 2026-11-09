@@ -42,14 +42,14 @@ export const DAMAGE_MULTIPLIERS = [
   {infantry:1.3,runner:1.3,tank:1.1,plane:.65}
 ];
 export function makeEnemy(kind, wave) {
-  const boss=BOSSES.find(b=>b.kind===kind),type=ENEMY_TYPES[kind];
+  const boss=BOSS_CATALOG.find(b=>b.kind===kind),type=ENEMY_TYPES[kind];
   if(!type || !Number.isInteger(wave) || wave<1) throw new Error('Invalid enemy or wave');
   const hp=Math.round(type.hp*(1+(wave-1)*.23));
   if(boss){const maxHp=Math.round(hp*boss.hp);return {kind:boss.base,boss:boss.kind,hp:maxHp,maxHp,speed:type.speed*boss.speed,reward:boss.reward,damage:type.damage*boss.damage};}
   return {kind, hp, maxHp:hp, speed:type.speed, reward:type.reward, damage:type.damage};
 }
 export function towerDamage(type, level, branch, enemyKind) {
-  const baseKind=BOSSES.find(b=>b.kind===enemyKind)?.base||enemyKind;
+  const baseKind=BOSS_CATALOG.find(b=>b.kind===enemyKind)?.base||enemyKind;
   const multiplier=DAMAGE_MULTIPLIERS[type]?.[baseKind];
   if(multiplier===undefined) throw new Error('Invalid tower or enemy');
   const base=[10,34,17,45][type];
@@ -66,6 +66,15 @@ export const BOSSES=Object.freeze([
  {kind:'bossCommander',label:'War Commander',base:'tank',hp:6,speed:.8,damage:2.5,reward:140,description:'Command aura speeds nearby ground troops; a rally periodically extends its range.'}
 ]);
 for(const boss of BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};
+// Story bosses belong to authored campaign finales, never to the endless
+// rotation: only `missionFormation` can spawn them, on a contract's final wave,
+// where the story boss replaces the rotation boss instead of stacking on it.
+export const STORY_BOSSES=Object.freeze([
+ {kind:'bossRiegel',label:'Riegel',base:'tank',hp:6,speed:.6,damage:1.5,reward:160,description:'Night Warden: his jam field periodically blocks your ability recharge and dampens weapon damage; interceptor swarms cover the open windows.'}
+]);
+const BOSS_CATALOG=[...BOSSES,...STORY_BOSSES];
+for(const boss of STORY_BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};
+export function storyBossKind(id){return typeof id==='string'&&id?'boss'+id[0].toUpperCase()+id.slice(1):null;}
 // Bosses arrive every fifth wave, which is the endless rhythm and stays that way.
 // The first-run contract teaches the boss on its own last wave instead, so the
 // callers that know about a contract pass `bossEvery` (see training-run.mjs).
@@ -78,6 +87,14 @@ export function waveFormation(wave,bossEvery=BOSS_EVERY){
  if(!Number.isSafeInteger(wave)||wave<1)throw new Error('Invalid wave');
  const base=wave<=WAVE_COUNT?[...WAVES[wave-1]]:Array.from({length:Math.min(72,36+Math.floor((wave-21)/2))},(_,i)=>['tank','runner','plane','infantry','tank','plane'][(i+wave)%6]);
  const boss=bossForWave(wave,bossEvery);if(boss)base.push(boss.kind);return base;
+}
+// The formation a campaign contract actually fights: identical to the endless
+// rhythm, except the final wave carries the mission's story boss instead of a
+// rotation boss. Contracts without a story boss are the endless rhythm exactly.
+export function missionFormation(wave,contract){
+ const formation=waveFormation(wave,contract?.bossEvery);
+ if(!contract?.bossFinal||wave!==contract.waves)return formation;
+ return [...formation.filter(kind=>!BOSS_CATALOG.find(b=>b.kind===kind)),contract.bossFinal];
 }
 
 // Readable field-manual roles, matching the existing damage multipliers.

@@ -41,16 +41,16 @@ const CODAS={
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
- 'lost-signal':[{art:'signal',place:'THE VALLEY ROAD',weather:'mist'},{art:'pinewood',place:'PINEWOOD APPROACH',weather:'mist'}],
- 'pinewood-rescue':[{art:'pinewood',place:'PINEWOOD CROSSING',weather:'mist'},{art:'pinewood',place:'THE RETURN ROAD',weather:'mist'}],
- 'ghost-frequency':[{art:'pinewood',place:'THE TALWALD RELAY LINE',weather:'mist'},{art:'pinewood',place:'THE LOOP ANSWERS',weather:'mist'}],
- 'blackout':[{art:'outpost',place:'THE BROKEN OUTPOST',weather:'embers'},{art:'outpost',place:'THE SIGNAL RETURNS',weather:'embers'}],
- 'ash-market':[{art:'city',place:'THE ASH MARKET',weather:'embers'},{art:'city',place:'THE BUYER’S TENT',weather:'embers'}],
- 'the-list':[{art:'marsh',place:'THE MARSH HOSPITAL',weather:'rain'},{art:'marsh',place:'THE LAST LITTER OUT',weather:'rain'}],
- 'brothers-keeper':[{art:'ice',place:'THE ICE ROAD',weather:'snow'},{art:'ice',place:'THE RELAY POST',weather:'snow'}],
- 'quiet-road':[{art:'outpost',place:'THE NIGHT HEATH',weather:'embers'},{art:'outpost',place:'THE COUNTING POST',weather:'embers'}],
- 'signal-home':[{art:'pinewood',place:'THE MAIN RELAY',weather:'mist'},{art:'valley',place:'THE VALLEY LISTENS',weather:'mist'}],
- 'supply-line':[{art:'pinewood',place:'THE FOREST CONVOY',weather:'mist'},{art:'valley',place:'THE VALLEY ROAD',weather:'mist'}],
+ 'lost-signal':[{art:'dawn-road',place:'THE VALLEY ROAD',weather:'mist'},{art:'pinewood',place:'PINEWOOD APPROACH',weather:'mist'}],
+ 'pinewood-rescue':[{art:'pinewood-trail',place:'PINEWOOD CROSSING',weather:'mist'},{art:'pinewood',place:'THE RETURN ROAD',weather:'mist'}],
+ 'ghost-frequency':[{art:'relay-line',place:'THE TALWALD RELAY LINE',weather:'mist'},{art:'pinewood',place:'THE LOOP ANSWERS',weather:'mist'}],
+ 'blackout':[{art:'outpost-fire',place:'THE BROKEN OUTPOST',weather:'embers'},{art:'outpost',place:'THE SIGNAL RETURNS',weather:'embers'}],
+ 'ash-market':[{art:'market-ruins',place:'THE ASH MARKET',weather:'embers'},{art:'city',place:'THE BUYER’S TENT',weather:'embers'}],
+ 'the-list':[{art:'marsh-hospital',place:'THE MARSH HOSPITAL',weather:'rain'},{art:'marsh',place:'THE LAST LITTER OUT',weather:'rain'}],
+ 'brothers-keeper':[{art:'ice-road',place:'THE ICE ROAD',weather:'snow'},{art:'ice',place:'THE RELAY POST',weather:'snow'}],
+ 'quiet-road':[{art:'night-heath',place:'THE NIGHT HEATH',weather:'embers'},{art:'outpost',place:'THE COUNTING POST',weather:'embers'}],
+ 'signal-home':[{art:'main-relay',place:'THE MAIN RELAY',weather:'mist'},{art:'valley',place:'THE VALLEY LISTENS',weather:'mist'}],
+ 'supply-line':[{art:'forest-convoy',place:'THE FOREST CONVOY',weather:'mist'},{art:'valley',place:'THE VALLEY ROAD',weather:'mist'}],
  'intercept':[{art:'outpost',place:'THE DISPATCH ROUTE',weather:'embers'},{art:'valley',place:'THE VALLEY BELOW',weather:'mist'}],
  'bridge':[{art:'pinewood',place:'THE EVACUATION BRIDGE',weather:'mist'},{art:'valley',place:'THE ROAD TO TIDELOCK',weather:'rain'}],
  'dead-air':[{art:'marsh',place:'THE FLOODED MARSH',weather:'rain'},{art:'ice',place:'THE NORTHERN SIGNAL',weather:'snow'}],
@@ -61,6 +61,32 @@ const SCENES={
  'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
+// Relict handovers: the act finales end with the bearer pressing their relic
+// into the player's hands. Keyed by mission id so this file stays free of a
+// campaign import; the tests enforce that every shipped act finale has a scene.
+// Frames may carry their own art and place - the handover plays as a short
+// illustrated sequence over the act's key art and one detail shot.
+export const RELIC_SCENES={
+ 'supply-line':{relic:'relic-open-line',frames:[
+  {speaker:'NARRATOR',text:'The valley road at dawn. The first free transmission of the war is still humming down the wire.',art:'act1-dawn',place:'THE VALLEY AT DAWN'},
+  {speaker:'ADA',text:'You held the line when nobody else could hear me. Take my old field jack - it has carried every word since the silence began.',art:'act1-relic',place:'THE OPEN LINE'},
+  {speaker:'ADA',text:'While you carry it, your strike call answers four seconds sooner. An open line, always.',art:'act1-relic',place:'THE OPEN LINE'},
+  {speaker:'NARRATOR',text:'Somewhere north, a transport runs on schedule. Ada keeps the line open - and waits.',art:'act1-dawn',place:'THE VALLEY AT DAWN'}]},
+ 'long-switch':{relic:'relic-the-list',frames:[
+  {speaker:'NARRATOR',text:'The flood is held back for another night. In the marsh hospital, Sera closes her notebook and holds it out.',art:'marsh',place:'THE MARSH HOSPITAL'},
+  {speaker:'SERA',text:'Every name in here is someone the water did not take. Keep it with the one who held the line.',art:'marsh',place:'THE MARSH HOSPITAL'},
+  {speaker:'SERA',text:'My stitches hold in the bunker walls now, and the quartermaster owes you a fuller pack. The list pays its debts.',art:'marsh',place:'THE MARSH HOSPITAL'},
+  {speaker:'NARRATOR',text:'Downstream, the water waits for its turn. The list is ready for it.',art:'marsh',place:'THE MARSH HOSPITAL'}]},
+ 'last-transmission':{relic:'relic-timetable',frames:[
+  {speaker:'NARRATOR',text:'The last transmission ends in static. In the occupied city, Ivo finally lays his timetable on the table.',art:'city',place:'THE OCCUPIED CITY'},
+  {speaker:'IVO',text:'I wrote the schedule that floods this valley. Now I am rewriting it - and your soldiers will keep my correction.',art:'city',place:'THE OCCUPIED CITY'},
+  {speaker:'IVO',text:'Faster hands, straighter shots. Read the rhythm, not the orders.',art:'city',place:'THE OCCUPIED CITY'},
+  {speaker:'NARRATOR',text:'The correction holds. The valley buys itself one more dawn.',art:'city',place:'THE OCCUPIED CITY'}]}
+};
+// Presentation-only: the game appends these frames to an act finale's ending.
+// `cinematicFrames` itself stays pure so debrief replays and translations can
+// keep addressing the authored coda by its stable tail.
+export function relicHandover(mission){return RELIC_SCENES[mission?.id]?.frames??[];}
 function speakers(text){return text.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|SURVIVORS):\s)/).map(line=>line.trim()).filter(Boolean).map(line=>{const m=line.match(/^([A-Z]+):\s*(.*)$/);return m?[m[1],m[2]]:['NARRATOR',line];});}
 export function cinematicFrames(mission,kind){
  if(!mission||!OPENINGS[mission.id]||!['intro','ending'].includes(kind))return [];

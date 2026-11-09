@@ -1,6 +1,6 @@
 import {createMatch,stepMatch} from './simulation.mjs?v=20261108-squadmaps1';
 import {applyCommand} from './match.mjs?v=20261108-squadmaps1';
-import {WAVE_COUNT} from './combat.mjs?v=20261102-battle2';
+import {WAVE_COUNT} from './combat.mjs?v=20261112-finale1';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.

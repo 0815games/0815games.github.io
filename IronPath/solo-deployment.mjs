@@ -15,8 +15,15 @@ import {decodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261101-campaign1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
 import {relicBonus} from './relics.mjs?v=20261101-campaign1';
+import {storyBossKind} from './combat.mjs?v=20261112-finale1';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
+ // Reported: "Soldier starts every time at the bunker!" A story mission
+ // begins where its first stage marker sits, so the soldier deploys there
+ // instead of walking the whole field from the bunker every time. Endless and
+ // training keep the classic bunker start (no spawn on the contract).
+ const spawn=campaign?.spawn;
+ if(Number.isFinite(spawn?.x)&&Number.isFinite(spawn?.y))player={...player,x:spawn.x,y:spawn.y};
  // The training contract is the only campaign-shaped deployment that is easier
  // than endless, so it is read from its own module rather than the threat table.
  const training=campaign?.threat==='training';
@@ -46,7 +53,7 @@ function applyContract(state,campaign,threat,training=false){
  state.hp=Math.min(state.hp,state.maxHp);
  state.campaignContract=training
   ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT,bossEvery:TRAINING_BOSS_EVERY}
-  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad,damage:threat.damage};
+  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad,damage:threat.damage,bossFinal:campaign.boss?storyBossKind(campaign.boss):null};
  // Only the training contract raises the wallet: its coach gates the upgrade card
  // on the field, and the endless start (125) could not buy the dearest tower AND
  // its first upgrade. A floor, not an override - equipment that grants start

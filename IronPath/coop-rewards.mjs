@@ -1,4 +1,4 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261112-finale1';
 import {rewardWave} from './armory.mjs?v=20261107-balance1';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
 import {rewardDelta} from './run-results.mjs?v=20261107-balance1';

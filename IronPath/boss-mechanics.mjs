@@ -6,16 +6,18 @@ export function bossPhase(enemy){
   case 'bossBomber': return clock%12>=10?'bomb-warning':'normal';
   case 'bossJuggernaut': return clock%10>=8?'repair-warning':'normal';
   case 'bossCommander': return clock%16>=10&&clock%16<14?'rally':'normal';
+  case 'bossRiegel': return clock%18>=12?'jam':'normal';
   default:return 'normal';
  }
 }
-export function bossWeaponFactor(enemy){return bossPhase(enemy)==='shield'?.6:1;}
+export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:1;}
 export function bossPhaseLabel(enemy){
  switch(bossPhase(enemy)){
   case 'shield':return 'SHIELD UP · weapon damage reduced';
   case 'bomb-warning':return 'BOMB RUN · bunker strike incoming!';
   case 'repair-warning':return 'REPAIR CYCLE · heal incoming!';
   case 'rally':return 'RALLY · nearby ground troops surge!';
+  case 'jam':return 'JAM FIELD · ability recharge blocked';
   default:return '';
  }
 }
@@ -36,6 +38,9 @@ export function bossTelegraph(enemy){
  else if(enemy.boss==='bossCommander'){
   const t=clock%16;if(t>=8&&t<10){key='rally-warning';seconds=Math.ceil(10-t);message='RALLY IN';warning=true;}
   else if(phase==='rally'){key='rally';seconds=Math.ceil(14-t);message='RALLY ACTIVE';}
+ }else if(enemy.boss==='bossRiegel'){
+  const t=clock%18;if(t>=10&&t<12){key='jam-warning';seconds=Math.ceil(12-t);message='JAM FIELD RISING';warning=true;}
+  else if(phase==='jam'){key='jam';seconds=Math.ceil(18-t);message='JAM FIELD ACTIVE · ABILITY BLOCKED';}
  }
  return key?{key,warning,seconds,text:`${message} · ${seconds}s`}:null;
 }
