@@ -186,6 +186,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('campaign-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Campaign emulator output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run publish-file rules tests (the file that ships to production)
+        shell: bash
+        run: |
+          if npm run test:publish > publish-rules-output.log 2>&1; then
+            cat publish-rules-output.log
+          else
+            cat publish-rules-output.log
+            python3 -c "from pathlib import Path; s=Path('publish-rules-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Publish-file rules output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
   game-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 10

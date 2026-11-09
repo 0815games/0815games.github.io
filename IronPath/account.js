@@ -3,22 +3,22 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261108-squadmaps1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261107-balance1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261111-events1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261209-savefix1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261108-squadmaps1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261209-savefix1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261104-leaderboards1';
-import {setupFriends} from './friends-ui.mjs?v=20261108-squadmaps1';
-import {createCommandCenter} from './command-center.mjs?v=20261108-squadmaps1';
+import {setupFriends} from './friends-ui.mjs?v=20261209-savefix1';
+import {createCommandCenter} from './command-center.mjs?v=20261209-savefix1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261101-campaign1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261101-campaign1';
 import {missingPrestige} from './prestige.mjs?v=20261101-campaign1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261108-squadmaps1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261108-squadmaps1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261209-savefix1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -27,7 +27,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261108-squadmaps1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261209-savefix1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261107-balance1';
@@ -37,9 +37,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261108-squadmaps1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261209-savefix1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261108-squadmaps1';
+import { startGame } from './game.js?v=20261209-savefix1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261108-squadmaps1';
 import { createPlayer } from './match.mjs?v=20261108-squadmaps1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -151,10 +151,19 @@ $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
 function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
+const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
+  // A realtime-database transaction only settles once the server answers; while
+  // offline it stays pending forever, and the results screen would sit on
+  // "Saving mission progress…" with every button locked and no retry offered.
+  // Race a watchdog so a stuck save fails with reason "timeout" instead.
+  const settle=work=>Promise.race([work,new Promise(resolve=>setTimeout(()=>resolve('timeout'),12000))]);
+  try{
    // Story progress and the mission's prestige trophy are written together, so a
    // finished mission can never grant one without the other.
-   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryMission(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};
+   const outcome=await settle(runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryMission(current,id)??undefined,{applyLocally:false}));
+   if(outcome==='timeout')return version===sessionVersion?{committed:false,reason:'timeout'}:{committed:false};
+   const result=outcome;
+   if(version!==sessionVersion)return {committed:false};
    // Reported: "Nach Abschluss der ersten Quest wird die zweite nicht
    // freigeschalten und die erste nicht abgeschlossen markiert." The write
    // committed, but the in-memory profile never learned about it: every board
@@ -162,7 +171,22 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getPro
    // now adopts the committed snapshot the same way awardXP does, so the
    // mission board unlocks the next operation in the same session.
    if(result.committed){profile=result.snapshot.val();commandCenter?.render();}
-   return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+   if(result.committed)return {committed:true,profile};
+   // The transaction was rejected or aborted, but its snapshot is still the
+   // freshest server state, so finish the save with a minimal patch of exactly
+   // what completeStoryMission would change there. A live ruleset without the
+   // story fields answers with permission-denied (reason "rejected") instead of
+   // the generic "could not be confirmed", and a mission that is already
+   // complete on the server adopts that state without writing anything.
+   const current=result.snapshot.val(),next=completeStoryMission(current,id);
+   if(!next)return {committed:false,reason:'locked'};
+   const patch={};for(const key of Object.keys(next))if(JSON.stringify(next[key])!==JSON.stringify(current[key]))patch[key]=next[key];
+   if(!Object.keys(patch).length){profile=next;commandCenter?.render();return {committed:true,alreadyComplete:true,profile:next};}
+   const applied=await settle(update(ref(db,`players/${currentUser.uid}`),patch));
+   if(applied==='timeout')return version===sessionVersion?{committed:false,reason:'timeout'}:{committed:false};
+   if(version!==sessionVersion)return {committed:false};
+   profile=next;commandCenter?.render();
+   return {committed:true,profile:next};}catch(e){return {committed:false,reason:String(e?.code||e?.message||'').includes('permission')?'rejected':'error'};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the
