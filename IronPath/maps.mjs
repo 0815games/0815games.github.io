@@ -113,7 +113,13 @@ const STORY_FIELDS=Object.freeze({
   // Act IV · THE LONG WINTER - the pass, the high moor and the warm-line relay.
   'g3-000000015':{theme:'arctic',name:'The Lower Station'},
   'g3-000000016':{theme:'arctic',name:'The Moor Depot'},
-  'g3-000000017':{theme:'arctic',name:'The Warm-Line Relay'}
+  'g3-000000017':{theme:'arctic',name:'The Warm-Line Relay'},
+  'g3-000000018':{theme:'arctic',name:'The Work Camp'},
+  'g3-000000019':{theme:'arctic',name:'The Rail Half'},
+  'g3-00000001a':{theme:'arctic',name:'The Long Span'},
+  'g3-00000001b':{theme:'scrub',name:'The Burned Heath'},
+  'g3-00000001c':{theme:'urban',name:'The Iron Yard'},
+  'g3-00000001d':{theme:'arctic',name:'The Gallery Mouth'}
 });
 // Endless and multiplayer draw their battlefield from a seed: the road is
 // walked cell by cell from the left edge to the bunker, so it can meander,

@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261215-winter1';
+import {getMap} from './maps.mjs?v=20261216-winter2';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -151,7 +151,31 @@ const MISSIONS=[
   {id:'frozen-relay',act:'ACT IV · THE LONG WINTER',title:'Frozen Relay',mapId:'g3-000000017',threat:'veteran',
    briefing:'A warm-line relay of the Iron Path stands intact in the snow. Take it without damaging it and listen live: the orders arriving on the schedule are signed by nobody — the dispatch sends itself.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Thaw the relay lock',dialogue:'IVO: The lock is frozen shut — literally. Cut the heat trace and the door opens without a shot.'},{type:'protect',at:'field',asset:'Wiretap rig',seconds:22,label:'Protect the wiretap rig',dialogue:'ADA: The rig records everything on the line. If they smash it, we go deaf mid-sentence.'},{type:'hold',at:'field',seconds:5,label:'Confirm the self-sent orders',dialogue:'ADA: Listen: the dispatch is issuing orders with no author. The timetable gives the commands now. It runs itself.'}],
-   success:'ADA: Orders with no signature, on schedule, to the minute. IVO: My correction has to reach the stamp — or nothing changes. NIA: Then we climb higher.'}
+   success:'ADA: Orders with no signature, on schedule, to the minute. IVO: My correction has to reach the stamp — or nothing changes. NIA: Then we climb higher.'},
+  {id:'the-work-camp',act:'ACT IV · THE LONG WINTER',title:'The Work Camp',mapId:'g3-000000018',threat:'veteran',
+   briefing:'A winter labor camp drives prisoners to road repairs on the pass. Break it open — and a whisper comes out with the first freed men: a "Vale" has been moved to the main junction.',
+   stages:[{type:'eliminate',count:10,label:'Break the camp guard',dialogue:'WREN: Watch towers first. The faster the guard dies, the fewer prisoners freeze in the open.'},{type:'hold',at:'field',seconds:5,label:'Open the stockade',dialogue:'PRISONERS: The lock is old but the cold welded it shut. Buy us a minute.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the freed men out',dialogue:'VOSS: Every man out, then we burn the ledgers. Rook counts his slaves; we count his losses.'}],
+   success:'PRISONERS: A "Vale" — they moved him to the main junction, special transport. ADA: Elias. Alive, and on schedule. IVO: Then the timetable is our map now.'},
+  {id:'avalanche',act:'ACT IV · THE LONG WINTER',title:'Avalanche',mapId:'g3-000000019',threat:'veteran',
+   briefing:'Rook’s vanguard pushes over the moor. Wren’s answer is the mountain itself: blasting crews climb to the rail half to cut the slope loose. Protect them on the way up — the vanguard must not reach the charges.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Cover the blasting crews',dialogue:'WREN: My crews climb with the charges. Hold the road below so nothing follows them up.'},{type:'protect',at:'field',asset:'Blasting crew',seconds:25,label:'Protect the blasting crew',dialogue:'WREN: They place, we hold. If the vanguard reaches them, the mountain stays standing and we do not.'},{type:'secure',at:'field',seconds:10,label:'Secure the slope fuse point',dialogue:'VOSS: The slope is wired. Take the fuse point and hold it until Wren gives the word.'}],
+   success:'WREN: Fire, in the name of everyone they buried up here. VOSS: The road below is gone — and Rook’s vanguard with it. The mountain keeps our secret.'},
+  {id:'the-long-span',act:'ACT IV · THE LONG WINTER',title:'The Long Span',mapId:'g3-00000001a',threat:'legendary',
+   briefing:'Nia’s proudest bridge carries the Iron Path’s heaviest supply trains. It has to fall: protect the demo charges at the piers until they fire — and hold the span while the detonators run their line.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Take the pier access',dialogue:'NIA: I built this bridge to carry trains, not armies. Open the pier access.'},{type:'protect',at:'field',asset:'Demo charges',seconds:25,label:'Protect the demo charges',dialogue:'NIA: The charges sit at the piers. Their sappers will try to cut them — keep every charge alive.'},{type:'defend',seconds:45,label:'Hold until the span falls',dialogue:'VOSS: The detonators are running. Hold the span — nothing crosses, nothing gets through.'}],
+   success:'NIA: It falls straight, into the gorge, where I drew it. My bridge, my hand on the switch. WREN: And the Iron Path just lost its heaviest road.'},
+  {id:'rooks-trail',act:'ACT IV · THE LONG WINTER',title:'Rook’s Trail',mapId:'g3-00000001b',threat:'legendary',
+   briefing:'Burned-out way stations mark Rook’s climb: he is scorching the relay chain upward — proof for his garrison, bait for the resistance. His rearguard waits in the ash. Hold them back.',
+   stages:[{type:'eliminate',count:10,label:'Break the rearguard',dialogue:'VOSS: His rearguard is dug into the ash. Dig them out.'},{type:'hold',at:'field',seconds:5,label:'Hold the burned station',dialogue:'ADA: The relays he burned still echo. He is heading for the storm gate — to lock it behind him.'},{type:'hold',at:'bunker',seconds:3,label:'Keep the trail closed',dialogue:'WREN: The trail stays ours. Let him climb alone.'}],
+   success:'ROOK: The junction is mine again. Whoever follows me dies in the snow. VOSS: Then we follow. NIA: Through the gate he is trying to close.'},
+  {id:'iron-yard',act:'ACT IV · THE LONG WINTER',title:'The Iron Yard',mapId:'g3-00000001c',threat:'legendary',
+   briefing:'In the mountain rail yard the Iron Path changes its trains — and stamps the winter timetable. Ivo’s counter-timetable must go into the punch machine before the stamp run ends.',
+   stages:[{type:'secure',at:'field',seconds:10,label:'Secure the punch hall',dialogue:'IVO: The punch hall stamps every convoy of the winter. Take it, and we stamp ours.'},{type:'protect',at:'field',asset:'Punch machine',seconds:25,label:'Protect the punch machine',dialogue:'IVO: My counter-timetable feeds the machine now. If they wreck it, the winter runs on Rook’s schedule.'},{type:'defend',seconds:35,label:'Hold until the stamp run ends',dialogue:'VOSS: Hold the yard until the last card is stamped and dispatched.'}],
+   success:'IVO: The winter timetable carries my correction now — every convoy of the Iron Path reads it. ADA: Including the one carrying my brother.'},
+  {id:'the-second-list',act:'ACT IV · THE LONG WINTER',title:'The Second List',mapId:'g3-00000001d',threat:'legendary',
+   briefing:'Sera’s pass hospital nurses partisans and prisoners alike. The junction’s answer is bombardment: bring the stretcher columns into the old gallery before the guns find their range.',
+   stages:[{type:'escort',at:'bunker',seconds:3,label:'Bring the stretcher columns in',dialogue:'SERA: The columns move at walking pace — that is the pace of the wounded. Walk with them.'},{type:'protect',at:'field',asset:'Litter train',seconds:22,label:'Protect the litter train',dialogue:'SERA: The gallery mouth is close and the guns are closer. Keep the sky off my patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the gallery mouth',dialogue:'VOSS: The gallery takes them all. Then we seal the mouth behind the last stretcher.'}],
+   success:'SERA: Every name on my second list is under stone and safe. VOSS: And the mountain hospital holds. WREN: The winter is long — but so are we.'}
 ];
 // ---------------------------------------------------------------------------
 // Anchor resolution. All geometry helpers are pure; the same seed always

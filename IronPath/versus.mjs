@@ -1,5 +1,5 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261215-winter1';
-import {applyCommand} from './match.mjs?v=20261215-winter1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261216-winter2';
+import {applyCommand} from './match.mjs?v=20261216-winter2';
 import {WAVE_COUNT} from './combat.mjs?v=20261212-actiii3';
 
 // Two isolated, identically generated battlefields, advanced on the host's
