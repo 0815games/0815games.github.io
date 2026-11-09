@@ -15,7 +15,7 @@ import {setupFriends} from './friends-ui.mjs?v=20261108-squadmaps1';
 import {createCommandCenter} from './command-center.mjs?v=20261108-squadmaps1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261101-campaign1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryWithPrestige,syncPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261101-campaign1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261101-campaign1';
 import {missingPrestige} from './prestige.mjs?v=20261101-campaign1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261108-squadmaps1';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261108-squadmaps1';
