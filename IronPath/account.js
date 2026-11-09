@@ -154,7 +154,15 @@ function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscri
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};try{
    // Story progress and the mission's prestige trophy are written together, so a
    // finished mission can never grant one without the other.
-   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryMission(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+   const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>completeStoryMission(current,id)??undefined,{applyLocally:false});if(version!==sessionVersion)return {committed:false};
+   // Reported: "Nach Abschluss der ersten Quest wird die zweite nicht
+   // freigeschalten und die erste nicht abgeschlossen markiert." The write
+   // committed, but the in-memory profile never learned about it: every board
+   // and menu kept rendering the pre-mission account until a reload. The save
+   // now adopts the committed snapshot the same way awardXP does, so the
+   // mission board unlocks the next operation in the same session.
+   if(result.committed){profile=result.snapshot.val();commandCenter?.render();}
+   return {committed:result.committed,profile:result.committed?result.snapshot.val():null};}catch{return {committed:false};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the
