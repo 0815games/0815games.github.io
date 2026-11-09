@@ -14,7 +14,9 @@ export const THREATS=Object.freeze({
   standard:{label:'Standard',wave:5,unit:1,damage:1,squad:0,bunker:1},
   hardened:{label:'Hardened',wave:6,unit:1.15,damage:1.2,squad:1,bunker:.85},
   elite:{label:'Elite',wave:7,unit:1.3,damage:1.35,squad:2,bunker:.72},
+  veteran:{label:'Veteran',wave:7,unit:1.33,damage:1.4,squad:2,bunker:.7},
   legendary:{label:'Legendary',wave:8,unit:1.35,damage:1.45,squad:3,bunker:.68},
+  iron:{label:'Iron',wave:9,unit:1.5,damage:1.6,squad:4,bunker:.6},
 });
 
 export function threatFor(key){return Object.hasOwn(THREATS,key)?THREATS[key]:THREATS.standard;}

@@ -5,10 +5,8 @@
 // and the legacy path keeps working.
 import {validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
 import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-squadmaps1';
-import {unlockPrestige} from './workshop-model.mjs?v=20261108-squadmaps1';
-import {isPrestige,prestigeEarned,PRESTIGE_IDS,PRESTIGE} from './prestige.mjs?v=20261108-squadmaps1';
-import {completeStory} from './campaign.mjs?v=20261108-squadmaps1';
-const PRESTIGE_BY_MISSION=Object.fromEntries(PRESTIGE_IDS.map(id=>[PRESTIGE[id].mission,{...PRESTIGE[id],id}]));
+import {isPrestige} from './prestige.mjs?v=20261101-campaign1';
+import {completeStory} from './campaign.mjs?v=20261101-campaign1';
 const LIMIT=2048;
 const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray(value) && Object.keys(value).length===keys.length && keys.every(k=>Object.hasOwn(value,k));
 
@@ -44,32 +42,40 @@ export function applyWireWorkshopCommand(profile,command){
  const encoded=encodeWorkshop(result.workshop);return encoded===null?null:{...result,workshop:encoded};
 }
 
-// Campaign completion writes story progress and the mission trophy together, in
-// one transaction. A trophy the campaign has not proven is refused here, so a
-// modified client cannot grant itself prestige gear by claiming a mission.
-export function completeStoryWithPrestige(profile,missionId){
+// Melt: strip every prestige trophy from a workshop. The trophies were retired
+// into the act relics (see relics.mjs), so an old save keeps its story progress
+// and loses the equipable gear: owned ids are removed, an equipped trophy is
+// replaced by the slot's neutral item and its mod entry is dropped. A workshop
+// that cannot be read is left untouched rather than blocking anything.
+function meltWorkshop(workshop){
+ const owned=workshop.owned.filter(id=>!isPrestige(id));
+ const equipped={...workshop.equipped};
+ for(const slot of ['weapon','gear','gadget'])if(isPrestige(equipped[slot]))equipped[slot]=slot==='weapon'?'standard':'none';
+ const mods={...workshop.mods};
+ for(const id of Object.keys(mods))if(isPrestige(id))delete mods[id];
+ const next={...workshop,owned,equipped,mods};
+ return validateWorkshop(next)?next:null;
+}
+// Campaign completion writes story progress and melts the retired trophies in
+// the same transaction, so finishing a mission can never resurrect old gear.
+export function completeStoryMission(profile,missionId){
  if(!profile||typeof profile!=='object'||Array.isArray(profile)||typeof missionId!=='string')return null;
  const next=completeStory(profile,missionId);
- if(!next)return null;
- const trophy=PRESTIGE_BY_MISSION[missionId];
- if(!trophy||!Object.hasOwn(next,'workshop'))return next;
+ if(!next||!Object.hasOwn(next,'workshop'))return next;
  const workshop=decodeWorkshop(next.workshop);
- if(!workshop||!prestigeEarned(trophy.id,next))return null;
- const unlocked=workshop.owned.includes(trophy.id)?workshop:unlockPrestige(workshop,trophy.id);
- if(!unlocked)return null;
- if(unlocked===workshop)return next;
- const encoded=encodeWorkshop(unlocked);
- return encoded===null?null:{...next,workshop:encoded};
+ if(!workshop)return next;
+ const melted=meltWorkshop(workshop);
+ if(!melted)return next;
+ const encoded=encodeWorkshop(melted);
+ return encoded===null||encoded===next.workshop?next:{...next,workshop:encoded};
 }
-// Backfill trophies for missions finished before the trophies existed, without
-// touching story progress. Refuses (null) if the workshop cannot be read.
-export function syncPrestige(profile){
- if(!profile||typeof profile!=='object'||Array.isArray(profile)||!Object.hasOwn(profile,'workshop'))return null;
+// Account sync: melt leftover trophies without touching story progress.
+export function meltPrestige(profile){
+ if(!profile||typeof profile!=='object'||Array.isArray(profile)||!Object.hasOwn(profile,'workshop'))return profile;
  const workshop=decodeWorkshop(profile.workshop);
- if(!workshop)return null;
- let next=workshop;
- for(const id of PRESTIGE_IDS){if(prestigeEarned(id,profile)&&!next.owned.includes(id)){const unlocked=unlockPrestige(next,id);if(!unlocked)return null;next=unlocked;}}
- if(next===workshop)return profile;
- const encoded=encodeWorkshop(next);
- return encoded===null?null:{...profile,workshop:encoded};
+ if(!workshop)return profile;
+ const melted=meltWorkshop(workshop);
+ if(!melted)return profile;
+ const encoded=encodeWorkshop(melted);
+ return encoded===null||encoded===profile.workshop?profile:{...profile,workshop:encoded};
 }

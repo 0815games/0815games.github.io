@@ -10,10 +10,11 @@
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
 import {createMatch} from './simulation.mjs?v=20261108-squadmaps1';
-import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261108-squadmaps1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261108-squadmaps1';
-import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261107-balance1';
+import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261101-campaign1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
+import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261101-campaign1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
+import {relicBonus} from './relics.mjs?v=20261101-campaign1';
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
  // The training contract is the only campaign-shaped deployment that is easier
@@ -24,11 +25,15 @@ export function createSoloDeployment({player,mapId,profile,workshopEnabled=false
  if(workshopEnabled&&profile&&Object.hasOwn(profile,'workshop')){
   const workshop=decodeWorkshop(profile.workshop);
   if(!workshop)throw new Error('A valid workshop is required for a workshop deployment');
-  const state=createWorkshopSoloMatch(player,workshop,mapId);
+  const state=createWorkshopSoloMatch(player,workshop,mapId,profile);
   if(contract)applyContract(state,campaign,threat,training);
   return state;
  }
- const state=createMatch([player],mapId);
+ // The classic path has no snapshot to carry them, so the account's earned
+ // relics ride on the match state and merge into the legacy effects.
+ const state=createMatch([player],mapId),relic=relicBonus(profile);
+ state.relicBonus=relic;
+ state.maxHp+=relic.bunkerHealth;state.hp+=relic.bunkerHealth;state.money+=relic.startSupplies;
  if(contract)applyContract(state,campaign,threat,training);
  return state;
 }

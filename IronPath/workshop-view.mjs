@@ -4,9 +4,9 @@
 // Every change goes through the account service, which runs the account
 // transaction; nothing here writes a save directly.
 import {RECIPES,MOD_SCRAP,modsOf,migrateWorkshop,validLegacy} from './workshop-model.mjs?v=20261108-squadmaps1';
-import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from './prestige.mjs?v=20261108-squadmaps1';
-import {CAMPAIGN,campaignProgress} from './campaign.mjs?v=20261108-squadmaps1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261108-squadmaps1';
+import {PRESTIGE,PRESTIGE_IDS,isPrestige,prestigeEarned} from './prestige.mjs?v=20261101-campaign1';
+import {CAMPAIGN,campaignProgress} from './campaign.mjs?v=20261101-campaign1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
 import {readArmory,ITEMS} from './armory.mjs?v=20261107-balance1';
 import {WORKSHOP_CATALOG} from './workshop-catalog.mjs?v=20261108-balance2';
 const slotKeys=['weapon','gear','gadget'];

@@ -6,10 +6,17 @@
 // single encoded string in the account's workshop, so no new database field and
 // no new rules are needed.
 //
-// Effects follow the existing workshop vocabulary (damage, range, movement,
+// Effects followed the existing workshop vocabulary (damage, range, movement,
 // bunkerHealth, startSupplies, cooldown, shotIntervalMultiplier) so the live
-// reducer and the match effects treat them like any other item.
-import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261108-squadmaps1';
+// reducer and the match effects treated them like any other item.
+//
+// RETIRED - the trophies were MELTED. Every equipable prestige item stopped
+// existing with the five-act campaign: no grants, no effects, no equipping.
+// What replaced them are the act relics (see relics.mjs) - one permanent
+// passive per completed act, never equipped. This module keeps its data only
+// so old workshop strings still decode, display their names and get stripped
+// by meltPrestige() on the next account sync. Nothing here grants anything.
+import {CAMPAIGN,campaignProgress,campaignMission} from './campaign.mjs?v=20261101-campaign1';
 
 export const PRESTIGE=Object.freeze({
   'prestige-relay':{
@@ -93,24 +100,11 @@ export function prestigeFor(id){return isPrestige(id)?PRESTIGE[id]:null;}
 
 // A trophy is mine only once the mission that carries it is finished, so the
 // mission index is the gate: progress is the number of completed missions.
-export function prestigeEarned(id,profile){
-  const item=prestigeFor(id),index=CAMPAIGN.findIndex(m=>m.id===item?.mission);
-  return index>=0&&index<campaignProgress(profile);
-}
-
-// Everything the account should own right now. Used to backfill after a client
-// update so a player who finished a mission never loses its trophy, and cannot
-// claim one for a mission the server does not see as complete.
-export function earnedPrestige(profile){
-  const owned=[];for(const id of PRESTIGE_IDS)if(prestigeEarned(id,profile))owned.push(id);return owned;
-}
-
-// Ids still missing from a workshop, in campaign order. The caller writes them
-// through the normal workshop transaction; this only decides what is owed.
-export function missingPrestige(profile,workshop){
-  const have=new Set(Array.isArray(workshop?.owned)?workshop.owned:[]);
-  return earnedPrestige(profile).filter(id=>!have.has(id));
-}
+// Melted: nothing is ever earned, owed or backfilled any more. The functions
+// stay exported so callers keep working; they answer "none", always.
+export function prestigeEarned(){return false;}
+export function earnedPrestige(){return [];}
+export function missingPrestige(){return [];}
 
 // The mission that awards a trophy, for the armory and the campaign board.
 export function prestigeMission(id){const item=prestigeFor(id);return item?campaignMission(item.mission):null;}

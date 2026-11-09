@@ -54,7 +54,12 @@ test('skill summary and next-step localization preserve numeric values and sourc
 });
 
 test('static German campaign, results and battlefield labels have translations',async()=>{
- const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8');for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!['CONTINUE','Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
+ const {germanStatic}=await import('../localization-static-de.mjs');const {readFile}=await import('node:fs/promises'),html=await readFile(new URL('../index.html',import.meta.url),'utf8'),gameSource=await readFile(new URL('../game.js',import.meta.url),'utf8');
+ // The mission board is generated from CAMPAIGN at runtime (buildMissionBoard):
+ // its labels never appear in static HTML, so they are pinned on the builder.
+ const generatedBoard=/^(MISSION \d\d|ACT [IV]+ ·)/;
+ for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!generatedBoard.test(en)&&!['CONTINUE','Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
+ assert.ok(gameSource.includes('mission-number')&&gameSource.includes('data-i18n-text'),'the board builder emits i18n-marked labels');
 });
 
 

@@ -323,3 +323,16 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
 @media(max-width:420px){.settings-dialog{padding:12px}.settings-row{padding:8px 0}}
 .visually-hidden:not([hidden]){position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 #gameView .map-frame .dashboard{right:16px;max-width:calc(100% - 24px)}
+
+/* Act relics (see relics.mjs): one permanent passive per completed act.
+   Earned slots glow gold, locked acts name their mission, upcoming acts dim. */
+.campaign.panel>.relic-panel{margin:8px 24px 18px;padding:9px 12px;border:1px solid #68745b;border-radius:7px;background:#20372c}
+.relic-panel summary{cursor:pointer;font-weight:800;letter-spacing:.08em;color:#e7cc8c}
+.relic-strip{display:grid;gap:7px;margin:10px 0 2px}
+.relic-slot{display:flex;flex-direction:column;gap:2px;padding:7px 10px;border:1px solid #2c352d;border-left:3px solid #4c5a4a;background:#141a15}
+.relic-slot strong{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#d9dde1}
+.relic-slot span{font-size:12px;line-height:1.35;color:#c9d2c6}
+.relic-slot[data-state=earned]{border-left-color:#f0d68a;background:#1a231b}
+.relic-slot[data-state=earned] strong{color:#f0d68a}
+.relic-slot[data-state=locked]{opacity:.85}
+.relic-slot[data-state=upcoming]{opacity:.55}

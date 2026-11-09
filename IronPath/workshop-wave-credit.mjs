@@ -4,7 +4,7 @@
 import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261102-battle2';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
 import {rewardWave} from './armory.mjs?v=20261107-balance1';
-import {decodeWorkshop,encodeWorkshop} from './workshop-wire.mjs?v=20261108-squadmaps1';
+import {decodeWorkshop,encodeWorkshop} from './workshop-wire.mjs?v=20261101-campaign1';
 import {applyBossRewards} from './workshop-rewards.mjs?v=20261108-squadmaps1';
 
 export function applyWorkshopWaveCredit(profile,{kind,receiptId,mask,block=0}={}){

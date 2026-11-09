@@ -3,7 +3,7 @@ import {CAMPAIGN,campaignWaveContract,campaignDifficulty} from '../campaign.mjs'
 import {THREATS,campaignUnitScale,campaignBunker,campaignSurge} from '../campaign-pressure.mjs';
 import {PRESTIGE,PRESTIGE_IDS,prestigeEarned,missingPrestige,isPrestige} from '../prestige.mjs';
 import {validateWorkshop,unlockPrestige,craftWorkshop,equipWorkshop,modifyWorkshop,modsOf} from '../workshop-model.mjs';
-import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop,completeStoryWithPrestige,syncPrestige} from '../workshop-wire.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop,completeStoryMission,meltPrestige} from '../workshop-wire.mjs';
 import {captureWorkshopLoadout,workshopEffects} from '../workshop-effects.mjs';
 import {createSoloDeployment} from '../solo-deployment.mjs';
 import {createPlayer} from '../match.mjs';
@@ -13,7 +13,7 @@ const profileWith=(storyProgress,workshop)=>({name:'A',gender:'female',xp:0,stor
 
 test('every mission carries a threat, and the campaign gets harder as it goes',()=>{
  for(const mission of CAMPAIGN)assert.ok(Object.hasOwn(THREATS,mission.threat),`${mission.id} needs a threat`);
- const order={standard:0,hardened:1,elite:2,legendary:3};
+ const order={standard:0,hardened:1,elite:2,veteran:3,legendary:4,iron:5};
  let previous=0;
  for(const mission of CAMPAIGN){assert.ok(order[mission.threat]>=previous,`${mission.id} must not be easier than the mission before it`);previous=order[mission.threat];}
  assert.equal(CAMPAIGN.at(-1).threat,'legendary','the finale is the hardest mission');
@@ -45,58 +45,65 @@ test('a mission deploys with the crafted gear and its contract; endless stays a 
  assert.equal(endless.maxHp,100,'endless keeps its own numbers');
 });
 
-test('prestige gear is earned by a mission, never bought',()=>{
- assert.equal(PRESTIGE_IDS.length,CAMPAIGN.length,'each mission carries one trophy');
+test('the trophies are retired: no price, no grants, nothing owed',()=>{
+ assert.equal(PRESTIGE_IDS.length,CAMPAIGN.length,'the retired set maps onto the shipped missions');
  for(const id of PRESTIGE_IDS){
   const item=PRESTIGE[id];
   assert.ok(isPrestige(id));
-  assert.ok(CAMPAIGN.some(m=>m.id===item.mission),`${id} needs a real mission`);
-  assert.ok(!Object.hasOwn(item,'scrap'),'a trophy has no price');
+  assert.ok(CAMPAIGN.some(m=>m.id===item.mission),`${id} still names a real mission for old saves`);
+  assert.ok(!Object.hasOwn(item,'scrap'),'a trophy never had a price');
   assert.equal(craftWorkshop({scrap:10000000,owned:0,equipped:0},empty(),id),null,'a trophy cannot be crafted');
  }
- assert.deepEqual(missingPrestige(profileWith(0),empty()),[],'no missions finished, nothing owed');
- assert.equal(prestigeEarned('prestige-relay',profileWith(0)),false);
- assert.equal(prestigeEarned('prestige-relay',profileWith(1)),true,'finishing the first mission earns its trophy');
+ assert.deepEqual(missingPrestige(profileWith(0),empty()),[],'nothing is owed any more');
+ assert.equal(prestigeEarned('prestige-relay',profileWith(1)),false,'not even a finished mission earns a trophy now');
 });
 
-test('finishing a mission writes story progress and its trophy in one step',()=>{
- const profile=profileWith(0);
- const after=completeStoryWithPrestige(profile,'lost-signal');
+test('finishing a mission writes story progress and melts retired trophies in one step',()=>{
+ const workshop={...empty(),owned:['prestige-relay'],equipped:{weapon:'standard',gear:'none',gadget:'prestige-relay'},mods:{'prestige-relay':'beacon'}};
+ const profile=profileWith(0,workshop);
+ const after=completeStoryMission(profile,'lost-signal');
  assert.equal(after.storyProgress,1);
- assert.deepEqual(decodeWorkshop(after.workshop).owned,['prestige-relay']);
- const replay=completeStoryWithPrestige(after,'lost-signal');
- assert.deepEqual(decodeWorkshop(replay.workshop).owned,['prestige-relay'],'a replay never duplicates the trophy');
- assert.equal(completeStoryWithPrestige(profile,'tidelock'),null,'a mission cannot be skipped for its trophy');
- assert.equal(validateWorkshop(decodeWorkshop(after.workshop)),true);
+ const saved=decodeWorkshop(after.workshop);
+ assert.deepEqual(saved.owned,[],'the trophy is gone');
+ assert.equal(saved.equipped.gadget,'none','the slot falls back to neutral');
+ assert.deepEqual({...saved.mods},{},'its mod is gone');
+ assert.equal(validateWorkshop(saved),true);
+ const replay=completeStoryMission(after,'lost-signal');
+ assert.equal(replay.storyProgress,1,'a replay changes nothing');
+ assert.equal(completeStoryMission(profile,'tidelock'),null,'a mission cannot be skipped');
 });
 
-test('trophies finished before the update are backfilled, once',()=>{
- const older=profileWith(2);
- const synced=syncPrestige(older);
- assert.deepEqual(decodeWorkshop(synced.workshop).owned,['prestige-relay','prestige-oscillator']);
- assert.equal(syncPrestige(synced),synced,'a second sync changes nothing');
- assert.equal(syncPrestige({name:'A',xp:0,storyProgress:2}),null,'no workshop, nothing to backfill');
+test('leftover trophies are melted on sync, once',()=>{
+ const workshop={...empty(),owned:['prestige-relay','prestige-oscillator'],equipped:{weapon:'standard',gear:'none',gadget:'prestige-relay'}};
+ const older=profileWith(2,workshop);
+ const synced=meltPrestige(older);
+ assert.deepEqual(decodeWorkshop(synced.workshop).owned,[],'both trophies melted');
+ assert.equal(meltPrestige(synced),synced,'a second sync changes nothing');
+ const clean=profileWith(2);
+ assert.equal(meltPrestige(clean),clean,'a clean workshop stays untouched');
+ const noWorkshop={name:'A',xp:0,storyProgress:2};
+ assert.equal(meltPrestige(noWorkshop),noWorkshop,'no workshop, nothing to melt');
 });
 
-test('an equipped trophy fights and can be modified',()=>{
- const workshop={...empty(),owned:['prestige-icekey'],equipped:{weapon:'prestige-icekey',gear:'none',gadget:'none'}};
- assert.equal(validateWorkshop(workshop),true);
- const equipped=equipWorkshop(workshop,'weapon','prestige-icekey');
- assert.deepEqual(modsOf('prestige-icekey'),['cipher','window']);
- const modified=modifyWorkshop({scrap:100,owned:0,equipped:0},equipped,'prestige-icekey','cipher');
- assert.equal(modified.workshop.mods['prestige-icekey'],'cipher');
- assert.equal(modifyWorkshop({scrap:100,owned:0,equipped:0},equipped,'prestige-icekey','nonsense'),null,'only real trophy mods');
- const effects=workshopEffects(captureWorkshopLoadout(modified.workshop,'solo'),5);
- assert.equal(effects.damage,6,'+4 from the key, +2 from the cipher');
- assert.equal(effects.range,10);
- assert.equal(workshopEffects(captureWorkshopLoadout({...workshop,equipped:{...workshop.equipped}}, 'versus'),5).damage,0,'versus stays neutral');
+test('an old snapshot with an equipped trophy resolves to no effect',()=>{
+ const workshop={...empty(),owned:['prestige-icekey'],equipped:{weapon:'prestige-icekey',gear:'none',gadget:'none'},mods:{'prestige-icekey':'cipher'}};
+ assert.equal(validateWorkshop(workshop),true,'the old shape still decodes');
+ const snapshot=captureWorkshopLoadout(workshop,'solo');
+ const effects=workshopEffects(snapshot,5);
+ assert.equal(effects.damage,0,'the melted key adds nothing');
+ assert.equal(effects.range,0,'its mod adds nothing');
+ assert.equal(workshopEffects(captureWorkshopLoadout(workshop,'versus'),5).damage,0,'versus stays neutral');
 });
 
-test('a workshop holding every trophy still fits the save format',()=>{
+test('a workshop holding every trophy melts into a valid, rules-sized save',()=>{
  let workshop=empty();
- for(const id of PRESTIGE_IDS){const next=unlockPrestige(workshop,id);assert.ok(next,`${id} must unlock`);workshop=next;}
- assert.equal(unlockPrestige(workshop,PRESTIGE_IDS[0]),null,'unlocking twice is a no-op');
- const encoded=encodeWorkshop({...workshop,equipped:{weapon:'prestige-override-flag',gear:'prestige-transformer-coil',gadget:'prestige-broadcast-horn'},mods:{'prestige-override-flag':'victory'}});
- assert.ok(encoded,'the full trophy set still encodes');
- assert.ok(encoded.length<=2048,`${encoded.length} chars must fit the rules limit`);
+ for(const id of PRESTIGE_IDS){const next=unlockPrestige(workshop,id);assert.ok(next,`${id} must still decode-unlock for the melt`);workshop=next;}
+ const armed={...workshop,equipped:{weapon:'prestige-override-flag',gear:'prestige-transformer-coil',gadget:'prestige-broadcast-horn'},mods:{'prestige-override-flag':'victory'}};
+ const encoded=encodeWorkshop(armed);assert.ok(encoded,'the full trophy set still encodes');
+ const melted=meltPrestige(profileWith(12,armed));
+ const saved=decodeWorkshop(melted.workshop);
+ assert.deepEqual(saved.owned,[]);
+ assert.equal(saved.equipped.weapon,'standard');assert.equal(saved.equipped.gear,'none');assert.equal(saved.equipped.gadget,'none');
+ const reEncoded=encodeWorkshop(saved);
+ assert.ok(reEncoded&&reEncoded.length<=2048,`${reEncoded?.length??'??'} chars must fit the rules limit`);
 });
