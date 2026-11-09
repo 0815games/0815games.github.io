@@ -20,6 +20,8 @@ const OPENINGS={
 'white-noise':[['IVO','The ice station only opens its authorization window briefly. Once it starts, we cannot stop it.'],['ADA','Then we move fast. I will read the signal from the transmitter.']],
 'cold-start':[['ADA','A winter lock has the rail junction frozen shut - and beyond the far track, a prison transport is rolling north. I need the switch house.'],['VOSS','We take it. Ada, get your camera ready.']],
 'long-switch':[['SERA','The hospital is running on that same power line. I have people on life support.'],['IVO','I can reroute it. I just need you to keep the transformer standing.']],
+'paper-war':[['IVO','The city registries hold Nia’s original gate plans—and the automation order with my signature on it.'],['VOSS','Then we take the records office before the censors burn it. Ivo—whatever is in there, we face it together.']],
+'the-mentor':[['IVO','My old master Ambrose hid the original timetable in his forge before the occupation.'],['AMBROSE','And Rook’s controllers are on their way. Tell Ivo: the forge stands while it stands.']],
 'city-of-glass':[['VOSS','Nia Reyes designed the second lock. Rook has her in the industrial district.'],['ADA','Then we get her out before his men move her.']],
  'tidelock':[['NIA','The gate is damaged, but it can be stabilized. Rook has to hear the truth.'],['ADA','I will tell his soldiers myself. Keep the broadcast relay alive.']],
 'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']]
@@ -45,6 +47,8 @@ const CODAS={
 'white-noise':[['NARRATOR','One key. Two locks. The road to the dam grows shorter.'],['NARRATOR','There is no safe shortcut to the second lock.']],
 'cold-start':[['NARRATOR','The junction is ours, the film is out, and the north line runs free.'],['NARRATOR','On the far track, the transport rolls on. Now there is a car number - and a name.']],
 'long-switch':[['NARRATOR','In the hospital, the lights remain on. In the occupied city, Nia waits.'],['NARRATOR','The first lock is down without sacrificing the people behind the line.']],
+'paper-war':[['NARRATOR','Nia’s plans are safe—so is the file with Ivo’s signature on the automation order.'],['NARRATOR','A signature is not a sentence. Somewhere in the city, an old forge is still lit.']],
+'the-mentor':[['NARRATOR','The original timetable leaves its hiding place behind the firebrick—and the master leaves with it.'],['NARRATOR','A schedule is a promise. Now the promise must be rewritten.']],
 'city-of-glass':[['NARRATOR','The truth is more complicated than the order. There is still a way to save the valley.'],['NARRATOR','Nia brings more than a key: she brings a choice.']],
  'tidelock':[['NARRATOR','Rook’s soldiers have heard Ada. Now the tower must be reached.'],['NARRATOR','The broadcast has reached Rook. His answer leaves one last task.']],
 'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']]
@@ -71,6 +75,8 @@ const SCENES={
  'white-noise':[{art:'ice',place:'THE ICE STATION',weather:'snow'},{art:'ice',place:'THE NORTHERN RIDGE',weather:'snow'}],
 'cold-start':[{art:'frozen-junction',place:'THE FROZEN JUNCTION',weather:'snow'},{art:'ice',place:'THE TRANSPORT ROLLS NORTH',weather:'snow'}],
  'long-switch':[{art:'outpost',place:'THE POWER SUBSTATION',weather:'embers'},{art:'city',place:'THE OCCUPIED CITY',weather:'rain'}],
+ 'paper-war':[{art:'registry-hall',place:'THE RECORDS OFFICE',weather:'rain'},{art:'city',place:'THE CITY REGISTRY',weather:'rain'}],
+ 'the-mentor':[{art:'city-forge',place:'THE CITY FORGE',weather:'embers'},{art:'city',place:'THE WORKSHOP DOOR',weather:'rain'}],
  'city-of-glass':[{art:'city',place:'THE INDUSTRIAL DISTRICT',weather:'rain'},{art:'tower',place:'THE GATE AHEAD',weather:'rain'}],
  'tidelock':[{art:'marsh',place:'THE MARSH CONTROL LINE',weather:'rain'},{art:'tower',place:'THE INDUSTRIAL TOWER',weather:'rain'}],
  'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]

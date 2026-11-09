@@ -47,7 +47,7 @@ test('a mission deploys with the crafted gear and its contract; endless stays a 
 
 test('the trophies are retired: no price, no grants, nothing owed',()=>{
  assert.equal(PRESTIGE_IDS.length,12,'the retired set keeps its twelve trophies');
- assert.equal(CAMPAIGN.length,23,'the shipped story grew to twenty-three missions');
+ assert.equal(CAMPAIGN.length,25,'the shipped story grew to twenty-five missions');
  assert.ok(PRESTIGE_IDS.every(id=>CAMPAIGN.some(m=>m.id===PRESTIGE[id].mission)),'every retired trophy still maps onto a shipped mission');
  for(const id of PRESTIGE_IDS){
   const item=PRESTIGE[id];

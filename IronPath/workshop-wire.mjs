@@ -3,10 +3,10 @@
 // Writes require the published workshop rules (see
 // firebase/WORKSHOP-RULES-TO-PUBLISH.json); without them saves are rejected
 // and the legacy path keeps working.
-import {validateWorkshop} from './workshop-model.mjs?v=20261108-squadmaps1';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261108-squadmaps1';
-import {isPrestige} from './prestige.mjs?v=20261101-campaign1';
-import {completeStory} from './campaign.mjs?v=20261208-kolt1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261210-actiii1';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261210-actiii1';
+import {isPrestige} from './prestige.mjs?v=20261210-actiii1';
+import {completeStory} from './campaign.mjs?v=20261210-actiii1';
 const LIMIT=2048;
 const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray(value) && Object.keys(value).length===keys.length && keys.every(k=>Object.hasOwn(value,k));
 
