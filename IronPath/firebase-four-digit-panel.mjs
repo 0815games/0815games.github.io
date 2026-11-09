@@ -1,5 +1,5 @@
 // Staged UI for the four-digit approval flow. Only enable with matching rules.
-import {translateText as tr} from './language.mjs?v=20261209-savefix1';
+import {translateText as tr} from './language.mjs?v=20261210-actiii1';
 export function createFourDigitPanel({document,createLobby,createApproval,getProfile,onJoinMatch,onLeaveMatch,confirmMatch,confirmClose=()=>true,enabled=false}){
   const $=id=>document.getElementById(id),root=$('firebaseParty'),requests=$('partyRequests'),toggle=$('partyToggle');
   let base=null,approval=null,party=null,unwatch=[],profileWatch=null,guest=null,guestReady=false,matchGuest=null,started=false,busy=false,version=0;

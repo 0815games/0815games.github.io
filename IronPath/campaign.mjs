@@ -95,6 +95,16 @@ const MISSIONS=[
    briefing:'The dam’s first lock depends on a remote substation in the scorched scrubland. Ivo must reroute power without cutting the hospital’s supply. Secure the junctions and defend the transformer while he works.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Open the power junction',dialogue:'IVO: The hospital and the dam share this line. Pull the wrong switch and Sera loses her patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the switching yard',dialogue:'SERA: I have the lights for now. Clear the yard so Ivo can reroute the line.'},{type:'protect',at:'field',asset:'Transformer',seconds:25,label:'Protect the transformer',dialogue:'IVO: Reroute in progress. If they destroy the transformer, the hospital goes dark.'}],
    success:'SERA: The lights stayed on. IVO: First lock is isolated. The second key belongs to the city’s captured controller, Nia Reyes.'},
+  // Act III opens inside the occupied city: the paper war for Nia's gate
+  // plans, and the forge where the original timetable survived the occupation.
+  {id:'paper-war',act:'ACT III · THE LAST LIGHT',title:'Paper War',mapId:'g3-00000000b',threat:'veteran',
+   briefing:'Rook’s censors are burning the city registries shelf by shelf. Nia’s original gate plans are filed in the records office—and so is the automation order that carries Ivo’s own signature. Fight through to the archive before the censors reach it.',
+   stages:[{type:'eliminate',count:10,label:'Break the censor escort',dialogue:'IVO: The records office sits behind that escort. Every hour we lose is another shelf they burn.'},{type:'hold',at:'field',seconds:5,label:'Search the records office',dialogue:'IVO: Nia’s gate plans… and here, under A-7, section three: my signature. I signed the automation. I never read it.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the plans to command',dialogue:'VOSS: The plans come with us, and so does the truth. Get them to the command vehicle.'}],
+   success:'IVO: The plans are safe—and so is the confession. NIA: Then my gate can still be stopped, if we reach the original timetable. AMBROSE: Then you must come to the forge.'},
+  {id:'the-mentor',act:'ACT III · THE LAST LIGHT',title:'The Mentor',mapId:'g3-00000000c',threat:'veteran',
+   briefing:'Ivo’s old master Ambrose hid the original timetable inside the city forge before the occupation. Rook’s inspection controllers are closing in on the workshop. Reach the forge and bring the timetable out before they arrive.',
+   stages:[{type:'secure',at:'field',seconds:10,label:'Secure the forge approach',dialogue:'AMBROSE: Ivo’s apprentice work still sits on my bench. Tell him: the forge stands while it stands.'},{type:'protect',at:'field',asset:'Forge fire',seconds:20,label:'Protect the forge fire',dialogue:'AMBROSE: The timetable is behind the firebrick. Keep their controllers off my back while I open the wall.'},{type:'escort',at:'bunker',seconds:3,label:'Escort Ambrose and the timetable out',dialogue:'IVO: Master, you should have burned it. AMBROSE: A schedule is a promise, Ivo. You taught me that. Now correct yours.'}],
+   success:'AMBROSE: The original timetable—without it, Rook cannot stamp his war any further. IVO: Then we take it into the city. NIA: And I will show you where my gate still answers to it.'},
   {id:'city-of-glass',act:'ACT III · THE LAST LIGHT',title:'A City Under Glass',mapId:'g3-0d891921a',threat:'veteran',
    briefing:'The occupied industrial city is full of broken sightlines and patrols. Find Nia Reyes before Rook moves her. She designed the second lock; she also knows why he believes flooding the valley is necessary.',
    stages:[{type:'eliminate',count:10,label:'Break the prison escort',dialogue:'VOSS: Clear the escort, then reach the holding site. Nia is our only way into the second lock.'},{type:'hold',at:'field',seconds:5,label:'Free Nia Reyes',dialogue:'NIA: Rook says the dam will fail unless he opens it. He is wrong—but the gate is already damaged.'},{type:'escort',at:'bunker',seconds:3,label:'Escort Nia to command',dialogue:'NIA: Keep them off me. I can prove the gate can be stabilized without flooding the valley.'}],
@@ -196,17 +206,20 @@ export function campaignWaveContract(mission){return campaignWaves(mission?.thre
 // older formats forward, old mission boundary by old mission boundary, so an
 // account never loses an earned act or relic when the story grows. The table
 // below maps the twelve-mission story onto the five-act order.
-export const STORY_FORMAT=2;
-// Format 1 shipped eighteen missions; Act II grows to twenty-three. The five
-// new operations slot BETWEEN the old ones, so a format-1 boundary maps to the
-// new index of the very same mission: an account never loses an earned act or
-// relic, and the new missions simply count as played where they were skipped.
-const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,21,22,23];
+export const STORY_FORMAT=3;
+// Format 1 shipped eighteen missions; format 2 grew to twenty-three. Act III
+// inserts the paper war and the city forge before the old act opener, so a
+// format-2 boundary maps to the new index of the very same mission: an account
+// never loses an earned act or relic, and the new missions simply count as
+// played where they were skipped.
+const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,23,24,25];
+const FORMAT_2_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25];
 const LEGACY_STORY_PROGRESS=[0,1,2,4,10,11,12,13,14,15,16,17,18];
 export function campaignProgress(profile){
   const raw=profile?.storyProgress,format=profile?.storyCampaign;
   if(!Number.isInteger(raw)||raw<0)return 0;
   if(Number.isInteger(format)&&format>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(format===2)return raw>23?0:FORMAT_2_PROGRESS[raw]??0;
   if(format===1)return raw>18?0:FORMAT_1_PROGRESS[raw]??0;
   if(raw>12)return 0;
   return LEGACY_STORY_PROGRESS[raw];

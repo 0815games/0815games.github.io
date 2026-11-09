@@ -13,7 +13,7 @@
 import {deflateSync} from 'node:zlib';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {getMap} from './maps.mjs?v=20261206-acttwo1';
-import {CAMPAIGN} from './campaign.mjs?v=20261208-kolt1';
+import {CAMPAIGN} from './campaign.mjs?v=20261210-actiii1';
 
 // ------------------------------------------------------------------ png ----
 const CRC_TABLE= (()=>{const t=new Int32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c;}return t;})();

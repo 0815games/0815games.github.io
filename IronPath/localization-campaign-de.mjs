@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261208-kolt1';
+import {CAMPAIGN} from './campaign.mjs?v=20261210-actiii1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -72,6 +72,16 @@ const data={
  'long-switch':['Die lange Umschaltung','Die erste Sperre des Damms hängt von einem abgelegenen Umspannwerk im verbrannten Buschland ab. Ivo muss den Strom umleiten, ohne das Krankenhaus abzuschalten. Sichere die Knotenpunkte und verteidige den Transformator, während er arbeitet.',[
  ['Öffne den Stromknoten','IVO: Das Krankenhaus und der Damm teilen sich diese Leitung. Leg den falschen Schalter um und Sera verliert ihre Patienten.'],['Sichere die Schaltanlage','SERA: Noch haben wir Licht. Räume die Anlage, damit Ivo die Leitung umschalten kann.'],['Schütze den Transformator','IVO: Umschaltung läuft. Wenn sie den Transformator zerstören, geht im Krankenhaus das Licht aus.']],
  'SERA: Das Licht ist an geblieben. IVO: Die erste Sperre ist isoliert. Der zweite Schlüssel gehört der gefangenen Anlagenleiterin der Stadt, Nia Reyes.'],
+ 'paper-war':['Papierkrieg','Rooks Zensoren verbrennen die Standesämter der besetzten Stadt Regal für Regal. Nias originale Schleusenpläne liegen im Aktenraum – und dort auch der Automatisierungsbefehl, der Ivos eigene Unterschrift trägt. Kämpft euch zum Archiv durch, bevor die Zensoren dort sind.',[
+ ['Brich die Zensoren-Eskorte auf','IVO: Das Standesamt liegt hinter dieser Eskorte. Jede verlorene Stunde ist ein weiteres Regal, das sie anzünden.'],
+ ['Durchsuche das Aktenarchiv','IVO: Nias Schleusenpläne … und hier, unter A-7, Abschnitt drei: meine Unterschrift. Ich habe die Automatisierung unterschrieben. Gelesen habe ich sie nie.'],
+ ['Geleite die Pläne zur Kommandostelle','VOSS: Die Pläne kommen mit uns – und die Wahrheit auch. Bringt sie zum Kommandofahrzeug.']],
+ 'IVO: Die Pläne sind in Sicherheit – und das Geständnis auch. NIA: Dann lässt sich mein Tor noch aufhalten – wenn wir an den Original-Fahrplan kommen. AMBROSE: Dann müsst ihr in die Schmiede kommen.'],
+ 'the-mentor':['Der Meister','Ivos alter Meister Ambrose hat den Original-Fahrplan vor der Besatzung in der Stadtschmiede versteckt. Rooks Prüfungskontrolleure sind auf dem Weg zur Werkstatt. Erreicht die Schmiede und bringt den Fahrplan heraus, bevor sie ankommen.',[
+ ['Sichere den Schmiede-Zugang','AMBROSE: Ivos Lehrarbeit liegt noch immer auf meiner Bank. Sag ihm: Die Schmiede steht – solange sie steht.'],
+ ['Schütze das Schmiedefeuer','AMBROSE: Der Fahrplan steckt hinter dem Schamottstein. Haltet mir die Kontrolleure vom Leib, während ich die Wand öffne.'],
+ ['Geleite Ambrose und den Fahrplan heraus','IVO: Meister, du hättest ihn verbrennen sollen. AMBROSE: Ein Fahrplan ist ein Versprechen, Ivo. Das hast du von mir gelernt. Jetzt korrigiere deines.']],
+ 'AMBROSE: Der Original-Fahrplan – ohne ihn kann Rook seinen Krieg nicht weiter stempeln. IVO: Dann bringen wir ihn in die Stadt. NIA: Und ich zeige euch, wo meine Schleuse noch auf ihn hört.'],
  'city-of-glass':['Eine Stadt unter Glas','Die besetzte Industriestadt ist voller verdeckter Sichtlinien und Patrouillen. Finde Nia Reyes, bevor Rook sie verlegt. Sie hat die zweite Sperre entworfen und weiß, warum er die Überflutung des Tals für notwendig hält.',[
  ['Schalte die Gefängniseskorte aus','VOSS: Schalte die Eskorte aus und erreiche dann den Haftort. Nia ist unser einziger Zugang zur zweiten Sperre.'],['Befreie Nia Reyes','NIA: Rook sagt, der Damm werde brechen, wenn er ihn nicht öffnet. Er irrt sich – aber das Tor ist bereits beschädigt.'],['Eskortiere Nia zur Kommandozentrale','NIA: Halt sie mir vom Leib. Ich kann beweisen, dass sich das Tor stabilisieren lässt, ohne das Tal zu überfluten.']],
  'NIA: Rook hatte den Befehl, das Tal aufzugeben. Er entschied sich, es zu überfluten, statt seine eigenen Leute zu gefährden. Das Tor lässt sich noch stoppen, aber jemand muss die Steuerleitung halten.'],
@@ -116,7 +126,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

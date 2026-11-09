@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261209-savefix1';
+import {translateText as tr} from './language.mjs?v=20261210-actiii1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -24,6 +24,10 @@ const STYLES={
  'the-count':{ground:'#5f7a68',light:'#93ac8e',dark:'#3a5548',water:'#6f9c96',weather:'rain',feature:'truck',accent:'#cfcc86'},
  'ice-run':{ground:'#c6dad5',light:'#e8f0e5',dark:'#82a8aa',water:'#8ab9c2',weather:'snow',feature:'shelter',accent:'#e6be74'},
  'cold-start':{ground:'#b9d1cc',light:'#dfe9e2',dark:'#78a0a2',water:'#84b4bd',weather:'snow',feature:'prison',accent:'#e2bb72'},
+ // Act III - the occupied city: the registry hall's paper war and the forge
+ // where the original timetable survived.
+ 'paper-war':{ground:'#7f8378',light:'#b3b39b',dark:'#4f5a52',water:'#7d9e9c',weather:'rain',feature:'dispatch',accent:'#e3cd8e'},
+ 'the-mentor':{ground:'#7a7468',light:'#ada288',dark:'#4c463c',water:'#7d9e9c',weather:'embers',feature:'market',accent:'#ecb377'},
  'city-of-glass':{ground:'#8a8d80',light:'#b7b6a0',dark:'#59665d',water:'#7d9e9c',weather:'rain',feature:'prison',accent:'#e2b876'},
  'tidelock':{ground:'#728b75',light:'#a8b9a0',dark:'#4b675c',water:'#6e9da0',weather:'rain',feature:'relay',accent:'#ead48a'},
  'last-transmission':{ground:'#879188',light:'#bec3ab',dark:'#52645c',water:'#739da3',weather:'mist',feature:'dam',accent:'#ead18b'}
