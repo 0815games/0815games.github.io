@@ -30,7 +30,7 @@ function ground(ctx,theme='road',width=960,height=540){
 // compacted surface, wheel ruts that follow the actual bends, and wear
 // scattered ALONG the geometry instead of at nine hard-coded spots.
 function drawRoad(ctx,path,theme,texture=null){
-  const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:['#544a34','#716244','#8d7c5b'];
+  const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:theme==='talwald'?['#48563a','#65734c','#828e5e']:['#544a34','#716244','#8d7c5b'];
   const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
   trace(86,'rgba(26,30,24,.32)');
   trace(78,tones[0]);
@@ -103,7 +103,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261108-v3art2`;
+    image.src=`assets/${name}-sprite.png?v=20261111-act1`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }
@@ -263,7 +263,7 @@ function getGroundImage(doc,theme,variant=0){
   // painting style - bolder contrast, olive grading, painted shadow shapes.
   // The per-field section, mirror and offset below already keep two maps of
   // the same theme from sharing ground, so the old second plates retired.
-  const base=({forest:'terrain3-forest',urban:'terrain3-city',outpost:'terrain3-city',scrub:'terrain3-desert',arctic:'terrain3-snow',marsh:'terrain3-marsh'})[theme];
+  const base=({forest:'terrain3-forest',urban:'terrain3-city',outpost:'terrain3-city',scrub:'terrain3-desert',arctic:'terrain3-snow',marsh:'terrain3-marsh',talwald:'terrain3-talwald'})[theme];
   const name=base?base+'.jpg':'endless-ground3.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
@@ -355,7 +355,7 @@ function drawZoneStates(ctx,zones,state){
 // same look as towers and field - rendered artwork, not flat vector boxes. The
 // vector branches below stay as the asset-loading fallback, exactly like the
 // tower pads keep theirs.
-const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34};
+const DECO_ART={cabin:56,barn:64,stand:44,stilt:46,shed:58,ruin:62,wall:72,factory:68,gate:34,mast:56,forester:64,cross:36};
 // V2 field art: the set dressing is realistically painted now, matching
 // bunker, emplacements, torches and actors. The kind keeps its map identity
 // (the generator is untouched); only the artwork reference moves to the
@@ -372,12 +372,16 @@ const THEME_SPRITE={
   scrub:{shed:'shed2scrub',ruin:'ruin2scrub',wall:'wall2scrub'},
   urban:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
   outpost:{ruin:'ruin2',wall:'wall2',factory:'factory2'},
+  // Campaign-only Act I dressing (Talwald): the relay masts, forester houses,
+  // wayside crosses and the downed courier machine never appear in free play -
+  // free play keeps its five rotating themes (see maps.mjs STORY_FIELDS).
+  talwald:{mast:'funk2',forester:'forester2',cross:'cross2',wreck:'landmark2-wreck'},
 };
 function drawDeco(ctx,deco,theme,notify,scale=1){
   // `scale` grows the dressing with the field: a fixed 60px barn reads fine on
   // a 960 map but drowns on a 2040 sector field.
-  const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268'}[theme]||'#8a7d64';
-  const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340'}[theme]||'#54432f';
+  const walls={forest:'#7c6b50',arctic:'#7d6a55',marsh:'#6a5c49',scrub:'#9c8663',urban:'#8a8880',outpost:'#8f8268',talwald:'#6f7a58'}[theme]||'#8a7d64';
+  const roofs={forest:'#54432f',arctic:'#dfe8e6',marsh:'#4f4436',scrub:'#6d4f35',urban:'#55564f',outpost:'#5e5340',talwald:'#3f4c34'}[theme]||'#54432f';
   for(const d of deco||[]){
     const tone=Math.floor((d.shade||0)*3),wall=[walls,'#6f6250','#93846a'][tone]||walls;
     const artwork=sprite(ctx,(THEME_SPRITE[theme]&&THEME_SPRITE[theme][d.kind])||DECO_SPRITE[d.kind]||d.kind,notify);

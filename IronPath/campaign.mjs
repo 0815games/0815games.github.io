@@ -23,10 +23,34 @@ const MISSIONS=[
    briefing:'Pinewood’s crossing is under attack. The distress signal came from an engineer named Ivo Chen and a handful of soldiers. Ada insists her brother is with them; Voss cannot promise what you will find.',
    stages:[{type:'hold',at:'field',seconds:5,label:'Find the missing patrol',dialogue:'VOSS: Search the shelter beyond the crossing. Ivo was carrying a component we cannot replace.'},{type:'escort',at:'bunker',seconds:2,label:'Escort the patrol to the bunker',dialogue:'IVO: We are all that is left. Ada’s brother stayed behind to get us out. Please tell her he saved us.'}],
    success:'ADA: He was supposed to come home. IVO: He gave me the oscillator so we could warn you. The enemy transmitter is turning our own relay network against us.'},
+  {id:'ghost-frequency',act:'ACT I · THE SILENCE',title:'Ghost Frequency',mapId:'g3-0b3f01a77',threat:'standard',
+   briefing:'Ada traces the jamming signal to an old relay chain through the Talwald. As she brings each mast online, a looped callsign answers her - one that has been dead for a year.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the first mast',dialogue:'ADA: The relay line runs through the forest. Start at the first mast; I will listen as you go.'},{type:'protect',at:'field',asset:'Relay',seconds:20,label:'Protect the relay mast',dialogue:'ADA: It is here. My brother’s old callsign, looping on our frequency. Keep them off the mast while I record it.'},{type:'hold',at:'bunker',seconds:2,label:'Return the recording',dialogue:'ADA: Voss, listen. That is Elias. He is alive, and someone is using his voice to bait us.'}],
+   success:'VOSS: If Elias Vale is alive, he is being moved. ADA: Then we follow the signal - all of it.'},
   {id:'blackout',act:'ACT I · THE SILENCE',title:'Blackout at the Outpost',mapId:'g3-02e2ac0ea',threat:'hardened',
    briefing:'Ivo identifies the old outpost transmitter as the source of the jamming. Destroying it may reopen the road, but it will also tell the enemy exactly where the resistance is hiding.',
    stages:[{type:'hold',at:.3,seconds:3,label:'Plant the first charge',dialogue:'IVO: Two charges. One at the junction and one on the feed. Neither is worth your life.'},{type:'hold',at:.72,seconds:3,label:'Plant the second charge',dialogue:'ADA: First charge is answering. Ivo, are you sure the second will not bring down our relay too?'},{type:'defend',seconds:40,label:'Defend until detonation',dialogue:'IVO: I am sure enough. Charges armed—hold the bunker until they fire.'}],
    success:'VOSS: The jammer is down. ADA: Wait. A second signal just woke up. Someone wanted us to destroy that transmitter.'},
+  {id:'ash-market',act:'ACT I · THE SILENCE',title:'The Ash Market',mapId:'g3-0c5d2e19b',threat:'hardened',
+   briefing:'The relay chain needs parts the resistance cannot make. In the ruined industrial quarter, a black market trades in salvaged components - and Rook’s quartermasters bid for the same crates.',
+   stages:[{type:'eliminate',count:6,label:'Break the quartermaster’s escort',dialogue:'VOSS: Rook’s buyers are already there. Break their escort before the auction closes.'},{type:'hold',at:.3,seconds:4,label:'Win the auction crates',dialogue:'IVO: Two masts’ worth of components. Bid fast - the market moves when the shelling starts.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the parts hauler',dialogue:'IVO: The hauler is loaded. Walk it home; the market does not give refunds.'}],
+   success:'IVO: Enough components for three masts. ADA: And a manifest from the buyer’s tent - the payments are signed with a prison camp code.'},
+  {id:'the-list',act:'ACT I · THE SILENCE',title:'The List',mapId:'g3-0d7a4b35c',threat:'hardened',
+   briefing:'The camp code points to a marsh field hospital run by Medic Sera Malik. Enemy reprisal squads are combing the delta for her wounded. Her list of names begins here.',
+   stages:[{type:'secure',at:'field',seconds:10,label:'Secure the dressing station',dialogue:'SERA: I operate as long as the ground outside is ours. Clear it and keep it clear.'},{type:'protect',at:'field',asset:'Field hospital',seconds:20,label:'Protect the field hospital',dialogue:'SERA: Reprisal squads in the reeds. Do not let them reach the tents - every name on my list is still breathing.'},{type:'escort',at:'bunker',seconds:3,label:'Evacuate the wounded',dialogue:'SERA: Litters are moving. Walk them out ahead of the next sweep.'}],
+   success:'SERA: Everyone on the list is out. One of my wounded was a courier - he spoke of a manifest with a prisoner called VALE.'},
+  {id:'brothers-keeper',act:'ACT I · THE SILENCE',title:'Brother’s Keeper',mapId:'g3-0e9c6f21d',threat:'hardened',
+   briefing:'A captured dispatch rider was moved across the ice road before the pass closed. His satchel is said to hold a prisoner manifest - and Ada has stopped pretending she is not listening.',
+   stages:[{type:'eliminate',count:8,label:'Break the dispatch escort',dialogue:'VOSS: The rider is with that escort. Take them down before they reach the far shore.'},{type:'hold',at:.3,seconds:4,label:'Recover the dispatch satchel',dialogue:'ADA: The satchel is at the relay post. Bring it to me unopened. Please.'},{type:'hold',at:'bunker',seconds:2,label:'Read the manifest',dialogue:'ADA: Line forty-one. VALE, ELIAS. Transfer pending. He is alive, Voss - and he is being moved north.'}],
+   success:'ADA: A year of silence, and he is a name on a transfer list. VOSS: Then we go north - after the road is ours.'},
+  {id:'quiet-road',act:'ACT I · THE SILENCE',title:'The Quiet Road',mapId:'g3-0f1a8b44e',threat:'hardened',
+   briefing:'The night heath carries convoy traffic on a strict timetable. Ivo wants a full count: if Elias rides one of those trucks, the timetable itself will tell them which one.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Take the counting post',dialogue:'IVO: The observation post overlooks the convoy lane. Hold it and start counting.'},{type:'secure',at:'field',seconds:10,label:'Secure the timetable handoff',dialogue:'IVO: A courier passes the night’s schedule at the waypoint. Take it intact - every minute matters to them.'},{type:'hold',at:'bunker',seconds:2,label:'Deliver the timetable',dialogue:'IVO: Cross-referenced: the northbound transport runs the night after the next. One night to reach the relay.'}],
+   success:'IVO: The road runs on schedule because it must. ADA: Then for once, the timetable is on our side.'},
+  {id:'signal-home',act:'ACT I · THE SILENCE',title:'Signal Home',mapId:'g3-002000003',threat:'elite',
+   briefing:'The main relay stands in the deep Talwald. Ada will broadcast the valley’s first free transmission from it tonight - and wait for an answer on a knock code only her brother knows.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the main relay',dialogue:'ADA: The main relay is old but honest. Get me to it and I will do the rest.'},{type:'protect',at:'field',asset:'Main relay',seconds:30,label:'Protect the main relay',dialogue:'ADA: Broadcasting. If Elias can hear me, he will answer with the knock code. Keep the mast standing while I listen.'},{type:'defend',seconds:45,label:'Hold until the answer comes',dialogue:'VOSS: They know what she is doing. Hold the bunker until the transmission ends.'}],
+   success:'ADA: Three knocks, then two. That is our childhood code. VOSS: Then we have a brother to bring home - and a convoy to catch.'},
   {id:'supply-line',act:'ACT I · THE SILENCE',title:'The Relief Convoy',mapId:'g3-0e6d5c492',threat:'elite',
    briefing:'The blackout exposed a relief convoy trapped in the forest. Medic Sera Malik is with them. Voss orders the supplies recovered, but Sera refuses to leave anyone behind.',
    stages:[{type:'hold',at:'field',seconds:4,label:'Recover the medical supplies',dialogue:'SERA: The northern crate has antibiotics. Without it, the wounded will not survive the night.'},{type:'hold',at:.55,seconds:4,label:'Find the convoy survivors',dialogue:'SERA: Thank you. The drivers are sheltering on the southern road; we leave together.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the convoy survivors',dialogue:'SURVIVORS: We can walk. Keep the enemy away and we will follow you.'}],
@@ -107,7 +131,18 @@ function resolveStages(mission){
     const band=stage.type==='protect'?[80,95]:stage.type==='secure'?[58,105]:null;
     const inBand=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]&&d<=band[1];};
     const spread=q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=180);
-    const p=order.find(q=>spread(q)&&inBand(q))||(band?order.find(inBand):null)||order.find(spread)||order[fallback++%Math.max(1,order.length)]||{x:Math.round(path[0].x),y:Math.round(path[0].y)};
+    // Third try: a widened band before giving up on the road entirely. Some
+    // generated fields have no free spot at all inside the strict ring (the
+    // 15px-wide protect band can be empty on a marsh map); a slightly wider
+    // ring keeps the stage contestable instead of dropping it 500px from the
+    // nearest enemy. Protect stays under the 100px enemy reach, secure under
+    // the 110px contest radius the balance suite asserts. The widened ring also
+    // accepts the balance suite's own 90px marker floor instead of the full
+    // 180px spread - on a small marsh field the only contestable spot can sit
+    // near the bunker the escort stage walks to.
+    const relaxed=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]-15&&d<=(stage.type==='protect'?99:110);};
+    const nearSpread=q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=90);
+    const p=order.find(q=>spread(q)&&inBand(q))||(band?order.find(inBand):null)||(band?order.find(q=>nearSpread(q)&&relaxed(q)):null)||order.find(spread)||order[fallback++%Math.max(1,order.length)]||{x:Math.round(path[0].x),y:Math.round(path[0].y)};
     Object.assign(stage,{x:p.x,y:p.y});
   }
   for(const stage of stages)delete stage.at;
@@ -135,10 +170,24 @@ export function actComplete(profile,act){const end=actEndIndex(act);return end>=
 export function campaignThreat(mission){return mission?.threat??'standard';}
 export function campaignDifficulty(mission){return threatFor(mission?.threat);}
 export function campaignWaveContract(mission){return campaignWaves(mission?.threat);}
-export function campaignProgress(profile){const n=profile?.storyProgress;return Number.isInteger(n)&&n>=0&&n<=CAMPAIGN.length?n:0;}
+// Story progress formats. Inserting act missions renumbers the story, so a
+// bare storyProgress number is ambiguous between formats. Every write stamps
+// the format (storyCampaign, allowed by the published rules); reads remap
+// older formats forward, old mission boundary by old mission boundary, so an
+// account never loses an earned act or relic when the story grows. The table
+// below maps the twelve-mission story onto the five-act order.
+export const STORY_FORMAT=1;
+const LEGACY_STORY_PROGRESS=[0,1,2,4,10,11,12,13,14,15,16,17,18];
+export function campaignProgress(profile){
+  const raw=profile?.storyProgress;
+  if(!Number.isInteger(raw)||raw<0)return 0;
+  if(Number.isInteger(profile?.storyCampaign)&&profile.storyCampaign>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(raw>12)return 0;
+  return LEGACY_STORY_PROGRESS[raw];
+}
 export function campaignMission(id){return CAMPAIGN.find(m=>m.id===id)||null;}
 export function campaignAvailable(profile,id){const index=CAMPAIGN.findIndex(m=>m.id===id);return index>=0&&index<=campaignProgress(profile);}
-export function completeStory(profile,id){const index=CAMPAIGN.findIndex(m=>m.id===id),progress=campaignProgress(profile);if(!profile||index<0||index>progress)return null;return {...profile,storyProgress:Math.max(progress,index+1)};}
+export function completeStory(profile,id){const index=CAMPAIGN.findIndex(m=>m.id===id),progress=campaignProgress(profile);if(!profile||index<0||index>progress)return null;return {...profile,storyProgress:Math.max(progress,index+1),storyCampaign:STORY_FORMAT};}
 // Compatibility with old account values and old rules tests; not playable missions.
 const LEGACY=[['last-road',5],['pinewood',10],['outpost',15]];
 export function completeCampaign(profile,id,wave){const index=LEGACY.findIndex(m=>m[0]===id),progress=Number.isInteger(profile?.campaign)&&profile.campaign>=0&&profile.campaign<=3?profile.campaign:0;if(!profile||index<0||!Number.isSafeInteger(wave)||wave<LEGACY[index][1]||index>progress)return null;return {...profile,campaign:Math.max(progress,index+1)};}
