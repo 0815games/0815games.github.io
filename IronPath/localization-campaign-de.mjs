@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261211-actiii2';
+import {CAMPAIGN} from './campaign.mjs?v=20261212-actiii3';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -98,6 +98,21 @@ const data={
  'tidelock':['Tidelock','Nia kennt über eine Steuerleitung im Marschland einen Weg ins Dammnetz. Ada wird Rooks Truppen die Beweise senden, während du das Tor isolierst. Der Empfänger muss lange genug überleben, um sie zu übertragen.',[
  ['Verbinde die Steuerleitung','NIA: Das Tor steht unter Druck. Wenn wir den Strom zu schnell abschalten, öffnet es sich von selbst.'],['Schütze das Senderelais','ADA: Hier ist Ada Vale. Im Tal sind noch Zivilisten. Rooks Befehle werden sie ertränken. Bitte hört zu.'],['Isoliere die Torsteuerung','NIA: Einige seiner Einheiten stellen den Kampf ein. Räume die Steuerstellung; ich kann das Tor isolieren.']],
  'ROOK: Mein Befehl war, meine Truppen zu retten. VOSS: Dann hilf uns, alle zu retten. ROOK: Die letzte Übersteuerung liegt am Industrieturm. Von hier aus kann ich sie nicht stoppen.'],
+ 'the-confession':['Das Geständnis','In Adas Sendung legt Ivo offen, was das Tal schon geahnt hat: Der Fahrplan, der den Krieg am Laufen hält, ist sein Werk. Manche Kämpfer wollen ihn ausstoßen – der Rat stimmt heute Nacht ab. Haltet die Versammlungshalle, während das Tal entscheidet.',[
+ ['Brich die Rückholkommando auf','VOSS: Rook hat eine Kommando geschickt, um die Abstimmung zu sprengen, bevor sie gezählt ist. Sie erreichen die Halle nicht.'],
+ ['Bewache die Versammlungshalle','IVO: Ich habe den Fahrplan geschrieben, der dieses Tal überflutet. Ich werde mich nicht hinter einer Korrektur verstecken. Urteilt über mich – aber lasst die Korrektur laufen.'],
+ ['Sichere den Zählhof','SERA: Die Halle hält den Atem an. Haltet den Hof frei, bis jede Hand erhoben und gezählt ist.']],
+ 'IVO: Der Rat behält die Korrektur – und ihren Autor. SERA: Niemand wird von dieser Liste gestrichen, nicht einmal der Mann, der den Fahrplan schrieb. ADA: Und während das Tal stritt, habe ich gefunden, woher Rooks Befehle wirklich kommen.'],
+ 'the-signal-above':['Das Signal da oben','Während das Tal die stabilisierte Schleuse feiert, peilt Ada Rooks Befehlskette nach. Jeder Befehl kam als Relais von EINER Quelle – am Ende der alten Nachschubstraße. Richtet den Peiler auf und folgt dem Strahl: die Eiserne Straße.',[
+ ['Richte den Peiler auf','ADA: Eine Frequenz, weitergeleitet durch jeden Befehl, den Rook je gegeben hat. Ich brauche den Peiler oben – und ruhig.'],
+ ['Schütze den Peiler','ADA: Die Peilung läuft. Wenn sie den Peiler zerschlagen, wird die Kette kalt und wir fangen von vorn an.'],
+ ['Bestätige die Relaiskette','ADA: Peilung bestätigt. Die Befehle kommen vom Knoten am Ende der alten Nachschubstraße. Die Eiserne Straße ist echt – und sie führt sich selbst.']],
+ 'ADA: Jeder Befehl, jeder Fahrplan, jeder Konvoi: eine Quelle. IVO: Dann läuft der Fahrplan, den ich unterschrieben habe, da oben immer noch. NIA: Und er hält nicht an, wenn wir nicht zu ihm hinaufsteigen.'],
+ 'counterfeit-key':['Falschlösung','Der Leser im Turm prüft den Schlüssel, den man ihm gibt. Aus Nias alten Plänen fertigt Ivo einen Nachbau, der ihn anlügt – genau genug, um den äußeren Stromkreis zu öffnen, falsch genug, um die Übersteuerung nicht zu scharf zu stellen. Die Fertigung muss unter Beschuss geschehen.',[
+ ['Kalibriere die Fräsbank','IVO: Die Toleranz ist alles. Zwei Zehntel daneben, und der Reader frisst den Schlüssel – und den Turm gleich mit.'],
+ ['Sichere den Werkshof','VOSS: Rook weiß, was eine Fräsbank im Viertel bedeutet. Haltet den Hof, solange Ivo arbeitet.'],
+ ['Schütze den Schlüsselnachbau','NIA: Der Rohling wird gefräst. Wenn die Saboteure die Bank erreichen, gibt es keinen zweiten Rohling – verteidigt ihn mit allem.']],
+ 'IVO: Der Nachbau ist gefräst – ein Schlüssel, der die Tür öffnet und das Schloss anlügt. NIA: Dann steigen wir den Turm hinauf. ADA: Eine letzte Sendung. Für uns alle.'],
  'last-transmission':['Die letzte Übertragung','Der Countdown der automatischen Übersteuerung läuft. Seras Evakuierung ist in Sicherheit und Nia am Tor. Du musst den Industrieturm erreichen und die letzte Verbindung trennen. Rooks verbliebene Getreue rücken weiter vor.',[
  ['Erreiche den Turmstromkreis','NIA: Ich kann das Tor nur stabilisieren, wenn du den Turmstromkreis öffnest. Ada führt dich hindurch.'],['Deaktiviere die Übersteuerung','ADA: Folge dem blauen Kabel. Für meinen Bruder und alle, die noch dort unten sind – zieh es heraus.'],['Halte durch, bis das Tor stabil ist','NIA: Übersteuerung getrennt. Das Tor braucht Zeit, um sich zu stabilisieren. Halte den Bunker; überlass ihnen die Leitung nicht wieder.'],['Bestätige, dass die Straße offen ist','SERA: Das Wasser sinkt. Komm nach Hause; wir zählen alle gemeinsam.']],
  'VOSS: Das Tor ist gesichert. Das Tal steht noch. ADA: Mein Bruder hat das Signal nie wieder gehört, aber die Menschen, die er gerettet hat, schon. SERA: Die Straße ist offen. Diesmal bekommt jeder eine Chance, nach Hause zu kommen.']
@@ -136,7 +151,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

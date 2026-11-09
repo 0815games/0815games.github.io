@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261206-acttwo1';
+import {getMap} from './maps.mjs?v=20261212-actiii3';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -121,7 +121,19 @@ const MISSIONS=[
    briefing:'Nia knows a way into the dam network through a marsh control line. Ada will broadcast the evidence to Rook’s troops while you isolate the gate. The receiver must survive long enough to send it.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Connect the control line',dialogue:'NIA: The gate is under strain. If we cut power too quickly, it will open by itself.'},{type:'protect',at:'field',asset:'Broadcast relay',seconds:30,label:'Protect the broadcast relay',dialogue:'ADA: This is Ada Vale. The valley is still occupied by civilians. Rook’s orders will drown them. Please listen.'},{type:'secure',at:'field',seconds:10,label:'Isolate the gate control',dialogue:'NIA: Some of his units are standing down. Clear the control position; I can isolate the gate.'}],
    success:'ROOK: My orders were to save my troops. VOSS: Then help us save everyone. ROOK: The final override is at the industrial tower. I cannot stop it from here.'},
-  {id:'last-transmission',act:'ACT III · THE LAST LIGHT',title:'The Last Transmission',mapId:'g3-06be302d5',threat:'legendary',
+  {id:'the-confession',act:'ACT III · THE LAST LIGHT',title:'The Confession',mapId:'g3-000000012',threat:'legendary',
+   briefing:'In Ada’s broadcast, Ivo confesses what the valley has suspected: the timetable that keeps the war running is his work. Some fighters want him cast out; the council votes tonight. Hold the assembly hall while the valley decides.',
+   stages:[{type:'eliminate',count:10,label:'Break the recall squad',dialogue:'VOSS: Rook sent a squad to break the vote before it is counted. They do not reach the hall.'},{type:'hold',at:'field',seconds:5,label:'Guard the assembly hall',dialogue:'IVO: I wrote the schedule that floods this valley. I will not hide behind a correction. Judge me — but let the correction run.'},{type:'secure',at:'field',seconds:10,label:'Secure the counting yard',dialogue:'SERA: The hall holds its breath. Keep the yard clear until every hand is raised and counted.'}],
+   success:'IVO: The council keeps the correction—and its author. SERA: Nobody gets crossed off this list, not even the man who wrote the timetable. ADA: And while the valley argued, I found where Rook’s orders really come from.'},
+  {id:'the-signal-above',act:'ACT III · THE LAST LIGHT',title:'The Signal Above',mapId:'g3-000000013',threat:'legendary',
+   briefing:'While the valley celebrates the stabilized gate, Ada traces Rook’s command chain. Every order arrived as a relay from ONE source — at the end of the old supply road. Raise the direction finder and follow the beam: the Iron Path.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Raise the direction finder',dialogue:'ADA: One frequency, relayed through every order Rook ever gave. I need the finder up and steady.'},{type:'protect',at:'field',asset:'Direction finder',seconds:25,label:'Protect the direction finder',dialogue:'ADA: The trace is running. If they smash the finder, the chain goes cold and we start over.'},{type:'hold',at:'field',seconds:5,label:'Confirm the relay chain',dialogue:'ADA: Bearing confirmed. The orders come from the junction at the end of the old supply road. The Iron Path is real — and it runs itself.'}],
+   success:'ADA: Every order, every timetable, every convoy: one source. IVO: Then the timetable I signed is still running up there. NIA: And it will not stop unless we climb to it.'},
+  {id:'counterfeit-key',act:'ACT III · THE LAST LIGHT',title:'Counterfeit Key',mapId:'g3-000000014',threat:'legendary',
+   briefing:'The tower’s reader checks the key it is given. From Nia’s old plans, Ivo machines a counterfeit that lies to it — close enough to open the outer circuit, wrong enough to keep the override from arming. The forging has to happen under fire.',
+   stages:[{type:'hold',at:'field',seconds:4,label:'Calibrate the cutting bench',dialogue:'IVO: Tolerance is everything. Two tenths off and the reader eats the key — and the tower with it.'},{type:'secure',at:'field',seconds:10,label:'Secure the workshop courtyard',dialogue:'VOSS: Rook knows what a cutting bench in the district means. Hold the courtyard while Ivo works.'},{type:'protect',at:'field',asset:'Counterfeit key',seconds:20,label:'Protect the counterfeit key',dialogue:'NIA: The blank is cutting. If their saboteurs reach the bench, there is no second blank — guard it with everything.'}],
+   success:'IVO: The counterfeit is cut — a key that opens the door and lies to the lock. NIA: Then we go up the tower. ADA: One last transmission. For all of us.'},
+  {id:'last-transmission',act:'ACT III · THE LAST LIGHT',title:'The Last Transmission',mapId:'g3-06be302d5',threat:'legendary',boss:'a7',
    briefing:'The automatic override is counting down. With Sera’s evacuation clear and Nia at the gate, you must reach the industrial tower and break the last connection. Rook’s remaining loyalists are still advancing.',
    stages:[{type:'hold',at:'entry',seconds:5,label:'Access the tower circuit',dialogue:'NIA: I can stabilize the gate only if you open the tower circuit. Ada will talk you through it.'},{type:'hold',at:'field',seconds:5,label:'Disable the override',dialogue:'ADA: Follow the blue cable. For my brother, and everyone still down there—pull it.'},{type:'defend',seconds:50,label:'Hold until the gate stabilizes',dialogue:'NIA: Override disconnected. The gate needs time to settle. Hold the bunker; do not give them the line back.'},{type:'hold',at:'bunker',seconds:2,label:'Confirm the road is open',dialogue:'SERA: The water is falling. Come home; we will count everyone together.'}],
    success:'VOSS: The gate is secure. The valley is still standing. ADA: My brother never heard the signal return, but the people he saved did. SERA: The road is open. This time, everyone gets a chance to go home.'}
@@ -214,20 +226,23 @@ export function campaignWaveContract(mission){return campaignWaves(mission?.thre
 // older formats forward, old mission boundary by old mission boundary, so an
 // account never loses an earned act or relic when the story grows. The table
 // below maps the twelve-mission story onto the five-act order.
-export const STORY_FORMAT=4;
-// Format 1 shipped eighteen missions; format 2 grew to twenty-three; format 3
-// added the paper war and the city forge. The two workshop missions slot
-// between the city and the marsh, so an older boundary maps to the new index
-// of the very same mission: an account never loses an earned act or relic, and
-// the new missions simply count as played where they were skipped.
-const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,23,26,27];
-const FORMAT_2_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,26,27];
-const FORMAT_3_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,26,27];
+export const STORY_FORMAT=5;
+// Format 1 shipped eighteen missions; format 2 grew to twenty-three; formats 3
+// and 4 added the city and workshop operations. The last three act-III
+// missions slot between the marsh control line and the tower, so an older
+// boundary maps to the new index of the very same mission: an account never
+// loses an earned act or relic, and the new missions simply count as played
+// where they were skipped.
+const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,23,26,30];
+const FORMAT_2_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,26,30];
+const FORMAT_3_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,26,30];
+const FORMAT_4_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,30];
 const LEGACY_STORY_PROGRESS=[0,1,2,4,10,11,12,13,14,15,16,17,18];
 export function campaignProgress(profile){
   const raw=profile?.storyProgress,format=profile?.storyCampaign;
   if(!Number.isInteger(raw)||raw<0)return 0;
   if(Number.isInteger(format)&&format>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(format===4)return raw>27?0:FORMAT_4_PROGRESS[raw]??0;
   if(format===3)return raw>25?0:FORMAT_3_PROGRESS[raw]??0;
   if(format===2)return raw>23?0:FORMAT_2_PROGRESS[raw]??0;
   if(format===1)return raw>18?0:FORMAT_1_PROGRESS[raw]??0;

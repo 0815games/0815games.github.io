@@ -41,7 +41,7 @@ assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
  const riegel=makeEnemy('bossRiegel',7);
  assert.equal(riegel.boss,'bossRiegel');assert.equal(riegel.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossRiegel'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,2,'Riegel closes Act I, Kolt closes Act II');
+ assert.equal(STORY_BOSSES.length,3,'Riegel closes Act I, Kolt closes Act II, A-7 closes Act III');
 }
 {
  const s=setup('bossRiegel',18-STEP/2);s.players.solo.cooldown=5;const events=stepMatch(s);
@@ -71,7 +71,7 @@ assert.equal(bossTelegraph({boss:'bossKolt',bossClock:14}).key,'flood');
  const kolt=makeEnemy('bossKolt',7);
  assert.equal(kolt.boss,'bossKolt');assert.equal(kolt.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossKolt'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,2);
+ assert.equal(STORY_BOSSES.length,3);
 }
 {
  const surge=()=>{const s=setup('bossKolt',13);s.enemies.push({kind:'infantry',x:s.enemies[0].x+150,y:s.enemies[0].y,hp:100,maxHp:100,speed:30,segment:1,reward:1,damage:1});const enemy=s.enemies[1],x=enemy.x;stepMatch(s);return Math.abs(enemy.x-x);};
@@ -84,6 +84,41 @@ assert.equal(bossTelegraph({boss:'bossKolt',bossClock:14}).key,'flood');
  const s=setup('bossKolt',18-STEP/2);const events=stepMatch(s);
  assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='flood').length,1);
  assert.equal(stepMatch(s).filter(e=>e.type==='bossAbility'&&e.ability==='flood').length,0,'the pulse fires once per cycle');
+}
+// A-7, the Works Overseer, closes Act III: his armor comes off in phases -
+// works shell, exposed torso, open core - read straight off boss health, so
+// snapshots and reconnects agree without extra state. The shell halves weapon
+// damage; the open core takes extra and drives him forward.
+assert.equal(bossPhase({boss:'bossA7',hp:7,maxHp:7}),'werk');
+assert.equal(bossPhase({boss:'bossA7',hp:4.6,maxHp:7}),'torso');
+assert.equal(bossPhase({boss:'bossA7',hp:2,maxHp:7}),'kern');
+assert.equal(bossPhase({boss:'bossA7',hp:6.9,maxHp:7}),'werk','above two thirds the shell holds');
+assert.equal(bossPhase({boss:'bossA7',hp:4.6,maxHp:7}),'torso','the shell breaks at two thirds');
+assert.equal(bossPhase({boss:'bossA7',hp:2.3,maxHp:7}),'kern','the core opens at one third');
+assert.equal(bossWeaponFactor({boss:'bossA7',hp:7,maxHp:7}),.5);
+assert.equal(bossWeaponFactor({boss:'bossA7',hp:4.6,maxHp:7}),1);
+assert.equal(bossWeaponFactor({boss:'bossA7',hp:2,maxHp:7}),1.25);
+assert.match(bossPhaseLabel({boss:'bossA7',hp:7,maxHp:7}),/halved/);
+assert.match(bossPhaseLabel({boss:'bossA7',hp:4.6,maxHp:7}),/accelerates/);
+assert.match(bossPhaseLabel({boss:'bossA7',hp:2,maxHp:7}),/strike now/);
+assert.equal(bossTelegraph({boss:'bossA7',hp:7,maxHp:7}),null,'the phases are read off health, not a countdown');
+{
+ const a7=makeEnemy('bossA7',7);
+ assert.equal(a7.boss,'bossA7');assert.equal(a7.kind,'tank');
+ assert.equal(BOSSES.find(b=>b.kind==='bossA7'),undefined,'story bosses never join the endless rotation');
+}
+{
+ const s=setup('bossA7',3);s.enemies[0].hp=s.enemies[0].maxHp;stepMatch(s);
+ s.enemies[0].hp=s.enemies[0].maxHp*.5;const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='a7-torso').length,1);
+ assert.equal(stepMatch(s).filter(e=>e.type==='bossAbility'&&e.ability==='a7-torso').length,0,'the phase event fires once per threshold');
+}
+{
+ const move=fraction=>{const s=setup('bossA7',3);s.enemies[0].hp=s.enemies[0].maxHp*fraction;s.enemies[0].speed=30;const x=s.enemies[0].x;stepMatch(s);return Math.abs(s.enemies[0].x-x);};
+ const shell=move(.9),torso=move(.5),core=move(.2);
+ assert.ok(Math.abs(shell-30*STEP)<1e-6,'the works shell keeps his pace');
+ assert.ok(Math.abs(shell*1.12-torso)<1e-6,'the exposed torso accelerates him');
+ assert.ok(Math.abs(shell*1.35-core)<1e-6,'the open core drives him forward');
 }
 // The mission formation carries the story boss on the contract's final wave,
 // replacing the rotation boss instead of stacking on it.
