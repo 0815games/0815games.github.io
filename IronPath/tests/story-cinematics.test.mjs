@@ -7,7 +7,7 @@ const MOTIFS=['dawn-road','pinewood-trail','relay-line','outpost-fire','market-r
 const ACT2=['flood-village','hospital-row','night-count','white-passage','frozen-junction'];
 const ACT3=['registry-hall','city-forge','night-strike'];
 const ACT4=['mountain-pass','moor-depot','work-camp','long-span','iron-yard','storm-gate'];
-const ACT5=['the-descent','dead-timetable','the-quartermaster','two-keys'];
+const ACT5=['the-descent','dead-timetable','the-quartermaster','two-keys','night-of-lights','prison-train','rooks-line'];
 test('all scenes have authored, valid locations for both briefings and debriefs',()=>{const introArts=new Set();for(const mission of CAMPAIGN){for(const kind of ['intro','ending']){const scene=cinematicScene(mission,kind);assert.ok(scene?.place);assert.ok(POOL.concat(MOTIFS,ACT2,ACT3,ACT4,ACT5).includes(scene.art),`${mission.id} ${kind} art ${scene.art}`);assert.ok(['rain','snow','mist','embers'].includes(scene.weather));if(kind==='intro')introArts.add(scene.art);}}
  // Every Act I, II and III briefing carries its own painted motif; the acts
  // beyond keep the shared pool until their regions ship.

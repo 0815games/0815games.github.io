@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261218-junction1';
+import {getMap} from './maps.mjs?v=20261219-trains1';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -195,7 +195,19 @@ const MISSIONS=[
   {id:'two-keys',act:'ACT V · THE IRON PATH',title:'Two Keys',mapId:'g3-000000022',threat:'legendary',
    briefing:'Nia’s city key and Ivo’s timetable card open the outer ring of the junction — but the readers learn. Feed the false map first, let the ring defend the wrong gate, and take the real one while it does.',
    stages:[{type:'secure',at:'field',seconds:10,label:'Feed the false map',dialogue:'IVO: The readers pattern-match: last night’s rail, tonight’s ring. Let them read a map of a gate we will not touch.'},{type:'hold',at:'field',seconds:5,label:'Hold the decoy approach',dialogue:'NIA: The ring turns its guns toward the false gate. Keep the pretence alive — noise, light, everything.'},{type:'defend',seconds:40,label:'Hold until the real gate opens',dialogue:'VOSS: Nia’s key turns. The real gate is grinding open — hold the ring until our people are through.'}],
-   success:'NIA: The outer ring is open. VOSS: And the junction’s guns are still watching an empty road. ADA: Inside is the core. And inside the core is my brother.'}
+   success:'NIA: The outer ring is open. VOSS: And the junction’s guns are still watching an empty road. ADA: Inside is the core. And inside the core is my brother.'},
+  {id:'night-of-lights',act:'ACT V · THE IRON PATH',title:'Night of Lights',mapId:'g3-000000023',threat:'legendary',
+   briefing:'Ada hijacks the road’s signal chain and broadcasts the valley’s evidence to every garrison — including Rook’s original order, uncensored: they had left him to die too. Hold the mast while the truth goes out, then hold the yard while the garrisons decide.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Take the signal mast',dialogue:'ADA: The signal chain is the road’s nervous system. One mast, one night, every garrison listening — take it.'},{type:'protect',at:'field',asset:'Signal chain',seconds:30,label:'Protect the broadcast',dialogue:'ADA: Everything the valley suffered goes out tonight on their own frequencies — uncensored, unsigned, undeniable. Keep the chain standing while it transmits.'},{type:'defend',seconds:40,label:'Hold until the garrisons answer',dialogue:'VOSS: Some will fight harder. Some will stop. All of them now know what the road does with its own soldiers — hold until the answers come in.'}],
+   success:'ADA: Every garrison on the line has heard it now — including Rook’s own order to abandon his rearguard. VOSS: The junction’s phone lines are burning. WREN: An army that knows it is expendable defends nothing for long.'},
+  {id:'the-prison-train',act:'ACT V · THE IRON PATH',title:'The Prison Train',mapId:'g3-000000024',threat:'legendary',
+   briefing:'Labor trains roll into the core — Elias Vale is aboard. Take the train in motion: the engine, not the carriages, with Ada’s voice in your ear the whole way. Nobody rides that train to the end of the line tonight.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the running board',dialogue:'ADA: The prison train does not stop — it cannot be stopped. Reach it at the crossing and get aboard.'},{type:'eliminate',count:10,label:'Clear the escort cars',dialogue:'VOSS: Escort cars, roof gunners. Clear them car by car — the passengers are not the enemy tonight.'},{type:'escort',at:'bunker',seconds:3,label:'Bring the train out of the core',dialogue:'ADA: Elias. It is Ada. It has always been Ada. Get my brother off this train.'}],
+   success:'ELIAS: Ada? ...I know. I have known since the relay. Take the controls — I ride in the engine now. ADA: Voss — the core. While they still think the train is theirs. Bring us home.'},
+  {id:'rooks-line',act:'ACT V · THE IRON PATH',title:'Rook’s Line',mapId:'g3-000000025',threat:'legendary',
+   briefing:'Rook pulls every loyal unit into one defence line before the core — the last conventional battle of the war. His address runs on every channel: one man, asking his army to die for a road that already abandoned him.',
+   stages:[{type:'eliminate',count:10,label:'Break the defence line',dialogue:'VOSS: One line, every loyal soldier he has left. Break it in the middle and the flanks fold.'},{type:'secure',at:'field',seconds:10,label:'Secure the command post',dialogue:'IVO: His field desk — maps, codes, the last signed order. Take it intact: the core’s doors answer to it.'},{type:'defend',seconds:50,label:'Hold until the line breaks',dialogue:'WREN: His speech is still playing on every channel. Let him finish — then show his army what is left.'}],
+   success:'ROOK: Line... withdrawn. All units... withdrawn. VOSS: The last conventional army of the Iron Path is gone. NIA: And behind it: the core. ADA: And behind the core: home.'}
 ];
 // ---------------------------------------------------------------------------
 // Anchor resolution. All geometry helpers are pure; the same seed always

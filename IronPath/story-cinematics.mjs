@@ -43,7 +43,10 @@ const OPENINGS={
 'the-descent':[['NIA','Below the gate the valley opens like a lit map. The junction does not know we are coming.'],['VOSS','Then we descend quietly. First contact on the shunting yards - the road is alive tonight.']],
 'dead-timetable':[['IVO','The station clock is the network’s only truth. Tonight, my card goes into the truth.'],['VOSS','Then we hold the platform while the network learns a new schedule.']],
 'the-quartermaster':[['VOSS','A vault depot. The war has eaten from this hand for years.'],['WREN','Tonight the hand opens. We eat - and they learn to count losses.']],
-'two-keys':[['NIA','My city key. His timetable card. Together they open the outer ring.'],['IVO','But the readers learn. We feed them a false map first - they will defend the wrong gate all night.']]
+'two-keys':[['NIA','My city key. His timetable card. Together they open the outer ring.'],['IVO','But the readers learn. We feed them a false map first - they will defend the wrong gate all night.']],
+'night-of-lights':[['ADA','The signal chain is the road’s nervous system. Tonight I speak through it - to every garrison at once.'],['VOSS','Then we hold the mast while the whole valley listens to the truth.']],
+'the-prison-train':[['ADA','A labor train rolls into the core. Elias is aboard - I have known since the relay, and I have been afraid since forever.'],['VOSS','Then tonight the train stops being theirs. The engine, not the carriages.']],
+'rooks-line':[['ROOK','All loyal units to the line. This is the last order I will ever give you.'],['VOSS','His speech is on every channel. Let it play - and break the line he is hiding behind.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -89,7 +92,10 @@ const CODAS={
 'the-descent':[['NARRATOR','The first siding falls without a shout. The yards keep marshalling their war, unaware.'],['NARRATOR','From the switchbacks, the junction glitters like a festival that never ends.']],
 'dead-timetable':[['NARRATOR','The clock face turns, and with it every convoy of the network.'],['NARRATOR','Somewhere a dispatcher reads a schedule nobody wrote - and obeys it anyway.']],
 'the-quartermaster':[['NARRATOR','The vault stands open, its sleds heavy with the junction’s years.'],['NARRATOR','A starving garrison is a garrison that makes mistakes. Soon, it will make them.']],
-'two-keys':[['NARRATOR','The false map burns down to ash, and the real gate stands open behind it.'],['NARRATOR','Inside the ring, the core of the Iron Path waits - and with it, a name on a transport list.']]
+'two-keys':[['NARRATOR','The false map burns down to ash, and the real gate stands open behind it.'],['NARRATOR','Inside the ring, the core of the Iron Path waits - and with it, a name on a transport list.']],
+'night-of-lights':[['NARRATOR','The mast blazes, and down every wire of the valley the truth runs at the speed of light.'],['NARRATOR','In a hundred garrisons, a hundred radios play a man’s own death order back to him.']],
+'the-prison-train':[['NARRATOR','The escort cars stand cleared, the engine answers to new hands.'],['NARRATOR','Brother and sister, one microphone between them, ride the train out of the dark.']],
+'rooks-line':[['NARRATOR','The line breaks in the middle, and the flanks fold like paper.'],['NARRATOR','Behind the last soldier of the last army, the core’s towers hum - waiting for their turn.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -136,7 +142,10 @@ const SCENES={
  'the-descent':[{art:'the-descent',place:'THE SHUNTING YARD',weather:'mist'},{art:'city',place:'THE VALLEY MOUTH',weather:'mist'}],
  'dead-timetable':[{art:'dead-timetable',place:'THE STATION CLOCK',weather:'mist'},{art:'tower',place:'THE PLATFORM',weather:'mist'}],
  'the-quartermaster':[{art:'the-quartermaster',place:'THE VAULT DEPOT',weather:'embers'},{art:'city',place:'THE FULL SLEDS',weather:'mist'}],
- 'two-keys':[{art:'two-keys',place:'THE OUTER RING',weather:'rain'},{art:'city',place:'THE FALSE MAP FEED',weather:'rain'}]
+ 'two-keys':[{art:'two-keys',place:'THE OUTER RING',weather:'rain'},{art:'city',place:'THE FALSE MAP FEED',weather:'rain'}],
+ 'night-of-lights':[{art:'night-of-lights',place:'THE SIGNAL MAST',weather:'mist'},{art:'tower',place:'EVERY GARRISON LISTENS',weather:'mist'}],
+ 'the-prison-train':[{art:'prison-train',place:'THE RUNNING BOARD',weather:'embers'},{art:'city',place:'THE ENGINE CAB',weather:'mist'}],
+ 'rooks-line':[{art:'rooks-line',place:'THE DEFENCE LINE',weather:'rain'},{art:'outpost',place:'THE COMMAND POST',weather:'rain'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic
