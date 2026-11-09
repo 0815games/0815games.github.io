@@ -14,10 +14,14 @@ const profileWith=(storyProgress,workshop)=>({name:'A',gender:'female',xp:0,stor
 test('every mission carries a threat, and the campaign gets harder as it goes',()=>{
  for(const mission of CAMPAIGN)assert.ok(Object.hasOwn(THREATS,mission.threat),`${mission.id} needs a threat`);
  const order={standard:0,hardened:1,elite:2,veteran:3,legendary:4,iron:5};
- let previous=0;
- for(const mission of CAMPAIGN){assert.ok(order[mission.threat]>=previous,`${mission.id} must not be easier than the mission before it`);previous=order[mission.threat];}
- assert.equal(CAMPAIGN.at(-1).threat,'legendary','the finale is the hardest mission');
- assert.equal(campaignWaveContract(CAMPAIGN.at(-1)),8,'the finale runs eight waves');
+ // Threat climbs within an act; a new act may open lower again (the plan's
+ // five-act curve restarts each region) but never dips inside one.
+ let previous=0,act=null;
+ for(const mission of CAMPAIGN){if(mission.act!==act){act=mission.act;previous=0;}assert.ok(order[mission.threat]>=previous,`${mission.id} must not be easier than the mission before it within its act`);previous=order[mission.threat];}
+ const finale=CAMPAIGN.filter(m=>m.finale).at(-1);
+ assert.equal(finale.threat,'legendary','the story finale is the hardest mission');
+ assert.equal(campaignWaveContract(finale),8,'the story finale runs eight waves');
+ assert.ok(!CAMPAIGN.at(-1).finale||CAMPAIGN.at(-1).id===finale.id,'a partially shipped act ends without its finale');
 });
 
 test('a harder threat means tougher units, wider surges and a smaller bunker',()=>{
@@ -47,7 +51,7 @@ test('a mission deploys with the crafted gear and its contract; endless stays a 
 
 test('the trophies are retired: no price, no grants, nothing owed',()=>{
  assert.equal(PRESTIGE_IDS.length,12,'the retired set keeps its twelve trophies');
- assert.equal(CAMPAIGN.length,30,'the shipped story grew to thirty missions');
+ assert.equal(CAMPAIGN.length,33,'the shipped story grew to thirty-three missions');
  assert.ok(PRESTIGE_IDS.every(id=>CAMPAIGN.some(m=>m.id===PRESTIGE[id].mission)),'every retired trophy still maps onto a shipped mission');
  for(const id of PRESTIGE_IDS){
   const item=PRESTIGE[id];

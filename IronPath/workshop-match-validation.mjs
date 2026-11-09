@@ -1,7 +1,7 @@
 // Structural validation for an explicitly locked workshop match. These checks
 // do not authenticate the lock or stop older clients; enforcement belongs at
 // a trusted manifest/rules boundary before this can be enabled.
-import {verifyWorkshopRoster} from './workshop-multiplayer.mjs?v=20261212-actiii3';
+import {verifyWorkshopRoster} from './workshop-multiplayer.mjs?v=20261215-winter1';
 
 export function validWorkshopMatchLock(lock,{partyId,mode,playerIds}){
  if(!lock||!Array.isArray(lock.players))return false;
