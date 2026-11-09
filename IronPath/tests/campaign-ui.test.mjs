@@ -13,7 +13,7 @@ test('solo campaign selection, victory, save and next unlock work through the ga
  // the top of the card, in the page language - the green status line steps
  // back for it (kept at opacity 0 so screen readers still announce it).
  {const css=await readFile(new URL('../style.css',import.meta.url),'utf8');
-  assert.match(css,/\.mission-stamp\{[^}]*rotate\(-7deg\)/,'the stamp sits diagonally across the top of the card');
+  assert.match(css,/\.mission-stamp\{[^}]*translate\(-50%,-50%\) rotate\(-12deg\)/,'the big stamp sits diagonally across the middle of the card');
   assert.match(css,/\.mission-stamp\{[^}]*#cf4b42/,'the stamp border is stamp red');
   assert.match(css,/\.mission-card\[data-status="complete"\] \.mission-status\{opacity:0\}/,'the green status line steps back for the stamp');
   assert.match(css,/\.mission-card\[data-status="complete"\] \.mission-number\{opacity:0\}/,'the act number steps back too, so the stamp never fights the title');
