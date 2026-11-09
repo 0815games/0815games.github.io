@@ -1,6 +1,6 @@
 import {strict as assert} from 'node:assert';
-import {bossPhase,bossWeaponFactor,bossPhaseLabel,crossedCycle} from '../boss-mechanics.mjs';
-import {makeEnemy} from '../combat.mjs';
+import {bossPhase,bossWeaponFactor,bossPhaseLabel,bossTelegraph,crossedCycle} from '../boss-mechanics.mjs';
+import {makeEnemy,BOSSES,STORY_BOSSES,missionFormation,waveFormation} from '../combat.mjs';
 import {createMatch,stepMatch,STEP} from '../simulation.mjs';
 import {createPlayer} from '../match.mjs';
 import {createPartyHost} from '../party-host.mjs';
@@ -26,4 +26,42 @@ function setup(kind,clock,players=[player('solo')]){
 {
  const s=setup('bossBomber',11,[player('host'),player('guest')]);const host=createPartyHost(s,{hostId:'host'});host.setPresence('host',true);host.setPresence('guest',true);host.advance();const a=host.snapshotFor('host').match,b=host.snapshotFor('guest').match;assert.equal(bossPhase(a.enemies[0]),'bomb-warning');assert.equal(a.enemies[0].bossClock,b.enemies[0].bossClock);host.setPresence('guest',false);host.advance();host.setPresence('guest',true);assert.equal(bossPhase(host.snapshotFor('guest').match.enemies[0]),'bomb-warning');
 }
+// Riegel, the Night Warden, closes Act I: a story boss, never in the endless
+// rotation. His jam field blocks the ability recharge and dampens weapon
+// damage; when it collapses, a swarm of interceptors covers the open window.
+assert.equal(bossPhase({boss:'bossRiegel',bossClock:11.9}),'normal');
+assert.equal(bossPhase({boss:'bossRiegel',bossClock:12}),'jam');
+assert.equal(bossWeaponFactor({boss:'bossRiegel',bossClock:12}),.2);
+assert.equal(bossWeaponFactor({boss:'bossRiegel',bossClock:5}),1);
+assert.match(bossPhaseLabel({boss:'bossRiegel',bossClock:14}),/blocked/);
+assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:11}).key,'jam-warning');
+assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:11}).warning,true);
+assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
+{
+ const riegel=makeEnemy('bossRiegel',7);
+ assert.equal(riegel.boss,'bossRiegel');assert.equal(riegel.kind,'tank');
+ assert.equal(BOSSES.find(b=>b.kind==='bossRiegel'),undefined,'story bosses never join the endless rotation');
+ assert.equal(STORY_BOSSES.length,1);
+}
+{
+ const s=setup('bossRiegel',18-STEP/2);s.players.solo.cooldown=5;const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='interceptors').length,1);
+ assert.deepEqual(s.enemies.slice(1).map(e=>e.kind),['runner','runner','runner']);
+ assert.ok(s.enemies.slice(1).every(e=>e.speed>makeEnemy('runner',7).speed),'interceptors outrun ordinary scouts');
+ stepMatch(s);assert.equal(s.enemies.length,4,'the swarm drops once per cycle');
+}
+{
+ const s=setup('bossRiegel',13);s.players.solo.cooldown=5;stepMatch(s);
+ assert.equal(s.players.solo.cooldown,5,'the jam field freezes the ability recharge');
+ const open=setup('bossRiegel',3);open.players.solo.cooldown=5;stepMatch(open);
+ assert.ok(open.players.solo.cooldown<5,'recharge resumes once the field is down');
+}
+// The mission formation carries the story boss on the contract's final wave,
+// replacing the rotation boss instead of stacking on it.
+assert.equal(missionFormation(7,{waves:7,bossFinal:'bossRiegel'}).at(-1),'bossRiegel');
+assert.equal(missionFormation(7,{waves:7,bossFinal:'bossRiegel'}).filter(k=>k.startsWith('boss')).length,1);
+assert.equal(missionFormation(10,{waves:10,bossFinal:'bossRiegel'}).filter(k=>k.startsWith('boss')).length,1,'the finale swaps the rotation boss for the story boss');
+assert.equal(missionFormation(5,{waves:7,bossFinal:'bossRiegel'}).includes('bossRiegel'),false,'earlier waves keep the endless rhythm');
+assert.deepEqual(missionFormation(5,{}),waveFormation(5,undefined),'contracts without a story boss are the endless rhythm exactly');
+assert.equal(missionFormation(7,{}).includes('bossRiegel'),false);
 console.log('Boss timings, telegraphs, abilities and co-op snapshots passed.');

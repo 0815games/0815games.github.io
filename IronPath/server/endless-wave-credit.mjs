@@ -3,7 +3,7 @@
 // replay authenticated, authoritative completion events with stable run IDs.
 import {createHash} from 'node:crypto';
 import {applyWorkshopWaveCredit} from '../workshop-wave-credit.mjs';
-import {MAX_WAVE_MASK,WAVE_COUNT} from '../combat.mjs?v=20261102-battle2';
+import {MAX_WAVE_MASK,WAVE_COUNT} from '../combat.mjs?v=20261112-finale1';
 
 const validUid=v=>typeof v==='string'&&v.length>0&&v.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(v);
 const validId=v=>typeof v==='string'&&/^[a-f0-9]{32}$/.test(v);

@@ -10,6 +10,16 @@ test('a disabled workshop still plays the old equipment',()=>{
  const state=createSoloDeployment({player:player(),profile:{workshop:'bad'},workshopEnabled:false});
  assert.equal(state.players.local.loadout.equipped,1);assert.equal(equipmentForPlayer(state,state.players.local).damage,3);assert.equal(state.experimentalWorkshop,undefined);
 });
+test('a story mission deploys its soldier at the first stage marker, not the bunker',()=>{
+ // Reported: "Soldier starts every time at the bunker!" - the operation
+ // begins where its first objective sits; endless keeps the bunker start.
+ const deployed=createSoloDeployment({player:player(),profile:{},campaign:{id:'lost-signal',threat:'standard',spawn:{x:210,y:130}}});
+ assert.equal(deployed.players.local.x,210);assert.equal(deployed.players.local.y,130);
+ const endless=createSoloDeployment({player:player(),profile:{}});
+ assert.equal(endless.players.local.x,850);assert.equal(endless.players.local.y,450);
+ const half=createSoloDeployment({player:player(),profile:{},campaign:{id:'lost-signal',threat:'standard',spawn:{x:Number.NaN,y:130}}});
+ assert.equal(half.players.local.x,850,'an unreadable spawn point falls back to the bunker');
+});
 test('a campaign mission now uses the workshop loadout and its contract',()=>{
  // Missions used to be forced onto the legacy path, so no crafted gear mattered.
  let profile=initializeWireWorkshop({xp:0,armory:{scrap:100,owned:1,equipped:1}});

@@ -3,12 +3,12 @@ import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
-import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261102-battle2';
+import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261112-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261108-squadmaps1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
-import { WAVE_COUNT,waveFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261102-battle2';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261112-finale1';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
 import {addSupplies} from './match.mjs?v=20261108-squadmaps1';
 export const STEP = 1/30;
@@ -60,13 +60,18 @@ export function stepMatch(state){
   // Purely visual trails persist long enough to reach 5 Hz co-op snapshots.
   const shotDuration=state.individualSupplies ? .55 : .24;
   state.shots=state.shots.filter(s=>(s.life-=dt)>0);if(state.combatPops)state.combatPops=state.combatPops.filter(p=>(p.life-=dt)>0);
+  const jamField=state.enemies.some(e=>e.boss==='bossRiegel'&&e.hp>0&&bossPhase(e)==='jam');
   for(const id of Object.keys(state.players).sort()){
     const p=state.players[id];if(p.active===false)continue;const speed=(150+10*(p.skills?.recon||0)+bonuses[id].movement+(p.mobileSupply?.remaining>0?p.mobileSupply.bonus:0)+equipmentForPlayer(state,p).movement)*soldierSpeedFactor(theme,p,PATH);p.overdrive=Math.max(0,(p.overdrive||0)-dt);if(p.mobileSupply)p.mobileSupply.remaining=Math.max(0,p.mobileSupply.remaining-dt);if(p.healingField?.remaining>0&&state.running){const elapsed=Math.min(dt,p.healingField.remaining);p.healingField.remaining=Math.max(0,p.healingField.remaining-elapsed);state.hp=Math.min(state.maxHp,state.hp+p.healingField.rate*elapsed);}let {x:dx,y:dy}=p.direction;
     if(dx||dy){const len=Math.hypot(dx,dy);p.x+=dx/len*speed*dt;p.y+=dy/len*speed*dt;}
     else if(p.target){dx=p.target.x-p.x;dy=p.target.y-p.y;const len=Math.hypot(dx,dy),step=Math.min(len,speed*dt);if(len>0){p.x+=dx/len*step;p.y+=dy/len*step;}if(len<=step)p.target=null;}
-    p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));p.cooldown=Math.max(0,p.cooldown-dt);
+    p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
+    // Riegel's jam field reaches into every radio on the field: while it is up,
+    // the active ability stops recharging. Nothing else about the soldier
+    // changes, and the field itself is telegraphed two seconds ahead.
+    if(!jamField)p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=waveFormation(state.wave,state.campaignContract?.bossEvery),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=missionFormation(state.wave,state.campaignContract),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];
       // A retreat buys a longer road, and the enemy pays for it: every sector
       // past the first toughens each unit, so a bigger field is never an easier
       // one. Bosses included - they already scale with their wave.
@@ -111,6 +116,14 @@ export function stepMatch(state){
   for(const e of state.enemies)if(e.boss&&e.hp>0){
     const before=e.bossClock||0,after=before+dt;e.bossClock=after;e.bossFlash=Math.max(0,(e.bossFlash||0)-dt);
     if(e.boss==='bossJuggernaut'&&crossedCycle(before,after,10)){e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.02);e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'repair'});}
+    if(e.boss==='bossRiegel'&&crossedCycle(before,after,18)){
+      // The field collapses and the damage window opens - covered by a swarm of
+      // fast interceptors dropped right on top of the boss. They count as field
+      // units like any spawn, so a wave cannot end while they still run.
+      const count=3;
+      for(let i=0;i<count;i++){const swarm={...makeEnemy('runner',state.wave),campaign:true};swarm.hp=swarm.maxHp=Math.max(1,Math.round(swarm.maxHp*.5));swarm.speed*=1.35;state.enemies.push({...swarm,...(e.road!==undefined?{road:e.road}:{}),x:e.x,y:e.y,segment:e.segment});}
+      e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'interceptors',count});
+    }
     if(e.boss==='bossBomber'&&crossedCycle(before,after,12)){
       const damage=8*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);
       state.hp-=damage;e.bossFlash=.8;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:'bossBomber',damage};events.push({type:'bossAbility',boss:e.boss,ability:'bomb',damage});

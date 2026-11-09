@@ -148,11 +148,19 @@ function torchesFor(paths,pads,deco,bunker,width,height){
         // grid walk leaves short staircase steps and those would never see a
         // torch at all. 140 in clears the entry marker; 165 apart after that.
         while(arc<=cum+len){
-          const s=arc-cum,p={x:a.x+ux*s+px*46*side,y:a.y+uy*s+py*46*side};
-          if(free(p))torches.push(p);
-          // Relaxed pass: if the alternating side is taken, try the other
-          // rim of the road before giving up on the spot.
-          else if(relaxed){const q={x:a.x+ux*s-px*46*side,y:a.y+uy*s-py*46*side};if(free(q))torches.push(q);}
+          const s=arc-cum;
+          // Reported: "Wo Fackeln? die sollten die Wege entlang stehen, nicht
+          // nur vereinzelt manchmal." A spot used to vanish when its ONE
+          // candidate position was taken - a winding marsh road with a
+          // neighbour lane, a pad or a building on that side went dark there.
+          // Every spot now walks a small ladder of candidates: the alternating
+          // rim, the other rim, then both rims a little further out. Each
+          // candidate still passes the same `free` distances, so no torch ever
+          // stands in the tar, on a pad or against a wall - a spot is only
+          // dropped when EVERY rung violates a safety distance.
+          const cands=[];
+          for(const off of [46,38,52,60])cands.push({x:a.x+ux*s+px*off*side,y:a.y+uy*s+py*off*side},{x:a.x+ux*s-px*off*side,y:a.y+uy*s-py*off*side});
+          for(const p of cands){if(free(p)){torches.push(p);break;}}
           side=-side;arc+=165;
         }
         cum+=len;

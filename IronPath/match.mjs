@@ -7,7 +7,7 @@ import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261107-balance
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
-import { waveFormation } from './combat.mjs?v=20261102-battle2';
+import { waveFormation,missionFormation } from './combat.mjs?v=20261112-finale1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261101-campaign1';
 export const TOWER_COSTS = [50, 80, 65, 75];
@@ -52,7 +52,7 @@ export function addSupplies(state,playerId,amount){if(state.individualSupplies){
 function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;
  // A campaign surge wave arrives wider than its formation: the contract's squad
  // bonus adds units, so a mission cannot be idled through by holding one lane.
- state.spawnLeft=waveFormation(state.wave,state.campaignContract?.bossEvery).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
+ state.spawnLeft=missionFormation(state.wave,state.campaignContract).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
  state.spawnIndex=0;state.spawnTimer=.2;}
 // Shared pads; abilities, movement and co-op supplies are owned by each player.
 // Returns an explicit result rather than trusting a client-side UI decision.

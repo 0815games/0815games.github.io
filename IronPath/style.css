@@ -240,6 +240,26 @@ html::-webkit-scrollbar-thumb,dialog::-webkit-scrollbar-thumb,.map-viewport::-we
 /* Location-specific story illustrations and layered weather. */
 .story-cinematic[data-location="signal"] .cinematic-landscape{background-image:url('assets/story-signal.jpg')}
 .story-cinematic[data-location="pinewood"] .cinematic-landscape{background-image:url('assets/story-pinewood.jpg')}
+/* Act I carries its own painted motif for every mission briefing; the endings
+   keep travelling on the shared location pool above. */
+.story-cinematic[data-location="dawn-road"] .cinematic-landscape{background-image:url('assets/story-dawn-road.jpg')}
+.story-cinematic[data-location="pinewood-trail"] .cinematic-landscape{background-image:url('assets/story-pinewood-trail.jpg')}
+.story-cinematic[data-location="relay-line"] .cinematic-landscape{background-image:url('assets/story-relay-line.jpg')}
+.story-cinematic[data-location="outpost-fire"] .cinematic-landscape{background-image:url('assets/story-outpost-fire.jpg')}
+.story-cinematic[data-location="market-ruins"] .cinematic-landscape{background-image:url('assets/story-market-ruins.jpg')}
+.story-cinematic[data-location="marsh-hospital"] .cinematic-landscape{background-image:url('assets/story-marsh-hospital.jpg')}
+.story-cinematic[data-location="ice-road"] .cinematic-landscape{background-image:url('assets/story-ice-road.jpg')}
+.story-cinematic[data-location="night-heath"] .cinematic-landscape{background-image:url('assets/story-night-heath.jpg')}
+.story-cinematic[data-location="main-relay"] .cinematic-landscape{background-image:url('assets/story-main-relay.jpg')}
+.story-cinematic[data-location="forest-convoy"] .cinematic-landscape{background-image:url('assets/story-forest-convoy.jpg')}
+/* Act I key art and the relict handover's detail shot. */
+.story-cinematic[data-location="act1-dawn"] .cinematic-landscape{background-image:url('assets/story-act1-dawn.jpg')}
+.story-cinematic[data-location="act1-relic"] .cinematic-landscape{background-image:url('assets/story-act1-relic.jpg')}
+/* The portrait set grows with the story: Elias and Wren arrive with the act
+   finales even though their voices are still ahead. */
+.story-cinematic[data-speaker="elias"] .cinematic-portrait{background:center 30% / cover url('assets/story-elias.jpg')}
+.story-cinematic[data-speaker="wren"] .cinematic-portrait{background:center 30% / cover url('assets/story-wren.jpg')}
+.story-cinematic:is([data-speaker="elias"],[data-speaker="wren"]) .cinematic-portrait span{visibility:hidden}
 .story-cinematic[data-location="outpost"] .cinematic-landscape{background-image:url('assets/story-outpost.jpg')}
 .story-cinematic[data-location="marsh"] .cinematic-landscape{background-image:url('assets/story-marsh.jpg')}
 .story-cinematic[data-location="ice"] .cinematic-landscape{background-image:url('assets/story-ice.jpg')}
