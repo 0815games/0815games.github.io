@@ -315,7 +315,13 @@ body:has(#entry:not([hidden])){background-image:linear-gradient(#0d1918b8,#101d1
 .mission-card[data-mission="cold-start"]{background-image:linear-gradient(0deg,#12221ff5,#162b24b5 60%,#243c2d55),url('assets/story-frozen-junction.jpg')}.mission-card[data-mission="last-transmission"]{background-image:linear-gradient(0deg,#12221ff5,#162b24b5 60%,#243c2d55),url('assets/story-tower.jpg')}.mission-card[data-status="locked"]{background:#25372f;opacity:1;color:#a7b2a1;border-color:#43574b}.mission-card[aria-pressed="true"]{border:2px solid #efd28d;box-shadow:0 0 0 1px #efd28d66}.mission-card:not(:disabled):hover{background-color:#344c3e;border-color:#edd28b;color:#fff2d2}.mission-card .mission-number{font-size:9px;letter-spacing:.12em;color:#dfcc95}.mission-card strong{font:700 17px/1.15 Georgia,serif;margin:6px 0;color:inherit}.mission-card .mission-status{font-size:9px;letter-spacing:.1em;color:#c5d2b8}
 /* The rubber stamp on a finished operation: reported wish - a visible
    "completed" mark ACROSS the mission card, not only in the status line. */
-.mission-stamp{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);z-index:2;padding:4px 14px;border:3px double #d9c37a;border-radius:6px;background:#1c2f22e6;color:#e8cf83;font:800 13px/1 Georgia,serif;letter-spacing:.22em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 12px #0007;mix-blend-mode:screen}
+.mission-stamp{position:absolute;top:7px;right:7px;transform:rotate(-8deg);z-index:2;padding:3px 9px;border:2px double #d9c37a;border-radius:5px;background:#1c2f22f2;color:#e8cf83;font:800 10px/1 Georgia,serif;letter-spacing:.16em;text-transform:uppercase;pointer-events:none;box-shadow:0 2px 8px #0009}
+/* The card text sits bottom-left; the stamp lives in the empty photo area
+   top-right so it can never cover the mission title or status line. No blend
+   mode: screen tinted it red over the warm Act II photos. On phone-sized
+   cards the text fills the whole card, and the status line already says
+   ABGESCHLOSSEN - so the stamp steps aside instead of fighting for room. */
+@media(max-width:850px){.mission-stamp{display:none}}
 .mission-stamp[hidden]{display:none}
 /* Contract line: threat level and wave count, readable on a phone card. */
 .mission-contract{display:block;margin-top:3px;font-size:9px;line-height:1.3;letter-spacing:.06em;color:#c8b98a;font-weight:bold;overflow-wrap:anywhere}
