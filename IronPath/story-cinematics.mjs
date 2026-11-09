@@ -29,7 +29,10 @@ const OPENINGS={
 'the-confession':[['IVO','Tonight the valley decides whether the man who wrote the timetable stays.'],['VOSS','Then the vote happens in a hall that still stands. Nobody breaks it with a squad.']],
 'the-signal-above':[['ADA','Every order Rook gave arrived as a relay from one source. I want a bearing on it.'],['VOSS','Then we raise the finder and follow the beam — wherever it ends.']],
 'counterfeit-key':[['NIA','The tower’s reader checks the key it is given. So we give it a lie.'],['IVO','A counterfeit that opens the door and refuses the override. One blank, one chance.']],
-'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']]
+'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']],
+'the-pass':[['NIA','The valley road dies in winter. My old building pass is the only way to the source.'],['VOSS','Then we take the lower station and start the climb. Slowly, and together.']],
+'wrens-fire':[['WREN','Wren. High moor partisans. Tonight we burn a depot — your armor would be welcome.'],['VOSS','We hold the gate while your people work. Nobody gets left in the snow.']],
+'frozen-relay':[['IVO','A warm-line relay, intact, in the middle of the snowfield. If we take it quietly, we hear the Iron Path think.'],['ADA','Then let me listen. This is the closest I have ever been to my brother’s road.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -61,7 +64,10 @@ const CODAS={
 'the-confession':[['NARRATOR','The council keeps the correction — and its author. The valley chooses to repair, not to banish.'],['NARRATOR','A confession is not an acquittal. It is a work order.']],
 'the-signal-above':[['NARRATOR','The bearing is confirmed: one source, one road, one junction at the end of it.'],['NARRATOR','The Iron Path is real — and it runs itself.']],
 'counterfeit-key':[['NARRATOR','The counterfeit is cut: a key that opens the door and lies to the lock.'],['NARRATOR','One tower, one transmission, one climb left.']],
-'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']]
+'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']],
+'the-pass':[['NARRATOR','The lower station falls without a wasted shot; the climb stands open.'],['NARRATOR','Winter does not take sides. It only takes the unprepared.']],
+'wrens-fire':[['NARRATOR','The depot burns down to its nails; the sleds vanish into the moor.'],['NARRATOR','Trust is sleds-full of stolen fuel. The moor has paid its first installment.']],
+'frozen-relay':[['NARRATOR','The relay speaks into Ada’s recorder: orders with no author, minute-perfect.'],['NARRATOR','The machine commands the army now. Nobody is driving.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -94,7 +100,10 @@ const SCENES={
  'the-confession':[{art:'marsh',place:'THE ASSEMBLY HALL',weather:'rain'},{art:'valley',place:'THE VERDICT',weather:'mist'}],
  'the-signal-above':[{art:'night-heath',place:'THE BEACON HEATH',weather:'embers'},{art:'outpost',place:'THE RELAY TRACE',weather:'embers'}],
  'counterfeit-key':[{art:'city',place:'THE CUTTING BENCH',weather:'rain'},{art:'tower',place:'THE READER IN THE TOWER',weather:'rain'}],
- 'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]
+ 'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}],
+ 'the-pass':[{art:'mountain-pass',place:'THE LOWER STATION',weather:'snow'},{art:'ice',place:'THE CLIMB AHEAD',weather:'snow'}],
+ 'wrens-fire':[{art:'moor-depot',place:'THE BURNING DEPOT',weather:'embers'},{art:'ice',place:'THE MOOR GATE',weather:'snow'}],
+ 'frozen-relay':[{art:'ice',place:'THE WARM-LINE RELAY',weather:'snow'},{art:'outpost',place:'THE LISTENING POST',weather:'snow'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic

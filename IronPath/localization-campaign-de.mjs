@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261212-actiii3';
+import {CAMPAIGN} from './campaign.mjs?v=20261215-winter1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -115,10 +115,26 @@ const data={
  'IVO: Der Nachbau ist gefräst – ein Schlüssel, der die Tür öffnet und das Schloss anlügt. NIA: Dann steigen wir den Turm hinauf. ADA: Eine letzte Sendung. Für uns alle.'],
  'last-transmission':['Die letzte Übertragung','Der Countdown der automatischen Übersteuerung läuft. Seras Evakuierung ist in Sicherheit und Nia am Tor. Du musst den Industrieturm erreichen und die letzte Verbindung trennen. Rooks verbliebene Getreue rücken weiter vor.',[
  ['Erreiche den Turmstromkreis','NIA: Ich kann das Tor nur stabilisieren, wenn du den Turmstromkreis öffnest. Ada führt dich hindurch.'],['Deaktiviere die Übersteuerung','ADA: Folge dem blauen Kabel. Für meinen Bruder und alle, die noch dort unten sind – zieh es heraus.'],['Halte durch, bis das Tor stabil ist','NIA: Übersteuerung getrennt. Das Tor braucht Zeit, um sich zu stabilisieren. Halte den Bunker; überlass ihnen die Leitung nicht wieder.'],['Bestätige, dass die Straße offen ist','SERA: Das Wasser sinkt. Komm nach Hause; wir zählen alle gemeinsam.']],
- 'VOSS: Das Tor ist gesichert. Das Tal steht noch. ADA: Mein Bruder hat das Signal nie wieder gehört, aber die Menschen, die er gerettet hat, schon. SERA: Die Straße ist offen. Diesmal bekommt jeder eine Chance, nach Hause zu kommen.']
+ 'VOSS: Das Tor ist gesichert. Das Tal steht noch. ADA: Mein Bruder hat das Signal nie wieder gehört, aber die Menschen, die er gerettet hat, schon. SERA: Die Straße ist offen. Diesmal bekommt jeder eine Chance, nach Hause zu kommen.'],
+ 'the-pass':['Der Pass','Die Talstraße wird im Winter unverteidigbar. Nias alter Baupass ist der einzige Weg zur Quelle – und er klettert mitten durch die Wetterstationen des Feindes. Nehmt die Bergstation unten und öffnet den Aufstieg.',[
+ ['Nimm die Bergstation unten','NIA: Die Passstraße gehört mir seit vor dem Krieg. Nehmt die Station unten, und der Aufstieg steht offen.'],
+ ['Sichere die Passstraße','VOSS: Wetterpatrouillen streifen die Serpentinen. Räumt sie frei, damit die Kolonne klettern kann.'],
+ ['Geleite die Kletterer zum Pass','WREN: Meine Späher treffen euch oben. Bringt sie lebend hinauf.']],
+ 'NIA: Die Station unten ist unser – der Aufstieg steht offen. WREN: Und hier oben führt das Moor seinen eigenen Kalender. Willkommen im langen Winter.'],
+ 'wrens-fire':['Wrens Feuer','Wrens Hochmoor-Partisanen schlagen ein Treibstoffdepot des Feindes an. Verdient ihr Vertrauen: Haltet das Moortor, während ihre Leute die Schlitten beladen – und verbrennt, was sie zurücklassen.',[
+ ['Brich die Depotwache auf','WREN: Die Wache ist dünn, aber gepanzert. Öffnet sie, und das Depot gehört uns für eine Stunde.'],
+ ['Halte das Moortor','WREN: Meine Leute laden alles, was sich trägt. Das Tor ist euer Problem, bis die Schlitten fahren.'],
+ ['Halte die Stellung, bis die Schlitten draußen sind','VOSS: Was brennt, brennt. Wir halten das Tor, bis der letzte Schlitten das Moor verlassen hat.']],
+ 'WREN: Depot leer, Baracken brennen – das Moor erinnert sich jetzt an uns. VOSS: Und die Straße nach Norden erinnert sich auch an euch. WREN: Das soll sie. Sie wird beobachtet.'],
+ 'frozen-relay':['Gefrorenes Relais','Ein Warmleitungs-Relais der Eisernen Straße steht unversehrt im Schnee. Nehmt es ohne Beschädigung und hört live mit: Die Befehle, die nach Fahrplan eintreffen, sind von niemandem unterschrieben – die Disposition schickt sie selbst.',[
+ ['Taue das Relais-Schloss auf','IVO: Das Schloss ist buchstäblich eingefroren. Trennt die Heizspur, und die Tür öffnet sich ohne Schuss.'],
+ ['Schütze das Abhörgerät','ADA: Das Gerät zeichnet alles auf der Leitung auf. Wenn sie es zerschlagen, werden wir mitten im Satz taub.'],
+ ['Bestätige die selbstversandten Befehle','ADA: Hört zu: Die Disposition stellt Befehle ohne Autor aus. Der Fahrplan gibt jetzt die Kommandos. Er führt sich selbst.']],
+ 'ADA: Befehle ohne Unterschrift, pünktlich auf die Minute. IVO: Meine Korrektur muss bis zur Stanzmaschine vordringen – oder nichts ändert sich. NIA: Dann steigen wir höher auf.'],
 };
 const entries={};
-const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;};
+const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;
+};
 for(const mission of CAMPAIGN){const entry=data[mission.id];if(!entry||entry[2].length!==mission.stages.length)throw Error(`Missing campaign translation: ${mission.id}`);add(mission.title,entry[0]);add(mission.briefing,entry[1]);add(mission.success,entry[3]);
  mission.stages.forEach((stage,i)=>{add(stage.label,entry[2][i][0]);add(stage.dialogue,entry[2][i][1]);});
  // Cinematics split authored conversations by speaker; translate the matching
@@ -127,7 +143,7 @@ for(const mission of CAMPAIGN){const entry=data[mission.id];if(!entry||entry[2].
  const en=split(mission.success),de=split(entry[3]);if(en.length===de.length)for(let i=0;i<en.length;i++){const a=en[i].match(/^[A-Z]+:\s*(.*)$/),b=de[i].match(/^[A-Z]+:\s*(.*)$/);if(a&&b)add(a[1],b[1]);}
  for(let i=0;i<mission.stages.length;i++){const a=mission.stages[i].dialogue.match(/^[A-Z]+:\s*(.*)$/),b=entry[2][i][1].match(/^[A-Z]+:\s*(.*)$/);if(a&&b)add(a[1],b[1]);}
 }
-add('ACT I · THE SILENCE','AKT I · DIE STILLE');add('ACT II · THE FLOOD','AKT II · DIE FLUT');add('ACT III · THE LAST LIGHT','AKT III · DAS LETZTE LICHT');
+add('ACT I · THE SILENCE','AKT I · DIE STILLE');add('ACT II · THE FLOOD','AKT II · DIE FLUT');add('ACT III · THE LAST LIGHT','AKT III · DAS LETZTE LICHT');add('ACT IV · THE LONG WINTER','AKT IV · DER LANGE WINTER');add('ACT V · THE IRON PATH','AKT V · DER EISERNE WEG');
 Object.assign(entries,{
  'CLASSIFIED':'GEHEIM','LOCKED':'GESPERRT','COMPLETED':'ABGESCHLOSSEN','NEXT MISSION':'NÄCHSTE MISSION',
  'The valley is safe. Revisit any completed mission.':'Das Tal ist sicher. Spiele abgeschlossene Missionen erneut.',
@@ -151,7 +167,7 @@ Object.assign(entries,{
  'Hold the marked position for {seconds}s. Nearby enemies contest it.':'Halte die markierte Stellung {seconds} s lang. Gegner in der Nähe blockieren sie.',
  'Move to the marked location and hold for {seconds}s.':'Begib dich zur markierten Stelle und halte sie {seconds} s lang.',
  ' Mission time: {seconds}s (runs during waves).':' Missionszeit: {seconds} s (läuft während Wellen).',
- 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau',
+ 'Receiver':'Empfänger','Transformer':'Transformator','Fuel skid':'Treibstoffschlitten','Medicine sledge':'Medizinschlitten','Broadcast relay':'Senderelais','Forge fire':'Schmiedefeuer','Precision bench':'Präzisionsbank','Direction finder':'Peiler','Counterfeit key':'Schlüsselnachbau','Wiretap rig':'Abhörgerät',
  'IVO: The authorization window closed. We lost the key.':'IVO: Das Autorisierungsfenster ist geschlossen. Wir haben den Schlüssel verloren.',
  'SURVIVORS: We cannot make it. The rescue has failed.':'SURVIVORS: Wir schaffen es nicht. Die Rettung ist gescheitert.',
  '{asset} destroyed. The mission has failed.':'{asset} zerstört. Die Mission ist gescheitert.'

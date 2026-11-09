@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261212-actiii3';
+import {getMap} from './maps.mjs?v=20261215-winter1';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -51,7 +51,7 @@ const MISSIONS=[
    briefing:'The main relay stands in the deep Talwald. Ada will broadcast the valley’s first free transmission from it tonight - and wait for an answer on a knock code only her brother knows.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Reach the main relay',dialogue:'ADA: The main relay is old but honest. Get me to it and I will do the rest.'},{type:'protect',at:'field',asset:'Main relay',seconds:30,label:'Protect the main relay',dialogue:'ADA: Broadcasting. If Elias can hear me, he will answer with the knock code. Keep the mast standing while I listen.'},{type:'defend',seconds:45,label:'Hold until the answer comes',dialogue:'VOSS: They know what she is doing. Hold the bunker until the transmission ends.'}],
    success:'ADA: Three knocks, then two. That is our childhood code. VOSS: Then we have a brother to bring home - and a convoy to catch.'},
-  {id:'supply-line',act:'ACT I · THE SILENCE',title:'The Relief Convoy',mapId:'g3-0e6d5c492',threat:'elite',boss:'riegel',
+  {id:'supply-line',act:'ACT I · THE SILENCE',title:'The Relief Convoy',mapId:'g3-0e6d5c492',threat:'elite',boss:'riegel',finale:true,
    briefing:'The blackout exposed a relief convoy trapped in the forest. Medic Sera Malik is with them. Voss orders the supplies recovered, but Sera refuses to leave anyone behind.',
    stages:[{type:'hold',at:'field',seconds:4,label:'Recover the medical supplies',dialogue:'SERA: The northern crate has antibiotics. Without it, the wounded will not survive the night.'},{type:'hold',at:.55,seconds:4,label:'Find the convoy survivors',dialogue:'SERA: Thank you. The drivers are sheltering on the southern road; we leave together.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the convoy survivors',dialogue:'SURVIVORS: We can walk. Keep the enemy away and we will follow you.'}],
    success:'SERA: Everyone made it. One of the drivers found sealed orders in an enemy truck: TIDELOCK. Ivo, tell me that is not the dam.'},
@@ -91,7 +91,7 @@ const MISSIONS=[
    briefing:'A winter lock chokes the frozen rail junction: Rook’s garrison holds the switch house and the north line with it. Beyond the far track, Ada photographs a prison transport rolling north through the snow.',
    stages:[{type:'secure',at:'field',seconds:8,label:'Take the switch house',dialogue:'VOSS: The switch house is the lock on the whole junction. Take it and the north line opens.'},{type:'eliminate',count:12,label:'Break the garrison reserve',dialogue:'VOSS: Their reserve is coming across the ice. Break it before it digs in around the switches.'},{type:'hold',at:'bunker',seconds:5,label:'Hold the junction through the night',dialogue:'ADA: I have the transport on film - faces, numbers, everything. Hold the junction so it reaches Voss.'}],
    success:'ADA: The junction is ours and the film is out. Somewhere on that train is a car with Elias’s name on it - and now we know which one.',},
-  {id:'long-switch',act:'ACT II · THE FLOOD',title:'The Long Switch',mapId:'g3-0935170bb',threat:'veteran',boss:'kolt',
+  {id:'long-switch',act:'ACT II · THE FLOOD',title:'The Long Switch',mapId:'g3-0935170bb',threat:'veteran',boss:'kolt',finale:true,
    briefing:'The dam’s first lock depends on a remote substation in the scorched scrubland. Ivo must reroute power without cutting the hospital’s supply. Secure the junctions and defend the transformer while he works.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Open the power junction',dialogue:'IVO: The hospital and the dam share this line. Pull the wrong switch and Sera loses her patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the switching yard',dialogue:'SERA: I have the lights for now. Clear the yard so Ivo can reroute the line.'},{type:'protect',at:'field',asset:'Transformer',seconds:25,label:'Protect the transformer',dialogue:'IVO: Reroute in progress. If they destroy the transformer, the hospital goes dark.'}],
    success:'SERA: The lights stayed on. IVO: First lock is isolated. The second key belongs to the city’s captured controller, Nia Reyes.'},
@@ -133,10 +133,25 @@ const MISSIONS=[
    briefing:'The tower’s reader checks the key it is given. From Nia’s old plans, Ivo machines a counterfeit that lies to it — close enough to open the outer circuit, wrong enough to keep the override from arming. The forging has to happen under fire.',
    stages:[{type:'hold',at:'field',seconds:4,label:'Calibrate the cutting bench',dialogue:'IVO: Tolerance is everything. Two tenths off and the reader eats the key — and the tower with it.'},{type:'secure',at:'field',seconds:10,label:'Secure the workshop courtyard',dialogue:'VOSS: Rook knows what a cutting bench in the district means. Hold the courtyard while Ivo works.'},{type:'protect',at:'field',asset:'Counterfeit key',seconds:20,label:'Protect the counterfeit key',dialogue:'NIA: The blank is cutting. If their saboteurs reach the bench, there is no second blank — guard it with everything.'}],
    success:'IVO: The counterfeit is cut — a key that opens the door and lies to the lock. NIA: Then we go up the tower. ADA: One last transmission. For all of us.'},
-  {id:'last-transmission',act:'ACT III · THE LAST LIGHT',title:'The Last Transmission',mapId:'g3-06be302d5',threat:'legendary',boss:'a7',
+  {id:'last-transmission',act:'ACT III · THE LAST LIGHT',title:'The Last Transmission',mapId:'g3-06be302d5',threat:'legendary',boss:'a7',finale:true,
    briefing:'The automatic override is counting down. With Sera’s evacuation clear and Nia at the gate, you must reach the industrial tower and break the last connection. Rook’s remaining loyalists are still advancing.',
    stages:[{type:'hold',at:'entry',seconds:5,label:'Access the tower circuit',dialogue:'NIA: I can stabilize the gate only if you open the tower circuit. Ada will talk you through it.'},{type:'hold',at:'field',seconds:5,label:'Disable the override',dialogue:'ADA: Follow the blue cable. For my brother, and everyone still down there—pull it.'},{type:'defend',seconds:50,label:'Hold until the gate stabilizes',dialogue:'NIA: Override disconnected. The gate needs time to settle. Hold the bunker; do not give them the line back.'},{type:'hold',at:'bunker',seconds:2,label:'Confirm the road is open',dialogue:'SERA: The water is falling. Come home; we will count everyone together.'}],
-   success:'VOSS: The gate is secure. The valley is still standing. ADA: My brother never heard the signal return, but the people he saved did. SERA: The road is open. This time, everyone gets a chance to go home.'}
+   success:'VOSS: The gate is secure. The valley is still standing. ADA: My brother never heard the signal return, but the people he saved did. SERA: The road is open. This time, everyone gets a chance to go home.'},
+  // Act IV - THE LONG WINTER. The valley road dies in the snow; Nia's old
+  // building pass climbs toward the source, and the high moor partisans of
+  // Wren decide whether the resistance survives the cold.
+  {id:'the-pass',act:'ACT IV · THE LONG WINTER',title:'The Pass',mapId:'g3-000000015',threat:'veteran',
+   briefing:'The valley road becomes indefensible in winter. Nia’s old building pass is the only route left toward the source — and it climbs straight through the enemy’s weather stations. Take the lower mountain station and open the climb.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Take the lower station',dialogue:'NIA: The pass road is mine from before the war. Take the lower station and the climb opens.'},{type:'secure',at:'field',seconds:10,label:'Secure the pass road',dialogue:'VOSS: Weather patrols sweep the switchbacks. Clear them so the column can climb.'},{type:'escort',at:'bunker',seconds:3,label:'Escort the climbers to the pass',dialogue:'WREN: My scouts will meet you at the top. Bring them up alive.'}],
+   success:'NIA: The lower station is ours — the climb stands open. WREN: And up here the moor keeps its own calendar. Welcome to the long winter.'},
+  {id:'wrens-fire',act:'ACT IV · THE LONG WINTER',title:'Wren’s Fire',mapId:'g3-000000016',threat:'veteran',
+   briefing:'Wren’s high-moor partisans strike an enemy fuel depot. Earn their trust: hold the moor gate while her people load the sleds — and burn whatever they leave behind.',
+   stages:[{type:'eliminate',count:10,label:'Break the depot guard',dialogue:'WREN: The guard is thin but armored. Open it, and the depot is ours for an hour.'},{type:'secure',at:'field',seconds:10,label:'Hold the moor gate',dialogue:'WREN: My people load everything worth carrying. The gate is your problem until the sleds move.'},{type:'defend',seconds:30,label:'Hold until the sleds are out',dialogue:'VOSS: Whatever burns, burns. We hold the gate until the last sled clears the moor.'}],
+   success:'WREN: Depot empty, barracks burning — the moor remembers us now. VOSS: And the road north remembers you too. WREN: It should. It is watched.'},
+  {id:'frozen-relay',act:'ACT IV · THE LONG WINTER',title:'Frozen Relay',mapId:'g3-000000017',threat:'veteran',
+   briefing:'A warm-line relay of the Iron Path stands intact in the snow. Take it without damaging it and listen live: the orders arriving on the schedule are signed by nobody — the dispatch sends itself.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Thaw the relay lock',dialogue:'IVO: The lock is frozen shut — literally. Cut the heat trace and the door opens without a shot.'},{type:'protect',at:'field',asset:'Wiretap rig',seconds:22,label:'Protect the wiretap rig',dialogue:'ADA: The rig records everything on the line. If they smash it, we go deaf mid-sentence.'},{type:'hold',at:'field',seconds:5,label:'Confirm the self-sent orders',dialogue:'ADA: Listen: the dispatch is issuing orders with no author. The timetable gives the commands now. It runs itself.'}],
+   success:'ADA: Orders with no signature, on schedule, to the minute. IVO: My correction has to reach the stamp — or nothing changes. NIA: Then we climb higher.'}
 ];
 // ---------------------------------------------------------------------------
 // Anchor resolution. All geometry helpers are pure; the same seed always
@@ -210,9 +225,11 @@ export const ACTS=Object.freeze([
   {n:5,key:'iron',    title:'ACT V · THE IRON PATH',   character:'Rook',     region:'knoten',   regionLabel:'The Junction',  relic:'relic-iron-path'},
 ].map(a=>Object.freeze(a)));
 export function actOf(mission){return ACTS.find(a=>mission?.act===a.title)||null;}
-// Index of the act's final mission in CAMPAIGN order, or -1 while the act has
-// no missions yet. Completing past this index completes the act.
-export function actEndIndex(act){const n=typeof act==='number'?act:act?.n;let end=-1;CAMPAIGN.forEach((m,i)=>{if(actOf(m)?.n===n)end=i;});return end;}
+// Index of the act's finale mission (finale:true) in CAMPAIGN order, or -1
+// while the act's finale has not shipped yet - even if earlier missions of the
+// act already have. Completing past this index completes the act and earns its
+// relic, so a partially shipped act can never be completed early.
+export function actEndIndex(act){const n=typeof act==='number'?act:act?.n;let end=-1;CAMPAIGN.forEach((m,i)=>{if(actOf(m)?.n===n&&m.finale)end=i;});return end;}
 export function actComplete(profile,act){const end=actEndIndex(act);return end>=0&&campaignProgress(profile)>end;}
 // A mission's threat decides its difficulty (see campaign-pressure.mjs): tougher
 // units, wider surge waves, a smaller bunker and a fixed wave contract, so the

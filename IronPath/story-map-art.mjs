@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261212-actiii3';
+import {translateText as tr} from './language.mjs?v=20261215-winter1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -32,6 +32,11 @@ const STYLES={
  'night-shift':{ground:'#5c665f',light:'#8fa08e',dark:'#38443c',water:'#6f9c96',weather:'rain',feature:'convoy',accent:'#e6cf8f'},
  // Act III - the road to the tower: the marsh council, the relay trace and the
  // counterfeit key forging.
+ // Act IV - the long winter: the pass climb, the burning moor depot and the
+ // frozen warm-line relay.
+ 'the-pass':{ground:'#b7d0cb',light:'#dceae5',dark:'#75a0a2',water:'#83b4bd',weather:'snow',feature:'shelter',accent:'#e5c077'},
+ 'wrens-fire':{ground:'#a9c3be',light:'#d5e4de',dark:'#679295',water:'#7fb0b9',weather:'embers',feature:'dispatch',accent:'#efa96a'},
+ 'frozen-relay':{ground:'#c0d6d1',light:'#e4ede1',dark:'#7ea4a6',water:'#86b7c0',weather:'snow',feature:'relay',accent:'#e2bd75'},
  'the-confession':{ground:'#63806c',light:'#98b092',dark:'#3e5749',water:'#6f9c96',weather:'rain',feature:'shelter',accent:'#e3d291'},
  'the-signal-above':{ground:'#8a7f68',light:'#bcae90',dark:'#5b5240',water:'#83958b',weather:'embers',feature:'antenna',accent:'#ecb37b'},
  'counterfeit-key':{ground:'#767b70',light:'#a9ac96',dark:'#484f47',water:'#7d9e9c',weather:'rain',feature:'dispatch',accent:'#e6c98c'},
