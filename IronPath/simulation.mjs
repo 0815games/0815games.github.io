@@ -1,16 +1,16 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261216-winter2';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261217-stormgate';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
-import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261212-actiii3';
+import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261217-stormgate';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261216-winter2';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261217-stormgate';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261212-actiii3';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261217-stormgate';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261216-winter2';
+import {addSupplies} from './match.mjs?v=20261217-stormgate';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -122,6 +122,15 @@ export function stepMatch(state){
     // remembered phase travels with the snapshot; recomputing from hp stays
     // deterministic for reconnects.
     if(e.boss==='bossA7'){const phase=bossPhase(e);if(e.a7Phase&&e.a7Phase!==phase){e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'a7-'+phase});}e.a7Phase=phase;}
+    if(e.boss==='bossZugsmeister'){const phase=bossPhase(e);if(e.zugsPhase&&e.zugsPhase!==phase){e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'zugs-'+phase});}e.zugsPhase=phase;
+      // Rail guns fire on the boss clock - every 18 seconds behind the signal
+      // wire, every 12 once the guns stand exposed. Uncoupled, they fall silent.
+      const period=phase==='wire'?18:phase==='guns'?12:0;
+      if(period&&crossedCycle(before,after,period)){
+        const damage=10*(1-.1*(state.plating||0))*(state.hp<state.maxHp*.5?Math.pow(.85,state.runPerks?.laststand||0)*(state.wave>=6?1-.02*(state.safeguard||0):1):1);
+        state.hp-=damage;e.bossFlash=.8;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:'bossZugsmeister',damage};events.push({type:'bossAbility',boss:e.boss,ability:'railgun',damage});
+      }
+    }
     if(e.boss==='bossRiegel'&&crossedCycle(before,after,18)){
       // The field collapses and the damage window opens - covered by a swarm of
       // fast interceptors dropped right on top of the boss. They count as field
@@ -151,7 +160,7 @@ export function stepMatch(state){
     const tanks=state.enemies.filter(e=>e.hp>0&&e.kind==='tank'&&e.segment===5).length;
     if(tanks){state.iceStress=(state.iceStress||0)+tanks*dt;if(state.iceStress>=4){state.iceBroken=true;events.push({type:'iceBroken'});}}
   }
-  for(const e of state.enemies){const PATH=paths[e.road]||paths[0],zi=zoneInfoOf(e);if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken,zi);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e,zi)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1)*(flood&&!e.boss?1.45:1)*(e.boss==='bossA7'?(bossPhase(e)==='kern'?1.35:bossPhase(e)==='torso'?1.12:1):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
+  for(const e of state.enemies){const PATH=paths[e.road]||paths[0],zi=zoneInfoOf(e);if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken,zi);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e,zi)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1)*(flood&&!e.boss?1.45:1)*(e.boss==='bossA7'?(bossPhase(e)==='kern'?1.35:bossPhase(e)==='torso'?1.12:1):1)*(e.boss==='bossZugsmeister'?(bossPhase(e)==='loco'?1.35:bossPhase(e)==='guns'?1.12:1):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
   if(state.gun>0&&state.running){
     state.gunTimer=Math.max(0,(state.gunTimer||0)-dt);
     if(state.gunTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-bunker.x,e.y-bunker.y)<=170);if(target){target.hp-=5*state.gun;state.gunTimer=3;state.shots.push({x:bunker.x,y:bunker.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}

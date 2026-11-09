@@ -15,7 +15,7 @@ import {createPlayer} from '../match.mjs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 
 test('every mission resolves valid objectives on its generated field',()=>{
-  assert.equal(CAMPAIGN.length,39);
+  assert.equal(CAMPAIGN.length,40);
   for(const mission of CAMPAIGN){
     const map=getMap(mission.mapId);
     assert.equal(map.id,mission.mapId,`${mission.id} deploys on its own map`);

@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261216-winter2';
+import {translateText as tr} from './language.mjs?v=20261217-stormgate';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -34,6 +34,7 @@ const STYLES={
  // counterfeit key forging.
  // Act IV - the long winter: the pass climb, the burning moor depot and the
  // frozen warm-line relay.
+ 'storm-gate':{ground:'#9db8b2',light:'#cadcd6',dark:'#5f8b8d',water:'#78a9b2',weather:'snow',feature:'dam',accent:'#e8c87e'},
  'the-work-camp':{ground:'#a5bfb9',light:'#d2e1da',dark:'#638e91',water:'#7cacb5',weather:'snow',feature:'prison',accent:'#e0b976'},
  'avalanche':{ground:'#bccfca',light:'#e0ebe6',dark:'#7fa3a4',water:'#84b5be',weather:'snow',feature:'dam',accent:'#e8c57c'},
  'the-long-span':{ground:'#a9c2bd',light:'#d6e5df',dark:'#699495',water:'#7fb0b9',weather:'snow',feature:'bridge',accent:'#ecc97e'},

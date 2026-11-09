@@ -1,5 +1,5 @@
 import {threatFor,campaignWaves} from './campaign-pressure.mjs?v=20261101-campaign1';
-import {getMap} from './maps.mjs?v=20261216-winter2';
+import {getMap} from './maps.mjs?v=20261217-stormgate';
 
 // Story progress is account-saved and client-reported, not cheat-proof.
 // The retired wave-goal campaign remains only as legacy account data.
@@ -175,7 +175,11 @@ const MISSIONS=[
   {id:'the-second-list',act:'ACT IV · THE LONG WINTER',title:'The Second List',mapId:'g3-00000001d',threat:'legendary',
    briefing:'Sera’s pass hospital nurses partisans and prisoners alike. The junction’s answer is bombardment: bring the stretcher columns into the old gallery before the guns find their range.',
    stages:[{type:'escort',at:'bunker',seconds:3,label:'Bring the stretcher columns in',dialogue:'SERA: The columns move at walking pace — that is the pace of the wounded. Walk with them.'},{type:'protect',at:'field',asset:'Litter train',seconds:22,label:'Protect the litter train',dialogue:'SERA: The gallery mouth is close and the guns are closer. Keep the sky off my patients.'},{type:'secure',at:'field',seconds:10,label:'Secure the gallery mouth',dialogue:'VOSS: The gallery takes them all. Then we seal the mouth behind the last stretcher.'}],
-   success:'SERA: Every name on my second list is under stone and safe. VOSS: And the mountain hospital holds. WREN: The winter is long — but so are we.'}
+   success:'SERA: Every name on my second list is under stone and safe. VOSS: And the mountain hospital holds. WREN: The winter is long — but so are we.'},
+  {id:'storm-gate',act:'ACT IV · THE LONG WINTER',title:'The Storm Gate',mapId:'g3-00000001e',threat:'legendary',boss:'zugsmeister',finale:true,
+   briefing:'Rook has slammed the storm gate behind him: "The junction is mine again. Whoever follows me dies in the snow." Nia blew up her own bridge to cut his road short — take the mountain gate in the blizzard, while the starved garrison falters, and the valley beyond fills with the lights of the main junction.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Take the gate approach',dialogue:'NIA: My bridge bought us this road. The storm gate is the last wall before the junction — take its approach in the blizzard.'},{type:'eliminate',count:10,label:'Break the gate garrison',dialogue:'WREN: Starving, frozen, and still on the wall. Break them before the storm breaks us.'},{type:'secure',at:'field',seconds:10,label:'Secure the storm gate',dialogue:'VOSS: The gatehouse is ours to open. Clear it and keep it clear — nothing closes that door behind us.'},{type:'defend',seconds:50,label:'Hold until the gate falls',dialogue:'IVO: The last thing down this pass is not a convoy. It is him — the Zugsmeister. Hold until the gate mechanism finishes.'}],
+   success:'NIA: The gate falls open! VOSS: And the valley beyond is awake with lights — the junction, closer than any map ever showed. WREN: The long winter is over. The iron path begins.'}
 ];
 // ---------------------------------------------------------------------------
 // Anchor resolution. All geometry helpers are pure; the same seed always

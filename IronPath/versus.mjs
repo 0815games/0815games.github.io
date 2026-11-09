@@ -1,6 +1,6 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261216-winter2';
-import {applyCommand} from './match.mjs?v=20261216-winter2';
-import {WAVE_COUNT} from './combat.mjs?v=20261212-actiii3';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261217-stormgate';
+import {applyCommand} from './match.mjs?v=20261217-stormgate';
+import {WAVE_COUNT} from './combat.mjs?v=20261217-stormgate';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.

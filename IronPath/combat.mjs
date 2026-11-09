@@ -72,7 +72,8 @@ for(const boss of BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label
 export const STORY_BOSSES=Object.freeze([
  {kind:'bossRiegel',label:'Riegel',base:'tank',hp:6,speed:.6,damage:1.5,reward:160,description:'Night Warden: his jam field periodically blocks your ability recharge and dampens weapon damage; interceptor swarms cover the open windows.'},
  {kind:'bossKolt',label:'Kolt',base:'tank',hp:6,speed:.55,damage:1.8,reward:170,description:'Deichbrecher: every 18 seconds a flood pulse surges all remaining enemies while he raises his shield at the dyke. Thin the wave in order and strike between the pulses.'},
- {kind:'bossA7',label:'A-7',base:'tank',hp:7,speed:.5,damage:1.9,reward:190,description:'Works Overseer: three armor phases - works shell, exposed torso, open core. The shell halves weapon damage, the open core takes extra. Strip the shell and finish the core before he closes in.'}
+ {kind:'bossA7',label:'A-7',base:'tank',hp:7,speed:.5,damage:1.9,reward:190,description:'Works Overseer: three armor phases - works shell, exposed torso, open core. The shell halves weapon damage, the open core takes extra. Strip the shell and finish the core before he closes in.'},
+ {kind:'bossZugsmeister',label:'Zugsmeister',base:'tank',hp:8,speed:.5,damage:2,reward:210,description:'Guard of the Pass: a rolling rail battery wired into the signal chain. Telegraphed rail strikes hammer the bunker while the signal wire halves your weapon damage - strip the wire, weather the guns, finish him uncoupled.'}
 ]);
 const BOSS_CATALOG=[...BOSSES,...STORY_BOSSES];
 for(const boss of STORY_BOSSES)ENEMY_TYPES[boss.kind]={...ENEMY_TYPES[boss.base],label:boss.label};

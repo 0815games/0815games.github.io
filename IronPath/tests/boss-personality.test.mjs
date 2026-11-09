@@ -41,7 +41,7 @@ assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
  const riegel=makeEnemy('bossRiegel',7);
  assert.equal(riegel.boss,'bossRiegel');assert.equal(riegel.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossRiegel'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,3,'Riegel closes Act I, Kolt closes Act II, A-7 closes Act III');
+ assert.equal(STORY_BOSSES.length,4,'Riegel, Kolt, A-7 and the Zugsmeister close acts I through IV');
 }
 {
  const s=setup('bossRiegel',18-STEP/2);s.players.solo.cooldown=5;const events=stepMatch(s);
@@ -71,7 +71,7 @@ assert.equal(bossTelegraph({boss:'bossKolt',bossClock:14}).key,'flood');
  const kolt=makeEnemy('bossKolt',7);
  assert.equal(kolt.boss,'bossKolt');assert.equal(kolt.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossKolt'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,3);
+ assert.equal(STORY_BOSSES.length,4);
 }
 {
  const surge=()=>{const s=setup('bossKolt',13);s.enemies.push({kind:'infantry',x:s.enemies[0].x+150,y:s.enemies[0].y,hp:100,maxHp:100,speed:30,segment:1,reward:1,damage:1});const enemy=s.enemies[1],x=enemy.x;stepMatch(s);return Math.abs(enemy.x-x);};
@@ -119,6 +119,54 @@ assert.equal(bossTelegraph({boss:'bossA7',hp:7,maxHp:7}),null,'the phases are re
  assert.ok(Math.abs(shell-30*STEP)<1e-6,'the works shell keeps his pace');
  assert.ok(Math.abs(shell*1.12-torso)<1e-6,'the exposed torso accelerates him');
  assert.ok(Math.abs(shell*1.35-core)<1e-6,'the open core drives him forward');
+}
+// The Zugsmeister, Guard of the Pass, closes Act IV: rail artillery on a
+// health-read armor chain - signal wire, exposed guns, uncoupled loco. The
+// wire halves weapon damage; telegraphed rail strikes hammer the bunker on the
+// boss clock, faster once the guns stand exposed, never once uncoupled.
+assert.equal(bossPhase({boss:'bossZugsmeister',hp:8,maxHp:8}),'wire');
+assert.equal(bossPhase({boss:'bossZugsmeister',hp:5,maxHp:8}),'guns');
+assert.equal(bossPhase({boss:'bossZugsmeister',hp:2,maxHp:8}),'loco');
+assert.equal(bossPhase({boss:'bossZugsmeister',hp:7.9,maxHp:8}),'wire','above two thirds the wire holds');
+assert.equal(bossPhase({boss:'bossZugsmeister',hp:2.6,maxHp:8}),'loco','the loco uncouples at one third');
+assert.equal(bossWeaponFactor({boss:'bossZugsmeister',hp:8,maxHp:8}),.5);
+assert.equal(bossWeaponFactor({boss:'bossZugsmeister',hp:5,maxHp:8}),1);
+assert.equal(bossWeaponFactor({boss:'bossZugsmeister',hp:2,maxHp:8}),1.25);
+assert.match(bossPhaseLabel({boss:'bossZugsmeister',hp:8,maxHp:8}),/halve/);
+assert.match(bossPhaseLabel({boss:'bossZugsmeister',hp:5,maxHp:8}),/accelerates/);
+assert.match(bossPhaseLabel({boss:'bossZugsmeister',hp:2,maxHp:8}),/strike now/);
+assert.equal(bossTelegraph({boss:'bossZugsmeister',hp:8,maxHp:8,bossClock:15}).key,'rail-warning');
+assert.equal(bossTelegraph({boss:'bossZugsmeister',hp:8,maxHp:8,bossClock:15}).warning,true);
+assert.equal(bossTelegraph({boss:'bossZugsmeister',hp:8,maxHp:8,bossClock:3}).key,'wire');
+assert.equal(bossTelegraph({boss:'bossZugsmeister',hp:2,maxHp:8,bossClock:3}),null,'uncoupled, he only comes');
+{
+ const zugs=makeEnemy('bossZugsmeister',7);
+ assert.equal(zugs.boss,'bossZugsmeister');assert.equal(zugs.kind,'tank');
+ assert.equal(BOSSES.find(b=>b.kind==='bossZugsmeister'),undefined,'story bosses never join the endless rotation');
+}
+{
+ const s=setup('bossZugsmeister',3);s.enemies[0].hp=s.enemies[0].maxHp;stepMatch(s);
+ s.enemies[0].hp=s.enemies[0].maxHp*.5;const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='zugs-guns').length,1);
+ assert.equal(stepMatch(s).filter(e=>e.type==='bossAbility'&&e.ability==='zugs-guns').length,0,'the phase event fires once per threshold');
+}
+{
+ const strike=(fraction,clock)=>{const s=setup('bossZugsmeister',clock);s.enemies[0].hp=s.enemies[0].maxHp*fraction;const before=s.hp;const events=stepMatch(s);return {hit:before-s.hp,railguns:events.filter(e=>e.type==='bossAbility'&&e.ability==='railgun').length};};
+ const wire=strike(1,18-STEP/2);
+ assert.equal(wire.railguns,1,'the rail guns fire once per wire cycle');
+ assert.ok(Math.abs(wire.hit-10)<1e-9,'the rail strike hits the bunker for ten');
+ assert.equal(strike(1,5).railguns,0,'no strike mid-cycle');
+ assert.equal(strike(1,12-STEP/2).railguns,0,'the wire cycle is eighteen seconds, not twelve');
+ const guns=strike(.5,12-STEP/2);
+ assert.equal(guns.railguns,1,'exposed guns reload every twelve seconds');
+ assert.equal(strike(.2,18-STEP/2).railguns,0,'uncoupled, the guns fall silent');
+}
+{
+ const move=fraction=>{const s=setup('bossZugsmeister',3);s.enemies[0].hp=s.enemies[0].maxHp*fraction;s.enemies[0].speed=30;const x=s.enemies[0].x;stepMatch(s);return Math.abs(s.enemies[0].x-x);};
+ const wire=move(.9),guns=move(.5),loco=move(.2);
+ assert.ok(Math.abs(wire-30*STEP)<1e-6,'the signal wire keeps his pace');
+ assert.ok(Math.abs(wire*1.12-guns)<1e-6,'the exposed guns accelerate him');
+ assert.ok(Math.abs(wire*1.35-loco)<1e-6,'uncoupled, he drives forward');
 }
 // The mission formation carries the story boss on the contract's final wave,
 // replacing the rotation boss instead of stacking on it.

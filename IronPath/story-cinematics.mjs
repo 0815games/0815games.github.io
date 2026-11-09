@@ -38,7 +38,8 @@ const OPENINGS={
 'the-long-span':[['NIA','My proudest bridge carries his heaviest trains. It has to fall.'],['VOSS','Your bridge, your switch. We hold the piers until it does.']],
 'rooks-trail':[['ADA','He is burning the relay chain as he climbs — a trail of ash straight to the storm gate.'],['VOSS','Then his rearguard learns what the ash feels like. Hold them back.']],
 'iron-yard':[['IVO','The iron yard stamps the winter timetable. My counter-timetable goes into that machine tonight.'],['VOSS','Then we hold the punch hall until the last card is out.']],
-'the-second-list':[['SERA','My pass hospital is full of partisans and prisoners — and the junction has found it.'],['VOSS','Then we walk your stretcher columns into the stone before the guns do.']]
+'the-second-list':[['SERA','My pass hospital is full of partisans and prisoners — and the junction has found it.'],['VOSS','Then we walk your stretcher columns into the stone before the guns do.']],
+'storm-gate':[['NIA','The storm gate. Rook slammed it shut behind him and called it a victory.'],['VOSS','Then we open it. In the blizzard, in the dark, with everything we have left.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -79,7 +80,8 @@ const CODAS={
 'the-long-span':[['NARRATOR','The long span falls straight into the gorge, exactly where its builder drew it.'],['NARRATOR','Some debts are paid in steel. The heaviest road of the Iron Path is gone.']],
 'rooks-trail':[['NARRATOR','The rearguard holds the ash, and loses it. The trail stays closed behind Rook.'],['NARRATOR','A man climbing alone toward a gate he means to shut.']],
 'iron-yard':[['NARRATOR','The punch hall stamps the winter — and the winter carries Ivo’s correction.'],['NARRATOR','Every convoy of the enemy now reads a timetable its master did not approve.']],
-'the-second-list':[['NARRATOR','The last stretcher crosses under stone, and the gallery mouth seals behind it.'],['NARRATOR','The second list is complete. Nobody was left to the guns.']]
+'the-second-list':[['NARRATOR','The last stretcher crosses under stone, and the gallery mouth seals behind it.'],['NARRATOR','The second list is complete. Nobody was left to the guns.']],
+'storm-gate':[['NARRATOR','The storm gate stands open, and the blizzard pours through it like a held breath let go.'],['NARRATOR','Below the pass the whole valley glitters: junction lights, signal lights, the Iron Path awake and burning.'],['ADA','To everyone still climbing: the winter is behind us, and the junction is next. This is Ada Vale, signing off.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -121,7 +123,8 @@ const SCENES={
  'the-long-span':[{art:'long-span',place:'THE LONG SPAN',weather:'snow'},{art:'valley',place:'THE GORGE BELOW',weather:'snow'}],
  'rooks-trail':[{art:'night-heath',place:'THE BURNED STATIONS',weather:'embers'},{art:'outpost',place:'THE ASH TRAIL',weather:'embers'}],
  'iron-yard':[{art:'iron-yard',place:'THE IRON YARD',weather:'snow'},{art:'city',place:'THE PUNCH HALL',weather:'snow'}],
- 'the-second-list':[{art:'marsh-hospital',place:'THE PASS HOSPITAL',weather:'snow'},{art:'ice',place:'THE OLD GALLERY',weather:'snow'}]
+ 'the-second-list':[{art:'marsh-hospital',place:'THE PASS HOSPITAL',weather:'snow'},{art:'ice',place:'THE OLD GALLERY',weather:'snow'}],
+ 'storm-gate':[{art:'storm-gate',place:'THE STORM GATE',weather:'snow'},{art:'valley',place:'THE JUNCTION LIGHTS',weather:'snow'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic
@@ -144,7 +147,12 @@ export const RELIC_SCENES={
   {speaker:'NARRATOR',text:'The last transmission ends in static. In the occupied city, Ivo finally lays his timetable on the table.',art:'city',place:'THE OCCUPIED CITY'},
   {speaker:'IVO',text:'I wrote the schedule that floods this valley. Now I am rewriting it - and your soldiers will keep my correction.',art:'city',place:'THE OCCUPIED CITY'},
   {speaker:'IVO',text:'Faster hands, straighter shots. Read the rhythm, not the orders.',art:'city',place:'THE OCCUPIED CITY'},
-  {speaker:'NARRATOR',text:'The correction holds. The valley buys itself one more dawn.',art:'city',place:'THE OCCUPIED CITY'}]}
+  {speaker:'NARRATOR',text:'The correction holds. The valley buys itself one more dawn.',art:'city',place:'THE OCCUPIED CITY'}]},
+ 'storm-gate':{relic:'relic-blueprint',frames:[
+  {speaker:'NARRATOR',text:'The storm gate stands open. Above it, on the wall, Nia unrolls a drawing older than the war itself.',art:'storm-gate',place:'THE OPEN GATE'},
+  {speaker:'NIA',text:'My original blueprint - every bridge, every cut, every gate of the pass, drawn by my hand before Rook even knew their names. It is yours now.',art:'long-span',place:'THE LONG SPAN'},
+  {speaker:'NIA',text:'While you carry it, the bunker knits itself back together after every wave, and your people move like they were born on this mountain.',art:'long-span',place:'THE LONG SPAN'},
+  {speaker:'NARRATOR',text:'Below the pass, the junction lights the whole valley. The blueprint has one more page: the way in.',art:'valley',place:'THE JUNCTION LIGHTS'}]}
 };
 // Presentation-only: the game appends these frames to an act finale's ending.
 // `cinematicFrames` itself stays pure so debrief replays and translations can

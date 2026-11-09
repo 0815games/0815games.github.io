@@ -1,6 +1,6 @@
 // Free-tier solo receipt identity: random per run, deterministic per wave block.
 // This only prevents accidental double credit; it cannot prove a wave was completed.
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261212-actiii3';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261217-stormgate';
 
 export function newRunReceiptId(source=globalThis.crypto){
  if(!source||typeof source.getRandomValues!=='function')return null;

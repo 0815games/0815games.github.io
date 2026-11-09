@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {CAMPAIGN,ACTS,actOf,actEndIndex,actComplete} from '../campaign.mjs';
+import {CAMPAIGN,ACTS,actOf,actEndIndex,actComplete,STORY_FORMAT} from '../campaign.mjs';
 import {RELICS,relicEarned,earnedRelicIds,relicBonus,applyRelicBonus,isRelic} from '../relics.mjs';
 import {completeStoryMission,meltPrestige,encodeWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
 import {captureWorkshopLoadout,workshopEffects} from '../workshop-effects.mjs';
@@ -15,9 +15,10 @@ test('five acts each carry exactly one relic and end on their shipped finale',()
   assert.equal(CAMPAIGN[actEndIndex(1)].id,'supply-line');
   assert.equal(CAMPAIGN[actEndIndex(2)].id,'long-switch');
   assert.equal(CAMPAIGN[actEndIndex(3)].id,'last-transmission');
-  // Acts IV and V have no missions yet: no finale, no completion, no relic.
-  assert.equal(actEndIndex(4),-1);assert.equal(actEndIndex(5),-1);
-  assert.equal(actComplete({storyProgress:CAMPAIGN.length},4),false);
+  assert.equal(CAMPAIGN[actEndIndex(4)].id,'storm-gate');
+  // Act V has no missions yet: no finale, no completion, no relic.
+  assert.equal(actEndIndex(5),-1);
+  assert.equal(actComplete({storyProgress:CAMPAIGN.length,storyCampaign:STORY_FORMAT},4),true,'storm-gate completes act IV');
   assert.equal(actComplete({storyProgress:CAMPAIGN.length},5),false);
   assert.equal(actComplete({storyProgress:4},1),true);
   assert.equal(actComplete({storyProgress:3},1),false);
@@ -34,6 +35,11 @@ test('relics are earned exactly at act completion and merge as passives',()=>{
   assert.deepEqual(earnedRelicIds(act2),['relic-open-line','relic-the-list']);
   assert.deepEqual(earnedRelicIds(act3),['relic-open-line','relic-the-list','relic-timetable']);
   assert.ok(!relicEarned('relic-blueprint',act3),'act IV relic stays locked until act IV ships');
+  const act4={storyProgress:40,storyCampaign:STORY_FORMAT};
+  assert.deepEqual(earnedRelicIds(act4),['relic-open-line','relic-the-list','relic-timetable','relic-blueprint']);
+  const bonus4=relicBonus(act4);
+  assert.equal(bonus4.waveRepair,10,'the blueprint repairs the bunker after every wave');
+  assert.equal(bonus4.movement,10,'the blueprint speeds everyone up');
   assert.ok(!relicEarned('relic-iron-path',act3),'act V relic stays locked until act V ships');
   const bonus=relicBonus(act3);
   assert.equal(bonus.cooldown,4);assert.equal(bonus.bunkerHealth,25);assert.equal(bonus.startSupplies,15);
