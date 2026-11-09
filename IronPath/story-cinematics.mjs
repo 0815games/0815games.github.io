@@ -23,6 +23,8 @@ const OPENINGS={
 'paper-war':[['IVO','The city registries hold Nia’s original gate plans—and the automation order with my signature on it.'],['VOSS','Then we take the records office before the censors burn it. Ivo—whatever is in there, we face it together.']],
 'the-mentor':[['IVO','My old master Ambrose hid the original timetable in his forge before the occupation.'],['AMBROSE','And Rook’s controllers are on their way. Tell Ivo: the forge stands while it stands.']],
 'city-of-glass':[['VOSS','Nia Reyes designed the second lock. Rook has her in the industrial district.'],['ADA','Then we get her out before his men move her.']],
+'workshop-of-ghosts':[['AMBROSE','Rook’s answer is a conversion order: my forge is to make his war.'],['IVO','Then the forge fights back. We hold the floor while the bench still runs.']],
+'night-shift':[['WORKERS','The whole night shift lays down its tools tonight. Rook will send his strikebreakers.'],['VOSS','Then we walk beside you. No column gets broken up on our watch.']],
  'tidelock':[['NIA','The gate is damaged, but it can be stabilized. Rook has to hear the truth.'],['ADA','I will tell his soldiers myself. Keep the broadcast relay alive.']],
 'last-transmission':[['NIA','The automatic override is still connected. Once it fires, the valley floods.'],['VOSS','One last line to hold. Everyone who made it this far is counting on us.']]
 };
@@ -50,6 +52,8 @@ const CODAS={
 'paper-war':[['NARRATOR','Nia’s plans are safe—so is the file with Ivo’s signature on the automation order.'],['NARRATOR','A signature is not a sentence. Somewhere in the city, an old forge is still lit.']],
 'the-mentor':[['NARRATOR','The original timetable leaves its hiding place behind the firebrick—and the master leaves with it.'],['NARRATOR','A schedule is a promise. Now the promise must be rewritten.']],
 'city-of-glass':[['NARRATOR','The truth is more complicated than the order. There is still a way to save the valley.'],['NARRATOR','Nia brings more than a key: she brings a choice.']],
+'workshop-of-ghosts':[['NARRATOR','The conversion order dies in the forge—and the bench keeps machining its careful parts.'],['NARRATOR','A workshop that refuses the war is worth more than a depot that burns.']],
+'night-shift':[['NARRATOR','The night shift marches, loud and unbroken, and the marsh road stays open behind it.'],['NARRATOR','Paper orders cannot retool a city whose hands stay closed.']],
  'tidelock':[['NARRATOR','Rook’s soldiers have heard Ada. Now the tower must be reached.'],['NARRATOR','The broadcast has reached Rook. His answer leaves one last task.']],
 'last-transmission':[['NARRATOR','When the radios fall quiet again, it is not because the signal is lost. It is because, at last, the fighting has stopped.'],['NARRATOR','The road remains scarred, and those who fell are not forgotten.'],['ADA','To anyone still listening: the valley is safe. This is Ada Vale, signing off.']]
 };
@@ -78,6 +82,8 @@ const SCENES={
  'paper-war':[{art:'registry-hall',place:'THE RECORDS OFFICE',weather:'rain'},{art:'city',place:'THE CITY REGISTRY',weather:'rain'}],
  'the-mentor':[{art:'city-forge',place:'THE CITY FORGE',weather:'embers'},{art:'city',place:'THE WORKSHOP DOOR',weather:'rain'}],
  'city-of-glass':[{art:'city',place:'THE INDUSTRIAL DISTRICT',weather:'rain'},{art:'tower',place:'THE GATE AHEAD',weather:'rain'}],
+ 'workshop-of-ghosts':[{art:'city-forge',place:'THE FORGE FLOOR',weather:'embers'},{art:'city',place:'THE SILENT WORKSHOPS',weather:'rain'}],
+ 'night-shift':[{art:'night-strike',place:'THE NIGHT MARCH',weather:'rain'},{art:'city',place:'THE MARSH ROAD GATE',weather:'rain'}],
  'tidelock':[{art:'marsh',place:'THE MARSH CONTROL LINE',weather:'rain'},{art:'tower',place:'THE INDUSTRIAL TOWER',weather:'rain'}],
  'last-transmission':[{art:'tower',place:'THE FINAL OVERRIDE',weather:'rain'},{art:'valley',place:'THE VALLEY AT DAWN',weather:'mist'}]
 };

@@ -5,7 +5,7 @@ test('every mission has authored briefing and debrief scenes with complete reada
 const POOL=['signal','pinewood','outpost','marsh','ice','city','tower','valley'];
 const MOTIFS=['dawn-road','pinewood-trail','relay-line','outpost-fire','market-ruins','marsh-hospital','ice-road','night-heath','main-relay','forest-convoy'];
 const ACT2=['flood-village','hospital-row','night-count','white-passage','frozen-junction'];
-const ACT3=['registry-hall','city-forge'];
+const ACT3=['registry-hall','city-forge','night-strike'];
 test('all scenes have authored, valid locations for both briefings and debriefs',()=>{const introArts=new Set();for(const mission of CAMPAIGN){for(const kind of ['intro','ending']){const scene=cinematicScene(mission,kind);assert.ok(scene?.place);assert.ok(POOL.concat(MOTIFS,ACT2,ACT3).includes(scene.art),`${mission.id} ${kind} art ${scene.art}`);assert.ok(['rain','snow','mist','embers'].includes(scene.weather));if(kind==='intro')introArts.add(scene.art);}}
  // Every Act I, II and III briefing carries its own painted motif; the acts
  // beyond keep the shared pool until their regions ship.

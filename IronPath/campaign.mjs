@@ -109,6 +109,14 @@ const MISSIONS=[
    briefing:'The occupied industrial city is full of broken sightlines and patrols. Find Nia Reyes before Rook moves her. She designed the second lock; she also knows why he believes flooding the valley is necessary.',
    stages:[{type:'eliminate',count:10,label:'Break the prison escort',dialogue:'VOSS: Clear the escort, then reach the holding site. Nia is our only way into the second lock.'},{type:'hold',at:'field',seconds:5,label:'Free Nia Reyes',dialogue:'NIA: Rook says the dam will fail unless he opens it. He is wrong—but the gate is already damaged.'},{type:'escort',at:'bunker',seconds:3,label:'Escort Nia to command',dialogue:'NIA: Keep them off me. I can prove the gate can be stabilized without flooding the valley.'}],
    success:'NIA: Rook was ordered to abandon the valley. He chose to flood it instead of risking his own people. The gate can still be stopped, but someone must hold the control line.'},
+  {id:'workshop-of-ghosts',act:'ACT III · THE LAST LIGHT',title:'Workshop of Ghosts',mapId:'g3-00000000d',threat:'veteran',
+   briefing:'Rook answers the loss of the timetable with a conversion order: Ambrose’s forge is to be retooled for war production. Sabotage the conversion while the precision bench still runs—once it is torn out, the city’s workshops follow.',
+   stages:[{type:'hold',at:'entry',seconds:4,label:'Hold the forge gates',dialogue:'AMBROSE: His engineers are at the gates. The conversion crew works fast—keep them off the floor.'},{type:'protect',at:'field',asset:'Precision bench',seconds:22,label:'Protect the precision bench',dialogue:'IVO: The bench is the heart of the forge. While it runs, the conversion cannot start—and my corrections can be machined.'},{type:'defend',seconds:35,label:'Hold until the conversion is undone',dialogue:'VOSS: The crews are falling back. Hold the yard until every machine is safe.'}],
+   success:'AMBROSE: The forge is still a forge. IVO: And it machines more than parts—the gate braces for Nia’s line are ready. NIA: Then we take the marsh control line.'},
+  {id:'night-shift',act:'ACT III · THE LAST LIGHT',title:'Night Shift',mapId:'g3-00000000e',threat:'veteran',
+   briefing:'The city’s workers lay down their tools: without their hands, Rook’s conversion orders are paper. He answers with hired strikebreakers. Protect the strike column—the marsh road must stay open for the night march.',
+   stages:[{type:'escort',at:'bunker',seconds:3,label:'March with the strike column',dialogue:'WORKERS: The whole night shift is out. Walk with us—they will not touch a column this loud.'},{type:'secure',at:'field',seconds:10,label:'Secure the marsh road gate',dialogue:'VOSS: The gate is the bottleneck. Clear it and the column reaches the marsh before dawn.'},{type:'hold',at:'field',seconds:5,label:'Hold the road until the column is through',dialogue:'SERA: Your hospital rows are filling with their families. Hold the road—everyone gets through tonight.'}],
+   success:'VOSS: The column is through and the night shift holds. NIA: The marsh control line is waiting, and Ada’s evidence with it. ADA: One broadcast left—make it count.'},
   {id:'tidelock',act:'ACT III · THE LAST LIGHT',title:'Tidelock',mapId:'g3-04e114f5c',threat:'legendary',
    briefing:'Nia knows a way into the dam network through a marsh control line. Ada will broadcast the evidence to Rook’s troops while you isolate the gate. The receiver must survive long enough to send it.',
    stages:[{type:'hold',at:'entry',seconds:4,label:'Connect the control line',dialogue:'NIA: The gate is under strain. If we cut power too quickly, it will open by itself.'},{type:'protect',at:'field',asset:'Broadcast relay',seconds:30,label:'Protect the broadcast relay',dialogue:'ADA: This is Ada Vale. The valley is still occupied by civilians. Rook’s orders will drown them. Please listen.'},{type:'secure',at:'field',seconds:10,label:'Isolate the gate control',dialogue:'NIA: Some of his units are standing down. Clear the control position; I can isolate the gate.'}],
@@ -206,19 +214,21 @@ export function campaignWaveContract(mission){return campaignWaves(mission?.thre
 // older formats forward, old mission boundary by old mission boundary, so an
 // account never loses an earned act or relic when the story grows. The table
 // below maps the twelve-mission story onto the five-act order.
-export const STORY_FORMAT=3;
-// Format 1 shipped eighteen missions; format 2 grew to twenty-three. Act III
-// inserts the paper war and the city forge before the old act opener, so a
-// format-2 boundary maps to the new index of the very same mission: an account
-// never loses an earned act or relic, and the new missions simply count as
-// played where they were skipped.
-const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,23,24,25];
-const FORMAT_2_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,24,25];
+export const STORY_FORMAT=4;
+// Format 1 shipped eighteen missions; format 2 grew to twenty-three; format 3
+// added the paper war and the city forge. The two workshop missions slot
+// between the city and the marsh, so an older boundary maps to the new index
+// of the very same mission: an account never loses an earned act or relic, and
+// the new missions simply count as played where they were skipped.
+const FORMAT_1_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,13,15,17,19,20,23,26,27];
+const FORMAT_2_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,23,26,27];
+const FORMAT_3_PROGRESS=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,26,27];
 const LEGACY_STORY_PROGRESS=[0,1,2,4,10,11,12,13,14,15,16,17,18];
 export function campaignProgress(profile){
   const raw=profile?.storyProgress,format=profile?.storyCampaign;
   if(!Number.isInteger(raw)||raw<0)return 0;
   if(Number.isInteger(format)&&format>=STORY_FORMAT)return raw>CAMPAIGN.length?0:raw;
+  if(format===3)return raw>25?0:FORMAT_3_PROGRESS[raw]??0;
   if(format===2)return raw>23?0:FORMAT_2_PROGRESS[raw]??0;
   if(format===1)return raw>18?0:FORMAT_1_PROGRESS[raw]??0;
   if(raw>12)return 0;
