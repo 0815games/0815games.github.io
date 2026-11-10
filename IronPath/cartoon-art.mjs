@@ -1,6 +1,6 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261219-trains1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261220-actintros';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261219-trains1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261220-actintros';
 import {ENEMY_INTEL} from './combat.mjs?v=20261217-stormgate';
 import {bossPhase} from './boss-mechanics.mjs?v=20261217-stormgate';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.

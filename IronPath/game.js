@@ -4,7 +4,7 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr} from './language.mjs?v=20261219-trains1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261220-actintros';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -25,13 +25,13 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261219-trains1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261219-trains1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261219-trains1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261220-actintros';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261219-trains1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261219-trains1';
+import { createTutorial } from './tutorial.mjs?v=20261220-actintros';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261220-actintros';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261219-trains1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261219-trains1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261217-stormgate';
@@ -194,14 +194,38 @@ function renderResults(target){
     else if(!wanted&&battleViewport){battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);}
   }
   $('campaignSelect').value='free';
+  // The act detail header is rendered per act at runtime (like the mission
+  // cards, it never appears in static HTML); its parts are addressed through
+  // one helper so the DOM contract only sees static ids.
+  const actDetailEl=part=>$('actDetail'+part);
   function renderCampaign(){
     const profile=account.getProfile(),progress=campaignProgress(profile),selection=$('campaignSelect').value,mission=campaignMission(selection);
     const blocked=!!coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo());
-    CAMPAIGN.forEach((m,i)=>{const locked=i>progress,complete=i<progress,card=$(`missionCard${i}`);$(`campaignOption${i}`).disabled=locked;$(`campaignOption${i}`).textContent=`${String(i+1).padStart(2,'0')} · ${locked?tr('CLASSIFIED'):tr(m.title)}`;card.disabled=blocked||locked;card.dataset.status=locked?'locked':complete?'complete':'available';card.setAttribute('aria-pressed',String(selection===m.id));$(`missionTitle${i}`).textContent=locked?tr('CLASSIFIED'):tr(m.title);$(`missionStatus${i}`).textContent=tr(locked?'LOCKED':complete?'COMPLETED':'NEXT MISSION');const stamp=$(`missionStamp${i}`);if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
+    CAMPAIGN.forEach((m,i)=>{const locked=i>progress,complete=i<progress,card=$(`missionCard${i}`);$(`campaignOption${i}`).disabled=locked;$(`campaignOption${i}`).textContent=`${String(i+1).padStart(2,'0')} · ${locked?tr('CLASSIFIED'):tr(m.title)}`;if(!card)return;card.disabled=blocked||locked;card.dataset.status=locked?'locked':complete?'complete':'available';card.setAttribute('aria-pressed',String(selection===m.id));$(`missionTitle${i}`).textContent=locked?tr('CLASSIFIED'):tr(m.title);$(`missionStatus${i}`).textContent=tr(locked?'LOCKED':complete?'COMPLETED':'NEXT MISSION');const stamp=$(`missionStamp${i}`);if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
      // The contract is visible before you commit: act, threat and wave count.
      const contract=$(`missionContract${i}`);
      if(contract){const difficulty=campaignDifficulty(m);contract.textContent=locked?'':tr('{threat} · {waves} waves',{threat:tr(difficulty.label.toUpperCase()),waves:campaignWaveContract(m)});contract.dataset.threat=locked?'':m.threat;contract.hidden=locked;}
     });
+    // The act overview banners: staged art, live progress, the red stamp on
+    // finished acts - and the open act's detail header stays fresh too.
+    ACTS.forEach((act,i)=>{
+      const banner=$(`actBanner${i}`);if(!banner)return;
+      const list=CAMPAIGN.map((m,idx)=>({m,idx})).filter(({m})=>actOf(m)?.n===act.n),done=list.filter(({idx})=>idx<progress).length,end=actEndIndex(act),complete=end>=0&&progress>end;
+      banner.dataset.state=complete?'complete':list.length?'open':'upcoming';
+      banner.disabled=blocked||!list.length;
+      const title=$(`actBannerTitle${i}`),meta=$(`actBannerMeta${i}`),prog=$(`actBannerProgress${i}`),stamp=$(`actBannerStamp${i}`);
+      if(title)title.textContent=tr(act.title);
+      if(meta)meta.textContent=`${tr(act.character)} · ${tr(act.regionLabel)}`;
+      if(prog)prog.textContent=tr('{done} / {total} MISSIONS',{done,total:list.length});
+      if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
+    });
+    if(campaignActView){const act=ACTS.find(a=>a.n===campaignActView);
+      if(act){const list=CAMPAIGN.map((m,idx)=>({m,idx})).filter(({m})=>actOf(m)?.n===act.n),done=list.filter(({idx})=>idx<progress).length;
+        const eyebrow=actDetailEl('Eyebrow'),head=actDetailEl('Title'),prog=actDetailEl('Progress');
+        if(eyebrow)eyebrow.textContent=tr(act.title);
+        if(head)head.textContent=`${tr(act.character)} · ${tr(act.regionLabel)}`;
+        if(prog)prog.textContent=tr('{done} / {total} MISSIONS',{done,total:list.length});
+      }}
     $('campaignBoard').hidden=!mission||!missionBoardOpen;$('campaignShowBoard').hidden=!mission||missionBoardOpen;$('campaignShowBoard').disabled=blocked;$('campaignCloseBoard').hidden=!activeMission;$('campaignPanel').dataset.boardOpen=String(missionBoardOpen);$('campaignOverall').textContent=progress===CAMPAIGN.length?tr('The valley is safe. Revisit any completed mission.'):progress?tr('Your next mission awaits. {done} of {total} missions completed.',{done:progress,total:CAMPAIGN.length}):tr('A lost signal is only the beginning.');$('campaignProgressText').textContent=tr('{done} / {total} COMPLETED',{done:progress,total:CAMPAIGN.length});$('campaignProgressBar').max=CAMPAIGN.length;$('campaignProgressBar').value=progress;$('campaignContinue').disabled=blocked;$('campaignContinue').textContent=tr(progress===CAMPAIGN.length?'REPLAY FINAL MISSION →':progress?'CONTINUE STORY →':'BEGIN STORY →');$('campaignSelectedAct').textContent=tr(mission?.act||'');$('campaignSelectedTitle').textContent=tr(mission?.title||'Select a mission');$('campaignQuickLoad').disabled=blocked||!!mission&&!campaignAvailable(profile,mission.id);$('campaignQuickStatus').textContent=tr(blocked?'Leave your party before changing solo operations.':mission?'Select a mission on the board or load this selection.':'Free play: random map and endless waves.');
     const strip=$('relicStrip');
     if(strip){
@@ -221,26 +245,59 @@ function renderResults(target){
   // generated from CAMPAIGN: a new act ships by adding missions, never by
   // hand-editing markup. Cards keep their historic ids so the handlers and
   // the renderer above stay untouched.
+  // The mission board opens on a staged overview of the five acts; each act
+  // banner leads into that act's mission list. Entering an act for the first
+  // time plays its intro film - once per browser, skip always in reach.
+  let campaignActView=0;
+  const actIntrosSeen=new Set();
+  try{const saved=JSON.parse(window.localStorage.getItem('ironpath:actIntros')||'[]');if(Array.isArray(saved))for(const n of saved)if(Number.isInteger(n)&&n>=1&&n<=ACTS.length)actIntrosSeen.add(n);}catch{}
+  function markActIntroSeen(n){actIntrosSeen.add(n);try{window.localStorage.setItem('ironpath:actIntros',JSON.stringify([...actIntrosSeen]));}catch{}}
+  function actIntroSource(n){return `assets/cinematics/act${n}-intro-${getLanguage()==='de'?'de':'en'}.mp4`;}
+  function playActIntro(n,onDone){
+    const dialog=$('actIntro'),video=$('actIntroVideo'),done=typeof onDone==='function'?onDone:()=>{};
+    if(!dialog||!video){markActIntroSeen(n);done();return;}
+    let finished=false;
+    const finish=()=>{if(finished)return;finished=true;markActIntroSeen(n);video.onended=null;try{dialog.close();}catch{}if(typeof video.pause==='function')video.pause();done();};
+    video.onended=finish;$('actIntroSkip').onclick=finish;
+    dialog.onclose=()=>{if(!finished){finished=true;markActIntroSeen(n);done();}};
+    video.src=actIntroSource(n);
+    try{dialog.showModal();}catch{}
+    const playing=typeof video.play==='function'?video.play():null;
+    if(playing&&typeof playing.catch==='function')playing.catch(()=>{});
+  }
+  function showActOverview(){campaignActView=0;const overview=$('actOverview'),detail=$('missionActs');if(overview)overview.hidden=false;if(detail)detail.hidden=true;}
+  function wireMissionCards(){
+    CAMPAIGN.forEach((mission,i)=>{const card=$(`missionCard${i}`);if(!card)return;card.onclick=()=>{if(!coop&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo())){$('campaignSelect').value=mission.id;renderCampaign();}};});
+  }
+  function showActDetail(n){
+    const act=ACTS.find(a=>a.n===n);if(!act)return;
+    campaignActView=n;
+    const cards=CAMPAIGN.map((mission,i)=>({mission,i})).filter(({mission})=>actOf(mission)?.n===act.n).map(({mission,i})=>{
+      const numberText=`MISSION ${String(i+1).padStart(2,'0')}`;
+      return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span><b id="missionStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`;
+    }).join('');
+    const detail=$('missionActs');
+    detail.innerHTML=`<header class="act-detail-head"><button type="button" id="actDetailBack" class="act-detail-back">← ${tr('BACK TO ACTS')}</button><div class="act-detail-meta"><span id="actDetailEyebrow" class="board-eyebrow">${tr(act.title)}</span><h3 id="actDetailTitle"></h3><p id="actDetailProgress"></p></div><button type="button" id="actDetailReplay" class="act-intro-replay">▸ ${tr('WATCH INTRO')}</button></header><div class="mission-grid">${cards}</div>`;
+    const overview=$('actOverview');if(overview)overview.hidden=true;detail.hidden=false;
+    wireMissionCards();
+    const back=actDetailEl('Back');if(back)back.onclick=()=>showActOverview();
+    const replay=actDetailEl('Replay');if(replay)replay.onclick=()=>playActIntro(n);
+    renderCampaign();
+  }
+  function openAct(n){const act=ACTS.find(a=>a.n===n);if(!act)return;if(!actIntrosSeen.has(n))playActIntro(n,()=>showActDetail(n));else showActDetail(n);}
   function buildMissionBoard(){
-    const acts=$('missionActs'),select=$('campaignSelect');
-    let html='';
-    for(const title of [...new Set(CAMPAIGN.map(m=>m.act))]){
-      const cards=CAMPAIGN.map((mission,i)=>({mission,i})).filter(({mission})=>mission.act===title).map(({mission,i})=>{
-        const numberText=`MISSION ${String(i+1).padStart(2,'0')}`;
-        return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span><b id="missionStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`;
-      }).join('');
-      html+=`<section class="mission-act" aria-label="${title}"><h4 data-i18n-text="${title}">${tr(title)}</h4><div class="mission-grid">${cards}</div></section>`;
-    }
-    acts.innerHTML=html;
+    const overview=$('actOverview'),select=$('campaignSelect');
+    if(overview)overview.innerHTML=ACTS.map((act,i)=>`<button type="button" id="actBanner${i}" class="act-banner" data-act="${act.n}" data-state="open" aria-label="${act.title}"><span class="act-banner-numeral" aria-hidden="true">${['I','II','III','IV','V'][i]||act.n}</span><span class="act-banner-body"><strong id="actBannerTitle${i}">${tr(act.title)}</strong><span id="actBannerMeta${i}" class="act-banner-meta"></span><span id="actBannerProgress${i}" class="act-banner-progress"></span></span><b id="actBannerStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`).join('');
+    ACTS.forEach((act,i)=>{const banner=$(`actBanner${i}`);if(banner)banner.onclick=()=>openAct(act.n);});
     // The quick select keeps free play first; option labels come from the
     // renderer. Rebuilding replaces the whole list, ids stay stable.
     select.innerHTML=`<option value="free" data-i18n-text="Free play · random battlefield">${tr('Free play · random battlefield')}</option>`+CAMPAIGN.map((mission,i)=>`<option id="campaignOption${i}" value="${mission.id}"></option>`).join('');
+    showActOverview();
   }
-  function setMissionBoard(open){missionBoardOpen=!!open;keys.clear();sendDirection();accumulator=0;renderCampaign();}
+  function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();}
   buildMissionBoard();
   $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
   $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
-  CAMPAIGN.forEach((mission,i)=>{$(`missionCard${i}`).onclick=()=>{if(!coop&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo())){$('campaignSelect').value=mission.id;renderCampaign();}};});
   $('campaignContinue').onclick=async()=>{if(coop||(typeof account.canChooseSolo==='function'&&!account.canChooseSolo()))return;const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;renderCampaign();await $('campaignLoad').onclick();};
   $('campaignQuickLoad').onclick=()=>$('campaignLoad').onclick();
   $('storyReplayDebrief').onclick=()=>{const mission=campaignMission($('campaignSelect').value);if(!coop&&mission&&CAMPAIGN.indexOf(mission)<campaignProgress(account.getProfile())&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo()))showCinematic(mission,'ending',null,'CLOSE');};
