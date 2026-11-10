@@ -16,10 +16,10 @@ test('five acts each carry exactly one relic and end on their shipped finale',()
   assert.equal(CAMPAIGN[actEndIndex(2)].id,'long-switch');
   assert.equal(CAMPAIGN[actEndIndex(3)].id,'last-transmission');
   assert.equal(CAMPAIGN[actEndIndex(4)].id,'storm-gate');
-  // Act V has no missions yet: no finale, no completion, no relic.
-  assert.equal(actEndIndex(5),-1);
+  assert.equal(CAMPAIGN[actEndIndex(5)].id,'homecoming');
   assert.equal(actComplete({storyProgress:CAMPAIGN.length,storyCampaign:STORY_FORMAT},4),true,'storm-gate completes act IV');
-  assert.equal(actComplete({storyProgress:CAMPAIGN.length},5),false);
+  assert.equal(actComplete({storyProgress:CAMPAIGN.length,storyCampaign:STORY_FORMAT},5),true,'homecoming completes act V');
+  assert.equal(actComplete({storyProgress:CAMPAIGN.length-1,storyCampaign:STORY_FORMAT},5),false);
   assert.equal(actComplete({storyProgress:4},1),true);
   assert.equal(actComplete({storyProgress:3},1),false);
   assert.equal(actOf(CAMPAIGN[actEndIndex(1)]).n,1);
@@ -40,7 +40,13 @@ test('relics are earned exactly at act completion and merge as passives',()=>{
   const bonus4=relicBonus(act4);
   assert.equal(bonus4.waveRepair,10,'the blueprint repairs the bunker after every wave');
   assert.equal(bonus4.movement,10,'the blueprint speeds everyone up');
-  assert.ok(!relicEarned('relic-iron-path',act3),'act V relic stays locked until act V ships');
+  assert.ok(!relicEarned('relic-iron-path',act3),'the iron path stays locked until its act is complete');
+  const act5={storyProgress:CAMPAIGN.length,storyCampaign:STORY_FORMAT};
+  assert.deepEqual(earnedRelicIds(act5),['relic-open-line','relic-the-list','relic-timetable','relic-blueprint','relic-iron-path']);
+  const bonus5=relicBonus(act5);
+  assert.equal(bonus5.towerDamage,1.1,'the iron path sharpens every tower');
+  assert.equal(bonus5.towerRange,20,'the iron path extends every tower');
+  assert.equal(bonus5.startSupplies,40,'the list and the iron path stock the depot together');
   const bonus=relicBonus(act3);
   assert.equal(bonus.cooldown,4);assert.equal(bonus.bunkerHealth,25);assert.equal(bonus.startSupplies,15);
   assert.equal(bonus.damage,2);assert.equal(bonus.shotIntervalMultiplier,.92);

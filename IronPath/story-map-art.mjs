@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261220-actintros';
+import {translateText as tr} from './language.mjs?v=20261031-finale1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={
@@ -37,6 +37,9 @@ const STYLES={
  'night-of-lights':{ground:'#43484a',light:'#75797a',dark:'#24272a',water:'#54696d',weather:'mist',feature:'broadcast',accent:'#e8cf8f'},
  'the-prison-train':{ground:'#4d524d',light:'#7e827b',dark:'#2b2e2b',water:'#5a7370',weather:'embers',feature:'convoy',accent:'#e6bb7f'},
  'rooks-line':{ground:'#4f544e',light:'#80847c',dark:'#2c2f2b',water:'#5b746e',weather:'rain',feature:'antenna',accent:'#e4ca8c'},
+ 'the-core':{ground:'#4a4f4a',light:'#7c807a',dark:'#282b28',water:'#5a7370',weather:'rain',feature:'station',accent:'#e4c98e'},
+ 'last-order':{ground:'#4d524e',light:'#7f837c',dark:'#2b2e2b',water:'#5c7570',weather:'rain',feature:'dispatch',accent:'#ecd692'},
+ 'homecoming':{ground:'#565a52',light:'#8b8d7f',dark:'#33362f',water:'#5f7a74',weather:'embers',feature:'broadcast',accent:'#e8c87e'},
  'the-descent':{ground:'#565a52',light:'#8b8d7f',dark:'#33362f',water:'#5f7a74',weather:'mist',feature:'station',accent:'#e6cd8b'},
  'dead-timetable':{ground:'#4e534f',light:'#7f837b',dark:'#2c2f2b',water:'#5c7570',weather:'mist',feature:'timetable',accent:'#ecd692'},
  'the-quartermaster':{ground:'#585245',light:'#8a8272',dark:'#34302a',water:'#5f7568',weather:'embers',feature:'market',accent:'#e8b97a'},

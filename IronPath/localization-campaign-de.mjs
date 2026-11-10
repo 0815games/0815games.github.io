@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261219-trains1';
+import {CAMPAIGN} from './campaign.mjs?v=20261031-finale1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -202,6 +202,24 @@ const data={
  ['Sichere den Gefechtsstand','IVO: Sein Feldschreibtisch – Karten, Chiffren, der letzte signierte Befehl. Nehmt ihn unversehrt: Die Tore des Kerns antworten darauf.'],
  ['Halte die Stellung, bis die Linie bricht','WREN: Seine Rede läuft noch auf jedem Kanal. Lasst ihn ausreden – dann zeigt seiner Armee, was übrig ist.']],
  'ROOK: Linie … zurückgenommen. Alle Einheiten … zurückgenommen. VOSS: Die letzte konventionelle Armee der Eisernen Straße ist fort. NIA: Und dahinter: der Kern. ADA: Und hinter dem Kern: zu Hause.'],
+ 'the-core':['Der Kern','Drei Operationen, eine Nacht: Ivo trägt die Master-Fahrplan-Karte in den Kern, Nia öffnet den Außenring nach ihren alten Plänen – und Sie brechen den Hauptknoten dazwischen. Das Herz der Eisernen Straße schlägt nach Fahrplan. Heute Nacht ändert sich der Fahrplan.',[
+ ['Erreicht das Kern-Tor','NIA: Meine Pläne öffnen den Ring noch immer – aber nur von innen. Kommen Sie zum Tor, solange der Rangierbahnhof noch glaubt, der Zug gehöre ihnen.'],
+ ['Schützt die Überschreib-Konsole','IVO: Der Kern gleicht jede Karte mit dem Master-Fahrplan ab. Halten Sie sie von meiner Konsole fern, während meine zum Master wird.'],
+ ['Sichert die Ring-Kontrolle','NIA: Der Ring antwortet jetzt auf meine Hand. Nehmt den Kontrollraum – die Tore des Kerns bleiben genau so lange offen, wie wir ihn halten.'],
+ ['Haltet durch, während die Umschreibung greift','IVO: Sie greift Weiche für Weiche, von West nach Ost. Jede Depesche ab jetzt trägt meine Korrektur – und keine davon trägt Rooks Autorität.']],
+ 'NIA: Der Ring ist offen. Der Kern ist unser. IVO: Ab dieser Minute läuft die Eiserne Straße nach meinem Fahrplan – und mein Fahrplan sagt: Jeder fährt heim. ADA: Dann fehlt nur noch der Turm, Voss. Bringen Sie ihm den letzten Befehl.'],
+ 'last-order':['Der letzte Befehl','Der Kern ist genommen, doch die Disposition wehrt sich: Ihre automatischen Schreibtische versenden weiter loyale Konvois gegen den neuen Fahrplan. Haltet die Konsole, bis Ivos Stich abgeschlossen ist und die letzte loyale Welle von selbst bricht.',[
+ ['Stoppt die Meldegänger','IVO: Die Schreibtische sind gedankenlos – sie versenden Befehle, bis die Tinte trocken ist. Stoppt jeden Reiter vor den Toren.'],
+ ['Haltet die Depeschen-Konsole','IVO: Mein Stich geht Zeile für Zeile hinein. Haltet ihre Hände von der Konsole fern – eine verlorene Zeile, und die Konvois drehen wieder.'],
+ ['Brecht die letzte loyale Welle','VOSS: Die Schreibtische haben ihnen einen letzten Sieg versprochen. Lassen Sie sie das Versprechen halten – an unserer Linie.']],
+ 'IVO: Der Stich sitzt. Kein Schreibtisch in diesem Tal wird je wieder Rooks Befehle ausstellen. WREN: Dann kämpft ab jetzt, wer es umsonst tut. VOSS: Noch ein Turm – und der Mann selbst.'],
+ 'homecoming':['Die Heimfahrt','Der Signalturm – das letzte Eisen in Rooks Hand. Seine letzte Wache steht auf der Treppe, und über ihnen brennt noch ein einziges Fenster. Brecht die Wache, nehmt die Treppe und gebt der Eisernen Straße ihren letzten Befehl. Voss kennt die Worte bereits.',[
+ ['Erreicht den Signalturm','ADA: Jedes Licht am Knoten ist unser – nur eines nicht, ganz oben im Signalturm. Er wartet auf Sie, Voss. Wir bleiben die ganze Zeit auf der Leitung.'],
+ ['Brecht die letzte Wache','VOSS: Seine Ehrenwache – Männer, die einer Straße folgten statt einem Menschen. Brecht sie, und die Treppe steht offen.'],
+ ['Sichert die Turmtreppe','WREN: Die Treppe ist unsere. Was auch immer oben geschieht – der Turm brennt heute Nacht nicht.'],
+ ['Haltet gegen Rooks Veteranen','ROOK: Ihr habt meine Linie genommen, meine Höfe, meinen Fahrplan. Meine Hand habe ich noch – und sie zittert nicht. Kommt und nehmt den Turm.'],
+ ['Gebt den letzten Befehl','ROOK: Mir wurde nie der Befehl zum Halten gegeben. Jemand … muss ihn geben. VOSS: Dann hören Sie ihn von mir: Gehen Sie heim, Rook. Das ist der letzte Befehl der Eisernen Straße.']],
+ 'ROOK: Heimgehen. … Ja. Die Straße ist … zu Ende. VOSS: Legen Sie die Feder ab, alter Mann. Der erste freie Konvoi rollt bei Sonnenaufgang. ELIAS: Die Befreiten steigen ein – und Ada, ich komme mit ihnen den Berg hinunter. ADA: Ich halte die Leitung offen, den ganzen Weg heim.'],
 };
 const entries={};
 const add=(en,de)=>{if(typeof en==='string'&&typeof de==='string')entries[en]=de;
@@ -210,7 +228,7 @@ for(const mission of CAMPAIGN){const entry=data[mission.id];if(!entry||entry[2].
  mission.stages.forEach((stage,i)=>{add(stage.label,entry[2][i][0]);add(stage.dialogue,entry[2][i][1]);});
  // Cinematics split authored conversations by speaker; translate the matching
  // individual segments too, retaining speaker identifiers and English fallback.
- const split=s=>s.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|SURVIVORS):\s)/).map(x=>x.trim()).filter(Boolean);
+ const split=s=>s.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|ELIAS|WREN|SURVIVORS):\s)/).map(x=>x.trim()).filter(Boolean);
  const en=split(mission.success),de=split(entry[3]);if(en.length===de.length)for(let i=0;i<en.length;i++){const a=en[i].match(/^[A-Z]+:\s*(.*)$/),b=de[i].match(/^[A-Z]+:\s*(.*)$/);if(a&&b)add(a[1],b[1]);}
  for(let i=0;i<mission.stages.length;i++){const a=mission.stages[i].dialogue.match(/^[A-Z]+:\s*(.*)$/),b=entry[2][i][1].match(/^[A-Z]+:\s*(.*)$/);if(a&&b)add(a[1],b[1]);}
 }
