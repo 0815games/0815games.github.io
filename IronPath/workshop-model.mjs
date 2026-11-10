@@ -2,7 +2,7 @@
 // or account imports. Live callers are the armory view and the account
 // transaction service; safety lives in the rules and the receipts there.
 import {ITEMS,readArmory} from './armory.mjs?v=20261107-balance1';
-import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261031-finale1';
+import {PRESTIGE,isPrestige} from './prestige.mjs?v=20261103-listvoice1';
 const slots=['weapon','gear','gadget'];
 const legacySlots=['gadget','gear','gear','gadget','gadget','gear','gadget','gadget','gadget','gadget'];
 // One price source for both the reducer and the UI, so a re-tune cannot drift.
