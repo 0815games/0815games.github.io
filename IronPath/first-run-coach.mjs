@@ -15,7 +15,7 @@
 //
 // Copy is one sentence per card. Pictures belong to the reward popups, not to the
 // card that has to keep the field free.
-import {translateText as tr} from './language.mjs?v=20261031-finale1';
+import {translateText as tr} from './language.mjs?v=20261031-valleymap1';
 import {createCoachHighlight} from './coach-highlight.mjs?v=20261112-coachptr1';
 
 // Every card except the two announcements asks for something, and the card does

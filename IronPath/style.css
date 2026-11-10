@@ -421,20 +421,29 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
 
 /* Act overview: five staged banners lead into the acts; the first entry into
    an act plays its intro film. Finished acts carry the field stamp. */
-.act-overview{display:grid;gap:14px;margin:18px 0}.act-overview[hidden],.mission-acts[hidden]{display:none}
-.act-banner{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:148px;padding:16px 128px 16px 22px;text-align:left;margin:0;border:1px solid #6c806a;border-radius:6px;color:#f3e8ce;cursor:pointer;overflow:hidden;background:linear-gradient(90deg,#0d1a12f8,#0d1a12e0 46%,#0d1a1240),var(--act-image) center/cover;transition:transform .15s ease,filter .15s ease}
-.act-banner:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.09)}
-.act-banner:disabled{cursor:not-allowed;opacity:.55}
-.act-banner[data-act="1"]{--act-image:url('assets/story-act1-title.jpg')}
-.act-banner[data-act="2"]{--act-image:url('assets/story-act2-title.jpg')}
-.act-banner[data-act="3"]{--act-image:url('assets/story-act3-title.jpg')}
-.act-banner[data-act="4"]{--act-image:url('assets/story-act4-title.jpg')}
-.act-banner[data-act="5"]{--act-image:url('assets/story-act5-title.jpg')}
-.act-banner-body{display:grid;gap:5px;max-width:640px}
-.act-banner-body strong{font:700 21px Georgia,serif;color:#f6ebcf;letter-spacing:.02em}
-.act-banner-meta{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9fb3a0}
-.act-banner-progress{font-size:11px;letter-spacing:.1em;color:#cdd8c2}
-.act-banner-numeral{position:absolute;right:20px;top:50%;transform:translateY(-50%);font:800 62px Georgia,serif;color:#f3e8ce1f;letter-spacing:.04em;pointer-events:none}
+.act-overview{margin:18px 0}.act-overview[hidden],.mission-acts[hidden]{display:none}
+/* The painted valley map: one road, five act stations. The dashed route is
+   the Iron Path itself; a station opens only when the road has reached it. */
+.campaign-map{position:relative;border:1px solid #6c806a;border-radius:8px;overflow:hidden;background:linear-gradient(0deg,#0d1a12d9,#0d1a1236 55%,#0d1a12c9),url('assets/story-campaign-map.jpg') center/cover;min-height:500px}
+.campaign-map-route{position:absolute;inset:0;width:100%;height:100%}
+.campaign-map-route polyline{fill:none;stroke:#e6cd8f;stroke-width:2;stroke-dasharray:5 6;stroke-linejoin:round;stroke-linecap:round;opacity:.8}
+.act-node{position:absolute;left:var(--node-x,50%);top:var(--node-y,50%);transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:7px;width:210px;padding:0;margin:0;border:0;background:transparent;color:#f3e8ce;cursor:pointer;transition:transform .15s ease,filter .15s ease}
+.act-node-marker{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;border:2px solid #d9c79d;background:radial-gradient(circle at 35% 30%,#31503a,#152318 72%);box-shadow:0 4px 12px #000a,0 0 0 5px #0d1a1280;font:800 22px Georgia,serif;color:#f6ebcf;pointer-events:none}
+.act-node-plate{display:grid;gap:3px;justify-items:center;text-align:center;padding:7px 12px 8px;border:1px solid #6c806a;border-radius:6px;background:#0d1a12e0;min-width:176px;pointer-events:none}
+.act-node-plate strong{font:700 15px/1.25 Georgia,serif;color:#f6ebcf;letter-spacing:.02em}
+.act-node-meta{font-size:8.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#9fb3a0}
+.act-node-progress{font-size:10px;letter-spacing:.08em;color:#cdd8c2}
+.act-node:hover:not(:disabled){transform:translate(-50%,-50%) translateY(-3px);filter:brightness(1.12)}
+.act-node:focus-visible{outline:2px solid #e6cd8f;outline-offset:3px;border-radius:8px}
+.act-node:disabled{cursor:not-allowed}
+.act-node[data-state="open"] .act-node-marker{border-color:#f2d694;animation:act-node-pulse 2.4s ease-in-out infinite}
+@keyframes act-node-pulse{0%,100%{box-shadow:0 4px 12px #000a,0 0 0 5px #f2d69426}50%{box-shadow:0 4px 12px #000a,0 0 0 11px #f2d6940f}}
+.act-node[data-state="complete"] .act-node-marker{border-color:#e6c67a;background:radial-gradient(circle at 35% 30%,#4a5a3c,#1c2a1c 72%)}
+.act-node[data-state="locked"] .act-node-marker{filter:grayscale(.9) brightness(.62);border-color:#5c6b5e;border-style:dashed}
+.act-node[data-state="locked"] .act-node-plate{opacity:.55}
+.act-node-lock{display:inline-flex;align-items:center;gap:5px;font:800 8.5px Arial,serif;letter-spacing:.16em;color:#0d1a12;padding:3px 8px;border-radius:3px;background:#c9b98a;box-shadow:0 1px 3px #0008;pointer-events:none}
+.act-node-lock::before{content:'';display:inline-block;width:9px;height:6px;border:1.5px solid #0d1a12;border-bottom:none;border-radius:3px 3px 0 0}
+.act-node .mission-stamp{top:-10px;left:50%;transform:translate(-50%,0) rotate(-9deg)}
 .act-detail-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 10px;padding-bottom:12px;border-bottom:1px solid #60765e}
 .act-detail-meta{flex:1 1 220px}
 .act-detail-meta h3{font:700 20px Georgia,serif;color:#f6ebcf;margin:4px 0}
@@ -446,4 +455,4 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
 .act-intro-frame{border:1px solid #2c4436;border-radius:8px;overflow:hidden;background:#000}
 .act-intro-frame video{display:block;width:100%;max-height:78vh;background:#000}
 #actIntroSkip{display:block;margin:14px auto 0;min-height:42px;padding:10px 20px;border:1px solid #e1c986;border-radius:4px;background:#e1c986;color:#1b3024;font:800 12px Arial,serif;letter-spacing:.14em;cursor:pointer}
-@media(max-width:850px){.act-banner{min-height:104px;padding:12px 84px 12px 14px}.act-banner-body strong{font-size:16px}.act-banner-numeral{font-size:40px;right:12px}.act-banner-meta{letter-spacing:.1em}}
+@media(max-width:850px){.campaign-map{min-height:0;padding:12px;display:grid;gap:10px;background:#0d1a12}.campaign-map-route{display:none}.act-node{position:relative;transform:none;width:100%;flex-direction:row;align-items:center;gap:12px}.act-node:hover:not(:disabled){transform:none}.act-node-plate{flex:1 1 auto;justify-items:start;text-align:left;min-width:0}.act-node .mission-stamp{top:50%;left:auto;right:8px;transform:translateY(-50%) rotate(-6deg)}}

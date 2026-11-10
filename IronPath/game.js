@@ -4,12 +4,12 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261031-finale1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261031-valleymap1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261031-finale1';
-import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex} from './campaign.mjs?v=20261031-finale1';
+import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex,actComplete} from './campaign.mjs?v=20261031-finale1';
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261031-finale1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
@@ -25,13 +25,13 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-finale1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-finale1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-valleymap1';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261220-actintros';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261031-finale1';
+import { createTutorial } from './tutorial.mjs?v=20261031-valleymap1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261031-valleymap1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-finale1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-finale1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
@@ -206,18 +206,22 @@ function renderResults(target){
      const contract=$(`missionContract${i}`);
      if(contract){const difficulty=campaignDifficulty(m);contract.textContent=locked?'':tr('{threat} · {waves} waves',{threat:tr(difficulty.label.toUpperCase()),waves:campaignWaveContract(m)});contract.dataset.threat=locked?'':m.threat;contract.hidden=locked;}
     });
-    // The act overview banners: staged art, live progress, the red stamp on
-    // finished acts - and the open act's detail header stays fresh too.
+    // The act overview is a painted land map of the valley: five stations on
+    // one road, each act a settlement to click into. A station only opens
+    // once the previous act is complete - the road itself is the lock.
     ACTS.forEach((act,i)=>{
       const banner=$(`actBanner${i}`);if(!banner)return;
       const list=CAMPAIGN.map((m,idx)=>({m,idx})).filter(({m})=>actOf(m)?.n===act.n),done=list.filter(({idx})=>idx<progress).length,end=actEndIndex(act),complete=end>=0&&progress>end;
-      banner.dataset.state=complete?'complete':list.length?'open':'upcoming';
-      banner.disabled=blocked||!list.length;
-      const title=$(`actBannerTitle${i}`),meta=$(`actBannerMeta${i}`),prog=$(`actBannerProgress${i}`),stamp=$(`actBannerStamp${i}`);
+      const unlocked=act.n===1||actComplete(profile,act.n-1);
+      banner.dataset.state=complete?'complete':!unlocked?'locked':list.length?'open':'upcoming';
+      banner.disabled=blocked||!list.length||!unlocked;
+      banner.title=unlocked?'':tr('Complete {act} to unlock this place.',{act:tr(ACTS[act.n-2].title)});
+      const title=$(`actBannerTitle${i}`),meta=$(`actBannerMeta${i}`),prog=$(`actBannerProgress${i}`),stamp=$(`actBannerStamp${i}`),lock=$(`actBannerLock${i}`);
       if(title)title.textContent=tr(act.title);
       if(meta)meta.textContent=`${tr(act.character)} · ${tr(act.regionLabel)}`;
-      if(prog)prog.textContent=tr('{done} / {total} MISSIONS',{done,total:list.length});
+      if(prog)prog.textContent=complete?tr('COMPLETED'):tr('{done} / {total} MISSIONS',{done,total:list.length});
       if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
+      if(lock){lock.textContent=tr('LOCKED');lock.hidden=unlocked;}
     });
     if(campaignActView){const act=ACTS.find(a=>a.n===campaignActView);
       if(act){const list=CAMPAIGN.map((m,idx)=>({m,idx})).filter(({m})=>actOf(m)?.n===act.n),done=list.filter(({idx})=>idx<progress).length;
@@ -287,7 +291,14 @@ function renderResults(target){
   function openAct(n){const act=ACTS.find(a=>a.n===n);if(!act)return;if(!actIntrosSeen.has(n))playActIntro(n,()=>showActDetail(n));else showActDetail(n);}
   function buildMissionBoard(){
     const overview=$('actOverview'),select=$('campaignSelect');
-    if(overview)overview.innerHTML=ACTS.map((act,i)=>`<button type="button" id="actBanner${i}" class="act-banner" data-act="${act.n}" data-state="open" aria-label="${act.title}"><span class="act-banner-numeral" aria-hidden="true">${['I','II','III','IV','V'][i]||act.n}</span><span class="act-banner-body"><strong id="actBannerTitle${i}">${tr(act.title)}</strong><span id="actBannerMeta${i}" class="act-banner-meta"></span><span id="actBannerProgress${i}" class="act-banner-progress"></span></span><b id="actBannerStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`).join('');
+    // The painted valley map: five act stations along the one road, west to
+    // east - forest, marsh, city, pass, junction. Positions are map
+    // percentages; the dashed route is the Iron Path itself.
+    if(overview){
+      const stations=[[13,60],[32,82],[48,52],[57,16],[83,36]];
+      const route=stations.map(([x,y])=>`${x},${y}`).join(' ');
+      overview.innerHTML=`<div class="campaign-map" role="group" aria-label="${tr('The five acts')}"><svg class="campaign-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${route}"/></svg>${ACTS.map((act,i)=>`<button type="button" id="actBanner${i}" class="act-node" data-act="${act.n}" data-state="open" style="--node-x:${stations[i]?.[0]||50}%;--node-y:${stations[i]?.[1]||50}%" aria-label="${act.title}"><span class="act-node-marker" aria-hidden="true"><b class="act-node-numeral">${['I','II','III','IV','V'][i]||act.n}</b></span><span class="act-node-plate"><strong id="actBannerTitle${i}">${tr(act.title)}</strong><span id="actBannerMeta${i}" class="act-node-meta"></span><span id="actBannerProgress${i}" class="act-node-progress"></span></span><b id="actBannerStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b><span id="actBannerLock${i}" class="act-node-lock" aria-hidden="true" hidden></span></button>`).join('')}</div>`;
+    }
     ACTS.forEach((act,i)=>{const banner=$(`actBanner${i}`);if(banner)banner.onclick=()=>openAct(act.n);});
     // The quick select keeps free play first; option labels come from the
     // renderer. Rebuilding replaces the whole list, ids stay stable.

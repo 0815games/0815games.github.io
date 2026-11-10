@@ -850,20 +850,20 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .panel-heading .eyebrow,h1,.brand-title{color:var(--iron-rim-strong);text-shadow:0 1px 0 #0b0f0c}
 /* Stamped iron buttons: a raised bevel, silver rim on hover, pressed state. */
 /* Not the mode cards: their painted artwork IS their background. The same
-   goes for the campaign act banners - their key art is the background. */
-button:not(.primary):not([disabled]):not(.mode-card):not(.act-banner),.map-toolbar button:not([disabled]){
+   goes for the valley map's act stations - the map art is the background. */
+button:not(.primary):not([disabled]):not(.mode-card):not(.act-node),.map-toolbar button:not([disabled]){
   background:linear-gradient(180deg,var(--iron-mid),#1e251f);
   border:1px solid #4c564e;
   border-top-color:#6d766e;
   box-shadow:0 2px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.14);
   color:#e9ecdf;
 }
-button:not(.primary):not([disabled]):not(.mode-card):not(.act-banner):hover{
+button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):hover{
   border-color:var(--iron-rim);
   border-top-color:var(--iron-rim-strong);
   color:#fff;
 }
-button:not(.primary):not([disabled]):not(.mode-card):not(.act-banner):active{transform:translateY(1px);box-shadow:0 1px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.1)}
+button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{transform:translateY(1px);box-shadow:0 1px 0 #0d120e,inset 0 1px 0 rgba(217,221,225,.1)}
 .primary{
   background:linear-gradient(180deg,#41523e,#2d3b2d);
   border:1px solid #71806b;
