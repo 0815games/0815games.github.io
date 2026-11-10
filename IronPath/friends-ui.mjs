@@ -1,9 +1,9 @@
 import {loadFriendStats} from './friend-stats.mjs?v=20261107-balance1';
 import {renderFriendIndicators} from './friend-indicator.mjs?v=20261104-friendbadge1';
 import {createFriendPresence} from './friend-presence.mjs?v=20261104-presence1';
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-readable1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261102-act1voice1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createSocialNotifications} from './social-notifications.mjs?v=20261031-readable1';
+import {createSocialNotifications} from './social-notifications.mjs?v=20261102-act1voice1';
 import {createCoopInvites} from './coop-invites.mjs?v=20261104-invites1';
 import {createFriendService} from './friends.mjs?v=20261104-autosearch1';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto}){
