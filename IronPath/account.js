@@ -1,23 +1,23 @@
-import {createWorkshopAccount} from './workshop-account.mjs?v=20261219-trains1';
-import {createWorkshopView} from './workshop-view.mjs?v=20261219-trains1';
+import {createWorkshopAccount} from './workshop-account.mjs?v=20261031-finale1';
+import {createWorkshopView} from './workshop-view.mjs?v=20261031-finale1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261107-balance1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261220-actintros';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261031-finale1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261220-actintros';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261217-stormgate';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
 import {setupFriends} from './friends-ui.mjs?v=20261220-actintros';
 import {createCommandCenter} from './command-center.mjs?v=20261220-actintros';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261219-trains1';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261031-finale1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261219-trains1';
-import {missingPrestige} from './prestige.mjs?v=20261219-trains1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261219-trains1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261031-finale1';
+import {missingPrestige} from './prestige.mjs?v=20261031-finale1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-finale1';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261220-actintros';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
@@ -30,9 +30,9 @@ import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-end
 import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261220-actintros';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
-import {rewardDelta} from './run-results.mjs?v=20261217-stormgate';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261219-trains1';
-import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261219-trains1';
+import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-finale1';
+import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261031-finale1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
@@ -40,8 +40,8 @@ import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261220-actintros';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
 import { startGame } from './game.js?v=20261220-actintros';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261219-trains1';
-import { createPlayer } from './match.mjs?v=20261219-trains1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-finale1';
+import { createPlayer } from './match.mjs?v=20261031-finale1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);

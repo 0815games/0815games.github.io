@@ -46,7 +46,10 @@ const OPENINGS={
 'two-keys':[['NIA','My city key. His timetable card. Together they open the outer ring.'],['IVO','But the readers learn. We feed them a false map first - they will defend the wrong gate all night.']],
 'night-of-lights':[['ADA','The signal chain is the road’s nervous system. Tonight I speak through it - to every garrison at once.'],['VOSS','Then we hold the mast while the whole valley listens to the truth.']],
 'the-prison-train':[['ADA','A labor train rolls into the core. Elias is aboard - I have known since the relay, and I have been afraid since forever.'],['VOSS','Then tonight the train stops being theirs. The engine, not the carriages.']],
-'rooks-line':[['ROOK','All loyal units to the line. This is the last order I will ever give you.'],['VOSS','His speech is on every channel. Let it play - and break the line he is hiding behind.']]
+'rooks-line':[['ROOK','All loyal units to the line. This is the last order I will ever give you.'],['VOSS','His speech is on every channel. Let it play - and break the line he is hiding behind.']],
+'the-core':[['IVO','Three operations, one night: my card into the core, Nia’s ring, your knot. The heart of the road beats on a timetable.'],['NIA','And tonight the timetable changes. Get through the gate - the ring opens only from the inside.']],
+'last-order':[['IVO','The desks are mindless: they will keep dispatching loyal convoys until my cut dries.'],['VOSS','Then we hold the console - and let the last loyal wave break on its own.']],
+'homecoming':[['ADA','Every light in the junction is ours - except one window at the top of the signal tower. He is waiting for you, Voss.'],['VOSS','Then let us not keep him. One stair, one order, one road home.']]
 };
 const CODAS={
 'lost-signal':[['NARRATOR','The road ahead leads into Pinewood, and into the silence left behind.'],['NARRATOR','Somewhere beyond the trees, the patrol is still waiting for an answer.']],
@@ -95,7 +98,10 @@ const CODAS={
 'two-keys':[['NARRATOR','The false map burns down to ash, and the real gate stands open behind it.'],['NARRATOR','Inside the ring, the core of the Iron Path waits - and with it, a name on a transport list.']],
 'night-of-lights':[['NARRATOR','The mast blazes, and down every wire of the valley the truth runs at the speed of light.'],['NARRATOR','In a hundred garrisons, a hundred radios play a man’s own death order back to him.']],
 'the-prison-train':[['NARRATOR','The escort cars stand cleared, the engine answers to new hands.'],['NARRATOR','Brother and sister, one microphone between them, ride the train out of the dark.']],
-'rooks-line':[['NARRATOR','The line breaks in the middle, and the flanks fold like paper.'],['NARRATOR','Behind the last soldier of the last army, the core’s towers hum - waiting for their turn.']]
+'rooks-line':[['NARRATOR','The line breaks in the middle, and the flanks fold like paper.'],['NARRATOR','Behind the last soldier of the last army, the core’s towers hum - waiting for their turn.']],
+'the-core':[['NARRATOR','The core takes Ivo’s card, checks it against itself, and finds no fault.'],['NARRATOR','Switch by switch, west to east, the Iron Path learns a new master - and none of the dispatches carry Rook’s name.']],
+'last-order':[['NARRATOR','In the dispatch hall the last desk falls quiet, its ink dry at last.'],['NARRATOR','One tower still burns above the junction - the man himself, waiting for words he never received.']],
+'homecoming':[['NARRATOR','The tower lamp goes dark for the first time in years, and the junction learns to sleep.'],['NARRATOR','At dawn the first free convoy rolls west: the freed on board, Elias in the cab, the valley road open end to end.'],['ADA','To everyone still listening: the Iron Path is closed, and the way home is open. This is Ada Vale, signing off.']]
 };
 // Locations change between the opening and aftermath to follow the journey.
 const SCENES={
@@ -145,7 +151,10 @@ const SCENES={
  'two-keys':[{art:'two-keys',place:'THE OUTER RING',weather:'rain'},{art:'city',place:'THE FALSE MAP FEED',weather:'rain'}],
  'night-of-lights':[{art:'night-of-lights',place:'THE SIGNAL MAST',weather:'mist'},{art:'tower',place:'EVERY GARRISON LISTENS',weather:'mist'}],
  'the-prison-train':[{art:'prison-train',place:'THE RUNNING BOARD',weather:'embers'},{art:'city',place:'THE ENGINE CAB',weather:'mist'}],
- 'rooks-line':[{art:'rooks-line',place:'THE DEFENCE LINE',weather:'rain'},{art:'outpost',place:'THE COMMAND POST',weather:'rain'}]
+ 'rooks-line':[{art:'rooks-line',place:'THE DEFENCE LINE',weather:'rain'},{art:'outpost',place:'THE COMMAND POST',weather:'rain'}],
+ 'the-core':[{art:'the-core',place:'THE CORE GATE',weather:'rain'},{art:'night-of-lights',place:'THE RING ROOM',weather:'mist'}],
+ 'last-order':[{art:'last-order',place:'THE DISPATCH HALL',weather:'rain'},{art:'dead-timetable',place:'THE LAST DESK',weather:'mist'}],
+ 'homecoming':[{art:'homecoming',place:'THE SIGNAL TOWER',weather:'embers'},{art:'valley',place:'THE VALLEY ROAD AT DAWN',weather:'mist'}]
 };
 export function cinematicScene(mission,kind){return SCENES[mission?.id]?.[kind==='intro'?0:kind==='ending'?1:-1]??null;}
 // Relict handovers: the act finales end with the bearer pressing their relic
@@ -173,13 +182,17 @@ export const RELIC_SCENES={
   {speaker:'NARRATOR',text:'The storm gate stands open. Above it, on the wall, Nia unrolls a drawing older than the war itself.',art:'storm-gate',place:'THE OPEN GATE'},
   {speaker:'NIA',text:'My original blueprint - every bridge, every cut, every gate of the pass, drawn by my hand before Rook even knew their names. It is yours now.',art:'long-span',place:'THE LONG SPAN'},
   {speaker:'NIA',text:'While you carry it, the bunker knits itself back together after every wave, and your people move like they were born on this mountain.',art:'long-span',place:'THE LONG SPAN'},
-  {speaker:'NARRATOR',text:'Below the pass, the junction lights the whole valley. The blueprint has one more page: the way in.',art:'valley',place:'THE JUNCTION LIGHTS'}]}
-};
+  {speaker:'NARRATOR',text:'Below the pass, the junction lights the whole valley. The blueprint has one more page: the way in.',art:'valley',place:'THE JUNCTION LIGHTS'}]},
+ 'homecoming':{relic:'relic-iron-path',frames:[
+  {speaker:'NARRATOR',text:'The signal tower stands silent, and on the open stair the war sets down its pen. Nobody carries this last relic out - it was never a keepsake.',art:'homecoming',place:'THE OPEN STAIR'},
+  {speaker:'VOSS',text:'The Iron Path itself: every mast, every switch, every yard we bled for. The road belongs to the valley now - and it remembers its defenders.',art:'the-core',place:'THE QUIET CORE'},
+  {speaker:'VOSS',text:'While the road remembers, your towers strike harder and see farther, and every deployment starts richer. The Iron Path pays its debts in full.',art:'two-keys',place:'THE OUTER RING'},
+  {speaker:'NARRATOR',text:'Below, the first free convoy crosses the long span. Elias waves from the cab, and Ada keeps the line open - all the way home.',art:'valley',place:'THE VALLEY ROAD'}]}};
 // Presentation-only: the game appends these frames to an act finale's ending.
 // `cinematicFrames` itself stays pure so debrief replays and translations can
 // keep addressing the authored coda by its stable tail.
 export function relicHandover(mission){return RELIC_SCENES[mission?.id]?.frames??[];}
-function speakers(text){return text.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|SURVIVORS):\s)/).map(line=>line.trim()).filter(Boolean).map(line=>{const m=line.match(/^([A-Z]+):\s*(.*)$/);return m?[m[1],m[2]]:['NARRATOR',line];});}
+function speakers(text){return text.split(/(?=\b(?:VOSS|ADA|IVO|SERA|NIA|ROOK|ELIAS|WREN|SURVIVORS):\s)/).map(line=>line.trim()).filter(Boolean).map(line=>{const m=line.match(/^([A-Z]+):\s*(.*)$/);return m?[m[1],m[2]]:['NARRATOR',line];});}
 export function cinematicFrames(mission,kind){
  if(!mission||!OPENINGS[mission.id]||!['intro','ending'].includes(kind))return [];
  const lines=kind==='intro'?[['NARRATOR',mission.briefing],...OPENINGS[mission.id],...speakers(mission.stages[0].dialogue)]:[...speakers(mission.success),...CODAS[mission.id]];

@@ -16,6 +16,15 @@ export function bossPhase(enemy){
    if(hp>max/3)return 'guns';
    return 'loco';
   }
+  case 'bossRook': {
+   // The honour guard -> the vow -> the open hand. Health thresholds like
+   // A-7 and the Zugsmeister, so co-op snapshots and reconnects agree for
+   // free: strip the guard, weather the vow, strike while he waits.
+   const hp=Math.max(0,enemy?.hp||0),max=Math.max(1,enemy?.maxHp||1);
+   if(hp>max*2/3)return 'guard';
+   if(hp>max/3)return 'vow';
+   return 'order';
+  }
   case 'bossA7': {
    // Werk -> Torso -> Kern is a damage race, not a timer: the phase is read
    // straight off the boss health, so co-op snapshots and reconnects agree
@@ -28,7 +37,7 @@ export function bossPhase(enemy){
   default:return 'normal';
  }
 }
-export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:phase==='werk'?.5:phase==='wire'?.5:phase==='kern'||phase==='loco'?1.25:1;}
+export function bossWeaponFactor(enemy){const phase=bossPhase(enemy);return phase==='shield'?.6:phase==='jam'?.2:phase==='flood'?.5:phase==='werk'?.5:phase==='wire'?.5:phase==='guard'?.5:phase==='kern'||phase==='loco'||phase==='order'?1.25:1;}
 export function bossPhaseLabel(enemy){
  switch(bossPhase(enemy)){
   case 'shield':return 'SHIELD UP · weapon damage reduced';
@@ -40,6 +49,9 @@ export function bossPhaseLabel(enemy){
   case 'werk':return 'WORKS SHELL · weapon damage halved';
   case 'torso':return 'TORSO EXPOSED · full damage, A-7 accelerates';
   case 'wire':return 'SIGNAL WIRE · rail guns halve weapon damage';
+  case 'guard':return 'HONOUR GUARD · weapon damage halved while it stands';
+  case 'vow':return 'THE VOW · full damage, Rook quickens';
+  case 'order':return 'THE OPEN HAND · bonus damage - strike now!';
   case 'guns':return 'GUNS EXPOSED · full damage, artillery accelerates';
   case 'loco':return 'UNCOUPLED · bonus damage - strike now!';
   case 'kern':return 'CORE OPEN · bonus damage - strike now!';
@@ -78,6 +90,15 @@ export function bossTelegraph(enemy){
    else if(zphase==='wire'){key='wire';seconds=Math.ceil(period-4-t);message='SIGNAL WIRE ACTIVE · WEAPON DAMAGE HALVED';}
    else{key='guns';seconds=Math.ceil(period-4-t);message='RAIL GUNS ACCELERATING · HOLD THE BUNKER';}
   }
+ }else if(enemy.boss==='bossRook'){
+  // The honour guard steps in every 16 seconds while it stands. Past the
+  // vow there is nothing left to warn about - the open hand only waits.
+  const rphase=bossPhase(enemy);
+  if(rphase==='guard'){const t=clock%16;
+   if(t>=12){key='guard-warning';seconds=Math.ceil(16-t);message='GUARD STEPPING IN';warning=true;}
+   else{key='guard';seconds=Math.ceil(12-t);message='HONOUR GUARD · WEAPON DAMAGE HALVED';}
+  }else if(rphase==='vow'){key='vow';seconds=0;message='THE VOW · ROOK QUICKENS';}
+  else{key='order';seconds=0;message='THE OPEN HAND · HE WAITS FOR THE ORDER';}
  }
  return key?{key,warning,seconds,text:`${message} · ${seconds}s`}:null;
 }

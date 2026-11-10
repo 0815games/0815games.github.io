@@ -41,7 +41,7 @@ assert.equal(bossTelegraph({boss:'bossRiegel',bossClock:14}).key,'jam');
  const riegel=makeEnemy('bossRiegel',7);
  assert.equal(riegel.boss,'bossRiegel');assert.equal(riegel.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossRiegel'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,4,'Riegel, Kolt, A-7 and the Zugsmeister close acts I through IV');
+ assert.equal(STORY_BOSSES.length,5,'Riegel, Kolt, A-7, the Zugsmeister and Rook close acts I through V');
 }
 {
  const s=setup('bossRiegel',18-STEP/2);s.players.solo.cooldown=5;const events=stepMatch(s);
@@ -71,7 +71,7 @@ assert.equal(bossTelegraph({boss:'bossKolt',bossClock:14}).key,'flood');
  const kolt=makeEnemy('bossKolt',7);
  assert.equal(kolt.boss,'bossKolt');assert.equal(kolt.kind,'tank');
  assert.equal(BOSSES.find(b=>b.kind==='bossKolt'),undefined,'story bosses never join the endless rotation');
- assert.equal(STORY_BOSSES.length,4);
+ assert.equal(STORY_BOSSES.length,5);
 }
 {
  const surge=()=>{const s=setup('bossKolt',13);s.enemies.push({kind:'infantry',x:s.enemies[0].x+150,y:s.enemies[0].y,hp:100,maxHp:100,speed:30,segment:1,reward:1,damage:1});const enemy=s.enemies[1],x=enemy.x;stepMatch(s);return Math.abs(enemy.x-x);};
@@ -167,6 +167,46 @@ assert.equal(bossTelegraph({boss:'bossZugsmeister',hp:2,maxHp:8,bossClock:3}),nu
  assert.ok(Math.abs(wire-30*STEP)<1e-6,'the signal wire keeps his pace');
  assert.ok(Math.abs(wire*1.12-guns)<1e-6,'the exposed guns accelerate him');
  assert.ok(Math.abs(wire*1.35-loco)<1e-6,'uncoupled, he drives forward');
+}
+// Rook, the last order, closes Act V: while the honour guard stands, one
+// veteran steps in front of him every 16 seconds and weapons are halved;
+// past the vow he quickens; at the open hand he hesitates and waits.
+assert.equal(bossPhase({boss:'bossRook',hp:9,maxHp:9}),'guard');
+assert.equal(bossPhase({boss:'bossRook',hp:5,maxHp:9}),'vow');
+assert.equal(bossPhase({boss:'bossRook',hp:2,maxHp:9}),'order');
+assert.equal(bossWeaponFactor({boss:'bossRook',hp:9,maxHp:9}),.5);
+assert.equal(bossWeaponFactor({boss:'bossRook',hp:5,maxHp:9}),1);
+assert.equal(bossWeaponFactor({boss:'bossRook',hp:2,maxHp:9}),1.25);
+assert.match(bossPhaseLabel({boss:'bossRook',hp:9,maxHp:9}),/halved/);
+assert.match(bossPhaseLabel({boss:'bossRook',hp:2,maxHp:9}),/strike now/);
+assert.equal(bossTelegraph({boss:'bossRook',hp:9,maxHp:9,bossClock:13}).key,'guard-warning');
+assert.equal(bossTelegraph({boss:'bossRook',hp:9,maxHp:9,bossClock:13}).warning,true);
+assert.equal(bossTelegraph({boss:'bossRook',hp:9,maxHp:9,bossClock:5}).key,'guard');
+assert.equal(bossTelegraph({boss:'bossRook',hp:2,maxHp:9,bossClock:3}).key,'order');
+{
+ const rook=makeEnemy('bossRook',7);
+ assert.equal(rook.boss,'bossRook');assert.equal(rook.kind,'tank');
+ assert.equal(BOSSES.find(b=>b.kind==='bossRook'),undefined,'story bosses never join the endless rotation');
+}
+{
+ const s=setup('bossRook',16-STEP/2);s.enemies[0].hp=s.enemies[0].maxHp;const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='guard').length,1);
+ assert.equal(s.enemies.length,2,'one veteran steps in front of him per cycle');
+ assert.equal(s.enemies[1].campaign,true,'the guard counts as a field unit');
+ stepMatch(s);assert.equal(s.enemies.length,2,'the guard steps in only once per cycle');
+}
+{
+ const s=setup('bossRook',3);s.enemies[0].hp=s.enemies[0].maxHp;stepMatch(s);
+ s.enemies[0].hp=s.enemies[0].maxHp*.2;const events=stepMatch(s);
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='rook-order').length,1,'crossing into the open hand announces itself');
+ assert.equal(events.filter(e=>e.type==='bossAbility'&&e.ability==='guard').length,0,'past the guard, no veteran steps in');
+}
+{
+ const move=fraction=>{const s=setup('bossRook',3);s.enemies[0].hp=s.enemies[0].maxHp*fraction;s.enemies[0].speed=30;const x=s.enemies[0].x;stepMatch(s);return Math.abs(s.enemies[0].x-x);};
+ const guard=move(.9),vow=move(.5),order=move(.2);
+ assert.ok(Math.abs(guard-30*STEP)<1e-6,'behind the guard he lets them come');
+ assert.ok(Math.abs(guard*1.15-vow)<1e-6,'the vow quickens him');
+ assert.ok(Math.abs(guard*.85-order)<1e-6,'the open hand hesitates');
 }
 // The mission formation carries the story boss on the contract's final wave,
 // replacing the rotation boss instead of stacking on it.

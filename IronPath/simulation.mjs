@@ -1,16 +1,16 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261219-trains1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261031-finale1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {comboTier,comboCue} from './skill-combos.mjs?v=20261102-results1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
-import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261217-stormgate';
+import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261219-trains1';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261031-finale1';
 // Fixed-step simulation. Browser and a future server can execute the same rules.
 // Not a networking protocol or an anti-cheat system by itself.
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261217-stormgate';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261031-finale1';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261219-trains1';
+import {addSupplies} from './match.mjs?v=20261031-finale1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -131,6 +131,16 @@ export function stepMatch(state){
         state.hp-=damage;e.bossFlash=.8;state.bunkerImpact={seq:(state.bunkerImpact?.seq||0)+1,kind:'bossZugsmeister',damage};events.push({type:'bossAbility',boss:e.boss,ability:'railgun',damage});
       }
     }
+    if(e.boss==='bossRook'){const phase=bossPhase(e);if(e.rookPhase&&e.rookPhase!==phase){e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'rook-'+phase});}e.rookPhase=phase;
+      // While the honour guard stands, one veteran steps in front of him
+      // every 16 seconds - a field unit like any spawn, so a wave cannot end
+      // while the guard still runs. Past the vow, Rook fights alone.
+      if(phase==='guard'&&crossedCycle(before,after,16)){
+        const guard={...makeEnemy('tank',state.wave),campaign:true};guard.hp=guard.maxHp=Math.max(1,Math.round(guard.maxHp*.6));
+        state.enemies.push({...guard,...(e.road!==undefined?{road:e.road}:{}),x:e.x,y:e.y,segment:e.segment});
+        e.bossFlash=.8;events.push({type:'bossAbility',boss:e.boss,ability:'guard',count:1});
+      }
+    }
     if(e.boss==='bossRiegel'&&crossedCycle(before,after,18)){
       // The field collapses and the damage window opens - covered by a swarm of
       // fast interceptors dropped right on top of the boss. They count as field
@@ -160,7 +170,7 @@ export function stepMatch(state){
     const tanks=state.enemies.filter(e=>e.hp>0&&e.kind==='tank'&&e.segment===5).length;
     if(tanks){state.iceStress=(state.iceStress||0)+tanks*dt;if(state.iceStress>=4){state.iceBroken=true;events.push({type:'iceBroken'});}}
   }
-  for(const e of state.enemies){const PATH=paths[e.road]||paths[0],zi=zoneInfoOf(e);if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken,zi);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e,zi)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1)*(flood&&!e.boss?1.45:1)*(e.boss==='bossA7'?(bossPhase(e)==='kern'?1.35:bossPhase(e)==='torso'?1.12:1):1)*(e.boss==='bossZugsmeister'?(bossPhase(e)==='loco'?1.35:bossPhase(e)==='guns'?1.12:1):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
+  for(const e of state.enemies){const PATH=paths[e.road]||paths[0],zi=zoneInfoOf(e);if(e.siegeMarks)e.siegeMarks=e.siegeMarks.map(m=>({...m,time:m.time-dt})).filter(m=>m.time>0);e.pinned=Math.max(0,(e.pinned||0)-dt);if(e.boss==='bossJuggernaut'&&e.hp>0)e.hp=Math.min(e.maxHp,e.hp+e.maxHp*.002*dt);e.hp-=iceDamage(theme,e,dt,state.iceBroken,zi);let distance=e.speed*dt*(theme==='arctic'&&state.iceBroken&&e.kind==='tank'&&e.segment===5?.75:1)*(e.pinned>0?.8:1)*enemySpeedFactor(theme,e,zi)*(state.suppression>0?.5:1)*(e.kind!=='plane'&&!e.boss&&commander&&Math.hypot(e.x-commander.x,e.y-commander.y)<(rally?180:100)?(rally?1.4:1.25):1)*(flood&&!e.boss?1.45:1)*(e.boss==='bossA7'?(bossPhase(e)==='kern'?1.35:bossPhase(e)==='torso'?1.12:1):1)*(e.boss==='bossZugsmeister'?(bossPhase(e)==='loco'?1.35:bossPhase(e)==='guns'?1.12:1):1)*(e.boss==='bossRook'?(bossPhase(e)==='vow'?1.15:bossPhase(e)==='order'?.85:1):1);while(distance>0&&e.segment<PATH.length){const target=PATH[e.segment],dx=target.x-e.x,dy=target.y-e.y,d=Math.hypot(dx,dy);if(d<=distance){e.x=target.x;e.y=target.y;distance-=d;e.segment++;}else{e.x+=dx/d*distance;e.y+=dy/d*distance;distance=0;}}}
   if(state.gun>0&&state.running){
     state.gunTimer=Math.max(0,(state.gunTimer||0)-dt);
     if(state.gunTimer<=0){const target=state.enemies.find(e=>e.hp>0&&e.segment<PATH.length&&Math.hypot(e.x-bunker.x,e.y-bunker.y)<=170);if(target){target.hp-=5*state.gun;state.gunTimer=3;state.shots.push({x:bunker.x,y:bunker.y,tx:target.x,ty:target.y,life:shotDuration,duration:shotDuration,kind:'hero',color:'#fff'});}}

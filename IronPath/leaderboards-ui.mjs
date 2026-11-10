@@ -1,6 +1,6 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261220-actintros';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-finale1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createLeaderboardService} from './leaderboards.mjs?v=20261217-stormgate';
+import {createLeaderboardService} from './leaderboards.mjs?v=20261031-finale1';
 export function setupLeaderboard({document,db,auth,sdk}){
  const $=id=>document.getElementById(id),dialog=$('leaderboardDialog');let mode='solo',filter='all',generation=0,data=null,status='';
  function reset(){generation++;data=null;status='';if(dialog.open)dialog.close();$('leaderboardRows').replaceChildren();$('leaderboardStatus').textContent='';}
