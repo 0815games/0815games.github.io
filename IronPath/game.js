@@ -71,14 +71,14 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const keys = new Set();
   let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false;
   let cinematic=null,radioTime=0,commandMenuOpen=false,missionBoardOpen=false;
-  function closeCinematic(continueScene=true){if(!cinematic)return;const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
+  function closeCinematic(continueScene=true){if(!cinematic)return;stopMissionVoice();const callback=cinematic.done;cinematic=null;if($('storyCinematic').open)$('storyCinematic').close();keys.clear();accumulator=0;if(continueScene&&callback)callback();}
   function showCinematic(mission,kind,done=null,finishLabel=null){
     // An act finale ends with the bearer's relict handover: four extra frames
     // over the act's key art. cinematicFrames stays pure; the handover is a
     // presentation tail, so replays and translations address a stable coda.
     const frames=cinematicFrames(mission,kind).concat(kind==='ending'?relicHandover(mission):[]);if(!frames.length){if(done)done();return;}closeCinematic(false);keys.clear();sendDirection();accumulator=0;cinematic={mission,kind,frames,index:0,done,finishLabel};const scene=cinematicScene(mission,kind);$('storyCinematic').dataset.location=scene?.art||'valley';$('storyCinematic').dataset.weather=scene?.weather||'mist';$('cinematicLocation').textContent=tr(scene?.place||'');$('storyCinematic').dataset.act=mission.act.includes('ACT III')?'3':mission.act.includes('ACT II')?'2':'1';renderCinematic();$('storyCinematic').showModal();
   }
-  function renderCinematic(){const {mission,kind,frames,index,finishLabel}=cinematic,frame=frames[index],scene=cinematicScene(mission,kind),art=frame.art||scene?.art||'valley',place=frame.place||scene?.place||'';$('cinematicProgress').max=frames.length;$('cinematicProgress').value=index+1;$('storyCinematic').dataset.location=art;$('cinematicAct').textContent=`${tr(mission.act)} / ${tr(kind==='intro'?'BRIEFING':'DEBRIEF')} · ${tr(place)}`;$('cinematicCount').textContent=`${index+1} / ${frames.length}`;$('cinematicLocation').textContent=tr(place);$('cinematicTitle').textContent=tr(mission.title);$('cinematicSpeaker').textContent=frame.speaker==='NARRATOR'?tr('FIELD REPORT'):frame.speaker;$('cinematicText').textContent=tr(frame.text);$('cinematicInitial').textContent=frame.speaker==='NARRATOR'?'◆':frame.speaker[0];$('storyCinematic').dataset.speaker=frame.speaker.toLowerCase();$('cinematicPrevious').disabled=index===0;$('cinematicNext').textContent=index===frames.length-1?tr(finishLabel|| (kind==='intro'?'DEPLOY':'VIEW RESULTS')):tr('NEXT →');}
+  function renderCinematic(){const {mission,kind,frames,index,finishLabel}=cinematic,frame=frames[index],scene=cinematicScene(mission,kind),art=frame.art||scene?.art||'valley',place=frame.place||scene?.place||'';$('cinematicProgress').max=frames.length;$('cinematicProgress').value=index+1;$('storyCinematic').dataset.location=art;$('cinematicAct').textContent=`${tr(mission.act)} / ${tr(kind==='intro'?'BRIEFING':'DEBRIEF')} · ${tr(place)}`;$('cinematicCount').textContent=`${index+1} / ${frames.length}`;$('cinematicLocation').textContent=tr(place);$('cinematicTitle').textContent=tr(mission.title);$('cinematicSpeaker').textContent=frame.speaker==='NARRATOR'?tr('FIELD REPORT'):frame.speaker;$('cinematicText').textContent=tr(frame.text);$('cinematicInitial').textContent=frame.speaker==='NARRATOR'?'◆':frame.speaker[0];$('storyCinematic').dataset.speaker=frame.speaker.toLowerCase();playMissionVoice(mission.id,kind,index);$('cinematicPrevious').disabled=index===0;$('cinematicNext').textContent=index===frames.length-1?tr(finishLabel|| (kind==='intro'?'DEPLOY':'VIEW RESULTS')):tr('NEXT →');}
   $('cinematicPrevious').onclick=()=>{if(cinematic&&cinematic.index>0){cinematic.index--;renderCinematic();}};
   $('cinematicNext').onclick=()=>{if(!cinematic)return;if(cinematic.index+1<cinematic.frames.length){cinematic.index++;renderCinematic();}else closeCinematic();};
   $('cinematicSkip').onclick=()=>closeCinematic();$('storyCinematic').addEventListener('cancel',e=>{e.preventDefault();closeCinematic();});bindDialogBackdrop($('storyCinematic'),()=>closeCinematic());
@@ -269,6 +269,21 @@ function renderResults(target){
     try{dialog.showModal();}catch{}
     const playing=typeof video.play==='function'?video.play():null;
     if(playing&&typeof playing.catch==='function')playing.catch(()=>{});
+  }
+  // Mission voice-over: every briefing, stage and debrief line has an audio
+  // clip per language at assets/voice/<lang>/<mission>/<part><index>.mp3.
+  // Clips ship incrementally; a missing file simply stays silent, so the
+  // game is always playable with whatever subset exists.
+  let missionVoice=null;
+  function stopMissionVoice(){if(missionVoice){try{missionVoice.pause();}catch{}missionVoice=null;}}
+  function playMissionVoice(missionId,part,index){
+    stopMissionVoice();
+    try{
+      const audio=new Audio(`assets/voice/${getLanguage()==='de'?'de':'en'}/${missionId}/${part}${index}.mp3`);
+      audio.volume=.9;audio.onerror=()=>{};
+      const playing=audio.play();if(playing&&typeof playing.catch==='function')playing.catch(()=>{});
+      missionVoice=audio;
+    }catch{/* Voice must never interrupt the game. */}
   }
   function showActOverview(){campaignActView=0;const overview=$('actOverview'),detail=$('missionActs');if(overview)overview.hidden=false;if(detail)detail.hidden=true;
     // On phones the map travels sideways; reopening centers the road on the
@@ -850,7 +865,7 @@ function renderResults(target){
         else if(entry.type==='reinforce')storyRadio(entry.text?entry.text:tr(EVENT_TEMPLATES.reinforcements,{count:entry.count}),false,null,entry.speaker);
         else if(entry.type==='side')storyRadio(entry.outcome==='complete'?tr(EVENT_TEMPLATES.bonusComplete,{label:tr(entry.label),reward:entry.reward}):tr(EVENT_TEMPLATES.bonusMissed,{label:tr(entry.label)}));
        }
-       if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage')storyStageCard();if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;target.campaignReason=result?.reason||null;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
+       if(outcome){notice(()=>translateStoryDetail(outcome.message,tr));if(outcome.type==='stage'){storyStageCard();if(activeStory?.stage>0)playMissionVoice(activeMission.id,'stage',activeStory.stage);}if(outcome.type==='victory'){const target=report;target.storyMessage=outcome.message;target.campaign=activeMission;target.campaignSaved=null;target.pending++;finishReport(target,state,me(),false);showCinematic(activeMission,'ending',()=>{if(lastReport===target&&state===target.snapshot&&target.accountId===account.getUserId()){renderResults(target);if(!$('runResults').open)$('runResults').showModal();}});Promise.resolve(account.saveCampaign(activeMission.id)).then(result=>{target.pending--;target.campaignSaved=!!result?.committed&&campaignProgress(result.profile)>=CAMPAIGN.indexOf(target.campaign)+1;target.campaignReason=result?.reason||null;if(result?.profile){target.profile=result.profile;target.storyConfirmed=campaignProgress(result.profile);const finishedAct=actOf(target.campaign);if(finishedAct&&campaignProgress(result.profile)===actEndIndex(finishedAct)+1&&RELICS[finishedAct.relic])notice(tr('RELIC EARNED: {name}',{name:tr(RELICS[finishedAct.relic].name)}));}if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.campaignSaved=false;if(lastReport===target&&$('runResults').open)renderResults(target);});}else if(outcome.type==='failure'){report.storyMessage=outcome.message;sound.play('defeat');}}}
       if(state.ended){accumulator=0;updateUI();break;}
     }
     uiElapsed+=dt;if(uiElapsed>=.12){uiElapsed=0;updateUI();}

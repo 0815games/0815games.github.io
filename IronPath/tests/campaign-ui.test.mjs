@@ -27,6 +27,9 @@ assert.match(el('actOverview').innerHTML,/campaignMapHint/,'the valley map carri
   assert.match(css,/\.mission-card\[data-status="complete"\] \.mission-status\{opacity:0\}/,'the green status line steps back for the stamp');
   assert.match(css,/\.mission-card\[data-status="complete"\] \.mission-number\{opacity:0\}/,'the act number steps back too, so the stamp never fights the title');
   assert.ok(!css.includes('@media(max-width:850px){.mission-stamp{display:none}}'),'the red stamp also shows on phone cards');
+assert.match(source,/playMissionVoice\(/,'mission voice-over is wired into the game');
+assert.match(source,/assets\/voice\/\$\{getLanguage\(\)==='de'\?'de':'en'\}/,'voice clips follow the page language');
+assert.match(source,/activeStory\?\.stage>0\)playMissionVoice\(activeMission\.id,'stage'/,'stage entry speaks its dialogue; stage 0 stays in the briefing');
 assert.match(css,/\.act-overview\{overflow-x:auto/,'phones scroll the valley map sideways');
 assert.match(css,/\.campaign-map\{width:180vw/,'the phone map is a wide travel strip');
 assert.match(css,/height:76dvh/,'the phone map fills the screen height');}assert.equal(el('missionStamp1').hidden,true,'the next mission has no stamp');selector.value='en';selector.change();game.refreshLanguage();assert.equal(el('resultsTitle').textContent,'Mission complete!');assert.match(el('resultsCampaign').textContent,/saved/);assert.equal(el('campaignOption1').disabled,false);assert.equal(el('missionStatus0').textContent,'COMPLETED');assert.equal(el('missionStamp0').textContent,'COMPLETED','the stamp follows the page language');assert.equal(el('missionStamp1').hidden,true);assert.equal(el('missionStatus1').textContent,'NEXT MISSION');assert.equal(el('missionTitle1').textContent,'The Missing Patrol');assert.equal(el('campaignProgressBar').value,1);assert.match(el('campaignContinue').textContent,/CONTINUE STORY/);
