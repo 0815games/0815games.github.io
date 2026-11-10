@@ -1,5 +1,5 @@
 import {CAMPAIGN} from './campaign.mjs?v=20261103-listvoice1';
-import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261031-finale1';
+import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261031-finale2';
 // The authored opening and closing frames in story-cinematics.mjs. The other
 // frames are translated via the campaign text dictionary.
 const lines={

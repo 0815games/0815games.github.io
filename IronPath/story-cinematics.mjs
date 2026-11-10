@@ -9,7 +9,7 @@ const OPENINGS={
 'brothers-keeper':[['ADA','A dispatch rider crossed the ice with a manifest in his satchel. Voss - if my brother’s name is on it-'],['VOSS','We bring the satchel home. Whatever it says, we face it together.']],
 'quiet-road':[['IVO','The enemy convoys run the heath on a timetable. Timetables can be read - if we take one.'],['VOSS','Then we count their trucks tonight.']],
 'signal-home':[['ADA','One relay left: the main mast in the deep forest. Power it and I will broadcast to the whole valley - and if my brother can hear me, he will answer with our childhood code.'],['VOSS','Then we hold that mast until he does.']],
-'supply-line':[['SERA','This is Medic Malik:PLACEHOLDER, a broken axle and almost no medicine.'],['VOSS','We are coming. Keep everyone together.']],
+'supply-line':[['SERA','This is Medic Malik. We have wounded, a broken axle and almost no medicine.'],['VOSS','We are coming. Keep everyone together.']],
 'intercept':[['IVO','Tidelock is an old dam protocol. I need the complete order to know what it does.'],['VOSS','The dispatch case comes back intact. Whatever is in it, we face it together.']],
 'high-water':[['SERA','This is Medic Malik. The river is a week ahead of the forecasts and a village is cut off behind the flooded road.'],['VOSS','And Rook’s pioneers are already at the dyke with charges. We get there first.']],
 'ward-line':[['SERA','My hospital in the city is down to fumes. One convoy of fuel, one road - and Rook knows the road.'],['VOSS','Then we hold it open until the last barrel rolls through.']],
