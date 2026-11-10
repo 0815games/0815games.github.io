@@ -4,7 +4,7 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261031-valleymap1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261031-readable1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -25,13 +25,13 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-finale1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-valleymap1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-readable1';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261031-valleymap1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261031-valleymap1';
+import { createTutorial } from './tutorial.mjs?v=20261031-readable1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261031-readable1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-finale1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-finale1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
@@ -223,6 +223,7 @@ function renderResults(target){
       if(stamp){stamp.textContent=tr('COMPLETED');stamp.hidden=!complete;}
       if(lock){lock.textContent=tr('LOCKED');lock.hidden=unlocked;}
     });
+    const mapHint=$('campaignMap'+'Hint');if(mapHint)mapHint.textContent=tr('SWIPE TO FOLLOW THE ROAD →');
     if(campaignActView){const act=ACTS.find(a=>a.n===campaignActView);
       if(act){const list=CAMPAIGN.map((m,idx)=>({m,idx})).filter(({m})=>actOf(m)?.n===act.n),done=list.filter(({idx})=>idx<progress).length;
         const eyebrow=actDetailEl('Eyebrow'),head=actDetailEl('Title'),prog=actDetailEl('Progress');
@@ -256,7 +257,7 @@ function renderResults(target){
   const actIntrosSeen=new Set();
   try{const saved=JSON.parse(window.localStorage.getItem('ironpath:actIntros')||'[]');if(Array.isArray(saved))for(const n of saved)if(Number.isInteger(n)&&n>=1&&n<=ACTS.length)actIntrosSeen.add(n);}catch{}
   function markActIntroSeen(n){actIntrosSeen.add(n);try{window.localStorage.setItem('ironpath:actIntros',JSON.stringify([...actIntrosSeen]));}catch{}}
-  function actIntroSource(n){return `assets/cinematics/act${n}-intro-${getLanguage()==='de'?'de':'en'}.mp4`;}
+  function actIntroSource(n){return `assets/cinematics/act${n}-intro-${getLanguage()==='de'?'de':'en'}.mp4?v=20261031-readable1`;}
   function playActIntro(n,onDone){
     const dialog=$('actIntro'),video=$('actIntroVideo'),done=typeof onDone==='function'?onDone:()=>{};
     if(!dialog||!video){markActIntroSeen(n);done();return;}
@@ -269,7 +270,16 @@ function renderResults(target){
     const playing=typeof video.play==='function'?video.play():null;
     if(playing&&typeof playing.catch==='function')playing.catch(()=>{});
   }
-  function showActOverview(){campaignActView=0;const overview=$('actOverview'),detail=$('missionActs');if(overview)overview.hidden=false;if(detail)detail.hidden=true;}
+  function showActOverview(){campaignActView=0;const overview=$('actOverview'),detail=$('missionActs');if(overview)overview.hidden=false;if(detail)detail.hidden=true;
+    // On phones the map travels sideways; reopening centers the road on the
+    // act still in progress instead of the far west. Guards keep the
+    // behaviour inert wherever the DOM is not fully interactive.
+    if(overview&&typeof overview.scrollLeft==='number'&&overview.scrollWidth>overview.clientWidth+1&&typeof overview.querySelector==='function'){
+      const profile=account.getProfile();let current=ACTS.length;
+      for(const act of ACTS){if(!actComplete(profile,act.n)){current=act.n;break;}}
+      const node=overview.querySelector(`.act-node[data-act="${current}"]`);
+      if(node&&typeof node.offsetLeft==='number')overview.scrollLeft=Math.max(0,node.offsetLeft+node.offsetWidth/2-overview.clientWidth/2);
+    }}
   function wireMissionCards(){
     CAMPAIGN.forEach((mission,i)=>{const card=$(`missionCard${i}`);if(!card)return;card.onclick=()=>{if(!coop&&campaignAvailable(account.getProfile(),mission.id)&&(typeof account.canChooseSolo!=='function'||account.canChooseSolo())){$('campaignSelect').value=mission.id;renderCampaign();}};});
   }
@@ -295,9 +305,9 @@ function renderResults(target){
     // east - forest, marsh, city, pass, junction. Positions are map
     // percentages; the dashed route is the Iron Path itself.
     if(overview){
-      const stations=[[13,60],[32,82],[48,52],[57,16],[83,36]];
+      const stations=[[18,64],[34,80],[50,50],[64,20],[82,36]];
       const route=stations.map(([x,y])=>`${x},${y}`).join(' ');
-      overview.innerHTML=`<div class="campaign-map" role="group" aria-label="${tr('The five acts')}"><svg class="campaign-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${route}"/></svg>${ACTS.map((act,i)=>`<button type="button" id="actBanner${i}" class="act-node" data-act="${act.n}" data-state="open" style="--node-x:${stations[i]?.[0]||50}%;--node-y:${stations[i]?.[1]||50}%" aria-label="${act.title}"><span class="act-node-marker" aria-hidden="true"><b class="act-node-numeral">${['I','II','III','IV','V'][i]||act.n}</b></span><span class="act-node-plate"><strong id="actBannerTitle${i}">${tr(act.title)}</strong><span id="actBannerMeta${i}" class="act-node-meta"></span><span id="actBannerProgress${i}" class="act-node-progress"></span></span><b id="actBannerStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b><span id="actBannerLock${i}" class="act-node-lock" aria-hidden="true" hidden></span></button>`).join('')}</div>`;
+      overview.innerHTML=`<div class="campaign-map" role="group" aria-label="${tr('The five acts')}"><svg class="campaign-map-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points="${route}"/></svg>${ACTS.map((act,i)=>`<button type="button" id="actBanner${i}" class="act-node" data-act="${act.n}" data-state="open" style="--node-x:${stations[i]?.[0]||50}%;--node-y:${stations[i]?.[1]||50}%" aria-label="${act.title}"><span class="act-node-marker" aria-hidden="true"><b class="act-node-numeral">${['I','II','III','IV','V'][i]||act.n}</b></span><span class="act-node-plate"><strong id="actBannerTitle${i}">${tr(act.title)}</strong><span id="actBannerMeta${i}" class="act-node-meta"></span><span id="actBannerProgress${i}" class="act-node-progress"></span></span><b id="actBannerStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b><span id="actBannerLock${i}" class="act-node-lock" aria-hidden="true" hidden></span></button>`).join('')}<span id="campaignMapHint" class="campaign-map-hint" aria-hidden="true"></span></div>`;
     }
     ACTS.forEach((act,i)=>{const banner=$(`actBanner${i}`);if(banner)banner.onclick=()=>openAct(act.n);});
     // The quick select keeps free play first; option labels come from the
