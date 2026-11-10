@@ -1,9 +1,9 @@
 // Free-tier solo wave credit: one account transaction credits legacy XP/loot, the
 // workshop bonus and a per-run receipt together. Client-reported completion cannot
 // prove a wave was completed; receipts only stop accidental duplicate retries.
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261031-finale1';
-import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261031-finale1';
-import {applyWorkshopWaveCredit} from './workshop-wave-credit.mjs?v=20261031-finale1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261103-listvoice1';
+import {initializeWireWorkshop} from './workshop-wire.mjs?v=20261103-listvoice1';
+import {applyWorkshopWaveCredit} from './workshop-wave-credit.mjs?v=20261103-listvoice1';
 import {receiptForBlock,waveCredit} from './workshop-run-receipt.mjs';
 
 // Returns the changed profile or null. A missing workshop is initialized exactly

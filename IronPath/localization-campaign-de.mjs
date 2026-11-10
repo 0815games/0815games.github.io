@@ -1,4 +1,4 @@
-import {CAMPAIGN} from './campaign.mjs?v=20261031-finale1';
+import {CAMPAIGN} from './campaign.mjs?v=20261103-listvoice1';
 // Translations are matched to authored mission IDs, never stored in profiles or
 // fed back into mission rules. Each stage entry follows the authored order.
 const data={
@@ -12,7 +12,7 @@ const data={
  ['Erreiche den ersten Mast','ADA: Die Relaislinie verläuft durch den Wald. Fang beim ersten Mast an; ich höre zu, während du gehst.'],['Schütze den Relais-Masten','ADA: Er ist da. Der alte Rufname meines Bruders, in einer Schleife auf unserer Frequenz. Halte sie vom Mast fern, während ich aufnehme.'],['Bring die Aufnahme zurück','ADA: Voss, hör zu. Das ist Elias. Er lebt – und jemand benutzt seine Stimme, um uns in eine Falle zu locken.']],
  'VOSS: Wenn Elias Vale lebt, wird er verlegt. ADA: Dann folgen wir dem Signal – bis zum Ende.'],
  'blackout':['Blackout am Außenposten','Ivo erkennt den alten Sender des Außenpostens als Quelle der Störung. Seine Zerstörung könnte die Straße wieder öffnen, verrät dem Feind aber auch genau, wo sich der Widerstand versteckt.',[
- ['Platziere die erste Ladung','IVO: Zwei Ladungen. Eine an der Kreuzung, eine an der Zuleitung. Keine ist dein Leben wert.'],['Platziere die zweite Ladung','ADA: Die erste Ladung antwortet. Ivo, bist du sicher, dass die zweite nicht auch unser Relais lahmlegt?'],['Verteidige bis zur Detonation','IVO: Sicher genug. Die Ladungen sind scharf – halte den Bunker bis zur Explosion.']],
+ ['Platziere die erste Ladung','IVO: Die eine kommt an die Kreuzung, die andere an die Zuleitung. Aber kein Auftrag ist dein Leben wert.'],['Platziere die zweite Ladung','ADA: Die erste Ladung antwortet. Ivo, bist du sicher, dass die zweite nicht auch unser Relais lahmlegt?'],['Verteidige bis zur Detonation','IVO: Sicher genug. Die Ladungen sind scharf – halte den Bunker bis zur Explosion.']],
  'VOSS: Der Störsender ist ausgeschaltet. ADA: Warte. Ein zweites Signal ist gerade erwacht. Jemand wollte, dass wir diesen Sender zerstören.'],
  'ash-market':['Der Aschmarkt','Die Relaiskette braucht Teile, die der Widerstand nicht selbst bauen kann. Im zerstörten Industrieviertel handelt ein Schwarzmarkt mit Bergungsbauteilen – und Rooks Quartiermeister bieten auf dieselben Kisten.',[
  ['Breche die Eskorte des Quartiermeisters','VOSS: Rooks Käufer sind schon da. Brich ihre Eskorte, bevor die Auktion schließt.'],['Sichere die Auktionskisten','IVO: Bauteile für zwei Masten. Biete schnell – der Markt bewegt sich, sobald der Beschuss beginnt.'],['Eskortiere den Teiletransporter','IVO: Der Transporter ist beladen. Bring ihn nach Hause; der Markt gibt nichts zurück.']],
