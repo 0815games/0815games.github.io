@@ -415,3 +415,32 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
 .relic-slot[data-state=earned] strong{color:#f0d68a}
 .relic-slot[data-state=locked]{opacity:.85}
 .relic-slot[data-state=upcoming]{opacity:.55}
+
+/* Act overview: five staged banners lead into the acts; the first entry into
+   an act plays its intro film. Finished acts carry the field stamp. */
+.act-overview{display:grid;gap:14px;margin:18px 0}.act-overview[hidden],.mission-acts[hidden]{display:none}
+.act-banner{position:relative;display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:148px;padding:16px 128px 16px 22px;text-align:left;margin:0;border:1px solid #6c806a;border-radius:6px;color:#f3e8ce;cursor:pointer;overflow:hidden;background:linear-gradient(90deg,#0d1a12f8,#0d1a12e0 46%,#0d1a1240),var(--act-image) center/cover;transition:transform .15s ease,filter .15s ease}
+.act-banner:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.09)}
+.act-banner:disabled{cursor:not-allowed;opacity:.55}
+.act-banner[data-act="1"]{--act-image:url('assets/story-act1-title.jpg')}
+.act-banner[data-act="2"]{--act-image:url('assets/story-act2-title.jpg')}
+.act-banner[data-act="3"]{--act-image:url('assets/story-act3-title.jpg')}
+.act-banner[data-act="4"]{--act-image:url('assets/story-act4-title.jpg')}
+.act-banner[data-act="5"]{--act-image:url('assets/story-act5-title.jpg')}
+.act-banner-body{display:grid;gap:5px;max-width:640px}
+.act-banner-body strong{font:700 21px Georgia,serif;color:#f6ebcf;letter-spacing:.02em}
+.act-banner-meta{font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#9fb3a0}
+.act-banner-progress{font-size:11px;letter-spacing:.1em;color:#cdd8c2}
+.act-banner-numeral{position:absolute;right:20px;top:50%;transform:translateY(-50%);font:800 62px Georgia,serif;color:#f3e8ce1f;letter-spacing:.04em;pointer-events:none}
+.act-detail-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 10px;padding-bottom:12px;border-bottom:1px solid #60765e}
+.act-detail-meta{flex:1 1 220px}
+.act-detail-meta h3{font:700 20px Georgia,serif;color:#f6ebcf;margin:4px 0}
+.act-detail-meta p{font-size:11px;color:#cdd8c2;margin:2px 0 0;letter-spacing:.08em}
+.act-detail-back,.act-intro-replay{min-height:40px;padding:9px 14px;border:1px solid #6c806a;border-radius:4px;background:#16281d;color:#e8ecdb;font:800 11px Arial,serif;letter-spacing:.12em;cursor:pointer}
+.act-detail-back:hover,.act-intro-replay:hover{background:#1e3626}
+.act-intro{border:0;padding:0;background:transparent;max-width:min(96vw,1080px)}
+.act-intro::backdrop{background:#05080bd9}
+.act-intro-frame{border:1px solid #2c4436;border-radius:8px;overflow:hidden;background:#000}
+.act-intro-frame video{display:block;width:100%;max-height:78vh;background:#000}
+#actIntroSkip{display:block;margin:14px auto 0;min-height:42px;padding:10px 20px;border:1px solid #e1c986;border-radius:4px;background:#e1c986;color:#1b3024;font:800 12px Arial,serif;letter-spacing:.14em;cursor:pointer}
+@media(max-width:850px){.act-banner{min-height:104px;padding:12px 84px 12px 14px}.act-banner-body strong{font-size:16px}.act-banner-numeral{font-size:40px;right:12px}.act-banner-meta{letter-spacing:.1em}}

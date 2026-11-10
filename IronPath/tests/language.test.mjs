@@ -58,7 +58,7 @@ test('static German campaign, results and battlefield labels have translations',
  // The mission board is generated from CAMPAIGN at runtime (buildMissionBoard):
  // its labels never appear in static HTML, so they are pinned on the builder.
  const generatedBoard=/^(MISSION \d\d|ACT [IV]+ ·)/;
- for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!generatedBoard.test(en)&&!['CONTINUE','Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
+ for(const [en,de] of Object.entries(germanStatic)){assert.ok(de, en);if(!generatedBoard.test(en)&&!['CONTINUE','Scene progress','Campaign missions completed','Current objective progress','Close results','Tower actions','Close tower menu','Battle status','Scrollable battlefield','Field menu','The five acts','Act intro'].includes(en))assert.ok(html.includes(`>${en}</`),en);}
  assert.ok(gameSource.includes('mission-number')&&gameSource.includes('data-i18n-text'),'the board builder emits i18n-marked labels');
 });
 
