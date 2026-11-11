@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {tagLines,drawDogTagArt,renderDogTagArt,drawFallbackPlate,drawPlateCrop} from '../dog-tag-art.mjs';
+import {tagLines,drawDogTagArt,renderDogTagArt,drawFallbackPlate,drawPlateCrop,onDogTagArtReady} from '../dog-tag-art.mjs';
 
 // A recording 2D context: remembers fills, texts, draws and font sizes.
 function recorder({measureWidth}={}){
@@ -123,6 +123,7 @@ test('the photo is cropped to the tag, not the scene around it',()=>{
   const [,sx,sy,sw,sh]=calls.drawImages[0];
   assert.ok(sw<image.width&&sh<image.height,'the source rect is a crop, not the whole photo');
   assert.ok(sw>=image.width*0.4,'the crop keeps the whole tag plus its margin');
+  assert.ok(sw<=image.width*0.8,'the crop keeps no scene margins around the tag');
   assert.ok(box.w>=240*0.6,`the plate lands large in the canvas (${Math.round(box.w)}px)`);
   assert.ok(box.x>=0&&box.x+box.w<=240+1&&box.y>=0&&box.y+box.h<=240+1,'the plate box sits inside the canvas');
 });
@@ -133,4 +134,17 @@ test('drawDogTagArt stamps inside the plate the fallback reports',()=>{
   // All text x positions sit inside the fallback plate (5%..95% of width).
   const plateX0=300*0.05,plateX1=300*0.95;
   assert.ok(calls.text.length>0,'lines are stamped');
+});
+
+test('screens that paint the tag directly are told when the assets land',()=>{
+  // In this environment the photo cannot load, so the hook settles at once -
+  // the same immediate path a screen takes when assets arrived before it.
+  let fired=0;
+  const unhook=onDogTagArtReady(()=>fired++);
+  assert.equal(typeof unhook,'function','returns an unregister function');
+  assert.ok(fired>=1,'settled assets fire the repaint immediately');
+  const before=fired;
+  unhook();
+  assert.equal(fired,before,'unregistered hooks stay silent');
+  onDogTagArtReady('not a function'); // must not throw
 });

@@ -496,7 +496,11 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 .recruit-choice{flex:1;min-height:44px;margin:0;padding:8px;font-size:11px;letter-spacing:.04em}
 .recruit-choice[aria-checked="true"]{outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px;border-color:var(--iron-gold,#f0d68a);color:#fff}
 .recruit-looks{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
-.recruit-look{flex:none;width:clamp(52px,16vw,64px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;background-size:cover;background-position:center 18%;opacity:.72}
+/* Look tiles are character miniatures, not full-body thumbnails: the
+   portraits are square and the faces sit around x 52% / y 45% (measured
+   across all twelve), so a 210% bust crop frames head and shoulders instead
+   of shrinking the whole scene into a colored square. */
+.recruit-look{flex:none;width:clamp(52px,16vw,64px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;background-size:210% auto;background-position:52% 45%;opacity:.72}
 .recruit-look:hover:not(:disabled){opacity:1}
 .recruit-look[aria-checked="true"]{opacity:1;outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px}
 .recruit-actions{display:grid;grid-template-columns:minmax(110px,1fr) 2fr;gap:9px}

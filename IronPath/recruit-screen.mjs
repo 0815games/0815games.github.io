@@ -8,7 +8,7 @@
 // account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
 import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
 import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
-import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-tagbg1';
+import {drawDogTagArt,onDogTagArtReady} from './dog-tag-art.mjs?v=20261112-tagbg2';
 import {translateText as tr} from './language.mjs?v=20261112-kits1';
 
 function todayISO(){
@@ -111,6 +111,11 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
   // A resize re-fits the tag canvas; the portrait is an image and reflows
   // on its own. The phone rotates, the card reflows.
   try{window.addEventListener('resize',()=>{paintTag();});}catch{/* No window in tests. */}
+
+  // The tag's first paint is the drawn fallback; swap to the photo the
+  // moment it (and the stencil font) finish loading, not on the next
+  // unrelated repaint.
+  onDogTagArtReady(()=>paintTag());
 
   paintAvatar();paintTag();renderOptions();
 
