@@ -153,9 +153,10 @@ $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
 // ── Endless record (launch dialog) ─────────────────────────────────────────
 // Client-reported like every other progression write. The stats live in four
-// new profile fields; until rules that accept them are published, a rejected
-// write silently disables the stats for this session - wave rewards and the
-// last-run card are unaffected either way.
+// profile fields the published rules accept (since 2026-10-31); if a write is
+// ever rejected anyway (rules rollback, offline), it silently disables the
+// stats for this session - wave rewards and the last-run card are unaffected
+// either way.
 let endlessStatsEnabled=true;
 function endlessRecord(){
   const armory=profile?readArmory(profile.armory):null;
@@ -175,7 +176,7 @@ async function recordEndlessRun(summary){
         endlessBosses:Math.min(1000000,(current.endlessBosses||0)+Math.max(0,summary.bosses|0)),
         endlessBestSector:Math.max(current.endlessBestSector||0,Math.min(4,Math.max(0,summary.sector|0)))};
     },{applyLocally:false});
-  }catch{/* Rules not published yet or offline: stop asking for this session. */
+  }catch{/* Rules rejection or offline: stop asking for this session. */
     endlessStatsEnabled=false;
   }
 }
