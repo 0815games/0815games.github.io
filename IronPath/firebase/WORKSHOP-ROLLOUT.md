@@ -1,6 +1,6 @@
 # Publishing the workshop rules: dry run and rollout
 
-Status: **not published, not approved.** Nothing in this document has been run against the live database. The workshop is already shipped in the client (Armory → WORKSHOP); it stays inert until these rules are published, because a write to the new fields is rejected. Preparing, crafting and equipping therefore only start working for players after the owner publishes them.
+Status: **published once (2026-11-05), re-publish required.** The live database accepted the workshop fields from that date, so the Armory workshop is active. But the current file has moved on since that publish (PR #210 added the `storyCampaign` format stamp and the 0–50 `storyProgress` band), and the live ruleset still rejects those story fields — the reported symptom is that a won campaign mission is never marked complete. Re-publishing the current `WORKSHOP-RULES-TO-PUBLISH.json` (see `WORKSHOP-RULES-TO-PUBLISH.md`) fixes that. Until then, everything below still applies to the next publish: back up, dry run, paste the whole file, publish, verify on a test identity.
 
 Cost note: this uses the existing Firebase Auth + Realtime Database on the free (Spark) tier and GitHub Pages. No Cloud Functions, no paid backend, no billing account. Firebase free-tier quotas still apply, and free-tier availability is not guaranteed.
 

@@ -1,12 +1,21 @@
 # Armory overhaul: release plan
 
-> **Direction update:** The user requires GitHub Pages and free-tier Firebase only, with no paid cloud service. The server-owned recommendation below is retained as historical research and is not the chosen release requirement. See `WORKSHOP-ALPHA.md` for the free-tier approach and its client-trust limitations. The workshop remains disabled while data preservation, rules and compatibility are unfinished.
+> **Direction:** GitHub Pages and free-tier Firebase only, with no paid cloud service. The server-owned recommendation below is retained as historical research and is not the chosen release requirement. See `WORKSHOP-ALPHA.md` for the shipped free-tier approach and its client-trust limitations.
 
 ## Goal and current status
 
 Release a responsive soldier inventory and workshop with three equipment slots, boss-wave materials, crafting and modifications, while preserving existing scrap, bunker ranks, owned gear, equipped effects and progress in solo and multiplayer. The GitHub Pages site remains the player-facing application.
 
-**Not released:** the soldier dossier and workshop components exist in draft, but the workshop is disabled. New combat effects and multiplayer loadout locking have experimental integrations and tests, not live end-to-end wiring. Reward crediting for endless solo (`workshop-solo-reward.mjs` behind the disabled release gate, run receipt from `workshop-run-receipt.mjs`) and for co-op/versus wave blocks (`coop-rewards.mjs` with `workshop: true`) is implemented as client transactions and unit-tested, but has not been enabled in the live game and is not verified against production rules. Candidate Firebase rules are not verified against production. [Draft PR #156](https://github.com/0815games/0815games.github.io/pull/156) must remain a draft until the release gates below pass.
+**Shipped and live:** the workshop is part of the Armory for every signed-in soldier (`Command Center → ARMORY → WORKSHOP`, no gate beyond the normal in-match edit lock). Endless solo and campaign run on the captured loadout, co-op credits workshop rewards, versus standardizes equipment to neutral. Reward crediting is wired as client transactions: endless solo through per-run receipts (`workshop-run-receipt.mjs`, `workshop-solo-reward.mjs`), co-op wave blocks through `coop-rewards.mjs` with `workshop: true`. The candidate rules were published to production on 2026-11-05, so the workshop fields are accepted live.
+
+**Outstanding — the finalization list, in order:**
+
+1. **Re-publish the rules.** The live ruleset from 2026-11-05 predates the story format stamp (`storyCampaign`, PR #210), so every campaign save since then is rejected by the `$other` catch-all — the reported "won mission never completes" bug. The current `firebase/WORKSHOP-RULES-TO-PUBLISH.json` is byte-identical to the CI-tested candidate (`test:publish` runs against exactly this file on every push), is a verified superset of all fourteen feature rule drafts, and covers every field the client writes today (`storyProgress` 0–50, `storyCampaign` 1–9, workshop, solo receipts, co-op rewards). This is an owner console action with backup and dry run — the exact steps are in `firebase/WORKSHOP-ROLLOUT.md`.
+2. **Live end-to-end verification on a test identity** after the re-publish: workshop prepare → craft → equip → reload, one solo wave (XP/scrap/component, no duplicate on retry), one campaign mission that now saves, friends/party/leaderboard regression check, maxed-account clamping. The scripted order is in `WORKSHOP-TESTING.md`.
+3. **Real-device and two-account checks** (the parts automation cannot prove) per `WORKSHOP-TESTING.md` and the BETA-TEST-PLAN matrix.
+4. **Disclosed, accepted free-tier limits** (unchanged by any publish): completion is client-reported and not cheat-resistant; the account owner can delete individual receipts and replay one wave; there is no old-client fence in multiplayer. Do not claim otherwise in product copy.
+
+The server-boundary sections below are retained as research for that abandoned direction; their checkboxes do not describe open work for the shipped workshop. [Draft PR #156](https://github.com/0815games/0815games.github.io/pull/156) stays a draft for the same reason.
 
 ## 1. Choose and implement the progression authority
 
