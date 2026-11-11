@@ -9,7 +9,7 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261130-germanfu
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261120-coachgate1';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261112-authfix1';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261112-avatar1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261127-tutlock1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
 import {germanTowers} from './localization-towers-de.mjs?v=20261110-storyde1';
