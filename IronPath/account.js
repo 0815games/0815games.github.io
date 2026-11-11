@@ -3,22 +3,24 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261103-listvoice1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261107-balance1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261130-germanfull1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-endless1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261130-germanfull1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-endless1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261130-germanfull1';
-import {createCommandCenter} from './command-center.mjs?v=20261130-germanfull1';
+import {setupFriends} from './friends-ui.mjs?v=20261112-endless1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-endless1';
+import {featureEnabled} from './features.mjs?v=20261112-endless1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-endless1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261103-listvoice1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261103-listvoice1';
 import {missingPrestige} from './prestige.mjs?v=20261103-listvoice1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-listvoice1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261130-germanfull1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-endless1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261102-autofill1';
@@ -27,7 +29,7 @@ import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {renderDogTag,dogTag} from './dog-tag.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261130-germanfull1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-endless1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
@@ -37,9 +39,9 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261130-germanfull1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-endless1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261130-germanfull1';
+import { startGame } from './game.js?v=20261112-endless1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-listvoice1';
 import { createPlayer } from './match.mjs?v=20261103-listvoice1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -149,9 +151,41 @@ async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPa
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const currentUser=user, version=sessionVersion;busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:$('gender').value,xp:0}:undefined,{applyLocally:false});if(version!==sessionVersion)return;if(!result.committed&&result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');friendsUI.start();scoreReporter?.close();scoreReporter=createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}});if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:true,deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
-function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
+// ── Endless record (launch dialog) ─────────────────────────────────────────
+// Client-reported like every other progression write. The stats live in four
+// new profile fields; until rules that accept them are published, a rejected
+// write silently disables the stats for this session - wave rewards and the
+// last-run card are unaffected either way.
+let endlessStatsEnabled=true;
+function endlessRecord(){
+  const armory=profile?readArmory(profile.armory):null;
+  return {runs:profile?.endlessRuns,waves:profile?.endlessWaves,bosses:profile?.endlessBosses,bestSector:profile?.endlessBestSector,scrap:armory?.scrap,loadout:armory?.equipped?translateText(ITEMS[armory.equipped-1].name):null};
+}
+async function bestSoloWave(){try{const snap=await get(ref(db,`leaderboards/solo/${user?.uid}`));return snap?.val()?.wave||0;}catch{return 0;}}
+async function recordEndlessRun(summary){
+  writeLastEndlessRun(window.localStorage,summary);
+  if(!endlessStatsEnabled||inSandbox()||!user||!profile)return;
+  const currentUser=user,version=sessionVersion;
+  try{
+    await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{
+      if(!current||version!==sessionVersion)return undefined;
+      return {...current,
+        endlessRuns:Math.min(1000000,(current.endlessRuns||0)+1),
+        endlessWaves:Math.min(10000000,(current.endlessWaves||0)+Math.max(0,summary.waves|0)),
+        endlessBosses:Math.min(1000000,(current.endlessBosses||0)+Math.max(0,summary.bosses|0)),
+        endlessBestSector:Math.max(current.endlessBestSector||0,Math.min(4,Math.max(0,summary.sector|0)))};
+    },{applyLocally:false});
+  }catch{/* Rules not published yet or offline: stop asking for this session. */
+    endlessStatsEnabled=false;
+  }
+}
+const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({document,storage:window.localStorage,
+  getRecord:endlessRecord,getBestWave:bestSoloWave,getLastRun:()=>readLastEndlessRun(window.localStorage),
+  onDeploy:async theme=>{commandCenter?.showBattle(true,'endless');const loaded=await gameControl?.chooseEndless(theme);if(loaded)gameControl?.setMenuOpen(false);else commandCenter?.showMenu();},
+  onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
+function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
   // A realtime-database transaction only settles once the server answers; while
   // offline it stays pending forever, and the results screen would sit on
   // "Saving mission progress…" with every button locked and no retry offered.
@@ -505,7 +539,7 @@ async function equipFirstRewards(){
 async function openWorkshopFirstTime(){
  guide().event?.('skills');
  document.getElementById('armoryOpen')?.click?.();
- if(await waitFor(()=>dialogOpen('armoryDialog')))document.getElementById('armoryWorkshopTab')?.click?.();
+ if(await waitFor(()=>dialogOpen('armoryDialog'))){if(featureEnabled('workshop'))document.getElementById('armoryWorkshopTab')?.click?.();}
  else return false;
  guide().raise?.();
  await waitFor(()=>!dialogOpen('armoryDialog'));
@@ -597,6 +631,7 @@ function startFirstRunTutorial(){
   requestAnimationFrame(()=>{try{gameControl?.startFirstRun?.()??gameControl?.startTutorialIfNeeded?.();}catch{}});
 }
 function chooseArmoryCategory(category){
+  if(category==='workshop'&&!featureEnabled('workshop'))category='equipment';
   armoryCategory=category;
   for(const [id,key] of armoryTabs){const tab=$(id);tab.setAttribute('aria-pressed',String(key===category));tab.setAttribute('aria-controls',key==='workshop'?'armoryWorkshop':'armoryList');}
   for(const section of $('armoryList').querySelectorAll('.armory-section'))section.hidden=section.dataset.section!==category;

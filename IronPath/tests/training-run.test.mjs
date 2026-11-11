@@ -135,7 +135,7 @@ test('the game wires the contract without inventing a second run loop',()=>{
  assert.match(game,/trainingWon\(state\)/,'the run ends itself after the last wave');
  assert.match(game,/campaign:activeTraining\?trainingContract\(\)/,'the contract reaches the real deployment');
  assert.match(game,/onFinish:id=>\{if\(trainingSeen\(id,tutorialStorage\)\)return;/,'the tutorial hands over exactly once');
- assert.match(game,/if\(activeTraining\)\{activeTraining=false;activeMission=null;selectedMap=nextMapId\(selectedMap\);\}/,'a finished contract does not replay on Deploy');
+ assert.match(game,/if\(activeTraining\)\{activeTraining=false;activeMission=null;selectedMap=drawFreeMapId\(selectedMap\);\}/,'a finished contract does not replay on Deploy');
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
  assert.match(account,/onTrainingComplete:\(\)=>window\.setTimeout\(offerFirstRunEnding,/,'the ending follows the contract');
 });

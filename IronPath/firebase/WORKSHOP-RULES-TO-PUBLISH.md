@@ -27,7 +27,8 @@ Run the backup and dry-run steps in `WORKSHOP-ROLLOUT.md` first. Publishing repl
 - `players/$uid/workshop`: a bounded string (1–2048 chars), cannot be removed once created.
 - `players/$uid/soloWorkshopReceipts/$receiptId`: 32-hex keys, 1–1048575, monotonic bits (a replay cannot clear progress).
 - `players/$uid/coopRewards`: kept, and now cannot be dropped from an existing profile.
-- `players/$uid`: refuses a write that deletes `campaign`, `storyProgress`, `workshop`, `soloWorkshopReceipts` or `coopRewards` once they exist; XP stays non-decreasing and capped.
+- `players/$uid`: refuses a write that deletes `campaign`, `storyProgress`, `workshop`, `soloWorkshopReceipts`, `coopRewards`, `endlessRuns`, `endlessWaves`, `endlessBosses` or `endlessBestSector` once they exist; XP stays non-decreasing and capped.
+- `players/$uid/endlessRuns|endlessWaves|endlessBosses|endlessBestSector`: the free-play record the endless launch dialog shows - client-reported integers, monotonic, capped (`endlessRuns` ≤ 1000000 first write ≤ 1, `endlessWaves` ≤ 10000000 first write ≤ 10000, `endlessBosses` ≤ 1000000 first write ≤ 1000, `endlessBestSector` 0–4). The game treats a rejection as non-fatal: a session flag stops the stats writes, run rewards are unaffected.
 - Everything else (parties, four-player, friends, invites, leaderboards, story) is the same as the other complete drafts in this folder.
 
 There is no longer an alpha allow-list (`workshopAlpha`): the workshop is part of the Armory for every signed-in account, so the rules only need to accept its two new fields.

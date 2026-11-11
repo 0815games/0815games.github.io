@@ -1,4 +1,5 @@
-import {translateStaticDom} from './language.mjs?v=20261130-germanfull1';
+import {translateStaticDom} from './language.mjs?v=20261112-endless1';
+import {applyFeatureVisibility} from './features.mjs?v=20261112-endless1';
 // The intro is independent of authentication. When it ends, any loading or
 // connection error remains visible underneath instead of blocking sign-in.
 export function startIntro({document,window,duration=4300}){
@@ -24,5 +25,8 @@ if(typeof document!=='undefined'&&typeof window!=='undefined'){
   // This runs before the intro decision, so the module is always evaluated.
   let storage=null;try{storage=window.localStorage;}catch{storage=null;}
   translateStaticDom({document,storage});
+  // Feature switches (features.mjs) hide their entry points on the same first
+  // paint, so a disabled area is never even briefly visible.
+  applyFeatureVisibility(document);
   if(document.documentElement.dataset.langGate!=='1')startIntro({document,window});
 }
