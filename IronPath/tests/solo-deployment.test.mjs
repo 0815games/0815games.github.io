@@ -12,13 +12,16 @@ test('a disabled workshop still plays the old equipment',()=>{
 });
 test('a story mission deploys its soldier at the first stage marker, not the bunker',()=>{
  // Reported: "Soldier starts every time at the bunker!" - the operation
- // begins where its first objective sits; endless keeps the bunker start.
+ // begins where its first objective sits; endless keeps the bunker start -
+ // the real one: the default map (road) has its bunker at (900,400), so the
+ // soldier stands at (810,460), not the old hard-coded (850,450) that only
+ // matched the classic maps. Generated maps are covered in bunker-start.test.
  const deployed=createSoloDeployment({player:player(),profile:{},campaign:{id:'lost-signal',threat:'standard',spawn:{x:210,y:130}}});
  assert.equal(deployed.players.local.x,210);assert.equal(deployed.players.local.y,130);
  const endless=createSoloDeployment({player:player(),profile:{}});
- assert.equal(endless.players.local.x,850);assert.equal(endless.players.local.y,450);
+ assert.equal(endless.players.local.x,810);assert.equal(endless.players.local.y,460);
  const half=createSoloDeployment({player:player(),profile:{},campaign:{id:'lost-signal',threat:'standard',spawn:{x:Number.NaN,y:130}}});
- assert.equal(half.players.local.x,850,'an unreadable spawn point falls back to the bunker');
+ assert.equal(half.players.local.x,810,'an unreadable spawn point falls back to the bunker');
 });
 test('a campaign mission now uses the workshop loadout and its contract',()=>{
  // Missions used to be forced onto the legacy path, so no crafted gear mattered.

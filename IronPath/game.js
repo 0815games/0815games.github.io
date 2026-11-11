@@ -1,4 +1,4 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261103-listvoice1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261031-bunker1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
