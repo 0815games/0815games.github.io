@@ -5,18 +5,16 @@ fields, so the workshop in the live Armory is active. Keep this file as the exac
 copy that was published: rollback means pasting your saved export back, not this
 file.
 
-**⚠ Status update — story fields added, RE-PUBLISH REQUIRED.** The file changed
-after that publish (PR #210): `players/$uid/storyCampaign` (integer 1–9) and the
-final `storyProgress` band (0–50, first write ≤ 1, never decreasing) were added.
-The live ruleset from 2026-11-05 does **not** know `storyCampaign`, so its
-`$other: {".validate": false}` rejects **every** story save since the client
-writes the format stamp — reported as: *"Nach Sieg in Kampagnen-Mission 1 bleiben
-‚Mission wiederholen' + ‚Nächste Mission' ausgegraut; Mission wird nie als
-abgeschlossen markiert."* XP keeps saving because XP-only writes never touch
-`storyCampaign`. **Fix:** paste the current file and publish again (same console
-steps as below). The client now also names the failure on the results screen
-("The database rejected the mission save…") instead of hanging on "Saving
-mission progress…".
+**✅ Status update — resolved and verified (2026-11-11).** The earlier
+"RE-PUBLISH REQUIRED" warning below turned out to be stale: when the owner
+pasted the current file into the console rules editor, the editor showed **no
+differences** against the live ruleset (the publish button stayed inactive), so
+the live rules already include the story fields (`players/$uid/storyCampaign`
+integer 1–9 and the `storyProgress` band 0–50, first write ≤ 1, never
+decreasing) from PR #210. Campaign saves are accepted; the "won mission never
+completes" symptom is gone. This file remains the exact copy of the live
+ruleset — if a future change moves it ahead of live again, the same paste-and-
+publish steps apply.
 
 File to paste: **`IronPath/firebase/WORKSHOP-RULES-TO-PUBLISH.json`** (identical to `workshop.complete.draft.rules.json`, renamed so it is obvious which file goes into the console).
 
