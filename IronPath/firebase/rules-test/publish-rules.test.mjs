@@ -77,3 +77,20 @@ test('publish file accepts the endless record fields, monotonic and capped',asyn
  await assertFails(update(p,{somethingNew:1}));
  stop();
 });
+test('publish file accepts the avatar string, bounded and undeletable',async()=>{const p=ref(alice,'players/alice');
+ // The painted face from the recruiting office: one short encoded string,
+ // written once at enlistment and whenever the face is edited.
+ await assertSucceeds(update(p,{avatar:'g:f|s:2|h:long|c:1|e:0|b:none|x:scar'}));
+ assert.equal((await get(p)).val().avatar,'g:f|s:2|h:long|c:1|e:0|b:none|x:scar');
+ await assertSucceeds(update(p,{avatar:'g:m|s:0|h:buzz|c:0|e:0|b:full|x:none'}));
+ // Out-of-band values are refused: not a string, too short to be a face, too
+ // long to be honest, and null would delete it.
+ await assertFails(update(p,{avatar:'short'}));
+ await assertFails(update(p,{avatar:'x'.repeat(65)}));
+ await assertFails(update(p,{avatar:42}));
+ await assertFails(update(p,{avatar:null}));
+ // Another account cannot stamp a face onto someone else's dossier.
+ await assertFails(update(ref(bob,'players/alice'),{avatar:'g:f|s:1|h:bun|c:2|e:1|b:none|x:none'}));
+ // The rest of the profile is untouched by the write.
+ assert.equal((await get(p)).val().xp,900);
+});

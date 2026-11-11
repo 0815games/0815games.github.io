@@ -80,7 +80,7 @@ test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
  assert.match(account,/const after=profile\?\.skills\|\|'',lvl=level\(profile\?\.xp\|\|0\);/);
  assert.match(account,/return after!==before&&pointsLeft\(parseBuild\(after,lvl\),lvl\)===0;/,'a saved build with the point spent is the proof');
  // The tag is drawn on every profile snapshot and stored nowhere.
- assert.match(account,/function refreshDogTags\(\)\{[\s\S]{0,220}renderDogTag\(document,container,data\)/);
+ assert.match(account,/function refreshDogTags\(\)\{[\s\S]{0,600}renderDogTagArt\(document,container,data/,'the worn tags are painted with their chain now');
  assert.match(account,/refreshDogTags\(\);\s*void startFirstRunTutorial\(\);|if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);refreshDogTags\(\);/);
  assert.equal(/dogTag:\s*\{|saveDogTag|dogTagSerial:\s*\(/.test(account),false,'the tag is never written to the account');
  // Every write path in the sandbox refuses before a transaction is built.
