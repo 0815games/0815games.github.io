@@ -1,4 +1,4 @@
-import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';import {ref,get,set,update,onValue,runTransaction} from 'firebase/database';import {CAMPAIGN,completeStory,STORY_FORMAT} from '../../campaign.mjs';
+import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';import {ref,get,set,update,remove,onValue,runTransaction} from 'firebase/database';import {CAMPAIGN,completeStory,STORY_FORMAT} from '../../campaign.mjs';
 // The file that gets pasted into the Firebase console is
 // ../WORKSHOP-RULES-TO-PUBLISH.json - not the draft files the other suites
 // load. Reported live: "Nach Sieg in Kampagnen-Mission 1 bleiben 'Mission
@@ -93,4 +93,33 @@ test('publish file accepts the avatar string, bounded and undeletable',async()=>
  await assertFails(update(ref(bob,'players/alice'),{avatar:'g:f|s:1|h:bun|c:2|e:1|b:none|x:none'}));
  // The rest of the profile is untouched by the write.
  assert.equal((await get(p)).val().xp,900);
+});
+
+test('the enlistment date is a bounded, undeletable profile field',async()=>{const p=ref(alice,'players/alice');
+ // The service start date printed on the dog tag: written once at enlistment
+ // (or backfilled for an existing account), never changed, never removed.
+ await assertSucceeds(update(p,{enlisted:'2026-11-11'}));
+ assert.equal((await get(p)).val().enlisted,'2026-11-11');
+ // Wrong shapes are refused: not a date, not the ISO shape, not a string.
+ await assertFails(update(p,{enlisted:'11.11.2026'}));
+ await assertFails(update(p,{enlisted:'2026-11-1'}));
+ await assertFails(update(p,{enlisted:'abcdefghij'}));
+ await assertFails(update(p,{enlisted:20261111}));
+ await assertFails(update(p,{enlisted:null}));
+ // Another account cannot date someone else's service record.
+ await assertFails(update(ref(bob,'players/alice'),{enlisted:'2027-01-01'}));
+ // The rest of the profile is untouched by the write.
+ assert.equal((await get(p)).val().xp,900);
+});
+
+test('the owner may delete the whole character, nobody else',async()=>{
+ // "Charakter löschen": the profile node is removed so the account returns to
+ // the recruiting office. Validate only guards non-null writes, so the owner's
+ // delete goes through; another account is still locked out.
+ await assertSucceeds(remove(ref(alice,'players/alice')));
+ assert.equal((await get(ref(alice,'players/alice'))).val(),null);
+ await assertFails(remove(ref(bob,'players/alice')));
+ // And a fresh character can be enlisted again right after.
+ await assertSucceeds(set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0}));
+ assert.equal((await get(ref(alice,'players/alice'))).val().name,'Alice');
 });

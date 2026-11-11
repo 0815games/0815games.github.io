@@ -1,50 +1,44 @@
 // The recruiting office: the character-creation screen as an event, not a
-// form. One live avatar preview, the dog tag stamping the name letter by
-// letter, option rows for the face, and an ENLIST stamp that slams down on the
-// paper. Pure presentation and choice collection - the actual profile write
-// stays in account.js (exactly {name, gender, xp} plus the avatar string).
-import {SKIN_TONES,HAIR_COLORS,EYE_COLORS,HAIR_STYLES,BEARDS,EXTRAS,defaultAvatar,randomAvatar,storeAvatar,AVATAR_STORAGE_KEY} from './avatar.mjs?v=20261112-avatar1';
-import {drawAvatarFace} from './avatar-art.mjs?v=20261112-avatar1';
-import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-avatar1';
-import {translateText as tr} from './language.mjs?v=20261112-avatar1';
+// form. One rendered portrait preview, the dog tag stamped with the name,
+// and exactly two choice rows - the gender and one rendered look per
+// hairstyle, strictly separated by gender. The editor stays short on
+// purpose: the first build scrolled forever and the preview left the screen
+// when an option was tapped (reported), so now the preview column is pinned
+// beside the choices and the choices themselves are a handful of tiles.
+// Pure presentation and choice collection - the actual profile write stays
+// in account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
+import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
+import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
+import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-avatar2';
+import {translateText as tr} from './language.mjs?v=20261112-avatar2';
 
-const SKIN_NAMES=['Light','Fair','Tan','Brown','Deep'];
-const HAIR_COLOR_NAMES=['Black','Dark brown','Brown','Blond','Grey','Field green'];
-const EYE_NAMES=['Blue','Green','Brown','Grey','Hazel'];
-const HAIR_NAMES={buzz:'Buzz cut',short:'Short',side:'Side part',long:'Long',bun:'Bun'};
-const BEARD_NAMES={none:'Clean',stubble:'Stubble',mustache:'Mustache',full:'Full beard'};
-const EXTRA_NAMES={none:'None',scar:'Scar',earring:'Earring',glasses:'Glasses'};
 const FLAVOR={female:'Pathfinder · sharp eye, steady hand',male:'Point man · first in, last out'};
 
-function fitCanvas(canvas,ratio){
-  const width=Math.round(canvas.clientWidth||192);
-  const size=Math.round(width*ratio);
-  if(canvas.width!==size){canvas.width=size;canvas.height=size;}
-  return size;
+function todayISO(){
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
 }
 
-// Builds and drives the whole screen. Callers hand in the account id (for the
-// tag's serial) and receive the chosen avatar through getAvatar() at submit.
+// Builds and drives the whole screen. The chosen avatar is read through
+// getAvatar() at submit; every change is mirrored to storage immediately.
 export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAvatarChange=()=>{}}={}){
   const $=id=>document.getElementById(id);
-  const avatarPreview=$('avatarPreview'),tagCanvas=$('recruitTag'),optionsRoot=$('avatarOptions');
-  if(!avatarPreview||!tagCanvas||!optionsRoot||typeof avatarPreview.getContext!=='function')return {getAvatar:()=>defaultAvatar(),stamp:()=>{}};
+  const preview=$('avatarPreview'),tagCanvas=$('recruitTag'),optionsRoot=$('avatarOptions');
+  if(!preview||!tagCanvas||!optionsRoot)return {getAvatar:()=>defaultAvatar(),stamp:()=>{},reset:()=>{}};
   let avatar=defaultAvatar('female');
 
-  function paintAvatar(){
-    const ratio=Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));
-    const size=fitCanvas(avatarPreview,ratio);
-    const ctx=avatarPreview.getContext('2d');
-    if(ctx)drawAvatarFace(ctx,size,avatar);
-  }
+  function paintAvatar(){preview.src=avatarPortrait(avatar);}
   function paintTag(){
     const ratio=Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));
     const cssWidth=tagCanvas.clientWidth||220;
     const size=Math.round(cssWidth*ratio);
-    if(tagCanvas.width!==size){tagCanvas.width=size;tagCanvas.height=Math.round(size*.98);}
+    if(tagCanvas.width!==size){tagCanvas.width=size;tagCanvas.height=size;}
     tagCanvas.style.height='auto';
-    const ctx=tagCanvas.getContext('2d');
-    if(ctx)drawDogTagArt(ctx,tagCanvas.width,{profile:{name:$('soldierName')?.value||'',gender:avatar.gender},accountId:getAccountId()},{rotation:-.05});
+    const ctx=tagCanvas.getContext&&tagCanvas.getContext('2d');
+    if(ctx){
+      const lines=drawDogTagArt(ctx,tagCanvas.width,{profile:{name:$('soldierName')?.value||'',gender:avatar.gender,enlisted:todayISO()}});
+      if(lines)tagCanvas.setAttribute('aria-label',`${tr('Your dog tag')}: ${lines.name} · ${lines.gender} · ${lines.date}`);
+    }
   }
   function commit(next){
     avatar=next;
@@ -53,7 +47,7 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
     try{onAvatarChange(avatar);}catch{/* Presentation never blocks the screen. */}
   }
 
-  function chipRow({label,key,entries,isColor}){
+  function chipRow({label,key,entries}){
     const row=document.createElement('div');
     row.className='recruit-row';
     row.setAttribute('role','radiogroup');
@@ -62,40 +56,54 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
     const group=document.createElement('div');group.className='recruit-choices';
     for(const entry of entries){
       const button=document.createElement('button');
-      button.type='button';button.className='recruit-choice'+(isColor?' recruit-swatch':'');
-      const value=entry.value;
-      const selected=avatar[key]===value||(key==='gender'&&avatar.gender===value);
+      button.type='button';button.className='recruit-choice';
+      const selected=avatar[key]===entry.value;
       button.setAttribute('aria-checked',String(selected));
       button.classList.toggle('selected',selected);
-      if(isColor){
-        button.style.background=entry.color;
-        button.setAttribute('aria-label',tr(entry.name));
-        button.title=tr(entry.name);
-      }else{
-        button.textContent=tr(entry.name);
-      }
-      button.addEventListener('click',()=>commit({...avatar,[key]:value}));
+      button.textContent=tr(entry.name);
+      button.addEventListener('click',()=>commit({...avatar,[key]:entry.value}));
       group.append(button);
     }
     row.append(title,group);
     return row;
   }
 
-  function renderOptions(){
-    optionsRoot.replaceChildren(
-      chipRow({label:'CHARACTER',key:'gender',entries:[{value:'female',name:'Female soldier'},{value:'male',name:'Male soldier'}]}),
-      chipRow({label:'SKIN',key:'skin',isColor:true,entries:SKIN_TONES.map((color,i)=>({value:i,color,name:SKIN_NAMES[i]}))}),
-      chipRow({label:'HAIR',key:'hair',entries:HAIR_STYLES.map(style=>({value:style,name:HAIR_NAMES[style]}))}),
-      chipRow({label:'HAIR COLOR',key:'hairColor',isColor:true,entries:HAIR_COLORS.map((color,i)=>({value:i,color,name:HAIR_COLOR_NAMES[i]}))}),
-      chipRow({label:'EYES',key:'eyes',isColor:true,entries:EYE_COLORS.map((color,i)=>({value:i,color,name:EYE_NAMES[i]}))}),
-    );
-    // The beard row only exists for a male face; female keeps her row count.
-    if(avatar.gender==='male')optionsRoot.append(chipRow({label:'BEARD',key:'beard',entries:BEARDS.map(beard=>({value:beard,name:BEARD_NAMES[beard]}))}));
-    optionsRoot.append(chipRow({label:'EXTRAS',key:'extra',entries:EXTRAS.map(extra=>({value:extra,name:EXTRA_NAMES[extra]}))}));
+  // The look tiles: one rendered portrait per hairstyle of the chosen
+  // gender - the picture is the button.
+  function lookRow(){
+    const row=document.createElement('div');
+    row.className='recruit-row';
+    row.setAttribute('role','radiogroup');
+    row.setAttribute('aria-label',tr('LOOK'));
+    const title=document.createElement('span');title.className='recruit-row-label';title.textContent=tr('LOOK');
+    const group=document.createElement('div');group.className='recruit-choices recruit-looks';
+    looksFor(avatar.gender).forEach((look,index)=>{
+      const button=document.createElement('button');
+      button.type='button';button.className='recruit-look';
+      button.setAttribute('aria-checked',String(avatar.look===index));
+      button.setAttribute('aria-label',tr(look.name));
+      button.title=tr(look.name);
+      button.style.backgroundImage=`url('${avatarPortrait({...avatar,look:index})}')`;
+      button.addEventListener('click',()=>commit({...avatar,look:index}));
+      group.append(button);
+    });
+    row.append(title,group);
+    return row;
   }
 
-  // The flavor line rides under the gender row, so the choice reads like a
-  // dossier entry rather than a toggle.
+  function renderOptions(){
+    // Switching gender clamps the look into that gender's own list - the
+    // hairstyle sets are separate and never mix.
+    const looks=looksFor(avatar.gender);
+    if(avatar.look>=looks.length)avatar={...avatar,look:looks.length-1};
+    optionsRoot.replaceChildren(
+      chipRow({label:'CHARACTER',key:'gender',entries:[{value:'female',name:'Female soldier'},{value:'male',name:'Male soldier'}]}),
+      lookRow(),
+    );
+  }
+
+  // The flavor line rides under the rows, so the choice reads like a dossier
+  // entry rather than a toggle.
   const flavorLine=document.createElement('p');
   flavorLine.className='recruit-flavor';flavorLine.textContent=tr(FLAVOR.female);
   optionsRoot.addEventListener('click',()=>{flavorLine.textContent=tr(FLAVOR[avatar.gender]);});
@@ -110,14 +118,17 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
   // first slam and any screen reader see the player's language.
   const stampEl=$('enlistStamp');if(stampEl)stampEl.textContent=tr('ENLISTED · IRON PATH');
 
-  // A resize re-fits both canvases; the phone rotates, the card reflows.
-  try{window.addEventListener('resize',()=>{paintAvatar();paintTag();});}catch{/* No window in tests. */}
+  // A resize re-fits the tag canvas; the portrait is an image and reflows
+  // on its own. The phone rotates, the card reflows.
+  try{window.addEventListener('resize',()=>{paintTag();});}catch{/* No window in tests. */}
 
   paintAvatar();paintTag();renderOptions();
 
   return {
     getAvatar:()=>avatar,
     refresh(){paintAvatar();paintTag();renderOptions();},
+    // After a character deletion: a clean desk, no leftover face or mirror.
+    reset(){avatar=defaultAvatar('female');storeAvatar(storage,avatar);paintAvatar();paintTag();renderOptions();},
     // The ENLIST stamp: slammed onto the paper by account.js on submit.
     stamp(){
       const stamp=$('enlistStamp'),card=document.querySelector('#characterView .recruit-card');
