@@ -527,3 +527,7 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 /* The character-delete button in the command utilities reads as destructive. */
 .command-utilities .danger-utility{color:#d98c8c;border-color:#6e3c3c}
 .command-utilities .danger-utility:hover,.command-utilities .danger-utility:focus-visible{color:#f2b3b3;border-color:#8f4a4a}
+/* The visible build stamp: one line in the loading scene and one in the
+   settings dialog. If a report says "still the old screen", the stamp shows
+   which build the BROWSER actually runs - stale stamp means cache, not code. */
+.build-stamp{margin:12px 0 0;font-size:9px;font-weight:bold;letter-spacing:.14em;color:#5f6d57;text-transform:uppercase;text-align:center}
