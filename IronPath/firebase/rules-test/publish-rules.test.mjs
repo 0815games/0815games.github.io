@@ -50,9 +50,14 @@ test('workshop profile writes still pass the publish file',async()=>{const p=ref
  assert.equal((await get(p)).val().workshop,'w1:1');
  await assertFails(update(p,{workshop:''}));});
 test('publish file accepts the endless record fields, monotonic and capped',async()=>{const p=ref(alice,'players/alice');
+ // Prime the cache the way the production listener does, so the transaction's
+ // first local pass sees the real profile.
+ let stop;await new Promise((ok,no)=>{stop=onValue(p,ok,no);});
  // The endless launch dialog's record: one client-reported transaction per
- // finished free-play run (runs, waves, bosses, best sector).
- await assertSucceeds(runTransaction(p,v=>({...v,endlessRuns:(v.endlessRuns||0)+1,endlessWaves:(v.endlessWaves||0)+7,endlessBosses:(v.endlessBosses||0)+1,endlessBestSector:Math.max(v.endlessBestSector||0,2)}),{applyLocally:false}));
+ // finished free-play run (runs, waves, bosses, best sector). The update
+ // function runs once against an empty local cache first, so like the
+ // production writer it must tolerate a null current value.
+ await assertSucceeds(runTransaction(p,v=>v?{...v,endlessRuns:(v.endlessRuns||0)+1,endlessWaves:(v.endlessWaves||0)+7,endlessBosses:(v.endlessBosses||0)+1,endlessBestSector:Math.max(v.endlessBestSector||0,2)}:undefined,{applyLocally:false}));
  const after=(await get(p)).val();
  assert.equal(after.endlessRuns,1);assert.equal(after.endlessWaves,7);assert.equal(after.endlessBosses,1);assert.equal(after.endlessBestSector,2);
  assert.equal(after.xp,900);assert.equal(after.campaign,3); // untouched by the stats write
@@ -70,4 +75,5 @@ test('publish file accepts the endless record fields, monotonic and capped',asyn
  await assertSucceeds(update(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0,endlessRuns:1,endlessWaves:10000,endlessBosses:1000,endlessBestSector:4}));
  // The $other catch-all still rejects unknown fields.
  await assertFails(update(p,{somethingNew:1}));
+ stop();
 });
