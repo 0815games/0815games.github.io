@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="style.css?v=20261031-readable1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261220-actintros">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
-  <link rel="stylesheet" href="field-command.css?v=20261111-events1">
+  <link rel="stylesheet" href="field-command.css?v=20261130-germanfull1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261105-soldier2">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
@@ -24,17 +24,18 @@
        FULLSCREEN chip that used to sit in this corner is gone: it was two controls
        in the top-right corner at all times, covering the field on a phone, and both
        of them are settings, not actions. The three elements the language code needs
-       (#languageSelect, #languagePreviewNote, #fullscreenToggle, #fullscreenStatus)
-       moved into the dialog unchanged - language.mjs and fullscreen.mjs still drive
-       the same ids, so there is still exactly one language control in the product. -->
+       (#languageSelect, #fullscreenToggle, #fullscreenStatus)
+       moved into the dialog unchanged - language.mjs still drives
+       the same id, so there is still exactly one language control in the product.
+       The German translation is complete, so the old "Deutsch (Vorschau)" label
+       and the preview note are gone: no preview claim the game no longer keeps. -->
   <dialog id="settingsDialog" tabindex="-1" class="settings-dialog" aria-labelledby="settingsTitle">
     <div class="settings-head"><span class="eyebrow" data-i18n-text="SETTINGS">SETTINGS</span><button id="settingsClose" class="settings-close" type="button" aria-label="Close settings" data-i18n-aria-label="Close settings">×</button></div>
     <h2 id="settingsTitle" data-i18n-text="Settings">Settings</h2>
     <div class="settings-row">
       <label for="languageSelect" data-i18n-text="Language">Language</label>
-      <span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache" aria-describedby="languagePreviewNote"><option value="en">English</option><option value="de">Deutsch (Vorschau)</option></select></span>
+      <span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache"><option value="en">English</option><option value="de">Deutsch</option></select></span>
     </div>
-    <p id="languagePreviewNote" class="language-preview-note" role="status" hidden data-i18n-text="Preview: some content is still English.">Preview: some content is still English.</p>
     <div class="settings-row">
       <label for="soundVolume" data-i18n-text="Sound">Sound</label>
       <span class="settings-volume"><input id="soundVolume" type="range" min="0" max="100" step="5" value="70" aria-describedby="soundVolumeStatus"><output id="soundVolumeStatus" for="soundVolume">70 %</output></span>
@@ -74,7 +75,7 @@
           <small>Auf Deutsch fortfahren</small>
         </button>
       </div>
-      <p class="language-gate-note">You can change this later at the top of the screen.<br><span lang="de">Du kannst die Sprache später oben im Bildschirm ändern. Deutsch ist eine Vorschau: einige Texte erscheinen noch auf Englisch.</span></p>
+      <p class="language-gate-note">You can change this later in Settings.<br><span lang="de">Du kannst die Sprache später in den Einstellungen ändern.</span></p>
     </div>
   </section>
   <section id="introOverlay" class="intro-overlay" role="region" aria-label="Iron Path animated introduction" data-i18n-aria-label="Iron Path animated introduction">
@@ -328,7 +329,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261112-firstrun5"></script>
+  <script type="module" src="intro.mjs?v=20261130-germanfull1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261101-voiceover2"></script>
+  <script type="module" src="account.js?v=20261130-germanfull1"></script>
 </body></html>

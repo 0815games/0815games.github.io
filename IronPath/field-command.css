@@ -118,6 +118,12 @@
 @media(min-width:851px){
  #gameView .map-viewport canvas:not(.map-large canvas){width:min(100%,calc(100dvh * 1.777778));}
  #gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc(100dvh * .872727));}
+ /* Reported: on the desktop the MAP button relabelled to MAP: LARGE and then
+    did nothing - the plain canvas width rule above carries an id and outranked
+    the .map-large rule in style.css, so the button could never enlarge the
+    field. The zoomed canvas is deliberately wider than the viewport: the
+    map viewport scrolls, exactly like the phone path. */
+ #gameView .map-viewport.map-large canvas{width:max(760px,200%);max-width:none;height:auto}
 }
 
 /* No flag beside the field menu any more, so the status row gets the width back. */

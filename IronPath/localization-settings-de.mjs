@@ -20,7 +20,6 @@ export const germanSettings = Object.freeze({
   'FULLSCREEN': 'VOLLBILD',
   'EXIT FULLSCREEN': 'VOLLBILD BEENDEN',
   'PLAY THE FIRST RUN AGAIN': 'DEN ERSTEN EINSATZ NEU SPIELEN',
-  'Preview: some content is still English.': 'Vorschau: Einige Inhalte sind noch auf Englisch.',
   'Sound, graphics and the first run ask for confirmation before anything changes.':
     'Ton, Grafik und der erste Einsatz fragen nach, bevor sich etwas ändert.',
 
