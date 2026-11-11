@@ -6,7 +6,7 @@
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": "auth != null && auth.uid === $uid && newData.exists()",
-        ".validate": "newData.hasChildren(['name', 'gender', 'xp']) && (!data.child('campaign').exists() || newData.child('campaign').exists()) && (!data.child('storyProgress').exists() || newData.child('storyProgress').exists()) && (!data.child('storyCampaign').exists() || newData.child('storyCampaign').exists()) && (!data.child('workshop').exists() || newData.child('workshop').exists()) && (!data.child('soloWorkshopReceipts').exists() || newData.child('soloWorkshopReceipts').exists()) && (!data.child('coopRewards').exists() || newData.child('coopRewards').exists())",
+        ".validate": "newData.hasChildren(['name', 'gender', 'xp']) && (!data.child('campaign').exists() || newData.child('campaign').exists()) && (!data.child('storyProgress').exists() || newData.child('storyProgress').exists()) && (!data.child('storyCampaign').exists() || newData.child('storyCampaign').exists()) && (!data.child('workshop').exists() || newData.child('workshop').exists()) && (!data.child('soloWorkshopReceipts').exists() || newData.child('soloWorkshopReceipts').exists()) && (!data.child('coopRewards').exists() || newData.child('coopRewards').exists()) && (!data.child('endlessRuns').exists() || newData.child('endlessRuns').exists()) && (!data.child('endlessWaves').exists() || newData.child('endlessWaves').exists()) && (!data.child('endlessBosses').exists() || newData.child('endlessBosses').exists()) && (!data.child('endlessBestSector').exists() || newData.child('endlessBestSector').exists())",
         "name": {
           ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && (!data.exists() || newData.val() === data.val())"
         },
@@ -79,6 +79,18 @@
         },
         "storyCampaign": {
           ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 1 && newData.val() <= 9"
+        },
+        "endlessRuns": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 1000000 && (!data.exists() ? newData.val() <= 1 : newData.val() >= data.val())"
+        },
+        "endlessWaves": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 10000000 && (!data.exists() ? newData.val() <= 10000 : newData.val() >= data.val())"
+        },
+        "endlessBosses": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 1000000 && (!data.exists() ? newData.val() <= 1000 : newData.val() >= data.val())"
+        },
+        "endlessBestSector": {
+          ".validate": "newData.isNumber() && newData.val() % 1 === 0 && newData.val() >= 0 && newData.val() <= 4 && (!data.exists() ? newData.val() <= 4 : newData.val() >= data.val())"
         }
       }
     },

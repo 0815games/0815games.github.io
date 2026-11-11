@@ -49,3 +49,25 @@ test('workshop profile writes still pass the publish file',async()=>{const p=ref
  await assertSucceeds(update(p,{workshop:'w1:1'}));
  assert.equal((await get(p)).val().workshop,'w1:1');
  await assertFails(update(p,{workshop:''}));});
+test('publish file accepts the endless record fields, monotonic and capped',async()=>{const p=ref(alice,'players/alice');
+ // The endless launch dialog's record: one client-reported transaction per
+ // finished free-play run (runs, waves, bosses, best sector).
+ await assertSucceeds(runTransaction(p,v=>({...v,endlessRuns:(v.endlessRuns||0)+1,endlessWaves:(v.endlessWaves||0)+7,endlessBosses:(v.endlessBosses||0)+1,endlessBestSector:Math.max(v.endlessBestSector||0,2)}),{applyLocally:false}));
+ const after=(await get(p)).val();
+ assert.equal(after.endlessRuns,1);assert.equal(after.endlessWaves,7);assert.equal(after.endlessBosses,1);assert.equal(after.endlessBestSector,2);
+ assert.equal(after.xp,900);assert.equal(after.campaign,3); // untouched by the stats write
+ // Decreasing any stat is rejected (monotonic like storyProgress).
+ await assertFails(update(p,{endlessRuns:0}));
+ await assertFails(update(p,{endlessWaves:6}));
+ await assertFails(update(p,{endlessBosses:0}));
+ await assertFails(update(p,{endlessBestSector:1}));
+ // Non-integer or out-of-band values are rejected.
+ await assertFails(update(p,{endlessBosses:1.5}));
+ await assertFails(update(p,{endlessBestSector:5}));
+ await assertFails(update(p,{endlessWaves:null}));
+ // First-write sanity caps: a brand-new field cannot arrive pre-inflated.
+ await assertFails(update(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0,endlessRuns:2}));
+ await assertSucceeds(update(ref(bob,'players/bob'),{name:'Bob',gender:'male',xp:0,endlessRuns:1,endlessWaves:10000,endlessBosses:1000,endlessBestSector:4}));
+ // The $other catch-all still rejects unknown fields.
+ await assertFails(update(p,{somethingNew:1}));
+});

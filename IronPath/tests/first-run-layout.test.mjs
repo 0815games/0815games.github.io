@@ -271,7 +271,9 @@ test('the coach can be reopened after it was dismissed', () => {
   // thing, because two paths drift apart (the old one replayed the retired modal).
   const game = readFileSync(resolve(root, 'game.js'), 'utf8');
   const show = game.slice(game.indexOf('showTutorial:()=>'), game.indexOf('showTutorial:()=>') + 420);
-  assert.match(show, /coach\.replay/, 'the field tutorial action replays the coach');
+  // Stufe 1: the coach is feature-gated, so the replay is optional-chained -
+  // with the flag off the action falls through to the tutorial replay.
+  assert.match(show, /coach\?\.replay/, 'the field tutorial action replays the coach');
   assert.match(readFileSync(resolve(root, 'field-menu.mjs'), 'utf8'), /fieldCoachReplay/,
     'and the field menu offers it in-match');
   assert.match(html, /id="fieldCoachReplay"/);
