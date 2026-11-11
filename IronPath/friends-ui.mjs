@@ -1,11 +1,11 @@
 import {loadFriendStats} from './friend-stats.mjs?v=20261107-balance1';
 import {renderFriendIndicators} from './friend-indicator.mjs?v=20261104-friendbadge1';
 import {createFriendPresence} from './friend-presence.mjs?v=20261104-presence1';
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-markers1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261112-friendpurge1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createSocialNotifications} from './social-notifications.mjs?v=20261112-markers1';
+import {createSocialNotifications} from './social-notifications.mjs?v=20261112-friendpurge1';
 import {createCoopInvites} from './coop-invites.mjs?v=20261104-invites1';
-import {createFriendService} from './friends.mjs?v=20261104-autosearch1';
+import {createFriendService} from './friends.mjs?v=20261112-friendpurge1';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto}){
  const $=id=>document.getElementById(id),dialog=$('friendsDialog');let generation=0,service=null,unsubscribe=null,busy=false,next=null,searchName='',invitations={},inviteService=null,stopInvites=null,stopRequests=null,indexPromise=null,indexSession=0,requestCount=0,requestUnavailable=false,presence=null,presenceStops=new Map(),presenceStates=new Map(),presenceLabels=new Map(),statsId=null,statsGeneration=0,statsData=null,statsName='',lastFriendData=null,searchRows=[],lastMessage={text:'',values:{}};
  const popup=createSocialNotifications({document,container:$('socialPopup'),title:$('socialPopupTitle'),body:$('socialPopupBody'),openButton:$('socialPopupOpen'),dismissButton:$('socialPopupDismiss'),onOpen:()=>open()});
@@ -24,7 +24,7 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
  function renderInvites(){const list=$('coopInviteList');list.replaceChildren();for(const [id,invite] of Object.entries(invitations)){if(!invite||typeof invite.name!=='string'||!/^\d{4}$/.test(invite.code)||!/^[a-f0-9]{32}$/.test(invite.partyId))continue;const item=document.createElement('li'),text=document.createElement('div'),name=document.createElement('strong'),detail=document.createElement('span'),join=document.createElement('button'),decline=document.createElement('button');name.textContent=invite.name;detail.textContent=tr('Invited you to a party · expires after 30 minutes');text.append(name,detail);join.type=decline.type='button';join.textContent=tr('JOIN');decline.textContent=tr('DECLINE');join.onclick=()=>action(async current=>{if(await joinInvite(invite)){await inviteService.dismiss(id).catch(()=>{});if(current())reset();}else if(current())message('Join cancelled or unavailable. Leave your current party, or ask for a fresh invitation.');});decline.onclick=()=>action(async current=>{await inviteService.dismiss(id);if(current())message('Invitation declined.');});item.append(text,join,decline);list.append(item);}$('coopInvitesEmpty').hidden=list.children.length>0;}
  function indexAccount(){
   if(indexPromise)return indexPromise;const current=indexSession,profile=getProfile();if(!profile||!auth.currentUser)return Promise.resolve(false);
-  indexPromise=Promise.resolve().then(()=>createFriendService({db,auth,sdk,crypto}).ensureSearchListing(profile.name)).then(()=>{if(current===indexSession)$('friendIndexError').hidden=true;return true;}).catch(()=>{if(current===indexSession){$('friendIndexError').hidden=false;if(dialog.open)message('Could not update your player search listing. Retry when connected.');}return false;}).finally(()=>{if(current===indexSession)indexPromise=null;});return indexPromise;
+  indexPromise=Promise.resolve().then(()=>createFriendService({db,auth,sdk,crypto}).ensureSearchListing(profile.name)).then(()=>{if(current===indexSession)$('friendIndexError').hidden=true;return true;}).catch(error=>{if(current===indexSession){$('friendIndexError').hidden=false;if(dialog.open)message(error?.message||'Could not update your player search listing. Retry when connected.');}return false;}).finally(()=>{if(current===indexSession)indexPromise=null;});return indexPromise;
  }
  function start(){void presence?.stop();presence=null;clearPresenceWatches();try{presence=createFriendPresence({db,auth,sdk,crypto});}catch{}stopInvites?.();stopRequests?.();indexSession++;indexPromise=null;invitations={};popup.reset();const session=indexSession,uid=auth.currentUser?.uid;requestCount=0;requestUnavailable=false;indicators();stopRequests=sdk.onValue(sdk.ref(db,`friendships/${uid}`),snapshot=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;const edges=snapshot.val()||{},pending=Object.entries(edges).filter(([,edge])=>edge?.status==='pending');const count=pending.length;requestCount=count;requestUnavailable=false;indicators();},()=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;requestUnavailable=true;indicators();});inviteService=createCoopInvites({db,auth,sdk});stopInvites=inviteService.watch(values=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;invitations=values;const fresh=Object.entries(values).filter(([,v])=>v&&typeof v.name==='string'&&/^\d{4}$/.test(v.code)&&/^[a-f0-9]{32}$/.test(v.partyId)&&Number.isFinite(v.createdAt)&&v.createdAt>=Date.now()-1800000);popup.update('invites',fresh.map(([id,v])=>({key:JSON.stringify([id,v.partyId,v.createdAt]),name:v.name})),{suppress:dialog.open});const count=Object.keys(values).length;$('inviteNotification').hidden=!count;indicators();renderInvites();},()=>{if(session===indexSession&&auth.currentUser?.uid===uid&&dialog.open)message('Could not load invitations. Check your connection.');});void indexAccount();}
  function signOut(){void presence?.stop();presence=null;clearPresenceWatches();popup.reset();indexSession++;indexPromise=null;stopInvites?.();stopInvites=null;stopRequests?.();stopRequests=null;requestCount=0;requestUnavailable=false;inviteService=null;invitations={};indicators();$('inviteNotification').hidden=true;$('friendIndexError').hidden=true;reset({clearInput:true});}
@@ -52,6 +52,13 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
   if(!auth.currentUser||!getProfile())return;popup.clear();reset();const current=generation;dialog.showModal();message('Connecting…');
   try{service=createFriendService({db,auth,sdk,crypto});unsubscribe=service.watch(render,()=>{if(current===generation){closeStats();message('Could not load friends. Check your connection and published rules.');}});void indexAccount().then(ok=>{if(current===generation&&ok)message('Search for a soldier by name.');});}catch{message('Could not open friends. Check your connection.');}
  }
+ // Character deletion: the friends data goes with the soldier (see purge in
+ // friends.mjs). A fresh service is enough - deletion does not need the
+ // watches or the dialog, and it must work before the dialog ever opened.
+ async function purge(){
+  if(!auth.currentUser)return {edges:0,outgoing:0,failed:0};
+  try{return await createFriendService({db,auth,sdk,crypto}).purge();}catch{return {edges:0,outgoing:0,failed:1};}
+ }
  $('menuFriends').onclick=open;$('lobbyFriends').onclick=open;$('inviteNotification').onclick=open;
  function closeFriends(){if(busy){message('Please wait for the current action to finish.');return;}reset();}
  $('friendsClose').onclick=closeFriends;dialog.addEventListener('cancel',event=>{event.preventDefault();closeFriends();});bindDialogBackdrop(dialog,closeFriends);
@@ -63,5 +70,5 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
 
  }
  $('friendSearch').onclick=()=>action(current=>search(current,false));$('friendMore').onclick=()=>action(current=>search(current,true));
- return {reset,start,signOut,open};
+ return {reset,start,signOut,open,purge};
 }

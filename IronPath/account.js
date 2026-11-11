@@ -3,32 +3,32 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261112-markers1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-avatar1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-markers1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-friendpurge1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-markers1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-friendpurge1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261112-markers1';
-import {createCommandCenter} from './command-center.mjs?v=20261112-markers1';
+import {setupFriends} from './friends-ui.mjs?v=20261112-friendpurge1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-friendpurge1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-markers1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-friendpurge1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-markers1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-markers1';
 import {missingPrestige} from './prestige.mjs?v=20261112-markers1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-markers1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-markers1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-friendpurge1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261112-markers1';
+import {setupAuthForm} from './auth-form.mjs?v=20261112-friendpurge1';
 import {serviceMedals} from './service-record.mjs?v=20261107-balance1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-markers1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-friendpurge1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
@@ -38,16 +38,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-markers1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-friendpurge1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-markers1';
+import { startGame } from './game.js?v=20261112-friendpurge1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-markers1';
 import { createPlayer } from './match.mjs?v=20261112-markers1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-markers1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-avatar3';
 import { avatarPortrait } from './avatar-art.mjs?v=20261112-avatar3';
-import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-markers1';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-markers1';
+import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-friendpurge1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-friendpurge1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
@@ -165,10 +165,16 @@ $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogo
 // swaps the view on its own; the social nodes are cleaned up best-effort.
 async function deleteCharacter(){
  if(!user||!profile)return;
- const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, all progress, gear and endless records are erased. The account itself stays and you can enlist a new soldier right away.',accept:'DELETE'});
+ const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, all progress, gear, endless records and friend links are erased. Your friends keep their accounts; the character leaves their lists. The account itself stays and you can enlist a new soldier right away.',accept:'DELETE'});
  if(!confirmed)return;
  try{await remove(ref(db,`players/${user.uid}`));}catch(e){message(errorText(e));return;}
- void Promise.allSettled([remove(ref(db,`friendNames/${user.uid}`)),remove(ref(db,`friendships/${user.uid}`)),remove(ref(db,`coopInvites/${user.uid}`))]);
+ // The friend data goes with the soldier: the own list is emptied and the
+ // character leaves everyone else's lists (friends.mjs purge - both edge
+ // directions, the search listing and the request trails). Degrades silently
+ // while the rules for those paths are not published; the paths above never
+ // depended on them.
+ void friendsUI.purge().catch(()=>{});
+ void Promise.allSettled([remove(ref(db,`coopInvites/${user.uid}`))]);
  try{localStorage.removeItem(AVATAR_STORAGE_KEY);}catch{/* The mirror is optional. */}
  const nameField=$('soldierName');if(nameField)nameField.value='';
  recruitScreen.reset();

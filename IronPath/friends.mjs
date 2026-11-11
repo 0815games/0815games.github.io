@@ -30,7 +30,14 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
  // Called when an account loads, not when the Friends dialog is opened.
  async function ensureSearchListing(name){
   const key=friendNameKey(name),code=await ensureCode(name),old=await read(`friendPrivate/${uid}/searchKey`);
-  if(old&&old!==key)throw Error('Your search listing cannot be updated.');
+  if(old&&old!==key){
+    // The soldier was deleted and the account enlisted again under a new
+    // name. The private search key is create-only under the rules, so it
+    // cannot move: take the old listing down (nobody should find the deleted
+    // character by name) and name the limitation instead of failing cryptically.
+    try{await remove(`friendNames/${old}/${uid}`);}catch{/* Best effort: without rules the listing is unreachable anyway. */}
+    throw Error('Friend search keeps one soldier name per account. After deleting a character, share your friend code instead.');
+  }
   if(!old){try{await set(`friendPrivate/${uid}/searchKey`,key);}catch(error){if(await read(`friendPrivate/${uid}/searchKey`)!==key)throw error;}}
   await set(`friendNames/${key}/${uid}`,{name,code});
  }
@@ -39,6 +46,26 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   const snap=await sdk.get(q);check();const raw=snap.val()||{},ids=[];snap.forEach(child=>{ids.push(child.key);});const matches=[];
   for(const id of ids){const item=raw[id];try{if(id!==uid&&typeof item?.name==='string'&&friendNameKey(item.name)===key&&codePattern.test(item.code))matches.push({id,name:item.name,code:item.code});}catch{}}
   return {matches,next:ids.length===30?ids.at(-1):null};
+ }
+ // Character deletion takes the friend data with the soldier: the own list is
+ // emptied AND the character leaves everyone else's lists. The rules let
+ // either side of an edge remove it, so my edges on other people's nodes go
+ // too. What stays, by rule design: their outgoing records about me are
+ // owner-only and degrade to "Request no longer active" until they clear
+ // them, and friendCodes/friendPrivate are create-only - the code keeps
+ // resolving to this account, which is exactly what lets a re-enlisted
+ // soldier reuse it instead of colliding with a dead entry.
+ async function purge(){
+  const [privateData,incoming,outgoing]=await Promise.all([read(`friendPrivate/${uid}`),read(`friendships/${uid}`),read(`friendOutgoing/${uid}`)]);
+  const senders=Object.keys(incoming||{}),receivers=Object.keys(outgoing||{});
+  const searchKey=privateData&&typeof privateData.searchKey==='string'&&/^[a-f0-9]+$/.test(privateData.searchKey)?privateData.searchKey:null;
+  const results=await Promise.allSettled([
+    ...receivers.map(other=>remove(`friendships/${other}/${uid}`)),
+    remove(`friendships/${uid}`),
+    remove(`friendOutgoing/${uid}`),
+    ...(searchKey?[remove(`friendNames/${searchKey}/${uid}`)]:[]),
+  ]);
+  return {edges:senders.length,outgoing:receivers.length,failed:results.filter(r=>r.status==='rejected').length};
  }
  function watch(callback,onError){
   check();let closed=false,incoming={},outgoing={},edges={},edgeStops=new Map();
@@ -52,5 +79,5 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   },error);
   return ()=>{closed=true;unIn();unOut();for(const stop of edgeStops.values())stop();edgeStops.clear();};
  }
- return {ensureCode,send,ensureSearchListing,search,watch,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
+ return {ensureCode,send,ensureSearchListing,search,watch,purge,accept:sender=>set(`friendships/${uid}/${sender}/status`,'accepted'),removeIncoming:sender=>remove(`friendships/${uid}/${sender}`),removeOutgoing:async other=>{const edge=await read(`friendships/${other}/${uid}`);if(edge)await remove(`friendships/${other}/${uid}`);await remove(`friendOutgoing/${uid}/${other}`);}};
 }

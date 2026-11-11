@@ -163,7 +163,8 @@ export const germanMoreStatic=Object.freeze({
   "DELETE CHARACTER": "CHARAKTER LÖSCHEN",
   "The passwords do not match. Please type them again.": "Die Passwörter stimmen nicht überein. Bitte gib sie erneut ein.",
   "Delete character?": "Charakter löschen?",
-  "Your soldier, all progress, gear and endless records are erased. The account itself stays and you can enlist a new soldier right away.": "Dein Soldat, der gesamte Fortschritt, die Ausrüstung und die Endlos-Rekorde werden gelöscht. Das Konto selbst bleibt und du kannst sofort einen neuen Soldaten anwerben.",
+  "Your soldier, all progress, gear, endless records and friend links are erased. Your friends keep their accounts; the character leaves their lists. The account itself stays and you can enlist a new soldier right away.": "Dein Soldat, der gesamte Fortschritt, die Ausrüstung, die Endlos-Rekorde und die Freundschaftsverbindungen werden gelöscht. Die Konten deiner Freunde bleiben; der Charakter verschwindet aus ihren Listen. Das Konto selbst bleibt und du kannst sofort einen neuen Soldaten anwerben.",
+  "Friend search keeps one soldier name per account. After deleting a character, share your friend code instead.": "Die Freundessuche behält einen Soldatennamen pro Konto. Teile nach dem Löschen eines Charakters stattdessen deinen Freundescode.",
   "DELETE": "LÖSCHEN",
   "Character deleted.": "Charakter gelöscht.",
 });
