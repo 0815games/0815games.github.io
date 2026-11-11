@@ -27,10 +27,15 @@ test('every mission resolves valid objectives on its generated field',()=>{
       assert.ok(map.pads.every(p=>Math.hypot(p.x-stage.x,p.y-stage.y)>56),`${mission.id}: ${stage.label} avoids build pads`);
       if(stage.type!=='escort')held++;
     }
-    // Protected assets and hold points must not collapse onto one spot.
+    // Protected assets and hold points must not collapse onto one spot -
+    // except a deliberate one-camp pair: a setup stage and the protect stage
+    // of the SAME site share one named anchor (The List's dressing station IS
+    // the field hospital), so identical points are the design, not a collapse.
     const points=mission.stages.filter(s=>Number.isFinite(s.x));
-    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++)
-      assert.ok(Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)>=90||held<2,`${mission.id}: objectives are spread out`);
+    for(let i=0;i<points.length;i++)for(let j=i+1;j<points.length;j++){
+      const oneCamp=j===i+1&&points[i].x===points[j].x&&points[i].y===points[j].y&&points[j].type==='protect';
+      assert.ok(oneCamp||Math.hypot(points[i].x-points[j].x,points[i].y-points[j].y)>=90||held<2,`${mission.id}: objectives are spread out`);
+    }
   }
 });
 
