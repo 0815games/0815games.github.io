@@ -462,30 +462,51 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
 
 /* Recruiting office: character creation as an event (2026-11 avatar build). */
 #characterView{padding:0}
-.recruit-stage{position:relative;display:grid;justify-items:center;padding:18px 14px 26px;overflow:hidden}
-.recruit-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.82) brightness(.48)}
-.recruit-card{position:relative;width:min(560px,100%);background:linear-gradient(165deg,#f4e8c8,#e7d7ae 60%,#dcc998);border:2px solid #849270;border-radius:10px;box-shadow:0 18px 40px rgba(10,14,8,.55),inset 0 1px 0 #fff8dd;padding:18px 20px 22px}
-.recruit-hero{display:flex;gap:18px;align-items:flex-start;margin:12px 0 6px;flex-wrap:wrap}
-.recruit-avatar-frame{flex:0 0 168px;width:168px;height:168px;border-radius:50%;border:4px solid #617c50;box-shadow:0 6px 16px rgba(20,24,14,.4),inset 0 0 0 3px #d9c69a;overflow:hidden;background:#d9c69a}
-#avatarPreview{display:block;width:100%;height:100%}
-.recruit-tag-slot{flex:1 1 200px;min-width:180px;max-width:280px;filter:drop-shadow(0 10px 14px rgba(15,18,10,.45))}
-#recruitTag{display:block;width:100%;height:auto}
-.recruit-options{display:grid;gap:9px;margin:12px 0 2px}
-.recruit-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center}
+/* ── Recruiting office (Musterung) ───────────────────────────────────────────
+   One desk, two halves: the rendered portrait and the stamped dog tag sit
+   beside the form on a wide screen and stay pinned at the top on a phone -
+   the preview never leaves the screen while a look is tapped (reported:
+   "wenn man Änderungen drauf drückt, kann man's oben nicht sehen"). The
+   office is one deliberate scene, not a floating window over mystery
+   content (reported for desktop). */
+.entry.recruiting{max-width:min(1120px,100%);margin:4vh auto}
+@font-face{font-family:'Black Ops One';src:url('assets/fonts/black-ops-one.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+.recruit-stage{position:relative;display:grid;justify-items:center;padding:22px 14px 32px;overflow:hidden;min-height:62vh}
+.recruit-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) brightness(.5)}
+.recruit-card{position:relative;width:min(1080px,100%);background:linear-gradient(165deg,#f4e8c8,#e7d7ae 60%,#dcc998);border:2px solid #849270;border-radius:12px;box-shadow:0 18px 40px rgba(10,14,8,.55),inset 0 1px 0 #fff8dd;padding:20px 22px 24px;display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:24px}
+.recruit-visual{position:sticky;top:12px;align-self:start;display:grid;gap:16px;justify-items:center;background:linear-gradient(180deg,rgba(24,32,20,.55),rgba(24,32,20,.28));border:1px solid rgba(132,146,112,.55);border-radius:12px;padding:16px 14px}
+.recruit-avatar-frame{width:min(232px,56vw);aspect-ratio:1;border-radius:14px;border:4px solid #617c50;box-shadow:0 8px 18px rgba(20,24,14,.45);overflow:hidden;background:#243020}
+.recruit-avatar-frame img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.recruit-tag-slot{width:min(240px,66vw);filter:drop-shadow(0 10px 14px rgba(15,18,10,.45))}
+.recruit-tag-slot canvas{width:100%;height:auto;display:block}
+.recruit-options{display:grid;gap:12px;margin:14px 0 2px}
+.recruit-row{display:grid;gap:7px}
 .recruit-row-label{font-size:11px;letter-spacing:.14em;color:#50654a}
-.recruit-choices{display:flex;flex-wrap:wrap;gap:6px}
-.recruit-choice{font:600 12px/1 Georgia,serif;letter-spacing:.04em;background:#fff4d5;color:#344832;border:2px solid #849270;border-radius:4px;padding:6px 9px;cursor:pointer;box-shadow:1px 2px 0 #9b9b72}
+.recruit-choices{display:flex;flex-wrap:wrap;gap:8px}
+.recruit-choice{font:600 12.5px/1 Georgia,serif;letter-spacing:.04em;background:#fff4d5;color:#344832;border:2px solid #849270;border-radius:4px;padding:8px 12px;cursor:pointer;box-shadow:1px 2px 0 #9b9b72}
 .recruit-choice[aria-checked="true"]{border-color:#3f5a37;background:#cfe0b8;box-shadow:inset 0 0 0 1px #3f5a37}
-.recruit-swatch{width:26px;height:26px;padding:0;border-radius:50%;border:2px solid rgba(52,72,50,.55)}
-.recruit-swatch[aria-checked="true"]{outline:3px solid #b86643;outline-offset:1px}
-.recruit-flavor{margin:6px 0 0;font:italic 600 12.5px/1.35 Georgia,serif;color:#6b5a34}
-.recruit-tools{margin:10px 0 0;display:flex;justify-content:flex-end}
+.recruit-looks{gap:10px}
+.recruit-look{width:88px;aspect-ratio:3/4;border-radius:8px;border:2px solid #849270;background-size:cover;background-position:center 18%;cursor:pointer;box-shadow:1px 2px 0 #9b9b72;padding:0}
+.recruit-look[aria-checked="true"]{outline:3px solid #b86643;outline-offset:2px;border-color:#3f5a37}
+.recruit-flavor{margin:8px 0 0;font:italic 600 12.5px/1.35 Georgia,serif;color:#6b5a34}
+.recruit-tools{margin:12px 0 0;display:flex;justify-content:flex-end}
 .recruit-actions{display:flex;gap:10px;margin-top:12px}
 .recruit-actions .primary{flex:1}
 .enlist-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0;pointer-events:none;font:900 clamp(22px,5vw,34px)/1.05 Georgia,serif;letter-spacing:.06em;color:#af674a;border:5px double #af674a;border-radius:10px;padding:8px 18px;background:rgba(244,232,200,.25);text-transform:uppercase;mix-blend-mode:multiply;z-index:3}
 .enlist-stamp.stamped{animation:enlist-slam .5s cubic-bezier(.2,1.4,.4,1) forwards}
 @keyframes enlist-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(3.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(.94)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}}
 .recruit-card.stamped{animation:paper-hit .5s cubic-bezier(.2,1.4,.4,1)}
-@keyframes paper-hit{0%{transform:none}30%{transform:translate(2px,3px) rotate(.6deg)}60%{transform:translate(-2px,-1px) rotate(-.4deg)}100%{transform:none}}
 @media (prefers-reduced-motion:reduce){.enlist-stamp.stamped{animation:none;opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}.recruit-card.stamped{animation:none}}
-@media (max-width:560px){.recruit-row{grid-template-columns:78px 1fr}.recruit-hero{flex-direction:column;align-items:center}.recruit-tag-slot{flex-basis:auto}}
+@media (max-width:880px){
+ .entry.recruiting{margin:12px auto}
+ .recruit-card{grid-template-columns:1fr}
+ /* The preview column becomes a pinned bar: portrait and tag stay visible
+    while the (short) form scrolls underneath. */
+ .recruit-visual{position:sticky;top:0;z-index:5;grid-auto-flow:column;grid-template-columns:minmax(112px,140px) minmax(120px,1fr);justify-items:start;align-items:center;gap:12px;padding:10px 12px;background:linear-gradient(165deg,#f4e8c8,#e2d2a8);box-shadow:0 6px 14px rgba(15,18,10,.35)}
+ .recruit-avatar-frame{width:min(128px,34vw);border-width:3px;border-radius:10px}
+ .recruit-tag-slot{width:min(150px,42vw)}
+}
+
+/* The character-delete button in the command utilities reads as destructive. */
+.command-utilities .danger-utility{color:#d98c8c;border-color:#6e3c3c}
+.command-utilities .danger-utility:hover,.command-utilities .danger-utility:focus-visible{color:#f2b3b3;border-color:#8f4a4a}

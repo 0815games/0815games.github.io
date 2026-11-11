@@ -1,113 +1,178 @@
-// The dog tag, painted on canvas with its real ball chain - the way it hangs
-// on a soldier, not as a flat card. The data model stays in dog-tag.mjs (it
-// derives every line from the profile; nothing is stored here); this module is
-// the brush: two beaded strands that meet at the tag's hole, brushed metal,
-// stamped lines. Hi-DPI aware via the same ratio pattern the map uses.
-import {dogTag,DOG_TAG_BRAND} from './dog-tag.mjs?v=20261112-avatar1';
+// The dog tag as a photograph, not a drawing: a rendered blank tag image with
+// the soldier's own three lines stamped on in a military stencil font - name,
+// gender and the day service began (reported: "Dog Tag per Canvas sieht
+// einfach nur scheiße aus, auch Bild-Rendering und dann die Military-Font
+// drauf schreiben").
+//
+// The plate's position inside the photo is not hardcoded: it is detected from
+// the pixels (the largest bright, low-saturation blob) once the image has
+// loaded, so a re-rendered photo with a different crop still gets its stamp
+// in the right place. Until the photo and the stencil font have arrived, a
+// clean fallback plate is drawn and the canvas repaints the moment they land
+// - the same "draw now, refine when the image lands" contract the map uses.
+import {translateText as tr} from './language.mjs?v=20261112-avatar2';
 
-// One beaded strand from (x1,y1) to (x2,y2): a slight sag, then the beads.
-function drawBallChain(ctx,x1,y1,x2,y2,bead=3.4,sag=4){
-  const steps=Math.max(4,Math.round(Math.hypot(x2-x1,y2-y1)/(bead*1.4)));
-  for(let i=0;i<=steps;i++){
-    const t=i/steps;
-    const x=x1+(x2-x1)*t;
-    const y=y1+(y2-y1)*t+Math.sin(t*Math.PI)*sag;
-    const light=.45+.3*Math.sin(t*9); // alternating bead sheen
-    ctx.beginPath();ctx.arc(x,y,bead,0,Math.PI*2);
-    ctx.fillStyle=`rgba(${Math.round(196+light*30)},${Math.round(186+light*28)},${Math.round(150+light*26)},1)`;
-    ctx.fill();
-    ctx.beginPath();ctx.arc(x-bead*.3,y-bead*.3,bead*.34,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,250,225,${.28+light*.3})`;ctx.fill();
+const TAG_ASSET='assets/dog-tag-plate.jpg?v=20261112-avatar2';
+const STENCIL='"Black Ops One","Arial Black",Impact,sans-serif';
+const FALLBACK_PLATE=Object.freeze({x:.2,y:.34,w:.6,h:.4});
+
+const cache={image:null,ready:false,failed:false,plate:null,redraws:new Set()};
+
+function notify(){
+  for(const redraw of [...cache.redraws]){
+    try{redraw();}catch{/* A repaint must never throw into the image load. */}
   }
-  // The connecting wire the beads ride on, visible in the gaps.
-  ctx.strokeStyle='rgba(96,88,64,.55)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo((x1+x2)/2,(y1+y2)/2+sag,x2,y2);ctx.stroke();
 }
 
-// Stamp a line of engraved text: dark imprint plus a bottom highlight, the way
-// pressed metal reads.
-function stampText(ctx,text,x,y,size,spacing=1.4){
-  ctx.save();
-  ctx.font=`700 ${size}px Georgia,serif`;
+// Starts loading the tag photo and the stencil font exactly once.
+function loadAssets(document){
+  if(cache.image||cache.loading)return;
+  const image=typeof document?.createElement==='function'?document.createElement('img'):null;
+  if(!image){cache.failed=true;return;}
+  cache.loading=true;
+  image.onload=()=>{
+    cache.image=image;
+    cache.plate=detectPlate(image,document)||FALLBACK_PLATE;
+    cache.ready=true;
+    notify();
+  };
+  image.onerror=()=>{cache.failed=true;};
+  image.src=TAG_ASSET;
+  try{
+    document.fonts?.load(`16px ${STENCIL}`)?.then(()=>notify())?.catch(()=>{});
+  }catch{/* No font API: the stack falls back to Arial Black / Impact. */}
+}
+
+// The plate is the largest bright, low-saturation connected region - bigger
+// than any chain bead, unlike the beads not part of a thin strand.
+function detectPlate(image,document){
+  try{
+    const w=96,h=96;
+    const canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    if(!ctx||!ctx.getImageData)return null;
+    ctx.drawImage(image,0,0,w,h);
+    const {data}=ctx.getImageData(0,0,w,h);
+    const bright=new Uint8Array(w*h);
+    for(let i=0,p=0;i<data.length;i+=4,p++){
+      const r=data[i],g=data[i+1],b=data[i+2];
+      const max=Math.max(r,g,b),min=Math.min(r,g,b);
+      if(max>110&&max-min<46)bright[p]=1;
+    }
+    let best=null;
+    const seen=new Uint8Array(w*h);
+    for(let p=0;p<w*h;p++){
+      if(!bright[p]||seen[p])continue;
+      // Flood fill one bright blob, remembering its bounds and size.
+      const queue=[p];seen[p]=1;
+      let minX=w,minY=h,maxX=0,maxY=0,count=0;
+      while(queue.length){
+        const q=queue.pop();count++;
+        const x=q%w,y=(q-x)/w;
+        if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;
+        const neighbours=[q-1,q+1,q-w,q+w];
+        for(const n of neighbours){
+          if(n<0||n>=w*h||seen[n]||!bright[n])continue;
+          // Left/right neighbours must stay on the same row.
+          if((n===q-1&&x===0)||(n===q+1&&x===w-1))continue;
+          seen[n]=1;queue.push(n);
+        }
+      }
+      if(!best||count>best.count)best={count,minX,minY,maxX,maxY};
+    }
+    if(!best||best.count<w*h*0.08)return null;
+    return {x:best.minX/w,y:best.minY/h,w:(best.maxX-best.minX+1)/w,h:(best.maxY-best.minY+1)/h};
+  }catch{return null;}
+}
+
+// The three lines the player dictated: name, gender, service start date.
+export function tagLines(profile={}){
+  const name=String(profile.name||'UNKNOWN').slice(0,24).toUpperCase();
+  const gender=profile.gender==='male'?'M':'F';
+  let date='—';
+  if(typeof profile.enlisted==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(profile.enlisted))
+    date=`${profile.enlisted.slice(8,10)}.${profile.enlisted.slice(5,7)}.${profile.enlisted.slice(0,4)}`;
+  return {name,gender,date};
+}
+
+// Stamps one line in the embossed stencil look: dark imprint, thin light
+// edge underneath, like a machine hit the plate.
+function stampLine(ctx,text,x,y,px){
   ctx.textAlign='center';ctx.textBaseline='middle';
-  ctx.fillStyle='rgba(28,26,20,.88)';
-  ctx.fillText(spaced(text,spacing),x,y+size*.06);
-  ctx.fillStyle='rgba(233,225,190,.30)';
-  ctx.fillText(spaced(text,spacing),x,y+size*.06+1);
-  ctx.restore();
-}
-function spaced(text,spacing){
-  if(!text)return text;
-  return String(text).split('').join('\u2009'.repeat(Math.max(0,Math.round(spacing))));
+  try{ctx.letterSpacing=Math.round(px*0.08)+'px';}catch{/* Older canvases: no spacing. */}
+  ctx.font=`${px}px ${STENCIL}`;
+  ctx.fillStyle='rgba(255,255,255,.34)';
+  ctx.fillText(text,x,y+Math.max(1,px*0.05));
+  ctx.fillStyle='#23231f';
+  ctx.fillText(text,x,y);
+  try{ctx.letterSpacing='0px';}catch{}
 }
 
-// Draw the worn tag. `size` is the canvas edge; the tag occupies the lower
-// two thirds, the chain hangs from the top edge into the hole.
-export function drawDogTagArt(ctx,size,data,{rotation=-.06}={}){
-  if(!ctx||!Number.isFinite(size)||size<=0)return;
-  const tag=dogTag(data);
-  const s=size/100;
-  ctx.save();
-  ctx.scale(s,s);
-  // Chain: both strands drop in from the top corners and meet at the tag hole.
-  const hole={x:50,y:33};
-  drawBallChain(ctx,26,-6,hole.x,hole.y,3.1,5);
-  drawBallChain(ctx,74,-6,hole.x,hole.y,3.1,5);
-  // A short loop through the hole itself.
-  ctx.strokeStyle='rgba(120,110,80,.8)';ctx.lineWidth=1.6;
-  ctx.beginPath();ctx.arc(hole.x,hole.y-1.5,2.6,Math.PI*.1,Math.PI*.9);ctx.stroke();
+function drawCover(ctx,size,image){
+  const ratio=Math.max(size/image.width,size/image.height);
+  const w=image.width*ratio,h=image.height*ratio;
+  ctx.drawImage(image,(size-w)/2,(size-h)/2,w,h);
+}
 
-  ctx.translate(50,64);ctx.rotate(rotation);ctx.translate(-50,-64);
-  // Tag plate: rounded rectangle with a corner cut at the hole.
-  const plate='#b7a86f';
+// The interim plate: plain brushed metal, corner hole, short chain stub - a
+// clean placeholder until the photo asset lands, never the final look.
+function drawFallbackPlate(ctx,size){
+  const plate={x:size*FALLBACK_PLATE.x,y:size*FALLBACK_PLATE.y,w:size*FALLBACK_PLATE.w,h:size*FALLBACK_PLATE.h};
+  ctx.fillStyle='#2c2418';
+  ctx.fillRect(0,0,size,size);
+  ctx.strokeStyle='#8f948b';ctx.lineWidth=Math.max(2,size*0.012);
+  ctx.beginPath();ctx.moveTo(size/2,0);ctx.lineTo(plate.x+plate.w*0.32,plate.y+6);ctx.stroke();
+  const grad=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(plate.x,plate.y,plate.x+plate.w,plate.y+plate.h):null;
+  if(grad){grad.addColorStop(0,'#b9bdc0');grad.addColorStop(.5,'#cfd3d6');grad.addColorStop(1,'#a9adb0');ctx.fillStyle=grad;}
+  else ctx.fillStyle='#c6cacc';
+  const r=plate.h*0.18;
   ctx.beginPath();
-  ctx.moveTo(hole.x,30);
-  ctx.lineTo(72,37);ctx.lineTo(75,44);
-  ctx.lineTo(75,86);ctx.quadraticCurveTo(75,92,69,92);
-  ctx.lineTo(31,92);ctx.quadraticCurveTo(25,92,25,86);
-  ctx.lineTo(25,44);ctx.lineTo(28,37);ctx.closePath();
-  ctx.fillStyle='rgba(30,26,16,.35)';ctx.save();ctx.translate(1.6,2);ctx.fill();ctx.restore(); // drop shadow
-  ctx.fillStyle=plate;ctx.fill();
-  // Brushed metal: one broad light band and a darker rim.
-  ctx.save();ctx.clip();
-  ctx.fillStyle='rgba(255,248,214,.34)';ctx.beginPath();ctx.ellipse(38,58,26,34,-.5,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='rgba(70,60,34,.22)';ctx.beginPath();ctx.ellipse(70,80,16,26,-.5,0,Math.PI*2);ctx.fill();
-  ctx.restore();
-  ctx.strokeStyle='rgba(84,74,44,.9)';ctx.lineWidth=1.4;ctx.stroke();
-  // The hole gets its own grommet.
-  ctx.beginPath();ctx.arc(hole.x,hole.y,3.4,0,Math.PI*2);
-  ctx.fillStyle='#8f8352';ctx.fill();ctx.strokeStyle='rgba(60,52,30,.9)';ctx.lineWidth=1.2;ctx.stroke();
-  ctx.beginPath();ctx.arc(hole.x,hole.y,1.7,0,Math.PI*2);ctx.fillStyle='#1c1912';ctx.fill();
-
-  // Stamped lines: brand, NAME, serial, blood type row.
-  stampText(ctx,tag.brand,50,50,4.6,.6);
-  stampText(ctx,(tag.name||'UNKNOWN').toUpperCase(),50,60,9.5,1.2);
-  stampText(ctx,tag.serial,50,70,5.4,1.6);
-  const bottom=[tag.gender==='male'?'M':tag.gender==='female'?'F':null,tag.bloodType].filter(Boolean).join(' · ');
-  if(bottom)stampText(ctx,bottom,50,79,4.6,.6);
-  // Issue date, small, bottom edge.
-  stampText(ctx,tag.issued.text,50,86.5,3.8,.4);
-  ctx.restore();
-  return tag;
+  ctx.roundRect?ctx.roundRect(plate.x,plate.y,plate.w,plate.h,r):ctx.rect(plate.x,plate.y,plate.w,plate.h);
+  ctx.fill();
+  ctx.beginPath();ctx.arc(plate.x+plate.w*0.14,plate.y+plate.h/2,Math.max(2,plate.h*0.07),0,Math.PI*2);
+  ctx.fillStyle='#2c2418';ctx.fill();
 }
 
-// Replace a container's contents with the painted tag. Keeps the same contract
-// as dog-tag.mjs renderDogTag: returns the element, stores nothing, and the
-// canvas carries the aria-label so screen readers keep the full tag text.
-export function renderDogTagArt(document,container,data,{size=180,rotation=-.06,ratio}={}){
-  if(!container)return null;
-  const scale=Number.isFinite(ratio)?ratio:Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));
+// Draws the whole tag into a square canvas of `size` pixels. Returns the
+// stamped lines (also used for the accessible label).
+export function drawDogTagArt(ctx,size,data={},options={}){
+  if(!ctx||!Number.isFinite(size)||size<=0)return null;
+  const lines=tagLines(data.profile||{});
+  loadAssets(ctx.canvas?.ownerDocument??(typeof document!=='undefined'?document:null));
+  ctx.save();
+  if(cache.ready&&cache.image)drawCover(ctx,size,cache.image);
+  else drawFallbackPlate(ctx,size);
+  const plate=cache.plate||FALLBACK_PLATE;
+  const box={x:size*plate.x,y:size*plate.y,w:size*plate.w,h:size*plate.h};
+  const namePx=Math.min(box.w/(lines.name.length*0.72),box.h*0.34);
+  stampLine(ctx,lines.name,box.x+box.w/2,box.y+box.h*0.34,namePx);
+  stampLine(ctx,lines.gender,box.x+box.w/2,box.y+box.h*0.58,Math.max(9,namePx*0.6));
+  stampLine(ctx,lines.date,box.x+box.w/2,box.y+box.h*0.8,Math.max(9,namePx*0.52));
+  ctx.restore();
+  return lines;
+}
+
+// Mounts the tag as a labelled canvas inside a container, and repaints it
+// once the photo and the stencil font have finished loading.
+export function renderDogTagArt(document,container,data={},options={}){
+  if(!container||typeof document?.createElement!=='function')return null;
+  const size=Math.max(60,Number(options.size)||180);
   const canvas=document.createElement('canvas');
-  canvas.width=Math.round(size*scale);canvas.height=Math.round(size*scale*0.98);
   canvas.className='dog-tag-art';
-  const ctx=canvas.getContext&&canvas.getContext('2d');
-  let tag=null;
-  if(ctx){
-    tag=drawDogTagArt(ctx,canvas.width,data,{rotation});
-    canvas.setAttribute('role','img');
-    canvas.setAttribute('aria-label',`${tag.name} · ${DOG_TAG_BRAND} · ${tag.serial}`);
-    canvas.style.width='100%';canvas.style.maxWidth=`${size}px`;canvas.style.height='auto';
-  }
+  canvas.setAttribute('role','img');
+  const paint=()=>{
+    const ratio=Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));
+    const px=Math.round(size*ratio);
+    if(canvas.width!==px){canvas.width=px;canvas.height=px;}
+    canvas.style.width=size+'px';
+    canvas.style.height=size+'px';
+    const lines=drawDogTagArt(canvas.getContext&&canvas.getContext('2d'),px,data,options);
+    if(lines)canvas.setAttribute('aria-label',`${tr('Your dog tag')}: ${lines.name} · ${lines.gender} · ${lines.date}`);
+  };
+  paint();
+  const redraw=()=>{if(canvas.isConnected)paint();};
+  cache.redraws.add(redraw);
   container.replaceChildren(canvas);
   return canvas;
 }
