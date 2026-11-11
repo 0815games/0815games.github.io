@@ -4,6 +4,13 @@
 // einfach nur scheiße aus, auch Bild-Rendering und dann die Military-Font
 // drauf schreiben").
 //
+// The scene around the tag is cropped away (reported: "Können wir den
+// Hintergrund entfernen, das Holzfiguren, bzw nur die Dog Tag benutzen ohne
+// Hintergrund? So das es größer wird" - names ran past the small plate while
+// the wooden-figure backdrop ate the frame). The canvas shows the tag itself,
+// edge to edge, and every stamped line is shrunk to its measured width so a
+// name can never run past the plate again.
+//
 // The plate's position inside the photo is not hardcoded: it is detected from
 // the pixels (the largest bright, low-saturation blob) once the image has
 // loaded, so a re-rendered photo with a different crop still gets its stamp
@@ -14,7 +21,11 @@ import {translateText as tr} from './language.mjs?v=20261112-kits1';
 
 const TAG_ASSET='assets/dog-tag-plate.jpg?v=20261112-avatar2';
 const STENCIL='"Black Ops One","Arial Black",Impact,sans-serif';
-const FALLBACK_PLATE=Object.freeze({x:.2,y:.34,w:.6,h:.4});
+// The fallback plate fills the frame on its own: no backdrop, just the tag.
+const FALLBACK_PLATE=Object.freeze({x:.05,y:.12,w:.9,h:.76});
+// Breathing room around the detected plate when cropping the photo: enough
+// chain and edge for the tag to sit naturally, none of the scene around it.
+const CROP_MARGIN=.16;
 
 const cache={image:null,ready:false,failed:false,plate:null,redraws:new Set()};
 
@@ -97,8 +108,20 @@ export function tagLines(profile={}){
 }
 
 // Stamps one line in the embossed stencil look: dark imprint, thin light
-// edge underneath, like a machine hit the plate.
-function stampLine(ctx,text,x,y,px){
+// edge underneath, like a machine hit the plate. The line is SHRUNK TO ITS
+// MEASURED WIDTH - the reported bug was names running past the tag, so the
+// font size yields to the plate, never the other way around.
+function stampLine(ctx,text,x,y,px,maxWidth){
+  if(Number.isFinite(maxWidth)&&maxWidth>0){
+    let width=Number.NaN;
+    try{
+      ctx.font=`${px}px ${STENCIL}`;
+      try{ctx.letterSpacing=Math.round(px*0.08)+'px';}catch{/* Older canvases: no spacing. */}
+      width=ctx.measureText(text)?.width;
+    }catch{/* Recording contexts and old canvases: estimate instead. */}
+    if(!Number.isFinite(width)||width<=0)width=text.length*px*0.82;
+    if(width>maxWidth)px=Math.max(7,px*maxWidth/width);
+  }
   ctx.textAlign='center';ctx.textBaseline='middle';
   try{ctx.letterSpacing=Math.round(px*0.08)+'px';}catch{/* Older canvases: no spacing. */}
   ctx.font=`${px}px ${STENCIL}`;
@@ -107,22 +130,33 @@ function stampLine(ctx,text,x,y,px){
   ctx.fillStyle='#23231f';
   ctx.fillText(text,x,y);
   try{ctx.letterSpacing='0px';}catch{}
+  return px;
 }
 
-function drawCover(ctx,size,image){
-  const ratio=Math.max(size/image.width,size/image.height);
-  const w=image.width*ratio,h=image.height*ratio;
-  ctx.drawImage(image,(size-w)/2,(size-h)/2,w,h);
+// Crops the photo down to the tag itself (plus a little chain margin) and
+// CONTAIN-fits that crop into the square canvas: the whole tag stays visible,
+// the scene around it is gone and the leftover strip is transparent. Returns
+// where the plate landed, in canvas pixels, so the stamp lands on the metal
+// and nowhere else.
+export function drawPlateCrop(ctx,size,image,plate){
+  const mx=plate.w*CROP_MARGIN,my=plate.h*CROP_MARGIN;
+  const x0=Math.max(0,plate.x-mx),y0=Math.max(0,plate.y-my);
+  const x1=Math.min(1,plate.x+plate.w+mx),y1=Math.min(1,plate.y+plate.h+my);
+  const sx=x0*image.width,sy=y0*image.height,sw=(x1-x0)*image.width,sh=(y1-y0)*image.height;
+  const scale=Math.min(size/sw,size/sh);
+  const dw=sw*scale,dh=sh*scale,dx=(size-dw)/2,dy=(size-dh)/2;
+  ctx.drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh);
+  return {x:dx+(plate.x-x0)*image.width*scale,y:dy+(plate.y-y0)*image.height*scale,
+    w:plate.w*image.width*scale,h:plate.h*image.height*scale};
 }
 
 // The interim plate: plain brushed metal, corner hole, short chain stub - a
-// clean placeholder until the photo asset lands, never the final look.
-function drawFallbackPlate(ctx,size){
+// clean placeholder until the photo asset lands, never the final look. No
+// backdrop: the tag sits alone on the transparent canvas, filling the frame.
+export function drawFallbackPlate(ctx,size){
   const plate={x:size*FALLBACK_PLATE.x,y:size*FALLBACK_PLATE.y,w:size*FALLBACK_PLATE.w,h:size*FALLBACK_PLATE.h};
-  ctx.fillStyle='#2c2418';
-  ctx.fillRect(0,0,size,size);
   ctx.strokeStyle='#8f948b';ctx.lineWidth=Math.max(2,size*0.012);
-  ctx.beginPath();ctx.moveTo(size/2,0);ctx.lineTo(plate.x+plate.w*0.32,plate.y+6);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(size/2,0);ctx.lineTo(plate.x+plate.w*0.14,plate.y+plate.h*.5);ctx.stroke();
   const grad=typeof ctx.createLinearGradient==='function'?ctx.createLinearGradient(plate.x,plate.y,plate.x+plate.w,plate.y+plate.h):null;
   if(grad){grad.addColorStop(0,'#b9bdc0');grad.addColorStop(.5,'#cfd3d6');grad.addColorStop(1,'#a9adb0');ctx.fillStyle=grad;}
   else ctx.fillStyle='#c6cacc';
@@ -132,6 +166,7 @@ function drawFallbackPlate(ctx,size){
   ctx.fill();
   ctx.beginPath();ctx.arc(plate.x+plate.w*0.14,plate.y+plate.h/2,Math.max(2,plate.h*0.07),0,Math.PI*2);
   ctx.fillStyle='#2c2418';ctx.fill();
+  return plate;
 }
 
 // Draws the whole tag into a square canvas of `size` pixels. Returns the
@@ -141,14 +176,14 @@ export function drawDogTagArt(ctx,size,data={},options={}){
   const lines=tagLines(data.profile||{});
   loadAssets(ctx.canvas?.ownerDocument??(typeof document!=='undefined'?document:null));
   ctx.save();
-  if(cache.ready&&cache.image)drawCover(ctx,size,cache.image);
-  else drawFallbackPlate(ctx,size);
-  const plate=cache.plate||FALLBACK_PLATE;
-  const box={x:size*plate.x,y:size*plate.y,w:size*plate.w,h:size*plate.h};
-  const namePx=Math.min(box.w/(lines.name.length*0.72),box.h*0.34);
-  stampLine(ctx,lines.name,box.x+box.w/2,box.y+box.h*0.34,namePx);
-  stampLine(ctx,lines.gender,box.x+box.w/2,box.y+box.h*0.58,Math.max(9,namePx*0.6));
-  stampLine(ctx,lines.date,box.x+box.w/2,box.y+box.h*0.8,Math.max(9,namePx*0.52));
+  const box=cache.ready&&cache.image
+    ?drawPlateCrop(ctx,size,cache.image,cache.plate||FALLBACK_PLATE)
+    :drawFallbackPlate(ctx,size);
+  // Name first and largest; gender and date follow its (possibly shrunk)
+  // size so a long name compresses the whole stamp block, never overflows.
+  const namePx=stampLine(ctx,lines.name,box.x+box.w/2,box.y+box.h*0.32,box.h*0.3,box.w*0.9);
+  stampLine(ctx,lines.gender,box.x+box.w/2,box.y+box.h*0.58,Math.max(9,namePx*0.62),box.w*0.9);
+  stampLine(ctx,lines.date,box.x+box.w/2,box.y+box.h*0.8,Math.max(9,namePx*0.52),box.w*0.9);
   ctx.restore();
   return lines;
 }
