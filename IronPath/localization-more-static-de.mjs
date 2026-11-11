@@ -111,4 +111,7 @@ export const germanMoreStatic=Object.freeze({
   "Slow ground and waterways.": "Zähes Gelände und Wasserläufe.",
   "Last run: wave {wave} · {bosses} bosses · sector {sector}": "Letzte Runde: Welle {wave} · {bosses} Bosse · Sektion {sector}",
   "No endless run yet on this device.": "Auf diesem Gerät gab es noch keine Endlos-Runde.",
+  "SIGN IN": "ANMELDEN",
+  "CREATE ACCOUNT": "KONTO ERSTELLEN",
+  "BACK TO SIGN IN": "ZURÜCK ZUR ANMELDUNG",
 });

@@ -181,3 +181,20 @@ test('every import of a module agrees on that module cache token',()=>{
  // A declined or broken ending step must not leave the guide pill behind.
  assert.match(account,/onStopped:\(\)=>\{endingRunning=false;firstRunGuide\?\.stop\?\.\(\);syncGuideRecall\(\);\}/,'a stopped ending stops the guide and hides its pill');
 }
+// Reported: "Abbrechen des Tutorials muss auch die Aufgaben abbrechen". A
+// practice step leaves the real armory/skills dialog open in sandbox mode;
+// every close of the tour must tear that down, not only the tour itself.
+{
+ const torn=[];
+ const tour2=createTutorial({document,storage,onTearDown:()=>torn.push(1)});
+ tour2.startIfNeeded('teardown-user');
+ assert.equal(tour2.isOpen(),true);
+ el('tutorialSkip').onclick();
+ assert.equal(tour2.isOpen(),false);
+ assert.equal(torn.length,1,'skipping tears down the open practice');
+ tour2.replay('teardown-user');
+ assert.equal(tour2.isOpen(),true,'a replay opens after the skip');
+ tour2.stop();
+ assert.equal(torn.length,2,'stop tears down too');
+ assert.equal(tour2.isOpen(),false);
+}
