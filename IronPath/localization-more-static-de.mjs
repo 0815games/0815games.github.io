@@ -115,7 +115,7 @@ export const germanMoreStatic=Object.freeze({
   "CREATE ACCOUNT": "KONTO ERSTELLEN",
   "BACK TO SIGN IN": "ZURÜCK ZUR ANMELDUNG",
   "RECRUITING OFFICE": "MUSTERUNG",
-  "Your name, character and face are permanent for now. Signed-in players can find your soldier name and player ID in friend search.": "Dein Name, deine Figur und dein Gesicht bleiben vorerst dauerhaft. Angemeldete Spieler finden deinen Soldatennamen und deine Spieler-ID in der Freundessuche.",
+  "Your name and face are permanent. Friends can find you by soldier name and player ID.": "Dein Name und dein Gesicht bleiben dauerhaft. Freunde finden dich über Soldatennamen und Spieler-ID.",
   "SURPRISE ME": "ÜBERRASCH MICH",
   "Avatar preview": "Avatar-Vorschau",
   "SKIN": "HAUT",

@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261108-icon2">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261108-icon2">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261108-icon2">
-  <link rel="stylesheet" href="style.css?v=20261112-avatar2">
+  <link rel="stylesheet" href="style.css?v=20261112-recruitui1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261111-defringe1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261130-germanfull1">
@@ -132,7 +132,7 @@
         </form>
         <div class="dossier-footer" aria-hidden="true"><span data-i18n-text="FIELD RECORD · 01">FIELD RECORD · 01</span><span data-i18n-text="HOLD THE LINE ★">HOLD THE LINE ★</span></div>
       </div>
-<div id="characterView" hidden><div class="recruit-stage"><img class="recruit-bg" src="assets/soldier-workbench.jpg" alt="" aria-hidden="true"><div class="recruit-card"><div class="recruit-visual"><div class="recruit-avatar-frame"><img id="avatarPreview" width="192" height="192" alt="" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"></div><div class="recruit-tag-slot"><canvas id="recruitTag" width="220" height="215" role="img" aria-label="Your dog tag"></canvas></div></div><div class="recruit-form"><div class="entry-stamp" aria-hidden="true">★</div><span class="eyebrow" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2><p class="hint" data-i18n-text="Your name, character and face are permanent for now. Signed-in players can find your soldier name and player ID in friend search.">Your name, character and face are permanent for now. Signed-in players can find your soldier name and player ID in friend search.</p><form id="characterForm"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"><div id="avatarOptions" class="recruit-options"></div><div class="recruit-tools"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button></div><div class="recruit-actions"><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button><button id="setupLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div></div></div>
+<div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><img id="avatarPreview" class="recruit-portrait" width="132" height="132" alt="" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div class="recruit-id"><canvas id="recruitTag" width="220" height="215" role="img" aria-label="Your dog tag" data-i18n-aria-label="Your dog tag"></canvas><div class="recruit-name"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div></div><div id="avatarOptions" class="recruit-options"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
     <div id="gameView" hidden><p id="scoreSaveStatus" role="status"></p><p id="friendIndexError" class="friend-index-error" role="status" hidden><span data-i18n-text="The player search listing could not be updated.">The player search listing could not be updated.</span> <button id="friendIndexRetry" type="button" data-i18n-text="RETRY">RETRY</button></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
@@ -349,7 +349,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261112-pwconfirm1"></script>
+  <script type="module" src="intro.mjs?v=20261112-recruitui1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261112-roads1"></script>
+  <script type="module" src="account.js?v=20261112-recruitui1"></script>
 </body></html>

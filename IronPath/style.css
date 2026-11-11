@@ -115,7 +115,7 @@ body:has(#entry:not([hidden])){background:radial-gradient(ellipse at 50% 0,#677b
 body:has(#entry:not([hidden])) main>header p{color:#f1e5bf;font-family:Georgia,serif;font-style:italic;letter-spacing:.03em}
 .entry{position:relative;overflow:hidden;background:repeating-linear-gradient(0deg,#e9dcb8,#e9dcb8 30px,#e3d4ad 31px);border:3px solid #354a36;border-radius:6px 13px 8px 11px;box-shadow:6px 8px 0 #1c2d21,0 18px 50px #1118;color:#344832}
 .entry:before{content:'FIELD PERSONNEL RECORD';display:block;margin:-26px -26px 22px;padding:10px 26px;background:#536e4c;color:#f2e7bf;font-size:10px;letter-spacing:.17em;font-weight:bold;border-bottom:3px solid #354a36}
-.entry h2{font:700 26px/1.1 Georgia,serif;color:#354c36;margin:8px 0}.entry .hint{font-size:13px;color:#52674c}.entry label{color:#50654a;letter-spacing:.12em}.entry input,.entry select{background:#fff4d5;color:#344832;border:2px solid #849270;border-radius:5px;box-shadow:inset 1px 2px 0 #d8c99f}.entry input:focus-visible,.entry select:focus-visible{outline:3px solid #b86643;outline-offset:2px}.entry button{border:2px solid #40563b;border-radius:5px;box-shadow:2px 3px 0 #9b9b72}.entry button.primary{background:#617c50;color:#fff1ce}.entry button.primary:hover:not(:disabled){background:#506a43;color:#fff1ce}.entry #forgot{background:transparent;color:#51674b;border:0;box-shadow:none;text-decoration:underline}.entry-stamp{float:right;display:grid;place-items:center;width:46px;height:46px;border:3px double #af674a;border-radius:50%;color:#af674a;font-size:24px;transform:rotate(12deg);opacity:.8}.entry-message:empty{display:none}
+.entry h2{font:700 26px/1.1 Georgia,serif;color:#354c36;margin:8px 0}.entry .hint{font-size:13px;color:#52674c}.entry label{color:#50654a;letter-spacing:.12em}.entry input,.entry select{background:#fff4d5;color:#344832;border:2px solid #849270;border-radius:5px;box-shadow:inset 1px 2px 0 #d8c99f}.entry input:focus-visible,.entry select:focus-visible{outline:3px solid #b86643;outline-offset:2px}.entry button{border:2px solid #40563b;border-radius:5px;box-shadow:2px 3px 0 #9b9b72}.entry button.primary{background:#617c50;color:#fff1ce}.entry button.primary:hover:not(:disabled){background:#506a43;color:#fff1ce}.entry #forgot{background:transparent;color:#51674b;border:0;box-shadow:none;text-decoration:underline}.entry-message:empty{display:none}
 /* Small illustrated status badges keep their labels for accessibility. */
 .dashboard>div{display:flex;align-items:center;gap:8px;min-width:0}.dashboard>div>span{min-width:0}.hud-icon{flex:none;width:30px;height:30px;padding:4px;fill:none;stroke:#f4e5b9;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;background:#617b50;border:2px solid #405638;border-radius:7px;box-shadow:1px 2px 0 #a99f7d}.dashboard>div:nth-child(2) .hud-icon{background:#b66b4a}.dashboard>div:nth-child(3) .hud-icon{background:#987d4e}.dashboard>div:nth-child(4) .hud-icon{background:#6c7058}
 /* Keep the battlefield and controls in view on typical phones; retain page scroll
@@ -460,51 +460,64 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
    and travels sideways - swipe west to east, station by station. */
 @media(max-width:850px){.act-overview{overflow-x:auto;-webkit-overflow-scrolling:touch}.campaign-map{width:180vw;max-width:none;height:76vh;height:76dvh;min-height:430px;max-height:660px}.campaign-map-hint{display:block}.act-node{width:190px}.act-node-plate{min-width:158px;padding:6px 10px 7px}.act-node-plate strong{font-size:13.5px}}
 
-/* Recruiting office: character creation as an event (2026-11 avatar build). */
+/* ── Recruiting (Musterung) ────────────────────────────────────────────────
+   Character creation wears the game's own iron plate: same gradient panel,
+   same stamped buttons, same gold star accent as the command center and the
+   dialogs (reported: the old bright paper desk "passt ueberhaupt nicht zum
+   Spielen", colours and font barely readable). One compact card - portrait
+   and dog tag as the ID row, a slim filmstrip of looks where the photo IS
+   the button - and the whole enlistment fits a phone screen without
+   scrolling: the site chrome steps aside, the note stays under ~46
+   characters per line. */
 #characterView{padding:0}
-/* ── Recruiting office (Musterung) ───────────────────────────────────────────
-   One desk, two halves: the rendered portrait and the stamped dog tag sit
-   beside the form on a wide screen and stay pinned at the top on a phone -
-   the preview never leaves the screen while a look is tapped (reported:
-   "wenn man Änderungen drauf drückt, kann man's oben nicht sehen"). The
-   office is one deliberate scene, not a floating window over mystery
-   content (reported for desktop). */
-.entry.recruiting{max-width:min(1120px,100%);margin:4vh auto}
 @font-face{font-family:'Black Ops One';src:url('assets/fonts/black-ops-one.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
-.recruit-stage{position:relative;display:grid;justify-items:center;padding:22px 14px 32px;overflow:hidden;min-height:62vh}
-.recruit-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.85) brightness(.5)}
-.recruit-card{position:relative;width:min(1080px,100%);background:linear-gradient(165deg,#f4e8c8,#e7d7ae 60%,#dcc998);border:2px solid #849270;border-radius:12px;box-shadow:0 18px 40px rgba(10,14,8,.55),inset 0 1px 0 #fff8dd;padding:20px 22px 24px;display:grid;grid-template-columns:minmax(280px,340px) minmax(0,1fr);gap:24px}
-.recruit-visual{position:sticky;top:12px;align-self:start;display:grid;gap:16px;justify-items:center;background:linear-gradient(180deg,rgba(24,32,20,.55),rgba(24,32,20,.28));border:1px solid rgba(132,146,112,.55);border-radius:12px;padding:16px 14px}
-.recruit-avatar-frame{width:min(232px,56vw);aspect-ratio:1;border-radius:14px;border:4px solid #617c50;box-shadow:0 8px 18px rgba(20,24,14,.45);overflow:hidden;background:#243020}
-.recruit-avatar-frame img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
-.recruit-tag-slot{width:min(240px,66vw);filter:drop-shadow(0 10px 14px rgba(15,18,10,.45))}
-.recruit-tag-slot canvas{width:100%;height:auto;display:block}
-.recruit-options{display:grid;gap:12px;margin:14px 0 2px}
-.recruit-row{display:grid;gap:7px}
-.recruit-row-label{font-size:11px;letter-spacing:.14em;color:#50654a}
-.recruit-choices{display:flex;flex-wrap:wrap;gap:8px}
-.recruit-choice{font:600 12.5px/1 Georgia,serif;letter-spacing:.04em;background:#fff4d5;color:#344832;border:2px solid #849270;border-radius:4px;padding:8px 12px;cursor:pointer;box-shadow:1px 2px 0 #9b9b72}
-.recruit-choice[aria-checked="true"]{border-color:#3f5a37;background:#cfe0b8;box-shadow:inset 0 0 0 1px #3f5a37}
-.recruit-looks{gap:10px}
-.recruit-look{width:88px;aspect-ratio:3/4;border-radius:8px;border:2px solid #849270;background-size:cover;background-position:center 18%;cursor:pointer;box-shadow:1px 2px 0 #9b9b72;padding:0}
-.recruit-look[aria-checked="true"]{outline:3px solid #b86643;outline-offset:2px;border-color:#3f5a37}
-.recruit-flavor{margin:8px 0 0;font:italic 600 12.5px/1.35 Georgia,serif;color:#6b5a34}
-.recruit-tools{margin:12px 0 0;display:flex;justify-content:flex-end}
-.recruit-actions{display:flex;gap:10px;margin-top:12px}
-.recruit-actions .primary{flex:1}
-.enlist-stamp{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%) rotate(-14deg) scale(3);opacity:0;pointer-events:none;font:900 clamp(22px,5vw,34px)/1.05 Georgia,serif;letter-spacing:.06em;color:#af674a;border:5px double #af674a;border-radius:10px;padding:8px 18px;background:rgba(244,232,200,.25);text-transform:uppercase;mix-blend-mode:multiply;z-index:3}
+/* The enlistment is a focused scene, like the game's own dialogs: header and
+   footer step aside, the horizon stays. */
+body:has(#characterView:not([hidden])) header,body:has(#characterView:not([hidden])) footer{display:none}
+body:has(#characterView:not([hidden])) main{padding:18px 12px}
+.entry.recruiting{max-width:520px;margin:8vh auto;padding:0}
+.entry.recruiting:before{content:'IRON PATH / RECRUITING OFFICE';margin:0;padding:13px 22px;background:#192f25;color:#e3ca8b;border-bottom:1px solid #6c8068;font-size:9px;letter-spacing:.18em}
+.recruit-card{position:relative;display:grid;gap:12px;padding:20px 22px 16px}
+.recruit-head{display:flex;gap:16px;align-items:center}
+.recruit-portrait{flex:none;width:clamp(88px,24vw,120px);aspect-ratio:1;object-fit:cover;object-position:center top;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+.recruit-head-text{min-width:0}
+.recruit-kicker{display:block;font-size:9px;font-weight:bold;letter-spacing:.16em;color:var(--iron-gold,#f0d68a)}
+.recruit-card h2{font:700 clamp(21px,5vw,27px)/1.1 Georgia,serif;color:#f2e9cc;margin:5px 0 0}
+.recruit-note{margin:0;max-width:46ch;font-size:12.5px;line-height:1.5}
+.recruit-id{display:flex;gap:14px;align-items:center}
+#recruitTag{flex:none;width:clamp(96px,30vw,128px);height:auto;filter:drop-shadow(0 6px 12px rgba(8,12,9,.5))}
+.recruit-name{flex:1;min-width:0;display:grid;gap:6px}
+.recruit-name label{margin:0;font-size:10px;letter-spacing:.12em}
+.recruit-name input{width:100%;min-height:48px;margin:0;padding:10px 12px;font-size:16px}
+.recruit-options{display:grid;gap:11px}
+.recruit-row{display:grid;gap:6px}
+.recruit-row-label{font-size:9px;letter-spacing:.14em;font-weight:bold;color:#c0cda9}
+.recruit-choices{display:flex;gap:8px}
+.recruit-choice{flex:1;min-height:44px;margin:0;padding:8px;font-size:11px;letter-spacing:.04em}
+.recruit-choice[aria-checked="true"]{outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px;border-color:var(--iron-gold,#f0d68a);color:#fff}
+.recruit-looks{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
+.recruit-look{flex:none;width:clamp(52px,16vw,64px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;background-size:cover;background-position:center 18%;opacity:.72}
+.recruit-look:hover:not(:disabled){opacity:1}
+.recruit-look[aria-checked="true"]{opacity:1;outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px}
+.recruit-actions{display:grid;grid-template-columns:minmax(110px,1fr) 2fr;gap:9px}
+.recruit-actions button{min-height:48px;margin:0;padding:10px;font-size:11px}
+#avatarRandom{background:transparent;border:1px dashed #6d8066;box-shadow:none;color:#c9d4ba}
+#avatarRandom:hover:not(:disabled){border-color:var(--iron-rim,#8d979b);color:#fff;background:transparent}
+.recruit-logout{width:auto;justify-self:center;min-height:38px;margin:0;padding:6px 12px;background:transparent;border:0;box-shadow:none;color:#9fb39a;font-size:10px;letter-spacing:.08em;text-decoration:underline}
+.recruit-logout:hover:not(:disabled){color:#cfe0c2;border:0;background:transparent;box-shadow:none}
+/* The ENLIST slam: a hot stamp on the iron plate, not ink on paper. */
+.enlist-stamp{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-12deg) scale(3);opacity:0;pointer-events:none;font:900 clamp(18px,4.5vw,26px)/1.05 'Trebuchet MS',Arial,sans-serif;letter-spacing:.08em;color:#ff8f6a;border:4px double #ff8f6a;border-radius:6px;padding:8px 16px;background:#132119e6;text-transform:uppercase;z-index:3}
 .enlist-stamp.stamped{animation:enlist-slam .5s cubic-bezier(.2,1.4,.4,1) forwards}
-@keyframes enlist-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(3.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(.94)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}}
+@keyframes enlist-slam{0%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scale(3.2)}55%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(.94)}100%{opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}}
+@keyframes paper-hit{0%{transform:translate(0,0)}30%{transform:translate(1px,2px) rotate(.3deg)}60%{transform:translate(-1px,1px) rotate(-.2deg)}100%{transform:translate(0,0)}}
 .recruit-card.stamped{animation:paper-hit .5s cubic-bezier(.2,1.4,.4,1)}
-@media (prefers-reduced-motion:reduce){.enlist-stamp.stamped{animation:none;opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}.recruit-card.stamped{animation:none}}
-@media (max-width:880px){
- .entry.recruiting{margin:12px auto}
- .recruit-card{grid-template-columns:1fr}
- /* The preview column becomes a pinned bar: portrait and tag stay visible
-    while the (short) form scrolls underneath. */
- .recruit-visual{position:sticky;top:0;z-index:5;grid-auto-flow:column;grid-template-columns:minmax(112px,140px) minmax(120px,1fr);justify-items:start;align-items:center;gap:12px;padding:10px 12px;background:linear-gradient(165deg,#f4e8c8,#e2d2a8);box-shadow:0 6px 14px rgba(15,18,10,.35)}
- .recruit-avatar-frame{width:min(128px,34vw);border-width:3px;border-radius:10px}
- .recruit-tag-slot{width:min(150px,42vw)}
+@media (prefers-reduced-motion:reduce){.enlist-stamp.stamped{animation:none;opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}.recruit-card.stamped{animation:none}}
+@media(max-width:480px){
+ .entry.recruiting{margin:3vh auto}
+ .recruit-card{padding:16px 14px 12px;gap:11px}
+ .recruit-head{gap:12px}
+ .recruit-id{gap:10px}
+ .recruit-actions{grid-template-columns:1fr 1.5fr}
 }
 
 /* The character-delete button in the command utilities reads as destructive. */
