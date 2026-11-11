@@ -16,14 +16,29 @@ import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} 
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
 import {relicBonus} from './relics.mjs?v=20261103-listvoice1';
 import {storyBossKind} from './combat.mjs?v=20261031-finale1';
+import {getMap} from './maps.mjs?v=20261031-finale1';
+
+// Where a soldier stands when a run begins. A story mission starts at its first
+// stage marker ("Soldier starts every time at the bunker!" was the report that
+// fixed that). Everything else - endless, training, a mission without a marker -
+// deploys at the bunker OF THE MAP: the old hard-coded (850,450) only matched
+// the three classic maps whose bunker sits at (900,400). Generated free-play
+// maps put their bunker anywhere from (150,150) to (750,330), and the soldier
+// started up to 760px away, mid-field. The offset is the one the retreat uses
+// (bunker.x-90, bunker.y+60), so surviving into a new sector does not teleport
+// anyone; a second soldier (co-op join) stands 50px further left, like the old
+// 800/850 pair did on the classic maps.
+export function bunkerStart(mapId,slot=0){
+  const map=getMap(mapId),bunker=map.bunker||{x:900,y:400};
+  return {x:Math.max(90,bunker.x-90-50*Math.max(0,slot)),y:Math.min((map.height||540)-60,bunker.y+60)};
+}
 
 export function createSoloDeployment({player,mapId,profile,workshopEnabled=false,campaign=null}) {
- // Reported: "Soldier starts every time at the bunker!" A story mission
- // begins where its first stage marker sits, so the soldier deploys there
- // instead of walking the whole field from the bunker every time. Endless and
- // training keep the classic bunker start (no spawn on the contract).
+ // A story mission begins where its first stage marker sits; endless and
+ // training keep the bunker start - now the real one, see bunkerStart.
  const spawn=campaign?.spawn;
  if(Number.isFinite(spawn?.x)&&Number.isFinite(spawn?.y))player={...player,x:spawn.x,y:spawn.y};
+ else player={...player,...bunkerStart(mapId)};
  // The training contract is the only campaign-shaped deployment that is easier
  // than endless, so it is read from its own module rather than the threat table.
  const training=campaign?.threat==='training';
