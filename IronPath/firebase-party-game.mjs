@@ -6,9 +6,9 @@ import {createVersus} from './versus.mjs?v=20261112-kits1';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261031-finale1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261031-finale1';
-import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261103-unified1';
+import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261112-lag2';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261112-lag1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261112-lag2';
 import {createPartyHost} from './party-host.mjs?v=20261112-lag1';
 import {createMatch,STEP} from './simulation.mjs?v=20261112-kits1';
 

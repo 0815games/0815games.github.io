@@ -49,10 +49,16 @@ export function createFirebasePartyChannel({db,auth,sdk,partyId,hostId,playerIds
       const unsubscribes=playerIds.map(id=>listen(`inputs/${id}`,MAX_INPUT_BYTES,packet=>callback(id,packet)));
       return ()=>unsubscribes.forEach(remove=>remove());
     },
+    // A publish addresses any non-empty subset of the roster: the full
+    // periodic view for everyone, or just the sender's view when a command
+    // receipt is due (three- and four-player rosters would otherwise repeat
+    // the whole match clone per player on every keystroke).
     publishViews(views){
       ensure();if(uid!==hostId)throw new Error('Host required');
-      if(!views||typeof views!=='object'||Array.isArray(views)||Object.keys(views).length!==playerIds.length||playerIds.some(id=>!Object.hasOwn(views,id)))throw new Error('Both player views required (all roster members)');
-      const changes=Object.fromEntries(playerIds.map(id=>[`views/${id}`,encode(views[id],MAX_VIEW_BYTES)]));
+      if(!views||typeof views!=='object'||Array.isArray(views))throw new Error('Invalid party views');
+      const ids=Object.keys(views);
+      if(ids.length<1||ids.some(id=>!playerIds.includes(id)))throw new Error('Views must address party players');
+      const changes=Object.fromEntries(ids.map(id=>[`views/${id}`,encode(views[id],MAX_VIEW_BYTES)]));
       return write(()=>sdk.update(sdk.ref(db,base),changes));
     },
     async close(){closed=true;for(const remove of [...listeners])remove();await pending;}

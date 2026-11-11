@@ -9,6 +9,7 @@ import {readFileSync} from 'node:fs';
 import {createFirebasePartyHostSession,createFirebasePartyClientSession} from '../firebase-party-session.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {createMatch} from '../simulation.mjs';
+import {createTwoVsTwo} from '../four-modes.mjs';
 import {createPlayer} from '../match.mjs';
 import {SNAPSHOT_RECEIPTS} from '../protocol.mjs';
 
@@ -31,33 +32,62 @@ test('snapshots carry only the newest receipts, not the whole history',()=>{
   assert.equal(snapshot.nextSeq,21,'the sequence itself is unaffected');
 });
 
-test('the host session publishes at fifteen hertz, not per tick',async()=>{
+test('the host session paces to an uplink budget across roster sizes',async()=>{
+  // Rosters amplify the publish set: a duo runs a ~7 KB view set, two-vs-two
+  // ~13 KB before a wave even spawns (every view carries BOTH lanes), and a
+  // running four-player field reaches 17-25 KB - doubling again in late
+  // waves. The session therefore paces the FULL set by an uplink budget
+  // (default 180 KB/s), quantized to 15/10/7.5/6/5 Hz, with receipts as
+  // tiny sender-only publishes on top.
+  const sizes={};
+  const countPublishes=async(build,ids,budget,record)=>{
+    let publishes=0,blob=0;
+    const party=createPartyHost(build(),{hostId:ids[0]});
+    for(const id of ids)party.setPresence(id,true);
+    const channel={watchInputs(){return()=>{};},async publishViews(views){publishes++;blob=Math.max(blob,JSON.stringify(views).length);},async close(){}};
+    const session=createFirebasePartyHostSession({channel,host:party,playerIds:ids,epoch:'epoch-budget',...(budget?{publishBudgetBytesPerSecond:budget}:{})});
+    session.start();await flush();
+    for(let i=0;i<3;i++){session.step();await flush();}
+    publishes=0;
+    for(let i=0;i<30;i++){session.step();await flush();}
+    if(record)sizes[record]=blob;
+    await session.stop();
+    return publishes;
+  };
+  const mk=id=>createPlayer(id,{name:id,gender:'male',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10',storyProgress:12});
+  // The quantization ladder on a stable duo set (~3.4 KB at rest).
+  const duo=()=>createMatch([mk('alice'),mk('bob')],'road');
+  assert.equal(await countPublishes(duo,['alice','bob']),15,'the default budget gives a lean duo fifteen hertz');
+  assert.equal(await countPublishes(duo,['alice','bob'],25000),8,'a tighter budget quantizes to seven and a half');
+  assert.equal(await countPublishes(duo,['alice','bob'],20000),6,'and to six hertz');
+  assert.equal(await countPublishes(duo,['alice','bob'],1000),5,'a starvation budget floors at five hertz');
+  // The roster amplification itself: a two-vs-two set (both lanes in every
+  // view) runs ~13.4 KB at rest - four times the duo - and must pace below
+  // the duo on the same budget.
+  const four=['a','b','c','d'].map(mk);
+  assert.equal(await countPublishes(()=>createTwoVsTwo(four,'a',[['a','b'],['c','d']]),['a','b','c','d'],100000,'2v2'),8,'two-vs-two paces below the duo on the same budget');
+  await countPublishes(duo,['alice','bob'],100000,'duo');
+  assert.ok(sizes['2v2']>sizes['duo']*3,`rosters amplify the view set (${sizes['duo']} -> ${sizes['2v2']} bytes)`);
+});
+
+test('command receipts publish only the sender, never the whole roster',async()=>{
   const players=['alice','bob'];
-  let publishes=0,inputListener=()=>{};
-  const hostChannel={watchInputs(fn){inputListener=fn;return()=>{inputListener=()=>{};};},async publishViews(){publishes++;},async close(){}};
-  const session=createFirebasePartyHostSession({channel:hostChannel,host:createPartyHost(twoPlayerMatch(),{hostId:'alice'}),playerIds:players,epoch:'epoch-cadence'});
+  const published=[];
+  let inputListener=()=>{};
+  const hostChannel={watchInputs(fn){inputListener=fn;return()=>{inputListener=()=>{};};},async publishViews(views){published.push(views);},async close(){}};
+  const session=createFirebasePartyHostSession({channel:hostChannel,host:createPartyHost(twoPlayerMatch(),{hostId:'alice'}),playerIds:players,epoch:'epoch-receipts',localPlayerId:'alice'});
   session.start();session.setPresence('alice',true);session.setPresence('bob',true);await flush();
-  // Thirty session steps at thirty steps per second: the pulse counter must
-  // coalesce to fifteen publishes, and a double-speed advance (two protocol
-  // ticks per step) must not double the rate.
-  publishes=0;
-  for(let i=0;i<30;i++){session.step();await flush();}
-  assert.equal(publishes,15,'fifteen hertz baseline');
-  // A command is urgent and publishes on its own step.
-  inputListener('bob',{epoch:'epoch-cadence',envelope:{version:1,seq:1,command:{type:'direction',x:1,y:0}}});
+  // A remote command publishes its receipt as a sender-only view.
+  inputListener('bob',{epoch:'epoch-receipts',envelope:{version:1,seq:1,command:{type:'direction',x:1,y:0}}});
   session.step();await flush();
-  assert.equal(publishes,16,'command receipts still publish immediately');
+  assert.ok(published.some(views=>Object.keys(views).join(',')==='bob'),'the receipt publish addresses only bob');
+  // The host's own command publishes nothing: its screen is localView().
+  const before=published.length;
+  const local=session.localChannel();
+  await local.writeInput({epoch:'epoch-receipts',envelope:{version:1,seq:1,command:{type:'direction',x:0,y:1}}});
+  session.step();await flush();
+  assert.equal(published.length,before,'the host command costs no database write');
   await session.stop();
-  // A FAT view throttles back to ten hertz instead of saturating the uplink:
-  // late waves run ~10 KB per view, and 15 Hz would cost a duo ~290 KB/s.
-  let fatPublishes=0;
-  const fatChannel={watchInputs(){return()=>{};},async publishViews(){fatPublishes++;},async close(){}};
-  const fatSession=createFirebasePartyHostSession({channel:fatChannel,host:createPartyHost(twoPlayerMatch(),{hostId:'alice'}),playerIds:['alice','bob'],epoch:'epoch-fat',leanViewBytes:1});
-  fatSession.start();fatSession.setPresence('alice',true);fatSession.setPresence('bob',true);await flush();
-  fatPublishes=0;
-  for(let i=0;i<30;i++){fatSession.step();await flush();}
-  assert.equal(fatPublishes,10,'fat views publish at ten hertz');
-  await fatSession.stop();
 });
 
 test('a full session round trip stays small and keeps resolving commands',async()=>{
@@ -79,7 +109,7 @@ test('a full session round trip stays small and keeps resolving commands',async(
   }
   assert.ok(views.length>0,'views were published');
   for(const view of views){
-    for(const id of players){
+    for(const id of Object.keys(view)){
       const size=JSON.stringify(view[id]).length;
       assert.ok(size<4200,`view for ${id} stays lean (${size} bytes)`);
       assert.ok(view[id].snapshot.receipts.length<=SNAPSHOT_RECEIPTS,'published views carry the receipt window only');

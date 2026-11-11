@@ -2,10 +2,18 @@ import {normalizeCommand} from './protocol.mjs?v=20261112-lag1';
 // Session logic for live parties, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
-export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{},leanViewBytes=4096}){
-  if(!channel||!host||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||typeof epoch!=='string'||!epoch||typeof onError!=='function'||!Number.isFinite(leanViewBytes)||leanViewBytes<0)throw new Error('Invalid host session');
-  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null,pulse=0,lastViewBytes=0;
+const STEPS_PER_SECOND=30,MAX_PUBLISH_HZ=15,MIN_PUBLISH_HZ=5;
+export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{},publishBudgetBytesPerSecond=184320}){
+  if(!channel||!host||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||typeof epoch!=='string'||!epoch||typeof onError!=='function'||!Number.isFinite(publishBudgetBytesPerSecond)||publishBudgetBytesPerSecond<1)throw new Error('Invalid host session');
+  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null,pulse=0,lastViewBytes=0,pendingReceipts=new Set(),receiptPumping=false;
   const connections=new Map(playerIds.map(id=>[id,[]]));
+  function viewFor(id){
+    const snapshot=host.snapshotFor(id);
+    // Older game screens read match.money. Supply a per-recipient alias so
+    // a cached screen never displays an empty balance during an update.
+    if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
+    return {epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot};
+  }
   function localView(){
     if(!localListener||!localPlayerId||closed||failed)return;
     const snapshot=host.snapshotFor(localPlayerId);if(snapshot?.match?.individualSupplies)snapshot.match.money=snapshot.match.players[localPlayerId].money;
@@ -13,15 +21,25 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
   }
   function queueView(){
     if(closed||failed)return;
-    latest=Object.fromEntries(playerIds.map(id=>{
-      const snapshot=host.snapshotFor(id);
-      // Older game screens read match.money. Supply a per-recipient alias so
-      // a cached screen never displays an empty balance during an update.
-      if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
-      return [id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot}];
-    }));
+    latest=Object.fromEntries(playerIds.map(id=>[id,viewFor(id)]));
     lastViewBytes=JSON.stringify(latest).length;
     localView();if(!publishing)void pump();
+  }
+  // Command receipts are latency-critical for exactly ONE player - the
+  // sender, whose next input stays locked until the receipt lands. Three-
+  // and four-player rosters must not pay a full view set per keystroke, so
+  // receipts publish only the sender's view. The host's own commands need
+  // nothing: localView() already refreshes its screen for free.
+  function queueReceipts(ids){
+    if(closed||failed)return;
+    for(const id of ids)if(id!==localPlayerId&&playerIds.includes(id))pendingReceipts.add(id);
+    if(pendingReceipts.size&&!receiptPumping)void pumpReceipts();
+  }
+  async function pumpReceipts(){
+    receiptPumping=true;
+    try{while(pendingReceipts.size&&!closed){const ids=[...pendingReceipts];pendingReceipts.clear();await channel.publishViews(Object.fromEntries(ids.map(id=>[id,viewFor(id)])));}}
+    catch(error){failed=true;pendingReceipts.clear();latest=null;for(const id of playerIds)host.setPresence(id,false);onError(error);}
+    finally{receiptPumping=false;}
   }
   async function pump(){
     publishing=true;
@@ -32,24 +50,34 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
   return {
     start(){
       if(started||closed)throw new Error('Host session already started or closed');started=true;
-      unsubscribe=channel.watchInputs((id,packet)=>{if(!closed&&!failed&&packet?.epoch===epoch){const result=host.receive(id,packet.envelope);if(result.status==='cancelled')queueView();}});
+      unsubscribe=channel.watchInputs((id,packet)=>{if(!closed&&!failed&&packet?.epoch===epoch){const result=host.receive(id,packet.envelope);if(result.status==='cancelled')queueReceipts([id]);}});
       queueView();
     },
     setFocusPaused(paused){if(!started||closed||failed||typeof host.setFocusPaused!=='function')return false;const changed=host.setFocusPaused(paused);if(changed)queueView();return changed;},
     setPresence(id,connected){if(!started||closed||failed)return false;const changed=host.setPresence(id,connected);if(changed)queueView();return changed;},
     setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
     // The host sees its authoritative state locally, while remote views are
-    // coalesced to 15 Hz while a view stays lean, easing back to 10 Hz once
-    // late waves fill it with enemies and tracers - smoothness must not be
-    // priced in uplink saturation (measured: a wave-20 view runs ~10 KB, so
-    // 15 Hz would push a duo past 290 KB/s of database traffic). The pulse
-    // counter (not tick%) paces REAL session steps, so a double-speed advance
-    // cannot silently double the publish rate.
-    step(){if(!started||closed||failed)return null;const result=host.advance();if(result){pulse++;const urgent=result.commands.length>0||result.events.some(event=>event.type==='waveCleared');const every=lastViewBytes<=leanViewBytes?2:3;if(urgent||pulse%every===1)queueView();else localView();}return result;},
+    // coalesced by an UPLINK BUDGET (180 KB/s): the full view set is
+    // published at the highest quantized rate the budget allows
+    // (15/10/7.5/5 Hz), because rosters amplify - measured with the real
+    // matches: a duo runs a ~7 KB view set, four-player coop ~17 KB,
+    // two-vs-two ~25 KB (every view carries both lanes), and late waves
+    // double it again. Without the budget, three- and four-player fields
+    // push 190-290+ KB/s of database traffic through the hosting browser and
+    // EVERYONE stutters. The pulse counter (not tick%) paces REAL session
+    // steps, so a double-speed advance cannot silently double the publish
+    // rate. Command receipts bypass the budget as tiny sender-only
+    // publishes; wave completions publish the full set.
+    step(){if(!started||closed||failed)return null;const result=host.advance();if(result){pulse++;
+      if(result.events.some(event=>event.type==='waveCleared')){queueView();return result;}
+      if(result.commands.length)queueReceipts(result.commands.map(item=>item.playerId));
+      const bytes=Math.max(1,lastViewBytes),rate=Math.max(MIN_PUBLISH_HZ,Math.min(MAX_PUBLISH_HZ,publishBudgetBytesPerSecond/bytes)),every=Math.max(2,Math.min(6,Math.round(STEPS_PER_SECOND/rate)));
+      if(pulse%every===1)queueView();else localView();
+    }return result;},
     localChannel(){
       if(!playerIds.includes(localPlayerId))throw new Error('Local player required');
       return {watchView(fn){localListener=fn;if(started)localView();return()=>{if(localListener===fn)localListener=null;};},
-        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='cancelled')queueView();if(result.status==='rejected')throw new Error(result.reason);},
+        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='cancelled')queueReceipts([localPlayerId]);if(result.status==='rejected')throw new Error(result.reason);},
         async close(){localListener=null;}};
     },
     publish(){if(started&&!closed&&!failed)queueView();},

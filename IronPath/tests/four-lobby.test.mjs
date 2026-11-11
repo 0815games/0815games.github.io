@@ -57,8 +57,13 @@ const flush=()=>new Promise(resolve=>setTimeout(resolve,0));await flush();
 async function execute(id,command){const result=clients[id].command(command);await flush();session.step();await flush();return result;}
 assert.equal((await execute('alice',{type:'startWave'})).waitingForPlayers,true);const requestId=views.alice.match.pending.id;
 for(const id of ids.slice(1))assert.equal((await execute(id,{type:'approveWave',requestId})).ok,true);
+// Command receipts now travel as sender-only publishes, so the OTHER guests
+// learn a command's outcome from the next paced view (one session step here)
+// instead of the same tick - that is the bandwidth contract Punkt 9 pinned.
+session.step();await flush();
 assert.deepEqual(views.bob.match.lanes.map(lane=>lane.wave),[1,1]);
-assert.equal((await execute('cara',{type:'build',pad:15,towerType:0})).ok,true);assert.equal(views.dan.match.lanes[1].towers[0].ownerId,'cara');assert.equal(views.alice.match.lanes[0].towers.length,0);
+assert.equal((await execute('cara',{type:'build',pad:15,towerType:0})).ok,true);session.step();await flush();
+assert.equal(views.dan.match.lanes[1].towers[0].ownerId,'cara');assert.equal(views.alice.match.lanes[0].towers.length,0);
 assert.equal(views.cara.receipts.length,2);assert.equal(views.alice.receipts.length,1);
 assert.ok(new TextEncoder().encode(values.get('fourParties/fourtest/views/dan')).length<262144,'four-player view fits current packet size in this scenario');
 for(const client of Object.values(clients))await client.stop();await session.stop();
