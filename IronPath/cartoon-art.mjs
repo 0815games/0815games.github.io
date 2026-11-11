@@ -78,24 +78,41 @@ function drawRail(ctx,path){
   }
   ctx.lineCap='round';
 }
-function drawRoad(ctx,path,theme,texture=null){
+export function drawRoad(ctx,path,theme,texture=null){
   if(theme==='junction'){drawRail(ctx,path);return;}
   const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:theme==='talwald'?['#48563a','#65734c','#828e5e']:['#544a34','#716244','#8d7c5b'];
+  // One helper, one stroke: a polyline stroked in a single operation never
+  // blends with itself, so no bend can grow a seam.
   const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
-  trace(86,'rgba(26,30,24,.32)');
-  trace(78,tones[0]);
-  trace(68,tones[1]);
-  trace(58,tones[2]);
-  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.28;ctx.strokeStyle=pattern;ctx.lineWidth=52;ctx.stroke();ctx.restore();}}
-  // Wheel ruts on both sides of the lane, following every actual bend.
+  // The road wears four deliberate layers. The old nested 78/68/58 tone
+  // strokes stacked three hard-edged bands that read as painted contour
+  // lines across every bend (reported: "Strassen-Design neu").
+  // 1. a soft dark rim where the road meets the ground,
+  trace(86,'rgba(26,30,24,.3)');
+  // 2. the dark aggregate shoulder, peeking five pixels out on each side,
+  trace(76,tones[0]);
+  // 3. the driving surface itself, and
+  trace(66,tones[1]);
+  // 4. ONE translucent wash of the lightest tone - a worn, sun-bleached
+  //    centre that fades into the surface instead of stepping.
+  ctx.save();ctx.globalAlpha=.42;trace(46,tones[2]);ctx.restore();
+  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.24;ctx.strokeStyle=pattern;ctx.lineWidth=60;ctx.stroke();ctx.restore();}}
+  // Wheel ruts on both sides of the lane, following every actual bend. One
+  // stroke per side: the old code stroked every segment separately, and the
+  // round caps stacked their alpha at each vertex - dark beads along the
+  // whole road. A single stroke of many subpaths is composited once, so the
+  // beads cannot come back.
   ctx.strokeStyle='rgba(28,24,16,.26)';ctx.lineWidth=5;
-  for(const side of [-1,1])for(let i=1;i<path.length;i++){
-    const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
-    if(!l)continue;
-    const px=-dy/l*15*side,py=dx/l*15*side;
-    ctx.beginPath();ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);ctx.stroke();
+  for(const side of [-1,1]){
+    ctx.beginPath();
+    for(let i=1;i<path.length;i++){
+      const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
+      if(!l)continue;
+      const px=-dy/l*15*side,py=dx/l*15*side;
+      ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);
+    }
+    ctx.stroke();
   }
-  ctx.save();ctx.globalAlpha=.16;trace(9,'#efe6cd');ctx.restore();
   // Pebbles and track marks along the real arclength - deterministic, so the
   // cached terrain layer stays reproducible.
   const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
