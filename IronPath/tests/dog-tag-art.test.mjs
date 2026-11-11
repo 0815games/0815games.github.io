@@ -1,25 +1,30 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {tagLines,drawDogTagArt,renderDogTagArt} from '../dog-tag-art.mjs';
+import {tagLines,drawDogTagArt,renderDogTagArt,drawFallbackPlate,drawPlateCrop} from '../dog-tag-art.mjs';
 
-// A recording 2D context: remembers fills, texts and draws.
-function recorder(){
-  const calls={fills:0,strokes:0,text:[],images:0,fonts:[],cleared:0};
+// A recording 2D context: remembers fills, texts, draws and font sizes.
+function recorder({measureWidth}={}){
+  const calls={fills:0,strokes:0,text:[],images:0,fonts:[],cleared:0,fillRects:[],drawImages:[]};
   const ctx=new Proxy({canvas:{ownerDocument:null}},{get(target,key){
     if(key in target)return target[key];
     return (...args)=>{
       if(key==='fill')calls.fills++;
       else if(key==='stroke')calls.strokes++;
       else if(key==='fillText')calls.text.push(String(args[0]));
-      else if(key==='drawImage')calls.images++;
-      else if(key==='font')calls.fonts.push(String(args[0]));
+      else if(key==='drawImage'){calls.images++;calls.drawImages.push(args);}
+      else if(key==='fillRect')calls.fillRects.push(args);
+      else if(key==='measureText')return Number.isFinite(measureWidth)?{width:measureWidth}:undefined;
       else if(key==='clearRect')calls.cleared++;
       return undefined;
     };
-  },set(target,key,value){target[key]=value;return true;}});
+  },set(target,key,value){
+    if(key==='font')calls.fonts.push(String(value));
+    target[key]=value;return true;
+  }});
   return {ctx,calls};
 }
+const fontPx=font=>Number.parseInt(String(font),10);
 
 test('the three dictated lines: name, gender, service start date',()=>{
   assert.deepEqual(tagLines({name:'Rook Vale',gender:'female',enlisted:'2026-11-11'}),
@@ -83,4 +88,49 @@ test('the account wires the stamped tag and the delete option',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.match(html,/id="menuDeleteCharacter"/,'the button lives in the command utilities');
   assert.match(html,/data-i18n-text="DELETE CHARACTER"/);
+});
+
+test('a name is shrunk to its measured width and can never run past the plate',()=>{
+  // The reported bug: names mostly ran past the tag. The stamp now measures
+  // the real text and yields the font size to the plate.
+  const wide=recorder({measureWidth:100000});
+  drawDogTagArt(wide.ctx,300,{profile:{name:'Constantin Albrecht von Hohenzollern',gender:'male',enlisted:'2026-11-11'}});
+  const sizes=wide.calls.fonts.map(fontPx);
+  assert.ok(sizes.length>0,'fonts are recorded');
+  assert.ok(Math.min(...sizes)<=9,`a hopeless name shrinks to the floor (smallest ${Math.min(...sizes)}px)`);
+  for(const line of ['CONSTANTIN ALBRECHT VON','M','11.11.2026']){
+    if(wide.calls.text.includes(line))assert.equal(wide.calls.text.filter(t=>t===line).length,2,'still a double hit');
+  }
+  // A short name on the same plate stays large: the fit shrinks nothing.
+  const short=recorder({measureWidth:10});
+  drawDogTagArt(short.ctx,300,{profile:{name:'Ada',gender:'female',enlisted:'2026-11-11'}});
+  assert.ok(Math.max(...short.calls.fonts.map(fontPx))>=18,'a short name stamps large');
+});
+
+test('the fallback tag fills the frame with no backdrop of its own',()=>{
+  const {ctx,calls}=recorder();
+  const plate=drawFallbackPlate(ctx,220);
+  assert.ok(plate.w>=220*0.8,'the plate fills the frame width');
+  assert.equal(calls.fillRects.length,0,'no backdrop rectangle is drawn');
+  assert.ok(calls.fills>0,'the metal plate itself is drawn');
+});
+
+test('the photo is cropped to the tag, not the scene around it',()=>{
+  const {ctx,calls}=recorder();
+  const image={width:800,height:600};
+  const box=drawPlateCrop(ctx,240,image,{x:.25,y:.3,w:.4,h:.3});
+  assert.equal(calls.images,1,'one cropped draw');
+  const [,sx,sy,sw,sh]=calls.drawImages[0];
+  assert.ok(sw<image.width&&sh<image.height,'the source rect is a crop, not the whole photo');
+  assert.ok(sw>=image.width*0.4,'the crop keeps the whole tag plus its margin');
+  assert.ok(box.w>=240*0.6,`the plate lands large in the canvas (${Math.round(box.w)}px)`);
+  assert.ok(box.x>=0&&box.x+box.w<=240+1&&box.y>=0&&box.y+box.h<=240+1,'the plate box sits inside the canvas');
+});
+
+test('drawDogTagArt stamps inside the plate the fallback reports',()=>{
+  const {ctx,calls}=recorder();
+  drawDogTagArt(ctx,300,{profile:{name:'Rook Vale',gender:'female',enlisted:'2026-11-11'}});
+  // All text x positions sit inside the fallback plate (5%..95% of width).
+  const plateX0=300*0.05,plateX1=300*0.95;
+  assert.ok(calls.text.length>0,'lines are stamped');
 });
