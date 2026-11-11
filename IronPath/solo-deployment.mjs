@@ -9,8 +9,8 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261112-pressure1';
-import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-pressure1';
+import {createMatch} from './simulation.mjs?v=20261112-kits1';
+import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-kits1';
 import {decodeWorkshop} from './workshop-wire.mjs?v=20261112-pressure1';
 import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure} from './campaign-pressure.mjs?v=20261112-pressure1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';

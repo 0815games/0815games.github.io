@@ -1,6 +1,7 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261112-pressure1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261112-kits1';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261112-pressure1';
+import {specializationRank} from './tower-specialization.mjs?v=20261112-kits1';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261112-kits1';
 import {ENEMY_INTEL} from './combat.mjs?v=20261031-finale1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -225,6 +226,12 @@ function pad(ctx,p,tower,selected,types,notify){
   // A static gold halo remains visible even when reduced motion is enabled.
   if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
     ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
+  // Specialization rank chevrons under the plate: one small gold wedge per
+  // earned rank (level 4/5; prestige keeps three forever).
+  const kitRank=specializationRank(tower);
+  if(kitRank>0){ctx.save();ctx.fillStyle='#f0d68a';ctx.strokeStyle='#5c4c22';ctx.lineWidth=.75;
+    for(let i=0;i<kitRank;i++){const cx=x-11+i*11;ctx.beginPath();ctx.moveTo(cx-4.5,y+22);ctx.lineTo(cx,y+17);ctx.lineTo(cx+4.5,y+22);ctx.closePath();ctx.fill();ctx.stroke();}
+    ctx.restore();}
   // Contact shadow grounds the tower on the plate; sandbag dressing only
   // exists for the vector fallback plate, the painted emplacement brings
   // its own base.
