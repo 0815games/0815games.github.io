@@ -16,6 +16,16 @@ completes" symptom is gone. This file remains the exact copy of the live
 ruleset — if a future change moves it ahead of live again, the same paste-and-
 publish steps apply.
 
+**✅ Status update — published (2026-10-31).** The four endless-record fields
+(`players/$uid/endlessRuns` ≤ 1000000 first write ≤ 1, `endlessWaves`
+≤ 10000000 first write ≤ 10000, `endlessBosses` ≤ 1000000 first write ≤ 1000,
+`endlessBestSector` 0–4, all never decreasing) from PR #252 are live: the
+owner pasted this file into the console rules editor and published. The
+endless launch dialog's per-run record now persists for every account; until a
+player reloads, a rejected write still just silences the stats for that
+session (rewards were never affected). This file remains the exact copy of the
+live ruleset.
+
 File to paste: **`IronPath/firebase/WORKSHOP-RULES-TO-PUBLISH.json`** (identical to `workshop.complete.draft.rules.json`, renamed so it is obvious which file goes into the console).
 
 Console: project `iron-path-dc727` → Realtime Database → **Rules** → select all → paste the **whole** file → Publish.
