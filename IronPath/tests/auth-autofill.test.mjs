@@ -22,3 +22,21 @@ setupAuthForm({form:form2,email,password,submit:submit2,register:register2,forgo
 const pending=form2.listeners.submit({preventDefault(){}});assert.equal(submit2.disabled,true);register2.listeners.click();assert.equal(password.autocomplete,'current-password');await form2.listeners.submit({preventDefault(){}});assert.equal(slowCalls,1);finish();await pending;assert.equal(submit2.disabled,false);
 const account=await readFile(new URL('../account.js',import.meta.url),'utf8');assert.ok(!account.includes("message('');$('password').value='';if(!currentUser)"),'initial signed-out auth callback must not erase AutoFill');assert.match(account,/setTimeout\(\(\)=>\{if\(auth\.currentUser\?\.uid===uid\)\$\('password'\)\.value='';\},1500\)/);
 console.log('Sign-in and sign-up password-manager hints and submission tests passed.');
+// Reported: "im Login-Screen steht teilweise noch englische Schrift" - the
+// first paint is German, but switching between sign-in and account creation
+// rewrote the buttons in hard-coded English. The mode switch must go through
+// the dictionary like everything else.
+const {productionModuleUrl}=await import('./production-module.mjs');
+const {setupLanguage}=await import(productionModuleUrl('language.mjs'));
+const languageNode=()=>({value:'',textContent:'',hidden:false,setAttribute(){},addEventListener(){},classList:{toggle(){},add(){},remove(){}}});
+const savedDocument=globalThis.document;
+globalThis.document={documentElement:{},getElementById:languageNode,querySelector:languageNode,querySelectorAll:()=>[],addEventListener(){},dispatchEvent(){}};
+try{setupLanguage({document:globalThis.document,storage:{getItem:()=>'de'}});}finally{globalThis.document=savedDocument;}
+const formDe=element(),emailDe=element(),passwordDe=element(),submitDe=element(),registerDe=element(),forgotDe=element();
+setupAuthForm({form:formDe,email:emailDe,password:passwordDe,submit:submitDe,register:registerDe,forgot:forgotDe,onSignIn:async()=>{},onRegister:async()=>{}});
+assert.equal(submitDe.textContent,'ANMELDEN','the German screen keeps German buttons');
+registerDe.listeners.click();
+assert.equal(submitDe.textContent,'KONTO ERSTELLEN');
+assert.equal(registerDe.textContent,'ZURÜCK ZUR ANMELDUNG');
+assert.equal(passwordDe.autocomplete,'new-password');
+console.log('auth-autofill: German mode switch verified');

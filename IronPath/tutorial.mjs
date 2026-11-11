@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-endless1';
+import {translateText as tr} from './language.mjs?v=20261112-authfix1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 // The practice steps open the real dialogs in sandbox mode (see account.js). The
 // callbacks are injected so this module never needs the account app itself.
@@ -28,7 +28,7 @@ const memory=new Set();
 // a new edition is offered once, and skipping it is remembered like finishing.
 const TUTORIAL_EDITION=2;
 const keyFor=id=>`ironpath:tutorial:v${TUTORIAL_EDITION}:${id}`;
-export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{},onFinish=()=>{}}){
+export function createTutorial({document,storage,onVisibilityChange=()=>{},onPractice=()=>{},onFinish=()=>{},onTearDown=()=>{}}){
   const $=id=>document.getElementById(id),dialog=$('tutorialDialog');
   let index=0,activeUser=null,skill,armory,workshop,skipped,lastDialogs=-1,pendingDialogs=-1;
   function resetPractice(){skill={upgraded:false,saved:false};armory={equipped:false,upgraded:false};workshop={crafted:false,equippedItem:false};skipped=new Set();}
@@ -67,7 +67,12 @@ export function createTutorial({document,storage,onVisibilityChange=()=>{},onPra
   dialog.addEventListener('close',()=>{if(pendingDialogs>=0)flushPendingPractice();});
   // `finished` distinguishes a completed walk from a dismissal: only a finished
   // tour hands the player on to the training contract.
-  function close(mark,finished=false){if(!dialog.open)return;const user=activeUser;if(mark&&user)markCompleted(user);dialog.close();activeUser=null;onVisibilityChange(false);if(finished&&user){try{onFinish(user);}catch{/* The tour is over either way. */}}}
+  function close(mark,finished=false){if(!dialog.open)return;const user=activeUser;if(mark&&user)markCompleted(user);dialog.close();activeUser=null;onVisibilityChange(false);
+    // Reported: "Abbrechen des Tutorials muss auch die Aufgaben abbrechen". A
+    // practice step leaves the real dialog open in sandbox mode; skipping or
+    // finishing the tour must tear that down, not only the tour itself.
+    try{onTearDown();}catch{/* Tearing down the practice must never break the close. */}
+    if(finished&&user){try{onFinish(user);}catch{/* The tour is over either way. */}}}
   $('tutorialPracticeSkip').onclick=()=>{const practice=TUTORIAL_STEPS[index].practice;if(practice){skipped.add(practice);render();}};
   // The real dialogs report what happened here instead of a mock screen doing it.
   function practiceResult(type,detail){
