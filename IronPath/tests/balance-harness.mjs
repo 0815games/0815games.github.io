@@ -25,6 +25,10 @@ export const GEARS={
   veteran:{label:'veteran',level:12,skills:'2,2,1,0,0;assault',loadout:'1,1,1',storyProgress:4},
   elite:{label:'elite',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10',storyProgress:12},
 };
+// `branch` is the autopilot's specialization policy (Punkt 8 balance gear):
+// which kit every tower takes at level 2->3. Default 0 keeps every pinned
+// result identical to the pre-kit runs. Branch 2 needs soldier level 5 and
+// branch 3 needs 10 (match.mjs gates), so a rookie gear can only run 0/1.
 const profile=gear=>({gender:'male',name:'Soldier',level:gear.level,skills:gear.skills,loadout:gear.loadout,storyProgress:gear.storyProgress||0});
 
 // ------------------------------------------------------------- geometry ----
@@ -75,7 +79,11 @@ function spend(ctx,id){
       if(r.ok){ctx.buildSeq++;continue;}
     }
     if(up&&money>=upCost){
-      const r=ctx.command(id,up.level===2?{type:'upgrade',pad:up.pad,branch:0}:{type:'upgrade',pad:up.pad});
+      // The branch policy may be a number (every tower takes that kit) or a
+      // function of the tower being upgraded - the balance suite uses the
+      // latter to model a player who mixes kits sensibly per tower type.
+      const branch=typeof ctx.branch==='function'?ctx.branch(up):ctx.branch??0;
+      const r=ctx.command(id,up.level===2?{type:'upgrade',pad:up.pad,branch}:{type:'upgrade',pad:up.pad});
       if(r.ok)continue;
     }
     break;
@@ -140,9 +148,9 @@ function driveLanes(laneCtxs,step,tickLimit=30*60*120){
   }
   return laneCtxs.map(laneResult);
 }
-function makeCtx(state,ids,label,maxWaves,command){
+function makeCtx(state,ids,label,maxWaves,command,branch){
   const map=getMap(state.mapId);
-  const ctx={state,ids,label,maxWaves,command,buildSeq:0,samples:[],mapId:state.mapId,map,order:coverageOrder(map)};
+  const ctx={state,ids,label,maxWaves,command,buildSeq:0,samples:[],mapId:state.mapId,map,order:coverageOrder(map),branch};
   const mid=roadPoint(map,.55);
   for(const id of ids){const p=state.players[id];p.x=mid.x;p.y=mid.y;p.target=null;p.direction={x:0,y:0};}
   return ctx;
@@ -152,19 +160,19 @@ function makeCtx(state,ids,label,maxWaves,command){
 export function runSolo(mapId,gear=GEARS.rookie,maxWaves=25){
   const player=createPlayer('p1',profile(gear),850,450);
   const state=createMatch([player],mapId);
-  return driveLanes([makeCtx(state,['p1'],`solo ${mapId} ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c))],()=>stepMatch(state))[0];
+  return driveLanes([makeCtx(state,['p1'],`solo ${mapId} ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c),gear.branch??0)],()=>stepMatch(state))[0];
 }
 export function runCoop(mapId,count,gear=GEARS.rookie,maxWaves=25){
   const players=Array.from({length:count},(_,i)=>createPlayer(`p${i+1}`,profile(gear),850,450));
   const state=createMatch(players,mapId);
-  return driveLanes([makeCtx(state,players.map(p=>p.id),`coop${count} ${mapId} ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c))],()=>stepMatch(state))[0];
+  return driveLanes([makeCtx(state,players.map(p=>p.id),`coop${count} ${mapId} ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c),gear.branch??0)],()=>stepMatch(state))[0];
 }
 export function runVersus(mapId,gear=GEARS.rookie,maxWaves=25){
   const players=[createPlayer('host',profile(gear),850,450),createPlayer('guest',profile(gear),850,450)];
   const v=createVersus(players,mapId,'host');
   const cmd=(id,command)=>applyVersus(v,id,command);
-  const ctxs=[makeCtx(v.lanes.host,['host'],`versus-host ${mapId} ${gear.label}`,maxWaves,cmd),
-              makeCtx(v.lanes.guest,['guest'],`versus-guest ${mapId} ${gear.label}`,maxWaves,cmd)];
+  const ctxs=[makeCtx(v.lanes.host,['host'],`versus-host ${mapId} ${gear.label}`,maxWaves,cmd,gear.branch??0),
+              makeCtx(v.lanes.guest,['guest'],`versus-guest ${mapId} ${gear.label}`,maxWaves,cmd,gear.branch??0)];
   ctxs[0].sync=()=>{if(v.pendingWave)applyVersus(v,'guest',{type:'approveWave',requestId:v.waveRequestId});};
   const results=driveLanes(ctxs,()=>stepVersus(v));
   return {mode:'versus',mapId,gear:gear.label,waves:results.map(r=>r.wave),ended:v.ended?v.endReason:'running',lanes:results};
@@ -173,8 +181,8 @@ export function runTwoVsTwo(gear=GEARS.rookie,maxWaves=25,mapId){
   const players=['a','b','c','d'].map(id=>createPlayer(id,profile(gear),850,450));
   const s=createTwoVsTwo(players,'a',[['a','b'],['c','d']],mapId);
   const cmd=(id,command)=>applyFourCommand(s,id,command);
-  const ctxs=[makeCtx(s.lanes[0],['a','b'],`2v2-team1 ${gear.label}`,maxWaves,cmd),
-              makeCtx(s.lanes[1],['c','d'],`2v2-team2 ${gear.label}`,maxWaves,cmd)];
+  const ctxs=[makeCtx(s.lanes[0],['a','b'],`2v2-team1 ${gear.label}`,maxWaves,cmd,gear.branch??0),
+              makeCtx(s.lanes[1],['c','d'],`2v2-team2 ${gear.label}`,maxWaves,cmd,gear.branch??0)];
   const sync=()=>{if(s.pending)for(const id of s.pending.required)if(!s.pending.approved.includes(id))applyFourCommand(s,id,{type:'approveWave',requestId:s.pending.id});};
   ctxs[0].sync=sync;ctxs[1].sync=sync;
   const results=driveLanes(ctxs,()=>stepFour(s));
@@ -184,7 +192,7 @@ export function runFourCoop(count,gear=GEARS.rookie,maxWaves=25,mapId){
   const players=Array.from({length:count},(_,i)=>createPlayer(`p${i+1}`,profile(gear),850,450));
   const s=createFourCoop(players,'p1',mapId);
   const cmd=(id,command)=>applyFourCommand(s,id,command);
-  const ctx=makeCtx(s.match,players.map(p=>p.id),`four${count} ${gear.label}`,maxWaves,cmd);
+  const ctx=makeCtx(s.match,players.map(p=>p.id),`four${count} ${gear.label}`,maxWaves,cmd,gear.branch??0);
   ctx.sync=()=>{if(s.pending)for(const id of s.pending.required)if(!s.pending.approved.includes(id))applyFourCommand(s,id,{type:'approveWave',requestId:s.pending.id});};
   return {...driveLanes([ctx],()=>stepFour(s))[0],mode:`four-coop-${count}`};
 }
@@ -192,7 +200,7 @@ export function runCampaign(mission,gear=GEARS.rookie){
   const player=createPlayer('p1',profile(gear),850,450);
   const state=createSoloDeployment({player,mapId:mission.mapId,profile:profile(gear),workshopEnabled:false,campaign:{id:mission.id,threat:mission.threat}});
   const maxWaves=state.campaignContract.waves;
-  const result=driveLanes([makeCtx(state,['p1'],`${mission.id}(${mission.threat}) ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c))],()=>stepMatch(state))[0];
+  const result=driveLanes([makeCtx(state,['p1'],`${mission.id}(${mission.threat}) ${gear.label}`,maxWaves,(id,c)=>applyCommand(state,id,c),gear.branch??0)],()=>stepMatch(state))[0];
   return {...result,won:!state.ended&&state.wave>=maxWaves,map:mission.mapId};
 }
 

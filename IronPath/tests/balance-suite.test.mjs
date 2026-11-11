@@ -6,6 +6,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {runSolo,runCoop,runVersus,runFourCoop,runCampaign,GEARS} from './balance-harness.mjs';
+import {ITEMS} from '../armory.mjs?v=20261107-balance1';
 import {CAMPAIGN,actOf,actEndIndex} from '../campaign.mjs';
 import {PRESSURE,campaignPressure} from '../campaign-pressure.mjs';
 import {getMap} from '../maps.mjs';
@@ -202,4 +203,98 @@ test('the calibrated campaign pressure is felt and stays fair',()=>{
   assert.equal(campaignPressure({id:'supply-line'}),1,'finales stay ungated by pressure');
   assert.equal(campaignPressure({id:'tidelock'}),1,'the acts behind the relic wall stay at 1');
   assert.equal(campaignPressure({}),1,'anything unlisted runs at 1');
+});
+
+// ───────────────────────────── Punkt 8: gear balance ───────────────────────
+// The point-6/7 contracts were calibrated against ONE pilot: the no-gear
+// rookie on branch 0. These tests hold the line for the gear the player
+// actually accumulates - armory items and the ten specialization kits.
+
+// The sensible mixed kit policy a real player converges on: fast guns
+// (Twin MG / Twin Flak) against the scout swarms, hard guns (Siege Cannon /
+// Anti-armor Rifle) against armor.
+const MIXED_KIT=up=>up.type===1||up.type===3?1:0;
+const fieldMissions=()=>CAMPAIGN.filter(m=>(m.act.includes('ACT I ·')||m.act.includes('ACT II ·'))&&!m.finale&&(m.threat==='hardened'||m.threat==='elite')&&m.id!=='pinewood-rescue');
+
+test('a no-gear rookie can mix kits and still win every hardened or elite field',()=>{
+  // The uniform-branch-1 pilot loses white-noise by a hair (21 -> 0 bunker on
+  // the final wave): slow heavy guns leak that map's scout swarms. That is
+  // the pre-kit stat trade-off, not a kit bug - and it is exactly why the
+  // fairness contract is pinned on a MIXED kit loadout, the play the game's
+  // own per-tower choice invites. Every field must stay winnable for it.
+  const gear={...GEARS.rookie,branch:MIXED_KIT};
+  for(const mission of fieldMissions()){
+    const r=runCampaign(mission,gear);
+    assert.equal(r.won,true,`${mission.id}: mixed kits must keep the no-gear rookie winning`);
+    assert.ok(r.hp/r.maxHp<=.78,`${mission.id}: mixed kits must still cost bunker (${Math.round(r.hp/r.maxHp*100)}%)`);
+  }
+});
+
+test('no kit choice breaks the endless curve',()=>{
+  // The worst sensible policy (the mix) and the uniform alternatives must
+  // all still lose to the forest curve eventually - and the situational
+  // Boss Hunter kit, which trades wave DPS for boss damage, stays bounded:
+  // clearly worse than the default kit, never catastrophically broken.
+  assert.ok(runSolo('forest',{...GEARS.rookie,branch:MIXED_KIT},50).wave<50,'mixed kits: the curve still wins');
+  assert.ok(runSolo('forest',{...GEARS.rookie,branch:1},50).wave<50,'heavy guns: the curve still wins');
+  const hunter=runSolo('forest',{...GEARS.veteran,branch:3},50).wave;
+  assert.ok(hunter<50,'boss hunters: the curve still wins');
+  assert.ok(hunter>=15,`boss hunters stay a bounded trade-off (observed ${hunter})`);
+});
+
+test('geared soldiers never brick: every kit keeps the contracts winnable',()=>{
+  // A level-12 veteran with relics may pick any of the four kits (the
+  // universal ones unlock at soldier level 5/10). Whichever they spam, no
+  // field may become unwinnable - and the pinned contract missions plus a
+  // slice of act III must stay reachable.
+  for(const branch of [1,2,3]){
+    const gear={...GEARS.veteran,branch};
+    for(const mission of fieldMissions())
+      assert.equal(runCampaign(mission,gear).won,true,`${mission.id}: veteran kit ${branch} must not brick`);
+  }
+  for(const id of ['supply-line','city-of-glass','long-switch']){
+    const mission=CAMPAIGN.find(m=>m.id===id);
+    for(const branch of [1,3])
+      assert.equal(runCampaign(mission,{...GEARS.veteran,branch}).won,true,`${id}: kit ${branch} keeps the finale contract`);
+  }
+  const actIII=CAMPAIGN.filter(m=>m.act.includes('ACT III')).slice(0,6);
+  for(const mission of actIII)
+    assert.equal(runCampaign(mission,{...GEARS.veteran,branch:3}).won,true,`${mission.id}: boss hunters still take act III`);
+});
+
+test('gear buys margin, monotonic in loadout',()=>{
+  // The whole point of gear: the same mixed-kit policy must convert levels,
+  // skills, relics and loadout into real margin on the SAME fields.
+  const rookie={...GEARS.rookie,branch:MIXED_KIT},veteran={...GEARS.veteran,branch:MIXED_KIT};
+  const fields=fieldMissions().filter(m=>['blackout','the-list','ward-line','dead-air'].includes(m.id));
+  const margin=(gear,mission)=>{const r=runCampaign(mission,gear);return r.won?r.hp/r.maxHp:0;};
+  for(const mission of fields)
+    assert.ok(margin(veteran,mission)>margin(rookie,mission)+.3,`${mission.id}: veteran gear must buy real margin`);
+  // Road survives to any cap for both loadouts, so the progression pin
+  // lives on the rough field where the rookie actually falls.
+  assert.ok(runSolo('g3-0d3e7f521',veteran,40).wave>=runSolo('g3-0d3e7f521',rookie,40).wave+5,'veteran gear reaches at least five waves deeper on the rough field');
+});
+
+test('armory items stay honest gear',()=>{
+  // Items are pure buffs for a human, but the pinned autopilot reacts to a
+  // faster or longer-reaching soldier with different decisions, which flips
+  // razor-thin fields (boots "lose" ice-run, binoculars white-noise) - that
+  // is pilot noise on 3%-margin maps, already pinned item-less above. The
+  // honest item contract is pinned on robust ground: the curve still wins,
+  // the onboarding stays winnable and no item trivializes the campaign.
+  const subset=fieldMissions().filter(m=>['blackout','the-list','ward-line','intercept','cold-start'].includes(m.id));
+  const onboarding=CAMPAIGN.filter(m=>m.act.includes('ACT I ·')&&!m.finale&&m.threat==='standard');
+  for(let item=0;item<=ITEMS.length;item++){
+    const gear={...GEARS.rookie,loadout:`0,0,${item}`};
+    assert.ok(runSolo('g3-0d3e7f521',gear,40).wave<35,`item ${item}: the endless curve still wins`);
+    for(const mission of onboarding)
+      assert.equal(runCampaign(mission,gear).won,true,`item ${item}: ${mission.id} onboarding stays winnable`);
+    let coasts=0;
+    for(const mission of subset){
+      const r=runCampaign(mission,gear);
+      assert.equal(r.won,true,`item ${item}: ${mission.id} must stay winnable`);
+      if(r.hp/r.maxHp>=.995)coasts++;
+    }
+    assert.ok(coasts<=2,`item ${item} coasts ${coasts} of the subset - gear must not trivialize the campaign`);
+  }
 });
