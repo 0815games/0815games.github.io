@@ -9,8 +9,8 @@
 // in account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
 import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
 import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
-import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-avatar2';
-import {translateText as tr} from './language.mjs?v=20261112-avatar2';
+import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-pwconfirm1';
+import {translateText as tr} from './language.mjs?v=20261112-pwconfirm1';
 
 const FLAVOR={female:'Pathfinder · sharp eye, steady hand',male:'Point man · first in, last out'};
 

@@ -161,6 +161,7 @@ export const germanMoreStatic=Object.freeze({
   "Braid": "Zopf",
   "Medium": "Mittellang",
   "DELETE CHARACTER": "CHARAKTER LÖSCHEN",
+  "The passwords do not match. Please type them again.": "Die Passwörter stimmen nicht überein. Bitte gib sie erneut ein.",
   "Delete character?": "Charakter löschen?",
   "Your soldier, all progress, gear and endless records are erased. The account itself stays and you can enlist a new soldier right away.": "Dein Soldat, der gesamte Fortschritt, die Ausrüstung und die Endlos-Rekorde werden gelöscht. Das Konto selbst bleibt und du kannst sofort einen neuen Soldaten anwerben.",
   "DELETE": "LÖSCHEN",
