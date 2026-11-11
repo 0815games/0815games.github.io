@@ -1,4 +1,4 @@
-import {translateText as tr} from './language.mjs?v=20261112-pwconfirm1';
+import {translateText as tr} from './language.mjs?v=20261112-recruitui1';
 // Solo campaign presentation only. These decorations never change map geometry,
 // hit testing, terrain rules or simulation state.
 const STYLES={

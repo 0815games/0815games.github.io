@@ -1,18 +1,15 @@
-// The recruiting office: the character-creation screen as an event, not a
-// form. One rendered portrait preview, the dog tag stamped with the name,
-// and exactly two choice rows - the gender and one rendered look per
-// hairstyle, strictly separated by gender. The editor stays short on
-// purpose: the first build scrolled forever and the preview left the screen
-// when an option was tapped (reported), so now the preview column is pinned
-// beside the choices and the choices themselves are a handful of tiles.
-// Pure presentation and choice collection - the actual profile write stays
-// in account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
+// The recruiting office: a compact dark dossier in the game's own panel
+// language. One rendered portrait beside the briefing text, the dog tag with
+// the live-stamped name as the ID row, and exactly two choice rows - the
+// gender and one rendered look per hairstyle, strictly separated by gender.
+// The looks are a slim filmstrip: the photo IS the button, no huge tiles,
+// and the whole card fits a phone screen without scrolling. Pure
+// presentation and choice collection - the actual profile write stays in
+// account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
 import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
 import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
-import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-pwconfirm1';
-import {translateText as tr} from './language.mjs?v=20261112-pwconfirm1';
-
-const FLAVOR={female:'Pathfinder · sharp eye, steady hand',male:'Point man · first in, last out'};
+import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-recruitui1';
+import {translateText as tr} from './language.mjs?v=20261112-recruitui1';
 
 function todayISO(){
   const now=new Date(),pad=n=>String(n).padStart(2,'0');
@@ -101,13 +98,6 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
       lookRow(),
     );
   }
-
-  // The flavor line rides under the rows, so the choice reads like a dossier
-  // entry rather than a toggle.
-  const flavorLine=document.createElement('p');
-  flavorLine.className='recruit-flavor';flavorLine.textContent=tr(FLAVOR.female);
-  optionsRoot.addEventListener('click',()=>{flavorLine.textContent=tr(FLAVOR[avatar.gender]);});
-  optionsRoot.after(flavorLine);
 
   const random=$('avatarRandom');
   if(random)random.addEventListener('click',()=>commit(randomAvatar(avatar.gender)));

@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
+import {readFileSync} from 'node:fs';
 import {setupRecruitScreen} from '../recruit-screen.mjs';
 import {looksFor,defaultAvatar,decodeAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
 
@@ -144,4 +145,19 @@ test('without the elements the screen degrades to a default face',()=>{
   assert.deepEqual(screen.getAvatar(),defaultAvatar('female'));
   assert.doesNotThrow(()=>screen.stamp());
   assert.doesNotThrow(()=>screen.reset());
+});
+
+test('the enlistment is a compact iron-plate card, not the old paper desk',()=>{
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const view=html.slice(html.indexOf('<div id="characterView"'),html.indexOf('<p id="entryMessage"'));
+  assert.match(view,/<form id="characterForm" class="recruit-card">/,'the card IS the form - one compact block');
+  assert.ok(!view.includes('recruit-stage')&&!view.includes('soldier-workbench.jpg'),'no workbench photo scene anymore (reported: does not fit the game)');
+  assert.match(view,/class="hint recruit-note"/,'the note is its own capped line under the head');
+  assert.match(view,/<div id="avatarOptions" class="recruit-options"><\/div>/,'the options root keeps its id and class');
+  assert.match(view,/id="setupLogout"/,'sign out stays reachable from the enlistment');
+  const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
+  assert.match(css,/body:has\(#characterView:not\(\[hidden\]\)\) header,body:has\(#characterView:not\(\[hidden\]\)\) footer\{display:none\}/,'site chrome steps aside so the card fits a phone screen');
+  assert.match(css,/\.recruit-note\{[^}]*max-width:46ch/,'the note keeps a readable measure on phones');
+  assert.match(css,/\.recruit-look\{[^}]*width:clamp\(52px,16vw,64px\)/,'the look filmstrip stays slim - the photo is the button, not a huge tile');
+  assert.match(css,/\.recruit-choice\[aria-checked="true"\]\{[^}]*outline:2px solid var\(--iron-gold/,'the selected state speaks the iron-plate accent');
 });
