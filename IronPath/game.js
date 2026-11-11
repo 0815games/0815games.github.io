@@ -552,7 +552,12 @@ function renderResults(target){
     dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.':'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();onReturnToCommand();});
   };
   $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');if(result.combos?.length){combatFx.emit('combo',{x:player.comboCue.x,y:player.comboCue.y,comboLabel:result.combos.join(' + ')},state);sound.play('combo');}}notice(()=>tr('{ability} deployed!',{ability:tr(abilityName(state.players[me()]?.skills))})+(result.combos?.length?tr(' {combos} combo!',{combos:result.combos.map(x=>tr(x)).join(' + ')}):''));updateUI();});};
-  function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(coop){const key=`${x},${y}`;if(key!==lastDirection){lastDirection=key;coopInput.direction({type:'direction',x,y});}}else applyCommand(state,'local',{type:'direction',x,y});}
+  function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(coop){const key=`${x},${y}`;if(key!==lastDirection){lastDirection=key;coopInput.direction({type:'direction',x,y});
+        // Render-only prediction: the own soldier answers instantly instead
+        // of after the database round trip. The next authoritative snapshot
+        // confirms or gently corrects the extrapolation (projectCoopMotion).
+        const myself=state.players[me()];if(myself&&coopReady){myself.direction={x,y};if(x||y)myself.target=null;}
+      }}else applyCommand(state,'local',{type:'direction',x,y});}
   window.addEventListener('keydown', e=>{if(cinematic)return;if(!menu.hidden){if(e.key==='Escape'){closeMenu();state.selectedPad=null;updateUI();}return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
   const focusPause=createFocusPause({window,document,onBlur:()=>{keys.clear();sendDirection();accumulator=0;},onChange:paused=>coop?.setFocusPaused?.(paused)});
@@ -764,7 +769,9 @@ function renderResults(target){
     if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
     const radius=Math.min(56,Math.max(28,22*logicalWidth/rect.width/(view?.scale||1))),pads=map.pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
-    if(index<0){closeMenu();state.selectedPad=null;dispatch({type:'move',x:Math.max(12,Math.min((map.width||960)-12,x)),y:Math.max(12,Math.min((map.height||540)-12,y))},result=>{if(result.ok){const p=state.players[me()];coach.event('move',{moveFrom:{x:p?.x,y:p?.y}});}notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
+    if(index<0){closeMenu();state.selectedPad=null;const mx=Math.max(12,Math.min((map.width||960)-12,x)),my=Math.max(12,Math.min((map.height||540)-12,y));
+      if(coop&&coopReady){const myself=state.players[me()];if(myself){myself.target={x:mx,y:my};myself.direction={x:0,y:0};}}
+      dispatch({type:'move',x:mx,y:my},result=>{if(result.ok){const p=state.players[me()];coach.event('move',{moveFrom:{x:p?.x,y:p?.y}});}notice(result.ok?'Hero moving to position.':result.reason);updateUI();});return;}
     const selected=index;
     if(coop&&!state.towers.some(t=>t.pad===selected)){
       closeMenu();state.selectedPad=null;const epoch=selectionEpoch,session=coop,input=coopInput;

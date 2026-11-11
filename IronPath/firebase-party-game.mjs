@@ -8,8 +8,8 @@ import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261031-finale1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261031-finale1';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261103-unified1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261112-kits1';
-import {createPartyHost} from './party-host.mjs?v=20261112-kits1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261112-lag1';
+import {createPartyHost} from './party-host.mjs?v=20261112-lag1';
 import {createMatch,STEP} from './simulation.mjs?v=20261112-kits1';
 
 // Game-facing adapter for an already-established party. It is not a lobby or

@@ -19,7 +19,7 @@ import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.m
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-pressure1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-kits1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-lag1';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-kits1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
@@ -40,8 +40,8 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-kits1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-kits1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-kits1';
+import { startGame } from './game.js?v=20261112-lag1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-lag1';
 import { createPlayer } from './match.mjs?v=20261112-kits1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-kits1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-avatar3';

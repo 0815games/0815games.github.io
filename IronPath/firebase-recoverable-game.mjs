@@ -5,11 +5,11 @@ import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-v
 // rebuilds the match from the latest durable checkpoint after a reload.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
-import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261112-kits1';
+import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261112-lag1';
 import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261104-hostpause1';
-import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261112-kits1';
+import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261112-lag1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261112-kits1';
+import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261112-lag1';
 import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261112-kits1';
 import {createVersus} from './versus.mjs?v=20261112-kits1';
 import {createMatch} from './simulation.mjs?v=20261112-kits1';
