@@ -2,7 +2,7 @@ import {germanWorkshop} from './localization-workshop-de.mjs?v=20261108-balance2
 // The Settings dialog is where a player switches the language in the first place, so
 // its copy cannot fall back to English. Own file, asked first, for the same reason as
 // the first-run dictionary below.
-import {germanSettings} from './localization-settings-de.mjs?v=20261118-settings1';
+import {germanSettings} from './localization-settings-de.mjs?v=20261130-germanfull1';
 // The first run was the last translated part of the game and the first one a new
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated
@@ -22,7 +22,7 @@ import {germanCinematics} from './localization-cinematics-de.mjs?v=20261103-list
 import {germanEvents} from './localization-events-de.mjs?v=20261206-acttwo1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
-import {germanText} from './localization-de.mjs?v=20261127-tutlock1';
+import {germanText} from './localization-de.mjs?v=20261130-germanfull1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
@@ -99,12 +99,31 @@ export function translate(key,values={}){
 export function setupLanguage({document,storage,onChange=()=>{}}){
   const selector=document.getElementById('languageSelect');let lang='en';
   try{const saved=storage?.getItem('ironpath:language');if(SUPPORTED_LANGUAGES.includes(saved))lang=saved;}catch{}
-  function render(){active=lang;document.documentElement.lang=lang;selector.value=lang;document.getElementById('languagePreviewNote').hidden=lang!=='de';
-    for(const element of document.querySelectorAll('[data-i18n]')){const key=element.getAttribute('data-i18n');if(Object.hasOwn(messages,key))element.textContent=translate(key);}
-    for(const element of document.querySelectorAll('[data-i18n-text]'))element.textContent=translateText(element.getAttribute('data-i18n-text'));
-    for(const attr of ['placeholder','aria-label','title'])for(const element of document.querySelectorAll(`[data-i18n-${attr}]`))element.setAttribute(attr,translateText(element.getAttribute(`data-i18n-${attr}`)));
+  function render(){active=lang;document.documentElement.lang=lang;selector.value=lang;applyDomTranslations(document);
     onChange(lang);for(const listener of listeners)listener(lang);
   }
   selector.addEventListener('change',()=>{if(!SUPPORTED_LANGUAGES.includes(selector.value)){selector.value=lang;return;}lang=selector.value;try{storage?.setItem('ironpath:language',lang);}catch{}render();});
   render();return {getLanguage:()=>lang,translate};
+}
+function applyDomTranslations(doc){
+    for(const element of doc.querySelectorAll('[data-i18n]')){const key=element.getAttribute('data-i18n');if(Object.hasOwn(messages,key))element.textContent=translate(key);}
+    for(const element of doc.querySelectorAll('[data-i18n-text]'))element.textContent=translateText(element.getAttribute('data-i18n-text'));
+    for(const attr of ['placeholder','aria-label','title'])for(const element of doc.querySelectorAll(`[data-i18n-${attr}]`))element.setAttribute(attr,translateText(element.getAttribute(`data-i18n-${attr}`)));
+    // The browser tab is part of the first paint a German player sees; without
+    // this the tab kept the English tagline forever, even with the game in German.
+    // (Node test fixtures pass minimal documents, so the query is guarded.)
+    const title=typeof doc.querySelector==='function'?doc.querySelector('title'):null;if(title)title.textContent=translateText(title.textContent);
+}
+// The intro and the sign-in form render before account.js has finished fetching
+// the Firebase SDK from the CDN. On a slow connection that window is seconds
+// long, and everything the player could read in it was English (reported:
+// "im Login-Screen steht teilweise noch englische Schrift"). This pass applies
+// the saved language to the static DOM immediately; setupLanguage later renders
+// identically and wires the selector. Both passes are idempotent, and a device
+// without a saved language stays English so the bilingual gate stays honest.
+export function translateStaticDom({document,storage}){
+  let lang='en';
+  try{const saved=storage?.getItem('ironpath:language');if(SUPPORTED_LANGUAGES.includes(saved))lang=saved;}catch{}
+  active=lang;document.documentElement.lang=lang;
+  applyDomTranslations(document);
 }

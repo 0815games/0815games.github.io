@@ -42,8 +42,8 @@ test('the device plan quotes the German the build actually shows',()=>{
  const gate=html.match(/<section id="languageGate"[\s\S]*?<\/section>/)?.[0]??'';
  const flatGate=gate.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ');
  for(const sentence of [
-  'You can change this later at the top of the screen.',
-  'Du kannst die Sprache später oben im Bildschirm ändern.',
+  'You can change this later in Settings.',
+  'Du kannst die Sprache später in den Einstellungen ändern.',
   'SPRACHE WÄHLEN',
  ]){
   assert.ok(flatGate.includes(sentence),`the gate must show: ${sentence}`);

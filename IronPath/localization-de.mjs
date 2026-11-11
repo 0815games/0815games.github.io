@@ -1,5 +1,6 @@
 // German preview strings. English keys are used only for presentation.
 export const germanText=Object.freeze({
+  "Iron Path — Hold the Line": "Iron Path — Halte die Stellung",
   "ACT RELICS": "AKT-RELIKTE",
   "RELIC EARNED: {name}": "RELIKT VERDIENT: {name}",
   "Complete {act} to earn this relic.": "Schließe {act} ab, um dieses Relikt zu verdienen.",

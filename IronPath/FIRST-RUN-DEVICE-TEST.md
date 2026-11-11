@@ -63,8 +63,8 @@ into a report.
 
 1. Open the site in a fresh profile. **Expected:** the gate appears before
    anything else, with **CHOOSE YOUR LANGUAGE / SPRACHE WÄHLEN** as the heading.
-   The note under the tiles reads *"You can change this later at the top of the
-   screen."* in English and the German line directly beneath it.
+   The note under the tiles reads *"You can change this later in
+   Settings."* in English and the German line directly beneath it.
    **First thing to check:** both tiles show a **real flag image**, not the
    letters `GB` / `DE` — Windows renders flag emoji as bare letters, so a gate
    that looks right on your phone can look broken on a Windows laptop.
@@ -72,13 +72,13 @@ into a report.
    tappable — **English** / *Continue in English* and **Deutsch** / *Auf Deutsch
    fortfahren*.
 3. **Check no German reader is stuck:** the German sentence *"Du kannst die
-   Sprache später oben im Bildschirm ändern."* must be complete and in correct
+   Sprache später in den Einstellungen ändern."* must be complete and in correct
    German. If it is not, that is a fail even if you read English. It sits
    directly under the tiles, so nobody has to read the English line first.
 4. Pick **Deutsch**. **Expected:** the whole gate disappears at once — no flash of
    English underneath, no half-translated screen.
 5. Reload. **Expected:** no gate; the game opens straight in German.
-6. Switch to English with the language selector at the top of the screen and
+6. Switch to English with the language selector in the Settings dialog and
    reload. **Expected:** the choice stuck, and no gate returned.
 
 **On a phone specifically:** the gate must fit without scrolling on a 320 px wide
@@ -180,7 +180,7 @@ seconds and ends the boss wave with 100 of 150 bunker health left.
 
 ## 5. Fullscreen (desktop)
 
-1. Enter fullscreen with the toggle at the top of the screen. **Expected:** the
+1. Enter fullscreen with the toggle in the Settings dialog. **Expected:** the
    battlefield fills the screen and every control needed to play is still
    reachable — build, upgrade, ability, speed, field menu.
 2. Open a dialog (Skills or Armory) in fullscreen. **Expected:** it is centred and

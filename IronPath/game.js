@@ -4,7 +4,7 @@ import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261103-listvoice1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261130-germanfull1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -25,13 +25,13 @@ import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-finale1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261103-listvoice1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261130-germanfull1';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261103-listvoice1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261103-listvoice1';
+import { createTutorial } from './tutorial.mjs?v=20261130-germanfull1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261130-germanfull1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261103-listvoice1';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261103-listvoice1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
@@ -190,7 +190,21 @@ function renderResults(target){
     // viewport the four-player frontier uses; phone maps stay as they are.
     const oversized=(map.width||960)>960||(map.height||540)>540;
     const wanted=!versus&&((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer));
-    if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');}
+    // Reported: "nach der zehnten Welle wird die Karte kleiner und beim Zoomen
+    // bleibt nur ein Drittel nutzbar." Two defects:
+    // 1. A second retreat (wave 20, 30) kept the controller built for the
+    //    PREVIOUS sector's dimensions - the bigger field was drawn through a
+    //    viewport that clipped and clamped to the old world size, so whole
+    //    regions of the new map could neither be seen nor reached. The
+    //    controller must be rebuilt whenever the world dimensions change.
+    // 2. The retreat opened on the whole-field fit, shrinking every sprite to
+    //    half its first-round size. It now opens at the first round's reading
+    //    scale; MAP: FIT still shows the whole-field overview on demand.
+    const current=battleViewport?.getViewport();
+    const stale=!!battleViewport&&(current.worldWidth!==map.width||current.worldHeight!==map.height);
+    if(wanted&&stale){battleViewport.destroy();battleViewport=null;}
+    if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');
+      if(!map.fourPlayer){const fit=Math.min(logicalWidth/map.width,logicalHeight/map.height);if(fit<1)battleViewport.zoom(1/fit);}}
     else if(!wanted&&battleViewport){battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);}
   }
   $('campaignSelect').value='free';
