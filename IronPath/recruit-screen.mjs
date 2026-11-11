@@ -7,8 +7,8 @@
 // beside the choices and the choices themselves are a handful of tiles.
 // Pure presentation and choice collection - the actual profile write stays
 // in account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
-import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar2';
-import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar2';
+import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
+import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
 import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-avatar2';
 import {translateText as tr} from './language.mjs?v=20261112-avatar2';
 

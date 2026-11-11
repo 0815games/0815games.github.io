@@ -29,6 +29,8 @@ export const MALE_LOOKS=Object.freeze([
   Object.freeze({id:'short',file:'m-short.jpg',name:'Short'}),
   Object.freeze({id:'side',file:'m-side.jpg',name:'Side part'}),
   Object.freeze({id:'medium',file:'m-medium.jpg',name:'Medium'}),
+  Object.freeze({id:'stubble',file:'m-stubble.jpg',name:'Stubble'}),
+  Object.freeze({id:'beard',file:'m-beard.jpg',name:'Full beard'}),
 ]);
 
 // The two lists are deliberately never merged: asking for a gender always

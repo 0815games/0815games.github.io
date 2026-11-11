@@ -4,7 +4,7 @@
 // canvas-drawn comic face should be a "realistisches Rendering", 1:1 with the
 // game's graphics). Unknown or missing looks clamp to the gender's first
 // portrait, so a stale mirror string can never produce a broken image.
-import {looksFor} from './avatar.mjs?v=20261112-avatar2';
+import {looksFor} from './avatar.mjs?v=20261112-avatar3';
 
 // Bump together with the portrait files on every art re-issue.
 export const PORTRAIT_TOKEN='20261112-avatar2';

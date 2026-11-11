@@ -3,8 +3,9 @@ import {strict as assert} from 'node:assert';
 import {FEMALE_LOOKS,MALE_LOOKS,looksFor,AVATAR_STORAGE_KEY,defaultAvatar,encodeAvatar,decodeAvatar,resolveAvatar,storeAvatar,randomAvatar} from '../avatar.mjs';
 
 test('the hairstyle sets are strictly separate per gender',()=>{
-  assert.ok(FEMALE_LOOKS.length>=6,'the female list carries its own hairstyles');
-  assert.ok(MALE_LOOKS.length>=4,'the male list carries its own hairstyles');
+  assert.equal(FEMALE_LOOKS.length,6,'the female list carries its own hairstyles');
+  assert.equal(MALE_LOOKS.length,6,'the male list carries its own hairstyles');
+  assert.deepEqual(MALE_LOOKS.map(l=>l.id),['buzz','short','side','medium','stubble','beard'],'the male bearded looks are part of the hairstyle list');
   const femaleIds=FEMALE_LOOKS.map(l=>l.id),maleIds=MALE_LOOKS.map(l=>l.id);
   assert.ok(femaleIds.every(id=>!maleIds.includes(id)),'no hairstyle is shared between the lists');
   assert.deepEqual(looksFor('female'),FEMALE_LOOKS);
