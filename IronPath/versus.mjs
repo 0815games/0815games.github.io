@@ -1,5 +1,5 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261112-markers1';
-import {applyCommand} from './match.mjs?v=20261112-markers1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261112-pressure1';
+import {applyCommand} from './match.mjs?v=20261112-pressure1';
 import {WAVE_COUNT} from './combat.mjs?v=20261031-finale1';
 
 // Two isolated, identically generated battlefields, advanced on the host's
