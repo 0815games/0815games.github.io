@@ -41,7 +41,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-avatar1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-avatar1';
+import { startGame } from './game.js?v=20261111-defringe1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-listvoice1';
 import { createPlayer } from './match.mjs?v=20261103-listvoice1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261031-bunker1';

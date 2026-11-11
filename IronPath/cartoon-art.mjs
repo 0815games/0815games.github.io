@@ -153,7 +153,7 @@ function sprite(ctx,name,notify){
     // V3 art ships under the same file names as V2: without a version query a
     // returning player's browser serves the old sprite from its HTTP cache and
     // the new emblems never land. Bump this with every art re-issue.
-    image.src=`assets/${name}-sprite.png?v=20261111-act1`;
+    image.src=`assets/${name}-sprite.png?v=20261111-defringe1`;
   }
   const entry=spriteImages.get(name);return entry.ready?entry.image:null;
 }

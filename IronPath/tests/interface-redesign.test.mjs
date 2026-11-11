@@ -12,7 +12,9 @@ test('interface layer loads after the base stylesheet and its imagery exists', (
   assert.match(html, /interface-redesign\.css\?v=[\w-]+/);
   assert.ok(html.indexOf('style.css?v=') < html.indexOf('interface-redesign.css?v='));
   for (const [, path] of css.matchAll(/url\(['"]?(assets\/[^)'" ]+)/g)) {
-    assert.ok(existsSync(resolve(root, path)), `missing ${path}`);
+    // Sprites carry a cache-buster token (?v=...); the file behind it is the
+    // path without the query.
+    assert.ok(existsSync(resolve(root, path.split('?')[0])), `missing ${path}`);
   }
 });
 

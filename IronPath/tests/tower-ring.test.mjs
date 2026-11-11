@@ -79,9 +79,10 @@ test('a button shows a picture and a name, nothing to read', () => {
   assert.equal(declarations(css, '.tower-sheet.tower-radial .sheet-description').display, 'none',
     'the long description belongs to the dialog the click opens');
   assert.ok(declarations(css, '.tower-sheet.tower-radial .sheet-art')['background-size'], 'there is a picture');
-  // The four build towers get their real sprites, not letters.
+  // The four build towers get their real sprites, not letters. The url carries
+  // the sprite cache token, which changes with every art re-issue.
   for (const sprite of ['mg', 'cannon', 'flak', 'sniper']) {
-    assert.match(css, new RegExp(`data-mode="build"\\] #radial\\d \\.sheet-art\\{background-image:url\\('assets/${sprite}-sprite\\.png'\\)`),
+    assert.match(css, new RegExp(`data-mode="build"\\] #radial\\d \\.sheet-art\\{background-image:url\\('assets/${sprite}-sprite\\.png(\\?v=[\\w-]+)?'\\)`),
       `${sprite} shows its sprite in the ring`);
   }
   // Actions get their own icons, chosen per action because the ring position moves.
