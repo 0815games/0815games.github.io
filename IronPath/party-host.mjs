@@ -1,4 +1,4 @@
-import { createHost, restoreHost } from './protocol.mjs?v=20261112-pressure1';
+import { createHost, restoreHost } from './protocol.mjs?v=20261112-kits1';
 
 // Local, player-hosted match core. The Firebase adapter must bind each player
 // ID to authenticated paths. The hosting browser is not an anti-cheat authority.

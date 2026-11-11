@@ -10,7 +10,7 @@
 // in the right place. Until the photo and the stencil font have arrived, a
 // clean fallback plate is drawn and the canvas repaints the moment they land
 // - the same "draw now, refine when the image lands" contract the map uses.
-import {translateText as tr} from './language.mjs?v=20261112-pressure1';
+import {translateText as tr} from './language.mjs?v=20261112-kits1';
 
 const TAG_ASSET='assets/dog-tag-plate.jpg?v=20261112-avatar2';
 const STENCIL='"Black Ops One","Arial Black",Impact,sans-serif';

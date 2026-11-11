@@ -1,6 +1,6 @@
 // Builds a solo match that carries the account's workshop loadout; reached
 // from solo-deployment for endless solo and campaign missions.
-import {createMatch} from './simulation.mjs?v=20261112-pressure1';
+import {createMatch} from './simulation.mjs?v=20261112-kits1';
 import {captureWorkshopLoadout,workshopEffects} from './workshop-effects.mjs?v=20261112-pressure1';
 export function createWorkshopSoloMatch(player,workshop,mapId,profile=null){
  const snapshot=captureWorkshopLoadout(workshop,'solo',profile);if(!snapshot||!player?.loadout)throw new Error('Invalid solo workshop loadout');

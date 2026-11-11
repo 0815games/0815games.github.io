@@ -8,6 +8,7 @@ import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261107-balance
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { waveFormation,missionFormation } from './combat.mjs?v=20261031-finale1';
+import { upgradeCostFor } from './tower-specialization.mjs?v=20261112-kits1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
 export const TOWER_COSTS = [50, 80, 65, 75];
@@ -144,7 +145,7 @@ export function applyCommand(state, playerId, command) {
       if(tower.level===2&&![0,1,2,3].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
       if(tower.level===2&&command.branch===2&&player.level<5)return {ok:false,reason:'Veteran specialization unlocks at soldier level 5.'};
       if(tower.level===2&&command.branch===3&&player.level<10)return {ok:false,reason:'Boss Hunter specialization unlocks at soldier level 10.'};
-      const cost=upgradeCost(tower.level);if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
+      const cost=upgradeCostFor(tower,upgradeCost(tower.level));if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
       addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
     }
     case 'sell': {
