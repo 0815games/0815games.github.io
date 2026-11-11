@@ -20,7 +20,9 @@ await host.publishViews({alice:{...snapshot,private:'alice'},bob:snapshot});
 assert.deepEqual(views,[snapshot],'empty arrays survive Firebase encoding');
 assert.throws(()=>guest.watchInputs(()=>{}),/Host required/);
 assert.throws(()=>guest.publishViews({alice:snapshot,bob:snapshot}),/Host required/);
-assert.throws(()=>host.publishViews({alice:snapshot}),/Both player views/);
+await host.publishViews({alice:snapshot}); // a sender-only receipt publish is valid
+assert.throws(()=>host.publishViews({eve:snapshot}),/party players/);
+assert.throws(()=>host.publishViews({}),/party players/);
 assert.throws(()=>guest.writeInput({data:'x'.repeat(5000)}),/too large/);
 await sdk.set('parties/randomPrivateId/inputs/bob','not json');assert.deepEqual(errors,['Invalid party packet']);
 await sdk.set('parties/randomPrivateId/inputs/bob','[]');assert.equal(errors.length,2);
