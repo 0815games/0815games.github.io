@@ -23,9 +23,13 @@ const TAG_ASSET='assets/dog-tag-plate.jpg?v=20261112-avatar2';
 const STENCIL='"Black Ops One","Arial Black",Impact,sans-serif';
 // The fallback plate fills the frame on its own: no backdrop, just the tag.
 const FALLBACK_PLATE=Object.freeze({x:.05,y:.12,w:.9,h:.76});
-// Breathing room around the detected plate when cropping the photo: enough
-// chain and edge for the tag to sit naturally, none of the scene around it.
-const CROP_MARGIN=.16;
+// Breathing room around the detected plate when cropping the photo. Kept
+// TIGHT on purpose: the tag must fill the frame (reported: "nur die Dog Tag
+// benutzen ohne Hintergrund - so das es größer wird"). At five percent the
+// plate covers ~91% of the canvas width - the same footprint as the drawn
+// fallback, so the fallback-to-photo transition does not visibly shrink the
+// tag. Wider margins brought the scene (and the shrink) back.
+const CROP_MARGIN=.05;
 
 const cache={image:null,ready:false,failed:false,plate:null,redraws:new Set()};
 
@@ -33,6 +37,19 @@ function notify(){
   for(const redraw of [...cache.redraws]){
     try{redraw();}catch{/* A repaint must never throw into the image load. */}
   }
+}
+
+// Registers a repaint for the moment the photo and the stencil font have
+// arrived. Screens that draw the tag directly (instead of through
+// renderDogTagArt) must hook this, or they keep their first paint - the
+// fallback plate - forever and only swap to the photo on the next unrelated
+// repaint (that late swap read as "worked briefly, then broke").
+export function onDogTagArtReady(redraw){
+  if(typeof redraw!=='function')return ()=>{};
+  // Already settled (loaded, or loading is impossible here): paint now.
+  if(cache.ready||cache.failed){try{redraw();}catch{}return ()=>{};}
+  cache.redraws.add(redraw);
+  return ()=>{cache.redraws.delete(redraw);};
 }
 
 // Starts loading the tag photo and the stencil font exactly once.

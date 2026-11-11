@@ -161,3 +161,17 @@ test('the enlistment is a compact iron-plate card, not the old paper desk',()=>{
   assert.match(css,/\.recruit-look\{[^}]*width:clamp\(52px,16vw,64px\)/,'the look filmstrip stays slim - the photo is the button, not a huge tile');
   assert.match(css,/\.recruit-choice\[aria-checked="true"\]\{[^}]*outline:2px solid var\(--iron-gold/,'the selected state speaks the iron-plate accent');
 });
+
+test('the recruit tag swaps to the photo the moment assets land',()=>{
+  const source=readFileSync(new URL('../recruit-screen.mjs',import.meta.url),'utf8');
+  assert.match(source,/onDogTagArtReady\(\(\)=>paintTag\(\)\)/,'the tag repaints when photo and font arrive, not on the next unrelated paint');
+});
+
+test('look tiles are character miniatures, not colored squares',()=>{
+  const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
+  // The twelve portraits are square with faces around x 52% / y 45%; a 210%
+  // bust crop frames head and shoulders instead of shrinking the scene.
+  assert.match(css,/\.recruit-look\{[^}]*background-size:210% auto/,'the tile zooms into the bust');
+  assert.match(css,/\.recruit-look\{[^}]*background-position:52% 45%/,'the crop is anchored on the measured face position');
+  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:cover/,'no full-body cover crop');
+});
