@@ -3,32 +3,32 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261103-listvoice1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-avatar1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-avatar2';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-pwconfirm1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-avatar2';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-pwconfirm1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261112-avatar2';
-import {createCommandCenter} from './command-center.mjs?v=20261112-avatar2';
+import {setupFriends} from './friends-ui.mjs?v=20261112-pwconfirm1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-pwconfirm1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-avatar2';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-pwconfirm1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261103-listvoice1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261103-listvoice1';
 import {missingPrestige} from './prestige.mjs?v=20261103-listvoice1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261103-listvoice1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-avatar2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-pwconfirm1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261112-avatar2';
+import {setupAuthForm} from './auth-form.mjs?v=20261112-pwconfirm1';
 import {serviceMedals} from './service-record.mjs?v=20261107-balance1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-avatar2';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-pwconfirm1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
@@ -38,16 +38,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-avatar2';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-pwconfirm1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-avatar2';
+import { startGame } from './game.js?v=20261112-pwconfirm1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261103-listvoice1';
 import { createPlayer } from './match.mjs?v=20261103-listvoice1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261031-bunker1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-avatar3';
 import { avatarPortrait } from './avatar-art.mjs?v=20261112-avatar3';
-import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-avatar2';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-avatar3';
+import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-pwconfirm1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-pwconfirm1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
@@ -155,7 +155,7 @@ function message(text,values={}){entryMessage=typeof text==='object'?text:{text,
 onLanguageChange(()=>message(entryMessage));
 function errorText(error){const code=error?.code||'';if(code.includes('invalid-credential')||code.includes('wrong-password')||code.includes('user-not-found'))return 'Incorrect email or password.';if(code.includes('email-already-in-use'))return 'This email is already registered. Sign in instead.';if(code.includes('weak-password'))return 'Please choose a stronger password.';if(code.includes('invalid-email'))return 'Please enter a valid email address.';if(code.includes('network'))return 'Network error. Check your connection and try again.';if(code.includes('permission-denied')||code.includes('permission_denied'))return 'Database access denied. The Iron Path database rules may need to be deployed.';return code?{text:'Could not complete the request. Please try again. ({code})',values:{code}}:'Could not complete the request. Please try again.';}
 async function busy(button, task){if(button.disabled)return;button.disabled=true;message('');try{await task();}catch(e){message(errorText(e));}finally{button.disabled=false;}}
-setupAuthForm({form:$('authForm'),email:$('email'),password:$('password'),submit:$('authSubmit'),register:$('register'),forgot:$('forgot'),onSignIn:(email,password)=>signInWithEmailAndPassword(auth,email,password),onRegister:(email,password)=>createUserWithEmailAndPassword(auth,email,password),onError:error=>message(error?errorText(error):'')});
+setupAuthForm({form:$('authForm'),email:$('email'),password:$('password'),submit:$('authSubmit'),register:$('register'),forgot:$('forgot'),confirm:$('passwordConfirm'),confirmField:$('passwordConfirmField'),onSignIn:(email,password)=>signInWithEmailAndPassword(auth,email,password),onRegister:(email,password)=>createUserWithEmailAndPassword(auth,email,password),onError:error=>message(typeof error==='string'?error:error?errorText(error):'')});
 $('forgot').onclick=e=>{const email=$('email').value.trim();if(!email){message('Enter your email address first.');return;}busy(e.currentTarget,async()=>{await sendPasswordResetEmail(auth,email);message('If the email is registered, a reset email may arrive shortly.');});};
 async function logout(){try{await fourPanel?.leaveForLogout();await partyPanel.leaveForLogout();await signOut(auth);$('password').value='';}catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}}}
 async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPanel?.isActive(),run=gameControl?.getRunSummary();if((partyActive||run)&&!await confirmation.ask({title:'Sign out?',text:partyActive?'Signing out leaves your multiplayer party and may end its match.':'Your current solo operation will be lost. Completed-wave rewards remain saved.',accept:'SIGN OUT'}))return;await logout();}

@@ -9,7 +9,7 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261130-germanfu
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261120-coachgate1';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261112-avatar2';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261112-pwconfirm1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261127-tutlock1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
 import {germanTowers} from './localization-towers-de.mjs?v=20261110-storyde1';
@@ -34,6 +34,7 @@ const messages={
   'auth.copy':{en:'Sign in to access your soldier and saved progress.',de:'Melde dich an, um auf deinen Soldaten und deinen gespeicherten Fortschritt zuzugreifen.'},
   'auth.email':{en:'EMAIL ADDRESS',de:'E-MAIL-ADRESSE'},
   'auth.password':{en:'PASSWORD',de:'PASSWORT'},
+  'auth.passwordConfirm':{en:'CONFIRM PASSWORD',de:'PASSWORT BESTÄTIGEN'},
   'auth.signin':{en:'SIGN IN',de:'ANMELDEN'},
   'auth.register':{en:'CREATE ACCOUNT',de:'KONTO ERSTELLEN'},
   'auth.forgot':{en:'Forgot your password?',de:'Passwort vergessen?'},
