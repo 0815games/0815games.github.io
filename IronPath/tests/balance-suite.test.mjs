@@ -7,6 +7,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {runSolo,runCoop,runVersus,runFourCoop,runCampaign,GEARS} from './balance-harness.mjs';
 import {CAMPAIGN,actOf,actEndIndex} from '../campaign.mjs';
+import {PRESSURE,campaignPressure} from '../campaign-pressure.mjs';
 import {getMap} from '../maps.mjs';
 import {legacyEquipmentEffects} from '../equipment-effects.mjs';
 import {createSoloDeployment} from '../solo-deployment.mjs';
@@ -171,4 +172,31 @@ test('contracts and duels never fall back a sector',()=>{
   lane.wave=10;lane.running=true;lane.spawnLeft=0;lane.enemies=[];
   stepMatch(lane);
   assert.equal(lane.pendingSector,undefined,'a versus lane holds its map');
+});
+
+test('the calibrated campaign pressure is felt and stays fair',()=>{
+  // Reported: act I was "easy peasy" with no equipment at all. The per-mission
+  // pressure (see PRESSURE in campaign-pressure.mjs) is calibrated so the
+  // pinned rookie autopilot still WINS every act I/II non-finale wave contract
+  // - but no hardened or elite field lets it coast: the contract must cost
+  // bunker. pinewood-rescue is the documented exception, an escort sprint the
+  // autopilot survives unscratched at every pressure it can live with.
+  for(const mission of CAMPAIGN){
+    if(!(mission.act.includes('ACT I ·')||mission.act.includes('ACT II ·'))||mission.finale)continue;
+    if(mission.threat!=='hardened'&&mission.threat!=='elite')continue;
+    if(mission.id==='pinewood-rescue')continue;
+    const r=runCampaign(mission,GEARS.rookie);
+    assert.equal(r.won,true,`${mission.id} stays winnable for the rookie autopilot`);
+    assert.ok(r.hp/r.maxHp<=0.78,`${mission.id} must push: autopilot bunker ${(r.hp/r.maxHp*100).toFixed(0)}% of max`);
+  }
+  // The pressure table is a bounded, act I/II-only instrument: finales, the
+  // acts behind the relic wall, training and endless all run at 1.
+  for(const [id,factor] of Object.entries(PRESSURE)){
+    assert.ok(factor>=1&&factor<=2,`${id}: pressure ${factor} outside the calibrated band`);
+    const mission=CAMPAIGN.find(m=>m.id===id);
+    assert.ok(mission&&(mission.act.includes('ACT I ·')||mission.act.includes('ACT II ·'))&&!mission.finale,`${id}: only act I/II non-finales carry pressure`);
+  }
+  assert.equal(campaignPressure({id:'supply-line'}),1,'finales stay ungated by pressure');
+  assert.equal(campaignPressure({id:'tidelock'}),1,'the acts behind the relic wall stay at 1');
+  assert.equal(campaignPressure({}),1,'anything unlisted runs at 1');
 });

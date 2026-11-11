@@ -9,12 +9,12 @@
 //
 // A campaign mission is a contract, not a sandbox: it carries a threat level that
 // decides its wave count, enemy scale and bunker health (see campaign-pressure).
-import {createMatch} from './simulation.mjs?v=20261112-markers1';
-import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-markers1';
-import {decodeWorkshop} from './workshop-wire.mjs?v=20261112-markers1';
-import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge} from './campaign-pressure.mjs?v=20261101-campaign1';
+import {createMatch} from './simulation.mjs?v=20261112-pressure1';
+import {createWorkshopSoloMatch} from './workshop-solo.mjs?v=20261112-pressure1';
+import {decodeWorkshop} from './workshop-wire.mjs?v=20261112-pressure1';
+import {threatFor,campaignUnitScale,campaignBunker,campaignWaves,campaignSurge,campaignPressure} from './campaign-pressure.mjs?v=20261112-pressure1';
 import {TRAINING_WAVES,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_BOSS_EVERY,TRAINING_SUPPLIES} from './training-run.mjs?v=20261121-supplies1';
-import {relicBonus} from './relics.mjs?v=20261112-markers1';
+import {relicBonus} from './relics.mjs?v=20261112-pressure1';
 import {storyBossKind} from './combat.mjs?v=20261031-finale1';
 import {getMap} from './maps.mjs?v=20261031-finale1';
 
@@ -66,9 +66,13 @@ function applyContract(state,campaign,threat,training=false){
  const base=state.maxHp;
  state.maxHp=campaignBunker(base,threat.bunker);
  state.hp=Math.min(state.hp,state.maxHp);
+ // The mission's calibrated pressure rides on enemy health and bunker damage
+ // (see PRESSURE in campaign-pressure.mjs): it levels the generated fields
+ // onto one difficulty curve per threat grade.
+ const pressure=campaignPressure(campaign);
  state.campaignContract=training
   ?{missionId:campaign.id,threat:'training',waves:TRAINING_WAVES,unit:TRAINING_UNIT,squad:0,bossUnit:TRAINING_BOSS_UNIT,bossEvery:TRAINING_BOSS_EVERY}
-  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1),squad:threat.squad,damage:threat.damage,bossFinal:campaign.boss?storyBossKind(campaign.boss):null};
+  :{missionId:campaign.id,threat:campaign.threat??'standard',waves:campaignWaves(campaign.threat),unit:campaignUnitScale(campaign.threat,1)*pressure,squad:threat.squad,damage:threat.damage*pressure,bossFinal:campaign.boss?storyBossKind(campaign.boss):null};
  // Only the training contract raises the wallet: its coach gates the upgrade card
  // on the field, and the endless start (125) could not buy the dearest tower AND
  // its first upgrade. A floor, not an override - equipment that grants start

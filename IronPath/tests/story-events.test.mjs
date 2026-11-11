@@ -97,15 +97,16 @@ test('a time side settles against the running time of its stage',()=>{
     stepStory(s,b,seconds);
     return drainStoryNotifications(s).filter(e=>e.type==='side')[0];
   };
-  // The secure approach takes twelve clean seconds; the side allows seventy-five.
-  assert.equal(run(12)?.outcome,'complete');
+  // The secure approach takes its authored clean seconds; the side allows
+  // seventy-five, so any honest clear completes it.
+  assert.equal(run(find('bridge').stages[0].seconds)?.outcome,'complete');
   // A side tighter than the stage itself can only miss: thirty seconds of
   // running field against a five-second ask.
   const tight=createStoryMission(find('bridge')),tightBattle=battle();
   stepStory(tight,tightBattle,1/30);drainStoryNotifications(tight);
   tight.sides.push({def:{id:'test-tight',label:'Too tight',kind:'time',stage:0,seconds:5,reward:10},done:false,failed:false});
   tightBattle.wave=1;tightBattle.running=true;tightBattle.players.local={x:tight.mission.stages[0].x,y:tight.mission.stages[0].y};
-  stepStory(tight,tightBattle,12);
+  stepStory(tight,tightBattle,find('bridge').stages[0].seconds);
   assert.equal(drainStoryNotifications(tight).filter(e=>e.type==='side')[0]?.outcome,'missed');
 });
 

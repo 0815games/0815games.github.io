@@ -23,7 +23,7 @@
 // German. Writing the raw strings to the screen was a real bug - the guide was the
 // one part of the first run with no German at all, because nobody ever asked for a
 // translation.
-import {translateText as tr} from './language.mjs?v=20261112-friendpurge1';
+import {translateText as tr} from './language.mjs?v=20261112-pressure1';
 
 export const STEPS = Object.freeze([
   Object.freeze({
