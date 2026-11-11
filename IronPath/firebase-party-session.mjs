@@ -1,10 +1,10 @@
-import {normalizeCommand} from './protocol.mjs?v=20261112-kits1';
+import {normalizeCommand} from './protocol.mjs?v=20261112-lag1';
 // Session logic for live parties, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
-export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{}}){
-  if(!channel||!host||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||typeof epoch!=='string'||!epoch||typeof onError!=='function')throw new Error('Invalid host session');
-  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null;
+export function createFirebasePartyHostSession({channel,host,playerIds,epoch,localPlayerId=null,onError=()=>{},leanViewBytes=4096}){
+  if(!channel||!host||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||typeof epoch!=='string'||!epoch||typeof onError!=='function'||!Number.isFinite(leanViewBytes)||leanViewBytes<0)throw new Error('Invalid host session');
+  let started=false,closed=false,unsubscribe=null,publishing=false,latest=null,failed=false,localListener=null,pulse=0,lastViewBytes=0;
   const connections=new Map(playerIds.map(id=>[id,[]]));
   function localView(){
     if(!localListener||!localPlayerId||closed||failed)return;
@@ -20,6 +20,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
       if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
       return [id,{epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot}];
     }));
+    lastViewBytes=JSON.stringify(latest).length;
     localView();if(!publishing)void pump();
   }
   async function pump(){
@@ -38,8 +39,13 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
     setPresence(id,connected){if(!started||closed||failed)return false;const changed=host.setPresence(id,connected);if(changed)queueView();return changed;},
     setConnections(id,ids){if(!started||closed||failed||!connections.has(id)||!Array.isArray(ids))return false;connections.set(id,ids.slice(0,64));queueView();return true;},
     // The host sees its authoritative state locally, while remote views are
-    // coalesced to at most 10 Hz plus command and wave-completion receipts.
-    step(){if(!started||closed||failed)return null;const result=host.advance();if(result){if(result.tick%3===0||result.commands.length||result.events.some(event=>event.type==='waveCleared'))queueView();else if(result.tick%2===0)localView();}return result;},
+    // coalesced to 15 Hz while a view stays lean, easing back to 10 Hz once
+    // late waves fill it with enemies and tracers - smoothness must not be
+    // priced in uplink saturation (measured: a wave-20 view runs ~10 KB, so
+    // 15 Hz would push a duo past 290 KB/s of database traffic). The pulse
+    // counter (not tick%) paces REAL session steps, so a double-speed advance
+    // cannot silently double the publish rate.
+    step(){if(!started||closed||failed)return null;const result=host.advance();if(result){pulse++;const urgent=result.commands.length>0||result.events.some(event=>event.type==='waveCleared');const every=lastViewBytes<=leanViewBytes?2:3;if(urgent||pulse%every===1)queueView();else localView();}return result;},
     localChannel(){
       if(!playerIds.includes(localPlayerId))throw new Error('Local player required');
       return {watchView(fn){localListener=fn;if(started)localView();return()=>{if(localListener===fn)localListener=null;};},

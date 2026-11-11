@@ -8,6 +8,14 @@ import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261112-kits1';
 import { applyCommand } from './match.mjs?v=20261112-kits1';
 import { stepMatch } from './simulation.mjs?v=20261112-kits1';
 export const PROTOCOL_VERSION=1;
+// Snapshots carry only the newest receipts. A client may have exactly ONE
+// command in flight (it sends sequence nextSeq and stays locked until that
+// receipt arrives), so the newest handful of receipts is strictly sufficient;
+// the window merely covers view reordering. Views are written to the database
+// up to 15 times per second per player, so every kilobyte here is bandwidth
+// the players feel as lag (measured: a full 128-receipt history dominated the
+// view at ~60% of its bytes).
+export const SNAPSHOT_RECEIPTS=8;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
@@ -92,7 +100,7 @@ function makeHost(data){
   function snapshotFor(playerId){
     if(!Object.hasOwn(players,playerId))return null;
     const p=players[playerId];
-    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.map(r=>r.response)});
+    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.slice(-SNAPSHOT_RECEIPTS).map(r=>r.response)});
   }
   return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive,speed:()=>speedControl.snapshot().speed};
 }
