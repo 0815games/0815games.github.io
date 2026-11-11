@@ -8,8 +8,8 @@
 // account.js (exactly {name, gender, xp, enlisted} plus the avatar string).
 import {looksFor,defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-avatar3';
 import {avatarPortrait} from './avatar-art.mjs?v=20261112-avatar3';
-import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-recruitui1';
-import {translateText as tr} from './language.mjs?v=20261112-recruitui1';
+import {drawDogTagArt} from './dog-tag-art.mjs?v=20261112-markers1';
+import {translateText as tr} from './language.mjs?v=20261112-markers1';
 
 function todayISO(){
   const now=new Date(),pad=n=>String(n).padStart(2,'0');

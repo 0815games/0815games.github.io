@@ -4,8 +4,8 @@
 import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261031-finale1';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
 import {rewardWave} from './armory.mjs?v=20261107-balance1';
-import {decodeWorkshop,encodeWorkshop} from './workshop-wire.mjs?v=20261103-listvoice1';
-import {applyBossRewards} from './workshop-rewards.mjs?v=20261103-listvoice1';
+import {decodeWorkshop,encodeWorkshop} from './workshop-wire.mjs?v=20261112-markers1';
+import {applyBossRewards} from './workshop-rewards.mjs?v=20261112-markers1';
 
 export function applyWorkshopWaveCredit(profile,{kind,receiptId,mask,block=0}={}){
  if(!profile||typeof profile!=='object'||Array.isArray(profile)||!Number.isSafeInteger(profile.xp)||profile.xp<0||profile.xp>10000000||!['solo','coop'].includes(kind)||typeof receiptId!=='string'||!/^[a-f0-9]{32}$/.test(receiptId)||!Number.isInteger(mask)||mask<0||mask>MAX_WAVE_MASK)return null;

@@ -14,6 +14,10 @@ import {getMap} from './maps.mjs?v=20261031-finale1';
 //   at:'entry'         where the enemy road enters the field
 //   at:<fraction>      that fraction along the road (junctions, convoys)
 //   at:'field'         the next free field spot away from road, pads, bunker
+//   at:'<name>'        one shared landmark: stages carrying the same name
+//                      resolve to the SAME point - a dressing station that
+//                      becomes the field hospital you then protect is one
+//                      camp, not two (The List, reported)
 const MISSIONS=[
   {id:'lost-signal',act:'ACT I · THE SILENCE',title:'The Silent Signal',mapId:'g3-0a195a333',threat:'standard',
    briefing:'At dawn, every radio on the valley road goes silent—except for one broken distress call. Captain Mara Voss sends you to find the courier carrying the relay key. The bunker is the last place still answering.',
@@ -37,7 +41,7 @@ const MISSIONS=[
    success:'IVO: Enough components for three masts. ADA: And a manifest from the buyer’s tent - the payments are signed with a prison camp code.'},
   {id:'the-list',act:'ACT I · THE SILENCE',title:'The List',mapId:'g3-0d7a4b35c',threat:'hardened',
    briefing:'The camp code points to a marsh field hospital run by Medic Sera Malik. Enemy reprisal squads are combing the delta for her wounded. Her list of names begins here.',
-   stages:[{type:'secure',at:'field',seconds:10,label:'Secure the dressing station',dialogue:'SERA: I operate as long as the ground outside is ours. Clear it and keep it clear.'},{type:'protect',at:'field',asset:'Field hospital',seconds:20,label:'Protect the field hospital',dialogue:'SERA: Reprisal squads in the reeds. Do not let them reach the tents - every name on my list is still breathing.'},{type:'escort',at:'bunker',seconds:3,label:'Evacuate the wounded',dialogue:'SERA: Litters are moving. Walk them out ahead of the next sweep.'}],
+   stages:[{type:'secure',at:'hospital',seconds:10,label:'Secure the dressing station',dialogue:'SERA: I operate as long as the ground outside is ours. Clear it and keep it clear.'},{type:'protect',at:'hospital',asset:'Field hospital',seconds:20,label:'Protect the field hospital',dialogue:'SERA: Reprisal squads in the reeds. Do not let them reach the tents - every name on my list is still breathing.'},{type:'escort',at:'bunker',seconds:3,label:'Evacuate the wounded',dialogue:'SERA: Litters are moving. Walk them out ahead of the next sweep.'}],
    success:'SERA: Everyone on the list is out. One of my wounded was a courier - he spoke of a manifest with a prisoner called VALE.'},
   {id:'brothers-keeper',act:'ACT I · THE SILENCE',title:'Brother’s Keeper',mapId:'g3-0e9c6f21d',threat:'hardened',
    briefing:'A captured dispatch rider was moved across the ice road before the pass closed. His satchel is said to hold a prisoner manifest - and Ada has stopped pretending she is not listening.',
@@ -226,11 +230,29 @@ const MISSIONS=[
 // resolves to the same points, so host and client never need to sync stages.
 function distanceToSegment(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,d=dx*dx+dy*dy,t=d?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/d)):0;return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function pointAlong(path,t){let total=0;for(let i=1;i<path.length;i++)total+=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);let left=total*Math.max(0,Math.min(1,t));for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],seg=Math.hypot(b.x-a.x,b.y-a.y);if(left<=seg)return {x:a.x+(b.x-a.x)*(left/seg),y:a.y+(b.y-a.y)*(left/seg)};left-=seg;}return {...path[path.length-1]};}
-// The first point between two road fractions that stays clear of every pad:
-// objective markers must never sit on top of a buildable pad.
-function padClearPoint(path,pads,from,to){for(let i=0;i<=24;i++){const p=pointAlong(path,from+(to-from)*i/24);if(pads.every(q=>Math.hypot(q.x-p.x,q.y-p.y)>56))return {x:Math.round(p.x),y:Math.round(p.y)};}return null;}
+// Objective markers draw a label plate above their point, a dashed ring
+// around it and - for protected assets - a health bar below (see game.js). A
+// marker needs room for all of that: 64px left and right, 67px above, 52px
+// below, or parts of it leave the canvas. Reported on The List, where the
+// dressing station sat in the dead top-left corner with its label off the
+// field - and the same defect hid 35 more markers across the story.
+const MARKER_MARGIN={side:64,top:67,bottom:52};
+function markerFits(p,map){return p.x>=MARKER_MARGIN.side&&p.x<=map.width-MARKER_MARGIN.side&&p.y>=MARKER_MARGIN.top&&p.y<=map.height-MARKER_MARGIN.bottom;}
+const clampMarker=(p,map)=>({x:Math.round(Math.max(MARKER_MARGIN.side,Math.min(map.width-MARKER_MARGIN.side,p.x))),y:Math.round(Math.max(MARKER_MARGIN.top,Math.min(map.height-MARKER_MARGIN.bottom,p.y)))});
+// The first point between two road fractions that stays clear of every pad
+// and fits the marker: objective markers never sit on top of a buildable pad,
+// and never clip off the field.
+function padClearPoint(path,pads,from,to,map){for(let i=0;i<=24;i++){const p=pointAlong(path,from+(to-from)*i/24);if(pads.every(q=>Math.hypot(q.x-p.x,q.y-p.y)>56)&&markerFits(p,map))return {x:Math.round(p.x),y:Math.round(p.y)};}return null;}
+// The fittable, pad-free point on the road closest to a fraction. Generated
+// roads lead in from outside the field, so the window around a target
+// fraction can lie entirely off-map (High Water's village marker sat at
+// x=32). Scanning the whole road keeps the stage ON its road instead of
+// clamping it sideways into the grass.
+function roadFits(path,pads,t,map){let best=null,bestD=1e9;for(let i=0;i<=200;i++){const p=pointAlong(path,i/200);if(!markerFits(p,map)||pads.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<=56))continue;const d=Math.abs(i/200-t);if(d<bestD){bestD=d;best={x:Math.round(p.x),y:Math.round(p.y)};}}return best;}
 // Free field spots: the same jittered grid the story map art anchors its
-// landmarks to, so scenery and objectives share one visual language.
+// landmarks to, so scenery and objectives share one visual language. Edge
+// spots stay in the set - the balance suite sims live on these exact points,
+// and the marker renderer keeps its own label plate inside the canvas.
 function fieldSpots(path,pads,bunker,stages){const spots=[];for(let row=0;row<=6;row++)for(let col=0;col<=12;col++){const x=55+col*70+((col*13+row*7)%19)-9,y=52+row*70+((col*5+row*11)%19)-9,p={x,y};if(path.slice(1).some((b,i)=>distanceToSegment(p,path[i],b)<58))continue;if(pads.some(q=>Math.hypot(q.x-x,q.y-y)<60))continue;if(Math.hypot(bunker.x-x,bunker.y-y)<80)continue;if(stages.some(q=>Number.isFinite(q.x)&&Math.hypot(q.x-x,q.y-y)<65))continue;spots.push(p);}return spots;}
 function resolveStages(mission){
   const map=getMap(mission.mapId),path=map.path,pads=map.pads,bunker=map.bunker||{x:900,y:400};
@@ -239,15 +261,24 @@ function resolveStages(mission){
     if(stage.at==='bunker')Object.assign(stage,{x:bunker.x,y:bunker.y});
     else if(stage.at==='entry'){
       // Generated roads lead in from outside the field: the entry objective is
-      // the first stretch of road that is actually on the map and pad-free.
+      // the first stretch of road that is actually on the map, pad-free and
+      // fully drawable - its label plate must not clip off the canvas.
       let p=null;
       for(let i=0;i<=30&&!p;i++){const c=pointAlong(path,.15*i/30);
-        if(c.x>=40&&c.x<=map.width-40&&c.y>=40&&c.y<=map.height-40&&pads.every(q=>Math.hypot(q.x-c.x,q.y-c.y)>56))p=c;}
-      p=p||pointAlong(path,.1);
-      Object.assign(stage,{x:Math.round(Math.max(40,Math.min(map.width-40,p.x))),y:Math.round(Math.max(40,Math.min(map.height-40,p.y)))});
+        if(markerFits(c,map)&&pads.every(q=>Math.hypot(q.x-c.x,q.y-c.y)>56))p=c;}
+      p=p||roadFits(path,pads,.1,map)||clampMarker(pointAlong(path,.1),map);
+      Object.assign(stage,{x:Math.round(p.x),y:Math.round(p.y)});
     }
-    else if(typeof stage.at==='number'){const t=stage.at,p=padClearPoint(path,pads,Math.max(0,t-.15),Math.min(1,t+.15))||pointAlong(path,t);Object.assign(stage,{x:Math.round(p.x),y:Math.round(p.y)});}
+    else if(typeof stage.at==='number'){const t=stage.at,p=padClearPoint(path,pads,Math.max(0,t-.15),Math.min(1,t+.15),map)||roadFits(path,pads,t,map)||clampMarker(pointAlong(path,t),map);Object.assign(stage,{x:p.x,y:p.y});}
   }
+  // Named anchors: stages that share one narrative landmark resolve to ONE
+  // point. The List secures Sera's dressing station and then protects "the
+  // field hospital" - the same tents, so the marker must not jump camps
+  // (reported: two objectives 501px apart told two different stories). The
+  // shared point answers the strictest member: a protect member needs the
+  // tight road band even when the first member only set the place up.
+  const groups=new Map();
+  for(const stage of stages)if(typeof stage.at==='string'&&!['bunker','entry','field'].includes(stage.at)){if(!groups.has(stage.at))groups.set(stage.at,[]);groups.get(stage.at).push(stage);}
   // Field spots are shuffled per mission and spread apart, so two protected
   // assets never share one corner of the map.
   const spots=fieldSpots(path,pads,bunker,stages);
@@ -260,8 +291,11 @@ function resolveStages(mission){
   // still clear them); other field anchors keep the plain spread rules.
   const roadDistance=p=>{let m=1e9;for(let i=1;i<path.length;i++){const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l2=dx*dx+dy*dy,t=l2?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/l2)):0;m=Math.min(m,Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy));}return m;};
   let fallback=0;
-  for(const stage of stages)if(stage.at==='field'){
-    const band=stage.type==='protect'?[80,95]:stage.type==='secure'?[58,105]:null;
+  for(const stage of stages)if(stage.at==='field'||groups.has(stage.at)){
+    if(Number.isFinite(stage.x))continue; // a shared anchor resolves once, with its first member
+    const members=groups.get(stage.at)||[stage];
+    const strictest=members.some(s=>s.type==='protect')?'protect':members.some(s=>s.type==='secure')?'secure':stage.type;
+    const band=strictest==='protect'?[80,95]:strictest==='secure'?[58,105]:null;
     const inBand=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]&&d<=band[1];};
     const spread=q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=180);
     // Third try: a widened band before giving up on the road entirely. Some
@@ -273,10 +307,10 @@ function resolveStages(mission){
     // accepts the balance suite's own 90px marker floor instead of the full
     // 180px spread - on a small marsh field the only contestable spot can sit
     // near the bunker the escort stage walks to.
-    const relaxed=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]-15&&d<=(stage.type==='protect'?99:110);};
+    const relaxed=q=>{if(!band)return true;const d=roadDistance(q);return d>=band[0]-15&&d<=(strictest==='protect'?99:110);};
     const nearSpread=q=>stages.every(s=>!Number.isFinite(s.x)||Math.hypot(s.x-q.x,s.y-q.y)>=90);
-    const p=order.find(q=>spread(q)&&inBand(q))||(band?order.find(inBand):null)||(band?order.find(q=>nearSpread(q)&&relaxed(q)):null)||order.find(spread)||order[fallback++%Math.max(1,order.length)]||{x:Math.round(path[0].x),y:Math.round(path[0].y)};
-    Object.assign(stage,{x:p.x,y:p.y});
+    const p=order.find(q=>spread(q)&&inBand(q))||(band?order.find(inBand):null)||(band?order.find(q=>nearSpread(q)&&relaxed(q)):null)||order.find(spread)||order[fallback++%Math.max(1,order.length)]||clampMarker(pointAlong(path,.5),map);
+    for(const member of members)Object.assign(member,{x:p.x,y:p.y});
   }
   for(const stage of stages)delete stage.at;
   return stages.map(s=>Object.freeze(s));
