@@ -173,7 +173,7 @@ function endLoadingScene(){
  if(loadingSlowTimer){clearTimeout(loadingSlowTimer);loadingSlowTimer=null;}
  $('loadingSlow')&&($('loadingSlow').hidden=true);
 }
-function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();}
+function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
  // The recruiting office is a wide desk, not a 430px personnel card: the
  // entry panel breaks out of its dossier width while the Musterung is up.
  $('entry').classList.toggle('recruiting',view==='character');}

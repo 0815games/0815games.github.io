@@ -30,7 +30,7 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     // array that was only read at the very end, so an early timeout left no
     // clue WHAT broke the boot. Print the moment it happens.
     page.on('pageerror', error => { const text = error.stack || String(error); errors.push(text); console.error('[pageerror] ' + text); });
-    page.on('console', message => { console.error('[' + message.type() + '] ' + message.text()); });
+    page.on('console', message => { if (message.type() === 'error') console.error('[console] ' + message.text()); });
     page.on('requestfailed', request => console.error('[requestfailed] ' + request.method() + ' ' + request.url() + ' ' + (request.failure()?.errorText || '')));
     // The pageerror arrives with an empty stack, so catch it where it is born:
     // window error events carry filename, line and column even for parse errors.
