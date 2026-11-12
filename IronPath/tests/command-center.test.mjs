@@ -33,7 +33,7 @@ test('the highlighted SOLDIER card sits above the game modes and owns the quick 
   assert.ok(card<actions&&actions<head&&head<modes,'card, then quick actions, then the deployment head, then the game modes');
   assert.ok(!html.includes('soldier-dossier'),'the old dossier column is gone');
   assert.ok(!html.includes('id="menuEquipment"')&&!html.includes('id="menuScrap"')&&!html.includes('id="menuPoints"'),'scrap/equipment/points live in their dialogs, not the menu');
-  for(const id of ['menuPortrait','menuName','menuLevel','menuXp','menuXpBar','menuArmory','menuSkills','menuSkillBadge','menuFriends','menuFriendBadge','menuLeaderboard'])
+  for(const id of ['menuPortrait','menuName','menuLevel','menuRank','menuXp','menuXpBar','menuArmory','menuSkills','menuSkillBadge','menuFriends','menuFriendBadge','menuLeaderboard'])
     assert.ok(html.includes(`id="${id}"`),'kept id: '+id);
   // The dog tag is OFF the menu card (reported: "die dog Tag passt nicht auf
   // den hauptbildschirm und sieht auch sonst scheisse aus" - removed).

@@ -834,3 +834,16 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 .endless-actions{justify-content:flex-end}
 @media(max-width:560px){.endless-record{grid-template-columns:repeat(2,1fr)}.endless-themes{grid-template-columns:1fr}}
 
+/* --- Soldier rank: chevrons and stars, derived from the level ------------------
+   One stencil-gold mark, three sizes: a corner chip on the menu portrait, a
+   line in the dossier rail, a small badge beside the name on the field. The
+   rank is derived from the level and never stored - the mark is decoration,
+   the name next to it carries the meaning. */
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;flex:none}
+.rank-badge svg{display:block}
+.rank-badge-menu{position:absolute;right:5px;bottom:5px;padding:3px 5px;background:#12211ae6;border:1px solid #e0c68299;border-radius:3px;box-shadow:0 2px 8px #0008}
+.rank-badge-profile{align-self:center;margin-left:4px}
+.soldier-rank{display:flex;align-items:center;gap:8px;margin:3px 0 0;min-width:0}
+.soldier-rank .rank-badge{padding:2px 4px;background:#12211a80;border:1px solid #7b8a6b66;border-radius:3px}
+.soldier-rank strong{font:700 11px 'Trebuchet MS',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#d4c181;overflow-wrap:anywhere}
+@media(max-width:540px){.rank-badge-menu{right:3px;bottom:3px;padding:2px 3px}.soldier-rank strong{font-size:10px}}
