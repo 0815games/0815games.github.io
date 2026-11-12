@@ -1,7 +1,7 @@
 // Workshop transaction service, live for every signed-in soldier through the
 // armory. Writes fail closed when the workshop rules are not published; the
 // legacy path keeps working in that case.
-import {initializeWireWorkshop,applyWireWorkshopCommand,meltPrestige} from './workshop-wire.mjs?v=20261112-pressure1';
+import {initializeWireWorkshop,applyWireWorkshopCommand,meltPrestige} from './workshop-wire.mjs?v=20261112-tagless1';
 
 export function createWorkshopAccount({db,auth,sdk,canEdit=()=>false}){
  if(!db||!auth||!sdk||typeof sdk.ref!=='function'||typeof sdk.onValue!=='function'||typeof sdk.runTransaction!=='function'||typeof canEdit!=='function')throw new Error('Invalid workshop account service');

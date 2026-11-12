@@ -1,5 +1,5 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {readArmory,ITEMS} from './armory.mjs?v=20261107-balance1';
+import {readArmory,ITEMS} from './armory.mjs?v=20261112-tagless1';
 import {parseBuild,webBonuses,abilityName} from './skills.mjs?v=20261107-balance1';
 // Base loadout values only. Terrain, temporary perks and enemy defenses can
 // change the actual battlefield result; no simulation state is written here.

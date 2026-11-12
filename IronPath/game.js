@@ -1,40 +1,40 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-kits1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261112-tagless1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261112-live1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261112-tagless1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
 import {cinematicFrames,cinematicScene,relicHandover} from './story-cinematics.mjs?v=20261031-finale2';
 import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDifficulty,campaignWaveContract,ACTS,actOf,actEndIndex,actComplete} from './campaign.mjs?v=20261112-pressure1';
-import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-pressure1';
+import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261121-supplies1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261031-finale1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261112-pressure1';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261112-tagless1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
 import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-finale1';
 import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261112-live1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261112-tagless1';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-coopui1';
-import { createTutorial } from './tutorial.mjs?v=20261112-live1';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261112-live1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-kits1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261112-kits1';
+import { createTutorial } from './tutorial.mjs?v=20261112-tagless1';
+import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261112-tagless1';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261112-tagless1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261112-tagless1';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { specializationRank } from './tower-specialization.mjs?v=20261112-kits1';
@@ -870,15 +870,15 @@ function renderResults(target){
         else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost. The operation has failed.');}
         else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');const target=report;target.pending++;Promise.resolve(account.awardXP(event.xp,event.wave,!experimentalWorkshop?null:runReceipt())).then(detail=>{target.pending--;if(detail?.committed)addReward(target,detail);else target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);renderCampaign();}).catch(()=>{target.pending--;target.failed=true;if(lastReport===target&&$('runResults').open)renderResults(target);});notice(event.wave%5===0?tr('Boss wave {wave} cleared! Choose a field upgrade. +{xp} XP.',{wave:event.wave,xp:event.xp}):tr('Wave cleared! +20 supplies and +{xp} XP. Prepare for the next wave.',{xp:event.xp}));}
       }
-      // The boss of wave 5 ends the training contract: five cleared waves, and the
-      // dog tag is handed over in the debrief. `trainingWon` waits for the boss to
-      // actually die, so the run cannot end with the boss still standing.
+      // The boss of wave 5 ends the training contract: five cleared waves and the
+      // debrief. `trainingWon` waits for the boss to actually die, so the run
+      // cannot end with the boss still standing.
       // The first run ends in the reward screen either way. Winning tops the run up
       // to FIRST_RUN_XP; losing still pays FIRST_RUN_DEFEAT_XP, and both reach
       // level 2 - the screens that follow teach equipment and skills, and a player
       // who bounced off wave five still has to be given something to equip and a
       // point to spend. This used to fire on `trainingWon` only, so a defeat ended
-      // the run with the debrief and no dog tag at all.
+      // the run with the debrief and no reward at all.
       // However the training contract ends - abandoned, bunker lost, or the boss
       // down - the field coaching ends with it. Reported: the SHOW TASK pill
       // outlived a lost or abandoned tutorial and floated over the Command
@@ -892,7 +892,7 @@ function renderResults(target){
        // A replay pays nothing: the first run can be restarted from Settings, and a
        // reward that can be farmed by restarting the tutorial is not a reward.
        if(trainingRewards)Promise.resolve(account.awardXP(xp,Math.max(1,state.completedWave||1))).catch(()=>{});
-       notice(()=>tr(trainingRewards?'Run over. {xp} XP for the attempt - the dog tag is yours anyway.':'Run over. This replay pays no XP - the first run already did.',{xp}));
+       notice(()=>tr(trainingRewards?'Run over. {xp} XP for the attempt - time to gear up.':'Run over. This replay pays no XP - the first run already did.',{xp}));
       }
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
@@ -1048,9 +1048,9 @@ function renderResults(target){
   // the shortened contract on the training map again, the coach's marker is cleared
   // so the seven cards start at the first one, and the run pays no second reward.
   //
-  // Deliberately NOT cleared: the ending marker (dog tag, equip, skills, workshop).
-  // Those steps write to the real profile - replaying them would hand out a second
-  // dog tag and a second free point, so a replay teaches the field, not the economy.
+  // Deliberately NOT cleared: the ending marker (equip, skills, workshop). Those
+  // steps write to the real profile - replaying them would hand out a second free
+  // point, so a replay teaches the field, not the economy.
   replayFirstRun:()=>{
    const id=account.getUserId();
    if(!id)return false;

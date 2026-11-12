@@ -1,5 +1,5 @@
 import {readRecoveryFromServer} from './firebase-recovery-server-read.mjs?v=20261103-recovery2';
-import {restorePartyHost} from './party-host.mjs?v=20261112-lag1';
+import {restorePartyHost} from './party-host.mjs?v=20261112-tagless1';
 // Checkpoint store for the opt-in host-recovery trial. Owner-specific paths
 // fence stale writers. A checkpoint and all recipient views are one atomic
 // record.

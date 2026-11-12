@@ -1,53 +1,52 @@
-import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-pressure1';
-import {createWorkshopView} from './workshop-view.mjs?v=20261112-pressure1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-dossier1';
+import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
+import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-tagless1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-live1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-tagless1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
-import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
+import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-live1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-tagless1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261112-dossier1';
-import {createCommandCenter} from './command-center.mjs?v=20261112-soldatcard1';
+import {setupFriends} from './friends-ui.mjs?v=20261112-tagless1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-tagless1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-live1';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-pressure1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-tagless1';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
-import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-pressure1';
+import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-lag1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-live1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-tagless1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-tagless1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261112-live1';
-import {serviceMedals} from './service-record.mjs?v=20261107-balance1';
+import {setupAuthForm} from './auth-form.mjs?v=20261112-tagless1';
+import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
-import {runFirstRunEnding,endingDone,markEndingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-tutend1';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-live1';
-import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
+import {runFirstRunEnding,endingDone,markEndingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-tagless1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-tagless1';
+import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
-import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261112-pressure1';
-import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-pressure1';
+import {rewardDelta} from './run-results.mjs?v=20261112-tagless1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261112-tagless1';
+import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-live1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-tagless1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-menutag1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-lag2';
-import { createPlayer } from './match.mjs?v=20261112-kits1';
-import { bunkerStart } from './solo-deployment.mjs?v=20261112-kits1';
+import { startGame } from './game.js?v=20261112-tagless1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-tagless1';
+import { createPlayer } from './match.mjs?v=20261112-tagless1';
+import { bunkerStart } from './solo-deployment.mjs?v=20261112-tagless1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-live1';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261112-live1';
-import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-live1';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-live1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-tagless1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
@@ -58,9 +57,9 @@ let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=fal
 // Declared before setupLanguage() runs: its first onChange fires immediately.
 let armoryCategory='equipment';
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
-// The recruiting office: the avatar preview, the option rows and the stamped
-// dog tag on the character-creation screen. Presentation only; the profile
-// write stays in the form submit below.
+// The recruiting office: the avatar preview and the option rows on the
+// character-creation screen. Presentation only; the profile write stays in
+// the form submit below.
 const recruitScreen=setupRecruitScreen({document,storage:languageStorage,getAccountId:()=>user?.uid??null});
 setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
 const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
@@ -181,8 +180,8 @@ async function deleteCharacter(){
  message('Character deleted.');
 }
 $('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
-// The day service began - printed on the dog tag. Local time, ISO shape,
-// exactly what the published rules accept.
+// The day service began - shown in the service record. Local time, ISO
+// shape, exactly what the published rules accept.
 const enlistmentDate=()=>{const now=new Date(),pad=n=>String(n).padStart(2,'0');return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;};
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const avatar=recruitScreen.getAvatar();const currentUser=user, version=sessionVersion;recruitScreen.stamp();busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate()}:undefined,{applyLocally:false});
  // The face rides in its own optional field after the profile exists, so a
@@ -228,10 +227,10 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
   onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
 function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
- // Accounts from before the dog-tag rework carry no service date; stamp one
- // once. If the rules are not live yet this fails silently and retries on
- // the next load - the tag shows the placeholder until then.
- if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);refreshDogTags();if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();refreshDogTags();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+ // Accounts from before the service-date rework carry none; stamp one once.
+ // If the rules are not live yet this fails silently and retries on the
+ // next load - the service record shows the placeholder until then.
+ if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
   // A realtime-database transaction only settles once the server answers; while
   // offline it stays pending forever, and the results screen would sit on
@@ -469,21 +468,12 @@ const sandboxAPI={
 // closes the dialog itself - the sample soldier goes with it.
 for(const id of ['skillDialog','armoryDialog'])$(id)?.addEventListener('close',()=>{if(inSandbox())sandboxAPI.leave();});
 // --- First-run ending -----------------------------------------------------------
-// After the training contract the new soldier spends their first skill point in
-// the REAL Skills dialog, receives a dog tag (drawn, never stored) and opens the
-// workshop for the first time. Ordering and the once-per-account gate live in
-// first-run-ending.mjs; the dialogs stay here, where they already are.
+// After the training contract the new soldier puts on the gear the run earned
+// in the REAL Armory, spends their first skill point in the REAL Skills dialog
+// and opens the workshop for the first time. Ordering and the once-per-account
+// gate live in first-run-ending.mjs; the dialogs stay here, where they are.
 let endingRunning=false,endingAborted=false;
 const firstRunStorage=()=>{try{return window.localStorage;}catch{return null;}};
-// The tag is cosmetic: it is derived on every render and nothing is written back.
-function refreshDogTags(){
- if(!profile)return;
- const data={profile,accountId:user?.uid};
- // The worn tag: painted on canvas with its real ball chain everywhere it
- // hangs - the soldier screen, the armory and the dossier portrait corner.
- for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag')])if(container)renderDogTagArt(document,container,data,{size:170});
- refreshProfileTag(data);
-}
 // The dossier and soldier-screen portraits show the soldier's own LAYERED
 // face: base portrait plus the chosen hair and beard overlays, composed on
 // an offscreen canvas. The composition is async, the consumers are sync, so
@@ -505,20 +495,6 @@ async function refreshSoldierPortrait(){
 function recruitPortraitUrl(){
   if(!profile)return null;
   return portraitCache.url??facePortrait(resolveAvatar(profile,languageStorage));
-}
-// The dog tag is a piece of kit the soldier WEARS, not a stat: once the first run is
-// over it hangs beside the name in the Command Center. `ENDING_KEY` is the record of
-// "this soldier has been issued one", so the badge and the award dialog can never
-// disagree - no new profile field, no Firebase rules change.
-function refreshProfileTag(data){
- const badge=document.getElementById('profileTag');
- if(!badge)return;
- const issued=!!user?.uid&&endingDone(user.uid,firstRunStorage());
- badge.hidden=!issued;
- if(!issued){badge.replaceChildren();return;}
- // The little tag beside the name: the same rendered photo and stamped
- // lines as everywhere else, just smaller.
- renderDogTagArt(document,badge,data,{size:84});
 }
 const dialogOpen=id=>!!document.getElementById(id)?.open;
 // Wait for a dialog to open, then for the player to finish with it. Never hangs:
@@ -553,29 +529,10 @@ async function practiceSkills(){
  // Closing without saving is a decline, not a failure: the ending stays offered.
  return false;
 }
-// Step 1 of the ending: the tag is ISSUED. Until now the dog tag only existed
-// inside the soldier screen, which meant the reward for the first boss was a line
-// in a menu nobody had opened yet. It gets its own popup, full size.
-async function showDogTag(){
- refreshDogTags();
- guide().start(user?.uid);
- const dialog=document.getElementById('dogTagAward'),slot=document.getElementById('dogTagAwardSlot'),close=document.getElementById('dogTagAwardClose');
- if(!dialog||!slot)return true;
- renderDogTagArt(document,slot,{profile:viewProfile(),accountId:user?.uid},{size:170});
- if(!dialog.open)dialog.showModal();
- guide().raise?.();
- await new Promise(resolve=>{
-  const done=()=>{dialog.removeEventListener('close',done);close?.removeEventListener?.('click',onClose);resolve();};
-  const onClose=()=>{if(dialog.open)dialog.close();};
-  dialog.addEventListener('close',done);
-  close?.addEventListener?.('click',onClose);
- });
- return true;
-}
-// Step 2 of the ending: put on what the run earned, in the REAL armory. This is
+// Step 1 of the ending: put on what the run earned, in the REAL armory. This is
 // the player's own soldier, not the practice sandbox, so the save is real.
 async function equipFirstRewards(){
- guide().next?.();
+ guide().start(user?.uid);
  document.getElementById('armoryOpen')?.click?.();
  if(!await waitFor(()=>dialogOpen('armoryDialog'),{timeout:10000}))return false;
  document.getElementById('armoryEquipmentTab')?.click?.();
@@ -613,12 +570,12 @@ async function openWorkshopFirstTime(){
 let firstRunGuide=null;
 // "Play the first run again": forget that this device has seen the tutorial, then let
 // the game redeploy the training contract. Only the seen markers are cleared - the
-// rewards are switched off inside game.js, so a replay cannot mint XP or a dog tag.
+// rewards are switched off inside game.js, so a replay cannot mint a second reward.
 const firstRunStorageFor=()=>{try{return window.localStorage;}catch{return null;}};
 // "Play the first run again": forget that this device has seen the coaching and the
-// four cards after the match, then let the game redeploy the training contract. The
-// ending (dog tag popup, real armory, real skill tree) is deliberately NOT cleared:
-// those steps write to the profile, so a replay teaches the field, not the economy.
+// three cards after the match, then let the game redeploy the training contract. The
+// ending (real armory, real skill tree) is deliberately NOT cleared: those steps
+// write to the profile, so a replay teaches the field, not the economy.
 function replayFirstRun(){
  const id=user?.uid;
  if(!id)return false;
@@ -627,7 +584,7 @@ function replayFirstRun(){
  const storage=firstRunStorageFor();
  try{
   forgetGuideSeen(id,storage);
-  for(const key of ['rewards','equip','skills','workshop'])storage?.removeItem?.(`ironpath:guide:v1:${key}`);
+  for(const key of ['equip','skills','workshop'])storage?.removeItem?.(`ironpath:guide:v1:${key}`);
  }catch{/* memory only: the session still replays */}
  const started=gameControl?.replayFirstRun?.();
  if(!started)return false;
@@ -658,7 +615,7 @@ function guide(){
   // back every time.
   const close=document.getElementById('guideClose');
   if(close)close.onclick=()=>{
-   const midLesson=dialogOpen('dogTagAward')||dialogOpen('armoryDialog')||dialogOpen('skillDialog');
+   const midLesson=dialogOpen('armoryDialog')||dialogOpen('skillDialog');
    if(!endingRunning||midLesson){firstRunGuide?.dismiss?.();return;}
    endingAborted=true;
    firstRunGuide?.stop?.();
@@ -679,13 +636,13 @@ function offerFirstRunEnding(){
  // The wrapper honours an abort from the FIRST pending moment of a step; the
  // runner asks `shouldStop` again between steps, so a closed walkthrough ends
  // at the next breath instead of dragging the player to the next screen.
- const guarded=name=>async()=>!endingAborted&&await ({tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime})[name]();
+ const guarded=name=>async()=>!endingAborted&&await ({equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime})[name]();
  void runFirstRunEnding({
   id,storage:firstRunStorage(),
-  steps:{tag:guarded('tag'),equip:guarded('equip'),skills:guarded('skills'),workshop:guarded('workshop')},
+  steps:{equip:guarded('equip'),skills:guarded('skills'),workshop:guarded('workshop')},
   shouldStop:()=>endingAborted,
 
-  onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();refreshDogTags();openFieldSchool();},
+  onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();openFieldSchool();},
   // A declined or unavailable step stops the walkthrough - and the guide with
   // it. Reported: the SHOW TASK pill outlived an abandoned ending and floated
   // over every Command Center view with nothing left to show.

@@ -1,4 +1,4 @@
-import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-pressure1';
+import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-tagless1';
 import {webBonuses} from './skills.mjs?v=20261107-balance1';
 import {getMap} from './maps.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor} from './terrain.mjs?v=20261124-zones1';

@@ -14,7 +14,7 @@ import { forgetGuideSeen, guideSeen, markGuideSeen } from '../first-run-guide.mj
 // lets the game deploy the contract again.
 //
 // Two things must never happen with that button, and both are tested here:
-//   1. it must not hand out a second reward (no XP, no second dog tag);
+//   1. it must not hand out a second reward (no XP, no second payout);
 //   2. it must not turn into a way to farm the first run by restarting it.
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -71,23 +71,23 @@ test('the training contract can be forgotten, so startFirstRun deploys it again'
 
 test('the four cards after the match are forgotten too', () => {
   const storage = memory();
-  for (const id of ['rewards', 'equip', 'skills', 'workshop']) markGuideSeen(id, storage);
-  assert.equal(guideSeen('rewards', storage), true);
-  forgetGuideSeen('rewards', storage);
-  assert.equal(guideSeen('rewards', storage), false, 'the replay starts the guide again');
+  for (const id of ['equip', 'skills', 'workshop']) markGuideSeen(id, storage);
+  assert.equal(guideSeen('equip', storage), true);
+  forgetGuideSeen('equip', storage);
+  assert.equal(guideSeen('equip', storage), false, 'the replay starts the guide again');
   assert.equal(guideSeen('skills', storage), true, 'and only the one that was forgotten');
 });
 
 test('a replay pays no second reward, and the game says so', () => {
   // The reward branch is the whole honesty of this button: if the replay paid, a
-  // player could restart the tutorial to farm XP and the dog tag.
+  // player could restart the tutorial to farm XP.
   const game = readFileSync(resolve(root, 'game.js'), 'utf8');
   assert.match(game, /trainingRewards=true,/, 'a normal first run is paid');
   assert.match(game, /trainingRewards=rewards!==false/, 'and only an explicit replay turns it off');
   assert.match(game, /if\(trainingRewards\)Promise\.resolve\(account\.awardXP\(xp,/, 'the defeat payout is gated');
   assert.match(game, /if\(trainingRewards&&bonus>0/, 'and so is the completion bonus');
   assert.match(game, /This replay pays no XP/, 'the player is told, not left guessing');
-  // The ending (dog tag popup, real armory, real skill tree) is not part of a replay.
+  // The ending (real armory, real skill tree) is not part of a replay.
   const account = readFileSync(resolve(root, 'account.js'), 'utf8');
   const replay = account.slice(account.indexOf('function replayFirstRun('), account.indexOf('function guide('));
   assert.doesNotMatch(replay, /endingKey|ENDING_KEY/, 'the ending marker is not cleared');

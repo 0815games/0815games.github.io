@@ -107,15 +107,13 @@ test('SURPRISE ME rolls a different combination within the gender',()=>{
   assert.notEqual(after,before,'the roll changed the default');
 });
 
-test('typing a name repaints the tag',()=>{
-  const {nodes}=fixture();
-  const name=nodes.get('soldierName');
-  name.value='Ro';
-  name.oninput();
-  name.value='Rook';
-  name.oninput();
-  // The draw itself is covered in dog-tag-art.test; here: wired, no throw.
-  assert.equal(name.value,'Rook');
+test('the recruit screen ships no dog tag canvas',()=>{
+  // Reported: "Dog tags konsequent entfernen überall" - the live-stamped tag
+  // beside the portrait went with them.
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.ok(!html.includes('recruitTag'),'no tag canvas in the markup');
+  assert.ok(!html.includes('recruit-showcase-side'),'no showcase side column');
+  assert.ok(!existsSync(new URL('../dog-tag-art.mjs',import.meta.url)),'the tag art module is deleted');
 });
 
 test('the ENLIST stamp appears and hides itself again',()=>{
@@ -148,7 +146,7 @@ test('the markup and css carry the showcase and composite tiles',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
   assert.match(html,/<canvas id="avatarPreview" class="recruit-portrait-canvas"/,'the showcase portrait is a canvas');
   assert.doesNotMatch(html,/<img id="avatarPreview"/,'no small preview image anymore');
-  assert.match(html,/class="recruit-showcase"/,'portrait and dog tag sit in the showcase row');
+  assert.match(html,/class="recruit-showcase"/,'the showcase centers the layered portrait');
   assert.doesNotMatch(html,/recruit-id/,'the old cramped id row is gone');
   assert.ok(!existsSync(new URL('../recruit-preview.html',import.meta.url)),'the preview page was removed after the build-in');
   assert.ok(!existsSync(new URL('../avatar-art.mjs',import.meta.url)),'the single-look portrait mapper was removed with the filmstrip');

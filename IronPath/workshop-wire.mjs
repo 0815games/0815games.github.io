@@ -3,8 +3,8 @@
 // Writes require the published workshop rules (see
 // firebase/WORKSHOP-RULES-TO-PUBLISH.json); without them saves are rejected
 // and the legacy path keeps working.
-import {validateWorkshop} from './workshop-model.mjs?v=20261112-pressure1';
-import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261112-pressure1';
+import {validateWorkshop} from './workshop-model.mjs?v=20261112-tagless1';
+import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261112-tagless1';
 import {isPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {completeStory} from './campaign.mjs?v=20261112-pressure1';
 const LIMIT=2048;

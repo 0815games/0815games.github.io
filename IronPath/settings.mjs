@@ -153,7 +153,7 @@ export function createSettings({
     if (typeof onResetFirstRun !== 'function') return;
     const ok = !confirm || await confirm.ask({
       title: 'Play the first run again?',
-      text: 'The training contract starts from the beginning: same map, same cards, same guide. Progress you already earned stays yours, and this replay pays no second XP and no second dog tag.',
+      text: 'The training contract starts from the beginning: same map, same cards, same guide. Progress you already earned stays yours, and this replay pays no second XP.',
       accept: 'START OVER',
     });
     if (!ok) return;

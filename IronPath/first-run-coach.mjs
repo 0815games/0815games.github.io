@@ -15,7 +15,7 @@
 //
 // Copy is one sentence per card. Pictures belong to the reward popups, not to the
 // card that has to keep the field free.
-import {translateText as tr} from './language.mjs?v=20261112-live1';
+import {translateText as tr} from './language.mjs?v=20261112-tagless1';
 import {createCoachHighlight} from './coach-highlight.mjs?v=20261112-coachptr1';
 
 // Every card except the two announcements asks for something, and the card does
@@ -41,7 +41,7 @@ export const COACH_STEPS = Object.freeze([
   Object.freeze({id:'hero',title:'Move your hero',text:'Tap open ground and your soldier walks there and fires on his own. He is not a tower: he can be anywhere, so put him where the road bends.',caption:'TAP OPEN GROUND',when:'move',ask:'Send your soldier somewhere',target:null}),
   Object.freeze({id:'money',title:'Supplies',text:'Supplies pay for towers and only arrive when you clear a wave. That is why you build before you deploy, not after.',caption:'WATCH THE SUPPLY COUNT',when:null,target:{element:'#moneyPanel'}}),
   Object.freeze({id:'deploy',title:'Start the wave',text:'Deploy calls the next wave. Clearing it pays XP and supplies, so the field gets stronger only if you keep building.',caption:'PRESS DEPLOY',when:'deploy',ask:'Press Deploy to start the wave',target:{element:'#start'}}),
-  Object.freeze({id:'boss',title:'The boss is here',text:'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.',caption:'BOSS OF WAVE 5',when:'boss',target:null}),
+  Object.freeze({id:'boss',title:'The boss is here',text:'A boss walks with the last wave. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.',caption:'BOSS OF WAVE 5',when:'boss',target:null}),
 ]);
 
 // The edition decides whether an existing soldier is shown the cards again. It is
@@ -49,8 +49,8 @@ export const COACH_STEPS = Object.freeze([
 // it" marker, so without a bump an account that closed the old card once would
 // never be shown the explanations again, not even on the new field.
 //
-// v2 is the six-wave contract, with the last wave as the boss wave and the dog tag
-// coming from that boss rather than from wave five.
+// v2 is the six-wave contract, with the last wave as the boss wave rather than
+// a boss on wave five.
 const EDITION=2;
 const keyFor=id=>`ironpath:coach:v${EDITION}:${id}`;
 const memory=new Set();

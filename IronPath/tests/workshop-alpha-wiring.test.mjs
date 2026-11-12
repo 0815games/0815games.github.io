@@ -48,7 +48,7 @@ test('armory state exists before the first language render',()=>{
 test('repeated profile snapshots never restart the game or social listeners',()=>{
  // showProfile() starts the game, the friend listener and the score reporter;
  // running it again on every snapshot duplicated popups and leaderboard writes.
- assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);refreshDogTags\(\);if\(featureEnabled\('tutorial'\)\)void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once; the tag is only re-drawn');
+ assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);if\(featureEnabled\('tutorial'\)\)void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
 });
 
 test('the workshop view is cache-busted with the build',()=>{

@@ -485,9 +485,9 @@ html[lang="de"] .language-flag-control .flag-icon{background-image:url('assets/f
    Character creation wears the game's own iron plate: same gradient panel,
    same stamped buttons, same gold star accent as the command center and the
    dialogs (reported: the old bright paper desk "passt ueberhaupt nicht zum
-   Spielen", colours and font barely readable). One compact card - portrait
-   and dog tag as the ID row, a slim filmstrip of looks where the photo IS
-   the button - and the whole enlistment fits a phone screen without
+   Spielen", colours and font barely readable). One compact card - the portrait as the ID row, a slim
+   filmstrip of looks where the photo IS the button - and the whole
+   enlistment fits a phone screen without
    scrolling: the site chrome steps aside, the note stays under ~46
    characters per line. */
 #characterView{padding:0}
@@ -505,7 +505,6 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
    when it sat as a small square in the head row). */
 .recruit-showcase{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
 .recruit-portrait-canvas{flex:none;width:clamp(170px,52vw,240px);aspect-ratio:1;display:block;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
-.recruit-showcase-side{display:grid;justify-items:center;gap:10px}
 .recruit-head-text{min-width:0}
 .recruit-kicker{display:block;font-size:9px;font-weight:bold;letter-spacing:.16em;color:var(--iron-gold,#f0d68a)}
 .recruit-card h2{font:700 clamp(21px,5vw,27px)/1.1 Georgia,serif;color:#f2e9cc;margin:5px 0 0}

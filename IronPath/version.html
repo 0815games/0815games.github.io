@@ -24,11 +24,10 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
 <p>Diese Seite prüft von <strong>deinem Gerät</strong> aus, ob du die aktuelle Version bekommst. Bitte mach einen Screenshot von dieser Seite und schick ihn, falls etwas nicht stimmt.</p>
 <div class="result" id="url"><span class="verdict">DU BIST HIER</span><p><code id="here">…</code></p><p class="small" id="agent"></p></div>
 <div class="result" id="r1"><span class="verdict">PRÜFE AKTUELLE SPIEL-DATEI…</span><p id="r1d">Wird geladen…</p></div>
-<div class="result" id="r2"><span class="verdict">PRÜFE DOG-TAG-MODUL…</span><p id="r2d">Wird geladen…</p></div>
-<div class="result" id="r3"><span class="verdict">PRÜFE CHARAKTER-KACHELN…</span><p id="r3d">Wird geladen…</p></div>
+<div class="result" id="r2"><span class="verdict">PRÜFE CHARAKTER-KACHELN…</span><p id="r2d">Wird geladen…</p></div>
 <a class="button" href="./?x=1">SPIEL FRISCH ÖFFNEN (?x=1)</a>
 <p class="small">Der Zusatz ?x=1 umgeht den Seiten-Cache. Nach dem Laden unten im SETTINGS-Dialog die Build-Nummer prüfen.</p>
-<p class="build">DIAGNOSE-SEITE BUILD 20261112-diag4</p>
+<p class="build">DIAGNOSE-SEITE BUILD 20261112-diag5</p>
 <script>
 (function(){
   document.getElementById('here').textContent=location.href;
@@ -44,19 +43,14 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
   probe('index.html').then(html=>{
     const build=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
     token=(html.match(/account\.js\?v=([A-Za-z0-9-]+)/)||[])[1]||token;
-    set('r1',build==='20261112-notag1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
-    // Modul-Inhalt direkt pruefen: die prozedurale Tag trägt DOG_TAG_ART_VERSION
-    return probe('dog-tag-art.mjs?v='+token);
-  }).then(src=>{
-    const v=(src.match(/DOG_TAG_ART_VERSION='([^']+)'/)||[])[1];
-    set('r2',v==='procedural1',
-      v?('Dog-Tag: prozedurale Version '+v+(v==='procedural1'?' (kein Foto, kein Holztisch, kein Flacker-Wechsel)':' (unbekannte Version - Seite neu laden)')):'ALTER STAND: noch die Foto-basierte Tag (Holztisch/Flackern)');
-    return probe('style.css?v=20261112-notag1');
+    set('r1',build==='20261112-tagless1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
+    // Kachel-Optik direkt am Stylesheet pruefen (Ebenen-Erstellung, Build 2026-11).
+    return probe('style.css?v=20261112-tagless1');
   }).then(css=>{
-    set('r3',/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css),
+    set('r2',/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css),
       /\.recruit-showcase\{/.test(css)?'Ebenen-Erstellung eingebaut: großes Showcase-Portrait + live komponierte Kacheln (GESICHT/HAARE/BART)':'ALTER STAND: noch die alte LOOK-Zeile ohne Showcase');
   }).catch(err=>{
-    ['r1','r2','r3'].forEach(id=>set(id,false,'Abruf fehlgeschlagen: '+err.message));
+    ['r1','r2'].forEach(id=>set(id,false,'Abruf fehlgeschlagen: '+err.message));
   });
 })();
 </script>

@@ -3,7 +3,7 @@
 // The 12 equipable prestige trophies were melted into these. A relic is never
 // equipped, never crafted, never chosen: finishing the final mission of an act
 // earns that act's relic and it is active from then on, everywhere the account
-// plays. Like the dog tag, a relic is DERIVED at run time from storyProgress -
+// plays. A relic is DERIVED at run time from storyProgress -
 // no database field, no migration, and an old save sees exactly what a new one
 // sees. Acts whose missions have not shipped yet cannot be completed, so their
 // relics exist in the catalogue but stay locked.
