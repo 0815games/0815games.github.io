@@ -36,17 +36,18 @@ test('redesign covers the lobby, combat menus, progression and debrief without c
 // separately and it showed; the dossier block is what makes them one thing. The
 // overflow rule is a regression guard: the old briefing was clipped on a 360x480
 // screen because it set a max-height and nothing else.
-test('the dossier dog tag stays fully visible - in the frame, above the label, smaller on phones',()=>{
- // Reported: on the phone the tag was "versetzt und verdeckt" - the old
- // negative offsets (right:-8px;bottom:-12px) sat inside two overflow:hidden
- // boxes, and at 92px the tag buried the PERSONNEL FILE line in the 110px
- // portrait column.
- const tag=css.match(/\.menu-dog-tag\{[^}]*\}/)?.[0]||'';
- assert.match(tag,/right:6px/,'in-bounds on the right');
- assert.match(tag,/bottom:8px/,'in-bounds at the bottom');
- assert.doesNotMatch(tag,/right:-\d+px|bottom:-\d+px/,'no negative offsets inside clipping boxes');
- assert.match(tag,/z-index:2/,'above the gradient overlay and the personnel line');
- assert.match(css,/@media\(max-width:540px\)\{\.menu-dog-tag\{width:64px/,'the phone dossier shrinks the tag to fit the 110px column');
+test('the main screen carries no dog tag - the card is the person, not the kit',()=>{
+ // Reported: "die dog Tag passt nicht auf den hauptbildschirm und sieht auch
+ // sonst scheisse aus. Wir schmeissen die raus." The tag keeps hanging in
+ // the soldier dossier and the recruit screen; the menu card shows the
+ // portrait alone.
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.ok(!html.includes('menuDogTag'),'no tag element on the main screen');
+ assert.ok(html.includes('id="soldierDogTag"'),'the soldier dossier keeps its tag');
+ const css=readFileSync(new URL('../interface-redesign.css',import.meta.url),'utf8');
+ assert.ok(!css.includes('.menu-dog-tag'),'the menu tag styling is gone');
+ const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
+ assert.ok(!account.includes('menuDogTag'),'nothing renders a menu tag anymore');
 });
 
 test('the first-run surfaces share one visual language and stay inside a phone', () => {
