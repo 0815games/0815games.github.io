@@ -27,7 +27,7 @@ import {setupAuthForm} from './auth-form.mjs?v=20261112-live1';
 import {serviceMedals} from './service-record.mjs?v=20261107-balance1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
-import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
+import {runFirstRunEnding,endingDone,markEndingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-tutend1';
 import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-live1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
@@ -473,7 +473,7 @@ for(const id of ['skillDialog','armoryDialog'])$(id)?.addEventListener('close',(
 // the REAL Skills dialog, receives a dog tag (drawn, never stored) and opens the
 // workshop for the first time. Ordering and the once-per-account gate live in
 // first-run-ending.mjs; the dialogs stay here, where they already are.
-let endingRunning=false;
+let endingRunning=false,endingAborted=false;
 const firstRunStorage=()=>{try{return window.localStorage;}catch{return null;}};
 // The tag is cosmetic: it is derived on every render and nothing is written back.
 function refreshDogTags(){
@@ -542,7 +542,7 @@ async function practiceSkills(){
  // has never heard of Assault or Engineer, and the tree does not say what they buy.
  guide().event?.('equip');
  document.getElementById('skillOpen')?.click?.();
- if(!await waitFor(()=>dialogOpen('skillDialog')))return false;
+ if(!await waitFor(()=>dialogOpen('skillDialog'),{timeout:10000}))return false;
  guide().raise?.();
  // A saved build with no points left is the proof that the point went somewhere.
  const saved=await waitFor(()=>{
@@ -577,7 +577,7 @@ async function showDogTag(){
 async function equipFirstRewards(){
  guide().next?.();
  document.getElementById('armoryOpen')?.click?.();
- if(!await waitFor(()=>dialogOpen('armoryDialog')))return false;
+ if(!await waitFor(()=>dialogOpen('armoryDialog'),{timeout:10000}))return false;
  document.getElementById('armoryEquipmentTab')?.click?.();
  guide().raise?.();
  // Reported: "Legt ein Spieler das item an, passiert nichts. Die Mission geht
@@ -602,7 +602,7 @@ async function equipFirstRewards(){
 async function openWorkshopFirstTime(){
  guide().event?.('skills');
  document.getElementById('armoryOpen')?.click?.();
- if(await waitFor(()=>dialogOpen('armoryDialog'))){if(featureEnabled('workshop'))document.getElementById('armoryWorkshopTab')?.click?.();}
+ if(await waitFor(()=>dialogOpen('armoryDialog'),{timeout:10000})){if(featureEnabled('workshop'))document.getElementById('armoryWorkshopTab')?.click?.();}
  else return false;
  guide().raise?.();
  await waitFor(()=>!dialogOpen('armoryDialog'));
@@ -649,7 +649,24 @@ function guide(){
   // The card's own buttons: NEXT advances a read card, ✕ puts the guide away
   // (a pause, not an end - the recall pill brings it back), the pill recalls it.
   const next=document.getElementById('guideNext');if(next)next.onclick=()=>{firstRunGuide?.next?.();};
-  const close=document.getElementById('guideClose');if(close)close.onclick=()=>{firstRunGuide?.dismiss?.();};
+  // Closing the guide card means two different things. Mid-lesson - one of the
+  // walkthrough's dialogs is open - it is a pause: the recall pill sits above
+  // dialogs and brings the lesson back. In the Command Center, with no step
+  // screen open, there is nothing left to recall: closing ENDS the walkthrough.
+  // Reported: after the tutorial the guide card and its SHOW TASK pill kept
+  // floating over the main menu, and closing them only paused - the pill came
+  // back every time.
+  const close=document.getElementById('guideClose');
+  if(close)close.onclick=()=>{
+   const midLesson=dialogOpen('dogTagAward')||dialogOpen('armoryDialog')||dialogOpen('skillDialog');
+   if(!endingRunning||midLesson){firstRunGuide?.dismiss?.();return;}
+   endingAborted=true;
+   firstRunGuide?.stop?.();
+   markEndingDone(user?.uid,firstRunStorage());
+   endingRunning=false;
+   syncGuideRecall();
+   openFieldSchool();
+  };
   const pill=document.getElementById('guideRecall');if(pill)pill.onclick=()=>{firstRunGuide?.reopen?.();};
  }
  return firstRunGuide;
@@ -658,10 +675,15 @@ function offerFirstRunEnding(){
  const id=user?.uid;
  if(!id||endingRunning)return;
  if(endingDone(id,firstRunStorage()))return;
- endingRunning=true;
+ endingRunning=true;endingAborted=false;
+ // The wrapper honours an abort from the FIRST pending moment of a step; the
+ // runner asks `shouldStop` again between steps, so a closed walkthrough ends
+ // at the next breath instead of dragging the player to the next screen.
+ const guarded=name=>async()=>!endingAborted&&await ({tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime})[name]();
  void runFirstRunEnding({
   id,storage:firstRunStorage(),
-  steps:{tag:showDogTag,equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime},
+  steps:{tag:guarded('tag'),equip:guarded('equip'),skills:guarded('skills'),workshop:guarded('workshop')},
+  shouldStop:()=>endingAborted,
 
   onDone:()=>{endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();refreshDogTags();openFieldSchool();},
   // A declined or unavailable step stops the walkthrough - and the guide with
