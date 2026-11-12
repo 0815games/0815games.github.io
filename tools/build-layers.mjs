@@ -125,6 +125,8 @@ const LAYERS=[
   {src:'f-hair-long.jpg',kind:'hair',gender:'female',id:'long',label:'Long hair'},
   {src:'f-hair-braid.jpg',kind:'hair',gender:'female',id:'braid',label:'Braid'},
   {src:'f-hair-ponytail.jpg',kind:'hair',gender:'female',id:'ponytail',label:'Ponytail'},
+  {src:'f-hair-bun.jpg',kind:'hair',gender:'female',id:'bun',label:'Bun'},
+  {src:'f-hair-curly.jpg',kind:'hair',gender:'female',id:'curly',label:'Curly'},
   {src:'m-hair-short.jpg',kind:'hair',gender:'male',id:'short',label:'Short'},
   {src:'m-hair-side.jpg',kind:'hair',gender:'male',id:'side',label:'Side part'},
   {src:'m-hair-medium.jpg',kind:'hair',gender:'male',id:'medium',label:'Medium'},
@@ -134,7 +136,7 @@ const LAYERS=[
 ];
 
 const PORTRAIT_TOKEN='20261112-avatar2';
-const LAYER_TOKEN='20261112-layers1';
+const LAYER_TOKEN='20261112-layers2';
 
 const baseImgs={};
 for(const [gender,base] of Object.entries(BASES)){
@@ -211,6 +213,7 @@ for(const layer of LAYERS){
 const FACES=[
   {gender:'female',id:'crop',label:'Face 1',file:`assets/portraits/f-crop.jpg?v=${PORTRAIT_TOKEN}`,face:BASES.female.face},
   {gender:'female',id:'bun',label:'Face 2',file:`assets/portraits/f-bun.jpg?v=${PORTRAIT_TOKEN}`,face:detectFace(decode(join(PORTRAITS,'f-bun.jpg')))},
+  {gender:'female',id:'slick',label:'Face 3',file:`assets/portraits/f-slick.jpg?v=${PORTRAIT_TOKEN}`,face:detectFace(decode(join(PORTRAITS,'f-slick.jpg')))},
   {gender:'male',id:'buzz',label:'Face 1',file:`assets/portraits/m-buzz.jpg?v=${PORTRAIT_TOKEN}`,face:BASES.male.face},
   {gender:'male',id:'short',label:'Face 2',file:`assets/portraits/m-short.jpg?v=${PORTRAIT_TOKEN}`,face:detectFace(decode(join(PORTRAITS,'m-short.jpg')))},
 ];

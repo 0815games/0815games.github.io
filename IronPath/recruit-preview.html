@@ -12,7 +12,12 @@
     body{margin:0}
     main{padding:18px 12px}
     .preview-note{max-width:520px;margin:0 auto 10px;font:700 9px/1.6 Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9fb3a0;text-align:center}
-    .recruit-portrait-canvas{flex:none;width:clamp(88px,24vw,120px);aspect-ratio:1;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+    /* The big preview is the centrepiece, not a thumbnail: reported "nicht
+       komplett sichtbar und zu klein" when it sat cramped in the head row. */
+    .recruit-portrait-canvas{flex:none;width:clamp(170px,52vw,240px);aspect-ratio:1;display:block;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+    .recruit-showcase{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
+    .recruit-showcase-side{display:grid;justify-items:center;gap:10px}
+    .recruit-showcase #recruitTag{max-width:38vw!important;height:auto!important}
     .recruit-look canvas{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
     .layer-row[hidden]{display:none}
     .preview-combo{margin:0;font:700 10px/1.5 Arial,sans-serif;letter-spacing:.1em;color:#cdd8c2;text-transform:uppercase;text-align:center}
@@ -24,19 +29,21 @@
     <div class="entry recruiting">
       <div class="recruit-card">
         <div class="recruit-head">
-          <canvas id="portrait" class="recruit-portrait-canvas" role="img" aria-label="Portrait-Vorschau"></canvas>
           <div class="recruit-head-text">
             <span class="recruit-kicker">MUSTERUNG · NEU</span>
             <h2>Charakter-Erstellung</h2>
-            <p class="recruit-note">Gesicht, Haare und Bart sind jetzt getrennte Wahlen — unten im Filmstrip tippen, das große Portrait und die Dog-Tag folgen sofort.</p>
+            <p class="recruit-note">Gesicht, Haare und Bart sind getrennte Wahlen — unten im Filmstrip tippen, das große Portrait und die Dog-Tag folgen sofort.</p>
           </div>
         </div>
-        <div class="recruit-id">
-          <div id="tagSlot"></div>
-          <div class="recruit-name">
-            <label for="nameInput">NAME</label>
-            <input id="nameInput" maxlength="24" autocomplete="off" spellcheck="false" value="ROOK VALE">
+        <div class="recruit-showcase">
+          <canvas id="portrait" class="recruit-portrait-canvas" role="img" aria-label="Portrait-Vorschau"></canvas>
+          <div class="recruit-showcase-side">
+            <div id="tagSlot"></div>
           </div>
+        </div>
+        <div class="recruit-name">
+          <label for="nameInput">NAME</label>
+          <input id="nameInput" maxlength="24" autocomplete="off" spellcheck="false" value="ROOK VALE">
         </div>
         <div class="recruit-options" id="rows"></div>
         <p class="preview-combo" id="combo"></p>
@@ -48,13 +55,13 @@
     </div>
   </main>
   <script type="module">
-    import {layerOptions,composePortrait} from './avatar-layers.mjs?v=20261112-layers1';
+    import {layerOptions,composePortrait} from './avatar-layers.mjs?v=20261112-layers2';
     import {renderDogTagArt} from './dog-tag-art.mjs?v=20261112-recruit1';
 
     const DE={
       gender:{female:'WEIBLICH',male:'MÄNNLICH'},
-      faces:{crop:'GESICHT 1',bun:'GESICHT 2',buzz:'GESICHT 1',short:'GESICHT 2'},
-      hairs:{crop:'KURZ',bob:'BOB',long:'LANG',ponytail:'PFERDESCHWANZ',buzz:'BUZZ',side:'SEITENSCHEIDEL',medium:'MITTELLANG',short:'KURZ'},
+      faces:{crop:'GESICHT 1',bun:'GESICHT 2',slick:'GESICHT 3',buzz:'GESICHT 1',short:'GESICHT 2'},
+      hairs:{crop:'KURZ',bob:'BOB',long:'LANG',ponytail:'PFERDESCHWANZ',braid:'ZOPF',bun:'DUTT',curly:'LOCKEN',buzz:'BUZZ',side:'SEITENSCHEIDEL',medium:'MITTELLANG',short:'KURZ'},
       beards:{stubble:'STOPPEL',mustache:'SCHNURRBART',full:'VOLLBART'},
     };
 
@@ -70,7 +77,7 @@
 
     function paintTag(){
       tagSlot.replaceChildren();
-      tagCanvas=renderDogTagArt(document,tagSlot,{profile:{name:nameInput.value||'UNKNOWN',gender:state.gender,enlisted:'2026-11-12'}},{size:128});
+      tagCanvas=renderDogTagArt(document,tagSlot,{profile:{name:nameInput.value||'UNKNOWN',gender:state.gender,enlisted:'2026-11-12'}},{size:160});
     }
 
     async function paintPortrait(){
