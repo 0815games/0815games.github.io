@@ -12,7 +12,7 @@ test('the build stamp is present, formatted and consistent',()=>{
   assert.equal(stamps.length,2,'one stamp in the loading scene, one in the settings dialog');
   assert.ok(new Set(stamps).size===1,'both stamps carry the same build');
   assert.match(stamps[0],/^20\d{6}-[a-z0-9]+$/,'the build is a dated wave token');
-  assert.match(html,/<div id="loading">[^]*?class="build-stamp"/,'the loading scene shows the stamp');
+  assert.match(html,/<div id="loading"[^>]*>[^]*?class="build-stamp"/,'the loading scene shows the stamp');
   assert.match(html,/<dialog id="settingsDialog"[^]*?class="build-stamp"/,'the settings dialog shows the stamp');
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
   assert.match(css,/\.build-stamp\{/,'the stamp has styling');

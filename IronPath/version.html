@@ -43,9 +43,9 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
   probe('index.html').then(html=>{
     const build=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
     token=(html.match(/account\.js\?v=([A-Za-z0-9-]+)/)||[])[1]||token;
-    set('r1',build==='20261031-rank1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
+    set('r1',build==='20261031-loading1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
     // Kachel-Optik direkt am Stylesheet pruefen (Ebenen-Erstellung, Build 2026-11).
-    return probe('style.css?v=20261031-rank1');
+    return probe('style.css?v=20261031-loading1');
   }).then(css=>{
     set('r2',/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css),
       /\.recruit-showcase\{/.test(css)?'Ebenen-Erstellung eingebaut: großes Showcase-Portrait + live komponierte Kacheln (GESICHT/HAARE/BART)':'ALTER STAND: noch die alte LOOK-Zeile ohne Showcase');

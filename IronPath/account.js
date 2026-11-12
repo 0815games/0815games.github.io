@@ -1,34 +1,34 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-rank1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-loading1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261031-rank1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261031-loading1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-rank1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-loading1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261031-rank1';
-import {createCommandCenter} from './command-center.mjs?v=20261031-rank1';
+import {setupFriends} from './friends-ui.mjs?v=20261031-loading1';
+import {createCommandCenter} from './command-center.mjs?v=20261031-loading1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261031-rank1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261031-loading1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-tagless1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-rank1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-loading1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261031-rank1';
+import {setupAuthForm} from './auth-form.mjs?v=20261031-loading1';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,markEndingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-tagless1';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-rank1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-loading1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261112-tagless1';
@@ -38,16 +38,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-rank1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-loading1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261031-rank1';
+import { startGame } from './game.js?v=20261031-loading1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-tagless1';
 import { createPlayer } from './match.mjs?v=20261112-tagless1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-tagless1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-live1';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261112-live1';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-rank1';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-rank1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-loading1';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-loading1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
@@ -146,7 +146,34 @@ if(fourPlayerTest){
 }
 const level=xp=>characterProgress(xp).level;
 const levelText=xp=>{const p=characterProgress(xp);return translateText('LEVEL {level} · {current} / {required} XP',{level:p.level,current:p.current,required:p.required});};
-function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';
+// The connecting scene tells the truth in two steps: the field link while
+// Firebase auth resolves, the soldier while the profile streams in. `link` is
+// the resting state of a fresh page; the auth callback moves it to `soldier`.
+const LOADING_STEPS={
+ link:{title:'Establishing field connection…',hint:'The valley is waiting.'},
+ soldier:{title:'Preparing your soldier.',hint:'Record, gear and skills are on their way.'},
+};
+let loadingStep='link',loadingSlowTimer=null;
+function setLoadingStep(step){
+ loadingStep=LOADING_STEPS[step]?step:'link';
+ const def=LOADING_STEPS[loadingStep];
+ const title=$('loadingTitle'),hint=$('loadingStep');
+ if(title)title.textContent=translateText(def.title);
+ if(hint)hint.textContent=translateText(def.hint);
+}
+function beginLoadingScene(){
+ setLoadingStep(loadingStep);
+ if(loadingSlowTimer)clearTimeout(loadingSlowTimer);
+ $('loadingSlow')&&($('loadingSlow').hidden=true);
+ // A slow connection is told, not swallowed: after six seconds the scene
+ // says so itself, long before the error view would take over.
+ loadingSlowTimer=setTimeout(()=>{const slow=$('loadingSlow');if(slow&&$('loading').hidden===false)slow.hidden=false;},6000);
+}
+function endLoadingScene(){
+ if(loadingSlowTimer){clearTimeout(loadingSlowTimer);loadingSlowTimer=null;}
+ $('loadingSlow')&&($('loadingSlow').hidden=true);
+}
+function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
  // The recruiting office is a wide desk, not a 430px personnel card: the
  // entry panel breaks out of its dossier width while the Musterung is up.
  $('entry').classList.toggle('recruiting',view==='character');}
@@ -180,7 +207,7 @@ async function deleteCharacter(){
  recruitScreen.reset();
  message('Character deleted.');
 }
-$('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(user){message('');display('loading');loadProfile(user,sessionVersion);}};
+$('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(user){message('');loadingStep='soldier';display('loading');loadProfile(user,sessionVersion);}};
 // The day service began - shown in the service record. Local time, ISO
 // shape, exactly what the published rules accept.
 const enlistmentDate=()=>{const now=new Date(),pad=n=>String(n).padStart(2,'0');return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;};
@@ -289,7 +316,7 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),record
   return {committed:!!outcome.committed,delta:outcome.committed?rewardDelta(outcome.before,outcome.after):null,profile:outcome.committed?outcome.after:null};
  }catch(e){if(version===sessionVersion)$('saveStatus').textContent=translateText('XP and loot could not be saved. Check your connection and database rules.');return {committed:false};}}};
 let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false,savingArmory=false,closingSkills=false,skillsOpenGeneration=0;
-onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
+onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');setLoadingStep('soldier');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){
