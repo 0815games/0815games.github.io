@@ -1,4 +1,5 @@
-import {translate,translateText} from './language.mjs?v=20261112-tagless1';
+import {translate,translateText} from './language.mjs?v=20261031-rank1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-rank1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
@@ -10,7 +11,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
   // name, level and XP. Scrap, equipment and skill points moved out of the
   // menu into their own dialogs (armory, skills) - the field dossier shows
   // the same numbers in full.
-  $('menuName').textContent=profile.name;$('menuLevel').textContent=translate('command.level',{level:p.level});$('menuXp').textContent=`${p.current} / ${p.required} XP`;$('menuXpBar').max=p.required;$('menuXpBar').value=p.current;$('menuPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(profile.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');$('menuCampaignProgress').textContent=progress>=CAMPAIGN.length?translate('command.storyDone'):translate('command.missions',{done:progress,total:CAMPAIGN.length});
+  $('menuName').textContent=profile.name;$('menuLevel').textContent=translate('command.level',{level:p.level});renderRankInsignia(document,$('menuRank'),{level:p.level},{size:22});$('menuXp').textContent=`${p.current} / ${p.required} XP`;$('menuXpBar').max=p.required;$('menuXpBar').value=p.current;$('menuPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(profile.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');$('menuCampaignProgress').textContent=progress>=CAMPAIGN.length?translate('command.storyDone'):translate('command.missions',{done:progress,total:CAMPAIGN.length});
   const summary=game?.getRunSummary();$('menuResume').hidden=!summary&&!isPartyActive();$('menuResumeLabel').textContent=isPartyActive()?translate('command.returnOnline'):summary?translate('command.resume',{operation:summary}):translate('command.resumeDefault');
  }
  // The screen label decides how the battle is framed (see field-command.css), so a

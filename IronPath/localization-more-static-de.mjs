@@ -159,4 +159,12 @@ export const germanMoreStatic=Object.freeze({
   "Friend search keeps one soldier name per account. After deleting a character, share your friend code instead.": "Die Freundessuche behält einen Soldatennamen pro Konto. Teile nach dem Löschen eines Charakters stattdessen deinen Freundescode.",
   "DELETE": "LÖSCHEN",
   "Character deleted.": "Charakter gelöscht.",
+
+  // ---- Soldier ranks (derived from the level, shown everywhere) -----------
+  "Recruit": "Rekrut",
+  "Private": "Gefreiter",
+  "Sergeant": "Feldwebel",
+  "Lieutenant": "Leutnant",
+  "Captain": "Hauptmann",
+  "Next rank: {rank} at level {level}": "Nächster Rang: {rank} ab Stufe {level}",
 });

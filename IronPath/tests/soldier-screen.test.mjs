@@ -63,11 +63,13 @@ test('owned equipment fills the collection and marks the equipped piece',()=>{
 
 test('the reworked markup: identity rail with portrait and XP, panels on the right',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const rail=html.indexOf('soldier-id-visual'),name=html.indexOf('id="soldierNameDisplay"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
+  const rail=html.indexOf('soldier-id-visual'),name=html.indexOf('id="soldierNameDisplay"'),rank=html.indexOf('id="soldierRank"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
   assert.ok(rail>=0&&name>rail&&bar>rail,'portrait, name and XP bar live in the identity rail');
+  assert.ok(name<rank&&rank<bar,'the rank line sits between name and XP bar');
   assert.ok(!html.includes('soldierDogTag'),'the dog tag is gone from the rail');
   assert.ok(panels>rail,'the three panels sit beside the rail');
   assert.ok(html.includes('id="soldierXpText"'),'the XP numbers are labelled');
+  assert.ok(html.includes('id="soldierRankName"'),'the rank name is written out in the rail');
   // The contract the browser smoke test pins stays intact.
   for(const id of ['soldierDialog','soldierScreenTitle','soldierNameDisplay','soldierDamage','soldierEquipped','soldierCollectionEmpty','soldierCollectionList','soldierArmory','soldierClose','soldierLevelDisplay','soldierAbility','soldierRange','soldierMovement','soldierCooldown','soldierEquippedEffect','soldierInventoryCount','soldierSkills','soldierCollectionTitle','soldierPortrait'])
     assert.ok(html.includes(`id="${id}"`),'kept id: '+id);
