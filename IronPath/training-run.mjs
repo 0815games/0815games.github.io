@@ -4,8 +4,8 @@
 // deliberately kinder than a story mission so that a player who has never built a
 // tower before can finish it: five waves instead of an endless run, enemies at 70%
 // health, a bunker with half again as much health, and a weakened wave-5 boss.
-// **The boss of wave 5 ends the run**: that boss drops the soldier's dog tag,
-// which is the first piece of kit they ever own. Nothing follows it.
+// **The boss of wave 5 ends the run**: nothing follows it, the debrief and the
+// first-run screens take over.
 //
 // Waves 1-5 pay 250 XP on their own, which is short of level 2. The contract pays a
 // mission bonus up to FIRST_RUN_XP (450) - level 2 plus a third of the way to level
@@ -23,7 +23,7 @@ export const TRAINING_WAVES=5;
 // wave formula staying at 20+10n. Level 2, and a 150 XP head start on level 3.
 export const FIRST_RUN_XP=450;
 // What the first run pays when the soldier LOSES. The run is the tutorial, not an
-// exam: a player who loses still walks away with the dog tag and enough XP to reach
+// exam: a player who loses still walks away with enough XP to reach
 // level 2 and spend the point, because the screens that follow teach equipment and
 // skills and both need something to teach. Losing costs the surplus, not the lesson.
 export const FIRST_RUN_DEFEAT_XP=330;

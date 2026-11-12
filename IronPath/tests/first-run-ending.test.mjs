@@ -5,24 +5,23 @@ import {runFirstRunEnding,endingDone,markEndingDone,endingKey,ENDING_STEPS,ENDIN
 
 const storage=()=>{const store=new Map();return {store,getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)};};
 
-test('the ending runs once per account: tag, equip, skills, workshop, in that order',async()=>{
+test('the ending runs once per account: equip, skills, workshop, in that order',async()=>{
  const store=storage(),seen=[];
  const result=await runFirstRunEnding({
   id:'soldier-a',storage:store,
   steps:{
    skills:async()=>{seen.push('skills');return true;},
-   tag:async()=>{seen.push('tag');return true;},
    equip:async()=>{seen.push('equip');return true;},
    workshop:async()=>{seen.push('workshop');return true;},
   },
  });
- assert.deepEqual(result,{status:'done',completed:4});
- // The tag is the boss reward, the gear it earned goes on next, and only then is
- // there a point worth spending.
- assert.deepEqual(seen,['tag','equip','skills','workshop'],'tag, then equipment, then the skill point');
+ assert.deepEqual(result,{status:'done',completed:3});
+ // The gear the run earned goes on first, and only then is there a point worth
+ // spending.
+ assert.deepEqual(seen,['equip','skills','workshop'],'equipment first, then the skill point');
  assert.equal(store.store.get(endingKey('soldier-a')),'done');
  assert.equal(endingDone('soldier-a',store),true);
- const again=await runFirstRunEnding({id:'soldier-a',storage:store,steps:{tag:()=>{throw Error('must not run');}}});
+ const again=await runFirstRunEnding({id:'soldier-a',storage:store,steps:{equip:()=>{throw Error('must not run');}}});
  assert.deepEqual(again,{status:'done',completed:0},'a finished ending never runs twice');
 });
 
@@ -30,24 +29,24 @@ test('declining a step stops the sequence without marking it done',async()=>{
  const store=storage(),seen=[];
  const result=await runFirstRunEnding({
   id:'soldier-b',storage:store,
-  steps:{tag:async()=>{seen.push('tag');return true;},equip:async()=>{seen.push('equip');return false;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
+  steps:{equip:async()=>{seen.push('equip');return false;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
  });
  assert.equal(result.status,'stopped');
  assert.equal(result.step,'equip');
  assert.equal(result.reason,'declined');
- assert.deepEqual(seen,['tag','equip'],'the skill dialog is not opened behind a declined step');
+ assert.deepEqual(seen,['equip'],'the skill dialog is not opened behind a declined step');
  assert.equal(endingDone('soldier-b',store),false,'the ending can be offered again');
 });
 
 test('a throwing step is a stop, not a crash',async()=>{
- const result=await runFirstRunEnding({id:'soldier-c',storage:storage(),steps:{tag:async()=>{throw Error('no dialog');},equip:async()=>true,skills:async()=>true,workshop:async()=>true}});
+ const result=await runFirstRunEnding({id:'soldier-c',storage:storage(),steps:{equip:async()=>{throw Error('no dialog');},skills:async()=>true,workshop:async()=>true}});
  assert.equal(result.status,'stopped');
  assert.equal(result.reason,'declined');
 });
 
 test('a missing step stops the sequence cleanly',async()=>{
- const result=await runFirstRunEnding({id:'soldier-d',storage:storage(),steps:{tag:async()=>true}});
- assert.deepEqual({status:result.status,step:result.step,reason:result.reason},{status:'stopped',step:'equip',reason:'unavailable'});
+ const result=await runFirstRunEnding({id:'soldier-d',storage:storage(),steps:{equip:async()=>true}});
+ assert.deepEqual({status:result.status,step:result.step,reason:result.reason},{status:'stopped',step:'skills',reason:'unavailable'});
 });
 
 test('shouldStop aborts between steps - the walkthrough ends instead of dragging on',async()=>{
@@ -59,19 +58,19 @@ test('shouldStop aborts between steps - the walkthrough ends instead of dragging
  let abort=false;
  const result=await runFirstRunEnding({
   id:'soldier-abort',storage:store,
-  steps:{tag:async()=>{seen.push('tag');return true;},equip:async()=>{seen.push('equip');abort=true;return true;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
+  steps:{equip:async()=>{seen.push('equip');abort=true;return true;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
   shouldStop:()=>abort,
  });
  assert.equal(result.status,'stopped');
  assert.equal(result.reason,'aborted');
- assert.deepEqual(seen,['tag','equip'],'the skill and workshop screens are never opened behind an abort');
+ assert.deepEqual(seen,['equip'],'the skill and workshop screens are never opened behind an abort');
  assert.equal(endingDone('soldier-abort',store),false,'the runner itself does not mark an aborted ending done');
  // An abort before the first step runs nothing at all.
  const seen2=[];
  const fresh=await runFirstRunEnding({id:'soldier-abort2',storage:storage(),
-  steps:{tag:async()=>{seen2.push('tag');return true;},equip:async()=>true,skills:async()=>true,workshop:async()=>true},
+  steps:{equip:async()=>{seen2.push('equip');return true;},skills:async()=>true,workshop:async()=>true},
   shouldStop:()=>true});
- assert.deepEqual(fresh,{status:'stopped',step:'tag',reason:'aborted',completed:0});
+ assert.deepEqual(fresh,{status:'stopped',step:'equip',reason:'aborted',completed:0});
  assert.deepEqual(seen2,[],'nothing ran');
 });
 
@@ -81,7 +80,7 @@ test('no account means no ending, and storage failures do not break it',async()=
  markEndingDone('soldier-e',broken);
  assert.equal(endingDone('soldier-e',broken),true,'the session remembers even without storage');
  assert.equal(endingDone('someone-else',broken),false);
- assert.equal(ENDING_STEPS.join(','),'tag,equip,skills,workshop');
+ assert.equal(ENDING_STEPS.join(','),'equip,skills,workshop');
  assert.equal(ENDING_KEY,'ironpath:firstrun:v2','the edition moved with the new order, so old accounts see it');
 });
 
@@ -104,10 +103,10 @@ test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
  // The skill point is only real once the account saved it; the screen waits for that.
  assert.match(account,/const after=profile\?\.skills\|\|'',lvl=level\(profile\?\.xp\|\|0\);/);
  assert.match(account,/return after!==before&&pointsLeft\(parseBuild\(after,lvl\),lvl\)===0;/,'a saved build with the point spent is the proof');
- // The tag is drawn on every profile snapshot and stored nowhere.
- assert.match(account,/function refreshDogTags\(\)\{[\s\S]{0,600}renderDogTagArt\(document,container,data/,'the worn tags are painted with their chain now');
- assert.match(account,/refreshDogTags\(\);\s*void startFirstRunTutorial\(\);|if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);refreshDogTags\(\);/);
- assert.equal(/dogTag:\s*\{|saveDogTag|dogTagSerial:\s*\(/.test(account),false,'the tag is never written to the account');
+ // The dog tag is gone entirely: no renderer, no dialog, no leftover element.
+ assert.equal(/renderDogTagArt|refreshDogTags|refreshProfileTag|showDogTag/.test(account),false,'no dog tag code path remains in the account');
+ assert.match(account,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);if\(featureEnabled\('tutorial'\)\)void startFirstRunTutorial\(\);\}/,'the first snapshot still boots the game exactly once');
+ assert.equal(/dogTag:\s*\{|saveDogTag|dogTagSerial:\s*\(/.test(account),false,'no tag field is ever written to the account');
  // Every write path in the sandbox refuses before a transaction is built.
  const sandbox=account.slice(account.indexOf('// --- Tutorial sandbox API'),account.indexOf('// --- First-run ending'));
  assert.match(sandbox,/refuseWrite:assertWritable/);

@@ -1,7 +1,7 @@
 // The guide that walks the player through the *screens* after the first match.
 //
-// The reward screen, the armory and the skill tree all opened on their own before
-// this file existed - and explained nothing. A new soldier was shown a dog tag, a
+// The armory and the skill tree all opened on their own before
+// this file existed - and explained nothing. A new soldier was shown a
 // grid of gear with prices and a tree with four classes, and told to get on with it.
 // The run had taught them to tap a build marker; nothing had taught them what
 // "Assault" is.
@@ -23,17 +23,9 @@
 // German. Writing the raw strings to the screen was a real bug - the guide was the
 // one part of the first run with no German at all, because nobody ever asked for a
 // translation.
-import {translateText as tr} from './language.mjs?v=20261112-live1';
+import {translateText as tr} from './language.mjs?v=20261112-tagless1';
 
 export const STEPS = Object.freeze([
-  Object.freeze({
-    id: 'rewards',
-    title: 'Your first reward',
-    text: 'This is what the run paid: experience towards the next level, and a dog tag with your name, your serial and a blood type the game derives from your account. It is issued once and then worn beside your name.',
-    caption: 'REWARDS',
-    target: { element: '#dogTagAward' },
-    advance: 'button',
-  }),
   Object.freeze({
     id: 'equip',
     title: 'Gear is what fights',
@@ -80,7 +72,7 @@ export function guideSeen(id, storage) {
   try { return storage?.getItem(keyFor(id)) === 'done'; } catch { return false; }
 }
 
-// Only the Settings replay calls this: the four cards after the match are marked as
+// Only the Settings replay calls this: the three cards after the match are marked as
 // seen per soldier, and a replay has to start at the first one again.
 export function forgetGuideSeen(id, storage) {
   if (!id) return false;
@@ -120,8 +112,8 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     $('guideNext').hidden = current.advance !== 'button';
     card.hidden = false;
     // A modal dialog (the armory, the skill tree) is always above every z-index -
-    // the card spent its life under their backdrops, which is why the screens after
-    // the dog tag "came without explanation". The popover layer is the only layer
+    // the card spent its life under their backdrops, which is why the post-match
+    // screens "came without explanation". The popover layer is the only layer
     // above a modal dialog, so the card is shown as a manual popover where the
     // browser has one; without it, the old fixed-position behaviour stands.
     try { card.showPopover?.(); } catch { /* older browsers keep the old layering */ }

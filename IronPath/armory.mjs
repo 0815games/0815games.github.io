@@ -2,8 +2,7 @@
 // Items are indexed by position: `equipped` is a 1-based index into this array and
 // is stored in every existing save's loadout string, which only accepts 0-10
 // (`parseLoadout`). Adding an entry would either renumber everyone's gear or
-// overflow the format, so the dog tag is NOT an armory item: it is issued by the
-// first-run debrief (see first-run-ending.mjs) and drawn by dog-tag.mjs.
+// overflow the format, so nothing outside this array can ever become an item.
 export const ITEMS=[
   {name:'Field Scope',description:'+3 soldier damage per shot, +1 more every three waves from wave 6.',wave:2,icon:'scope'},
   {name:'Reinforced Vest',description:'+10 shared bunker maximum health.',wave:4,icon:'vest'},

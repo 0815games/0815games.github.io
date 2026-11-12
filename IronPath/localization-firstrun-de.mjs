@@ -49,15 +49,11 @@ export const germanFirstRun=Object.freeze({
   'Press Deploy to start the wave':'Drücke Einsatz, um die Welle zu starten',
 
   'The boss is here':'Der Boss ist da',
-  'A boss walks with the last wave and drops your dog tag. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.':
-    'Mit der letzten Welle kommt ein Boss – er bringt deine Erkennungsmarke. Schwäche ihn mit Türmen, bevor er den Bunker erreicht: er trifft weit härter als alles andere.',
+  'A boss walks with the last wave. Weaken it with towers before it reaches the bunker - it hits far harder than the rest.':
+    'Mit der letzten Welle kommt ein Boss. Schwäche ihn mit Türmen, bevor er den Bunker erreicht: er trifft weit härter als alles andere.',
   'BOSS OF WAVE 5':'BOSS DER WELLE 5',
 
-  // ---- The four cards after the match --------------------------------------
-  'Your first reward':'Deine erste Belohnung',
-  'This is what the run paid: experience towards the next level, and a dog tag with your name, your serial and a blood type the game derives from your account. It is issued once and then worn beside your name.':
-    'Das hat der Einsatz eingebracht: Erfahrung für die nächste Stufe und eine Erkennungsmarke mit deinem Namen, deiner Nummer und einer Blutgruppe, die das Spiel aus deinem Konto ableitet. Die Marke wird einmal ausgegeben und danach neben deinem Namen getragen.',
-  'REWARDS':'BELOHNUNGEN',
+  // ---- The three cards after the match -------------------------------------
 
   'Gear is what fights':'Ausrüstung kämpft',
   'The Armory holds what you own. Each piece raises one number - damage, health, supplies per wave. Equip the piece you just won: an item in the bag does nothing at all.':

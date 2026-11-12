@@ -192,7 +192,7 @@ test('every import of a module agrees on that module cache token',()=>{
  // Reported: after the tutorial the guide card and its SHOW TASK pill kept
  // floating over the Command Center, and closing them only paused. Closing the
  // guide in the menu (no step dialog open) has to END the walkthrough.
- assert.match(account,/const midLesson=dialogOpen\('dogTagAward'\)\|\|dialogOpen\('armoryDialog'\)\|\|dialogOpen\('skillDialog'\);/,'the close handler knows the three step dialogs');
+ assert.match(account,/const midLesson=dialogOpen\('armoryDialog'\)\|\|dialogOpen\('skillDialog'\);/,'the close handler knows the two step dialogs');
  assert.match(account,/if\(!endingRunning\|\|midLesson\)\{firstRunGuide\?\.dismiss\?\.\(\);return;\}/,'mid-lesson closing stays a pause');
  assert.match(account,/markEndingDone\(user\?\.uid,firstRunStorage\(\)\);[\s\S]*?syncGuideRecall\(\);[\s\S]*?openFieldSchool\(\);/,'closing in the menu ends the walkthrough: done marker, pill hidden, field school shown');
  assert.match(account,/shouldStop:\(\)=>endingAborted/,'the ending runner asks the abort flag between steps');

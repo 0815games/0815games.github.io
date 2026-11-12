@@ -61,10 +61,11 @@ test('owned equipment fills the collection and marks the equipped piece',()=>{
   assert.ok(nodes.get('soldierEquipped').textContent!=='No equipment','the equipped piece is named');
 });
 
-test('the reworked markup: identity rail with dog tag and XP, panels on the right',()=>{
+test('the reworked markup: identity rail with portrait and XP, panels on the right',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const rail=html.indexOf('soldier-id-visual'),tag=html.indexOf('id="soldierDogTag"'),name=html.indexOf('id="soldierNameDisplay"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
-  assert.ok(rail>=0&&tag>rail&&name>rail&&bar>rail,'portrait, dog tag, name and XP bar live in the identity rail');
+  const rail=html.indexOf('soldier-id-visual'),name=html.indexOf('id="soldierNameDisplay"'),bar=html.indexOf('id="soldierXpBar"'),panels=html.indexOf('soldier-main');
+  assert.ok(rail>=0&&name>rail&&bar>rail,'portrait, name and XP bar live in the identity rail');
+  assert.ok(!html.includes('soldierDogTag'),'the dog tag is gone from the rail');
   assert.ok(panels>rail,'the three panels sit beside the rail');
   assert.ok(html.includes('id="soldierXpText"'),'the XP numbers are labelled');
   // The contract the browser smoke test pins stays intact.
@@ -75,10 +76,8 @@ test('the reworked markup: identity rail with dog tag and XP, panels on the righ
 test('the reworked dossier styling: rail layout, phone showcase, no hero photo',()=>{
   const css=readFileSync(new URL('../soldier-screen.css',import.meta.url),'utf8');
   assert.match(css,/\.soldier-body\{[^}]*grid-template-columns:264px/,'a dedicated identity rail');
-  assert.match(css,/\.soldier-id \.dog-tag-slot canvas\{[^}]*max-width:170px/,'the rail owns the tag size (no clipping)');
   assert.doesNotMatch(css,/soldier-workbench\.jpg/,'the hero photo is gone - the soldier is the photo now (reported: complete rework)');
   const phone=css.slice(css.indexOf('@media(max-width:640px)'));
   assert.match(phone,/\.soldier-body\{[^}]*grid-template-columns:1fr/,'phone: single column');
-  assert.match(phone,/\.soldier-id-visual\{[^}]*display:flex/,'phone: portrait and tag become a showcase row');
-  assert.match(phone,/\.soldier-id \.dog-tag-slot\{[^}]*max-width:110px/,'phone: the tag shrinks with the rail');
+  assert.match(phone,/\.soldier-id-visual\{[^}]*display:flex/,'phone: the rail becomes a showcase row');
 });

@@ -15,12 +15,11 @@ than against the code alone.
 | 5 | **Coach cards, ON the field** (7 cards, no modal, never pauses) | `first-run-coach.mjs` | Once per account per browser |
 | 6 | **The pointer:** a ring on the pad the card names, a line from the card to it | `coach-highlight.mjs` | While a card is up |
 | 7 | Play waves 1–5 yourself; the boss of wave 5 ends the run and nothing follows it | `game.js` + `training-run.mjs` | Same run |
-| 8 | **Rewards** — XP for the level, and the dog tag, **won or lost** | `account.js` + `dog-tag.mjs` | Once per account |
-| 9 | **The reward card** explains what was just paid | `first-run-guide.mjs` | Once per account |
-| 10 | **Equipment on** in the real Armory, with the card explaining what gear does | `account.js` + `first-run-guide.mjs` | Once per account |
-| 11 | **First skill point**, with the card naming Assault / Engineer / Recon / Command | `account.js` + `first-run-guide.mjs` | Once per account |
-| 12 | Workshop opened, with the card saying where gear comes from | `account.js` + `first-run-guide.mjs` | Once per account |
-| 13 | Field School menu: Armory & Workshop, Skills, Campaign, Multiplayer | `account.js` + `index.html` | Shown after the ending |
+| 8 | **Rewards** — XP for the level, **won or lost** | `account.js` | Once per account |
+| 9 | **Equipment on** in the real Armory, with the card explaining what gear does | `account.js` + `first-run-guide.mjs` | Once per account |
+| 10 | **First skill point**, with the card naming Assault / Engineer / Recon / Command | `account.js` + `first-run-guide.mjs` | Once per account |
+| 11 | Workshop opened, with the card saying where gear comes from | `account.js` + `first-run-guide.mjs` | Once per account |
+| 12 | Field School menu: Armory & Workshop, Skills, Campaign, Multiplayer | `account.js` + `index.html` | Shown after the ending |
 
 The order is the point. The old build briefed first and played second, and the
 briefing was a modal over the very field it described. Now the field comes first,
@@ -104,12 +103,12 @@ same module:
 - **Enemies at 70% health** (`TRAINING_UNIT = 0.7`).
 - **The wave-5 boss at 60% of that** (`TRAINING_BOSS_UNIT = 0.6`).
 - **Bunker at 150% health** (`TRAINING_BUNKER = 1.5`, 100 → 150).
-- **A defeat still pays.** Losing ends the run with `FIRST_RUN_DEFEAT_XP` (330) and
-  the dog tag anyway. The run is the tutorial, not an exam: the screens that follow
+- **A defeat still pays.** Losing ends the run with `FIRST_RUN_DEFEAT_XP` (330)
+  anyway. The run is the tutorial, not an exam: the screens that follow
   teach equipment and skills, and a player who bounced off wave five still has to be
   given something to equip and a point to spend. Losing costs the surplus, not the
   lesson. (`game.js` used to fire the ending only on `training-end`, so a defeat
-  finished with a debrief and no tag at all.)
+  finished with a debrief and no reward at all.)
 - **450 XP** on a win: the five waves pay 250 (30 + 40 + 50 + 60 + 70) and the
   contract adds `trainingBonusXP() = 50` with the last wave. The bonus exists so
   the first skill point cannot drift away with a balance change; it is shown as a
@@ -175,50 +174,23 @@ against a **sandbox**:
 Two properties the tests assert: with the sandbox on, no write can reach the
 account save; and the player's own build is byte-identical after practicing.
 
-## The dog tag
-
-Drawn, never stored. `dogTag({profile, accountId, issued})` derives:
-
-- the name, from the soldier profile;
-- a gender pictogram in the same line style as the armory icons;
-- a serial, FNV-1a over `0815-IRON-PATH` + the account id, shown as `XXXX-XXXX`;
-- a **blood type**, a second FNV-1a pass with its own seed over the same id,
-  mapped onto the eight types (`0 RH+` … `AB RH−`). It is derived so it can never
-  change and never needs a field, and the popup labels it *Derived, not recorded.*
-  It is a mark on a prop, not a medical record;
-- `0815 GAMES · IRON PATH`;
-- the issue date.
-
-It is cosmetic: no stat, no bonus, never equipped, always worn. It is **issued in
-its own popup** when the boss of wave 5 falls, then appears on the Soldier screen
-and in the Armory.
-
-It is deliberately **not** an entry in `armory.mjs`'s `ITEMS`: `equipped` is a
-1-based index into that array and is stored in every save's loadout string, whose
-format accepts only 0–10. Inserting an item would renumber everyone's gear or
-overflow the format. The tag is issued by the ending and drawn from the account. Because it is derived at render time, a soldier
-who has played for a year gets the same tag they always had, and the account
-needs no migration.
-
 ## The ending
 
 `first-run-ending.mjs` owns the order and the once-per-account gate; `account.js`
-owns the dialogs. Four steps:
+owns the dialogs. Three steps:
 
-1. **Tag** — the dog tag popup, full size, with the derived blood type.
-2. **Equip** — the **real** Armory opens on the Equipment tab and the player puts
+1. **Equip** — the **real** Armory opens on the Equipment tab and the player puts
    on what the run earned. No sandbox: this is their own soldier and the save is
    real. The step ends when the armory is closed, so nobody is trapped in it.
-3. **Skills** — the real Skills dialog opens, and the step only counts as done
+2. **Skills** — the real Skills dialog opens, and the step only counts as done
    once the account saved a build whose points are all spent. Closing without
    saving stops the sequence without marking it complete, so it can be offered
    again instead of vanishing.
-4. **Workshop** — the Armory opens on the workshop tab for the first time.
+3. **Workshop** — the Armory opens on the workshop tab for the first time.
 
-`ENDING_EDITION` is **2**. The ending gained the tag and swapped its first two
-steps, so accounts that finished the old order are offered the new one — the same
-lesson as `TUTORIAL_EDITION`: a content change that reuses the old key reaches
-nobody.
+`ENDING_EDITION` is **2**. It is raised whenever the step list changes, so
+accounts that finished an older order are offered the new one — the same lesson as
+`TUTORIAL_EDITION`: a content change that reuses the old key reaches nobody.
 
 Then the Field School appears on the Command Center with four entries. Each one
 clicks an existing control (`armoryOpen`, `skillOpen`, `campaignShowBoard`,
@@ -239,10 +211,9 @@ player on a new browser is asked once and then goes straight in.
 | `tests/first-run-coach.test.mjs` | Cards follow real actions, no modal, **the coach is in no pause condition**, boss jumps the queue, dismissed stays dismissed |
 | `tests/tutorial.test.mjs` | The replay tour, practice gates, real-dialog handoff, completion once per account, one owner for the marker key |
 | `tests/coach-highlight.test.mjs` | the ring lands on the pad, survives a panned/zoomed view, and can never capture a tap; the arrow is revealed by attribute (SVG has no `hidden` property) |
-| `tests/first-run-guide.test.mjs` | rewards → equip → skills → workshop in that order; an action card cannot be clicked past; the four classes are explained; not a modal |
+| `tests/first-run-guide.test.mjs` | equip → skills → workshop in that order; an action card cannot be clicked past; the four classes are explained; not a modal |
 | `tests/training-run.test.mjs` | 5 waves, 70% / 150% / weakened boss, boss only on wave 5, 250 + 200 = 450 XP = level 2 with headroom, the boss must fall before the run ends, offered once per edition |
-| `tests/dog-tag.test.mjs` | Serial and blood type derived, stable and spread over all eight, nothing persisted, SVG in the armory style |
-| `tests/first-run-ending.test.mjs` | Order (tag → equip → skills → workshop), once per account, decline stops without marking done, Field School uses existing controls |
+| `tests/first-run-ending.test.mjs` | Order (equip → skills → workshop), once per account, decline stops without marking done, Field School uses existing controls |
 | `tests/language-gate.test.mjs` | Gate once per device, both languages printed, and **every inline script in `index.html` compiles** |
 
 The first run still has to be played on a real phone and a real desktop browser.

@@ -36,29 +36,31 @@ test('redesign covers the lobby, combat menus, progression and debrief without c
 // separately and it showed; the dossier block is what makes them one thing. The
 // overflow rule is a regression guard: the old briefing was clipped on a 360x480
 // screen because it set a max-height and nothing else.
-test('the main screen carries no dog tag - the card is the person, not the kit',()=>{
+test('the game carries no dog tag anywhere - the card is the person, not the kit',()=>{
  // Reported: "die dog Tag passt nicht auf den hauptbildschirm und sieht auch
- // sonst scheisse aus. Wir schmeissen die raus." The tag keeps hanging in
- // the soldier dossier and the recruit screen; the menu card shows the
- // portrait alone.
+ // sonst scheisse aus. Wir schmeissen die raus." First the menu card, then
+ // the rest: dossier rail, armory, recruit screen, profile row, award popup -
+ // every surface shows the portrait alone and no tag is drawn anymore.
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- assert.ok(!html.includes('menuDogTag'),'no tag element on the main screen');
- assert.ok(html.includes('id="soldierDogTag"'),'the soldier dossier keeps its tag');
+ for(const id of ['menuDogTag','soldierDogTag','armoryDogTag','profileTag','dogTagAward','recruitTag'])
+  assert.ok(!html.includes(id),`no tag element anywhere: ${id}`);
  const css=readFileSync(new URL('../interface-redesign.css',import.meta.url),'utf8');
- assert.ok(!css.includes('.menu-dog-tag'),'the menu tag styling is gone');
+ assert.ok(!/\.dog-tag|\.profile-tag/.test(css),'the tag styling is gone');
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
- assert.ok(!account.includes('menuDogTag'),'nothing renders a menu tag anymore');
+ assert.ok(!/DogTag|dogTag/.test(account),'nothing renders a tag anymore');
+ assert.ok(!existsSync(new URL('../dog-tag.mjs',import.meta.url)),'the tag module is deleted');
+ assert.ok(!existsSync(new URL('../dog-tag-art.mjs',import.meta.url)),'the tag art module is deleted');
 });
 
 test('the first-run surfaces share one visual language and stay inside a phone', () => {
   const dossier = css.slice(css.indexOf('First-run dossier'));
   assert.ok(dossier.length > 500, 'the dossier block is present');
-  for (const surface of ['.first-run-coach', '.tutorial-dialog', '.dog-tag-award']) {
+  for (const surface of ['.first-run-coach', '.tutorial-dialog']) {
     assert.ok(dossier.includes(surface), `the dossier styles ${surface}`);
   }
   // A max-height without overflow is exactly the bug that made the first run
   // unplayable: content taller than the box, and no way to reach the buttons.
-  assert.match(dossier, /\.dog-tag-award\{[^}]*overflow:auto/);
+  assert.match(css, /\.tutorial-dialog\{overflow:auto\}/);
   assert.match(dossier, /max-height:calc\(100dvh/);
   // The 44px thumb rule survives any restyle.
   assert.match(dossier, /\.tutorial-dialog \.tutorial-actions button\{min-height:44px\}/);

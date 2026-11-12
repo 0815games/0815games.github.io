@@ -39,7 +39,7 @@ Older keys you may still find, and what they mean now:
 - `ironpath:tutorial:v1:` — the 8-step tour. Ignored. It once hid the new briefing
   from every existing account; leaving it in place is the point, so **do not**
   clear it to test anything.
-- `ironpath:firstrun:v1:` — the old ending order (skills first, no dog tag).
+- `ironpath:firstrun:v1:` — the old ending order (skills first).
   Ignored since the ending moved to v2, which is why an old account still gets the
   new ending once.
 
@@ -155,26 +155,18 @@ seconds and ends the boss wave with 100 of 150 bunker health left.
 
 ## 4. The ending
 
-1. **Expected order:** debrief → **dog tag** → **equipment** → **skill point** →
-   workshop → Field School. Gear comes before skills on purpose: the boss reward
-   goes on first, the point is spent after.
-2. **Dog tag popup:** the heading reads **Deine Hundemarke**, full size, with your
-   soldier's name, a gender pictogram, a
-   serial like `DBD6-B90A`, a blood type like `A RH+`, `0815 GAMES · IRON PATH`,
-   the issue date, and the note *Abgeleitet, nicht erfasst.* Press **ANLEGEN**.
-3. **Check it is stable:** note serial **and blood type**, reload, and check both
-   are identical. They are derived from the account, never stored, so they must
-   never change. If the blood type looks like a real medical record to you, say
-   so — the label is meant to prevent exactly that.
-4. **Equipment:** the real Armory opens on the Equipment tab. Put on what the run
+1. **Expected order:** debrief → **equipment** → **skill point** → workshop →
+   Field School. Gear comes before skills on purpose: what the run earned goes
+   on first, the point is spent after.
+2. **Equipment:** the real Armory opens on the Equipment tab. Put on what the run
    earned. **Expected:** it saves to your soldier (this is not the practice
    sandbox), and the step ends when you close the armory.
-5. **Skill point:** spend it and save. Reload and open **Skills** again.
+3. **Skill point:** spend it and save. Reload and open **Skills** again.
    **Expected:** the build is still there. If it reverted, that is a blocker.
-6. **Field School:** four entries — **Waffenkammer & Werkstatt**, **Fähigkeiten**,
+4. **Field School:** four entries — **Waffenkammer & Werkstatt**, **Fähigkeiten**,
    **Kampagne**, **Mehrspieler**. Tap each one and confirm it opens the real
    screen, not a second copy of anything.
-7. **Decline path (optional, needs a second fresh account):** when the ending
+5. **Decline path (optional, needs a second fresh account):** when the ending
    offers a step, decline it. **Expected:** the sequence stops cleanly, nothing is
    marked as done, and you are not trapped in a dialog.
 
@@ -217,7 +209,6 @@ Fix before inviting anyone else:
   missing.
 - The training contract cannot be completed by a reasonable new player.
 - The skill point or the build is lost on reload.
-- The dog tag or its blood type changes between visits.
 - Any screen traps the player: a dialog that cannot be closed, a disabled Next
   with no way forward, a lost Escape.
 

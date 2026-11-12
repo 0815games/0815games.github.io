@@ -96,7 +96,7 @@ test('publish file accepts the avatar string, bounded and undeletable',async()=>
 });
 
 test('the enlistment date is a bounded, undeletable profile field',async()=>{const p=ref(alice,'players/alice');
- // The service start date printed on the dog tag: written once at enlistment
+ // The service start date shown in the service record: written once at enlistment
  // (or backfilled for an existing account), never changed, never removed.
  await assertSucceeds(update(p,{enlisted:'2026-11-11'}));
  assert.equal((await get(p)).val().enlisted,'2026-11-11');

@@ -32,8 +32,8 @@ export const germanSettings = Object.freeze({
     'Die bewegten Effekte auf dem Feld kommen zurück.',
   'APPLY': 'ÜBERNEHMEN',
   'Play the first run again?': 'Den ersten Einsatz neu spielen?',
-  'The training contract starts from the beginning: same map, same cards, same guide. Progress you already earned stays yours, and this replay pays no second XP and no second dog tag.':
-    'Der Trainingsvertrag startet von vorn: gleiche Karte, gleiche Karten, gleicher Guide. Was du schon verdient hast, bleibt dir, und dieser Durchlauf zahlt keine zweite EP und keine zweite Erkennungsmarke.',
+  'The training contract starts from the beginning: same map, same cards, same guide. Progress you already earned stays yours, and this replay pays no second XP.':
+    'Der Trainingsvertrag startet von vorn: gleiche Karte, gleiche Karten, gleicher Guide. Was du schon verdient hast, bleibt dir, und dieser Durchlauf zahlt keine zweite EP.',
   'START OVER': 'NEU STARTEN',
 
   // What the game says while a replay runs, so nobody wonders where the XP went.

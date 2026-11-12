@@ -197,7 +197,7 @@ Pipeline wie etabliert (generate_image → magick transparent/trim); Bilder werd
 
 ## Die fünf Relikte (Passives — nichts zum Anlegen)
 
-Alle bisherigen 12 anlegbaren Prestige-Teile werden **verschweißt**: sie hören auf zu existieren, alte Workshop-Einträge werden gefiltert. An ihre Stelle treten fünf akt-thematische Relikte — **einmal verdient, immer aktiv**, abgeleitet aus `storyProgress` (wie die Hundemarke: kein Datenbankfeld, keine Migration):
+Alle bisherigen 12 anlegbaren Prestige-Teile werden **verschweißt**: sie hören auf zu existieren, alte Workshop-Einträge werden gefiltert. An ihre Stelle treten fünf akt-thematische Relikte — **einmal verdient, immer aktiv**, abgeleitet aus `storyProgress`: kein Datenbankfeld, keine Migration:
 
 | Akt | Relikt | Figur | Passive Wirkung (Vorschlag) |
 |---|---|---|---|

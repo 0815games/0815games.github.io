@@ -24,16 +24,13 @@ function makeDocument() {
 }
 const store = () => { const map = new Map(); return { getItem: k => map.get(k) ?? null, setItem: (k, v) => map.set(k, v), _map: map }; };
 
-test('the guide walks rewards -> equip -> skills -> workshop, in that order', () => {
+test('the guide walks equip -> skills -> workshop, in that order', () => {
   const document = makeDocument(), storage = store();
   const guide = createGuide({ document, storage, resolve: () => ({ getBoundingClientRect: () => ({ left: 5, top: 5, width: 100, height: 80 }) }) });
   assert.equal(guide.start('soldier-a'), true);
-  assert.equal(guide.step().id, 'rewards');
-  assert.equal(document._nodes.get('guideTitle').textContent, 'Your first reward');
+  assert.equal(guide.step().id, 'equip');
+  assert.equal(document._nodes.get('guideTitle').textContent, 'Gear is what fights');
   assert.equal(document._nodes.get('firstRunGuide').hidden, false);
-  // The reward card is read, so it has a button.
-  assert.equal(document._nodes.get('guideNext').hidden, false);
-  guide.next(); assert.equal(guide.step().id, 'equip');
   // The equip card waits for the gear to be put on. Clicking NEXT must NOT skip it,
   // or the guide becomes a wall of text again.
   assert.equal(document._nodes.get('guideNext').hidden, true, 'no button on an action card');
@@ -60,7 +57,6 @@ test('the guide is shown once per account, and stopping does not count as finish
   const walked = store();
   const finished = createGuide({ document, storage: walked });
   finished.start('soldier-c');
-  finished.next();            // rewards -> equip
   finished.event('equip');    // -> skills
   finished.event('skills');   // -> workshop
   finished.next();            // closes and marks
@@ -69,7 +65,7 @@ test('the guide is shown once per account, and stopping does not count as finish
 });
 
 test('every card explains one screen, and the classes are actually explained', () => {
-  assert.deepEqual(STEPS.map(step => step.id), ['rewards', 'equip', 'skills', 'workshop']);
+  assert.deepEqual(STEPS.map(step => step.id), ['equip', 'skills', 'workshop']);
   for (const step of STEPS) {
     assert.ok(step.title && step.text.length > 60, `${step.id} says something useful`);
     assert.ok(step.target?.element, `${step.id} names the screen it is about`);
@@ -129,7 +125,7 @@ test('a dismissed guide keeps its place, still counts the screen, and returns at
   const seen = [];
   const guide = createGuide({ document, storage, resolve: () => ({ getBoundingClientRect: () => ({ left: 5, top: 5, width: 100, height: 80 }) }), onVisibilityChange: open => seen.push(open) });
   guide.start('soldier-d');
-  guide.next(); // rewards -> equip (action card)
+  // The first card is the equip card - an action card.
   assert.equal(guide.step().id, 'equip');
   // Reported: "Bei Fähigkeiten, Armory etc. soll die Mission auch ausgeblendet
   // werden können und wieder aufgerufen werden." ✕ puts it away - a pause.

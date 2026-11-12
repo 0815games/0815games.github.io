@@ -1,10 +1,10 @@
 /* "Dein Soldat" as a field dossier (reported: "Ueberarbeite das Dein Soldat
- * Fenster gaenzlich"). The old screen was a flat two-column form with a lone
- * dog tag floating between the columns and a heavy workbench photo on top.
+ * Fenster gaenzlich"). The old screen was a flat two-column form with a
+ * heavy workbench photo on top.
  * The rework follows the game's iron-plate language instead:
  *
- *   * one identity rail on the left - layered portrait, the soldier's own
- *     dog tag under it, name, level and an XP progress bar to the next level;
+ *   * one identity rail on the left - layered portrait, name, level and an
+ *     XP progress bar to the next level;
  *   * three numbered panels on the right - equipment, combat profile,
  *     collection - each with its own border, no nested boxes-in-boxes;
  *   * a slim header bar instead of the hero photo: the soldier IS the photo
@@ -24,10 +24,6 @@
 .soldier-id{display:grid;gap:9px;align-content:start;background:#20382b;border:1px solid #61775b;padding:14px;min-width:0}
 .soldier-id-visual{display:grid;justify-items:center;gap:12px}
 .soldier-id-visual img{width:100%;max-width:190px;aspect-ratio:1;object-fit:cover;border:1px solid #a7ad80;border-radius:4px;background:#10231c}
-/* The tag canvas renders at a fixed 170px inline width; the rail owns the
- * final size so the phone never clips it (same lesson as the dossier tag). */
-.soldier-id .dog-tag-slot{width:100%;max-width:170px}
-.soldier-id .dog-tag-slot canvas{width:100%!important;max-width:170px;height:auto!important}
 .soldier-id h3{font:700 1.3rem Georgia,serif;margin:2px 0 0;color:#fbf0d5;overflow-wrap:anywhere}
 .soldier-id #soldierLevelDisplay{margin:0;color:#d4c181;font-size:.78rem;letter-spacing:.08em}
 .soldier-xp{display:grid;gap:4px;margin-top:2px}
@@ -65,11 +61,8 @@
 @media(max-width:640px){
  .soldier-hero{padding:14px 16px}
  .soldier-body{grid-template-columns:1fr;padding:12px}
- /* The rail becomes a showcase row: portrait and tag side by side, the
-    written identity underneath - the phone keeps one screen of dossier. */
+ /* The rail becomes a showcase row on the phone - one screen of dossier. */
  .soldier-id-visual{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
  .soldier-id-visual img{width:clamp(110px,38vw,150px)}
- .soldier-id .dog-tag-slot{max-width:110px}
- .soldier-id .dog-tag-slot canvas{max-width:110px}
  .soldier-collection-list{grid-template-columns:1fr}
 }

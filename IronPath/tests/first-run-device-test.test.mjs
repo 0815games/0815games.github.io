@@ -29,8 +29,6 @@ test('the device plan quotes the German the build actually shows',()=>{
   ['coach build',translateText('Build a tower'),'Baue einen Turm'],
   ['coach boss',translateText('The boss is here'),'Der Boss ist da'],
   ['coach done',translateText('GOT IT'),'VERSTANDEN'],
-  ['tag note',translateText('Derived, not recorded.'),'Abgeleitet, nicht erfasst.'],
-  ['tag award',translateText('Your dog tag'),'Deine Hundemarke'],
  ];
  for(const [name,actual,quoted] of translated){
   assert.equal(actual,quoted,`${name} no longer matches the plan`);

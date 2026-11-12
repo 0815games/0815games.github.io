@@ -13,7 +13,7 @@ nötig ist, **welche Datei** er anfasst und **wann** er als fertig gilt.
 
 Ziel in einem Satz: Ein neuer Soldat landet nach dem Login direkt auf einem
 gerenderten Spielfeld, spielt Wellen 1–5 mit einer Erste-Hilfe-Karte, die das
-Spiel **nicht** anhält, gewinnt am Boss seine Hundemarke, zieht die Ausrüstung an
+Spiel **nicht** anhält, beendet am Boss den Vertrag, zieht die Ausrüstung an
 und verteilt danach seinen Skillpunkt.
 
 ---
@@ -54,7 +54,7 @@ Login (erster Account-Kontakt)
 ③ Der Spieler spielt selbst: bauen, upgrade, Held bewegen, Deploy, Welle 1 … 5
    (Karten begleiten die echte Aktion, keine Klickfolge über Screenshots)
    ▼
-④ Boss-Welle 5 fällt → Hundemarke wird verliehen (Popup, das den Lauf beendet)
+④ Boss-Welle 5 fällt → der Vertrag endet im Debrief
    ▼
 ⑤ Ausrüstung aus dem Boss-Kill anziehen (echter Armory-Dialog, echte Daten)
    ▼
@@ -157,51 +157,31 @@ Willkommenskarte erscheint.
 
 ---
 
-## 5. Patch 4 — Die Hundemarke ist der Preis für Welle 5
+## 5. Patch 4 — Der Boss-Belohnungs-Moment (zurückgebaut)
 
-**Warum:** „nach dem Boss von Welle 5 sein erstes Item erhält — die Dog Tag mit
-Name, Geschlecht und Blutgruppe o. ä."
+**Warum damals:** „nach dem Boss von Welle 5 sein erstes Item erhält."
 
-Status quo: Es gibt eine Hundemarke (`dog-tag.mjs`) — sie wird aber nur beim
-Öffnen des Soldatenbildschirms gerendert und ist im Debrief nicht der Abschluss.
+**Was geschah:** Patch 4 baute eine ableitbare Blech-Marke mit Serial und
+Blutgruppe, verliehen im eigenen Popup als Boss-Belohnung.
 
-**Was:**
-
-* `armory.mjs` / `rewardWave`: Boss-Wellen (`wave % 5 === 0`) zahlen heute nur
-  Skrap. Neu: Die **erste** Boss-Welle eines Accounts vergibt zusätzlich das
-  Item `identity-tag` (rein kosmetisch, `wave: 5`). Damit bekommt der Spieler
-  „sein erstes Item" aus dem Boss — ohne das Kampfsystem zu ändern.
-* **Blutgruppe**: Neues, abgeleitetes Feld in `dog-tag.mjs`:
-  ```js
-  export const BLOOD_TYPES = Object.freeze(['0 RH+','0 RH−','A RH+','A RH−','B RH+','B RH−','AB RH+','AB RH−']);
-  export function dogTagBloodType(accountId){ /* deterministisch aus Serial-Hash: 8 Typen */ }
-  ```
-  Regel wie beim Serial: **nichts wird gespeichert**, dieselbe ID ergibt auf jedem
-  Gerät dieselbe Blutgruppe. Das ist kein medizinischer Wert und wird im UI als
-  „AUSWEIS / ERFUNDEN" gekennzeichnet, damit niemand denkt, es sei echt.
-* `dog-tag.mjs`: Zeile „BLUTGRUPPE" ins SVG/HTML-Aussehen, gleiche Linienoptik wie
-  die Armory-Icons. Name, Geschlechts-Piktogramm, Serial, Marke, Ausgabedatum
-  bleiben.
-* Debrief (Popups): Die Marke erscheint **groß** im Debrief-Modal als Belohnung
-  („VERLIEHEN"), danach bleibt sie am Soldaten sichtbar (immer getragen, wie
-  spezifiziert).
-
-**Fertig wenn:** `dogTag({...}).bloodType` existiert, deterministisch ist, der
-Test „nichts wird gespeichert" weiter grün ist, und im Debrief die Marke als
-Belohnung erscheint.
+**Rückbau (2026-10-31):** Die Marke ist vollständig aus dem Spiel entfernt
+(reported: „passt nicht auf den hauptbildschirm und sieht auch sonst scheisse
+aus" — zuerst vom Hauptbildschirm, danach konsequent von allen Flächen:
+Dossier, Armory, Rekrutierung, Profilzeile, Popup, Module, Tests). Modul,
+Asset und alle Texte sind gelöscht; der Abschluss läuft ohne diesen Schritt.
 
 ---
 
 ## 6. Patch 5 — Erst Ausrüstung, dann Skillpunkt
 
 **Warum:** „erst an das Anziehen der gewonnenen Boss-Ausrüstung, danach an das
-Skill verteilen." Heute ist die Reihenfolge in `first-run-ending.mjs` umgekehrt
+Skill verteilen." Die Reihenfolge in `first-run-ending.mjs` war damals umgekehrt
 (`ENDING_STEPS = ['skills','tag','workshop']`).
 
 **Was:**
 
-* `first-run-ending.mjs`: `ENDING_STEPS = ['tag','equip','skills','workshop']`.
-  * `tag` = Hundemarke verliehen (Popup, kein Dialogwechsel nötig).
+* `first-run-ending.mjs`: `ENDING_STEPS = ['equip','skills','workshop']`
+  (der Marken-Schritt ist mit Patch 4 zurückgebaut).
   * `equip` = **echter** Armory-Dialog, gefiltert auf die Items, die der Lauf
     wirklich eingebracht hat; der Spieler zieht selbst an; Speichern passiert
     über den bestehenden `saveArmory`-Pfad (echte Daten, keine Sandbox).
@@ -209,7 +189,7 @@ Skill verteilen." Heute ist die Reihenfolge in `first-run-ending.mjs` umgekehrt
   * `workshop` = wie heute.
 * `account.js`: `steps` neu verdrahten; `equip` nutzt den Armory-Dialog **ohne**
   Sandbox (`sandbox.leave()` ist der Normalzustand), weil es echte Belohnung ist.
-* `ENDING_KEY` **von `v1` auf `v2`** heben: die Reihenfolge und die Hundemarke sind
+* `ENDING_KEY` **von `v1` auf `v2`** heben: die Reihenfolge ist
   neuer Inhalt, und die alte Edition hat die Reihenfolge „Skills zuerst"
   abgeschlossen. Sonst sieht kein bestehender Account den neuen Abschluss.
   (Exakt der Fehler, der in `tutorial.mjs` die `TUTORIAL_EDITION` erzwungen hat.)
@@ -243,10 +223,9 @@ Platz unten, damit die Augen auf dem Feld bleiben:
 **B. Belohnungs-/Debrief-Popups (nach dem Lauf)** — groß, feierlich, dürfen
 Fotos zeigen:
 
-* Hundemarke in Übergröße, Prägung mit Lichtkante (nur CSS, kein neues Asset).
 * Danach Ausrüstung, dann Skills: derselbe Kopf-Aufbau (Kicker · Titel · eine
   Zeile Erklärung), damit die Kette als **ein** Ablauf gelesen wird.
-* Ein einziger „Weiter"-Knopf pro Schritt, Fortschritt `2 / 4` im Kicker.
+* Ein einziger „Weiter"-Knopf pro Schritt, Fortschritt im Kicker.
 
 **Technik:** Die Optik kommt in `interface-redesign.css` (ein Block je Sorte),
 `style.css:12` und `style.css:102–106` werden entschärft (kein doppeltes Setzen
@@ -261,7 +240,7 @@ kein Knopf aus dem Viewport ragt, und alle Popup-Knöpfe ≥ 44 px sind.
 ### Stand der Umsetzung
 
 Gebaut als **ein** Block `First-run dossier` am Ende von `interface-redesign.css`.
-Die drei Flächen (Karte, Wiederholungs-Tour, Hundemarke) teilen jetzt benannte
+Die Flächen (Karte, Wiederholungs-Tour) teilen jetzt benannte
 Token (`--dossier-plate`, `--dossier-gold`, `--dossier-edge`, `--dossier-ink`)
 statt dreier unabhängiger Farbsätze:
 
@@ -271,8 +250,6 @@ statt dreier unabhängiger Farbsätze:
 * **Tour (nur noch Wiederholung aus der Hilfe):** Stempel-Kicker, Bild entsättigt,
   damit die Bildunterschrift gewinnt, Aktionsleiste mit 44-px-Knöpfen und
   Trennlinie, `::backdrop` mit leichtem Blur.
-* **Hundemarke:** dieselbe Kante, Prägung über Verlauf und Innenkante,
-  `overflow:auto` unter `max-height:calc(100dvh - 20px)`.
 * Unter `520 px` Höhe verschwindet das Tour-Bild — die Knöpfe sind wichtiger als
   die Illustration, und genau diese Reihenfolge fehlte beim alten Popup.
 
@@ -333,8 +310,7 @@ Unit (`node --test IronPath/tests/*.test.mjs`, heute 391 grün):
 
 * Welle 5 beendet den Vertrag, `trainingXP()===300`, Level 2 danach.
 * `trainingUnitScale()` unverändert (Gegner bleiben geschwächt), Boss-Welle 5.
-* Hundemarke: `bloodType` deterministisch, in `BLOOD_TYPES`, ohne Storage-Zugriff.
-* `endingDone` mit `v1`-Marker → `false`; Reihenfolge `['tag','equip','skills','workshop']`.
+* `endingDone` mit `v1`-Marker → `false`; Reihenfolge `['equip','skills','workshop']`.
 * Cache-Token-Invariante (aus #161) bleibt grün; neue Dateien mit demselben Token.
 * `tests/tutorial.test.mjs` wird auf den Coach umgeschrieben (keine `<dialog>`-API).
 
@@ -343,12 +319,12 @@ Browser (`browser-tests/command-center.cjs`, Playwright, läuft in CI):
 * Erster Login → Training startet selbst, Canvas hat Frames, **dann** Karte 1.
 * Während Karte offen: Tipp auf Baufeld baut (Karte nicht modal, Spiel läuft).
 * Karten lassen sich wegtippen; Spiel pausiert nie.
-* Boss Welle 5 → Debrief mit Hundemarke → Ausrüstung → Skills → gespeichert.
+* Boss Welle 5 → Debrief → Ausrüstung → Skills → gespeichert.
 * Nach dem Debrief ist `Deploy` wieder benutzbar (Regression `trainingDone`).
 
 Geräte (manuell, `FIRST-RUN-DEVICE-TEST.md` wird umgeschrieben):
 390 × 664, 360 × 480 (klein), 844 × 390 (quer), Desktop. Gesucht: Popup verdeckt
-die Karte nicht, jeder Knopf mit dem Daumen erreichbar, Hundemarke lesbar.
+die Karte nicht, jeder Knopf mit dem Daumen erreichbar.
 
 ---
 
@@ -357,7 +333,7 @@ die Karte nicht, jeder Knopf mit dem Daumen erreichbar, Hundemarke lesbar.
 1. **Patch 1** (Welle 5 + Guard) — kleine, testbare Änderung, entkoppelt vom UI.
 2. **Patch 2** (Karte nicht modal, nicht pausierend) — die eigentliche Bugbehebung.
 3. **Patch 3** (Willkommen nach dem ersten Frame).
-4. **Patch 4** (Hundemarke + Blutgruppe + Item aus dem Boss).
+4. **Patch 4** (Boss-Belohnung — später vollständig zurückgebaut).
 5. **Patch 5** (Reihenfolge Ausrüstung → Skills, `ENDING_KEY` v2).
 6. **Patch 6** (Optik beider Popup-Sorten).
 7. **Patch 8** (Tests parallel zu 1–6, Gerätetest zuletzt).
@@ -370,18 +346,13 @@ Jeder Patch einzeln grün, einzeln committet, damit ein Rückbau möglich bleibt
 
 1. **Alte Accounts:** Sollen sie den neuen Ablauf auch sehen (`TUTORIAL_EDITION = 3`),
    oder nur neue Accounts? Ich empfehle: **ja**, einmal — sie haben den
-   „Wellen 1–5 + Hundemarke"-Fluss nie gesehen. Das ist derselbe Grund, aus dem
+   „Wellen 1–5"-Fluss nie gesehen. Das ist derselbe Grund, aus dem
    wir die Edition überhaupt eingeführt haben.
 2. **300 XP hart oder skalierend?** Ich empfehle, den Bonus so zu setzen, dass
    Level 2 **garantiert** erreicht wird (Auftragsbonus), damit der Skillpunkt
    nicht an einer Balancing-Änderung hängt.
-3. **Blutgruppe** ist erfunden und deterministisch (nichts gespeichert). Wenn du
-   sie lieber vom Spieler wählbar hättest, brauchen wir ein neues Profilfeld
-   (Firebase + Rules + Migration) — deutlich größer. Empfehlung: abgeleitet, im
-   UI als Markierung „AUSWEIS" gekennzeichnet.
-4. **Boss-Item:** die Hundemarke als `armory.mjs`-Item (`wave: 5`) oder rein als
-   Belohnung im Debrief? Empfehlung: **beides** — als Item sichtbar in der
-   Armory („getragen, nie verkauft"), verdient in Welle 5.
+3. **Blutgruppe und Boss-Item:** gehörten beide zur Marke aus Patch 4 und sind
+   mit ihr zurückgebaut.
 
 ---
 
