@@ -1,6 +1,6 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-pressure1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-pressure1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-avatar1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-dossier1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
 import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-live1';
@@ -11,7 +11,7 @@ import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismiss
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-live1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261112-live1';
+import {setupFriends} from './friends-ui.mjs?v=20261112-dossier1';
 import {createCommandCenter} from './command-center.mjs?v=20261112-menutag1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-live1';
