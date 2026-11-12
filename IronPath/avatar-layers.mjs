@@ -11,7 +11,7 @@
 // by mapping ITS face box onto the TARGET face's box - small drift in the AI
 // edit therefore self-corrects, and one overlay fits every face of its
 // gender.
-import {FACES,HAIRS,BEARDS} from './assets/layers/manifest.mjs?v=20261112-layers1';
+import {FACES,HAIRS,BEARDS} from './assets/layers/manifest.mjs?v=20261112-layers2';
 
 // The option a row offers when no overlay is drawn: the base portrait's own
 // cut. Ids are null so they simply skip the layer.
@@ -103,9 +103,7 @@ export function legacyLook(avatar){
     case 'bob':return {gender,faceId:'crop',hairId:'bob',beardId:null};
     case 'ponytail':return {gender,faceId:'crop',hairId:'ponytail',beardId:null};
     case 'long':return {gender,faceId:'crop',hairId:'long',beardId:null};
-    // The braid overlay is not shipped yet (its first edit failed the
-    // pipeline's coverage gate); long hair is the closest stand-in.
-    case 'braid':return {gender,faceId:'crop',hairId:'long',beardId:null};
+    case 'braid':return {gender,faceId:'crop',hairId:'braid',beardId:null};
     case 'bun':return {gender,faceId:'bun',hairId:null,beardId:null};
     case 'short':return {gender,faceId:'buzz',hairId:'short',beardId:null};
     case 'side':return {gender,faceId:'buzz',hairId:'side',beardId:null};

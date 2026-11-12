@@ -2,7 +2,7 @@
 // Face boxes are measured with the pico.js face detector (see tools/).
 // Overlays are anchored by mapping their face box onto the target face box,
 // so a small drift in the AI edit self-corrects at composite time.
-export const LAYER_TOKEN='20261112-layers1';
+export const LAYER_TOKEN='20261112-layers2';
 export const FACES=[
   {
     "gender": "female",
@@ -24,6 +24,17 @@ export const FACES=[
       "cx": 0.43568638392857145,
       "cy": 0.38490513392857145,
       "size": 0.461827042753732
+    }
+  },
+  {
+    "gender": "female",
+    "id": "slick",
+    "label": "Face 3",
+    "file": "assets/portraits/f-slick.jpg?v=20261112-avatar2",
+    "face": {
+      "cx": 0.505615234375,
+      "cy": 0.3800455729166667,
+      "size": 0.4126014921062216
     }
   },
   {
@@ -53,7 +64,7 @@ export const HAIRS=[
   {
     "id": "bob",
     "label": "Bob",
-    "file": "assets/layers/hair-female-bob.png?v=20261112-layers1",
+    "file": "assets/layers/hair-female-bob.png?v=20261112-layers2",
     "face": {
       "cx": 0.5013950892857143,
       "cy": 0.38839285714285715,
@@ -64,7 +75,7 @@ export const HAIRS=[
   {
     "id": "long",
     "label": "Long hair",
-    "file": "assets/layers/hair-female-long.png?v=20261112-layers1",
+    "file": "assets/layers/hair-female-long.png?v=20261112-layers2",
     "face": {
       "cx": 0.50224609375,
       "cy": 0.378662109375,
@@ -73,9 +84,20 @@ export const HAIRS=[
     "gender": "female"
   },
   {
+    "id": "braid",
+    "label": "Braid",
+    "file": "assets/layers/hair-female-braid.png?v=20261112-layers2",
+    "face": {
+      "cx": 0.4977596507352941,
+      "cy": 0.38361672794117646,
+      "size": 0.4155612583755031
+    },
+    "gender": "female"
+  },
+  {
     "id": "ponytail",
     "label": "Ponytail",
-    "file": "assets/layers/hair-female-ponytail.png?v=20261112-layers1",
+    "file": "assets/layers/hair-female-ponytail.png?v=20261112-layers2",
     "face": {
       "cx": 0.4994140625,
       "cy": 0.38763020833333334,
@@ -84,9 +106,31 @@ export const HAIRS=[
     "gender": "female"
   },
   {
+    "id": "bun",
+    "label": "Bun",
+    "file": "assets/layers/hair-female-bun.png?v=20261112-layers2",
+    "face": {
+      "cx": 0.5042818509615384,
+      "cy": 0.3798076923076923,
+      "size": 0.4048199552905679
+    },
+    "gender": "female"
+  },
+  {
+    "id": "curly",
+    "label": "Curly",
+    "file": "assets/layers/hair-female-curly.png?v=20261112-layers2",
+    "face": {
+      "cx": 0.5002170138888888,
+      "cy": 0.3870985243055556,
+      "size": 0.3996923189663984
+    },
+    "gender": "female"
+  },
+  {
     "id": "short",
     "label": "Short",
-    "file": "assets/layers/hair-male-short.png?v=20261112-layers1",
+    "file": "assets/layers/hair-male-short.png?v=20261112-layers2",
     "face": {
       "cx": 0.5018257472826086,
       "cy": 0.361625339673913,
@@ -97,7 +141,7 @@ export const HAIRS=[
   {
     "id": "side",
     "label": "Side part",
-    "file": "assets/layers/hair-male-side.png?v=20261112-layers1",
+    "file": "assets/layers/hair-male-side.png?v=20261112-layers2",
     "face": {
       "cx": 0.49893043154761907,
       "cy": 0.359375,
@@ -108,7 +152,7 @@ export const HAIRS=[
   {
     "id": "medium",
     "label": "Medium",
-    "file": "assets/layers/hair-male-medium.png?v=20261112-layers1",
+    "file": "assets/layers/hair-male-medium.png?v=20261112-layers2",
     "face": {
       "cx": 0.5008951822916666,
       "cy": 0.360595703125,
@@ -121,7 +165,7 @@ export const BEARDS=[
   {
     "id": "stubble",
     "label": "Stubble",
-    "file": "assets/layers/beard-male-stubble.png?v=20261112-layers1",
+    "file": "assets/layers/beard-male-stubble.png?v=20261112-layers2",
     "face": {
       "cx": 0.4937220982142857,
       "cy": 0.3630487351190476,
@@ -132,7 +176,7 @@ export const BEARDS=[
   {
     "id": "mustache",
     "label": "Mustache",
-    "file": "assets/layers/beard-male-mustache.png?v=20261112-layers1",
+    "file": "assets/layers/beard-male-mustache.png?v=20261112-layers2",
     "face": {
       "cx": 0.498974609375,
       "cy": 0.3615234375,
@@ -143,7 +187,7 @@ export const BEARDS=[
   {
     "id": "full",
     "label": "Full beard",
-    "file": "assets/layers/beard-male-full.png?v=20261112-layers1",
+    "file": "assets/layers/beard-male-full.png?v=20261112-layers2",
     "face": {
       "cx": 0.4963507401315789,
       "cy": 0.3627158717105263,

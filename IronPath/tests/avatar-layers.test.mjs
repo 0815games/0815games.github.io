@@ -21,8 +21,8 @@ const fakeImage=(file)=>({naturalWidth:1024,naturalHeight:1024,file});
 const fakeLoader=(files)=>(src)=>{for(const [name,image] of Object.entries(files))if(src.startsWith(name))return Promise.resolve(image);return Promise.reject(new Error('no such layer: '+src));};
 
 test('the manifest ships only well-formed layers whose files exist',()=>{
-  assert.equal(FACES.length,4,'two faces per gender');
-  assert.equal(FACES.filter(f=>f.gender==='female').length,2);
+  assert.equal(FACES.length,5,'three female + two male faces');
+  assert.equal(FACES.filter(f=>f.gender==='female').length,3,'three female faces (parity request)');
   assert.equal(FACES.filter(f=>f.gender==='male').length,2);
   for(const layer of [...FACES,...HAIRS,...BEARDS]){
     assert.match(layer.file,/^assets\/(portraits|layers)\//,'asset path is repo-relative');
@@ -30,20 +30,24 @@ test('the manifest ships only well-formed layers whose files exist',()=>{
     assert.ok(layer.face.cx>0&&layer.face.cx<1&&layer.face.cy>0&&layer.face.cy<1&&layer.face.size>0&&layer.face.size<1,'face box in range: '+layer.id);
   }
   assert.ok(BEARDS.every(b=>b.gender==='male'),'beards are a male-only row');
-  // The first braid edit changed 66% of the image and was rejected by the
-  // pipeline's coverage gate - it must not ship as a broken overlay.
-  assert.ok(!HAIRS.some(h=>h.id==='braid'),'the rejected braid overlay is not shipped');
+  // The first braid edit (66% of the image changed) was rejected by the
+  // pipeline's coverage gate; the second attempt passed and ships.
+  assert.ok(HAIRS.some(h=>h.id==='braid'),'the braid overlay ships (retry passed the gate)');
 });
 
-test('the rows: two faces, hairs per gender, beards only for men',()=>{
+test('the rows: equal option counts for women and men (reported parity request)',()=>{
   const female=layerOptions('female');
   const male=layerOptions('male');
-  assert.equal(female.faces.length,2);
+  assert.equal(female.faces.length,3,'three female faces');
   assert.equal(male.faces.length,2);
-  assert.ok(female.hairs.length>=3,'female hair options exist');
-  assert.ok(male.hairs.length>=3,'male hair options exist');
+  assert.equal(female.hairs.length,6,'six female hair overlays (braid, bun, curly included)');
+  assert.equal(male.hairs.length,3);
   assert.equal(female.beards.length,0,'no beard row for women');
-  assert.ok(male.beards.length>=3,'beard options exist for men');
+  assert.equal(male.beards.length,3);
+  // total tiles per gender: women 3+1+6 = men 2+1+3+1+3 = 10
+  const femaleTiles=female.faces.length+female.hairs.length+1;
+  const maleTiles=male.faces.length+male.hairs.length+1+male.beards.length+1;
+  assert.equal(femaleTiles,maleTiles,'same number of choices for both genders');
 });
 
 test('layerTransform maps the overlay face box exactly onto the target face box',()=>{
