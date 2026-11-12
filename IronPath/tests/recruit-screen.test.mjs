@@ -158,20 +158,22 @@ test('the enlistment is a compact iron-plate card, not the old paper desk',()=>{
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
   assert.match(css,/body:has\(#characterView:not\(\[hidden\]\)\) header,body:has\(#characterView:not\(\[hidden\]\)\) footer\{display:none\}/,'site chrome steps aside so the card fits a phone screen');
   assert.match(css,/\.recruit-note\{[^}]*max-width:46ch/,'the note keeps a readable measure on phones');
-  assert.match(css,/\.recruit-look\{[^}]*width:clamp\(52px,16vw,64px\)/,'the look filmstrip stays slim - the photo is the button, not a huge tile');
+  assert.match(css,/\.recruit-look\{[^}]*width:clamp\(60px,18vw,76px\)/,'the look filmstrip stays slim enough to scroll - the photo is the button, not a huge tile (headshot size, see the 400% crop pin)');
   assert.match(css,/\.recruit-choice\[aria-checked="true"\]\{[^}]*outline:2px solid var\(--iron-gold/,'the selected state speaks the iron-plate accent');
 });
 
-test('the recruit tag swaps to the photo the moment assets land',()=>{
+test('the recruit tag repaints when the stencil font lands',()=>{
   const source=readFileSync(new URL('../recruit-screen.mjs',import.meta.url),'utf8');
-  assert.match(source,/onDogTagArtReady\(\(\)=>paintTag\(\)\)/,'the tag repaints when photo and font arrive, not on the next unrelated paint');
+  assert.match(source,/onDogTagArtReady\(\(\)=>paintTag\(\)\)/,'the tag repaints when the font arrives, not on the next unrelated paint');
 });
 
-test('look tiles are character miniatures, not colored squares',()=>{
+test('look tiles are character headshots, not colored shades',()=>{
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
-  // The twelve portraits are square with faces around x 52% / y 45%; a 210%
-  // bust crop frames head and shoulders instead of shrinking the scene.
-  assert.match(css,/\.recruit-look\{[^}]*background-size:210% auto/,'the tile zooms into the bust');
-  assert.match(css,/\.recruit-look\{[^}]*background-position:52% 45%/,'the crop is anchored on the measured face position');
-  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:cover/,'no full-body cover crop');
+  // Measured: faces sit at x 46-55% / y 37-61% across all twelve portraits.
+  // A 400% crop anchored at 52%/52% shows a 25%-wide window (y 35-69%) - the
+  // face fills the tile, so hairstyles read as people (reported: at 210%
+  // they still read as "various color shades").
+  assert.match(css,/\.recruit-look\{[^}]*background-size:400% auto/,'the tile zooms onto the face');
+  assert.match(css,/\.recruit-look\{[^}]*background-position:52% 52%/,'the crop is anchored on the measured face cluster');
+  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:(cover|210%)/,'no full-body or half-body crop');
 });

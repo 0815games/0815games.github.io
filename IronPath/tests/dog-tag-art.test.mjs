@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {tagLines,drawDogTagArt,renderDogTagArt,drawFallbackPlate,drawPlateCrop,onDogTagArtReady} from '../dog-tag-art.mjs';
+import {tagLines,drawDogTagArt,renderDogTagArt,drawTagPlate,onDogTagArtReady,DOG_TAG_ART_VERSION} from '../dog-tag-art.mjs';
 
 // A recording 2D context: remembers fills, texts, draws and font sizes.
 function recorder({measureWidth}={}){
@@ -107,38 +107,38 @@ test('a name is shrunk to its measured width and can never run past the plate',(
   assert.ok(Math.max(...short.calls.fonts.map(fontPx))>=18,'a short name stamps large');
 });
 
-test('the fallback tag fills the frame with no backdrop of its own',()=>{
+test('the procedural tag fills the frame with no backdrop of its own',()=>{
   const {ctx,calls}=recorder();
-  const plate=drawFallbackPlate(ctx,220);
+  const plate=drawTagPlate(ctx,220);
   assert.ok(plate.w>=220*0.8,'the plate fills the frame width');
   assert.equal(calls.fillRects.length,0,'no backdrop rectangle is drawn');
   assert.ok(calls.fills>0,'the metal plate itself is drawn');
 });
 
-test('the photo is cropped to the tag, not the scene around it',()=>{
+test('the tag is 100% procedural: no photo asset, and a clean canvas every paint',()=>{
+  // The photo-based tag accumulated stale frames (a contain-fit crop never
+  // clears what it does not cover) and raced its own fallback - reported as
+  // "the new white tag in the background, the old image floating in front".
+  // The procedural tag must have neither the asset nor the accumulation.
+  const source=readFileSync(new URL('../dog-tag-art.mjs',import.meta.url),'utf8');
+  assert.equal(DOG_TAG_ART_VERSION,'procedural1','the art version is pinned');
+  assert.doesNotMatch(source,/TAG_ASSET|drawImage|detectPlate/,'no photo is loaded, detected or drawn');
   const {ctx,calls}=recorder();
-  const image={width:800,height:600};
-  const box=drawPlateCrop(ctx,240,image,{x:.25,y:.3,w:.4,h:.3});
-  assert.equal(calls.images,1,'one cropped draw');
-  const [,sx,sy,sw,sh]=calls.drawImages[0];
-  assert.ok(sw<image.width&&sh<image.height,'the source rect is a crop, not the whole photo');
-  assert.ok(sw>=image.width*0.4,'the crop keeps the whole tag plus its margin');
-  assert.ok(sw<=image.width*0.8,'the crop keeps no scene margins around the tag');
-  assert.ok(box.w>=240*0.6,`the plate lands large in the canvas (${Math.round(box.w)}px)`);
-  assert.ok(box.x>=0&&box.x+box.w<=240+1&&box.y>=0&&box.y+box.h<=240+1,'the plate box sits inside the canvas');
+  drawDogTagArt(ctx,240,{profile:{name:'Ada',gender:'female',enlisted:'2026-11-11'}});
+  assert.ok(calls.cleared>=1,'the canvas is cleared before every paint');
+  assert.equal(calls.images,0,'nothing is blitted');
 });
 
-test('drawDogTagArt stamps inside the plate the fallback reports',()=>{
+test('drawDogTagArt stamps inside the plate the renderer reports',()=>{
   const {ctx,calls}=recorder();
   drawDogTagArt(ctx,300,{profile:{name:'Rook Vale',gender:'female',enlisted:'2026-11-11'}});
-  // All text x positions sit inside the fallback plate (5%..95% of width).
-  const plateX0=300*0.05,plateX1=300*0.95;
   assert.ok(calls.text.length>0,'lines are stamped');
 });
 
-test('screens that paint the tag directly are told when the assets land',()=>{
-  // In this environment the photo cannot load, so the hook settles at once -
-  // the same immediate path a screen takes when assets arrived before it.
+test('screens that paint the tag directly are told when the font lands',()=>{
+  // In this environment the stencil font cannot load, so the hook settles at
+  // once - the same immediate path a screen takes when there is nothing to
+  // wait for.
   let fired=0;
   const unhook=onDogTagArtReady(()=>fired++);
   assert.equal(typeof unhook,'function','returns an unregister function');
