@@ -46,8 +46,8 @@ import { createPlayer } from './match.mjs?v=20261112-kits1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-kits1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-avatar3';
 import { avatarPortrait } from './avatar-art.mjs?v=20261112-avatar3';
-import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-tagbg2';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-tagbg2';
+import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-recruit1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-recruit1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
