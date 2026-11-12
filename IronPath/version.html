@@ -44,14 +44,14 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
   probe('index.html').then(html=>{
     const build=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
     token=(html.match(/account\.js\?v=([A-Za-z0-9-]+)/)||[])[1]||token;
-    set('r1',build==='20261112-live1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
+    set('r1',build==='20261112-soldatcard1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
     // Modul-Inhalt direkt pruefen: die prozedurale Tag trägt DOG_TAG_ART_VERSION
     return probe('dog-tag-art.mjs?v='+token);
   }).then(src=>{
     const v=(src.match(/DOG_TAG_ART_VERSION='([^']+)'/)||[])[1];
     set('r2',v==='procedural1',
       v?('Dog-Tag: prozedurale Version '+v+(v==='procedural1'?' (kein Foto, kein Holztisch, kein Flacker-Wechsel)':' (unbekannte Version - Seite neu laden)')):'ALTER STAND: noch die Foto-basierte Tag (Holztisch/Flackern)');
-    return probe('style.css?v=20261112-live1');
+    return probe('style.css?v=20261112-soldatcard1');
   }).then(css=>{
     set('r3',/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css),
       /\.recruit-showcase\{/.test(css)?'Ebenen-Erstellung eingebaut: großes Showcase-Portrait + live komponierte Kacheln (GESICHT/HAARE/BART)':'ALTER STAND: noch die alte LOOK-Zeile ohne Showcase');
