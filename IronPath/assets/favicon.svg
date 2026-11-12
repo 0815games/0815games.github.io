@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Iron Path">
-  <!-- Full-bleed icon matching the painted master: an iron cross pattée with
-       a silver rim and the gold field star on the olive battlefield. -->
-  <rect width="64" height="64" fill="#344b36"/>
-  <ellipse cx="16" cy="10" rx="11" ry="6" fill="#3d5740"/>
-  <ellipse cx="50" cy="14" rx="9" ry="5" fill="#2c4030"/>
-  <ellipse cx="8" cy="52" rx="8" ry="5" fill="#2c4030"/>
-  <ellipse cx="55" cy="55" rx="10" ry="6" fill="#3d5740"/>
-  <ellipse cx="50" cy="59" rx="4" ry="2.4" fill="#6a6d5f"/>
-  <ellipse cx="10" cy="24" rx="3" ry="2" fill="#565a4c"/>
-  <ellipse cx="54" cy="44" rx="2.6" ry="1.8" fill="#565a4c"/>
-  <!-- iron cross pattée: arms flare wide at the ends, pinched at the center -->
-  <path d="M22 8 H42 L37 27 L56 22 V42 L37 37 L42 56 H22 L27 37 L8 42 V22 L27 27 Z"
-        fill="#1d2120" stroke="#d9dde1" stroke-width="3.5" stroke-linejoin="miter"/>
-  <path d="M22 8 H42 L37 27 L56 22 V42 L37 37 L42 56 H22 L27 37 L8 42 V22 L27 27 Z"
-        fill="none" stroke="#3f4440" stroke-width="1.1" stroke-linejoin="miter"
-        transform="translate(32 32) scale(0.78) translate(-32 -32)"/>
-  <!-- the gold field star at the heart of the cross -->
-  <path d="M32 26 L33.41 30.06 L37.71 30.15 L34.28 32.74 L35.53 36.85 L32 34.4 L28.47 36.85 L29.72 32.74 L26.29 30.15 L30.59 30.06 Z"
-        fill="#f0d68a" stroke="#1f3024" stroke-width="1" stroke-linejoin="round"/>
+  <!-- The icon of the field transmission: the captain's mark - one gold star
+       over two chevrons - on the dark olive plate of the loading scene and the
+       intro. Same stencil gold, same shapes the soldier wears as a rank, so
+       the favicon, the home screen and the uniform tell one story. -->
+  <rect width="64" height="64" fill="#14241e"/>
+  <ellipse cx="14" cy="9" rx="12" ry="6" fill="#1b2f26"/>
+  <ellipse cx="52" cy="13" rx="9" ry="5" fill="#0f1c16"/>
+  <ellipse cx="7" cy="54" rx="9" ry="5" fill="#0f1c16"/>
+  <ellipse cx="55" cy="56" rx="11" ry="6" fill="#1b2f26"/>
+  <ellipse cx="10" cy="26" rx="3.2" ry="2" fill="#24392e"/>
+  <ellipse cx="55" cy="42" rx="2.8" ry="1.9" fill="#24392e"/>
+  <!-- the gold field star -->
+  <path d="M32 11.5 L34.4 18.3 L41.6 18.5 L35.9 22.9 L37.9 29.8 L32 25.9 L26.1 29.8 L28.1 22.9 L22.4 18.5 L29.6 18.3 Z"
+        fill="#e4ca89" stroke="#1f3024" stroke-width="1" stroke-linejoin="round"/>
+  <!-- two enlisted chevrons under the star -->
+  <path d="M14 33 L32 23.5 L50 33 L50 40 L32 30.5 L14 40 Z"
+        fill="#e4ca89" stroke="#1f3024" stroke-width="1" stroke-linejoin="miter"/>
+  <path d="M14 45 L32 35.5 L50 45 L50 52 L32 42.5 L14 52 Z"
+        fill="#e4ca89" stroke="#1f3024" stroke-width="1" stroke-linejoin="miter"/>
 </svg>

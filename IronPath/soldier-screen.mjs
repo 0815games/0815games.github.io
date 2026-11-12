@@ -1,6 +1,6 @@
 import {soldierProfile} from './soldier-profile.mjs?v=20261112-tagless1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {renderRankInsignia,rankForLevel,rankTooltip} from './rank-insignia.mjs?v=20261031-rank1';
+import {renderRankInsignia,rankForLevel,rankTooltip} from './rank-insignia.mjs?v=20261031-loading1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 export function createSoldierScreen({document,getProfile,translate:tr,getPortrait=null,onArmory,onSkills}){
  const $=id=>document.getElementById(id),dialog=$('soldierDialog');

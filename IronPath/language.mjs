@@ -9,7 +9,7 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261112-tagless1
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261112-tagless1';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-rank1';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-loading1';
 import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261127-tutlock1';
 import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
 import {germanTowers} from './localization-towers-de.mjs?v=20261112-kits1';
@@ -28,8 +28,6 @@ import {germanText} from './localization-de.mjs?v=20261112-live1';
 // complete story, gameplay and account flows still need translated strings.
 const messages={
   'language.label':{en:'Language',de:'Sprache'},
-  'loading.title':{en:'Connecting…',de:'Verbindung wird hergestellt…'},
-  'loading.subtitle':{en:'Preparing your soldier.',de:'Dein Soldat wird vorbereitet.'},
   'auth.heading':{en:'IDENTITY CHECK',de:'IDENTITÄTSPRÜFUNG'},
   'auth.copy':{en:'Sign in to access your soldier and saved progress.',de:'Melde dich an, um auf deinen Soldaten und deinen gespeicherten Fortschritt zuzugreifen.'},
   'auth.email':{en:'EMAIL ADDRESS',de:'E-MAIL-ADRESSE'},

@@ -847,3 +847,29 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 .soldier-rank .rank-badge{padding:2px 4px;background:#12211a80;border:1px solid #7b8a6b66;border-radius:3px}
 .soldier-rank strong{font:700 11px 'Trebuchet MS',sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#d4c181;overflow-wrap:anywhere}
 @media(max-width:540px){.rank-badge-menu{right:3px;bottom:3px;padding:2px 3px}.soldier-rank strong{font-size:10px}}
+
+/* --- Loading: a field transmission, not a bare spinner ------------------------
+   Skipping the intro used to drop the player on the bright paper personnel
+   record with two words on it. The connecting scene now speaks the intro's
+   language - dark plate, gold kicker, a pulsing chevron signal - and its copy
+   follows the two phases the connection really has: field link, then soldier.
+   The error view wears the same plate, so a failed load is a change of text,
+   not a change of world. */
+.entry:has(#loading:not([hidden])),.entry:has(#connectionView:not([hidden])){width:min(560px,100%);max-width:560px;background:#14241e;border:1px solid #81947a;border-radius:4px;box-shadow:0 24px 70px #0009;color:#e9e1c5}
+.entry:has(#loading:not([hidden])):before,.entry:has(#connectionView:not([hidden])):before{content:'0815 GAMES / FIELD TRANSMISSION';padding:13px 22px;background:#192f25;color:#e3ca8b;border-bottom:1px solid #6c8068}
+.transmission{display:grid;justify-items:center;gap:10px;padding:30px 26px 22px;text-align:center}
+.transmission-topline{display:flex;justify-content:center;width:100%;font:700 9px 'Trebuchet MS',sans-serif;letter-spacing:.22em;color:#c9d0b4}
+.transmission-topline i{font-style:normal;color:#d2b977;margin:0 6px}
+.transmission h2{font:700 24px Georgia,serif;color:#f6e9ca;margin:4px 0 0}
+.transmission .hint{color:#c9d6bf;font-size:13px;line-height:1.5;margin:0}
+.transmission-slow{color:#e8c9a0}
+.transmission button{width:auto;min-height:44px;margin:8px 0 0;padding:10px 22px;background:#e4ca89;border:1px solid #e4ca89;color:#1b3024;border-radius:3px;font-weight:bold}
+.transmission button + button{margin-left:8px}
+/* The signal: three stencil chevrons pulsing upwards, like bars on a radio. */
+.transmission-emblem{display:flex;flex-direction:column-reverse;gap:5px;padding:12px 16px;border:1px solid #6c806680;border-radius:4px;background:#0f1c16}
+.transmission-emblem i{width:46px;height:10px;clip-path:polygon(0 100%,50% 0,100% 100%,100% 76%,50% 32%,0 76%);background:#e4ca89;opacity:.25;animation:transmission-pulse 1.4s ease-in-out infinite}
+.transmission-emblem i:nth-child(2){animation-delay:.22s}
+.transmission-emblem i:nth-child(3){animation-delay:.44s}
+@keyframes transmission-pulse{0%,100%{opacity:.25}45%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.transmission-emblem i{animation:none;opacity:.8}}
+@media(max-width:520px){.transmission{padding:22px 18px 16px}.transmission h2{font-size:20px}}

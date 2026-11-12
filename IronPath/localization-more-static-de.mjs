@@ -167,4 +167,11 @@ export const germanMoreStatic=Object.freeze({
   "Lieutenant": "Leutnant",
   "Captain": "Hauptmann",
   "Next rank: {rank} at level {level}": "Nächster Rang: {rank} ab Stufe {level}",
+
+  // ---- The connecting scene: two honest phases plus the slow hint --------
+  "Establishing field connection…": "Feldverbindung wird hergestellt…",
+  "The valley is waiting.": "Das Tal wartet.",
+  "Preparing your soldier.": "Dein Soldat wird vorbereitet.",
+  "Record, gear and skills are on their way.": "Akten, Ausrüstung und Fähigkeiten sind unterwegs.",
+  "This is taking longer than usual. Check your connection.": "Das dauert länger als üblich. Prüfe deine Verbindung.",
 });
