@@ -33,16 +33,16 @@ test('the highlighted SOLDIER card sits above the game modes and owns the quick 
   assert.ok(card<actions&&actions<head&&head<modes,'card, then quick actions, then the deployment head, then the game modes');
   assert.ok(!html.includes('soldier-dossier'),'the old dossier column is gone');
   assert.ok(!html.includes('id="menuEquipment"')&&!html.includes('id="menuScrap"')&&!html.includes('id="menuPoints"'),'scrap/equipment/points live in their dialogs, not the menu');
-  for(const id of ['menuPortrait','menuDogTag','menuName','menuLevel','menuXp','menuXpBar','menuArmory','menuSkills','menuSkillBadge','menuFriends','menuFriendBadge','menuLeaderboard'])
+  for(const id of ['menuPortrait','menuName','menuLevel','menuXp','menuXpBar','menuArmory','menuSkills','menuSkillBadge','menuFriends','menuFriendBadge','menuLeaderboard'])
     assert.ok(html.includes(`id="${id}"`),'kept id: '+id);
-  const cardBlock=html.slice(card,html.indexOf('</button>',card));
-  assert.ok(cardBlock.includes('id="menuDogTag"'),'the dog tag hangs on the card portrait');
+  // The dog tag is OFF the menu card (reported: "die dog Tag passt nicht auf
+  // den hauptbildschirm und sieht auch sonst scheisse aus" - removed).
+  assert.ok(!html.includes('menuDogTag'),'no dog tag on the main screen');
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
   const cardCss=css.match(/\.command-soldier\{[^}]*\}/)?.[0]||'';
   assert.match(cardCss,/border:1px solid #e0c682/,'gold frame: extra highlighted');
   assert.match(css,/\.command-home-layout\{[^}]*grid-template-columns:minmax\(0,1fr\)/,'single column - no side dossier');
   assert.match(css,/\.command-soldier-actions\{[^}]*grid-template-columns:repeat\(4/,'four quick actions');
-  assert.match(css,/\.command-soldier \.menu-dog-tag\{width:52px/,'the card tag shrinks to the card portrait');
   assert.doesNotMatch(css,/\.soldier-dossier\{|\.soldier-details\{|\.soldier-actions\{/,'the dossier column styles are gone');
   const source=readFileSync(new URL('../command-center.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(source,/menuEquipment|menuScrap|menuPoints/,'render() no longer feeds removed nodes');

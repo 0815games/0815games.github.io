@@ -901,12 +901,4 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 @media(max-width:560px){.endless-record{grid-template-columns:repeat(2,1fr)}.endless-themes{grid-template-columns:1fr}}
 /* The painted dog tag with its real chain (2026-11 avatar build). */
 .dog-tag-art{display:block;margin:0 auto}
-.menu-dog-tag{position:absolute;right:6px;bottom:8px;width:92px;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(15,18,10,.5))}
-.menu-dog-tag canvas{display:block;width:100%;height:auto}
-/* The tag hangs ON the portrait corner, not out of it: the portrait box and
-   the dossier clip their overflow, so the old negative offsets cut the tag
-   on every screen. On phones the dossier's portrait column shrinks to
-   110px, where a 92px tag also buried the PERSONNEL FILE line - reported:
-   the tag was "versetzt und verdeckt" on the phone. In-bounds placement
-   plus a 64px step keeps it fully visible and the line readable. */
-@media(max-width:540px){.menu-dog-tag{width:64px;right:5px;bottom:6px}}
+

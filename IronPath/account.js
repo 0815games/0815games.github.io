@@ -481,7 +481,7 @@ function refreshDogTags(){
  const data={profile,accountId:user?.uid};
  // The worn tag: painted on canvas with its real ball chain everywhere it
  // hangs - the soldier screen, the armory and the dossier portrait corner.
- for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag'),document.getElementById('menuDogTag')])if(container)renderDogTagArt(document,container,data,{size:container.id==='menuDogTag'?140:170});
+ for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag')])if(container)renderDogTagArt(document,container,data,{size:170});
  refreshProfileTag(data);
 }
 // The dossier and soldier-screen portraits show the soldier's own LAYERED
