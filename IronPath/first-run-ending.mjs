@@ -46,10 +46,15 @@ export function markEndingDone(id,storage){
 // Ordering and cancellation live here so the UI cannot drift from it. `steps` is
 // a map of step name -> async function returning true when the player finished
 // it. A missing step is treated as unavailable, which stops the sequence cleanly.
-export async function runFirstRunEnding({id,storage,steps,onStep=()=>{},onDone=()=>{},onStopped=()=>{}}={}){
+// `shouldStop` is asked before every step: the account aborts the walkthrough
+// this way when the player closes the guide in the Command Center (reported:
+// the guide card and its SHOW TASK pill kept floating over the main menu after
+// the tutorial ended, and closing them only paused - the pill came back).
+export async function runFirstRunEnding({id,storage,steps,onStep=()=>{},onDone=()=>{},onStopped=()=>{},shouldStop=()=>false}={}){
  if(!id||endingDone(id,storage))return {status:'done',completed:0};
  let completed=0;
  for(const name of ENDING_STEPS){
+  if(shouldStop()){onStopped({step:name,reason:'aborted',completed});return {status:'stopped',step:name,reason:'aborted',completed};}
   const step=steps?.[name];
   if(typeof step!=='function'){onStopped({step:name,reason:'unavailable',completed});return {status:'stopped',step:name,reason:'unavailable',completed};}
   onStep(name);

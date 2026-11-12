@@ -50,6 +50,31 @@ test('a missing step stops the sequence cleanly',async()=>{
  assert.deepEqual({status:result.status,step:result.step,reason:result.reason},{status:'stopped',step:'equip',reason:'unavailable'});
 });
 
+test('shouldStop aborts between steps - the walkthrough ends instead of dragging on',async()=>{
+ // Reported: after the tutorial the guide card and its SHOW TASK pill kept
+ // floating over the Command Center; closing them only paused. The account
+ // aborts the walkthrough through shouldStop, so the runner must stop at the
+ // next step boundary and never open the following screen.
+ const store=storage(),seen=[];
+ let abort=false;
+ const result=await runFirstRunEnding({
+  id:'soldier-abort',storage:store,
+  steps:{tag:async()=>{seen.push('tag');return true;},equip:async()=>{seen.push('equip');abort=true;return true;},skills:async()=>{seen.push('skills');return true;},workshop:async()=>{seen.push('workshop');return true;}},
+  shouldStop:()=>abort,
+ });
+ assert.equal(result.status,'stopped');
+ assert.equal(result.reason,'aborted');
+ assert.deepEqual(seen,['tag','equip'],'the skill and workshop screens are never opened behind an abort');
+ assert.equal(endingDone('soldier-abort',store),false,'the runner itself does not mark an aborted ending done');
+ // An abort before the first step runs nothing at all.
+ const seen2=[];
+ const fresh=await runFirstRunEnding({id:'soldier-abort2',storage:storage(),
+  steps:{tag:async()=>{seen2.push('tag');return true;},equip:async()=>true,skills:async()=>true,workshop:async()=>true},
+  shouldStop:()=>true});
+ assert.deepEqual(fresh,{status:'stopped',step:'tag',reason:'aborted',completed:0});
+ assert.deepEqual(seen2,[],'nothing ran');
+});
+
 test('no account means no ending, and storage failures do not break it',async()=>{
  assert.equal((await runFirstRunEnding({id:null,storage:storage()})).completed,0);
  const broken={getItem(){throw Error('blocked');},setItem(){throw Error('blocked');}};
