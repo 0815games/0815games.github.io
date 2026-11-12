@@ -901,7 +901,6 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 @media(max-width:560px){.endless-record{grid-template-columns:repeat(2,1fr)}.endless-themes{grid-template-columns:1fr}}
 /* The painted dog tag with its real chain (2026-11 avatar build). */
 .dog-tag-art{display:block;margin:0 auto}
-.soldier-portrait{position:relative}
 .menu-dog-tag{position:absolute;right:6px;bottom:8px;width:92px;z-index:2;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(15,18,10,.5))}
 .menu-dog-tag canvas{display:block;width:100%;height:auto}
 /* The tag hangs ON the portrait corner, not out of it: the portrait box and

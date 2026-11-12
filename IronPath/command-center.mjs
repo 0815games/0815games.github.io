@@ -1,14 +1,16 @@
 import {translate,translateText} from './language.mjs?v=20261112-live1';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {readArmory,ITEMS} from './armory.mjs?v=20261107-balance1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
-import {parseBuild,pointsLeft} from './skills.mjs?v=20261107-balance1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 // Navigation only: online matches and account mutations remain with their existing owners.
 export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut,endlessLauncher=null,getPortrait=null}){
  const $=id=>document.getElementById(id);
- function render(){const profile=getProfile();if(!profile)return;const p=characterProgress(profile.xp),armory=readArmory(profile.armory),points=pointsLeft(parseBuild(profile.skills,p.level),p.level),progress=campaignProgress(profile),game=getGame();
-  $('menuName').textContent=profile.name;$('menuLevel').textContent=translate('command.level',{level:p.level});$('menuXp').textContent=`${p.current} / ${p.required} XP`;$('menuXpBar').max=p.required;$('menuXpBar').value=p.current;$('menuEquipment').textContent=armory.equipped?translateText(ITEMS[armory.equipped-1].name):translate('command.none');$('menuScrap').textContent=String(armory.scrap);$('menuPoints').textContent=String(points);$('menuPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(profile.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');$('menuCampaignProgress').textContent=progress>=CAMPAIGN.length?translate('command.storyDone'):translate('command.missions',{done:progress,total:CAMPAIGN.length});
+ function render(){const profile=getProfile();if(!profile)return;const p=characterProgress(profile.xp),progress=campaignProgress(profile),game=getGame();
+  // The highlighted SOLDIER card above the game modes carries the person:
+  // name, level and XP. Scrap, equipment and skill points moved out of the
+  // menu into their own dialogs (armory, skills) - the field dossier shows
+  // the same numbers in full.
+  $('menuName').textContent=profile.name;$('menuLevel').textContent=translate('command.level',{level:p.level});$('menuXp').textContent=`${p.current} / ${p.required} XP`;$('menuXpBar').max=p.required;$('menuXpBar').value=p.current;$('menuPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(profile.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');$('menuCampaignProgress').textContent=progress>=CAMPAIGN.length?translate('command.storyDone'):translate('command.missions',{done:progress,total:CAMPAIGN.length});
   const summary=game?.getRunSummary();$('menuResume').hidden=!summary&&!isPartyActive();$('menuResumeLabel').textContent=isPartyActive()?translate('command.returnOnline'):summary?translate('command.resume',{operation:summary}):translate('command.resumeDefault');
  }
  // The screen label decides how the battle is framed (see field-command.css), so a
