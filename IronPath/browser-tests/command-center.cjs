@@ -32,6 +32,12 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     page.on('pageerror', error => { const text = error.stack || String(error); errors.push(text); console.error('[pageerror] ' + text); });
     page.on('console', message => { console.error('[' + message.type() + '] ' + message.text()); });
     page.on('requestfailed', request => console.error('[requestfailed] ' + request.method() + ' ' + request.url() + ' ' + (request.failure()?.errorText || '')));
+    // The pageerror arrives with an empty stack, so catch it where it is born:
+    // window error events carry filename, line and column even for parse errors.
+    await page.addInitScript(() => {
+      window.addEventListener('error', event => console.error('[windowerror] ' + [event.filename, event.lineno, event.colno].join(':') + ' ' + event.message));
+      window.addEventListener('unhandledrejection', event => console.error('[rejection] ' + String((event.reason && event.reason.stack) || event.reason)));
+    });
     const mocks = {
       'firebase-app.js': `export function initializeApp(){return {}}`,
       'firebase-auth.js': `const user={uid:'mock-user',getIdToken:async()=> 'mock'}; const auth={currentUser:user}; export function getAuth(){return auth} export function onAuthStateChanged(a,cb){globalThis.__mockAuth=next=>{a.currentUser=next;cb(next)};setTimeout(()=>cb(user),0);return ()=>{}} export async function signOut(a){a.currentUser=null} export async function signInWithEmailAndPassword(){} export async function createUserWithEmailAndPassword(){} export async function sendPasswordResetEmail(){}`,
