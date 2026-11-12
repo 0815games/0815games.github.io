@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Iron Path · Charakter-Erstellung (Vorschau)</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261108-icon2">
+  <link rel="stylesheet" href="style.css?v=20261112-face1">
+  <style>
+    /* Preview-only chrome: this page is an iteration tool, not the game. */
+    body{margin:0}
+    main{padding:18px 12px}
+    .preview-note{max-width:520px;margin:0 auto 10px;font:700 9px/1.6 Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:#9fb3a0;text-align:center}
+    .recruit-portrait-canvas{flex:none;width:clamp(88px,24vw,120px);aspect-ratio:1;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+    .recruit-look canvas{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
+    .layer-row[hidden]{display:none}
+    .preview-combo{margin:0;font:700 10px/1.5 Arial,sans-serif;letter-spacing:.1em;color:#cdd8c2;text-transform:uppercase;text-align:center}
+  </style>
+</head>
+<body>
+  <main>
+    <p class="preview-note">Vorschau-Seite · ohne Login · nichts wird gespeichert · nicht das Spiel</p>
+    <div class="entry recruiting">
+      <div class="recruit-card">
+        <div class="recruit-head">
+          <canvas id="portrait" class="recruit-portrait-canvas" role="img" aria-label="Portrait-Vorschau"></canvas>
+          <div class="recruit-head-text">
+            <span class="recruit-kicker">MUSTERUNG · NEU</span>
+            <h2>Charakter-Erstellung</h2>
+            <p class="recruit-note">Gesicht, Haare und Bart sind jetzt getrennte Wahlen — unten im Filmstrip tippen, das große Portrait und die Dog-Tag folgen sofort.</p>
+          </div>
+        </div>
+        <div class="recruit-id">
+          <div id="tagSlot"></div>
+          <div class="recruit-name">
+            <label for="nameInput">NAME</label>
+            <input id="nameInput" maxlength="24" autocomplete="off" spellcheck="false" value="ROOK VALE">
+          </div>
+        </div>
+        <div class="recruit-options" id="rows"></div>
+        <p class="preview-combo" id="combo"></p>
+        <div class="recruit-actions">
+          <button type="button" disabled>VORSCHAU</button>
+          <button type="button" id="random" class="primary">ZUFALLS-SOLDAT</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script type="module">
+    import {layerOptions,composePortrait} from './avatar-layers.mjs?v=20261112-layers1';
+    import {renderDogTagArt} from './dog-tag-art.mjs?v=20261112-recruit1';
+
+    const DE={
+      gender:{female:'WEIBLICH',male:'MÄNNLICH'},
+      faces:{crop:'GESICHT 1',bun:'GESICHT 2',buzz:'GESICHT 1',short:'GESICHT 2'},
+      hairs:{crop:'KURZ',bob:'BOB',long:'LANG',ponytail:'PFERDESCHWANZ',buzz:'BUZZ',side:'SEITENSCHEIDEL',medium:'MITTELLANG',short:'KURZ'},
+      beards:{stubble:'STOPPEL',mustache:'SCHNURRBART',full:'VOLLBART'},
+    };
+
+    const state={gender:'male',faceId:'buzz',hairId:null,beardId:null};
+    const rows=document.getElementById('rows');
+    const portrait=document.getElementById('portrait');
+    const combo=document.getElementById('combo');
+    const nameInput=document.getElementById('nameInput');
+    let tagSlot=document.getElementById('tagSlot');
+    let tagCanvas=null;
+
+    function dpr(){return Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));}
+
+    function paintTag(){
+      tagSlot.replaceChildren();
+      tagCanvas=renderDogTagArt(document,tagSlot,{profile:{name:nameInput.value||'UNKNOWN',gender:state.gender,enlisted:'2026-11-12'}},{size:128});
+    }
+
+    async function paintPortrait(){
+      await composePortrait(portrait,state,Math.round(240*dpr()));
+    }
+
+    function comboText(){
+      const o=layerOptions(state.gender);
+      const face=o.faces.find(f=>f.id===state.faceId);
+      const hair=o.hairs.find(h=>h.id===state.hairId);
+      const beard=o.beards.find(b=>b.id===state.beardId);
+      const parts=[DE.faces[state.faceId]||'—',hair?(DE.hairs[hair.id]||hair.label):'BASIS'];
+      if(state.gender==='male')parts.push(beard?(DE.beards[beard.id]||beard.label):'KEIN BART');
+      return parts.join(' · ');
+    }
+
+    // Every tile is a live composite: option X combined with the CURRENT
+    // rest of the selection, so the rows always preview what you get.
+    async function tileCanvas(avatar,label){
+      const button=document.createElement('button');
+      button.type='button';button.className='recruit-look';
+      button.title=label;button.setAttribute('aria-label',label);
+      const canvas=document.createElement('canvas');
+      const px=Math.round(76*dpr());
+      button.replaceChildren(canvas);
+      try{
+        await composePortrait(canvas,avatar,px);
+      }catch(error){
+        const ctx=canvas.getContext('2d');
+        canvas.width=px;canvas.height=Math.round(px*4/3);
+        ctx.fillStyle='#3a2323';ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='#f2b3b3';ctx.font='700 11px Arial';ctx.textAlign='center';
+        ctx.fillText('FEHLER',canvas.width/2,canvas.height/2);
+      }
+      return button;
+    }
+
+    function buttonRow(label,build){
+      const row=document.createElement('div');row.className='recruit-row layer-row';
+      const title=document.createElement('span');title.className='recruit-row-label';title.textContent=label;
+      const group=document.createElement('div');group.className='recruit-choices recruit-looks';
+      row.replaceChildren(title,group);
+      rows.append(row);
+      build(group);
+      return row;
+    }
+
+    function choice(group,label,pressed,onPick){
+      const button=document.createElement('button');
+      button.type='button';button.className='recruit-choice';button.textContent=label;
+      button.setAttribute('aria-checked',String(pressed));
+      button.addEventListener('click',()=>{onPick();render();});
+      group.append(button);
+      return button;
+    }
+
+    function buildGenderRow(){
+      buttonRow('GESCHLECHT',group=>{
+        for(const gender of ['female','male']){
+          choice(group,DE.gender[gender],state.gender===gender,()=>{
+            state.gender=gender;
+            const o=layerOptions(gender);
+            state.faceId=o.faces[0].id;state.hairId=null;state.beardId=null;
+          });
+        }
+      });
+    }
+
+    function buildRows(){
+      rows.replaceChildren();
+      buildGenderRow();
+      const o=layerOptions(state.gender);
+      buttonRow('GESICHT',async group=>{
+        for(const face of o.faces){
+          const tile=await tileCanvas({...state,faceId:face.id},DE.faces[face.id]||face.label);
+          if(state.faceId===face.id)tile.setAttribute('aria-checked','true');
+          tile.addEventListener('click',()=>{state.faceId=face.id;render();});
+          group.append(tile);
+        }
+      });
+      buttonRow('HAARE',async group=>{
+        const none=await tileCanvas({...state,hairId:null},'Basis-Frisur');
+        if(state.hairId===null)none.setAttribute('aria-checked','true');
+        none.addEventListener('click',()=>{state.hairId=null;render();});
+        group.append(none);
+        for(const hair of o.hairs){
+          const tile=await tileCanvas({...state,hairId:hair.id},DE.hairs[hair.id]||hair.label);
+          if(state.hairId===hair.id)tile.setAttribute('aria-checked','true');
+          tile.addEventListener('click',()=>{state.hairId=hair.id;render();});
+          group.append(tile);
+        }
+      });
+      if(state.gender==='male'){
+        buttonRow('BART',async group=>{
+          const none=await tileCanvas({...state,beardId:null},'Kein Bart');
+          if(state.beardId===null)none.setAttribute('aria-checked','true');
+          none.addEventListener('click',()=>{state.beardId=null;render();});
+          group.append(none);
+          for(const beard of o.beards){
+            const tile=await tileCanvas({...state,beardId:beard.id},DE.beards[beard.id]||beard.label);
+            if(state.beardId===beard.id)tile.setAttribute('aria-checked','true');
+            tile.addEventListener('click',()=>{state.beardId=beard.id;render();});
+            group.append(tile);
+          }
+        });
+      }
+    }
+
+    function render(){
+      buildRows();
+      paintPortrait();
+      paintTag();
+      combo.textContent=comboText();
+    }
+
+    document.getElementById('random').addEventListener('click',()=>{
+      const genders=['female','male'];
+      state.gender=genders[Math.floor(Math.random()*2)];
+      const o=layerOptions(state.gender);
+      const pick=list=>list.length?list[Math.floor(Math.random()*(list.length+1))]:null;
+      state.faceId=o.faces[Math.floor(Math.random()*o.faces.length)].id;
+      state.hairId=pick(o.hairs)?.id??null;
+      state.beardId=pick(o.beards)?.id??null;
+      const names=['ADA VOSS','ELIAS ROOK','NIA WREN','IVO KANE','SERA VALE','MAX ADLER'];
+      nameInput.value=names[Math.floor(Math.random()*names.length)];
+      render();
+    });
+
+    nameInput.addEventListener('input',paintTag);
+    render();
+  </script>
+</body>
+</html>

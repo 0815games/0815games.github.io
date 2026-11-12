@@ -1,0 +1,13 @@
+{
+  "name": "ironpath-layer-tools",
+  "private": true,
+  "type": "module",
+  "description": "Build pipeline for the portrait hair/beard overlay assets. Run: npm install && node build-layers.mjs",
+  "scripts": {
+    "build": "node build-layers.mjs"
+  },
+  "dependencies": {
+    "jpeg-js": "^0.4.4",
+    "pngjs": "^7.0.0"
+  }
+}
