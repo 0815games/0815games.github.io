@@ -169,11 +169,14 @@ test('the recruit tag repaints when the stencil font lands',()=>{
 
 test('look tiles are character headshots, not colored shades',()=>{
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
-  // Measured: faces sit at x 46-55% / y 37-61% across all twelve portraits.
-  // A 400% crop anchored at 52%/52% shows a 25%-wide window (y 35-69%) - the
-  // face fills the tile, so hairstyles read as people (reported: at 210%
-  // they still read as "various color shades").
-  assert.match(css,/\.recruit-look\{[^}]*background-size:400% auto/,'the tile zooms onto the face');
-  assert.match(css,/\.recruit-look\{[^}]*background-position:52% 52%/,'the crop is anchored on the measured face cluster');
-  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:(cover|210%)/,'no full-body or half-body crop');
+  // Measured with a face detector (pico.js facefinder) across all twelve
+  // portraits: face centers x 43.6-54.3% / y 36.1-42.9%, face DIAMETER
+  // 35-46% of the image. The 400% zoom tried before was SMALLER than a face
+  // - tiles showed skin/hair texture (reported: "nur verschiedene Farbtöne"
+  // under TYP). 150% at 50%/0% shows x 16.7-83.3% / y 0-88.9%; re-running
+  // the detector on that exact window verified 12/12 faces fully inside,
+  // each filling 53-66% of the tile.
+  assert.match(css,/\.recruit-look\{[^}]*background-size:150% auto/,'the tile window is wider than the measured face diameter');
+  assert.match(css,/\.recruit-look\{[^}]*background-position:50% 0%/,'the crop is anchored on the measured face cluster');
+  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:(cover|210%|400%)/,'no full-body crop and no zoom that cuts into the face');
 });
