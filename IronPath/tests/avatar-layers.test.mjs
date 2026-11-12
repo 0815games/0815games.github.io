@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {existsSync,readFileSync} from 'node:fs';
-import {layerOptions,composePortrait,layerTransform,legacyLook} from '../avatar-layers.mjs';
+import {layerOptions,composePortrait,layerTransform,facePortrait} from '../avatar-layers.mjs';
 import {FACES,HAIRS,BEARDS} from '../assets/layers/manifest.mjs';
 
 function recorder(){
@@ -95,32 +95,9 @@ test('composePortrait draws base, then hair, then beard - and clamps stale ids',
   assert.equal(calls.drawImages.length-before,2,'female draws base + hair only');
 });
 
-test('every legacy look maps to a combination that still exists',async ()=>{
-  const {ctx}=recorder();
-  const files={};
-  for(const face of FACES)files[face.file]=fakeImage(face.file);
-  for(const layer of [...HAIRS,...BEARDS])files[layer.file]=fakeImage(layer.file);
-  for(const gender of ['female','male']){
-    const looks=gender==='female'?6:6;
-    for(let look=0;look<looks;look++){
-      const mapped=legacyLook({gender,look});
-      assert.equal(mapped.gender,gender);
-      const composed=await composePortrait(canvasOf({ctx}),mapped,120,{loadImage:fakeLoader(files)});
-      assert.ok(composed,'legacy look '+gender+'#'+look+' composes');
-      assert.equal(composed.faceId,mapped.faceId);
-      assert.equal(composed.hairId,mapped.hairId);
-      assert.equal(composed.beardId,mapped.beardId);
-    }
-  }
-  // the old stubble and full-beard looks survive as beard choices
-  assert.equal(legacyLook({gender:'male',look:4}).beardId,'stubble');
-  assert.equal(legacyLook({gender:'male',look:5}).beardId,'full');
-});
-
-test('the preview page is wired to the engine and stays out of search indexes',()=>{
-  const html=readFileSync(new URL('../recruit-preview.html',import.meta.url),'utf8');
-  assert.match(html,/name="robots" content="noindex"/,'preview is noindex');
-  assert.match(html,/avatar-layers\.mjs\?v=/,'the preview uses the layer engine');
-  assert.match(html,/dog-tag-art\.mjs\?v=/,'the preview shows the procedural dog tag');
-  assert.doesNotMatch(html,/firebase|account\.js/,'the preview runs without login');
+test('facePortrait returns the base face file for sync callers',()=>{
+  assert.match(facePortrait({gender:'male',faceId:'buzz'}),/^assets\/portraits\/m-buzz\.jpg\?v=/,'the male base face');
+  assert.match(facePortrait({gender:'female',faceId:'bun'}),/^assets\/portraits\/f-bun\.jpg\?v=/,'the second female face');
+  assert.match(facePortrait({gender:'female'}),/^assets\/portraits\/f-crop\.jpg\?v=/,'an unknown face id falls back to the first of the gender');
+  assert.equal(facePortrait(null),null,'no avatar means no URL');
 });

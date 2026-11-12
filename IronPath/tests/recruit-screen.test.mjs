@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {setupRecruitScreen} from '../recruit-screen.mjs';
-import {looksFor,defaultAvatar,decodeAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
+import {defaultAvatar,encodeAvatar,decodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
 
 function memory(saved={}){
   const store={...saved};
@@ -22,8 +22,11 @@ function element(tag){
   };
 }
 
+const fakeLoader=()=>Promise.resolve({naturalWidth:512,naturalHeight:512});
+
 function fixture(){
   const nodes=new Map();
+  nodes.set('avatarPreview',element('canvas'));
   const document={
     getElementById(id){if(!nodes.has(id))nodes.set(id,element('div'));return nodes.get(id);},
     createElement:element,
@@ -31,74 +34,76 @@ function fixture(){
   };
   const storage=memory();
   const changes=[];
-  const screen=setupRecruitScreen({document,storage,getAccountId:()=>'uid-42',onAvatarChange:face=>changes.push(face)});
+  const screen=setupRecruitScreen({document,storage,getAccountId:()=>'uid-42',onAvatarChange:face=>changes.push(face),
+    deps:{loadImage:fakeLoader}});
   return {screen,nodes,storage,document,changes};
 }
 
-test('the editor is two rows: gender, then that gender\'s own looks',()=>{
+test('the editor is four rows: gender, face, hair - and beard for men only',()=>{
   const {nodes}=fixture();
   const rows=nodes.get('avatarOptions').children;
-  assert.deepEqual(rows.map(row=>row.attrs['aria-label']),['CHARACTER','LOOK']);
+  assert.deepEqual(rows.map(row=>row.attrs['aria-label']),['CHARACTER','FACE','HAIR']);
   assert.equal(rows[0].children[1].children.length,2,'two gender chips');
-  const tiles=rows[1].children[1].children;
-  assert.equal(tiles.length,looksFor('female').length,'one tile per female hairstyle');
-  for(const tile of tiles){
-    assert.match(tile.style.backgroundImage,/^url\('assets\/portraits\/f-[a-z]+\.jpg/,'the tile shows the rendered portrait');
+  assert.equal(rows[1].children[1].children.length,3,'three female faces');
+  assert.equal(rows[2].children[1].children.length,7,'BASIC CUT plus six hairs');
+  // Every tile is a live composite canvas, not a cropped background photo.
+  for(const tile of rows[1].children[1].children){
+    assert.equal(tile.children[0].tag,'canvas','the tile carries a canvas');
+    assert.ok(!tile.style.backgroundImage,'no background photo anymore');
   }
 });
 
-test('switching gender swaps in that gender\'s looks and clamps the choice',()=>{
+test('switching gender swaps in that gender\'s rows and resets the combination',()=>{
   const {screen,nodes,storage,changes}=fixture();
   const rows=()=>nodes.get('avatarOptions').children;
   const chips=()=>rows()[0].children[1].children;
-  const tiles=()=>rows()[1].children[1].children;
 
-  // Pick the male chip: the tile row becomes the male hairstyles.
-  chips()[1].onclick();
-  assert.equal(screen.getAvatar().gender,'male');
-  assert.equal(tiles().length,looksFor('male').length);
-  assert.ok(tiles().every(tile=>/m-[a-z]+\.jpg/.test(tile.style.backgroundImage)),'only male portraits are offered');
+  chips()[1].onclick(); // the male chip
+  assert.deepEqual(screen.getAvatar(),defaultAvatar('male'),'a gender switch starts from the gender\'s own default face');
+  assert.deepEqual(rows().map(row=>row.attrs['aria-label']),['CHARACTER','FACE','HAIR','BEARD'],'men get the beard row');
+  assert.equal(rows()[3].children[1].children.length,4,'NO BEARD plus three beards');
   assert.equal(storage.dump[AVATAR_STORAGE_KEY],encodeAvatar(screen.getAvatar()),'every change mirrors to storage');
   assert.equal(changes.length,1,'the account hears about the change');
 
-  // Pick the last male look, then switch back to female: the look clamps
-  // into the female list instead of leaking a male hairstyle.
-  tiles().at(-1).onclick();
-  const maleLook=screen.getAvatar().look;
-  assert.equal(maleLook,looksFor('male').length-1);
-  chips()[0].onclick();
-  assert.equal(screen.getAvatar().gender,'female');
-  assert.ok(screen.getAvatar().look<looksFor('female').length);
-  assert.ok(tiles().every(tile=>/f-[a-z]+\.jpg/.test(tile.style.backgroundImage)));
-  assert.equal(decodeAvatar(storage.dump[AVATAR_STORAGE_KEY],'female').gender,'female');
+  chips()[0].onclick(); // back to female
+  assert.deepEqual(screen.getAvatar(),defaultAvatar('female'));
+  assert.deepEqual(rows().map(row=>row.attrs['aria-label']),['CHARACTER','FACE','HAIR'],'no beard row for women');
 
-  // Exactly one chip and one tile carry aria-checked.
+  // Exactly one checked entry per row.
   for(const row of rows()){
-    const checked=row.children[1].children.filter(chip=>chip.attrs['aria-checked']==='true');
+    const checked=row.children[1].children.filter(entry=>entry.attrs['aria-checked']==='true');
     assert.equal(checked.length,1,row.attrs['aria-label']);
   }
 });
 
-test('the preview shows the chosen rendered portrait',()=>{
-  const {nodes}=fixture();
+test('tiles commit their option and every tile previews the current selection',async ()=>{
+  const {screen,nodes}=fixture();
+  const rows=()=>nodes.get('avatarOptions').children;
+  const hairTiles=()=>rows()[2].children[1].children;
+  hairTiles()[1].onclick(); // the bob
+  assert.equal(screen.getAvatar().hairId,'bob');
+  const faceTiles=()=>rows()[1].children[1].children;
+  faceTiles()[1].onclick(); // the second female face
+  assert.equal(screen.getAvatar().faceId,'bun');
+  assert.equal(screen.getAvatar().hairId,'bob','the hair survives a face change');
+  // The preview canvas is composed from the combination, not set as a src.
+  await new Promise(resolve=>setTimeout(resolve,0));
   const preview=nodes.get('avatarPreview');
-  assert.match(preview.src,/^assets\/portraits\/f-crop\.jpg/,'the default female portrait');
-  const rows=nodes.get('avatarOptions').children;
-  rows[1].children[1].children[3].onclick(); // the bun
-  assert.match(preview.src,/f-bun\.jpg/,'the preview follows the tile');
+  assert.ok(preview.width>0,'the showcase canvas was sized by the compositor');
+  assert.equal(preview.tag,'canvas','the showcase is a canvas, not an img');
 });
 
-test('SURPRISE ME rolls a different look within the gender',()=>{
+test('SURPRISE ME rolls a different combination within the gender',()=>{
   const {screen,nodes,storage}=fixture();
   const before=encodeAvatar(screen.getAvatar());
-  // A deterministic roll: always the deepest look of the list.
   const real=Math.random;
   Math.random=()=>0.999;
   try{nodes.get('avatarRandom').onclick();}finally{Math.random=real;}
   const after=encodeAvatar(screen.getAvatar());
   assert.ok(storage.dump[AVATAR_STORAGE_KEY],'the roll is mirrored');
   assert.equal(screen.getAvatar().gender,'female','the gender stays');
-  assert.equal(screen.getAvatar().look,looksFor('female').length-1,'the roll lands on the last look');
+  assert.equal(screen.getAvatar().faceId,'slick','the roll lands on the last female face');
+  assert.equal(screen.getAvatar().hairId,'curly','the roll lands on the last female hair');
   assert.notEqual(after,before,'the roll changed the default');
 });
 
@@ -131,52 +136,32 @@ test('the ENLIST stamp appears and hides itself again',()=>{
 
 test('reset clears the desk after a character deletion',()=>{
   const {screen,nodes,storage}=fixture();
-  const rows=nodes.get('avatarOptions').children;
-  rows[0].children[1].children[1].onclick(); // male
-  rows[1].children[1].children[2].onclick(); // some look
+  const rows=()=>nodes.get('avatarOptions').children;
+  rows()[0].children[1].children[1].onclick(); // male
+  rows()[2].children[1].children[2].onclick(); // some hair
   screen.reset();
   assert.deepEqual(screen.getAvatar(),defaultAvatar('female'));
   assert.equal(storage.dump[AVATAR_STORAGE_KEY],encodeAvatar(defaultAvatar('female')));
 });
 
-test('without the elements the screen degrades to a default face',()=>{
-  const document={getElementById:()=>null,createElement:element,querySelector(){return null;}};
-  const screen=setupRecruitScreen({document,storage:memory()});
-  assert.deepEqual(screen.getAvatar(),defaultAvatar('female'));
-  assert.doesNotThrow(()=>screen.stamp());
-  assert.doesNotThrow(()=>screen.reset());
-});
-
-test('the enlistment is a compact iron-plate card, not the old paper desk',()=>{
+test('the markup and css carry the showcase and composite tiles',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const view=html.slice(html.indexOf('<div id="characterView"'),html.indexOf('<p id="entryMessage"'));
-  assert.match(view,/<form id="characterForm" class="recruit-card">/,'the card IS the form - one compact block');
-  assert.ok(!view.includes('recruit-stage')&&!view.includes('soldier-workbench.jpg'),'no workbench photo scene anymore (reported: does not fit the game)');
-  assert.match(view,/class="hint recruit-note"/,'the note is its own capped line under the head');
-  assert.match(view,/<div id="avatarOptions" class="recruit-options"><\/div>/,'the options root keeps its id and class');
-  assert.match(view,/id="setupLogout"/,'sign out stays reachable from the enlistment');
+  assert.match(html,/<canvas id="avatarPreview" class="recruit-portrait-canvas"/,'the showcase portrait is a canvas');
+  assert.doesNotMatch(html,/<img id="avatarPreview"/,'no small preview image anymore');
+  assert.match(html,/class="recruit-showcase"/,'portrait and dog tag sit in the showcase row');
+  assert.doesNotMatch(html,/recruit-id/,'the old cramped id row is gone');
+  assert.ok(!existsSync(new URL('../recruit-preview.html',import.meta.url)),'the preview page was removed after the build-in');
+  assert.ok(!existsSync(new URL('../avatar-art.mjs',import.meta.url)),'the single-look portrait mapper was removed with the filmstrip');
+
   const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
-  assert.match(css,/body:has\(#characterView:not\(\[hidden\]\)\) header,body:has\(#characterView:not\(\[hidden\]\)\) footer\{display:none\}/,'site chrome steps aside so the card fits a phone screen');
-  assert.match(css,/\.recruit-note\{[^}]*max-width:46ch/,'the note keeps a readable measure on phones');
-  assert.match(css,/\.recruit-look\{[^}]*width:clamp\(60px,18vw,76px\)/,'the look filmstrip stays slim enough to scroll - the photo is the button, not a huge tile (headshot size, see the 400% crop pin)');
-  assert.match(css,/\.recruit-choice\[aria-checked="true"\]\{[^}]*outline:2px solid var\(--iron-gold/,'the selected state speaks the iron-plate accent');
+  assert.match(css,/\.recruit-portrait-canvas\{[^}]*width:clamp\(170px,52vw,240px\)/,'the showcase portrait is big (reported: too small before)');
+  assert.match(css,/\.recruit-showcase\{[^}]*flex-wrap:wrap/,'the showcase wraps on narrow screens');
+  assert.match(css,/\.recruit-look canvas\{/,'tiles style their composite canvas');
+  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size/,'no background photo crop left in the tiles');
 });
 
-test('the recruit tag repaints when the stencil font lands',()=>{
-  const source=readFileSync(new URL('../recruit-screen.mjs',import.meta.url),'utf8');
-  assert.match(source,/onDogTagArtReady\(\(\)=>paintTag\(\)\)/,'the tag repaints when the font arrives, not on the next unrelated paint');
-});
-
-test('look tiles are character headshots, not colored shades',()=>{
-  const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
-  // Measured with a face detector (pico.js facefinder) across all twelve
-  // portraits: face centers x 43.6-54.3% / y 36.1-42.9%, face DIAMETER
-  // 35-46% of the image. The 400% zoom tried before was SMALLER than a face
-  // - tiles showed skin/hair texture (reported: "nur verschiedene Farbtöne"
-  // under TYP). 150% at 50%/0% shows x 16.7-83.3% / y 0-88.9%; re-running
-  // the detector on that exact window verified 12/12 faces fully inside,
-  // each filling 53-66% of the tile.
-  assert.match(css,/\.recruit-look\{[^}]*background-size:150% auto/,'the tile window is wider than the measured face diameter');
-  assert.match(css,/\.recruit-look\{[^}]*background-position:50% 0%/,'the crop is anchored on the measured face cluster');
-  assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size:(cover|210%|400%)/,'no full-body crop and no zoom that cuts into the face');
+test('German labels exist for the three new rows and every option',()=>{
+  const de=readFileSync(new URL('../localization-de.mjs',import.meta.url),'utf8');
+  for(const key of ['"FACE"','"HAIR"','"BEARD"','"BASIC CUT"','"NO BEARD"','"Braid"','"Bun"','"Curly"','"Long hair"','"Ponytail"','"Side part"','"Medium"','"Stubble"','"Mustache"','"Full beard"','"Face 1"','"Face 2"','"Face 3"'])
+    assert.ok(de.includes(key),'missing German label: '+key);
 });

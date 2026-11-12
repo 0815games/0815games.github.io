@@ -10,7 +10,7 @@
 // because a contain-fit crop never clears what it does not cover. There is no
 // background to remove because none is ever drawn, and the canvas is cleared
 // before every paint. No asset, no detection, no race: draw, stamp, done.
-import {translateText as tr} from './language.mjs?v=20261112-kits1';
+import {translateText as tr} from './language.mjs?v=20261112-live1';
 
 // Bumped whenever the procedural tag changes shape. The diagnostic page
 // (version.html) reads this to tell players' devices which tag they get.

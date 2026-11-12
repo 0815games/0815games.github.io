@@ -7,7 +7,7 @@
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261108-icon2">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261108-icon2">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261108-icon2">
-  <link rel="stylesheet" href="style.css?v=20261112-face1">
+  <link rel="stylesheet" href="style.css?v=20261112-live1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261111-defringe1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261130-germanfull1">
@@ -50,7 +50,7 @@
     </div>
     <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
     <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261112-face1</p>
+      <p class="build-stamp" aria-hidden="true">BUILD 20261112-live1</p>
   </dialog>
   <!-- Endless launch: the pre-deploy selection menu (personal record, battlefield
        choice, last run, loadout). Reached from the Command Center ENDLESS card;
@@ -113,7 +113,7 @@
 <main>
     <header><div><span class="eyebrow" data-i18n-text="0815 GAMES / FIELD PROTOTYPE">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-brand-cutout.png?v=20261103-brand2" width="1000" height="351" alt="Iron Path"></h1><p data-i18n-text="Hold the line. Protect the bunker.">Hold the line. Protect the bunker.</p></div><span class="badge" data-i18n-text="FIELD COMMAND / ONLINE">FIELD COMMAND / ONLINE</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
-      <div id="loading"><h2 data-i18n="loading.title">Connecting…</h2><p class="hint" data-i18n="loading.subtitle">Preparing your soldier.</p><p class="build-stamp" aria-hidden="true">BUILD 20261112-face1</p></div>
+      <div id="loading"><h2 data-i18n="loading.title">Connecting…</h2><p class="hint" data-i18n="loading.subtitle">Preparing your soldier.</p><p class="build-stamp" aria-hidden="true">BUILD 20261112-live1</p></div>
       <div id="connectionView" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
         <div class="dossier-heading">
@@ -133,7 +133,7 @@
         </form>
         <div class="dossier-footer" aria-hidden="true"><span data-i18n-text="FIELD RECORD · 01">FIELD RECORD · 01</span><span data-i18n-text="HOLD THE LINE ★">HOLD THE LINE ★</span></div>
       </div>
-<div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><img id="avatarPreview" class="recruit-portrait" width="132" height="132" alt="" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div class="recruit-id"><canvas id="recruitTag" width="220" height="215" role="img" aria-label="Your dog tag" data-i18n-aria-label="Your dog tag"></canvas><div class="recruit-name"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div></div><div id="avatarOptions" class="recruit-options"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div>
+<div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div class="recruit-showcase"><canvas id="avatarPreview" class="recruit-portrait-canvas" role="img" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"></canvas><div class="recruit-showcase-side"><canvas id="recruitTag" width="220" height="215" role="img" aria-label="Your dog tag" data-i18n-aria-label="Your dog tag"></canvas></div></div><div class="recruit-name recruit-name-row"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div><div id="avatarOptions" class="recruit-options"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
     <div id="gameView" hidden><p id="scoreSaveStatus" role="status"></p><p id="friendIndexError" class="friend-index-error" role="status" hidden><span data-i18n-text="The player search listing could not be updated.">The player search listing could not be updated.</span> <button id="friendIndexRetry" type="button" data-i18n-text="RETRY">RETRY</button></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
@@ -350,7 +350,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261112-kits1"></script>
+  <script type="module" src="intro.mjs?v=20261112-live1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261112-recruit1"></script>
+  <script type="module" src="account.js?v=20261112-live1"></script>
 </body></html>
