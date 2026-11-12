@@ -26,7 +26,11 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     const watchdog=setTimeout(()=>{console.error(`HUNG in stage: ${stage}`);process.exit(1);},8*60*1000);
     watchdog.unref?.();
     await page.addInitScript(()=>{const original=CanvasRenderingContext2D.prototype.drawImage;window.__soldierFrames=[];CanvasRenderingContext2D.prototype.drawImage=function(image,...args){if(image?.src?.includes('/hero2-sprite.png')&&args.length===4){const t=this.getTransform();window.__soldierFrames.push({width:args[2],height:args[3],rotation:t.b});if(window.__soldierFrames.length>400)window.__soldierFrames.shift();}return original.call(this,image,...args);};});
-    page.on('pageerror', error => errors.push(error.stack || String(error)));
+    // Fail loudly and immediately: a page error used to be collected into an
+    // array that was only read at the very end, so an early timeout left no
+    // clue WHAT broke the boot. Print the moment it happens.
+    page.on('pageerror', error => { const text = error.stack || String(error); errors.push(text); console.error('[pageerror] ' + text); });
+    page.on('console', message => { if (message.type() === 'error') console.error('[console] ' + message.text()); });
     const mocks = {
       'firebase-app.js': `export function initializeApp(){return {}}`,
       'firebase-auth.js': `const user={uid:'mock-user',getIdToken:async()=> 'mock'}; const auth={currentUser:user}; export function getAuth(){return auth} export function onAuthStateChanged(a,cb){globalThis.__mockAuth=next=>{a.currentUser=next;cb(next)};setTimeout(()=>cb(user),0);return ()=>{}} export async function signOut(a){a.currentUser=null} export async function signInWithEmailAndPassword(){} export async function createUserWithEmailAndPassword(){} export async function sendPasswordResetEmail(){}`,
