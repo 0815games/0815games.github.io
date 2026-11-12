@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Iron Path · Versions-Check</title>
+<style>
+body{margin:0;background:#111510;color:#eef1e6;font-family:Arial,sans-serif;padding:24px;max-width:560px;margin:auto}
+h1{font-size:20px;letter-spacing:.04em}
+p,li{font-size:14px;line-height:1.6;color:#cdd8c2}
+code{background:#1c221b;border:1px solid #3b4836;padding:2px 6px;border-radius:3px;font-size:12px;color:#f0d68a;word-break:break-all}
+.result{border:1px solid #3b4836;border-radius:6px;padding:12px 14px;margin:10px 0;background:#191f18}
+.ok{border-color:#4e7a4e}.bad{border-color:#8f4a4a}
+.verdict{font-weight:bold;letter-spacing:.06em;font-size:12px;text-transform:uppercase}
+.ok .verdict{color:#9fd39f}.bad .verdict{color:#f2b3b3}
+a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;background:#d3df7c;color:#182014;font-weight:bold;letter-spacing:.06em;text-decoration:none;border-radius:4px}
+.small{font-size:11px;color:#788571}
+.build{margin:16px 0 4px;font-size:10px;font-weight:bold;letter-spacing:.14em;color:#5f6d57;text-transform:uppercase}
+</style>
+</head>
+<body>
+<h1>IRON PATH · VERSIONS-CHECK</h1>
+<p>Diese Seite prüft von <strong>deinem Gerät</strong> aus, ob du die aktuelle Version bekommst. Bitte mach einen Screenshot von dieser Seite und schick ihn, falls etwas nicht stimmt.</p>
+<div class="result" id="url"><span class="verdict">DU BIST HIER</span><p><code id="here">…</code></p><p class="small" id="agent"></p></div>
+<div class="result" id="r1"><span class="verdict">PRÜFE AKTUELLE SPIEL-DATEI…</span><p id="r1d">Wird geladen…</p></div>
+<div class="result" id="r2"><span class="verdict">PRÜFE DOG-TAG-MODUL…</span><p id="r2d">Wird geladen…</p></div>
+<div class="result" id="r3"><span class="verdict">PRÜFE CHARAKTER-KACHELN…</span><p id="r3d">Wird geladen…</p></div>
+<a class="button" href="./?x=1">SPIEL FRISCH ÖFFNEN (?x=1)</a>
+<p class="small">Der Zusatz ?x=1 umgeht den Seiten-Cache. Nach dem Laden unten im SETTINGS-Dialog die Build-Nummer prüfen.</p>
+<p class="build">DIAGNOSE-SEITE BUILD 20261112-diag1</p>
+<script>
+(function(){
+  document.getElementById('here').textContent=location.href;
+  document.getElementById('agent').textContent=navigator.userAgent;
+  // Jeder Abruf mit einzigartigem Query + no-store: kein Cache der Welt
+  // kann hier etwas anderes liefern als das, was gerade auf dem Server liegt.
+  const probe=(path)=>fetch(path+(path.includes('?')?'&':'?')+'probe='+Date.now(),{cache:'no-store'}).then(r=>r.text());
+  function set(id,ok,detail){
+    const box=document.getElementById(id),verdict=box.querySelector('.verdict'),body=document.getElementById(id+'d');
+    box.classList.add(ok?'ok':'bad');verdict.textContent=ok?'AKTUELL':'ALT / PROBLEM';body.textContent=detail;
+  }
+  var token='?';
+  probe('index.html').then(html=>{
+    const build=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
+    token=(html.match(/account\.js\?v=([A-Za-z0-9-]+)/)||[])[1]||token;
+    set('r1',build==='20261112-build1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand vor heute)')+' · account.js-Token: '+(token||'?'));
+    // Modul-Inhalt direkt pruefen: die neue Tag-Freistellung lebt in drawPlateCrop
+    return probe('dog-tag-art.mjs?v='+token);
+  }).then(src=>{
+    set('r2',src.includes('drawPlateCrop')&&src.includes('CROP_MARGIN=.05'),
+      src.includes('drawPlateCrop')?(src.includes('CROP_MARGIN=.05')?'Dog-Tag-Freistellung (ohne Holztisch) + enger Crop: VORHANDEN':'Neue Freistellung vorhanden, aber alter Crop-Rand'):'ALTER STAND: Freistellung fehlt - da ist noch der Holztisch-Code');
+    return probe('style.css?v=20261112-diag1');
+  }).then(css=>{
+    set('r3',/recruit-look\{[^}]*background-size:210% auto/.test(css),
+      /background-size:210% auto/.test(css)?'Kacheln als Gesichts-Miniaturen: VORHANDEN':'ALTER STAND: Kacheln zeigen noch die ganze Szene (Farbflächen)');
+  }).catch(err=>{
+    ['r1','r2','r3'].forEach(id=>set(id,false,'Abruf fehlgeschlagen: '+err.message));
+  });
+})();
+</script>
+</body>
+</html>
