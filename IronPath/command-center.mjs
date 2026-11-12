@@ -16,7 +16,15 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // shortened contract on the scrolling page frame instead of a fixed field.
  function showBattle(pauseSolo=false,mode=null){const game=getGame(),workspace=$('gameWorkspace');workspace.dataset.screen=mode||(game?.isOnlineMatch?.()?'online':game?.getSoloMode?.()||'endless');workspace.dataset.online=String(!!game?.isOnlineMatch?.());$('commandCenter').hidden=true;workspace.hidden=false;game?.setMenuOpen(pauseSolo===true);}
  function showLobby(){showBattle(true,'lobby');}
- function navigateToMenu(allowParty=false){if(isPartyActive()&&!allowParty){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);$('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
+ function navigateToMenu(allowParty=false){if(isPartyActive()&&!allowParty){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);
+ // The coach overlay (card, yellow ring, dashed arrow, recall pill) sits
+ // outside #gameView and survived every view switch; without this park the
+ // ring kept floating over the menu's mission cards after the tutorial run
+ // ended (reported: "mit dem gelben Kreis und den Strichen auch im
+ // Hauptmenue aktiv"). Parking is a pause: back on the field the pill
+ // recalls the card at its current step.
+ getGame()?.parkCoach?.();
+ $('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
  $('menuResume').onclick=()=>{if(isPartyActive()&&!getGame()?.isOnlineMatch?.()){showLobby();openParty();}else showBattle();};
  $('menuCampaign').onclick=()=>{if(!featureEnabled('campaign'))return;if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(false,'campaign');getGame()?.chooseStory();};
  $('menuEndless').onclick=async()=>{if(!featureEnabled('endless'))return;if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}if(endlessLauncher){endlessLauncher.open();return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};

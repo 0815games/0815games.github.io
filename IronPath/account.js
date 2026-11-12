@@ -12,7 +12,7 @@ import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-live1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
 import {setupFriends} from './friends-ui.mjs?v=20261112-live1';
-import {createCommandCenter} from './command-center.mjs?v=20261112-live1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-menutag1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-live1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-pressure1';
@@ -40,7 +40,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-live1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-live1';
+import { startGame } from './game.js?v=20261112-menutag1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-lag2';
 import { createPlayer } from './match.mjs?v=20261112-kits1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-kits1';
@@ -481,7 +481,7 @@ function refreshDogTags(){
  const data={profile,accountId:user?.uid};
  // The worn tag: painted on canvas with its real ball chain everywhere it
  // hangs - the soldier screen, the armory and the dossier portrait corner.
- for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag'),document.getElementById('menuDogTag')])if(container)renderDogTagArt(document,container,data,{size:container.id==='menuDogTag'?120:170});
+ for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag'),document.getElementById('menuDogTag')])if(container)renderDogTagArt(document,container,data,{size:container.id==='menuDogTag'?140:170});
  refreshProfileTag(data);
 }
 // The dossier and soldier-screen portraits show the soldier's own LAYERED

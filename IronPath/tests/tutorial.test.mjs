@@ -177,6 +177,15 @@ test('every import of a module agrees on that module cache token',()=>{
  assert.match(game,/endReason==='retired'\)\{\s*trainingDone=true;coach\.stop\(\);/,'an abandoned tutorial stops the coach');
  // Losing the bunker ends the coaching as finished: no card can be proven on a dead field.
  assert.match(game,/trainingBonusPaid=true;coach\.complete\(\);/,'a lost tutorial completes the coach');
+ // Reported: after the tutorial run ended without closing the card, the
+ // yellow ring and its dashed arrow kept floating over the main menu. The
+ // coach optics live outside #gameView, so entering the Command Center has
+ // to park them all - card, ring, arrow and recall pill.
+ const center=readFileSync(new URL('../command-center.mjs',import.meta.url),'utf8');
+ assert.match(center,/navigateToMenu[\s\S]*?getGame\(\)\?\.parkCoach\?\.\(\);/,'entering the menu parks the coach overlay');
+ assert.match(game,/parkCoach\(\)\{try\{coach\?\.dismiss\?\.\(\);\}/,'parking pauses the card like its own close button');
+ assert.match(game,/for\(const id of \['firstRunCoach','coachRecall'\]\)/,'the card and the pill are hidden');
+ assert.match(game,/for\(const id of \['coachHighlight','coachRing','coachArrow'\]\)/,'the highlight layer, ring and arrow are hidden');
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
  // A declined or broken ending step must not leave the guide pill behind.
  assert.match(account,/onStopped:\(\)=>\{endingRunning=false;firstRunGuide\?\.stop\?\.\(\);syncGuideRecall\(\);\}/,'a stopped ending stops the guide and hides its pill');

@@ -36,6 +36,19 @@ test('redesign covers the lobby, combat menus, progression and debrief without c
 // separately and it showed; the dossier block is what makes them one thing. The
 // overflow rule is a regression guard: the old briefing was clipped on a 360x480
 // screen because it set a max-height and nothing else.
+test('the dossier dog tag stays fully visible - in the frame, above the label, smaller on phones',()=>{
+ // Reported: on the phone the tag was "versetzt und verdeckt" - the old
+ // negative offsets (right:-8px;bottom:-12px) sat inside two overflow:hidden
+ // boxes, and at 92px the tag buried the PERSONNEL FILE line in the 110px
+ // portrait column.
+ const tag=css.match(/\.menu-dog-tag\{[^}]*\}/)?.[0]||'';
+ assert.match(tag,/right:6px/,'in-bounds on the right');
+ assert.match(tag,/bottom:8px/,'in-bounds at the bottom');
+ assert.doesNotMatch(tag,/right:-\d+px|bottom:-\d+px/,'no negative offsets inside clipping boxes');
+ assert.match(tag,/z-index:2/,'above the gradient overlay and the personnel line');
+ assert.match(css,/@media\(max-width:540px\)\{\.menu-dog-tag\{width:64px/,'the phone dossier shrinks the tag to fit the 110px column');
+});
+
 test('the first-run surfaces share one visual language and stay inside a phone', () => {
   const dossier = css.slice(css.indexOf('First-run dossier'));
   assert.ok(dossier.length > 500, 'the dossier block is present');
