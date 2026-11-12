@@ -1072,6 +1072,17 @@ function renderResults(target){
    startTrainingRun,
   // The coach owns its own card; these let other modules (account.js) drive it.
   startCoach:id=>coach.start(id),stopCoach:()=>coach.stop(),isCoachOpen:()=>coach.isOpen(),replayCoach:()=>coach.replay(account.getUserId()),
+  // The coach card, its ring and its recall pill are battlefield optics:
+  // they live OUTSIDE #gameView, so nothing hid them when the Command Center
+  // opened - after a finished tutorial run the yellow ring and its dashed
+  // arrow kept floating over the menu's mission cards (reported: "bleibt die
+  // aktive Field Karte mit dem Ziel mit dem gelben Kreis und den Strichen
+  // auch im Hauptmenue aktiv"). Parking pauses the card like its own close
+  // button (the step survives) and force-hides every layer; back on the
+  // field the pill recalls the card at its current step.
+  parkCoach(){try{coach?.dismiss?.();}catch{/* never block the menu */}
+   for(const id of ['firstRunCoach','coachRecall']){const node=$(id);if(node)node.hidden=true;}
+   for(const id of ['coachHighlight','coachRing','coachArrow']){const node=$(id);if(node)node.setAttribute('hidden','');}},
    isTrainingRun:()=>activeTraining,getTrainingXP:trainingXP,
    getSoloMode:()=>activeTraining?'training':activeMission?'campaign':'endless',getRunSummary:()=>!state.ended&&(state.wave>0||state.towers.length||activeMission)?tr(activeTraining?'TRAINING CONTRACT':activeMission?.title||'ENDLESS'):null,isOnlineMatch:()=>!!coop};
 }
