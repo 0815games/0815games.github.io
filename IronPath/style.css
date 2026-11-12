@@ -479,14 +479,18 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 .entry.recruiting:before{content:'IRON PATH / RECRUITING OFFICE';margin:0;padding:13px 22px;background:#192f25;color:#e3ca8b;border-bottom:1px solid #6c8068;font-size:9px;letter-spacing:.18em}
 .recruit-card{position:relative;display:grid;gap:12px;padding:20px 22px 16px}
 .recruit-head{display:flex;gap:16px;align-items:center}
-.recruit-portrait{flex:none;width:clamp(88px,24vw,120px);aspect-ratio:1;object-fit:cover;object-position:center top;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+/* The showcase: the composed portrait is the centrepiece, not a thumbnail
+   (reported: the big picture was "nicht komplett sichtbar und zu klein"
+   when it sat as a small square in the head row). */
+.recruit-showcase{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
+.recruit-portrait-canvas{flex:none;width:clamp(170px,52vw,240px);aspect-ratio:1;display:block;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+.recruit-showcase-side{display:grid;justify-items:center;gap:10px}
 .recruit-head-text{min-width:0}
 .recruit-kicker{display:block;font-size:9px;font-weight:bold;letter-spacing:.16em;color:var(--iron-gold,#f0d68a)}
 .recruit-card h2{font:700 clamp(21px,5vw,27px)/1.1 Georgia,serif;color:#f2e9cc;margin:5px 0 0}
 .recruit-note{margin:0;max-width:46ch;font-size:12.5px;line-height:1.5}
-.recruit-id{display:flex;gap:14px;align-items:center}
-#recruitTag{flex:none;width:clamp(96px,30vw,128px);height:auto;filter:drop-shadow(0 6px 12px rgba(8,12,9,.5))}
-.recruit-name{flex:1;min-width:0;display:grid;gap:6px}
+#recruitTag{width:clamp(96px,30vw,128px);height:auto;filter:drop-shadow(0 6px 12px rgba(8,12,9,.5))}
+.recruit-name{min-width:0;display:grid;gap:6px}
 .recruit-name label{margin:0;font-size:10px;letter-spacing:.12em}
 .recruit-name input{width:100%;min-height:48px;margin:0;padding:10px 12px;font-size:16px}
 .recruit-options{display:grid;gap:11px}
@@ -496,17 +500,13 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 .recruit-choice{flex:1;min-height:44px;margin:0;padding:8px;font-size:11px;letter-spacing:.04em}
 .recruit-choice[aria-checked="true"]{outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px;border-color:var(--iron-gold,#f0d68a);color:#fff}
 .recruit-looks{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
-/* Look tiles are head portraits, and the crop is MEASURED, not guessed: a
-   face detector (pico.js, facefinder cascade) run over all twelve portraits
-   puts the face centers at x 43.6-54.3% / y 36.1-42.9% with a face DIAMETER
-   of 35-46% of the image. That is far too large for the 400% zoom tried
-   before - its window was smaller than the face itself, so tiles showed
-   skin and hair texture instead of a person (reported: "nur verschiedene
-   Farbtöne" under TYP). A 150% crop anchored at 50%/0% shows x 16.7-83.3% /
-   y 0-88.9% of the portrait; re-running the detector on exactly that
-   window verified 12/12 faces fully inside, each filling 53-66% of the
-   tile - a real headshot with hair and shoulders. */
-.recruit-look{flex:none;width:clamp(60px,18vw,76px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;background-size:150% auto;background-position:50% 0%;opacity:.72}
+/* Option tiles are LIVE COMPOSITES now, not cropped background photos: each
+   canvas is drawn by avatar-layers.mjs from the option combined with the
+   current rest of the selection (requested: separate FACE / HAIR / BEARD
+   rows, "verschiedene Varianten mit Haaren und Bart"). No background-image,
+   no crop maths here - the face anchoring happens in the compositor. */
+.recruit-look{flex:none;width:clamp(60px,18vw,76px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;overflow:hidden;opacity:.72}
+.recruit-look canvas{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
 .recruit-look:hover:not(:disabled){opacity:1}
 .recruit-look[aria-checked="true"]{opacity:1;outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px}
 .recruit-actions{display:grid;grid-template-columns:minmax(110px,1fr) 2fr;gap:9px}
@@ -526,7 +526,7 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
  .entry.recruiting{margin:3vh auto}
  .recruit-card{padding:16px 14px 12px;gap:11px}
  .recruit-head{gap:12px}
- .recruit-id{gap:10px}
+ .recruit-showcase{gap:12px}
  .recruit-actions{grid-template-columns:1fr 1.5fr}
 }
 

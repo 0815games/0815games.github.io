@@ -3,32 +3,32 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261112-pressure1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261112-avatar1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-kits1';
+import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261112-live1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261121-taskback1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-kits1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261112-live1';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261112-kits1';
-import {createCommandCenter} from './command-center.mjs?v=20261112-kits1';
+import {setupFriends} from './friends-ui.mjs?v=20261112-live1';
+import {createCommandCenter} from './command-center.mjs?v=20261112-live1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-kits1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261112-live1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-pressure1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-pressure1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261112-lag1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-kits1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261112-live1';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261112-kits1';
+import {setupAuthForm} from './auth-form.mjs?v=20261112-live1';
 import {serviceMedals} from './service-record.mjs?v=20261107-balance1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
 import {runFirstRunEnding,endingDone,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261112-firstrun5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-kits1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261112-live1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261107-balance1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261031-finale1';
@@ -38,16 +38,16 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-kits1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261112-live1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261112-lag1';
+import { startGame } from './game.js?v=20261112-live1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261112-lag2';
 import { createPlayer } from './match.mjs?v=20261112-kits1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-kits1';
-import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-avatar3';
-import { avatarPortrait } from './avatar-art.mjs?v=20261112-avatar3';
-import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-recruit1';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-recruit1';
+import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-live1';
+import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261112-live1';
+import { renderDogTagArt } from './dog-tag-art.mjs?v=20261112-live1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261112-live1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
@@ -190,7 +190,7 @@ $('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$
  // that field is published the localStorage mirror (written on every change)
  // keeps the face; the write starts succeeding the moment the rules go live.
  if(version!==sessionVersion)return;
- if(result.committed){try{await update(ref(db,`players/${currentUser.uid}`),{avatar:encodeAvatar(avatar)});}catch{/* Rules for the avatar field not published yet; the mirror has the face. */}}
+ if(result.committed){try{await update(ref(db,`players/${currentUser.uid}`),{avatar:encodeAvatar(avatar)});}catch{/* Rules for the avatar field not published yet; the mirror has the face. */}await refreshSoldierPortrait();}
  else if(result.snapshot.exists())loadProfile(currentUser,version);});});
 function updateSkillPrompt(value){const lvl=level(value.xp),left=pointsLeft(parseBuild(value.skills,lvl),lvl);renderSkillIndicators({document,points:left});}
 // ── Endless record (launch dialog) ─────────────────────────────────────────
@@ -226,7 +226,7 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
   getRecord:endlessRecord,getBestWave:bestSoloWave,getLastRun:()=>readLastEndlessRun(window.localStorage),
   onDeploy:async theme=>{commandCenter?.showBattle(true,'endless');const loaded=await gameControl?.chooseEndless(theme);if(loaded)gameControl?.setMenuOpen(false);else commandCenter?.showMenu();},
   onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
-function showProfile(value){updateSkillPrompt(value);profile=value;$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onTrainingComplete:()=>window.setTimeout(offerFirstRunEnding,600)});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
  // Accounts from before the dog-tag rework carry no service date; stamp one
  // once. If the rules are not live yet this fails silently and retries on
@@ -484,9 +484,28 @@ function refreshDogTags(){
  for(const container of [document.getElementById('soldierDogTag'),document.getElementById('armoryDogTag'),document.getElementById('menuDogTag')])if(container)renderDogTagArt(document,container,data,{size:container.id==='menuDogTag'?120:170});
  refreshProfileTag(data);
 }
-// The dossier and soldier-screen portraits show the soldier's own painted
-// face; the jpgs remain the no-canvas fallback.
-function recruitPortraitUrl(){return profile?avatarPortrait(resolveAvatar(profile,languageStorage)):null;}
+// The dossier and soldier-screen portraits show the soldier's own LAYERED
+// face: base portrait plus the chosen hair and beard overlays, composed on
+// an offscreen canvas. The composition is async, the consumers are sync, so
+// the composed PNG data URL is cached per avatar string and the base face
+// file is the immediate fallback for the first paint.
+let portraitCache={key:'',url:null};
+async function refreshSoldierPortrait(){
+  if(!profile){portraitCache={key:'',url:null};return;}
+  const avatar=resolveAvatar(profile,languageStorage);
+  const key=encodeAvatar(avatar);
+  if(portraitCache.key===key)return;
+  const canvas=document.createElement('canvas');
+  try{
+    await composePortrait(canvas,avatar,192);
+    portraitCache={key,url:canvas.toDataURL('image/png')};
+  }catch{/* Assets unavailable: the base face file carries the frame. */
+    portraitCache={key,url:null};}
+}
+function recruitPortraitUrl(){
+  if(!profile)return null;
+  return portraitCache.url??facePortrait(resolveAvatar(profile,languageStorage));
+}
 // The dog tag is a piece of kit the soldier WEARS, not a stat: once the first run is
 // over it hangs beside the name in the Command Center. `ENDING_KEY` is the record of
 // "this soldier has been issued one", so the badge and the award dialog can never

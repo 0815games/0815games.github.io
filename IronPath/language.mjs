@@ -22,7 +22,7 @@ import {germanCinematics} from './localization-cinematics-de.mjs?v=20261112-pres
 import {germanEvents} from './localization-events-de.mjs?v=20261206-acttwo1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
-import {germanText} from './localization-de.mjs?v=20261130-germanfull1';
+import {germanText} from './localization-de.mjs?v=20261112-live1';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.

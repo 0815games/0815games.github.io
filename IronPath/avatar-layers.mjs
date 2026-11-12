@@ -58,6 +58,17 @@ function clampChoice(list,id,fallback){
   return list.some(o=>o.id===id)?id:fallback;
 }
 
+// The base face file of an avatar's gender - the immediate fallback for
+// sync callers while the composed portrait renders (the composition is
+// async; the dossier must never show a blank frame).
+export function facePortrait(avatar){
+  if(!avatar)return null;
+  const gender=avatar.gender==='male'?'male':'female';
+  const faces=FACES.filter(f=>f.gender===gender);
+  const face=faces.find(f=>f.id===avatar?.faceId)??faces[0];
+  return face?.file??null;
+}
+
 // Draws the composed portrait (base face + hair + beard) onto a square
 // canvas of `size` pixels. `avatar` is {gender, faceId, hairId, beardId};
 // unknown ids clamp to the first option, so stale saves can never break the
@@ -85,31 +96,4 @@ export async function composePortrait(canvas,avatar,size,deps={}){
     if(rect)ctx.drawImage(image,rect.dx,rect.dy,rect.w,rect.h);
   }
   return {gender,faceId:face.id,hairId,beardId};
-}
-
-// Old saves store a single look index (the twelve portrait files). Maps each
-// to the closest layered combination so nobody loses their soldier.
-const LEGACY={
-  female:['crop','bob','ponytail','bun','long','braid'],
-  male:['buzz','short','side','medium','stubble','beard'],
-};
-
-export function legacyLook(avatar){
-  const gender=avatar?.gender==='female'?'female':'male';
-  const looks=LEGACY[gender];
-  const look=Math.min(Math.max(0,Number(avatar?.look)||0),looks.length-1);
-  const id=looks[look];
-  switch(id){
-    case 'bob':return {gender,faceId:'crop',hairId:'bob',beardId:null};
-    case 'ponytail':return {gender,faceId:'crop',hairId:'ponytail',beardId:null};
-    case 'long':return {gender,faceId:'crop',hairId:'long',beardId:null};
-    case 'braid':return {gender,faceId:'crop',hairId:'braid',beardId:null};
-    case 'bun':return {gender,faceId:'bun',hairId:null,beardId:null};
-    case 'short':return {gender,faceId:'buzz',hairId:'short',beardId:null};
-    case 'side':return {gender,faceId:'buzz',hairId:'side',beardId:null};
-    case 'medium':return {gender,faceId:'buzz',hairId:'medium',beardId:null};
-    case 'stubble':return {gender,faceId:'buzz',hairId:null,beardId:'stubble'};
-    case 'beard':return {gender,faceId:'buzz',hairId:null,beardId:'full'};
-    default:return {gender,faceId:gender==='female'?'crop':'buzz',hairId:null,beardId:null};
-  }
 }
