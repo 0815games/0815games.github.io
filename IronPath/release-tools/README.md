@@ -17,6 +17,19 @@ service; identity, free limits and the complete rollout still need verification.
 
 ## Current isolated candidates
 
+- The owner supplied a complete rules JSON block described as the current rules.
+  A temporary transcription was byte-for-byte and structurally identical to
+  `firebase/WORKSHOP-RULES-TO-PUBLISH.json` (59,215 bytes, SHA-256
+  `8041607e1adb3f235afffde8f581ebf6a06afdee99eb642a4d460ad938a04577`),
+  with no duplicate JSON keys. This is evidence of the owner's supplied text,
+  **not** an independent Firebase read or proof of the database instance or
+  current deployment. Obtain a fresh backup and compare again before changes.
+- `IRONPATH_RELEASE_GUARD=1` runs the real large-map lobby and party modules
+  with two synthetic users under the generated candidate rules: coop and versus
+  including guest reconnect, stale/unexchanged credentials and closure of a
+  multiplayer listener and writes were tested locally with Fireemu
+  (`productionExact: false`; 4/4). It is included in `test:release-guard` for
+  subsequent official-emulator CI. It is not a live or two-device test.
 - The owner connected GitHub to Vercel. The separate `ironpath-release` project
   exists in the `0815games` Hobby team, linked to this repository with project
   root `IronPath/release-tools` and output directory `public`. The first Git
@@ -137,9 +150,11 @@ service; identity, free limits and the complete rollout still need verification.
 
 1. Verify the real Firebase project, database instance, deployed rules, Auth
    providers, plan, administrator permissions, backups, and whether any other
-   application shares those resources. `WORKSHOP-RULES-TO-PUBLISH.json` is a
-   repository reference, **not** a verified live export. Disabling a provider
-   or wrapping every rule can interrupt other applications and data paths.
+   application shares those resources. The owner's posted JSON matched the
+   `WORKSHOP-RULES-TO-PUBLISH.json` repository reference, but it was **not**
+   retrieved independently from Firebase. Compare a fresh backup immediately
+   before any change. Disabling a provider or wrapping every rule can interrupt
+   other applications and data paths.
 2. Decide and provision a trusted, TLS-hosted session service. It needs a
    narrowly scoped identity, an authoritative *fresh* control-record read,
    Admin ID-token verification with revocation checking, custom-token signing,
