@@ -16,7 +16,7 @@ for(const [name,port] of [['FIREBASE_AUTH_EMULATOR_HOST',9099],['FIREBASE_DATABA
  if(![`127.0.0.1:${port}`,`localhost:${port}`].includes(process.env[name]))throw Error(`${name} must explicitly name the local emulator`);
 }
 const project='demo-ironpath',uid='runtime-browser-alice';
-const epochA='a'.repeat(32),epochB='b'.repeat(32);
+const epochA='a'.repeat(32),epochB='b'.repeat(32),epochC='c'.repeat(32);
 const releaseDir=path.resolve(__dirname,'../../release-tools');
 const emulatorStatus=`http://127.0.0.1:9000/_ironpathRelease.json?ns=${project}`;
 const harness=`
@@ -146,10 +146,10 @@ runtime.start();`;
    assert.equal(await during.evaluate(()=>window.guard.ready()),false);
    assert.deepEqual(await during.evaluate(()=>window.guard.destination()),{kind:'maintenance'});
 
-   const opening=prepareReleaseControlWrite({mode:'open',build:'runtime-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+   const opening=prepareReleaseControlWrite({mode:'open',build:'runtime-2',currentEpoch:epochB},()=>Buffer.from(epochC,'hex'));
    await adminSet('_ironpathRelease',opening);
    const reopened=await adminGet('_ironpathRelease'),cutoffMs=reopened.authAfterMs;
-   assert.notEqual(reopened.epoch,epochB);
+   assert.equal(reopened.epoch,epochC);assert.notEqual(reopened.epoch,epochA);assert.notEqual(reopened.epoch,epochB);
    while(Math.floor(Date.now()/1000)*1000<=cutoffMs)await new Promise(resolve=>setTimeout(resolve,50));
    const fresh=await openPage('runtime-2');await fresh.waitForFunction(()=>window.guard.ready());
    await fresh.evaluate(()=>window.guard.login());await fresh.evaluate(()=>window.guard.write(3));

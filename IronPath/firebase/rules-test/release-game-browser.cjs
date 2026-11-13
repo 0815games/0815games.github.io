@@ -16,7 +16,7 @@ for(const [name,port] of [['FIREBASE_AUTH_EMULATOR_HOST',9099],['FIREBASE_DATABA
  if(![`127.0.0.1:${port}`,`localhost:${port}`].includes(process.env[name]))throw Error(`${name} must explicitly name the local emulator`);
 }
 const project='demo-ironpath',uid='guarded-game-browser';
-const epochA='c'.repeat(32),epochB='d'.repeat(32);
+const epochA='c'.repeat(32),epochB='d'.repeat(32),epochC='e'.repeat(32);
 const root=path.resolve(__dirname,'../..'),releaseDir=path.join(root,'release-tools');
 const emulatorStatus=`http://127.0.0.1:9000/_ironpathRelease.json?ns=${project}`;
 const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript',
@@ -213,10 +213,10 @@ function guardedHtml(html){
    await page.waitForURL(landing('maintenance'));
    assert.equal((await adminGet(`players/${uid}`)).xp,0);
 
-   const opening=prepareReleaseControlWrite({mode:'open',build:'game-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+   const opening=prepareReleaseControlWrite({mode:'open',build:'game-2',currentEpoch:epochB},()=>Buffer.from(epochC,'hex'));
    await adminSet('_ironpathRelease',opening);
    const reopened=await adminGet('_ironpathRelease'),cutoffMs=reopened.authAfterMs;
-   assert.notEqual(reopened.epoch,epochB);
+   assert.equal(reopened.epoch,epochC);assert.notEqual(reopened.epoch,epochA);assert.notEqual(reopened.epoch,epochB);
    while(Math.floor(Date.now()/1000)*1000<=cutoffMs)await new Promise(resolve=>setTimeout(resolve,50));
    const before=accountRequests.length;
    await page.goto(game('game-1'));await page.waitForURL(landing('update'));
