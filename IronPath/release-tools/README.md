@@ -3,9 +3,10 @@
 This is **not enabled in the published game or production Firebase**. The
 working-branch account code now has an optional guarded-session boundary and a
 one-way stop hook, but the ordinary game entry does not install or require the
-guard. Do not publish the generated rules, start a real maintenance window, or
-promise that sign-in is blocked using these prototypes alone. GitHub Pages
-currently serves `main:/` directly; an ordinary merge is not gated by this experiment.
+guard. Do not publish the generated rules to the real game, start a real
+maintenance window, or promise that sign-in is blocked using these prototypes
+alone. GitHub Pages currently serves `main:/` directly; an ordinary merge is not
+gated by this experiment. An isolated test using `ironpathtest` is separate.
 
 The owner reports that the Firebase project is dedicated to Iron Path and that
 they can administer it. The owner requires a **free solution only**: do not
@@ -38,7 +39,7 @@ service; identity, free limits and the complete rollout still need verification.
   are locked. The owner subsequently confirmed that this test database belongs
   to `ironpathtest`, contains no real game data, has only root read/write
   denials and no child rules, uses Spark, and has Email/Password enabled. These
-  are owner observations, not an independent Rules export or a live login.
+  are owner observations, not an independent Rules export.
   A guarded build and launcher were staged only under `/tmp` using those Web
   settings and a deliberately synthetic session endpoint. After the atomic
   cutoff change, all 595 staged files were scanned for the normal game's project
@@ -48,7 +49,13 @@ service; identity, free limits and the complete rollout still need verification.
   before the account module or login. The fuller SDK/emulator browser test also
   passed with a simulated 403. None of these tests made a live login, session
   exchange, database write or rule change, or deployed the staged game; they do
-  not prove Firebase enforcement.
+  not prove Firebase enforcement. A separate [live test-project preflight](https://github.com/0815games/0815games.github.io/actions/runs/43473375121)
+  subsequently reported success on `ironpathtest`. Its script requires a
+  synthetic email/password sign-in, the expected denied control/profile/scratch
+  access, and an acknowledged account deletion in its `finally` block. The log
+  download failed, so individual log messages were not independently inspected.
+  It did not modify Rules or the release status, test every path, or exercise the
+  configured service. No actual player or production Firebase was involved.
 - `IRONPATH_RELEASE_GUARD=1` runs the real large-map lobby and party modules
   with two synthetic users under the generated candidate rules: coop and versus
   including guest reconnect, stale/unexchanged credentials and closure of a
@@ -349,6 +356,20 @@ time is not Firebase Auth server time, and emulator components share a local
 clock: passing an emulator test says nothing about live clock skew or pending
 sign-in completion. Until those assumptions and a suitable enforcement design
 are validated, this mechanism is experimental, not a demonstrated guarantee.
+
+## Using the existing test project
+
+`build-isolated-test-site.mjs` packages the guarded launcher and game for the
+owner's existing `ironpathtest` Firebase project and the separate
+`ironpath-release` Vercel project. The configuration contains only public Web
+settings. It derives an immutable build ID from the complete Git commit, refuses
+to replace an existing output, and scans the staged output for the known normal
+Firebase project ID and Web key. It does not change Firebase or create a server,
+verify every possible production endpoint, or make the guard production-ready.
+The test Vercel project may explicitly run `node build-isolated-test-site.mjs`
+as its build command; it must include source files outside its `release-tools`
+root. Generated site files are build outputs, not repository files. Do not point
+this test build, its service credentials, or its generated Rules at real players.
 
 ## Creating an isolated guarded candidate
 
