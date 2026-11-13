@@ -12,6 +12,9 @@ const http=require('node:http');
 const assert=require('node:assert/strict');
 const {pathToFileURL}=require('node:url');
 
+for(const [name,port] of [['FIREBASE_AUTH_EMULATOR_HOST',9099],['FIREBASE_DATABASE_EMULATOR_HOST',9000]]){
+ if(![`127.0.0.1:${port}`,`localhost:${port}`].includes(process.env[name]))throw Error(`${name} must explicitly name the local emulator`);
+}
 const project='demo-ironpath',uid='runtime-browser-alice';
 const epochA='a'.repeat(32),epochB='b'.repeat(32);
 const releaseDir=path.resolve(__dirname,'../../release-tools');

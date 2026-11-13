@@ -9,10 +9,10 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve
 async function setup(override={}){
  const calls=[],terminations=[],controller=new AbortController(),observers=[];
  const auth={currentUser:null,authStateReady:async()=>{}},passwordAuth={currentUser:null,authStateReady:async()=>{}},db={};
- let sdkObserver;
+ let sdkObserver,sdkError;
  const sdk={
   beforeAuthStateChanged:(a,next)=>{a._before=next;return ()=>calls.push('unwatch-before');},
-  onAuthStateChanged:(_auth,next)=>{sdkObserver=next;queueMicrotask(()=>next(auth.currentUser));return ()=>calls.push('unwatch');},
+  onAuthStateChanged:(_auth,next,onError)=>{sdkObserver=next;sdkError=onError;queueMicrotask(()=>next(auth.currentUser));return ()=>calls.push('unwatch');},
   signInWithEmailAndPassword:async(a,email)=>{calls.push('password');return {user:a.currentUser=user(email)};},
   createUserWithEmailAndPassword:async(a,email)=>{calls.push('register');return {user:a.currentUser=user(email)};},
   signInWithCustomToken:async(a)=>{calls.push('custom');const u=user(passwordAuth._expectedUid||'alice');await a._before(u);a.currentUser=u;sdkObserver(u);return {user:u};},
@@ -26,7 +26,8 @@ async function setup(override={}){
  Object.assign(sdk,override.sdk||{});opts.sdk=sdk;
  const session=await createGuardedGameSession(opts);
  session.onAuthStateChanged(value=>observers.push(value?.uid??null));await new Promise(resolve=>queueMicrotask(resolve));
- return {session,auth,passwordAuth,db,sdk,calls,terminations,controller,observers,emit:u=>{auth.currentUser=u;sdkObserver(u);}};
+ return {session,auth,passwordAuth,db,sdk,calls,terminations,controller,observers,
+  emit:u=>{auth.currentUser=u;sdkObserver(u);},emitError:value=>sdkError(value)};
 }
 
 test('only an authenticated, matching custom session reaches the real game observer',async()=>{
@@ -77,6 +78,15 @@ test('abort during exchange never authenticates the game and unexpected auth cha
  await new Promise(resolve=>setImmediate(resolve));h.controller.abort();wait.resolve({status:'ok',customToken:'x'});
  await assert.rejects(pending);assert.equal(h.calls.includes('custom'),false);assert.deepEqual(h.observers,[null]);
  const other=await setup();other.emit(user('intruder'));assert.deepEqual(other.terminations,['unavailable']);
+});
+
+test('an SDK auth-observer error fails closed instead of reopening the login form',async()=>{
+ const h=await setup();await h.session.signIn('alice','password');
+ h.emitError(Error('observer failed'));h.emitError(Error('late observer failure'));
+ assert.deepEqual(h.terminations,['unavailable']);assert.equal(h.controller.signal.aborted,true);
+ assert.equal(h.session.getState(),'terminated');assert.deepEqual(h.observers,[null,'alice']);
+ h.emit(user('too-late'));assert.deepEqual(h.observers,[null,'alice']);
+ assert.ok(h.calls.includes('unwatch'));
 });
 
 test('one observer terminating the document prevents later observers from starting profile work',async()=>{

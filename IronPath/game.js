@@ -39,6 +39,9 @@ import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from 
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { specializationRank } from './tower-specialization.mjs?v=20261112-kits1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null}={}) {
+  // One-way release teardown; the guarded caller still has to replace the
+  // whole document, because the rest of this UI is not a reusable SPA.
+  let releaseStopped=false,frameHandle=null;
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
@@ -995,10 +998,29 @@ function renderResults(target){
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();
   }
   $('coopControls').hidden=!coopUrl;
-  function leaveCoop(){$('gameWorkspace').dataset.onlineReady='false';if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;coopHasBaseline=false;needStop=false;orphanReleases.clear();coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent=tr('JOIN CO-OP (TEST)');$('coopStatus').textContent=tr('SOLO');if(account.isReady())reset(true);return Promise.resolve(stopping);}
+  function leaveCoop(){
+    $('gameWorkspace').dataset.onlineReady='false';if(!coop)return Promise.resolve();
+    const old=coop,input=coopInput;coop=null;coopInput=null;coopReady=false;coopHasBaseline=false;needStop=false;orphanReleases.clear();
+    // A broken input adapter must not prevent the transport itself from stopping.
+    try{input?.setEnabled(false);}catch{}
+    let stopping;try{stopping=old.stop();}catch(error){stopping=Promise.reject(error);}
+    keys.clear();lastDirection='0,0';$('coopToggle').textContent=tr('JOIN CO-OP (TEST)');$('coopStatus').textContent=tr('SOLO');
+    if(!releaseStopped&&account.isReady())reset(true);return Promise.resolve(stopping);
+  }
+  function stopForRelease(){
+    if(releaseStopped)return;
+    releaseStopped=true;
+    // Each step is best-effort: a broken dialog or adapter must not keep the
+    // other resources running. The surrounding fence has already gone offline.
+    const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
+    stop(()=>{if(frameHandle!==null&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(frameHandle);});
+    frameHandle=null;keys.clear();
+    stop(()=>focusPause.dispose());stop(()=>closeCinematic(false));stop(()=>tutorial.stop());stop(()=>coach.stop());
+    stop(()=>sound.setEnabled(false));stop(()=>leaveCoop());
+  }
   function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
   function beginCoop(factory,onUpdate=()=>{},reportId=null,mode=null){
-    if(coop||!account.isReady())return false;
+    if(releaseStopped||coop||!account.isReady())return false;
     $('gameWorkspace').dataset.onlineReady='false';$('onlineConnecting').textContent=tr('Connecting to the multiplayer battlefield…');hostFocusPaused=false;
     // Both two-player modes get an existing larger, one-road sector-two map.
     // The host's snapshot carries its seed to the guest; recovery retains the
@@ -1025,7 +1047,13 @@ function renderResults(target){
   account.onSessionChange(()=>{closeCinematic(false);missionBoardOpen=false;lastReport=null;coopReports.clear();$('viewResults').hidden=true;if($('runResults').open)$('runResults').close();leaveCoop();if($('towerDetails').open)$('towerDetails').close();closeMenu();tutorial.stop();keys.clear();if(account.isReady()){activeMission=null;$('campaignSelect').value='free';// The first-run tutorial is started by the account once a soldier exists.
   reset();if(!deferTutorial)tutorial.startIfNeeded(account.getUserId());}});
   // The first-run tutorial is started by the account once a soldier exists.
-  reset();if(!deferTutorial&&featureEnabled('tutorial'))tutorial.startIfNeeded(account.getUserId());let last=performance.now();function frame(now){const dt=Math.min((now-last)/1000,.05);last=now;update(dt);draw();requestAnimationFrame(frame);}requestAnimationFrame(frame);
+  reset();if(!deferTutorial&&featureEnabled('tutorial'))tutorial.startIfNeeded(account.getUserId());
+  let last=performance.now();function frame(now){
+    if(releaseStopped)return;frameHandle=null;
+    const dt=Math.min((now-last)/1000,.05);last=now;update(dt);
+    if(releaseStopped)return;draw();if(!releaseStopped)frameHandle=requestAnimationFrame(frame);
+  }
+  frameHandle=requestAnimationFrame(frame);
   function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
   function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
   // What a first login does now: the field first, the briefing *on* the field.
@@ -1059,6 +1087,7 @@ function renderResults(target){
   // training contract. Without it the second tap on "play the first run again" did
   // nothing, because `activeTraining` was still true from the first replay.
   function startTrainingRun({rewards=true,restart=false}={}){
+   if(releaseStopped)return false;
    if(activeTraining&&!restart)return false;
    trainingRewards=rewards!==false;
    closeMenu();keys.clear();sendDirection();activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;trainingBonusPaid=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
@@ -1067,14 +1096,14 @@ function renderResults(target){
    // meaning over an empty canvas, and the player must see the pads it points at.
    const id=account.getUserId();
    if(id&&!coachSeen(id,tutorialStorage)){
-    const start=()=>coach.start(id);
+    const start=()=>{if(!releaseStopped)coach.start(id);};
     if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(start));
     else start();
    }
    return true;
   }
   async function chooseEndless(theme){endlessTheme=theme??null;const previous=activeMission?.id||'free';$('campaignSelect').value='free';renderCampaign();const loaded=await $('campaignLoad').onclick();if(!loaded){$('campaignSelect').value=previous;renderCampaign();}return loaded;}
-  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.

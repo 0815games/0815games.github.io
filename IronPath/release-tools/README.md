@@ -1,9 +1,11 @@
 # Iron Path release guard — experiment, not production
 
-These files are **not connected to the game or production Firebase**. Do not
-publish the generated rules, start a real maintenance window, or promise that
-sign-in is blocked using these prototypes alone. GitHub Pages currently serves
-`main:/` directly; an ordinary merge is not gated by this experiment.
+This is **not enabled in the published game or production Firebase**. The
+working-branch account code now has an optional guarded-session boundary and a
+one-way stop hook, but the ordinary game entry does not install or require the
+guard. Do not publish the generated rules, start a real maintenance window, or
+promise that sign-in is blocked using these prototypes alone. GitHub Pages
+currently serves `main:/` directly; an ordinary merge is not gated by this experiment.
 
 The owner reports that the Firebase project is dedicated to Iron Path and that
 they can administer it. The owner requires a **free solution only**: do not
@@ -67,8 +69,8 @@ service; identity, free limits and the complete rollout still need verification.
   passed locally against the unofficial Fireemu and in the official emulator
   CI on commit `8acd7f9` ([run 43405350430](https://github.com/0815games/0815games.github.io/actions/runs/43405350430)),
   including an old `LOCAL` tab. The exchange in that browser test is synthetic,
-  not the Vercel service. It does not yet modify `account.js`, build a launcher
-  or control production.
+  not the Vercel service. The ordinary game entry still does not install this
+  adapter; no launcher or production gate is in place.
 - `guarded-runtime.mjs` composes the isolated Firebase factory, monitor, lifecycle
   and session adapter. It generates fresh app names, uses in-memory Auth, refuses
   to remount known Auth/RTDB objects and derives the status URL from the same
@@ -83,8 +85,31 @@ service; identity, free limits and the complete rollout still need verification.
   exchange, maintenance, rejection of an old offline write after reopening, and
   a status outage. It uses same-origin loopback proxies, records the navigation
   rather than leaving the page, and is not the real game, Vercel, browser CORS,
-  production Firebase or a real-device test. The official-emulator CI runs it via
-  `test:release-tabs`; confirm that particular run before claiming a pass.
+  production Firebase or a real-device test. The previous implementation passed
+  the official emulators in [CI 43410406970](https://github.com/0815games/0815games.github.io/actions/runs/43410406970)
+  on commit `8303961`; that run predates the current changes.
+- `account-services.mjs` selects the normal SDK or an explicitly preinstalled,
+  single-use guarded session. `guarded-game-bootstrap.mjs` installs that session
+  before importing the account and will not reveal a late import after abort.
+  On guarded teardown, the fence blocks the page, takes RTDB offline, then aborts
+  the account: the game frame loop and multiplayer transport stop, dialogs close,
+  listeners are detached where supported, and a full navigation follows. The
+  game is not a generally reusable/destroyable SPA; navigation is mandatory.
+  Cleanup is best effort and can leave stale presence/lobby data behind. None of
+  this changes the ordinary published entry or makes a client-side check a
+  server-side security boundary.
+- `stage-version.mjs` includes an explicit allowlist of browser guard modules
+  inside each version directory, not server code or deployment secrets. Its
+  generated HTML still starts the *unguarded* game. The additional
+  `release-game-browser.cjs` test modifies that HTML **only in memory** to
+  install a guarded test bootstrap, serves the packaged modules, and drives the
+  real account UI using local emulator identities and HTTP proxies. With the
+  unofficial Fireemu (`productionExact: false`) it passed incorrect-password
+  retry, login, a hanging logout, actual game-loop stop, open-dialog teardown,
+  full local document navigations, maintenance, a queued old write, stale build,
+  reopen and status outage. This is not the deployed launcher, a Vercel/CORS
+  test, production Firebase or a real-device test. The new case is included in
+  `test:release-tabs`; the official-emulator CI result for it must be checked.
 
 ## What has to be true before enabling it
 
@@ -99,14 +124,15 @@ service; identity, free limits and the complete rollout still need verification.
    protected operations, monitoring and abuse/rate limits. No fully configured
    trusted service is deployed here. Never place service-account keys, tokens
    or player data in this repo.
-3. Integrate the game and launcher before changing production rules. The game
-   currently signs in directly and immediately starts a profile listener. It
-   must authenticate with a separate transient password-auth instance, exchange
-   the token, validate the custom claims, and only then start game listeners.
-   A status failure must freeze the interface, stop the database and terminate
-   the document. The stable entry point must select and verify a complete,
-   immutable build. `stage-version.mjs` merely makes a local candidate; it is
-   not a Pages pipeline, launcher, cryptographic code attestation or deployment.
+3. Complete the actual game and launcher integration before changing production
+   rules. The normal entry still signs in directly and starts a profile listener;
+   only the isolated test installs the guarded account session before import.
+   The real path must use separate temporary and game Auth instances, exchange
+   and validate the claims, then start listeners; a status failure must block,
+   disconnect and replace the document. The stable entry must select and verify
+   a complete immutable build. `stage-version.mjs` only makes a local, currently
+   unguarded candidate; it is not a Pages pipeline, launcher, cryptographic code
+   attestation or deployment.
 4. **Never upgrade an old Realtime Database SDK instance to a new epoch.** The
    tests demonstrate that an offline write queued under the old identity can
    be sent with new credentials. Origin-wide `LOCAL` Auth can transfer the new
@@ -179,8 +205,8 @@ also run this probe when a push commit explicitly includes
 The public alias is reachable without Vercel login; protected preview and
 unique deployment URLs cannot be substituted without an authorized test path.
 
-The cross-tab and combined browser-runtime tests additionally require
-Playwright/Chromium. CI installs them and runs
+The cross-tab, combined browser-runtime and staged-game tests additionally
+require Playwright/Chromium. CI installs them and runs
 `npm run test:release-tabs --prefix IronPath/firebase/rules-test` with `NODE_PATH`
 pointing at the pinned Playwright installation. The tests use only
 `demo-ironpath`, loopback emulators and synthetic users; they do not inspect or

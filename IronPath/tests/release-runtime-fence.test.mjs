@@ -16,12 +16,13 @@ test('remains blocked while checking and only starts once for the current open r
  assert.deepEqual(calls,['hold:checking','ready']);assert.equal(context().signal.aborted,false);assert.equal(fence.getPhase(),'active');
 });
 
-test('maintenance synchronously freezes, aborts and disconnects before sign-out and navigation',async()=>{
+test('maintenance freezes and disconnects before notifying abort listeners, sign-out and navigation',async()=>{
  const {fence,calls,context}=setup();fence.accept({kind:'open',release:open});
+ context().signal.addEventListener('abort',()=>calls.push('abort'));
  const done=fence.accept({kind:'maintenance'});
- assert.deepEqual(calls,['ready','hold:maintenance','offline']);assert.equal(context().signal.aborted,true);
- await done;assert.deepEqual(calls,['ready','hold:maintenance','offline','signout',{kind:'maintenance'}]);
- fence.accept({kind:'open',release:open});assert.equal(calls.length,5,'a terminated document cannot restart');
+ assert.deepEqual(calls,['ready','hold:maintenance','offline','abort']);assert.equal(context().signal.aborted,true);
+ await done;assert.deepEqual(calls,['ready','hold:maintenance','offline','abort','signout',{kind:'maintenance'}]);
+ fence.accept({kind:'open',release:open});assert.equal(calls.length,6,'a terminated document cannot restart');
 });
 
 test('build, epoch or cutoff changes force a fresh versioned document',async()=>{

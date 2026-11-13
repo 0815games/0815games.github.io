@@ -100,7 +100,11 @@ export async function createGuardedGameSession({auth, passwordAuth, db, release,
     if(observed!==auth.currentUser)return;
     if((state==='idle'||state==='password'||state==='resetting') && observed)terminate('unavailable');
     if(state==='active' && observed!==approved)terminate('unavailable');
-  },()=>terminate('unavailable'));
+  },()=>{
+    // An Auth observer failure is a fatal guarded-document error, not an
+    // invitation to redisplay the normal login form inside the old document.
+    terminate('unavailable');
+  });
 
   async function checked() {
     alive();

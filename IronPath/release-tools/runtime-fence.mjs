@@ -40,10 +40,11 @@ export function createRuntimeFence({build, onHold, onReady, goOffline, signOut, 
       await Promise.race([signout,deadline]);clearTimeout(timer);
       safely(()=>replaceDocument(target));
     });
-    // Synchronously freeze the page and stop the RTDB connection before any
-    // asynchronous sign-out or navigation. A fresh document discards in-memory
-    // queued writes; the server-side epoch is still the authoritative fence.
-    safely(()=>hold(reason));lifetime.abort();safely(goOffline);
+    // Synchronously freeze and disconnect before notifying application abort
+    // listeners: those listeners may stop presence/lobbies and queue cleanup.
+    // An already in-flight request still needs the server-side epoch fence.
+    // A fresh document discards the in-memory queue before any new login.
+    safely(()=>hold(reason));safely(goOffline);lifetime.abort();
     return transition;
   }
   return Object.freeze({

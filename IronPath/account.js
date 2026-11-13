@@ -24,6 +24,7 @@ import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-loadin
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261031-loading1';
+import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
@@ -40,7 +41,7 @@ import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, on
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-loading1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261031-mpview1';
+import { startGame } from './game.js?v=20261031-mpview1-releasestop1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-mpview1';
 import { createPlayer } from './match.mjs?v=20261112-tagless1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-tagless1';
@@ -51,9 +52,15 @@ import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-loading1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 bindDisclosureDismiss(document);
+const accountServices=createAccountServices({
+ config:{apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'},
+ sdk:{initializeApp,getAuth,getDatabase,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail,signOut},
+ // Only an explicitly staged guarded document requires a preinstalled session.
+ // The ordinary published page remains unchanged until a separate cutover.
+ requireGuard:requiresAccountGuard(document.documentElement.dataset.ironpathGuard)
+});
 window.ironPathLoaded = true;
-const app = initializeApp({apiKey:'AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE',authDomain:'iron-path-dc727.firebaseapp.com',databaseURL:'https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app',projectId:'iron-path-dc727',storageBucket:'iron-path-dc727.firebasestorage.app',messagingSenderId:'305063261861',appId:'1:305063261861:web:8ec54d8318a983fce3ff4c'});
-const auth=getAuth(app), db=getDatabase(app), $=id=>document.getElementById(id);
+const {auth,db}=accountServices, $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null, soldierUI=null;
 // Declared before setupLanguage() runs: its first onChange fires immediately.
 let armoryCategory='equipment';
@@ -182,9 +189,15 @@ function message(text,values={}){entryMessage=typeof text==='object'?text:{text,
 onLanguageChange(()=>message(entryMessage));
 function errorText(error){const code=error?.code||'';if(code.includes('invalid-credential')||code.includes('wrong-password')||code.includes('user-not-found'))return 'Incorrect email or password.';if(code.includes('email-already-in-use'))return 'This email is already registered. Sign in instead.';if(code.includes('weak-password'))return 'Please choose a stronger password.';if(code.includes('invalid-email'))return 'Please enter a valid email address.';if(code.includes('network'))return 'Network error. Check your connection and try again.';if(code.includes('permission-denied')||code.includes('permission_denied'))return 'Database access denied. The Iron Path database rules may need to be deployed.';return code?{text:'Could not complete the request. Please try again. ({code})',values:{code}}:'Could not complete the request. Please try again.';}
 async function busy(button, task){if(button.disabled)return;button.disabled=true;message('');try{await task();}catch(e){message(errorText(e));}finally{button.disabled=false;}}
-setupAuthForm({form:$('authForm'),email:$('email'),password:$('password'),submit:$('authSubmit'),register:$('register'),forgot:$('forgot'),confirm:$('passwordConfirm'),confirmField:$('passwordConfirmField'),onSignIn:(email,password)=>signInWithEmailAndPassword(auth,email,password),onRegister:(email,password)=>createUserWithEmailAndPassword(auth,email,password),onError:error=>message(typeof error==='string'?error:error?errorText(error):'')});
-$('forgot').onclick=e=>{const email=$('email').value.trim();if(!email){message('Enter your email address first.');return;}busy(e.currentTarget,async()=>{await sendPasswordResetEmail(auth,email);message('If the email is registered, a reset email may arrive shortly.');});};
-async function logout(){try{await fourPanel?.leaveForLogout();await partyPanel.leaveForLogout();await signOut(auth);$('password').value='';}catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}}}
+setupAuthForm({form:$('authForm'),email:$('email'),password:$('password'),submit:$('authSubmit'),register:$('register'),forgot:$('forgot'),confirm:$('passwordConfirm'),confirmField:$('passwordConfirmField'),onSignIn:accountServices.signIn,onRegister:accountServices.register,onError:error=>message(typeof error==='string'?error:error?errorText(error):'')});
+$('forgot').onclick=e=>{const email=$('email').value.trim();if(!email){message('Enter your email address first.');return;}busy(e.currentTarget,async()=>{await accountServices.resetPassword(email);message('If the email is registered, a reset email may arrive shortly.');});};
+async function logout(){try{
+ // A guarded session must end this document immediately, even if party cleanup
+ // hangs offline. Its abort handler below performs only best-effort cleanup.
+ if(accountServices.guarded)await accountServices.logout();
+ else{await fourPanel?.leaveForLogout();await partyPanel.leaveForLogout();await accountServices.logout();}
+ $('password').value='';
+}catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}}}
 async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPanel?.isActive(),run=gameControl?.getRunSummary();if((partyActive||run)&&!await confirmation.ask({title:'Sign out?',text:partyActive?'Signing out leaves your multiplayer party and may end its match.':'Your current solo operation will be lost. Completed-wave rewards remain saved.',accept:'SIGN OUT'}))return;await logout();}
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout;
 // "Charakter löschen": erases the soldier and returns the still-signed-in
@@ -316,7 +329,28 @@ const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),record
   return {committed:!!outcome.committed,delta:outcome.committed?rewardDelta(outcome.before,outcome.after):null,profile:outcome.committed?outcome.after:null};
  }catch(e){if(version===sessionVersion)$('saveStatus').textContent=translateText('XP and loot could not be saved. Check your connection and database rules.');return {committed:false};}}};
 let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false,savingArmory=false,closingSkills=false,skillsOpenGeneration=0;
-onAuthStateChanged(auth,currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');setLoadingStep('soldier');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
+// Guarded documents are single-use. The fence has already blocked the page and
+// put RTDB offline before aborting this signal; clean up without waiting for
+// network writes, and never try to revive this account/game in the same page.
+if(accountServices.signal){
+ const stopGuardedAccount=()=>{
+  sessionVersion++;profile=null;user=null;
+  const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
+  const oldWatch=unsubscribe;unsubscribe=null;
+  stop(()=>oldWatch?.());stop(()=>scoreReporter?.close());scoreReporter=null;
+  stop(()=>gameControl?.stopForRelease());stop(()=>notifySession());
+  stop(()=>{endingAborted=true;});stop(()=>firstRunGuide?.stop?.());
+  stop(()=>leaderboardUI.reset());stop(()=>friendsUI.signOut());stop(()=>confirmation.cancel());stop(()=>soldierUI?.close());
+  stop(()=>partyPanel.reset());stop(()=>partyPanel.collapse());stop(()=>fourPanel?.leaveForLogout(0));
+  // A modal dialog in the top layer can otherwise keep the blocked page inert
+  // even after its containing game is hidden. Never restore one in this page.
+  stop(()=>{for(const dialog of document.querySelectorAll('dialog[open]'))try{dialog.close();}catch{}});
+  stop(()=>{$('password').value='';});
+ };
+ accountServices.signal.addEventListener('abort',stopGuardedAccount,{once:true});
+ if(accountServices.signal.aborted)stopGuardedAccount();
+}
+accountServices.observe(currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');setLoadingStep('soldier');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){

@@ -9,6 +9,12 @@ import {BUILD_PATTERN} from './release-control.mjs';
 
 const within=(parent,child)=>{const r=relative(parent,child);return r===''||(!r.startsWith(`..${sep}`)&&r!=='..'&&!r.startsWith(sep));};
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+// Only browser-safe dependencies of the unmounted guard are copied. Never copy
+// the server/API, deployment configuration, node_modules or possible secrets.
+const browserGuardFiles=Object.freeze([
+  'guarded-game-bootstrap.mjs','guarded-runtime.mjs','game-session.mjs',
+  'release-control.mjs','runtime-fence.mjs','status-monitor.mjs','bounded-json.mjs'
+]);
 
 export async function stageVersion({sourceDir, outputDir, build} = {}) {
   if (typeof build !== 'string' || !BUILD_PATTERN.test(build)) throw Error('Invalid build ID');
@@ -48,6 +54,13 @@ export async function stageVersion({sourceDir, outputDir, build} = {}) {
   const assetInfo=await lstat(join(source,'assets'));
   if (!assetInfo.isDirectory() || assetInfo.isSymbolicLink()) throw Error('Missing real assets directory');
   await copyTree(join(source,'assets'),'assets');
+  const guardDir=join(source,'release-tools'),guardInfo=await lstat(guardDir);
+  if (!guardInfo.isDirectory() || guardInfo.isSymbolicLink()) throw Error('Missing real browser guard directory');
+  for (const name of browserGuardFiles) {
+    const file=join(guardDir,name),info=await lstat(file);
+    if (!info.isFile() || info.isSymbolicLink()) throw Error(`Invalid browser guard file: ${name}`);
+    await save(join('release-tools',name),await readFile(file));
+  }
 
   // The release is nested two levels below /IronPath/. Keep the home link and
   // installed-PWA start on the stable entry point rather than an obsolete build.

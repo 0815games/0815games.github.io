@@ -8,6 +8,8 @@ import {createHash} from 'node:crypto';
 import {stageVersion} from '../release-tools/stage-version.mjs';
 
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const guardFiles=['guarded-game-bootstrap.mjs','guarded-runtime.mjs','game-session.mjs',
+ 'release-control.mjs','runtime-fence.mjs','status-monitor.mjs','bounded-json.mjs'];
 async function fixture(t){
  const base=await mkdtemp(join(tmpdir(),'ironpath-stage-'));t.after(()=>rm(base,{recursive:true,force:true}));
  const source=join(base,'source'),output=join(base,'output');await mkdir(join(source,'assets','layers'),{recursive:true});await mkdir(output);
@@ -17,19 +19,24 @@ async function fixture(t){
  await writeFile(join(source,'style.css'),'body{color:red}');
  await writeFile(join(source,'assets','manifest.webmanifest'),JSON.stringify({name:'Iron Path',start_url:'./index.html',icons:[]}));
  await writeFile(join(source,'assets','layers','unit.png'),Buffer.from([1,2,3,4]));
+ await mkdir(join(source,'release-tools'));
+ for(const name of guardFiles)await writeFile(join(source,'release-tools',name),`// browser fixture ${name}\n`);
+ await writeFile(join(source,'release-tools','server-secret-fixture.txt'),'must never be staged');
  return {base,source,output};
 }
 
 test('a staged release has an isolated path, matching stamp, stable PWA entry and hashed inventory',async t=>{
  const {source,output}=await fixture(t);
  const result=await stageVersion({sourceDir:source,outputDir:output,build:'release-1'});
- assert.equal(result.fileCount,6);
+ assert.equal(result.fileCount,6+guardFiles.length);
  const html=await readFile(join(result.directory,'index.html'),'utf8');
  assert.match(html,/data-ironpath-release-build="release-1"/);assert.match(html,/BUILD release-1/);assert.match(html,/<a href="\/">/);
  const webmanifest=JSON.parse(await readFile(join(result.directory,'assets','manifest.webmanifest'),'utf8'));
  assert.equal(webmanifest.start_url,'/IronPath/');assert.equal(webmanifest.scope,'/IronPath/');
  const inventory=JSON.parse(await readFile(join(result.directory,'release-manifest.json'),'utf8'));
  assert.equal(inventory.build,'release-1');
+ assert.deepEqual(Object.keys(inventory.files).filter(name=>name.startsWith('release-tools/')).sort(),
+  guardFiles.map(name=>`release-tools/${name}`).sort(),'only explicitly allowed browser modules are included');
  for(const [name,entry] of Object.entries(inventory.files)){
   const bytes=await readFile(join(result.directory,name));assert.equal(entry.bytes,bytes.length,name);assert.equal(entry.sha256,hash(bytes),name);
  }
@@ -50,6 +57,17 @@ test('bad IDs, source overlap, unexpected HTML and symlinks are rejected',async 
  await assert.rejects(stageVersion({sourceDir:source,outputDir:output,build:'release-3'}),/Symbolic link/);
 });
 
+test('browser guard inputs cannot be missing, directories or symlinks',async t=>{
+ const {source,output}=await fixture(t);
+ const file=join(source,'release-tools','game-session.mjs');
+ await rm(file);
+ await assert.rejects(stageVersion({sourceDir:source,outputDir:output,build:'missing-guard'}),/ENOENT/);
+ await symlink('/etc/passwd',file);
+ await assert.rejects(stageVersion({sourceDir:source,outputDir:output,build:'linked-guard'}),/Invalid browser guard file/);
+ await rm(file);await mkdir(file);
+ await assert.rejects(stageVersion({sourceDir:source,outputDir:output,build:'directory-guard'}),/Invalid browser guard file/);
+});
+
 test('the current game runtime and full asset tree can be staged without changing source', {timeout:60000}, async t=>{
  const base=await mkdtemp(join(tmpdir(),'ironpath-real-stage-'));t.after(()=>rm(base,{recursive:true,force:true}));
  const source=fileURLToPath(new URL('..',import.meta.url));
@@ -58,7 +76,8 @@ test('the current game runtime and full asset tree can be staged without changin
  const inventory=JSON.parse(await readFile(join(result.directory,'release-manifest.json'),'utf8'));
  const files=Object.keys(inventory.files);
  assert.ok(files.length>500,`full runtime and assets copied: ${files.length}`);
- for(const name of ['account.js','game.js','maps.mjs','style.css','assets/layers/manifest.mjs','assets/story-outpost.jpg','assets/manifest.webmanifest'])assert.ok(files.includes(name),name);
+ for(const name of ['account.js','account-services.mjs','game.js','maps.mjs','style.css','assets/layers/manifest.mjs','assets/story-outpost.jpg','assets/manifest.webmanifest'])assert.ok(files.includes(name),name);
+ assert.deepEqual(files.filter(name=>name.startsWith('release-tools/')).sort(),guardFiles.map(name=>`release-tools/${name}`).sort());
  const roots=(await readdir(source)).filter(name=>/\.(?:mjs|js|css)$/.test(name));
  for(const name of roots)assert.ok(files.includes(name),`runtime copied: ${name}`);
  assert.deepEqual(await readFile(join(source,'index.html')),original,'source was not modified');
