@@ -25,7 +25,7 @@
     "test:workshop-draft": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop-draft.emulator.json 'node --test workshop-draft-rules.test.mjs'",
     "test:workshop-server": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-workshop-server.emulator.json 'node --test workshop-server-rules.test.mjs'",
     "test:release-guard": "firebase emulators:exec --only auth,database --project demo-ironpath --config ../firebase-release.emulator.json 'node --test release-rules.test.mjs && node --test release-auth-transition.test.mjs && node --test release-session-integration.test.mjs'",
-    "test:release-tabs": "firebase emulators:exec --only auth,database --project demo-ironpath --config ../firebase-release.emulator.json 'node release-auth-tabs.cjs'",
+    "test:release-tabs": "firebase emulators:exec --only auth,database --project demo-ironpath --config ../firebase-release.emulator.json 'node release-auth-tabs.cjs && node release-runtime-browser.cjs'",
     "test:publish": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-publish.emulator.json 'node --test publish-rules.test.mjs && PUBLISH_RULES=1 node --test large-multiplayer-rules.test.mjs'"
   },
   "dependencies": {

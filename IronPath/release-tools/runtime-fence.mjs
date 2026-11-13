@@ -15,28 +15,45 @@ export function createRuntimeFence({build, onHold, onReady, goOffline, signOut, 
       !Number.isInteger(signOutTimeoutMs) || signOutTimeoutMs<1) throw Error('Invalid runtime fence configuration');
   let phase='checking', accepted=null, transition=null;
   const lifetime=new AbortController();
-  const safely=fn=>{try{fn();}catch{/* Continue teardown even if a UI/SDK callback fails. */}};
+  const safely=fn=>{try{
+    const result=fn();
+    if(result && typeof result.then==='function')void Promise.resolve(result).catch(()=>{});
+  }catch{/* Continue teardown even if a UI/SDK callback fails. */}};
+  const hold=reason=>{
+    const result=onHold(reason);
+    if(result && typeof result.then==='function'){
+      void Promise.resolve(result).catch(()=>{});
+      throw Error('The blocking UI callback must be synchronous');
+    }
+  };
 
   function leave(reason, target) {
     if (phase==='terminated') return transition;
     phase='terminated';
-    // Synchronously freeze the page and stop the RTDB connection before any
-    // asynchronous sign-out or navigation. A fresh document discards in-memory
-    // queued writes; the server-side epoch is still the authoritative fence.
-    safely(()=>onHold(reason));lifetime.abort();safely(goOffline);
-    transition=(async()=>{
+    // Assign the promise before callbacks: an abort/hold callback may reenter
+    // stop(), which must see the same in-progress transition, not null.
+    // This microtask cannot sign out until the synchronous fence below returns.
+    transition=Promise.resolve().then(async()=>{
       let timer;
       const signout=Promise.resolve().then(signOut).catch(()=>{});
       const deadline=new Promise(resolve=>{timer=setTimeout(resolve,signOutTimeoutMs);});
       await Promise.race([signout,deadline]);clearTimeout(timer);
       safely(()=>replaceDocument(target));
-    })();
+    });
+    // Synchronously freeze the page and stop the RTDB connection before any
+    // asynchronous sign-out or navigation. A fresh document discards in-memory
+    // queued writes; the server-side epoch is still the authoritative fence.
+    safely(()=>hold(reason));lifetime.abort();safely(goOffline);
     return transition;
   }
   return Object.freeze({
     accept(event){
       if (phase==='terminated') return transition;
-      if (event?.kind==='checking' && phase==='checking') { safely(()=>onHold('checking'));return; }
+      if (event?.kind==='checking' && phase==='checking') {
+        try { hold('checking'); }
+        catch { return leave('unavailable',{kind:'maintenance'}); }
+        return;
+      }
       if (event?.kind==='maintenance') return leave('maintenance',{kind:'maintenance'});
       if (event?.kind!=='open') return leave('unavailable',{kind:'maintenance'});
       const release=parseReleaseControl(event.release);
@@ -50,6 +67,16 @@ export function createRuntimeFence({build, onHold, onReady, goOffline, signOut, 
           Promise.resolve(onReady({release,signal:lifetime.signal})).catch(()=>leave('unavailable',{kind:'maintenance'}));
         } catch { return leave('unavailable',{kind:'maintenance'}); }
       }
+    },
+    // Logout, a failed session exchange, or an external fatal error must tear
+    // down the same way as a status change. The caller chooses a fixed local
+    // destination for each target; this API never accepts a URL.
+    stop(reason='unavailable'){
+      if (reason==='logout') return leave('logout',{kind:'entry'});
+      if (reason==='maintenance') return leave('maintenance',{kind:'maintenance'});
+      if (reason==='updating') return leave('updating',{kind:'update'});
+      if (reason==='unavailable') return leave('unavailable',{kind:'maintenance'});
+      throw Error('Invalid teardown reason');
     },
     getPhase:()=>phase
   });

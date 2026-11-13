@@ -20,22 +20,25 @@ service; identity, free limits and the complete rollout still need verification.
   root `IronPath/release-tools` and output directory `public`. The first Git
   push was surprisingly promoted to this *separate project's* production alias
   even though its configured production branch is `main`. No game or Firebase
-  configuration was changed. `vercel.json` now requests **no automatic Git
-  deployments**; this is only in the candidate branch, is not an independently
-  enforced protection, and does not control GitHub Pages. Verify it after a
-  push and use explicitly reviewed deployments if adopted.
+  configuration was changed. `vercel.json` requests **no automatic Git
+  deployments**. Commit `e2f44ea` containing that setting produced no automatic
+  `ironpath-release` deployment before a later explicit deployment, but this is
+  not an independently enforced protection and does not control GitHub Pages.
+  Verify behavior after subsequent pushes and use explicitly reviewed deployments.
 - `api/session.mjs`, `package.json`, `vercel.json`, and `public/` form an
-  **unconfigured** service candidate. Deployment `dpl_2skwgDM4stiqqbJ7dwaujTjBQNN9`
-  from commit `9527b55` is READY, uses Node 22.x, and serves the public alias
+  **unconfigured** service candidate. Explicit deployment `dpl_7PxUCqssH4Ma814NE1F5BG5Qvkbu`
+  from commit `e2f44ea` is READY, uses Node 22.x, and serves the public alias
   `https://ironpath-release.vercel.app/`; the deployment-specific and team
   aliases require Vercel sign-in. No Firebase variables or credentials have
   been added. The initial function crashed at startup (500). Vercel disables
   `require(ESM)` by default and this dependency chain fails with that setting
   locally; adding the documented non-secret project setting
   `NODE_OPTIONS=--experimental-require-module` for Production and Preview and
-  redeploying the same commit yielded the generic unavailable JSON response on
-  the public alias. The exact runtime error was not retrieved, so this is a
-  plausible compatibility diagnosis, not a captured production stack trace.
+  redeploying `9527b55` yielded the generic unavailable JSON response on the
+  public alias; the opt-in [CI probe](https://github.com/0815games/0815games.github.io/actions/runs/43408350246)
+  confirmed 503/no-store JSON for unconfigured GET, OPTIONS and synthetic POST.
+  The exact original runtime error was not retrieved, so this is a plausible
+  compatibility diagnosis, not a captured production stack trace.
   Run `runtime-compatibility.test.mjs` after dependency changes and recheck the
   Vercel setting: ordinary Node 22 locally can otherwise hide this failure.
   The real configured HTTP exchange, request streaming, CORS, deployment
@@ -66,6 +69,22 @@ service; identity, free limits and the complete rollout still need verification.
   including an old `LOCAL` tab. The exchange in that browser test is synthetic,
   not the Vercel service. It does not yet modify `account.js`, build a launcher
   or control production.
+- `guarded-runtime.mjs` composes the isolated Firebase factory, monitor, lifecycle
+  and session adapter. It generates fresh app names, uses in-memory Auth, refuses
+  to remount known Auth/RTDB objects and derives the status URL from the same
+  Firebase database configuration. Startup remains gated until an open status is
+  read; a status failure, maintenance, version change or logout synchronously
+  begins one-way teardown. The embedding UI must block synchronously, honor the
+  abort signal and actually perform a full-document navigation. Those properties
+  are not magically imposed on the current game.
+- `release-runtime-browser.cjs` exercises that composition in Chromium with the
+  real Web SDK, local HTTP handler, Admin Auth and candidate rules against the
+  unofficial Fireemu (`productionExact: false`). The test checks a real password
+  exchange, maintenance, rejection of an old offline write after reopening, and
+  a status outage. It uses same-origin loopback proxies, records the navigation
+  rather than leaving the page, and is not the real game, Vercel, browser CORS,
+  production Firebase or a real-device test. The official-emulator CI runs it via
+  `test:release-tabs`; confirm that particular run before claiming a pass.
 
 ## What has to be true before enabling it
 
@@ -160,8 +179,9 @@ also run this probe when a push commit explicitly includes
 The public alias is reachable without Vercel login; protected preview and
 unique deployment URLs cannot be substituted without an authorized test path.
 
-The cross-tab test additionally requires Playwright/Chromium. CI installs it
-and runs `npm run test:release-tabs --prefix IronPath/firebase/rules-test` with
-`NODE_PATH` pointing at the pinned Playwright installation. The tests use only
+The cross-tab and combined browser-runtime tests additionally require
+Playwright/Chromium. CI installs them and runs
+`npm run test:release-tabs --prefix IronPath/firebase/rules-test` with `NODE_PATH`
+pointing at the pinned Playwright installation. The tests use only
 `demo-ironpath`, loopback emulators and synthetic users; they do not inspect or
 modify the live Firebase project.

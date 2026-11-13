@@ -38,6 +38,43 @@ test('missing, malformed and unavailable status fail closed, including at startu
  }
 });
 
+test('a failure to show the initial blocked state cannot start the game',async()=>{
+ const calls=[];
+ const fence=createRuntimeFence({build:'build-1',onHold:reason=>{calls.push(`hold:${reason}`);if(reason==='checking')throw Error('ui');},
+  onReady:()=>calls.push('ready'),goOffline:()=>calls.push('offline'),signOut:()=>calls.push('signout'),replaceDocument:target=>calls.push(target)});
+ await fence.accept({kind:'checking'});fence.accept({kind:'open',release:open});
+ assert.equal(fence.getPhase(),'terminated');
+ assert.deepEqual(calls,['hold:checking','hold:unavailable','offline','signout',{kind:'maintenance'}]);
+});
+
+test('an asynchronous initial gate is rejected instead of starting unchecked',async()=>{
+ const calls=[];
+ const fence=createRuntimeFence({build:'build-1',onHold:async reason=>{calls.push(`hold:${reason}`);throw Error('late UI failure');},
+  onReady:()=>calls.push('ready'),goOffline:()=>calls.push('offline'),signOut:()=>calls.push('signout'),replaceDocument:target=>calls.push(target)});
+ await fence.accept({kind:'checking'});fence.accept({kind:'open',release:open});
+ assert.deepEqual(calls,['hold:checking','hold:unavailable','offline','signout',{kind:'maintenance'}]);
+});
+
+test('reentrant stop during a synchronous teardown observes the same pending transition',async()=>{
+ let fence,reentered;
+ fence=createRuntimeFence({build:'build-1',onHold:reason=>{if(reason==='maintenance')reentered=fence.stop('logout');},
+  onReady:()=>{},goOffline:()=>{},signOut:()=>{},replaceDocument:()=>{}});
+ fence.accept({kind:'open',release:open});const done=fence.stop('maintenance');
+ assert.ok(done instanceof Promise);assert.equal(reentered,done);await done;
+});
+
+test('explicit logout and fatal errors use the same one-way teardown',async()=>{
+ for(const [reason,target] of [['logout',{kind:'entry'}],['maintenance',{kind:'maintenance'}],
+  ['updating',{kind:'update'}],['unavailable',{kind:'maintenance'}]]){
+  const {fence,calls,context}=setup();fence.accept({kind:'open',release:open});
+  const done=fence.stop(reason);assert.equal(context().signal.aborted,true);
+  assert.deepEqual(calls,['ready',`hold:${reason}`,'offline']);await done;
+  assert.deepEqual(calls.slice(-2),['signout',target]);assert.equal(fence.getPhase(),'terminated');
+  assert.equal(fence.stop(reason),done);
+ }
+ assert.throws(()=>setup().fence.stop('arbitrary-redirect'),/Invalid teardown reason/);
+});
+
 test('teardown proceeds despite throwing or hanging callbacks and asynchronous startup failure',async()=>{
  let target;
  const {fence}=setup({onHold:()=>{throw Error('ui');},goOffline:()=>{throw Error('offline');},signOut:()=>new Promise(()=>{}),replaceDocument:t=>{target=t;},signOutTimeoutMs:5});
