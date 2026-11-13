@@ -2,7 +2,7 @@
 // A trusted service may verify a fresh Firebase password ID token and mint a
 // custom token whose claim is checked by the candidate database rules. The
 // caller-supplied build is a compatibility check, NOT proof of code integrity.
-import {BUILD_PATTERN, parseReleaseControl, sameRelease} from './release-control.mjs';
+import {BUILD_PATTERN, parseReleaseControl, sameRelease, isAuthAfterCutoff} from './release-control.mjs';
 
 export function createReleaseSessionExchange({readControl, verifyIdToken, mintCustomToken, now = Date.now} = {}) {
   if (![readControl, verifyIdToken, mintCustomToken, now].every(fn => typeof fn === 'function')) {
@@ -28,7 +28,7 @@ export function createReleaseSessionExchange({readControl, verifyIdToken, mintCu
       if (!Number.isSafeInteger(seconds) || !identity || typeof identity.uid !== 'string' ||
           identity.uid.length < 1 || identity.uid.length > 128 ||
           identity.firebase?.sign_in_provider !== 'password' || identity.firebase?.tenant != null ||
-          !Number.isSafeInteger(identity.auth_time) || identity.auth_time <= initial.authAfter ||
+          !isAuthAfterCutoff(identity.auth_time, initial.authAfterMs) ||
           identity.auth_time > seconds + 30 || identity.auth_time < seconds - 300) {
         return {status:'unauthorized'};
       }

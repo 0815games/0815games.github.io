@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createGuardedRuntime,createIsolatedReleaseFirebase} from '../release-tools/guarded-runtime.mjs';
 
-const initial={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfter:1000};
+const initial={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfterMs:1000000};
 const statusUrl='https://demo.firebaseio.com/_ironpathRelease.json';
 const endpoint='https://release.example.test/api/session';
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve};};

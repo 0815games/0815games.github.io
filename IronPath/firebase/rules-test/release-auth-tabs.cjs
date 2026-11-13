@@ -15,8 +15,8 @@ for(const [name,port] of [['FIREBASE_AUTH_EMULATOR_HOST',9099],['FIREBASE_DATABA
 }
 const project='demo-ironpath',epochA='a'.repeat(32),epochB='b'.repeat(32);
 const now=Math.floor(Date.now()/1000);
-const first={mode:'open',build:'release-1',epoch:epochA,authAfter:now-120};
-const second={mode:'open',build:'release-2',epoch:epochB,authAfter:now-1};
+const first={mode:'open',build:'release-1',epoch:epochA,authAfterMs:(now-120)*1000};
+const second={mode:'open',build:'release-2',epoch:epochB,authAfterMs:(now-1)*1000};
 const encode=v=>Buffer.from(JSON.stringify(v)).toString('base64url');
 function customToken(epoch){
  const seconds=Math.floor(Date.now()/1000);

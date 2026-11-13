@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createGuardedGameSession,createSessionExchangeClient} from '../release-tools/game-session.mjs';
 
-const release={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfter:1000};
+const release={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfterMs:1000000};
 const claims={firebase:{sign_in_provider:'custom'},ip_release_epoch:release.epoch,auth_time:1001};
 const user=(uid,tokenClaims=claims)=>({uid,getIdToken:async()=>`password-token-${uid}`,getIdTokenResult:async()=>({claims:tokenClaims})});
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};

@@ -19,7 +19,7 @@ const guarded=process.env.IRONPATH_RELEASE_GUARD==='1';
 const publish=process.env.PUBLISH_RULES==='1'||guarded;
 const rulesFile=publish?'../WORKSHOP-RULES-TO-PUBLISH.json':'../unified.complete.draft.rules.json';
 const epochA='a'.repeat(32),epochB='b'.repeat(32),t=Math.floor(Date.now()/1000);
-const control={mode:'open',build:'release-1',epoch:epochA,authAfter:t-120};
+const control={mode:'open',build:'release-1',epoch:epochA,authAfterMs:(t-120)*1000};
 const claims=(epoch=epochA,authTime=t-30,provider='custom')=>({
  iat:t,auth_time:authTime,ip_release_epoch:epoch,firebase:{sign_in_provider:provider,identities:{}}
 });
@@ -105,7 +105,7 @@ if(guarded){
    await adminSet(CONTROL_PATH,{...control,mode:'maintenance',epoch:epochB});
    await assertFails(set(ref(db.bob,input),'closed'));
    assert.match(String((await within(cancelled,'multiplayer listener cancellation'))?.code),/permission.denied/i);
-   await adminSet(CONTROL_PATH,{...control,mode:'open',build:'release-2',epoch:epochB,authAfter:t-10});
+   await adminSet(CONTROL_PATH,{...control,mode:'open',build:'release-2',epoch:epochB,authAfterMs:(t-10)*1000});
    await assertFails(set(ref(db.bob,input),'stale'));
    const fresh=env.authenticatedContext('bob',claims(epochB,t-1)).database();
    await assertSucceeds(set(ref(fresh,input),'new epoch'));

@@ -2,7 +2,7 @@
 // into the currently published game. A new document gets new in-memory Auth and
 // RTDB instances; it may authorize the game instance at most once. Never move
 // an old offline RTDB queue to a new session or synchronize auth across tabs.
-import {BUILD_PATTERN, parseReleaseControl} from './release-control.mjs';
+import {BUILD_PATTERN, parseReleaseControl, isAuthAfterCutoff} from './release-control.mjs';
 import {readBoundedJson} from './bounded-json.mjs';
 
 function error(code) { const result = Error('Release session unavailable'); result.code = code; return result; }
@@ -88,8 +88,9 @@ export async function createGuardedGameSession({auth, passwordAuth, db, release,
     try{
       const claims=(await candidate.getIdTokenResult())?.claims;alive();
       if(candidate.uid!==expectedUid || claims?.firebase?.sign_in_provider!=='custom' ||
-          claims.ip_release_epoch!==accepted.epoch || !Number.isSafeInteger(claims.auth_time) ||
-          claims.auth_time<=accepted.authAfter)throw error('release/unavailable');
+          claims.ip_release_epoch!==accepted.epoch || !isAuthAfterCutoff(claims.auth_time,accepted.authAfterMs)) {
+        throw error('release/unavailable');
+      }
       await checked();
     }catch{terminate('unavailable');throw error('release/unavailable');}
   });
@@ -140,7 +141,7 @@ export async function createGuardedGameSession({auth, passwordAuth, db, release,
       const claims=(await gameUser?.getIdTokenResult())?.claims;alive();
       if(!admissionUsed || !gameUser || gameUser.uid!==uid || auth.currentUser!==gameUser ||
           claims?.firebase?.sign_in_provider!=='custom' || claims.ip_release_epoch!==accepted.epoch ||
-          !Number.isSafeInteger(claims.auth_time) || claims.auth_time<=accepted.authAfter) {
+          !isAuthAfterCutoff(claims.auth_time,accepted.authAfterMs)) {
         throw error('release/unavailable');
       }
       await checked();

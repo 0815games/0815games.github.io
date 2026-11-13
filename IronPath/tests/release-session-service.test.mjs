@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {controlUrl, createFreshControlReader, createConfiguredSessionExchange} from '../release-tools/session-service.mjs';
 
 const databaseUrl='https://demo-test-default-rtdb.europe-west1.firebasedatabase.app';
-const control={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfter:1000};
+const control={mode:'open',build:'release-1',epoch:'a'.repeat(32),authAfterMs:1000000};
 const json=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
 
 test('control URL is pinned to an HTTPS Firebase database root',()=>{

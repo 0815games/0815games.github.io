@@ -14,7 +14,7 @@ const projectId='demo-ironpath',epochA='a'.repeat(32),epochB='b'.repeat(32);
 const source=JSON.parse(await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url),'utf8'));
 const {candidate}=buildRulesCandidate(source);
 const t=Math.floor(Date.now()/1000);
-const initial={mode:'open',build:'release-1',epoch:epochA,authAfter:t-120};
+const initial={mode:'open',build:'release-1',epoch:epochA,authAfterMs:(t-120)*1000};
 const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
 function emulatorCustomToken(epoch){
  const now=Math.floor(Date.now()/1000);
@@ -33,7 +33,7 @@ function client(){
 }
 async function closeAndOpen(){
  await adminSet(CONTROL_PATH,{...initial,mode:'maintenance',epoch:epochB});
- await adminSet(CONTROL_PATH,{mode:'open',build:'release-2',epoch:epochB,authAfter:t-1});
+ await adminSet(CONTROL_PATH,{mode:'open',build:'release-2',epoch:epochB,authAfterMs:(t-1)*1000});
 }
 async function waitForProfileRemoval(){
  const deadline=Date.now()+5000;

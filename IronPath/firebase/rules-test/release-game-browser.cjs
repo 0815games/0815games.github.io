@@ -80,6 +80,7 @@ function guardedHtml(html){
   for(const build of ['game-1','game-2'])await stageVersion({sourceDir:root,outputDir:out,build});
   const source=JSON.parse(await fs.readFile(path.join(root,'firebase/WORKSHOP-RULES-TO-PUBLISH.json'),'utf8'));
   const {buildRulesCandidate}=await import(pathToFileURL(path.join(releaseDir,'rules-candidate.mjs')).href);
+  const {prepareReleaseControlWrite}=await import(pathToFileURL(path.join(releaseDir,'release-control-write.mjs')).href);
   const {createConfiguredSessionExchange}=await import(pathToFileURL(path.join(releaseDir,'session-service.mjs')).href);
   const {createReleaseSessionHttpHandler}=await import(pathToFileURL(path.join(releaseDir,'session-http.mjs')).href);
   const rules=buildRulesCandidate(source).candidate;
@@ -125,7 +126,7 @@ function guardedHtml(html){
   const adminSet=(p,v)=>env.withSecurityRulesDisabled(ctx=>set(p?ref(ctx.database(),p):ref(ctx.database()),v));
   const adminGet=async p=>{let value;await env.withSecurityRulesDisabled(async ctx=>{value=(await get(ref(ctx.database(),p))).val();});return value;};
   await env.clearDatabase();
-  const open={mode:'open',build:'game-1',epoch:epochA,authAfter:Math.floor(Date.now()/1000)-120};
+  const open={mode:'open',build:'game-1',epoch:epochA,authAfterMs:(Math.floor(Date.now()/1000)-120)*1000};
   await adminSet('',{_ironpathRelease:{...open,mode:'maintenance'},players:{[uid]:{name:'Alice',gender:'female',xp:0}}});
   const args=['--host-resolver-rules=MAP * 127.0.0.1'];if(process.env.CHROMIUM_PATH)args.push('--no-sandbox');
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args});
@@ -212,9 +213,11 @@ function guardedHtml(html){
    await page.waitForURL(landing('maintenance'));
    assert.equal((await adminGet(`players/${uid}`)).xp,0);
 
-   const cutoff=Math.floor(Date.now()/1000);
-   await adminSet('_ironpathRelease',{mode:'open',build:'game-2',epoch:epochB,authAfter:cutoff});
-   while(Math.floor(Date.now()/1000)<=cutoff)await new Promise(resolve=>setTimeout(resolve,50));
+   const opening=prepareReleaseControlWrite({mode:'open',build:'game-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+   await adminSet('_ironpathRelease',opening);
+   const reopened=await adminGet('_ironpathRelease'),cutoffMs=reopened.authAfterMs;
+   assert.notEqual(reopened.epoch,epochB);
+   while(Math.floor(Date.now()/1000)*1000<=cutoffMs)await new Promise(resolve=>setTimeout(resolve,50));
    const before=accountRequests.length;
    await page.goto(game('game-1'));await page.waitForURL(landing('update'));
    assert.equal(accountRequests.length,before,'a stale build never imports account.js');

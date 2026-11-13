@@ -24,21 +24,31 @@ service; identity, free limits and the complete rollout still need verification.
   with no duplicate JSON keys. This is evidence of the owner's supplied text,
   **not** an independent Firebase read or proof of the database instance or
   current deployment. Obtain a fresh backup and compare again before changes.
+- The current `authAfterMs` generator wrapped 45 read and 41 write grants in
+  that reference while preserving the root denials. With two-space JSON and a
+  trailing newline its local, undeployed candidate has SHA-256
+  `f92a0332f6a34e33a67f51b436d375aef0a20f3d51673f140608128442276bc5`.
+  This hash is for comparison only; it is not evidence of the live rules, a
+  backup, an independently reviewed security policy or a deployed candidate.
 - The owner supplied public Web settings for the separate `ironpathtest`
   project. A public Identity Toolkit lookup matched its project number, but did
   not establish database ownership, Auth-provider settings, rules or billing
   plan. Anonymous REST reads of both the database root and `_ironpathRelease`
   returned `Permission denied`: this does **not** prove child paths or writes
-  are locked. A guarded build and launcher were staged only under `/tmp` using
-  those Web settings and a deliberately synthetic session endpoint. All 595
-  staged files were scanned for the normal game's project ID and API key; none
-  contained either. A local full-inventory check covered 580 build files. A
-  separate network-blocked Chromium dry run with SDK doubles and a simulated
-  denied status kept the launcher and direct game blocked before the account
-  module or login. The fuller SDK/emulator browser test also passed with a
-  simulated 403. This test made no live login, session exchange, database write
-  or rule change, and did not deploy the staged build; it does not prove
-  Firebase enforcement.
+  are locked. The owner subsequently confirmed that this test database belongs
+  to `ironpathtest`, contains no real game data, has only root read/write
+  denials and no child rules, uses Spark, and has Email/Password enabled. These
+  are owner observations, not an independent Rules export or a live login.
+  A guarded build and launcher were staged only under `/tmp` using those Web
+  settings and a deliberately synthetic session endpoint. After the atomic
+  cutoff change, all 595 staged files were scanned for the normal game's project
+  ID and API key; none contained either. A loopback full-inventory check covered
+  all 580 build files. An earlier network-blocked Chromium dry run with SDK
+  doubles and a simulated denied status kept the launcher and direct game blocked
+  before the account module or login. The fuller SDK/emulator browser test also
+  passed with a simulated 403. None of these tests made a live login, session
+  exchange, database write or rule change, or deployed the staged game; they do
+  not prove Firebase enforcement.
 - `IRONPATH_RELEASE_GUARD=1` runs the real large-map lobby and party modules
   with two synthetic users under the generated candidate rules: coop and versus
   including guest reconnect, stale/unexchanged credentials and closure of a
@@ -79,6 +89,21 @@ service; identity, free limits and the complete rollout still need verification.
   protection, abuse controls and Firebase integration remain unverified. Hobby
   rate limits are per region, not a global distributed security guarantee; its
   quotas can interrupt service.
+- Four **unconfigured** Preview deployments remain: three file probes
+  (`dpl_8qJPt6xrGGcJx4TbNqDqzQzgYwwJ`, `dpl_CnuqSDATe5BSofWRLLrUvbZ6Ya8g`,
+  `dpl_8fp75bdQ9Rf7uxm2mJZe9GAQrGBN`) and one Git-source preview
+  (`dpl_3jtFU3irosYFUvFpv1aawVGn6kKg`, pinned to `72b4b95`, Node 22.x, `fra1`).
+  They were not promoted; production remained the deployment noted above when
+  checked. The Git preview predates the `authAfterMs` changes and cannot test
+  this schema. At least one file-probe URL required a Vercel login, but
+  protection has not been independently verified for every preview. The game
+  deliberately sends exchange requests with `credentials:'omit'`, so it cannot
+  depend on a Vercel login cookie. Disabling protection or adding an exception
+  changes a domain's exposure; neither has been done. Preview variables would
+  be captured by later Preview deployments: disabling Git auto-deployment is not
+  a credential boundary, and existing deployments retain their captured
+  variables. Do not put credentials there without agreeing on deployment scope,
+  exposure, cleanup and key revocation.
 - The candidate currently expects `IRONPATH_FIREBASE_PROJECT_ID`,
   `IRONPATH_FIREBASE_DATABASE_URL`, `IRONPATH_GAME_ORIGIN` and
   `IRONPATH_FIREBASE_SERVICE_ACCOUNT`. The last is a highly sensitive,
@@ -231,12 +256,21 @@ service; identity, free limits and the complete rollout still need verification.
   actual public artifact, all assets, the launcher and status endpoint before
   allowing traffic. Pages/CDN caching, a preexisting service worker and stale
   open documents need explicit tests; `no-store` is not code attestation.
-- Reopen by atomically publishing `mode: open` with a fresh, **server-derived**
-  `authAfter` cutoff covering the whole maintenance interval. Account for
-  trusted clock synchronization with Firebase Auth. Since `auth_time` has
-  one-second precision and the candidate uses `auth_time > authAfter`, an
-  authentication in the same second as the cutoff is rejected; retry later.
-  Login during maintenance must not become valid merely because it was recent.
+- Reopen only through a single write of the **whole** control record at
+  `/_ironpathRelease`, containing `mode:'open'`, the selected build, a fresh
+  unique epoch and `authAfterMs:{'.sv':'timestamp'}`. RTDB resolves that
+  sentinel to its server's Unix milliseconds in the same write. Never sample
+  a timestamp in an earlier request or update fields separately: a login in
+  the gap could otherwise be admitted. Exchange, game and Rules require
+  `auth_time * 1000 > authAfterMs`, rejecting the entire cutoff second.
+  The candidate assumes sufficiently consistent clocks and ordering between
+  RTDB and Firebase Auth; these are separate services and neither their clock
+  skew nor pending authentication timing has been bounded here. Atomicity alone
+  is **not** proof that all maintenance-period logins are excluded. Before any
+  real rollout, establish and test a defensible bound (and a conservative
+  post-open login delay enforced by the trusted service if appropriate), or
+  replace this mechanism with one that does not depend on that assumption.
+  Until then it must not be treated as a hard maintenance boundary.
 - Smoke-test new and old accounts and versions, then monitor. Previously
   registered `onDisconnect` operations may be rejected by the closed rules;
   identify and carefully clean only stale ephemeral presence/lobby records.
@@ -247,12 +281,12 @@ service; identity, free limits and the complete rollout still need verification.
 
 ## Before any live test-project changes
 
-Verify in the Firebase Console that the Realtime Database URL and Web app really
-belong to `ironpathtest`, that its plan is Spark, and whether Authentication →
-Sign-in method has Email/Password enabled. Inspect and back up the test database
-rules; anonymous root denial is not a substitute for reviewing child grants.
-The owner's production rules are a reference for a generated candidate, not
-permission to overwrite any test or production rules.
+The owner confirmed the test database's ownership, Spark plan, empty game data,
+root denials and enabled Email/Password provider, as recorded above. Independently
+inspect the exact project/instance, current rules, Auth settings and data; save
+and verify a restorable rules/data backup. Anonymous root denial is not proof of
+child grants. The owner's posted production rules are a reference for a generated
+candidate, not permission to overwrite any test or production rules.
 
 The real candidate needs a publicly readable but client-nonwritable
 `_ironpathRelease` record **and** reviewed server-side rules guarding all game
@@ -263,7 +297,83 @@ credentials in Vercel until the target and deployment/alias boundaries have been
 independently checked and a test-only rollout and rollback are agreed. Never
 share private keys, passwords, tokens, or player data in chat or this repository.
 
+### Atomic control record and schema transition
+
+`release-control-write.mjs` **prepares data only**. It performs no database
+write, locks no operator out and is not a release command. The following local
+example prints a candidate record; substitute a real current epoch only after
+reading the explicitly verified test instance. It is *not* permission to write:
+
+```sh
+node --input-type=module -e "import {prepareReleaseControlWrite} from './IronPath/release-tools/release-control-write.mjs'; console.log(JSON.stringify(prepareReleaseControlWrite({mode:'open',build:'example-1',currentEpoch:null})))"
+```
+
+For an eventually authorized experiment, an operator with suitable privileges
+must use one whole-record `set` or REST `PUT` on `/_ironpathRelease`, not the
+root and not separate child writes. Firebase's
+[REST server-value documentation](https://firebase.google.com/docs/database/rest/save-data#section-rest-server-values)
+defines the `.sv` placeholder. The Firebase CLI's `database:set` also replaces
+an indicated path from a JSON file, but its actual account, instance and target
+must be separately verified; a mistyped path can overwrite data. Send the
+**unresolved** sentinel in that same write, then confirm a fresh read contains
+all expected fields and a resolved integer millisecond timestamp. A timeout can
+mean either success or failure: inspect the current record before retrying, do
+not guess. Do not overwrite a concurrent transition; use a single operator and
+consider a conditional write if independently tested with the sentinel.
+The helper ensures a random 128-bit epoch differs from the supplied current
+one; it cannot check the history. Epochs must never be reused, including on
+rollback. Preparing a maintenance record also produces a fresh timestamp and
+new epoch; mode is still closed.
+
+This changes the control schema from `authAfter` in seconds to `authAfterMs` in
+milliseconds. Old records fail the new parser, new records fail the old parser,
+and the old/new Rules expect different fields: mixed deployments must remain
+closed, not silently interpret or publish both as interchangeable. If migrating
+an existing guarded release, close its **currently authoritative** gate, stop
+traffic, back up the exact rules and control state, coordinate all clients,
+service, launcher and Rules while closed, and verify new schema enforcement
+before opening. The currently published game has **no** such gate: writing a
+control record alone would not close it. Its initial cutover needs its own
+reviewed/rehearsed plan to fence old clients without exposing data or losing
+updates. Restoring old Rules without a gate can grant access to old clients;
+simply restoring an old control record or old epoch is unsafe. A rollback
+needs a separately rehearsed, compatible closed state and **new** epoch and
+cutoff, or should remain unavailable. No initial cutover, cross-schema migration,
+rollback or live write has been executed or proven.
+
+The exchange verifies the password ID token and compares its `auth_time` against
+the cutoff. The game and Rules also check the subsequent custom session's
+`auth_time`; Rules require its epoch claim to match the current epoch. The
+cutoff's whole second is intentionally denied. RTDB server
+time is not Firebase Auth server time, and emulator components share a local
+clock: passing an emulator test says nothing about live clock skew or pending
+sign-in completion. Until those assumptions and a suitable enforcement design
+are validated, this mechanism is experimental, not a demonstrated guarantee.
+
 ## Creating an isolated guarded candidate
+
+To reproduce the **local reference Rules candidate**, from the repository root:
+
+```sh
+umask 077
+candidate_dir="$(mktemp -d)"
+CANDIDATE_DIR="$candidate_dir" node --input-type=module <<'JS'
+import {readFile, writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {join} from 'node:path';
+import {buildRulesCandidate} from './IronPath/release-tools/rules-candidate.mjs';
+const source = JSON.parse(await readFile('IronPath/firebase/WORKSHOP-RULES-TO-PUBLISH.json', 'utf8'));
+const {candidate, counts} = buildRulesCandidate(source);
+const bytes = Buffer.from(JSON.stringify(candidate, null, 2) + '\n');
+const path = join(process.env.CANDIDATE_DIR, 'reference-candidate.json');
+await writeFile(path, bytes, {flag:'wx', mode:0o600});
+console.log({path, counts, sha256:createHash('sha256').update(bytes).digest('hex')});
+JS
+```
+
+This intentionally transforms only the repository reference, not a fresh live
+export; it does not publish Rules. Compare independently exported target Rules,
+review the transformation and rehearse the security/rollback behavior separately.
 
 The following makes local files **only**. The example is deliberately fake and
 cannot log in; browser integration tests route it to loopback emulators. Do not

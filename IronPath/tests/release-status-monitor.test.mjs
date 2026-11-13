@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {createReleaseStatusMonitor} from '../release-tools/status-monitor.mjs';
 
 const url='https://example.firebasedatabase.app/_ironpathRelease.json';
-const open={mode:'open',build:'release-2',epoch:'a'.repeat(32),authAfter:1000};
+const open={mode:'open',build:'release-2',epoch:'a'.repeat(32),authAfterMs:1000000};
 const response=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
 
 test('monitor only accepts a fixed HTTPS control path and valid timings',()=>{

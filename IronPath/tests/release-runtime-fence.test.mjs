@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createRuntimeFence} from '../release-tools/runtime-fence.mjs';
 
-const open={mode:'open',build:'build-1',epoch:'a'.repeat(32),authAfter:1700000000};
+const open={mode:'open',build:'build-1',epoch:'a'.repeat(32),authAfterMs:1700000000000};
 function setup(overrides={}){
  const calls=[];let readyContext;
  const fence=createRuntimeFence({build:'build-1',onHold:r=>calls.push(`hold:${r}`),onReady:c=>{readyContext=c;calls.push('ready');},goOffline:()=>calls.push('offline'),signOut:()=>calls.push('signout'),replaceDocument:t=>calls.push(t),signOutTimeoutMs:20,...overrides});
@@ -26,7 +26,7 @@ test('maintenance freezes and disconnects before notifying abort listeners, sign
 });
 
 test('build, epoch or cutoff changes force a fresh versioned document',async()=>{
- for(const release of [{...open,build:'build-2'},{...open,epoch:'b'.repeat(32)},{...open,authAfter:1700000001}]){
+ for(const release of [{...open,build:'build-2'},{...open,epoch:'b'.repeat(32)},{...open,authAfterMs:1700000001000}]){
   const {fence,calls}=setup();fence.accept({kind:'open',release:open});await fence.accept({kind:'open',release});
   assert.deepEqual(calls.slice(-4),['hold:updating','offline','signout',{kind:'update',build:release.build}]);
  }

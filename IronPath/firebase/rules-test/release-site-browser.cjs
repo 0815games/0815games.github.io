@@ -45,6 +45,7 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
   await stageLauncher({sourceDir:root,outputDir:site,build:'launcher-1',config});
   const source=JSON.parse(await fs.readFile(path.join(root,'firebase/WORKSHOP-RULES-TO-PUBLISH.json'),'utf8'));
   const {buildRulesCandidate}=await import(pathToFileURL(path.join(tools,'rules-candidate.mjs')).href);
+  const {prepareReleaseControlWrite}=await import(pathToFileURL(path.join(tools,'release-control-write.mjs')).href);
   const {createConfiguredSessionExchange}=await import(pathToFileURL(path.join(tools,'session-service.mjs')).href);
   const {createReleaseSessionHttpHandler}=await import(pathToFileURL(path.join(tools,'session-http.mjs')).href);
   const sdkModules={};
@@ -76,7 +77,7 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
   const adminSet=(p,v)=>env.withSecurityRulesDisabled(ctx=>set(p?ref(ctx.database(),p):ref(ctx.database()),v));
   const adminGet=async p=>{let value;await env.withSecurityRulesDisabled(async ctx=>{value=(await get(ref(ctx.database(),p))).val();});return value;};
   await env.clearDatabase();
-  const open={mode:'open',build:'site-1',epoch:epochA,authAfter:Math.floor(Date.now()/1000)-120};
+  const open={mode:'open',build:'site-1',epoch:epochA,authAfterMs:(Math.floor(Date.now()/1000)-120)*1000};
   await adminSet('',{_ironpathRelease:{...open,mode:'maintenance'},players:{[uid]:{name:'Alice',gender:'female',xp:0}}});
   const args=['--host-resolver-rules=MAP * 127.0.0.1'];if(process.env.CHROMIUM_PATH)args.push('--no-sandbox');
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args});
@@ -233,9 +234,11 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
    await maintenanceLanding;await page.waitForFunction(()=>document.getElementById('titleText').textContent==='Operation paused');
    assert.equal((await adminGet(`players/${uid}`)).xp,0);
 
-   const cutoff=Math.floor(Date.now()/1000);
-   await adminSet('_ironpathRelease',{mode:'open',build:'site-2',epoch:epochB,authAfter:cutoff});
-   while(Math.floor(Date.now()/1000)<=cutoff)await new Promise(resolve=>setTimeout(resolve,50));
+   const opening=prepareReleaseControlWrite({mode:'open',build:'site-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+   await adminSet('_ironpathRelease',opening);
+   const reopened=await adminGet('_ironpathRelease'),cutoffMs=reopened.authAfterMs;
+   assert.notEqual(reopened.epoch,epochB);
+   while(Math.floor(Date.now()/1000)*1000<=cutoffMs)await new Promise(resolve=>setTimeout(resolve,50));
    await page.evaluate(()=>window.dispatchEvent(new Event('online')));
    await page.waitForURL('**/IronPath/releases/site-2/',{timeout:30000});await login();
    await page.evaluate(async()=>{

@@ -5,7 +5,7 @@ import {createReleaseSessionExchange} from '../release-tools/session-exchange.mj
 import http from 'node:http';
 import {createReleaseSessionHttpHandler,createReleaseSessionHttpServer} from '../release-tools/session-http.mjs';
 
-const base = Object.freeze({mode:'open', build:'release-2', epoch:'0123456789abcdef0123456789abcdef', authAfter:1000});
+const base = Object.freeze({mode:'open', build:'release-2', epoch:'0123456789abcdef0123456789abcdef', authAfterMs:1000000});
 const identity = Object.freeze({uid:'alice', auth_time:1001, firebase:{sign_in_provider:'password'}});
 const setup = (overrides={}) => {
   let control = structuredClone(base), reads=0, verifies=[], mints=[];
@@ -23,11 +23,11 @@ test('release record fails closed when required fields are missing or malformed'
   assert.deepEqual(parseReleaseControl(base), base);
   for (const value of [null, {}, [], {...base,mode:'other'}, {...base,epoch:'x'}, {...base,epoch:'A'.repeat(32)},
     {...base,build:'../other'}, {...base,build:''}, {...base,build:'a'.repeat(65)},
-    {...base,authAfter:0}, {...base,authAfter:1.1}, {...base,authAfter:'1000'}]) {
+    {...base,authAfterMs:0}, {...base,authAfterMs:1.1}, {...base,authAfterMs:'1000000'}]) {
     assert.equal(parseReleaseControl(value), null);
   }
   assert.equal(sameRelease(parseReleaseControl(base), parseReleaseControl({...base})), true);
-  assert.equal(sameRelease(parseReleaseControl(base), parseReleaseControl({...base,authAfter:1001})), false);
+  assert.equal(sameRelease(parseReleaseControl(base), parseReleaseControl({...base,authAfterMs:1001000})), false);
 });
 
 test('a fresh verified password ID token is exchanged for a release-bound custom token', async () => {

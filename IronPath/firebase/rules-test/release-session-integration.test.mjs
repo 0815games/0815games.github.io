@@ -12,6 +12,7 @@ import {createReleaseSessionExchange} from '../../release-tools/session-exchange
 import {createConfiguredSessionExchange} from '../../release-tools/session-service.mjs';
 import {createReleaseSessionHttpServer} from '../../release-tools/session-http.mjs';
 import {CONTROL_PATH,parseReleaseControl,sameRelease} from '../../release-tools/release-control.mjs';
+import {prepareReleaseControlWrite} from '../../release-tools/release-control-write.mjs';
 import {createGuardedGameSession,createSessionExchangeClient} from '../../release-tools/game-session.mjs';
 
 // Actual client and Admin SDKs, but ONLY local emulators and a demo project.
@@ -39,7 +40,7 @@ after(async()=>{for(const {app,auth} of clients){await signOut(auth);await delet
 
 test('real emulator SDK exchange fences data and requires a new login for each epoch, but does not disable Firebase Auth', {timeout:60000},async()=>{
  const now=Math.floor(Date.now()/1000);
- const initial={mode:'open',build:'release-1',epoch:epochA,authAfter:now-120};
+ const initial={mode:'open',build:'release-1',epoch:epochA,authAfterMs:(now-120)*1000};
  await env.clearDatabase();await adminSet(CONTROL_PATH,initial);
  const passwordClient=client();
  const credential=await createUserWithEmailAndPassword(passwordClient.auth,'alice@example.test','example-password-123');
@@ -83,14 +84,16 @@ test('real emulator SDK exchange fences data and requires a new login for each e
  const duringMaintenanceClaims=await adminAuth.verifyIdToken(duringMaintenanceToken,true);
  await assertFails(set(ref(registration.db,`players/${newUser.user.uid}`),{name:'Bob',gender:'male',xp:0}));
 
- // The cutoff covers the entire maintenance interval. auth_time is
- // second-granular, so a genuinely fresh login must wait for the next second.
- const cutoff=Math.max(passwordClaims.auth_time,duringMaintenanceClaims.auth_time);
- await adminSet(CONTROL_PATH,{mode:'open',build:'release-2',epoch:epochB,authAfter:cutoff});
+ // Resolve the RTDB timestamp in the *same write* that opens the new epoch.
+ // Both emulators use the local clock; this does not prove real clock sync.
+ const opening=prepareReleaseControlWrite({mode:'open',build:'release-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+ await adminSet(CONTROL_PATH,opening);
+ const reopened=await adminGet(CONTROL_PATH),cutoffMs=reopened.authAfterMs;
+ assert.ok(Number.isSafeInteger(cutoffMs) && cutoffMs>=duringMaintenanceClaims.auth_time*1000);
  assert.equal((await exchange.exchange({idToken:passwordToken,build:'release-2'})).status,'unauthorized');
  assert.equal((await exchange.exchange({idToken:duringMaintenanceToken,build:'release-2'})).status,'unauthorized');
  await assertFails(update(ref(game.db,player),{xp:2}));
- while(Math.floor(Date.now()/1000)<=cutoff)await new Promise(resolve=>setTimeout(resolve,50));
+ while(Math.floor(Date.now()/1000)*1000<=cutoffMs)await new Promise(resolve=>setTimeout(resolve,50));
  await signOut(passwordClient.auth);
  const freshPassword=await signInWithEmailAndPassword(passwordClient.auth,'alice@example.test','example-password-123');
  const freshIssue=await exchange.exchange({idToken:await freshPassword.user.getIdToken(),build:'release-2'});
@@ -103,7 +106,7 @@ test('real emulator SDK exchange fences data and requires a new login for each e
 
 test('Node HTTP service adapter uses real Admin Auth and fresh REST control against the local emulators', {timeout:60000},async()=>{
  const now=Math.floor(Date.now()/1000);
- const initial={mode:'open',build:'release-http-1',epoch:epochA,authAfter:now-120};
+ const initial={mode:'open',build:'release-http-1',epoch:epochA,authAfterMs:(now-120)*1000};
  await env.clearDatabase();await adminSet(CONTROL_PATH,initial);
  const password=client();
  const credential=await createUserWithEmailAndPassword(password.auth,'http-alice@example.test','example-password-123');
@@ -134,7 +137,7 @@ test('Node HTTP service adapter uses real Admin Auth and fresh REST control agai
 });
 
 test('guarded adapter checks real SDK credentials before game access and isolates an old offline queue', {timeout:60000},async()=>{
- const initial={mode:'open',build:'guard-1',epoch:epochA,authAfter:Math.floor(Date.now()/1000)-120};
+ const initial={mode:'open',build:'guard-1',epoch:epochA,authAfterMs:(Math.floor(Date.now()/1000)-120)*1000};
  await env.clearDatabase();await adminSet(CONTROL_PATH,initial);
  const seed=client();
  const created=await createUserWithEmailAndPassword(seed.auth,'guard-alice@example.test','example-password-123');
@@ -178,14 +181,14 @@ test('guarded adapter checks real SDK credentials before game access and isolate
   goOffline(old.game.db);
   const queued=update(ref(old.game.db,player),{xp:99});
   const rejected=assertFails(queued);
-  const cutoff=Math.floor(Date.now()/1000);
   await adminSet(CONTROL_PATH,{...initial,mode:'maintenance',epoch:epochB});
   await assert.rejects(old.refreshStatus());
   assert.deepEqual(old.events,['maintenance']);assert.equal(old.controller.signal.aborted,true);
   await assert.rejects(old.session.signIn('guard-alice@example.test','example-password-123'));
-  const reopened={mode:'open',build:'guard-2',epoch:epochB,authAfter:cutoff};
-  await adminSet(CONTROL_PATH,reopened);
-  while(Math.floor(Date.now()/1000)<=cutoff)await new Promise(resolve=>setTimeout(resolve,50));
+  const opening=prepareReleaseControlWrite({mode:'open',build:'guard-2',currentEpoch:epochB},()=>Buffer.alloc(16,0xcc));
+  await adminSet(CONTROL_PATH,opening);
+  const reopened=await adminGet(CONTROL_PATH);
+  while(Math.floor(Date.now()/1000)*1000<=reopened.authAfterMs)await new Promise(resolve=>setTimeout(resolve,50));
   const fresh=await guarded(reopened);
   await fresh.session.signIn('guard-alice@example.test','example-password-123');
   await assertSucceeds(update(ref(fresh.game.db,player),{xp:3}));
@@ -195,7 +198,7 @@ test('guarded adapter checks real SDK credentials before game access and isolate
   // Even a same-uid reauthentication on the new instance must be stopped by
   // Firebase's blocking hook before Auth hands it to the database SDK.
   const original=fresh.game.auth.currentUser;
-  const anotherToken=await adminAuth.createCustomToken(uid,{ip_release_epoch:epochB});
+  const anotherToken=await adminAuth.createCustomToken(uid,{ip_release_epoch:reopened.epoch});
   await assert.rejects(signInWithCustomToken(fresh.game.auth,anotherToken),{code:'auth/login-blocked'});
   assert.equal(fresh.game.auth.currentUser,original);
   assert.deepEqual(fresh.events,['unavailable']);assert.deepEqual(fresh.observed,[null,uid]);

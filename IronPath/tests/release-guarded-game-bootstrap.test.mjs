@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createGuardedGameBootstrap} from '../release-tools/guarded-game-bootstrap.mjs';
 
-const release={mode:'open',build:'game-1',epoch:'a'.repeat(32),authAfter:1000};
+const release={mode:'open',build:'game-1',epoch:'a'.repeat(32),authAfterMs:1000000};
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve};};
 function setup(options={}){
  const events=[],shown=deferred(),replaced=deferred(),sdk={

@@ -4,7 +4,7 @@ import {createReleaseLauncher} from '../release-tools/release-launcher.mjs';
 
 const config={firebase:{apiKey:'fake-public-key',authDomain:'demo-ironpath.firebaseapp.com',
  databaseURL:'https://demo-ironpath.firebaseio.com',projectId:'demo-ironpath'},sessionEndpoint:'https://release.example/api/session'};
-const open={mode:'open',build:'site-1',epoch:'a'.repeat(32),authAfter:1000};
+const open={mode:'open',build:'site-1',epoch:'a'.repeat(32),authAfterMs:1000000};
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};
 async function until(predicate){
  for(let n=0;n<200;n++){if(predicate())return;await new Promise(resolve=>setImmediate(resolve));}
