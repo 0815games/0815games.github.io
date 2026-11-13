@@ -196,6 +196,8 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('publish-rules-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok') or l.startswith('Error:')]; t='\n'.join('\n'.join(s[n:n+18]) for n in i) if i else '\n'.join(s[-30:]); print('::error title=Publish-file rules output::'+t[:3800].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Test experimental release guard (emulator only; not a deployment)
+        run: npm run test:release-guard
   game-regressions:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -260,13 +262,24 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/ironpath-http.log 2>&1 &
-          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && timeout 300 node IronPath/browser-tests/command-center.cjs && timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs; } > /tmp/browser-smoke.log 2>&1; then
+          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && timeout 300 node IronPath/browser-tests/command-center.cjs && timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && timeout 180 node IronPath/browser-tests/release-stage.cjs; } > /tmp/browser-smoke.log 2>&1; then
             cat /tmp/browser-smoke.log
           else
             cat /tmp/browser-smoke.log
             python3 -c "from pathlib import Path; s=Path('/tmp/browser-smoke.log').read_text()[-3500:]; print('::error title=Browser smoke::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Firebase emulator test tooling
+        run: npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
+      - name: Test experimental release auth across Chromium tabs (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        run: npm run test:release-tabs
       - name: Save interface screenshots
         if: always()
         uses: actions/upload-artifact@v4

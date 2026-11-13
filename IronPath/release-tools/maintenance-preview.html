@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Iron Path · Wartungsanzeige – Vorschau</title>
+  <link rel="stylesheet" href="maintenance-view.css">
+</head>
+<body>
+  <!-- This is an isolated design/interaction preview. It does not change or
+       consult Firebase, sign anyone out, block login, or perform a rollout. -->
+  <aside class="preview-bar" aria-label="Vorschau-Steuerung">
+    <strong id="previewLabel">LOKALE VORSCHAU · NICHT LIVE</strong>
+    <div class="preview-controls">
+      <label for="previewState" id="previewStateLabel">Ansicht</label>
+      <select id="previewState">
+        <option value="maintenance">Wartung</option>
+        <option value="unavailable">Kein Signal</option>
+        <option value="updating">Version laden</option>
+      </select>
+      <button type="button" id="previewLanguage" aria-label="Switch to English">EN</button>
+    </div>
+  </aside>
+  <div class="release-scene">
+    <header class="release-header">
+      <img class="release-brand" src="../assets/iron-path-brand-cutout.png" alt="Iron Path" width="220" height="77">
+      <div class="release-header-mark"><span class="signal-icon" aria-hidden="true"><i></i><i></i><i></i></span><span id="headerText">FUNKSTELLE · 0815 GAMES</span></div>
+    </header>
+    <main class="release-main" aria-labelledby="releaseTitle">
+      <section class="release-card" aria-live="polite" aria-atomic="true">
+        <div class="card-topline"><span id="eyebrow">FELDMELDUNG <b>//</b> EINSATZSTATUS</span><span class="card-code" aria-hidden="true">IP—01</span></div>
+        <div class="card-rule" aria-hidden="true"><span></span></div>
+        <div class="release-seal" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M7 9.5 16 5l9 4.5v6.2c0 5.2-3.5 8.7-9 11.3-5.5-2.6-9-6.1-9-11.3V9.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 15.5 16 18l4.5-2.5M12.5 11.5 16 13.4l3.5-1.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+        <p class="release-kicker" id="kicker">DIE STELLUNG WIRD VORBEREITET</p>
+        <h1 id="releaseTitle"><span id="titleText">Einsatzpause</span><span class="punctuation">.</span></h1>
+        <p class="release-lead" id="lead">Wir bringen Iron Path auf den neuesten Stand. Anmeldung und Einsätze pausieren während des Updates.</p>
+        <div class="release-steps" aria-label="Update-Ablauf" id="stepGroup">
+          <div class="release-step"><span class="step-number">01</span><span id="step1">Anmeldung pausiert</span><span class="step-mark" aria-hidden="true">—</span></div>
+          <div class="release-step is-current" id="step2Row"><span class="step-number">02</span><span id="step2">Update wird vorbereitet</span><span class="step-mark" aria-hidden="true">◆</span></div>
+          <div class="release-step" id="step3Row"><span class="step-number">03</span><span id="step3">Aktuelle Version laden</span><span class="step-mark" aria-hidden="true">—</span></div>
+        </div>
+        <div class="status-line"><span class="status-pulse" aria-hidden="true"></span><strong id="statusText">WARTUNG LÄUFT</strong><span class="status-divider" aria-hidden="true">/</span><span id="statusDetail">Der Status wird erneut geprüft.</span></div>
+        <p class="release-footnote" id="footnote">Nicht bestätigter Fortschritt kann verloren gehen. Dein Konto bleibt erhalten.</p>
+      </section>
+      <div class="scene-caption" aria-hidden="true"><span>IRON PATH</span><b> / </b><span id="captionText">DIE LINIE HÄLT</span></div>
+    </main>
+    <footer class="release-footer"><span>0815 GAMES <b> / </b> IRON PATH</span><span id="footerText">VORSCHAU · KEINE LIVE-PRÜFUNG</span></footer>
+  </div>
+  <script type="module" src="maintenance-preview.mjs"></script>
+</body>
+</html>
