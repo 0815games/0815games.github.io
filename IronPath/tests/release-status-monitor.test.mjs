@@ -4,7 +4,7 @@ import {createReleaseStatusMonitor} from '../release-tools/status-monitor.mjs';
 
 const url='https://example.firebasedatabase.app/_ironpathRelease.json';
 const open={mode:'open',build:'release-2',epoch:'a'.repeat(32),authAfter:1000};
-const response=value=>({ok:true,json:async()=>value});
+const response=value=>new Response(JSON.stringify(value),{headers:{'content-type':'application/json'}});
 
 test('monitor only accepts a fixed HTTPS control path and valid timings',()=>{
   for(const statusUrl of ['', 'http://example.com/_ironpathRelease.json', 'https://u:p@example.com/_ironpathRelease.json',
@@ -29,6 +29,7 @@ test('only a fresh no-store response can produce open; failures and invalid reco
   next=response(null);await monitor.refresh();assert.deepEqual(events.at(-1),{kind:'unavailable'});
   next={ok:false};await monitor.refresh();assert.deepEqual(events.at(-1),{kind:'unavailable'});
   next=new Error('offline');await monitor.refresh();assert.deepEqual(events.at(-1),{kind:'unavailable'});
+  next=new Response('x'.repeat(2049));await monitor.refresh();assert.deepEqual(events.at(-1),{kind:'unavailable'});
   monitor.stop();
 });
 

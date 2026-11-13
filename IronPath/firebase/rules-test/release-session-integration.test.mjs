@@ -2,14 +2,17 @@ import {test,before,after} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeApp as initializeClient,deleteApp as deleteClient} from 'firebase/app';
-import {initializeAuth,connectAuthEmulator,inMemoryPersistence,createUserWithEmailAndPassword,signInWithEmailAndPassword,signInWithCustomToken,signOut} from 'firebase/auth';
-import {getDatabase,connectDatabaseEmulator,ref,get,set,update} from 'firebase/database';
+import {initializeAuth,connectAuthEmulator,inMemoryPersistence,beforeAuthStateChanged,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail} from 'firebase/auth';
+import {getDatabase,connectDatabaseEmulator,ref,get,set,update,goOffline,goOnline} from 'firebase/database';
 import {initializeApp as initializeAdmin,deleteApp as deleteAdmin} from 'firebase-admin/app';
 import {getAuth as getAdminAuth} from 'firebase-admin/auth';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 import {createReleaseSessionExchange} from '../../release-tools/session-exchange.mjs';
-import {CONTROL_PATH} from '../../release-tools/release-control.mjs';
+import {createConfiguredSessionExchange} from '../../release-tools/session-service.mjs';
+import {createReleaseSessionHttpServer} from '../../release-tools/session-http.mjs';
+import {CONTROL_PATH,parseReleaseControl,sameRelease} from '../../release-tools/release-control.mjs';
+import {createGuardedGameSession,createSessionExchangeClient} from '../../release-tools/game-session.mjs';
 
 // Actual client and Admin SDKs, but ONLY local emulators and a demo project.
 // Require explicit loopback endpoints; never point this test at production.
@@ -96,4 +99,108 @@ test('real emulator SDK exchange fences data and requires a new login for each e
  const freshGame=client();await signInWithCustomToken(freshGame.auth,freshIssue.customToken);
  await assertSucceeds(update(ref(freshGame.db,player),{xp:3}));
  assert.equal((await adminGet(player)).xp,3);
+});
+
+test('Node HTTP service adapter uses real Admin Auth and fresh REST control against the local emulators', {timeout:60000},async()=>{
+ const now=Math.floor(Date.now()/1000);
+ const initial={mode:'open',build:'release-http-1',epoch:epochA,authAfter:now-120};
+ await env.clearDatabase();await adminSet(CONTROL_PATH,initial);
+ const password=client();
+ const credential=await createUserWithEmailAndPassword(password.auth,'http-alice@example.test','example-password-123');
+ const uid=credential.user.uid, player=`players/${uid}`;
+ await adminSet(player,{name:'Alice',gender:'female',xp:0});
+ const passwordToken=await credential.user.getIdToken();
+ let reads=0;
+ // Only this injected test fetcher speaks loopback HTTP. The service itself
+ // insists on an HTTPS Firebase host and never sees production credentials.
+ const fetcher=(_url,options)=>{reads++;return fetch(`http://127.0.0.1:9000/${CONTROL_PATH}.json?ns=${projectId}`,options);};
+ const exchange=createConfiguredSessionExchange({databaseUrl:'https://demo-ironpath.firebaseio.com',adminAuth,fetcher});
+ const server=createReleaseSessionHttpServer({exchange,allowedOrigins:['https://0815games.github.io'],route:'/api/session'});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const url=`http://127.0.0.1:${server.address().port}/api/session`;
+ const headers={origin:'https://0815games.github.io',authorization:`Bearer ${passwordToken}`,'content-type':'application/json'};
+ try{
+  let response=await fetch(url,{method:'POST',headers,body:JSON.stringify({build:'release-http-1'})});
+  assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');
+  const issued=await response.json();assert.equal(issued.status,'ok');assert.equal(reads,3);
+  const game=client();await signInWithCustomToken(game.auth,issued.customToken);
+  await assertSucceeds(update(ref(game.db,player),{xp:7}));
+  await adminSet(CONTROL_PATH,{...initial,mode:'maintenance',epoch:epochB});
+  response=await fetch(url,{method:'POST',headers,body:JSON.stringify({build:'release-http-1'})});
+  assert.equal(response.status,503);assert.deepEqual(await response.json(),{status:'maintenance'});
+  await assertFails(update(ref(game.db,player),{xp:8}));
+  assert.equal((await adminGet(player)).xp,7);
+ }finally{await new Promise(resolve=>server.close(resolve));}
+});
+
+test('guarded adapter checks real SDK credentials before game access and isolates an old offline queue', {timeout:60000},async()=>{
+ const initial={mode:'open',build:'guard-1',epoch:epochA,authAfter:Math.floor(Date.now()/1000)-120};
+ await env.clearDatabase();await adminSet(CONTROL_PATH,initial);
+ const seed=client();
+ const created=await createUserWithEmailAndPassword(seed.auth,'guard-alice@example.test','example-password-123');
+ const uid=created.user.uid,player=`players/${uid}`;
+ await signOut(seed.auth);await adminSet(player,{name:'Alice',gender:'female',xp:0});
+ const service=createConfiguredSessionExchange({databaseUrl:'https://demo-ironpath.firebaseio.com',adminAuth,
+  fetcher:(_url,options)=>fetch(`http://127.0.0.1:9000/${CONTROL_PATH}.json?ns=${projectId}`,options)});
+ const server=createReleaseSessionHttpServer({exchange:service,allowedOrigins:['https://0815games.github.io'],route:'/api/session'});
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ const localEndpoint=`http://127.0.0.1:${server.address().port}/api/session`;
+ const exchange=createSessionExchangeClient({endpoint:'https://release.example/api/session',fetcher:(_url,options)=>
+  fetch(localEndpoint,{...options,headers:{...options.headers,origin:'https://0815games.github.io'}})});
+ const sdk={beforeAuthStateChanged,onAuthStateChanged,createUserWithEmailAndPassword,signInWithEmailAndPassword,
+  signInWithCustomToken,signOut,sendPasswordResetEmail};
+ const sessions=[];
+ async function guarded(release){
+  const game=client(),password=client(),controller=new AbortController(),observed=[],events=[];
+  const terminate=reason=>{events.push(reason);goOffline(game.db);controller.abort();};
+  const refreshStatus=async()=>{
+   const response=await fetch(`http://127.0.0.1:9000/${CONTROL_PATH}.json?ns=${projectId}`,{cache:'no-store'});
+   const current=parseReleaseControl(await response.json());
+   if(!sameRelease(release,current)){terminate(current?.mode==='maintenance'?'maintenance':'unavailable');throw Error('release changed');}
+  };
+  const session=await createGuardedGameSession({auth:game.auth,passwordAuth:password.auth,db:game.db,release,build:release.build,
+   signal:controller.signal,sdk,exchange,refreshStatus,onTerminate:terminate});
+  session.onAuthStateChanged(value=>observed.push(value?.uid??null));
+  await new Promise(resolve=>setImmediate(resolve));
+  const result={game,password,controller,session,refreshStatus,observed,events};sessions.push(result);return result;
+ }
+ try{
+  const old=await guarded(initial);
+  assert.deepEqual(old.observed,[null]);
+  await assertFails(get(ref(old.game.db,player)));
+  await old.session.signIn('guard-alice@example.test','example-password-123');
+  assert.deepEqual(old.observed,[null,uid]);assert.equal(old.password.auth.currentUser,null);
+  assert.equal((await assertSucceeds(get(ref(old.game.db,player)))).val().xp,0);
+  await assertSucceeds(update(ref(old.game.db,player),{xp:1}));
+
+  // Queue an old write while disconnected, then close and reopen in a new
+  // epoch. A new document must use a separate Auth and RTDB instance.
+  goOffline(old.game.db);
+  const queued=update(ref(old.game.db,player),{xp:99});
+  const rejected=assertFails(queued);
+  const cutoff=Math.floor(Date.now()/1000);
+  await adminSet(CONTROL_PATH,{...initial,mode:'maintenance',epoch:epochB});
+  await assert.rejects(old.refreshStatus());
+  assert.deepEqual(old.events,['maintenance']);assert.equal(old.controller.signal.aborted,true);
+  await assert.rejects(old.session.signIn('guard-alice@example.test','example-password-123'));
+  const reopened={mode:'open',build:'guard-2',epoch:epochB,authAfter:cutoff};
+  await adminSet(CONTROL_PATH,reopened);
+  while(Math.floor(Date.now()/1000)<=cutoff)await new Promise(resolve=>setTimeout(resolve,50));
+  const fresh=await guarded(reopened);
+  await fresh.session.signIn('guard-alice@example.test','example-password-123');
+  await assertSucceeds(update(ref(fresh.game.db,player),{xp:3}));
+  goOnline(old.game.db);await rejected;
+  assert.equal((await adminGet(player)).xp,3);
+
+  // Even a same-uid reauthentication on the new instance must be stopped by
+  // Firebase's blocking hook before Auth hands it to the database SDK.
+  const original=fresh.game.auth.currentUser;
+  const anotherToken=await adminAuth.createCustomToken(uid,{ip_release_epoch:epochB});
+  await assert.rejects(signInWithCustomToken(fresh.game.auth,anotherToken),{code:'auth/login-blocked'});
+  assert.equal(fresh.game.auth.currentUser,original);
+  assert.deepEqual(fresh.events,['unavailable']);assert.deepEqual(fresh.observed,[null,uid]);
+ }finally{
+  for(const session of sessions){session.controller.abort();goOnline(session.game.db);}
+  await new Promise(resolve=>server.close(resolve));
+ }
 });

@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {parseReleaseControl, sameRelease} from '../release-tools/release-control.mjs';
 import {createReleaseSessionExchange} from '../release-tools/session-exchange.mjs';
-import {createReleaseSessionHttpServer} from '../release-tools/session-http.mjs';
+import http from 'node:http';
+import {createReleaseSessionHttpHandler,createReleaseSessionHttpServer} from '../release-tools/session-http.mjs';
 
 const base = Object.freeze({mode:'open', build:'release-2', epoch:'0123456789abcdef0123456789abcdef', authAfter:1000});
 const identity = Object.freeze({uid:'alice', auth_time:1001, firebase:{sign_in_provider:'password'}});
@@ -108,4 +109,24 @@ test('HTTP adapter enforces route, origin, bounded body, bearer tokens and no-st
     h.setControl({...base,mode:'maintenance'});
     r=await fetch(`${url}/v1/session`,{method:'POST',headers,body:JSON.stringify({build:'release-2'})}); assert.equal(r.status,503); assert.deepEqual(await r.json(),{status:'maintenance'});
   } finally { await new Promise(resolve=>server.close(resolve)); }
+});
+
+test('the HTTP handler does not invoke a lazy platform body getter and rejects an already consumed stream', async () => {
+  const h=setup(),handler=createReleaseSessionHttpHandler({exchange:h.service,allowedOrigins:['https://0815games.github.io']});
+  let getterCalls=0;
+  const server=http.createServer((req,res)=>{
+    Object.defineProperty(req,'body',{get(){getterCalls++;throw Error('the getter must not be accessed');}});
+    if(req.headers['x-consume-first']==='yes'){
+      req.resume();req.once('end',()=>handler(req,res));
+    }else handler(req,res);
+  });
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  const url=`http://127.0.0.1:${server.address().port}/v1/session`;
+  const headers={origin:'https://0815games.github.io',authorization:'Bearer firebase-id-token','content-type':'application/json'};
+  try{
+    let response=await fetch(url,{method:'POST',headers,body:JSON.stringify({build:request.build})});
+    assert.equal(response.status,200);assert.deepEqual(await response.json(),{status:'ok',customToken:'signed-custom-token'});
+    response=await fetch(url,{method:'POST',headers:{...headers,'x-consume-first':'yes'},body:JSON.stringify({build:request.build}),signal:AbortSignal.timeout(1000)});
+    assert.equal(response.status,400);assert.deepEqual(await response.json(),{status:'invalid'});assert.equal(getterCalls,0);
+  }finally{await new Promise(resolve=>server.close(resolve));}
 });

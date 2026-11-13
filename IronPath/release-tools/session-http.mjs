@@ -3,8 +3,12 @@
 // redaction, managed identity, health/alerts and independent security review.
 import http from 'node:http';
 
-export function createReleaseSessionHttpServer({exchange, allowedOrigins} = {}) {
-  if (typeof exchange?.exchange !== 'function' || !Array.isArray(allowedOrigins) || !allowedOrigins.length) {
+// The request handler works both with a Node HTTP server and Vercel's Node
+// function runtime. CORS is not authentication or a rate limit: callers can
+// forge Origin outside a browser. Apply a separate distributed abuse limit.
+export function createReleaseSessionHttpHandler({exchange, allowedOrigins, route = '/v1/session'} = {}) {
+  if (typeof exchange?.exchange !== 'function' || !Array.isArray(allowedOrigins) || !allowedOrigins.length ||
+      typeof route !== 'string' || !/^\/[a-z0-9/-]+$/.test(route)) {
     throw Error('Exchange and explicit allowed HTTPS origins are required');
   }
   for (const origin of allowedOrigins) {
@@ -22,11 +26,11 @@ export function createReleaseSessionHttpServer({exchange, allowedOrigins} = {}) 
     res.writeHead(status, headers(origin));
     res.end(JSON.stringify(payload));
   };
-  const server = http.createServer((req, res) => {
+  return (req, res) => {
     const origin = req.headers.origin;
     if (!origins.has(origin)) { req.resume(); return reply(res, 403, {status:'origin-denied'}, origin); }
     // Exact route only. Never accept tokens in a URL or in access-log fields.
-    if (req.url !== '/v1/session') { req.resume(); return reply(res, 404, {status:'not-found'}, origin); }
+    if (req.url !== route) { req.resume(); return reply(res, 404, {status:'not-found'}, origin); }
     if (req.method === 'OPTIONS') {
       if (req.headers['access-control-request-method'] !== 'POST') return reply(res, 405, {status:'method-not-allowed'}, origin);
       res.writeHead(204, {...headers(origin), 'access-control-allow-methods':'POST',
@@ -41,6 +45,10 @@ export function createReleaseSessionHttpServer({exchange, allowedOrigins} = {}) 
     if (!/^application\/json(?:\s*;|$)/i.test(req.headers['content-type'] || '')) {
       req.resume(); return reply(res, 415, {status:'invalid-content-type'}, origin);
     }
+    // Do not touch Vercel's lazy req.body getter: accessing it parses and
+    // consumes the stream before our size limit. If another layer already
+    // consumed the stream, fail closed instead of hanging until the timeout.
+    if (req.readableEnded || req.destroyed) return reply(res, 400, {status:'invalid'}, origin);
     let length = 0, chunks = [], tooLarge = false;
     req.on('data', chunk => {
       length += chunk.length;
@@ -68,7 +76,11 @@ export function createReleaseSessionHttpServer({exchange, allowedOrigins} = {}) 
         return reply(res, codes.get(kind), payload, origin);
       } catch { return reply(res, 503, {status:'unavailable'}, origin); }
     });
-  });
+  };
+}
+
+export function createReleaseSessionHttpServer(options = {}) {
+  const server = http.createServer(createReleaseSessionHttpHandler(options));
   server.headersTimeout = 10000;
   server.requestTimeout = 15000;
   return server;

@@ -1,4 +1,5 @@
 import {CONTROL_PATH, parseReleaseControl} from './release-control.mjs';
+import {readBoundedJson} from './bounded-json.mjs';
 
 // Candidate for the future bootstrap / standalone maintenance page; not wired
 // into the published game. A successful, fresh REST response is required on
@@ -38,7 +39,7 @@ export function createReleaseStatusMonitor({statusUrl, onStatus, onFatal, fetche
         const response=await fetcher(url.href, {method:'GET', cache:'no-store', credentials:'omit',
           mode:'cors', redirect:'error', referrerPolicy:'no-referrer', signal:controller.signal});
         if (!response?.ok) throw Error('status unavailable');
-        const control=parseReleaseControl(await response.json());
+        const control=parseReleaseControl(await readBoundedJson(response,2048));
         if (!control) throw Error('invalid status');
         return control;
       })();

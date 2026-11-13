@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "public",
+  "regions": ["fra1"],
+  "functions": {
+    "api/session.mjs": {"maxDuration": 15}
+  }
+}

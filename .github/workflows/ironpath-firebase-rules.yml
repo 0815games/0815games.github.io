@@ -214,6 +214,10 @@ jobs:
         run: npm ci --prefix IronPath/server --no-audit --no-fund
       - name: Run server tests
         run: npm test --prefix IronPath/server
+      - name: Install experimental release service dependencies
+        run: npm ci --prefix IronPath/release-tools --no-audit --no-fund
+      - name: Test unconfigured release service
+        run: node --test IronPath/release-tools/session-config.test.mjs
   interface-browser-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 10

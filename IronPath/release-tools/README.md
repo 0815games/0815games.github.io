@@ -5,6 +5,52 @@ publish the generated rules, start a real maintenance window, or promise that
 sign-in is blocked using these prototypes alone. GitHub Pages currently serves
 `main:/` directly; an ordinary merge is not gated by this experiment.
 
+The owner reports that the Firebase project is dedicated to Iron Path and that
+they can administer it. The owner requires a **free solution only**: do not
+activate billing or a paid plan. The owner can set up Vercel Hobby for this
+non-commercial personal project, and chose to block sign-in **in the game** and
+access to its data, not to prohibit every possible Firebase Auth token. Vercel
+Hobby is a target, not an established service; the project configuration, free
+limits, identity setup and actual deployments still need independent verification.
+
+## Current isolated candidates
+
+- Vercel is connected to the owner's `0815games` Hobby team, but that team has
+  no projects. Creating a repository-linked project was rejected because the
+  Vercel account needs a GitHub Login Connection. **No Vercel project or
+  deployment was created.** The owner must connect GitHub and grant repository
+  access in Vercel before retrying; do not create a project implicitly through
+  a deployment call.
+- `api/session.mjs`, `package.json`, `vercel.json`, and `public/` are an
+  **unconfigured** Node 22/Vercel service candidate rooted in this directory.
+  The intended static output contains only `public/`; actual bundling, HTTP
+  handling and public browser/CORS access still need a real Vercel deployment
+  test. Team deployment protection, the production alias and a Hobby WAF rule
+  must be checked explicitly. Hobby rate limits are per region, not a global
+  distributed security guarantee; its quotas can interrupt service.
+- The candidate currently expects `IRONPATH_FIREBASE_PROJECT_ID`,
+  `IRONPATH_FIREBASE_DATABASE_URL`, `IRONPATH_GAME_ORIGIN` and
+  `IRONPATH_FIREBASE_SERVICE_ACCOUNT`. The last is a highly sensitive,
+  long-lived service-account key: it can sign Firebase custom tokens, so a
+  leak can compromise player access even if its IAM database privileges are
+  restricted. No key has been created or shared. If this approach is approved,
+  use a dedicated account with the minimum Auth lookup permissions; put its
+  key directly into a sensitive **production-only** Vercel variable, never in
+  chat, Git, preview environments, build output or logs. Verify key rotation,
+  revocation and incident response before production. Google's guide for
+  external Workload Identity Federation lists enabled billing as a prerequisite;
+  do not enable billing or assume that alternative works under the user's
+  restriction. A no-billing, keyless alternative would be preferable if proven.
+- `game-session.mjs` is a **separate, unmounted** client adapter. It uses a
+  transient password Auth instance, a single game sign-in, claim validation and
+  Firebase's blocking Auth hook to prevent an old RTDB instance from receiving
+  another user's or another epoch's credentials. Its caller must actually create
+  separate **in-memory** Auth instances, freeze/stop the game on termination and
+  replace the whole document. Real-SDK integration and a two-tab Chromium test
+  passed locally against the unofficial Fireemu, including an old `LOCAL` tab;
+  the exchange in that browser test is synthetic, not the Vercel service. It
+  does not yet modify `account.js`, build a launcher or control production.
+
 ## What has to be true before enabling it
 
 1. Verify the real Firebase project, database instance, deployed rules, Auth

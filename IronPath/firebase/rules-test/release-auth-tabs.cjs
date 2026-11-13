@@ -2,6 +2,8 @@
 // This is a controlled test only: no connection to the production project.
 const {chromium}=require(process.env.PW_PATH||'playwright');
 const {initializeTestEnvironment}=require('@firebase/rules-unit-testing');
+const {initializeApp:initializeAdmin,deleteApp:deleteAdmin}=require('firebase-admin/app');
+const {getAuth:getAdminAuth}=require('firebase-admin/auth');
 const {ref,get,set}=require('firebase/database');
 const {readFile}=require('node:fs/promises');
 const path=require('node:path');const http=require('node:http');
@@ -35,6 +37,39 @@ window.harness={
  queue:xp=>{window.queued=update(ref(db,'players/alice'),{xp}).then(()=>({accepted:true}),error=>({accepted:false,code:error.code||''}));},
  result:()=>window.queued
 };`;
+// Real browser Firebase SDKs, but a synthetic exchange token and demo users.
+// This probes the adapter's in-memory Auth isolation, not the Vercel service.
+const guardedHarness=`
+import {initializeApp} from '/sdk/firebase-app.js';
+import {initializeAuth,inMemoryPersistence,connectAuthEmulator,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail} from '/sdk/firebase-auth.js';
+import {getDatabase,connectDatabaseEmulator,ref,update,goOffline} from '/sdk/firebase-database.js';
+import {createGuardedGameSession} from '/release/game-session.mjs';
+const options={apiKey:'fake',authDomain:'demo-ironpath.firebaseapp.com',projectId:'demo-ironpath',databaseURL:'http://127.0.0.1:9000?ns=demo-ironpath'};
+// The new game deliberately uses the same default app name and API key as the
+// old LOCAL tab. Only in-memory persistence isolates the new credentials.
+const app=initializeApp(options),temporary=initializeApp(options,'password');
+const auth=initializeAuth(app,{persistence:inMemoryPersistence}),passwordAuth=initializeAuth(temporary,{persistence:inMemoryPersistence});
+connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});connectAuthEmulator(passwordAuth,'http://127.0.0.1:9099',{disableWarnings:true});
+const db=getDatabase(app);connectDatabaseEmulator(db,'127.0.0.1',9000);
+const controller=new AbortController(),events=[],observed=[];
+let session,token;
+window.guarded={
+ initialize:async release=>{
+  session=await createGuardedGameSession({auth,passwordAuth,db,release,build:release.build,signal:controller.signal,
+   sdk:{beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail},
+   // The enclosing test changes the rules and controls network timing. Full
+   // monitor integration is not claimed by this isolated tab test.
+   refreshStatus:async()=>{},exchange:async()=>({status:'ok',customToken:token}),
+   onTerminate:reason=>{events.push(reason);goOffline(db);controller.abort();}});
+  session.onAuthStateChanged(user=>observed.push(user?.uid??null));
+ },
+ login:async customToken=>{token=customToken;return session.signIn('tabs-guard@example.test','example-password-123');},
+ uid:()=>auth.currentUser?.uid??null,
+ epoch:async()=>auth.currentUser?(await auth.currentUser.getIdTokenResult()).claims.ip_release_epoch:null,
+ write:xp=>update(ref(db,'players/alice'),{xp}),
+ attemptReauth:async token=>{try{await signInWithCustomToken(auth,token);return 'accepted';}catch(error){return error.code;}},
+ observed:()=>observed,events:()=>events
+};`;
 (async()=>{
  const source=JSON.parse(await readFile('../WORKSHOP-RULES-TO-PUBLISH.json','utf8'));
  const {buildRulesCandidate}=await import(pathToFileURL(path.resolve('../../release-tools/rules-candidate.mjs')).href);
@@ -45,14 +80,19 @@ window.harness={
   if(name!=='firebase-app.js')js=js.replaceAll('https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js','/sdk/firebase-app.js');
   scripts[`/sdk/${name}`]=js;
  }
+ for(const name of ['game-session.mjs','release-control.mjs','bounded-json.mjs'])scripts[`/release/${name}`]=await readFile(path.resolve('../../release-tools',name),'utf8');
  const server=http.createServer((req,res)=>{
   const file=new URL(req.url,'http://127.0.0.1').pathname;
   if(file==='/harness.js'){res.writeHead(200,{'content-type':'text/javascript'}).end(harness);return;}
+  if(file==='/guarded-harness.js'){res.writeHead(200,{'content-type':'text/javascript'}).end(guardedHarness);return;}
   if(scripts[file]){res.writeHead(200,{'content-type':'text/javascript'}).end(scripts[file]);return;}
-  if(file==='/'){res.writeHead(200,{'content-type':'text/html'}).end('<!doctype html><html><body><script type="module" src="/harness.js"></script></body></html>');return;}
+  if(file==='/'||file==='/guarded.html'){
+   const script=file==='/'?'/harness.js':'/guarded-harness.js';
+   res.writeHead(200,{'content-type':'text/html'}).end(`<!doctype html><html><body><script type="module" src="${script}"></script></body></html>`);return;
+  }
   res.writeHead(404).end();
  });
- let browser,env;
+ let browser,env,admin;
  try{
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   env=await initializeTestEnvironment({projectId:project,database:{host:'127.0.0.1',port:9000,rules:JSON.stringify(rules)}});
@@ -106,7 +146,34 @@ window.harness={
     console.log('Tab-scoped session: the old tab kept its old/no auth, and its queued write was rejected.');
    }finally{await context.close();}
   }
+  // The prior custom sign-ins created this synthetic emulator user. Add a
+  // password so the guarded adapter can use the real password Auth SDK.
+  admin=initializeAdmin({projectId:project},'release-tabs-admin');
+  await getAdminAuth(admin).updateUser('alice',{email:'tabs-guard@example.test',password:'example-password-123'});
+  {
+   const {context,old,fresh,pageErrors}=await prepare();
+   try{
+    await fresh.close();
+    const guarded=await context.newPage();guarded.on('pageerror',error=>pageErrors.push(String(error)));
+    await guarded.goto(url+'guarded.html');await guarded.waitForFunction(()=>window.guarded);
+    await guarded.evaluate(release=>window.guarded.initialize(release),second);
+    assert.equal(await guarded.evaluate(()=>window.guarded.uid()),null,'old LOCAL identity must not migrate into new memory-only Auth');
+    await guarded.evaluate(async token=>{await window.guarded.login(token);},customToken(epochB));
+    assert.equal(await guarded.evaluate(()=>window.guarded.epoch()),epochB);
+    assert.deepEqual(await guarded.evaluate(()=>window.guarded.observed()),[null,'alice']);
+    await guarded.evaluate(()=>window.guarded.write(3));
+    await new Promise(resolve=>setTimeout(resolve,1500));
+    assert.notEqual(await old.evaluate(()=>window.harness.epoch()),epochB);
+    await old.evaluate(()=>window.harness.online());
+    const outcome=await old.evaluate(()=>window.harness.result());
+    assert.equal(outcome.accepted,false);assert.match(outcome.code,/permission.denied/i);
+    assert.equal((await adminGet('players/alice')).xp,3);
+    assert.equal(await guarded.evaluate(token=>window.guarded.attemptReauth(token),customToken(epochB)),'auth/login-blocked');
+    assert.deepEqual(await guarded.evaluate(()=>window.guarded.events()),['unavailable']);assert.deepEqual(pageErrors,[]);
+    console.log('Guarded memory-only Auth: an old LOCAL tab received no new credentials; its queued write was rejected, and same-uid reauth was blocked.');
+   }finally{await context.close();}
+  }
  }finally{
-  if(browser)await browser.close();if(env)await env.cleanup();await new Promise(resolve=>server.close(resolve));
+  if(browser)await browser.close();if(admin)await deleteAdmin(admin);if(env)await env.cleanup();await new Promise(resolve=>server.close(resolve));
  }
 })().catch(error=>{console.error(error);process.exitCode=1;});
