@@ -1,8 +1,8 @@
 import {CONTROL_PATH, parseReleaseControl} from './release-control.mjs';
 import {readBoundedJson} from './bounded-json.mjs';
 
-// Candidate for the future bootstrap / standalone maintenance page; not wired
-// into the published game. A successful, fresh REST response is required on
+// Candidate used by the isolated staged launcher/runtime; not wired into the
+// published game. A successful, fresh REST response is required on
 // every check. Failure, an unknown record, a timeout, or a listener error must
 // block the UI; a caller must also stop its SDK/game and replace the document.
 // no-store cannot defeat a malicious service worker or prove browser integrity.

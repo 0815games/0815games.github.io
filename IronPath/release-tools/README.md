@@ -70,7 +70,7 @@ service; identity, free limits and the complete rollout still need verification.
   CI on commit `8acd7f9` ([run 43405350430](https://github.com/0815games/0815games.github.io/actions/runs/43405350430)),
   including an old `LOCAL` tab. The exchange in that browser test is synthetic,
   not the Vercel service. The ordinary game entry still does not install this
-  adapter; no launcher or production gate is in place.
+  adapter; no launcher or production gate is deployed.
 - `guarded-runtime.mjs` composes the isolated Firebase factory, monitor, lifecycle
   and session adapter. It generates fresh app names, uses in-memory Auth, refuses
   to remount known Auth/RTDB objects and derives the status URL from the same
@@ -106,6 +106,9 @@ service; identity, free limits and the complete rollout still need verification.
   into the source tree, deploys anything, changes Firebase or protects the
   existing public entry. Keep old version and launcher paths intact; the tools
   do not build a retained, atomic Pages snapshot or a rollback automatically.
+  Each full build duplicates tens of MiB of assets: assess the hosting limits
+  and a safe retention policy before rollout rather than promising unlimited
+  versions within a free quota.
 - The candidate launcher polls the same configured Firebase control record,
   fails closed on missing/bad status, checks the manifest and 13 critical files,
   confirms the release again, and performs a fixed same-origin full navigation.
@@ -115,8 +118,9 @@ service; identity, free limits and the complete rollout still need verification.
   service workers, malicious hosting and a later file replacement are outside
   this check. `verify-public-release.mjs` can separately compare **every**
   inventoried public build file and the remote manifest with a trusted local
-  staging inventory, once per release; it does not check the launcher, prove
-  later immutability, configure the service or reopen anything.
+  staging inventory, once per release. A loopback HTTP check compared all 580
+  staged files (about 68 MiB) in a local build. It does not check the launcher,
+  prove later immutability, configure the service or reopen anything.
 - `release-game-browser.cjs` uses in-memory test HTML and passed the **official
   Firebase emulators** in [CI 43418709714](https://github.com/0815games/0815games.github.io/actions/runs/43418709714)
   on `b643a45`. The newer `release-site-browser.cjs` uses the actual generated
@@ -125,8 +129,9 @@ service; identity, free limits and the complete rollout still need verification.
   hanging logout, maintenance with an open dialog and queued write, reopen,
   status outage, stale build and a simulated bfcache restore. Its SDK wrappers
   and HTTP routes point to loopback emulators; this is not a real Vercel/CORS,
-  Pages/CDN, production Firebase or two-device test. Official-emulator CI for
-  this newer case must be checked on its commit.
+  Pages/CDN, production Firebase or two-device test. All four browser cases
+  also passed the **official Firebase emulators** in [CI 43422704446](https://github.com/0815games/0815games.github.io/actions/runs/43422704446)
+  for commit `80722ac`.
 
 ## What has to be true before enabling it
 

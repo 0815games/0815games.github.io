@@ -11,7 +11,7 @@ import {validatePublicSiteConfig,formatPublicSiteConfig} from './public-site-con
 
 const within=(parent,child)=>{const r=relative(parent,child);return r===''||(!r.startsWith(`..${sep}`)&&r!=='..'&&!r.startsWith(sep));};
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
-// Only browser-safe dependencies of the unmounted guard are copied. Never copy
+// Only browser-safe dependencies of the candidate guard are copied. Never copy
 // the server/API, deployment configuration, node_modules or possible secrets.
 const browserGuardFiles=Object.freeze([
   'guarded-game-bootstrap.mjs','guarded-runtime.mjs','game-session.mjs',

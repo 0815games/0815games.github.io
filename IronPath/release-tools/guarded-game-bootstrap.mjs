@@ -1,7 +1,7 @@
-// Experimental bootstrap for a future staged game document. The page MUST be
-// blocked and non-interactive in its initial HTML before this module runs. A
-// future caller must perform real same-origin full-document navigation, never
-// an SPA reset. This module is not installed in the current published page.
+// Experimental bootstrap for an explicitly guarded staged game document. The
+// page MUST be blocked and non-interactive in its initial HTML before this
+// module runs. Its caller must perform real same-origin full-document navigation,
+// never an SPA reset. This is not installed in the current published page.
 import {createGuardedRuntime,createIsolatedReleaseFirebase} from './guarded-runtime.mjs';
 
 function synchronous(callback,value) {

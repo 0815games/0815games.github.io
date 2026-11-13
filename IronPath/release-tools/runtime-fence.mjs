@@ -1,6 +1,6 @@
 import {BUILD_PATTERN,parseReleaseControl,sameRelease} from './release-control.mjs';
 
-// Candidate lifecycle controller, deliberately not connected to account.js.
+// Candidate lifecycle controller, not installed in the ordinary published entry.
 // The consumer must begin with the entire UI blocked, load account/game code
 // only inside onReady, honor its AbortSignal, use tab-scoped auth, and verify
 // the signed token/epoch before any profile listener or write is started.
