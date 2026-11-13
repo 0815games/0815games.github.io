@@ -47,9 +47,11 @@ limits, identity setup and actual deployments still need independent verificatio
   another user's or another epoch's credentials. Its caller must actually create
   separate **in-memory** Auth instances, freeze/stop the game on termination and
   replace the whole document. Real-SDK integration and a two-tab Chromium test
-  passed locally against the unofficial Fireemu, including an old `LOCAL` tab;
-  the exchange in that browser test is synthetic, not the Vercel service. It
-  does not yet modify `account.js`, build a launcher or control production.
+  passed locally against the unofficial Fireemu and in the official emulator
+  CI on commit `8acd7f9` ([run 43405350430](https://github.com/0815games/0815games.github.io/actions/runs/43405350430)),
+  including an old `LOCAL` tab. The exchange in that browser test is synthetic,
+  not the Vercel service. It does not yet modify `account.js`, build a launcher
+  or control production.
 
 ## What has to be true before enabling it
 

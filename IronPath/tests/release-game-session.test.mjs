@@ -79,6 +79,15 @@ test('abort during exchange never authenticates the game and unexpected auth cha
  const other=await setup();other.emit(user('intruder'));assert.deepEqual(other.terminations,['unavailable']);
 });
 
+test('one observer terminating the document prevents later observers from starting profile work',async()=>{
+ const h=await setup(),later=[];
+ h.session.onAuthStateChanged(value=>{if(value)h.session.logout();});
+ h.session.onAuthStateChanged(value=>later.push(value?.uid??null));
+ await new Promise(resolve=>queueMicrotask(resolve));
+ await assert.rejects(h.session.signIn('alice','password'),{code:'release/unavailable'});
+ assert.deepEqual(h.terminations,['logout']);assert.deepEqual(later,[null]);
+});
+
 test('a retry cannot race cleanup of the temporary password identity',async()=>{
  const cleanup=deferred();
  const h=await setup({sdk:{

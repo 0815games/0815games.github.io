@@ -62,6 +62,9 @@ export async function createGuardedGameSession({auth, passwordAuth, db, release,
   const alive=()=>{if(stopped||signal.aborted)throw error('release/unavailable');};
   const notify=()=>{
     for(const observer of listeners){
+      // A previous observer can synchronously request logout or throw. Never
+      // deliver a user to later consumers once teardown has begun.
+      if(stopped || signal.aborted)break;
       const user=approved;
       if(observer.last===user)continue;
       observer.last=user;
