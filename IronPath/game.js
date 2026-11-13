@@ -16,8 +16,8 @@ import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStory
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261103-online1';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261105-sharp1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261102-fourviewport2';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261031-mpview1';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261031-mpview1';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261112-tagless1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
@@ -42,7 +42,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
   const $ = id => document.getElementById(id);
   const logicalWidth=960;let logicalHeight=540;
-  function setLogicalHeight(height){if(logicalHeight!==height){logicalHeight=height;canvas.height=Math.round(canvas.width*height/logicalWidth);}canvas.dataset.lanes=height===1100?'versus':'single';}
+  function setLogicalHeight(height,versus=false){if(logicalHeight!==height){logicalHeight=height;canvas.height=Math.round(canvas.width*height/logicalWidth);}canvas.dataset.lanes=versus?'versus':'single';}
   function prepareCanvas(){const size=canvasResolution(logicalWidth,logicalHeight,canvas.getBoundingClientRect(),window.devicePixelRatio);if(canvas.width!==size.width)canvas.width=size.width;if(canvas.height!==size.height)canvas.height=size.height;ctx.setTransform(size.width/logicalWidth,0,0,size.height/logicalHeight,0,0);return size.width/logicalWidth;}
   // Reduced motion is either the operating system's wish or the player's own
   // Graphics setting - the setting only ever makes it MORE reduced, never less, so a
@@ -158,7 +158,11 @@ function renderResults(target){
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
-  let largeMap=false, battleViewport=null, savedLargeMap=false, touchZoom=null;
+  let largeMap=false, battleViewport=null, savedLargeMap=false, touchZoom=null, fullBattleView=false;
+  // The controller selects on pointerup. Its subsequent compatibility click
+  // must not close the sheet it just opened or activate a button underneath it.
+  let viewportTap=null;
+  document.addEventListener('pointerdown',()=>{viewportTap=null;},true);
   // V3 impact tracking: the bunker-hit camera shake is presentation only -
   // the seq comes from the authoritative state, the wobble is local.
   let lastImpactSeq=0, shakeStart=-1e9;
@@ -173,12 +177,12 @@ function renderResults(target){
   // showed the desktop hint until the first zoom. One repaint fixes that.
   renderViewportLabels();
   $('mapQuickZoom').addEventListener('click',()=>zoomButton.click());
-  if(touchZoom&&typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(state&&coop)updateUI();else if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
   // The pointer is anchored to a world position, not to a pixel: whenever the field
   // moves under it, re-mark. Cheap, and the ring must never point at where the pad
   // used to be.
   const remarkCoach=()=>{try{coach.remark();}catch{}};
-  zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else battleViewport.zoom(2);return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
+  zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else{const fill=Math.max(v.width/v.worldWidth,v.height/v.worldHeight);battleViewport.zoom(fullBattleView?Math.max(2,fill/fit):2);}return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
   // Reported: "Bunker und Straßen Endpunkte passen nicht" - the quick-jump
   // buttons pinned to the left and right rim. Start and bunker sit wherever
   // the generated map puts them, so both buttons now aim at the real world
@@ -186,40 +190,59 @@ function renderResults(target){
   const aimViewport=target=>{
     if(battleViewport){const v=battleViewport.getViewport(),visW=v.width/v.scale,visH=v.height/v.scale;
       battleViewport.pan((v.x+visW/2-target.x)*v.scale,(v.y+visH/2-target.y)*v.scale);return;}
-    const m=getMap(state.mapId),fx=Math.max(0,Math.min(1,target.x/m.width)),fy=Math.max(0,Math.min(1,target.y/m.height));
+    const m=getMap(state.mapId),fx=Math.max(0,Math.min(1,target.x/(m.width||960))),fy=Math.max(0,Math.min(1,target.y/(m.height||540)));
     mapViewport.scrollTo({left:fx*(mapViewport.scrollWidth-mapViewport.clientWidth),top:fy*(mapViewport.scrollHeight-mapViewport.clientHeight),behavior:'smooth'});
   };
   $('mapEntry').addEventListener('click',()=>{aimViewport(getMap(state.mapId).path[0]);remarkCoach();});
-  $('mapBunker').addEventListener('click',()=>{aimViewport(getMap(state.mapId).bunker);remarkCoach();});
+  // Classic maps predate explicit bunker coordinates; their renderer and
+  // simulation use the same default. Keep the jump control usable there too.
+  $('mapBunker').addEventListener('click',()=>{aimViewport(getMap(state.mapId).bunker||{x:900,y:400});remarkCoach();});
   portrait.addEventListener('change',()=>{if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());remarkCoach();});
-  window.addEventListener('resize',remarkCoach);
+  window.addEventListener('resize',()=>{if(state)updateUI();remarkCoach();});
   // Two more ways the field moves under the card: the page itself is scrolled (the
   // phone browser toolbar collapsing, a bounce at the end of a swipe), and the map
   // viewport is scrolled sideways. `resize` does not fire for either, so the ring
   // stayed on the old pad while the card stayed put - the two drifted apart.
   window.addEventListener('scroll',remarkCoach,{passive:true});
   mapViewport.addEventListener('scroll',remarkCoach,{passive:true});
-  function syncBattleViewport(map,versus){
-    // Oversized fields (the endless retreat sectors) get the pan-and-zoom
-    // viewport the four-player frontier uses; phone maps stay as they are.
+  function wantsBattleViewport(map,versus,fullBattle=false){
     const oversized=(map.width||960)>960||(map.height||540)>540;
-    const wanted=!versus&&((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer));
-    // Reported: "nach der zehnten Welle wird die Karte kleiner und beim Zoomen
-    // bleibt nur ein Drittel nutzbar." Two defects:
-    // 1. A second retreat (wave 20, 30) kept the controller built for the
-    //    PREVIOUS sector's dimensions - the bigger field was drawn through a
-    //    viewport that clipped and clamped to the old world size, so whole
-    //    regions of the new map could neither be seen nor reached. The
-    //    controller must be rebuilt whenever the world dimensions change.
-    // 2. The retreat opened on the whole-field fit, shrinking every sprite to
-    //    half its first-round size. It now opens at the first round's reading
-    //    scale; MAP: FIT still shows the whole-field overview on demand.
-    const current=battleViewport?.getViewport();
-    const stale=!!battleViewport&&(current.worldWidth!==map.width||current.worldHeight!==map.height);
+    return fullBattle||(versus?oversized:((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer)));
+  }
+  function syncBattleViewport(map,versus,fullBattle){
+    // A 1v1 view contains two equal map-sized lanes and a 20px divider.
+    // Classic maps omit their dimensions; checkpoints can still use them.
+    const worldWidth=map.width||960,laneHeight=map.height||540,worldHeight=versus?laneHeight*2+20:laneHeight;
+    const wanted=wantsBattleViewport(map,versus,fullBattle),current=battleViewport?.getViewport();
+    // A new sector or mode must not keep the previous world's clipping bounds.
+    const stale=!!current&&(current.worldWidth!==worldWidth||current.worldHeight!==worldHeight);
     if(wanted&&stale){battleViewport.destroy();battleViewport=null;}
-    if(wanted&&!battleViewport){if(touchZoom)touchZoom.reset();savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;battleViewport=createBattleViewportController({canvas,worldWidth:map.width,worldHeight:map.height,screenWidth:logicalWidth,screenHeight:logicalHeight,onTap:point=>selectBattlePoint(point.x,point.y),onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');
-      if(!map.fourPlayer){const fit=Math.min(logicalWidth/map.width,logicalHeight/map.height);if(fit<1)battleViewport.zoom(1/fit);}}
-    else if(!wanted&&battleViewport){battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);}
+    const fill=()=>{const v=battleViewport.getViewport(),scale=Math.max(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale<scale)battleViewport.zoom(scale/v.scale);};
+    // On a tall phone the filled view can show only a slice of a wide map.
+    // Start at this soldier rather than an arbitrary map centre. In a duel,
+    // the local soldier is always in the upper lane of the projected view.
+    const focusPlayer=()=>{const player=state.players?.[me()];if(Number.isFinite(player?.x)&&Number.isFinite(player?.y))aimViewport({x:player.x,y:player.y});};
+    if(wanted&&!battleViewport){
+      if(touchZoom){touchZoom.reset();canvas.style.width='';canvas.style.height='';}
+      savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;
+      battleViewport=createBattleViewportController({canvas,worldWidth,worldHeight,screenWidth:logicalWidth,screenHeight:logicalHeight,
+        onTap:(point,event)=>{viewportTap={id:event.pointerId,x:event.clientX,y:event.clientY,time:Date.now()};void selectBattlePoint(point.x,point.y);},
+        onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});
+      $('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');
+      // Multiplayer starts large and undistorted on phones, tablets and
+      // desktops. FIT shows the complete map; panning reaches the edges.
+      if(fullBattle){fill();focusPlayer();}
+      else if(!map.fourPlayer){const fit=Math.min(logicalWidth/worldWidth,logicalHeight/worldHeight);if(fit<1)battleViewport.zoom(1/fit);}
+    }else if(wanted&&battleViewport){
+      const resized=current.width!==logicalWidth||current.height!==logicalHeight;
+      const wasFilled=current.scale>=Math.max(current.width/current.worldWidth,current.height/current.worldHeight)-1e-8;
+      if(resized)battleViewport.resize(logicalWidth,logicalHeight);
+      if(fullBattle&&!fullBattleView){battleViewport.reset();fill();focusPlayer();}
+      else if(fullBattle&&resized&&wasFilled)fill();
+    }else if(!wanted&&battleViewport){
+      battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);if(touchZoom)touchZoom.resize(touchZoom.getFactor());
+    }
+    fullBattleView=!!(wanted&&fullBattle);
   }
   $('campaignSelect').value='free';
   // The act detail header is rendered per act at runtime (like the mission
@@ -475,7 +498,12 @@ function renderResults(target){
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
     $('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
-    const canvasHeight=versus?1100:540;if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight);if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}syncBattleViewport(map,versus);
+    const workspace=$('gameWorkspace');
+    const fullBattle=!!coop&&!workspace.hidden&&workspace.dataset.screen==='online'&&workspace.dataset.onlineReady==='true'&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0;
+    const canvasHeight=fullBattle?Math.max(1,Math.round(logicalWidth*mapViewport.clientHeight/mapViewport.clientWidth)):versus?Math.round(logicalWidth*((map.height||540)*2+20)/(map.width||960)):540;
+    canvas.dataset.fullBattle=String(fullBattle);
+    if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight,versus);if(touchZoom&&!battleViewport&&!fullBattle)touchZoom.resize(touchZoom.getFactor());}else canvas.dataset.lanes=versus?'versus':'single';
+    syncBattleViewport(map,versus,fullBattle);
     $('versusStatus').hidden=!versus&&!teamMatch;if(teamMatch){const info=state.fourInfo;$('versusTitle').textContent=state.ended?(info.winnerTeam===null?tr('DRAW / MATCH ENDED'):info.winnerTeam===info.team?tr('VICTORY'):tr('DEFEAT')):tr('2 VS 2 · TEAM {team}',{team:info.team?'B':'A'});$('versusInfo').textContent=tr('YOUR BUNKER {health} · OTHER BUNKER {other}',{health:Math.max(0,Math.ceil(state.hp)),other:Math.max(0,Math.ceil(info.otherHealth))});}if(versus){$('versusTitle').textContent=state.ended?(state.winnerId?(state.winnerId===me()?tr('VICTORY'):tr('DEFEAT')):tr('DRAW / MATCH ENDED')):tr('1 VS 1 · SURVIVAL');$('versusInfo').textContent=tr('YOUR BUNKER {health} · {name} {other}',{health:Math.max(0,Math.ceil(state.hp)),name:state.players[state.rivalId]?.name||tr('OPPONENT'),other:Math.max(0,Math.ceil(state.rival.hp))})+(state.waitingForRival&&!state.ended?tr(' · WAITING FOR OPPONENT'):'');}
     if($('terrainBriefing')){
       const zoneKinds=map.zones?[...new Set(map.zones.map(z=>z.kind))]:[];
@@ -759,6 +787,13 @@ function renderResults(target){
   bindDialogBackdrop($('towerDetails'),dismissTower);
   $('towerDetails').addEventListener('cancel',event=>{event.preventDefault();dismissTower();});
   document.addEventListener('click',event=>{
+    const tap=viewportTap;viewportTap=null;
+    const samePointer=tap&&(event.pointerId==null||event.pointerId<0||event.pointerId===tap.id);
+    const sameClick=samePointer&&event.detail!==0&&Date.now()-tap.time<1000&&Math.hypot(event.clientX-tap.x,event.clientY-tap.y)<3;
+    // A click may even be retargeted onto the newly opened sheet on touch.
+    // Swallow only that compatibility click, not the next physical tap or a
+    // keyboard activation; a later outside click still dismisses the menu.
+    if(sameClick){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation?.();return;}
     if(menu.hidden||$('towerDetails').open||document.querySelector('dialog[open]')||menu.contains(event.target))return;
     dismissTower();event.preventDefault();event.stopPropagation();
   },true);
@@ -766,7 +801,7 @@ function renderResults(target){
     if(battleViewport&&!menu.hidden){dismissTower();return;}
     selectionEpoch++;
     if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),map=getMap(state.mapId),view=battleViewport?.getViewport();
-    if(state.mode==='versus'&&y>=540){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
+    if(state.mode==='versus'&&y>=(map.height||540)){notice('That is your opponent’s battlefield. Build and move on your own lane above.');return;}
     const radius=Math.min(56,Math.max(28,22*logicalWidth/rect.width/(view?.scale||1))),pads=map.pads;let index=-1,nearest=radius;
     pads.forEach((p,i)=>{const d=Math.hypot(p.x-x,p.y-y);if(d<nearest){index=i;nearest=d;}});
     if(index<0){closeMenu();state.selectedPad=null;const mx=Math.max(12,Math.min((map.width||960)-12,x)),my=Math.max(12,Math.min((map.height||540)-12,y));
@@ -951,16 +986,24 @@ function renderResults(target){
       ctx.lineJoin='round';ctx.strokeStyle='#172721';ctx.lineWidth=5;ctx.stroke();ctx.strokeStyle='#bad8ca';ctx.lineWidth=2;ctx.stroke();ctx.restore();
     }}
     }
-    if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawOwn);else drawOwn();
-    if(state.mode==='versus'&&state.rival){ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,540,960,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),480,555);ctx.translate(0,560);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
+    // Both 1v1 lanes must share the camera transform; otherwise the rival lane
+    // is drawn at screen coordinates while taps/panning use world coordinates.
+    const drawBattle=()=>{
+      drawOwn();
+      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
+    };
+    if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop(){$('gameWorkspace').dataset.onlineReady='false';if(!coop)return Promise.resolve();const old=coop;coop=null;coopReady=false;coopHasBaseline=false;needStop=false;orphanReleases.clear();coopInput.setEnabled(false);coopInput=null;const stopping=old.stop();keys.clear();lastDirection='0,0';$('coopToggle').textContent=tr('JOIN CO-OP (TEST)');$('coopStatus').textContent=tr('SOLO');if(account.isReady())reset(true);return Promise.resolve(stopping);}
   function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
-  function beginCoop(factory,onUpdate=()=>{},reportId=null){
+  function beginCoop(factory,onUpdate=()=>{},reportId=null,mode=null){
     if(coop||!account.isReady())return false;
     $('gameWorkspace').dataset.onlineReady='false';$('onlineConnecting').textContent=tr('Connecting to the multiplayer battlefield…');hostFocusPaused=false;
-    activeMission=null;activeStory=null;selectedMap=nextMapId(selectedMap);hasCoopSnapshot=false;report=newReport(reportId||'test');coopReports.set(report.id,report);
+    // Both two-player modes get an existing larger, one-road sector-two map.
+    // The host's snapshot carries its seed to the guest; recovery retains the
+    // checkpoint's original map, including a previously started classic duel.
+    activeMission=null;activeStory=null;selectedMap=(mode==='coop'||mode==='versus')?nextMapId(selectedMap,globalThis.crypto,2):nextMapId(selectedMap);hasCoopSnapshot=false;report=newReport(reportId||'test');coopReports.set(report.id,report);
     closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;let client;
     try{
       client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error'||value==='duplicate')$('onlineConnecting').textContent=tr(value==='error'?'Multiplayer connection failed. Open Party to leave or retry.':'This party is already open in another tab. Close it and retry.');if(value==='error')notice('Multiplayer connection failed. If the host reloaded, use Resume as Host in a recovery trial; otherwise create a new party.');if(value==='duplicate')notice('This party is already open in another tab. Close it before joining here.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){closeMenu();state.selectedPad=null;if($('towerDetails').open)$('towerDetails').close();combatFx.clear();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':state.mode==='two-vs-two'?'2 vs 2 paused. Waiting for all players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}if(ready)reconcileOrphanReservations();updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;if(snapshot?.match?.mode==='four-coop'||snapshot?.match?.mode==='two-vs-two'){try{snapshot=projectFourGameView(snapshot,me());}catch{notice('Invalid four-player match snapshot.');return;}}const wasHostPaused=hostFocusPaused;hostFocusPaused=snapshot.hostPaused===true;if(hostFocusPaused&&!wasHostPaused)notice('Match paused: the host left the game window.');else if(wasHostPaused&&!hostFocusPaused)notice(coopReady?'Host returned. The match has resumed.':'Host returned. Waiting for players to reconnect.');hasCoopSnapshot=true;$('gameWorkspace').dataset.onlineReady='true';const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldPendingWave=state.pendingWave||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){for(const cue of combatFx.observe(snapshot.match,getMap(snapshot.match.mapId).pads))sound.play(cue);}else combatFx.clear();lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:snapshot.speedControl?.speed===2?2:1,speedRequest:snapshot.speedControl?.request||null};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');

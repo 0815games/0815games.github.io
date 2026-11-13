@@ -1,17 +1,17 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261112-tagless1';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261031-mpview1';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
 // Integration adapter for the opt-in host-recovery trial: the host opens the
 // lobby with ?recovery=1, the party is marked recoverable, and this adapter
 // rebuilds the match from the latest durable checkpoint after a reload.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
-import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261112-tagless1';
+import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261031-mpview1';
 import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261104-hostpause1';
-import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261112-tagless1';
+import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261031-mpview1';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261112-tagless1';
+import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261031-mpview1';
 import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261112-tagless1';
-import {createVersus} from './versus.mjs?v=20261112-tagless1';
+import {createVersus} from './versus.mjs?v=20261031-mpview1';
 import {createMatch} from './simulation.mjs?v=20261112-tagless1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261031-finale1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261031-finale1';

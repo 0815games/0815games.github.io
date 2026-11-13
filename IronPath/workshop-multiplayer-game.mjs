@@ -2,7 +2,7 @@
 // by the live Firebase party game and the recovery path. A validated lock
 // does not establish trusted ownership.
 import {createMatch} from './simulation.mjs?v=20261112-tagless1';
-import {createVersus} from './versus.mjs?v=20261112-tagless1';
+import {createVersus} from './versus.mjs?v=20261031-mpview1';
 import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261112-tagless1';
 import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261112-tagless1';
 import {workshopEffects} from './workshop-effects.mjs?v=20261112-tagless1';

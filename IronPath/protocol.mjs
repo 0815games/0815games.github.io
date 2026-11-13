@@ -1,7 +1,7 @@
 import {createSpeedControl} from './multiplayer-speed.mjs?v=20261104-speedvote1';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261112-tagless1';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261112-tagless1';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-mpview1';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.

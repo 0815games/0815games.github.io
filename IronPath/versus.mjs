@@ -1,6 +1,7 @@
 import {createMatch,stepMatch} from './simulation.mjs?v=20261112-tagless1';
 import {applyCommand} from './match.mjs?v=20261112-tagless1';
 import {WAVE_COUNT} from './combat.mjs?v=20261031-finale1';
+import {bunkerStart} from './solo-deployment.mjs?v=20261112-tagless1';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.
@@ -9,7 +10,10 @@ export function createVersus(players,mapId,hostId){
   // Each lane is its own host: a versus field never falls back a sector, so
   // both duelists hold the same map for the whole match (the solo endless
   // retreat is gated on a field having no host of its own).
-  const lanes=Object.fromEntries(players.map(p=>{const lane=createMatch([{...p,x:850,y:450,direction:{x:0,y:0},target:null}],mapId);lane.hostId=p.id;return [p.id,lane];}));
+  // Both rivals begin at the same point relative to the actual map bunker.
+  // An old fixed point could be far from a generated bunker's position.
+  const spawn=bunkerStart(mapId);
+  const lanes=Object.fromEntries(players.map(p=>{const lane=createMatch([{...p,...spawn,direction:{x:0,y:0},target:null}],mapId);lane.hostId=p.id;return [p.id,lane];}));
   return {mode:'versus',hostId,mapId,players:Object.fromEntries(players.map(p=>[p.id,{...p,active:true,completedWaveMask:0}])),lanes,pendingWave:0,waveRequestId:0,ended:false,winnerId:null};
 }
 function finish(s,winner,reason){s.ended=true;s.winnerId=winner;s.endReason=reason;s.pendingWave=0;for(const lane of Object.values(s.lanes)){lane.ended=true;lane.running=false;lane.endReason=reason;}}
