@@ -117,10 +117,15 @@ service; identity, free limits and the complete rollout still need verification.
   long-lived service-account key: it can sign Firebase custom tokens, so a
   leak can compromise player access even if its IAM database privileges are
   restricted. No key has been created or shared. If this approach is approved,
-  use a dedicated account with the minimum Auth lookup permissions; put its
-  key directly into a sensitive **production-only** Vercel variable, never in
-  chat, Git, preview environments, build output or logs. Verify key rotation,
-  revocation and incident response before production. Google's guide for
+  for the real service use a dedicated account with the minimum Auth lookup
+  permissions; put its key directly into a sensitive **production-only**
+  Vercel variable, never in chat, Git, preview environments, build output or
+  logs. The one-time *test* initializer additionally needs permission to read
+  and replace Rules and to write the test status; a default test-project Admin
+  SDK key is broad, so use it only on the test project with no real game data
+  and revoke it after
+  testing. Verify key rotation, revocation and incident response before the
+  real production rollout. Google's guide for
   external Workload Identity Federation lists enabled billing as a prerequisite;
   do not enable billing or assume that alternative works under the user's
   restriction. A no-billing, keyless alternative would be preferable if proven.
@@ -134,7 +139,7 @@ service; identity, free limits and the complete rollout still need verification.
   CI on commit `8acd7f9` ([run 43405350430](https://github.com/0815games/0815games.github.io/actions/runs/43405350430)),
   including an old `LOCAL` tab. The exchange in that browser test is synthetic,
   not the Vercel service. The ordinary game entry still does not install this
-  adapter; no launcher or production gate is deployed.
+  adapter; no launcher or gate is deployed to the real game.
 - `guarded-runtime.mjs` composes the isolated Firebase factory, monitor, lifecycle
   and session adapter. It generates fresh app names, uses in-memory Auth, refuses
   to remount known Auth/RTDB objects and derives the status URL from the same
@@ -368,8 +373,27 @@ Firebase project ID and Web key. It does not change Firebase or create a server,
 verify every possible production endpoint, or make the guard production-ready.
 The test Vercel project may explicitly run `node build-isolated-test-site.mjs`
 as its build command; it must include source files outside its `release-tools`
-root. Generated site files are build outputs, not repository files. Do not point
-this test build, its service credentials, or its generated Rules at real players.
+root. Generated site files are build outputs, not repository files. The first
+[public test deployment](https://ironpath-release.vercel.app/IronPath/) is
+`dpl_ECCSFqqxjxCxqV7AZMLcDC7KoieD` from `d70f068`: its status and direct game
+entries stay blocked while the test database is locked; its session function is
+still missing the test-only credential. Three public settings are scoped to the
+Vercel project's Production environment (this is not GitHub Pages).
+
+The separate `initialize-isolated-test.mjs` is **not executed automatically**.
+For a separately approved test setup, it accepts only `ironpathtest`, the exact
+test RTDB and Vercel project/origin, an explicit flag, and a pinned Rules
+candidate. It reads the actual Rules, requires only denied root read/write and
+an absent control record, creates a conditionally written maintenance record
+with a server timestamp, then replaces and verifies the **test** Rules. It never
+writes the root, a player node, or a credential. A second Rules read limits but
+does not eliminate a concurrent operator race. If an operation fails or times
+out, inspect the test rules/status before retrying. The original locked Rules
+are simply `{ "rules": { ".read": false, ".write": false } }`; restoring
+those locks the test database but is not a production rollback plan. Until
+explicitly invoked with an appropriate test-project key, the script changes
+nothing. Do not point this test build, its service credentials, or its generated
+Rules at real players.
 
 ## Creating an isolated guarded candidate
 
