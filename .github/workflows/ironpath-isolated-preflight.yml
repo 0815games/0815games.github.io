@@ -1,0 +1,79 @@
+name: Temporary Iron Path test-project preflight
+on:
+  push:
+    paths: ['.github/workflows/ironpath-isolated-preflight.yml']
+permissions:
+  contents: read
+jobs:
+  test-project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check test Auth and locked test database; delete the synthetic user
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import {randomBytes} from 'node:crypto';
+          const project='ironpathtest';
+          const key='AIzaSyCY7Mz5OO7ql9Sqlq707mf9epbkiJ2oWIk'; // public Firebase Web API key
+          const db='https://ironpathtest-default-rtdb.europe-west1.firebasedatabase.app';
+          const email=`ironpath-check-${randomBytes(12).toString('hex')}@example.invalid`;
+          const password=`A9!${randomBytes(24).toString('base64url')}`;
+          let token=null,uid=null,problem=null,cleanupProblem=null,probeMayExist=false,signupStarted=false;
+          async function auth(action,body){
+            const response=await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:${action}?key=${key}`,{
+              method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000)
+            });
+            let data={};try{data=await response.json();}catch{}
+            if(!response.ok){
+              const code=String(data?.error?.message||'UNKNOWN').split(' : ')[0];
+              throw Error(`Authentication ${action} failed (${/^[A-Z_0-9]{1,64}$/.test(code)?code:'UNKNOWN'})`);
+            }
+            return data;
+          }
+          async function dbRequest(path,{method='GET',authenticated=false,body}={}){
+            const url=new URL(`${db}/${path}.json`);
+            if(authenticated)url.searchParams.set('auth',token);
+            return fetch(url,{method,headers:body?{'content-type':'application/json'}:{},
+              ...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(15000)});
+          }
+          function expectDenied(response,label){
+            if(![401,403].includes(response.status))throw Error(`${label}: unexpected HTTP ${response.status}`);
+            console.log(`${label}: denied as expected (HTTP ${response.status})`);
+          }
+          try{
+            signupStarted=true;
+            const created=await auth('signUp',{email,password,returnSecureToken:true});
+            token=created.idToken;uid=created.localId;
+            if(typeof token!=='string'||typeof uid!=='string')throw Error('Test registration did not return a usable identity');
+            const signed=await auth('signInWithPassword',{email,password,returnSecureToken:true});
+            if(signed.localId!==uid || typeof signed.idToken!=='string')throw Error('Test sign-in did not match the test account');
+            token=signed.idToken;
+            const claims=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString('utf8'));
+            if(claims.aud!==project || claims.sub!==uid || claims.firebase?.sign_in_provider!=='password')throw Error('Test Auth returned an unexpected project or provider');
+            console.log('Test-project email registration and password sign-in succeeded');
+            expectDenied(await dbRequest('_ironpathRelease'),'Anonymous test release status');
+            expectDenied(await dbRequest(`players/${uid}`,{authenticated:true}),'Test-user profile read');
+            const path=`_ironpathLiveCheck/${uid}`;
+            const written=await dbRequest(path,{method:'PUT',authenticated:true,body:{probe:true}});
+            if(written.ok){
+              probeMayExist=true;
+              const removed=await dbRequest(path,{method:'DELETE',authenticated:true});
+              probeMayExist=!removed.ok;
+              throw Error('Unexpectedly allowed a test write; stop and inspect test rules');
+            }
+            expectDenied(written,'Test-user scratch write');
+          }catch(error){problem=error instanceof Error && /^Authentication |^Test |^Anonymous |^Unexpectedly/.test(error.message)?error.message:'Test-project request failed';}
+          finally{
+            if(token){
+              try{await auth('delete',{idToken:token});console.log('Synthetic test account deleted');}
+              catch{cleanupProblem='Could not delete the synthetic account';}
+            }else if(signupStarted){cleanupProblem='Registration may have timed out; check for this synthetic account';}
+            if(probeMayExist)cleanupProblem='Synthetic scratch data could not be removed';
+          }
+          if(problem||cleanupProblem){
+            if(problem)console.error(problem);
+            if(cleanupProblem)console.error(`${cleanupProblem}; test email: ${email}; test uid: ${uid||'unknown'}`);
+            process.exitCode=1;
+          }
+          JS
