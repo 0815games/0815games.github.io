@@ -1,4 +1,5 @@
-// Vercel Node function candidate. Nothing is deployed or enabled by this file.
+// Vercel Node function candidate. An unconfigured test is deployed; the game
+// and production Firebase are not connected or protected by this file.
 // It uses a dedicated signing identity; NEVER log the request, token, config or
 // service-account key. CORS is not an authorization or abuse-control boundary.
 import {cert, initializeApp} from 'firebase-admin/app';

@@ -10,27 +10,38 @@ they can administer it. The owner requires a **free solution only**: do not
 activate billing or a paid plan. The owner can set up Vercel Hobby for this
 non-commercial personal project, and chose to block sign-in **in the game** and
 access to its data, not to prohibit every possible Firebase Auth token. Vercel
-Hobby is a target, not an established service; the project configuration, free
-limits, identity setup and actual deployments still need independent verification.
+Hobby hosts an **unconfigured test deployment**, not an established game
+service; identity, free limits and the complete rollout still need verification.
 
 ## Current isolated candidates
 
 - The owner connected GitHub to Vercel. The separate `ironpath-release` project
-  now exists in the `0815games` Hobby team and is linked to this repository,
-  with project root `IronPath/release-tools` and output directory `public`.
-  Its intended Node version is pinned by `package.json` to 22.x, although the
-  project default reads 26.x; verify the actual build runtime. No Firebase
-  variables or credentials have been added. The first connector deployment was
-  rejected because its API omits the required `projectSettings`; do not attempt
-  to smuggle unsupported fields into the connector call. A normal Git push may
-  trigger a Vercel build; until one is verified, deployment is unproven.
-- `api/session.mjs`, `package.json`, `vercel.json`, and `public/` are an
-  **unconfigured** Node 22/Vercel service candidate rooted in this directory.
-  The intended static output contains only `public/`; actual bundling, HTTP
-  handling and public browser/CORS access still need a real Vercel deployment
-  test. Team deployment protection, the production alias and a Hobby WAF rule
-  must be checked explicitly. Hobby rate limits are per region, not a global
-  distributed security guarantee; its quotas can interrupt service.
+  exists in the `0815games` Hobby team, linked to this repository with project
+  root `IronPath/release-tools` and output directory `public`. The first Git
+  push was surprisingly promoted to this *separate project's* production alias
+  even though its configured production branch is `main`. No game or Firebase
+  configuration was changed. `vercel.json` now requests **no automatic Git
+  deployments**; this is only in the candidate branch, is not an independently
+  enforced protection, and does not control GitHub Pages. Verify it after a
+  push and use explicitly reviewed deployments if adopted.
+- `api/session.mjs`, `package.json`, `vercel.json`, and `public/` form an
+  **unconfigured** service candidate. Deployment `dpl_2skwgDM4stiqqbJ7dwaujTjBQNN9`
+  from commit `9527b55` is READY, uses Node 22.x, and serves the public alias
+  `https://ironpath-release.vercel.app/`; the deployment-specific and team
+  aliases require Vercel sign-in. No Firebase variables or credentials have
+  been added. The initial function crashed at startup (500). Vercel disables
+  `require(ESM)` by default and this dependency chain fails with that setting
+  locally; adding the documented non-secret project setting
+  `NODE_OPTIONS=--experimental-require-module` for Production and Preview and
+  redeploying the same commit yielded the generic unavailable JSON response on
+  the public alias. The exact runtime error was not retrieved, so this is a
+  plausible compatibility diagnosis, not a captured production stack trace.
+  Run `runtime-compatibility.test.mjs` after dependency changes and recheck the
+  Vercel setting: ordinary Node 22 locally can otherwise hide this failure.
+  The real configured HTTP exchange, request streaming, CORS, deployment
+  protection, abuse controls and Firebase integration remain unverified. Hobby
+  rate limits are per region, not a global distributed security guarantee; its
+  quotas can interrupt service.
 - The candidate currently expects `IRONPATH_FIREBASE_PROJECT_ID`,
   `IRONPATH_FIREBASE_DATABASE_URL`, `IRONPATH_GAME_ORIGIN` and
   `IRONPATH_FIREBASE_SERVICE_ACCOUNT`. The last is a highly sensitive,
@@ -66,8 +77,9 @@ limits, identity setup and actual deployments still need independent verificatio
 2. Decide and provision a trusted, TLS-hosted session service. It needs a
    narrowly scoped identity, an authoritative *fresh* control-record read,
    Admin ID-token verification with revocation checking, custom-token signing,
-   protected operations, monitoring and abuse/rate limits. None is deployed
-   here. Never place service-account keys, tokens or player data in this repo.
+   protected operations, monitoring and abuse/rate limits. No fully configured
+   trusted service is deployed here. Never place service-account keys, tokens
+   or player data in this repo.
 3. Integrate the game and launcher before changing production rules. The game
    currently signs in directly and immediately starts a profile listener. It
    must authenticate with a separate transient password-auth instance, exchange
@@ -134,7 +146,19 @@ With Node 22, Java 21 and the official Firebase emulator available:
 npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
 npm run test:release-guard --prefix IronPath/firebase/rules-test
 node --test IronPath/tests/release-*.test.mjs
+npm ci --prefix IronPath/release-tools --no-audit --no-fund
+node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
 ```
+
+To verify **only an intentionally unconfigured isolated deployment**, run
+`node IronPath/release-tools/smoke-unconfigured.mjs https://ironpath-release.vercel.app/api/session`
+from a network that can reach Vercel. It sends only synthetic invalid inputs and
+expects 503/no-store JSON for GET, OPTIONS and POST. It does not test successful
+login, streaming, credentials or production Firebase. The GitHub workflow can
+also run this probe when a push commit explicitly includes
+`[ironpath-unconfigured-smoke]`; it does not run on ordinary pushes or PRs.
+The public alias is reachable without Vercel login; protected preview and
+unique deployment URLs cannot be substituted without an authorized test path.
 
 The cross-tab test additionally requires Playwright/Chromium. CI installs it
 and runs `npm run test:release-tabs --prefix IronPath/firebase/rules-test` with

@@ -216,8 +216,11 @@ jobs:
         run: npm test --prefix IronPath/server
       - name: Install experimental release service dependencies
         run: npm ci --prefix IronPath/release-tools --no-audit --no-fund
-      - name: Test unconfigured release service
-        run: node --test IronPath/release-tools/session-config.test.mjs
+      - name: Test unconfigured release service and Node compatibility
+        run: node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
+      - name: Probe isolated unconfigured release service (explicit opt-in only)
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[ironpath-unconfigured-smoke]')
+        run: node IronPath/release-tools/smoke-unconfigured.mjs https://ironpath-release.vercel.app/api/session
   interface-browser-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
