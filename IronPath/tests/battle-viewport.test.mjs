@@ -31,3 +31,16 @@ test('draw transform clips the world and restores canvas state on failure',()=>{
   assert.throws(()=>drawInBattleViewport(ctx,view,()=>{throw Error('drawing failed');}),/drawing failed/);
   assert.deepEqual(calls,[['save'],['scale',2/3,2/3],['translate',-view.x,-view.y],['beginPath'],['rect',0,0,1440,720],['clip'],['restore']]);
 });
+
+test('portrait camera can fill the screen and resizing retains its focus',async()=>{
+  const {resizeBattleViewport}=await import('../battle-viewport.mjs');
+  const overview=createBattleViewport(1440,720,960,2070);
+  const full=zoomBattleViewport(overview,100,{x:480,y:1035});
+  assert.ok(full.scale>=2070/720,'portrait can zoom far enough to fill its height');
+  const fill=zoomBattleViewport(overview,(2070/720)/overview.scale,{x:480,y:1035});
+  const center=battleScreenToWorld(fill,{x:480,y:1035});
+  const resized=resizeBattleViewport(fill,960,1700);
+  const after=battleScreenToWorld(resized,{x:480,y:850});
+  near(center.x,after.x);near(center.y,after.y);
+  assert.throws(()=>resizeBattleViewport(fill,0,500));
+});

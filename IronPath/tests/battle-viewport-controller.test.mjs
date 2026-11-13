@@ -21,3 +21,13 @@ test('wheel zoom and destroy restore canvas behavior',()=>{
   const s=setup();let prevented=false;s.send('wheel',0,250,155,{deltaY:-200,preventDefault(){prevented=true;}});assert.ok(prevented);assert.ok(s.controller.getViewport().scale>2/3);
   s.controller.destroy();s.controller.destroy();assert.equal(s.canvas.style.touchAction,'pan-y');assert.equal(s.listeners.size,0);
 });
+
+test('resized controller uses the new logical height for touch mapping',()=>{
+  const s=setup();s.controller.resize(960,1080);
+  const view=s.controller.getViewport(),target={x:720,y:360};
+  const x=10+(target.x-view.x)*view.scale*480/view.width;
+  const y=20+(target.y-view.y)*view.scale*270/view.height;
+  s.send('pointerdown',1,x,y);s.send('pointerup',1,x,y);
+  assert.equal(s.taps.length,1);assert.ok(Math.abs(s.taps[0].x-target.x)<1e-8);assert.ok(Math.abs(s.taps[0].y-target.y)<1e-8);
+  s.controller.destroy();
+});

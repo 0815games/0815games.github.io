@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="style.css?v=20261112-tagless1">
   <link rel="stylesheet" href="interface-redesign.css?v=20261031-loading1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
-  <link rel="stylesheet" href="field-command.css?v=20261130-germanfull1">
+  <link rel="stylesheet" href="field-command.css?v=20261031-mpview1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
@@ -51,7 +51,7 @@
     </div>
     <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
     <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261031-loading1</p>
+      <p class="build-stamp" aria-hidden="true">BUILD 20261031-mpview1</p>
   </dialog>
   <!-- Endless launch: the pre-deploy selection menu (personal record, battlefield
        choice, last run, loadout). Reached from the Command Center ENDLESS card;
@@ -118,7 +118,7 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-loading1</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-mpview1</p></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
         <div class="dossier-heading">
@@ -354,5 +354,5 @@
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
   <script type="module" src="intro.mjs?v=20261031-loading1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account.js?v=20261031-loading1"></script>
+  <script type="module" src="account.js?v=20261031-mpview1"></script>
 </body></html>

@@ -10,7 +10,12 @@ function bounded(v){
   const visibleWidth=v.width/v.scale,visibleHeight=v.height/v.scale;
   return {...v,x:visibleWidth>=v.worldWidth?(v.worldWidth-visibleWidth)/2:clamp(v.x,0,v.worldWidth-visibleWidth),y:visibleHeight>=v.worldHeight?(v.worldHeight-visibleHeight)/2:clamp(v.y,0,v.worldHeight-visibleHeight)};
 }
-// Fit the whole map initially; permit up to 3x the fit scale for touch use.
+const fitScale=v=>Math.min(v.width/v.worldWidth,v.height/v.worldHeight);
+const fillScale=v=>Math.max(v.width/v.worldWidth,v.height/v.worldHeight);
+// A tall phone needs more than 3× the overview scale just to fill its screen
+// with a wide map. Leave some extra headroom for precise touch selection.
+const maxScale=v=>Math.max(fitScale(v)*3,fillScale(v)*1.5);
+// Fit the whole map initially; callers can choose a closer opening view.
 export function createBattleViewport(worldWidth,worldHeight,width,height){
   if(![worldWidth,worldHeight,width,height].every(finitePositive))throw Error('Invalid viewport dimensions');
   const minScale=Math.min(width/worldWidth,height/worldHeight);
@@ -22,9 +27,17 @@ export function panBattleViewport(view,dx,dy){
 }
 export function zoomBattleViewport(view,factor,anchor){
   validate(view);if(!finitePositive(factor)||!validPoint(anchor))throw Error('Invalid zoom');
-  const minScale=Math.min(view.width/view.worldWidth,view.height/view.worldHeight),scale=clamp(view.scale*factor,minScale,minScale*3);
+  const scale=clamp(view.scale*factor,fitScale(view),maxScale(view));
   const worldX=view.x+anchor.x/view.scale,worldY=view.y+anchor.y/view.scale;
   return bounded({...view,scale,x:worldX-anchor.x/scale,y:worldY-anchor.y/scale});
+}
+// Resizing/rotating keeps the world point under the screen centre and the
+// zoom relative to the overview, subject to the new view's bounds.
+export function resizeBattleViewport(view,width,height){
+  validate(view);if(![width,height].every(finitePositive))throw Error('Invalid viewport dimensions');
+  const centerX=view.x+view.width/(2*view.scale),centerY=view.y+view.height/(2*view.scale);
+  const next={...view,width,height},scale=clamp(view.scale/fitScale(view)*fitScale(next),fitScale(next),maxScale(next));
+  return bounded({...next,scale,x:centerX-width/(2*scale),y:centerY-height/(2*scale)});
 }
 export function battleScreenToWorld(view,point){
   validate(view);if(!validPoint(point))throw Error('Invalid point');
