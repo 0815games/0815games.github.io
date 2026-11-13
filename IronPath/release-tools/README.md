@@ -15,12 +15,15 @@ limits, identity setup and actual deployments still need independent verificatio
 
 ## Current isolated candidates
 
-- Vercel is connected to the owner's `0815games` Hobby team, but that team has
-  no projects. Creating a repository-linked project was rejected because the
-  Vercel account needs a GitHub Login Connection. **No Vercel project or
-  deployment was created.** The owner must connect GitHub and grant repository
-  access in Vercel before retrying; do not create a project implicitly through
-  a deployment call.
+- The owner connected GitHub to Vercel. The separate `ironpath-release` project
+  now exists in the `0815games` Hobby team and is linked to this repository,
+  with project root `IronPath/release-tools` and output directory `public`.
+  Its intended Node version is pinned by `package.json` to 22.x, although the
+  project default reads 26.x; verify the actual build runtime. No Firebase
+  variables or credentials have been added. The first connector deployment was
+  rejected because its API omits the required `projectSettings`; do not attempt
+  to smuggle unsupported fields into the connector call. A normal Git push may
+  trigger a Vercel build; until one is verified, deployment is unproven.
 - `api/session.mjs`, `package.json`, `vercel.json`, and `public/` are an
   **unconfigured** Node 22/Vercel service candidate rooted in this directory.
   The intended static output contains only `public/`; actual bundling, HTTP
