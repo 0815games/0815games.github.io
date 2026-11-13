@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createHash} from 'node:crypto';
-import {mkdtemp,mkdir,readFile,writeFile,rm,symlink,stat} from 'node:fs/promises';
+import {mkdtemp,mkdir,readFile,writeFile,rm,symlink,stat,readdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -9,6 +9,7 @@ import {stageVersion} from '../release-tools/stage-version.mjs';
 import {stageLauncher} from '../release-tools/stage-launcher.mjs';
 import {CRITICAL_RELEASE_FILES,verifyStagedBuild} from '../release-tools/verify-staged-build.mjs';
 import {verifyPublicRelease} from '../release-tools/verify-public-release.mjs';
+import {formatGuardedAccountConfig,ACCOUNT_CONFIG_MARKER} from '../release-tools/public-site-config.mjs';
 
 const source=fileURLToPath(new URL('..',import.meta.url));
 const config={firebase:{apiKey:'fake-public-key',authDomain:'demo-ironpath.firebaseapp.com',
@@ -30,6 +31,7 @@ function fileFetcher(site,requests){
 
 test('an explicitly guarded build and versioned launcher stage separately from the live source', {timeout:60000},async t=>{
  const {site,releases}=await setup(t),original=await readFile(join(source,'index.html'));
+ const originalAccount=await readFile(join(source,'account.js'),'utf8');
  const result=await stageVersion({sourceDir:source,outputDir:releases,build:'site-1',guardedConfig:config});
  const launcher=await stageLauncher({sourceDir:source,outputDir:site,build:'launcher-1',config});
  assert.equal(launcher.build,'launcher-1');
@@ -45,6 +47,17 @@ test('an explicitly guarded build and versioned launcher stage separately from t
  for(const name of CRITICAL_RELEASE_FILES)assert.ok(inventory.files[name],name);
  assert.equal(await readFile(join(site,'launcher','launcher-1','release-config.mjs'),'utf8'),
   await readFile(join(result.directory,'release-config.mjs'),'utf8'));
+ const stagedAccount=await readFile(join(result.directory,'account.js'),'utf8');
+ assert.equal(stagedAccount.split(formatGuardedAccountConfig(config)).length,2,'the account fallback targets this staged project');
+ const oldProject=originalAccount.match(/projectId:'([^']+)'/)?.[1],oldKey=originalAccount.match(/apiKey:'([^']+)'/)?.[1];
+ assert.ok(oldProject && oldKey && oldProject!==config.firebase.projectId,'the test uses a different project');
+ for(const [directory,prefix] of [[result.directory,''],[join(result.directory,'release-tools'),'release-tools/']]){
+  for(const name of await readdir(directory))if(/\.(?:js|mjs)$/.test(name)){
+   const text=await readFile(join(directory,name),'utf8');
+   assert.ok(!text.includes(oldProject) && !text.includes(oldKey),`${prefix}${name} must not include the normal game Firebase config`);
+  }
+ }
+ assert.equal(await readFile(join(source,'account.js'),'utf8'),originalAccount,'the source account is not modified');
  const requests=[],fetcher=fileFetcher(site,requests);
  assert.equal(await verifyStagedBuild({build:'site-1',origin:'http://127.0.0.1:8080',config,fetcher}),'/IronPath/releases/site-1/');
  assert.equal(requests.length,CRITICAL_RELEASE_FILES.length+1);
@@ -65,6 +78,16 @@ test('readiness rejects tampering, an unguarded entry, inconsistent settings and
  await assert.rejects(check({config:{...config,sessionEndpoint:'https://other.example/api/session'}}),/configuration differs/);
  const account=join(directory,'account.js'),bytes=await readFile(account);await writeFile(account,Buffer.concat([bytes,Buffer.from('\n// changed')]));
  await assert.rejects(check(),/too large|Inconsistent/);await writeFile(account,bytes);
+ // Even a matching manifest must not hide an account fallback for another
+ // project; compare that line against the launcher's trusted local config.
+ const manifestPath=join(directory,'release-manifest.json'),originalManifest=await readFile(manifestPath);
+ const other={...config,firebase:{...config.firebase,projectId:'demo-other',authDomain:'demo-other.firebaseapp.com'}};
+ const accountText=bytes.toString('utf8'),alteredAccount=Buffer.from(accountText.replace(formatGuardedAccountConfig(config),formatGuardedAccountConfig(other)));
+ assert.notDeepEqual(alteredAccount,bytes);
+ const changedInventory=JSON.parse(originalManifest);changedInventory.files['account.js']={bytes:alteredAccount.length,sha256:hash(alteredAccount)};
+ await writeFile(account,alteredAccount);await writeFile(manifestPath,JSON.stringify(changedInventory));
+ await assert.rejects(check(),/Account Firebase configuration differs/);
+ await writeFile(account,bytes);await writeFile(manifestPath,originalManifest);
  const entry=join(directory,'index.html'),originalHtml=await readFile(entry,'utf8');
  const altered=Buffer.from(originalHtml.replace('data-ironpath-guard="required"','data-ironpath-guard="optional"'));
  await writeFile(entry,altered);
@@ -89,7 +112,7 @@ test('packaging refuses secret-like config, overlaps, symlinked output and inval
  await assert.rejects(stat(join(site,'index.html')),{code:'ENOENT'});
 });
 
-test('guarded staging refuses a missing game, a mismatched session registry or unsafe source HTML',async t=>{
+test('guarded staging refuses a missing game, an ambiguous account config, mismatched registry or unsafe HTML',async t=>{
  const {dir,releases}=await setup(t),src=join(dir,'minimal-source');
  await mkdir(join(src,'assets'),{recursive:true});await mkdir(join(src,'release-tools'));
  const guardNames=['guarded-game-bootstrap.mjs','guarded-runtime.mjs','game-session.mjs','release-control.mjs',
@@ -97,13 +120,18 @@ test('guarded staging refuses a missing game, a mismatched session registry or u
  for(const name of guardNames)await writeFile(join(src,'release-tools',name),await readFile(join(source,'release-tools',name)));
  await writeFile(join(src,'assets','manifest.webmanifest'),'{"name":"Iron Path"}');
  await writeFile(join(src,'account-services.mjs'),'export const x=1;');await writeFile(join(src,'game.js'),'// game');
- const correct="import {x} from './account-services.mjs?v=20261031-releaseguard1';";
+ const marked=` config:{projectId:'old-game'}, ${ACCOUNT_CONFIG_MARKER}`;
+ const correct=`import {x} from './account-services.mjs?v=20261031-releaseguard1';\nconst fallback={\n${marked}\n};`;
  await writeFile(join(src,'account.js'),correct);
  const html='<!doctype html><html lang="en"><head></head><body><p class="build-stamp" aria-hidden="true">BUILD old</p><p class="build-stamp" aria-hidden="true">BUILD old</p><a href="../">← 0815 Games</a><script type="module" src="account.js?v=old"></script></body></html>';
  await writeFile(join(src,'index.html'),html);
  await stageVersion({sourceDir:src,outputDir:releases,build:'valid',guardedConfig:config});
  await writeFile(join(src,'account.js'),correct.replace('releaseguard1','releaseguard2'));
  await assert.rejects(stageVersion({sourceDir:src,outputDir:releases,build:'wrong-registry',guardedConfig:config}),/registry module URLs must match/);
+ await writeFile(join(src,'account.js'),correct.replace(ACCOUNT_CONFIG_MARKER,'// missing marker'));
+ await assert.rejects(stageVersion({sourceDir:src,outputDir:releases,build:'missing-config',guardedConfig:config}),/Unexpected account Firebase configuration/);
+ await writeFile(join(src,'account.js'),correct.replace(marked,`${marked}\n${marked}`));
+ await assert.rejects(stageVersion({sourceDir:src,outputDir:releases,build:'duplicate-config',guardedConfig:config}),/Unexpected account Firebase configuration/);
  await writeFile(join(src,'account.js'),correct);await rm(join(src,'game.js'));
  await assert.rejects(stageVersion({sourceDir:src,outputDir:releases,build:'missing-game',guardedConfig:config}),/Missing guarded runtime file/);
  await writeFile(join(src,'game.js'),'// game');await writeFile(join(src,'index.html'),html.replace('</head>',''));

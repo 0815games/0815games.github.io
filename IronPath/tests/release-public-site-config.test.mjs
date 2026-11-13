@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {formatPublicSiteConfig,validatePublicSiteConfig,validateSiteOrigin} from '../release-tools/public-site-config.mjs';
+import {formatPublicSiteConfig,formatGuardedAccountConfig,ACCOUNT_CONFIG_MARKER,validatePublicSiteConfig,validateSiteOrigin} from '../release-tools/public-site-config.mjs';
 
 const input={firebase:{projectId:'demo-ironpath',authDomain:'demo-ironpath.firebaseapp.com',
   databaseURL:'https://demo-ironpath.firebaseio.com',apiKey:'fake-public-key',appId:'1:123:web:abcdef'},
@@ -12,6 +12,8 @@ test('public settings have a deterministic browser representation and no arbitra
   assert.equal(Object.isFrozen(config),true);assert.equal(Object.isFrozen(config.firebase),true);
   assert.equal(formatPublicSiteConfig(input),formatPublicSiteConfig(config));
   assert.match(formatPublicSiteConfig(input),/export default/);
+  assert.equal(formatGuardedAccountConfig(input),` config:${JSON.stringify(config.firebase)}, ${ACCOUNT_CONFIG_MARKER}`);
+  assert.ok(!formatGuardedAccountConfig(input).includes('release.example'),'account config has no session endpoint');
 });
 
 test('only HTTPS origins and local loopback HTTP are accepted',()=>{

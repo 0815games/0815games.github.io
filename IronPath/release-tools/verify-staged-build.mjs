@@ -4,7 +4,7 @@
 // separately verify its entire public inventory before opening the release.
 import {BUILD_PATTERN} from './release-control.mjs';
 import {readBoundedBytes,readBoundedJson} from './bounded-json.mjs';
-import {formatPublicSiteConfig,validatePublicSiteConfig,validateSiteOrigin} from './public-site-config.mjs';
+import {formatPublicSiteConfig,formatGuardedAccountConfig,ACCOUNT_CONFIG_MARKER,validatePublicSiteConfig,validateSiteOrigin} from './public-site-config.mjs';
 
 export const CRITICAL_RELEASE_FILES=Object.freeze([
   'index.html','account.js','account-services.mjs','release-config.mjs',
@@ -60,6 +60,11 @@ export async function verifyStagedBuild({build,origin,config,fetcher=globalThis.
     })));
     const decode=bytes=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
     if(decode(files['release-config.mjs'])!==formatPublicSiteConfig(publicConfig))throw Error('Build configuration differs from launcher');
+    const accountLines=decode(files['account.js']).split(/\r?\n/);
+    if(accountLines.filter(line=>line.includes(ACCOUNT_CONFIG_MARKER)).length!==1 ||
+        accountLines.filter(line=>line===formatGuardedAccountConfig(publicConfig)).length!==1) {
+      throw Error('Account Firebase configuration differs from launcher');
+    }
     const html=decode(files['index.html']);
     const once=text=>html.split(text).length===2;
     if(!once(`<html lang="en" data-ironpath-guard="required" data-ironpath-release-build="${build}">`) ||

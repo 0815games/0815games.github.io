@@ -51,7 +51,7 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
   for(const name of ['firebase-app.js','firebase-auth.js','firebase-database.js'])sdkModules[name]=await fs.readFile(path.join(__dirname,'node_modules/firebase',name),'utf8');
   admin=initializeAdmin({projectId:project},'release-site-browser-admin');const adminAuth=getAdminAuth(admin);
   await adminAuth.createUser({uid,email:'release-site@example.test',password:'example-password-123'});
-  let sessionRequests=0,serviceReads=0,failStatus=false,breakCritical=false;
+  let sessionRequests=0,serviceReads=0,statusRequests=0,gameStatusRequests=0,sdkRequests=0,failStatus=0,breakCritical=false;
   const service=createConfiguredSessionExchange({databaseUrl:config.firebase.databaseURL,adminAuth,
    fetcher:(_url,options)=>{serviceReads++;return fetch(emulatorStatus,options);}});
   const handleSession=createReleaseSessionHttpHandler({exchange:service,allowedOrigins:['https://0815games.github.io'],route:'/api/session'});
@@ -117,7 +117,7 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
    await context.route('**/*',async route=>{
     const request=route.request(),url=new URL(request.url()),name=url.pathname.split('/').pop();
     if(url.hostname==='www.gstatic.com' && url.pathname.startsWith('/firebasejs/10.14.1/')){
-     let body=sdkModules[name];
+     sdkRequests++;let body=sdkModules[name];
      if(name==='firebase-auth.js')body=authShim;
      if(name==='firebase-database.js')body=databaseShim;
      if(name==='firebase-auth-test-raw.js')body=sdkModules['firebase-auth.js'];
@@ -125,7 +125,9 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
      if(body)return route.fulfill({contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body});
     }
     if(url.href==='https://demo-ironpath.firebaseio.com/_ironpathRelease.json'){
-     if(failStatus)return route.fulfill({status:503,headers:{'access-control-allow-origin':'*'},body:'unavailable'});
+     statusRequests++;
+     if(new URL(request.frame().url()).pathname.startsWith('/IronPath/releases/'))gameStatusRequests++;
+     if(failStatus)return route.fulfill({status:failStatus,headers:{'access-control-allow-origin':'*'},body:'unavailable'});
      const response=await fetch(emulatorStatus,{cache:'no-store',signal:AbortSignal.timeout(5000)});
      return route.fulfill({status:response.status,headers:{'access-control-allow-origin':'*','content-type':'application/json','cache-control':'no-store'},body:await response.text()});
     }
@@ -156,6 +158,23 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
     assert.equal(await page.evaluate(()=>window.__releaseSite.auths[1].currentUser?.uid??null),null);
    };
 
+   // A denied public control record (e.g. a still-locked test database) is
+   // not evidence of maintenance or permission to log in. Both the stable
+   // entry and a direct guarded URL must fail closed before importing account.
+   // This 403 is simulated locally, not a request to a real Firebase project.
+   failStatus=403;
+   await page.goto(`${base}/IronPath/`);
+   await page.waitForFunction(()=>document.getElementById('titleText').textContent==='Signal lost');
+   assert.ok(statusRequests>0);assert.deepEqual(accountScripts,[]);assert.equal(sessionRequests,0);
+   const beforeGameStatus=gameStatusRequests,beforeSdk=sdkRequests;
+   const deniedLanding=page.waitForURL(/\/IronPath\/\?from=unavailable$/,{timeout:15000});
+   try{await page.goto(game('site-1'),{waitUntil:'domcontentloaded'});}
+   catch(error){if(!String(error).includes('ERR_ABORTED'))throw error;}
+   await deniedLanding;await page.waitForFunction(()=>document.getElementById('titleText').textContent==='Signal lost');
+   assert.ok(gameStatusRequests>beforeGameStatus,'direct game checked the denied status');
+   assert.ok(sdkRequests>beforeSdk,'direct game reached the SDK bootstrap');
+   assert.deepEqual(accountScripts,[]);assert.equal(sessionRequests,0);
+   failStatus=0;
    await page.goto(`${base}/IronPath/`);
    await page.waitForFunction(()=>document.getElementById('titleText').textContent==='Operation paused');
    assert.deepEqual(accountScripts,[]);assert.equal(sessionRequests,0);
@@ -227,10 +246,10 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
 
    // A status outage returns to a blocked launcher. Even after the signal
    // recovers, an unavailable return waits for a deliberate retry.
-   failStatus=true;const unavailableLanding=page.waitForURL(/\/IronPath\/\?from=unavailable$/,{timeout:10000});
+   failStatus=503;const unavailableLanding=page.waitForURL(/\/IronPath\/\?from=unavailable$/,{timeout:10000});
    await page.evaluate(()=>window.dispatchEvent(new Event('online')));await unavailableLanding;
    await page.waitForFunction(()=>document.getElementById('titleText').textContent==='Signal lost');
-   failStatus=false;await page.evaluate(()=>window.dispatchEvent(new Event('online')));await page.waitForTimeout(200);
+   failStatus=0;await page.evaluate(()=>window.dispatchEvent(new Event('online')));await page.waitForTimeout(200);
    assert.match(page.url(),/\?from=unavailable$/);await page.locator('#launcherRetry').click();
    await page.waitForURL('**/IronPath/releases/site-2/',{timeout:30000});await login();
 
@@ -250,7 +269,7 @@ export function goOffline(value){window.__releaseSite.events.push('offline');ret
    assert.equal(accountScripts.filter(p=>p.includes('/site-1/')).length,oldBefore);
    await page.locator('#authView').waitFor({state:'visible',timeout:25000});
    assert.deepEqual(staticFailures,[]);assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
-   console.log('Packaged launcher + guarded game: blocked first paint, artifact check, login, logout, maintenance, reopen, outage and bfcache simulation passed against loopback emulators.');
+   console.log('Packaged launcher + guarded game: denied control, blocked first paint, artifact check, login, logout, maintenance, reopen, outage and bfcache simulation passed against loopback emulators.');
   }finally{await context.close();}
  }finally{
   if(browser)await browser.close();if(env)await env.cleanup();if(server)await new Promise(resolve=>server.close(resolve));

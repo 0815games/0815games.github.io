@@ -24,12 +24,28 @@ service; identity, free limits and the complete rollout still need verification.
   with no duplicate JSON keys. This is evidence of the owner's supplied text,
   **not** an independent Firebase read or proof of the database instance or
   current deployment. Obtain a fresh backup and compare again before changes.
+- The owner supplied public Web settings for the separate `ironpathtest`
+  project. A public Identity Toolkit lookup matched its project number, but did
+  not establish database ownership, Auth-provider settings, rules or billing
+  plan. Anonymous REST reads of both the database root and `_ironpathRelease`
+  returned `Permission denied`: this does **not** prove child paths or writes
+  are locked. A guarded build and launcher were staged only under `/tmp` using
+  those Web settings and a deliberately synthetic session endpoint. All 595
+  staged files were scanned for the normal game's project ID and API key; none
+  contained either. A local full-inventory check covered 580 build files. A
+  separate network-blocked Chromium dry run with SDK doubles and a simulated
+  denied status kept the launcher and direct game blocked before the account
+  module or login. The fuller SDK/emulator browser test also passed with a
+  simulated 403. This test made no live login, session exchange, database write
+  or rule change, and did not deploy the staged build; it does not prove
+  Firebase enforcement.
 - `IRONPATH_RELEASE_GUARD=1` runs the real large-map lobby and party modules
   with two synthetic users under the generated candidate rules: coop and versus
   including guest reconnect, stale/unexchanged credentials and closure of a
   multiplayer listener and writes were tested locally with Fireemu
-  (`productionExact: false`; 4/4). It is included in `test:release-guard` for
-  subsequent official-emulator CI. It is not a live or two-device test.
+  (`productionExact: false`; 4/4). The `test:release-guard` step also passed
+  with the official emulator in [CI 43430568466](https://github.com/0815games/0815games.github.io/actions/runs/43430568466)
+  for `f8bde98`. It is not a live or two-device test.
 - The owner connected GitHub to Vercel. The separate `ironpath-release` project
   exists in the `0815games` Hobby team, linked to this repository with project
   root `IronPath/release-tools` and output directory `public`. The first Git
@@ -45,9 +61,12 @@ service; identity, free limits and the complete rollout still need verification.
   from commit `e2f44ea` is READY, uses Node 22.x, and serves the public alias
   `https://ironpath-release.vercel.app/`; the deployment-specific and team
   aliases require Vercel sign-in. No Firebase variables or credentials have
-  been added. The initial function crashed at startup (500). Vercel disables
-  `require(ESM)` by default and this dependency chain fails with that setting
-  locally; adding the documented non-secret project setting
+  been added. The deployed instance reports Node 22.x, and the service package
+  requests `22.x`; a later project-settings read reported `26.x`. Reconcile the
+  effective Node version and rerun the unconfigured smoke before any new
+  deployment or credential setup. The initial function crashed at startup (500).
+  Vercel disables `require(ESM)` by default and this dependency chain fails with
+  that setting locally; adding the documented non-secret project setting
   `NODE_OPTIONS=--experimental-require-module` for Production and Preview and
   redeploying `9527b55` yielded the generic unavailable JSON response on the
   public alias; the opt-in [CI probe](https://github.com/0815games/0815games.github.io/actions/runs/43408350246)
@@ -114,8 +133,14 @@ service; identity, free limits and the complete rollout still need verification.
 - `stage-version.mjs` defaults to the **unguarded** packaging smoke, but an
   explicit `--guarded-public-config` now produces a separate candidate with a
   hidden/inert first paint, a required guard marker and the actual guarded
-  bootstrap instead of the direct account script. `stage-launcher.mjs` makes a
-  separate stable entry and uniquely versioned launcher assets. Neither writes
+  bootstrap instead of the direct account script. It replaces the uniquely
+  marked default account Firebase config with that staged public config; a
+  missing/ambiguous marker fails staging, and the launcher's critical-file
+  check compares the replacement to its own config. This reduces accidental
+  cross-project fallback but does not prove project ownership, network
+  isolation, source integrity or future code free of other Firebase targets.
+  `stage-launcher.mjs` makes a separate stable entry and uniquely versioned
+  launcher assets. Neither writes
   into the source tree, deploys anything, changes Firebase or protects the
   existing public entry. Keep old version and launcher paths intact; the tools
   do not build a retained, atomic Pages snapshot or a rollback automatically.
@@ -220,6 +245,24 @@ service; identity, free limits and the complete rollout still need verification.
   or activate an unguarded build. Restore a known-compatible build and repeat
   verification before reopening.
 
+## Before any live test-project changes
+
+Verify in the Firebase Console that the Realtime Database URL and Web app really
+belong to `ironpathtest`, that its plan is Spark, and whether Authentication →
+Sign-in method has Email/Password enabled. Inspect and back up the test database
+rules; anonymous root denial is not a substitute for reviewing child grants.
+The owner's production rules are a reference for a generated candidate, not
+permission to overwrite any test or production rules.
+
+The real candidate needs a publicly readable but client-nonwritable
+`_ironpathRelease` record **and** reviewed server-side rules guarding all game
+data. A locked or missing record intentionally makes the launcher unavailable.
+It also needs a working trusted session exchange; the synthetic endpoint used in
+local staging is deliberately unusable. Do not publish rules or place service
+credentials in Vercel until the target and deployment/alias boundaries have been
+independently checked and a test-only rollout and rollback are agreed. Never
+share private keys, passwords, tokens, or player data in chat or this repository.
+
 ## Creating an isolated guarded candidate
 
 The following makes local files **only**. The example is deliberately fake and
@@ -241,9 +284,13 @@ Use a fresh directory and never reuse a game or launcher ID for different
 contents. Both tools reject source/output overlap and refuse to overwrite their
 entry paths; an unsuccessful stage can leave a partial directory that must not
 be published. The launcher and game need exactly the same public config. The
-candidate is hard-coded for `/IronPath/`, requires HTTPS except loopback in
-local checks, and currently accepts the project's `firebaseapp.com` Auth domain.
-The normal packager invocation without the explicit config remains unguarded.
+normal `account.js` default config is replaced in a guarded build only; review
+and scan the *whole* output for unexpected production identifiers whenever the
+source changes. The config validator does not prove that the Firebase database
+belongs to the selected Auth project. The candidate is hard-coded for
+`/IronPath/`, requires HTTPS except loopback in local checks, and currently
+accepts the project's `firebaseapp.com` Auth domain. The normal packager
+invocation without the explicit config remains unguarded.
 
 After a separately reviewed deployment, the operator can compare the whole
 remote release with its trusted *local* inventory using

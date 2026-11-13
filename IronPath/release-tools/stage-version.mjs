@@ -7,10 +7,17 @@ import {createHash} from 'node:crypto';
 import {resolve, relative, join, sep} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {BUILD_PATTERN} from './release-control.mjs';
-import {validatePublicSiteConfig,formatPublicSiteConfig} from './public-site-config.mjs';
+import {validatePublicSiteConfig,formatPublicSiteConfig,formatGuardedAccountConfig,ACCOUNT_CONFIG_MARKER} from './public-site-config.mjs';
 
 const within=(parent,child)=>{const r=relative(parent,child);return r===''||(!r.startsWith(`..${sep}`)&&r!=='..'&&!r.startsWith(sep));};
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+const accountConfigLine=/^[ \t]*config:\{[^\r\n]*\},[ \t]*\/\/ @ironpath-account-firebase-config[ \t]*$/gm;
+function retargetAccount(source,config){
+  if(source.split(ACCOUNT_CONFIG_MARKER).length!==2 || [...source.matchAll(accountConfigLine)].length!==1) {
+    throw Error('Unexpected account Firebase configuration; cannot stage guarded build');
+  }
+  return source.replace(accountConfigLine,formatGuardedAccountConfig(config));
+}
 // Only browser-safe dependencies of the candidate guard are copied. Never copy
 // the server/API, deployment configuration, node_modules or possible secrets.
 const browserGuardFiles=Object.freeze([
@@ -55,7 +62,9 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
   for (const name of names) {
     const info=await lstat(join(source,name));
     if (!info.isFile() || info.isSymbolicLink()) throw Error(`Invalid runtime file: ${name}`);
-    await save(name,await readFile(join(source,name)));
+    let bytes=await readFile(join(source,name));
+    if(config && name==='account.js')bytes=Buffer.from(retargetAccount(new TextDecoder('utf-8',{fatal:true}).decode(bytes),config));
+    await save(name,bytes);
   }
   const assetInfo=await lstat(join(source,'assets'));
   if (!assetInfo.isDirectory() || assetInfo.isSymbolicLink()) throw Error('Missing real assets directory');

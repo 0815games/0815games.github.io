@@ -61,3 +61,12 @@ export function formatPublicSiteConfig(value) {
   const config=validatePublicSiteConfig(value);
   return `// Public browser settings only. Never put service credentials in this file.\nexport default ${JSON.stringify(config)};\n`;
 }
+
+// The normal game has a public default Firebase config in account.js. Guarded
+// staging replaces the uniquely marked line with its target project's public
+// settings, so a test artifact does not carry the game's production fallback.
+export const ACCOUNT_CONFIG_MARKER='// @ironpath-account-firebase-config';
+export function formatGuardedAccountConfig(value) {
+  const {firebase}=validatePublicSiteConfig(value);
+  return ` config:${JSON.stringify(firebase)}, ${ACCOUNT_CONFIG_MARKER}`;
+}
