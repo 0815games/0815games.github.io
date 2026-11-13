@@ -282,7 +282,7 @@ jobs:
           java-version: '21'
       - name: Install Firebase emulator test tooling
         run: npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
-      - name: Test release auth, teardown and staged game in Chromium (emulators only)
+      - name: Test release auth, launcher and staged game in Chromium (emulators only)
         working-directory: IronPath/firebase/rules-test
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules

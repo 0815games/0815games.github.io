@@ -98,19 +98,35 @@ service; identity, free limits and the complete rollout still need verification.
   Cleanup is best effort and can leave stale presence/lobby data behind. None of
   this changes the ordinary published entry or makes a client-side check a
   server-side security boundary.
-- `stage-version.mjs` includes an explicit allowlist of browser guard modules
-  inside each version directory, not server code or deployment secrets. Its
-  generated HTML still starts the *unguarded* game. The additional
-  `release-game-browser.cjs` test modifies that HTML **only in memory** to
-  install a guarded test bootstrap, serves the packaged modules, and drives the
-  real account UI using local emulator identities and HTTP proxies. With the
-  unofficial Fireemu (`productionExact: false`) it passed incorrect-password
-  retry, login, a hanging logout, actual game-loop stop, open-dialog teardown,
-  full local document navigations, maintenance, a queued old write, stale build,
-  reopen and status outage. This is not the deployed launcher, a Vercel/CORS
-  test, production Firebase or a real-device test. All three browser cases passed
-  the **official Firebase emulators** in [CI 43418709714](https://github.com/0815games/0815games.github.io/actions/runs/43418709714)
-  for commit `b643a45`.
+- `stage-version.mjs` defaults to the **unguarded** packaging smoke, but an
+  explicit `--guarded-public-config` now produces a separate candidate with a
+  hidden/inert first paint, a required guard marker and the actual guarded
+  bootstrap instead of the direct account script. `stage-launcher.mjs` makes a
+  separate stable entry and uniquely versioned launcher assets. Neither writes
+  into the source tree, deploys anything, changes Firebase or protects the
+  existing public entry. Keep old version and launcher paths intact; the tools
+  do not build a retained, atomic Pages snapshot or a rollback automatically.
+- The candidate launcher polls the same configured Firebase control record,
+  fails closed on missing/bad status, checks the manifest and 13 critical files,
+  confirms the release again, and performs a fixed same-origin full navigation.
+  A missing/changed build requires a manual retry instead of a redirect loop.
+  Its hashes detect inconsistent files but are not signed, do not cover every
+  asset and do not prove what subsequent requests execute. Browser caches,
+  service workers, malicious hosting and a later file replacement are outside
+  this check. `verify-public-release.mjs` can separately compare **every**
+  inventoried public build file and the remote manifest with a trusted local
+  staging inventory, once per release; it does not check the launcher, prove
+  later immutability, configure the service or reopen anything.
+- `release-game-browser.cjs` uses in-memory test HTML and passed the **official
+  Firebase emulators** in [CI 43418709714](https://github.com/0815games/0815games.github.io/actions/runs/43418709714)
+  on `b643a45`. The newer `release-site-browser.cjs` uses the actual generated
+  launcher and guarded HTML, without HTML injection, and passed locally with
+  Fireemu (`productionExact: false`): blocked first paint, bad artifact, login,
+  hanging logout, maintenance with an open dialog and queued write, reopen,
+  status outage, stale build and a simulated bfcache restore. Its SDK wrappers
+  and HTTP routes point to loopback emulators; this is not a real Vercel/CORS,
+  Pages/CDN, production Firebase or two-device test. Official-emulator CI for
+  this newer case must be checked on its commit.
 
 ## What has to be true before enabling it
 
@@ -125,15 +141,15 @@ service; identity, free limits and the complete rollout still need verification.
    protected operations, monitoring and abuse/rate limits. No fully configured
    trusted service is deployed here. Never place service-account keys, tokens
    or player data in this repo.
-3. Complete the actual game and launcher integration before changing production
-   rules. The normal entry still signs in directly and starts a profile listener;
-   only the isolated test installs the guarded account session before import.
-   The real path must use separate temporary and game Auth instances, exchange
-   and validate the claims, then start listeners; a status failure must block,
-   disconnect and replace the document. The stable entry must select and verify
-   a complete immutable build. `stage-version.mjs` only makes a local, currently
-   unguarded candidate; it is not a Pages pipeline, launcher, cryptographic code
-   attestation or deployment.
+3. Complete and rehearse the actual deployment integration before changing
+   production rules. The normal published entry still signs in directly and
+   starts a profile listener. The opt-in staged launcher/game implement a
+   candidate guarded path, but they are not wired into GitHub Pages. The
+   deployed path must use separate temporary and game Auth instances, exchange
+   and validate claims before listeners, and fully replace the document after
+   teardown. The new packagers are not a retained atomic Pages pipeline, a
+   guaranteed cache strategy, code attestation, a verified production artifact
+   or a deployment. Review and verify the launcher as well as every build file.
 4. **Never upgrade an old Realtime Database SDK instance to a new epoch.** The
    tests demonstrate that an offline write queued under the old identity can
    be sent with new credentials. Origin-wide `LOCAL` Auth can transfer the new
@@ -184,6 +200,40 @@ service; identity, free limits and the complete rollout still need verification.
   or activate an unguarded build. Restore a known-compatible build and repeat
   verification before reopening.
 
+## Creating an isolated guarded candidate
+
+The following makes local files **only**. The example is deliberately fake and
+cannot log in; browser integration tests route it to loopback emulators. Do not
+copy a service-account JSON, a private key, a player token, or any other secret
+into this public configuration or the generated artifact. The Web API key below
+is a synthetic stand-in for the intended public Firebase Web configuration.
+
+```sh
+mkdir -p /tmp/ironpath-candidate/IronPath/releases
+cat > /tmp/ironpath-candidate/public.json <<'JSON'
+{"firebase":{"apiKey":"fake-public-key","authDomain":"demo-ironpath.firebaseapp.com","databaseURL":"https://demo-ironpath.firebaseio.com","projectId":"demo-ironpath"},"sessionEndpoint":"https://release.example/api/session"}
+JSON
+node IronPath/release-tools/stage-version.mjs IronPath /tmp/ironpath-candidate/IronPath/releases example-1 --guarded-public-config /tmp/ironpath-candidate/public.json
+node IronPath/release-tools/stage-launcher.mjs IronPath /tmp/ironpath-candidate/IronPath launcher-1 /tmp/ironpath-candidate/public.json
+```
+
+Use a fresh directory and never reuse a game or launcher ID for different
+contents. Both tools reject source/output overlap and refuse to overwrite their
+entry paths; an unsuccessful stage can leave a partial directory that must not
+be published. The launcher and game need exactly the same public config. The
+candidate is hard-coded for `/IronPath/`, requires HTTPS except loopback in
+local checks, and currently accepts the project's `firebaseapp.com` Auth domain.
+The normal packager invocation without the explicit config remains unguarded.
+
+After a separately reviewed deployment, the operator can compare the whole
+remote release with its trusted *local* inventory using
+`node IronPath/release-tools/verify-public-release.mjs <authorized-site-origin> <local-release-manifest.json>`.
+This read-only check downloads every listed file (currently roughly 68 MB), uses
+bounded concurrency and fails on a missing or altered response. It does not
+verify the stable launcher itself, future changes, a browser's service worker or
+cached resources, Firebase rules, the session service, or a safe release order.
+It must not be treated as permission to reopen maintenance.
+
 ## Isolated test entry points
 
 With Node 22, Java 21 and the official Firebase emulator available:
@@ -206,8 +256,8 @@ also run this probe when a push commit explicitly includes
 The public alias is reachable without Vercel login; protected preview and
 unique deployment URLs cannot be substituted without an authorized test path.
 
-The cross-tab, combined browser-runtime and staged-game tests additionally
-require Playwright/Chromium. CI installs them and runs
+The cross-tab, combined browser-runtime, staged-game and packaged-site tests
+additionally require Playwright/Chromium. CI installs them and runs
 `npm run test:release-tabs --prefix IronPath/firebase/rules-test` with `NODE_PATH`
 pointing at the pinned Playwright installation. The tests use only
 `demo-ironpath`, loopback emulators and synthetic users; they do not inspect or

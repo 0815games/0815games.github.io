@@ -1,6 +1,6 @@
-// Parse small, untrusted network responses without buffering an unbounded body.
+// Read small, untrusted network responses without buffering an unbounded body.
 // The caller owns its timeout/AbortController and must check the HTTP status.
-export async function readBoundedJson(response, maxBytes) {
+export async function readBoundedBytes(response, maxBytes) {
   if (!response?.headers?.get || !response.body?.getReader ||
       !Number.isSafeInteger(maxBytes) || maxBytes < 1) throw Error('Invalid response');
   const length=response.headers.get('content-length');
@@ -26,5 +26,10 @@ export async function readBoundedJson(response, maxBytes) {
   }
   const bytes=new Uint8Array(size);let offset=0;
   for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}
+  return bytes;
+}
+
+export async function readBoundedJson(response, maxBytes) {
+  const bytes=await readBoundedBytes(response,maxBytes);
   return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
 }
