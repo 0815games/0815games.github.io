@@ -108,8 +108,9 @@ service; identity, free limits and the complete rollout still need verification.
   retry, login, a hanging logout, actual game-loop stop, open-dialog teardown,
   full local document navigations, maintenance, a queued old write, stale build,
   reopen and status outage. This is not the deployed launcher, a Vercel/CORS
-  test, production Firebase or a real-device test. The new case is included in
-  `test:release-tabs`; the official-emulator CI result for it must be checked.
+  test, production Firebase or a real-device test. All three browser cases passed
+  the **official Firebase emulators** in [CI 43418709714](https://github.com/0815games/0815games.github.io/actions/runs/43418709714)
+  for commit `b643a45`.
 
 ## What has to be true before enabling it
 
