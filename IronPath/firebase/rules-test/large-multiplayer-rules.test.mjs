@@ -10,13 +10,17 @@ import {createPlayer} from '../../match.mjs';
 import {bunkerStart} from '../../solo-deployment.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 import {CONTROL_PATH} from '../../release-tools/release-control.mjs';
+import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
+import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
+import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
 
 // Uses Firebase's SDK and a local database emulator with checked-in rules.
-// The optional guarded run tests a generated candidate, not deployed rules.
+// The optional guarded runs test generated candidates, not deployed rules.
 const ids=['alice','bob'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp};
 const profiles=Object.fromEntries(ids.map(id=>[id,{name:id,gender:'female',level:1}]));
-const guarded=process.env.IRONPATH_RELEASE_GUARD==='1';
-const publish=process.env.PUBLISH_RULES==='1'||guarded;
+const guarded=process.env.IRONPATH_RELEASE_GUARD==='1',maintenance=process.env.IRONPATH_MAINTENANCE_GUARD==='1';
+if(guarded&&maintenance)throw Error('Choose one local release guard');
+const publish=process.env.PUBLISH_RULES==='1'||guarded||maintenance;
 const rulesFile=publish?'../WORKSHOP-RULES-TO-PUBLISH.json':'../unified.complete.draft.rules.json';
 const epochA='a'.repeat(32),epochB='b'.repeat(32),t=Math.floor(Date.now()/1000);
 const control={mode:'open',build:'release-1',epoch:epochA,authAfterMs:(t-120)*1000};
@@ -27,20 +31,22 @@ const mapId='g3-19e3779b1';let env,db;
 const adminSet=(path,value)=>env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),path),value));
 before(async()=>{
  const source=await readFile(new URL(rulesFile,import.meta.url),'utf8');
- const rules=guarded?JSON.stringify(buildRulesCandidate(JSON.parse(source)).candidate):source;
+ const rules=guarded?JSON.stringify(buildRulesCandidate(JSON.parse(source)).candidate):
+  maintenance?JSON.stringify(buildMaintenanceRulesCandidate(buildSocialCleanupCandidate(source),{adminUid:'local-large-maintenance-admin'}).candidate):source;
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules}});
- db=Object.fromEntries(ids.map(id=>[id,(guarded?env.authenticatedContext(id,claims()):env.authenticatedContext(id)).database()]));
+ db=Object.fromEntries(ids.map(id=>[id,(guarded?env.authenticatedContext(id,claims()):maintenance?env.authenticatedContext(id,claims(epochA,t-30,'password')):env.authenticatedContext(id)).database()]));
 });
 beforeEach(async()=>{
  await env.clearDatabase();
  if(guarded)await adminSet(CONTROL_PATH,control);
+ if(maintenance)await adminSet(MAINTENANCE_PATH,{format:1,mode:'open',authAfterMs:0});
  for(const id of ids)await set(ref(db[id],`players/${id}`),{name:id,gender:'female',xp:0});
  // Fail if the test accidentally reaches an unrestricted database instance.
  await assertFails(set(ref(db.bob,'players/alice/xp'),1));
 });
 after(async()=>env.cleanup());
 
-for(const mode of ['coop','versus'])test(`${guarded?'release-gated publish':publish?'publish':'unified'} candidate rules admit a large ${mode} lobby, battle and guest reconnect`,{timeout:60000},async()=>{
+for(const mode of ['coop','versus'])test(`${guarded?'release-gated publish':maintenance?'maintenance-gated publish':publish?'publish':'unified'} candidate rules admit a large ${mode} lobby, battle and guest reconnect`,{timeout:60000},async()=>{
  const auth=id=>({currentUser:{uid:id}});
  const lobbies=Object.fromEntries(ids.map(id=>[id,createFirebaseFourLobby({db:db[id],auth:auth(id),sdk,crypto:webcrypto})]));
  const party=await assertSucceeds(lobbies.alice.create(profiles.alice));let clients=[];

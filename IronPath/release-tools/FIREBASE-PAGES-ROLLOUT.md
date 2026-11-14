@@ -117,11 +117,14 @@ registriert selbst keine Konten.
    zusammenführen und erneut prüfen, nicht die Produktion passend machen.
 3. Den **neuesten** PR-Commit, vollständige Tests und insbesondere die
    offiziellen Emulatorläufe `npm run test:maintenance` und
-   `npm run test:maintenance-browser` prüfen. Die Admin- und AFK-Browsertests
-   verwenden das echte Firebase-SDK mit lokalen Auth-/RTDB-Emulatoren; weitere
-   lokale Chromium-Fälle verwenden Firebase-Doubles. Der lokal verwendete
-   Ersatz-Emulator ist nicht vollständig produktionsgetreu
-   (`productionExact:false`).
+   `npm run test:maintenance-browser` prüfen. Der Rules-Lauf prüft auch
+   Social-/Charakterbereinigung sowie Zwei- und Vier-Spieler-Lobbys und -Partien
+   mit den **kombinierten** Wartungs-Rules. Er prüft außerdem, dass eine laufende
+   Vierer-Verbindung bei Wartung gesperrt wird und alte Sitzungen nach dem Öffnen
+   gesperrt bleiben. Die Admin- und AFK-Browsertests verwenden das echte
+   Firebase-SDK mit lokalen Auth-/RTDB-Emulatoren; weitere lokale Chromium-Fälle
+   verwenden Firebase-Doubles. Der lokal verwendete Ersatz-Emulator ist nicht
+   vollständig produktionsgetreu (`productionExact:false`).
    Keiner dieser Tests beweist produktive Rules, echtes CORS/CDN-Verhalten oder
    den Live-Cutover. Die kombinierte Rules-Datei ersetzt beim Veröffentlichen
    die gesamte produktive Ruleset-Datei, nicht nur einen Teil.

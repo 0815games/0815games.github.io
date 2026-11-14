@@ -6,17 +6,21 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,update,remove,onValue,runTransaction,serverTimestamp,query,orderByKey,startAfter,limitToFirst} from 'firebase/database';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
+import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
+import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
 import {createFriendService,friendNameKey} from '../../friends.mjs';
 import {createCoopInvites} from '../../coop-invites.mjs';
 import {createCharacterDeletion} from '../../character-deletion.mjs';
 import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
 
 // The baseline is the checked-in owner reference, not a live Rules export.
-// Candidate and candidate+release-guard are separate emulator runs.
-const baseline=process.env.SOCIAL_BASELINE==='1',guarded=process.env.SOCIAL_GUARDED==='1';
+// Baseline, old release guard, and Firebase-only maintenance are separate runs.
+const baseline=process.env.SOCIAL_BASELINE==='1',guarded=process.env.SOCIAL_GUARDED==='1',maintenance=process.env.SOCIAL_MAINTENANCE==='1';
+if([baseline,guarded,maintenance].filter(Boolean).length>1)throw Error('Choose at most one local Rules mode');
 const sdk={ref,get,set,update,remove,onValue,runTransaction,serverTimestamp,query,orderByKey,startAfter,limitToFirst};
 const now=Math.floor(Date.now()/1000),epoch='a'.repeat(32),control={mode:'open',build:'social-test',epoch,authAfterMs:(now-120)*1000};
-const claims={iat:now,auth_time:now-30,ip_release_epoch:epoch,firebase:{sign_in_provider:'custom',identities:{}}};
+const claims={iat:now,auth_time:now-30,ip_release_epoch:epoch,firebase:{sign_in_provider:maintenance?'password':'custom',identities:{}}};
+const maintenanceAdmin='local-social-maintenance-admin';
 const ids=['alice','bob','carol','eve'];let env,db;
 const auth=uid=>({currentUser:{uid}});
 const friends=uid=>createFriendService({db:db[uid],auth:auth(uid),sdk,crypto:webcrypto});
@@ -30,11 +34,13 @@ before(async()=>{
  const bytes=await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));
  let rules=baseline?JSON.parse(bytes):buildSocialCleanupCandidate(bytes);
  if(guarded)rules=buildRulesCandidate(rules).candidate;
+ if(maintenance)rules=buildMaintenanceRulesCandidate(rules,{adminUid:maintenanceAdmin}).candidate;
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:JSON.stringify(rules)}});
- db=Object.fromEntries(ids.map(uid=>[uid,env.authenticatedContext(uid,guarded?claims:undefined).database()]));
+ db=Object.fromEntries(ids.map(uid=>[uid,env.authenticatedContext(uid,guarded||maintenance?claims:undefined).database()]));
 });
 beforeEach(async()=>{
  await env.clearDatabase();if(guarded)await adminSet('_ironpathRelease',control);
+ if(maintenance)await adminSet(MAINTENANCE_PATH,{format:1,mode:'open',authAfterMs:0});
  for(const [uid,name] of [['alice','Alice'],['bob','Bob'],['carol','Carol'],['eve','Eve']])await set(ref(db[uid],`players/${uid}`),{name,gender:'female',xp:0});
 });
 after(async()=>env.cleanup());
@@ -100,4 +106,30 @@ test('reference Rules reject the complete atomic cleanup without deleting the pl
 test('a soldier with no social records can be deleted with the reference Rules',{skip:!baseline},async()=>{
  await set(ref(db.alice,'leaderboards/solo/alice'),{name:'Alice',wave:7});
  await assertSucceeds(deletion('alice').remove('Alice'));assert.equal(await adminRead('players/alice'),null);assert.equal(await adminRead('leaderboards/solo/alice'),null);
+});
+
+if(maintenance)test('maintenance blocks social deletion atomically until a fresh login after reopening',{timeout:30000},async()=>{
+ const a=friends('alice'),b=friends('bob');
+ await a.ensureSearchListing('Alice');const aliceCode=await a.ensureCode('Alice'),bobCode=await b.ensureCode('Bob');
+ await a.send(bobCode,'Alice');await b.accept('alice');
+ await set(ref(db.alice,'leaderboards/solo/alice'),{name:'Alice',wave:7});
+ const before={player:await adminRead('players/alice'),friendship:await adminRead('friendships/bob/alice'),
+  code:await adminRead(`friendCodes/${aliceCode}`),score:await adminRead('leaderboards/solo/alice')};
+ assert.ok(before.friendship);assert.ok(before.code);
+ const admin=env.authenticatedContext(maintenanceAdmin,claims).database(),status=ref(admin,MAINTENANCE_PATH);
+ await assertSucceeds(set(status,{format:1,mode:'maintenance',authAfterMs:0}));
+ await assertFails(get(ref(db.alice,'players/alice')));
+ await assertFails(update(ref(db.alice),{'players/alice':null,'leaderboards/solo/alice':null}));
+ await assert.rejects(()=>deletion('alice').remove('Alice'));
+ assert.deepEqual(await adminRead('players/alice'),before.player);
+ assert.deepEqual(await adminRead('friendships/bob/alice'),before.friendship);
+ assert.deepEqual(await adminRead(`friendCodes/${aliceCode}`),before.code);
+ assert.deepEqual(await adminRead('leaderboards/solo/alice'),before.score);
+ await assertSucceeds(set(status,{format:1,mode:'open',authAfterMs:serverTimestamp()}));
+ const cutoff=(await assertSucceeds(get(status))).val().authAfterMs;
+ await assertFails(update(ref(db.alice),{'players/alice':null}));
+ const fresh=env.authenticatedContext('alice',{...claims,auth_time:Math.floor(cutoff/1000)+2}).database();
+ await assertSucceeds(createCharacterDeletion({db:fresh,auth:auth('alice'),sdk}).remove('Alice'));
+ for(const path of ['players/alice','friendships/bob/alice',`friendCodes/${aliceCode}`,'leaderboards/solo/alice'])assert.equal(await adminRead(path),null,path);
+ assert.equal((await adminRead('players/bob')).name,'Bob');
 });

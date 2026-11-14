@@ -9,12 +9,29 @@ import {createFourPlayerPanel} from '../../firebase-four-panel.mjs';
 import {projectFourGameView} from '../../four-game-view.mjs';
 import {createPlayer} from '../../match.mjs';
 import {webcrypto} from 'node:crypto';
+import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
+import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
+import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
+// Both modes use synthetic accounts and a local emulator, never a live project.
+const maintenance=process.env.IRONPATH_MAINTENANCE_GUARD==='1',adminUid='local-four-maintenance-admin';
+const tokenTime=Math.floor(Date.now()/1000);
+const claims=(authTime=tokenTime-30)=>({iat:tokenTime,auth_time:authTime,firebase:{sign_in_provider:'password',identities:{}}});
 let env,db;const names={alice:'Alice',bob:'Bob',cara:'Cara',dan:'Dan',eve:'Eve'};
 const party='0123456789abcdef0123456789abcdef',code='0123',p=`fourParties/${party}`,c=`fourCodes/${code}`,at=(uid,path)=>ref(db[uid],path);
 const profile=uid=>({name:names[uid],gender:'female',level:1});
 const manifest=(mode='two-vs-two')=>({hostId:'alice',playerIds:['alice','bob','cara','dan'],mode,teams:[0,1,0,1]});
-before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../four-player.complete.draft.rules.json',import.meta.url),'utf8')}});db=Object.fromEntries(Object.keys(names).map(id=>[id,env.authenticatedContext(id).database()]));db.anon=env.unauthenticatedContext().database();});
-beforeEach(async()=>{await env.clearDatabase();for(const uid of Object.keys(names))await assertSucceeds(set(at(uid,`players/${uid}`),{name:names[uid],gender:'female',xp:0}));});after(async()=>{await env.cleanup();});
+before(async()=>{
+ const source=await readFile(new URL(maintenance?'../WORKSHOP-RULES-TO-PUBLISH.json':'../four-player.complete.draft.rules.json',import.meta.url));
+ const rules=maintenance?JSON.stringify(buildMaintenanceRulesCandidate(buildSocialCleanupCandidate(source),{adminUid}).candidate):source.toString();
+ env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules}});
+ db=Object.fromEntries(Object.keys(names).map(id=>[id,env.authenticatedContext(id,maintenance?claims():undefined).database()]));
+ db.anon=env.unauthenticatedContext().database();
+});
+beforeEach(async()=>{
+ await env.clearDatabase();
+ if(maintenance)await env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),MAINTENANCE_PATH),{format:1,mode:'open',authAfterMs:0}));
+ for(const uid of Object.keys(names))await assertSucceeds(set(at(uid,`players/${uid}`),{name:names[uid],gender:'female',xp:0}));
+});after(async()=>{await env.cleanup();});
 async function create(){await assertSucceeds(set(at('alice',`${p}/hostId`),'alice'));await assertSucceeds(set(at('alice',`${c}/hostId`),'alice'));await assertSucceeds(set(at('alice',`${p}/inviteCode`),code));await assertSucceeds(set(at('alice',`${c}/partyId`),party));await assertSucceeds(set(at('alice',`${p}/profiles/alice`),profile('alice')));await assertSucceeds(set(at('alice',`${p}/config`),{mode:'two-vs-two',teams:[0,1,0,1]}));}
 async function add(uid,slot){await assertSucceeds(set(at(uid,`${c}/requests/${uid}`),{name:names[uid]}));await assertSucceeds(set(at('alice',`${p}/slots/${slot}`),uid));await assertSucceeds(set(at(uid,`${p}/profiles/${uid}`),profile(uid)));}
 async function full(){await create();await add('bob','one');await add('cara','two');await add('dan','three');}
@@ -77,7 +94,7 @@ test('SDK lobby subscriptions expose only permitted roster information', {timeou
   await assert.rejects(once((ok,err)=>lobby.eve.watchProfile(created.partyId,'alice',ok,err)),/permission_denied/i);
   await lobby.bob.leave(created.partyId);await lobby.alice.close(created.partyId,created.inviteCode);
 });
-for(const mode of ['four-coop','two-vs-two'])test(`four real Firebase SDK clients play ${mode} under draft rules`,{timeout:60000},async()=>{
+for(const mode of ['four-coop','two-vs-two'])test(`four real Firebase SDK clients play ${mode} under ${maintenance?'maintenance candidate':'draft rules'}`,{timeout:60000},async()=>{
   await full();if(mode==='four-coop')await set(at('alice',`${p}/config`),{mode,teams:[0,1,0,1]});await set(at('alice',`${p}/started`),manifest(mode));
   const ids=['alice','bob','cara','dan'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp},statuses={},views={},errors=[];
   const players=ids.map((id,i)=>createPlayer(id,profile(id),1220,270+i*60));
@@ -117,4 +134,30 @@ for(const mode of ['four-coop','two-vs-two'])test(`four lobby panels hand off a 
 });
 test('existing account and two-player code rules remain present',async()=>{
   const old='fedcba9876543210fedcba9876543210';await assertSucceeds(set(at('alice',`parties/${old}/hostId`),'alice'));await assertSucceeds(set(at('alice','partyCodes/0987/hostId'),'alice'));await assertFails(get(at('eve','players/alice')));await assertFails(set(at('bob','players/alice/xp'),500));
+});
+
+if(maintenance)test('maintenance cancels a four-player input listener and fences old sessions after reopening',{timeout:30000},async()=>{
+  await full();await assertSucceeds(set(at('alice',`${p}/started`),manifest()));
+  const input=`${p}/inputs/bob`;await assertSucceeds(set(at('bob',input),'before'));
+  let initialResolve,cancelResolve;
+  const initial=new Promise(resolve=>{initialResolve=resolve;}),cancelled=new Promise(resolve=>{cancelResolve=resolve;});
+  const off=onValue(at('alice',input),snapshot=>initialResolve(snapshot.val()),error=>cancelResolve(error));
+  async function within(promise,label){
+    let timer;try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(`${label} timed out`)),12000);})]);}
+    finally{clearTimeout(timer);}
+  }
+  try{
+    assert.equal(await within(initial,'initial multiplayer input'),'before');
+    const admin=env.authenticatedContext(adminUid,claims()).database(),control=ref(admin,MAINTENANCE_PATH);
+    await assertSucceeds(set(control,{format:1,mode:'maintenance',authAfterMs:0}));
+    await assertFails(set(at('bob',input),'closed'));
+    assert.match(String((await within(cancelled,'multiplayer listener cancellation'))?.code),/permission.denied/i);
+    await assertSucceeds(set(control,{format:1,mode:'open',authAfterMs:serverTimestamp()}));
+    const cutoff=(await assertSucceeds(get(control))).val().authAfterMs;
+    assert.ok(Number.isSafeInteger(cutoff)&&cutoff>0);
+    await assertFails(set(at('bob',input),'stale'));
+    const fresh=env.authenticatedContext('bob',claims(Math.floor(cutoff/1000)+2)).database();
+    await assertSucceeds(set(ref(fresh,input),'reauthenticated'));
+    await assertFails(get(at('eve',input)));
+  }finally{off();}
 });
