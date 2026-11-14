@@ -302,6 +302,11 @@ jobs:
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: npm run test:release-tabs
+      - name: Test character cleanup UI in Chromium (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        run: npm run test:social-browser
       - name: Save interface screenshots
         if: always()
         uses: actions/upload-artifact@v4

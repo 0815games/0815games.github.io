@@ -11,7 +11,7 @@ const mocks={
 const panel=`export function createFourPlayerPanel({document,onMatch}){
  let active=false;const root=document.getElementById('fourPartyPanel');
  globalThis.__testParty=mode=>{active=true;return onMatch({partyId:'0123456789abcdef0123456789abcdef',hostId:'mock-user',playerIds:['mock-user','bob'],profiles:[{name:'Test Soldier',gender:'female',level:3},{name:'Bob',gender:'male',level:3}],mode,teamRosters:[['mock-user','bob'],[]]});};
- return {show(){root.hidden=false},hide(){root.hidden=true},isActive:()=>active,hostInvite:()=>null,joinInvite:async()=>false,leaveParty:async()=>{active=false;return true},leaveForLogout:async()=>{active=false}};
+ return {show(){root.hidden=false},hide(){root.hidden=true},isActive:()=>active,isBusy:()=>false,hostInvite:()=>null,joinInvite:async()=>false,leaveParty:async()=>{active=false;return true},leaveForLogout:async()=>{active=false}};
 }`;
 const partyGame=`import {createMatch} from './simulation.mjs';import {applyCommand} from './match.mjs';import {createVersus,versusView,applyVersus} from './versus.mjs';
  export function createFirebasePartyGame({players,mapId,mode,hostId,onSnapshot,onStatus}){

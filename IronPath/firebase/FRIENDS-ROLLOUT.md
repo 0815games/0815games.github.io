@@ -78,8 +78,14 @@ The `test:social-cleanup` suite exercises the checked-in reference, the candidat
 and the candidate combined with the experimental release guard using Firebase's
 official local emulator in CI. It checks failure without partial profile loss,
 both friendship directions, known invitations, scores, re-enlistment under a new
-name, legacy name migration and unauthorized access. Mock-store tests do not
-prove Rules behavior; an emulator is not the live database. Before any rollout,
+name, legacy name migration and unauthorized access. `test:social-browser` uses
+the real account UI and Firebase SDK against local Auth/RTDB emulators: it
+checks the old Rules' atomic rejection, the active-party block, waiting while
+offline at the deletion write, reconnecting, cleanup with the guarded candidate
+and re-enlistment. The browser suite needs Playwright and Chromium; CI installs
+the pinned browser tooling separately. These tests do not establish cross-device
+or interrupted-write safety. Mock-store tests do not prove Rules behavior; an
+emulator is not the live database. Before any rollout,
 test with separate consenting accounts/devices: friendship request/accept and
 remove in both directions, invitations, host close and guest leave, offline or
 interrupted writes, deletion, re-enlistment and search. Verify deployed Rules
