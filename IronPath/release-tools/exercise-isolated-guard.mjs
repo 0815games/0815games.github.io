@@ -40,11 +40,14 @@ async function expectedRules(){
   return candidate;
 }
 function claims(token,uid,provider){
-  if(typeof token!=='string'||token.length>8192)fail('TEST_IDENTITY_INVALID');
-  let value;try{value=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString('utf8'));}catch{fail('TEST_IDENTITY_INVALID');}
-  if(value?.aud!=='ironpathtest'||value.sub!==uid||value.firebase?.sign_in_provider!==provider||!Number.isSafeInteger(value.auth_time)) {
-    fail('TEST_IDENTITY_INVALID');
-  }
+  if(typeof token!=='string'||token.length>8192)fail('TEST_IDENTITY_TOKEN_MISSING');
+  let value;try{value=JSON.parse(Buffer.from(token.split('.')[1],'base64url').toString('utf8'));}catch{fail('TEST_IDENTITY_TOKEN_MALFORMED');}
+  // Fixed diagnostic codes identify a failed assertion without printing any
+  // part of a token, a user ID, credentials, or an upstream error body.
+  if(value?.aud!=='ironpathtest')fail('TEST_IDENTITY_PROJECT');
+  if(value.sub!==uid)fail('TEST_IDENTITY_SUBJECT');
+  if(value.firebase?.sign_in_provider!==provider)fail('TEST_IDENTITY_PROVIDER');
+  if(!Number.isSafeInteger(value.auth_time))fail('TEST_IDENTITY_AUTH_TIME');
   return value;
 }
 
@@ -97,7 +100,7 @@ export async function exerciseIsolatedGuard({previousBuild,nextBuild,initialEpoc
     const response=await request(`${IDENTITY}signInWithPassword?key=${API_KEY}`,{method:'POST',headers:{'content-type':'application/json'},
       body:JSON.stringify({email,password,returnSecureToken:true})});
     if(!response.ok)fail('TEST_PASSWORD_SIGNIN_FAILED');
-    const body=await json(response);if(body?.localId!==uid)fail('TEST_IDENTITY_INVALID');
+    const body=await json(response);if(body?.localId!==uid)fail('TEST_PASSWORD_UID_MISMATCH');
     return {token:body.idToken,claims:claims(body.idToken,uid,'password')};
   }
   async function freshSignIn(cutoff){
@@ -116,7 +119,7 @@ export async function exerciseIsolatedGuard({previousBuild,nextBuild,initialEpoc
     const response=await request(`${IDENTITY}signInWithCustomToken?key=${API_KEY}`,{method:'POST',headers:{'content-type':'application/json'},
       body:JSON.stringify({token:customToken,returnSecureToken:true})});
     if(!response.ok)fail('TEST_CUSTOM_SIGNIN_FAILED');
-    const body=await json(response);if(body?.localId!==uid)fail('TEST_IDENTITY_INVALID');
+    const body=await json(response);if(body?.localId!==uid)fail('TEST_CUSTOM_UID_MISMATCH');
     const value=claims(body.idToken,uid,'custom');if(value.ip_release_epoch!==epoch||!isAuthAfterCutoff(value.auth_time,current.authAfterMs))fail('TEST_CUSTOM_CLAIMS_INVALID');
     return body.idToken;
   }

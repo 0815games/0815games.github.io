@@ -17,7 +17,7 @@ const fakeJwt=value=>`${encode({alg:'none'})}.${encode(value)}.test`;
 const fromJwt=value=>decode(value.split('.')[1]);
 const allowedOrigin='https://ironpath-release.vercel.app';
 
-function fixture({failProfile=false,conflictOnFirstTransition=false,changedRules=false}={}){
+function fixture({failProfile=false,conflictOnFirstTransition=false,changedRules=false,wrongAudience=false}={}){
  let now=1800000001000,version=1,user=null,profile=null,createdUid=null;
  let control={mode:'maintenance',build:previousBuild,epoch:initialEpoch,authAfterMs:now-10000};
  const transitions=[],requests=[],calls=[];
@@ -28,7 +28,7 @@ function fixture({failProfile=false,conflictOnFirstTransition=false,changedRules
   async getUser(uid){calls.push('get');if(!user||user.uid!==uid)throw notFound();return {uid:user.uid,email:user.email};},
   async deleteUser(uid){calls.push('delete');assert.equal(uid,user.uid);user=null;}
  };
- const token=(provider,epoch)=>fakeJwt({aud:'ironpathtest',sub:user.uid,auth_time:Math.floor(now/1000),
+ const token=(provider,epoch)=>fakeJwt({aud:wrongAudience?'other-project':'ironpathtest',sub:user.uid,auth_time:Math.floor(now/1000),
   firebase:{sign_in_provider:provider},...(epoch?{ip_release_epoch:epoch}:{})});
  const fetcher=async(input,options={})=>{
   const url=new URL(input),method=options.method||'GET',headers=options.headers||{};
@@ -125,6 +125,14 @@ test('a failed or uncertain profile write closes our epoch and removes the synth
  assert.deepEqual(f.transitions,['open','maintenance']);
  assert.equal(f.getControl().mode,'maintenance');assert.equal(f.getUser(),null);assert.equal(f.getProfile(),null);
  assert.ok(f.requests.some(request=>request.method==='DELETE'&&request.path.startsWith('/players/')));
+});
+
+test('an unexpected identity is diagnosed without credentials and the test account is removed',async()=>{
+ const f=fixture({wrongAudience:true});
+ await assert.rejects(()=>exerciseIsolatedGuard(f.args),error=>{
+  assert.equal(error.message,'TEST_IDENTITY_PROJECT');assert.doesNotMatch(error.message,/token|password|example/i);return true;
+ });
+ assert.deepEqual(f.transitions,[]);assert.equal(f.getControl().mode,'maintenance');assert.equal(f.getUser(),null);
 });
 
 test('a concurrent operator is never overwritten and the synthetic account is removed',async()=>{
