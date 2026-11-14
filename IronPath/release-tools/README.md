@@ -93,10 +93,13 @@ its full live flow, free limits and the production rollout still need verificati
   Run `runtime-compatibility.test.mjs` after dependency changes and recheck the
   Vercel setting: ordinary Node 22 locally can otherwise hide this failure.
   The subsequent isolated test passed real configured HTTP POSTs and an OPTIONS
-  preflight from a Node client, including Firebase Auth and RTDB access. Browser
-  CORS, all deployment-protection paths, abuse controls and the real game's
-  integration still need separate verification. Hobby rate limits are per region,
-  not a global distributed security guarantee; its quotas can interrupt service.
+  preflight from a Node client, including Firebase Auth and RTDB access. A real
+  Chromium CI smoke later followed the public launcher and completed the browser
+  password/session exchange through to the recruitment screen in `ironpathtest`;
+  its synthetic account deletion returned success. It exercised browser CORS on
+  that path, not all deployment-protection paths, abuse controls, multiplayer or
+  real-game integration. Hobby rate limits are per region, not a global
+  distributed security guarantee; its quotas can interrupt service.
 - Four **unconfigured** Preview deployments remain: three file probes
   (`dpl_8qJPt6xrGGcJx4TbNqDqzQzgYwwJ`, `dpl_CnuqSDATe5BSofWRLLrUvbZ6Ya8g`,
   `dpl_8fp75bdQ9Rf7uxm2mJZe9GAQrGBN`) and one Git-source preview
@@ -409,7 +412,12 @@ response check incorrectly required `localId`; that is not required by Firebase'
 custom-token response and was corrected. The test checks the ID-token subject.
 The temporary build command was restored to packaging only. This is an HTTP/API
 smoke on selected paths, not a real-player, all-Rules, offline-device, browser
-or production-cutover proof.
+or production-cutover proof. The separate real-browser login step in
+[CI 43556162279](https://github.com/0815games/0815games.github.io/actions/runs/43556162279)
+reached recruitment and returned success from synthetic-account deletion. That
+smoke did not create a character or exercise a maintenance transition in the
+browser. It is opt-in only and hard-pinned to the already open test build;
+never repeat it with a stale build or assume a killed runner cleaned up.
 
 The operator closes its own epoch and checks cleanup on failure; a killed
 process, lost response or concurrent operator still requires inspection. Its

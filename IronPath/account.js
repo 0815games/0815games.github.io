@@ -9,19 +9,20 @@ import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-loading1';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-finale1';
-import {setupFriends} from './friends-ui.mjs?v=20261031-loading1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-socialcleanup1';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-socialcleanup1';
+import {setupFriends} from './friends-ui.mjs?v=20261031-socialcleanup1';
+import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-socialcleanup1';
 import {createCommandCenter} from './command-center.mjs?v=20261031-loading1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun} from './endless-launcher.mjs?v=20261031-loading1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261031-loading1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-mpview1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-loading1';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261107-balance1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-socialcleanup1';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261031-loading1';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
@@ -39,7 +40,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction, get, remove, set, update, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-loading1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-socialcleanup1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
 import { startGame } from './game.js?v=20261031-mpview1-releasestop1';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-mpview1';
@@ -62,6 +63,7 @@ const accountServices=createAccountServices({
 window.ironPathLoaded = true;
 const {auth,db}=accountServices, $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null, soldierUI=null;
+let deletingCharacter=false,deletionPending=null;
 // Declared before setupLanguage() runs: its first onChange fires immediately.
 let armoryCategory='equipment';
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
@@ -200,25 +202,48 @@ async function logout(){try{
 }catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}}}
 async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPanel?.isActive(),run=gameControl?.getRunSummary();if((partyActive||run)&&!await confirmation.ask({title:'Sign out?',text:partyActive?'Signing out leaves your multiplayer party and may end its match.':'Your current solo operation will be lost. Completed-wave rewards remain saved.',accept:'SIGN OUT'}))return;await logout();}
 $('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout;
-// "Charakter löschen": erases the soldier and returns the still-signed-in
-// account to the recruiting office. The profile listener sees the removal and
-// swaps the view on its own; the social nodes are cleaned up best-effort.
+// Never start deleting in a party or while a lobby request is still completing.
+// Other tabs/older builds cannot be locked by this page; the confirmation asks
+// the player to close them. A successful update covers only discoverable paths.
+const partyActivity=()=>partyPanel.isActive()||partyPanel.isBusy()||!!fourPanel?.isActive()||!!fourPanel?.isBusy();
 async function deleteCharacter(){
- if(!user||!profile)return;
- const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, all progress, gear, endless records and friend links are erased. Your friends keep their accounts; the character leaves their lists. The account itself stays and you can enlist a new soldier right away.',accept:'DELETE'});
- if(!confirmed)return;
- try{await remove(ref(db,`players/${user.uid}`));}catch(e){message(errorText(e));return;}
- // The friend data goes with the soldier: the own list is emptied and the
- // character leaves everyone else's lists (friends.mjs purge - both edge
- // directions, the search listing and the request trails). Degrades silently
- // while the rules for those paths are not published; the paths above never
- // depended on them.
- void friendsUI.purge().catch(()=>{});
- void Promise.allSettled([remove(ref(db,`coopInvites/${user.uid}`))]);
- try{localStorage.removeItem(AVATAR_STORAGE_KEY);}catch{/* The mirror is optional. */}
- const nameField=$('soldierName');if(nameField)nameField.value='';
- recruitScreen.reset();
- message('Character deleted.');
+ if(!user||!profile||deletionPending)return;
+ if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ const currentUser=user,currentName=profile.name,version=sessionVersion;
+ const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, progress, scores and discoverable friend links and invitations will be removed. Close other tabs and devices first. Any current solo operation ends even if deletion fails. Your account remains; older unindexed data may remain.',accept:'DELETE'});
+ if(!confirmed||user!==currentUser||version!==sessionVersion||profile?.name!==currentName)return;
+ if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ const attempt={};deletionPending=attempt;deletingCharacter=true;$('menuDeleteCharacter').disabled=true;
+ const current=()=>deletionPending===attempt&&version===sessionVersion&&user===currentUser&&auth.currentUser?.uid===currentUser.uid&&!accountServices.signal?.aborted;
+ try{
+  // Stop new local writes and wait for work already sent by this document. Do
+  // not time out and then start another deletion: Firebase can queue writes
+  // offline. The loading view remains blocked until a server response arrives.
+  const scoreStop=scoreReporter?.close();scoreReporter=null;
+  const socialStop=friendsUI.prepareForDeletion();
+  if(unsubscribe){unsubscribe();unsubscribe=null;}
+  leaderboardUI.reset();notifySession();display('loading');
+  message('Deleting your soldier. Keep this page open and check your connection.');
+  await Promise.all([scoreStop,socialStop]);if(!current())return;
+  const deletion=createCharacterDeletion({db,auth,sdk:{ref,get,update},isCurrent:current});
+  await deletion.remove(currentName);if(!current())return;
+  // update() is locally optimistic; only reveal recruitment after its server
+  // acknowledgement. The profile listener was detached while it was pending.
+  deletingCharacter=false;profile=null;notifySession();
+  try{localStorage.removeItem(AVATAR_STORAGE_KEY);localStorage.removeItem(ENDLESS_LAST_RUN_KEY);}catch{/* Local mirrors are optional. */}
+  const nameField=$('soldierName');if(nameField)nameField.value='';
+  recruitScreen.reset();display('character');message('Character deleted.');loadProfile(currentUser,version);
+ }catch{
+  if(current()){
+   // A denied update is atomic, but a lost response is uncertain. Reload the
+   // soldier instead of claiming either success or an unchanged profile.
+   deletingCharacter=false;profile=null;notifySession();display('connection');
+   message('Character deletion was not confirmed. Check your connection and database rules, then retry loading your soldier.');
+  }
+ }finally{
+  if(deletionPending===attempt)deletionPending=null;
+  $('menuDeleteCharacter').disabled=false;
+ }
 }
 $('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(user){message('');loadingStep='soldier';display('loading');loadProfile(user,sessionVersion);}};
 // The day service began - shown in the service record. Local time, ISO
@@ -278,7 +303,7 @@ function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscri
  // If the rules are not live yet this fails silently and retries on the
  // next load - the service record shows the placeholder until then.
  if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
+const account={recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user&&!deletingCharacter,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
   // A realtime-database transaction only settles once the server answers; while
   // offline it stays pending forever, and the results screen would sit on
   // "Saving mission progress…" with every button locked and no retry offered.
@@ -350,7 +375,7 @@ if(accountServices.signal){
  accountServices.signal.addEventListener('abort',stopGuardedAccount,{once:true});
  if(accountServices.signal.aborted)stopGuardedAccount();
 }
-accountServices.observe(currentUser=>{scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');setLoadingStep('soldier');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
+accountServices.observe(currentUser=>{deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=currentUser;notifySession();message('');if(currentUser){const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);}if(!currentUser){display('auth');return;}display('loading');setLoadingStep('soldier');loadProfile(currentUser,version);},error=>{display('auth');message(errorText(error));});
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){

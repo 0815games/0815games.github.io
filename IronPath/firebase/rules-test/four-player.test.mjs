@@ -55,14 +55,14 @@ test('member-only inputs, private views and bounded presence',async()=>{
   const conn='a'.repeat(32);await assertSucceeds(set(at('bob',`${p}/presence/bob/${conn}`),serverTimestamp()));await assertSucceeds(get(at('alice',`${p}/presence/bob`)));await assertFails(get(at('eve',`${p}/presence/bob`)));await assertFails(set(at('eve',`${p}/presence/bob/${conn}`),serverTimestamp()));await assertFails(set(at('bob',`${p}/presence/bob/${conn}`),1));await assertSucceeds(set(at('bob',`${p}/presence/bob/${conn}`),null));
 });
 test('four-player SDK lobby operations and reconnect work under the combined rules', {timeout:30000},async()=>{
-  const sdk={ref,get,set,onValue,runTransaction,remove};let random=0;const crypto={getRandomValues(bytes){bytes.fill(++random);return bytes;}};
+  const sdk={ref,get,set,update,onValue,runTransaction,remove};let random=0;const crypto={getRandomValues(bytes){bytes.fill(++random);return bytes;}};
   const lobbies=Object.fromEntries(Object.keys(names).map(uid=>[uid,createFirebaseFourLobby({db:db[uid],auth:{currentUser:{uid}},sdk,crypto})]));
   const created=await assertSucceeds(lobbies.alice.create(profile('alice')));for(const uid of ['bob','cara','dan']){await assertSucceeds(lobbies[uid].request(created.inviteCode,names[uid]));await assertSucceeds(lobbies.alice.approve(created.partyId,created.inviteCode,uid));await assertSucceeds(lobbies[uid].publishProfile(created.partyId,profile(uid)));}
   await assertSucceeds(lobbies.alice.configure(created.partyId,{mode:'two-vs-two',teams:[0,1,0,1]}));const started=await assertSucceeds(lobbies.alice.start(created.partyId));assert.deepEqual(started.playerIds,['alice','bob','cara','dan']);assert.deepEqual((await assertSucceeds(lobbies.bob.reconnect(created.partyId,created.inviteCode))).teamRosters,[['alice','cara'],['bob','dan']]);
   await assertFails(lobbies.eve.reconnect(created.partyId,created.inviteCode));await assert.rejects(()=>lobbies.bob.leave(created.partyId),/locked/);await assertSucceeds(lobbies.alice.close(created.partyId,created.inviteCode));
 });
 test('SDK lobby subscriptions expose only permitted roster information', {timeout:30000},async()=>{
-  const sdk={ref,get,set,onValue,runTransaction,remove};let random=0;const crypto={getRandomValues(bytes){bytes.fill(++random);return bytes;}};
+  const sdk={ref,get,set,update,onValue,runTransaction,remove};let random=0;const crypto={getRandomValues(bytes){bytes.fill(++random);return bytes;}};
   const lobby=Object.fromEntries(['alice','bob','eve'].map(uid=>[uid,createFirebaseFourLobby({db:db[uid],auth:{currentUser:{uid}},sdk,crypto})]));
   const created=await lobby.alice.create(profile('alice'));
   function once(subscribe){return new Promise((resolve,reject)=>{let unwatch;unwatch=subscribe(value=>{queueMicrotask(()=>unwatch?.());resolve(value);},reject);});}

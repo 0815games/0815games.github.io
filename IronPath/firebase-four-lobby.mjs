@@ -9,7 +9,7 @@ const validCode=code=>typeof code==='string'&&/^[0-9]{4}$/.test(code);
 export function fourTeamRosters(manifest){if(!manifest||!Array.isArray(manifest.playerIds)||!availablePartyModes(manifest.playerIds.length).includes(manifest.mode)||new Set(manifest.playerIds).size!==manifest.playerIds.length||manifest.playerIds.some(id=>!validUid(id))||manifest.hostId!==manifest.playerIds[0]||!validConfig(manifest))throw Error('Invalid started roster');return [0,1].map(team=>manifest.playerIds.filter((_,i)=>manifest.teams[i]===team));}
 function validConfig(config){return config&&['coop','versus','four-coop','two-vs-two'].includes(config.mode)&&Array.isArray(config.teams)&&config.teams.length===4&&config.teams.every(t=>t===0||t===1)&&config.teams.filter(t=>t===0).length===2;}
 export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,recoveryEnabled=false}){
-  if(!db||!auth||!sdk||!['ref','get','set','remove','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function'||typeof recoveryEnabled!=='boolean')throw Error('Invalid four-player lobby configuration');
+  if(!db||!auth||!sdk||!['ref','get','set','remove','update','runTransaction','onValue'].every(k=>typeof sdk[k]==='function')||typeof crypto?.getRandomValues!=='function'||typeof recoveryEnabled!=='boolean')throw Error('Invalid four-player lobby configuration');
   const uid=auth.currentUser?.uid;if(!validUid(uid))throw Error('Sign in required');
   const check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Party identity changed');};
   const ref=path=>sdk.ref(db,path),party=(id,path)=>{if(!validParty(id))throw Error('Invalid party');return ref(`fourParties/${id}/${path}`);};
@@ -90,11 +90,21 @@ export function createFirebaseFourLobby({db,auth,sdk,crypto=globalThis.crypto,re
     async leave(partyId){
       check();const [hostId,slots,started]=await Promise.all([read(party(partyId,'hostId')),read(party(partyId,'slots')),read(party(partyId,'started'))]);if(hostId===uid||started)throw Error('Cannot leave locked roster');
       const slot=Object.keys(slots||{}).find(k=>slots[k]===uid);if(!slot)return false;
-      const result=await transactionWithCache(party(partyId,`slots/${slot}`),value=>value===uid?null:undefined);check();if(result.committed){await sdk.remove(party(partyId,`profiles/${uid}`));check();}return result.committed;
+      // Delete the slot and its published profile in one update. Rules recheck
+      // the slot owner and unlocked roster for each leaf at commit time; if the
+      // host starts first neither part of the departure is applied.
+      await sdk.update(ref(`fourParties/${partyId}`),{[`slots/${slot}`]:null,[`profiles/${uid}`]:null});check();return true;
     },
     async reject(inviteCode,guestId){check();if(!validCode(inviteCode)||!validUid(guestId))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${guestId}`));check();},
     async cancel(inviteCode){check();if(!validCode(inviteCode))throw Error('Invalid request');await sdk.remove(ref(`fourCodes/${inviteCode}/requests/${uid}`));check();},
-    async close(partyId,inviteCode){check();if(!validCode(inviteCode)||(await read(party(partyId,'hostId')))!==uid)throw Error('Host required');await sdk.remove(ref(`fourCodes/${inviteCode}`));check();await sdk.remove(ref(`fourParties/${partyId}`));check();},
+    async close(partyId,inviteCode){
+      check();if(!validCode(inviteCode))throw Error('Invalid code');
+      const [host,codeHost,linked]=await Promise.all([read(party(partyId,'hostId')),read(ref(`fourCodes/${inviteCode}/hostId`)),read(ref(`fourCodes/${inviteCode}/partyId`))]);
+      if(host!==uid||codeHost!==uid||linked!==partyId)throw Error('Host party changed');
+      // Do not strand the party if the code removal succeeds but the second
+      // network request fails. Both owner-only deletes succeed or fail together.
+      await sdk.update(sdk.ref(db),{[`fourCodes/${inviteCode}`]:null,[`fourParties/${partyId}`]:null});check();
+    },
     watchHost(partyId,callback,onError=()=>{}){return watch(party(partyId,'hostId'),callback,onError);},
     watchConfig(partyId,callback,onError=()=>{}){return watch(party(partyId,'config'),callback,onError);},
     watchProfile(partyId,playerId,callback,onError=()=>{}){if(!validUid(playerId))throw Error('Invalid player');return watch(party(partyId,`profiles/${playerId}`),callback,onError);},

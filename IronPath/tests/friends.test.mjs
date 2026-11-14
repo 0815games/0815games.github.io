@@ -18,58 +18,30 @@ test('account listing is published automatically and restores a previously hidde
  await alice.ensureSearchListing('Alice');assert.equal(store.values.get(listing).name,'Alice');const code=store.values.get(listing).code;await store.sdk.remove(listing);await alice.ensureSearchListing('Alice');assert.deepEqual(store.values.get(listing),{name:'Alice',code});
 });
 
-test('deleting a character empties the own list and leaves everyone else\'s lists',async()=>{
- const store=makeStore();let n=0;const crypto={getRandomValues(bytes){bytes.fill(++n);}};
- const make=uid=>createFriendService({db:{},auth:{currentUser:{uid}},sdk:store.sdk,crypto});
- const alice=make('alice'),bob=make('bob'),carol=make('carol');
- await alice.ensureSearchListing('Alice');await bob.ensureSearchListing('Bob');await carol.ensureSearchListing('Carol');
- // Alice is mutual friends with Bob (Alice sent, Bob accepted) and has a
- // pending request from Carol sitting in her inbox.
- const aliceCode=store.values.get(`friendPrivate/alice/code`),bobCode=store.values.get(`friendPrivate/bob/code`);
- await alice.send(bobCode,'Alice');
- await store.sdk.set('friendships/bob/alice',{...store.values.get('friendships/bob/alice'),status:'accepted'});
- await carol.send(aliceCode,'Carol');
- const summary=await alice.purge();
- assert.deepEqual(summary,{edges:1,outgoing:1,failed:0});
- assert.equal(store.values.get('friendships/alice'),undefined,'own incoming edges are gone');
- assert.equal(store.values.get('friendOutgoing/alice'),undefined,'own outgoing records are gone');
- assert.equal(store.values.get('friendships/bob/alice'),undefined,'the character left Bob\'s friend list');
- assert.equal(store.values.get(`friendNames/${friendNameKey('Alice')}/alice`),undefined,'the search listing is gone');
- // Carol sent Alice a request: her outgoing record is owner-only under the
- // rules, so it stays - but the edge it points at is gone, which is exactly
- // what renders as "Request no longer active" with a CLEAR button.
- assert.ok(store.values.get('friendOutgoing/carol/alice'),'the other side\'s own record is theirs to clear');
- assert.equal(store.values.get('friendships/alice/carol'),undefined,'the request trail into the deleted account is gone');
- // The create-only pieces survive by rule design: the code keeps resolving,
- // which is what lets a re-enlisted soldier reuse it.
- assert.ok(store.values.get(`friendCodes/${aliceCode}`),'the friend code entry is create-only');
- assert.ok(store.values.get('friendPrivate/alice/code'),'the private code is create-only');
-});
-
-test('purge without any friend data is a clean no-op',async()=>{
- const store=makeStore();const crypto={getRandomValues(bytes){bytes.fill(3);}};
- const alice=createFriendService({db:{},auth:{currentUser:{uid:'alice'}},sdk:store.sdk,crypto});
- assert.deepEqual(await alice.purge(),{edges:0,outgoing:0,failed:0});
-});
-
-test('re-enlisting under a new name degrades honestly instead of bricking search',async()=>{
+test('a legacy account refreshes its retained friend code and moves its listing after re-enlistment',async()=>{
  const store=makeStore();const crypto={getRandomValues(bytes){bytes.fill(5);}};
  const alice=createFriendService({db:{},auth:{currentUser:{uid:'alice'}},sdk:store.sdk,crypto});
- await alice.ensureSearchListing('Alice');
- const firstCode=store.values.get(`friendPrivate/alice/code`);
- await alice.purge(); // the character is gone; friendPrivate is create-only
- // The same account enlists a new soldier with a different name.
- const secondCode=await alice.ensureCode('Alicia');
- assert.equal(secondCode,firstCode,'the code is reused, not collided');
- await assert.rejects(()=>alice.ensureSearchListing('Alicia'),/share your friend code instead/);
- assert.equal(store.values.get(`friendNames/${friendNameKey('Alice')}/alice`),undefined,'the stale listing was taken down');
- assert.equal(store.values.get(`friendNames/${friendNameKey('Alicia')}/alice`),undefined,'no listing appears under the new name while the key cannot move');
+ await alice.ensureSearchListing('Alice');const code=store.values.get('friendPrivate/alice/code');
+ await alice.ensureSearchListing('Alicia');
+ assert.equal(store.values.get('friendPrivate/alice/code'),code);
+ assert.deepEqual(store.values.get(`friendCodes/${code}`),{uid:'alice',name:'Alicia'});
+ assert.equal(store.values.get(`friendNames/${friendNameKey('Alice')}/alice`),undefined);
+ assert.deepEqual(store.values.get(`friendNames/${friendNameKey('Alicia')}/alice`),{name:'Alicia',code});
 });
 
-test('character deletion is wired to the friends purge',()=>{
+test('legacy Rules cannot silently advertise an old friend code as the new soldier',async()=>{
+ const store=makeStore();const crypto={getRandomValues(bytes){bytes.fill(6);}};
+ const alice=createFriendService({db:{},auth:{currentUser:{uid:'alice'}},sdk:store.sdk,crypto});
+ await alice.ensureSearchListing('Alice');const code=store.values.get('friendPrivate/alice/code'),set=store.sdk.set;
+ store.sdk.set=async(path,value)=>{if(path===`friendCodes/${code}`)throw Error('permission denied');return set(path,value);};
+ await assert.rejects(()=>alice.ensureSearchListing('Alicia'),/updated database rules/);
+ assert.equal(store.values.get(`friendNames/${friendNameKey('Alice')}/alice`),undefined);
+ assert.equal(store.values.get(`friendNames/${friendNameKey('Alicia')}/alice`),undefined);
+ assert.equal(store.values.get(`friendCodes/${code}`).name,'Alice');
+});
+
+test('account deletion uses the atomic deletion service, not the old fire-and-forget purge',()=>{
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
- assert.match(account,/friendsUI\.purge\(\)\.catch\(\(\)=>\{\}\)/,'deleteCharacter runs the friends purge');
- assert.match(account,/friend links are erased/,'the confirmation names the friend links');
- const ui=readFileSync(new URL('../friends-ui.mjs',import.meta.url),'utf8');
- assert.match(ui,/return \{reset,start,signOut,open,purge\}/,'the friends UI exposes the purge');
+ assert.match(account,/createCharacterDeletion/);
+ assert.doesNotMatch(account,/friendsUI\.purge/);
 });
