@@ -57,6 +57,9 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
   }
   // Everything the present browser game can reference lives at its top level
   // or below assets/, including runtime-built image, sound and video URLs.
+  // Only index.html is staged below. In particular, do not copy admin.html:
+  // its public Firebase configuration targets the ordinary production project,
+  // and this legacy packager may be used to build an isolated guarded site.
   // The caller must audit this inventory again when the application changes.
   const names=(await readdir(source)).filter(name=>/\.(?:mjs|js|css)$/.test(name)).sort();
   for (const name of names) {

@@ -4,6 +4,9 @@
 import {readBoundedJson} from './release-tools/bounded-json.mjs';
 
 export const MAINTENANCE_PATH='_ironpathMaintenance';
+// An empty, read-protected capability probe. The actual write remains protected
+// independently by Rules; cached client reads are not authorization proof.
+export const MAINTENANCE_ADMIN_ACCESS_PATH='_ironpathMaintenanceAdminAccess';
 
 export function parseMaintenanceControl(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).sort().join(',')!=='authAfterMs,format,mode'||

@@ -44,6 +44,13 @@ test('an explicitly guarded build and versioned launcher stage separately from t
  assert.doesNotMatch(html,/<script type="module" src="(?:account\.js|account-entry\.mjs)\?/);
  const inventory=JSON.parse(await readFile(join(result.directory,'release-manifest.json'),'utf8'));
  assert.equal(inventory.guarded,true);assert.equal(inventory.build,'site-1');
+ // The public admin entry targets production. It is intentionally absent from
+ // the guarded staging tree rather than accidentally exposing that project to
+ // an isolated/test site. The real GitHub Pages source retains admin.html.
+ assert.match(await readFile(join(source,'admin.html'),'utf8'),/ironpath-admin-database-url/);
+ await assert.rejects(stat(join(result.directory,'admin.html')),error=>error.code==='ENOENT');
+ await assert.rejects(stat(join(site,'admin.html')),error=>error.code==='ENOENT');
+ assert.equal(Object.hasOwn(inventory.files,'admin.html'),false);
  for(const name of CRITICAL_RELEASE_FILES)assert.ok(inventory.files[name],name);
  assert.equal(await readFile(join(site,'launcher','launcher-1','release-config.mjs'),'utf8'),
   await readFile(join(result.directory,'release-config.mjs'),'utf8'));

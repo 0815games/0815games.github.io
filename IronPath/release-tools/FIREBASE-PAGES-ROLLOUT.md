@@ -8,11 +8,13 @@ Hinweis, dass ein Cutover oder Rollback bereits stattgefunden hat.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und
-keinen Service-Account-Schlüssel**. Das frühere Vercel-Experiment und sein
-abweichendes Control-Format sind in `PAGES-ROLLOUT.md` nur historisch dokumentiert
-und dürfen mit diesem Ablauf nicht vermischt werden. Keine weiteren Tests auf
-`ironpathtest`. Keine Abrechnung aktivieren; Firebase-Spark- und Pages-Kontingente
-und ihre aktuellen Bedingungen vorab prüfen.
+keinen Service-Account-Schlüssel**. Der Wartungsschalter nutzt ein separates
+Firebase-Auth-Administratorkonto mit eigener, in den Rules freigeschalteter UID.
+Das frühere Vercel-Experiment und sein abweichendes Control-Format sind in
+`PAGES-ROLLOUT.md` nur historisch dokumentiert und dürfen mit diesem Ablauf nicht
+vermischt werden. Keine weiteren Tests auf `ironpathtest`. Keine Abrechnung
+aktivieren; Firebase-Spark- und Pages-Kontingente und ihre aktuellen Bedingungen
+vorab prüfen.
 
 ## Was der lokale Kandidat kann – und was nicht
 
@@ -25,9 +27,10 @@ und ihre aktuellen Bedingungen vorab prüfen.
 - Die **Kandidaten-Rules** verweigern die bisherigen Spiel-Lese- und Schreib-
   freigaben, solange `mode` nicht `open` ist. Nach dem Wiederöffnen verweigern
   sie Tokens, deren `auth_time` nicht strikt nach `authAfterMs` liegt. Der
-  Statuspfad selbst ist öffentlich lesbar und für Spielclients nicht
-  schreibbar. Der Kandidat enthält zusätzlich die fünf Social-Cleanup-
-  Änderungen; er muss als Gesamtes geprüft werden.
+  Statuspfad ist öffentlich lesbar und **nur für eine explizit freigeschaltete
+  Admin-UID** in erlaubten Zustandsübergängen schreibbar; normale Spielkonten
+  können ihn nicht schalten. Der Kandidat enthält zusätzlich die fünf
+  Social-Cleanup-Änderungen; er muss als Gesamtes geprüft werden.
 - Firebase Authentication selbst bleibt erreichbar: Andere Anwendungen oder
   manipulierte/ältere Clients können Auth-Tokens beziehen. Ein alter Client,
   der sich **nach** der Wiederöffnung neu authentifiziert, kann wieder Zugriff
@@ -48,6 +51,29 @@ und ihre aktuellen Bedingungen vorab prüfen.
   oder Neuladen kann trotzdem Daten verwerfen. CDN-/Proxy-/Service-Worker-
   Caches und eine Auslieferung verschiedener Dateien zu unterschiedlichen
   Zeitpunkten bleiben möglich; `version.html` beweist keinen ausgeführten Code.
+- Nach 30 Minuten ohne echte Eingabe im sicheren Menü wird die lokale Firebase-
+  Sitzung abgemeldet und die Version frisch geprüft. Nur bei einem bestätigten
+  neuen Build wird automatisch neu geladen; ansonsten erscheint die Anmeldung.
+  Laufende Einsätze/Gruppen, Dialoge, Formulare und bekannte unbestätigte
+  Speicherungen verhindern die Abmeldung und starten danach eine neue
+  Inaktivitätsfrist. Pausierte oder schlafende Browser reagieren erst später.
+- Firebase kann die Anmeldung zwischen Tabs derselben Origin teilen. Neue,
+  kooperierende Spiel-Tabs halten dafür einen gemeinsamen Web Lock: Die AFK-
+  Abmeldung wartet, solange ein anderer solcher Tab offen ist – auch wenn er
+  selbst nur das Login zeigt. Ohne Web Locks ist die AFK-Abmeldung deaktiviert;
+  die bestehende Versionsprüfung bleibt aktiv. Ältere/offline/manipulierte Tabs
+  können nicht zuverlässig erkannt oder geschützt werden. Andere Geräte werden
+  nicht durch diese lokale Abmeldung abgemeldet; es ist keine serverseitige
+  Session-Ablauffrist und keine Versions- oder Code-Sicherheitsgarantie.
+- `admin.html` ist ein separater, öffentlich erreichbarer Einstieg und bleibt
+  während Wartung bedienbar. Eine benannte Firebase-App mit Session-Persistenz
+  trennt die Admin-Anmeldung vom gewöhnlichen Spiel-Login. Die Rules begrenzen
+  den Zugriff auf die bestätigte Admin-UID; der Admin darf keinen fremden
+  Spielstand ändern. Der Schalter überprüft den öffentlichen Status frisch,
+  verwendet eine vergleichende RTDB-Transaktion und verlangt eine ausdrückliche
+  Bestätigung. Beim Öffnen erzwingen die Rules einen neuen Serverzeitstempel.
+  Ein kompromittiertes Admin-Konto kann Wartung auslösen; starke Zugangsdaten
+  und deren Schutz bleiben Aufgabe des Betreibers.
 
 ## 1. Vorbedingungen für einen tatsächlichen Erst-Cutover
 
@@ -56,7 +82,11 @@ unerwarteten Zustand **stoppen**, nicht überschreiben. Projekt
 `iron-path-dc727`, Datenbankinstanz `iron-path-dc727-default-rtdb` in Europa,
 Berechtigungen, Anmeldeanbieter und das eigene Backup-Verfahren unabhängig
 prüfen. Zugangsdaten, private Daten und Exportdateien nicht im Chat oder Git
-ablegen.
+ablegen. Vorab in **diesem** Firebase-Projekt ein separates Admin-Konto anlegen
+bzw. überprüfen und seine Auth-UID unabhängig aus der Firebase-Authentication-
+Benutzerliste ablesen. Diese UID ist kein Passwort. Kein Passwort, Token oder
+Service-Account-Schlüssel ist für die Vorbereitung erforderlich. Das Panel
+registriert selbst keine Konten.
 
 1. Im Firebase-Dashboard die **aktuell live geltenden gesamten RTDB-Rules**
    unabhängig exportieren und geschützt sichern. Die frühere, vom Nutzer
@@ -68,24 +98,33 @@ ablegen.
 
    ```sh
    python3 IronPath/release-tools/prepare-maintenance-rules.py \
-     /privat/frischer-rules-export.json /tmp/ironpath-maintenance-candidate.json
+     /privat/frischer-rules-export.json /tmp/ironpath-maintenance-candidate.json \
+     --admin-uid 'HIER_DIE_GEPRUEFTE_ADMIN_UID'
    ```
 
-   Das Werkzeug veröffentlicht nichts, liest keine Daten aus Firebase und
-   verweigert abweichende JSON-Inhalte, doppelte Schlüssel, veränderte Hashes
-   und vorhandene Ausgabedateien. Referenz-SHA-256:
-   `8041607e1adb3f235afffde8f581ebf6a06afdee99eb642a4d460ad938a04577`;
-   lokaler Kandidat-SHA-256:
-   `369bf819546c4f063dfe88212bd61f1599e88e4eef9b30d77089d9fc7982f029`.
-   Eine Übereinstimmung beweist weder Herkunft noch Aktualität des Exports.
-   Bei Abweichungen die Rules zuerst manuell zusammenführen und erneut prüfen,
-   nicht den Export oder die Produktion passend machen.
-3. Den **neuesten** PR-Commit, vollständige Tests und insbesondere den
-   offiziellen Firebase-Emulatorlauf `npm run test:maintenance` prüfen. Die
-   lokalen Chromium-Fälle verwenden Firebase-Doubles; sie beweisen keine
-   produktiven Rules, kein echtes CORS/CDN-Verhalten und keinen Live-Cutover.
-   Die kombinierte Rules-Datei ersetzt beim Veröffentlichen die gesamte
-   produktive Ruleset-Datei, nicht nur einen Teil.
+   Die UID im Beispiel durch die unabhängig geprüfte UID ersetzen; niemals
+   einen Spielstand-Namen oder ein Passwort verwenden. Das Werkzeug veröffentlicht
+   nichts, liest keine Daten aus Firebase und verweigert abweichende JSON-Inhalte,
+   doppelte Schlüssel, ungültige UIDs, veränderte Vorlagen und vorhandene
+   Ausgabedateien. Referenz-SHA-256:
+   `8041607e1adb3f235afffde8f581ebf6a06afdee99eb642a4d460ad938a04577`.
+   Der alte, schreibgeschützte Basis-Kandidat wird intern gegen SHA-256
+   `369bf819546c4f063dfe88212bd61f1599e88e4eef9b30d77089d9fc7982f029`
+   geprüft; der finale Hash **hängt von der Admin-UID ab** und wird ausgegeben.
+   Den gesamten Kandidaten einschließlich genau dieser UID und der erlaubten
+   Übergänge manuell prüfen. Eine Übereinstimmung beweist weder Herkunft noch
+   Aktualität des Exports. Bei Abweichungen die Rules zuerst manuell
+   zusammenführen und erneut prüfen, nicht die Produktion passend machen.
+3. Den **neuesten** PR-Commit, vollständige Tests und insbesondere die
+   offiziellen Emulatorläufe `npm run test:maintenance` und
+   `npm run test:maintenance-browser` prüfen. Die Admin- und AFK-Browsertests
+   verwenden das echte Firebase-SDK mit lokalen Auth-/RTDB-Emulatoren; weitere
+   lokale Chromium-Fälle verwenden Firebase-Doubles. Der lokal verwendete
+   Ersatz-Emulator ist nicht vollständig produktionsgetreu
+   (`productionExact:false`).
+   Keiner dieser Tests beweist produktive Rules, echtes CORS/CDN-Verhalten oder
+   den Live-Cutover. Die kombinierte Rules-Datei ersetzt beim Veröffentlichen
+   die gesamte produktive Ruleset-Datei, nicht nur einen Teil.
 4. GitHub **Settings → Pages** und den tatsächlichen Veröffentlichungsweg
    frisch überprüfen. Ein Merge nach `main` kann das ganze Repository als
    Website veröffentlichen; bei einer anderen Source kann er auch gar kein
@@ -93,9 +132,10 @@ ablegen.
    `ironpath-guarded-pages`-Workflow ist für den Vercel-Experimentpfad und wird
    für diesen Ablauf nicht aktiviert. Vor dem Merge müssen Regelreihenfolge,
    Freigabe, bestätigte Seitenveröffentlichung und Fehlerbehandlung feststehen.
-5. Den bestehenden Knoten `/_ironpathMaintenance` administrativ **lesen**.
-   Ist er nicht leer oder ist die Instanz unklar, stoppen und den Zustand
-   unabhängig prüfen. Keine produktiven Spielerknoten verändern.
+5. Die Knoten `/_ironpathMaintenance` und `/_ironpathMaintenanceAdminAccess`
+   administrativ **lesen**. Ist einer davon nicht leer oder ist die Instanz
+   unklar, stoppen und den Zustand unabhängig prüfen. Der Zugriffstest-Knoten
+   soll keine Daten enthalten. Keine produktiven Spielerknoten verändern.
 
 ## 2. Erstmalige koordinierte Veröffentlichung
 
@@ -118,10 +158,20 @@ ausgehen, bevor die neuen Rules tatsächlich aktiv sind.
 3. Erst nach Freigabe den geprüften Branch über den bestätigten Pages-Weg
    veröffentlichen und den Abschluss des tatsächlichen Deployments abwarten.
    Die gelieferte Spielseite, das Manifest, relevante Modul-URLs und die
-   Wartungsanzeige unabhängig prüfen. Alte Clients und echte Geräte sind damit
-   noch nicht vollständig abgenommen. Fehlende oder nicht lesbare Statusdaten
-   halten den neuen Spieleinstieg geschlossen.
-4. Nur wenn alle Prüfungen passen: den **ganzen** Record in einem atomaren Set
+   Wartungsanzeige unabhängig prüfen. `admin.html` muss bei laufender Wartung
+   erreichbar sein; das separate Admin-Konto muss die Berechtigungsprüfung
+   bestehen. Ohne gezielte Freigabe noch keinen Schalter betätigen. Alte Clients
+   und echte Geräte sind damit noch nicht vollständig abgenommen. Fehlende oder
+   nicht lesbare Statusdaten halten den neuen Spieleinstieg geschlossen.
+4. Nur wenn alle Prüfungen passen und die Freigabe vorliegt: Im geprüften
+   `admin.html` **WARTUNG BEENDEN** wählen und bestätigen. Das Panel verwendet
+   eine vergleichende Transaktion und den von RTDB aufgelösten Serverzeitstempel.
+   Anschließend den vollständigen Record unabhängig zurücklesen und den neuen
+   numerischen Cutoff prüfen. Bei ausstehendem oder unklarem Ergebnis nicht
+   erneut schalten, solange die Transaktion noch laufen kann.
+
+   Nur als abgestimmte Operator-Alternative, etwa falls das Panel nicht
+   erreichbar ist: den **ganzen** Record in einem atomaren administrativen Set
    mit `mode: "open"` und einem von RTDB im selben Set aufgelösten
    Serverzeitstempel schreiben. Inhalt der JSON-Datei:
 
@@ -146,12 +196,15 @@ ausgehen, bevor die neuen Rules tatsächlich aktiv sind.
 
 ## 3. Spätere Wartung und normale Updates
 
-- Vor Wartung Record lesen, angekündigt den **ganzen** Record mit
-  `mode: "maintenance"` und dem unveränderten aktuellen numerischen Cutoff
-  setzen und zurücklesen. Angemeldete neue Clients sollten stoppen; offline
-  Geräte reagieren erst später. Nach Arbeiten nur mit einem neuen
-  RTDB-Serverzeitstempel wie oben vollständig öffnen und zurücklesen. Keine
-  alten `open`-Records wiederverwenden.
+- Vor Wartung Status prüfen und die Unterbrechung ankündigen. Im Admin-Panel
+  **WARTUNG AKTIVIEREN** ausdrücklich bestätigen; das Panel erhält den Cutoff
+  und prüft den Zustand erneut. Angemeldete Online-Clients sollten stoppen;
+  unbestätigte Saves können verloren gehen, offline Geräte reagieren erst
+  später. Nach Arbeiten mit **WARTUNG BEENDEN** und neuem RTDB-Serverzeitstempel
+  vollständig öffnen und zurücklesen. Keine alten `open`-Records wiederverwenden.
+  Bei Netzwerkfehler oder unbekanntem Transaktionsausgang zuerst den tatsächlichen
+  Zustand unabhängig prüfen; eine Zeitüberschreitung bricht Firebase-Writes
+  nicht sicher ab.
 - Für ein normales Update ohne Wartung eine neue eindeutige Build-ID in
   `release-version.json`, HTML-Meta und beiden angezeigten Build-Stempeln
   verwenden. Cache-Tokens aller geänderten Dateien **und ihrer Importstellen**

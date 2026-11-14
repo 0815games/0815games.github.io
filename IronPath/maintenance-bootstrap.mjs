@@ -2,7 +2,7 @@
 // lets a maintenance or connection message appear even if the SDK CDN fails.
 // The normal account module reuses this exact gate and rechecks after the
 // version probe; the separately staged legacy guard does not use it.
-import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update1';
+import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update2';
 
 let active=null;
 export function startMaintenanceBoot({document,window,databaseUrl}={}){

@@ -1,6 +1,6 @@
 // Free, client-side presentation of the public Firebase maintenance signal.
 // It cannot close another offline tab or enforce Rules; see maintenance-check.
-import {createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update1';
+import {createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update2';
 
 const words={
  en:{maintenanceTitle:'Maintenance in progress',maintenanceDetail:'Sign-in and game data are paused while Iron Path is being updated.',

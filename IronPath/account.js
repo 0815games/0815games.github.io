@@ -3,15 +3,15 @@ import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
 import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-loading1';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange} from './language.mjs?v=20261031-loading1';
+import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261031-loading1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-update1';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-update1';
-import {setupFriends} from './friends-ui.mjs?v=20261031-update1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-update2';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-update2';
+import {setupFriends} from './friends-ui.mjs?v=20261031-update2';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-socialcleanup1';
 import {createCommandCenter} from './command-center.mjs?v=20261031-loading1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
@@ -21,25 +21,26 @@ import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.m
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-mpview1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-update1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-update2';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261031-loading1';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261031-update1';
-import {createWriteTracker} from './version-check.mjs?v=20261031-update1';
-import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update1';
-import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update1';
-import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update1';
+import {createVersionUI} from './version-ui.mjs?v=20261031-update2';
+import {createWriteTracker} from './version-check.mjs?v=20261031-update2';
+import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update2';
+import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update2';
+import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update2';
+import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update2';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
 import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261031-update1';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261031-update2';
 import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-loading1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261112-tagless1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-update1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-update2';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
@@ -47,7 +48,7 @@ import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, ge
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
 import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-socialcleanup1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261031-update1';
+import { startGame } from './game.js?v=20261031-update2';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-mpview1';
 import { createPlayer } from './match.mjs?v=20261112-tagless1';
 import { bunkerStart } from './solo-deployment.mjs?v=20261112-tagless1';
@@ -61,8 +62,8 @@ import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 // a screen's own watchdog has timed out. Do not reload the document while one
 // of these writes, a retry queue, or a party is still outstanding.
 const releaseWrites=createWriteTracker();
-let releaseFrozen=false;
-const trackedWrite=(fn,args)=>releaseFrozen?Promise.reject(Error('This session is ending')):releaseWrites.track(fn(...args));
+let releaseFrozen=false,afkTransition=false;
+const trackedWrite=(fn,args)=>(releaseFrozen||afkTransition)?Promise.reject(Error('This session is ending')):releaseWrites.track(fn(...args));
 const runTransaction=(...args)=>trackedWrite(firebaseRunTransaction,args);
 const remove=(...args)=>trackedWrite(firebaseRemove,args);
 const set=(...args)=>trackedWrite(firebaseSet,args);
@@ -97,6 +98,13 @@ if(maintenanceUI){
  }
  maintenanceControl=second.control;
 }
+
+// Cooperating game tabs acquire this before initializing the shared Firebase
+// Auth instance. If Web Locks are unavailable, play continues but automatic
+// AFK sign-out is disabled rather than risking another tab's active session.
+const sessionTabLock=guardedDocument?null:createSessionTabLock({locks:window.navigator?.locks});
+if(sessionTabLock)await sessionTabLock.start();
+let afkTimer=null;
 
 bindDisclosureDismiss(document);
 const accountServices=createAccountServices(accountServiceOptions);
@@ -429,7 +437,7 @@ let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savin
 // This is intentionally conservative. A pending Firebase promise, retrying
 // leaderboard/reward queue, failed report, active party or open dialog prevents
 // automatic reload. It describes this document only, not other devices/tabs.
-releaseSafety=()=>{
+function normalReleaseSafety(){
  if(partyActivity()||gameControl?.isOnlineMatch?.())return 'party';
  // Never discard an in-progress authentication, profile load or account form.
  // Recruitment also includes avatar choices that are not just a text input.
@@ -443,7 +451,57 @@ releaseSafety=()=>{
     workshopAccount.isBusy()||friendsUI.hasPending())return 'saving';
  if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]'))return 'dialog';
  return 'ready';
-};
+}
+releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
+const AFK_NOTICE_KEY='ironpath:afk-signed-out';
+function afkNotice(value){try{
+ if(value===true)window.sessionStorage.setItem(AFK_NOTICE_KEY,'1');
+ else if(value===false)window.sessionStorage.removeItem(AFK_NOTICE_KEY);
+ else return window.sessionStorage.getItem(AFK_NOTICE_KEY)==='1';
+}catch{}return false;}
+const afkText=(en,de)=>getLanguage()==='de'?de:en;
+function renderAfkText(){
+ $('afkSessionStatus').textContent=afkText('Signing out after inactivity…','Abmeldung wegen Inaktivität…');
+ $('afkFailureTitle').textContent=afkText('Session protection unavailable','Sitzungsschutz nicht verfügbar');
+ $('afkFailureDetail').textContent=afkText('The browser could not protect the shared session. Reload the game before continuing.','Der Browser konnte die gemeinsame Sitzung nicht schützen. Lade das Spiel neu, bevor du fortfährst.');
+ $('afkSessionReload').textContent=afkText('RELOAD GAME','SPIEL NEU LADEN');
+ if(afkNotice()&&!user&&!auth.currentUser)message(afkText('You were signed out after 30 minutes of inactivity. Sign in to continue.','Du wurdest nach 30 Minuten Inaktivität abgemeldet. Melde dich erneut an.'));
+}
+onLanguageChange(renderAfkText);renderAfkText();
+$('afkSessionFailure').addEventListener('cancel',event=>event.preventDefault());
+$('afkSessionReload').onclick=()=>window.location.reload();
+async function signOutAfterIdle({stillIdle}){
+ if(!sessionTabLock?.isHeld()||!stillIdle())return;
+ const oldAuth=auth.currentUser,wasInert=document.documentElement.inert;
+ if(!oldAuth||oldAuth.uid!==user?.uid)return;
+ afkTransition=true;document.documentElement.inert=true;$('afkSessionStatus').hidden=false;
+ try{
+  await sessionTabLock.runIfAlone(async()=>{
+   // Another document may have opened while our shared lock was released. The
+   // exclusive lock, unchanged auth object, input clock and safety are all
+   // checked again immediately before calling Firebase signOut.
+   if(!stillIdle()||auth.currentUser!==oldAuth||accountTerminated||releaseFrozen)return;
+   afkNotice(true);
+   try{await accountServices.logout();}catch{afkNotice(false);return;}
+   if(auth.currentUser){afkNotice(false);return;}
+   for(const id of ['email','password','passwordConfirm'])$(id).value='';
+   renderAfkText();
+   // This is a new network version check after logout. The existing coordinator
+   // reloads only if a newer build is confirmed and every safety check passes.
+   await versionUI?.beforeGame();
+  });
+ }finally{
+  afkTransition=false;$('afkSessionStatus').hidden=true;
+  if(!accountTerminated&&!releaseFrozen){
+   document.documentElement.inert=wasInert;
+   if(!sessionTabLock.isHeld()){
+    // Never continue as an unprotected cooperating tab after a lock failure.
+    releaseFrozen=true;document.documentElement.inert=false;
+    if(!$('afkSessionFailure').open)$('afkSessionFailure').showModal();
+   }
+  }
+ }
+}
 beforeVersionReload=()=>{
  // Called only after safety() and a fresh version check. Block new user input
  // synchronously; the old RTDB instance must not queue new work during navigation.
@@ -459,6 +517,7 @@ beforeVersionReload=()=>{
 let accountTerminated=false;
 function stopAccountForRelease(){
  if(accountTerminated)return;releaseFrozen=true;accountTerminated=true;sessionVersion++;profile=null;user=null;cancelStartChecks();
+ afkTimer?.stop();sessionTabLock?.stop();
  const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
  const oldWatch=unsubscribe;unsubscribe=null;
  stop(()=>oldWatch?.());stop(()=>scoreReporter?.close());scoreReporter=null;
@@ -486,12 +545,19 @@ if(maintenanceUI&&!accountTerminated)createMaintenanceMonitor({
  subscribe:(accept,fail)=>onValue(ref(db,MAINTENANCE_PATH),snapshot=>accept(snapshot.val()),fail),
  onHalt:haltForMaintenance
 });
+if(!accountTerminated&&sessionTabLock?.isHeld()){
+ afkTimer=createAfkTimer({document,window,
+  session:()=>user&&profile&&!accountTerminated&&!releaseFrozen?sessionVersion:null,
+  safety:normalReleaseSafety,onExpire:signOutAfterIdle});
+ afkTimer.start();
+}
 if(!accountTerminated)accountServices.observe(currentUser=>{
  if(accountTerminated)return;
+ afkTimer?.reset();
  cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
  deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
- if(!currentUser){display('auth');return;}
- display('loading');setLoadingStep('soldier');
+ if(!currentUser){display('auth');renderAfkText();return;}
+ afkNotice(false);display('loading');setLoadingStep('soldier');
  const activate=()=>{if(accountTerminated||version!==sessionVersion||auth.currentUser?.uid!==currentUser.uid)return;user=currentUser;notifySession();const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);loadProfile(currentUser,version);};
  // The initial cutoff of zero preserves existing sessions at first rollout.
  // After a maintenance reopening, inspect the token's *authentication* time,

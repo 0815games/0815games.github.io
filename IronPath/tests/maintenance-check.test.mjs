@@ -9,8 +9,10 @@ const open={format:1,mode:'open',authAfterMs:0};
 
 test('the early maintenance probe and normal account use the same public database',async()=>{
  const account=await readFile(new URL('../account.js',import.meta.url),'utf8'),html=await readFile(new URL('../index.html',import.meta.url),'utf8');
+ const admin=await readFile(new URL('../admin.html',import.meta.url),'utf8');
  const url=/<meta name="ironpath-maintenance-database" content="([^"]+)">/.exec(html)?.[1];
- assert.ok(url);assert.ok(account.includes(`databaseURL:'${url}'`));
+ const adminUrl=/<meta name="ironpath-admin-database-url" content="([^"]+)">/.exec(admin)?.[1];
+ assert.ok(url);assert.ok(account.includes(`databaseURL:'${url}'`));assert.equal(adminUrl,url,'admin and game target the same public instance');
  assert.match(account,/maintenanceBoot\.databaseUrl!==accountServiceOptions\.config\.databaseURL/,'a mismatch stops startup');
 });
 
@@ -57,6 +59,10 @@ test('the Firebase-only candidate wraps every grant and leaves control public/re
  assert.match(candidate.rules.players.$uid['.read'],/auth\.token\.auth_time/);assert.ok(candidate.rules.players.$uid['.read'].includes(MAINTENANCE_GATE));
  assert.equal(candidate.rules.players.$uid.xp['.validate'],source.rules.players.$uid.xp['.validate']);
  assert.doesNotMatch(MAINTENANCE_GATE,/ip_release_epoch|sign_in_provider|custom/,'no Vercel or custom tokens');
+ const withAdmin=buildMaintenanceRulesCandidate(source,{adminUid:'example-admin'}).candidate.rules[MAINTENANCE_PATH];
+ assert.match(withAdmin['.write'],/auth\.uid === 'example-admin'/);
+ assert.match(withAdmin['.write'],/\.val\(\) === now/);assert.equal(withAdmin.$other['.validate'],false);
+ assert.throws(()=>buildMaintenanceRulesCandidate(source,{adminUid:"x' || true"}),/UID/);
  assert.throws(()=>buildMaintenanceRulesCandidate({rules:{'.read':true,'.write':false}}),/Root/);
  assert.throws(()=>buildMaintenanceRulesCandidate({rules:{'.read':false,'.write':false,$path:{'.read':true}}}),/wildcard/);
  assert.throws(()=>buildMaintenanceRulesCandidate({rules:{'.read':false,'.write':false,[MAINTENANCE_PATH]:{}}}),/audit/);

@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261031-update1">
+  <meta name="ironpath-build" content="20261031-update2">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261031-update1">
+  <link rel="stylesheet" href="style.css?v=20261031-update2">
   <link rel="stylesheet" href="interface-redesign.css?v=20261031-loading1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261031-mpview1">
@@ -22,6 +22,12 @@
   <!-- First paint: decide whether this device must choose a language before any
        English text is shown. Runs inline so the gate never flashes in late. -->
   <script>try{document.documentElement.dataset.langGate=(function(){var v=localStorage.getItem('ironpath:language');return v!=='en'&&v!=='de'?'1':'0';})();}catch(e){document.documentElement.dataset.langGate='1';}</script>
+  <div id="afkSessionStatus" class="afk-session-status" role="status" hidden>Signing out after inactivity…</div>
+  <dialog id="afkSessionFailure" class="afk-session-failure" aria-labelledby="afkFailureTitle" aria-describedby="afkFailureDetail">
+    <h2 id="afkFailureTitle">Session protection unavailable</h2>
+    <p id="afkFailureDetail">The browser could not protect the shared session. Reload the game before continuing.</p>
+    <button id="afkSessionReload" type="button">RELOAD GAME</button>
+  </dialog>
   <dialog id="maintenanceGate" class="maintenance-gate" aria-labelledby="maintenanceTitle" aria-describedby="maintenanceDetail" hidden>
     <div class="maintenance-scene">
       <img class="maintenance-brand" src="assets/iron-path-brand-cutout.png" alt="Iron Path" width="220" height="77">
@@ -66,7 +72,7 @@
     </div>
     <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
     <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261031-update1</p>
+      <p class="build-stamp" aria-hidden="true">BUILD 20261031-update2</p>
   </dialog>
   <!-- Endless launch: the pre-deploy selection menu (personal record, battlefield
        choice, last run, loadout). Reached from the Command Center ENDLESS card;
@@ -135,7 +141,7 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-update1</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-update2</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden>RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
@@ -372,5 +378,5 @@
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
   <script type="module" src="intro.mjs?v=20261031-loading1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261031-update1"></script>
+  <script type="module" src="account-entry.mjs?v=20261031-update2"></script>
 </body></html>

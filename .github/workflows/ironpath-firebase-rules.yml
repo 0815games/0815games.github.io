@@ -281,7 +281,7 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/ironpath-http.log 2>&1 &
-          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && timeout 300 node IronPath/browser-tests/command-center.cjs && timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && timeout 180 node IronPath/browser-tests/release-stage.cjs && timeout 180 node IronPath/browser-tests/release-gates.cjs; } > /tmp/browser-smoke.log 2>&1; then
+          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && timeout 300 node IronPath/browser-tests/command-center.cjs && timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && timeout 180 node IronPath/browser-tests/release-stage.cjs && timeout 180 node IronPath/browser-tests/release-gates.cjs && timeout 180 node IronPath/browser-tests/admin-panel.cjs; } > /tmp/browser-smoke.log 2>&1; then
             cat /tmp/browser-smoke.log
           else
             cat /tmp/browser-smoke.log
@@ -299,6 +299,11 @@ jobs:
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: npm run test:release-tabs
+      - name: Test maintenance admin, AFK and isolated auth in Chromium (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        run: npm run test:maintenance-browser
       - name: Test social and character cleanup UI in Chromium (emulators only)
         working-directory: IronPath/firebase/rules-test
         env:

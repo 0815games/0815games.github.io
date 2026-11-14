@@ -14,11 +14,11 @@ const app=`export function initializeApp(){globalThis.__events.push('app');retur
 const auth=`
  const config=globalThis.__testConfig;
  const makeUser=(uid,time)=>uid?{uid,getIdToken:async()=> 'synthetic',getIdTokenResult:async()=>({claims:{auth_time:time}})}:null;
- const auth={currentUser:makeUser(config.user,config.authTime)};let observer=null;
+ const auth={currentUser:makeUser(sessionStorage.getItem('__testSignedOut')?null:config.user,config.authTime)};let observer=null;
  export function getAuth(){globalThis.__events.push('auth');return auth;}
  export function onAuthStateChanged(a,cb){observer=cb;globalThis.__switchUser=(uid,time=config.authTime)=>{const next=makeUser(uid,time);a.currentUser=next;queueMicrotask(()=>cb(next));};setTimeout(()=>cb(a.currentUser),0);return ()=>{observer=null;};}
- export async function signOut(a){globalThis.__events.push('signout');a.currentUser=null;observer?.(null);}
- export async function signInWithEmailAndPassword(a){a.currentUser=makeUser('alice',config.authTime);observer?.(a.currentUser);}
+ export async function signOut(a){globalThis.__events.push('signout');sessionStorage.setItem('__testSignedOut','1');a.currentUser=null;observer?.(null);}
+ export async function signInWithEmailAndPassword(a){sessionStorage.removeItem('__testSignedOut');a.currentUser=makeUser('alice',config.authTime);observer?.(a.currentUser);}
  export async function createUserWithEmailAndPassword(a){return signInWithEmailAndPassword(a);}
  export async function sendPasswordResetEmail(){}
 `;
@@ -66,14 +66,16 @@ const partyLobby=`
 `;
 const partyGame=`export function createFirebasePartyGame(){globalThis.__partyGameCreated=true;throw Error('A cancelled party must not start');}`;
 
-async function fixture(browser,{control=open,user='alice',authTime=300,served=build,published=build,party=false,sdkUnavailable=false}={}){
- const state={control,served,published,party,sdkUnavailable,sdkRequests:[],holdNextVersion:null,unexpected:[],errors:[]};
+async function fixture(browser,{control=open,user='alice',authTime=300,served=build,published=build,party=false,sdkUnavailable=false,fakeClock=false,disableLocks=false,instrumentGame=false}={}){
+ const state={control,served,published,party,sdkUnavailable,instrumentGame,sdkRequests:[],holdNextVersion:null,unexpected:[],errors:[],documentLoads:0};
  const context=await browser.newContext({bypassCSP:true,viewport:{width:390,height:844},reducedMotion:'reduce'});
- await context.addInitScript(({control,user,authTime})=>{
+ await context.addInitScript(({control,user,authTime,fakeClock,disableLocks})=>{
   globalThis.__testConfig={user,authTime};globalThis.__mockControl=control;globalThis.__events=[];
+  if(fakeClock){let offset=0;const realNow=Date.now.bind(Date);Date.now=()=>realNow()+offset;globalThis.__advanceIdleClock=ms=>{offset+=ms;};}
+  if(disableLocks)Object.defineProperty(navigator,'locks',{value:undefined,configurable:true});
   localStorage.setItem('ironpath:language','en');
   for(const id of ['alice','bob'])for(const key of ['ironpath:training:v2','ironpath:tutorial:v2','ironpath:coach:v2'])localStorage.setItem(`${key}:${id}`,'done');
- },{control,user,authTime});
+ },{control,user,authTime,fakeClock,disableLocks});
  await context.route('**/*',async route=>{
   const url=new URL(route.request().url()),name=url.pathname.split('/').pop();
   if(url.hostname==='www.gstatic.com'){
@@ -87,8 +89,13 @@ async function fixture(browser,{control=open,user='alice',authTime=300,served=bu
   if(url.origin!==base){state.unexpected.push(url.href);return route.abort();}
   if(state.party&&name==='firebase-four-lobby.mjs')return route.fulfill({contentType:'text/javascript',body:partyLobby});
   if(state.party&&name==='firebase-party-game.mjs')return route.fulfill({contentType:'text/javascript',body:partyGame});
+  if(state.instrumentGame&&name==='account.js'){
+   const source=readFileSync(join(__dirname,'..','account.js'),'utf8'),needle='gameControl=startGame(account,';
+   assert.equal(source.split(needle).length,2,'test-only read access to the game control is unambiguous');
+   return route.fulfill({contentType:'text/javascript',body:source.replace(needle,'globalThis.__testGameControl=gameControl=startGame(account,')});
+  }
   if(name==='account-entry.mjs')return route.fulfill({status:200,contentType:'text/javascript',headers:{'cache-control':'no-store'},body:accountEntry.replaceAll(build,state.served)});
-  if(url.pathname==='/IronPath/'||url.pathname==='/IronPath/index.html')return route.fulfill({status:200,contentType:'text/html',headers:{'cache-control':'no-store'},body:html.replaceAll(build,state.served)});
+  if(url.pathname==='/IronPath/'||url.pathname==='/IronPath/index.html'){state.documentLoads++;return route.fulfill({status:200,contentType:'text/html',headers:{'cache-control':'no-store'},body:html.replaceAll(build,state.served)});}
   if(url.pathname==='/IronPath/release-version.json'){
    if(state.holdNextVersion){const hold=state.holdNextVersion;state.holdNextVersion=null;hold.requested();await hold.wait;}
    return route.fulfill({status:200,contentType:'application/json',headers:{'cache-control':'no-store'},body:JSON.stringify({format:1,build:state.published})});
@@ -112,7 +119,18 @@ async function prepareEndless(page){
 async function startEndless(page){
  await prepareEndless(page);await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('start').textContent.includes('WAVE IN PROGRESS'));
 }
+async function visiblePad(page,index=null){
+ await page.locator('#game').scrollIntoViewIfNeeded();
+ return page.evaluate(async index=>{
+  const {getMap}=await import('./maps.mjs'),id=__testGameControl.getMapId(),map=getMap(id),r=document.getElementById('game').getBoundingClientRect();
+  const points=map.pads.map((p,i)=>({index:i,x:r.left+p.x*r.width/960,y:r.top+p.y*r.height/540}));
+  const visible=points.filter(p=>p.x>0&&p.x<innerWidth&&p.y>0&&p.y<innerHeight&&document.elementFromPoint(p.x,p.y)?.id==='game');
+  if(index!==null)return visible.find(p=>p.index===index)||null;
+  return visible.sort((a,b)=>Math.abs(a.x-innerWidth/2)+Math.abs(a.y-innerHeight/2)-Math.abs(b.x-innerWidth/2)-Math.abs(b.y-innerHeight/2))[0]||null;
+ },index);
+}
 async function triggerVersion(page){await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));}
+async function advanceAfk(page,ms){await page.evaluate(value=>{__advanceIdleClock(value);document.dispatchEvent(new Event('visibilitychange'));},ms);}
 const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelector('meta[name="ironpath-build"]')?.content===expected,nextBuild,{timeout:15000});
 
 (async()=>{
@@ -204,10 +222,15 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
    }finally{await f.close();}
   }
   {
-   const f=await fixture(browser);const {page,state}=f;
+   const f=await fixture(browser,{instrumentGame:true});const {page,state}=f;
    try{
     await waitForMenu(page);await prepareEndless(page);
     assert.match(await page.locator('#start').innerText(),/DEPLOY \/ START WAVE/);
+    const pad=await visiblePad(page);assert.ok(pad,'a real empty pad is visible on the field');
+    await page.mouse.click(pad.x,pad.y);
+    await page.waitForFunction(()=>!document.getElementById('radialMenu').hidden&&document.getElementById('radialMenu').dataset.mode==='build');
+    await page.locator('.sheet-option').first().click();await page.locator('#towerDetails').waitFor({state:'visible'});await page.locator('#towerDetailsConfirm').click();
+    await page.waitForFunction(()=>/built\. Tap it to upgrade or sell\./.test(document.getElementById('message').textContent));
     state.published=nextBuild;state.served=nextBuild;await triggerVersion(page);
     await page.waitForFunction(()=>document.getElementById('versionNoticeText').textContent.includes('Finish your current operation'));
     await page.waitForTimeout(1300);
@@ -216,12 +239,14 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     assert.equal(await page.locator('#versionNotice').isVisible(),false,'the update notice does not cover the open field menu');
     await page.locator('#fieldBack').click();
     await page.locator('#menuResume').waitFor({state:'visible'});await page.locator('#menuResume').click();
-    await page.locator('#start').click();
+    const samePad=await visiblePad(page,pad.index);assert.ok(samePad,'the built tower remains on the same field');await page.mouse.click(samePad.x,samePad.y);
+    await page.waitForFunction(()=>!document.getElementById('radialMenu').hidden&&document.getElementById('radialMenu').dataset.mode==='actions');
+    await page.locator('#radialClose').click();await page.locator('#start').click();
     await page.waitForFunction(()=>document.getElementById('start').textContent.includes('WAVE IN PROGRESS'));
     assert.equal(await page.locator('meta[name="ironpath-build"]').getAttribute('content'),build,'the player can start the first wave of the existing operation');
     await page.locator('#endRun').click();await page.locator('#gameConfirmAccept').click();
     await page.locator('#runResults[open]').waitFor();await page.locator('#resultsDone').click();await waitForNewBuild(page);
-    console.log('ordinary update: preserves and resumes a deployed field before its first wave');
+    console.log('ordinary update: preserves and resumes a built tower before the first wave');
    }finally{await f.close();}
   }
   {
@@ -319,6 +344,62 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     await page.evaluate(()=>__partyHost(null));await page.locator('#fourPartyEntry').waitFor({state:'visible'});release();await page.waitForTimeout(300);
     assert.equal(await page.evaluate(()=>!!globalThis.__partyGameCreated),false,'closing the party invalidates its pending handoff');
     console.log('party handoff: host closure invalidates an in-flight guest version check');
+   }finally{await f.close();}
+  }
+  {
+   const f=await fixture(browser,{fakeClock:true});const {page,state}=f;
+   try{
+    await waitForMenu(page);await advanceAfk(page,29*60_000);await page.waitForTimeout(150);
+    assert.equal(await page.locator('#commandCenter').isVisible(),true,'29 minutes does not sign out');
+    await advanceAfk(page,61_000);await page.locator('#authView').waitFor({state:'visible'});
+    assert.ok((await page.evaluate(()=>__events)).includes('signout'));
+    assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+    assert.equal(state.documentLoads,1,'the current build is not reloaded after AFK sign-out');
+    console.log('AFK: signs out after 30 idle minutes, checks the version and does not reload the current build');
+   }finally{await f.close();}
+  }
+  {
+   const f=await fixture(browser,{fakeClock:true});const {page,state}=f;
+   try{
+    await waitForMenu(page);state.published=nextBuild;state.served=nextBuild;
+    await advanceAfk(page,31*60_000);await waitForNewBuild(page);await page.locator('#authView').waitFor({state:'visible'});
+    assert.equal(await page.evaluate(()=>sessionStorage.getItem('__testSignedOut')),'1');
+    assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+    assert.equal(state.documentLoads,2,'a newer version loads exactly once after sign-out');
+    console.log('AFK: a newer build reloads after sign-out and leaves the player at login');
+   }finally{await f.close();}
+  }
+  {
+   const f=await fixture(browser,{fakeClock:true});const {page}=f;
+   try{
+    await waitForMenu(page);await startEndless(page);await advanceAfk(page,31*60_000);await page.waitForTimeout(250);
+    assert.equal((await page.evaluate(()=>__events)).includes('signout'),false,'an active mission is not abandoned');
+    await page.locator('#endRun').click();await page.locator('#gameConfirmAccept').click();
+    await page.locator('#runResults[open]').waitFor();await page.locator('#resultsDone').click();await waitForMenu(page);
+    await advanceAfk(page,29*60_000);await page.waitForTimeout(150);assert.equal(await page.locator('#commandCenter').isVisible(),true);
+    await advanceAfk(page,61_000);await page.locator('#authView').waitFor({state:'visible'});
+    console.log('AFK: a long operation survives and a new idle period begins after the report');
+   }finally{await f.close();}
+  }
+  {
+   const f=await fixture(browser,{fakeClock:true});const {page,context}=f;let second;
+   try{
+    await waitForMenu(page);second=await context.newPage();second.setDefaultTimeout(15000);
+    await second.goto(base+'/IronPath/',{waitUntil:'domcontentloaded'});await waitForMenu(second);await startEndless(second);
+    await advanceAfk(page,31*60_000);await page.waitForTimeout(500);
+    assert.equal((await page.evaluate(()=>__events)).includes('signout'),false,'a second participating tab holds the shared session');
+    assert.equal(await second.locator('#gameWorkspace').isVisible(),true,'the other tab keeps its active game');
+    await second.close();second=null;await advanceAfk(page,1000);await page.locator('#authView').waitFor({state:'visible'});
+    console.log('AFK: an active cooperating tab blocks shared Firebase logout until it closes');
+   }finally{await second?.close();await f.close();}
+  }
+  {
+   const f=await fixture(browser,{fakeClock:true,disableLocks:true});const {page}=f;
+   try{
+    await waitForMenu(page);await advanceAfk(page,31*60_000);await page.waitForTimeout(350);
+    assert.equal((await page.evaluate(()=>__events)).includes('signout'),false,'missing Web Locks disables AFK sign-out');
+    assert.equal(await page.locator('#commandCenter').isVisible(),true);
+    console.log('AFK: browsers without Web Locks do not risk signing out another tab');
    }finally{await f.close();}
   }
  }finally{await browser.close();}
