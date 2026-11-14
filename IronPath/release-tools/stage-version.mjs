@@ -104,9 +104,24 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
   html=html.replace('<html lang="en">',`<html lang="en"${config?' data-ironpath-guard="required"':''} data-ironpath-release-build="${build}">`)
     .replace(stamp,`<p class="build-stamp" aria-hidden="true">BUILD ${build}</p>`)
     .replace('<a href="../">← 0815 Games</a>','<a href="/">← 0815 Games</a>');
+  // Ordinary staged builds also use the page's version gate. Give the nested
+  // immutable build a matching local manifest, not the source page's ID. Older
+  // fixture/source revisions without this gate keep their historical layout.
+  const buildMeta=/<meta name="ironpath-build" content="[^"]+">/g;
+  const buildMetas=[...html.matchAll(buildMeta)];
+  if(buildMetas.length>1)throw Error('Ambiguous source build metadata');
+  if(buildMetas.length===1){
+    html=html.replace(buildMeta,`<meta name="ironpath-build" content="${build}">`);
+    await save('release-version.json',Buffer.from(`${JSON.stringify({format:1,build})}\n`));
+  }
   if(config){
-    const account=/<script type="module" src="account\.js\?v=[^"]+"><\/script>/g;
-    if([...html.matchAll(account)].length!==1 || html.split('</head>').length!==2 ||
+    // Accept the modern lightweight maintenance entry and older source
+    // revisions that loaded account.js directly; guarded builds replace either.
+    const account=/<script type="module" src="(?:account\.js|account-entry\.mjs)\?v=[^"]+"><\/script>/g;
+    const maintenanceMeta=/<meta name="ironpath-maintenance-database" content="[^"]+">\s*/g;
+    const maintenanceMetas=[...html.matchAll(maintenanceMeta)];
+    if([...html.matchAll(account)].length!==1 || maintenanceMetas.length>1 ||
+        (html.includes('src="account-entry.mjs?')&&maintenanceMetas.length!==1) || html.split('</head>').length!==2 ||
         html.split('<body>').length!==2 || html.split('</body>').length!==2 ||
         html.includes('id="ironpath-guarded-game"') || html.includes('id="ironpath-guarded-hold"')) {
       throw Error('Unexpected source HTML; cannot install guarded entry');
@@ -115,7 +130,10 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
     // covered: it is both hidden and inert before any account module can run.
     const hold=`<div id="ironpath-guarded-hold" role="status" aria-live="polite"><div class="ironpath-guarded-message"><b>0815 GAMES / IRON PATH</b><h1 id="ironpath-hold-title">Checking operation status / Einsatzstatus wird geprüft</h1><p id="ironpath-hold-detail">Sign-in and play stay blocked until clearance. / Anmeldung und Spiel bleiben bis zur Freigabe gesperrt.</p><a href="/IronPath/?from=unavailable">Return to status / Zur Statusseite</a></div></div><div id="ironpath-guarded-game" hidden inert>`;
     const style='<style>#ironpath-guarded-game[hidden],#ironpath-guarded-hold[hidden]{display:none!important}#ironpath-guarded-hold{min-height:100vh;display:grid;place-items:center;padding:24px;background:#14241c;color:#f8f0dc;font:16px/1.6 Arial,sans-serif}#ironpath-guarded-hold .ironpath-guarded-message{max-width:560px;padding:32px;border:1px solid #95a080;background:#1b3028}#ironpath-guarded-hold b{color:#ead39a;font-size:11px;letter-spacing:.14em}#ironpath-guarded-hold h1{font:700 36px/1.1 Georgia,serif}#ironpath-guarded-hold a{color:#ead39a}</style>';
-    html=html.replace('</head>',`${style}</head>`).replace('<body>',`<body>${hold}`)
+    // The guarded entry obtains its (possibly test-project) configuration from
+    // release-config.mjs; do not leak the ordinary production database URL into
+    // an isolated build that never runs the ordinary bootstrap.
+    html=html.replace(maintenanceMeta,'').replace('</head>',`${style}</head>`).replace('<body>',`<body>${hold}`)
       .replace(account,'<script type="module" src="release-tools/guarded-game-entry.mjs"></script>')
       .replace('</body>','</div></body>');
   }

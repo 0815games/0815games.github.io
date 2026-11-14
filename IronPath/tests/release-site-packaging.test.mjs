@@ -41,7 +41,7 @@ test('an explicitly guarded build and versioned launcher stage separately from t
  assert.match(html,/data-ironpath-guard="required" data-ironpath-release-build="site-1"/);
  assert.match(html,/<div id="ironpath-guarded-game" hidden inert>/);
  assert.match(html,/<script type="module" src="release-tools\/guarded-game-entry\.mjs"><\/script>/);
- assert.doesNotMatch(html,/<script type="module" src="account\.js\?/);
+ assert.doesNotMatch(html,/<script type="module" src="(?:account\.js|account-entry\.mjs)\?/);
  const inventory=JSON.parse(await readFile(join(result.directory,'release-manifest.json'),'utf8'));
  assert.equal(inventory.guarded,true);assert.equal(inventory.build,'site-1');
  for(const name of CRITICAL_RELEASE_FILES)assert.ok(inventory.files[name],name);

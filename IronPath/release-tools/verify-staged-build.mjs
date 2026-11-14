@@ -70,7 +70,8 @@ export async function verifyStagedBuild({build,origin,config,fetcher=globalThis.
     if(!once(`<html lang="en" data-ironpath-guard="required" data-ironpath-release-build="${build}">`) ||
         !once('<div id="ironpath-guarded-game" hidden inert>') || !once('id="ironpath-guarded-hold"') ||
         !once('<script type="module" src="release-tools/guarded-game-entry.mjs"></script>') ||
-        /<script\b[^>]*\bsrc=["']account\.js(?:\?[^"']*)?["']/i.test(html)) {
+        /<meta\b[^>]*\bname=["']ironpath-maintenance-database["']/i.test(html) ||
+        /<script\b[^>]*\bsrc=["'](?:account\.js|account-entry\.mjs)(?:\?[^"']*)?["']/i.test(html)) {
       throw Error('Build does not have the required blocked entry');
     }
     return `/IronPath/releases/${build}/`;

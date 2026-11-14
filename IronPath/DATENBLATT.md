@@ -2,25 +2,26 @@
 
 Dieses Blatt trennt veröffentlichte Funktionen, lokale Änderungen und ausstehende Nachweise. GitHub Pages, Firebase Authentication und die Realtime Database sind getrennte Systeme: Ein Website-Merge veröffentlicht keine Firebase-Regeln und beweist keine Live-Partie. Keine Zugangsdaten, Tokens, Partycodes oder privaten Spielerinformationen in diesem Blatt speichern.
 
-**Aktualisierung:** Charakter-/Social-Bereinigung und der Guard liegen auf dem
-Arbeitsbranch; die Emulator-CI einschließlich zweier synthetischer Browser-
-Sessions bestand, aber die Änderungen sind nicht live. Nach Freigabe des Nutzers
-wurde ohne weiteren Test auf `ironpathtest` ein separates Vercel-Hobby-Projekt
-für den Produktionsdienst angelegt. Es hat noch keinen Produktionsschlüssel
-oder Deployment. Ein lokal geprüftes Pages-Paket mit begrenztem Rückfall und
-ein abgeschalteter Deployment-Workflow sind vorbereitet. Firebase-Regeln,
-Control-Record und Pages-Ursprung der Produktion sind unverändert. Offene
-Schritte, Risiken und die Schnittstellenbegrenzung für das erste Vercel-
-Deployment stehen in `release-tools/PAGES-ROLLOUT.md`; ältere Abschnitte unten
-halten frühere Zwischenstände fest.
+**Aktueller Arbeitsstand:** Die kostenlose Firebase-/Pages-Variante für
+Wartung und sichere Updatezeitpunkte liegt zusammen mit Charakter-/Social-
+Bereinigung und Vierer-Party auf dem Arbeitsbranch, **nicht live**. Sie braucht
+keinen Vercel-Dienst und keinen Service-Account-Schlüssel. Lokale Tests verwenden
+Firebase-Doubles; der neue Rules-Kandidat muss im offiziellen Emulator sowie vor
+Veröffentlichung mit einem frischen, unabhängigen Produktions-Rules-Export
+geprüft werden. Firebase-Regeln und produktiver Wartungsdatensatz wurden nicht
+geändert; die aktuelle Pages-Quellkonfiguration muss vor einem Cutover frisch
+verifiziert werden. Der Operatorplan und die Grenzen stehen in
+`release-tools/FIREBASE-PAGES-ROLLOUT.md`. Das separate Vercel-Hobby-Projekt und
+`PAGES-ROLLOUT.md` beschreiben nur den älteren Experimentpfad. Kein weiterer
+Test auf `ironpathtest`; ältere Abschnitte unten halten Zwischenstände fest.
 
 ## Übersicht der Anforderungen
 
 | Abschnitt | Stand | Offene Punkte |
 | --- | --- | --- |
 | Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | Website-Build `20261031-mpview1` wurde über [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlicht; Pages und öffentliche Assets wurden abgerufen. | Live-Abnahme mit zwei Konten und Geräten, Reconnect, Belohnungen, Balance und produktiven Firebase-Regeln steht noch aus. |
-| Wartung vor jedem Patch und Rollout | **Isolierte Kandidaten inklusive Launcher und geschütztem Staging; nicht im veröffentlichten Spiel aktiviert.** Gewünscht: Sitzungen beenden, Anmeldung während der Wartung sperren und eine Anzeige im Spielstil. | Server-/Auth-Sperre, produktive Integration, Regeln, Tests, Berechtigungen, Rollback und Einrichtung. |
-| Immer aktuelle Clients | **Analyse; noch nicht garantiert.** Alte Tabs, zwischengespeicherte HTML-/Moduldateien und wieder online kommende Geräte müssen berücksichtigt werden. | Autoritative Release-Version, serverseitige Zugangssperre für alte Sitzungen, vollständige Cache-Kette und verifizierter Reload. |
+| Wartung vor jedem Patch und Rollout | **Firebase-only-Kandidat lokal, nicht live.** Wartungsanzeige, Live-Abbruch und Rules-Entwurf für Spieldaten mit Auth-Zeit-Cutoff. | Frischer Produktions-Rules-Abgleich, offizieller Emulator für den neuen Kandidaten, Pages-Konfiguration, tatsächlicher Cutover und Rollback. Firebase Auth selbst wird nicht vollständig gesperrt. |
+| Immer aktuelle Clients | **Versionsprüfung lokal, nicht live.** Normale Updates warten auf bekannte sichere Punkte und unterbrechen laufende Partien nicht absichtlich. | Ein Manifest beweist keinen Browsercode; Cache, Offline-Geräte, alte/manipulierte Clients und fehlgeschlagene Saves bleiben Grenzen. |
 | Weitere Patch-Blöcke: Charakter, Freunde, Einladungen | Auf dem Arbeitsbranch implementiert und in Emulator-/Browser-CI geprüft; nicht Teil des veröffentlichten MP-Releases. | Aktuelle Produktions-Rules abgleichen, abgestimmt veröffentlichen und bekannte Grenzen bei parallelen Geräten beachten. |
 
 ## 1. Zuletzt veröffentlichter Multiplayer-Schnitt
@@ -31,7 +32,13 @@ halten frühere Zwischenstände fest.
 - Isoliert bestanden **630/630 Node-Tests**, **13/13 Server-Tests**, Chromium-Smokes und ein lokaler Stresslauf. Offizielle Firebase-, Spiel- und Browser-Jobs bestanden für den PR und auf `main`. Die Fireemu-Prüfung ist nicht mit Produktionsregeln gleichzusetzen; der allgemeine Stresslauf nutzte für Zweier-Playthroughs ältere `g2`-Karten.
 - Die statische Live-Auslieferung ist bestätigt; eine echte Live-Partie mit mindestens zwei Konten und Geräten, Wellen, Reconnect und Belohnungen bleibt offen. Alte Tabs sollen vor Partien geschlossen und derselbe Build in den Einstellungen überprüft werden.
 
-## 2. Wartung und Versionssicherheit – aktuelle Analyse
+## 2. Wartung und Versionssicherheit – historisches Arbeitsprotokoll
+
+Die folgenden Einträge dokumentieren frühere Annahmen und den **anderen**
+Vercel-/Custom-Token-Entwurf. Sie beschreiben weder den aktuellen Firebase-only-
+Kandidaten noch den frisch bestätigten Pages-Zustand und sind keine Rollout-
+Anleitung. Maßgeblich sind die Aktualisierung oben und
+`release-tools/FIREBASE-PAGES-ROLLOUT.md`.
 
 - Das öffentliche Spiel ist eine statische GitHub-Pages-Seite, die direkt aus `main:/` gebaut wird. Die Website kommuniziert aus dem Browser mit Firebase Auth und Realtime Database. Ein allgemein vorgeschalteter, vertrauenswürdiger Rollout-Dienst ist nicht vorhanden; Firebase-Regeln werden laut Repository-Dokumentation manuell veröffentlicht.
 - Clientseitiges Verstecken des Logins oder `signOut()` im neuen JavaScript reicht allein nicht: Alte oder offline befindliche Tabs können diesen Code nicht ausführen. Realtime-Database-Regeln sperren Datenzugriffe, aber nicht automatisch die Ausgabe von Authentifizierungstokens. Widerrufene Refresh-Tokens machen bereits ausgegebene ID-Tokens nicht von selbst sofort auf allen Datenpfaden ungültig.
@@ -77,7 +84,7 @@ halten frühere Zwischenstände fest.
 | Abschnitt | Nachweis / Status |
 | --- | --- |
 | Bisheriger Website-Stand | Pages-Build `ebefe2adf7131adce155db1a3e75e8f4ee0264b3` mit `20261031-mpview1` nach PR #286; produktive Firebase-Regeln nicht unabhängig ausgelesen. |
-| Wartungs- und Versionsschutz | **Noch nicht live.** Separater Produktionsdienst ohne Schlüssel/Deployment und lokaler Pages-Rollout vorbereitet; Regeln, Control und Pages-Ursprung unverändert. Kein weiterer Test auf `ironpathtest`. |
+| Wartungs- und Versionsschutz | **Noch nicht live.** Firebase-only-Kandidat und sichere Updatezeitpunkte lokal; kein Vercel-Dienst erforderlich. Regeln und produktiver Status unverändert, aktuelle Pages-Quelle unabhängig zu prüfen. Kein weiterer Test auf `ironpathtest`. |
 | Weitere Patch-Blöcke | Auf dem Branch implementiert und in Emulator-/Browser-CI geprüft; nicht live. |
 
 Nach jedem logischen Abschnitt fortschreiben. Ein noch nicht geprüfter Schutz oder Rollout bleibt ausdrücklich als solcher markiert.

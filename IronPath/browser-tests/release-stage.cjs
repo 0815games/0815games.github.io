@@ -1,5 +1,5 @@
 // End-to-end static packaging smoke with Firebase replaced by local doubles.
-// This tests versioned URLs, not the as-yet-unwired maintenance/auth guard.
+// This tests packaging with a mocked maintenance signal, not server Rules or a live deployment.
 const {chromium}=require(process.env.PW_PATH||'playwright');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');const fsp=require('node:fs/promises');
@@ -8,7 +8,7 @@ const {pathToFileURL}=require('node:url');
 const mocks={
  'firebase-app.js':`export function initializeApp(){return {}}`,
  'firebase-auth.js':`const user={uid:'mock-user',getIdToken:async()=> 'mock'},auth={currentUser:user};export function getAuth(){return auth}export function onAuthStateChanged(a,cb){setTimeout(()=>cb(user),0);return ()=>{}}export async function signOut(a){a.currentUser=null}export async function signInWithEmailAndPassword(){}export async function createUserWithEmailAndPassword(){}export async function sendPasswordResetEmail(){}`,
- 'firebase-database.js':`const profile={name:'Test Soldier',gender:'female',xp:750};export function getDatabase(){return {}}export function ref(db,path){return {path}}export function onValue(r,cb){if(r.path==='players/mock-user')queueMicrotask(()=>cb({val:()=>profile}));return ()=>{}}export async function runTransaction(){return {committed:false,snapshot:{val:()=>null,exists:()=>false}}}export async function get(r){return {val:()=>r.path==='players/mock-user'?profile:null,exists:()=>r.path==='players/mock-user',forEach(){}}}export async function remove(){}export async function set(){}export async function update(){}export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}}export function serverTimestamp(){return Date.now()}export function query(r){return r}export function orderByKey(){return {}}export function startAfter(){return {}}export function limitToFirst(){return {}}export function orderByChild(){return {}}export function limitToLast(){return {}}`
+ 'firebase-database.js':`const profile={name:'Test Soldier',gender:'female',xp:750};export function getDatabase(){return {}}export function goOffline(){}export function ref(db,path){return {path}}export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user')queueMicrotask(()=>cb({val:()=>profile}));return ()=>{}}export async function runTransaction(){return {committed:false,snapshot:{val:()=>null,exists:()=>false}}}export async function get(r){return {val:()=>r.path==='players/mock-user'?profile:null,exists:()=>r.path==='players/mock-user',forEach(){}}}export async function remove(){}export async function set(){}export async function update(){}export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}}export function serverTimestamp(){return Date.now()}export function query(r){return r}export function orderByKey(){return {}}export function startAfter(){return {}}export function limitToFirst(){return {}}export function orderByChild(){return {}}export function limitToLast(){return {}}`
 };
 const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.mp3':'audio/mpeg','.mp4':'video/mp4','.ico':'image/x-icon'};
 
@@ -37,7 +37,9 @@ const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs'
    await context.addInitScript(()=>{localStorage.setItem('ironpath:language','en');localStorage.setItem('ironpath:training:v2:mock-user','done');});
    await context.route('**/*',route=>{
     const url=new URL(route.request().url()),file=url.pathname.split('/').pop();
-    if(url.hostname==='www.gstatic.com'&&mocks[file])return route.fulfill({contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:mocks[file]});
+    // Intercept the ONLY Firebase status request; every other external request is aborted.
+      if(url.hostname==='iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app'&&url.pathname==='/_ironpathMaintenance.json')return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({format:1,mode:'open',authAfterMs:0})});
+      if(url.hostname==='www.gstatic.com'&&mocks[file])return route.fulfill({contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:mocks[file]});
     if(url.origin!==local)return route.abort();
     localRequests.push(url.pathname);return route.continue();
    });

@@ -55,7 +55,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   }
   function enterMatch(gen,value){
     if(gen!==generation||!party||started)return;
-    try{const teamRosters=fourTeamRosters(value);if(!value.playerIds.includes(party.uid)||value.hostId!==party.hostId)throw Error('Roster changed');started=true;render();status('Match started. Connecting…');Promise.resolve().then(()=>gen===generation&&party?onMatch({...value,partyId:party.partyId,teamRosters}):false).then(ok=>{if(gen===generation){joinFailed=ok===false;render();status(joinFailed?'Could not connect to the match. Leave and try again.':'Connecting to the match…');}}).catch(()=>{if(gen===generation){joinFailed=true;render();status('Could not connect to the match. Leave and try again.');}});}catch{failed();}
+    try{const teamRosters=fourTeamRosters(value);if(!value.playerIds.includes(party.uid)||value.hostId!==party.hostId)throw Error('Roster changed');started=true;render();status('Match started. Connecting…');Promise.resolve().then(()=>gen===generation&&party?onMatch({...value,partyId:party.partyId,teamRosters},{isCurrent:()=>gen===generation&&!!party&&started}):false).then(ok=>{if(gen===generation){joinFailed=ok===false;render();status(joinFailed?'Could not connect to the match. Leave and try again.':'Connecting to the match…');}}).catch(()=>{if(gen===generation){joinFailed=true;render();status('Could not connect to the match. Leave and try again.');}});}catch{failed();}
   }
   function watchMember(gen){
     addWatch(lobby.watchConfig(party.partyId,value=>{if(gen!==generation||!party)return;config=value;render();},failed));
@@ -114,13 +114,13 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     if(!await confirmStart()||gen!==generation)return;
     const active=createLobby();lobby=active;const result=await active.resumeHost(code);if(gen!==generation)return;
     party={...result,role:'host'};started=true;watchParty(gen);watchMember(gen);render();status('Recovering the match…');
-    const ok=await onMatch(result);if(gen===generation&&ok===false)status('Could not recover the match. Close the party and try again.');
+    const ok=await onMatch(result,{isCurrent:()=>gen===generation&&!!party&&started});if(gen===generation&&ok===false)status('Could not recover the match. Close the party and try again.');
   });
   $('fourPartyMode').onchange=()=>{selectedMode=$('fourPartyMode').value;render();};
   $('fourPartyTeams').onchange=()=>{selectedTeams=Number($('fourPartyTeams').value);if(!teams[selectedTeams])selectedTeams=0;render();};
   $('fourPartyStart').onclick=()=>run(async gen=>{
     if(party?.role!=='host'||!ready()||started||!await confirmStart()||gen!==generation||!party||!ready())return;
-    await lobby.configure(party.partyId,{mode:selectedMode,teams:teams[selectedTeams]});if(gen!==generation||!party||!ready())return;const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
+    await lobby.configure(party.partyId,{mode:selectedMode,teams:teams[selectedTeams]});if(gen!==generation||!party||!ready())return;const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId},{isCurrent:()=>gen===generation&&!!party&&started});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
   });
   const leaveParty=()=>run(async gen=>{
     if(!party||joining)return;const current=party,active=lobby;if(current.role==='host'&&(!await confirmClose()||gen!==generation||party!==current))return;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);

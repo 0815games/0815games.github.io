@@ -82,5 +82,5 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
 
  }
  $('friendSearch').onclick=()=>action(current=>search(current,false));$('friendMore').onclick=()=>action(current=>search(current,true));
- return {reset,start,signOut,open,prepareForDeletion};
+ return {reset,start,signOut,open,prepareForDeletion,hasPending:()=>busy||inFlight.size>0};
 }

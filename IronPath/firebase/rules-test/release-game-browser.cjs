@@ -63,7 +63,7 @@ window.ironPathTest={runtime,events:()=>events,stallSignOut:()=>{stallSignOut=tr
 runtime.start();`;
 
 function guardedHtml(html){
- const script=/<script type="module" src="account\.js\?v=[^"]+"><\/script>/g;
+ const script=/<script type="module" src="(?:account\.js|account-entry\.mjs)\?v=[^"]+"><\/script>/g;
  if([...html.matchAll(script)].length!==1 || !html.includes('<body>') || !html.includes('</body>'))throw Error('Unexpected staged HTML');
  return html.replace('<html lang="en"','<html lang="en" data-ironpath-guard="required"')
   .replace('<body>','<body><div id="guardedTestHold" role="status">TEST HOLD: checking</div><div id="guardedTestGame" hidden inert>')

@@ -1,4 +1,14 @@
-# Iron Path release guard — experiment, not production
+# Iron Path release tools
+
+**Current working-branch approach:** the free Firebase-only maintenance signal,
+server-Rules candidate, and safe-point GitHub Pages version checks are documented
+in [`FIREBASE-PAGES-ROLLOUT.md`](FIREBASE-PAGES-ROLLOUT.md). They are **not live**.
+They do not require Vercel, custom tokens, or a service-account key. The earlier
+Vercel guard and `PAGES-ROLLOUT.md` below describe a different historical
+experiment; do not mix its Rules, status record or deployment workflow with the
+Firebase-only approach. No further tests on `ironpathtest`.
+
+## Historical release guard experiment — not production
 
 This is **not enabled in the published game or production Firebase**. The
 working-branch account code now has an optional guarded-session boundary and a

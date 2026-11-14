@@ -53,6 +53,6 @@ test('repeated profile snapshots never restart the game or social listeners',()=
 
 test('the workshop view is cache-busted with the build',()=>{
  assert.match(source,/workshop-view\.mjs\?v=\d{8}-[a-z0-9]+/,'the workshop view is cache-busted per release');
- assert.match(html,/account\.js\?v=\d{8}-[a-z0-9]+/,'account.js is cache-busted per release');
+ assert.match(html,/account-entry\.mjs\?v=\d{8}-[a-z0-9]+/,'the account bootstrap is cache-busted per release');
  assert.match(html,/workshop-view\.css\?v=\d{8}-[a-z0-9]+/,'the workshop stylesheet is cache-busted per release');
 });

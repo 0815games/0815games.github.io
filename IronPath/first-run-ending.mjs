@@ -58,12 +58,32 @@ export async function runFirstRunEnding({id,storage,steps,onStep=()=>{},onDone=(
   onStep(name);
   let ok=false;
   try{ok=await step()===true;}catch{ok=false;}
+  // The account can change while the last real dialog is open, too. Check
+  // after *every* await, including the final step, before writing a marker or
+  // letting a completed old walkthrough change the new session's interface.
+  if(shouldStop()){onStopped({step:name,reason:'aborted',completed});return {status:'stopped',step:name,reason:'aborted',completed};}
   if(!ok){onStopped({step:name,reason:'declined',completed});return {status:'stopped',step:name,reason:'declined',completed};}
   completed++;
  }
  markEndingDone(id,storage);
  onDone({completed});
  return {status:'done',completed};
+}
+
+// Each delayed training-to-ending handoff owns its own marker. An older timer
+// must not clear a newer handoff or allow an update while that handoff is still
+// pending. The caller checks the captured account *session*, not just its UID.
+export function createEndingHandoffs({isCurrent,offer,setTimer=setTimeout,delay=600}={}){
+ if(typeof isCurrent!=='function'||typeof offer!=='function'||typeof setTimer!=='function'||!Number.isInteger(delay)||delay<0)throw Error('Invalid ending handoff');
+ const pending=new Set();
+ return Object.freeze({
+  schedule(session){
+   const marker={};pending.add(marker);
+   try{setTimer(()=>{pending.delete(marker);if(isCurrent(session))offer(session);},delay);}
+   catch(error){pending.delete(marker);throw error;}
+  },
+  isPending:()=>pending.size>0
+ });
 }
 
 // What the Field School offers after the ending. `action` is the id of an

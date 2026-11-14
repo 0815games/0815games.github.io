@@ -557,3 +557,25 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
    settings dialog. If a report says "still the old screen", the stamp shows
    which build the BROWSER actually runs - stale stamp means cache, not code. */
 .build-stamp{margin:12px 0 0;font-size:9px;font-weight:bold;letter-spacing:.14em;color:#5f6d57;text-transform:uppercase;text-align:center}
+
+/* Version status is deliberately non-modal: players can finish a match and
+   read its report before an update. The report repeats the message above the
+   browser's dialog top layer. */
+.version-notice{position:fixed;z-index:90;top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));display:flex;align-items:center;gap:12px;max-width:min(460px,calc(100vw - 24px));padding:12px 14px;background:#1b3028;color:#f8f0dc;border:1px solid #c3cf84;border-radius:8px;box-shadow:0 8px 24px #0009;font-size:14px;line-height:1.4;pointer-events:none}
+.version-notice[hidden]{display:none!important}.version-notice button{flex:none;min-height:40px;padding:7px 10px;pointer-events:auto}.version-notice span{min-width:0}
+@media(max-width:480px){.version-notice{left:12px;right:12px;max-width:none;flex-wrap:wrap}}
+/* Keep the field's top-right MENU reachable on small screens. The notice is
+   informational while a run continues; it must not intercept map input, and
+   its text must not cover the opened field menu. */
+body:has(#gameWorkspace:not([hidden])) .version-notice{top:calc(70px + env(safe-area-inset-top,0px));left:max(8px,env(safe-area-inset-left,0px));right:auto;max-width:min(310px,calc(100vw - 16px))}
+body:has(#gameWorkspace:not([hidden]) #fieldOps[open]) .version-notice{visibility:hidden}
+/* A real top-layer dialog blocks login and the battlefield during maintenance.
+   The same field art and journal palette as the standalone design preview. */
+.maintenance-gate[hidden]{display:none!important}
+.maintenance-gate{position:fixed;inset:0;width:100vw;max-width:none;height:100dvh;max-height:none;margin:0;border:0;padding:24px;overflow:auto;background:linear-gradient(90deg,#0a1410eb,#0d1913b5),linear-gradient(0deg,#09110ef0,transparent 65%),url('assets/story-outpost.jpg') 55% center/cover no-repeat;color:#f8f0dc;box-sizing:border-box}
+.maintenance-gate[open]{display:flex;align-items:center;justify-content:center}.maintenance-gate::backdrop{background:#111a15}
+.maintenance-scene{width:min(100%,590px);margin:auto}.maintenance-brand{display:block;width:clamp(130px,20vw,210px);height:auto;margin:0 0 22px;filter:drop-shadow(0 3px 5px #0009)}
+.maintenance-card{position:relative;width:100%;box-sizing:border-box;padding:clamp(24px,6vw,42px);border:1px solid #95a080;outline:1px solid #192b20;outline-offset:-7px;background:linear-gradient(140deg,#1c2e23f7,#101f18fa);box-shadow:0 25px 70px #0009,0 0 0 4px #0b1712a8}
+.maintenance-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#c9d3b9;font-size:9px;font-weight:800;letter-spacing:.16em}.maintenance-topline>div{display:flex;align-items:center;gap:12px}.maintenance-language{min-width:44px;min-height:44px;padding:6px;border:1px solid #83927470;background:#24392b;color:#f2dfb7;font-size:11px;letter-spacing:.08em}.maintenance-rule{height:1px;margin:15px 0 24px;background:linear-gradient(90deg,#db995c 60px,#83927470 60px)}.maintenance-seal{display:grid;place-items:center;width:44px;height:44px;border:1px solid #bca674;background:#354b37;color:#efdbac}
+.maintenance-card h1{font:700 clamp(28px,6vw,48px)/1.05 Georgia,serif;letter-spacing:-.025em;margin:18px 0;overflow-wrap:anywhere}.maintenance-card p{line-height:1.6;color:#d7dfca}.maintenance-card .maintenance-extra{padding-top:14px;border-top:1px solid #72846a55;color:#c9d7bf;font-size:12px}.maintenance-card #maintenanceRetry{width:auto;min-height:48px;margin-top:12px;padding:10px 20px}
+@media(max-width:420px){.maintenance-gate{padding:20px}.maintenance-brand{width:130px;margin-bottom:16px}.maintenance-card{padding:23px}.maintenance-rule{margin:13px 0 17px}.maintenance-seal{width:36px;height:36px}.maintenance-card h1{font-size:clamp(25px,9vw,35px);margin:14px 0}.maintenance-card p{font-size:14px;line-height:1.5}}

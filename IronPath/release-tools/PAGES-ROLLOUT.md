@@ -1,6 +1,14 @@
-# Iron Path: Vorbereitung der produktiven Pages-Umstellung
+# Iron Path: früherer Vercel-Guard-Versuch (historisch)
 
-**Stand: vorbereitet, nicht live.** Weder produktive Firebase-Regeln noch der
+> **Nicht der aktuelle kostenlose Ablauf.** Der Firebase-/Pages-Kandidat auf
+> dem Arbeitsbranch benötigt weder Vercel noch Service-Account-Schlüssel oder
+> Custom-Token-Rules. Für seinen Status und seine Voraussetzungen ausschließlich
+> [`FIREBASE-PAGES-ROLLOUT.md`](FIREBASE-PAGES-ROLLOUT.md) heranziehen. Die
+> nachstehenden Schritte gehören zu einem anderen Experiment und dürfen nicht
+> als Anweisung für den neuen Kandidaten ausgeführt oder mit ihm vermischt
+> werden. Kein weiterer Test auf `ironpathtest`.
+
+**Historischer Stand: vorbereitet, nicht live.** Weder produktive Firebase-Regeln noch der
 Pages-Ursprung wurden durch diese Vorbereitung geändert. Der Dienst
 `ironpath-live-session` ist ein separates Vercel-Hobby-Projekt; es hat noch
 keinen Produktionsschlüssel und kein Deployment. Die Vercel-Schnittstelle

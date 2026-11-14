@@ -44,7 +44,7 @@ const runtime=createGuardedGameBootstrap({config:{apiKey:'fake',authDomain:'demo
  showGame:()=>{game.inert=false;game.hidden=false;hold.hidden=true;},replaceDocument:()=>location.replace('/test-landing')});
 window.ironPathSocialTest={offline:()=>goOffline(instances.db),online:()=>goOnline(instances.db),uid:()=>instances.auth.currentUser?.uid};runtime.start();`;
 function guardedHtml(html){
- const script=/<script type="module" src="account\.js\?v=[^"]+"><\/script>/g;
+ const script=/<script type="module" src="(?:account\.js|account-entry\.mjs)\?v=[^"]+"><\/script>/g;
  if([...html.matchAll(script)].length!==1||!html.includes('<html lang="en"')||!html.includes('<body>')||!html.includes('</body>'))throw Error('Unexpected game entry');
  return html.replace('<html lang="en"','<html lang="en" data-ironpath-guard="required"')
   .replace('<body>','<body><div id="guardedTestHold">TEST HOLD</div><div id="guardedTestGame" hidden inert>')

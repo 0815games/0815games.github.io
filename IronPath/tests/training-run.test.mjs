@@ -137,7 +137,8 @@ test('the game wires the contract without inventing a second run loop',()=>{
  assert.match(game,/onFinish:id=>\{if\(trainingSeen\(id,tutorialStorage\)\)return;/,'the tutorial hands over exactly once');
  assert.match(game,/if\(activeTraining\)\{activeTraining=false;activeMission=null;selectedMap=drawFreeMapId\(selectedMap\);\}/,'a finished contract does not replay on Deploy');
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
- assert.match(account,/onTrainingComplete:\(\)=>window\.setTimeout\(offerFirstRunEnding,/,'the ending follows the contract');
+ assert.match(account,/onTrainingComplete:\(\)=>endingHandoffs\.schedule\(\{version:sessionVersion,id:user\?\.uid\}\)/,'the delayed ending captures the account session');
+ assert.match(account,/endingHandoffs\.isPending\(\)/,'every concurrent pending handoff blocks a version reload');
 });
 
 // The bug that shipped: an account that had played the old five-wave contract was
@@ -154,7 +155,8 @@ test('an account from the previous edition plays the new field, not the old tour
  // with what it checks.
  const start = game.slice(game.indexOf('function startFirstRun()'), game.indexOf('function startTrainingRun'));
  assert.match(start, /if\(!trainingSeen\(id,tutorialStorage\)\)\{/);
- assert.match(start, /return startTrainingRun\(\)/);
+ assert.match(start, /requestTrainingStart\(\(\)=>startTrainingRun\(\)\)/, 'the version check precedes the field');
+ assert.match(start, /if\(ok&&account\.getUserId\(\)===id&&account\.getSessionVersion\?\.\(\)===session\)markTrainingSeen/, 'a refused version check or changed session must not consume the first run');
  assert.equal((start.match(/tutorial\./g) ?? []).length, 1, 'the tour is only the fallback after the field');
  // Versioned markers, so "played it once" means "played THIS one once".
  assert.equal(TRAINING_KEY, 'ironpath:training:v2', 'a new contract edition is new content');
