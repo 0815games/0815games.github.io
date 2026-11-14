@@ -20,9 +20,10 @@ const config={apiKey:'fake',authDomain:'demo-ironpath.firebaseapp.com',databaseU
 const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.webmanifest':'application/manifest+json','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.mp3':'audio/mpeg','.mp4':'video/mp4','.ico':'image/x-icon'};
 const authWrapper=`
 export * from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-real.js';
-import {getAuth as realGetAuth,connectAuthEmulator,signOut as realSignOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-real.js';
+import {getAuth as realGetAuth,connectAuthEmulator,signOut as realSignOut,signInWithEmailAndPassword as realSignIn} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-real.js';
 const prepared=new WeakSet();
 export function getAuth(app){const auth=realGetAuth(app);if(!prepared.has(auth)){connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});prepared.add(auth);}window.__testAuth=auth;return auth;}
+export async function signInWithEmailAndPassword(...args){try{return await realSignIn(...args);}catch(error){window.__testAuthError={code:error?.code,message:error?.message};throw error;}}
 export async function signOut(auth){const result=await realSignOut(auth);window.__testSignOutDone=true;return result;}
 `;
 const databaseWrapper=`
@@ -116,6 +117,9 @@ function replaceOnce(source,pattern,replacement,label){
    });
    async function newPage(){
     const page=await context.newPage();page.setDefaultTimeout(20000);page.on('pageerror',error=>state.errors.push(error.stack||String(error)));
+    page.on('requestfailed',request=>{if(new URL(request.url()).port==='9099')console.error('AFK Auth emulator request failed:',request.url(),request.failure());});
+    page.on('response',response=>{if(new URL(response.url()).port==='9099'&&response.status()>=400)console.error('AFK Auth emulator response:',response.status(),response.url());});
+    page.on('console',message=>{if(message.type()==='error')console.error('AFK browser console:',message.text().slice(0,600));});
     await page.goto(base+'/IronPath/',{waitUntil:'domcontentloaded'});return page;
    }
    return {state,context,newPage,async close(){await context.close();assert.deepEqual(state.external,[],'no live services were contacted');assert.deepEqual(state.errors,[],'no uncaught browser errors');}};
@@ -128,7 +132,7 @@ function replaceOnce(source,pattern,replacement,label){
     await page.waitForFunction(()=>globalThis.__testSafety?.()==='ready');
     assert.equal(await page.evaluate(()=>__testAuth.currentUser?.uid),uid);
    }catch(error){
-    console.error('AFK login state:',await page.evaluate(()=>({uid:globalThis.__testAuth?.currentUser?.uid||null,safety:globalThis.__testSafety?.(),
+    console.error('AFK login state:',await page.evaluate(()=>({uid:globalThis.__testAuth?.currentUser?.uid||null,safety:globalThis.__testSafety?.(),authError:globalThis.__testAuthError,
      entry:document.getElementById('entryMessage')?.textContent,maintenance:document.getElementById('maintenanceDetail')?.textContent})).catch(()=>null));
     throw error;
    }
