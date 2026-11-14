@@ -66,6 +66,7 @@ function guardedHtml(html){
   const sdkModules={};for(const name of ['firebase-app.js','firebase-auth.js','firebase-database.js'])sdkModules[name]=await fs.readFile(path.join(__dirname,'node_modules/firebase',name),'utf8');
   admin=initializeAdmin({projectId:project},'social-cleanup-browser-admin');const adminAuth=getAdminAuth(admin);
   await adminAuth.createUser({uid,email:'social-browser@example.test',password:'example-password-123'});
+  await adminAuth.createUser({uid:other,email:'social-browser-friend@example.test',password:'example-password-123'});
   const exchange=createConfiguredSessionExchange({databaseUrl:'https://demo-ironpath.firebaseio.com',adminAuth,fetcher:(_url,options)=>fetch(emulatorStatus,options)});
   const handleSession=createReleaseSessionHttpHandler({exchange,allowedOrigins:['https://0815games.github.io'],route:'/api/session'});
   server=http.createServer(async(req,res)=>{
@@ -86,9 +87,10 @@ function guardedHtml(html){
   await env.clearDatabase();await adminSet('',{_ironpathRelease:{mode:'open',build:'social-1',epoch:'a'.repeat(32),authAfterMs:(Math.floor(Date.now()/1000)-120)*1000},players:{[uid]:{name:'Alice',gender:'female',xp:0},[other]:{name:'Bob',gender:'male',xp:0}}});
   const args=['--host-resolver-rules=MAP * 127.0.0.1'];if(process.env.CHROMIUM_PATH)args.push('--no-sandbox');
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args});
-  const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});const errors=[],external=[];let page;
-  try{
-   await context.addInitScript(id=>{try{localStorage.setItem('ironpath:language','en');for(const prefix of ['training','tutorial','coach'])localStorage.setItem(`ironpath:${prefix}:v2:${id}`,'done');}catch{}},uid);
+  const contexts=[],errors=[],external=[];let page,friendPage,stage='initial login';
+  async function client(id){
+   const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});contexts.push(context);
+   await context.addInitScript(id=>{try{localStorage.setItem('ironpath:language','en');for(const prefix of ['training','tutorial','coach'])localStorage.setItem(`ironpath:${prefix}:v2:${id}`,'done');}catch{}},id);
    await context.route('**/*',route=>{const url=new URL(route.request().url()),name=url.pathname.split('/').pop();
     if(url.hostname==='www.gstatic.com'&&url.pathname.startsWith('/firebasejs/10.14.1/')){
      const body=name==='firebase-database.js'?databaseWrapper:name==='firebase-database-real.js'?sdkModules['firebase-database.js']:sdkModules[name];
@@ -98,7 +100,10 @@ function guardedHtml(html){
     external.push(url.origin);return route.abort();
    });
    await context.routeWebSocket(()=>true,socket=>{const url=new URL(socket.url());if(url.hostname==='127.0.0.1'&&url.port==='9000')return socket.connectToServer();external.push(url.origin);return socket.close();});
-   page=await context.newPage();page.on('pageerror',error=>errors.push(String(error)));
+   const result=await context.newPage();result.on('pageerror',error=>errors.push(String(error)));return result;
+  }
+  try{
+   page=await client(uid);
    await page.goto(`http://127.0.0.1:${server.address().port}/IronPath/releases/social-1/`);
    await page.locator('#authView').waitFor({state:'visible',timeout:20000});await page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
    await page.locator('#email').fill('social-browser@example.test');await page.locator('#password').fill('example-password-123');await page.locator('#authSubmit').click();
@@ -139,12 +144,77 @@ function guardedHtml(html){
    assert.equal((await adminGet(`players/${uid}`)).name,'Alicia');
    const indexDeadline=Date.now()+15000;let newCode=null;while(Date.now()<indexDeadline){newCode=await adminGet(`friendPrivate/${uid}/code`);if(newCode&&newCode!==code)break;await new Promise(resolve=>setTimeout(resolve,50));}
    assert.match(newCode||'',/^[a-f0-9]{32}$/);assert.notEqual(newCode,code);
-   assert.deepEqual(external,[],'test browser attempted no live service');assert.deepEqual(errors,[]);
    console.log('Character deletion browser: old Rules fail closed; active party blocks deletion; offline wait, candidate cleanup and new enlistment passed.');
+
+   // A second isolated browser context uses another genuine emulator account.
+   // Make the friendship and invitation through the UI, not admin-seeded edges.
+   stage='second login and indexing';friendPage=await client(other);
+   await friendPage.goto(`http://127.0.0.1:${server.address().port}/IronPath/releases/social-1/`);
+   await friendPage.locator('#authView').waitFor({state:'visible',timeout:20000});await friendPage.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
+   await friendPage.locator('#email').fill('social-browser-friend@example.test');await friendPage.locator('#password').fill('example-password-123');await friendPage.locator('#authSubmit').click();
+   await friendPage.locator('#menuMultiplayer').waitFor({state:'visible',timeout:30000});assert.equal(await friendPage.locator('#menuName').textContent(),'Bob');
+   const friendDeadline=Date.now()+15000;let friendCode=null,friendKey=null;
+   while(Date.now()<friendDeadline){friendCode=await adminGet(`friendPrivate/${other}/code`);friendKey=await adminGet(`friendPrivate/${other}/searchKey`);if(friendCode&&friendKey&&await adminGet(`friendNames/${friendKey}/${other}`))break;await new Promise(resolve=>setTimeout(resolve,50));}
+   assert.match(friendCode||'',/^[a-f0-9]{32}$/);assert.ok(await adminGet(`friendNames/${friendKey}/${other}`));
+
+   stage='friend request and acceptance';
+   await page.locator('#menuMultiplayer').waitFor({state:'visible'});await page.locator('#menuFriends').click();
+   await page.locator('#friendInput').fill('Bob');await page.locator('#friendSearch').click();
+   await page.locator('#friendResults li').filter({hasText:'Bob'}).getByRole('button',{name:'ADD',exact:true}).click();
+   await friendPage.locator('#menuFriends').click();
+   await friendPage.locator('#friendRequests li').filter({hasText:'Alicia'}).getByRole('button',{name:'ACCEPT',exact:true}).click();
+   await page.locator('#friendList li').filter({hasText:'Bob'}).waitFor({state:'visible',timeout:20000});
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).waitFor({state:'visible',timeout:20000});
+
+   stage='party invitation and guest join';
+   await friendPage.locator('#friendsClose').click();await friendPage.locator('#menuMultiplayer').click();
+   await friendPage.locator('#fourPartyCreate').click();await friendPage.locator('#fourPartyActive').waitFor({state:'visible',timeout:20000});
+   const hostCode=await friendPage.locator('#fourPartyCodeDisplay').textContent();assert.match(hostCode,/^\d{4}$/);
+   await friendPage.locator('#lobbyFriends').click();
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).getByRole('button',{name:'INVITE',exact:true}).click();
+   await page.locator('#coopInviteList li').filter({hasText:'Bob'}).getByRole('button',{name:'JOIN',exact:true}).click();
+   await page.locator('#fourPartyActive').waitFor({state:'visible',timeout:30000});
+   await friendPage.locator('#fourPartyRoster').getByText(/Alicia/).waitFor({state:'visible',timeout:30000});
+   await page.locator('#fourPartyRoster').getByText(/Bob/).waitFor({state:'visible',timeout:30000});
+
+   stage='guest leaves before the match';
+   const hostParty=await adminGet(`fourCodes/${hostCode}/partyId`);assert.match(hostParty||'',/^[a-f0-9]{32}$/);
+   await page.locator('#fourPartyLeave').click();await page.locator('#fourPartyEntry').waitFor({state:'visible',timeout:20000});
+   assert.equal(await adminGet(`fourParties/${hostParty}/profiles/${uid}`),null);
+   assert.ok(!Object.values(await adminGet(`fourParties/${hostParty}/slots`)||{}).includes(uid));
+   await friendPage.locator('#fourPartyRoster').getByText(/Alicia/).waitFor({state:'detached',timeout:20000});
+   await page.locator('#backToCommand').click();await page.locator('#menuFriends').click();
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).getByRole('button',{name:'INVITE',exact:true}).click();
+   await page.locator('#coopInviteList li').filter({hasText:'Bob'}).getByRole('button',{name:'JOIN',exact:true}).click();
+   await page.locator('#fourPartyActive').waitFor({state:'visible',timeout:30000});
+   await friendPage.locator('#fourPartyRoster').getByText(/Alicia/).waitFor({state:'visible',timeout:30000});
+
+   stage='host closes party';
+   await friendPage.locator('#friendsClose').click();await friendPage.locator('#fourPartyLeave').click();
+   await friendPage.locator('#gameConfirmAccept').click();
+   await friendPage.locator('#fourPartyEntry').waitFor({state:'visible',timeout:20000});
+   await page.locator('#fourPartyEntry').waitFor({state:'visible',timeout:20000});
+   assert.equal(await adminGet(`fourCodes/${hostCode}`),null);assert.equal(await adminGet(`fourParties/${hostParty}`),null);
+   await friendPage.locator('#backToCommand').click();await page.locator('#backToCommand').click();
+
+   stage='peer sees character deletion';
+   await friendPage.locator('#menuFriends').click();
+   const connectedFriend=friendPage.locator('#friendList li').filter({hasText:'Alicia'});
+   await connectedFriend.waitFor({state:'visible',timeout:20000});
+   await confirmDelete();await page.locator('#characterView').waitFor({state:'visible',timeout:30000});
+   await connectedFriend.waitFor({state:'detached',timeout:20000});
+   for(const p of [`players/${uid}`,`friendCodes/${newCode}`,`friendOutgoing/${uid}/${other}`,`friendships/${other}/${uid}`])assert.equal(await adminGet(p),null,p);
+   assert.equal((await adminGet(`players/${other}`)).name,'Bob');assert.equal((await adminGet(`friendCodes/${friendCode}`)).uid,other);
+   await friendPage.locator('#friendInput').fill('Alicia');await friendPage.locator('#friendSearch').click();
+   await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent.includes('No players found.'),null,{timeout:20000});
+   assert.equal(await friendPage.locator('#friendResults li').count(),0);
+   assert.deepEqual(external,[],'test browser attempted no live service');assert.deepEqual(errors,[]);
+   console.log('Two isolated browser sessions: request, acceptance, invited join, guest leave, host close and peer-visible character cleanup passed.');
   }catch(error){
-   if(page)console.error('Browser state:',await page.evaluate(()=>Object.fromEntries(['authView','connectionView','characterView','gameView','loading','entryMessage','loadingStep','guardedTestHold'].map(id=>{const e=document.getElementById(id);return [id,{hidden:e?.hidden,text:e?.textContent?.slice(0,180)}];}))).catch(()=>({})));
+   console.error('Browser test stage:',stage);
+   for(const current of [page,friendPage].filter(Boolean))console.error('Browser state:',await current.evaluate(()=>Object.fromEntries(['authView','connectionView','characterView','gameView','loading','entryMessage','friendStatus','fourPartyStatus','guardedTestHold'].map(id=>{const e=document.getElementById(id);return [id,{hidden:e?.hidden,text:e?.textContent?.slice(0,180)}];}))).catch(()=>({})));
    console.error('Browser errors:',errors,'blocked origins:',external);throw error;
-  }finally{await context.close();}
+  }finally{for(const context of contexts)await context.close();}
  }finally{
   if(browser)await browser.close();if(candidateEnv)await candidateEnv.cleanup();if(env)await env.cleanup();if(server)await new Promise(resolve=>server.close(resolve));if(admin)await deleteAdmin(admin);await fs.rm(tmp,{recursive:true,force:true});
  }

@@ -10,22 +10,29 @@ prevention system.
 ## Before deploying
 
 `WORKSHOP-RULES-TO-PUBLISH.json` is the owner's **checked-in reference**, not a
-fresh independent export of the live Rules. The former `friends.complete` and
-other draft files are older, partial baselines: do not publish one of them over
-a newer database. Replacing RTDB Rules replaces the *whole* ruleset. Export,
-back up and compare the real live Rules; reconcile outside changes and review
-all grants. Do not publish anything until the owner approves the rollout and
-all relevant emulator and real-device checks pass. The changes in this branch
-have not been published to the real game or its database.
+fresh independent export of the live Rules. The complete Rules block most
+recently supplied by the owner in chat was structurally identical to this
+reference; the reconstructed two-space JSON has SHA-256
+`8041607e1adb3f235afffde8f581ebf6a06afdee99eb642a4d460ad938a04577`. That
+comparison does not independently establish which database the text came from,
+or whether Rules have changed since. The former `friends.complete` and other
+draft files are older, partial baselines: do not publish one of them over a newer
+database. Replacing RTDB Rules replaces the *whole* ruleset. Export, back up and
+compare the real live Rules immediately before any change; reconcile outside
+changes and review all grants. Do not publish anything until the owner approves
+the rollout and all relevant emulator and real-device checks pass. The changes
+in this branch have not been published to the real game or its database.
 
 `social-cleanup-candidate.mjs` builds a **local candidate** from the exact
 SHA-256-pinned reference; it refuses a changed reference. It changes five
 expressions: the account owner may remove or update its own friend-code name,
 remove its private code and replace/remove its search key; a request recipient
 may delete only the sender's pointer to that recipient; and presence writes
-require a current soldier (deletes remain allowed). All existing field
-validation and access to other players remain in force. Generate for inspection,
-not publication, with:
+require a current soldier (deletes remain allowed). These are the five `.write`
+expressions at `friendCodes/$code`, `friendPrivate/$uid/code`,
+`friendPrivate/$uid/searchKey`, `friendOutgoing/$uid/$other`, and
+`friendPresence/$uid/$connection`. All existing field validation and access to
+other players remain in force. Generate for inspection, not publication, with:
 
 ```sh
 node IronPath/firebase/social-cleanup-candidate.mjs > /tmp/ironpath-social-candidate.json
@@ -34,10 +41,14 @@ npm run test:social-cleanup --prefix IronPath/firebase/rules-test
 
 The script uses no credential and cannot publish. Review the actual diff against
 the exported live Rules and integrate any independent changes before preparing
-a publishable file. For the experimental maintenance guard the social candidate
-must additionally be passed through the guarded Rules builder and tested as a
-combined candidate; the previously installed `ironpathtest` Rules still use the
-old pinned reference. Never paste an unreviewed candidate over live Rules.
+a publishable file. `scripts/rules-publish-dry-run.mjs` checks the workshop draft,
+not this social candidate; it is not a substitute for that review. For the
+experimental maintenance guard the social candidate must additionally be passed
+through the guarded Rules builder and tested as a combined candidate; the
+previously installed `ironpathtest` Rules still use the old pinned reference.
+The guard changes far more than the five social expressions and blocks existing
+ordinary sessions: do not publish it ahead of a compatible deployment. Never
+paste an unreviewed candidate over live Rules.
 
 ## Character deletion in this branch
 
@@ -82,10 +93,13 @@ name, legacy name migration and unauthorized access. `test:social-browser` uses
 the real account UI and Firebase SDK against local Auth/RTDB emulators: it
 checks the old Rules' atomic rejection, the active-party block, waiting while
 offline at the deletion write, reconnecting, cleanup with the guarded candidate
-and re-enlistment. The browser suite needs Playwright and Chromium; CI installs
-the pinned browser tooling separately. These tests do not establish cross-device
-or interrupted-write safety. Mock-store tests do not prove Rules behavior; an
-emulator is not the live database. Before any rollout,
+and re-enlistment. Two isolated Chromium contexts with separate synthetic Auth
+users also exercise a friend request and acceptance, invited party join, guest
+leave, host closure and a friend's view of character cleanup. The browser suite
+needs Playwright and Chromium; CI installs the pinned browser tooling separately.
+These local emulator checks are not two physical devices, live-service tests or
+proof of cross-device race and interrupted-write safety. Mock-store tests do not
+prove Rules behavior; an emulator is not the live database. Before any rollout,
 test with separate consenting accounts/devices: friendship request/accept and
 remove in both directions, invitations, host close and guest leave, offline or
 interrupted writes, deletion, re-enlistment and search. Verify deployed Rules
