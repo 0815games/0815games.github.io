@@ -77,10 +77,10 @@ its full live flow, free limits and the production rollout still need verificati
 - `api/session.mjs`, `package.json`, `vercel.json`, and `public/` form a
   **test-only** service candidate. Earlier deployment `dpl_7PxUCqssH4Ma814NE1F5BG5Qvkbu`
   was unconfigured. The later test-only deployment `dpl_6Ga2xnFwr4ZZKQ8Ei1gLfxN99p8g`
-  is READY on the public alias `https://ironpath-release.vercel.app/`, uses Node
-  22.x, and received the test service-account secret as a sensitive Production
-  variable. The project setting still reports 26.x, while the package requests
-  22.x. The session exchange requires a live end-to-end check. The initial
+  was READY on the public alias `https://ironpath-release.vercel.app/`, used
+  Node 22.x, and received the test service-account secret as a sensitive
+  Production variable. The project setting still reports 26.x, while the package
+  requests 22.x. A later live operator exercised its HTTP exchange. The initial
   function crashed at startup (500).
   Vercel disables `require(ESM)` by default and this dependency chain fails with
   that setting locally; adding the documented non-secret project setting
@@ -92,10 +92,11 @@ its full live flow, free limits and the production rollout still need verificati
   compatibility diagnosis, not a captured production stack trace.
   Run `runtime-compatibility.test.mjs` after dependency changes and recheck the
   Vercel setting: ordinary Node 22 locally can otherwise hide this failure.
-  The real configured HTTP exchange, request streaming, CORS, deployment
-  protection, abuse controls and Firebase integration remain unverified. Hobby
-  rate limits are per region, not a global distributed security guarantee; its
-  quotas can interrupt service.
+  The subsequent isolated test passed real configured HTTP POSTs and an OPTIONS
+  preflight from a Node client, including Firebase Auth and RTDB access. Browser
+  CORS, all deployment-protection paths, abuse controls and the real game's
+  integration still need separate verification. Hobby rate limits are per region,
+  not a global distributed security guarantee; its quotas can interrupt service.
 - Four **unconfigured** Preview deployments remain: three file probes
   (`dpl_8qJPt6xrGGcJx4TbNqDqzQzgYwwJ`, `dpl_CnuqSDATe5BSofWRLLrUvbZ6Ya8g`,
   `dpl_8fp75bdQ9Rf7uxm2mJZe9GAQrGBN`) and one Git-source preview
@@ -116,7 +117,8 @@ its full live flow, free limits and the production rollout still need verificati
   `IRONPATH_FIREBASE_SERVICE_ACCOUNT`. The last is a highly sensitive,
   long-lived service-account key: it can sign Firebase custom tokens, so a
   leak can compromise player access even if its IAM database privileges are
-  restricted. No key has been created or shared. If this approach is approved,
+  restricted. The owner has configured a **test-project-only** sensitive key;
+  it was not read or shared in the conversation. If this approach is approved,
   for the real service use a dedicated account with the minimum Auth lookup
   permissions; put its key directly into a sensitive **production-only**
   Vercel variable, never in chat, Git, preview environments, build output or
@@ -378,10 +380,11 @@ root. Generated site files are build outputs, not repository files. The first
 `dpl_ECCSFqqxjxCxqV7AZMLcDC7KoieD` from `d70f068`; that earlier deployment
 had no test credential. The owner then supplied a sensitive test-only variable,
 and deployment `dpl_6Ga2xnFwr4ZZKQ8Ei1gLfxN99p8g` from `3eef6ea` explicitly
-ran the initializer. Its read-back verified the pinned Rules in `ironpathtest`,
-and the publicly readable control record is in maintenance. The test launcher
-shows maintenance and a direct game link returns to the launcher. This is not
-GitHub Pages or the real game's Firebase project.
+ran the initializer. Its read-back verified the pinned Rules in `ironpathtest`;
+the test launcher displayed maintenance and a direct game link returned to it.
+A subsequent live exercise succeeded and opened test build `04ee7ce`, promoted
+as `dpl_DWEKWjwEJXPJqWXbm8hwXMhFXsyp`. This is not GitHub Pages or the real
+game's Firebase project.
 
 `initialize-isolated-test.mjs` accepts only `ironpathtest`, the exact test RTDB
 and Vercel project/origin, an explicit flag, and a pinned Rules candidate. It
@@ -398,11 +401,22 @@ implicitly run this one-time operator.
 `exercise-isolated-guard.mjs` is a separate, explicitly invoked **test-only**
 operator. It requires the exact prior maintenance build and epoch, rechecks the
 Rules, and uses a synthetic account/profile to exercise the service and Rules.
-It closes its own epoch and checks cleanup on failure; a killed process, lost
-response or concurrent operator still requires inspection. Its final test opening
-can briefly point at a not-yet-promoted new Vercel build: the launcher should
-fail closed if that build is unavailable. It is not an atomic production rollout.
-Do not point these tools, service credentials, or Rules at real players.
+On `dpl_DWEKWjwEJXPJqWXbm8hwXMhFXsyp` it verified password and custom-token
+sign-in, allowed profile read/write when open, denial during maintenance, denial
+of old credentials after reopening, a fresh new session, and removal of the
+synthetic profile and account. The first attempt stopped safely because its REST
+response check incorrectly required `localId`; that is not required by Firebase's
+custom-token response and was corrected. The test checks the ID-token subject.
+The temporary build command was restored to packaging only. This is an HTTP/API
+smoke on selected paths, not a real-player, all-Rules, offline-device, browser
+or production-cutover proof.
+
+The operator closes its own epoch and checks cleanup on failure; a killed
+process, lost response or concurrent operator still requires inspection. Its
+final test opening can briefly point at a not-yet-promoted new Vercel build: the
+launcher should fail closed if that build is unavailable. It is not an atomic
+production rollout. Do not point these tools, service credentials, or Rules at
+real players.
 
 ## Creating an isolated guarded candidate
 
