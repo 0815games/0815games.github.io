@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Iron Path · Checking status</title>
+  <link rel="stylesheet" href="launcher/__LAUNCHER_BUILD__/maintenance-view.css">
+  <link rel="stylesheet" href="launcher/__LAUNCHER_BUILD__/launcher.css">
+</head>
+<body>
+  <!-- Candidate launcher: the real public game and Firebase are not changed. -->
+  <div class="release-scene">
+    <header class="release-header">
+      <img class="release-brand" src="launcher/__LAUNCHER_BUILD__/assets/iron-path-brand-cutout.png" alt="Iron Path" width="220" height="77">
+      <div class="launcher-header-actions">
+        <div class="release-header-mark"><span class="signal-icon" aria-hidden="true"><i></i><i></i><i></i></span><span id="headerText">FIELD SIGNAL · 0815 GAMES</span></div>
+        <button type="button" id="launcherLanguage" class="launcher-language" aria-label="Auf Deutsch wechseln">DE</button>
+      </div>
+    </header>
+    <main class="release-main" aria-labelledby="releaseTitle">
+      <section class="release-card" aria-live="polite" aria-atomic="true">
+        <div class="card-topline"><span id="eyebrow">FIELD TRANSMISSION // OPERATION STATUS</span><span class="card-code" aria-hidden="true">IP—01</span></div>
+        <div class="card-rule" aria-hidden="true"><span></span></div>
+        <div class="release-seal" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M7 9.5 16 5l9 4.5v6.2c0 5.2-3.5 8.7-9 11.3-5.5-2.6-9-6.1-9-11.3V9.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M11.5 15.5 16 18l4.5-2.5M12.5 11.5 16 13.4l3.5-1.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg></div>
+        <p class="release-kicker" id="kicker">CHECKING THE FIELD SIGNAL</p>
+        <h1 id="releaseTitle"><span id="titleText">Checking operation status</span><span class="punctuation">.</span></h1>
+        <p class="release-lead" id="lead">We are checking the connection before allowing sign-in and play.</p>
+        <div class="release-steps" aria-label="Update process" id="stepGroup">
+          <div class="release-step"><span class="step-number">01</span><span id="step1">Sign-in paused</span><span class="step-mark" aria-hidden="true">—</span></div>
+          <div class="release-step is-current" id="step2Row"><span class="step-number">02</span><span id="step2">Checking the connection</span><span class="step-mark" aria-hidden="true">◆</span></div>
+          <div class="release-step" id="step3Row"><span class="step-number">03</span><span id="step3">Waiting for clearance</span><span class="step-mark" aria-hidden="true">—</span></div>
+        </div>
+        <div class="status-line"><span class="status-pulse" aria-hidden="true"></span><strong id="statusText">CHECKING STATUS</strong><span class="status-divider" aria-hidden="true">/</span><span id="statusDetail">Please wait a moment.</span></div>
+        <div class="launcher-actions"><button type="button" id="launcherRetry" class="launcher-retry">Check again</button><a href="/" id="launcherHome">0815 Games</a></div>
+        <noscript><p class="launcher-noscript">JavaScript is required to check the status. / Für die Statusprüfung ist JavaScript erforderlich.</p></noscript>
+        <p class="release-footnote" id="footnote">Unconfirmed progress may be lost. Your account remains available.</p>
+      </section>
+      <div class="scene-caption" aria-hidden="true"><span>IRON PATH</span><b> / </b><span id="captionText">HOLD THE LINE</span></div>
+    </main>
+    <footer class="release-footer"><span>0815 GAMES <b> / </b> IRON PATH</span><span id="footerText">OPERATION STATUS</span></footer>
+  </div>
+  <script type="module" src="launcher/__LAUNCHER_BUILD__/launcher-entry.mjs"></script>
+</body>
+</html>

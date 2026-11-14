@@ -6,12 +6,12 @@ const assert=require('node:assert/strict');
 const mocks={
  'firebase-app.js':`export function initializeApp(){return {}}`,
  'firebase-auth.js':`const user={uid:'mock-user',getIdToken:async()=> 'mock'},auth={currentUser:user};export function getAuth(){return auth}export function onAuthStateChanged(a,cb){setTimeout(()=>cb(user),0);return ()=>{}}export async function signOut(a){a.currentUser=null}export async function signInWithEmailAndPassword(){}export async function createUserWithEmailAndPassword(){}export async function sendPasswordResetEmail(){}`,
- 'firebase-database.js':`const profile={name:'Test Soldier',gender:'female',xp:750};export function getDatabase(){return {}}export function ref(db,path){return {path}}export function onValue(r,cb){if(r.path==='players/mock-user')queueMicrotask(()=>cb({val:()=>profile}));return ()=>{}}export async function runTransaction(){return {committed:false,snapshot:{val:()=>null,exists:()=>false}}}export async function get(r){return {val:()=>r.path==='players/mock-user'?profile:null,exists:()=>r.path==='players/mock-user',forEach(){}}}export async function remove(){}export async function set(){}export async function update(){}export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}}export function serverTimestamp(){return Date.now()}export function query(r){return r}export function orderByKey(){return {}}export function startAfter(){return {}}export function limitToFirst(){return {}}export function orderByChild(){return {}}export function limitToLast(){return {}}`,
+ 'firebase-database.js':`const profile={name:'Test Soldier',gender:'female',xp:750};export function getDatabase(){return {}}export function goOffline(){}export function ref(db,path){return {path}}export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user')queueMicrotask(()=>cb({val:()=>profile}));return ()=>{}}export async function runTransaction(){return {committed:false,snapshot:{val:()=>null,exists:()=>false}}}export async function get(r){return {val:()=>r.path==='players/mock-user'?profile:null,exists:()=>r.path==='players/mock-user',forEach(){}}}export async function remove(){}export async function set(){}export async function update(){}export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}}export function serverTimestamp(){return Date.now()}export function query(r){return r}export function orderByKey(){return {}}export function startAfter(){return {}}export function limitToFirst(){return {}}export function orderByChild(){return {}}export function limitToLast(){return {}}`,
 };
 const panel=`export function createFourPlayerPanel({document,onMatch}){
  let active=false;const root=document.getElementById('fourPartyPanel');
  globalThis.__testParty=mode=>{active=true;return onMatch({partyId:'0123456789abcdef0123456789abcdef',hostId:'mock-user',playerIds:['mock-user','bob'],profiles:[{name:'Test Soldier',gender:'female',level:3},{name:'Bob',gender:'male',level:3}],mode,teamRosters:[['mock-user','bob'],[]]});};
- return {show(){root.hidden=false},hide(){root.hidden=true},isActive:()=>active,hostInvite:()=>null,joinInvite:async()=>false,leaveParty:async()=>{active=false;return true},leaveForLogout:async()=>{active=false}};
+ return {show(){root.hidden=false},hide(){root.hidden=true},isActive:()=>active,isBusy:()=>false,hostInvite:()=>null,joinInvite:async()=>false,leaveParty:async()=>{active=false;return true},leaveForLogout:async()=>{active=false}};
 }`;
 const partyGame=`import {createMatch} from './simulation.mjs';import {applyCommand} from './match.mjs';import {createVersus,versusView,applyVersus} from './versus.mjs';
  export function createFirebasePartyGame({players,mapId,mode,hostId,onSnapshot,onStatus}){
@@ -25,12 +25,14 @@ const partyGame=`import {createMatch} from './simulation.mjs';import {applyComma
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH});
  try{
   for(const mode of ['coop','versus']){
-   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
+   const context=await browser.newContext({bypassCSP:true,viewport:{width:390,height:844},hasTouch:true,isMobile:true,reducedMotion:'reduce'});
    try{
     await context.addInitScript(()=>{localStorage.setItem('ironpath:language','en');localStorage.setItem('ironpath:training:v2:mock-user','done');localStorage.setItem('ironpath:tutorial:v2:mock-user','done');localStorage.setItem('ironpath:coach:v2:mock-user','done');});
     await context.route('**/*',route=>{
      const url=new URL(route.request().url()),file=url.pathname.split('/').pop();
-     if(url.hostname==='www.gstatic.com'&&mocks[file])return route.fulfill({contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:mocks[file]});
+     // Intercept the ONLY Firebase status request; every other external request is aborted.
+      if(url.hostname==='iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app'&&url.pathname==='/_ironpathMaintenance.json')return route.fulfill({status:200,contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({format:1,mode:'open',authAfterMs:0})});
+      if(url.hostname==='www.gstatic.com'&&mocks[file])return route.fulfill({contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:mocks[file]});
      if(url.hostname!=='127.0.0.1')return route.abort();
      if(file==='firebase-four-panel.mjs')return route.fulfill({contentType:'text/javascript',body:panel});
      if(file==='firebase-party-game.mjs')return route.fulfill({contentType:'text/javascript',body:partyGame});

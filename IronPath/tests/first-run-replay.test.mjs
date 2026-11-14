@@ -84,7 +84,7 @@ test('a replay pays no second reward, and the game says so', () => {
   const game = readFileSync(resolve(root, 'game.js'), 'utf8');
   assert.match(game, /trainingRewards=true,/, 'a normal first run is paid');
   assert.match(game, /trainingRewards=rewards!==false/, 'and only an explicit replay turns it off');
-  assert.match(game, /if\(trainingRewards\)Promise\.resolve\(account\.awardXP\(xp,/, 'the defeat payout is gated');
+  assert.match(game, /if\(trainingRewards\)trackReportSave\(report,account\.awardXP\(xp,/, 'the defeat payout is gated and tracked until confirmed');
   assert.match(game, /if\(trainingRewards&&bonus>0/, 'and so is the completion bonus');
   assert.match(game, /This replay pays no XP/, 'the player is told, not left guessing');
   // The ending (real armory, real skill tree) is not part of a replay.
