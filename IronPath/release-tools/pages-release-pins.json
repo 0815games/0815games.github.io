@@ -1,0 +1,8 @@
+{
+  "format": 1,
+  "gameRevision": "2396ea9bc59fdf8e6de8c59822e2a46659b937e7",
+  "rollback": {
+    "revision": "9af24fa4220a2281bb2aa69fe8075f395530c81e",
+    "disableCharacterDeletion": true
+  }
+}

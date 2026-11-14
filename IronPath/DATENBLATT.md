@@ -2,6 +2,18 @@
 
 Dieses Blatt trennt veröffentlichte Funktionen, lokale Änderungen und ausstehende Nachweise. GitHub Pages, Firebase Authentication und die Realtime Database sind getrennte Systeme: Ein Website-Merge veröffentlicht keine Firebase-Regeln und beweist keine Live-Partie. Keine Zugangsdaten, Tokens, Partycodes oder privaten Spielerinformationen in diesem Blatt speichern.
 
+**Aktualisierung:** Charakter-/Social-Bereinigung und der Guard liegen auf dem
+Arbeitsbranch; die Emulator-CI einschließlich zweier synthetischer Browser-
+Sessions bestand, aber die Änderungen sind nicht live. Nach Freigabe des Nutzers
+wurde ohne weiteren Test auf `ironpathtest` ein separates Vercel-Hobby-Projekt
+für den Produktionsdienst angelegt. Es hat noch keinen Produktionsschlüssel
+oder Deployment. Ein lokal geprüftes Pages-Paket mit begrenztem Rückfall und
+ein abgeschalteter Deployment-Workflow sind vorbereitet. Firebase-Regeln,
+Control-Record und Pages-Ursprung der Produktion sind unverändert. Offene
+Schritte, Risiken und die Schnittstellenbegrenzung für das erste Vercel-
+Deployment stehen in `release-tools/PAGES-ROLLOUT.md`; ältere Abschnitte unten
+halten frühere Zwischenstände fest.
+
 ## Übersicht der Anforderungen
 
 | Abschnitt | Stand | Offene Punkte |
@@ -9,7 +21,7 @@ Dieses Blatt trennt veröffentlichte Funktionen, lokale Änderungen und ausstehe
 | Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | Website-Build `20261031-mpview1` wurde über [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlicht; Pages und öffentliche Assets wurden abgerufen. | Live-Abnahme mit zwei Konten und Geräten, Reconnect, Belohnungen, Balance und produktiven Firebase-Regeln steht noch aus. |
 | Wartung vor jedem Patch und Rollout | **Isolierte Kandidaten inklusive Launcher und geschütztem Staging; nicht im veröffentlichten Spiel aktiviert.** Gewünscht: Sitzungen beenden, Anmeldung während der Wartung sperren und eine Anzeige im Spielstil. | Server-/Auth-Sperre, produktive Integration, Regeln, Tests, Berechtigungen, Rollback und Einrichtung. |
 | Immer aktuelle Clients | **Analyse; noch nicht garantiert.** Alte Tabs, zwischengespeicherte HTML-/Moduldateien und wieder online kommende Geräte müssen berücksichtigt werden. | Autoritative Release-Version, serverseitige Zugangssperre für alte Sitzungen, vollständige Cache-Kette und verifizierter Reload. |
-| Weitere Patch-Blöcke: Charakter, Freunde, Einladungen | Frühere Arbeiten wurden nicht im MP-Release veröffentlicht. | Nach sicherem Wartungs-/Release-Verfahren wieder aufnehmen und den vorhandenen Stand zuerst erneut prüfen. |
+| Weitere Patch-Blöcke: Charakter, Freunde, Einladungen | Auf dem Arbeitsbranch implementiert und in Emulator-/Browser-CI geprüft; nicht Teil des veröffentlichten MP-Releases. | Aktuelle Produktions-Rules abgleichen, abgestimmt veröffentlichen und bekannte Grenzen bei parallelen Geräten beachten. |
 
 ## 1. Zuletzt veröffentlichter Multiplayer-Schnitt
 
@@ -50,15 +62,22 @@ Dieses Blatt trennt veröffentlichte Funktionen, lokale Änderungen und ausstehe
 
 ## 3. Weitere Patch-Blöcke
 
-- Die frühere Unterhaltung dokumentierte lokale Arbeiten zu Charakterentlassung, Freunden, Einladungen und Party-Bereinigung. Diese Änderungen waren bewusst nicht Bestandteil von PR #286. Der aktuelle Branch startet sauber vom veröffentlichten Merge; diese früheren uncommitteten Dateien und das damalige lokale Datenblatt liegen in diesem Arbeitsbaum nicht vor. Vor Fortsetzung muss der vorhandene Stand aus dem früheren Arbeitsstand/Snapshot wiederhergestellt oder neu aufgebaut werden; eine Veröffentlichung ist nicht nachgewiesen.
-- Gewünschte Richtung aus der bisherigen Arbeit: Der Account bleibt bestehen, der Charakter wird entlassen; Bereinigung und Logout dürfen nicht als erfolgreich gemeldet werden, wenn Teiloperationen offen oder fehlgeschlagen sind. Rules, echte Firebase-CORS- und Zwei-Account-Tests sowie sicherer Cutover und Rollback bleiben erforderlich.
+- Charakterentlassung, Freundes-/Einladungsbereinigung und Teile des Party-
+  Lifecycle sind auf diesem Branch implementiert, nicht im MP-Release PR #286.
+  Die Entlassung löscht bekannte Daten atomar und wartet auf Serverbestätigung;
+  sie löscht nicht das Firebase-Auth-Konto und erfasst keine unauffindbaren
+  Altlasten oder garantiert alle parallelen Geräte.
+- Die kombinierten Regeln und zwei synthetische Browser-Sessions bestanden in
+  der offiziellen Emulator-CI [43570287668](https://github.com/0815games/0815games.github.io/actions/runs/43570287668).
+  Das ist keine produktive Mehrgeräte-Abnahme. Einzelheiten und Grenzen stehen
+  in `firebase/FRIENDS-ROLLOUT.md`.
 
 ## 4. Rollout-Protokoll
 
 | Abschnitt | Nachweis / Status |
 | --- | --- |
 | Bisheriger Website-Stand | Pages-Build `ebefe2adf7131adce155db1a3e75e8f4ee0264b3` mit `20261031-mpview1` nach PR #286; produktive Firebase-Regeln nicht unabhängig ausgelesen. |
-| Wartungs- und Versionsschutz | **Noch keine produktive Freischaltung.** Im vorhandenen Vercel-/Firebase-Testprojekt bestanden Live-API-Prüfungen von Anmeldung, Wartungssperre und Wiederöffnung sowie ein Chromium-Anmeldetest mit künstlichem Konto. Browser-Wartungswechsel, Mehrgeräte-Test und Produktions-Cutover stehen aus; GitHub Pages und die echten Firebase-Regeln sind unverändert. |
-| Weitere Patch-Blöcke | Nicht Teil des letzten MP-Releases; auf diesem neuen Branch zunächst nicht vorhanden und nicht live bestätigt. |
+| Wartungs- und Versionsschutz | **Noch nicht live.** Separater Produktionsdienst ohne Schlüssel/Deployment und lokaler Pages-Rollout vorbereitet; Regeln, Control und Pages-Ursprung unverändert. Kein weiterer Test auf `ironpathtest`. |
+| Weitere Patch-Blöcke | Auf dem Branch implementiert und in Emulator-/Browser-CI geprüft; nicht live. |
 
 Nach jedem logischen Abschnitt fortschreiben. Ein noch nicht geprüfter Schutz oder Rollout bleibt ausdrücklich als solcher markiert.

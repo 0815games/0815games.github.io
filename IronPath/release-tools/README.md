@@ -8,6 +8,27 @@ maintenance window, or promise that sign-in is blocked using these prototypes
 alone. GitHub Pages currently serves `main:/` directly; an ordinary merge is not
 gated by this experiment. An isolated test using `ironpathtest` is separate.
 
+## Production-path preparation (not live)
+
+The owner approved preparing a production cutover without further tests on the
+other server. A separate Vercel Hobby project `ironpath-live-session` now exists
+with non-secret production project, database and origin settings; no production
+service key or deployment has been installed. The connector cannot create its
+first deployment because Vercel requires `projectSettings` that it does not
+expose. The existing `ironpath-release` test project was not repurposed.
+
+`build-pages-site.mjs` stages the whole tracked website with an isolated launcher,
+current guarded build and a limited older fallback; it checks both locally. The
+fallback's unsafe legacy character-delete button is disabled, but other older
+behavior remains and production rollback has not been proven. The Pages workflow
+cannot deploy until an owner explicitly enables its repository variable and the
+live control record references a retained build. `prepare-production-rules.py`
+checks a separately supplied fresh Rules export against the pinned reference; it
+never contacts Firebase. The direct production path, remaining operator steps,
+control-record preparation and rollback limits are in `PAGES-ROLLOUT.md`.
+No Pages source, real Firebase Rules, real control record or real-player data
+has been modified. These preparations do not establish a guaranteed cutover.
+
 The owner reports that the Firebase project is dedicated to Iron Path and that
 they can administer it. The owner requires a **free solution only**: do not
 activate billing or a paid plan. The owner can set up Vercel Hobby for this
@@ -416,8 +437,8 @@ or production-cutover proof. The separate real-browser login step in
 [CI 43556162279](https://github.com/0815games/0815games.github.io/actions/runs/43556162279)
 reached recruitment and returned success from synthetic-account deletion. That
 smoke did not create a character or exercise a maintenance transition in the
-browser. It is opt-in only and hard-pinned to the already open test build;
-never repeat it with a stale build or assume a killed runner cleaned up.
+browser. Its former opt-in CI step has been removed at the owner's request;
+do not repeat the test on the other server or assume a killed runner cleaned up.
 
 The operator closes its own epoch and checks cleanup on failure; a killed
 process, lost response or concurrent operator still requires inspection. Its
@@ -499,15 +520,10 @@ npm ci --prefix IronPath/release-tools --no-audit --no-fund
 node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
 ```
 
-To verify **only an intentionally unconfigured isolated deployment**, run
-`node IronPath/release-tools/smoke-unconfigured.mjs https://ironpath-release.vercel.app/api/session`
-from a network that can reach Vercel. It sends only synthetic invalid inputs and
-expects 503/no-store JSON for GET, OPTIONS and POST. It does not test successful
-login, streaming, credentials or production Firebase. The GitHub workflow can
-also run this probe when a push commit explicitly includes
-`[ironpath-unconfigured-smoke]`; it does not run on ordinary pushes or PRs.
-The public alias is reachable without Vercel login; protected preview and
-unique deployment URLs cannot be substituted without an authorized test path.
+The earlier unconfigured-deployment probe sent only synthetic invalid inputs;
+it did not test successful login, streaming, credentials or production Firebase.
+Its former opt-in GitHub workflow step has been removed. Do not probe the other
+server at the owner's request.
 
 The cross-tab, combined browser-runtime, staged-game and packaged-site tests
 additionally require Playwright/Chromium. CI installs them and runs

@@ -213,6 +213,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Offline Pages packaging verifies both pinned ancestor revisions.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -228,9 +231,6 @@ jobs:
         run: npm ci --prefix IronPath/release-tools --no-audit --no-fund
       - name: Test unconfigured release service and Node compatibility
         run: node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
-      - name: Probe isolated unconfigured release service (explicit opt-in only)
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[ironpath-unconfigured-smoke]')
-        run: node IronPath/release-tools/smoke-unconfigured.mjs https://ironpath-release.vercel.app/api/session
   interface-browser-smoke:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -274,11 +274,6 @@ jobs:
               exit 1
             fi
           fi
-      - name: Test live isolated test-project browser login (explicit opt-in only)
-        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[ironpath-live-browser]')
-        env:
-          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
-        run: timeout 270 node IronPath/browser-tests/release-live-test.cjs test-04ee7ce8e6e5e43d8e80720b441960ccd7adca37
       - name: Check static interface at phone and desktop sizes
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
