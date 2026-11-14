@@ -276,6 +276,25 @@ jobs:
               exit 1
             fi
           fi
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Firebase emulator test tooling
+        run: npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
+      - name: Test maintenance admin, AFK and isolated auth in Chromium (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        shell: bash
+        run: |
+          if timeout 180 npm run test:maintenance-browser > /tmp/maintenance-browser.log 2>&1; then
+            cat /tmp/maintenance-browser.log
+          else
+            cat /tmp/maintenance-browser.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/maintenance-browser.log').read_text()[-5000:]; print('::error title=Maintenance browser emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Check static interface at phone and desktop sizes
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
@@ -288,22 +307,11 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('/tmp/browser-smoke.log').read_text()[-3500:]; print('::error title=Browser smoke::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '21'
-      - name: Install Firebase emulator test tooling
-        run: npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
       - name: Test release auth, launcher and staged game in Chromium (emulators only)
         working-directory: IronPath/firebase/rules-test
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: npm run test:release-tabs
-      - name: Test maintenance admin, AFK and isolated auth in Chromium (emulators only)
-        working-directory: IronPath/firebase/rules-test
-        env:
-          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
-        run: npm run test:maintenance-browser
       - name: Test social and character cleanup UI in Chromium (emulators only)
         working-directory: IronPath/firebase/rules-test
         env:

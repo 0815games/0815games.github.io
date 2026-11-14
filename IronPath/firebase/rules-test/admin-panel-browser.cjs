@@ -74,6 +74,7 @@ const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs'
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const port=server.address().port,base=`http://127.0.0.1:${port}`;
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:process.env.CHROMIUM_PATH?['--no-sandbox']:[]});
   const context=await browser.newContext({bypassCSP:true,viewport:{width:390,height:844},serviceWorkers:'block'});const external=[],errors=[];
+  let stage='setup',game,page;
   try{
    await context.routeWebSocket(url=>url.hostname!=='127.0.0.1'||url.port!=='9000',ws=>{external.push(ws.url());return ws.close();});
    await context.route('**/*',route=>{
@@ -83,29 +84,35 @@ const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs'
     if(url.hostname==='127.0.0.1'&&[String(port),'9000','9099'].includes(url.port))return route.continue();
     external.push(url.origin);return route.abort();
    });
-   const game=await context.newPage();game.on('pageerror',e=>errors.push(String(e)));
+   stage='game login';game=await context.newPage();game.on('pageerror',e=>errors.push(String(e)));
    await game.goto(base+'/IronPath/test-game-auth.html');await game.waitForFunction(()=>typeof window.__gameLogin==='function');
    await game.evaluate(()=>window.__gameLogin());assert.equal(await game.evaluate(()=>__gameAuth.currentUser?.uid),gameUid);
-   const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
+   stage='admin login and authorization';page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
    await page.goto(base+'/IronPath/admin.html');await page.locator('#adminLoginButton:not([disabled])').waitFor({timeout:20000});
    await page.locator('#adminEmail').fill('admin@example.test');await page.locator('#adminPassword').fill('example-password-123');await page.locator('#adminLoginButton').click();
    await page.waitForFunction(()=>!document.getElementById('adminDisable').disabled,null,{timeout:20000});
    assert.equal(await page.evaluate(()=>__adminAuth.currentUser?.uid),adminUid);
    assert.equal(await game.evaluate(()=>__gameAuth.currentUser?.uid),gameUid,'admin login does not replace the game account');
-   await page.locator('#adminDisable').click();await page.locator('#adminConfirmAction').click();
+   stage='reopen';await page.locator('#adminDisable').click();await page.locator('#adminConfirmAction').click();
    await page.waitForFunction(()=>document.getElementById('adminMessage').textContent.includes('öffentlich bestätigt'),null,{timeout:20000});
    let record=await adminGet('_ironpathMaintenance');assert.equal(record.mode,'open');assert.ok(record.authAfterMs>0);
    await page.waitForFunction(()=>!document.getElementById('adminEnable').disabled,null,{timeout:20000});
-   await page.locator('#adminEnable').click();await page.locator('#adminConfirmAction').click();
+   stage='close';await page.locator('#adminEnable').click();await page.locator('#adminConfirmAction').click();
    await page.waitForFunction(()=>document.getElementById('adminStatusCard').dataset.state==='maintenance',null,{timeout:20000});
    record=await adminGet('_ironpathMaintenance');assert.equal(record.mode,'maintenance');
    await page.locator('#adminLogout').click();await page.locator('#adminLogin').waitFor({state:'visible'});
    assert.equal(await game.evaluate(()=>__gameAuth.currentUser?.uid),gameUid,'admin logout does not sign out the game');
-   await page.locator('#adminEmail').fill('game@example.test');await page.locator('#adminPassword').fill('example-password-123');await page.locator('#adminLoginButton').click();
+   stage='ordinary-user denial';await page.locator('#adminEmail').fill('game@example.test');await page.locator('#adminPassword').fill('example-password-123');await page.locator('#adminLoginButton').click();
    await page.waitForFunction(()=>document.getElementById('adminMessage').textContent.includes('Berechtigung oder Verbindung'),null,{timeout:20000});
    assert.equal(await page.locator('#adminEnable').isDisabled(),true);assert.equal(await page.locator('#adminDisable').isDisabled(),true);
    assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
    console.log('Admin browser with local real Auth/RTDB: separate game session, closed-mode login, safe toggles and ordinary-user denial passed.');
+  }catch(error){
+   console.error('Admin browser stage:',stage);
+   if(page)console.error('Admin browser state:',await page.evaluate(()=>({uid:globalThis.__adminAuth?.currentUser?.uid||null,
+    login:document.getElementById('adminLoginMessage')?.textContent,message:document.getElementById('adminMessage')?.textContent,
+    state:document.getElementById('adminStatusCard')?.dataset.state})).catch(()=>null));
+   throw error;
   }finally{if(errors.length||external.length)console.error('Browser diagnostics:',{errors,external});await context.close();}
  }finally{await browser?.close();if(server)await new Promise(resolve=>server.close(resolve));if(env)await env.cleanup();if(admin)await deleteAdmin(admin);}
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -121,11 +121,17 @@ function replaceOnce(source,pattern,replacement,label){
    return {state,context,newPage,async close(){await context.close();assert.deepEqual(state.external,[],'no live services were contacted');assert.deepEqual(state.errors,[],'no uncaught browser errors');}};
   }
   async function login(page){
-   await page.locator('#authView').waitFor({state:'visible'});await page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
-   await page.locator('#email').fill('afk-browser@example.test');await page.locator('#password').fill('example-password-123');await page.locator('#authSubmit').click();
-   await page.locator('#menuMultiplayer').waitFor({state:'visible'});
-   await page.waitForFunction(()=>globalThis.__testSafety?.()==='ready');
-   assert.equal(await page.evaluate(()=>__testAuth.currentUser?.uid),uid);
+   try{
+    await page.locator('#authView').waitFor({state:'visible'});await page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
+    await page.locator('#email').fill('afk-browser@example.test');await page.locator('#password').fill('example-password-123');await page.locator('#authSubmit').click();
+    await page.locator('#menuMultiplayer').waitFor({state:'visible'});
+    await page.waitForFunction(()=>globalThis.__testSafety?.()==='ready');
+    assert.equal(await page.evaluate(()=>__testAuth.currentUser?.uid),uid);
+   }catch(error){
+    console.error('AFK login state:',await page.evaluate(()=>({uid:globalThis.__testAuth?.currentUser?.uid||null,safety:globalThis.__testSafety?.(),
+     entry:document.getElementById('entryMessage')?.textContent,maintenance:document.getElementById('maintenanceDetail')?.textContent})).catch(()=>null));
+    throw error;
+   }
   }
   async function advance(page,ms){await page.evaluate(value=>{__advanceIdleClock(value);document.dispatchEvent(new Event('visibilitychange'));},ms);}
   async function waitForLogout(page){
@@ -137,6 +143,7 @@ function replaceOnce(source,pattern,replacement,label){
   {
    const f=await fixture(),{state}=f;
    try{
+    console.log('Real SDK AFK: checking current build');
     const page=await f.newPage();await login(page);
     await advance(page,29*60_000);await page.waitForTimeout(200);assert.equal(await page.evaluate(()=>__testAuth.currentUser?.uid),uid);
     await advance(page,2*60_000);await waitForLogout(page);
@@ -148,6 +155,7 @@ function replaceOnce(source,pattern,replacement,label){
   {
    const f=await fixture(),{state}=f;
    try{
+    console.log('Real SDK AFK: checking newer build');
     const page=await f.newPage();await login(page);state.published=nextBuild;state.served=nextBuild;
     await advance(page,31*60_000);
     await page.waitForFunction(expected=>document.querySelector('meta[name="ironpath-build"]')?.content===expected,nextBuild,{timeout:20000});
@@ -161,6 +169,7 @@ function replaceOnce(source,pattern,replacement,label){
   {
    const f=await fixture(),{state}=f;
    try{
+    console.log('Real SDK AFK: checking unavailable version');
     const page=await f.newPage();await login(page);state.unavailable=true;await advance(page,31*60_000);await waitForLogout(page);
     assert.ok(state.postLogoutChecks>=1);assert.equal(state.documents,1,'an unavailable version is not evidence of a new build');
     await page.waitForFunction(()=>document.getElementById('versionNoticeText').textContent.includes('could not be checked'));
@@ -170,6 +179,7 @@ function replaceOnce(source,pattern,replacement,label){
   {
    const f=await fixture(),{state}=f;let second;
    try{
+    console.log('Real SDK AFK: checking shared account and second tab');
     const page=await f.newPage();await login(page);second=await f.newPage();
     await second.locator('#menuMultiplayer').waitFor({state:'visible'});await second.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
     assert.equal(await second.evaluate(()=>__testAuth.currentUser?.uid),uid,'the real locally persisted game account is shared by tabs');
