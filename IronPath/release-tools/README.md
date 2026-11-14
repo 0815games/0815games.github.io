@@ -13,8 +13,8 @@ they can administer it. The owner requires a **free solution only**: do not
 activate billing or a paid plan. The owner can set up Vercel Hobby for this
 non-commercial personal project, and chose to block sign-in **in the game** and
 access to its data, not to prohibit every possible Firebase Auth token. Vercel
-Hobby hosts an **unconfigured test deployment**, not an established game
-service; identity, free limits and the complete rollout still need verification.
+Hobby hosts a **separate test deployment**, not the established game service;
+its full live flow, free limits and the production rollout still need verification.
 
 ## Current isolated candidates
 
@@ -27,10 +27,11 @@ service; identity, free limits and the complete rollout still need verification.
   current deployment. Obtain a fresh backup and compare again before changes.
 - The current `authAfterMs` generator wrapped 45 read and 41 write grants in
   that reference while preserving the root denials. With two-space JSON and a
-  trailing newline its local, undeployed candidate has SHA-256
+  trailing newline the candidate has SHA-256
   `f92a0332f6a34e33a67f51b436d375aef0a20f3d51673f140608128442276bc5`.
-  This hash is for comparison only; it is not evidence of the live rules, a
-  backup, an independently reviewed security policy or a deployed candidate.
+  The isolated initializer wrote and re-read this candidate only in the empty
+  `ironpathtest` database; the real game's Rules were not changed. The hash is
+  not a backup or independently reviewed security policy.
 - The owner supplied public Web settings for the separate `ironpathtest`
   project. A public Identity Toolkit lookup matched its project number, but did
   not establish database ownership, Auth-provider settings, rules or billing
@@ -73,15 +74,14 @@ service; identity, free limits and the complete rollout still need verification.
   `ironpath-release` deployment before a later explicit deployment, but this is
   not an independently enforced protection and does not control GitHub Pages.
   Verify behavior after subsequent pushes and use explicitly reviewed deployments.
-- `api/session.mjs`, `package.json`, `vercel.json`, and `public/` form an
-  **unconfigured** service candidate. Explicit deployment `dpl_7PxUCqssH4Ma814NE1F5BG5Qvkbu`
-  from commit `e2f44ea` is READY, uses Node 22.x, and serves the public alias
-  `https://ironpath-release.vercel.app/`; the deployment-specific and team
-  aliases require Vercel sign-in. No Firebase variables or credentials have
-  been added. The deployed instance reports Node 22.x, and the service package
-  requests `22.x`; a later project-settings read reported `26.x`. Reconcile the
-  effective Node version and rerun the unconfigured smoke before any new
-  deployment or credential setup. The initial function crashed at startup (500).
+- `api/session.mjs`, `package.json`, `vercel.json`, and `public/` form a
+  **test-only** service candidate. Earlier deployment `dpl_7PxUCqssH4Ma814NE1F5BG5Qvkbu`
+  was unconfigured. The later test-only deployment `dpl_6Ga2xnFwr4ZZKQ8Ei1gLfxN99p8g`
+  is READY on the public alias `https://ironpath-release.vercel.app/`, uses Node
+  22.x, and received the test service-account secret as a sensitive Production
+  variable. The project setting still reports 26.x, while the package requests
+  22.x. The session exchange requires a live end-to-end check. The initial
+  function crashed at startup (500).
   Vercel disables `require(ESM)` by default and this dependency chain fails with
   that setting locally; adding the documented non-secret project setting
   `NODE_OPTIONS=--experimental-require-module` for Production and Preview and
@@ -374,26 +374,35 @@ verify every possible production endpoint, or make the guard production-ready.
 The test Vercel project may explicitly run `node build-isolated-test-site.mjs`
 as its build command; it must include source files outside its `release-tools`
 root. Generated site files are build outputs, not repository files. The first
-[public test deployment](https://ironpath-release.vercel.app/IronPath/) is
-`dpl_ECCSFqqxjxCxqV7AZMLcDC7KoieD` from `d70f068`: its status and direct game
-entries stay blocked while the test database is locked; its session function is
-still missing the test-only credential. Three public settings are scoped to the
-Vercel project's Production environment (this is not GitHub Pages).
+[public test deployment](https://ironpath-release.vercel.app/IronPath/) was
+`dpl_ECCSFqqxjxCxqV7AZMLcDC7KoieD` from `d70f068`; that earlier deployment
+had no test credential. The owner then supplied a sensitive test-only variable,
+and deployment `dpl_6Ga2xnFwr4ZZKQ8Ei1gLfxN99p8g` from `3eef6ea` explicitly
+ran the initializer. Its read-back verified the pinned Rules in `ironpathtest`,
+and the publicly readable control record is in maintenance. The test launcher
+shows maintenance and a direct game link returns to the launcher. This is not
+GitHub Pages or the real game's Firebase project.
 
-The separate `initialize-isolated-test.mjs` is **not executed automatically**.
-For a separately approved test setup, it accepts only `ironpathtest`, the exact
-test RTDB and Vercel project/origin, an explicit flag, and a pinned Rules
-candidate. It reads the actual Rules, requires only denied root read/write and
-an absent control record, creates a conditionally written maintenance record
-with a server timestamp, then replaces and verifies the **test** Rules. It never
-writes the root, a player node, or a credential. A second Rules read limits but
-does not eliminate a concurrent operator race. If an operation fails or times
-out, inspect the test rules/status before retrying. The original locked Rules
-are simply `{ "rules": { ".read": false, ".write": false } }`; restoring
-those locks the test database but is not a production rollback plan. Until
-explicitly invoked with an appropriate test-project key, the script changes
-nothing. Do not point this test build, its service credentials, or its generated
-Rules at real players.
+`initialize-isolated-test.mjs` accepts only `ironpathtest`, the exact test RTDB
+and Vercel project/origin, an explicit flag, and a pinned Rules candidate. It
+required denied root read/write and an absent control record, conditionally
+created a maintenance record, then replaced and verified the **test** Rules. It
+never writes the root, a player node, or a credential. A second Rules read limits
+but does not eliminate a concurrent operator race. If an operation fails or
+times out, inspect the test Rules/status before retrying. The original locked
+Rules are `{ "rules": { ".read": false, ".write": false } }`; restoring
+those locks the test database but is not a production rollback plan. Subsequent
+builds must use only `node build-isolated-test-site.mjs`; `vercel.json` does not
+implicitly run this one-time operator.
+
+`exercise-isolated-guard.mjs` is a separate, explicitly invoked **test-only**
+operator. It requires the exact prior maintenance build and epoch, rechecks the
+Rules, and uses a synthetic account/profile to exercise the service and Rules.
+It closes its own epoch and checks cleanup on failure; a killed process, lost
+response or concurrent operator still requires inspection. Its final test opening
+can briefly point at a not-yet-promoted new Vercel build: the launcher should
+fail closed if that build is unavailable. It is not an atomic production rollout.
+Do not point these tools, service credentials, or Rules at real players.
 
 ## Creating an isolated guarded candidate
 

@@ -1,6 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "node build-isolated-test-site.mjs && node initialize-isolated-test.mjs --apply-ironpathtest-only",
   "outputDirectory": "public",
   "git": {"deploymentEnabled": false},
   "regions": ["fra1"],

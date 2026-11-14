@@ -14,6 +14,8 @@ test('candidate requests manual Git deployments and pins its Node runtime',async
  const vercel=JSON.parse(await readFile(new URL('./vercel.json',import.meta.url),'utf8'));
  const pkg=JSON.parse(await readFile(new URL('./package.json',import.meta.url),'utf8'));
  assert.equal(vercel.git.deploymentEnabled,false);assert.equal(vercel.outputDirectory,'public');
+ // One-time operators must never run automatically on subsequent builds.
+ assert.equal(vercel.buildCommand,undefined);
  assert.equal(pkg.engines.node,'22.x');
 });
 
