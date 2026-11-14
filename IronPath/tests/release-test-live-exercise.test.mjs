@@ -80,7 +80,8 @@ function fixture({failProfile=false,conflictOnFirstTransition=false,changedRules
    }
    assert.equal(url.pathname,'/v1/accounts:signInWithCustomToken');
    const custom=decode(body.token);assert.equal(custom.uid,user.uid);
-   return Response.json({localId:user.uid,idToken:token('custom',custom.epoch)});
+   // Production Firebase's custom-token response is not required to contain localId.
+   return Response.json({idToken:token('custom',custom.epoch)});
   }
   assert.equal(url.href,`${allowedOrigin}/api/session`);assert.equal(headers.origin,allowedOrigin);
   if(method==='OPTIONS')return new Response(null,{status:204,headers:serviceHeaders});

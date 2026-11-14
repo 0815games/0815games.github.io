@@ -119,7 +119,11 @@ export async function exerciseIsolatedGuard({previousBuild,nextBuild,initialEpoc
     const response=await request(`${IDENTITY}signInWithCustomToken?key=${API_KEY}`,{method:'POST',headers:{'content-type':'application/json'},
       body:JSON.stringify({token:customToken,returnSecureToken:true})});
     if(!response.ok)fail('TEST_CUSTOM_SIGNIN_FAILED');
-    const body=await json(response);if(body?.localId!==uid)fail('TEST_CUSTOM_UID_MISMATCH');
+    // The custom-token REST response documents an ID token, not localId.
+    // Verify the ID token's subject below; if a localId is supplied, it must
+    // agree too. Password sign-in, in contrast, does document localId.
+    const body=await json(response);
+    if(Object.hasOwn(body,'localId')&&body.localId!==uid)fail('TEST_CUSTOM_UID_MISMATCH');
     const value=claims(body.idToken,uid,'custom');if(value.ip_release_epoch!==epoch||!isAuthAfterCutoff(value.auth_time,current.authAfterMs))fail('TEST_CUSTOM_CLAIMS_INVALID');
     return body.idToken;
   }
