@@ -107,9 +107,21 @@ let endingRunning=false,endingAborted=false,endingRun=null,firstRunGuide=null;
 const endingHandoffs=createEndingHandoffs({setTimer:(fn,ms)=>window.setTimeout(fn,ms),
  isCurrent:({version,id})=>!accountTerminated&&!!id&&version===sessionVersion&&user?.uid===id,
  offer:()=>offerFirstRunEnding()});
-const releaseRewardQueues=new Set(),releaseScoreReporters=new Set(),pendingFirstRuns=new Set();
+const releaseRewardQueues=new Set(),releaseScoreReporters=new Set(),pendingFirstRuns=new Set(),pendingStartChecks=new Set();
 function trackedRewardQueue(options){const queue=createCoopRewardQueue(options);releaseRewardQueues.add(queue);return queue;}
-const beforeNewGame=()=>versionUI?versionUI.beforeGame():Promise.resolve(true);
+function showStartCheck(){
+ const pending=pendingStartChecks.size>0,workspace=$('gameWorkspace'),notice=$('deploymentCheck');
+ if(workspace){workspace.inert=pending;if(pending)workspace.setAttribute('aria-busy','true');else workspace.removeAttribute('aria-busy');}
+ if(notice)notice.hidden=!pending;
+}
+function cancelStartChecks(){pendingStartChecks.clear();showStartCheck();}
+function beforeNewGame(){
+ if(!versionUI)return Promise.resolve(true);
+ // The field must not accept a second deploy, build or navigation while the
+ // first asynchronous version check is deciding which operation may start.
+ const marker={};pendingStartChecks.add(marker);showStartCheck();
+ return Promise.resolve().then(()=>versionUI.beforeGame()).finally(()=>{pendingStartChecks.delete(marker);showStartCheck();});
+}
 // Declared before setupLanguage() runs: its first onChange fires immediately.
 let armoryCategory='equipment';
 let languageStorage;try{languageStorage=window.localStorage;}catch{languageStorage=null;}
@@ -343,7 +355,13 @@ async function recordEndlessRun(summary){
 }
 const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({document,storage:window.localStorage,
   getRecord:endlessRecord,getBestWave:bestSoloWave,getLastRun:()=>readLastEndlessRun(window.localStorage),
-  onDeploy:async theme=>{commandCenter?.showBattle(true,'endless');const loaded=await gameControl?.chooseEndless(theme);if(loaded)gameControl?.setMenuOpen(false);else commandCenter?.showMenu();},
+  onDeploy:async theme=>{
+    const version=sessionVersion,uid=user?.uid,control=gameControl,center=commandCenter;if(!uid||!control||!center)return;
+    center.showBattle(true,'endless');let loaded=false;try{loaded=await control.chooseEndless(theme);}catch{/* Return to the menu below. */}
+    // A late check from a previous login must not navigate a new user's game.
+    if(accountTerminated||version!==sessionVersion||user?.uid!==uid||gameControl!==control)return;
+    if(loaded)control.setMenuOpen(false);else center.showMenu();
+  },
   onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
 // The rank is derived from the level on every snapshot - the combat profile
 // strip gets its own paint, the menu card and the dossier re-render themselves.
@@ -415,7 +433,7 @@ releaseSafety=()=>{
  if(partyActivity()||gameControl?.isOnlineMatch?.())return 'party';
  // Never discard an in-progress authentication, profile load or account form.
  // Recruitment also includes avatar choices that are not just a text input.
- if(!$('loading').hidden||$('authSubmit').disabled||$('forgot').disabled)return 'saving';
+ if(pendingStartChecks.size||!$('loading').hidden||$('authSubmit').disabled||$('forgot').disabled)return 'saving';
  if(!$('characterView').hidden||(!$('authView').hidden&&['email','password','passwordConfirm'].some(id=>$(id).value)))return 'form';
  const gameState=gameControl?.releaseSafety?.()??'ready';
  if(gameState!=='ready')return gameState;
@@ -440,7 +458,7 @@ beforeVersionReload=()=>{
 // Server Rules, not this teardown, deny data access while maintenance is closed.
 let accountTerminated=false;
 function stopAccountForRelease(){
- if(accountTerminated)return;releaseFrozen=true;accountTerminated=true;sessionVersion++;profile=null;user=null;
+ if(accountTerminated)return;releaseFrozen=true;accountTerminated=true;sessionVersion++;profile=null;user=null;cancelStartChecks();
  const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
  const oldWatch=unsubscribe;unsubscribe=null;
  stop(()=>oldWatch?.());stop(()=>scoreReporter?.close());scoreReporter=null;
@@ -470,7 +488,7 @@ if(maintenanceUI&&!accountTerminated)createMaintenanceMonitor({
 });
 if(!accountTerminated)accountServices.observe(currentUser=>{
  if(accountTerminated)return;
- cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
+ cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
  deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
  if(!currentUser){display('auth');return;}
  display('loading');setLoadingStep('soldier');

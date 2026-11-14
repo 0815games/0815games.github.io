@@ -569,6 +569,8 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
    its text must not cover the opened field menu. */
 body:has(#gameWorkspace:not([hidden])) .version-notice{top:calc(70px + env(safe-area-inset-top,0px));left:max(8px,env(safe-area-inset-left,0px));right:auto;max-width:min(310px,calc(100vw - 16px))}
 body:has(#gameWorkspace:not([hidden]) #fieldOps[open]) .version-notice{visibility:hidden}
+.deployment-check[hidden]{display:none!important}
+.deployment-check{position:fixed;z-index:91;top:50%;left:50%;transform:translate(-50%,-50%);max-width:calc(100vw - 32px);padding:14px 18px;border:1px solid #c3cf84;border-radius:6px;background:#1b3028;color:#f8f0dc;box-shadow:0 8px 24px #0009;text-align:center;line-height:1.4;pointer-events:none}
 /* A real top-layer dialog blocks login and the battlefield during maintenance.
    The same field art and journal palette as the standalone design preview. */
 .maintenance-gate[hidden]{display:none!important}

@@ -102,10 +102,15 @@ async function fixture(browser,{control=open,user='alice',authTime=300,served=bu
 }
 const unmask=page=>page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
 async function waitForMenu(page){await page.locator('#menuMultiplayer').waitFor({state:'visible'});await unmask(page);}
-async function startEndless(page){
+async function prepareEndless(page){
  await page.locator('#menuEndless').click();await page.locator('#endlessLaunch').waitFor({state:'visible'});
  await page.locator('#endlessDeploy').click();await page.locator('#gameWorkspace').waitFor({state:'visible'});
- await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('start').textContent.includes('WAVE IN PROGRESS'));
+ // The field is displayed before its asynchronous version check completes.
+ // Wait for the actual deployment, not just for the workspace to become visible.
+ await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Free play ready.'));
+}
+async function startEndless(page){
+ await prepareEndless(page);await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('start').textContent.includes('WAVE IN PROGRESS'));
 }
 async function triggerVersion(page){await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));}
 const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelector('meta[name="ironpath-build"]')?.content===expected,nextBuild,{timeout:15000});
@@ -184,9 +189,24 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
   {
    const f=await fixture(browser);const {page,state}=f;
    try{
-    await waitForMenu(page);
-    await page.locator('#menuEndless').click();await page.locator('#endlessDeploy').click();
-    await page.locator('#gameWorkspace').waitFor({state:'visible'});
+    await waitForMenu(page);await page.locator('#menuEndless').click();await page.locator('#endlessLaunch').waitFor({state:'visible'});
+    let release,requested;const wait=new Promise(resolve=>{release=resolve;}),asked=new Promise(resolve=>{requested=resolve;});
+    state.holdNextVersion={wait,requested};await page.locator('#endlessDeploy').click();await asked;
+    assert.equal(await page.locator('#gameWorkspace').evaluate(el=>el.inert),true,'field input waits for the version check');
+    assert.equal(await page.locator('#deploymentCheck').isVisible(),true);
+    const box=await page.locator('#start').boundingBox();assert.ok(box);await page.mouse.click(box.x+box.width/2,box.y+box.height/2);
+    assert.match(await page.locator('#start').textContent(),/DEPLOY \/ START WAVE/,'a fast extra tap cannot start the unprepared field');
+    release();await page.locator('#deploymentCheck').waitFor({state:'hidden'});
+    await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Free play ready.'));
+    assert.equal(await page.locator('#gameWorkspace').evaluate(el=>el.inert),false);
+    await page.locator('#start').click();await page.waitForFunction(()=>document.getElementById('start').textContent.includes('WAVE IN PROGRESS'));
+    console.log('new deployment: field input waits for its asynchronous version check');
+   }finally{await f.close();}
+  }
+  {
+   const f=await fixture(browser);const {page,state}=f;
+   try{
+    await waitForMenu(page);await prepareEndless(page);
     assert.match(await page.locator('#start').innerText(),/DEPLOY \/ START WAVE/);
     state.published=nextBuild;state.served=nextBuild;await triggerVersion(page);
     await page.waitForFunction(()=>document.getElementById('versionNoticeText').textContent.includes('Finish your current operation'));
@@ -253,8 +273,10 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     let release,requested;const wait=new Promise(resolve=>{release=resolve;}),asked=new Promise(resolve=>{requested=resolve;});
     state.holdNextVersion={wait,requested};await page.locator('#menuEndless').click();await page.locator('#endlessDeploy').click();await asked;
     await page.evaluate(()=>__switchUser('bob'));await page.waitForFunction(()=>document.getElementById('menuName').textContent==='Bob');
-    release();await page.waitForTimeout(300);assert.equal(await page.locator('#gameWorkspace').isHidden(),true,'a late version check must not start Alice’s game for Bob');
-    console.log('account switch: late version check cannot deploy the previous user’s run');
+    assert.equal(await page.locator('#gameWorkspace').evaluate(el=>el.inert),false,'the new session is not locked by the old check');
+    await prepareEndless(page);release();await page.waitForTimeout(300);
+    assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'Alice’s late check cannot hide Bob’s already deployed run');
+    console.log('account switch: a late version check cannot deploy or hide another user’s run');
    }finally{await f.close();}
   }
   {

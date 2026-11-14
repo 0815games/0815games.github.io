@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {createVersionUI} from '../version-ui.mjs';
 
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
-function fixture({build='old',published='old',url='https://example.test/IronPath/',previous=null,language='en'}={}){
+function fixture({build='old',published='old',url='https://example.test/IronPath/',previous=null,language='en',fetcherOverride=null}={}){
  const ids=['releaseCheck','loading','releaseCheckTitle','releaseCheckDetail','releaseCheckRetry','versionNotice','versionNoticeText','versionNoticeRetry','versionNoticeDismiss','resultsVersionStatus'];
  const nodes=new Map(ids.map(id=>[id,{id,hidden:true,textContent:'',onclick:null}]));nodes.get('loading').hidden=false;
  const docEvents=new Map(),winEvents=new Map(),intervals=new Map();let intervalId=0;
@@ -16,7 +16,7 @@ function fixture({build='old',published='old',url='https://example.test/IronPath
   addEventListener:(name,fn)=>winEvents.set(name,fn),removeEventListener:name=>winEvents.delete(name),
   setInterval:(fn,ms)=>{assert.equal(ms,60000);intervals.set(++intervalId,fn);return intervalId;},clearInterval:id=>intervals.delete(id)};
  let current=published,safe='ready',before=0;
- const fetcher=async()=>current==='unavailable'?new Response('offline',{status:503}):new Response(JSON.stringify({format:1,build:current}));
+ const fetcher=fetcherOverride|| (async()=>current==='unavailable'?new Response('offline',{status:503}):new Response(JSON.stringify({format:1,build:current})));
  const ui=createVersionUI({document,window,safety:()=>safe,beforeReload:()=>before++,fetcher});
  return {ui,nodes,navigations,storage,location,document,docEvents,winEvents,intervals,getBefore:()=>before,setPublished:value=>{current=value;},setSafety:value=>{safe=value;}};
 }
@@ -60,6 +60,18 @@ test('visible polling and returning from BFCache discover updates without interr
  f.setPublished('old');f.winEvents.get('pageshow')({persisted:true});await pause();assert.equal(f.nodes.get('versionNotice').hidden,true);
  f.setPublished('new');f.intervals.values().next().value();await pause();assert.match(f.nodes.get('versionNoticeText').textContent,/Finish your current operation/);
  f.ui.stop();assert.equal(f.intervals.size,0);assert.equal(f.docEvents.size,0);assert.equal(f.winEvents.size,0);
+});
+
+test('a visibility event during a pending background check causes one fresh follow-up',async()=>{
+ let calls=0,release,requested;const wait=new Promise(resolve=>{release=resolve;}),asked=new Promise(resolve=>{requested=resolve;});
+ const response=build=>new Response(JSON.stringify({format:1,build}));
+ const f=fixture({fetcherOverride:async()=>{calls++;if(calls===2){requested();await wait;return response('old');}return response(calls===1?'old':'new');}});
+ await f.ui.start();f.setSafety('game');f.docEvents.get('visibilitychange')();await asked;
+ f.docEvents.get('visibilitychange')();f.winEvents.get('pageshow')({persisted:true});release();
+ for(let i=0;i<5;i++)await pause();
+ assert.equal(calls,3,'concurrent events are coalesced into one additional fetch');
+ assert.match(f.nodes.get('versionNoticeText').textContent,/Finish your current operation/);
+ assert.deepEqual(f.navigations,[]);f.ui.stop();
 });
 
 test('the game sees a waiting reason instead of being interrupted when a new build appears',async()=>{

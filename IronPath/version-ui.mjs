@@ -32,13 +32,19 @@ export function createVersionUI({document,window,safety,beforeReload=()=>{},fetc
   const endpoint=new URL('release-version.json',window.location.href);
   const probe=createVersionProbe({url:endpoint.href,origin:window.location.origin,build,fetcher});
   let booted=false,bootBusy=false,bootResolve=null,coordinator=null,status=null,loadedNotice=false,nonce=0;
-  let monitorTimer=null,monitoring=false,backgroundCheck=false;
+  let monitorTimer=null,monitoring=false,backgroundCheck=false,backgroundRequested=false;
   // Check periodically in a visible tab, and after returning from the background
-  // or BFCache. The coordinator still waits for games, saves and dialogs; a timer
-  // is not a guarantee that a suspended/offline browser sees a release promptly.
+  // or BFCache. A second visibility event during an in-flight request requires
+  // one fresh follow-up, rather than silently dropping the newer observation.
+  // A timer cannot guarantee that a suspended/offline tab sees a release promptly.
   async function checkInBackground(){
-    if(!monitoring||backgroundCheck||document.visibilityState==='hidden')return;
-    backgroundCheck=true;try{await coordinator?.check();}finally{backgroundCheck=false;}
+    if(!monitoring||document.visibilityState==='hidden')return;
+    if(backgroundCheck){backgroundRequested=true;return;}
+    backgroundCheck=true;
+    try{
+      do{backgroundRequested=false;await coordinator?.check();}
+      while(monitoring&&backgroundRequested&&document.visibilityState!=='hidden');
+    }finally{backgroundCheck=false;}
   }
   function onVisibility(){if(document.visibilityState!=='hidden')void checkInBackground();}
   function onPageShow(event){if(event.persisted)void checkInBackground();}
@@ -49,7 +55,7 @@ export function createVersionUI({document,window,safety,beforeReload=()=>{},fetc
     monitorTimer=window.setInterval(()=>void checkInBackground(),60000);
   }
   function stopMonitoring(){
-    monitoring=false;if(monitorTimer!==null)window.clearInterval(monitorTimer);monitorTimer=null;
+    monitoring=false;backgroundRequested=false;if(monitorTimer!==null)window.clearInterval(monitorTimer);monitorTimer=null;
     document.removeEventListener('visibilitychange',onVisibility);
     window.removeEventListener('pageshow',onPageShow);
   }
