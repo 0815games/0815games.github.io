@@ -69,10 +69,21 @@ function replaceOnce(source,pattern,replacement,label){
   const afk=replaceOnce(afkOriginal,/clock=Date\.now,/g,
    'clock=()=>Date.now()+(globalThis.__idleOffset||0),','AFK clock');
   const modules={};for(const name of ['firebase-app.js','firebase-auth.js','firebase-database.js'])modules[name]=await fs.readFile(path.join(__dirname,'node_modules/firebase',name));
+  let activeState=null;
   server=http.createServer(async(req,res)=>{
    try{
-    let pathname=new URL(req.url,'http://127.0.0.1').pathname;if(pathname==='/IronPath/')pathname+='/index.html'.slice(1);
+    let pathname=new URL(req.url,'http://127.0.0.1').pathname;if(pathname==='/IronPath/')pathname='/IronPath/index.html';
     if(!pathname.startsWith('/IronPath/'))throw Error('Unknown path');
+    // Let the browser obtain the main document from a real loopback server.
+    // A synthetic route.fulfill() document can have an unknown network address
+    // space in newer Chromium, which blocks its later local-emulator requests.
+    if(pathname==='/IronPath/index.html'){
+     if(!activeState)throw Error('No active test fixture');
+     activeState.documents++;res.writeHead(200,{'content-type':'text/html','cache-control':'no-store'}).end(html.replaceAll(build,activeState.served));return;
+    }
+    if(pathname==='/IronPath/account.js'||pathname==='/IronPath/afk-session.mjs'){
+     res.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'}).end(pathname.endsWith('/account.js')?account:afk);return;
+    }
     const file=path.resolve(root,pathname.slice('/IronPath/'.length));if(!file.startsWith(root+path.sep))throw Error('Invalid path');
     const body=await fs.readFile(file);
     res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream','cache-control':'no-store'}).end(body);
@@ -81,7 +92,8 @@ function replaceOnce(source,pattern,replacement,label){
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base=`http://127.0.0.1:${server.address().port}`;
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:process.env.CHROMIUM_PATH?['--no-sandbox']:[]});
   async function fixture(){
-   const state={published:build,served:build,unavailable:false,documents:0,postLogoutChecks:0,external:[],errors:[]};
+   if(activeState)throw Error('AFK fixtures must run sequentially');
+   const state={published:build,served:build,unavailable:false,documents:0,postLogoutChecks:0,external:[],errors:[]};activeState=state;
    const context=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',serviceWorkers:'block'});contexts.push(context);
    await context.addInitScript(id=>{
     globalThis.__idleOffset=0;globalThis.__advanceIdleClock=ms=>{globalThis.__idleOffset+=ms;};
@@ -101,11 +113,6 @@ function replaceOnce(source,pattern,replacement,label){
      return route.fulfill({status:upstream.status,contentType:'application/json',headers:{'access-control-allow-origin':'*','cache-control':'no-store'},body:await upstream.text()});
     }
     if(url.origin===base){
-     if(url.pathname==='/IronPath/'||url.pathname==='/IronPath/index.html'){
-      state.documents++;return route.fulfill({status:200,contentType:'text/html',headers:{'cache-control':'no-store'},body:html.replaceAll(build,state.served)});
-     }
-     if(url.pathname==='/IronPath/account.js')return route.fulfill({contentType:'text/javascript',body:account});
-     if(url.pathname==='/IronPath/afk-session.mjs')return route.fulfill({contentType:'text/javascript',body:afk});
      if(url.pathname==='/IronPath/release-version.json'){
       if(await route.request().frame().evaluate(()=>globalThis.__testSignOutDone===true).catch(()=>false))state.postLogoutChecks++;
       return route.fulfill(state.unavailable?{status:503,body:'unavailable'}:{status:200,contentType:'application/json',headers:{'cache-control':'no-store'},body:JSON.stringify({format:1,build:state.published})});
@@ -122,7 +129,7 @@ function replaceOnce(source,pattern,replacement,label){
     page.on('console',message=>{if(message.type()==='error')console.error('AFK browser console:',message.text().slice(0,600));});
     await page.goto(base+'/IronPath/',{waitUntil:'domcontentloaded'});return page;
    }
-   return {state,context,newPage,async close(){await context.close();assert.deepEqual(state.external,[],'no live services were contacted');assert.deepEqual(state.errors,[],'no uncaught browser errors');}};
+   return {state,context,newPage,async close(){await context.close();if(activeState===state)activeState=null;assert.deepEqual(state.external,[],'no live services were contacted');assert.deepEqual(state.errors,[],'no uncaught browser errors');}};
   }
   async function login(page){
    try{
