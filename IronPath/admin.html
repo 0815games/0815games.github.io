@@ -12,7 +12,7 @@
   <meta name="ironpath-admin-app-id" content="1:305063261861:web:8ec54d8318a983fce3ff4c">
   <title>Iron Path · Betriebssteuerung</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
-  <link rel="stylesheet" href="admin.css?v=20261031-update2">
+  <link rel="stylesheet" href="admin.css?v=20261031-update3">
 </head>
 <body>
   <div class="admin-shell">
@@ -32,7 +32,7 @@
       <section class="panel" aria-label="Wartungssteuerung">
         <div class="panel-top"><span>IRON PATH <i>/</i> KONTROLLRAUM</span><span>IP—01</span></div>
         <div id="adminLogin">
-          <div class="panel-heading"><div class="panel-icon" aria-hidden="true">⌁</div><p class="eyebrow">GESCHÜTZTER ZUGANG</p><h2>Administrationskonto</h2><p>Melde dich mit deinem separaten Admin-Konto an.</p></div>
+          <div class="panel-heading"><div class="panel-icon" aria-hidden="true">⌁</div><p class="eyebrow">GESCHÜTZTER ZUGANG</p><h2>Admin-Zugang</h2><p>Melde dich mit deinem separaten Admin-Konto an.</p></div>
           <form id="adminLoginForm">
             <label for="adminEmail">E-MAIL-ADRESSE</label>
             <input id="adminEmail" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="name@beispiel.de">
@@ -41,10 +41,10 @@
             <button id="adminLoginButton" class="primary" type="submit" disabled>VERBINDUNG WIRD VORBEREITET …</button>
           </form>
           <p id="adminLoginMessage" class="feedback" role="status" aria-live="polite"></p>
-          <p class="footnote">Das Konto wird in Firebase verwaltet. Zugangsdaten werden nicht im Spielcode hinterlegt.</p>
+          <p class="footnote">Die Freigabe prüft Firebase. Zugangsdaten werden nicht im Spielcode hinterlegt.</p>
         </div>
         <div id="adminDashboard" hidden>
-          <div class="dashboard-head"><div><p class="eyebrow">LIVE-STATUS</p><h2>Wartungsmodus</h2></div><button id="adminLogout" class="text-button" type="button">ABMELDEN ↗</button></div>
+          <div class="dashboard-head"><p class="eyebrow">LIVE-STATUS</p><h2>Wartungsmodus</h2><button id="adminLogout" class="text-button" type="button">ABMELDEN ↗</button></div>
           <p class="signed-in">Angemeldet als <strong id="adminIdentity"></strong></p>
           <div class="status-card" id="adminStatusCard" data-state="unknown">
             <div class="status-label"><span class="status-light"></span><span id="adminStatusLabel">STATUS WIRD GEPRÜFT</span></div>
@@ -66,6 +66,6 @@
   <dialog id="adminConfirm" aria-labelledby="adminConfirmTitle" aria-describedby="adminConfirmDetail">
     <div class="confirm-card"><p class="eyebrow">BESTÄTIGUNG ERFORDERLICH</p><h2 id="adminConfirmTitle"></h2><p id="adminConfirmDetail"></p><div class="confirm-actions"><button id="adminConfirmCancel" class="secondary" type="button">ABBRECHEN</button><button id="adminConfirmAction" class="danger" type="button">BESTÄTIGEN</button></div></div>
   </dialog>
-  <script type="module" src="admin-entry.mjs?v=20261031-update2"></script>
+  <script type="module" src="admin-entry.mjs?v=20261031-update3"></script>
 </body>
 </html>

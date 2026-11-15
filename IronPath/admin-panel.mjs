@@ -1,7 +1,7 @@
 // The page is public; only Firebase Rules authorize its read probe and writes.
 // The SDK, Auth instance and database are supplied by the separate admin entry.
-import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH,parseMaintenanceControl,createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update2';
-import {sameMaintenanceControl,transitionMaintenance} from './admin-maintenance.mjs?v=20261031-update2';
+import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH,parseMaintenanceControl,createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update3';
+import {sameMaintenanceControl,transitionMaintenance} from './admin-maintenance.mjs?v=20261031-update3';
 
 export function createAdminPanel({document,window,auth,db,sdk,databaseUrl,fetcher=window?.fetch?.bind(window)}={}){
  const $=id=>document.getElementById(id);

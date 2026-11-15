@@ -30,6 +30,14 @@ test('maintenance text can be switched between German and English before the gam
  f.nodes.get('maintenanceLanguage').onclick();assert.match(f.nodes.get('maintenanceTitle').textContent,/Wartung/);
 });
 
+test('an unchanged maintenance message is not repeatedly announced on polling',async()=>{
+ const f=fixture('maintenance'),title=f.nodes.get('maintenanceTitle');let text=title.textContent,writes=0;
+ Object.defineProperty(title,'textContent',{get:()=>text,set:value=>{text=value;writes++;}});
+ f.ui.waitForOpen();await turn();assert.match(text,/Wartung/);const afterFirst=writes;
+ await f.tick();assert.equal(writes,afterFirst,'an unchanged title is not written to the live region again');
+ f.nodes.get('maintenanceLanguage').onclick();assert.match(text,/Maintenance/);assert.equal(writes,afterFirst+1);
+});
+
 test('failed account module loading stays blocked and offers a fresh document',async()=>{
  const f=fixture('open');await f.ui.waitForOpen();f.ui.loadFailure();
  assert.equal(f.nodes.get('maintenanceGate').open,true);assert.match(f.nodes.get('maintenanceDetail').textContent,/Spieldateien/);

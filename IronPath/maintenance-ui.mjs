@@ -1,6 +1,6 @@
 // Free, client-side presentation of the public Firebase maintenance signal.
 // It cannot close another offline tab or enforce Rules; see maintenance-check.
-import {createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update2';
+import {createMaintenanceProbe} from './maintenance-check.mjs?v=20261031-update3';
 
 const words={
  en:{maintenanceTitle:'Maintenance in progress',maintenanceDetail:'Sign-in and game data are paused while Iron Path is being updated.',
@@ -26,12 +26,14 @@ export function createMaintenanceUI({document,window,databaseUrl,fetcher=window?
  let checking=false,timer=null,pending=null,phase='boot',status=null,signout=Promise.resolve(),reloadStarted=false,languageOverride=null;
  const lang=()=>{if(languageOverride)return languageOverride;try{return window.localStorage?.getItem('ironpath:language')==='de'?'de':'en';}catch{return document.documentElement.lang==='de'?'de':'en';}};
  const t=key=>words[lang()][key];
+ // Avoid re-announcing an unchanged live-region message on every status poll.
+ const setText=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
  function show(){dialog.hidden=false;try{if(!dialog.open)dialog.showModal();}catch{dialog.setAttribute('open','');}}
  function hide(){try{if(dialog.open)dialog.close();}catch{}dialog.hidden=true;}
  function render(){
   const key=status==='maintenance'?'maintenance':status==='session'?'session':status==='ready'?'ready':status==='load-error'?'loadError':'unavailable';
   dialog.lang=lang();language.textContent=lang()==='de'?'EN':'DE';language.setAttribute('aria-label',lang()==='de'?'Switch to English':'Auf Deutsch wechseln');
-  title.textContent=t(`${key}Title`);detail.textContent=t(`${key}Detail`);extra.hidden=phase!=='halted';extra.textContent=phase==='halted'?t('stopped'):'';
+  setText(title,t(`${key}Title`));setText(detail,t(`${key}Detail`));extra.hidden=phase!=='halted';setText(extra,phase==='halted'?t('stopped'):'');
   retry.disabled=checking||reloadStarted;retry.textContent=t(checking?'checking':status==='ready'||phase==='load-error'?'reload':'retry');
  }
  function cancelTimer(){if(timer!==null){window.clearTimeout(timer);timer=null;}}
