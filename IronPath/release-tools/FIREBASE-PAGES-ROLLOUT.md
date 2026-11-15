@@ -1,10 +1,15 @@
 # Iron Path: kostenloser Firebase-/GitHub-Pages-Ablauf
 
-**Status: Arbeitsbranch, nicht produktiv veröffentlicht.** Die normalen
-GitHub-Pages-Dateien, Firebase-Produktions-Rules und der produktive
-Wartungsdatensatz wurden durch diese Arbeit nicht umgestellt. Der offene PR ist
-ein Draft. Die folgenden Schritte sind ein **abzustimmender Operatorplan**, kein
-Hinweis, dass ein Cutover oder Rollback bereits stattgefunden hat.
+**Zwischenstand nach der Rules-Veröffentlichung:** Der Betreiber meldete die
+Initialisierung des Wartungsdatensatzes und die Veröffentlichung des Kandidaten.
+Ein öffentlicher Statusabruf zeigte `format: 1`, `mode: maintenance` und
+`authAfterMs: 0`. Der vollständige Abgleich der danach angezeigten Rules und die
+Browser-CORS-Prüfung stehen noch aus; der Statusabruf belegt weder die gesamten
+Rules noch die Herkunft eines Exports. Die neue Spielversion war zu diesem
+Zeitpunkt noch nicht über GitHub Pages veröffentlicht und der PR noch ein
+Draft. Das ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen Zustand
+neu prüfen. Die folgenden Schritte sind ein **abzustimmender Operatorplan**,
+kein Beleg für einen abgeschlossenen Cutover oder Rollback.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und
