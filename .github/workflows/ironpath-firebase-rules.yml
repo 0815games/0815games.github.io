@@ -284,6 +284,11 @@ jobs:
               exit 1
             fi
           fi
+      - name: One-time read-only production CORS probe
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/arena/5a3a978f-0815games-github-io' }}
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        run: timeout 45 node IronPath/browser-tests/production-cors-probe.cjs --read-only-live
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

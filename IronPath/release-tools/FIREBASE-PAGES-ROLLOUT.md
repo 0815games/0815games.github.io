@@ -3,13 +3,15 @@
 **Zwischenstand nach der Rules-Veröffentlichung:** Der Betreiber meldete die
 Initialisierung des Wartungsdatensatzes und die Veröffentlichung des Kandidaten.
 Ein öffentlicher Statusabruf zeigte `format: 1`, `mode: maintenance` und
-`authAfterMs: 0`. Der vollständige Abgleich der danach angezeigten Rules und die
-Browser-CORS-Prüfung stehen noch aus; der Statusabruf belegt weder die gesamten
-Rules noch die Herkunft eines Exports. Die neue Spielversion war zu diesem
-Zeitpunkt noch nicht über GitHub Pages veröffentlicht und der PR noch ein
-Draft. Das ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen Zustand
-neu prüfen. Die folgenden Schritte sind ein **abzustimmender Operatorplan**,
-kein Beleg für einen abgeschlossenen Cutover oder Rollback.
+`authAfterMs: 0`. Die vom Betreiber nach einem authentifizierten Rules-REST-Abruf
+übermittelte, JSON-normalisierte SHA-256-Prüfsumme stimmte mit dem vollständigen
+lokalen Kandidaten überein. Der Abruf wurde nicht von dieser Arbeitsumgebung
+selbst authentifiziert; die Herkunft der Prüfsumme beruht auf der Betreiberangabe.
+Die produktive Browser-CORS-Prüfung steht noch aus. Die neue Spielversion war zu
+diesem Zeitpunkt noch nicht über GitHub Pages veröffentlicht und der PR noch
+ein Draft. Das ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen
+Zustand neu prüfen. Die folgenden Schritte sind ein **abzustimmender
+Operatorplan**, kein Beleg für einen abgeschlossenen Cutover oder Rollback.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und
