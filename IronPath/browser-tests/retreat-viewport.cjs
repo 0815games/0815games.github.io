@@ -39,7 +39,8 @@ const ACCOUNT = `(() => {
     });
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
-      if (url.hostname !== '127.0.0.1') return route.abort();
+      // This test boots game.js with its own account; do not start the real maintenance gate.
+      if (url.hostname !== '127.0.0.1' || url.pathname.endsWith('/account-entry.mjs')) return route.abort();
       return route.continue();
     });
     const page = await context.newPage();
@@ -146,7 +147,8 @@ const ACCOUNT = `(() => {
     });
     await context.route('**/*', route => {
       const url = new URL(route.request().url());
-      if (url.hostname !== '127.0.0.1') return route.abort();
+      // This test boots game.js with its own account; do not start the real maintenance gate.
+      if (url.hostname !== '127.0.0.1' || url.pathname.endsWith('/account-entry.mjs')) return route.abort();
       return route.continue();
     });
     const page = await context.newPage();

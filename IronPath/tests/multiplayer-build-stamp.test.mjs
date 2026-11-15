@@ -7,12 +7,16 @@ test('multiplayer camera, CSS and account entry use the current build wave',()=>
  const html=read('index.html'),account=read('account.js'),game=read('game.js'),controller=read('battle-viewport-controller.mjs');
  const stamp=/class="build-stamp"[^>]*>BUILD ([^<]+)/.exec(html)?.[1];
  assert.ok(stamp,'the client advertises a build wave');
- assert.ok(html.includes(`account.js?v=${stamp}`));
- assert.ok(html.includes(`field-command.css?v=${stamp}`));
+ assert.ok(html.includes(`account-entry.mjs?v=${stamp}`));
+ assert.ok(read('account-entry.mjs').includes(`account.js?v=${stamp}`));
  assert.ok(account.includes(`game.js?v=${stamp}`));
- assert.ok(game.includes(`battle-viewport-controller.mjs?v=${stamp}`));
- assert.ok(game.includes(`battle-viewport.mjs?v=${stamp}`));
- assert.ok(controller.includes(`battle-viewport.mjs?v=${stamp}`));
+ // The entire game has a new release ID, but unchanged multiplayer assets can
+ // keep their own revision. All paths to that shared revision must still agree.
+ const camera=/battle-viewport\.mjs\?v=([a-z0-9-]+)/.exec(game)?.[1];
+ assert.ok(camera,'the multiplayer assets advertise their revision');
+ assert.ok(html.includes(`field-command.css?v=${camera}`));
+ assert.ok(game.includes(`battle-viewport-controller.mjs?v=${camera}`));
+ assert.ok(controller.includes(`battle-viewport.mjs?v=${camera}`));
  // A larger duel also changes versus's bunker spawn. Revalidate every path
  // from account to that simulation, including workshop and host recovery.
  const dependencies={
@@ -27,5 +31,5 @@ test('multiplayer camera, CSS and account entry use the current build wave',()=>
   'protocol.mjs':['versus.mjs'],
  };
  for(const [file,modules] of Object.entries(dependencies))for(const module of modules)
-  assert.ok(read(file).includes(`${module}?v=${stamp}`),`${file} must import the current ${module}`);
+  assert.ok(read(file).includes(`${module}?v=${camera}`),`${file} must import the current ${module}`);
 });

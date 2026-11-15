@@ -47,7 +47,7 @@ test('the scene is styled: dark plate, pulsing chevrons, motion-safe',()=>{
 
 test('account.js drives the phases and the slow hint',()=>{
   assert.match(account,/const LOADING_STEPS=\{\s*link:\{title:'Establishing field connection…',hint:'The valley is waiting\.'\},\s*soldier:\{title:'Preparing your soldier\.',hint:'Record, gear and skills are on their way\.'\},\s*\};/s,'both phases named');
-  assert.match(account,/display\('loading'\);setLoadingStep\('soldier'\);loadProfile\(currentUser,version\);/,'auth resolved: the soldier phase begins');
+  assert.match(account,/display\('loading'\);setLoadingStep\('soldier'\);[\s\S]*?const activate=\(\)=>\{[^\n]*loadProfile\(currentUser,version\);\};/,'auth resolved: the soldier phase begins before the cutoff check and profile load');
   assert.match(account,/loadingStep='soldier';display\('loading'\);/,'a retry goes straight to the soldier phase');
   assert.match(account,/slow\.hidden=false;\},6000\);/,'the slow hint shows after six seconds');
   assert.match(account,/if\(view==='loading'\)beginLoadingScene\(\);else endLoadingScene\(\);/,'showing the scene starts it, leaving stops it');

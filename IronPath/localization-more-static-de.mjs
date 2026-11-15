@@ -155,8 +155,11 @@ export const germanMoreStatic=Object.freeze({
   "DELETE CHARACTER": "CHARAKTER LÖSCHEN",
   "The passwords do not match. Please type them again.": "Die Passwörter stimmen nicht überein. Bitte gib sie erneut ein.",
   "Delete character?": "Charakter löschen?",
-  "Your soldier, all progress, gear, endless records and friend links are erased. Your friends keep their accounts; the character leaves their lists. The account itself stays and you can enlist a new soldier right away.": "Dein Soldat, der gesamte Fortschritt, die Ausrüstung, die Endlos-Rekorde und die Freundschaftsverbindungen werden gelöscht. Die Konten deiner Freunde bleiben; der Charakter verschwindet aus ihren Listen. Das Konto selbst bleibt und du kannst sofort einen neuen Soldaten anwerben.",
-  "Friend search keeps one soldier name per account. After deleting a character, share your friend code instead.": "Die Freundessuche behält einen Soldatennamen pro Konto. Teile nach dem Löschen eines Charakters stattdessen deinen Freundescode.",
+  "Your soldier, progress, scores and discoverable friend links and invitations will be removed. Close other tabs and devices first. Any current solo operation ends even if deletion fails. Your account remains; older unindexed data may remain.": "Dein Soldat, Fortschritt, Bestenlisteneinträge sowie auffindbare Freundschaften und Einladungen werden gelöscht. Schließe vorher andere Tabs und Geräte. Ein laufender Solo-Einsatz endet auch dann, wenn das Löschen fehlschlägt. Dein Konto bleibt bestehen; ältere, nicht auffindbare Daten können verbleiben.",
+  "Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.": "Verlasse deine Gruppe und warte, bis ihre Aktionen abgeschlossen sind. Bitte bei einem gestarteten Spiel den Host, die Gruppe zu schließen, bevor du deinen Soldaten löschst.",
+  "Deleting your soldier. Keep this page open and check your connection.": "Dein Soldat wird gelöscht. Lass diese Seite geöffnet und prüfe deine Verbindung.",
+  "Character deletion was not confirmed. Check your connection and database rules, then retry loading your soldier.": "Das Löschen des Charakters wurde nicht bestätigt. Prüfe deine Verbindung und die Datenbankregeln und lade deinen Soldaten erneut.",
+  "Your friend code needs updated database rules before it can use your new soldier name.": "Dein Freundescode benötigt aktualisierte Datenbankregeln, bevor er den neuen Soldatennamen verwenden kann.",
   "DELETE": "LÖSCHEN",
   "Character deleted.": "Charakter gelöscht.",
 

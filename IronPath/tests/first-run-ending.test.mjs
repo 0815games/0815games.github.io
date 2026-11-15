@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {runFirstRunEnding,endingDone,markEndingDone,endingKey,ENDING_STEPS,ENDING_KEY,ENDING_EDITION,FIELD_SCHOOL_ENTRIES} from '../first-run-ending.mjs';
+import {runFirstRunEnding,endingDone,markEndingDone,endingKey,createEndingHandoffs,ENDING_STEPS,ENDING_KEY,ENDING_EDITION,FIELD_SCHOOL_ENTRIES} from '../first-run-ending.mjs';
 
 const storage=()=>{const store=new Map();return {store,getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)};};
 
@@ -72,6 +72,26 @@ test('shouldStop aborts between steps - the walkthrough ends instead of dragging
   shouldStop:()=>true});
  assert.deepEqual(fresh,{status:'stopped',step:'equip',reason:'aborted',completed:0});
  assert.deepEqual(seen2,[],'nothing ran');
+});
+
+test('an account switch during the last step does not mark the old ending or open the next screen',async()=>{
+ const store=storage();let finish,active=true,done=false;
+ const last=new Promise(resolve=>{finish=resolve;});
+ const run=runFirstRunEnding({id:'soldier-last-step',storage:store,
+  steps:{equip:async()=>true,skills:async()=>true,workshop:()=>last},shouldStop:()=>!active,onDone:()=>{done=true;}});
+ await new Promise(resolve=>setImmediate(resolve));active=false;finish(true);
+ const result=await run;assert.equal(result.reason,'aborted');assert.equal(result.step,'workshop');
+ assert.equal(endingDone('soldier-last-step',store),false);assert.equal(done,false);
+});
+
+test('overlapping ending timers stay unsafe until each handoff has settled',()=>{
+ const timers=[],offers=[];let session=2;
+ const handoffs=createEndingHandoffs({setTimer:(fn,ms)=>{assert.equal(ms,600);timers.push(fn);},
+  isCurrent:value=>value.version===session,offer:value=>offers.push(value.version)});
+ handoffs.schedule({version:1});handoffs.schedule({version:2});assert.equal(handoffs.isPending(),true);
+ timers[0]();assert.equal(handoffs.isPending(),true,'the older timer cannot clear the newer one');assert.deepEqual(offers,[]);
+ timers[1]();assert.equal(handoffs.isPending(),false);assert.deepEqual(offers,[2]);
+ session=3;handoffs.schedule({version:2});timers[2]();assert.deepEqual(offers,[2],'same account on a different session is stale');
 });
 
 test('no account means no ending, and storage failures do not break it',async()=>{

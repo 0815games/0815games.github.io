@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://www.gstatic.com; style-src 'self'; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com; object-src 'none'; base-uri 'none'; form-action 'self'">
+  <meta name="ironpath-admin-api-key" content="AIzaSyC_1iHc7YREzKAGH9YbdO5bMTEtE4edPiE">
+  <meta name="ironpath-admin-auth-domain" content="iron-path-dc727.firebaseapp.com">
+  <meta name="ironpath-admin-database-url" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
+  <meta name="ironpath-admin-project-id" content="iron-path-dc727">
+  <meta name="ironpath-admin-app-id" content="1:305063261861:web:8ec54d8318a983fce3ff4c">
+  <title>Iron Path · Betriebssteuerung</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
+  <link rel="stylesheet" href="admin.css?v=20261031-update2">
+</head>
+<body>
+  <div class="admin-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Zurück zu Iron Path"><img src="assets/iron-path-brand-cutout.png" alt="Iron Path" width="150" height="52"></a>
+      <span class="topbar-label">0815 GAMES <span>/</span> BETRIEBSSTEUERUNG</span>
+      <a class="game-link" href="./">ZUM SPIEL <span aria-hidden="true">↗</span></a>
+    </header>
+    <main class="layout">
+      <section class="intro" aria-labelledby="pageTitle">
+        <p class="eyebrow"><span></span> OPERATIONSKONTROLLE / 01</p>
+        <h1 id="pageTitle">Der Betrieb<br><em>in deiner Hand.</em></h1>
+        <p class="lead">Hier steuerst du den Wartungsmodus für Iron Path. Dieser Bereich ist auch während einer Wartung erreichbar.</p>
+        <div class="intro-rule"></div>
+        <div class="intro-note"><span class="note-icon" aria-hidden="true">✳</span><p>Ein separates, freigeschaltetes Administratorkonto ist erforderlich. Die Berechtigung wird durch Firebase-Regeln geprüft – nicht durch das Ausblenden dieser Seite.</p></div>
+      </section>
+      <section class="panel" aria-label="Wartungssteuerung">
+        <div class="panel-top"><span>IRON PATH <i>/</i> KONTROLLRAUM</span><span>IP—01</span></div>
+        <div id="adminLogin">
+          <div class="panel-heading"><div class="panel-icon" aria-hidden="true">⌁</div><p class="eyebrow">GESCHÜTZTER ZUGANG</p><h2>Administrationskonto</h2><p>Melde dich mit deinem separaten Admin-Konto an.</p></div>
+          <form id="adminLoginForm">
+            <label for="adminEmail">E-MAIL-ADRESSE</label>
+            <input id="adminEmail" name="email" type="email" autocomplete="username" required maxlength="254" placeholder="name@beispiel.de">
+            <label for="adminPassword">PASSWORT</label>
+            <input id="adminPassword" name="password" type="password" autocomplete="current-password" required>
+            <button id="adminLoginButton" class="primary" type="submit" disabled>VERBINDUNG WIRD VORBEREITET …</button>
+          </form>
+          <p id="adminLoginMessage" class="feedback" role="status" aria-live="polite"></p>
+          <p class="footnote">Das Konto wird in Firebase verwaltet. Zugangsdaten werden nicht im Spielcode hinterlegt.</p>
+        </div>
+        <div id="adminDashboard" hidden>
+          <div class="dashboard-head"><div><p class="eyebrow">LIVE-STATUS</p><h2>Wartungsmodus</h2></div><button id="adminLogout" class="text-button" type="button">ABMELDEN ↗</button></div>
+          <p class="signed-in">Angemeldet als <strong id="adminIdentity"></strong></p>
+          <div class="status-card" id="adminStatusCard" data-state="unknown">
+            <div class="status-label"><span class="status-light"></span><span id="adminStatusLabel">STATUS WIRD GEPRÜFT</span></div>
+            <p id="adminStatusDetail">Der aktuelle Zustand wird frisch aus der Datenbank abgerufen.</p>
+          </div>
+          <div class="actions">
+            <button id="adminEnable" class="danger" type="button" disabled>WARTUNG AKTIVIEREN <span aria-hidden="true">↗</span></button>
+            <button id="adminDisable" class="primary" type="button" disabled>WARTUNG BEENDEN <span aria-hidden="true">↗</span></button>
+            <button id="adminRefresh" class="secondary" type="button">STATUS ERNEUT PRÜFEN <span aria-hidden="true">↻</span></button>
+          </div>
+          <p id="adminMessage" class="feedback" role="status" aria-live="polite"></p>
+          <div class="warning"><span aria-hidden="true">!</span><p><strong>Wichtig vor dem Einschalten</strong> Laufende Online-Partien werden gestoppt. Noch nicht bestätigte Speicherungen können verloren gehen. Offline-Geräte reagieren erst bei erneuter Verbindung.</p></div>
+          <p class="footnote">Der Schalter bleibt bei unbekanntem Status gesperrt. Änderungen an Rules und Website erfolgen separat.</p>
+        </div>
+      </section>
+    </main>
+    <footer><span>IRON PATH <i>·</i> BETRIEBSSTEUERUNG</span><span>0815 GAMES / SICHERHEITSBEREICH</span></footer>
+  </div>
+  <dialog id="adminConfirm" aria-labelledby="adminConfirmTitle" aria-describedby="adminConfirmDetail">
+    <div class="confirm-card"><p class="eyebrow">BESTÄTIGUNG ERFORDERLICH</p><h2 id="adminConfirmTitle"></h2><p id="adminConfirmDetail"></p><div class="confirm-actions"><button id="adminConfirmCancel" class="secondary" type="button">ABBRECHEN</button><button id="adminConfirmAction" class="danger" type="button">BESTÄTIGEN</button></div></div>
+  </dialog>
+  <script type="module" src="admin-entry.mjs?v=20261031-update2"></script>
+</body>
+</html>

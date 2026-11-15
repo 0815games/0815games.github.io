@@ -1,5 +1,12 @@
 # Rules to paste into Firebase
 
+> **Historical workshop record, not a current rollout instruction.** The
+> owner's supplied Rules snapshot matches this checked-in reference, but it
+> was not independently retrieved from Firebase. Do not paste this or any draft
+> over the current rules without a fresh backup, target-instance verification,
+> review and the owner's approval. The character-cleanup and maintenance-guard
+> candidates are separate; see [FRIENDS-ROLLOUT.md](FRIENDS-ROLLOUT.md).
+
 **Status: PUBLISHED (2026-11-05).** The live database now accepts the workshop
 fields, so the workshop in the live Armory is active. Keep this file as the exact
 copy that was published: rollback means pasting your saved export back, not this

@@ -23,3 +23,14 @@ test('Friends requests update badges without popup; valid invitations still aler
  f.el('socialPopupOpen').onclick();assert.equal(f.friends.open,true);assert.equal(f.el('socialPopup').hidden,true);f.emit('friendships/alice',{bob:{status:'pending',senderName:'<Bob>'},cara:{status:'pending',senderName:'Cara'}});f.friends.close();assert.equal(f.el('menuFriendBadge').textContent,'2');assert.equal(f.el('socialPopup').hidden,true,'requests never produce alerts');
  f.emit('coopInvites/alice',{eve:{...inv,createdAt:Date.now()-1900000}});assert.equal(f.el('socialPopup').hidden,true,'expired invite is not announced');f.emit('coopInvites/alice',{eve:{...inv,partyId:'b'.repeat(32),createdAt:Date.now()}});assert.equal(f.el('socialPopup').hidden,false,'replacement invitation is new');ui.signOut();assert.equal(f.el('menuFriendBadge').hidden,true);assert.equal(f.el('lobbyFriendBadge').hidden,true);assert.equal(f.el('socialPopup').hidden,true);auth.currentUser=null;f.emit('coopInvites/alice',{eve:inv});assert.equal(f.el('socialPopup').hidden,true);
 });
+
+test('deletion pauses social listeners and waits for an already started index write',async()=>{
+ const f=fixture(),auth={currentUser:{uid:'alice'}};let release,first=true;
+ f.sdk.get=async()=>{if(first){first=false;await new Promise(resolve=>{release=resolve;});}return {val:()=>null};};
+ const ui=setupFriends({document:f.document,db:{},auth,sdk:f.sdk,getProfile:()=>({name:'Alice'}),crypto:{getRandomValues(bytes){bytes.fill(7);}}});
+ ui.start();await new Promise(resolve=>setImmediate(resolve));assert.equal(typeof release,'function');
+ let paused=false;const pending=ui.prepareForDeletion().then(()=>{paused=true;});
+ await new Promise(resolve=>setImmediate(resolve));assert.equal(paused,false);
+ release();await pending;assert.equal(paused,true);
+ f.emit('friendships/alice',{bob:{status:'pending',senderName:'Bob'}});assert.equal(f.el('menuFriendBadge').hidden,true);
+});

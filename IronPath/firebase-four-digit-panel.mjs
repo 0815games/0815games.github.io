@@ -85,5 +85,5 @@ export function createFourDigitPanel({document,createLobby,createApproval,getPro
   });
   const leaveParty=()=>run(async current=>{if(!party)return;if(party.role==='host'&&(!await confirmClose()||current!==version||!party))return;const wasHost=party.role==='host';await onLeaveMatch();await cleanup(party,base,approval);if(current!==version)return;clear();base=null;approval=null;party=null;guest=null;guestReady=false;started=false;matchGuest=null;render(wasHost?'Party closed.':'You left the party.');return true;});
   $('partyLeave').onclick=leaveParty;
-  render('');return {reset,leaveForLogout,leaveParty,collapse,isActive:()=>!!party};
+  render('');return {reset,leaveForLogout,leaveParty,collapse,isActive:()=>!!party,isBusy:()=>busy};
 }

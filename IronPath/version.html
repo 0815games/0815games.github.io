@@ -21,37 +21,51 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
 </head>
 <body>
 <h1>IRON PATH · VERSIONS-CHECK</h1>
-<p>Diese Seite prüft von <strong>deinem Gerät</strong> aus, ob du die aktuelle Version bekommst. Bitte mach einen Screenshot von dieser Seite und schick ihn, falls etwas nicht stimmt.</p>
+<p>Diese Seite vergleicht die an <strong>dein Gerät</strong> gelieferten Kennungen von Spielseite und Versionsmanifest. Bitte mache einen Screenshot, falls etwas nicht stimmt.</p>
 <div class="result" id="url"><span class="verdict">DU BIST HIER</span><p><code id="here">…</code></p><p class="small" id="agent"></p></div>
-<div class="result" id="r1"><span class="verdict">PRÜFE AKTUELLE SPIEL-DATEI…</span><p id="r1d">Wird geladen…</p></div>
+<div class="result" id="r1"><span class="verdict">VERGLEICHE SPIELSEITE UND MANIFEST…</span><p id="r1d">Wird geladen…</p></div>
 <div class="result" id="r2"><span class="verdict">PRÜFE CHARAKTER-KACHELN…</span><p id="r2d">Wird geladen…</p></div>
-<a class="button" href="./?x=1">SPIEL FRISCH ÖFFNEN (?x=1)</a>
-<p class="small">Der Zusatz ?x=1 umgeht den Seiten-Cache. Nach dem Laden unten im SETTINGS-Dialog die Build-Nummer prüfen.</p>
-<p class="build">DIAGNOSE-SEITE BUILD 20261112-diag5</p>
+<a class="button" id="openGame" href="./">SPIEL NEU ÖFFNEN</a>
+<p class="small">Die eindeutige Adresse und <code>no-store</code> helfen gegen übliche Caches, garantieren aber keinen frischen Inhalt bei Proxys oder Service Workern. Übereinstimmende Kennungen beweisen nicht, welche Module der Spiel-Tab tatsächlich ausführt.</p>
+<p class="build">DIAGNOSE-SEITE · KENNUNGSVERGLEICH</p>
 <script>
-(function(){
+(async function(){
   document.getElementById('here').textContent=location.href;
   document.getElementById('agent').textContent=navigator.userAgent;
-  // Jeder Abruf mit einzigartigem Query + no-store: kein Cache der Welt
-  // kann hier etwas anderes liefern als das, was gerade auf dem Server liegt.
-  const probe=(path)=>fetch(path+(path.includes('?')?'&':'?')+'probe='+Date.now(),{cache:'no-store'}).then(r=>r.text());
+  const fresh=new URL('./',location.href);fresh.searchParams.set('_ip_nonce',Date.now()+'-diagnostic');
+  document.getElementById('openGame').href=fresh.href;
+  let sequence=0;
+  async function probe(path){
+    const url=new URL(path,location.href);url.searchParams.set('probe',Date.now()+'-'+(++sequence));
+    const response=await fetch(url.href,{cache:'no-store',redirect:'error'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    return response.text();
+  }
   function set(id,ok,detail){
     const box=document.getElementById(id),verdict=box.querySelector('.verdict'),body=document.getElementById(id+'d');
-    box.classList.add(ok?'ok':'bad');verdict.textContent=ok?'AKTUELL':'ALT / PROBLEM';body.textContent=detail;
+    box.classList.remove('ok','bad');box.classList.add(ok?'ok':'bad');
+    verdict.textContent=ok?'STIMMIG':'ABWEICHUNG / PROBLEM';body.textContent=detail;
   }
-  var token='?';
-  probe('index.html').then(html=>{
-    const build=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
-    token=(html.match(/account\.js\?v=([A-Za-z0-9-]+)/)||[])[1]||token;
-    set('r1',build==='20261031-loading1','Gelieferte Spiel-Version: BUILD '+(build||'UNBEKANNT (ohne Stempel = alter Stand)')+' · account.js-Token: '+(token||'?'));
-    // Kachel-Optik direkt am Stylesheet pruefen (Ebenen-Erstellung, Build 2026-11).
-    return probe('style.css?v=20261031-loading1');
-  }).then(css=>{
-    set('r2',/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css),
-      /\.recruit-showcase\{/.test(css)?'Ebenen-Erstellung eingebaut: großes Showcase-Portrait + live komponierte Kacheln (GESICHT/HAARE/BART)':'ALTER STAND: noch die alte LOOK-Zeile ohne Showcase');
-  }).catch(err=>{
-    ['r1','r2'].forEach(id=>set(id,false,'Abruf fehlgeschlagen: '+err.message));
-  });
+  let cssToken;
+  try{
+    const [html,manifestText]=await Promise.all([probe('index.html'),probe('release-version.json')]);
+    const meta=(html.match(/<meta name="ironpath-build" content="([a-z0-9-]+)">/)||[])[1];
+    const stamp=(html.match(/class="build-stamp"[^>]*>BUILD ([^<]+)</)||[])[1];
+    const entry=(html.match(/account-entry\.mjs\?v=([a-z0-9-]+)/)||[])[1];
+    if(!entry)throw Error('Kein Account-Einstieg in der Spielseite gefunden');
+    const entryText=await probe('account-entry.mjs?v='+encodeURIComponent(entry));
+    const account=(entryText.match(/account\.js\?v=([a-z0-9-]+)/)||[])[1];
+    cssToken=(html.match(/style\.css\?v=([a-z0-9-]+)/)||[])[1];
+    const manifest=JSON.parse(manifestText),published=manifest?.format===1&&typeof manifest.build==='string'&&/^[a-z0-9][a-z0-9-]{0,63}$/.test(manifest.build)?manifest.build:null;
+    const match=!!published&&meta===published&&stamp===meta&&entry===meta&&account===meta&&cssToken===meta;
+    set('r1',match,'Manifest: '+(published||'UNBEKANNT')+' · Spielseite: '+(meta||'UNBEKANNT')+' · Stempel: '+(stamp||'UNBEKANNT')+' · Einstieg: '+(entry||'?')+' · account.js: '+(account||'?')+' · style.css: '+(cssToken||'?'));
+  }catch(error){set('r1',false,'Vergleich fehlgeschlagen: '+error.message);}
+  try{
+    if(!cssToken)throw Error('Kein Stylesheet-Token in der Spielseite gefunden');
+    const css=await probe('style.css?v='+encodeURIComponent(cssToken));
+    const found=/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css);
+    set('r2',found,found?'Stylesheet enthält Showcase und komponierte Charakter-Kacheln.':'Stylesheet enthält die erwarteten Charakter-Kacheln nicht.');
+  }catch(error){set('r2',false,'Abruf fehlgeschlagen: '+error.message);}
 })();
 </script>
 </body>

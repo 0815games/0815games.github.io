@@ -1,0 +1,10 @@
+.release-scene{min-height:100vh;min-height:100svh}
+.launcher-header-actions{display:flex;align-items:center;gap:18px}
+.launcher-language,.launcher-retry{border:1px solid #a8ad8c;background:#314a38;color:#f8efd9;font-weight:800;cursor:pointer}
+.launcher-language{width:44px;min-height:40px;font-size:11px;letter-spacing:.08em}
+.launcher-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px}
+.launcher-retry{min-height:44px;padding:10px 18px;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.launcher-actions a{color:#ead39a;font-size:12px;font-weight:700;text-decoration-thickness:1px;text-underline-offset:4px}
+.launcher-noscript{color:#ead39a;font-size:12px;line-height:1.5}
+.launcher-retry[hidden]{display:none}
+@media(max-width:420px){.launcher-header-actions{gap:8px}.launcher-language{width:38px;min-height:38px}.launcher-actions{gap:14px}}

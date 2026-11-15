@@ -23,7 +23,20 @@ test('host lobby handles approvals, roster readiness, teams and start',async()=>
 test('guest approval publishes profile and hands off locked match once',async()=>{
   const f=fixture('guest');f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();assert.match(f.$('fourPartyStatus').textContent,/Waiting/);f.w.slots({one:'bob',two:'cara',three:'dan'});await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(f.calls[0],['publish','Bob']);assert.match(f.$('fourPartyStatus').textContent,/Approved/);
   f.w.started(manifest);f.w.started(manifest);await new Promise(resolve=>setImmediate(resolve));assert.equal(f.joined.length,1);assert.deepEqual(f.joined[0].teamRosters,[['alice','cara'],['bob','dan']]);await f.$('fourPartyLeave').onclick();assert.equal(f.stopped,1);assert.equal(f.panel.isActive(),false);assert.ok(!f.calls.some(c=>c[0]==='leave'),'locked roster is not mutated');
+  assert.equal(f.panel.isBusy(),true,'a departed locked roster still blocks deletion');f.w.host(null);assert.equal(f.panel.isBusy(),false,'host closure clears the retained roster');
 });
+test('a cancelled guest handoff becomes stale while its version check is pending',async()=>{
+ const f=fixture('guest'),doc={getElementById:f.$,createElement:()=>({children:[],append(...a){this.children.push(...a);}})};
+ let finish,entered=0,wasCurrent=false;
+ const pending=new Promise(resolve=>{finish=resolve;});
+ const panel=createFourPlayerPanel({document:doc,createLobby:()=>f.lobby,getProfile:()=>profiles.bob,
+  onMatch:async(_party,{isCurrent})=>{wasCurrent=isCurrent();await pending;if(!isCurrent())return false;entered++;return true;}});
+ f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});
+ await new Promise(resolve=>setImmediate(resolve));f.w.started(manifest);await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(wasCurrent,true);await panel.leaveForLogout(0);finish();await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(entered,0,'the handoff cannot enter the cancelled match');assert.equal(panel.isActive(),false);
+});
+
 test('stale readiness callbacks cannot mark a replaced player ready',async()=>{
   const f=fixture();await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob'});const stale=f.watchedProfiles.bob;f.w.slots({one:'cara'});stale(profiles.bob);f.w.slots({one:'bob',two:'cara',three:'dan'});f.watchedProfiles.bob(null);stale(profiles.bob);assert.equal(f.$('fourPartyStart').disabled,true);
 });

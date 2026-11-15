@@ -143,7 +143,7 @@ test('a replay walked to the end hands over the training contract, a skipped one
  assert.deepEqual(handed,[],'skipping a replay must not start a battle');
  // game.js owns the "already offered" half of the rule.
  const game=readFileSync(new URL('../game.js',import.meta.url),'utf8');
- assert.match(game,/onFinish:id=>\{if\(trainingSeen\(id,tutorialStorage\)\)return;markTrainingSeen/);
+ assert.match(game,/onFinish:id=>\{if\(trainingSeen\(id,tutorialStorage\)\)return;[\s\S]*?if\(releaseStopped\|\|account\.getUserId\(\)!==id\|\|account\.getSessionVersion\?\.\(\)!==session[\s\S]*?requestTrainingStart\(\(\)=>startTrainingRun\(\)\)[\s\S]*?if\(ok&&account\.getUserId\(\)===id&&account\.getSessionVersion\?\.\(\)===session\)markTrainingSeen/, 'only a successfully started contract for the same account session is marked seen');
 });
 
 test('every import of a module agrees on that module cache token',()=>{
@@ -188,14 +188,15 @@ test('every import of a module agrees on that module cache token',()=>{
  assert.match(game,/for\(const id of \['coachHighlight','coachRing','coachArrow'\]\)/,'the highlight layer, ring and arrow are hidden');
  const account=readFileSync(new URL('../account.js',import.meta.url),'utf8');
  // A declined or broken ending step must not leave the guide pill behind.
- assert.match(account,/onStopped:\(\)=>\{endingRunning=false;firstRunGuide\?\.stop\?\.\(\);syncGuideRecall\(\);\}/,'a stopped ending stops the guide and hides its pill');
+ assert.match(account,/const stopped=\(\)=>\{if\(endingRun!==attempt\)return;endingRun=null;endingRunning=false;firstRunGuide\?\.stop\?\.\(\);syncGuideRecall\(\);\}/,'only the matching stopped ending hides its guide and pill');
  // Reported: after the tutorial the guide card and its SHOW TASK pill kept
  // floating over the Command Center, and closing them only paused. Closing the
  // guide in the menu (no step dialog open) has to END the walkthrough.
  assert.match(account,/const midLesson=dialogOpen\('armoryDialog'\)\|\|dialogOpen\('skillDialog'\);/,'the close handler knows the two step dialogs');
  assert.match(account,/if\(!endingRunning\|\|midLesson\)\{firstRunGuide\?\.dismiss\?\.\(\);return;\}/,'mid-lesson closing stays a pause');
  assert.match(account,/markEndingDone\(user\?\.uid,firstRunStorage\(\)\);[\s\S]*?syncGuideRecall\(\);[\s\S]*?openFieldSchool\(\);/,'closing in the menu ends the walkthrough: done marker, pill hidden, field school shown');
- assert.match(account,/shouldStop:\(\)=>endingAborted/,'the ending runner asks the abort flag between steps');
+ assert.match(account,/shouldStop:\(\)=>!current\(\)/,'the ending runner checks the exact session between and after steps');
+ assert.match(account,/version===sessionVersion&&user\?\.uid===id/,'an old ending cannot run on a replacement session');
 }
 // Reported: "Abbrechen des Tutorials muss auch die Aufgaben abbrechen". A
 // practice step leaves the real armory/skills dialog open in sandbox mode;
