@@ -73,15 +73,17 @@ aber ältere Social-/Party-Logik, ist **kein** Nachweis für einen erfolgreichen
 Produktions-Rollback und behebt keinen defekten Sessiondienst oder defekte
 Rules. Der Rückfall muss im Störungsfall bewusst gewählt und überprüft werden.
 
-Die neue Workflow-Datei veröffentlicht **nicht** von sich aus: Erst die
-Repository-Variable `IRONPATH_GUARDED_PAGES_ENABLED=true` erlaubt ein Deployment
-von `main`. Vor jedem Deployment liest der Workflow den öffentlichen
-Produktions-Control-Record und verweigert es, falls dessen aktuelle Version
-nicht im Artefakt enthalten ist. Danach werden Launcher und kritische Dateien
-mit dem Artefakt verglichen; bei manuellem Lauf mit `full_verification` zusätzlich
-alle inventarisierten Dateien. Die Prüfungen ändern keinen Control-Record und
-öffnen das Spiel nicht. Netz-/CDN- und konkurrierende Änderungen bleiben ein
-Risiko; Pages und Firebase werden nicht atomar zusammen umgeschaltet.
+Die historische Workflow-Datei wird **nicht** durch einen Push gestartet, auch
+wenn die Repository-Variable bereits gesetzt sein sollte. Nur ein manueller Lauf
+von `main` mit `deploy=true` und der Repository-Variable
+`IRONPATH_GUARDED_PAGES_ENABLED=true` kann ein Deployment auslösen. Vor einem
+solchen Deployment liest der Workflow den öffentlichen Produktions-Control-Record
+und verweigert es, falls dessen aktuelle Version nicht im Artefakt enthalten ist.
+Danach werden Launcher und kritische Dateien mit dem Artefakt verglichen; bei
+`full_verification` zusätzlich alle inventarisierten Dateien. Die Prüfungen
+ändern keinen Control-Record und öffnen das Spiel nicht. Netz-/CDN- und
+konkurrierende Änderungen bleiben ein Risiko; Pages und Firebase werden nicht
+atomar zusammen umgeschaltet.
 
 Lokal, ohne Netzwerkzugriff und ohne ein Deployment:
 

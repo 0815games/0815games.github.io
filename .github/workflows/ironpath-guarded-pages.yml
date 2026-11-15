@@ -1,7 +1,7 @@
 name: Iron Path guarded Pages
+# Historical guarded-release experiment: never run automatically on a push.
+# The production Firebase-only release uses the repository's existing Pages source.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       deploy:
@@ -26,9 +26,9 @@ concurrency:
 
 jobs:
   pages:
-    # A manual run can build locally on a GitHub runner without deploying. A
-    # push is ignored until an owner explicitly sets the repository variable.
-    if: ${{ github.event_name == 'workflow_dispatch' || vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' }}
+    # A manual run can build locally on a GitHub runner without deploying.
+    # Even a pre-existing repository variable cannot trigger this on a push.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
@@ -47,24 +47,24 @@ jobs:
           node IronPath/release-tools/build-pages-site.mjs "$GITHUB_WORKSPACE" "$RUNNER_TEMP/ironpath-pages-output" \
             IronPath/release-tools/production-public-config.json IronPath/release-tools/pages-release-pins.json
       - name: Configure Pages
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true }}
         uses: actions/configure-pages@v5
       - name: Refuse deployment if the current live build is not retained
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true }}
         run: |
           node IronPath/release-tools/pages-safety.mjs control "$RUNNER_TEMP/ironpath-pages-output" \
             IronPath/release-tools/production-public-config.json IronPath/release-tools/pages-release-pins.json
       - name: Upload the Pages artifact
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true }}
         uses: actions/upload-pages-artifact@v3
         with:
           path: ${{ runner.temp }}/ironpath-pages-output
       - name: Deploy Pages
         id: deployment
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true }}
         uses: actions/deploy-pages@v4
       - name: Compare the live launcher and critical files with the local artifact
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) && inputs.full_verification != true }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true && inputs.full_verification != true }}
         run: |
           node IronPath/release-tools/pages-safety.mjs verify "$RUNNER_TEMP/ironpath-pages-output" \
             IronPath/release-tools/production-public-config.json IronPath/release-tools/pages-release-pins.json
@@ -74,7 +74,7 @@ jobs:
           node IronPath/release-tools/pages-safety.mjs verify "$RUNNER_TEMP/ironpath-pages-output" \
             IronPath/release-tools/production-public-config.json IronPath/release-tools/pages-release-pins.json --full
       - name: Recheck that the current live build remains present
-        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && (github.event_name == 'push' || inputs.deploy == true) }}
+        if: ${{ github.ref == 'refs/heads/main' && vars.IRONPATH_GUARDED_PAGES_ENABLED == 'true' && github.event_name == 'workflow_dispatch' && inputs.deploy == true }}
         run: |
           node IronPath/release-tools/pages-safety.mjs control "$RUNNER_TEMP/ironpath-pages-output" \
             IronPath/release-tools/production-public-config.json IronPath/release-tools/pages-release-pins.json

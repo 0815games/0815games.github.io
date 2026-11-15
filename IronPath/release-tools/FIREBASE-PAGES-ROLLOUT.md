@@ -141,9 +141,10 @@ registriert selbst keine Konten.
 4. GitHub **Settings → Pages** und den tatsächlichen Veröffentlichungsweg
    frisch überprüfen. Ein Merge nach `main` kann das ganze Repository als
    Website veröffentlichen; bei einer anderen Source kann er auch gar kein
-   Pages-Deployment auslösen. Der alte, standardmäßig deaktivierte
-   `ironpath-guarded-pages`-Workflow ist für den Vercel-Experimentpfad und wird
-   für diesen Ablauf nicht aktiviert. Vor dem Merge müssen Regelreihenfolge,
+   Pages-Deployment auslösen. Der historische `ironpath-guarded-pages`-Workflow
+   ist nur manuell ausführbar und für den Vercel-Experimentpfad; selbst eine
+   bereits gesetzte Repository-Variable startet ihn nicht bei einem Push. Er
+   wird für diesen Ablauf nicht aktiviert. Vor dem Merge müssen Regelreihenfolge,
    Freigabe, bestätigte Seitenveröffentlichung und Fehlerbehandlung feststehen.
 5. Die Knoten `/_ironpathMaintenance` und `/_ironpathMaintenanceAdminAccess`
    administrativ **lesen**. Ist einer davon nicht leer oder ist die Instanz
