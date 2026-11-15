@@ -7,11 +7,14 @@ Ein öffentlicher Statusabruf zeigte `format: 1`, `mode: maintenance` und
 übermittelte, JSON-normalisierte SHA-256-Prüfsumme stimmte mit dem vollständigen
 lokalen Kandidaten überein. Der Abruf wurde nicht von dieser Arbeitsumgebung
 selbst authentifiziert; die Herkunft der Prüfsumme beruht auf der Betreiberangabe.
-Die produktive Browser-CORS-Prüfung steht noch aus. Die neue Spielversion war zu
-diesem Zeitpunkt noch nicht über GitHub Pages veröffentlicht und der PR noch
-ein Draft. Das ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen
-Zustand neu prüfen. Die folgenden Schritte sind ein **abzustimmender
-Operatorplan**, kein Beleg für einen abgeschlossenen Cutover oder Rollback.
+Ein einmaliger, nicht authentifizierter Chromium-Test unter der tatsächlichen
+Pages-Origin konnte den öffentlichen Firebase-Status per CORS lesen. Er testete
+keine Anmeldung, kein echtes Mobilgerät und nicht den anschließend veröffentlichten
+Build. Die neue Spielversion war zu diesem Zeitpunkt noch nicht über GitHub Pages
+veröffentlicht und der PR noch ein Draft. Das ist eine Momentaufnahme: Vor jeder
+Aktion den tatsächlichen Zustand neu prüfen. Die folgenden Schritte sind ein
+**abzustimmender Operatorplan**, kein Beleg für einen abgeschlossenen Cutover oder
+Rollback.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und
@@ -165,6 +168,15 @@ ausgehen, bevor die neuen Rules tatsächlich aktiv sind.
    `/_ironpathMaintenance.json` und deren CORS im Browser müssen funktionieren;
    ein administrativer Read beweist nicht den öffentlichen Zugriff. Wenn etwas
    nicht passt: geschlossen bleiben, nicht mit einem alten Ruleset öffnen.
+   Bei verfügbarem Playwright kann dieser ausdrückliche Opt-in-Befehl den
+   öffentlichen Status im Chromium von einem echten Pages-Dokument aus prüfen:
+
+   ```sh
+   node IronPath/browser-tests/production-cors-probe.cjs --read-only-live
+   ```
+
+   Der Test lässt nur zwei anonyme GETs zu und erwartet `maintenance`; er
+   ersetzt keine Geräte-, Auth- oder späteren Deployment-Prüfungen.
 3. Erst nach Freigabe den geprüften Branch über den bestätigten Pages-Weg
    veröffentlichen und den Abschluss des tatsächlichen Deployments abwarten.
    Die gelieferte Spielseite, das Manifest, relevante Modul-URLs und die
