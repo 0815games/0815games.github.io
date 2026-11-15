@@ -1,6 +1,6 @@
 // Client-side admin coordinator; RTDB Rules are the authorization boundary.
 // No credentials are stored here and this module does not publish Rules.
-import {parseMaintenanceControl} from './maintenance-check.mjs?v=20261031-update2';
+import {parseMaintenanceControl} from './maintenance-check.mjs?v=20261031-update3';
 
 export function sameMaintenanceControl(a,b){
  const left=parseMaintenanceControl(a),right=parseMaintenanceControl(b);

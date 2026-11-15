@@ -67,7 +67,7 @@ const mime={'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs'
     const relative=pathname.replace(/^\/IronPath\//,'');if(relative===pathname)throw Error('Unknown path');
     const file=path.resolve(root,relative);if(!file.startsWith(root+path.sep))throw Error('Invalid path');
     let body=await fs.readFile(file);
-    if(relative==='admin.html')body=Buffer.from(body.toString('utf8').replace('admin-entry.mjs?v=20261031-update2','admin-test-bootstrap.mjs'));
+    if(relative==='admin.html')body=Buffer.from(body.toString('utf8').replace('admin-entry.mjs?v=20261031-update3','admin-test-bootstrap.mjs'));
     res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream','cache-control':'no-store'}).end(body);
    }catch{if(!res.headersSent)res.writeHead(404);res.end();}
   });

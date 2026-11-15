@@ -1,7 +1,7 @@
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {initializeAuth,browserSessionPersistence,onAuthStateChanged,signInWithEmailAndPassword,signOut} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {getDatabase,ref,get,onValue,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import {createAdminPanel} from './admin-panel.mjs?v=20261031-update2';
+import {createAdminPanel} from './admin-panel.mjs?v=20261031-update3';
 
 // The HTML contains only public Firebase web configuration, not an admin key.
 // A distinct named app plus session-only Auth avoids replacing or signing out

@@ -2,7 +2,7 @@
 // or toggles a production maintenance record. Rules are tested separately.
 const {chromium}=require(process.env.PW_PATH||'playwright');
 const assert=require('node:assert/strict');
-const base='http://127.0.0.1:8765',open={format:1,mode:'open',authAfterMs:0};
+const base=process.env.IRONPATH_BASE_URL||'http://127.0.0.1:8765',open={format:1,mode:'open',authAfterMs:0};
 const app=`export function initializeApp(config,name){globalThis.__adminApp={config,name};return {name};}`;
 const auth=`
  export const browserSessionPersistence={type:'SESSION'};
@@ -62,6 +62,13 @@ async function login(page,email='admin@example.test'){
  await page.locator('#adminDashboard').waitFor({state:'visible'});
 }
 async function enabled(page,id){await page.waitForFunction(id=>!document.getElementById(id).disabled,id);}
+async function assertFits(page,width,selectors){
+ const layout=await page.evaluate(selectors=>({scroll:document.documentElement.scrollWidth,boxes:selectors.map(selector=>{
+  const element=document.querySelector(selector),r=element?.getBoundingClientRect();return {selector,x:r?.x,right:r?.right,width:r?.width,height:r?.height};
+ })}),selectors);
+ assert.ok(layout.scroll<=width+1,`admin ${width}px has no horizontal overflow: ${JSON.stringify(layout)}`);
+ for(const box of layout.boxes)assert.ok(box.width>0&&box.height>0&&box.x>=-1&&box.right<=width+1,`admin ${width}px: ${box.selector} fits ${JSON.stringify(box)}`);
+}
 
 (async()=>{
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args:process.env.CHROMIUM_PATH?['--no-sandbox']:[]});
@@ -69,12 +76,23 @@ async function enabled(page,id){await page.waitForFunction(id=>!document.getElem
   {
    const f=await fixture(browser,{control:{...open,mode:'maintenance'}}),{page,state}=f;
    try{
+    await page.locator('#adminLoginButton:not([disabled])').waitFor();
+    for(const [width,height] of [[320,568],[375,667],[390,844],[1440,900]]){
+     await page.setViewportSize({width,height});
+     await assertFits(page,width,['.panel','#adminEmail','#adminPassword','#adminLoginButton']);
+     for(const id of ['adminEmail','adminPassword','adminLoginButton'])assert.ok((await page.locator('#'+id).boundingBox()).height>=44,`${id} remains a usable touch target`);
+    }
     await login(page);await enabled(page,'adminDisable');
     assert.equal(await page.locator('#adminStatusCard').getAttribute('data-state'),'maintenance');
-    for(const [width,height] of [[320,568],[390,844],[1440,900]]){
+    for(const [width,height] of [[320,568],[375,667],[390,844],[1440,900]]){
      await page.setViewportSize({width,height});
-     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`admin layout fits ${width}px`);
+     await page.evaluate(()=>{document.getElementById('adminIdentity').textContent='a-very-long-administrator-address-for-layout@example.test';});
+     await assertFits(page,width,['.panel','#adminStatusCard','#adminLogout','#adminEnable','#adminDisable','#adminRefresh']);
+     for(const id of ['adminLogout','adminEnable','adminDisable','adminRefresh'])assert.ok((await page.locator('#'+id).boundingBox()).height>=44,`${id} remains a usable touch target`);
     }
+    await page.setViewportSize({width:320,height:568});
+    await page.locator('#adminDisable').click();await assertFits(page,320,['#adminConfirm','#adminConfirmCancel','#adminConfirmAction']);
+    await page.locator('#adminConfirmCancel').click();assert.equal(state.writes,0,'mobile confirmation can be cancelled without a write');
     await page.setViewportSize({width:390,height:844});
     assert.equal(await page.evaluate(()=>__adminApp.name),'ironpath-maintenance-admin');
     assert.equal(await page.evaluate(()=>__adminPersistence),'SESSION','admin authentication is separate and session-only');

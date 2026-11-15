@@ -8,13 +8,19 @@ Ein öffentlicher Statusabruf zeigte `format: 1`, `mode: maintenance` und
 lokalen Kandidaten überein. Der Abruf wurde nicht von dieser Arbeitsumgebung
 selbst authentifiziert; die Herkunft der Prüfsumme beruht auf der Betreiberangabe.
 Ein einmaliger, nicht authentifizierter Chromium-Test unter der tatsächlichen
-Pages-Origin konnte den öffentlichen Firebase-Status per CORS lesen. Er testete
-keine Anmeldung, kein echtes Mobilgerät und nicht den anschließend veröffentlichten
-Build. Die neue Spielversion war zu diesem Zeitpunkt noch nicht über GitHub Pages
-veröffentlicht und der PR noch ein Draft. Das ist eine Momentaufnahme: Vor jeder
-Aktion den tatsächlichen Zustand neu prüfen. Die folgenden Schritte sind ein
-**abzustimmender Operatorplan**, kein Beleg für einen abgeschlossenen Cutover oder
-Rollback.
+Pages-Origin konnte den öffentlichen Firebase-Status per CORS lesen. Danach wurde
+PR #287 mit ausdrücklicher Freigabe veröffentlicht. Der Betreiber meldete auf
+seinem iPhone die Wartungsanzeige, zwei stimmige Versionsprüfungen und einen
+funktionierenden Admin-Login mit aktivem Wartungsstatus. Die öffentliche Abfrage
+meldete anschließend weiterhin `maintenance`; ein Schaltvorgang war nicht
+beauftragt. Der veröffentlichte Build war `20261031-update2`.
+
+Die mobile Gestaltungsüberarbeitung auf diesem Branch trägt die neue Kennung
+`20261031-update3` und muss nach einer gesondert freigegebenen Veröffentlichung
+auf dem echten Gerät erneut geprüft werden. Wartung bis zur abgestimmten Öffnung
+aktiv lassen. Dies ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen
+Zustand neu prüfen. Die folgenden Schritte sind ein **abzustimmender Operatorplan**,
+kein Beleg für einen abgeschlossenen Cutover oder Rollback.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und

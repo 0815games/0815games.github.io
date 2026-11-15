@@ -5,7 +5,7 @@ const {chromium}=require(process.env.PW_PATH||'playwright');
 const assert=require('node:assert/strict');
 const {readFileSync}=require('node:fs');
 const {join}=require('node:path');
-const base='http://127.0.0.1:8765',html=readFileSync(join(__dirname,'..','index.html'),'utf8');
+const base=process.env.IRONPATH_BASE_URL||'http://127.0.0.1:8765',html=readFileSync(join(__dirname,'..','index.html'),'utf8');
 const accountEntry=readFileSync(join(__dirname,'..','account-entry.mjs'),'utf8');
 const build=JSON.parse(readFileSync(join(__dirname,'..','release-version.json'),'utf8')).build;
 const nextBuild='browser-next-1',open={format:1,mode:'open',authAfterMs:0};
@@ -140,13 +140,30 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
    const f=await fixture(browser,{control:{...open,mode:'maintenance'}});const {page,state}=f;
    try{
     await page.locator('#maintenanceGate').waitFor({state:'visible'});assert.match(await page.locator('#maintenanceTitle').innerText(),/Maintenance/);
-    for(const [width,height] of [[320,568],[390,844],[1440,900]]){
-     await page.setViewportSize({width,height});
-     const layout=await page.evaluate(()=>{const box=document.querySelector('.maintenance-card').getBoundingClientRect(),image=document.querySelector('.maintenance-brand');return {left:box.left,right:box.right,scroll:document.getElementById('maintenanceGate').scrollWidth,logo:image.complete&&image.naturalWidth>0};});
-     assert.ok(layout.left>=-1&&layout.right<=width+1&&layout.scroll<=width+1,`maintenance fits ${width}px: ${JSON.stringify(layout)}`);assert.equal(layout.logo,true);
+    assert.equal(await page.evaluate(()=>document.activeElement.id),'maintenanceTitle','the modal initially focuses its heading');
+    const art=await page.evaluate(()=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(image.naturalWidth>0);image.onerror=()=>resolve(false);image.src='assets/maintenance-signal.jpg';}));
+    assert.equal(art,true,'the illustrated maintenance scene is available locally');
+    for(const language of ['en','de']){
+     if(language==='de'){await page.locator('#maintenanceLanguage').click();assert.match(await page.locator('#maintenanceTitle').innerText(),/Wartung/);}
+     for(const [width,height] of [[320,568],[375,667],[390,844],[844,390],[1440,900]]){
+      await page.setViewportSize({width,height});await page.evaluate(()=>document.getElementById('maintenanceGate').scrollTop=0);
+      const layout=await page.evaluate(()=>{
+       const rect=element=>{const r=element.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height};};
+       const gate=document.getElementById('maintenanceGate'),image=document.querySelector('.maintenance-brand');
+       return {card:rect(document.querySelector('.maintenance-card')),title:rect(document.getElementById('maintenanceTitle')),
+        language:rect(document.getElementById('maintenanceLanguage')),retry:rect(document.getElementById('maintenanceRetry')),
+        scroll:gate.scrollWidth,logo:image.complete&&image.naturalWidth>0,art:getComputedStyle(document.querySelector('.maintenance-art')).backgroundImage};
+      });
+      for(const name of ['card','title','language','retry'])assert.ok(layout[name].left>=-1&&layout[name].right<=width+1,`${language} ${width}px: ${name} fits ${JSON.stringify(layout)}`);
+      assert.ok(layout.scroll<=width+1,`${language} ${width}px: no horizontal overflow`);
+      assert.ok(layout.language.width>=44&&layout.language.height>=44&&layout.retry.height>=44,`${language} ${width}px: touch targets are large enough`);
+      assert.equal(layout.logo,true);assert.match(layout.art,/maintenance-signal\.jpg/);
+      await page.locator('#maintenanceRetry').scrollIntoViewIfNeeded();
+      const retry=await page.locator('#maintenanceRetry').boundingBox();
+      assert.ok(retry&&retry.y>=-1&&retry.y+retry.height<=height+1,`${language} ${width}px: retry remains reachable by scrolling`);
+     }
     }
     await page.setViewportSize({width:390,height:844});
-    await page.locator('#maintenanceLanguage').click();assert.match(await page.locator('#maintenanceTitle').innerText(),/Wartung/);
     await page.locator('#maintenanceLanguage').click();assert.match(await page.locator('#maintenanceTitle').innerText(),/Maintenance/);
     assert.deepEqual(state.sdkRequests,[],'maintenance UI does not depend on fetching Firebase SDK files');
     assert.deepEqual(await page.evaluate(()=>__events),[],'maintenance blocks Firebase initialization');
@@ -161,6 +178,14 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
    const f=await fixture(browser,{control:'unavailable'});const {page,state}=f;
    try{
     await page.locator('#maintenanceGate').waitFor({state:'visible'});assert.match(await page.locator('#maintenanceDetail').innerText(),/could not be checked/);
+    await page.setViewportSize({width:320,height:568});
+    for(const language of ['en','de']){
+     if(language==='de')await page.locator('#maintenanceLanguage').click();
+     assert.ok(await page.evaluate(()=>document.getElementById('maintenanceGate').scrollWidth<=innerWidth),`${language}: an unavailable status does not overflow`);
+     await page.locator('#maintenanceRetry').scrollIntoViewIfNeeded();
+     const button=await page.locator('#maintenanceRetry').boundingBox();
+     assert.ok(button&&button.x>=0&&button.x+button.width<=320&&button.y>=0&&button.y+button.height<=568,`${language}: retry remains reachable`);
+    }
     assert.deepEqual(await page.evaluate(()=>__events),[]);state.control=open;await page.evaluate(()=>{globalThis.__mockControl={format:1,mode:'open',authAfterMs:0};});
     await page.locator('#maintenanceRetry').click();await waitForMenu(page);
     console.log('unavailable maintenance signal: fails closed and retries');
@@ -200,6 +225,9 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     await page.locator('#maintenanceGate').waitFor({state:'visible'});
     assert.equal(await page.locator('#gameView').isHidden(),true);assert.equal(await page.locator('#settingsDialog').evaluate(el=>el.open),false);
     assert.match(await page.locator('#maintenanceExtra').innerText(),/not confirmed/);
+    await page.setViewportSize({width:320,height:568});await page.locator('#maintenanceRetry').scrollIntoViewIfNeeded();
+    const retry=await page.locator('#maintenanceRetry').boundingBox();
+    assert.ok(retry&&retry.x>=0&&retry.x+retry.width<=320&&retry.y>=0&&retry.y+retry.height<=568,'the longer halted-session message leaves retry reachable on a small phone');
     const events=await page.evaluate(()=>__events);assert.ok(events.indexOf('offline')>=0&&events.indexOf('offline')<events.indexOf('signout'));
     console.log('live maintenance: stops an active game, closes dialogs and goes offline before sign-out');
    }finally{await f.close();}
