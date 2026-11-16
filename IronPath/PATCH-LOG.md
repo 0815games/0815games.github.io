@@ -1122,3 +1122,144 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   Geräte und dauerhaft offline Teilnehmer bleiben offen. Der zuletzt öffentlich
   belegte Zustand war `maintenance`; die Arbeitsumgebung hat keinen bestätigten
   produktiven Zugriff auf den Admin-Schalter.
+
+## IPL-0028 – Veröffentlichung, Wiederöffnung und Testliste
+
+- **Git und Pages:** Commit `c8991d4888d5189ba25d5584f3ea41804fa59454`
+  wurde auf dem vorherigen Arbeitsbranch gepusht und mit
+  [PR #289](https://github.com/0815games/0815games.github.io/pull/289) in den
+  Merge-Commit `6c835f8a1e5cb8e9c836141324fb0ef699f5bfdd` übernommen. Der
+  [Pages-Lauf 43831291036](https://github.com/0815games/0815games.github.io/actions/runs/43831291036)
+  bestand; das öffentliche Manifest meldet `20261031-patch3`.
+- **Prüfung und Wiederöffnung:** Der
+  [PR-CI-Lauf 43830084162](https://github.com/0815games/0815games.github.io/actions/runs/43830084162)
+  und der [Main-CI-Lauf 43831291548](https://github.com/0815games/0815games.github.io/actions/runs/43831291548)
+  bestanden. Der Betreiber meldete, dass der Admin-Schalter über ein anderes
+  Netz oder Gerät bedienbar war; danach zeigte der öffentliche Status `open`
+  mit einem neuen Cutoff. Der zehnsekündige Timeout auf dem ersten Weg ist
+  nicht abschließend erklärt. Eine echte Mehrgeräte- und Speicherabnahme steht
+  noch aus.
+  Für den Release wurden keine produktiven Firebase-Rules oder Spieldaten
+  geändert; die Wiederöffnung änderte den vorgesehenen Wartungsstatus.
+- **Zum Testen – Multiplayer:** Mit zwei bis vier Geräten eigene und fremde
+  Türme bauen und verbessern, Preise/Vorräte vergleichen, Wellen durchspielen
+  und Wellen- sowie 2×-Anfragen von Gästen annehmen und ablehnen. Das mittige
+  Hinweisfenster soll Anfragen anzeigen; „Später“ beantwortet sie nicht. Nach
+  einem Verbindungsabbruch alte Anfragen und die Wiederverbindung beobachten.
+- **Zum Testen – Abschluss:** Nach abgeschlossenen Wellen soll der Host den
+  Einsatz beenden; alle Spieler sollen ihren Bericht und bestätigte Rewards
+  erhalten. Der Bericht lässt sich im Kommandozentrum erneut öffnen. Die
+  Feldabmeldung bietet während einer Hostpartie Warten, Abbrechen oder nach
+  Warnung sofortiges Abmelden. Sofortiges Abmelden kann eine unvollständige
+  Gruppe und unbestätigte Belohnungen zurücklassen.
+- **Zum Testen – Freunde und Tutorial:** Freundschaftsanfrage, Annahme,
+  Einladung, Beitritt und Verlassen prüfen. Leere Anfragebereiche werden
+  ausgeblendet; bei unlesbaren oder ungültigen Freundesbildern erscheint ein
+  neutraler Platzhalter. Training abbrechen und einer Gruppe beitreten: Der
+  alte Coach darf nicht in die Mehrspielerpartie hinein erscheinen.
+- **Vorsicht / offen:** Charakterlöschung entfernt Fortschritt; nur mit einem
+  entbehrlichen Testcharakter prüfen. Die Porträt-Reads sind nur als lokaler
+  Rules-Kandidat geprüft und nicht produktiv freigegeben. Eindeutige Namen,
+  die weiteren Blöcke und echte Geräte-/Langzeittests bleiben offen. Dauerhaft
+  abwesende Mitglieder können das sichere Schließen der Party blockieren.
+- **Protokollstand:** Dieser nachträgliche Dokumentationseintrag liegt auf dem
+  neuen Arbeitsbranch zunächst lokal/uncommittet und ist noch nicht selbst
+  öffentlich ausgeliefert. Frühere Angaben „lokal“ beschreiben ihren damaligen
+  Stand; die zugehörigen Änderungen wurden mit PR #289 veröffentlicht.
+
+## IPL-0029 – Nutzerfeedback und Übersicht der Patchblöcke
+
+- **Feedback:** Der Betreiber lobte den Bericht am Schluss. Dieses positive
+  Feedback ersetzt für sich genommen weder eine vollständige Geräte-,
+  Mehrspieler- oder Speicherabnahme noch die noch offenen Erweiterungen des
+  Berichts wie Rangabzeichen, Beförderung und „What’s Next“.
+- **Übersicht:** Auf Wunsch des Betreibers enthält `PATCH-BLOECKE.md` eine
+  Schnellübersicht über alle sechs Originalblöcke mit bereits veröffentlichten
+  Teilfunktionen und konkreten offenen Anforderungen. Das zusätzliche Lebens- /
+  Angriffssystem bleibt als separates vorgeschlagenes Vorhaben aufgeführt.
+  Einzelne überholte Aussagen zu #289, Wartung und CI wurden korrigiert, ohne
+  frühere Leistungen oder offene Kriterien zu streichen. `AGENTS.md` hält fest,
+  dass die Übersicht bei Fortschritt und Nutzerfeedback aktuell bleiben soll.
+- **Prüfung / Stand:** `git diff --check` bestand; 46 lokale Dateiziele und
+  52 Markdown-Anker sowie die sechs Übersichtseinträge, Originalblöcke 1–6 und
+  Zusätze A–E/7 wurden geprüft. Nur Dokumentation, kein Spielcode und keine
+  produktive Schaltung. Die Änderungen liegen auf
+  `arena/aada8412-0815games-github-io` lokal/uncommittet und sollen bei der
+  nächsten sinnvollen Veröffentlichung mitgenommen werden; sie sind nicht
+  schon öffentlich ausgeliefert.
+
+## IPL-0030 – Feldnotizen im Spiel und Block 7 als künftiger Patch
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`,
+  Basis `6c835f8a1e5cb8e9c836141324fb0ef699f5bfdd`; Stand dieses Eintrags
+  lokal/uncommittet.
+- **Auftrag:** Der Betreiber möchte den Patchlog mit dem Spiel verknüpfen: „Dann
+  könnte man es da anschauen was gemacht wurde und was noch ansteht in Zukunft.“
+  Zusätzlich soll Block 7 (Leben, Gegenangriffe, Reparaturen) als künftiger
+  Patch in den Plan aufgenommen werden, um daran entlangzuarbeiten.
+- **Änderungen / Dateien:** Neu `patch-notes.mjs` (Daten und Ansicht),
+  `patch-notes.css` (eigene Cache-Revision `20261031-notes1`) und
+  `tests/patch-notes.test.mjs`. In `index.html` ein Dialog `#patchNotes` mit
+  zwei Reitern (*Veröffentlicht*, *Was als Nächstes kommt*) sowie der Eintrag
+  `FELDNOTIZEN` in der Utility-Zeile der Kommandozentrale. `account.js` baut die
+  Ansicht, bindet Menüknopf, Backdrop und Sprachwechsel. `localization-de.mjs`
+  erhielt sechs neue deutsche Zeichenketten. `tests/multiplayer-build-stamp.test.mjs`
+  führt `patch-notes.mjs` in der Cache-Welle.
+- **Inhalt der Ansicht:** Der Reiter *Veröffentlicht* listet die vier
+  ausgelieferten Releases mit Build bzw. Pull-Request (#289 `20261031-patch3`,
+  #288 `20261031-update3`, #287 `20261031-update2`, #286 ohne Manifest – die
+  Datei existierte in diesem Commit nach GitHub-Abfrage noch nicht) und markiert
+  den laufenden Build. Der Reiter *Was als Nächstes kommt* zeigt die Blöcke 1–6
+  und neu **Block 7** in der vereinbarten Reihenfolge, jeweils mit bereits
+  veröffentlichten und offenen Punkten. Der installierte Build wird aus dem
+  `<meta name="ironpath-build">` der Seite gelesen, nicht geraten.
+- **Block 7 im Plan:** `PATCH-BLOECKE.md` erhielt den Abschnitt
+  „Kommende Patches – Reihenfolge“; Block 7 ist darin als künftiger Patch
+  Nr. 7 nach Block 6 eingeplant und in Abschnitt 7 entsprechend überschrieben.
+  Die Werte in Abschnitt E bleiben ausdrücklich ungetestete Startvorschläge,
+  und es gilt weiterhin kein dauerhafter Verlust von Fortschritt, Ausrüstung
+  oder Skillpunkten.
+- **Prüfungen:** `node --test IronPath/tests/patch-notes.test.mjs` bestand
+  **7/7**. Der vollständige serielle Lauf `node --test IronPath/tests/*.test.mjs`
+  bestand **1000/1001** (1 absichtlich übersprungen, 0 fehlgeschlagen) nach den
+  Änderungen. Gezielt erneut bestanden: `dom-contract`,
+  `translation-coverage`, `multiplayer-build-stamp`, `command-center`,
+  `command-redesign`, `release-stage-version`, `build-stamp`, `features`
+  (**26/26**). Syntaxprüfung von `account.js` und `patch-notes.mjs` mit
+  `node --check`; keine doppelten IDs in `index.html`; alle 17 echten
+  `<dialog>`-Elemente geschlossen.
+- **Grenzen:** Reine Leseansicht – kein Firebasezugriff, kein Spielzustand,
+  keine produktive Schaltung, keine Rules- oder Datenänderung. Die Einträge
+  werden von Hand gepflegt und sind nicht aus Git erzeugt. Die Playwright-/
+  Chromium-Browserfälle wurden in dieser Umgebung **nicht** ausgeführt (kein
+  Browser und keine Testabhängigkeiten vorhanden); die neue Oberfläche ist
+  damit nicht im Browser abgenommen. Echte Geräteprüfung bleibt offen.
+- **Git / PR / Release:** Kein neuer Commit, Push, PR, CI-Lauf, Merge,
+  Deployment oder Wartungsschalter. Die Änderungen liegen lokal/uncommittet und
+  sollen mit der nächsten sinnvollen Veröffentlichung mitgenommen werden.
+
+## IPL-0031 – Nachtrag: offener Feldnotizen-Dialog blockierte das Spiel, CSS-Fix
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`.
+- **Befund aus CI:** Nach dem Commit `231de4a1` schlugen in
+  [PR #290](https://github.com/0815games/0815games.github.io/pull/290) alle neun
+  Browserjobs fehl ([Lauf 43850674154](https://github.com/0815games/0815games.github.io/actions/runs/43850674154));
+  `database-rules` und `game-regressions` bestanden. Die Meldung lautete, dass
+  ein Unterelement des Dialogs `#patchNotes` Zeigerereignisse abfängt – der
+  Dialog lag damit dauerhaft über dem Spiel.
+- **Ursache:** Ein geschlossenes `<dialog>`-Element wird durch eine
+  **Browserregel** (`display:none`) verborgen. Eine Autorenregel mit `display`
+  überschreibt sie: `patch-notes.css` setzte `.patch-notes{…display:flex}`
+  ohne Einschränkung, also auch im geschlossenen Zustand. Die lokale
+  Node-Testsuite kann das nicht sehen; die Chromium-Fälle haben es gefunden.
+- **Korrektur:** `display` gilt nur noch im offenen Zustand
+  (`.patch-notes[open]{display:flex;flex-direction:column}`).
+  `tests/patch-notes.test.mjs` erhielt einen Wächter (Fall 8/8): jede
+  `display`-Regel, deren Ziel der Dialog selbst ist, muss auf `[open]` oder
+  `::backdrop` eingeschränkt sein.
+- **Grenzen:** Die Chromium-Fälle konnten in dieser Umgebung nicht lokal
+  ausgeführt werden (kein Browser, keine Testabhängigkeiten); der Nachweis
+  stammt ausschließlich aus der GitHub-CI. Die Korrektur wird daher erst nach
+  einem grünen CI-Lauf als bestätigt dokumentiert.

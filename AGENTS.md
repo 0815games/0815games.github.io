@@ -31,6 +31,19 @@ davon nicht betroffen.
    oder ein sicherer Rollout nicht belegt, den tatsächlichen Zustand und das
    Hindernis nennen statt eine Öffnung zu behaupten. Vor produktiven Rules- oder
    Datenänderungen den aktuellen Stand, Sicherheit und Backup unabhängig prüfen.
+6. Nach jeder Veröffentlichung dem Betreiber eine verständliche Liste geben:
+   Was wurde geändert, welche konkreten Schritte soll er testen und welches
+   Ergebnis wird erwartet? Offene Punkte, Risiken und den tatsächlichen Live-/
+   Wartungsstatus getrennt nennen; Emulatorergebnisse nicht als Geräteabnahme
+   ausgeben. Die Ingame-Ansicht **FELDNOTIZEN** (Daten in
+   `IronPath/patch-notes.mjs`) fortschreiben: nach einer belegten
+   Veröffentlichung die Release-Liste ergänzen und bei Statusänderungen die
+   Blöcke aktualisieren. Jede Zeile braucht eine deutsche und eine englische
+   Fassung; `IronPath/tests/patch-notes.test.mjs` lässt eine fehlende Sprache
+   nicht durch. Veröffentlichte Arbeit und offene Punkte bleiben getrennt, und
+   kein Eintrag behauptet eine Geräteabnahme. Die Schnellübersicht in `IronPath/PATCH-BLOECKE.md` bei Fortschritt
+   und Nutzerfeedback aktualisieren, ohne offene Kriterien oder bereits gebaute
+   Funktionen zu streichen. Bei Bedarf das Patch-Log verlinken.
 
 Das Log ist eine Arbeitsanweisung für künftige Agenten, kein automatischer
 Git-Hook: Externe Änderungen oder PR-Aktionen müssen gegebenenfalls anhand der
