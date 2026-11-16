@@ -1368,6 +1368,14 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   beruht. Der Emulatorlauf prüft **beide** Richtungen (ganzes Verzeichnis
   abgelehnt, ein Schlüssel erlaubt) – nur eine Richtung zu prüfen hätte den
   Fehler wieder verdeckt.
+- **Vierte Lektion derselben Art (CI):** Nach dem Einführen des Pflichtfelds
+  `at` schlugen die Bestandsfälle des Emulatortests fehl, weil sie noch ohne
+  Zeitstempel schrieben — und die Ablehnungsfälle wären **grün geblieben**, nur
+  eben aus dem falschen Grund („kein Zeitstempel" statt „gefälschte UID"). Die
+  Nutzlasten tragen jetzt einen gültigen Zeitstempel, damit jeder Fall für den
+  Grund scheitert, den sein Kommentar nennt; ein eigener Fall prüft „kein
+  Zeitstempel" ausdrücklich. Gemerkt: nach jeder Verschärfung der
+  Eintragsform sind die alten Ablehnungsfälle neu zu prüfen.
 - **Nebenbei:** `refused()` erkennt jetzt auch die Formulierung der
   Client-Bibliothek für eine abgelehnte **Transaktion** („Client doesn't have
   permission to access the desired data.“); drei Schreibweisen sind durch Tests
