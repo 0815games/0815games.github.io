@@ -1324,6 +1324,55 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
   folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
 
+## IPL-0037 – Block 2: die nötigen neuen Regeln vorbereitet (nicht veröffentlicht)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/75f7207f-0815games-github-io`,
+  nach den Merges von #295 und #296 (Main `3c4a069`, danach #296).
+- **Auftrag:** „Mach Block 2 fertig, dann die nötigen neuen regeln.“
+  Übersetzung: erst die Restarbeit an Block 2, danach die Regeln, die Block 2
+  braucht — **vorbereitet**, nicht veröffentlicht. Die Veröffentlichung bleibt
+  an frischen Export, Sicherung, Vergleich und separate Freigabe gebunden.
+- **Restarbeit an Block 2 (A2):** Der offene Untersuchungspunkt ist abgearbeitet.
+  Befund: ein abgebrochener oder doppelt gesendeter Fall war bereits geprüft
+  (kein Scheinerfolg, Markierung bleibt). Neu geprüft sind zwei Fälle der
+  Ebene darüber (`tests/friends-session-changes.test.mjs`): Ein Kontowechsel
+  mitten in einer laufenden Aktion behauptet keinen Erfolg und klemmt den
+  Dialog nicht fest; ein verspäteter Rückruf des Kontos, das sich abgemeldet
+  hat, kann die Anzeige des Kontos nicht überschreiben, das gekommen ist.
+  Beide Gegenproben sind mitgeführt (ohne die Prüfung nach dem Schreiben
+  behauptet der Dialog „angenommen“). **Kein Fehler gefunden** — die Fälle
+  sind jetzt nur festgenagelt. Offen bleibt die Abnahme mit echten Geräten.
+- **Die Regeln — Zusammensetzung:** `character-name-candidate.mjs` und
+  `friend-portrait-candidate.mjs` geben ihre Regeln jetzt als
+  `applyCharacterNameRules()` / `applyFriendPortraitRules()` heraus; neu ist
+  `firebase/block2-rules-candidate.mjs`, das beides auf eine **übergebene**
+  Basis anwendet. Damit gibt es eine Quelle pro Regelblock, und der Builder
+  nimmt auch einen frischen Export statt des Repository-Standes.
+- **Eingestellt:** `workshop.complete.draft.rules.json` enthält jetzt den
+  Namensindex und die beiden Porträt-Leserechte. Streng additiv: 6 Pfade neu,
+  4 um je ein Leserecht ergänzt, **nichts entfernt oder gelockert** (Vergleich
+  mit `pre-block2.complete.draft.rules.json`, die den Stand davor bewahrt und
+  als Basis für den Emulator-Lauf „ohne Index“ dient).
+- **Warum die Basis ein Argument ist:** Zwei Regelwerke im Repository
+  widersprechen sich in vier Pfaden (`friendCodes`, `friendOutgoing`,
+  `friendPresence`, `friendPrivate`): die festgenagelte Referenz und der
+  eingestellte Entwurf. Welcher live gilt, kann nur ein frischer Export sagen.
+  Der Kandidat baut auf dem eingestellten Entwurf auf, weil er der jüngere
+  Stand ist, und entfernt daraus nichts. Für die Veröffentlichung ist der Weg
+  über `block2-rules-candidate.mjs <frischer Export>` vorgesehen.
+- **Prüfungen:** vollständige lokale Testsuite 1021 bestanden, 0 fehlgeschlagen;
+  Publish-Trockenlauf 9/9; die Emulatorläufe (`test:character-names` mit und
+  ohne Index, `test:friend-portraits` gegen Referenz, Guard **und
+  eingestellten Entwurf**) sind ergänzt bzw. umgestellt und werden in CI
+  geprüft — lokal ist kein Emulator startbar (kein Java).
+- **Übergabe:** `firebase/BLOCK2-RULES-HANDOVER.md` nennt die beiden Blöcke,
+  die Prüfungen und die fünf Schritte vor dem Veröffentlichen.
+- **Grenzen:** Nicht veröffentlicht. Ohne frischen Export ist **nicht**
+  bewiesen, dass der Kandidat dem Live-Stand entspricht. Nach der
+  Veröffentlichung bleiben Alt-Duplikate unberührt; eine Umbenennung braucht
+  eine eigene Regeländerung (`players/$uid/name` ist heute unveränderlich).
+
 ## IPL-0035 – Block 2 / A1: verwaiste Reservierungen, Namensverzeichnis geschlossen
 
 - **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes

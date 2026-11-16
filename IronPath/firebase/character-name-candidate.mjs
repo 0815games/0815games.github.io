@@ -33,15 +33,11 @@ export const CHARACTER_NAME_KEY_PATTERN='/^([a-f0-9]{2}){1,96}$/';
 // comes from character-name.mjs, so the client and these rules cannot drift.
 const ABANDONED=`data.exists() && newData.exists() && data.child('uid').isString() && data.child('at').isNumber() && data.child('at').val() <= now - ${CHARACTER_NAME_RESERVATION_GRACE_MS} && !root.child('players').child(data.child('uid').val()).exists()`;
 
-export function buildCharacterNameCandidate(bytes){
-  const result=buildSocialCleanupCandidate(bytes),rules=result.rules;
-  if(rules.characterNames)throw Error('Character name rules already present; rebase the candidate before rebuilding');
-  // Reserve: signed in, path-shaped key, own uid, and nobody else holds it.
-  // Release: only the owner. Nobody may hand a name to another account.
-  // Read: a signed-in player must be able to check whether a name is free -
-  // the same information the public friend search already exposes, and the
-  // entry holds nothing but a uid and the display name.
-  rules.characterNames={
+// The index rules themselves, kept in ONE place: the offline candidate below
+// and the composed Block 2 candidate share them, so what the emulator tests is
+// what a publication would actually deploy.
+export function characterNameIndexRules(){
+ return {
     // No read at the root: the whole index at once would hand any signed-in
     // account the complete roster of names. A read of ONE key is granted by
     // the rule below - a deeper grant is not revoked by a shallower `false`,
@@ -66,7 +62,19 @@ export function buildCharacterNameCandidate(bytes){
       '$other':{'.validate':false},
     },
   };
-  return result;
+}
+
+// Applied to an existing ruleset. NEVER mutates it: a publication replaces the
+// whole ruleset, so this has to be additive on whatever base is handed in.
+export function applyCharacterNameRules(rules){
+ if(rules.characterNames)throw Error('Character name rules already present; rebase the candidate before rebuilding');
+ rules.characterNames=characterNameIndexRules();
+ return rules;
+}
+
+export function buildCharacterNameCandidate(bytes){
+ const result=buildSocialCleanupCandidate(bytes);
+ return applyCharacterNameRules(result.rules) && result;
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){

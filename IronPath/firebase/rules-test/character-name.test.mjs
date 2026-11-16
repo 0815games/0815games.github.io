@@ -14,15 +14,20 @@ import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/ru
 import {ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst} from 'firebase/database';
 import {createCharacterNameClaim} from '../../character-name-claim.mjs';
 import {characterNameKey,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../../character-name.mjs';
-import {buildCharacterNameCandidate} from '../character-name-candidate.mjs';
+import {buildBlock2RulesCandidate} from '../block2-rules-candidate.mjs';
 
-// Two runs against the PINNED owner reference (not a fresh export):
-//   default                    - with the candidate index, which is what the
-//                                rules would enforce after a separately
-//                                authorized publication;
-//   CHARACTER_NAME_BASELINE=1  - with exactly that reference, i.e. the ruleset
-//                                as it stands today, which has no index. That
-//                                run proves enlistment still works.
+// Two runs against the same base ruleset:
+//   default                    - the complete candidate: the ruleset the
+//                                repository would publish, PLUS the Block 2
+//                                rules (name index and portrait reads). This
+//                                is what a separately authorized publication
+//                                would actually deploy;
+//   CHARACTER_NAME_BASELINE=1  - that same ruleset WITHOUT them, i.e. what is
+//                                known to be live today. That run proves
+//                                enlistment still works while the index is
+//                                missing.
+// The base is the repository draft, not a fresh export of the live rules: see
+// firebase/BLOCK2-RULES-HANDOVER.md before publishing anything.
 const baseline=process.env.CHARACTER_NAME_BASELINE==='1';
 const log=(...parts)=>console.log('[character-name]',...parts);
 const report=(label,value)=>{log(label+':',JSON.stringify(value));return value;};
@@ -43,8 +48,8 @@ async function probe(label,operation){
 }
 
 before(async()=>{
- const bytes=await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url),'utf8');
- const rules=baseline?bytes:JSON.stringify(buildCharacterNameCandidate(bytes));
+ const bytes=await readFile(new URL('../pre-block2.complete.draft.rules.json',import.meta.url),'utf8');
+ const rules=baseline?bytes:JSON.stringify({rules:buildBlock2RulesCandidate(JSON.parse(bytes))});
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules}});
  alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();anon=env.unauthenticatedContext().database();
 

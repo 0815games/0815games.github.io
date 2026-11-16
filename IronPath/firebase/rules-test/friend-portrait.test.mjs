@@ -8,13 +8,22 @@ import {ref,get,set,remove} from 'firebase/database';
 import {buildFriendPortraitCandidate} from '../friend-portrait-candidate.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 
-const epoch='a'.repeat(32),guarded=process.env.FRIEND_PORTRAIT_GUARDED==='1';
+// Three bases, because the rules that are TESTED must be the rules that a
+// publication would DEPLOY:
+//   default                      - the pinned workshop reference plus the
+//                                  portrait candidate (the standalone review);
+//   FRIEND_PORTRAIT_GUARDED=1    - the same, behind the release guard;
+//   FRIEND_PORTRAIT_STAGED=1     - the staged complete draft as it stands,
+//                                  i.e. the artifact that would be published.
+const epoch='a'.repeat(32),guarded=process.env.FRIEND_PORTRAIT_GUARDED==='1',staged=process.env.FRIEND_PORTRAIT_STAGED==='1';
 let env,alice,bob,eve,anon;
 const claims=()=>({auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'custom'},ip_release_epoch:epoch});
 const db=id=>env.authenticatedContext(id,claims()).database();
 before(async()=>{
- const bytes=await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));
- const base=buildFriendPortraitCandidate(bytes),rules=guarded?buildRulesCandidate(base).candidate:base;
+ const base=staged
+  ?JSON.parse(await readFile(new URL('../workshop.complete.draft.rules.json',import.meta.url),'utf8'))
+  :buildFriendPortraitCandidate(await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url)));
+ const rules=guarded?buildRulesCandidate(base).candidate:base;
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:JSON.stringify(rules)}});
  alice=db('alice');bob=db('bob');eve=db('eve');anon=env.unauthenticatedContext().database();
 });
@@ -59,7 +68,7 @@ test('an accepted friend may read an absent legacy avatar as null but no private
  await assertFails(get(ref(alice,'players/bob')));
 });
 
-test('the release guard still fences portrait reads while closed', {skip:!guarded},async()=>{
+test('the release guard still fences portrait reads while closed', {skip:!guarded||staged},async()=>{
  await env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),'_ironpathRelease/mode'),'maintenance'));
  await assertFails(get(ref(db('alice'),'players/bob/avatar')));
  await assertFails(get(ref(db('alice'),'players/bob/gender')));

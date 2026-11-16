@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
 import {createCharacterNameClaim} from '../character-name-claim.mjs';
 import {friendNameKey} from '../friends.mjs';
-import {buildCharacterNameCandidate} from '../firebase/character-name-candidate.mjs';
+import {buildCharacterNameCandidate,characterNameIndexRules} from '../firebase/character-name-candidate.mjs';
 
 const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
 
@@ -255,9 +255,18 @@ test('the reservation is wired into enlistment and released when the character i
   // stays a builder until its publication is authorized on its own.
   assert.match(candidate,/buildSocialCleanupCandidate\(bytes\)/);
   assert.match(candidate,/characterNames/);
+  // The publishable draft carries the index, built from the SAME code the
+  // emulator suite tests - not a hand-edited copy that can drift from it.
   const publishable=JSON.parse(read('firebase/workshop.complete.draft.rules.json'));
-  assert.equal(publishable.rules.characterNames,undefined,'the index is not staged for publication yet');
-  const rules=buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json'));
+  assert.deepEqual(publishable.rules.characterNames,characterNameIndexRules(),'the staged draft and the builder agree');
+  // And nothing that was there before was dropped or rewritten on the way in.
+  const before=JSON.parse(read('firebase/pre-block2.complete.draft.rules.json')).rules;
+  for(const key of Object.keys(before))assert.ok(key in publishable.rules,`${key} survived the rebuild`);
+  for(const path of ['/friendCodes','/friendOutgoing','/friendPresence','/friendPrivate']){
+   const node=path.slice(1);
+   assert.equal(JSON.stringify(publishable.rules[node]),JSON.stringify(before[node]),`${node} is untouched`);
+  }
+  const rules={rules:buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json')).rules??buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json'))};
   assert.ok(rules.rules.characterNames?.$key?.['.write'],'the candidate carries the index');
   // `hasChildren` only requires the listed children; without $other an entry may
   // carry arbitrary extra fields (the emulator accepted one before this rule).
@@ -273,8 +282,14 @@ test('the reservation is wired into enlistment and released when the character i
   // The emulator suite builds its rules the same way, so it tests what a
   // publication would actually deploy.
   const emulator=read('firebase/rules-test/character-name.test.mjs');
-  assert.match(emulator,/buildCharacterNameCandidate\(bytes\)/);
+  assert.match(emulator,/buildBlock2RulesCandidate\(JSON.parse\(bytes\)\)/,'the emulator suite tests the composed candidate');
+  assert.match(emulator,/pre-block2\.complete\.draft\.rules\.json/,'against the ruleset known before this change');
   assert.match(emulator,/CHARACTER_NAME_BASELINE/,'and it also runs against today’s ruleset');
+  // The portrait half of the same publication is proven against the staged
+  // artifact, not only against a standalone candidate.
+  const portrait=read('firebase/rules-test/friend-portrait.test.mjs');
+  assert.match(portrait,/FRIEND_PORTRAIT_STAGED/);
+  assert.match(portrait,/workshop\.complete\.draft\.rules\.json/,'the staged draft is what gets tested');
 });
 
 // Every one of these reaches the player through message(), which runs
