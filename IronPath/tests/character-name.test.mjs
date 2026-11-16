@@ -167,6 +167,11 @@ test('the reservation is wired into enlistment and released when the character i
   assert.equal(publishable.rules.characterNames,undefined,'the index is not staged for publication yet');
   const rules=buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json'));
   assert.ok(rules.rules.characterNames?.$key?.['.write'],'the candidate carries the index');
+  // `hasChildren` only requires the listed children; without $other an entry may
+  // carry arbitrary extra fields (the emulator accepted one before this rule).
+  assert.equal(rules.rules.characterNames.$key.$other?.['.validate'],false,'no extra fields in a reservation');
+  assert.match(rules.rules.characterNames.$key['.read'],/\$key\.matches\(\/\^/,'the key regex is inlined into the rules, not left to the client');
+  assert.doesNotMatch(rules.rules.characterNames.$key['.write'],/\(\?:/,'RE2 in rules: no non-capturing groups (see the emulator log of PR #293)');
   assert.ok(rules.rules.players,'and nothing else was dropped');
   // The emulator suite builds its rules the same way, so it tests what a
   // publication would actually deploy.

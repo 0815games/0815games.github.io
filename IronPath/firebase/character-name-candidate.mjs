@@ -35,6 +35,10 @@ export function buildCharacterNameCandidate(bytes){
       '.read':`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN})`,
       '.write':`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN}) && ((!data.exists() && newData.exists()) || (data.exists() && data.child('uid').val() === auth.uid))`,
       '.validate':"newData.hasChildren(['uid','name']) && newData.child('uid').isString() && newData.child('uid').val() === auth.uid && newData.child('name').isString() && newData.child('name').val().length >= 2 && newData.child('name').val().length <= 24",
+      // Nothing else rides along. Without this, `hasChildren` only checks that
+      // uid and name are PRESENT - the emulator happily accepted an extra `xp`
+      // field until this rule was added.
+      '$other':{'.validate':false},
     },
   };
   return result;
