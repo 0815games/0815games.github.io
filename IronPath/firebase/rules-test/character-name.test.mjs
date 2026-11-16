@@ -78,9 +78,11 @@ after(async()=>env.cleanup());
 // module is wrong".
 test('the ruleset under test is the one we think it is',async()=>{
  const key=characterNameKey('Alex');
+ // `at` is part of the entry: without a reservation time the rules cannot
+ // judge whether an entry is abandoned, so they refuse it outright.
  const read=await probe('read characterNames/<key> as alice',()=>get(ref(alice,`characterNames/${key}`)));
- const write=await probe('write {uid:alice,name:Alex} as alice',()=>set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
- const tx=await probe('transaction as alice',()=>runTransaction(ref(alice,`characterNames/${characterNameKey('Bobby')}`),current=>current==null?{uid:'alice',name:'Bobby'}:undefined,{applyLocally:false}));
+ const write=await probe('write {uid:alice,name:Alex,at} as alice',()=>set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex',at:Date.now()}));
+ const tx=await probe('transaction as alice',()=>runTransaction(ref(alice,`characterNames/${characterNameKey('Bobby')}`),current=>current==null?{uid:'alice',name:'Bobby',at:Date.now()}:undefined,{applyLocally:false}));
  if(baseline){
   assert.equal(read.ok,false,'the baseline ruleset has no index, so even a read is refused');
   assert.equal(write.ok,false);
@@ -169,22 +171,28 @@ test('only the owner releases a name, and a released name becomes free',{skip:ba
  assert.equal(report('bob claims Alex after release',await bob$1.claim('Alex')).status,'claimed','freed names can be taken again');
 });
 
+// Every refusal here must fail for the reason the comment says. That is why
+// the payloads carry a valid `at`: leave it out and the entry is refused for
+// missing its reservation time, and every case below turns green for the wrong
+// reason - the same trap as the regex in PR #293.
 test('the rules refuse forged, mis-shaped and anonymous reservations',{skip:baseline},async()=>{
  const key=characterNameKey('Alex');
- await assertFails(set(ref(anon,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
+ const shape=(uid,name)=>({uid,name,at:Date.now()});
+ await assertFails(set(ref(anon,`characterNames/${key}`),shape('alice','Alex')));
  await assertFails(get(ref(anon,`characterNames/${key}`)));
- await assertFails(set(ref(bob,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
- await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice'}));                       // no name
- await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'A'}));              // too short
- await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'A'.repeat(25)}));   // too long
- await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex',xp:0}));      // no extra fields
+ await assertFails(set(ref(bob,`characterNames/${key}`),shape('alice','Alex')));                // forged uid
+ await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice',at:Date.now()}));        // no name
+ await assertFails(set(ref(alice,`characterNames/${key}`),shape('alice','A')));                 // too short
+ await assertFails(set(ref(alice,`characterNames/${key}`),shape('alice','A'.repeat(25))));      // too long
+ await assertFails(set(ref(alice,`characterNames/${key}`),{...shape('alice','Alex'),xp:0}));    // no extra fields
+ await assertFails(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));          // no reservation time
  // Keys that are not lowercase hex. A path with a dot or ".." is refused by
  // the client before it ever reaches the rules, so it proves nothing here.
- for(const bad of ['not-hex','ALEX','z'])await assertFails(set(ref(alice,`characterNames/${bad}`),{uid:'alice',name:'Alex'}));
- await assertSucceeds(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
+ for(const bad of ['not-hex','ALEX','z'])await assertFails(set(ref(alice,`characterNames/${bad}`),shape('alice','Alex')));
+ await assertSucceeds(set(ref(alice,`characterNames/${key}`),shape('alice','Alex')));
  // The owner may refresh their own entry, but never take another account's.
- await assertSucceeds(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
- await assertFails(set(ref(bob,`characterNames/${key}`),{uid:'bob',name:'Alex'}));
+ await assertSucceeds(set(ref(alice,`characterNames/${key}`),shape('alice','Alex')));
+ await assertFails(set(ref(bob,`characterNames/${key}`),shape('bob','Alex')));
 });
 
 // The ruleset currently in production has no `characterNames` path. Enlistment
