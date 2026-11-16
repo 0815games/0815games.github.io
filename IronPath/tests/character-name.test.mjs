@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY} from '../character-name.mjs';
+import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
 import {createCharacterNameClaim} from '../character-name-claim.mjs';
 import {friendNameKey} from '../friends.mjs';
 import {buildCharacterNameCandidate} from '../firebase/character-name-candidate.mjs';
@@ -10,8 +10,17 @@ const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
 
 // A tiny in-memory stand-in for the paths the claim module touches: enough to
 // prove WHO wins a race, without an emulator and without a network.
+//
+// It also stands in for the RULES, and that is its limit: it mirrors the
+// candidate, so it proves the client logic, not the rules. The rules
+// themselves are proven in firebase/rules-test/character-name.test.mjs.
+let player={uid:null};          // who is writing right now (auth.uid in rules)
 function firebase(){
   const store=new Map();
+  // Which accounts have a character. The real client CANNOT read this for
+  // somebody else (`players/<uid>` is owner-readable only) - which is exactly
+  // why the takeover decision has to sit in the rules.
+  const players=new Set();
   const snapshot=path=>({val:()=>{
     if(!store.has(path))return null;
     const value=store.get(path);
@@ -22,6 +31,7 @@ function firebase(){
   const deny=message=>Object.assign(Error(message),{code:'PERMISSION_DENIED'});
   return {
     store,
+    players,
     deny,
     sdk:{
       ref:(db,path)=>({path}),
@@ -31,17 +41,28 @@ function firebase(){
       query:(ref)=>ref,
       orderByKey:()=>({}),
       limitToFirst:()=>({}),
+      // Stands in for the rules: a write passes when the entry is free, when
+      // it is ours, or when it is abandoned - owner gone AND older than the
+      // grace window. It mirrors the candidate rules, so it proves the CLIENT
+      // logic only; the rules themselves are proven in the emulator suite.
       runTransaction:async({path},update)=>{
+        const uid=player.uid;
         const current=store.has(path)?store.get(path):null;
         const next=update(current);
         if(next===undefined)return {committed:false,snapshot:snapshot(path)};
+        const abandoned=current&&typeof current.at==='number'
+          &&Date.now()-current.at>=CHARACTER_NAME_RESERVATION_GRACE_MS&&!players.has(current.uid);
+        if(current?.uid&&current.uid!==uid&&!abandoned)throw deny('permission_denied');
         store.set(path,next);
         return {committed:true,snapshot:snapshot(path)};
       },
     },
   };
 }
-const claim=(fire,uid)=>createCharacterNameClaim({db:{},auth:{currentUser:{uid}},sdk:fire.sdk});
+// The stand-in needs to know WHO is writing, because the rules compare the
+// entry's uid with auth.uid.
+const session=uid=>{player.uid=uid;return {currentUser:{uid}};};
+const claim=(fire,uid)=>{player.uid=uid;return createCharacterNameClaim({db:{},auth:{currentUser:{uid}},sdk:fire.sdk});};
 
 test('the policy is versioned, so a stored key can always be traced to a rule',()=>{
   assert.match(CHARACTER_NAME_POLICY,/^[A-Z0-9_]+_V\d+$/);
@@ -99,6 +120,77 @@ test('two accounts racing for one name leave exactly one winner',async()=>{
   assert.equal((await alice.claim('ALEX')).status,'claimed');
 });
 
+// An entry whose owner never got a character (crashed enlistment, or a
+// character deleted in another session) would block the name forever. Taking
+// one over is allowed ONLY when both conditions hold: the owner has no
+// character AND the entry is older than the grace window.
+test('an abandoned reservation can be taken over, a live one never can',async()=>{
+  const key=characterNameKey('Alex');
+  const abandoned=at=>({uid:'ghost',name:'Alex',at});
+  // Crashed enlistment long enough ago: the name is free again.
+  {
+   const fire=firebase();
+   fire.store.set(`characterNames/${key}`,abandoned(Date.now()-CHARACTER_NAME_RESERVATION_GRACE_MS-1));
+   const taken=await claim(fire,'bob').claim('Alex');
+   assert.deepEqual(taken,{status:'claimed',key,reclaimed:true});
+   assert.equal(fire.store.get(`characterNames/${key}`).uid,'bob');
+   assert.equal(typeof fire.store.get(`characterNames/${key}`).at,'number','and it carries a fresh timestamp');
+  }
+  // The same entry one minute inside the window: an enlistment may still be
+  // running, and stealing the name then would create the duplicate we prevent.
+  {
+   const fire=firebase();
+   fire.store.set(`characterNames/${key}`,abandoned(Date.now()-CHARACTER_NAME_RESERVATION_GRACE_MS+60_000));
+   assert.deepEqual(await claim(fire,'bob').claim('Alex'),{status:'taken',key,source:'index'});
+   assert.equal(fire.store.get(`characterNames/${key}`).uid,'ghost');
+  }
+  // Old, but the owner still has a character: not abandoned, whatever the clock says.
+  {
+   const fire=firebase();
+   fire.players.add('ghost');
+   fire.store.set(`characterNames/${key}`,abandoned(Date.now()-CHARACTER_NAME_RESERVATION_GRACE_MS-1));
+   assert.deepEqual(await claim(fire,'bob').claim('Alex'),{status:'taken',key,source:'index'});
+  }
+  // No usable timestamp: cannot be told from a running enlistment, so it stays.
+  {
+   const fire=firebase();
+   fire.store.set(`characterNames/${key}`,{uid:'ghost',name:'Alex'});
+   assert.deepEqual(await claim(fire,'bob').claim('Alex'),{status:'taken',key,source:'index'});
+  }
+});
+
+// A transaction the rules refuse is phrased differently from a refused `set`.
+// Miss that spelling and the refusal escapes as an exception instead of a
+// message the player can act on.
+test('both spellings of a refusal are recognized',async()=>{
+  const fire=firebase();
+  const spellings=[
+   Object.assign(Error('permission_denied at /characterNames/x'),{code:'permission_denied'}),
+   Object.assign(Error("Client doesn't have permission to access the desired data."),{code:'PERMISSION_DENIED'}),
+   Object.assign(Error('PERMISSION_DENIED: Permission denied'),{code:'PERMISSION_DENIED'}),
+  ];
+  for(const error of spellings){
+   const half={...fire.sdk,runTransaction:async()=>{throw error;}};
+   assert.equal((await createCharacterNameClaim({db:{},auth:session('alice'),sdk:half}).claim('Alex')).status,'unsupported');
+  }
+  // An unrelated failure is still a failure: it must not be read as "taken".
+  const broken={...fire.sdk,runTransaction:async()=>{throw Error('network down');}};
+  await assert.rejects(()=>createCharacterNameClaim({db:{},auth:session('alice'),sdk:broken}).claim('Alex'),/network down/);
+});
+
+// The client cannot read another account's profile, so it must not guess: it
+// attempts the write and reports what the server says. Both possible answers
+// have to reach the player as the right message.
+test('a takeover the server refuses is reported as taken, not as unsupported',async()=>{
+  const key=characterNameKey('Alex'),fire=firebase();
+  // The read works (the rules know the path) but every write is refused: the
+  // entry belongs to a live account.
+  fire.store.set(`characterNames/${key}`,{uid:'ghost',name:'Alex',at:Date.now()});
+  const denied={...fire.sdk,runTransaction:async()=>{throw fire.deny('permission_denied');}};
+  const result=await createCharacterNameClaim({db:{},auth:session('bob'),sdk:denied}).claim('Alex');
+  assert.deepEqual(result,{status:'taken',key,source:'index'});
+});
+
 test('only the owner can free a name, and a failed enlistment does not squat it',async()=>{
   const fire=firebase(),alice=claim(fire,'alice'),bob=claim(fire,'bob');
   await alice.claim('Alex');
@@ -115,7 +207,7 @@ test('a refused transaction is reported, not retried until the player gives up',
   // The read is allowed (rules published) but the write is not: a stale or
   // restricted ruleset must still not hang the enlistment.
   const half={...fire.sdk,runTransaction:async()=>{throw fire.deny('permission_denied');}};
-  const alice=createCharacterNameClaim({db:{},auth:{currentUser:{uid:'alice'}},sdk:half});
+  const alice=createCharacterNameClaim({db:{},auth:session('alice'),sdk:half});
   assert.equal((await alice.claim('Alex')).status,'unsupported');
   assert.equal(fire.store.size,0);
 });
@@ -125,7 +217,7 @@ test('a ruleset without the index degrades to a read-only check instead of block
   const denied={...fire.sdk,
    runTransaction:async()=>{throw fire.deny('permission_denied');},
    get:async({path})=>{if(path.startsWith('characterNames/'))throw fire.deny('permission_denied');return fire.sdk.get({path});}};
-  const alice=createCharacterNameClaim({db:{},auth:{currentUser:{uid:'alice'}},sdk:denied});
+  const alice=createCharacterNameClaim({db:{},auth:session('alice'),sdk:denied});
   assert.equal((await alice.claim('Alex')).status,'unsupported','creation is not blocked');
   // An existing public listing still answers the question.
   fire.store.set(`friendNames/${characterNameKey('Alex')}`,{bob:{name:'Alex',code:'b'.repeat(32)}});
@@ -137,8 +229,8 @@ test('a ruleset without the index degrades to a read-only check instead of block
 
 test('an account switch mid-flight is refused rather than reserving for the wrong soldier',async()=>{
   const fire=firebase();
-  const session=createCharacterNameClaim({db:{},auth:{currentUser:{uid:'alice'}},sdk:fire.sdk,isCurrent:()=>false});
-  await assert.rejects(()=>session.claim('Alex'),/Account changed/);
+  const stale=createCharacterNameClaim({db:{},auth:session('alice'),sdk:fire.sdk,isCurrent:()=>false});
+  await assert.rejects(()=>stale.claim('Alex'),/Account changed/);
   assert.equal(fire.store.size,0);
   // A synchronous throw, not a rejected promise: assert.rejects would let it
   // escape instead of matching it.
@@ -174,7 +266,7 @@ test('the reservation is wired into enlistment and released when the character i
   // what keeps `$other` from blocking the whole node - the emulator denied
   // every read and write when only the parent `.validate` mentioned them.
   for(const field of ['uid','name'])assert.ok(rules.rules.characterNames.$key[field],`${field} is a named node before \$other`);
-  assert.equal(rules.rules.characterNames.$key['.validate'],"newData.hasChildren(['uid','name'])");
+  assert.equal(rules.rules.characterNames.$key['.validate'],"newData.hasChildren(['uid','name','at'])");
   assert.match(rules.rules.characterNames.$key['.read'],/\$key\.matches\(\/\^/,'the key regex is inlined into the rules, not left to the client');
   assert.doesNotMatch(rules.rules.characterNames.$key['.write'],/\(\?:/,'RE2 in rules: no non-capturing groups (see the emulator log of PR #293)');
   assert.ok(rules.rules.players,'and nothing else was dropped');

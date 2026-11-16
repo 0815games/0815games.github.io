@@ -1324,6 +1324,75 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
   folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
 
+## IPL-0035 – Block 2 / A1: verwaiste Reservierungen, Namensverzeichnis geschlossen
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/85658107-0815games-github-io`,
+  nach dem Merge von PR #293 (Main `af64f27`).
+- **Auftrag:** „Mergen und nächster Punkt.“ PR #293 wurde gemergt; als
+  nächster offener Punkt aus A1 folgte der Lebenszyklus der Reservierung:
+  verwaiste und unbestätigte Einträge.
+- **Problem:** Eine Reservierung wird **vor** dem Charakter angelegt und nur
+  dann zurückgegeben, wenn die Erstellung danach scheitert. Bricht die
+  Erstellung ab (Tab geschlossen, Netz weg) oder wird der Charakter in einer
+  **anderen Sitzung** gelöscht, bleibt der Eintrag stehen und blockiert den
+  Namen dauerhaft – ohne dass irgendein Konto ihn noch freigeben könnte.
+- **Entscheidung – zwei Bedingungen, nie eine allein:** Übernommen werden darf
+  ein Eintrag erst, wenn der Inhaber **keinen Charakter** hat **und** der
+  Eintrag **älter als die Schutzfrist** ist.
+  - *Nur „kein Charakter“:* eine laufende Erstellung sieht für einige Sekunden
+    genauso aus. Ein zweites Konto könnte den Namen mitten im Anlegen
+    übernehmen, beide Profile entstehen – genau das Duplikat, das der Index
+    verhindern soll.
+  - *Nur „alt“:* ein Charakter, der seit Monaten spielt, ist nicht verwaist,
+    egal wie alt sein Eintrag aussieht.
+  Gemessen wird mit der **Serveruhr** (`now` in den Rules), nicht mit der des
+  Clients. Die Frist steht als eine Konstante
+  (`CHARACTER_NAME_RESERVATION_GRACE_MS`, **Vorschlag: 6 Stunden, nicht
+  freigegeben**) in `character-name.mjs` und wird von dort in den
+  Rules-Kandidaten eingesetzt; der Client hält keine eigene Kopie.
+  Ein Eintrag **ohne verwertbaren Zeitstempel** bleibt geschützt: er ist nicht
+  von einer laufenden Erstellung zu unterscheiden.
+- **Wer entscheidet:** allein die Rules. `players/<uid>` ist nur für den
+  Inhaber lesbar, ein fremder Client kann Verwaisung also nicht feststellen.
+  Der Client versucht das Schreiben und liest die Antwort. Wichtig: eine
+  Ablehnung an dieser Stelle heißt **„vergeben“**, nicht „nicht unterstützt“ –
+  Letzteres hätte den Spieler in ein Duplikat geschickt. „Nicht unterstützt“
+  bleibt dem Fall vorbehalten, dass schon das Lesen des Index scheitert.
+- **Namensverzeichnis geschlossen (eigener Befund):** Der Kandidat erlaubte
+  mit `.read: auth != null` am Wurzelknoten das Lesen des **kompletten**
+  Verzeichnisses – jedes angemeldete Konto hätte alle Namen aller Spieler
+  abrufen können. Jetzt ist nur ein einzelner Schlüssel lesbar; die Prüfung
+  „einen Namen nachschlagen“ funktioniert weiter. Dass ein tieferes Leserecht
+  trotz `false` darüber gilt, ist dieselbe Regel, auf der `friendNames` heute
+  beruht. Der Emulatorlauf prüft **beide** Richtungen (ganzes Verzeichnis
+  abgelehnt, ein Schlüssel erlaubt) – nur eine Richtung zu prüfen hätte den
+  Fehler wieder verdeckt.
+- **Nebenbei:** `refused()` erkennt jetzt auch die Formulierung der
+  Client-Bibliothek für eine abgelehnte **Transaktion** („Client doesn't have
+  permission to access the desired data.“); drei Schreibweisen sind durch Tests
+  festgenagelt. Unbekannte Fehler bleiben Fehler.
+- **Änderungen / Dateien:** `character-name.mjs` (Konstante),
+  `character-name-claim.mjs` (Zeitstempel im Eintrag, Übernahmeversuch,
+  Abrufergebnis `reclaimed`), `firebase/character-name-candidate.mjs`
+  (`at`-Feld, Übernahmeregel, kein Lesen des Gesamtverzeichnisses),
+  `tests/character-name.test.mjs`, `firebase/rules-test/character-name.test.mjs`.
+  **Cache:** lokaler Schlüssel `20261031-patch3` → `20261031-patch4`, weil sich
+  Browser-Module geändert haben (PR #293 hatte sie ohne Stempelwechsel
+  ausgeliefert; ein alter Cache hätte die neuen Module sonst behalten).
+- **Prüfungen:** `tests/character-name.test.mjs` 13/13; vollständiger serieller
+  Lauf 1015 bestanden, 1 absichtlich übersprungen, 0 fehlgeschlagen;
+  Versions-/Cachekettentests 19/19; Rules-Publish-Trockenlauf 9/9. Die
+  Emulatorfälle (Übernahme verwaister/frischer/lebender Einträge, Eintrag ohne
+  Zeitstempel, Gesamtverzeichnis) sind ergänzt und werden in CI geprüft.
+- **Grenzen:** All dies wirkt erst mit veröffentlichten Rules. Bis dahin bleibt
+  ein verwaister Eintrag stehen – der Name ist dann blockiert, nicht doppelt
+  vergeben, das ist die sichere Richtung. Die Attrappe im Unit-Test bildet die
+  Rules **nach**; sie beweist die Client-Logik, nicht die Regel. Die Schutzfrist
+  ist ein Vorschlag. Umbenennung (eigene Rules-Änderung, weil
+  `players/<uid>/name` heute unveränderlich ist) und Alt-Duplikate bleiben
+  offen.
+
 ## IPL-0034 – Block 2: eindeutige Soldatennamen für neue Charaktere
 
 Korrektur nach dem ersten CI-Lauf (PR #293):

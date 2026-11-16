@@ -30,6 +30,19 @@
 export const CHARACTER_NAME_POLICY='NFC_LOWERCASE_V1';
 export const CHARACTER_NAME_MIN=2;
 export const CHARACTER_NAME_MAX=24;
+// How long a reservation is protected before an ABANDONED one may be taken
+// over. The window exists for one reason only: the profile is written after
+// the reservation, so for a few seconds a perfectly live enlistment looks
+// exactly like a crashed one (no profile yet). Without the window, a second
+// account could snatch the name out from under that enlistment - and end up
+// sharing it, which is the thing this whole index is supposed to prevent.
+//
+// VORSCHLAG, nicht freigegeben: six hours is a proposal, not an operator
+// decision. It is defined here once and inlined into the Rules by
+// firebase/character-name-candidate.mjs, so the number in the deployed rules
+// can always be traced back to this line. The client does NOT keep its own
+// copy: it attempts the takeover and lets the server refuse.
+export const CHARACTER_NAME_RESERVATION_GRACE_MS=6*60*60*1000;
 // Firebase Realtime Database keys must not contain `.#$[]/` or control bytes, and
 // the friend search index already allows at most 96 UTF-8 bytes.
 const KEY_MAX_BYTES=96;

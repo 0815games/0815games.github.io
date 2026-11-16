@@ -17,9 +17,16 @@
 //     it only sees accounts that ever published a listing);
 //   * it does NOT retroactively split names that already exist twice. Legacy
 //     duplicates stay until the authorized inventory and migration - see
-//     firebase/CHARACTER-NAME-AUDIT.md.
+//     firebase/CHARACTER-NAME-AUDIT.md;
+//   * a reservation whose owner never got a character (crashed enlistment),
+//     or whose character was deleted in a different session, would otherwise
+//     squat the name forever. Once such an entry is older than the grace
+//     window it can be taken over - but ONLY THE RULES decide whether an entry
+//     is abandoned; this module attempts the write and reads the refusal.
+//     Until those Rules are published an abandoned entry simply stays put,
+//     which is the safe direction: the name is blocked, not duplicated.
 
-import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261031-patch3';
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261031-patch4';
 
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 
@@ -27,8 +34,12 @@ const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]
 // older bundles spell it `permission_denied`. Both mean the same thing here:
 // the index is not part of the deployed ruleset yet.
 function refused(error){
-  const code=String(error?.code??'').toUpperCase();
-  return /PERMISSION[_ -]?DENIED/.test(code)||/permission[_ -]?denied/i.test(String(error?.message??''));
+  const code=String(error?.code??'').toUpperCase(),message=String(error?.message??'');
+  return /PERMISSION[_ -]?DENIED/.test(code)
+    ||/permission[_ -]?denied/i.test(message)
+    // A refused TRANSACTION is phrased differently by the client library:
+    // "Client doesn't have permission to access the desired data."
+    ||/doesn'?t have permission to access/i.test(message);
 }
 
 export function createCharacterNameClaim({db,auth,sdk,isCurrent=()=>true}={}){
@@ -59,35 +70,47 @@ export function createCharacterNameClaim({db,auth,sdk,isCurrent=()=>true}={}){
     async claim(name){
       check();
       const key=characterNameKey(name);
+      const entry=()=>({uid,name,at:Date.now()});
       // Read first. A refused read is the fast, ordinary signal that the
       // deployed rules do not know this path - and it cannot leave a
       // transaction retrying against a denial.
+      let held=null;
       try{
         const snap=await sdk.get(ref(`characterNames/${key}`));
         check();
         const value=snap?.val?.()??null;
         if(value?.uid===uid)return {status:'claimed',key};
-        if(value?.uid)return {status:'taken',key,source:'index'};
+        // Somebody else holds it. That is either a live character or an
+        // abandoned reservation, and this client cannot tell which:
+        // `players/<uid>` is readable by its owner only. So it asks the server.
+        if(value?.uid)held=value;
       }catch(error){
         if(!refused(error))throw error;
         const elsewhere=await indexedElsewhere(key,name);
         if(elsewhere===true)return {status:'taken',key,source:'search'};
         return {status:'unsupported',key,seen:elsewhere};
       }
-      // The read says the name is free; only the transaction decides a race.
       try{
         const result=await sdk.runTransaction(ref(`characterNames/${key}`),current=>{
-          if(current===null||current===undefined)return {uid,name};
-          if(current?.uid===uid)return current;          // already ours: keep it
-          return undefined;                              // taken: abort without writing
+          if(current?.uid===uid)return current;                    // already ours: keep it
+          if(held===null&&(current===null||current===undefined))return entry();
+          if(held===null)return undefined;                         // lost the race: abort
+          // Attempt to take over. THE RULES decide: the write passes only for
+          // an abandoned entry (owner gone, older than the grace window).
+          return entry();
         },{applyLocally:false});
         check();
         const value=result?.snapshot?.val?.()??null;
-        if(value?.uid===uid)return {status:'claimed',key};
+        if(value?.uid===uid)return held===null?{status:'claimed',key}:{status:'claimed',key,reclaimed:true};
         return {status:'taken',key,source:'index'};
       }catch(error){
-        if(refused(error))return {status:'unsupported',key};
-        throw error;
+        if(!refused(error))throw error;
+        // This point is only reached after a SUCCESSFUL read of the index, so
+        // the rules know the path. A refusal now refuses THIS write: the entry
+        // still belongs to a live account. Reporting `unsupported` here would
+        // wave the player through into creating a duplicate.
+        if(held!==null)return {status:'taken',key,source:'index'};
+        return {status:'unsupported',key};
       }
     },
     // Only the owner can free a name, and only their own. Used when enlistment
