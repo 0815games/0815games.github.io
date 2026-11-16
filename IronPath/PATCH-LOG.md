@@ -1292,3 +1292,34 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   Projektionsfehler fällt weiterhin auf, ein Messfehler beim Drehen nicht mehr.
   Der Nachweis steht und fällt mit der nächsten CI; in dieser Umgebung kann der
   Chromium-Fall nicht lokal ausgeführt werden.
+
+## IPL-0033 – Veröffentlicht: Abschluss, öffentlicher Status und nächster Schritt
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`;
+  dieser Nachtrag lag beim Schreiben lokal/uncommittet.
+- **Veröffentlicht:** [PR #291](https://github.com/0815games/0815games.github.io/pull/291)
+  (Commit `959a2a86`, die Absicherung des Browserfalls) wurde in den Merge-Commit
+  `17934f06da63e45cfc703f53572ca8fe21b07d39` übernommen. Die
+  [PR-CI 43854588244](https://github.com/0815games/0815games.github.io/actions/runs/43854588244)
+  bestand vollständig, der
+  [Main-Lauf 43856176548](https://github.com/0815games/0815games.github.io/actions/runs/43856176548)
+  bestand anschließend mit allen elf Jobs, und der
+  [Pages-Lauf 43856175915](https://github.com/0815games/0815games.github.io/actions/runs/43856175915)
+  war erfolgreich. Damit ist der in IPL-0032 beschriebene rote Lauf auf `main`
+  durch eine grüne Wiederholung ersetzt, nicht nur beschwichtigt.
+- **Öffentlich geprüft:** Das Manifest meldet weiterhin `20261031-patch3`, die
+  neue Datei `patch-notes.mjs` wird über Pages ausgeliefert, und der
+  Wartungsstatus wurde erneut als `open` mit unverändertem Cutoff abgefragt –
+  ein Schaltvorgang war nicht beauftragt und hat nicht stattgefunden.
+- **Zum Testen:** In der Kommandozentrale unten **FELDNOTIZEN** antippen. Im
+  Reiter *Veröffentlicht* muss die Karte mit `20261031-patch3` als **LIVE**
+  markiert sein; der Reiter *Was als Nächstes kommt* muss sieben Karten zeigen,
+  beginnend mit „Block 1 · Mehrspieler / IN ARBEIT“ und endend mit „Block 7 ·
+  Leben, Gegenangriffe und Reparaturen / GEPLANT“. Beim Wechsel der Sprache
+  müssen alle Texte umschalten. Danach wie gewohnt prüfen, dass sich das Spiel
+  wie vorher bedienen lässt: Karte, Türme, Wellen und Mehrspieler.
+- **Offen:** Echte Geräte- und Mehrspielerabnahme weiterhin nicht erledigt; die
+  Chromium-Fälle sind Emulator- und Testbrowser-Läufe. Block 7 bleibt ein
+  künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
+  folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
