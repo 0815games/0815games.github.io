@@ -66,8 +66,22 @@ const assert=require('node:assert/strict');
       const x=r.left+(pad.x-v.x)*v.scale*r.width/v.width,y=r.top+(pad.y-v.y)*v.scale*r.height/v.height;
       return {x,y,target:document.elementFromPoint(x,y)?.id};
     },index);
+    // After a rotation or a pan the canvas needs a frame before its new size is
+    // painted; measuring in the same tick projected the tap onto a pad the
+    // canvas had not resized to yet, so the tower ring never opened and the run
+    // died on a 30s timeout with no clue (seen once on main, unreproducible on
+    // the PR branch). Wait for two frames, and if the ring still does not open,
+    // re-measure and tap exactly once more: a real projection bug fails both
+    // times, a settling race passes on the retry.
+    const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const tapPad=async(index,touch=false)=>{
-      const p=await point(index);assert.equal(p.target,'game',`pad ${index} must be visible on the canvas: ${JSON.stringify(p)}`);
+      await settle();
+      let p=await point(index);assert.equal(p.target,'game',`pad ${index} must be visible on the canvas: ${JSON.stringify(p)}`);
+      if(touch)await page.touchscreen.tap(p.x,p.y);else await page.mouse.click(p.x,p.y);
+      try{await page.waitForFunction(()=>!document.getElementById('radialMenu').hidden,null,{timeout:5000});return;}
+      catch(error){if(!/Timeout/.test(String(error.message||error)))throw error;}
+      await settle();
+      p=await point(index);assert.equal(p.target,'game',`pad ${index} must be visible on the canvas after a retry: ${JSON.stringify(p)}`);
       if(touch)await page.touchscreen.tap(p.x,p.y);else await page.mouse.click(p.x,p.y);
       await page.waitForFunction(()=>!document.getElementById('radialMenu').hidden);
     };
