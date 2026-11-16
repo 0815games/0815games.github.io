@@ -1,12 +1,12 @@
 import {loadFriendStats} from './friend-stats.mjs?v=20261112-tagless1';
 import {renderFriendIndicators} from './friend-indicator.mjs?v=20261104-friendbadge1';
 import {createFriendPresence} from './friend-presence.mjs?v=20261104-presence1';
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch3';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch4';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createSocialNotifications} from './social-notifications.mjs?v=20261031-patch3';
-import {createCoopInvites} from './coop-invites.mjs?v=20261031-patch3';
-import {createFriendService} from './friends.mjs?v=20261031-patch3';
-import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261031-patch3';
+import {createSocialNotifications} from './social-notifications.mjs?v=20261031-patch4';
+import {createCoopInvites} from './coop-invites.mjs?v=20261031-patch4';
+import {createFriendService} from './friends.mjs?v=20261031-patch4';
+import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261031-patch4';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto,promptCenter=null}){
  const $=id=>document.getElementById(id),dialog=$('friendsDialog');let generation=0,service=null,unsubscribe=null,busy=false,next=null,searchName='',invitations={},inviteService=null,stopInvites=null,stopRequests=null,indexPromise=null,indexSession=0,noticeUid=null,requestCount=0,requestUnavailable=false,presence=null,presenceStops=new Map(),presenceStates=new Map(),presenceLabels=new Map(),portraitStops=new Map(),portraitStates=new Map(),portraitNodes=new Map(),statsId=null,statsGeneration=0,statsData=null,statsName='',lastFriendData=null,searchRows=[],lastMessage={text:'',values:{}};
  const popup=createSocialNotifications({document,container:$('socialPopup'),title:$('socialPopupTitle'),body:$('socialPopupBody'),openButton:$('socialPopupOpen'),dismissButton:$('socialPopupDismiss'),onOpen:()=>open(),promptCenter});
@@ -34,7 +34,23 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
  // to sit as a bar at the very top of the game view, over the Command Center
  // and every match (reported: "Die spielersuche konnte nicht aktualisiert
  // werden. Erneut versuchen." stand ganz oben, permanent).
- let indexRetries=0,indexTimer=null;
+ let indexRetries=0,indexTimer=null,indexFailed=false,connectionStop=null;
+ // The quiet retries below run three times, then stop. A player who never
+ // opens the friends dialog never sees the notice either, so a listing that
+ // failed while the device was offline stayed broken until they acted on it -
+ // they simply were not findable and nothing said so. Coming back online is
+ // the one moment we know the cause may be gone, so it earns another attempt.
+ function watchConnection(){
+  if(typeof sdk.onValue!=='function'||typeof sdk.ref!=='function')return;
+  connectionStop?.();
+  connectionStop=sdk.onValue(sdk.ref(db,'.info/connected'),snapshot=>{
+   // Only after a failure, and never while one is running: a reconnect must
+   // not turn into a burst of writes from every tab.
+   if(snapshot?.val?.()!==true||!indexFailed||indexPromise)return;
+   indexRetries=0;void indexAccount();
+  },()=>{});
+ }
+ function stopConnectionWatch(){connectionStop?.();connectionStop=null;}
  function scheduleIndexRetry(session){
   if(indexRetries>=3)return false;
   const delay=30000*(indexRetries+1);indexRetries++;
@@ -44,12 +60,12 @@ export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>
  }
  function indexAccount(){
   if(indexPromise)return indexPromise;const current=indexSession,profile=getProfile();if(!profile||!auth.currentUser)return Promise.resolve(false);
-  indexPromise=track(Promise.resolve().then(()=>createFriendService({db,auth,sdk,crypto}).ensureSearchListing(profile.name)).then(()=>{if(current===indexSession){$('friendIndexError').hidden=true;indexRetries=0;}return true;}).catch(error=>{if(current===indexSession){if(!scheduleIndexRetry(current)){$('friendIndexError').hidden=false;if(dialog.open)message(error?.message||'Could not update your player search listing. Retry when connected.');}}return false;}).finally(()=>{if(current===indexSession)indexPromise=null;}));return indexPromise;
+  indexPromise=track(Promise.resolve().then(()=>createFriendService({db,auth,sdk,crypto}).ensureSearchListing(profile.name)).then(()=>{if(current===indexSession){$('friendIndexError').hidden=true;indexRetries=0;indexFailed=false;}return true;}).catch(error=>{if(current===indexSession){indexFailed=true;if(!scheduleIndexRetry(current)){$('friendIndexError').hidden=false;if(dialog.open)message(error?.message||'Could not update your player search listing. Retry when connected.');}}return false;}).finally(()=>{if(current===indexSession)indexPromise=null;}));return indexPromise;
  }
- function start(){void presence?.stop();presence=null;clearPresenceWatches();try{presence=createFriendPresence({db,auth,sdk,crypto});}catch{}stopInvites?.();stopRequests?.();indexSession++;indexPromise=null;clearTimeout(indexTimer);indexTimer=null;indexRetries=0;invitations={};const uid=auth.currentUser?.uid;if(noticeUid!==uid){popup.reset();noticeUid=uid;}const session=indexSession;requestCount=0;requestUnavailable=false;indicators();stopRequests=sdk.onValue(sdk.ref(db,`friendships/${uid}`),snapshot=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;const edges=snapshot.val()||{},pending=Object.entries(edges).filter(([,edge])=>edge?.status==='pending');const count=pending.length;requestCount=count;requestUnavailable=false;indicators();},()=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;requestUnavailable=true;indicators();});$('friendInvitesError').hidden=true;inviteService=createCoopInvites({db,auth,sdk});stopInvites=inviteService.watch(values=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;$('friendInvitesError').hidden=true;invitations=values;const fresh=Object.entries(values).filter(([,v])=>v&&typeof v.name==='string'&&/^\d{4}$/.test(v.code)&&/^[a-f0-9]{32}$/.test(v.partyId)&&Number.isFinite(v.createdAt)&&v.createdAt>=Date.now()-1800000);popup.update('invites',fresh.map(([id,v])=>({key:JSON.stringify([id,v.partyId,v.code,v.name,v.createdAt]),name:v.name,expiresAt:v.createdAt+1800000})),{suppress:dialog.open});const count=Object.keys(values).length;$('inviteNotification').hidden=!count;indicators();renderInvites();},()=>{if(session===indexSession&&auth.currentUser?.uid===uid)$('friendInvitesError').hidden=false;});void indexAccount();}
+ function start(){void presence?.stop();presence=null;clearPresenceWatches();try{presence=createFriendPresence({db,auth,sdk,crypto});}catch{}stopInvites?.();stopRequests?.();indexSession++;indexPromise=null;clearTimeout(indexTimer);indexTimer=null;indexRetries=0;invitations={};const uid=auth.currentUser?.uid;if(noticeUid!==uid){popup.reset();noticeUid=uid;}const session=indexSession;requestCount=0;requestUnavailable=false;indexFailed=false;watchConnection();indicators();stopRequests=sdk.onValue(sdk.ref(db,`friendships/${uid}`),snapshot=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;const edges=snapshot.val()||{},pending=Object.entries(edges).filter(([,edge])=>edge?.status==='pending');const count=pending.length;requestCount=count;requestUnavailable=false;indicators();},()=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;requestUnavailable=true;indicators();});$('friendInvitesError').hidden=true;inviteService=createCoopInvites({db,auth,sdk});stopInvites=inviteService.watch(values=>{if(session!==indexSession||auth.currentUser?.uid!==uid)return;$('friendInvitesError').hidden=true;invitations=values;const fresh=Object.entries(values).filter(([,v])=>v&&typeof v.name==='string'&&/^\d{4}$/.test(v.code)&&/^[a-f0-9]{32}$/.test(v.partyId)&&Number.isFinite(v.createdAt)&&v.createdAt>=Date.now()-1800000);popup.update('invites',fresh.map(([id,v])=>({key:JSON.stringify([id,v.partyId,v.code,v.name,v.createdAt]),name:v.name,expiresAt:v.createdAt+1800000})),{suppress:dialog.open});const count=Object.keys(values).length;$('inviteNotification').hidden=!count;indicators();renderInvites();},()=>{if(session===indexSession&&auth.currentUser?.uid===uid)$('friendInvitesError').hidden=false;});void indexAccount();}
  // Character deletion suspends listeners before its server response; if it
  // fails, the same signed-in profile can reload without re-announcing notices.
- function signOut({preserveNotices=false}={}){const stopped=presence?.stop();presence=null;clearPresenceWatches();if(preserveNotices){popup.update('requests',[]);popup.update('invites',[]);}else{popup.reset();noticeUid=null;}indexSession++;indexPromise=null;clearTimeout(indexTimer);indexTimer=null;indexRetries=0;stopInvites?.();stopInvites=null;stopRequests?.();stopRequests=null;requestCount=0;requestUnavailable=false;inviteService=null;invitations={};indicators();renderInvites();$('inviteNotification').hidden=true;$('friendIndexError').hidden=true;$('friendInvitesError').hidden=true;reset({clearInput:true});return Promise.resolve(stopped).catch(()=>{});}
+ function signOut({preserveNotices=false}={}){const stopped=presence?.stop();presence=null;clearPresenceWatches();if(preserveNotices){popup.update('requests',[]);popup.update('invites',[]);}else{popup.reset();noticeUid=null;}indexSession++;indexPromise=null;clearTimeout(indexTimer);indexTimer=null;indexRetries=0;stopInvites?.();stopInvites=null;stopRequests?.();stopRequests=null;stopConnectionWatch();indexFailed=false;requestCount=0;requestUnavailable=false;inviteService=null;invitations={};indicators();renderInvites();$('inviteNotification').hidden=true;$('friendIndexError').hidden=true;$('friendInvitesError').hidden=true;reset({clearInput:true});return Promise.resolve(stopped).catch(()=>{});}
  async function prepareForDeletion(){const stopped=signOut({preserveNotices:true});await Promise.allSettled([stopped,...inFlight]);}
  $('friendIndexRetry').onclick=()=>{void indexAccount();};
  function render({incoming,outgoing,edges}){

@@ -1324,6 +1324,51 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
   folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
 
+## IPL-0036 – Block 2 / A2: Suchindex nach Rückkehr der Verbindung erneut versuchen
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Neuer Branch `arena/75f7207f-0815games-github-io`,
+  Basis `af64f27` (Main nach dem Merge von PR #293). Die Arbeit aus PR #294
+  (verwaiste Reservierungen) liegt auf dem vorherigen Branch und ist hier nicht
+  enthalten.
+- **Auftrag:** „Weiter, wann ist Block 2 fertig?“ Als nächster Punkt, den ich
+  ohne Freigabe oder echte Geräte abarbeiten kann, folgte aus A2 das
+  Untersuchungspaket: Online-/Offline-Status, mehrere Tabs, Konto-/
+  Charakterwechsel, erneute Anmeldung, fehlgeschlagene Suchindex-Erstellung,
+  Einladungen sowie abgebrochene und doppelt gesendete Anfragen.
+- **Befund (Bestand):** Eine fehlgeschlagene Veröffentlichung des Suchindex wird
+  dreimal leise wiederholt (30 s, 60 s, 120 s); erst danach erscheint eine
+  Meldung, und die steht **im Freunde-Dialog** — bewusst, weil sie früher als
+  Balken dauerhaft über Kommandozentrale und jedem Gefecht hing (gemeldet).
+- **Lücke:** Genau diese Platzierung erzeugt einen blinden Fleck. Wer den
+  Freunde-Dialog nie öffnet, sieht die Meldung nie. Ein Gerät, das beim
+  Synchronisieren offline war, blieb damit dauerhaft unauffindbar — und nichts
+  sagte es dem Spieler. Auch Öffnen des Dialogs heilt das nur, wenn der Spieler
+  ihn öffnet.
+- **Änderung:** Der Client beobachtet den Verbindungsstatus
+  (`.info/connected`, dasselbe Muster wie in `friend-presence.mjs`) und
+  wiederholt einen **fehlgeschlagenen** Versuch **einmal**, sobald die
+  Verbindung zurück ist. Leitplanken: nur nach einem Fehlschlag, nie während
+  ein Versuch läuft, und ein Erfolg vergisst den Fehlschlag — sonst würde jeder
+  Tab bei jeder Rückkehr schreiben. Abmelden und Charakterlöschung hängen den
+  Beobachter ab.
+- **Änderungen / Dateien:** `friends-ui.mjs` (Beobachter, Fehlermerker,
+  Abmelden) und `tests/friends-index-reconnect.test.mjs` (neu); die
+  Quelltext-Prüfungen in `tests/friends-index-notice.test.mjs` sind um den
+  Rückweg ergänzt. **Cache:** lokaler Schlüssel `20261031-patch3` →
+  `20261031-patch4` (dieselben Zeilen wie in PR #294, damit beide Wege
+  zusammengeführt werden können).
+- **Prüfungen:** neue Fälle 3/3 und Quelltextfälle 2/2; vollständiger serieller
+  Lauf 1015 bestanden, 1 absichtlich übersprungen, 0 fehlgeschlagen;
+  Versions-/Cachekettentests 19/19. **Gegenprobe:** mit entferntem Rückweg
+  schlagen die beiden neuen Fälle fehl — sie behaupten also etwas. Beim ersten
+  Anlauf hängte die Suite statt zu scheitern, weil ein Anwesenheits-Intervall
+  nach einer fehlgeschlagenen Prüfung weiterlief; das Aufräumen hängt jetzt an
+  `t.after`.
+- **Grenzen:** Der Verbindungswechsel ist synthetisch. Echte Netzwechsel, die
+  Firebase-Offline-Warteschlange, Zeitlimits und ein Wiedereinstieg mitten in
+  einem laufenden Schreibvorgang sind damit nicht abgenommen.
+
 ## IPL-0034 – Block 2: eindeutige Soldatennamen für neue Charaktere
 
 Korrektur nach dem ersten CI-Lauf (PR #293):

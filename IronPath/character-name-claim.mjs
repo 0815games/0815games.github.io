@@ -19,7 +19,7 @@
 //     duplicates stay until the authorized inventory and migration - see
 //     firebase/CHARACTER-NAME-AUDIT.md.
 
-import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261031-patch3';
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261031-patch4';
 
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 
