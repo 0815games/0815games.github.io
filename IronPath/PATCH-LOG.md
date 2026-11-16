@@ -1263,3 +1263,32 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   ausgeführt werden (kein Browser, keine Testabhängigkeiten); der Nachweis
   stammt ausschließlich aus der GitHub-CI. Die Korrektur wird daher erst nach
   einem grünen CI-Lauf als bestätigt dokumentiert.
+
+## IPL-0032 – Merge #290, Pages-Auslieferung und ein roter Browserfall auf main
+
+- **Veröffentlicht:** Commit `231de4a1` (Feldnotizen und Block 7) und Commit
+  `dd99aa75` (CSS-Fix) wurden mit
+  [PR #290](https://github.com/0815games/0815games.github.io/pull/290) in den
+  Merge-Commit `e25ce9b919532d79624d1ad0d95b841ea1297183` übernommen. Die
+  [PR-CI 43851953343](https://github.com/0815games/0815games.github.io/actions/runs/43851953343)
+  bestand danach vollständig, alle neun Browserjobs eingeschlossen. Der
+  [Pages-Lauf 43853201138](https://github.com/0815games/0815games.github.io/actions/runs/43853201138)
+  war erfolgreich; das öffentliche Manifest meldet weiterhin `20261031-patch3`.
+- **Roter Lauf auf main:** Der anschließende
+  [Main-Lauf 43853202901](https://github.com/0815games/0815games.github.io/actions/runs/43853202901)
+  schlug in genau einem Job fehl: `interface-browser-smoke` in
+  `browser-tests/multiplayer-field.cjs`, Schritt „landscape still selects the
+  correct tower“ – ein Tap auf einen Turmplatz direkt nach der Drehung des
+  Fensters. Alle übrigen zehn Jobs bestanden, und derselbe Code hatte in den
+  beiden Läufen des PR-Zweigs zuvor bestanden.
+- **Einordnung:** Der Fall hängt an der Projektion eines Klicks auf die
+  Leinwand, die nach einer Größenänderung einen Frame Zeit braucht. Er ist
+  damit zeitabhängig, nicht durch die Feldnotizen verursacht: `patch-notes.css`
+  und `patch-notes.mjs` werden in diesem Fall nicht geladen (das Skript
+  entfernt alle `<script>`-Tags und lädt nur `game.js`).
+- **Nachbesserung (lokal/uncommittet zum Zeitpunkt dieses Eintrags):**
+  `tapPad` wartet jetzt zwei Frames und wiederholt die Messung und den Tap
+  genau einmal, wenn sich das Turmmenü nicht öffnet. Ein echter
+  Projektionsfehler fällt weiterhin auf, ein Messfehler beim Drehen nicht mehr.
+  Der Nachweis steht und fällt mit der nächsten CI; in dieser Umgebung kann der
+  Chromium-Fall nicht lokal ausgeführt werden.
