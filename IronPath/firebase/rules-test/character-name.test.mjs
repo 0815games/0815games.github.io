@@ -13,7 +13,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst} from 'firebase/database';
 import {createCharacterNameClaim} from '../../character-name-claim.mjs';
-import {characterNameKey} from '../../character-name.mjs';
+import {characterNameKey,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../../character-name.mjs';
 import {buildCharacterNameCandidate} from '../character-name-candidate.mjs';
 
 // Two runs against the PINNED owner reference (not a fresh export):
@@ -93,6 +93,56 @@ test('the ruleset under test is the one we think it is',async()=>{
   assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
   assert.equal(tx.ok,true,'the candidate rules let an account claim through a transaction');
  }
+});
+
+// The index holds one entry per name. Handing out the whole list at once would
+// publish the roster to every signed-in account, so only a single key may be
+// read. A deeper grant is not revoked by the shallower `false` - that is the
+// same shape `friendNames` uses today.
+test('the index cannot be enumerated, but one name can still be checked',async()=>{
+ const key=characterNameKey('Alex');
+ await env.withSecurityRulesDisabled(async ctx=>{
+  await set(ref(ctx.database(),`characterNames/${key}`),{uid:'bob',name:'Alex',at:Date.now()});
+ });
+ const whole=await probe('read the whole index as alice',()=>get(ref(alice,'characterNames')));
+ const one=await probe('read one key as alice',()=>get(ref(alice,`characterNames/${key}`)));
+ assert.equal(whole.ok,false,'no roster for curious accounts');
+ if(baseline){
+  assert.equal(one.ok,false,'the baseline ruleset has no index at all');
+ }else{
+  assert.equal(one.ok,true,'the check a player needs still works');
+  assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'bob');
+ }
+});
+
+test('an abandoned reservation is taken over, a live one is not',{skip:baseline},async()=>{
+ const key=characterNameKey('Alex'),alice$1=claimService(alice,'alice');
+ // Owner gone AND older than the grace window: reclaimable.
+ await env.withSecurityRulesDisabled(async ctx=>{
+  await set(ref(ctx.database(),`characterNames/${key}`),{uid:'ghost',name:'Alex',at:Date.now()-CHARACTER_NAME_RESERVATION_GRACE_MS-1000});
+ });
+ assert.deepEqual(report('alice takes over an abandoned name',await alice$1.claim('Alex')),{status:'claimed',key,reclaimed:true});
+ assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
+
+ // Owner gone, but inside the window: an enlistment may still be running, and
+ // taking the name now would hand it out twice.
+ await env.withSecurityRulesDisabled(async ctx=>{
+  await set(ref(ctx.database(),`characterNames/${key}`),{uid:'ghost',name:'Alex',at:Date.now()});
+ });
+ assert.deepEqual(report('alice tries a reservation that is still fresh',await claimService(bob,'bob').claim('Alex')),{status:'taken',key,source:'index'});
+
+ // Old, but the owner has a character (bob exists in every case): never.
+ await env.withSecurityRulesDisabled(async ctx=>{
+  await set(ref(ctx.database(),`characterNames/${key}`),{uid:'bob',name:'Alex',at:Date.now()-CHARACTER_NAME_RESERVATION_GRACE_MS-1000});
+ });
+ assert.deepEqual(report('alice tries a name held by a live character',await alice$1.claim('Alex')),{status:'taken',key,source:'index'});
+ assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'bob','and the entry is untouched');
+
+ // No usable timestamp: indistinguishable from a running enlistment, so it stays.
+ await env.withSecurityRulesDisabled(async ctx=>{
+  await set(ref(ctx.database(),`characterNames/${key}`),{uid:'ghost',name:'Alex'});
+ });
+ assert.deepEqual(report('alice tries an entry without a timestamp',await alice$1.claim('Alex')),{status:'taken',key,source:'index'});
 });
 
 test('exactly one account wins a name, and case or padding does not create a second one',{skip:baseline},async()=>{

@@ -107,6 +107,19 @@ Offline-Audit vergleicht strenger (Case Folding) und meldet `Straße`/`STRASSE`
 als Konflikt. Details in
 [IPL-0034](PATCH-LOG.md#ipl-0034--block-2-eindeutige-soldatennamen-für-neue-charaktere).
 
+**Block 2 / A1 – verwaiste Reservierungen (lokaler Stand, nicht veröffentlicht):**
+Ein Eintrag, dessen Inhaber nie einen Charakter bekam oder dessen Charakter in
+einer anderen Sitzung gelöscht wurde, kann nach einer Schutzfrist übernommen
+werden – aber nur, wenn **beides** gilt: kein Charakter vorhanden **und**
+Eintrag älter als die Frist (Vorschlag: 6 Stunden, mit der Serveruhr gemessen,
+eine Konstante in `character-name.mjs`). Ohne die Frist könnte ein zweites Konto
+einer laufenden Erstellung den Namen wegnehmen und ihn damit teilen. Ein
+Eintrag ohne verwertbaren Zeitstempel bleibt geschützt. Das Verzeichnis ist
+außerdem nicht mehr als Ganzes lesbar, sondern nur Schlüssel für Schlüssel;
+sonst hätte jedes angemeldete Konto alle Namen aller Spieler abrufen können.
+Details in
+[IPL-0035](PATCH-LOG.md#ipl-0035--block-2--a1-verwaiste-reservierungen-namensverzeichnis-geschlossen).
+
 ## Übersicht der Anforderungen
 
 | Abschnitt | Stand | Offene Punkte |
