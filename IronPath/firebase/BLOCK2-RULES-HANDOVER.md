@@ -7,10 +7,11 @@ Veröffentlichen zwingend zu tun bleibt. Sie ersetzt keine Freigabe.
 ## Was dazugekommen ist
 
 Der veröffentlichbare Kandidat `workshop.complete.draft.rules.json` enthält
-jetzt zwei Blöcke. Beide sind **rein additiv**: 6 Pfade neu
-(`characterNames/**`), 4 um je ein Leserecht ergänzt
-(`players/$uid/{gender,avatar}`). Nichts wurde entfernt, umgeschrieben oder
-gelockert — der Vergleich steht unten.
+jetzt drei Blöcke. Alle sind **additiv**: 6 Pfade neu (`characterNames/**`),
+4 um je ein Leserecht ergänzt (`players/$uid/{gender,avatar}`), 2 Bedingungen
+per **ODER** erweitert (`players/$uid/name`, `friendCodes/$code`). Nichts wurde
+entfernt und nichts, was heute erlaubt ist, wird verboten — der Vergleich
+steht unten.
 
 ### 1. Soldatenname-Index (`characterNames/<Schlüssel>`)
 
@@ -30,7 +31,30 @@ Ausführlich, mit Begründung und Grenzen:
 und
 [IPL-0035](../../IronPath/PATCH-LOG.md#ipl-0035--block-2--a1-verwaiste-reservierungen-namensverzeichnis-geschlossen).
 
-### 2. Freundesporträt lesen (`players/$uid/{gender,avatar}`)
+### 2. Umbenennen (`players/$uid/name`, `friendCodes/$code`)
+
+Der Mechanismus für den Alt-Duplikat-Fall: ein Soldat kann seinen Namen
+ändern, und dabei ziehen **alle vier Stellen in einem Zug** um — Profilname,
+Suchindex (neuer Schlüssel und Eintrag, alter Eintrag weg), Freundescode und
+Namensreservierung. Zwei Änderungen, beide als **ODER** ergänzt (nichts, was
+heute erlaubt ist, wird verboten):
+
+- `players/$uid/name` darf sich ändern, aber nur, wenn der Eintrag unter dem
+  **aktuellen** Suchschlüssel schon den neuen Namen trägt. Den Schlüssel selbst
+  können die Regeln nicht nachrechnen (keine Unicode-Normalisierung); sie
+  können nur verlangen, dass Listing und Profil **übereinstimmen**. Ein
+  Umbenennen, das den Suchindex vergisst, wird abgelehnt.
+- `friendCodes/$code` darf vom Inhaber erneuert werden — ausschließlich zum
+  eigenen aktuellen Profilnamen. Bisher konnte ein Eintrag nur **erzeugt**
+  werden; nach einer Umbenennung hätte der Code dauerhaft den alten Namen
+  beworben.
+
+**Absichtlich noch nicht entschieden:** wer umbenennen darf, wann, wie oft und
+über welchen Einstiegspunkt im Spiel. Das Modul `character-rename.mjs` hat
+darum noch keine Schaltfläche — die Entscheidung fällt nach der
+Bestandsaufnahme.
+
+### 3. Freundesporträt lesen (`players/$uid/{gender,avatar}`)
 
 Bestätigte Freunde dürfen genau diese zwei Felder lesen — dieselbe Bedingung,
 die die Freundes-Statistiken schon benutzen. Leserechte kaskadieren nur nach
@@ -40,10 +64,11 @@ schreibbar war.
 
 ## Wie geprüft wurde
 
-- **Datenbank-Emulator, drei Läufe** (`test:character-names`): mit dem
-  zusammengesetzten Kandidaten und ohne ihn („was heute live ist"). Der Lauf
-  ohne Index beweist, dass die Charaktererstellung weiter funktioniert, wenn
-  der Server den Pfad nicht kennt.
+- **Datenbank-Emulator** (`test:character-names`): mit dem zusammengesetzten
+  Kandidaten — inklusive Umbenennung, Kollision und Suchbarkeit unter dem neuen
+  Namen — und ohne ihn („was heute live ist"). Der Lauf ohne die neuen Regeln
+  beweist, dass Charaktererstellung und Name unverändert funktionieren und eine
+  Umbenennung nichts anfasst.
 - **Datenbank-Emulator, drei Läufe** (`test:friend-portraits`): gegen die
   Referenz, gegen die Referenz hinter dem Veröffentlichungs-Guard und **gegen
   den eingestellten Entwurf selbst** — also gegen genau die Datei, die

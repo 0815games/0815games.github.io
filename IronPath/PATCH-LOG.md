@@ -1450,6 +1450,61 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   `players/<uid>/name` heute unveränderlich ist) und Alt-Duplikate bleiben
   offen.
 
+## IPL-0038 – Block 2 / A1: Umbenennung als Mechanismus (Regeln vorbereitet)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/6fa854f3-0815games-github-io`,
+  Basis `6fde2f8` (Main nach dem Merge von #297).
+- **Auftrag:** „Export, lass uns Block 2 fertig machen. Bis auf meine Tests.“
+  Ein Export lag nicht vor (keine Datei, kein Zugang), damit bleibt die
+  Veröffentlichung, wo sie war. Der letzte Rest von Block 2, den ich bauen
+  kann, war die Umbenennung.
+- **Warum eine Umbenennung zu Block 2 gehört:** Sie ist der Ausweg aus dem
+  Alt-Duplikat-Fall, den die Bestandsaufnahme zutage bringen wird: zwei Konten
+  halten denselben Namen, eines behält ihn, das andere wählt neu. Ohne
+  Mechanismus gäbe es nur „löschen und neu anlegen“ – mit Fortschrittsverlust.
+- **Der Name steht an vier Stellen, und die müssen zusammen umziehen:**
+  Profil (`players/<uid>/name`), Suchindex (`friendNames/<Schlüssel>/<uid>`
+  plus `friendPrivate/<uid>/searchKey`), Freundescode
+  (`friendCodes/<Code>/name`) und Namensreservierung
+  (`characterNames/<Schlüssel>`). `character-rename.mjs` schreibt alle vier in
+  **einem** Mehrfach-Schreibzug. Wären es mehrere Schritte, wäre der Soldat
+  zwischendurch unter zwei Namen findbar – oder unter gar keinem.
+- **Was die Rules können und was nicht:** Sie können **nicht** nachrechnen, ob
+  ein Schlüssel wirklich der Hash des Namens ist (keine Unicode-Normalisierung
+  in Rules). Sie **können** verlangen, dass der Eintrag unter dem **aktuellen**
+  Suchschlüssel bereits den neuen Namen trägt. Ein Umbenennen, das den
+  Suchindex vergisst, wird damit abgelehnt.
+- **Befund an den Regeln:** Ein Freundescode-Eintrag durfte bisher nur
+  **erzeugt**, nie erneuert werden (`!data.exists()`). Nach einer Umbenennung
+  hätte der Code dauerhaft den alten Namen beworben. Die Ergänzung erlaubt
+  dem Inhaber, ausschließlich den eigenen Namen auf den aktuellen
+  Profilnamen zu ziehen. Beide Änderungen sind **ODER**-Verknüpfungen:
+  nichts, was heute erlaubt ist, wird verboten.
+- **Sichere Richtung:** Solange die Rules nicht veröffentlicht sind, ist der
+  Name unveränderlich. Das Modul meldet dann „nicht unterstützt“ und ändert
+  **nichts** – statt in einen Namen zu wechseln, den niemand geprüft hat. Auch
+  eine halbe Antwort des Index (lesbar, aber ohne Eintrag) gilt nicht als
+  „frei“; dann entscheidet zusätzlich der öffentliche Suchindex.
+- **Bewusst offen:** Wer umbenennen darf, wann, wie oft und mit welchem
+  Einstiegspunkt im Spiel, ist eine Nutzerentscheidung **nach** der
+  Bestandsaufnahme. Darum hat das Modul absichtlich noch keine Schaltfläche.
+- **Änderungen / Dateien:** neu `character-rename.mjs` und
+  `firebase/character-rename-candidate.mjs`;
+  `firebase/block2-rules-candidate.mjs` nimmt den Umbenenn-Block auf und
+  bekommt eine eindeutige Kommandozeile (`Basis` und `Ausgabe` als Argumente,
+  Standardbasis ist der Stand vor Block 2 – nicht der schon zusammengesetzte
+  Entwurf, an dem die Wächter zu Recht anschlagen); neu
+  `tests/character-rename.test.mjs`; Emulatorfälle für Umbenennung, Kollision
+  und „ohne die Regeln“ ergänzt; der eingestellte Entwurf neu gebaut.
+- **Prüfungen:** 7/7 neue Einzelfälle, vollständiger serieller Lauf 1027
+  bestanden, 0 fehlgeschlagen; Publish-Trockenlauf 9/9. Die Emulatorfälle sind
+  der eigentliche Nachweis und laufen in CI.
+- **Grenzen:** Nicht veröffentlicht. Bestehende Freundschaften, offene
+  Anfragen und Bestenlisten-Einträge behalten den Namen vom Zeitpunkt ihres
+  Schreibens – ein Freund sieht den neuen Namen, wenn der Datensatz das
+  nächste Mal erneuert wird. Kein Versuch, das still zu „reparieren“.
+
 ## IPL-0036 – Block 2 / A2: Suchindex nach Rückkehr der Verbindung erneut versuchen
 
 - **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes

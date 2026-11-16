@@ -8,7 +8,7 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['name', 'gender', 'xp']) && (!data.child('campaign').exists() || newData.child('campaign').exists()) && (!data.child('storyProgress').exists() || newData.child('storyProgress').exists()) && (!data.child('storyCampaign').exists() || newData.child('storyCampaign').exists()) && (!data.child('workshop').exists() || newData.child('workshop').exists()) && (!data.child('soloWorkshopReceipts').exists() || newData.child('soloWorkshopReceipts').exists()) && (!data.child('coopRewards').exists() || newData.child('coopRewards').exists()) && (!data.child('endlessRuns').exists() || newData.child('endlessRuns').exists()) && (!data.child('endlessWaves').exists() || newData.child('endlessWaves').exists()) && (!data.child('endlessBosses').exists() || newData.child('endlessBosses').exists()) && (!data.child('endlessBestSector').exists() || newData.child('endlessBestSector').exists()) && (!data.child('avatar').exists() || newData.child('avatar').exists()) && (!data.child('enlisted').exists() || newData.child('enlisted').exists())",
         "name": {
-          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && (!data.exists() || newData.val() === data.val())"
+          ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 24 && (!data.exists() || newData.val() === data.val() || (root.child('friendPrivate').child($uid).child('searchKey').exists() && root.child('friendNames').child(root.child('friendPrivate').child($uid).child('searchKey').val()).child($uid).child('name').val() === newData.val()))"
         },
         "gender": {
           ".validate": "(newData.val() === 'male' || newData.val() === 'female') && (!data.exists() || newData.val() === data.val())",
@@ -422,7 +422,7 @@
     "friendCodes": {
       "$code": {
         ".read": "auth != null && $code.matches(/^[a-f0-9]{32}$/)",
-        ".write": "auth != null && $code.matches(/^[a-f0-9]{32}$/) && !data.exists() && newData.child('uid').val() === auth.uid && root.child('players').child(auth.uid).exists()",
+        ".write": "(auth != null && $code.matches(/^[a-f0-9]{32}$/) && !data.exists() && newData.child('uid').val() === auth.uid && root.child('players').child(auth.uid).exists()) || (auth != null && $code.matches(/^[a-f0-9]{32}$/) && data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid && newData.child('name').val() === root.child('players').child(auth.uid).child('name').val())",
         ".validate": "newData.hasChildren(['uid','name']) && newData.child('name').val() === root.child('players').child(auth.uid).child('name').val()",
         "uid": {
           ".validate": "newData.isString() && newData.val() === auth.uid"
