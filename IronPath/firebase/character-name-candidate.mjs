@@ -16,7 +16,10 @@ import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {buildSocialCleanupCandidate} from './social-cleanup-candidate.mjs';
 
-export const CHARACTER_NAME_KEY_PATTERN='/^(?:[a-f0-9]{2}){1,96}$/';
+// The same regex style the published rules use for `friendNames`. Firebase
+// evaluates these with RE2; a non-capturing group made every read AND write
+// fail, which is invisible to assertFails - only an assertSucceeds caught it.
+export const CHARACTER_NAME_KEY_PATTERN='/^([a-f0-9]{2}){1,96}$/';
 
 export function buildCharacterNameCandidate(bytes){
   const result=buildSocialCleanupCandidate(bytes),rules=result.rules;

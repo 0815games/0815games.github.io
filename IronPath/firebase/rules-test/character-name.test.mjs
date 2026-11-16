@@ -44,6 +44,10 @@ after(async()=>env.cleanup());
 
 test('exactly one account wins a name, and case or padding does not create a second one',async()=>{
  const key=characterNameKey('Alex'),alice$1=claimService(alice,'alice'),bob$1=claimService(bob,'bob');
+ // If the candidate rules were not in effect, every read and write below would
+ // be refused for the wrong reason - and assertFails cannot tell the
+ // difference. Assert the positive case first.
+ await assertSucceeds(get(ref(alice,`characterNames/${key}`)));
  assert.equal(report('alice claims Alex',await alice$1.claim('Alex')).status,'claimed');
  assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
  for(const spelling of ['alex','ALEX','  Alex  '])
@@ -58,6 +62,7 @@ test('exactly one account wins a name, and case or padding does not create a sec
 
 test('only the owner releases a name, and a released name becomes free',async()=>{
  const key=characterNameKey('Alex'),alice$1=claimService(alice,'alice'),bob$1=claimService(bob,'bob');
+ await assertSucceeds(get(ref(alice,`characterNames/${key}`)),'the candidate rules are in effect');
  assert.equal(report('alice claims Alex',await alice$1.claim('Alex')).status,'claimed');
  assert.deepEqual(report('bob releases Alex',await bob$1.release('Alex')),{released:false},'another account cannot free it');
  await assertFails(remove(ref(bob,`characterNames/${key}`)));
