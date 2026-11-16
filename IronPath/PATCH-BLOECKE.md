@@ -11,8 +11,9 @@ bedeutet nicht automatisch, dass eine vorhandene Funktion kaputt ist.
 fertig: unter anderem der gezielte Turmmenü-Pointerfix, mehrere Tutorial-Fixes,
 die freigegebene Avatar-Überarbeitung und das Turm-Kit-System. Diese Arbeiten
 werden nicht erneut als ungebaut eingeplant. Neue oder weitergehende Kriterien
-sind von ihnen getrennt aufgeführt. Die aktuelle Prüfung hat allerdings auch
-drei konkrete Fehler in den vorhandenen Turmkits gefunden – siehe Block 5.
+sind von ihnen getrennt aufgeführt. Bei der Prüfung wurden auch drei konkrete
+Fehler in den vorhandenen Turmkits gefunden; zwei sind noch offen, der dritte
+wurde mit #289 behoben – siehe Block 5.
 
 **Quellen und Grenzen:** Der vollständige ältere Chat ist hier nicht direkt
 verfügbar. Geprüft wurden die überlieferte Gesprächszusammenfassung, die
@@ -22,11 +23,17 @@ jeweiligen PR-Beschreibungen; es ist keine Behauptung, den gesamten alten Chat
 gesehen zu haben. Die Git-Historie des aktuellen Standes wurde nachgeladen und
 die Abstammung der genannten Änderungen vom veröffentlichten Merge
 [PR #288](https://github.com/0815games/0815games.github.io/pull/288)
-(`05542181c2`) geprüft; die Git-Historie wurde inzwischen erneut vollständig
-nachgeladen (`git rev-parse --is-shallow-repository`: `false`).
-Der zuletzt belegte öffentliche Build ist `20261031-update3`;
-der Status meldete zuletzt weiterhin `maintenance`. Ein Website-Release beweist
-weder die live aktiven Firebase-Rules noch eine echte Mehrgeräte-Abnahme.
+(`05542181c2`) geprüft; die Git-Historie war bei dieser damaligen Prüfung
+vollständig nachgeladen (`git rev-parse --is-shallow-repository`: `false`).
+Inzwischen wurde [PR #289](https://github.com/0815games/0815games.github.io/pull/289)
+als Build `20261031-patch3` veröffentlicht; der öffentliche Wartungsstatus wurde
+anschließend als `open` abgefragt. Ein Website-Release beweist weder die live
+aktiven Firebase-Rules noch eine echte Mehrgeräte-Abnahme. Die lokalen Tests
+beschreiben ihren jeweiligen Prüfzeitpunkt; die in IPL-0003–0027 dokumentierten
+Spielcode-Änderungen wurden mit #289 ausgeliefert. Rules-Kandidaten sind dadurch
+nicht produktiv freigegeben;
+der aktuelle Nachtrag und die Testliste stehen in
+[IPL-0028](PATCH-LOG.md#ipl-0028--veröffentlichung-wiederöffnung-und-testliste).
 
 **Datierung:** GitHub führt die Merges unter anderem mit den Zeitstempeln
 04.11.2026 für #136, 08.11. für #196, 11.11. für #249/#265, 12.11. für
@@ -48,10 +55,58 @@ danach Oberfläche (3), Avatare (4), Skills (5) und zuletzt das große Tutorial
 zeitliche Einordnung und mögliche Folgen für das Tutorial sind gesondert
 abzustimmen. Der Betreiber wünscht nach jedem sinnvollen, geprüften Schritt eine
 Veröffentlichung und die anschließende Öffnung zum Testen; Wartung soll nur für
-den genannten Merge-/Commit-Vorgang laufen. Der zuletzt abgefragte Status stand
-bereits auf Wartung. Ob ein Schritt tatsächlich veröffentlicht oder geöffnet
-ist, zeigen die nachgetragenen Ereignisse im Patch-Log und der aktuelle Status.
+den genannten Merge-/Commit-Vorgang laufen. Nach dem Release #289 wurde die
+Wiederöffnung öffentlich bestätigt. Ob ein Schritt tatsächlich veröffentlicht
+oder geöffnet ist, zeigen die nachgetragenen Ereignisse im Patch-Log und der
+aktuelle Status.
 Diese Bestandsaufnahme selbst ändert keine Firebase-Rules oder Produktionsdaten.
+
+## Schnellübersicht – sechs Originalblöcke
+
+Die Statusangaben unterscheiden **bereits veröffentlichte Teilfunktionen** von
+weiteren Wünschen und fehlender Abnahme. Die ausführlichen Kriterien stehen
+unverändert in den nachfolgenden Abschnitten; kein Block ist allein wegen einer
+grünen Testsuite vollständig erledigt.
+
+| Block | Bereits vorhanden oder veröffentlicht | Noch offen |
+| --- | --- | --- |
+| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Mehrspielermodi, größere Karten und mit #289 Turm-/Abstimmungsfixes, Anfragekarten, Abschluss und Berichte. | Echte Geräte und Netzwechsel, längere Partien, Einsteigerbalance sowie der Umgang mit dauerhaft fehlenden Mitgliedern. |
+| [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen und weitere Social-Fixes; Porträtanzeige mit sicherem Platzhalter. | Globale Namenseindeutigkeit und Altbestände, Porträt-Rules und reale Mehrgeräteabnahme. |
+| [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Liste, Bericht und Rangabzeichen im Profil sind vorhanden; der Betreiber lobte den Abschlussbericht. | Party-Porträtkarten, Kampf-HUD mit EP, Rang/Beförderung im Bericht, „What’s Next“, bezahlbarer Turmschimmer sowie Schuss-/Fähigkeitsdarstellung. |
+| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Die zuvor ausdrücklich freigegebene Layer-Vorschau ist bereits in Charaktererstellung, Menü und Dossier eingebaut. | Gewünschte zusätzliche Looks und konsistente, sichere Darstellung/Speicherung auf verschiedenen Geräten, in Freunde- und Partyansicht. |
+| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; der Veteranen-UI-Preisfix ist veröffentlicht. | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenauswahl und sichere Punkterückgabe/Migration. |
+| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Die bisherige Fünf-Wellen-Einführung, Wiederholung und bestätigte Abbruchfixes sind vorhanden. | Charakterbezogene Annahme/Ablehnung, große zusammenhängende Mission, Generalstimme und anschließende Menüführung. |
+
+**Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) schlägt ein
+Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker vor. Auf
+Wunsch des Betreibers ist es **als künftiger Patch nach Block 6 eingeplant**
+([IPL-0030](PATCH-LOG.md#ipl-0030--feldnotizen-im-spiel-und-block-7-als-künftiger-patch)):
+ein eigenes, noch nicht umgesetztes Vorhaben, an dem wir uns der Reihe nach
+entlangarbeiten. Die Werte in Abschnitt E bleiben ungetestete Startvorschläge.
+Die Zusatzwünsche A–D zu Namen/Freunden, Anfragen, Einsteigerbalance und
+Schüssen/Fähigkeit sind unten ausdrücklich den Blöcken zugeordnet.
+
+## Kommende Patches – Reihenfolge
+
+Diese Liste ist die Arbeitsreihenfolge und dient als Haken, an dem die
+nächsten Schritte hängen. Sie ist **kein Terminplan**: ein Patch gilt erst als
+erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
+
+| # | Künftiger Patch | Inhalt (Kurzform) | Stand |
+| --- | --- | --- | --- |
+| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Geräte-, Netzwechsel- und Langzeitabnahme; Umgang mit dauerhaft fehlenden Mitgliedern. | In Arbeit |
+| 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Globale Namenseindeutigkeit, Altbestände, Porträt-Rules, Mehrgeräteabnahme. | Als Nächstes |
+| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Karten, Kampf-HUD, Bericht mit Rang/Beförderung, „What’s Next“. | Geplant |
+| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Weitere Looks, einheitliche Anzeige und Speicherung auf allen Geräten. | Geplant |
+| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, Punkterückgabe. | Geplant |
+| 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Große vertonte Mission mit Generalstimme und anschließender Menüführung. | Geplant |
+| 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | Geplant (neu aufgenommen) |
+
+**Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
+Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
+live ist) und Reiter *Was als Nächstes kommt* (die Blöcke 1–7 mit bereits
+vorhandenen und offenen Punkten). Die Daten liegen in `patch-notes.mjs`; die
+ausführlichen Kriterien bleiben in diesem Blatt und im Patch-Log.
 
 ## Ursprünglicher Gameplan – vollständige Zuordnung
 
@@ -81,8 +136,8 @@ entstand, ist nicht sicher belegt.
 - [x] **Turmmenü-Pointerfix tatsächlich gebaut:** Derselbe PR #286 behandelt
   gezielt den Kompatibilitäts-`click` nach `pointerup`, der ein gerade geöffnetes
   Menü sofort wieder schließen konnte. Der Drei-Spieler-Browsertest öffnet
-  eigene und fremde Turmmenüs mit Maus und Touch. Die lokale Erweiterung führt
-  jetzt auch je ein Upgrade aus und prüft die Belastung des eigenen Kontos;
+  eigene und fremde Turmmenüs mit Maus und Touch. Der mit #289 erweiterte Test
+  führt auch je ein Upgrade aus und prüft die Belastung des eigenen Kontos;
   der Chromium-Test verwendet weiterhin einen künstlichen Transport und beweist
   nicht, dass jeder gemeldete Geräte- oder Netzwerkfehler erledigt ist.
 - [x] **Drei-/Vierer-Browser mit lokalem Firebase:** Echte Spieloberflächen und
@@ -90,14 +145,14 @@ entstand, ist nicht sicher belegt.
   eigenen Turm. Alle Emulator-Ansichten und UI-Geldanzeigen stimmten. Auch die
   3-/4-SDK-Tests prüfen getrennte Konten. Die Browser emulieren Touch/Maus und
   verwenden synthetische Konten, keine echten Geräte oder produktiven Rules.
-- [x] **Schneller Ausbau lokal abgesichert:** Nach bestätigtem Bau wird keine
+- [x] **Schneller Ausbau mit #289 abgesichert:** Nach bestätigtem Bau wird keine
   überflüssige Reservierungsfreigabe mehr gesendet. Ein ausdrücklich bewachter
   Upgrade-Klick kann kurz hinter Bewegung oder Reservierungsfreigabe warten;
   verändertes Menü, Turm, Spielfeld oder Verbindung verwerfen ihn. Der zuvor
   fehlgeschlagene Emulatorfall bestand danach erneut; die genaue Ursache des
   einzelnen Fehllaufs wurde nicht instrumentiert
   ([IPL-0013](PATCH-LOG.md#ipl-0013--block-1-schneller-turmausbau-nach-bau-oder-bewegung)).
-- [x] **Unterschiedliche Weglängen lokal korrigiert:** Zielerfassung und
+- [x] **Unterschiedliche Weglängen mit #289 korrigiert:** Zielerfassung und
   Bunkerankunft verwenden jetzt wie die Bewegung den jeweiligen Gegnerweg.
   Ohne dies blieben Gegner auf kürzeren Nebenwegen teils stehen oder trafen auf
   längeren Wegen zu früh; Welle 1 auf allen Squad-Karten ist mit drei und vier
@@ -106,17 +161,17 @@ entstand, ist nicht sicher belegt.
   Antippen → Menü → Upgrade → Übertragung zuverlässig aufwerten können. Den
   Dreierfall und Kartenbedienung mit echten Geräten einschließlich Firefox,
   Hoch-/Querformat und realem Endless-Rückzug bis Welle 10 erneut abnehmen.
-- [x] **Veteranen-Preisfehler lokal behoben:** Die Oberfläche verwendet beim
+- [x] **Veteranen-Preisfehler mit #289 behoben:** Die Oberfläche verwendet beim
   Upgrade dieselbe Rabatt- und Rundungsfunktion wie die Simulation. DOM- und
   Transport-Doubles prüfen eigene/fremde Türme, 306 Vorräte und Prestige 383;
-  eine echte Geräte- und Live-Abnahme sowie Veröffentlichung stehen aus.
+  der Fix ist mit #289 veröffentlicht, echte Geräte- und Live-Abnahme stehen aus.
   Einzelheiten stehen bei den [Turmkits](#konkrete-befunde-zur-bestehenden-turm-spezialisierung).
 - [x] **2×-Abstimmung ist mehr als ein Konzept:**
   [PR #136](https://github.com/0815games/0815games.github.io/pull/136)
   implementierte Anfragen durch beliebige Spieler und einstimmige Zustimmung
   während aktiver Wellen, Rücksetzung bei Wellenende, Disconnect und Recovery
   sowie UI-/Protokoll-/Emulatortests für die vorhandenen Modi.
-- [x] **2×-Regressionsfälle und lokale Korrekturen:** Bei 2v2 zeigt die
+- [x] **2×-Regressionsfälle und Korrekturen mit #289:** Bei 2v2 zeigt die
   empfangende Gegenseite jetzt den Namen des Anfragenden statt „Ein Spieler“.
   Verzögerte und bereits eingereihte Tempo-Befehle werden bei Rosterwechsel
   quittiert und verworfen. Der neue Browser sendet außerdem die zuletzt gesehene
@@ -134,18 +189,19 @@ entstand, ist nicht sicher belegt.
   Drei-/Vierer-Koop wurden Wellen 1 und 2 gespielt, alle EP serverseitig gelesen
   und Gast-2× in Welle 3 einstimmig bestätigt. Nach Offline/Reconnect wurde die
   alte Anfrage verworfen. Ein Reconnect-Klick hinter einem Bewegungs-Receipt
-  wartet lokal nun geschützt statt ohne Wirkung abgewiesen zu werden
+  wartet mit dem veröffentlichten Fix geschützt statt wirkungslos abgewiesen zu werden
   ([IPL-0010](PATCH-LOG.md#ipl-0010--block-1-reconnect-und-wartende-abstimmungsbefehle),
   [IPL-0011](PATCH-LOG.md#ipl-0011--block-1-unterschiedliche-gegnerwege-und-echte-emulator-browser)).
 - [ ] Den Pfad mit 2–4 echten Geräten und realen Verbindungswechseln abnehmen.
-  Die Änderungen sind lokal/unveröffentlicht; Welle 3 wurde nicht fertiggespielt,
-  längere Dreier-/Vierertests verwenden `four-front`. Produktive Rules und
-  vollständige Browser-/Firebase-Duelle bleiben ungeprüft. Das mittige
-  Anfragezentrum ist inzwischen lokal umgesetzt; seine Grenzen stehen in [B2](#b2-anfragen-mittig-als-popup).
+  Die Änderungen wurden mit #289 veröffentlicht; Welle 3 wurde in diesem
+  Emulatorfall nicht fertiggespielt, längere Drei-/Vierertests nutzen `four-front`.
+  Produktive Rules und vollständige Browser-/Firebase-Duelle sind nicht
+  abschließend abgenommen. Das mittige Anfragezentrum ist ebenfalls mit #289
+  veröffentlicht; seine Grenzen stehen in [B2](#b2-anfragen-mittig-als-popup).
 - [x] **Host und Party – vorhandene Teilpfade:** Ein ausdrückliches separates
   Schließen durch den Host schließt die Party; Gäste erhalten eine Meldung.
   Synchronisierter Einsatzabschluss und Teile der Belohnungslogik sind getestet.
-- [x] **Absichtlicher Hostabschluss lokal umgesetzt:** Endeansicht und eigene
+- [x] **Absichtlicher Hostabschluss mit #289 umgesetzt:** Endeansicht und eigene
   serverbestätigte Rewards werden von jedem Teilnehmer quittiert; erst nach allen
   Quittungen löscht der Host Party und Code. Ein kurzer Disconnect gilt nicht
   als Absicht. Berichte bleiben offen, Gäste erhalten eine Schließmeldung.
@@ -178,14 +234,14 @@ entstand, ist nicht sicher belegt.
   aber den Coachzustand. [PR #280](https://github.com/0815games/0815games.github.io/pull/280)
   dokumentiert die Nutzerbestätigung **„Tutorial hört sauber auf“** für den
   damaligen Fall. Diese Fixes sind nicht erneut als ungebaut zu behandeln.
-- [x] **Lifecycle lokal erweitert und mit Doubles geprüft:** Charakterwechsel
+- [x] **Lifecycle mit #289 erweitert und lokal mit Doubles geprüft:** Charakterwechsel
   und Partybeitritt stoppen Tutorial und Coach statt nur die Anzeige zu parken.
   Ein verzögerter Coachstart wird nach Abbruch, Sitzungswechsel und Partybeitritt
   verworfen; Trainingsstatus wird nicht in die neue Sitzung oder Party übernommen.
   Ein offenes Lobby-/Mehrspielerspiel blockiert den verzögerten Trainingsstart.
-- [ ] Weitere Übergänge und tatsächliche Bedienung auf Geräten prüfen; der lokale
-  Fix ist nicht veröffentlicht und ersetzt keine vollständige Abnahme.
-- [x] **Wellenanfrage durch jeden Spieler lokal implementiert:** Einstimmigkeit,
+- [ ] Weitere Übergänge und tatsächliche Bedienung auf Geräten prüfen; der mit
+  #289 veröffentlichte Fix ersetzt keine vollständige Abnahme.
+- [x] **Wellenanfrage durch jeden Spieler mit #289 veröffentlicht:** Einstimmigkeit,
   Rücknahme, Ablehnung und Disconnect-Fencing sind für alle Modi gebaut und mit
   Hostkern, Transport-Doubles und Chromium geprüft ([B1](#b1-welle-von-jedem-anfragbar)).
 - [x] **SDK-/Rules-Emulator lokal:** Gast-Wellenanfrage, Ablehnung, Rücknahme,
@@ -209,14 +265,14 @@ ableitbar; das nimmt den oben dokumentierten Fixes und Bestätigungen nichts weg
    Zweier-Browser bis Welle 2 und Drei-/Vierer-Browser bis zur 2×-Freigabe in
    Welle 3 grün. Vollständige Welle 3, Duelle und tatsächliche Netzwechsel sind
    über diesen Emulator-Browserpfad noch offen.
-3. Die lokalen Host-Ende-/Abmelde- und Recoverypfade einschließlich fehlender
-   Teilnehmer auf echten Geräten und mit realen Netzwechseln prüfen. Ohne
+3. Die veröffentlichten Host-Ende-/Abmelde- und Recoverypfade einschließlich
+   fehlender Teilnehmer auf echten Geräten und mit realen Netzwechseln prüfen. Ohne
    Nachweis der Zustellung und Speicherung weiterhin nicht vorzeitig schließen;
    verwaiste Gruppen und vorzeitig ausgetretene Spieler bleiben ein offener Fall.
 4. Tutorialübergänge, Karten- und Rückzugsbedienung auf echten Geräten abnehmen;
    lokale Regressionen samt Charakterwechsel/Partybeitritt sind grün.
-5. Jeden Fix getrennt testen; produktive Tests oder Veröffentlichung nur nach
-   gesonderter Abstimmung bei aktiver Wartung.
+5. Jeden Fix getrennt testen; nach einem sinnvollen geprüften Schritt
+   veröffentlichen und das Spiel wieder zum Testen öffnen.
 
 ### 2. Charakter löschen, Freunde und Einladungen – wesentliche Teilfälle bereits umgesetzt
 
@@ -250,7 +306,7 @@ entstand, ist nicht sicher belegt.
   parallele Geräte und eine echte Mehrgeräte-Abnahme bleiben gesondert zu
   prüfen. Atomar sind nur die im Update tatsächlich erfassten Pfade; nicht alle
   verwaisten Altlasten oder konkurrierenden Clients sind damit garantiert erfasst.
-- [x] **Abmelden und Meldung lokal implementiert:** Nach bestätigter Löschung
+- [x] **Abmelden und Meldung mit #289 veröffentlicht:** Nach bestätigter Löschung
   meldet sich das Konto ab und zeigt einmalig „Dein Charakter wurde aus dem
   Dienst entlassen. Bitte melde dich erneut an.“ Ein Abmeldefehler bietet einen
   eigenen Wiederholungsweg. Unit- und Chromium-Tests mit synthetischen Auth-/DB-
@@ -258,11 +314,11 @@ entstand, ist nicht sicher belegt.
   wechsel ab. Zwei isolierte Chromium-Sitzungen mit echten Firebase-SDKs und
   lokalen Auth-/RTDB-Emulatoren bestanden den Offline-/Wiederanmeldepfad;
   echte Geräteabnahme bleibt offen ([IPL-0009](PATCH-LOG.md#ipl-0009--blöcke-12-lokale-firebase--und-browser-emulatorprüfungen)).
-- [x] **Freundesfenster lokal angepasst:** Suche und Freunde bleiben sichtbar;
+- [x] **Freundesfenster mit #289 angepasst:** Suche und Freunde bleiben sichtbar;
   leere Einladungs-, eingehende und gesendete Anfragebereiche werden verborgen,
   Ladefehler getrennt angezeigt. Unit- und Chromium-Tests mit Doubles sind grün;
-  die Änderung ist noch nicht veröffentlicht.
-- [x] **Freundesporträts lokal:** Liste und „Daten“ teilen sich dasselbe aus dem
+  die Änderung wurde mit #289 veröffentlicht.
+- [x] **Freundesporträt-Anzeige mit #289 veröffentlicht:** Liste und „Daten“ teilen sich dasselbe aus dem
   gespeicherten Avatar zusammengesetzte Bild. Fehlende, unlesbare oder ungültige
   Angaben erhalten einen neutralen Platzhalter; fremde lokale Spiegel werden
   nicht verwendet. Unit-, Chromium- und SDK-/Firebase-Emulatorfälle prüfen
@@ -282,7 +338,7 @@ entstand, ist nicht sicher belegt.
   Benachrichtigung löscht die Einladung nicht; der gezielte Fix ist in
   [PR #162](https://github.com/0815games/0815games.github.io/pull/162),
   Commit `d44cffa`, dokumentiert und getestet.
-- [x] **Mittige Einladungsanzeige lokal:** Partyeinladungen und
+- [x] **Mittige Einladungsanzeige mit #289 veröffentlicht:** Partyeinladungen und
   Beitrittsanfragen teilen sich das nichtmodale Anfragezentrum mit den
   Abstimmungen. Die Karte öffnet nur die Übersicht; „Später“ löscht oder
   beantwortet nichts. Freundschaftsanfragen bleiben beim vorhandenen Hinweis
@@ -303,7 +359,9 @@ entstand, ist nicht sicher belegt.
   sowie der After-Action Report mit bestätigten Belohnungen sind vorhanden
   ([PR #87](https://github.com/0815games/0815games.github.io/pull/87),
   [PR #153](https://github.com/0815games/0815games.github.io/pull/153)).
-  XP-Fortschritt erscheint bereits im Menü/Dossier und Report.
+  XP-Fortschritt erscheint bereits im Menü/Dossier und Report. Der Betreiber
+  lobte den Abschlussbericht ausdrücklich; die folgenden zusätzlichen
+  Anforderungen bleiben davon getrennt offen ([IPL-0029](PATCH-LOG.md#ipl-0029--nutzerfeedback-und-übersicht-der-patchblöcke)).
 - [x] [PR #284](https://github.com/0815games/0815games.github.io/pull/284)
   führte aus dem Level abgeleitete Rangabzeichen und Rangnamen im Menü,
   Soldatendossier und Kampfprofil ein. Dies ist kein eigener Rang im Report.
@@ -381,9 +439,9 @@ entstand, ist nicht sicher belegt.
 #### Konkrete Befunde zur bestehenden Turm-Spezialisierung
 
 Diese Befunde stammen aus der Code- und Simulationsprüfung. Die ersten beiden
-sind noch offen; der dritte ist lokal behoben und getestet, aber noch nicht
-veröffentlicht. Sie machen das eingebaute System nicht zu einem bloßen Konzept,
-und die frühere grüne Testsuite belegte nicht jede versprochene Wirkung.
+sind noch offen; der dritte ist behoben, getestet und mit #289 veröffentlicht.
+Sie machen das eingebaute System nicht zu einem bloßen Konzept, und die frühere
+grüne Testsuite belegte nicht jede versprochene Wirkung.
 
 1. **Bossjäger III:** Der versprochene Bonus von 25 Vorräten für einen vom Turm
    erledigten Boss wird nicht erreicht: `applyHitEffects` kehrt bei `hp <= 0`
@@ -397,7 +455,7 @@ und die frühere grüne Testsuite belegte nicht jede versprochene Wirkung.
    im neutralen Simulationstest blieb der Flugzeug-Faktor auch auf Turmlevel 5
    bei 0,6: 13,2 statt 22 Grundschaden. Die Stufenerhöhung wirkt, der angekündigte
    zusätzliche Rank-III-Effekt aber nicht.
-3. **Veteranen-Rabatt in der UI – lokal korrigiert:** Bei einem Veteranenturm
+3. **Veteranen-Rabatt in der UI – mit #289 korrigiert:** Bei einem Veteranenturm
    auf Stufe 5 verlangt die Simulation **306** statt 360 Vorräte. Vor dem Fix
    zeigte der UI-Test Preis 360 und blockierte den Kauf; danach sind Anzeige,
    Zahlung und Prestige-Rundung für eigene und fremde Türme mit Doubles geprüft.
@@ -436,6 +494,12 @@ und die frühere grüne Testsuite belegte nicht jede versprochene Wirkung.
 
 ### 7. Zusätzlich vorgeschlagen: Leben und Gegenangriffe – offen
 
+**Eingeordnet als künftiger Patch Nr. 7 nach Block 6** (Wunsch des Betreibers,
+[IPL-0030](PATCH-LOG.md#ipl-0030--feldnotizen-im-spiel-und-block-7-als-künftiger-patch));
+in der [Reihenfolge](#kommende-patches--reihenfolge) und im Spiel unter
+**FELDNOTIZEN** geführt. Es ist kein Originalblock und ändert alle Modi, deshalb
+kommt es zuletzt.
+
 - [x] Der Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte.
 - [ ] Das neue Lebens-, Angriffsschutz- und Reparatursystem für Soldaten,
   Türme und Bunker **in allen Spielmodi** entwickeln und balancieren; die
@@ -460,11 +524,12 @@ Alle sieben Abschluss-Browserfälle bestanden lokal nach den ursprünglichen
 Porträtänderungen, aber vor der späteren Social-Härtung; die Fälle mit Rules-
 Ablehnung/Retry und Host-Recovery bestanden auf dem letzten Stand erneut
 ([IPL-0026](PATCH-LOG.md#ipl-0026--abschließende-lokale-regression-und-releaseprüfung)).
-Einige TAP-Zähler fassen ganze Testdateien zusammen. Der Bossjäger-Test ist wie oben beschrieben zu schwach; grün heißt
-nicht, dass sein 25-Vorräte-Bonus funktioniert. Die bestehende
-[Main-CI](https://github.com/0815games/0815games.github.io/actions/runs/43755799438)
-betrifft den veröffentlichten Ausgangsstand; die geänderte CI ist noch nicht
-ausgeführt. Diese Nachweise sind keine Live-Partie und ersetzen keine Geräte.
+Einige TAP-Zähler fassen ganze Testdateien zusammen. Der Bossjäger-Test ist wie
+oben beschrieben zu schwach; grün heißt nicht, dass sein 25-Vorräte-Bonus
+funktioniert. Die geänderte CI bestand für
+[PR #289](https://github.com/0815games/0815games.github.io/actions/runs/43830084162)
+und auf [main](https://github.com/0815games/0815games.github.io/actions/runs/43831291548).
+Diese Nachweise ersetzen keine Live-Mehrgerätepartie.
 
 ## Zusätzliche Wünsche – Zuordnung und Details
 
@@ -472,7 +537,7 @@ ausgeführt. Diese Nachweise sind keine Live-Partie und ersetzen keine Geräte.
 | --- | --- | --- |
 | **A – Charakter & Freunde** | Eindeutige Charakternamen; Freundesliste und Einladungen untersuchen und reparieren. | Block 2; Daten- und Rules-Sicherheit zuerst klären. |
 | **B – Multiplayer-Anfragen** | Jeder darf eine Welle anfragen; handlungsbedürftige Anfragen mittig anzeigen. | Zustandslogik in Block 1, Darstellung in Block 3. |
-| **C – Einsteigerbalance** | Multiplayer mit neuen Charakteren fairer und verständlicher machen. | Block 1; nach Block 7 erneut balancieren. |
+| **C – Einsteigerbalance** | Multiplayer mit neuen Charakteren fairer und verständlicher machen. | Block 1; bei Umsetzung von Block 7 erneut balancieren. |
 | **D – Kampfgefühl & Fähigkeit** | Schüsse schöner und unterscheidbar; Soldatenfähigkeit sichtbar integrieren. | Darstellung in Block 3; Fähigkeiten und Klassenlogik in Block 5. |
 | **E – Neu: Leben & Gegenangriffe** | Einheitliches Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker in allen Modi. | Zusätzlich vorgeschlagener Block 7; eigener Prototyp und gesonderter Rollout. |
 
@@ -490,13 +555,13 @@ bewertet ihre unabhängig überprüfbaren Grundlagen.
   und Browsern getestet.
 - [ ] Vollständige Firebase-/Geräteabnahme aller Größen/Modi und weitere
   Einsteigerbalance stehen aus. Wellenanfragen durch jeden Spieler und das
-  mittige Anfragezentrum sind lokal gebaut, aber noch nicht veröffentlicht oder
-  auf echten Geräten abgenommen.
+  mittige Anfragezentrum wurden mit #289 veröffentlicht, aber noch nicht auf
+  echten Geräten vollständig abgenommen.
 - [x] **Charakter und Social:** Serverseitig bestätigtes Löschen und Bereinigung
   bekannter Freundschafts-/Einladungsdaten wurden mit PR #287 veröffentlicht.
-- [x] Abmeldung und Login-Meldung nach der Entlassung sind lokal umgesetzt und
-  mit zwei Chromium-Kontexten sowie Auth-/RTDB-Emulator erneut geprüft; sie sind
-  noch nicht veröffentlicht.
+- [x] Abmeldung und Login-Meldung nach der Entlassung sind umgesetzt und
+  mit zwei Chromium-Kontexten sowie Auth-/RTDB-Emulator geprüft; sie wurden
+  mit #289 veröffentlicht.
 - [ ] Kontoübergreifend eindeutige Namen und die vom Betreiber gemeldeten
   weiteren Freundeslistenprobleme bleiben zu prüfen; der konkrete Neunamenfall
   wurde bereits gezielt adressiert und im Emulator geprüft. Eine reale
@@ -504,12 +569,11 @@ bewertet ihre unabhängig überprüfbaren Grundlagen.
   vollständig durch die lokale Bereinigung abgedeckt.
 - [x] **Wartung und Admin:** Wartungsanzeige und separater Admin-Bereich sind
   veröffentlicht; der Betreiber bestätigte Darstellung, Admin-Login und
-  Wartungsstatus auf dem iPhone. Der öffentliche Status meldete weiterhin
-  `maintenance`.
-- [ ] Eine produktive Schaltung zum Beenden und die Wiederöffnung wurden nicht
-  durchgeführt; beides bleibt ein separat abzustimmender Schritt. Der
-  authentifizierte Rules-Abgleich beruht auf der Betreiberangabe, nicht auf
-  einem unabhängigen Abruf hier.
+  Wartungsstatus auf dem iPhone. Nach #289 wurde die Wartung beendet und der
+  öffentliche Status `open` geprüft. Ein zuvor beobachteter Admin-Timeout im
+  ersten Netz ist nicht abschließend erklärt.
+- [ ] Der authentifizierte Rules-Abgleich beruht auf der Betreiberangabe, nicht
+  auf einem unabhängigen Abruf hier; für spätere Änderungen erneut prüfen.
 - [x] **Version und AFK:** Versionsprüfung und sichere Updatezeitpunkte sowie
   die 30-Minuten-AFK-Abmeldung im sicheren Menü sind veröffentlicht und
   automatisiert getestet. Der Betreiber meldete für `20261031-update3` zwei
@@ -582,8 +646,8 @@ Zeitpunkt des Berichts und weitere Fehlerursachen sind nicht sicher belegt.
 **Ursprünglicher Block 2:** Nach erfolgreicher Charakterlöschung soll der
 Account bestehen bleiben, aber die Sitzung abgemeldet werden. Die Loginseite
 soll anzeigen: „Dein Charakter wurde aus dem Dienst entlassen. Bitte melde dich
-erneut an.“ Der veröffentlichte Ausgangsstand blieb angemeldet und zeigte die
-Charaktererstellung; die unten beschriebene Änderung ist bislang nur lokal.
+erneut an.“ Der frühere Ausgangsstand blieb angemeldet und zeigte die
+Charaktererstellung; die unten beschriebene Änderung ist mit #289 veröffentlicht.
 
 - [x] Die bestehende Bereinigung auffindbarer Freundes-/Einladungsdaten und
   des Charakters wartet bereits auf Serverbestätigung; bei Fehler oder
@@ -603,32 +667,32 @@ Charaktererstellung; die unten beschriebene Änderung ist bislang nur lokal.
 
 ## B – Multiplayer-Anfragen und Wellenfreigabe
 
-**Veröffentlichter Ausgangsstand:** Bei Wellenfreigaben durfte nur der Host
+**Ausgangsstand vor #289:** Bei Wellenfreigaben durfte nur der Host
 anfragen; bei der 2×-Geschwindigkeitsabstimmung durfte bereits jeder Spieler
 anfragen ([PR #136](https://github.com/0815games/0815games.github.io/pull/136)).
-**Lokal/unveröffentlicht:** Die gesonderte Wellenfreigabe wurde wie folgt
+**Mit #289 veröffentlicht:** Die gesonderte Wellenfreigabe wurde wie folgt
 umgesetzt. Lokale Firebase-SDK-/Rules-Emulatorfälle sind grün; echte Geräte-
 und Live-Abnahme bleiben offen.
 
 ### B1. Welle von jedem anfragbar
 
-- [x] **Lokal implementiert und simuliert geprüft:** In 2er-, 3er- und 4er-Koop sowie 1v1 und 2v2 darf jeder teilnehmende Spieler die nächste Welle anfragen, auch die erste. Der Anfragende ist damit bereit; alle anderen müssen ausdrücklich bestätigen. Keine Mehrheit und kein stilles Ja nach Zeitablauf.
-- [x] **Lokal implementiert und simuliert geprüft:** Die Welle startet genau einmal und erst, wenn alle benötigten Zustimmungen für dieselbe Anfrage vorliegen und alle betroffenen Felder mit der vorherigen Welle und ihren Pflichtentscheidungen fertig sind. In 1v1 und 2v2 starten die getrennten Felder synchron. Solo erhält keine Mehrspieler-Abfrage.
-- [x] **Lokal implementiert und mit Chromium-Doubles geprüft:** Alle sehen Anfragenden, Welle und fehlende Zustimmungen; Ablehnung oder Rücknahme beendet die Anfrage. Gleichzeitige Anfragen, Doppeltipps, verspätete Antworten und Wiederholungen werden über eindeutige Anfrage-IDs geprüft.
-- [x] **Lokal implementiert und simuliert geprüft:** Verbindungsverlust verwirft offene Abstimmungen und nicht zugestellte alte Wellenbefehle; nach Rückkehr ist eine neue Abstimmung nötig. Die bestehenden Fortsetzungs-/Pausenregeln der Modi bleiben erhalten; Recovery übernimmt keine alte Zustimmung.
+- [x] **Veröffentlicht; lokal simuliert geprüft:** In 2er-, 3er- und 4er-Koop sowie 1v1 und 2v2 darf jeder teilnehmende Spieler die nächste Welle anfragen, auch die erste. Der Anfragende ist damit bereit; alle anderen müssen ausdrücklich bestätigen. Keine Mehrheit und kein stilles Ja nach Zeitablauf.
+- [x] **Veröffentlicht; lokal simuliert geprüft:** Die Welle startet genau einmal und erst, wenn alle benötigten Zustimmungen für dieselbe Anfrage vorliegen und alle betroffenen Felder mit der vorherigen Welle und ihren Pflichtentscheidungen fertig sind. In 1v1 und 2v2 starten die getrennten Felder synchron. Solo erhält keine Mehrspieler-Abfrage.
+- [x] **Veröffentlicht; lokal mit Chromium-Doubles geprüft:** Alle sehen Anfragenden, Welle und fehlende Zustimmungen; Ablehnung oder Rücknahme beendet die Anfrage. Gleichzeitige Anfragen, Doppeltipps, verspätete Antworten und Wiederholungen werden über eindeutige Anfrage-IDs geprüft.
+- [x] **Veröffentlicht; lokal simuliert geprüft:** Verbindungsverlust verwirft offene Abstimmungen und nicht zugestellte alte Wellenbefehle; nach Rückkehr ist eine neue Abstimmung nötig. Die bestehenden Fortsetzungs-/Pausenregeln der Modi bleiben erhalten; Recovery übernimmt keine alte Zustimmung.
 - [x] **Lokale SDK-/Rules-Emulatorprüfung:** Gastanfrage, Ablehnung, Rücknahme, Reconnect und Einstimmigkeit für alle fünf Modus-/Größenfälle bestanden; Zwei-Spieler-Gastpfade zusätzlich gegen lokale Guard-/Wartungskandidaten. Der SDK-Test ersetzt keine Browser- oder Gerätepartie.
 - [x] **Kombinierte Browser-/Firebase-Emulatorprüfung:** Zweier-Koop bis zur Gast-2×-Freigabe in Welle 2; Drei-/Vierer-Koop nach durchgespielten Wellen 1 und 2 bis zur 2×-Freigabe in Welle 3. Offline/Reconnect ist im Drei-/Viererfall enthalten; Grenzen in [IPL-0011](PATCH-LOG.md#ipl-0011--block-1-unterschiedliche-gegnerwege-und-echte-emulator-browser).
-- [ ] **Abnahme:** Echte 2–4 Geräte, tatsächliche Netzwechsel, vollständige Welle 3 sowie Duelle im kombinierten Browser-/Firebase-Pfad prüfen. Das einheitliche mittige Popup ist lokal umgesetzt; seine eigene Abnahme bleibt in B2 offen.
+- [ ] **Abnahme:** Echte 2–4 Geräte, tatsächliche Netzwechsel, vollständige Welle 3 sowie Duelle im kombinierten Browser-/Firebase-Pfad prüfen. Das einheitliche mittige Popup ist veröffentlicht; seine eigene Abnahme bleibt in B2 offen.
 
 ### B2. Anfragen mittig als Popup
 
-- [x] **Lokal umgesetzt:** Ein mittiges, nichtmodales Anfragezentrum zeigt
+- [x] **Mit #289 veröffentlicht:** Ein mittiges, nichtmodales Anfragezentrum zeigt
   Wellen- und 2×-Abstimmungen mit Absender, Welle, Zustimmungsstand und direkten
   Antworten. Der Anfragende sieht seinen Wartestreifen und eine Ergebnis- oder
   neutrale Statusmeldung. Eine verspätete Quittung darf einen bereits beendeten
   Antrag nicht wieder als wartend darstellen; eine übersprungene Generation
   wird nicht als Zustimmung ausgegeben.
-- [x] **Social und Beitritt lokal:** Partyeinladungen und
+- [x] **Social und Beitritt mit #289:** Partyeinladungen und
   Partybeitrittsanfragen stehen mit den Abstimmungen in derselben FIFO-Reihenfolge.
   Ihre Karten öffnen ausschließlich die jeweilige Übersicht; sie genehmigen,
   löschen oder versenden nichts. Freundschaftsanfragen behalten ihren bisherigen
@@ -636,7 +700,7 @@ und Live-Abnahme bleiben offen.
   direkte Genehmigung mit veralteter Beitrittsanfrage: Eine Rücknahme und neue
   Anfrage derselben UID sind ohne serverseitige Generation nicht zuverlässig
   unterscheidbar. Beobachtete lokale Ersetzungen werden dennoch erkannt.
-- [x] **Interaktion lokal:** Bestehende Dialoge, Eingaben und sichtbare
+- [x] **Interaktion mit #289:** Bestehende Dialoge, Eingaben und sichtbare
   Feldentscheidungen verzögern die Karte. „Später“ und Escape beantworten
   nichts; veraltete oder zurückgezogene Abstimmungen sind nicht mehr ausführbar.
   Zustands-/Session- und Anfragekennungen sowie Doppelklickschutz werden erneut
@@ -650,7 +714,7 @@ und Live-Abnahme bleiben offen.
 - [ ] **Abnahme:** Host und Gäste auf 2–4 echten Geräten und mit tatsächlichen
   Verbindungswechseln testen; Screenreader und Firefox/Safari separat prüfen.
   Vollständige Firebase-Browser-Duelle, Mischversionen und produktive Dienste
-  sind nicht abgenommen. Die Implementierung ist lokal und unveröffentlicht.
+  sind nicht abgenommen. Die Implementierung ist mit #289 veröffentlicht.
 
 ## C – Multiplayer mit Anfangscharakteren
 
@@ -662,7 +726,7 @@ und Live-Abnahme bleiben offen.
   Bot-Vergleich. Das ist keine Abnahme der Balance mit echten Gruppen oder für
   drei und vier Spieler.
 
-**Ausgangslage im Code:** Für ein gemeinsames Feld erhalten zwei aktive Spieler je **70 %** der Grund-Kill-/Wellen-Versorgung und Gegner erscheinen mit **1,5×** Leben; bei drei/vier aktiven Spielern sind es je **50 %/45 %** und **2×** Gegnerleben (`simulation.mjs`). Die Werte beziehen sich auf aktive Spieler auf diesem Feld; 1v1 hat getrennte Felder. Der veraltete 65-%-Hinweis wurde lokal in Englisch, Deutsch und Kommentaren auf den tatsächlichen Wert 70 % korrigiert und mit Konsistenz-/Balance-Tests geprüft; die Balance selbst blieb unverändert. Frische Spieler starten ohne gewählte aktive Fähigkeit, sofern sie noch keinen Punkt investiert haben.
+**Ausgangslage im Code:** Für ein gemeinsames Feld erhalten zwei aktive Spieler je **70 %** der Grund-Kill-/Wellen-Versorgung und Gegner erscheinen mit **1,5×** Leben; bei drei/vier aktiven Spielern sind es je **50 %/45 %** und **2×** Gegnerleben (`simulation.mjs`). Die Werte beziehen sich auf aktive Spieler auf diesem Feld; 1v1 hat getrennte Felder. Der veraltete 65-%-Hinweis wurde mit #289 in Englisch, Deutsch und Kommentaren auf den tatsächlichen Wert 70 % korrigiert und mit Konsistenz-/Balance-Tests geprüft; die Balance selbst blieb unverändert. Frische Spieler starten ohne gewählte aktive Fähigkeit, sofern sie noch keinen Punkt investiert haben.
 
 - [ ] Baseline mit frischen Charakteren ohne Ausrüstung/Skills **und** mit abgeschlossener Einführung messen: Versorgung, Zeit bis zum ersten Ausbau, Bunkerschaden und erreichte Welle. Mehrere Karten, unterschiedliche Spielstile sowie Gruppen mit neuen und erfahrenen Spielern vergleichen; nicht nur eine idealisierte Bot-Strategie verwenden.
 - [ ] Gegnerleben, Startversorgung und Belohnungen pro Teamgröße so abstimmen, dass eine Gruppe frischer Spieler die ersten Wellen und den ersten Boss mit verständlichen Entscheidungen bewältigen kann. Konkrete Werte erst nach Vergleich und Spieltests festlegen; keine versteckte Begünstigung eines Teams in 1v1/2v2.

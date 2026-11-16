@@ -1,0 +1,25 @@
+/* Field notes: the patch log, readable on a phone.
+   Same materials as the settings dialog it borrows its frame from (see
+   style.css): dark field green, aged paper, one gold accent. The list itself is
+   rendered by patch-notes.mjs, so this file only has to survive long text,
+   small screens and being scrolled with a thumb. */
+.patch-notes{width:min(560px,calc(100vw - 24px));max-height:min(80vh,720px);display:flex;flex-direction:column}
+.patch-notes .patch-notes-build{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#b9c39a}
+.patch-notes-tabs{display:flex;gap:6px;margin:0 0 12px}
+.patch-notes-tabs button{flex:1 1 0;min-height:40px;background:#2a4335;border:1px solid #6d7f63;border-radius:3px;color:#d9d2b6;font-size:12px;letter-spacing:.08em}
+.patch-notes-tabs button[aria-selected="true"]{background:#3d5a45;border-color:#e0c682;color:#f6e9ca}
+.patch-notes-panel{overflow-y:auto;overscroll-behavior:contain;padding-right:4px;-webkit-overflow-scrolling:touch}
+.patch-entry{margin:0 0 14px;padding:12px;border:1px solid #55684f;border-left:3px solid #55684f;border-radius:4px;background:#1b3129}
+/* The build the player is running right now gets the gold edge: the point of the
+   screen is "what am I playing?", so the answer is the one card that stands out. */
+.patch-entry[data-live="true"]{border-left-color:#e0c682}
+.patch-entry-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:6px}
+.patch-entry-meta{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9fae86}
+.patch-entry h3{margin:0;font:700 16px Georgia,serif;color:#f6e9ca}
+.patch-badge{margin-left:auto;padding:2px 7px;border:1px solid #e0c682;border-radius:999px;font-size:10px;letter-spacing:.16em;color:#f6e9ca}
+.patch-entry-note{margin:0 0 8px;font-size:13px;color:#cfd6bd}
+.patch-entry-label{margin:8px 0 4px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9fae86}
+.patch-list{margin:0;padding-left:18px}
+.patch-list li{margin:0 0 5px;font-size:13px;line-height:1.45;color:#e6e0c8}
+.patch-list-open li{color:#cfd6bd}
+.patch-notes-note{margin:12px 0 0;font-size:12px;line-height:1.45;color:#a9b592}

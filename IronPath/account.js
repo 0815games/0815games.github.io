@@ -7,6 +7,9 @@ import {setupLanguage,translateText,onLanguageChange,getLanguage} from './langua
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261031-patch3';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
+// Field notes: the patch log as a screen. Read-only, so it is wired next to the
+// settings dialog and nothing else in the account has to know about it.
+import {createPatchNotes} from './patch-notes.mjs?v=20261031-patch3';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-patch3';
@@ -161,6 +164,12 @@ let settingsSoundEnabled=false;
 const openSettings=from=>{settings.apply();settings.open(from);};
 setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
 $('menuSettings').onclick=()=>openSettings($('menuSettings'));
+// What changed and what comes next, straight from patch-notes.mjs. It opens on
+// the released list; the planned tab carries the blocks, Block 7 last.
+const patchNotes=createPatchNotes({document});
+bindDialogBackdrop($('patchNotes'),()=>patchNotes.close());
+$('menuPatchNotes').onclick=()=>patchNotes.open('released');
+onLanguageChange(()=>patchNotes.render());
 // The armory workshop is open to every signed-in soldier (free tier: client
 // transactions, no backend). It is built into the Armory screen.
 // Set once a workshop award was rejected by rules, so later waves use the legacy

@@ -7,14 +7,20 @@ sichere Updatezeitpunkte wurde mit Charakter-/Social-Bereinigung und Vierer-Part
 in [PR #287](https://github.com/0815games/0815games.github.io/pull/287)
 veröffentlicht. Die mobile Wartungs- und Admin-Gestaltung folgte nach gesonderter
 Freigabe in [PR #288](https://github.com/0815games/0815games.github.io/pull/288);
-der veröffentlichte Build ist `20261031-update3`. Der Betreiber bestätigte das
-neue Layout, den separaten Admin-Login und zwei stimmige Diagnosefelder auf
-seinem iPhone. Die öffentliche Statusabfrage zeigte danach weiter `maintenance`.
-Der Betreiber meldete zuvor die Rules-Veröffentlichung und eine zum Kandidaten
-passende Prüfsumme aus einem authentifizierten Abruf; dieser Abruf wurde nicht
-unabhängig aus dieser Arbeitsumgebung ausgeführt. Ein echter Mehrgeräte-Spieltest
-und die abgestimmte Wiederöffnung bleiben offen. Firebase Auth selbst ist nicht
-vollständig gesperrt; alte oder offline Geräte lassen sich nicht fernsteuern.
+der damalige Build war `20261031-update3`. Der Betreiber bestätigte das neue
+Layout, den separaten Admin-Login und zwei stimmige Diagnosefelder auf seinem
+iPhone. Der Betreiber meldete zuvor die Rules-Veröffentlichung und eine zum
+Kandidaten passende Prüfsumme aus einem authentifizierten Abruf; dieser Abruf
+wurde hier nicht unabhängig ausgeführt. Firebase Auth selbst ist nicht vollständig
+gesperrt; alte oder offline Geräte lassen sich nicht fernsteuern.
+
+Der erste zusammenhängende Teilstand der Blöcke 1 und 2 wurde mit
+[PR #289](https://github.com/0815games/0815games.github.io/pull/289) gemergt
+und als Build `20261031-patch3` über Pages ausgeliefert. Der öffentliche
+Wartungsstatus wurde danach als `open` abgefragt. Ein echter Mehrgeräte-Spieltest
+steht noch aus; CI-Ergebnis, Testliste und Grenzen sind in
+[IPL-0028](PATCH-LOG.md#ipl-0028--veröffentlichung-wiederöffnung-und-testliste)
+nachgetragen. Dieser Nachtrag ist bis zum nächsten Release nur lokal vorhanden.
 
 Der vollständig nachgereichte Gameplan, seine Entscheidungen und Fehlerfälle
 stehen mit belegten Teilständen und offenen Punkten in
@@ -24,16 +30,17 @@ freigegebene Avatar-Überarbeitung und die Turm-Kits sind bereits umgesetzt;
 die damalige Tutorial-Abbruchkorrektur wurde laut PR-Beschreibung vom Nutzer
 bestätigt. Neue Anforderungen und ausstehende Geräteprüfungen sind davon
 getrennt. Bei den bereits vorhandenen Turm-Kits wurden drei konkrete Fehler
-gefunden. Der zuletzt geprüfte Status stand auf Wartung; der Betreiber möchte
-nach jedem sinnvollen Schritt veröffentlichen und wieder für Tests öffnen. Diese
-Bestandsaufnahme ändert weder Website, Rules noch Produktionsdaten. Für spätere
-Rules-Änderungen den aktuellen vollständigen Produktionsstand erneut exportieren
-und vergleichen.
+gefunden: Zwei sind noch offen, der Veteranen-Preisfix ist veröffentlicht.
+Zu Beginn der Arbeiten stand der Status auf Wartung; der Betreiber möchte nach
+jedem sinnvollen Schritt veröffentlichen und wieder für Tests öffnen.
+Diese Bestandsaufnahme ändert weder Website, Rules noch Produktionsdaten. Für
+spätere Rules-Änderungen den aktuellen vollständigen Produktionsstand erneut
+exportieren und vergleichen.
 Der Operatorplan und die Grenzen stehen in `release-tools/FIREBASE-PAGES-ROLLOUT.md`.
 `PAGES-ROLLOUT.md` beschreibt nur den älteren Vercel-Experimentpfad. Kein weiterer
 Test auf `ironpathtest`; ältere Abschnitte unten halten Zwischenstände fest.
 
-**Lokaler Zwischenstand der aktuellen Blöcke:** Multiplayer-Abschluss,
+**Veröffentlichter Zwischenstand der aktuellen Blöcke:** Multiplayer-Abschluss,
 Abmeldeentscheidungen, Anfragen und Freundesabläufe wurden weiter abgesichert;
 Freundesporträts und ein ausschließlich lokales Namens-Inventurwerkzeug sind
 hinzugekommen. Der letzte serielle Spieltest bestand **994/994**, der Server
@@ -47,17 +54,37 @@ Git, das Patch-Log und das öffentliche Versionsmanifest. Globale
 Namenseindeutigkeit, Prüfung und Integration der Porträt-Rules sowie die
 späteren Blöcke bleiben offen.
 
+**Feldnotizen im Spiel (lokal, noch nicht veröffentlicht):** Der Betreiber
+möchte den Patchlog im Spiel sehen können. Dafür wurde eine reine Leseansicht
+gebaut: `patch-notes.mjs` (Daten und Ansicht), `patch-notes.css`, der Dialog
+`#patchNotes` in `index.html` mit den Reitern *Veröffentlicht* und *Was als
+Nächstes kommt* sowie der Eintrag `FELDNOTIZEN` in der Kommandozentrale. Der
+Reiter *Veröffentlicht* nennt die vier ausgelieferten Releases (Build
+`20261031-patch3`, `20261031-update3`, `20261031-update2` sowie #286 ohne
+damaliges Versionsmanifest) und hebt den laufenden Build hervor; der zweite
+Reiter listet die Blöcke 1–6 und **neu Block 7** in der vereinbarten
+Reihenfolge mit bereits veröffentlichten und offenen Punkten. Details,
+Prüfungen und Grenzen in
+[IPL-0030](PATCH-LOG.md#ipl-0030--feldnotizen-im-spiel-und-block-7-als-künftiger-patch).
+Block 7 ist damit als künftiger Patch nach Block 6 im Patchplan verankert
+([Reihenfolge](PATCH-BLOECKE.md#kommende-patches--reihenfolge)); seine Werte
+bleiben ungetestete Startvorschläge, und kein Fortschritt, keine Ausrüstung und
+keine Skillpunkte gehen dauerhaft verloren. Die Ansicht schreibt nichts, liest
+keine Firebase-Daten und ändert keinen Spielzustand. Sie ist lokal/uncommittet
+und in dieser Umgebung nicht im Browser abgenommen (kein Playwright/Chromium
+vorhanden).
+
 ## Übersicht der Anforderungen
 
 | Abschnitt | Stand | Offene Punkte |
 | --- | --- | --- |
-| Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlichte `20261031-mpview1`, inklusive Turmmenü-Pointerfix; lokale SDK-/Browser-Emulatorfälle prüfen zusätzlich eigene und fremde Upgrades und Wellenanfragen. | Veteranen-Rabatt und weitere lokale Fixes veröffentlichen; Live-Abnahme mit mehreren Konten und Geräten, Reconnect, Belohnungen und Balance. |
-| Wartung beim Merge-/Commit-Vorgang | Firebase-only-Wartung und Admin-Bereich veröffentlicht; der zuletzt öffentliche Status war `maintenance`. Der Betreiber wünscht nach sinnvollen Schritten die Wiederöffnung für Tests. | Nach erfolgreicher Veröffentlichung den berechtigten Admin-Schalter zum Öffnen verwenden; Firebase Auth selbst wird nicht vollständig gesperrt. Vor Rules-Änderungen aktuellen Produktionsstand sichern und vergleichen. |
+| Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlichte `20261031-mpview1`, inklusive Turmmenü-Pointerfix; #289 ergänzt u. a. Upgrade- und Abstimmungsfixes. | Live-Abnahme des Veteranen-Rabatts und der weiteren Fixes mit mehreren Konten und Geräten, Reconnect, Belohnungen und Balance. |
+| Wartung beim Merge-/Commit-Vorgang | Firebase-only-Wartung und Admin-Bereich veröffentlicht; nach #289 wurde der öffentliche Status als `open` abgefragt. Der Betreiber wünscht nach sinnvollen Schritten die Wiederöffnung für Tests. | Nach künftigen Veröffentlichungen den berechtigten Admin-Schalter zum Öffnen verwenden; Firebase Auth selbst wird nicht vollständig gesperrt. Vor Rules-Änderungen aktuellen Produktionsstand sichern und vergleichen. |
 | Versionsprüfung | Versionsprüfung mit sicheren Updatezeitpunkten veröffentlicht; der Betreiber meldete für `20261031-update3` zwei stimmige Diagnosefelder auf dem iPhone. | Während der Wartung prüft „Erneut prüfen“ nur den Wartungsstatus; die normale automatische Versionsprüfung startet nach Freigabe vor der Anmeldung. Ein Manifest beweist keinen Browsercode; Cache, Offline-Geräte, alte/manipulierte Clients und fehlgeschlagene Saves bleiben Grenzen. |
-| Charakter, Freunde, Einladungen | #287 implementiert bestätigte Bereinigung und Alt-Code-/Suchindex-Reparatur. Abmeldung/Meldung nach Entlassung, ein mittiges nichtmodales Anfragezentrum, frischegeschütztes Ablehnen und identische Freundesporträts mit neutralem Platzhalter sind lokal ergänzt. Ein konkurrierender Freundschafts-Write wird nicht mehr ohne eigene Bestätigung als Erfolg gemeldet ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); Emulator-/Browserfälle verwenden synthetische Daten. | Porträt-Rules nur als lokaler Kandidat; vor Veröffentlichung aktuell exportieren, separat prüfen und freigeben. Eindeutige Namen, tatsächliche Altbestände sowie reale Mehrgeräte- und Screenreader-Abnahme bleiben offen. |
-| Multiplayer, Kampf und Lebenssystem | Karten-/Tutorial-Fixes, 2×-Abstimmung, Kampfeffekte und zehn Turm-Kits sind vorhanden; das neue Lebenssystem ist nicht implementiert. Der Veteranenpreis ist lokal korrigiert. | [Themenblöcke und Reihenfolge](PATCH-BLOECKE.md): vorhandene Teilfunktionen erhalten, zwei noch offene Kit-Fehler und neue Anforderungen einzeln bearbeiten. |
+| Charakter, Freunde, Einladungen | #287 implementiert bestätigte Bereinigung und Alt-Code-/Suchindex-Reparatur. #289 ergänzt Abmeldung/Meldung nach Entlassung, mittiges Anfragezentrum, frischegeschütztes Ablehnen und Freundesporträts mit neutralem Platzhalter. Ein konkurrierender Freundschafts-Write wird nicht mehr ohne eigene Bestätigung als Erfolg gemeldet ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); Emulator-/Browserfälle verwenden synthetische Daten. | Porträt-Rules nur als lokaler Kandidat; vor Veröffentlichung aktuell exportieren, separat prüfen und freigeben. Eindeutige Namen, tatsächliche Altbestände sowie reale Mehrgeräte- und Screenreader-Abnahme bleiben offen. |
+| Multiplayer, Kampf und Lebenssystem | Karten-/Tutorial-Fixes, 2×-Abstimmung, Kampfeffekte und zehn Turm-Kits sind vorhanden; das neue Lebenssystem ist nicht implementiert. Der Veteranenpreis ist seit #289 korrigiert. | [Themenblöcke und Reihenfolge](PATCH-BLOECKE.md): vorhandene Teilfunktionen erhalten, zwei noch offene Kit-Fehler und neue Anforderungen einzeln bearbeiten. |
 
-## 1. Zuletzt veröffentlichter Multiplayer-Schnitt
+## 1. Zuvor veröffentlichter Multiplayer-Schnitt (vor PR #289)
 
 - Zweier-Koop verwendet generierte Sektor-2-Felder mit 1320 × 720. 1v1 verwendet zwei identische Felder dieser Größe und bunkerbezogene Startpunkte. Squad und 2v2 behalten ihre vorhandenen großen Karten.
 - Die laufende Online-Partie füllt den verfügbaren Spielbereich; Ziehen verschiebt, Pinch/Mausrad zoomt, **FIT MAP** zeigt die gesamte Karte. Browser-Vollbild ist eine getrennte Funktion.
@@ -112,24 +139,24 @@ Bestätigungen stammen aus den jeweils verlinkten PR-Beschreibungen.
 
 | Originalblock | Bereits belegt | Getrennt davon noch offen |
 | --- | --- | --- |
-| **1 – Multiplayer-Spielbarkeit** | #196/#249 reparierten den Rückzugskartenfehler; #286 brachte große Felder und Turmmenü-Fix; #136 implementierte 2×. Veteranenpreis, Wellenfreigabe durch alle, Weg-Endpunkte und bestätigter Partyabschluss sind lokal ergänzt. Feld-Abmeldung, pausierte Duelle und opt-in Recovery bestanden begrenzte Emulator-Browserfälle ([IPL-0018](PATCH-LOG.md#ipl-0018--block-1-feld-abmeldung-pausierte-duelle-und-recovery)). | Host-/Gast-Upgrade-, 2×- und Abschlusskette auf echten Geräten abnehmen; dauerhaft abwesende/früher ausgetretene Gäste und ohne Recovery verwaiste Gruppen bleiben offen. Lokale Fixes sind unveröffentlicht; Tutorial-Lifecycle weiter prüfen. |
-| **2 – Charakter, Freunde, Einladungen** | #287: atomare Bereinigung auffindbarer Daten und Reparatur von Alt-Code/Suchindex. Abmeldung/Meldung, leere Bereiche, mittige Social-Hinweise und einheitliche gespeicherte Freundesporträts sind lokal ergänzt; Ablehnung, Wiederanfrage, Entfernen und ein Porträt-Rules-Kandidat wurden synthetisch im Emulator geprüft ([IPL-0021](PATCH-LOG.md#ipl-0021--block-2-freundschaftsabläufe-und-lokale-freundesporträts)). Ein Zwei-Tab-Scheinerfolg ist lokal korrigiert und im Emulator geprüft ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); ein reines Offline-Inventurwerkzeug verwendet nur synthetische Fixtures ([IPL-0022](PATCH-LOG.md#ipl-0022--block-2-datenschutzschonende-namens-vorprüfung)). | Lokale Änderungen und dafür gesondert zu prüfende Rules nicht veröffentlicht; reale Altbestände und weitere Freundesfehler prüfen, eindeutige Namen und Geräteabnahme. Lokal-only- oder nicht zuordenbare Gesichter erscheinen bei Freunden als Platzhalter. |
+| **1 – Multiplayer-Spielbarkeit** | #196/#249 reparierten den Rückzugskartenfehler; #286 brachte große Felder und Turmmenü-Fix; #136 implementierte 2×. #289 veröffentlichte Veteranenpreis-Fix, Wellenfreigabe durch alle, Weg-Endpunkte und bestätigten Partyabschluss. Feld-Abmeldung, pausierte Duelle und opt-in Recovery bestanden begrenzte Emulator-Browserfälle ([IPL-0018](PATCH-LOG.md#ipl-0018--block-1-feld-abmeldung-pausierte-duelle-und-recovery)). | Host-/Gast-Upgrade-, 2×- und Abschlusskette auf echten Geräten abnehmen; dauerhaft abwesende/früher ausgetretene Gäste und ohne Recovery verwaiste Gruppen bleiben offen. Tutorial-Lifecycle weiter prüfen. |
+| **2 – Charakter, Freunde, Einladungen** | #287: atomare Bereinigung auffindbarer Daten und Reparatur von Alt-Code/Suchindex. #289 veröffentlichte Abmeldung/Meldung, leere Bereiche, mittige Social-Hinweise und Freundesporträt-Anzeige; Ablehnung, Wiederanfrage und Entfernen wurden synthetisch geprüft ([IPL-0021](PATCH-LOG.md#ipl-0021--block-2-freundschaftsabläufe-und-lokale-freundesporträts)). Ein Zwei-Tab-Scheinerfolg wurde behoben ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); das Offline-Inventurwerkzeug verwendete nur synthetische Fixtures ([IPL-0022](PATCH-LOG.md#ipl-0022--block-2-datenschutzschonende-namens-vorprüfung)). | Der zusätzlich benötigte Porträt-Rules-Kandidat ist nicht produktiv freigegeben. Reale Altbestände und weitere Freundesfehler prüfen, eindeutige Namen und Geräteabnahme. Nur lokal gespeicherte oder nicht zuordenbare Gesichter erscheinen bei Freunden als Platzhalter. |
 | **3 – Oberfläche** | Party-Textliste, After-Action Report mit bestätigten Belohnungen und Menü-/Report-XP-Anzeige; #284 brachte Rangabzeichen ins Menü, Dossier und Kampfprofil. | Vier Personalkarten, bezahlbarer Endless-Turmschimmer, bestätigte XP im Kampf-HUD, Rang/Beförderung im Report und „What’s Next“ im Detailbereich. |
 | **4 – Avatare** | Vorschau wurde laut [#277](https://github.com/0815games/0815games.github.io/pull/277) ausdrücklich freigegeben, im echten Recruit-Screen integriert und die Vorschauseite entfernt. Hauptmenü/Dossier zeigen Layer-Porträts; alte Looks werden zugeordnet. | Qualität und 6–10 stimmige Looks prüfen/erweitern; konsistente Darstellung in Freunden und Party sowie robuste geräteübergreifende Speicherung. Das genehmigte Rework nicht als ungebaut behandeln. |
-| **5 – Skills** | Fünf Klassen und ihre Fähigkeiten sowie zehn rangbasierte Turm-Kits sind vorhanden. [#265](https://github.com/0815games/0815games.github.io/pull/265) enthält trotz Plantitel den [Implementierungscommit](https://github.com/0815games/0815games.github.io/commit/624f6436c188d8b3b65b68de8d99d496169e0838); bei den Kits sind drei Fehler nachgewiesen. | Luftabwehr als sechste Klasse, exklusive Klassenwahl ab Level 2, individuelle Skillzweige und zusätzliche *skillbaumgesteuerte* Turmausbauten; sichere einmalige Punkterückgabe ohne Verlust von XP/Level/Ausrüstung. |
+| **5 – Skills** | Fünf Klassen und ihre Fähigkeiten sowie zehn rangbasierte Turm-Kits sind vorhanden. [#265](https://github.com/0815games/0815games.github.io/pull/265) enthält trotz Plantitel den [Implementierungscommit](https://github.com/0815games/0815games.github.io/commit/624f6436c188d8b3b65b68de8d99d496169e0838); von drei gefundenen Kit-Fehlern wurde einer mit #289 korrigiert. | Zwei Kit-Fehler, Luftabwehr als sechste Klasse, exklusive Klassenwahl ab Level 2, individuelle Skillzweige und zusätzliche *skillbaumgesteuerte* Turmausbauten; sichere einmalige Punkterückgabe ohne Verlust von XP/Level/Ausrüstung. |
 | **6 – Tutorial** | Die bisherige spielbare Fünf-Wellen-Mission, Coach und sichere Wiederholung bestehen; #196/#278/#279 behoben konkrete Abbruch-/Menüfälle, und [#280](https://github.com/0815games/0815games.github.io/pull/280) dokumentiert „Tutorial hört sauber auf“. | Charakterbezogene Annahme/Ablehnung im Hauptmenü, große vertonte Mission mit vollständiger Menüführung und fester Funkstimme eines älteren Generals; Untertitel, Barrierefreiheit und sichere Wiederholung. Nach Block 5 fertigstellen. |
 
 **Konkrete neue Prüfbefunde zu vorhandenen Turm-Kits:** (1) Bossjäger III zahlt
 den angekündigten +25-Vorräte-Bonus nicht; ein früherer Test kann durch normale
 Belohnungen fälschlich bestehen. (2) Doppel-MG III behält im neutralen
 Simulationstest den Faktor 0,6 gegen Flugzeuge statt des angekündigten vollen
-Schadens. (3) Das Menü zeigt für einen Veteranenturm Stufe 5 den ungekürzten
-Preis 360 und verhindert bei 306 Vorräten den Befehl, obwohl die Simulation
+Schadens. (3) Das Menü zeigte für einen Veteranenturm Stufe 5 den ungekürzten
+Preis 360 und verhinderte bei 306 Vorräten den Befehl, obwohl die Simulation
 306 akzeptiert. Letzteres wurde mit DOM-/Transport-Doubles reproduziert, nicht
 in einer echten Mehrgerätepartie. Messwerte und Codeverweise stehen im
 [Patchplan](PATCH-BLOECKE.md#konkrete-befunde-zur-bestehenden-turm-spezialisierung).
-Die ersten beiden Fehler sind offen; der Veteranenpreis ist lokal korrigiert,
-getestet und noch nicht veröffentlicht.
+Die ersten beiden Fehler sind offen; der Veteranenpreis ist korrigiert und mit
+#289 veröffentlicht, die echte Geräteabnahme steht noch aus.
 
 **Gemeldete Fehlerfälle:** In einer Dreierpartie gingen Turmmenüs an eigenen
 und fremden Türmen nicht auf; eine 2×-Anfrage in Welle 2 oder 3 zeigte keine
@@ -141,12 +168,12 @@ Berichte vor oder nach jedem einschlägigen Fix entstanden, ist nicht geklärt;
 sie sind nicht automatisch eine Reproduktion im aktuellen Build.
 
 - Die veröffentlichte Löschung wartet auf Bestätigung, lässt das Firebase-Auth-
-  Konto bestehen und erfasst nur bekannte Pfade. Im veröffentlichten Build
-  bleibt der Client danach angemeldet und zeigt die Charaktererstellung. Lokal
-  wird stattdessen abgemeldet und einmalig die gewünschte Login-Meldung
+  Konto bestehen und erfasst nur bekannte Pfade. Vor #289 blieb der Client
+  danach angemeldet und zeigte die Charaktererstellung. Seit #289 wird er
+  stattdessen abgemeldet und einmalig die gewünschte Login-Meldung
   **„Dein Charakter wurde aus dem Dienst entlassen. Bitte melde dich erneut an.“**
-  angezeigt; der Auth-/RTDB-Emulator-Browserfall bestand, Veröffentlichung und
-  echte Geräteabnahme stehen aus.
+  angezeigt; der Auth-/RTDB-Emulator-Browserfall bestand, die echte
+  Geräteabnahme steht noch aus.
 - Die kombinierten Regeln und zwei synthetische Browser-Sessions bestanden in
   der offiziellen Emulator-CI [43570287668](https://github.com/0815games/0815games.github.io/actions/runs/43570287668).
   Der Betreiber meldete die produktive Rules-Veröffentlichung und passenden
@@ -161,8 +188,8 @@ sie sind nicht automatisch eine Reproduktion im aktuellen Build.
   simulierten Transport in Chromium geprüft. Details und Grenzen stehen im
   [Patch-Log](PATCH-LOG.md#ipl-0014--b2-einheitliches-anfragezentrum-und-frische-einladungen).
   Einzelne TAP-Zähler fassen ganze Dateien zusammen. Der Bossjäger-Test bleibt
-  trotz Grün unzureichend. Die bestehende Main-CI betrifft den veröffentlichten
-  Ausgangsstand; kein Lauf ersetzt eine echte Mehrgeräte-Abnahme.
+  trotz Grün unzureichend. Die spätere CI für #289 und auf main bestand; kein
+  Lauf ersetzt eine echte Mehrgeräte-Abnahme.
 - **Ergänzungen A–E:** Namen gehören zu Block 2, Wellenanfragen durch alle
   Spieler und weitere Einsteigerbalance zu Block 1, Popup-Darstellung und
   Schussoptik zu Block 3 und die Klassenfähigkeit auch zu Block 5. Bereits
@@ -179,9 +206,9 @@ sie sind nicht automatisch eine Reproduktion im aktuellen Build.
 
 | Abschnitt | Nachweis / Status |
 | --- | --- |
-| Bisheriger Website-Stand | PR #286 lieferte `20261031-mpview1`; PR #287 veröffentlichte anschließend den Firebase-only-Wartungs- und Versionsschutz und die Charakter-/Social-Bereinigung. |
-| Aktueller Website-Stand | PR #288 wurde als `05542181c2c3df13cacc52010b7f190cc0ac1880` gemergt; [Pages-Deployment](https://github.com/0815games/0815games.github.io/actions/runs/43755799363) und [Main-CI](https://github.com/0815games/0815games.github.io/actions/runs/43755799438) bestanden. Das öffentliche Manifest meldete `20261031-update3`. |
-| Wartung und Geräteprüfung | Der Betreiber bestätigte das neue Layout, Admin-Login und beide Versionsfelder auf dem iPhone; danach meldete der öffentliche Status weiter `maintenance`. Eine spätere Öffnung ist getrennt abzustimmen. Der Rules-Abgleich beruht auf dem vom Betreiber gemeldeten authentifizierten Abruf, nicht auf einem unabhängigen Abruf hier. |
-| Sechs Originalblöcke und neue Wünsche | Im [Plan](PATCH-BLOECKE.md) nach historischen Fixes, Nutzerbestätigungen, neuen Anforderungen und ausstehenden Prüfungen getrennt. Bereits Gebautes und die drei gefundenen Kit-Fehler sind ausdrücklich vermerkt. |
+| Bisheriger Website-Stand | PR #286 lieferte `20261031-mpview1`; PR #287 veröffentlichte anschließend den Firebase-only-Wartungs- und Versionsschutz und die Charakter-/Social-Bereinigung. PR #288 lieferte `20261031-update3`. |
+| Aktueller Website-Stand | PR #289 wurde als `6c835f8a1e5cb8e9c836141324fb0ef699f5bfdd` gemergt; [Pages-Deployment](https://github.com/0815games/0815games.github.io/actions/runs/43831291036) und [Main-CI](https://github.com/0815games/0815games.github.io/actions/runs/43831291548) bestanden. Das öffentliche Manifest meldete `20261031-patch3`. |
+| Wartung und Geräteprüfung | Der Betreiber bestätigte Layout, Admin-Login und beide Versionsfelder auf dem iPhone. Nach #289 meldete der Betreiber die funktionierende Bedienung über ein anderes Netz oder Gerät; anschließend zeigte der öffentliche Status `open`. Die Ursache eines vorherigen Admin-Timeouts ist offen. Der Rules-Abgleich beruht auf dem vom Betreiber gemeldeten authentifizierten Abruf, nicht auf einem unabhängigen Abruf hier. |
+| Sechs Originalblöcke und neue Wünsche | Im [Plan](PATCH-BLOECKE.md) nach historischen Fixes, Nutzerbestätigungen, neuen Anforderungen und ausstehenden Prüfungen getrennt. Von drei gefundenen Kit-Fehlern sind zwei noch offen. |
 
 Nach jedem logischen Abschnitt fortschreiben. Ein noch nicht geprüfter Schutz oder Rollout bleibt ausdrücklich als solcher markiert.
