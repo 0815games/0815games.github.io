@@ -15,10 +15,26 @@ for(const [mode,count] of [['four-coop',3],['four-coop',4],['two-vs-two',4]]){
   const partyIds=ids.slice(0,count),partyPlayers=profiles.slice(0,count);
   const statuses={},views={},errors=[],rewards={};const make=id=>createFirebasePartyGame({db:{},auth:{currentUser:{uid:id}},sdk,partyId:mode+count,hostId:'alice',playerIds:partyIds,mode,...(id==='alice'?{players:partyPlayers,teams:[['alice','bob'],['cara','dan']]}:{}),crypto,onStatus:ready=>{statuses[id]=ready;},onState:state=>{if(state==='error')errors.push(id);},onSnapshot:s=>{views[id]=s;},onWaveRewards:mask=>{rewards[id]=mask;}});const instances=partyIds.map(make);
   try{for(const instance of instances)instance.start();await wait(()=>partyIds.every(id=>statuses[id]),`${mode} players ready`);assert.deepEqual(errors,[]);for(const id of partyIds)assert.equal(views[id].match.mode,mode);
-    const result=await instances[0].command({type:'startWave'});assert.equal(result.waitingForPlayers,true);const requestId=result.requestId;for(let i=1;i<count;i++)assert.equal((await instances[i].command({type:'approveWave',requestId})).ok,true);
+    const requester=count-1,result=await instances[requester].command({type:'startWave'});assert.equal(result.waitingForPlayers,true);const requestId=result.requestId;
+    await wait(()=>partyIds.every(id=>views[id]?.match.pending?.id===requestId),`${mode} guest request visible to everyone`);
+    for(const id of partyIds)assert.equal(views[id].match.pending.requester,partyIds[requester]);
+    for(let i=0;i<count;i++)if(i!==requester){assert.equal((await instances[i].command({type:'approveWave',requestId})).ok,true);if(i<count-2)await wait(()=>partyIds.every(id=>views[id]?.match.pending?.approved.length===i+1),`${mode} partial approvals replicated`);}
     await wait(()=>partyIds.every(id=>mode==='four-coop'?views[id]?.match.match.wave===1:views[id]?.match.lanes.every(lane=>lane.wave===1)),`${mode} wave started`);
     assert.equal((await instances[count-1].command({type:'build',pad:15,towerType:0})).ok,true);
     await wait(()=>mode==='four-coop'?views.alice?.match.match.towers.length===1:views.alice?.match.lanes[1].towers.length===1,`${mode} build replicated`);assert.deepEqual(errors,[]);assert.equal(rewards.alice,0);
+    if(mode==='four-coop'){
+      // Exercise the actual multi-client Firebase adapter, rather than only
+      // tapping an artificial menu: another player's tower can be upgraded and
+      // every member sees the result. The payer's wallet, not the owner's, pays.
+      const owner=partyIds[count-1],ownerBalance=views.alice.match.match.players[owner].money;
+      assert.equal((await instances[0].command({type:'upgrade',pad:15,branch:0})).ok,true);
+      await wait(()=>partyIds.every(id=>views[id]?.match.match.towers.some(t=>t.pad===15&&t.level===2)),`${count}-player shared upgrade replicated`);
+      for(const id of partyIds){assert.equal(views[id].match.match.players.alice.money,55);assert.equal(views[id].match.match.players[owner].money,ownerBalance);}
+      assert.equal((await instances[1].command({type:'build',pad:14,towerType:0})).ok,true);
+      assert.equal((await instances[1].command({type:'upgrade',pad:14,branch:0})).ok,true);
+      await wait(()=>partyIds.every(id=>views[id]?.match.match.towers.some(t=>t.pad===14&&t.level===2)),`${count}-player own upgrade replicated`);
+      for(const id of partyIds)assert.equal(views[id].match.match.players.bob.money,5);
+    }
     const vote=await instances[1].command({type:'requestSpeed'});assert.ok(vote.ok);await wait(()=>partyIds.every(id=>views[id]?.speedControl?.request?.id===vote.requestId),'speed vote visible');for(let i=0;i<count;i++)if(i!==1)assert.ok((await instances[i].command({type:'approveSpeed',requestId:vote.requestId})).ok);await wait(()=>partyIds.every(id=>views[id]?.speedControl?.speed===2),'all players approved 2x');assert.ok((await instances[0].command({type:'slowSpeed'})).ok);await wait(()=>partyIds.every(id=>views[id]?.speedControl?.speed===1),'slow to 1x');
     assert.equal(instances[1].setFocusPaused(true),false,'guest cannot pause the shared game');await wait(()=>views.alice.tick>0,'host continues after guest blur');
     assert.equal(instances[0].setFocusPaused(true),true);await wait(()=>partyIds.every(id=>statuses[id]===false&&views[id]?.hostPaused===true),'host pause is visible to every player');const pausedTick=views.alice.tick;await new Promise(resolve=>setTimeout(resolve,180));assert.equal(views.alice.tick,pausedTick,'simulation remains frozen while host is away');assert.equal((await instances[1].command({type:'move',x:700,y:400})).ok,false,'commands disabled while paused');assert.equal(instances[0].setFocusPaused(false),true);await wait(()=>partyIds.every(id=>statuses[id]&&views[id]?.hostPaused===false),'host return resumes play');

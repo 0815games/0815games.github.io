@@ -67,10 +67,22 @@ for(const mode of ['coop','versus'])test(`${guarded?'release-gated publish':main
   await wait(()=>mode==='coop'?views.bob?.match.towers.length===2:views.bob?.match.towers.length===1&&views.bob?.match.rival.towers.length===1,'builds are visible');
   assert.equal((await clients[1].command({type:'move',x:1200,y:600})).ok,true,'movement beyond the former field boundary');
   await wait(()=>views.bob?.match?.players?.bob?.target?.x===1200,'large-field movement is replicated');
-  const request=await clients[0].command({type:'startWave'});assert.equal(request.waitingForGuest,true);
-  await wait(()=>views.bob?.match?.pendingWave===1,'guest sees wave request');
-  assert.equal((await clients[1].command({type:'approveWave',requestId:views.bob.match.waveRequestId})).ok,true);
+  const first=await clients[1].command({type:'startWave'});assert.equal(first.waitingForGuest,true);
+  await wait(()=>ids.every(id=>views[id]?.match?.waveRequest?.id===first.requestId),'guest request reaches both views');
+  assert.equal(views.alice.match.waveRequest.requester,'bob');assert.equal(views.alice.match.wave,0);
+  assert.equal((await clients[0].command({type:'declineWave',requestId:first.requestId})).ok,true);
+  await wait(()=>ids.every(id=>!views[id]?.match?.waveRequest),'decline clears both views');
+  const request=await clients[1].command({type:'startWave'});assert.ok(request.requestId>first.requestId);
+  await wait(()=>ids.every(id=>views[id]?.match?.waveRequest?.id===request.requestId),'new request reaches both views');
+  assert.equal((await clients[0].command({type:'approveWave',requestId:request.requestId})).ok,true);
   await wait(()=>ids.every(id=>views[id]?.match?.wave===1),'both views start wave one');
+  const speed=await clients[1].command({type:'requestSpeed'});assert.equal(speed.ok,true);
+  await wait(()=>ids.every(id=>views[id]?.speedControl?.request?.id===speed.requestId),'guest 2x request reaches both views');
+  assert.equal(views.alice.speedControl.request.requester,'bob');
+  assert.equal((await clients[0].command({type:'approveSpeed',requestId:speed.requestId})).ok,true);
+  await wait(()=>ids.every(id=>views[id]?.speedControl?.speed===2),'both views observe 2x');
+  assert.equal((await clients[1].command({type:'slowSpeed'})).ok,true);
+  await wait(()=>ids.every(id=>views[id]?.speedControl?.speed===1),'both views return to 1x');
   await clients[1].stop();await wait(()=>ready.bob===false,'guest leaves');
   if(mode==='versus')await wait(()=>ready.alice===false,'duel pauses without the opponent');
   views.bob=null; // A pre-disconnect snapshot must not satisfy the reconnect check.

@@ -9,12 +9,12 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261112-tagless1
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261112-tagless1';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-socialcleanup1';
-import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261127-tutlock1';
-import {germanAccount} from './localization-account-de.mjs?v=20261110-storyde1';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-patch3';
+import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261031-patch3';
+import {germanAccount} from './localization-account-de.mjs?v=20261031-patch3';
 import {germanTowers} from './localization-towers-de.mjs?v=20261112-kits1';
 import {germanStatic} from './localization-static-de.mjs?v=20261220-actintros';
-import {germanBattle} from './localization-battle-de.mjs?v=20261217-stormgate';
+import {germanBattle} from './localization-battle-de.mjs?v=20261031-patch3';
 import {germanResults} from './localization-results-de.mjs?v=20261209-savefix1';
 import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261107-balance1';
 import {germanCampaign} from './localization-campaign-de.mjs?v=20261112-pressure1';

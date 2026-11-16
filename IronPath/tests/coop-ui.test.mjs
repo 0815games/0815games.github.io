@@ -6,8 +6,8 @@ import { createPlayer, applyCommand } from '../match.mjs';
 
 test('the opt-in co-op UI projects a party, a handoff and a mode without touching host state',async()=>{
 const nodes=new Map(),drawnText=[],ctx=new Proxy({}, {get:(_target,key)=>key==='fillText'?(text=>drawnText.push(text)):()=>{},set:()=>true});let frame;
-function el(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{flags:{},toggle(name,on){this.flags[name]=on;}},contains(){return false;},setAttribute(){},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return nodes.get(id);}
-const documentHandlers={},windowHandlers={};globalThis.document={hasFocus:()=>true,hidden:false,addEventListener(type,fn){(documentHandlers[type]??=[]).push(fn);},querySelector:()=>null,getElementById:el,activeElement:{tagName:'BODY'}};
+function el(id){if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',disabled:false,hidden:false,open:false,style:{},dataset:{},children:[],scrollWidth:400,clientWidth:400,scrollLeft:0,classList:{flags:{},toggle(name,on){this.flags[name]=on;}},contains(){return false;},setAttribute(){},removeAttribute(){},toggleAttribute(){},replaceChildren(...children){this.children=children;},get childElementCount(){return this.children.length;},addEventListener(type,fn){this['on'+type]=fn;},scrollTo(){},showModal(){this.open=true;},close(){this.open=false;},getContext(){return ctx;},getBoundingClientRect(){return {left:0,top:0,width:960,height:540};},width:960,height:540});return nodes.get(id);}
+const documentHandlers={},windowHandlers={};globalThis.document={hasFocus:()=>true,hidden:false,addEventListener(type,fn){(documentHandlers[type]??=[]).push(fn);},querySelector:()=>null,getElementById:el,createElement:()=>({toggleAttribute(){}}),activeElement:{tagName:'BODY'}};
 globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(type,fn){(windowHandlers[type]??=[]).push(fn);}};
 globalThis.requestAnimationFrame=fn=>{frame=fn;};
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
@@ -16,10 +16,14 @@ source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('..
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];match.hostId='alice';
 const factory=options=>{opts=options;return {start(){options.onSnapshot({match:structuredClone(match)});options.onStatus(true);},stop(){stopCalled=true;},async command(command){commands.push(command);const result=applyCommand(match,'alice',command);options.onSnapshot({match:structuredClone(match)});return result;}};};
-let mapGeneration=0,allowEnd=false,confirmation,returned=0;
-const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';},confirmAction:async options=>{confirmation=options;return allowEnd;},onReturnToCommand:()=>returned++});
+let mapGeneration=0,allowEnd=false,confirmation,returned=0,sessionChanged;
+const game=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',getToken:async()=> 'test',isReady:()=>true,getLevel:()=>1,onSessionChange(fn){sessionChanged=fn;},awardXP(){awards++;}}, {coopUrl:'wss://trusted.example/match',clientFactory:factory,nextMapId:()=>{mapGeneration++;return 'road';},confirmAction:async options=>{confirmation=options;return allowEnd;},onReturnToCommand:()=>returned++});
 el('tutorialSkip').onclick();assert.equal(el('coopControls').hidden,false);assert.equal(mapGeneration,1);game.resetSkills();assert.equal(mapGeneration,1,'editing skills does not reroll the current operation');
-await el('coopToggle').onclick();assert.equal(mapGeneration,2,'a co-op start generates a new battlefield');assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('soloObjective').hidden,true,'campaign tracker is hidden in multiplayer');assert.equal(el('speed').disabled,true);
+// Neither a visible nor a minimized tutorial task may survive a session or
+// party handoff. Stopping must clear the state, not merely hide the card.
+game.replayCoach();assert.equal(game.isCoachOpen(),true);sessionChanged();assert.equal(game.isCoachOpen(),false,'session change stops the visible coach');assert.equal(el('coachRecall').hidden,true);el('coachRecall').onclick();assert.equal(game.isCoachOpen(),false,'old session task cannot be reopened');
+game.replayCoach();el('coachClose').onclick();game.refreshLanguage();assert.equal(el('coachRecall').hidden,false,'a dismissed coach normally remains recallable');
+await el('coopToggle').onclick();assert.equal(mapGeneration,2,'a co-op start generates a new battlefield');assert.equal(el('coopStatus').textContent,'CONNECTING');assert.equal(el('soloObjective').hidden,true,'campaign tracker is hidden in multiplayer');assert.equal(el('speed').disabled,true);assert.equal(game.isCoachOpen(),false);assert.equal(el('coachRecall').hidden,true,'party handoff removes the old task');el('coachRecall').onclick();assert.equal(game.isCoachOpen(),false,'minimized task cannot resurrect in multiplayer');
 opts.onStatus(false);opts.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(commands.at(-1),{type:'direction',x:0,y:0},'reconnection neutralizes movement');
 match.wave=5;match.running=true;match.spawnLeft=1;opts.onSnapshot({match:structuredClone(match)});assert.match(el('bossAlertTitle').textContent,/BOSS INCOMING.*Ironclad/);assert.equal(el('bossAlert').hidden,false);
 match.enemies=[{boss:'bossIronclad',kind:'tank',hp:50,maxHp:100,x:100,y:100,segment:1}];opts.onSnapshot({match:structuredClone(match)});assert.match(el('bossAlertTitle').textContent,/BOSS · Ironclad/);assert.equal(el('bossHealthFill').style.width,'50%');
@@ -37,6 +41,7 @@ await el('game').onclick({clientX:105,clientY:210});assert.match(el('message').t
 applyCommand(match,'bob',{type:'releaseBuild',pad:0});opts.onSnapshot({match:structuredClone(match)});
 await el('game').onclick({clientX:105,clientY:210});assert.equal(match.buildReservations[0].playerId,'alice');assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.towers.length,1);assert.equal(match.buildReservations[0],undefined,'building releases the reservation');assert.equal(el('money').textContent,75);
+assert.ok(!commands.some(command=>command.type==='releaseBuild'&&command.pad===0),'a successful build does not send a redundant release that blocks the next upgrade');
 // Availability updates live while the multiplayer tower sheet and details stay open.
 match.towers[0].level=2;match.players.alice.money=0;opts.onSnapshot({match:structuredClone(match)});
 el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();
@@ -46,7 +51,34 @@ match.players.alice.money=1000;opts.onSnapshot({match:structuredClone(match)});a
 match.players.alice.level=5;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,false);assert.equal(el('radial2').classList.flags.unaffordable,false);
 match.players.alice.money=0;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,true);assert.match(el('towerDetailsCost').textContent,/Not enough supplies/);
 match.players.alice.money=1000;opts.onSnapshot({match:structuredClone(match)});assert.equal(el('towerDetailsConfirm').disabled,false,'new supplies enable the already-open confirmation');
-el('towerDetailsBack').onclick();el('radialClose').onclick();match.towers[0].level=1;match.players.alice.level=1;match.players.alice.money=75;opts.onSnapshot({match:structuredClone(match)});
+el('towerDetailsBack').onclick();el('radialClose').onclick();
+// A Veteran III tower is cheaper in the simulation; the UI must use exactly
+// that price, both before and after a balance update, for own and shared towers.
+match.towers[0].level=5;match.towers[0].branch=2;match.players.alice.money=305;opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});
+assert.equal(el('menuPrice0').textContent,'306','rank III displays the discounted price');
+assert.equal(el('radial0').classList.flags.unaffordable,true,'305 is insufficient for a 306 upgrade');
+const beforeVeteran=commands.filter(command=>command.type==='upgrade').length;
+el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(commands.filter(command=>command.type==='upgrade').length,beforeVeteran,'insufficient funds send no upgrade');
+match.players.alice.money=306;opts.onSnapshot({match:structuredClone(match)});
+assert.equal(el('menuPrice0').textContent,'306');assert.equal(el('radial0').classList.flags.unaffordable,false,'the live balance enables the discounted upgrade');
+el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers[0].level,6);assert.equal(match.players.alice.money,0,'the owner pays the discounted 306');
+// At prestige the discount still applies and rounds up, as it does in match.mjs.
+match.players.alice.money=383;opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});assert.equal(el('menuPrice0').textContent,'383');
+el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers[0].level,7);assert.equal(match.players.alice.money,0);
+// A host upgrading another player's tower pays from the host's own balance.
+match.towers[0].level=5;match.towers[0].ownerId='bob';match.players.alice.money=306;const bobBeforeUpgrade=match.players.bob.money;opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});assert.equal(el('menuPrice0').textContent,'306');assert.match(el('menuDesc0').textContent,/You pay/);
+el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(match.towers[0].level,6);assert.equal(match.players.alice.money,0);assert.equal(match.players.bob.money,bobBeforeUpgrade);
+// Other specializations must not accidentally receive the Veteran discount.
+match.towers[0].level=5;match.towers[0].branch=0;match.towers[0].ownerId='alice';match.players.alice.money=359;opts.onSnapshot({match:structuredClone(match)});
+await el('game').onclick({clientX:105,clientY:210});assert.equal(el('menuPrice0').textContent,'360');assert.equal(el('radial0').classList.flags.unaffordable,true);el('radialClose').onclick();
+delete match.towers[0].branch;match.towers[0].level=1;match.players.alice.level=1;match.players.alice.money=75;opts.onSnapshot({match:structuredClone(match)});
 // A replacement made by the other player cannot be sold by an old open menu.
 el('game').onclick({clientX:105,clientY:210});el('radial1').onclick();
 assert.equal(applyCommand(match,'bob',{type:'sell',pad:0}).ok,true);
@@ -72,11 +104,20 @@ console.log('Opt-in co-op UI adapter and party handoff smoke tests passed.');
 // Guest approves the host's request and leaves without ending the host's run.
 const guestMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);guestMatch.hostId='alice';
 let guestOptions,guestStopped=false,leftParty=0,guestCommands=[],guestGame,guestReturned=0;
+const guestPrompts={items:[],update(_source,items){this.items=items;},reset(){this.items=[];},isShowing(){return false;}};
 const guestFactory=options=>{guestOptions=options;return {start(){options.onSnapshot({match:structuredClone(guestMatch)});options.onStatus(true);},stop(){guestStopped=true;},async command(command){guestCommands.push(command);const result=applyCommand(guestMatch,'bob',command);options.onSnapshot({match:structuredClone(guestMatch)});return result;}};};
-guestGame=startGame({getProfile:()=>({name:'Bob',gender:'male'}),getUserId:()=> 'bob',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{confirmAction:async()=>true,leaveParty:async()=>{leftParty++;await guestGame.leaveCoop();return true;},nextMapId:()=> 'road',onReturnToCommand:()=>guestReturned++});
-assert.equal(guestGame.beginCoop(cb=>guestFactory(cb)),true);assert.equal(el('start').textContent,'WAIT FOR HOST');assert.equal(el('start').disabled,true);assert.equal(el('endRun').textContent,'LEAVE CO-OP');
-assert.equal(applyCommand(guestMatch,'alice',{type:'startWave'}).waitingForGuest,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('start').textContent,'APPROVE WAVE');assert.equal(el('waveRequest').hidden,false);
-el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(guestMatch.wave,1);assert.equal(guestCommands.at(-1).type,'approveWave');
+guestGame=startGame({getProfile:()=>({name:'Bob',gender:'male'}),getUserId:()=> 'bob',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{confirmAction:async()=>true,leaveParty:async()=>{leftParty++;await guestGame.leaveCoop();return true;},nextMapId:()=> 'road',onReturnToCommand:()=>guestReturned++,promptCenter:guestPrompts});
+assert.equal(guestGame.beginCoop(cb=>guestFactory(cb)),true);assert.equal(el('start').textContent,'REQUEST WAVE');assert.equal(el('start').disabled,false);assert.equal(el('endRun').textContent,'LEAVE CO-OP');
+guestMatch.players.alice.active=false;guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('start').textContent,'WAIT FOR PLAYERS');assert.equal(el('start').disabled,true);guestMatch.players.alice.active=true;guestOptions.onSnapshot({match:structuredClone(guestMatch)});
+el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(guestMatch.waveRequest.requester,'bob');assert.equal(guestCommands.at(-1).expectedRequestId,0,'new wave clicks carry the last observed vote ID');assert.equal(el('start').textContent,'CANCEL REQUEST');assert.match(el('waveRequestText').textContent,/Bob requests wave 1\. 1 approval/);assert.equal(el('waveDecline').hidden,true);
+assert.equal(applyCommand(guestMatch,'alice',{type:'declineWave',requestId:guestMatch.waveRequestId}).ok,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('waveRequest').hidden,true);
+assert.equal(applyCommand(guestMatch,'alice',{type:'startWave'}).waitingForGuest,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});assert.equal(el('start').textContent,'APPROVE WAVE');assert.equal(el('waveRequest').hidden,false);assert.match(el('waveRequestText').textContent,/Alice requests wave 1/);
+assert.equal(guestPrompts.items.length,1,'an actionable wave is offered to the prompt center');
+const staleWaveAction=guestPrompts.items[0].actions[0].run,oldWave=guestMatch.waveRequest.id;
+assert.equal(applyCommand(guestMatch,'alice',{type:'cancelWave',requestId:oldWave}).ok,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});
+assert.equal(applyCommand(guestMatch,'alice',{type:'startWave'}).waitingForGuest,true);guestOptions.onSnapshot({match:structuredClone(guestMatch)});const newWave=guestMatch.waveRequest.id;
+const beforeStale=guestCommands.length;assert.equal(await staleWaveAction(),false);assert.equal(guestCommands.length,beforeStale,'the old card cannot approve its replacement');
+assert.equal(await guestPrompts.items[0].actions[0].run(),true);assert.equal(guestMatch.wave,1);assert.deepEqual(guestCommands.at(-1),{type:'approveWave',requestId:newWave});
 await el('endRun').onclick();assert.equal(leftParty,1);assert.equal(guestReturned,1);assert.equal(guestStopped,true);assert.equal(guestMatch.ended,false);assert.equal(guestMatch.players.bob.active,false);assert.ok(guestCommands.some(c=>c.type==='leaveRun'));assert.equal(el('runResults').open,true);assert.match(el('resultsTitle').textContent,/left the operation/);el('resultsDone').onclick();
 // The versus canvas is taller and the opponent lane is visible but read-only.
 const {createVersus,applyVersus,versusView,stepVersus}=await import('../versus.mjs');
@@ -91,8 +132,10 @@ const {createTwoVsTwo,applyFourCommand,stepFour}=await import('../four-modes.mjs
 const fourIds=['alice','bob','cara','dan'];const four=createTwoVsTwo(fourIds.map(id=>createPlayer(id,{name:id,gender:'female'})),'alice',[['alice','bob'],['cara','dan']]);let fourOptions,fourCommands=[];
 const fourFactory=options=>{fourOptions=options;return {start(){options.onSnapshot({match:structuredClone(four)});options.onStatus(true);},stop(){},async command(command){fourCommands.push(command);const result=applyFourCommand(four,'cara',command);options.onSnapshot({match:structuredClone(four)});return result;}};};
 const fourGame=startGame({getProfile:()=>({name:'Cara',gender:'female'}),getUserId:()=> 'cara',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road'});
-assert.equal(fourGame.beginCoop(cb=>fourFactory(cb)),true);assert.equal(el('versusTitle').textContent,'2 VS 2 · TEAM B');assert.equal(el('start').textContent,'WAIT FOR HOST');
-const fourRequest=applyFourCommand(four,'alice',{type:'startWave'});fourOptions.onSnapshot({match:structuredClone(four)});assert.equal(el('start').textContent,'APPROVE WAVE');el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(fourCommands.at(-1).requestId,fourRequest.requestId);assert.equal(el('start').textContent,'WAIT FOR PLAYERS');assert.equal(el('start').disabled,true);
+assert.equal(fourGame.beginCoop(cb=>fourFactory(cb)),true);assert.equal(el('versusTitle').textContent,'2 VS 2 · TEAM B');assert.equal(el('start').textContent,'REQUEST WAVE');assert.equal(el('start').disabled,false);
+el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(four.pending.requester,'cara');assert.equal(fourCommands.at(-1).expectedRequestId,0);assert.equal(el('start').textContent,'CANCEL REQUEST');assert.match(el('waveRequestText').textContent,/cara requests wave 1\. 3 approvals/);el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(four.pending,null);
+el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(fourCommands.at(-1).expectedRequestId,1,'the four-player projection retains a cancelled vote counter');assert.equal(four.pending.requester,'cara');el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(four.pending,null);
+const fourRequest=applyFourCommand(four,'alice',{type:'startWave'});fourOptions.onSnapshot({match:structuredClone(four)});assert.equal(el('start').textContent,'APPROVE WAVE');assert.match(el('waveRequestText').textContent,/alice requests wave 1/);el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(fourCommands.at(-1).requestId,fourRequest.requestId);assert.equal(el('start').textContent,'WAIT FOR PLAYERS');assert.equal(el('start').disabled,true);assert.equal(el('waveRequest').hidden,false);assert.match(el('waveRequestText').textContent,/2 approvals still needed/);
 four.lanes[0].hp=0;stepFour(four);fourOptions.onSnapshot({match:structuredClone(four)});assert.equal(el('versusTitle').textContent,'VICTORY');assert.match(el('resultsTitle').textContent,/Victory/);el('resultsDone').onclick();await fourGame.leaveCoop();
 // A late reservation response cannot release a newer selection of the same pad.
 const raceMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);raceMatch.hostId='alice';let raceOptions,releaseFirst,firstStarted;const firstSeen=new Promise(resolve=>{firstStarted=resolve;});let first=true;
@@ -111,6 +154,141 @@ const stale=structuredClone(uncertainMatch);stale.buildReservations[0]={playerId
 // Focus events are sent to the adapter, and remote pause snapshots explain the pause.
 const focusMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);focusMatch.hostId='alice';let focusOptions,focusCalls=[];const focusFactory=options=>{focusOptions=options;return {setFocusPaused:value=>focusCalls.push(value),start(){options.onSnapshot({match:structuredClone(focusMatch),hostPaused:false});options.onStatus(true);},stop(){},async command(command){return applyCommand(focusMatch,'alice',command);}};};const focusGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});focusGame.beginCoop(focusFactory);for(const fn of windowHandlers.blur||[])fn();assert.equal(focusCalls.at(-1),true);focusOptions.onStatus(false);focusOptions.onSnapshot({match:structuredClone(focusMatch),hostPaused:true});assert.match(el('message').textContent,/host left the game window/i);for(const fn of windowHandlers.focus||[])fn();assert.equal(focusCalls.at(-1),false);focusOptions.onStatus(true);focusOptions.onSnapshot({match:structuredClone(focusMatch),hostPaused:false});assert.match(el('message').textContent,/match has resumed/i);await focusGame.leaveCoop();
 // The speed vote uses the authoritative snapshot and explicit commands.
-const speedMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);speedMatch.hostId='alice';speedMatch.running=true;speedMatch.wave=1;let speedOptions,speedCommands=[],vote=null,speedValue=1;const speedSnapshot=()=>({match:structuredClone(speedMatch),speedControl:{speed:speedValue,request:vote?structuredClone(vote):null}});
-const speedFactory=options=>{speedOptions=options;return {start(){options.onSnapshot(speedSnapshot());options.onStatus(true);},stop(){},async command(command){speedCommands.push(command);if(command.type==='requestSpeed')vote={id:9,requester:'alice',wave:1,required:['bob'],approved:[]};if(command.type==='cancelSpeed')vote=null;if(command.type==='slowSpeed')speedValue=1;options.onSnapshot(speedSnapshot());return {ok:true};}};};const speedGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});speedGame.beginCoop(speedFactory);assert.equal(el('speed').textContent,'REQUEST 2×');assert.equal(el('speed').disabled,false);el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(speedCommands.at(-1).type,'requestSpeed');assert.equal(el('speedRequest').hidden,false);assert.equal(el('speedApprove').hidden,true);assert.match(el('speedRequestText').textContent,/Alice requests 2×/);el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(speedCommands.at(-1),{type:'cancelSpeed',requestId:9});vote={id:10,requester:'bob',wave:1,required:['alice'],approved:[]};speedOptions.onSnapshot(speedSnapshot());assert.equal(el('speedApprove').hidden,false);assert.equal(el('speed').disabled,true);el('speedApprove').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(speedCommands.at(-1),{type:'approveSpeed',requestId:10});vote=null;speedValue=2;speedOptions.onSnapshot(speedSnapshot());assert.match(el('speed').textContent,/2×/);el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(speedCommands.at(-1).type,'slowSpeed');await speedGame.leaveCoop();
+const speedMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);speedMatch.hostId='alice';speedMatch.running=true;speedMatch.wave=1;let speedOptions,speedCommands=[],vote=null,speedValue=1,speedLast=8;const speedSnapshot=()=>({match:structuredClone(speedMatch),speedControl:{speed:speedValue,lastRequestId:speedLast,request:vote?structuredClone(vote):null}});
+const speedFactory=options=>{speedOptions=options;return {start(){options.onSnapshot(speedSnapshot());options.onStatus(true);},stop(){},async command(command){speedCommands.push(command);if(command.type==='requestSpeed'){speedLast=9;vote={id:9,requester:'alice',wave:1,required:['bob'],approved:[]};}if(command.type==='cancelSpeed')vote=null;if(command.type==='slowSpeed')speedValue=1;options.onSnapshot(speedSnapshot());return {ok:true};}};};
+const speedPrompts={items:[],update(_source,items){this.items=items;},reset(){this.items=[];},isShowing(){return false;}};
+const speedGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true,promptCenter:speedPrompts});
+speedGame.beginCoop(speedFactory);assert.equal(el('speed').textContent,'REQUEST 2×');assert.equal(el('speed').disabled,false);el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+assert.deepEqual(speedCommands.at(-1),{type:'requestSpeed',expectedRequestId:8});assert.equal(el('speedRequest').hidden,false);assert.equal(el('speedApprove').hidden,true);assert.match(el('speedRequestText').textContent,/Alice requests 2×/);assert.equal(speedPrompts.items.length,0,'the requester sees their waiting strip, not an answer popup');
+el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(speedCommands.at(-1),{type:'cancelSpeed',requestId:9});
+speedLast=10;vote={id:10,requester:'bob',wave:1,required:['alice'],approved:[]};speedOptions.onSnapshot(speedSnapshot());assert.equal(el('speedApprove').hidden,false);assert.equal(el('speed').disabled,true);assert.match(speedPrompts.items[0].note,/Battle continues/);
+const oldSpeedAction=speedPrompts.items[0].actions[0].run;speedOptions.onStatus(false);assert.equal(speedPrompts.items.length,0);assert.equal(await oldSpeedAction(),false,'disconnect invalidates a displayed vote');speedOptions.onStatus(true);await new Promise(resolve=>setTimeout(resolve,0));
+speedLast=11;vote={id:11,requester:'bob',wave:1,required:['alice'],approved:[]};speedOptions.onSnapshot(speedSnapshot());const sentBefore=speedCommands.length;assert.equal(await oldSpeedAction(),false);assert.equal(speedCommands.length,sentBefore,'the previous card cannot answer the replacement');
+assert.equal(await speedPrompts.items[0].actions[0].run(),true);assert.deepEqual(speedCommands.at(-1),{type:'approveSpeed',requestId:11});
+vote=null;speedValue=2;speedOptions.onSnapshot(speedSnapshot());assert.match(el('speed').textContent,/2×/);el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.deepEqual(speedCommands.at(-1),{type:'slowSpeed',expectedRequestId:11});
+// A requester needs an explicit result, not just a vanished waiting strip.
+speedLast=12;vote={id:12,requester:'alice',wave:1,required:['bob'],approved:[]};speedOptions.onSnapshot(speedSnapshot());vote=null;speedOptions.onSnapshot(speedSnapshot());
+assert.match(el('message').textContent,/2× request ended\. Check the current speed/i,'without a reason or complete intermediate snapshots, do not invent the outcome');
+speedLast=13;vote={id:13,requester:'alice',wave:1,required:['bob'],approved:[]};speedOptions.onSnapshot(speedSnapshot());vote=null;speedValue=2;speedOptions.onSnapshot(speedSnapshot());
+assert.match(el('message').textContent,/2× approved by all players/i);
+speedValue=1;speedLast=14;vote={id:14,requester:'alice',wave:1,required:['bob'],approved:[]};speedOptions.onSnapshot(speedSnapshot());speedLast=15;vote=null;speedValue=2;speedOptions.onSnapshot(speedSnapshot());
+assert.match(el('message').textContent,/request ended\. Check the current speed/i,'a missed generation is not claimed to be an approval');
+speedValue=1;speedLast=16;vote={id:16,requester:'alice',wave:1,required:['bob'],approved:[]};speedOptions.onSnapshot(speedSnapshot());vote=null;speedMatch.running=false;speedOptions.onSnapshot(speedSnapshot());
+assert.match(el('message').textContent,/Wave cleared/i,'wave completion supersedes an inconclusive speed result');await speedGame.leaveCoop();
+
+// A late success receipt must not replace the newer result with a false
+// "waiting" message after another player already declined the request.
+const lateSpeedMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);lateSpeedMatch.hostId='alice';lateSpeedMatch.wave=1;lateSpeedMatch.running=true;
+let lateSpeedOptions,lateSpeedVote=null,finishSpeedReceipt;const lateSpeedSnapshot=()=>({match:structuredClone(lateSpeedMatch),speedControl:{speed:1,lastRequestId:lateSpeedVote?1:lateSpeedOptions?1:0,request:lateSpeedVote}});
+const lateSpeedGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});
+lateSpeedGame.beginCoop(options=>{lateSpeedOptions=options;return {start(){options.onSnapshot({match:structuredClone(lateSpeedMatch),speedControl:{speed:1,lastRequestId:0,request:null}});options.onStatus(true);},stop(){},command(command){if(command.type!=='requestSpeed')return Promise.resolve({ok:true});lateSpeedVote={id:1,requester:'alice',wave:1,required:['bob'],approved:[]};options.onSnapshot(lateSpeedSnapshot());return new Promise(resolve=>{finishSpeedReceipt=resolve;});}};});
+el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(typeof finishSpeedReceipt,'function');lateSpeedVote=null;lateSpeedOptions.onSnapshot(lateSpeedSnapshot());assert.match(el('message').textContent,/2× request ended\. Check the current speed/);
+finishSpeedReceipt({ok:true,requestId:1});await new Promise(resolve=>setTimeout(resolve,0));assert.match(el('message').textContent,/2× request ended\. Check the current speed/,'a late receipt must not reinstate waiting');await lateSpeedGame.leaveCoop();
+const lateWaveMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);lateWaveMatch.hostId='alice';let lateWaveOptions,finishWaveReceipt,lateWaveResult;
+const lateWaveGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});
+lateWaveGame.beginCoop(options=>{lateWaveOptions=options;return {start(){options.onSnapshot({match:structuredClone(lateWaveMatch)});options.onStatus(true);},stop(){},command(command){if(command.type!=='startWave')return Promise.resolve({ok:true});lateWaveResult=applyCommand(lateWaveMatch,'alice',command);options.onSnapshot({match:structuredClone(lateWaveMatch)});return new Promise(resolve=>{finishWaveReceipt=resolve;});}};});
+el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));assert.equal(typeof finishWaveReceipt,'function');assert.equal(applyCommand(lateWaveMatch,'bob',{type:'declineWave',requestId:lateWaveResult.requestId}).ok,true);lateWaveOptions.onSnapshot({match:structuredClone(lateWaveMatch)});assert.match(el('message').textContent,/Wave request cancelled, declined/);
+finishWaveReceipt(lateWaveResult);await new Promise(resolve=>setTimeout(resolve,0));assert.match(el('message').textContent,/Wave request cancelled, declined/,'a late wave receipt must not reinstate waiting');await lateWaveGame.leaveCoop();
+
+// A transport can deliver a receipt before the matching game snapshot. The
+// pending state may be skipped entirely by coalescing: report the current
+// outcome, never claim a different generation approved the original request.
+for(const scenario of ['accepted','later-generation','pending-then-ended']){
+ const m=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);m.hostId='alice';m.wave=1;m.running=true;let options,finish,last=0,vote=null,speed=1;
+ const snapshot=()=>({match:structuredClone(m),speedControl:{speed,lastRequestId:last,request:vote?structuredClone(vote):null}});
+ const g=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});
+ g.beginCoop(o=>{options=o;return {start(){o.onSnapshot(snapshot());o.onStatus(true);},stop(){},command(c){if(c.type==='requestSpeed')return new Promise(resolve=>finish=resolve);return Promise.resolve({ok:true});}};});
+ el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));finish({ok:true,requestId:1});await new Promise(resolve=>setTimeout(resolve,0));assert.match(el('message').textContent,/synchronizing the game state/i,scenario);
+ last=scenario==='later-generation'?2:1;speed=scenario==='pending-then-ended'?1:2;
+ if(scenario==='pending-then-ended')vote={id:1,requester:'alice',wave:1,required:['bob'],approved:[]};
+ options.onSnapshot(snapshot());
+ if(scenario==='accepted')assert.match(el('message').textContent,/2× approved by all players/i);
+ else if(scenario==='later-generation')assert.match(el('message').textContent,/request ended\. Check the current speed/i,'a later approval cannot be attributed to the original request');
+ else{assert.match(el('message').textContent,/Waiting for every other player/i);vote=null;options.onSnapshot(snapshot());assert.match(el('message').textContent,/request ended\. Check the current speed/i);}
+ await g.leaveCoop();
+}
+for(const scenario of ['started','declined']){
+ const m=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);m.hostId='alice';let options,finish;
+ const g=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});
+ g.beginCoop(o=>{options=o;return {start(){o.onSnapshot({match:structuredClone(m)});o.onStatus(true);},stop(){},command(c){if(c.type==='startWave')return new Promise(resolve=>finish=resolve);return Promise.resolve({ok:true});}};});
+ el('start').onclick();await new Promise(resolve=>setTimeout(resolve,0));finish({ok:true,waitingForGuest:true,requestId:1});await new Promise(resolve=>setTimeout(resolve,0));assert.match(el('message').textContent,/synchronizing the game state/i,scenario);
+ m.waveRequestId=1;if(scenario==='started'){m.wave=1;m.running=true;}options.onSnapshot({match:structuredClone(m)});
+ assert.match(el('message').textContent,scenario==='started'?/Wave started\./:/Wave request cancelled, declined/);await g.leaveCoop();
+}
+for(const scenario of ['snapshot-first-approved','snapshot-first-newer','missing-id','disconnect']){
+ const m=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);m.hostId='alice';m.wave=1;m.running=true;let options,finish,last=0,speed=1;
+ const snapshot=()=>({match:structuredClone(m),speedControl:{speed,lastRequestId:last,request:null}});
+ const g=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});
+ g.beginCoop(o=>{options=o;return {start(){o.onSnapshot(snapshot());o.onStatus(true);},stop(){},command(c){if(c.type==='requestSpeed')return new Promise(resolve=>finish=resolve);return Promise.resolve({ok:true});}};});
+ el('speed').onclick();await new Promise(resolve=>setTimeout(resolve,0));
+ if(scenario.startsWith('snapshot-first')){last=scenario==='snapshot-first-approved'?1:2;speed=2;options.onSnapshot(snapshot());}
+ if(scenario==='disconnect')options.onStatus(false);
+ finish(scenario==='missing-id'||scenario==='disconnect'?{ok:true}:{ok:true,requestId:1});await new Promise(resolve=>setTimeout(resolve,0));
+ const expected=scenario==='snapshot-first-approved'?/2× approved by all players/i:scenario==='snapshot-first-newer'?/2× request ended\. Check the current speed/i:scenario==='missing-id'?/Request sent\. Check the current status/i:/connection interrupted/i;
+ assert.match(el('message').textContent,expected,scenario);await g.leaveCoop();
+}
+
+// A reconnect sends a neutral movement command. A simultaneous vote click
+// must wait for that receipt, but never outlive the roster or request it saw.
+const queueMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);queueMatch.hostId='alice';queueMatch.wave=1;queueMatch.running=true;
+let queueOptions,releaseDirection,queueGeneration=10,queueSpeedVote=null,queueSpeedLast=0;const queueCalls=[];
+const queueSnapshot=()=>({match:structuredClone(queueMatch),speedControl:{speed:1,lastRequestId:queueSpeedLast,request:queueSpeedVote},rosterGeneration:queueGeneration,focusGeneration:1});
+const queueFactory=options=>{queueOptions=options;return {start(){options.onSnapshot(queueSnapshot());options.onStatus(true);},stop(){},async command(command){queueCalls.push(command);if(command.type==='direction')return new Promise(resolve=>{releaseDirection=resolve;});if(command.type==='requestSpeed'){queueSpeedLast++;queueSpeedVote={id:queueSpeedLast,requester:'alice',wave:1,required:['bob'],approved:[]};options.onSnapshot(queueSnapshot());return {ok:true};}return applyCommand(queueMatch,'alice',command);}};};
+const queueGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});queueGame.beginCoop(queueFactory);
+queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();assert.match(el('message').textContent,/after movement is synchronized/);assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,0);
+releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'2x tap is sent once after movement');
+queueSpeedVote=null;queueOptions.onSnapshot(queueSnapshot());queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();queueGeneration++;queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'a changed roster invalidates the deferred 2x request');assert.match(el('message').textContent,/request changed/i);
+// A vote may start and be cancelled before this client sees any pending vote.
+// The counter still advances, so a queued tap cannot revive the old request.
+queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();queueSpeedLast++;queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'an unseen completed 2x vote invalidates the deferred request');assert.match(el('message').textContent,/request changed/i);
+queueMatch.running=false;queueSpeedVote=null;queueOptions.onSnapshot(queueSnapshot());queueOptions.onStatus(false);queueOptions.onStatus(true);el('start').onclick();
+const unseen=applyCommand(queueMatch,'bob',{type:'startWave'});assert.equal(unseen.ok,true);assert.equal(applyCommand(queueMatch,'bob',{type:'cancelWave',requestId:unseen.requestId}).ok,true);queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.ok(!queueCalls.some(c=>c.type==='startWave'),'an unseen withdrawn wave invalidates the deferred request');assert.match(el('message').textContent,/request changed/i);
+assert.equal(applyCommand(queueMatch,'bob',{type:'startWave'}).ok,true);queueOptions.onSnapshot(queueSnapshot());const oldWaveId=queueMatch.waveRequest.id;
+queueOptions.onStatus(false);queueOptions.onStatus(true);el('start').onclick();assert.equal(applyCommand(queueMatch,'alice',{type:'declineWave',requestId:oldWaveId}).ok,true);assert.equal(applyCommand(queueMatch,'bob',{type:'startWave'}).ok,true);queueOptions.onSnapshot(queueSnapshot());
+releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.ok(!queueCalls.some(c=>c.type==='approveWave'),'an approval cannot jump to a replacement request');assert.match(el('message').textContent,/request changed/i);await queueGame.leaveCoop();
+
+// Opening an occupied pad while movement is still being acknowledged must not
+// drop the first upgrade tap. Closing/changing the menu cancels a deferred tap.
+const heldMatch=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);heldMatch.hostId='alice';assert.ok(applyCommand(heldMatch,'bob',{type:'build',pad:0,towerType:0}).ok);
+let heldOptions,finishMovement;const heldCalls=[];const heldSnapshot=()=>({match:structuredClone(heldMatch),rosterGeneration:1,focusGeneration:0});
+const heldFactory=options=>{heldOptions=options;return {start(){options.onSnapshot(heldSnapshot());options.onStatus(true);},stop(){},async command(command){heldCalls.push(command);if(command.type==='direction')return new Promise(resolve=>{finishMovement=resolve;});const result=applyCommand(heldMatch,'alice',command);options.onSnapshot(heldSnapshot());return result;}};};
+const heldGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road',deferTutorial:true});heldGame.beginCoop(heldFactory);
+heldOptions.onStatus(false);heldOptions.onStatus(true);await el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();
+assert.match(el('message').textContent,/upgrade.*synchronized/i);assert.equal(heldCalls.filter(c=>c.type==='upgrade').length,0);
+finishMovement({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.equal(heldCalls.filter(c=>c.type==='upgrade').length,1);assert.equal(heldMatch.towers[0].level,2);
+heldMatch.towers[0].level=1;heldMatch.players.alice.money=125;heldOptions.onSnapshot(heldSnapshot());heldOptions.onStatus(false);heldOptions.onStatus(true);await el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();el('radialClose').onclick();finishMovement({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(heldCalls.filter(c=>c.type==='upgrade').length,1,'a closed menu cannot send a queued upgrade');
+heldOptions.onStatus(false);heldOptions.onStatus(true);await el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();heldMatch.towers[0].id++;heldOptions.onSnapshot(heldSnapshot());finishMovement({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(heldCalls.filter(c=>c.type==='upgrade').length,1,'a replacement tower cannot receive an old queued upgrade');
+// Back out of one specialization and reopen another: even though a details
+// dialog is open again, it is not the same user decision.
+el('radialClose').onclick();heldMatch.towers[0].level=2;heldMatch.players.alice.money=1000;heldOptions.onSnapshot(heldSnapshot());heldOptions.onStatus(false);heldOptions.onStatus(true);await el('game').onclick({clientX:105,clientY:210});el('radial0').onclick();el('radial0').onclick();assert.equal(el('towerDetails').open,true);el('towerDetailsConfirm').onclick();assert.match(el('towerDetailsCost').textContent,/upgrade.*synchronized/i);
+el('towerDetailsBack').onclick();el('radial1').onclick();assert.equal(el('towerDetails').open,true);finishMovement({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
+assert.equal(heldCalls.filter(c=>c.type==='upgrade').length,1,'reopening a different specialization cannot authorize the old selection');el('radialClose').onclick();await heldGame.leaveCoop();
+
+// Training schedules its coach two animation frames later. Run those frames
+// manually so we can change session, abandon the run or join a party in between.
+const trainingFrames=[];globalThis.requestAnimationFrame=fn=>{trainingFrames.push(fn);return trainingFrames.length;};
+let trainingId='first',trainingVersion=1,trainingSessionChange,canChooseSolo=true;
+const trainingAccount={getProfile:()=>({name:trainingId,gender:'female'}),getUserId:()=>trainingId,getSessionVersion:()=>trainingVersion,isReady:()=>true,getLevel:()=>1,canChooseSolo:()=>canChooseSolo,onSessionChange(fn){trainingSessionChange=fn;},awardXP(){}};
+const trainingRaceGame=startGame(trainingAccount,{nextMapId:()=> 'road',deferTutorial:true,confirmAction:async()=>true});
+trainingFrames.shift(); // The independent, continuously scheduled game loop.
+const scheduleCoach=()=>{const outer=trainingFrames.shift();assert.equal(typeof outer,'function');outer();const inner=trainingFrames.shift();assert.equal(typeof inner,'function');return inner;};
+assert.equal(trainingRaceGame.startTrainingRun(),true);const oldSessionCoach=scheduleCoach();
+trainingId='second';trainingVersion++;trainingSessionChange();
+assert.equal(trainingRaceGame.isTrainingRun(),false,'a new account must not inherit the old training contract');
+assert.equal(trainingRaceGame.startTrainingRun(),true,'the new account can start its own training');
+oldSessionCoach();assert.equal(trainingRaceGame.isCoachOpen(),false,'an old queued coach cannot start in the new session');
+scheduleCoach()();assert.equal(trainingRaceGame.isCoachOpen(),true,'the current training coach still starts normally');trainingRaceGame.stopCoach();
+assert.equal(trainingRaceGame.startTrainingRun({restart:true}),true);const abandonedCoach=scheduleCoach();
+await el('endRun').onclick();abandonedCoach();assert.equal(trainingRaceGame.isCoachOpen(),false,'an abandoned run cannot start its queued coach');
+assert.equal(trainingRaceGame.startTrainingRun({restart:true}),true);const partyCoach=scheduleCoach();
+const trainingParty=createMatch([createPlayer('second',{name:'Second',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);trainingParty.hostId='second';
+assert.equal(trainingRaceGame.beginCoop(options=>({start(){options.onSnapshot({match:structuredClone(trainingParty)});options.onStatus(true);},stop(){},command:async()=>({ok:true})})),true);
+assert.equal(trainingRaceGame.isTrainingRun(),false,'joining a party ends the training contract');
+assert.equal(trainingRaceGame.startTrainingRun(),false,'training cannot replace an active multiplayer field');partyCoach();assert.equal(trainingRaceGame.isCoachOpen(),false);
+await trainingRaceGame.leaveCoop();canChooseSolo=false;assert.equal(trainingRaceGame.startTrainingRun(),false,'an open lobby also blocks a late training handoff');
 });

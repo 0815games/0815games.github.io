@@ -77,6 +77,15 @@ test('account error templates preserve unknown codes',()=>{
  const f=fixture('de');assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Die Anfrage konnte nicht abgeschlossen werden. Bitte versuche es erneut. (auth/test)');f.selector.value='en';f.selector.change();assert.equal(translateText('Could not complete the request. Please try again. ({code})',{code:'auth/test'}),'Could not complete the request. Please try again. (auth/test)');
 });
 
+test('unconfirmed or duplicate friend requests have clear German and English feedback',()=>{
+ const f=fixture('de'),uncertain='Friend request could not be confirmed. Check your sent list before retrying.';
+ assert.equal(translateText(uncertain),'Die Freundschaftsanfrage konnte nicht bestätigt werden. Prüfe deine gesendeten Anfragen, bevor du es erneut versuchst.');
+ assert.equal(translateText('You are already friends.'),'Ihr seid bereits befreundet.');
+ assert.equal(translateText('Request already sent.'),'Anfrage wurde bereits gesendet.');
+ assert.equal(translateText('They already sent you a request. Accept it below.'),'Diese Person hat dir bereits eine Anfrage gesendet. Nimm sie unten an.');
+ f.selector.value='en';f.selector.change();assert.equal(translateText(uncertain),uncertain);
+});
+
 test('generated map names, accessibility titles and dynamic engine errors translate reversibly',async()=>{
  const {MAPS}=await import('../maps.mjs');const {localizeGameMessage}=await import('../game-localization.mjs');const f=fixture('de');
  for(const map of Object.values(MAPS))assert.notEqual(translateText(map.name),map.name,map.name);

@@ -2,27 +2,60 @@
 
 Dieses Blatt trennt veröffentlichte Funktionen, lokale Änderungen und ausstehende Nachweise. GitHub Pages, Firebase Authentication und die Realtime Database sind getrennte Systeme: Ein Website-Merge veröffentlicht keine Firebase-Regeln und beweist keine Live-Partie. Keine Zugangsdaten, Tokens, Partycodes oder privaten Spielerinformationen in diesem Blatt speichern.
 
-**Aktueller Arbeitsstand:** Die kostenlose Firebase-/Pages-Variante für
-Wartung und sichere Updatezeitpunkte liegt zusammen mit Charakter-/Social-
-Bereinigung und Vierer-Party auf dem Arbeitsbranch, **nicht live**. Sie braucht
-keinen Vercel-Dienst und keinen Service-Account-Schlüssel. Lokale Tests verwenden
-Firebase-Doubles; der neue Rules-Kandidat muss im offiziellen Emulator sowie vor
-Veröffentlichung mit einem frischen, unabhängigen Produktions-Rules-Export
-geprüft werden. Firebase-Regeln und produktiver Wartungsdatensatz wurden nicht
-geändert; die aktuelle Pages-Quellkonfiguration muss vor einem Cutover frisch
-verifiziert werden. Der Operatorplan und die Grenzen stehen in
-`release-tools/FIREBASE-PAGES-ROLLOUT.md`. Das separate Vercel-Hobby-Projekt und
-`PAGES-ROLLOUT.md` beschreiben nur den älteren Experimentpfad. Kein weiterer
+**Aktueller Arbeitsstand:** Die Firebase-/GitHub-Pages-Variante für Wartung und
+sichere Updatezeitpunkte wurde mit Charakter-/Social-Bereinigung und Vierer-Party
+in [PR #287](https://github.com/0815games/0815games.github.io/pull/287)
+veröffentlicht. Die mobile Wartungs- und Admin-Gestaltung folgte nach gesonderter
+Freigabe in [PR #288](https://github.com/0815games/0815games.github.io/pull/288);
+der veröffentlichte Build ist `20261031-update3`. Der Betreiber bestätigte das
+neue Layout, den separaten Admin-Login und zwei stimmige Diagnosefelder auf
+seinem iPhone. Die öffentliche Statusabfrage zeigte danach weiter `maintenance`.
+Der Betreiber meldete zuvor die Rules-Veröffentlichung und eine zum Kandidaten
+passende Prüfsumme aus einem authentifizierten Abruf; dieser Abruf wurde nicht
+unabhängig aus dieser Arbeitsumgebung ausgeführt. Ein echter Mehrgeräte-Spieltest
+und die abgestimmte Wiederöffnung bleiben offen. Firebase Auth selbst ist nicht
+vollständig gesperrt; alte oder offline Geräte lassen sich nicht fernsteuern.
+
+Der vollständig nachgereichte Gameplan, seine Entscheidungen und Fehlerfälle
+stehen mit belegten Teilständen und offenen Punkten in
+[Patch-Blöcke und Kampfsystem](PATCH-BLOECKE.md). Die frühere Einordnung als
+bloße Grundlagen war zu pauschal: mehrere gezielte Fixes, die ausdrücklich
+freigegebene Avatar-Überarbeitung und die Turm-Kits sind bereits umgesetzt;
+die damalige Tutorial-Abbruchkorrektur wurde laut PR-Beschreibung vom Nutzer
+bestätigt. Neue Anforderungen und ausstehende Geräteprüfungen sind davon
+getrennt. Bei den bereits vorhandenen Turm-Kits wurden drei konkrete Fehler
+gefunden. Der zuletzt geprüfte Status stand auf Wartung; der Betreiber möchte
+nach jedem sinnvollen Schritt veröffentlichen und wieder für Tests öffnen. Diese
+Bestandsaufnahme ändert weder Website, Rules noch Produktionsdaten. Für spätere
+Rules-Änderungen den aktuellen vollständigen Produktionsstand erneut exportieren
+und vergleichen.
+Der Operatorplan und die Grenzen stehen in `release-tools/FIREBASE-PAGES-ROLLOUT.md`.
+`PAGES-ROLLOUT.md` beschreibt nur den älteren Vercel-Experimentpfad. Kein weiterer
 Test auf `ironpathtest`; ältere Abschnitte unten halten Zwischenstände fest.
+
+**Lokaler Zwischenstand der aktuellen Blöcke:** Multiplayer-Abschluss,
+Abmeldeentscheidungen, Anfragen und Freundesabläufe wurden weiter abgesichert;
+Freundesporträts und ein ausschließlich lokales Namens-Inventurwerkzeug sind
+hinzugekommen. Der letzte serielle Spieltest bestand **994/994**, der Server
+**13/13**; zusätzliche Chromium- und Firebase-Emulatorfälle sind mit ihren
+Grenzen in [IPL-0026](PATCH-LOG.md#ipl-0026--abschließende-lokale-regression-und-releaseprüfung)
+dokumentiert. Der ergänzte Drei-/Vierer-Abschlusstest am normalen Pages-Einstieg
+ist in [IPL-0027](PATCH-LOG.md#ipl-0027--releasepfad-normaler-pages-einstieg-und-wartungs-rules)
+beschrieben. Zum Zeitpunkt dieser Prüfungen waren die Änderungen lokal und nicht
+auf echten Geräten abgenommen; den tatsächlichen Veröffentlichungsstand zeigen
+Git, das Patch-Log und das öffentliche Versionsmanifest. Globale
+Namenseindeutigkeit, Prüfung und Integration der Porträt-Rules sowie die
+späteren Blöcke bleiben offen.
 
 ## Übersicht der Anforderungen
 
 | Abschnitt | Stand | Offene Punkte |
 | --- | --- | --- |
-| Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | Website-Build `20261031-mpview1` wurde über [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlicht; Pages und öffentliche Assets wurden abgerufen. | Live-Abnahme mit zwei Konten und Geräten, Reconnect, Belohnungen, Balance und produktiven Firebase-Regeln steht noch aus. |
-| Wartung vor jedem Patch und Rollout | **Firebase-only-Kandidat lokal, nicht live.** Wartungsanzeige, Live-Abbruch und Rules-Entwurf für Spieldaten mit Auth-Zeit-Cutoff. | Frischer Produktions-Rules-Abgleich, offizieller Emulator für den neuen Kandidaten, Pages-Konfiguration, tatsächlicher Cutover und Rollback. Firebase Auth selbst wird nicht vollständig gesperrt. |
-| Immer aktuelle Clients | **Versionsprüfung lokal, nicht live.** Normale Updates warten auf bekannte sichere Punkte und unterbrechen laufende Partien nicht absichtlich. | Ein Manifest beweist keinen Browsercode; Cache, Offline-Geräte, alte/manipulierte Clients und fehlgeschlagene Saves bleiben Grenzen. |
-| Weitere Patch-Blöcke: Charakter, Freunde, Einladungen | Auf dem Arbeitsbranch implementiert und in Emulator-/Browser-CI geprüft; nicht Teil des veröffentlichten MP-Releases. | Aktuelle Produktions-Rules abgleichen, abgestimmt veröffentlichen und bekannte Grenzen bei parallelen Geräten beachten. |
+| Große Mehrspielerkarte und bildschirmfüllendes Spielfeld | [PR #286](https://github.com/0815games/0815games.github.io/pull/286) veröffentlichte `20261031-mpview1`, inklusive Turmmenü-Pointerfix; lokale SDK-/Browser-Emulatorfälle prüfen zusätzlich eigene und fremde Upgrades und Wellenanfragen. | Veteranen-Rabatt und weitere lokale Fixes veröffentlichen; Live-Abnahme mit mehreren Konten und Geräten, Reconnect, Belohnungen und Balance. |
+| Wartung beim Merge-/Commit-Vorgang | Firebase-only-Wartung und Admin-Bereich veröffentlicht; der zuletzt öffentliche Status war `maintenance`. Der Betreiber wünscht nach sinnvollen Schritten die Wiederöffnung für Tests. | Nach erfolgreicher Veröffentlichung den berechtigten Admin-Schalter zum Öffnen verwenden; Firebase Auth selbst wird nicht vollständig gesperrt. Vor Rules-Änderungen aktuellen Produktionsstand sichern und vergleichen. |
+| Versionsprüfung | Versionsprüfung mit sicheren Updatezeitpunkten veröffentlicht; der Betreiber meldete für `20261031-update3` zwei stimmige Diagnosefelder auf dem iPhone. | Während der Wartung prüft „Erneut prüfen“ nur den Wartungsstatus; die normale automatische Versionsprüfung startet nach Freigabe vor der Anmeldung. Ein Manifest beweist keinen Browsercode; Cache, Offline-Geräte, alte/manipulierte Clients und fehlgeschlagene Saves bleiben Grenzen. |
+| Charakter, Freunde, Einladungen | #287 implementiert bestätigte Bereinigung und Alt-Code-/Suchindex-Reparatur. Abmeldung/Meldung nach Entlassung, ein mittiges nichtmodales Anfragezentrum, frischegeschütztes Ablehnen und identische Freundesporträts mit neutralem Platzhalter sind lokal ergänzt. Ein konkurrierender Freundschafts-Write wird nicht mehr ohne eigene Bestätigung als Erfolg gemeldet ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); Emulator-/Browserfälle verwenden synthetische Daten. | Porträt-Rules nur als lokaler Kandidat; vor Veröffentlichung aktuell exportieren, separat prüfen und freigeben. Eindeutige Namen, tatsächliche Altbestände sowie reale Mehrgeräte- und Screenreader-Abnahme bleiben offen. |
+| Multiplayer, Kampf und Lebenssystem | Karten-/Tutorial-Fixes, 2×-Abstimmung, Kampfeffekte und zehn Turm-Kits sind vorhanden; das neue Lebenssystem ist nicht implementiert. Der Veteranenpreis ist lokal korrigiert. | [Themenblöcke und Reihenfolge](PATCH-BLOECKE.md): vorhandene Teilfunktionen erhalten, zwei noch offene Kit-Fehler und neue Anforderungen einzeln bearbeiten. |
 
 ## 1. Zuletzt veröffentlichter Multiplayer-Schnitt
 
@@ -67,24 +100,88 @@ Anleitung. Maßgeblich sind die Aktualisierung oben und
 - Auch eine gesperrte Datenbank und ein angehaltener eigener Token-Austausch unterbinden nicht automatisch jede Firebase-Authentifizierungsmethode. E-Mail/Passwort, Registrierung, weitere Provider, Custom-Token-Ausgabe und bestehende Tokens müssen getrennt geprüft werden; insbesondere können bereits ausgestellte Custom-Tokens noch gegen eine Firebase-Sitzung eingetauscht werden. Keine pauschale Auth-Sperre behaupten.
 - Pfadabgleich: Dieses neu rekonstruierte Blatt liegt im aktuellen Checkout unter `IronPath/DATENBLATT.md`; es ist nicht das frühere Original. Der zuvor angenommene Pfad außerhalb des Checkouts war falsch.
 
-## 3. Weitere Patch-Blöcke
+## 3. Ursprünglicher Gameplan und zusätzliche Themen
 
-- Charakterentlassung, Freundes-/Einladungsbereinigung und Teile des Party-
-  Lifecycle sind auf diesem Branch implementiert, nicht im MP-Release PR #286.
-  Die Entlassung löscht bekannte Daten atomar und wartet auf Serverbestätigung;
-  sie löscht nicht das Firebase-Auth-Konto und erfasst keine unauffindbaren
-  Altlasten oder garantiert alle parallelen Geräte.
+Der Betreiber hat alle sechs Originalblöcke samt Entscheidungen und konkreten
+Fehlerfällen nachgereicht. Die Reihenfolge bleibt **Block 1 vor Block 2**, dann
+Oberfläche, Avatare, Skill-Rework und zuletzt das große Tutorial. Der
+[Patchplan](PATCH-BLOECKE.md) unterscheidet bereits umgesetzte Funktionen,
+historische Nutzerbestätigungen, neue Anforderungen und fehlende Nachweise.
+Der vollständige ältere Chat ist hier nicht direkt verfügbar; die zitierten
+Bestätigungen stammen aus den jeweils verlinkten PR-Beschreibungen.
+
+| Originalblock | Bereits belegt | Getrennt davon noch offen |
+| --- | --- | --- |
+| **1 – Multiplayer-Spielbarkeit** | #196/#249 reparierten den Rückzugskartenfehler; #286 brachte große Felder und Turmmenü-Fix; #136 implementierte 2×. Veteranenpreis, Wellenfreigabe durch alle, Weg-Endpunkte und bestätigter Partyabschluss sind lokal ergänzt. Feld-Abmeldung, pausierte Duelle und opt-in Recovery bestanden begrenzte Emulator-Browserfälle ([IPL-0018](PATCH-LOG.md#ipl-0018--block-1-feld-abmeldung-pausierte-duelle-und-recovery)). | Host-/Gast-Upgrade-, 2×- und Abschlusskette auf echten Geräten abnehmen; dauerhaft abwesende/früher ausgetretene Gäste und ohne Recovery verwaiste Gruppen bleiben offen. Lokale Fixes sind unveröffentlicht; Tutorial-Lifecycle weiter prüfen. |
+| **2 – Charakter, Freunde, Einladungen** | #287: atomare Bereinigung auffindbarer Daten und Reparatur von Alt-Code/Suchindex. Abmeldung/Meldung, leere Bereiche, mittige Social-Hinweise und einheitliche gespeicherte Freundesporträts sind lokal ergänzt; Ablehnung, Wiederanfrage, Entfernen und ein Porträt-Rules-Kandidat wurden synthetisch im Emulator geprüft ([IPL-0021](PATCH-LOG.md#ipl-0021--block-2-freundschaftsabläufe-und-lokale-freundesporträts)). Ein Zwei-Tab-Scheinerfolg ist lokal korrigiert und im Emulator geprüft ([IPL-0025](PATCH-LOG.md#ipl-0025--block-2-kein-scheinerfolg-bei-konkurrierenden-freundesanfragen)); ein reines Offline-Inventurwerkzeug verwendet nur synthetische Fixtures ([IPL-0022](PATCH-LOG.md#ipl-0022--block-2-datenschutzschonende-namens-vorprüfung)). | Lokale Änderungen und dafür gesondert zu prüfende Rules nicht veröffentlicht; reale Altbestände und weitere Freundesfehler prüfen, eindeutige Namen und Geräteabnahme. Lokal-only- oder nicht zuordenbare Gesichter erscheinen bei Freunden als Platzhalter. |
+| **3 – Oberfläche** | Party-Textliste, After-Action Report mit bestätigten Belohnungen und Menü-/Report-XP-Anzeige; #284 brachte Rangabzeichen ins Menü, Dossier und Kampfprofil. | Vier Personalkarten, bezahlbarer Endless-Turmschimmer, bestätigte XP im Kampf-HUD, Rang/Beförderung im Report und „What’s Next“ im Detailbereich. |
+| **4 – Avatare** | Vorschau wurde laut [#277](https://github.com/0815games/0815games.github.io/pull/277) ausdrücklich freigegeben, im echten Recruit-Screen integriert und die Vorschauseite entfernt. Hauptmenü/Dossier zeigen Layer-Porträts; alte Looks werden zugeordnet. | Qualität und 6–10 stimmige Looks prüfen/erweitern; konsistente Darstellung in Freunden und Party sowie robuste geräteübergreifende Speicherung. Das genehmigte Rework nicht als ungebaut behandeln. |
+| **5 – Skills** | Fünf Klassen und ihre Fähigkeiten sowie zehn rangbasierte Turm-Kits sind vorhanden. [#265](https://github.com/0815games/0815games.github.io/pull/265) enthält trotz Plantitel den [Implementierungscommit](https://github.com/0815games/0815games.github.io/commit/624f6436c188d8b3b65b68de8d99d496169e0838); bei den Kits sind drei Fehler nachgewiesen. | Luftabwehr als sechste Klasse, exklusive Klassenwahl ab Level 2, individuelle Skillzweige und zusätzliche *skillbaumgesteuerte* Turmausbauten; sichere einmalige Punkterückgabe ohne Verlust von XP/Level/Ausrüstung. |
+| **6 – Tutorial** | Die bisherige spielbare Fünf-Wellen-Mission, Coach und sichere Wiederholung bestehen; #196/#278/#279 behoben konkrete Abbruch-/Menüfälle, und [#280](https://github.com/0815games/0815games.github.io/pull/280) dokumentiert „Tutorial hört sauber auf“. | Charakterbezogene Annahme/Ablehnung im Hauptmenü, große vertonte Mission mit vollständiger Menüführung und fester Funkstimme eines älteren Generals; Untertitel, Barrierefreiheit und sichere Wiederholung. Nach Block 5 fertigstellen. |
+
+**Konkrete neue Prüfbefunde zu vorhandenen Turm-Kits:** (1) Bossjäger III zahlt
+den angekündigten +25-Vorräte-Bonus nicht; ein früherer Test kann durch normale
+Belohnungen fälschlich bestehen. (2) Doppel-MG III behält im neutralen
+Simulationstest den Faktor 0,6 gegen Flugzeuge statt des angekündigten vollen
+Schadens. (3) Das Menü zeigt für einen Veteranenturm Stufe 5 den ungekürzten
+Preis 360 und verhindert bei 306 Vorräten den Befehl, obwohl die Simulation
+306 akzeptiert. Letzteres wurde mit DOM-/Transport-Doubles reproduziert, nicht
+in einer echten Mehrgerätepartie. Messwerte und Codeverweise stehen im
+[Patchplan](PATCH-BLOECKE.md#konkrete-befunde-zur-bestehenden-turm-spezialisierung).
+Die ersten beiden Fehler sind offen; der Veteranenpreis ist lokal korrigiert,
+getestet und noch nicht veröffentlicht.
+
+**Gemeldete Fehlerfälle:** In einer Dreierpartie gingen Turmmenüs an eigenen
+und fremden Türmen nicht auf; eine 2×-Anfrage in Welle 2 oder 3 zeigte keine
+sichtbare Reaktion. Nach „Run beenden“ blieb „Aufgabe zeigen“ im Hauptmenü und
+Multiplayer sichtbar (Handy im Hochformat, Laptop mit Firefox). Ein älteres
+Konto hatte nach Löschung und neuer Erstellung unter anderem Namen Probleme mit
+der Freundesuche. Dazu gibt es die oben verlinkten gezielten Fixes. Ob diese
+Berichte vor oder nach jedem einschlägigen Fix entstanden, ist nicht geklärt;
+sie sind nicht automatisch eine Reproduktion im aktuellen Build.
+
+- Die veröffentlichte Löschung wartet auf Bestätigung, lässt das Firebase-Auth-
+  Konto bestehen und erfasst nur bekannte Pfade. Im veröffentlichten Build
+  bleibt der Client danach angemeldet und zeigt die Charaktererstellung. Lokal
+  wird stattdessen abgemeldet und einmalig die gewünschte Login-Meldung
+  **„Dein Charakter wurde aus dem Dienst entlassen. Bitte melde dich erneut an.“**
+  angezeigt; der Auth-/RTDB-Emulator-Browserfall bestand, Veröffentlichung und
+  echte Geräteabnahme stehen aus.
 - Die kombinierten Regeln und zwei synthetische Browser-Sessions bestanden in
   der offiziellen Emulator-CI [43570287668](https://github.com/0815games/0815games.github.io/actions/runs/43570287668).
-  Das ist keine produktive Mehrgeräte-Abnahme. Einzelheiten und Grenzen stehen
-  in `firebase/FRIENDS-ROLLOUT.md`.
+  Der Betreiber meldete die produktive Rules-Veröffentlichung und passenden
+  Hash; der authentifizierte Abruf wurde hier nicht unabhängig ausgeführt.
+  Weitere Grenzen stehen in `firebase/FRIENDS-ROLLOUT.md`.
+- **Lokale Prüfungen:** Nach dem Anfragezentrum bestand der Node-Lauf mit
+  **932/932**, die separate Server-Suite mit **13/13**, jeweils ohne Skips.
+  Browser mit echten Firebase-SDKs und lokalen Auth-/RTDB-Emulatoren prüften
+  Zweier-Koop bis Welle 2 und Drei-/Vierer-Koop bis zur 2×-Freigabe in Welle 3;
+  für die durchgespielten Wellen wurden EP serverseitig gelesen. Fünf
+  Modus-/Größenfälle und die Popup-Bedienung wurden zusätzlich mit einem
+  simulierten Transport in Chromium geprüft. Details und Grenzen stehen im
+  [Patch-Log](PATCH-LOG.md#ipl-0014--b2-einheitliches-anfragezentrum-und-frische-einladungen).
+  Einzelne TAP-Zähler fassen ganze Dateien zusammen. Der Bossjäger-Test bleibt
+  trotz Grün unzureichend. Die bestehende Main-CI betrifft den veröffentlichten
+  Ausgangsstand; kein Lauf ersetzt eine echte Mehrgeräte-Abnahme.
+- **Ergänzungen A–E:** Namen gehören zu Block 2, Wellenanfragen durch alle
+  Spieler und weitere Einsteigerbalance zu Block 1, Popup-Darstellung und
+  Schussoptik zu Block 3 und die Klassenfähigkeit auch zu Block 5. Bereits
+  vorhandene Teilfunktionen, z. B. die 70-%-Balance für Zweierteams, sind im
+  Plan vermerkt. Das neue Lebens- und Angriffssystem ist als separater
+  **zusätzlicher Block 7** vorgeschlagen; seine Terminierung wird abgestimmt.
+- **Nutzerentscheidungen:** Hochwertige Looks mit einzelnen kompatiblen Details;
+  Luftabwehr als sechste Klasse; einmaliger Skill-Reset mit Rückgabe der Punkte;
+  eine feste Funkstimme eines älteren Generals. Namen sollen außerdem über alle
+  Konten hinweg eindeutig sein. Rules- und produktive Datenänderungen erfordern
+  weiterhin frischen Abgleich, Tests und separate Freigabe.
 
 ## 4. Rollout-Protokoll
 
 | Abschnitt | Nachweis / Status |
 | --- | --- |
-| Bisheriger Website-Stand | Pages-Build `ebefe2adf7131adce155db1a3e75e8f4ee0264b3` mit `20261031-mpview1` nach PR #286; produktive Firebase-Regeln nicht unabhängig ausgelesen. |
-| Wartungs- und Versionsschutz | **Noch nicht live.** Firebase-only-Kandidat und sichere Updatezeitpunkte lokal; kein Vercel-Dienst erforderlich. Regeln und produktiver Status unverändert, aktuelle Pages-Quelle unabhängig zu prüfen. Kein weiterer Test auf `ironpathtest`. |
-| Weitere Patch-Blöcke | Auf dem Branch implementiert und in Emulator-/Browser-CI geprüft; nicht live. |
+| Bisheriger Website-Stand | PR #286 lieferte `20261031-mpview1`; PR #287 veröffentlichte anschließend den Firebase-only-Wartungs- und Versionsschutz und die Charakter-/Social-Bereinigung. |
+| Aktueller Website-Stand | PR #288 wurde als `05542181c2c3df13cacc52010b7f190cc0ac1880` gemergt; [Pages-Deployment](https://github.com/0815games/0815games.github.io/actions/runs/43755799363) und [Main-CI](https://github.com/0815games/0815games.github.io/actions/runs/43755799438) bestanden. Das öffentliche Manifest meldete `20261031-update3`. |
+| Wartung und Geräteprüfung | Der Betreiber bestätigte das neue Layout, Admin-Login und beide Versionsfelder auf dem iPhone; danach meldete der öffentliche Status weiter `maintenance`. Eine spätere Öffnung ist getrennt abzustimmen. Der Rules-Abgleich beruht auf dem vom Betreiber gemeldeten authentifizierten Abruf, nicht auf einem unabhängigen Abruf hier. |
+| Sechs Originalblöcke und neue Wünsche | Im [Plan](PATCH-BLOECKE.md) nach historischen Fixes, Nutzerbestätigungen, neuen Anforderungen und ausstehenden Prüfungen getrennt. Bereits Gebautes und die drei gefundenen Kit-Fehler sind ausdrücklich vermerkt. |
 
 Nach jedem logischen Abschnitt fortschreiben. Ein noch nicht geprüfter Schutz oder Rollout bleibt ausdrücklich als solcher markiert.

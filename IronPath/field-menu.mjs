@@ -14,7 +14,7 @@ export function setupFieldMenu({document, onLanguageChange = () => () => {}, onS
   const menu = $('fieldOps');
   if (!menu) return;
 
-  for (const [source, target] of [['fieldBack', 'backToCommand'], ['fieldParty', 'partyToggle'], ['fieldMissionBoard', 'campaignShowBoard']]) {
+  for (const [source, target] of [['fieldBack', 'backToCommand'], ['fieldParty', 'partyToggle'], ['fieldMissionBoard', 'campaignShowBoard'], ['fieldLogout', 'menuLogout']]) {
     $(source)?.addEventListener('click', () => { menu.open = false; $(target)?.click(); });
   }
 

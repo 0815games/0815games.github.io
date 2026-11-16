@@ -35,6 +35,8 @@ const assert=require('node:assert/strict');
       const match=createFourCoop(ids.map(id=>createPlayer(id,{...profile,name:id})),'alice','four-front');
       const mine=applyFourCommand(match,'alice',{type:'build',pad:4,towerType:0});
       const theirs=applyFourCommand(match,'bob',{type:'build',pad:11,towerType:1});
+      // Exercise both upgrade purchases without waiting through real waves.
+      match.match.players.alice.money=300;
       window.__match=match;window.__commands=[];
       const account={getProfile:()=>profile,getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>3,onSessionChange(){},awardXP:async()=>{},recordScore(){},saveCampaign:async()=>{},getToken:async()=> 'test',sandbox:()=>false};
       window.__control=startGame(account,{experimentalFourViewport:true,nextMapId:()=>window.__nextMap||'four-front',deferTutorial:true,confirmAction:async()=>true});
@@ -80,6 +82,10 @@ const assert=require('node:assert/strict');
 
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'own tower stays open after mouse click');
     assert.ok((await page.evaluate(()=>window.__clicks)).some(e=>e.trusted&&e.detail>0),'a real compatibility click was dispatched');
+    await page.locator('#radial0').click();
+    await page.waitForFunction(()=>window.__match.match.towers.find(t=>t.pad===4)?.level===2);
+    assert.equal(await page.evaluate(()=>window.__match.match.players.alice.money),230,'own upgrade spends the payer’s supplies');
+    await tapPad(4);
     const commandsBefore=await page.evaluate(()=>window.__commands.length);await closeOutside();
     assert.equal(await page.evaluate(()=>window.__commands.length),commandsBefore,'outside dismissal does not also move the hero');
 
@@ -90,7 +96,12 @@ const assert=require('node:assert/strict');
     await page.keyboard.press('Escape');await page.waitForFunction(()=>document.getElementById('radialMenu').hidden);
     await page.waitForFunction(()=>!window.__match.match.buildReservations[3]);
 
-    await tapPad(11,true);assert.match(await page.locator('#sheetTitle').textContent(),/Cannon/,'another player’s tower stays open');await closeOutside(true);
+    await tapPad(11,true);assert.match(await page.locator('#sheetTitle').textContent(),/Cannon/,'another player’s tower stays open');
+    const ownerBefore=await page.evaluate(()=>window.__match.match.players.bob.money);
+    await page.locator('#radial0').tap();
+    await page.waitForFunction(()=>window.__match.match.towers.find(t=>t.pad===11)?.level===2);
+    assert.equal(await page.evaluate(()=>window.__match.match.players.alice.money),160,'shared upgrade charges the acting player');
+    assert.equal(await page.evaluate(()=>window.__match.match.players.bob.money),ownerBefore,'shared upgrade does not charge the tower owner');
     // Pan with a physical drag, then select a previously off-screen spot.
     await page.mouse.move(200,400);await page.mouse.down();await page.mouse.move(80,400,{steps:8});await page.mouse.up();
     await page.evaluate(async()=>{const {panBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect();window.__view=panBattleViewport(window.__view,-120*960/r.width,0);});

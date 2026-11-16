@@ -47,3 +47,11 @@ test('the highlighted SOLDIER card sits above the game modes and owns the quick 
   const source=readFileSync(new URL('../command-center.mjs',import.meta.url),'utf8');
   assert.doesNotMatch(source,/menuEquipment|menuScrap|menuPoints/,'render() no longer feeds removed nodes');
 });
+
+test('the command center can reopen a preserved report after the battle workspace is gone',()=>{
+ const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{dataset:{},hidden:false,textContent:'',value:0,max:0});return nodes.get(id);};
+ let available=false,opened=0;const game={setMenuOpen(){},getRunSummary:()=>null,hasResults:()=>available,showResults:()=>{opened++;}};
+ const ui=createCommandCenter({document:{getElementById:el},getProfile:()=>({name:'Alex',gender:'female',xp:0}),getGame:()=>game,isPartyActive:()=>false,openParty(){},signOut(){}});
+ ui.showMenu();assert.equal(el('menuResults').hidden,true);available=true;ui.render();assert.equal(el('menuResults').hidden,false);el('menuResults').onclick();assert.equal(opened,1);
+ available=false;ui.render();assert.equal(el('menuResults').hidden,true);
+});

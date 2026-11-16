@@ -15,12 +15,24 @@ funktionierenden Admin-Login mit aktivem Wartungsstatus. Die öffentliche Abfrag
 meldete anschließend weiterhin `maintenance`; ein Schaltvorgang war nicht
 beauftragt. Der veröffentlichte Build war `20261031-update2`.
 
-Die mobile Gestaltungsüberarbeitung auf diesem Branch trägt die neue Kennung
-`20261031-update3` und muss nach einer gesondert freigegebenen Veröffentlichung
-auf dem echten Gerät erneut geprüft werden. Wartung bis zur abgestimmten Öffnung
-aktiv lassen. Dies ist eine Momentaufnahme: Vor jeder Aktion den tatsächlichen
-Zustand neu prüfen. Die folgenden Schritte sind ein **abzustimmender Operatorplan**,
-kein Beleg für einen abgeschlossenen Cutover oder Rollback.
+Die mobile Gestaltungsüberarbeitung wurde nach gesonderter Freigabe mit PR #288
+veröffentlicht; der öffentliche Build ist `20261031-update3`. Der Betreiber
+bestätigte auf seinem iPhone das neue Wartungsbild und Admin-Layout, den
+Admin-Login mit aktivem Status und beide Versionsprüfungen als stimmig. Auch
+die öffentliche Statusabfrage meldete anschließend weiter `maintenance`; ein
+Wartungsschalter wurde dabei nicht betätigt. Die automatisierte Diagnose hatte
+bei der CSS-Prüfung eine Abweichung angezeigt, obwohl die gesuchten Regeln im
+öffentlich abgerufenen Stylesheet vorhanden waren; die Ursache bleibt unklar.
+
+Der Betreiber wünscht nach jedem sinnvollen, geprüften Schritt eine
+Veröffentlichung und die anschließende Öffnung zum Testen; Wartung soll nur für
+den genannten Merge-/Commit-Vorgang laufen. Der zuletzt abgefragte Zustand war
+bereits `maintenance`. Vor jeder Aktion den tatsächlichen Zustand neu prüfen;
+zum Öffnen ist das berechtigte Firebase-Administratorkonto nötig. Die folgenden
+Schritte sind ein **Operatorplan**, kein Beleg für einen abgeschlossenen Cutover
+oder Rollback. Der Patchplan in `../PATCH-BLOECKE.md` unterscheidet erledigte
+Teilfälle und offene Anforderungen; tatsächliche Releaseereignisse stehen im
+Patch-Log.
 
 Dieser Ansatz verwendet die bestehende Firebase Realtime Database und GitHub
 Pages. Er benötigt **keinen Vercel-Dienst, keinen Custom-Token-Austausch und

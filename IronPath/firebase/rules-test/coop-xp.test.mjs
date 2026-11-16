@@ -2,7 +2,7 @@ import {test,before,after,beforeEach} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
-import {ref,get,set,runTransaction,onValue,update} from 'firebase/database';
+import {ref,get,set,runTransaction,onValue,update,goOffline,goOnline} from 'firebase/database';
 import {createCoopRewardQueue} from '../../coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.IRONPATH_COMBINED_RULES?'../four-player.complete.draft.rules.json':'../long-term-progression.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
@@ -260,4 +260,43 @@ test('cross-path web format works in profiles and party rosters while legacy web
   await assertFails(set(ref(alice,'players/alice/skills'),extended+'0'));
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   await assertSucceeds(set(ref(alice,`parties/${party}/profiles/alice`),{name:'Alice',gender:'female',level:8,skills:extended}));
+});
+
+async function seedWaveReceipt(){
+  // New accounts must start at zero XP. Earn wave one with the real queue and
+  // local rules instead of bypassing the initializer for the test fixture.
+  await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});
+  const queue=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk,partyId:party});
+  queue.observe(1);await until(()=>queue.hasConfirmed(1)&&queue.isSettled());
+  const original=(await get(ref(alice,'players/alice'))).val();queue.close();
+  assert.equal(original.xp,30);assert.equal(original.coopRewards[party],1);return original;
+}
+
+for(const workshop of [false,true])test(`an already credited receipt requires an online server commit (${workshop?'workshop':'legacy'})`,{timeout:15000},async t=>{
+  const original=await seedWaveReceipt();
+  let seen=false,attempts=0;const commits=[],statuses=[];
+  // Retain a real cached profile while disconnected. This makes the difference
+  // between an SDK-local abort and a server-confirmed compare-and-set visible.
+  const stop=onValue(ref(alice,'players/alice'),snapshot=>{if(snapshot.val()?.xp===30)seen=true;});
+  t.after(()=>{goOnline(alice);stop();});await until(()=>seen);goOffline(alice);
+  const wrapped={...sdk,runTransaction:(...args)=>{attempts++;return runTransaction(...args).then(result=>{commits.push(result.committed);return result;});}};
+  const queue=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk:wrapped,partyId:party,workshop,onStatus:value=>statuses.push(value)});
+  t.after(()=>queue.close());queue.observe(1);await until(()=>attempts===1);
+  await new Promise(resolve=>setTimeout(resolve,250));
+  assert.equal(queue.hasConfirmed(1),false,'cached receipt cannot produce an end acknowledgement offline');
+  assert.equal(queue.isSettled(),false);assert.deepEqual(commits,[]);
+  goOnline(alice);await until(()=>queue.hasConfirmed(1));
+  assert.deepEqual(commits,[true]);assert.deepEqual(statuses,['confirmed']);
+  const saved=(await get(ref(alice,'players/alice'))).val();assert.deepEqual(saved,original,'revalidation does not award the wave twice');
+});
+
+test('a server-rejected no-op cannot confirm an existing receipt; a later retry can', {timeout:15000},async t=>{
+  const original=await seedWaveReceipt();let corrupt=true,attempts=0;const statuses=[];
+  const wrapped={...sdk,runTransaction:(reference,update,options)=>{attempts++;return runTransaction(reference,current=>{const next=update(current);return corrupt&&next?{...next,__invalidRewardTest:true}:next;},options);}};
+  let now=0;const queue=createCoopRewardQueue({db:alice,auth:{currentUser:{uid:'alice'}},sdk:wrapped,partyId:party,clock:()=>now,onStatus:value=>statuses.push(value)});t.after(()=>queue.close());
+  queue.observe(1);await until(()=>statuses.includes('error'));
+  assert.equal(queue.hasConfirmed(1),false);assert.equal(queue.isSettled(),false);
+  assert.deepEqual((await get(ref(alice,'players/alice'))).val(),original,'the emulator rules rejected the invalid test write');
+  corrupt=false;now=5001;queue.observe(1);await until(()=>queue.hasConfirmed(1));
+  assert.equal(attempts,2);assert.equal(statuses.at(-1),'confirmed');assert.deepEqual((await get(ref(alice,'players/alice'))).val(),original);
 });

@@ -1,16 +1,20 @@
-import { createHost, restoreHost } from './protocol.mjs?v=20261031-mpview1';
-
+import { createHost, restoreHost, isRosterVoteCommand } from './protocol.mjs?v=20261031-patch3';
 // Local, player-hosted match core. The Firebase adapter must bind each player
 // ID to authenticated paths. The hosting browser is not an anti-cheat authority.
 const rosterOf=match=>{const four=match?.mode==='four-coop'||match?.mode==='two-vs-two',ids=Object.keys((four?match?.members:match?.players)||{});if((four?(match.mode==='four-coop'?![3,4].includes(ids.length):ids.length!==4):ids.length!==2))throw new Error('Invalid party roster');return ids;};
 function wrapPartyHost(host,match,ids,hostId,{cancelPending=false}={}){
-  const online=new Map(ids.map(id=>[id,false]));let focusPaused=false,focusGeneration=0;
+  const online=new Map(ids.map(id=>[id,false]));let focusPaused=false,focusGeneration=0,rosterGeneration=0;
   for(const id of ids){host.setPlayerActive(id,false);if(cancelPending)host.suspendPlayer(id);}
-  const ready=()=>!focusPaused&&online.get(hostId)===true&&(!['versus','two-vs-two'].includes(match.mode)||ids.every(id=>online.get(id)===true));
+  // A live competitive battle needs the full roster. Once it has ended,
+  // connected members must still be able to exchange final acknowledgements
+  // while an absent player has not yet returned.
+  const competitive=['versus','two-vs-two'].includes(match.mode);
+  const ready=()=>!focusPaused&&online.get(hostId)===true&&(!competitive||host.hasEnded()||ids.every(id=>online.get(id)===true));
+  const canEndFor=id=>id===hostId&&!focusPaused&&online.get(hostId)===true;
   function setPresence(id,connected){
     if(!online.has(id)||typeof connected!=='boolean')return false;
     const wasOnline=online.get(id);online.set(id,connected);host.setPlayerActive(id,connected);
-    if(wasOnline&&!connected){if(id===hostId||match.mode==='two-vs-two'){for(const playerId of ids)host.suspendPlayer(playerId);}else host.suspendPlayer(id);}
+    if(wasOnline&&!connected){rosterGeneration++;host.suspendRosterVotes();if(id===hostId||competitive){for(const playerId of ids)host.suspendPlayer(playerId);}else host.suspendPlayer(id);}
     return true;
   }
   function setFocusPaused(paused){
@@ -25,6 +29,16 @@ function wrapPartyHost(host,match,ids,hostId,{cancelPending=false}={}){
   const readyFor=id=>ready()&&online.get(id)===true;
   function receive(id,envelope){
     if(!online.has(id))return {status:'rejected',reason:'unknown-player'};
+    // Inputs from an older roster view can arrive during the outage, not only
+    // after reconnect. Cancel them before the online/readiness checks, including
+    // when the sender is absent or a competitive match is paused. Otherwise its
+    // single input slot can remain locked forever without a receipt. A packet
+    // with the current generation still follows the ordinary readiness checks.
+    if(isRosterVoteCommand(envelope?.command?.type)&&(envelope?.rosterGeneration??0)!==rosterGeneration){
+      const response=host.receive(id,envelope);
+      if(response.status==='queued'){host.suspendRosterVotes(id,response.seq);return {status:'cancelled',seq:response.seq,reason:'roster-changed'};}
+      return response;
+    }
     if(!online.get(id))return {status:'rejected',reason:ready()?'player-offline':'match-paused'};
     // A command sent just before the pause can arrive late, even after resume.
     // Record a cancellation receipt rather than leaving the client sequence stuck
@@ -34,11 +48,22 @@ function wrapPartyHost(host,match,ids,hostId,{cancelPending=false}={}){
       if(response.status==='queued'){host.suspendPlayer(id,'host-paused');return {status:'cancelled',seq:response.seq,reason:'host-paused'};}
       return response;
     }
-    if(!ready())return {status:'rejected',reason:'match-paused'};
+    if(!ready()&&!(canEndFor(id)&&['endRun','finishParty'].includes(envelope?.command?.type))){
+      if(!competitive)return {status:'rejected',reason:'match-paused'};
+      // A packet sent immediately before an opponent disappeared can arrive
+      // after the pause. Record its cancellation so the sender's one input
+      // slot is released instead of blocking a later end request forever.
+      const response=host.receive(id,envelope);
+      if(response.status==='queued'){host.suspendPlayer(id,'match-paused');return {status:'cancelled',seq:response.seq,reason:'match-paused'};}
+      return response;
+    }
     return host.receive(id,envelope);
   }
-  function advance(){if(!ready())return null;const first=host.advance();if(host.speed()!==2)return first;const second=host.advance();return {...second,commands:[...first.commands,...second.commands],events:[...first.events,...second.events]};}
-  return {setPresence,setFocusPaused,ready,readyFor,receive,advance,snapshotFor:id=>{const snapshot=host.snapshotFor(id);return snapshot?{...snapshot,hostPaused:focusPaused,focusGeneration}:null;},checkpoint:()=>host.checkpoint()};
+  function advance(){
+    if(!ready())return canEndFor(hostId)?host.advanceHostEnd():null;
+    const first=host.advance();if(host.speed()!==2)return first;const second=host.advance();return {...second,commands:[...first.commands,...second.commands],events:[...first.events,...second.events]};
+  }
+  return {setPresence,setFocusPaused,ready,readyFor,canEndFor,receive,advance,snapshotFor:id=>{const snapshot=host.snapshotFor(id);return snapshot?{...snapshot,hostPaused:focusPaused,focusGeneration,rosterGeneration}:null;},checkpoint:()=>host.checkpoint()};
 }
 export function createPartyHost(initialMatch,{hostId}={}){
   const ids=rosterOf(initialMatch);hostId=hostId??ids[0];if(!ids.includes(hostId))throw new Error('Host must be a party player');

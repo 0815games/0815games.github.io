@@ -173,7 +173,9 @@ export function runVersus(mapId,gear=GEARS.rookie,maxWaves=25){
   const cmd=(id,command)=>applyVersus(v,id,command);
   const ctxs=[makeCtx(v.lanes.host,['host'],`versus-host ${mapId} ${gear.label}`,maxWaves,cmd,gear.branch??0),
               makeCtx(v.lanes.guest,['guest'],`versus-guest ${mapId} ${gear.label}`,maxWaves,cmd,gear.branch??0)];
-  ctxs[0].sync=()=>{if(v.pendingWave)applyVersus(v,'guest',{type:'approveWave',requestId:v.waveRequestId});};
+  // Either duelist may reach readiness first (notably after each chooses a
+  // wave-five upgrade). Approve from the other player, never the requester.
+  ctxs[0].sync=()=>{const request=v.waveRequest;if(request)for(const id of request.required)if(!request.approved.includes(id))applyVersus(v,id,{type:'approveWave',requestId:request.id});};
   const results=driveLanes(ctxs,()=>stepVersus(v));
   return {mode:'versus',mapId,gear:gear.label,waves:results.map(r=>r.wave),ended:v.ended?v.endReason:'running',lanes:results};
 }

@@ -1,7 +1,24 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-loading1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch3';
 // Non-modal, in-page alerts. The inbox remains the source of truth; dismissing
 // an alert never accepts, declines or deletes a request or invitation.
-export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen}){
+export function createSocialNotifications({document,container,title,body,openButton,dismissButton,onOpen,promptCenter=null}){
+  if(promptCenter){
+    // Social notices join the same ordered surface as battle decisions. The
+    // only action opens the inbox; it does not accept or delete an invitation.
+    container.hidden=true;
+    const kinds=['requests','invites'];
+    onLanguageChange(()=>promptCenter.refresh());
+    return {
+      update(kind,items,{suppress=false}={}){
+        if(!kinds.includes(kind))throw Error('Unknown notification type');
+        promptCenter.update(`social:${kind}`,items.map(item=>({key:item.key,expiresAt:item.expiresAt,
+          title:()=>tr(kind==='requests'?'FRIEND REQUEST':'PARTY INVITATION'),body:()=>tr(kind==='requests'?'{name} wants to connect.':'{name} invited you to a party.',{name:item.name}),
+          actions:[{id:'view',label:()=>tr('VIEW FRIENDS'),run:()=>{onOpen();return true;}}]})),{suppressNew:suppress});
+      },
+      clear(){for(const kind of kinds)promptCenter.dismissSource(`social:${kind}`);},
+      reset(){for(const kind of kinds)promptCenter.reset(`social:${kind}`);}
+    };
+  }
   let known={requests:new Map(),invites:new Map()},queue=[],current=null;
   const isBlocked=()=>!!document.querySelector('dialog[open]');
   function paint(){

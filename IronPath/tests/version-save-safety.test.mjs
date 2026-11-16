@@ -22,20 +22,37 @@ test('a closing score reporter can confirm its in-flight save, but cannot silent
 });
 
 test('co-op reward queues remain unsafe during subscription, pending write and retry',async()=>{
- const subscription=deferred(),write=deferred(),auth={currentUser:{uid:'alice'}},profile={name:'Alice',gender:'female',xp:0};
- const sdk={ref:(_db,path)=>path,onValue(_ref,cb){subscription.promise.then(()=>cb({val:()=>profile}));return ()=>{};},runTransaction:()=>write.promise};
- const q=createCoopRewardQueue({db:{},auth,sdk,partyId:'a'.repeat(32)});
+ const subscription=deferred(),writes=[],auth={currentUser:{uid:'alice'}},partyId='a'.repeat(32);
+ const profile={name:'Alice',gender:'female',xp:30,coopRewards:{[partyId]:1}};let now=0;
+ const sdk={ref:(_db,path)=>path,onValue(_ref,cb){subscription.promise.then(()=>cb({val:()=>profile}));return ()=>{};},runTransaction(_ref,update){
+  assert.deepEqual(update(structuredClone(profile)),profile,'a known receipt still requires a compare-and-set');
+  const write=deferred();writes.push(write);return write.promise;
+ }};
+ const q=createCoopRewardQueue({db:{},auth,sdk,partyId,clock:()=>now});
  assert.equal(q.isSettled(),true);q.observe(1);assert.equal(q.isSettled(),false,'the subscription itself can still lead to a write');
  subscription.resolve();await tick();assert.equal(q.isSettled(),false,'a pending transaction is not confirmed');
- write.resolve({committed:false,snapshot:{val:()=>({...profile,coopRewards:{['a'.repeat(32)]:1}})}});await tick();assert.equal(q.isSettled(),true,'a previously credited receipt is confirmation');q.close();assert.equal(q.isSettled(),true);
+ writes[0].resolve({committed:false,snapshot:{val:()=>profile}});await tick();
+ assert.equal(q.isSettled(),false,'an aborted transaction can return a matching local snapshot without a server acknowledgement');
+ assert.equal(q.hasConfirmed(1),false);
+ now=5000;q.observe(1);await tick();assert.equal(writes.length,2,'the receipt is retried after an abort');
+ writes[1].resolve({committed:true,snapshot:{val:()=>profile}});await tick();
+ assert.equal(q.isSettled(),true,'only a server-confirmed receipt is a safe update point');q.close();assert.equal(q.isSettled(),true);
 });
 
 test('a co-op reward already being written can still be confirmed after close',async()=>{
- const write=deferred(),auth={currentUser:{uid:'alice'}},profile={name:'Alice',gender:'female',xp:0};
- const q=createCoopRewardQueue({db:{},auth,sdk:{ref:(_db,path)=>path,onValue:(_ref,cb)=>{queueMicrotask(()=>cb({val:()=>profile}));return ()=>{};},runTransaction:()=>write.promise},partyId:'a'.repeat(32)});
- q.observe(1);await tick();q.close();assert.equal(q.isSettled(),false);
- write.resolve({committed:false,snapshot:{val:()=>({...profile,coopRewards:{['a'.repeat(32)]:1}})}});await tick();
- assert.equal(q.isSettled(),true,'the acknowledged in-flight receipt is not abandoned');
+ const write=deferred(),auth={currentUser:{uid:'alice'}},profile={name:'Alice',gender:'female',xp:0};let attempted;
+ const q=createCoopRewardQueue({db:{},auth,sdk:{ref:(_db,path)=>path,onValue:(_ref,cb)=>{queueMicrotask(()=>cb({val:()=>profile}));return ()=>{};},runTransaction(_ref,update){attempted=update(profile);return write.promise;}},partyId:'a'.repeat(32)});
+ q.observe(1);await tick();assert.ok(attempted,'the transaction has actually started before closing');q.close();assert.equal(q.isSettled(),false);
+ write.resolve({committed:true,snapshot:{val:()=>attempted}});await tick();
+ assert.equal(q.isSettled(),true,'the server-acknowledged in-flight receipt is not abandoned');
+});
+
+test('closing an aborted in-flight co-op reward never treats its cached receipt as safe',async()=>{
+ const write=deferred(),auth={currentUser:{uid:'alice'}},partyId='a'.repeat(32),profile={name:'Alice',gender:'female',xp:30,coopRewards:{[partyId]:1}};
+ const q=createCoopRewardQueue({db:{},auth,sdk:{ref:(_db,path)=>path,onValue:(_ref,cb)=>{queueMicrotask(()=>cb({val:()=>profile}));return ()=>{};},runTransaction:()=>write.promise},partyId});
+ q.observe(1);await tick();q.close();
+ write.resolve({committed:false,snapshot:{val:()=>profile}});await tick();
+ assert.equal(q.isSettled(),false,'a locally aborted write is abandoned despite the matching cached receipt');
 });
 
 test('closing an unresolved co-op reward never reports a safe update point',async()=>{

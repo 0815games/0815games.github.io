@@ -11,6 +11,24 @@ test('service sends, observes, accepts and removes a friend request',async()=>{
  await assert.rejects(()=>alice.send('wrong','Alice'),/32-character/);await assert.rejects(()=>bob.send(code,'Bob'),/own/);
 });
 
+test('a rejected request write is not reported successful because an edge is visible afterward',async()=>{
+ const store=makeStore();let n=0;const crypto={getRandomValues(bytes){bytes.fill(++n);}};
+ const make=uid=>createFriendService({db:{},auth:{currentUser:{uid}},sdk:store.sdk,crypto});
+ const alice=make('alice'),bob=make('bob'),code=await bob.ensureCode('Bob'),original=store.sdk.set;
+ store.sdk.set=async(path,value)=>{
+  if(path==='friendships/bob/alice'){
+   // Another tab won the race (or the local cache shows a pending value).
+   // Neither proves this particular set was acknowledged by the server.
+   await original(path,{...value,status:'accepted'});throw Error('permission denied');
+  }
+  return original(path,value);
+ };
+ await assert.rejects(alice.send(code,'Alice'),/could not be confirmed/i);
+ assert.ok(store.values.has('friendOutgoing/alice/bob'),'do not delete a marker that can belong to the other tab');
+ assert.equal(store.values.get('friendships/bob/alice').status,'accepted');
+ await assert.rejects(alice.send(code,'Alice'),/already friends/i,'a retry sees the existing relationship');
+});
+
 test('name lookup normalizes case and safely encodes Firebase path characters',()=>{assert.equal(friendNameKey(' Bob '),friendNameKey('bob'));assert.match(friendNameKey('Ä/#.[]'),/^[a-f0-9]+$/);assert.throws(()=>friendNameKey('x'),/2–24/);});
 
 test('account listing is published automatically and restores a previously hidden listing',async()=>{

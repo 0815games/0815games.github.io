@@ -1,61 +1,65 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-loading1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-patch3';
 import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261031-loading1';
+import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261031-patch3';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261118-settings1';
+import {setupFieldMenu} from './field-menu.mjs?v=20261031-patch3';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-update3';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-update3';
-import {setupFriends} from './friends-ui.mjs?v=20261031-update3';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-patch3';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-patch3';
+import {setupFriends} from './friends-ui.mjs?v=20261031-patch3';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261031-patch3';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-socialcleanup1';
-import {createCommandCenter} from './command-center.mjs?v=20261031-loading1';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261031-patch3';
+import {createCommandCenter} from './command-center.mjs?v=20261031-patch3';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261031-loading1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261031-patch3';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-mpview1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-update3';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-patch3';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-patch3';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261031-loading1';
+import {setupAuthForm} from './auth-form.mjs?v=20261031-patch3';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261031-update3';
-import {createWriteTracker} from './version-check.mjs?v=20261031-update3';
+import {createVersionUI} from './version-ui.mjs?v=20261031-patch3';
+import {createWriteTracker} from './version-check.mjs?v=20261031-patch3';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261111-completede1';
+import {createConfirmation} from './confirmation.mjs?v=20261031-patch3';
 import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261031-update3';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-loading1';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261031-patch3';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-patch3';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
 import {rewardDelta} from './run-results.mjs?v=20261112-tagless1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-update3';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-patch3';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261031-patch3';
+import {createPartySignOut} from './party-signout.mjs?v=20261031-patch3';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-socialcleanup1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-patch3';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261031-update3';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-mpview1';
-import { createPlayer } from './match.mjs?v=20261112-tagless1';
-import { bunkerStart } from './solo-deployment.mjs?v=20261112-tagless1';
+import { startGame } from './game.js?v=20261031-patch3';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-patch3';
+import { createPlayer } from './match.mjs?v=20261031-patch3';
+import { bunkerStart } from './solo-deployment.mjs?v=20261031-patch3';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-live1';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261112-live1';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-loading1';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-loading1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-patch3';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-patch3';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -111,6 +115,8 @@ const accountServices=createAccountServices(accountServiceOptions);
 const {auth,db}=accountServices, $=id=>document.getElementById(id);
 let profile=null, user=null, unsubscribe=null, sessionVersion=0, gameStarted=false, notifySession=()=>{}, gameControl=null, commandCenter=null, scoreReporter=null, soldierUI=null;
 let deletingCharacter=false,deletionPending=null;
+let dischargeStorage=null;try{dischargeStorage=window.sessionStorage;}catch{/* In-memory notice works for this document. */}
+const dischargeNotice=createDischargeNotice(dischargeStorage);
 let endingRunning=false,endingAborted=false,endingRun=null,firstRunGuide=null;
 const endingHandoffs=createEndingHandoffs({setTimer:(fn,ms)=>window.setTimeout(fn,ms),
  isCurrent:({version,id})=>!accountTerminated&&!!id&&version===sessionVersion&&user?.uid===id,
@@ -139,6 +145,7 @@ let languageStorage;try{languageStorage=window.localStorage;}catch{languageStora
 const recruitScreen=setupRecruitScreen({document,storage:languageStorage,getAccountId:()=>user?.uid??null});
 setupLanguage({document,storage:languageStorage,onChange:()=>{commandCenter?.render();gameControl?.refreshLanguage?.();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();if(profile){$('profileLevel').textContent=levelText(profile.xp);refreshProfileRank(profile);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(profile.xp)-1,20)+2*parseBuild(profile.skills,level(profile.xp)).assault+(readArmory(profile.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(profile.xp))).damage});updateSkillPrompt(profile);if($('armoryDialog').open)renderArmory();if($('skillDialog').open)renderSkills();}}});
 onLanguageChange(()=>{versionUI?.refresh();maintenanceUI?.refresh();});versionUI?.refresh();
+const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());
 const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
 // One dialog for language, sound, graphics and fullscreen, reached from the Command
@@ -198,7 +205,7 @@ const workshopService={
 armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:viewProfile,service:workshopService,confirm:options=>confirmation.ask(options),translate:translateText,onProfile:value=>{profile=value;commandCenter?.render();soldierUI?.refresh();if(gameControl?.canEditSkills())gameControl.resetSkills();}});
 soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,getPortrait:recruitPortraitUrl,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
-const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;}});
+const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,runTransaction,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;},promptCenter});
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
 // Online alpha: requires the complete four-player Firebase rules to be published.
@@ -207,7 +214,7 @@ const fourPlayerTest=true;
 // protocol for every member so normal lobbies remain unchanged.
 const hostRecoveryEnabled=new URLSearchParams(window.location.search).get('recovery')==='1';
 $('fourPartyResume').hidden=!hostRecoveryEnabled;
-let fourPanel=null;
+let fourPanel=null,activePartyEnd=null,hostPartySignOut=null;
 const confirmNewParty=async()=>{
  const version=sessionVersion,uid=user?.uid;
  if(!uid||!profile||versionUI&&!await beforeNewGame()||version!==sessionVersion||user?.uid!==uid||!profile)return false;
@@ -218,11 +225,23 @@ const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFour
 if(fourPlayerTest){
   fourPanel=createFourPlayerPanel({document,createLobby:()=>{if(partyPanel.isActive())throw Error('Leave the current party first');return createFirebaseFourLobby({db,auth,sdk:partySdk,recoveryEnabled:hostRecoveryEnabled});},
     getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),
-    confirmStart:confirmNewParty,confirmClose:()=>confirmation.ask({title:'Close multiplayer party?',text:'This ends the party and disconnects all players.',accept:'CLOSE PARTY'}),onLeaveMatch:async()=>{await gameControl?.leaveCoop();if(user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
-    onMatch:async (party,{isCurrent=()=>true}={})=>{const uid=auth.currentUser?.uid,version=sessionVersion;if(versionUI&&party.hostId!==uid&&!await beforeNewGame())return false;if(uid!==auth.currentUser?.uid||version!==sessionVersion||!isCurrent())return false;const rewardQueues=new Map();
-      const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,trackedRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
-      const joined=gameControl?.beginCoop(callbacks=>{const players=party.profiles?.map((p,i)=>{if(party.playerIds.length!==2)return createPlayer(party.playerIds[i],p,1220,270+i*60);const start=bunkerStart(gameControl.getMapId(),i);return createPlayer(party.playerIds[i],p,start.x,start.y);}),common={db,auth,sdk:partySdk,partyId:party.partyId,mapId:gameControl.getMapId(),players,...callbacks,onWaveRewards:(mask,block=0)=>{getRewards(block).observe(mask);if(party.mode==='coop'||party.mode==='four-coop')scoreReporter?.observe('coop',waveFromMask(mask,block));}};return party.recovery===true?createFirebaseRecoverableGame({...common,manifest:party,resumeGeneration:party.resumeGeneration??null}):createFirebasePartyGame({...common,partyRoot:'fourParties',hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,teams:party.teamRosters});},()=>{},party.partyId,party.mode)??false;
-      if(joined){commandCenter?.showBattle();fourPanel.hide();$('partyToggle').setAttribute('aria-expanded','false');}else for(const queue of rewardQueues.values())queue.close();return joined;
+    confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
+    onRequestHostEnd:id=>gameControl?.requestHostPartyEnd(id)??false,
+    canCompleteEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canClose(tick),
+    onLeaveMatch:async(options={})=>{const version=sessionVersion;activePartyEnd?.coordinator.stop();activePartyEnd=null;await gameControl?.leaveCoop(options);if(version===sessionVersion&&!fourPanel?.isActive()&&user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
+    onMatch:async (party,{isCurrent=()=>true}={})=>{
+      const uid=auth.currentUser?.uid,version=sessionVersion;if(versionUI&&party.hostId!==uid&&!await beforeNewGame())return false;if(uid!==auth.currentUser?.uid||version!==sessionVersion||!isCurrent())return false;
+      const rewardQueues=new Map();let scope;
+      const coordinator=createPartyEndCoordinator({uid,hostId:party.hostId,playerIds:party.playerIds,getQueues:()=>rewardQueues,
+        isCurrent:()=>activePartyEnd===scope&&version===sessionVersion&&auth.currentUser?.uid===uid&&isCurrent(),
+        send:tick=>gameControl?.acknowledgePartyEnd(party.partyId,tick)??{ok:false},
+        onClose:async tick=>{const closed=await (fourPanel?.completeParty(party.partyId,tick)??false);if(closed===true)void hostPartySignOut?.completed(scope);return closed;},
+        onStatus:(value,tick)=>{if(value!=='saving')gameControl?.markPartyRewardsConfirmed(party.partyId,tick);fourPanel?.completionStatus(party.partyId,value);}
+      });
+      scope={partyId:party.partyId,hostId:party.hostId,uid,version,user,authUser:auth.currentUser,coordinator};activePartyEnd?.coordinator.stop();activePartyEnd=scope;
+      const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,trackedRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onChange:()=>queueMicrotask(()=>coordinator.refresh()),onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
+      const joined=gameControl?.beginCoop(callbacks=>{const players=party.profiles?.map((p,i)=>{if(party.playerIds.length!==2)return createPlayer(party.playerIds[i],p,1220,270+i*60);const start=bunkerStart(gameControl.getMapId(),i);return createPlayer(party.playerIds[i],p,start.x,start.y);}),common={db,auth,sdk:partySdk,partyId:party.partyId,mapId:gameControl.getMapId(),players,...callbacks,onWaveRewards:(mask,block=0)=>{coordinator.observeReward(block,mask);getRewards(block).observe(mask);if(party.mode==='coop'||party.mode==='four-coop')scoreReporter?.observe('coop',waveFromMask(mask,block));}};return party.recovery===true?createFirebaseRecoverableGame({...common,manifest:party,resumeGeneration:party.resumeGeneration??null}):createFirebasePartyGame({...common,partyRoot:'fourParties',hostId:party.hostId,playerIds:party.playerIds,mode:party.mode,teams:party.teamRosters});},()=>{},party.partyId,party.mode,frame=>coordinator.observe(frame))??false;
+      if(joined){commandCenter?.showBattle();fourPanel.hide();$('partyToggle').setAttribute('aria-expanded','false');}else{coordinator.stop();if(activePartyEnd===scope)activePartyEnd=null;for(const queue of rewardQueues.values())queue.close();}return joined;
     }});
   $('partyToggle').hidden=false;$('partyToggle').onclick=()=>{commandCenter?.showLobby();partyPanel.collapse();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');};
 }
@@ -267,14 +286,53 @@ async function busy(button, task){if(button.disabled)return;button.disabled=true
 setupAuthForm({form:$('authForm'),email:$('email'),password:$('password'),submit:$('authSubmit'),register:$('register'),forgot:$('forgot'),confirm:$('passwordConfirm'),confirmField:$('passwordConfirmField'),onSignIn:accountServices.signIn,onRegister:accountServices.register,onError:error=>message(typeof error==='string'?error:error?errorText(error):'')});
 $('forgot').onclick=e=>{const email=$('email').value.trim();if(!email){message('Enter your email address first.');return;}busy(e.currentTarget,async()=>{await accountServices.resetPassword(email);message('If the email is registered, a reset email may arrive shortly.');});};
 async function logout(){try{
- // A guarded session must end this document immediately, even if party cleanup
- // hangs offline. Its abort handler below performs only best-effort cleanup.
+ // Once an immediate sign-out is chosen, a guarded session ends this document
+ // without waiting for network cleanup. Deferred sign-out is a separate choice.
  if(accountServices.guarded)await accountServices.logout();
  else{await fourPanel?.leaveForLogout();await partyPanel.leaveForLogout();await accountServices.logout();}
- $('password').value='';
-}catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}}}
-async function requestLogout(){const partyActive=partyPanel.isActive()||!!fourPanel?.isActive(),run=gameControl?.getRunSummary();if((partyActive||run)&&!await confirmation.ask({title:'Sign out?',text:partyActive?'Signing out leaves your multiplayer party and may end its match.':'Your current solo operation will be lost. Completed-wave rewards remain saved.',accept:'SIGN OUT'}))return;await logout();}
-$('logout').onclick=requestLogout; $('setupLogout').onclick=logout; $('errorLogout').onclick=logout;
+ $('password').value='';return true;
+}catch(e){message(errorText(e));{const err=errorText(e);$('saveStatus').textContent=typeof err==='string'?translateText(err):translateText(err.text,err.values);}return false;}}
+let hostSignOutState='idle';
+function renderHostSignOutStatus(){
+ const text=({waiting:'Sign-out is waiting for every report and saved reward. Keep this page open. Choose sign out again to cancel waiting or sign out now.',failed:'The match could not be ended. You are still signed in; reconnect and try again.',changed:'The party changed. Review it before signing out.', 'signout-failed':'Sign-out failed. You are still signed in; try again.'})[hostSignOutState];
+ $('partySignOutStatus').hidden=!text;$('partySignOutStatus').textContent=text?translateText(text):'';
+}
+onLanguageChange(renderHostSignOutStatus);
+hostPartySignOut=createPartySignOut({
+ isSessionCurrent:scope=>!accountTerminated&&!releaseFrozen&&scope.version===sessionVersion&&scope.user===user&&scope.authUser===auth.currentUser&&scope.uid===user?.uid,
+ isPartyCurrent:scope=>fourPanel?.startedHostPartyId()===scope.partyId&&(scope.coordinator?activePartyEnd===scope:!activePartyEnd),
+ canSignOutAfterClose:()=>!fourPanel?.isActive()&&!partyPanel.isActive(),
+ requestEnd:scope=>activePartyEnd===scope?(gameControl?.requestHostPartyEnd(scope.partyId)??false):false,
+ signOut:async()=>{if(!await logout())throw Error('Sign-out failed');},
+ onState:value=>{hostSignOutState=value;renderHostSignOutStatus();}
+});
+async function requestLogout(){
+ const version=sessionVersion,currentUser=user,currentAuth=auth.currentUser,hostPartyId=fourPanel?.startedHostPartyId();
+ if(hostPartyId){
+  // The placeholder covers a just-started match whose adapter is still
+  // connecting: waiting will fail safely, while immediate logout stays usable.
+  const scope=activePartyEnd?.partyId===hostPartyId?activePartyEnd:{partyId:hostPartyId,uid:user?.uid,version,user,authUser:currentAuth};
+  const waiting=hostPartySignOut.isWaiting(scope);
+  const answer=await confirmation.ask({title:'Sign out?',text:waiting?'Sign-out is waiting for every player. You can cancel the scheduled sign-out (the match remains ended), or sign out now and leave the party potentially unfinished.':'Waiting ends the shared match and signs you out only after every report and reward is confirmed. Keep this page open. Signing out now can leave the party open and rewards unconfirmed.',accept:waiting?'CANCEL SCHEDULED SIGN-OUT':'END AND WAIT',alternate:'SIGN OUT NOW'});
+  if(answer===false)return;
+  await hostPartySignOut.choose(scope,answer==='alternate'?'now':waiting?'cancel':'wait');return;
+ }
+ const partyActive=partyPanel.isActive()||!!fourPanel?.isActive(),run=gameControl?.getRunSummary();
+ if((partyActive||run)&&!await confirmation.ask({title:'Sign out?',text:partyActive?'Signing out disconnects you. Unsaved rewards and party closure may require you to reconnect.':'Your current solo operation will be lost. Completed-wave rewards remain saved.',accept:'SIGN OUT'}))return;
+ // A delayed dialog must not sign out a different account or a newly joined party.
+ if(version!==sessionVersion||currentUser!==user||currentAuth!==auth.currentUser||partyActive!==(partyPanel.isActive()||!!fourPanel?.isActive()))return;
+ await logout();
+}
+$('logout').onclick=requestLogout; $('setupLogout').onclick=logout;
+// Once the server has acknowledged deletion, a failed sign-out must not be
+// reported as a failed deletion or let the old session silently re-enlist.
+// The retry remains tied to this exact account session. Guarded logout replaces
+// the document; the one-shot notice travels through tab-local storage.
+const dischargeSignOut=createDischargeSignOut({auth,notice:dischargeNotice,guarded:accountServices.guarded,logout:()=>accountServices.logout(),
+ isCurrent:(currentUser,version)=>!accountTerminated&&version===sessionVersion&&user===currentUser&&auth.currentUser?.uid===currentUser.uid&&!accountServices.signal?.aborted,
+ onFailure:()=>{display('connection');message('Character deleted, but sign out failed. Please retry signing out before creating a new soldier.');}});
+const signOutDischarged=(currentUser,version)=>dischargeSignOut.start(currentUser,version);
+$('errorLogout').onclick=()=>dischargeSignOut.hasRetry()?dischargeSignOut.retry():logout();
 // Never start deleting in a party or while a lobby request is still completing.
 // Other tabs/older builds cannot be locked by this page; the confirmation asks
 // the player to close them. A successful update covers only discoverable paths.
@@ -300,12 +358,12 @@ async function deleteCharacter(){
   await Promise.all([scoreStop,socialStop]);if(!current())return;
   const deletion=createCharacterDeletion({db,auth,sdk:{ref,get,update},isCurrent:current});
   await deletion.remove(currentName);if(!current())return;
-  // update() is locally optimistic; only reveal recruitment after its server
-  // acknowledgement. The profile listener was detached while it was pending.
+  // update() is locally optimistic; only sign out after the server has
+  // acknowledged it. The profile listener stayed detached while it was pending.
   deletingCharacter=false;profile=null;notifySession();
   try{localStorage.removeItem(AVATAR_STORAGE_KEY);localStorage.removeItem(ENDLESS_LAST_RUN_KEY);}catch{/* Local mirrors are optional. */}
   const nameField=$('soldierName');if(nameField)nameField.value='';
-  recruitScreen.reset();display('character');message('Character deleted.');loadProfile(currentUser,version);
+  recruitScreen.reset();await signOutDischarged(currentUser,version);
  }catch{
   if(current()){
    // A denied update is atomic, but a lost response is uncertain. Reload the
@@ -318,7 +376,7 @@ async function deleteCharacter(){
   $('menuDeleteCharacter').disabled=false;
  }
 }
-$('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(user){message('');loadingStep='soldier';display('loading');loadProfile(user,sessionVersion);}};
+$('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>{if(dischargeSignOut.hasRetry()){void dischargeSignOut.retry();return;}if(user){message('');loadingStep='soldier';display('loading');loadProfile(user,sessionVersion);}};
 // The day service began - shown in the service record. Local time, ISO
 // shape, exactly what the published rules accept.
 const enlistmentDate=()=>{const now=new Date(),pad=n=>String(n).padStart(2,'0');return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;};
@@ -377,7 +435,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
  // Accounts from before the service-date rework carry none; stamp one once.
  // If the rules are not live yet this fails silently and retries on the
@@ -516,7 +574,7 @@ beforeVersionReload=()=>{
 // Server Rules, not this teardown, deny data access while maintenance is closed.
 let accountTerminated=false;
 function stopAccountForRelease(){
- if(accountTerminated)return;releaseFrozen=true;accountTerminated=true;sessionVersion++;profile=null;user=null;cancelStartChecks();
+ if(accountTerminated)return;releaseFrozen=true;accountTerminated=true;sessionVersion++;profile=null;user=null;hostPartySignOut?.reset();cancelStartChecks();
  afkTimer?.stop();sessionTabLock?.stop();
  const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
  const oldWatch=unsubscribe;unsubscribe=null;
@@ -553,10 +611,12 @@ if(!accountTerminated&&sessionTabLock?.isHeld()){
 }
 if(!accountTerminated)accountServices.observe(currentUser=>{
  if(accountTerminated)return;
+ hostPartySignOut?.reset();
+ const showDischarge=dischargeSignOut.observe(currentUser);
  afkTimer?.reset();
  cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
  deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
- if(!currentUser){display('auth');renderAfkText();return;}
+ if(!currentUser){$('password').value='';display('auth');renderAfkText();if(showDischarge)message(DISCHARGE_MESSAGE);return;}
  afkNotice(false);display('loading');setLoadingStep('soldier');
  const activate=()=>{if(accountTerminated||version!==sessionVersion||auth.currentUser?.uid!==currentUser.uid)return;user=currentUser;notifySession();const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);loadProfile(currentUser,version);};
  // The initial cutoff of zero preserves existing sessions at first rollout.

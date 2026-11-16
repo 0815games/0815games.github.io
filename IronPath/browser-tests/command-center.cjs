@@ -41,7 +41,7 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     const mocks = {
       'firebase-app.js': `export function initializeApp(){return {}}`,
       'firebase-auth.js': `const user={uid:'mock-user',getIdToken:async()=> 'mock'}; const auth={currentUser:user}; export function getAuth(){return auth} export function onAuthStateChanged(a,cb){globalThis.__mockAuth=next=>{a.currentUser=next;cb(next)};setTimeout(()=>cb(user),0);return ()=>{}} export async function signOut(a){a.currentUser=null} export async function signInWithEmailAndPassword(){} export async function createUserWithEmailAndPassword(){} export async function sendPasswordResetEmail(){}`,
-      'firebase-database.js': `const profile={name:'Test Soldier',gender:'female',xp:750}; let profileCb;globalThis.__profileUpdate=value=>{Object.assign(profile,value);profileCb?.({val:()=>profile})};globalThis.__profileGet=()=>({...profile}); let invite={alice:{name:'Alice',code:'0123',partyId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',createdAt:Date.now()}},inviteCb,friendRequests={},friendListeners=new Set();globalThis.__friendUpdate=value=>{friendRequests=value;for(const cb of friendListeners)cb({val:()=>friendRequests})};globalThis.__friendListenerCount=()=>friendListeners.size; export function getDatabase(){return {}}export function goOffline(){} export function ref(db,path){return {path}} export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user'){profileCb=cb;queueMicrotask(()=>cb({val:()=>profile}));}if(r.path==='coopInvites/mock-user'){inviteCb=cb;queueMicrotask(()=>cb({val:()=>invite}));}if(r.path==='friendships/mock-user'){friendListeners.add(cb);queueMicrotask(()=>{if(friendListeners.has(cb))cb({val:()=>friendRequests})});return ()=>friendListeners.delete(cb);}return ()=>{}} export async function runTransaction(){return {committed:false}} export async function get(r){(globalThis.__readPaths??=[]).push(r.path);const values={'players/bob/xp':750,'players/bob/skills':'1,1,0,0,0;assault','players/bob/armory':{scrap:10,fortify:1,plating:2,owned:1,equipped:1}};return {val:()=>values[r.path]??null,exists:()=>false,forEach(){}}} export async function remove(r){if(r.path==='coopInvites/mock-user/alice'){invite={};inviteCb?.({val:()=>invite});}} export async function set(r,v){(globalThis.__firebaseWrites??=[]).push(r.path);if(r.path==='friendships/mock-user/alice/status'){globalThis.__friendUpdate({...friendRequests,alice:{...friendRequests.alice,status:v}})}} export async function update(){} export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}} export function serverTimestamp(){return 0} export function query(r,...args){return r} export function orderByKey(){return {}} export function startAfter(v){return {}} export function limitToFirst(v){return {}} export function orderByChild(v){return {}} export function limitToLast(v){return {}}`
+      'firebase-database.js': `const profile={name:'Test Soldier',gender:'female',xp:750}; let profileCb;globalThis.__profileUpdate=value=>{Object.assign(profile,value);profileCb?.({val:()=>profile})};globalThis.__profileGet=()=>({...profile}); let invite={alice:{name:'Alice',code:'0123',partyId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',createdAt:Date.now()}},inviteCb,friendRequests={},friendListeners=new Set();globalThis.__friendUpdate=value=>{friendRequests=value;for(const cb of friendListeners)cb({val:()=>friendRequests})};globalThis.__friendListenerCount=()=>friendListeners.size; export function getDatabase(){return {}}export function goOffline(){} export function ref(db,path){return {path}} export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user'){profileCb=cb;queueMicrotask(()=>cb({val:()=>profile}));}if(r.path==='coopInvites/mock-user'){inviteCb=cb;queueMicrotask(()=>cb({val:()=>invite}));}if(r.path==='coopInvites/mock-user/alice')queueMicrotask(()=>cb({val:()=>invite.alice??null}));if(r.path==='friendships/mock-user'){friendListeners.add(cb);queueMicrotask(()=>{if(friendListeners.has(cb))cb({val:()=>friendRequests})});return ()=>friendListeners.delete(cb);}return ()=>{}} export async function runTransaction(r,change){if(r.path==='coopInvites/mock-user/alice'){const current=invite.alice??null,next=change(current);if(next===undefined)return {committed:false,snapshot:{val:()=>current}};invite={...invite};if(next===null)delete invite.alice;else invite.alice=next;inviteCb?.({val:()=>invite});return {committed:true,snapshot:{val:()=>next}};}return {committed:false}} export async function get(r){(globalThis.__readPaths??=[]).push(r.path);const values={'players/bob/xp':750,'players/bob/skills':'1,1,0,0,0;assault','players/bob/armory':{scrap:10,fortify:1,plating:2,owned:1,equipped:1}};return {val:()=>values[r.path]??null,exists:()=>false,forEach(){}}} export async function remove(r){if(r.path==='coopInvites/mock-user/alice'){invite={};inviteCb?.({val:()=>invite});}} export async function set(r,v){(globalThis.__firebaseWrites??=[]).push(r.path);if(r.path==='friendships/mock-user/alice/status'){globalThis.__friendUpdate({...friendRequests,alice:{...friendRequests.alice,status:v}})}} export async function update(){} export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}} export function serverTimestamp(){return 0} export function query(r,...args){return r} export function orderByKey(){return {}} export function startAfter(v){return {}} export function limitToFirst(v){return {}} export function orderByChild(v){return {}} export function limitToLast(v){return {}}`
     };
     await context.route('**/*',route=>{
       const url=new URL(route.request().url());
@@ -69,6 +69,13 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     // without a modal and without pausing. This is the phone bug: a modal brief
     // over a paused field meant the first run could not be played at all.
     await page.locator('#firstRunCoach').waitFor({state:'visible'});
+    // The centered invitation is nonmodal but can cover a particular pad. Put
+    // it aside explicitly before the tutorial tap; LATER must not decline it.
+    await page.locator('#multiplayerPrompt').waitFor({state:'visible'});
+    assert.match(await page.locator('#multiplayerPromptBody').innerText(),/Alice invited you/);
+    await page.locator('#multiplayerPromptActions [data-action="later"]').click();
+    assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true);
+    assert.match(await page.locator('#inviteNotification').textContent(),/1/,'putting the card aside keeps the invitation');
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false,'no modal briefing on the first run');
     assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
     assert.equal(await page.locator('#game').isVisible(),true);
@@ -207,14 +214,21 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     const tapRing = async mode => {
       const ring = await page.locator('#coachRing').boundingBox();
       assert.ok(ring && ring.width > 10, 'the card marks the pad it is asking about');
-      await page.mouse.click(ring.x + ring.width / 2, ring.y + ring.height / 2);
+      const point={x:ring.x+ring.width/2,y:ring.y+ring.height/2};
+      const hit=await page.evaluate(({x,y})=>{const e=document.elementFromPoint(x,y);if(!e)return null;const b=e.getBoundingClientRect();return {element:e.outerHTML.slice(0,400),parent:e.parentElement?.outerHTML.slice(0,400),rect:{x:b.x,y:b.y,w:b.width,h:b.height},pointer:getComputedStyle(e).pointerEvents};},point);
+      await page.mouse.click(point.x,point.y);
       // The sheet is a zero-size anchor centred on the pad - the buttons around it
       // carry the box, the sheet itself never has one - so "visible" is the wrong
       // signal. Its mode says which actions the tap actually produced.
-      await page.waitForFunction(expected => {
-        const sheet = document.getElementById('radialMenu');
-        return sheet && !sheet.hidden && sheet.dataset.mode === expected;
-      }, mode, {timeout: 10000});
+      try{
+        await page.waitForFunction(expected => {
+          const sheet = document.getElementById('radialMenu');
+          return sheet && !sheet.hidden && sheet.dataset.mode === expected;
+        }, mode, {timeout: 10000});
+      }catch(error){
+        const state=await page.evaluate(()=>{const sheet=document.getElementById('radialMenu'),canvas=document.getElementById('game'),ring=document.getElementById('coachRing');const rect=e=>{const b=e.getBoundingClientRect();return {x:b.x,y:b.y,w:b.width,h:b.height};};return {sheetHidden:sheet.hidden,sheetMode:sheet.dataset.mode,canvas:rect(canvas),ring:rect(ring),wave:document.getElementById('wave').textContent,start:document.getElementById('start').textContent};});
+        console.error('Coach-ring tap diagnostic:',JSON.stringify({expected:mode,point,hit,...state}));throw error;
+      }
     };
     // Build what the card asks for: pad, tower option, confirm the price.
     await tapRing('build');
@@ -328,10 +342,9 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     mark('command center');
     await page.locator('#menuName').waitFor({state:'visible',timeout:10000});
     assert.equal(await page.locator('#friendIndexError').isHidden(),true);
-    // The popup dismisses itself on any click outside it (by design: it is a
-    // passive alert), and every tap of the first run is exactly that click. So the
-    // real proof that a stray click cannot eat an invitation is the notification
-    // button, which still knows about it after the whole run above.
+    // The centered card was put aside with LATER before the training run. The
+    // notification button must still lead to the unchanged invitation afterward;
+    // neither putting the card aside nor playing the run accepts/declines it.
     await page.locator('#inviteNotification').click();
     await page.locator('#friendsDialog').waitFor({state:'visible',timeout:10000});
     assert.match(await page.locator('#coopInviteList').innerText(),/Alice/,'the invitation survived the first run');

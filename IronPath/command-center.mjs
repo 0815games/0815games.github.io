@@ -1,5 +1,5 @@
-import {translate,translateText} from './language.mjs?v=20261031-loading1';
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-loading1';
+import {translate,translateText} from './language.mjs?v=20261031-patch3';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-patch3';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
@@ -12,7 +12,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
   // menu into their own dialogs (armory, skills) - the field dossier shows
   // the same numbers in full.
   $('menuName').textContent=profile.name;$('menuLevel').textContent=translate('command.level',{level:p.level});renderRankInsignia(document,$('menuRank'),{level:p.level},{size:22});$('menuXp').textContent=`${p.current} / ${p.required} XP`;$('menuXpBar').max=p.required;$('menuXpBar').value=p.current;$('menuPortrait').src=(typeof getPortrait==='function'?getPortrait():null)||(profile.gender==='male'?'assets/soldier-male.jpg':'assets/soldier-female.jpg');$('menuCampaignProgress').textContent=progress>=CAMPAIGN.length?translate('command.storyDone'):translate('command.missions',{done:progress,total:CAMPAIGN.length});
-  const summary=game?.getRunSummary();$('menuResume').hidden=!summary&&!isPartyActive();$('menuResumeLabel').textContent=isPartyActive()?translate('command.returnOnline'):summary?translate('command.resume',{operation:summary}):translate('command.resumeDefault');
+  const summary=game?.getRunSummary();$('menuResume').hidden=!summary&&!isPartyActive();$('menuResumeLabel').textContent=isPartyActive()?translate('command.returnOnline'):summary?translate('command.resume',{operation:summary}):translate('command.resumeDefault');$('menuResults').hidden=!game?.hasResults?.();
  }
  // The screen label decides how the battle is framed (see field-command.css), so a
  // first run must say `training`: it used to be labelled `endless`, which put the
@@ -38,7 +38,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // old pop-up tour, because `showTutorial` prefers the live coach only when a match is
  // running and otherwise falls back to the modal briefing. `replayFirstRun` deploys the
  // training contract again - map, cards, guide - and pays nothing for the second run.
- $('menuTutorial').onclick=()=>{const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
+ $('menuTutorial').onclick=()=>{const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuResults').onclick=()=>getGame()?.showResults?.();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
  function showMenu(){return navigateToMenu();}
  function showAfterEnd(){return navigateToMenu(true);}
  return {render,showBattle,showLobby,showMenu,showAfterEnd};

@@ -57,9 +57,10 @@ for(const mode of ['coop','versus'])test(`two ${mode} party adapters share the l
   else await wait(()=>ids.every(id=>views[id]?.match?.towers?.length===1&&views[id]?.match?.rival?.towers?.length===1),'isolated duel towers replicated');
   const move={type:'move',x:map.width-30,y:map.height/2};
   assert.ok((await clients[1].command(move)).ok,'the guest can move beyond the old 960-pixel boundary');
-  const request=await clients[0].command({type:'startWave'});assert.equal(request.waitingForGuest,true);
-  await wait(()=>views.bob?.match?.pendingWave===1,'guest sees wave request');
-  assert.ok((await clients[1].command({type:'approveWave',requestId:views.bob.match.waveRequestId})).ok);
+  const request=await clients[1].command({type:'startWave'});assert.equal(request.waitingForGuest,true);
+  await wait(()=>ids.every(id=>views[id]?.match?.waveRequest?.id===request.requestId),'guest request visible to host and guest');
+  assert.equal(views.alice.match.waveRequest.requester,'bob');assert.equal(views.alice.match.wave,0);
+  assert.ok((await clients[0].command({type:'approveWave',requestId:request.requestId})).ok);
   await wait(()=>ids.every(id=>views[id]?.match?.wave===1),'wave starts on both views');
   await clients[1].stop();await wait(()=>ready.bob===false,'guest disconnects');
   views.bob=null; // Reconnection must deliver a new snapshot, not reuse the old one.

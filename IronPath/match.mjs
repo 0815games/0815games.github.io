@@ -11,6 +11,7 @@ import { waveFormation,missionFormation } from './combat.mjs?v=20261031-finale1'
 import { upgradeCostFor } from './tower-specialization.mjs?v=20261112-kits1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261031-patch3';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 // All investments have fixed costs in this version, so the refund can be derived
@@ -50,7 +51,8 @@ export function createPlayer(id, profile, x=850, y=450) {
 // Solo keeps its original shared balance; co-op stores separate player wallets.
 export function getSupplies(state,playerId){return state.individualSupplies?(state.players[playerId]?.money??0):state.money;}
 export function addSupplies(state,playerId,amount){if(state.individualSupplies){const player=state.players[playerId];if(!player)throw new Error('Unknown supplies owner');player.money+=amount;}else state.money+=amount;}
-function startNextWave(state){state.wave++;state.running=true;state.pendingWave=0;
+function clearWaveRequest(state){state.pendingWave=0;state.waveRequest=null;}
+function startNextWave(state){state.wave++;state.running=true;clearWaveRequest(state);
  // A campaign surge wave arrives wider than its formation: the contract's squad
  // bonus adds units, so a mission cannot be idled through by holding one lane.
  state.spawnLeft=missionFormation(state.wave,state.campaignContract).length+(state.campaignContract?campaignSurge(state.campaignContract.threat,state.wave):0);
@@ -66,20 +68,25 @@ export function applyCommand(state, playerId, command) {
   switch(command.type){
     case 'leaveRun': {
       if(!state.individualSupplies||!state.hostId||playerId===state.hostId)return {ok:false,reason:'Only the guest can leave individually.'};
-      player.active=false;player.direction={x:0,y:0};player.target=null;state.pendingWave=0;releaseBuildReservations(state,playerId);return {ok:true};
+      player.active=false;player.direction={x:0,y:0};player.target=null;clearWaveRequest(state);releaseBuildReservations(state,playerId);return {ok:true};
     }
     case 'endRun': {
       if(state.individualSupplies&&state.hostId&&playerId!==state.hostId)return {ok:false,reason:'Only the host can end the shared run. Leave the party to exit.'};
-      state.pendingWave=0;state.ended=true;state.running=false;state.endReason='retired';state.pendingPerk=0;state.spawnLeft=0;
+      clearWaveRequest(state);state.ended=true;state.running=false;state.endReason='retired';state.pendingPerk=0;state.spawnLeft=0;
       return {ok:true};
     }
     case 'startWave': {
       if(state.running||state.pendingPerk||state.pendingSector||!Number.isSafeInteger(state.wave)||state.wave>=Number.MAX_SAFE_INTEGER-1)return {ok:false,reason:state.pendingSector?'Order the retreat to the next sector first.':state.pendingPerk?'Choose a field upgrade first.':'Cannot start a wave now.'};
       if(state.individualSupplies&&state.hostId){
-        if(playerId!==state.hostId)return {ok:false,reason:'Only the host can request the next wave.'};
-        if(state.pendingWave)return {ok:false,reason:'Waiting for your teammate to approve.'};
-        const teammate=Object.keys(state.players).find(id=>id!==state.hostId);
-        if(teammate&&state.players[teammate].active!==false){state.waveRequestId=(state.waveRequestId||0)+1;state.pendingWave=state.wave+1;return {ok:true,waitingForGuest:true};}
+        if(state.pendingWave||state.waveRequest)return {ok:false,reason:'A wave request is already pending.'};
+        if(!waveRosterPresent(state.players))return {ok:false,reason:'All players must reconnect before requesting a wave.'};
+        if(!waveFieldsReady([state]))return {ok:false,reason:'All fields must be ready for the next wave.'};
+        const previous=state.waveRequestId??0;
+        if(!Number.isSafeInteger(previous)||previous<0||previous>=Number.MAX_SAFE_INTEGER)return {ok:false,reason:'No new wave request ID is available.'};
+        if(command.expectedRequestId!==undefined&&command.expectedRequestId!==previous)return {ok:false,reason:'The request changed. Please try again.'};
+        state.waveRequestId=previous+1;state.pendingWave=state.wave+1;
+        state.waveRequest=makeWaveRequest(state.waveRequestId,state.pendingWave,playerId,state.players);
+        return {ok:true,waitingForGuest:true,requestId:state.waveRequestId};
       }
       startNextWave(state);return {ok:true};
     }
@@ -88,17 +95,13 @@ export function applyCommand(state, playerId, command) {
       if(!retreat)return {ok:false,reason:'No sector is waiting for this field.'};
       return {ok:true,sector:retreat.sector,refund:retreat.refund};
     }
-    case 'approveWave': {
-      if(!state.individualSupplies||!state.hostId||playerId===state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.pendingWave!==state.wave+1||state.running||state.pendingPerk||state.players[state.hostId]?.active===false)return {ok:false,reason:'No wave is waiting for your approval.'};
-      startNextWave(state);return {ok:true};
-    }
-    case 'declineWave': {
-      if(!state.individualSupplies||!state.hostId||playerId===state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.running)return {ok:false,reason:'No wave request to decline.'};
-      state.pendingWave=0;return {ok:true};
-    }
-    case 'cancelWave': {
-      if(!state.individualSupplies||!state.hostId||playerId!==state.hostId||!state.pendingWave||command.requestId!==state.waveRequestId||state.running)return {ok:false,reason:'No wave request to cancel.'};
-      state.pendingWave=0;return {ok:true};
+    case 'approveWave': case 'declineWave': case 'cancelWave': {
+      const request=state.individualSupplies&&state.hostId?state.waveRequest:null;
+      if(command.type==='approveWave'&&request&&(!waveRosterPresent(state.players)||!waveFieldsReady([state],request.wave))){clearWaveRequest(state);return {ok:false,reason:'All fields and players must be ready for the next wave.'};}
+      const reply=replyToWaveRequest(request,playerId,command);if(!reply.ok)return reply;
+      if(reply.cancelled){clearWaveRequest(state);return {ok:true};}
+      if(reply.complete){startNextWave(state);return {ok:true};}
+      return {ok:true,waitingForPlayers:true};
     }
     case 'choosePerk': {
       if(!state.pendingPerk||state.running||!Number.isInteger(command.index)||command.index<0||command.index>2)return {ok:false,reason:'No such field upgrade is available.'};

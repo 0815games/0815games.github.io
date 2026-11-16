@@ -106,6 +106,8 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('friend-stats-output.log').read_text()[-4000:]; print('::error title=Friend stats emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Test friend portrait child-read candidate (emulator only)
+        run: npm run test:friend-portraits
       - name: Run friend presence rules tests
         shell: bash
         run: |
@@ -243,7 +245,9 @@ jobs:
         run: node --test IronPath/release-tools/session-config.test.mjs IronPath/release-tools/runtime-compatibility.test.mjs
   interface-browser-smoke:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    # Multi-client Firebase battles, cache and account smokes need headroom;
+    # long-running browser commands keep their own diagnostic timeouts below.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -252,8 +256,8 @@ jobs:
       - name: Install pinned browser test tooling
         run: |
           # This step has hung three times, always on `--with-deps`: it calls apt,
-          # and when the Azure package mirror is slow the job burns its whole 10
-          # minutes and reports "exceeded the maximum execution time" with no
+          # and when the Azure package mirror is slow the job burns its whole
+          # time limit and reports "exceeded the maximum execution time" with no
           # annotation. Two changes:
           #
           #   1. install Chromium WITHOUT the system packages first. The runner
@@ -308,7 +312,21 @@ jobs:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: |
           python3 -m http.server 8765 --bind 127.0.0.1 > /tmp/ironpath-http.log 2>&1 &
-          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && timeout 300 node IronPath/browser-tests/command-center.cjs && timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && timeout 180 node IronPath/browser-tests/release-stage.cjs && timeout 180 node IronPath/browser-tests/release-gates.cjs && timeout 180 node IronPath/browser-tests/admin-panel.cjs; } > /tmp/browser-smoke.log 2>&1; then
+          if { timeout 180 node IronPath/browser-tests/interface-smoke.cjs && \
+               timeout 300 node IronPath/browser-tests/command-center.cjs && \
+               timeout 180 node IronPath/browser-tests/retreat-viewport.cjs && \
+               timeout 180 node IronPath/browser-tests/multiplayer-field.cjs && \
+               timeout 300 node IronPath/browser-tests/wave-consensus.cjs && \
+               timeout 180 node IronPath/browser-tests/multiplayer-prompt-layout.cjs && \
+               timeout 180 node IronPath/browser-tests/cache-wave.cjs && \
+               timeout 300 node IronPath/browser-tests/multiplayer-fullscreen.cjs && \
+               timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && \
+               timeout 180 node IronPath/browser-tests/friends-sections.cjs && \
+               timeout 180 node IronPath/browser-tests/character-discharge.cjs && \
+               timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && \
+               timeout 180 node IronPath/browser-tests/release-stage.cjs && \
+               timeout 180 node IronPath/browser-tests/release-gates.cjs && \
+               timeout 180 node IronPath/browser-tests/admin-panel.cjs; } > /tmp/browser-smoke.log 2>&1; then
             cat /tmp/browser-smoke.log
           else
             cat /tmp/browser-smoke.log
@@ -325,6 +343,19 @@ jobs:
         env:
           NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
         run: npm run test:social-browser
+      - name: Test multiplayer battles in Chromium (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        shell: bash
+        run: |
+          if timeout 420 npm run test:multiplayer-browser > /tmp/multiplayer-browser.log 2>&1; then
+            cat /tmp/multiplayer-browser.log
+          else
+            cat /tmp/multiplayer-browser.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/multiplayer-browser.log').read_text()[-5000:]; print('::error title=Multiplayer browser emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Save interface screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -333,3 +364,59 @@ jobs:
           path: browser-artifacts/
           if-no-files-found: ignore
           retention-days: 7
+  party-finalization-browser:
+    # Each matrix entry gets its own runner and emulator ports. This keeps
+    # long recovery/sign-out cases out of the already full interface job and
+    # avoids parallel Firebase emulators competing on the same machine.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        script:
+          - test:party-end-browser
+          - test:party-end-rejection-browser
+          - test:party-signout-browser
+          - test:party-modes-browser
+          - test:party-offline-modes-browser
+          - test:party-natural-browser
+          - test:party-recovery-browser
+          - test:party-maintenance-browser
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: IronPath/firebase/rules-test/package-lock.json
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Firebase emulator test tooling
+        run: npm ci --prefix IronPath/firebase/rules-test --no-audit --no-fund
+      - name: Install and probe Chromium
+        shell: bash
+        run: |
+          PLAYWRIGHT="$RUNNER_TEMP/ironpath-browser/node_modules/.bin/playwright"
+          timeout 300 npm install --prefix "$RUNNER_TEMP/ironpath-browser" --no-audit --no-fund playwright@1.56.1
+          timeout 240 "$PLAYWRIGHT" install chromium
+          # Hosted images generally contain the required libraries; avoid an
+          # unnecessary slow apt trip unless the browser actually fails to launch.
+          if ! timeout 60 node -e 'require(process.env.RUNNER_TEMP+"/ironpath-browser/node_modules/playwright").chromium.launch({headless:true}).then(b=>b.close()).catch(e=>{console.error(e.message);process.exit(1)})'; then
+            timeout 420 "$PLAYWRIGHT" install-deps chromium
+          fi
+      - name: Test party finalization in Chromium and local emulators
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+          TEST_SCRIPT: ${{ matrix.script }}
+        shell: bash
+        run: |
+          if timeout 660 npm run "$TEST_SCRIPT" > /tmp/party-finalization-browser.log 2>&1; then
+            cat /tmp/party-finalization-browser.log
+          else
+            cat /tmp/party-finalization-browser.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/party-finalization-browser.log').read_text()[-5000:]; print('::error title=Party finalization emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
