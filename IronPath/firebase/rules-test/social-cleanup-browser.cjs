@@ -31,7 +31,7 @@ export function update(reference,values){
 const bootstrap=`
 import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import {initializeAuth,inMemoryPersistence,connectAuthEmulator,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-import {getDatabase,connectDatabaseEmulator,goOffline,goOnline} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
+import {getDatabase,connectDatabaseEmulator,goOffline,goOnline,ref,set} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {createGuardedGameBootstrap} from './release-tools/guarded-game-bootstrap.mjs';
 import {installGuardedAccountSession} from './account-services.mjs?v=20261031-releaseguard1';
 const game=document.getElementById('guardedTestGame'),hold=document.getElementById('guardedTestHold');let instances;
@@ -42,7 +42,7 @@ const runtime=createGuardedGameBootstrap({config:{apiKey:'fake',authDomain:'demo
  installSession:installGuardedAccountSession,importGame:()=>import('./account.js'),
  onHold:reason=>{game.hidden=true;game.inert=true;hold.hidden=false;hold.textContent='TEST HOLD: '+reason;},
  showGame:()=>{game.inert=false;game.hidden=false;hold.hidden=true;},replaceDocument:()=>location.replace('/test-landing')});
-window.ironPathSocialTest={offline:()=>goOffline(instances.db),online:()=>goOnline(instances.db),uid:()=>instances.auth.currentUser?.uid};runtime.start();`;
+window.ironPathSocialTest={offline:()=>goOffline(instances.db),online:()=>goOnline(instances.db),uid:()=>instances.auth.currentUser?.uid,setAvatar:value=>set(ref(instances.db,'players/'+instances.auth.currentUser.uid+'/avatar'),value)};runtime.start();`;
 function guardedHtml(html){
  const script=/<script type="module" src="(?:account\.js|account-entry\.mjs)\?v=[^"]+"><\/script>/g;
  if([...html.matchAll(script)].length!==1||!html.includes('<html lang="en"')||!html.includes('<body>')||!html.includes('</body>'))throw Error('Unexpected game entry');
@@ -58,11 +58,11 @@ function guardedHtml(html){
   const {stageVersion}=await import(pathToFileURL(path.join(releaseDir,'stage-version.mjs')).href);
   const out=path.join(tmp,'IronPath','releases');await fs.mkdir(out,{recursive:true});await stageVersion({sourceDir:root,outputDir:out,build:'social-1'});
   const source=await fs.readFile(path.join(root,'firebase/WORKSHOP-RULES-TO-PUBLISH.json'));
-  const {buildSocialCleanupCandidate}=await import(pathToFileURL(path.join(root,'firebase/social-cleanup-candidate.mjs')).href);
+  const {buildFriendPortraitCandidate}=await import(pathToFileURL(path.join(root,'firebase/friend-portrait-candidate.mjs')).href);
   const {buildRulesCandidate}=await import(pathToFileURL(path.join(releaseDir,'rules-candidate.mjs')).href);
   const {createConfiguredSessionExchange}=await import(pathToFileURL(path.join(releaseDir,'session-service.mjs')).href);
   const {createReleaseSessionHttpHandler}=await import(pathToFileURL(path.join(releaseDir,'session-http.mjs')).href);
-  const baseline=buildRulesCandidate(JSON.parse(source)).candidate,candidate=buildRulesCandidate(buildSocialCleanupCandidate(source)).candidate;
+  const baseline=buildRulesCandidate(JSON.parse(source)).candidate,candidate=buildRulesCandidate(buildFriendPortraitCandidate(source)).candidate;
   const sdkModules={};for(const name of ['firebase-app.js','firebase-auth.js','firebase-database.js'])sdkModules[name]=await fs.readFile(path.join(__dirname,'node_modules/firebase',name),'utf8');
   admin=initializeAdmin({projectId:project},'social-cleanup-browser-admin');const adminAuth=getAdminAuth(admin);
   await adminAuth.createUser({uid,email:'social-browser@example.test',password:'example-password-123'});
@@ -74,6 +74,7 @@ function guardedHtml(html){
     const pathname=new URL(req.url,'http://127.0.0.1').pathname;
     if(pathname==='/status'){const upstream=await fetch(emulatorStatus,{cache:'no-store'});res.writeHead(upstream.status,{'content-type':'application/json','cache-control':'no-store'}).end(await upstream.text());return;}
     if(pathname==='/api/session'){req.headers.origin='https://0815games.github.io';handleSession(req,res);return;}
+    if(pathname==='/test-landing'){res.writeHead(200,{'content-type':'text/html; charset=utf-8','cache-control':'no-store'}).end('<!doctype html><title>Local guard test landing</title>');return;}
     if(pathname.endsWith('/social-test-bootstrap.mjs')){res.writeHead(200,{'content-type':'text/javascript'}).end(bootstrap);return;}
     let requested=pathname;if(requested.endsWith('/'))requested+='index.html';const file=path.resolve(tmp,'.'+requested);
     if(!file.startsWith(tmp+path.sep)){res.writeHead(403).end();return;}let body=await fs.readFile(file);
@@ -84,7 +85,7 @@ function guardedHtml(html){
   env=await initializeTestEnvironment({projectId:project,database:{host:'127.0.0.1',port:9000,rules:JSON.stringify(baseline)}});
   const adminSet=(p,v)=>env.withSecurityRulesDisabled(ctx=>set(p?ref(ctx.database(),p):ref(ctx.database()),v));
   const adminGet=async p=>{let value;await env.withSecurityRulesDisabled(async ctx=>{value=(await get(ref(ctx.database(),p))).val();});return value;};
-  await env.clearDatabase();await adminSet('',{_ironpathRelease:{mode:'open',build:'social-1',epoch:'a'.repeat(32),authAfterMs:(Math.floor(Date.now()/1000)-120)*1000},players:{[uid]:{name:'Alice',gender:'female',xp:0},[other]:{name:'Bob',gender:'male',xp:0}}});
+  await env.clearDatabase();await adminSet('',{_ironpathRelease:{mode:'open',build:'social-1',epoch:'a'.repeat(32),authAfterMs:(Math.floor(Date.now()/1000)-120)*1000},players:{[uid]:{name:'Alice',gender:'female',xp:0},[other]:{name:'Bob',gender:'male',xp:0,avatar:'g:m|face:buzz|hair:side|beard:full'}}});
   const args=['--host-resolver-rules=MAP * 127.0.0.1'];if(process.env.CHROMIUM_PATH)args.push('--no-sandbox');
   browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH,args});
   const contexts=[],errors=[],external=[];let page,friendPage,stage='initial login';
@@ -113,10 +114,21 @@ function guardedHtml(html){
    assert.match(code||'',/^[a-f0-9]{32}$/);assert.ok(await adminGet(`friendNames/${searchKey}/${uid}`));
    await adminSet(`friendships/${uid}/${other}`,{status:'accepted',senderName:'Bob',receiverName:'Alice',code});
    await adminSet(`friendOutgoing/${other}/${uid}`,{code,name:'Alice'});
+   // With the old Rules, avatar/gender are not readable by friends. The
+   // dossier must still load its permitted stats and show a neutral placeholder.
+   stage='old rules portrait fallback';await page.locator('#menuFriends').click();
+   await page.locator('#friendList li').filter({hasText:'Bob'}).waitFor({state:'visible',timeout:20000});
+   assert.match(await page.locator('#friendList .friend-portrait').getAttribute('src'),/friend-placeholder\.svg/);
+   await page.locator('#friendList li').filter({hasText:'Bob'}).getByRole('button',{name:'STATS',exact:true}).click();
+   await page.locator('#friendStatsContent').waitFor({state:'visible',timeout:20000});
+   assert.match(await page.locator('#friendStatsPortrait').getAttribute('src'),/friend-placeholder\.svg/);
+   await page.locator('#friendStatsClose').click();await page.locator('#friendsClose').click();
    await adminSet(`coopInvites/${uid}/${other}`,{partyId:'d'.repeat(32),code:'1234',name:'Bob',createdAt:Date.now()});
    await adminSet(`coopInvites/${other}/${uid}`,{partyId:'e'.repeat(32),code:'5678',name:'Alice',createdAt:Date.now()});
    await adminSet(`friendPresence/${uid}/${'f'.repeat(32)}`,Date.now());
    await adminSet(`leaderboards/solo/${uid}`,{name:'Alice',wave:7});
+   await page.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:20000});assert.match(await page.locator('#multiplayerPromptBody').textContent(),/Bob invited you/);
+   await page.locator('#multiplayerPromptActions [data-action="later"]').click();assert.ok(await adminGet(`coopInvites/${uid}/${other}`),'putting a notice aside does not delete the invitation');
    const confirmDelete=async()=>{await page.locator('#menuDeleteCharacter').click();await page.locator('#gameConfirm').waitFor({state:'visible'});await page.locator('#gameConfirmAccept').click();};
    // The old Rules deny the entire update. The UI must not announce success or
    // offer recruitment based on an optimistic local profile removal.
@@ -125,6 +137,8 @@ function guardedHtml(html){
    assert.equal((await adminGet(`players/${uid}`)).name,'Alice');assert.equal((await adminGet(`leaderboards/solo/${uid}`)).wave,7);assert.ok(await adminGet(`friendships/${uid}/${other}`));
    candidateEnv=await initializeTestEnvironment({projectId:project,database:{host:'127.0.0.1',port:9000,rules:JSON.stringify(candidate)}});
    await page.locator('#retryProfile').click();await page.locator('#menuMultiplayer').waitFor({state:'visible',timeout:20000});
+   await page.waitForFunction(()=>document.getElementById('inviteNotification').textContent.includes('1'),null,{timeout:20000});
+   assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true,'reloading the same profile does not repeat the already dismissed invitation');
    // A locally active host party must be closed before character deletion.
    await page.locator('#menuMultiplayer').click();await page.locator('#fourPartyCreate').click();await page.locator('#fourPartyActive').waitFor({state:'visible',timeout:20000});
    const inviteCode=await page.locator('#fourPartyCodeDisplay').textContent();assert.match(inviteCode,/^\d{4}$/);
@@ -137,8 +151,16 @@ function guardedHtml(html){
    await page.waitForFunction(()=>window.__socialDeletionQueued===true,null,{timeout:20000});
    await page.locator('#loading').waitFor({state:'visible'});await page.waitForTimeout(500);
    assert.equal(await page.locator('#characterView').isVisible(),false);assert.equal((await adminGet(`players/${uid}`)).name,'Alice');
-   await page.evaluate(()=>window.ironPathSocialTest.online());await page.locator('#characterView').waitFor({state:'visible',timeout:30000});
+   await page.evaluate(()=>window.ironPathSocialTest.online());
+   // The guarded session tears down the document on logout. Re-enter with the
+   // same tab and check that the one-shot notice survived the navigation.
+   await page.waitForURL('**/test-landing',{timeout:30000});
    for(const p of [`players/${uid}`,`friendPrivate/${uid}`,`friendCodes/${code}`,`friendNames/${searchKey}/${uid}`,`friendships/${uid}/${other}`,`friendOutgoing/${other}/${uid}`,`coopInvites/${uid}/${other}`,`coopInvites/${other}/${uid}`,`friendPresence/${uid}`,`leaderboards/solo/${uid}`])assert.equal(await adminGet(p),null,p);
+   await page.goto(`http://127.0.0.1:${server.address().port}/IronPath/releases/social-1/`);
+   await page.locator('#authView').waitFor({state:'visible',timeout:20000});await page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
+   assert.equal(await page.locator('#entryMessage').textContent(),'Your character has been discharged. Please sign in again.');
+   await page.locator('#email').fill('social-browser@example.test');await page.locator('#password').fill('example-password-123');await page.locator('#authSubmit').click();
+   await page.locator('#characterView').waitFor({state:'visible',timeout:30000});
    await page.locator('#soldierName').fill('Alicia');await page.locator('#characterForm button[type="submit"]').click();
    await page.waitForFunction(()=>document.getElementById('menuName').textContent==='Alicia',null,{timeout:30000});
    assert.equal((await adminGet(`players/${uid}`)).name,'Alicia');
@@ -156,15 +178,62 @@ function guardedHtml(html){
    const friendDeadline=Date.now()+15000;let friendCode=null,friendKey=null;
    while(Date.now()<friendDeadline){friendCode=await adminGet(`friendPrivate/${other}/code`);friendKey=await adminGet(`friendPrivate/${other}/searchKey`);if(friendCode&&friendKey&&await adminGet(`friendNames/${friendKey}/${other}`))break;await new Promise(resolve=>setTimeout(resolve,50));}
    assert.match(friendCode||'',/^[a-f0-9]{32}$/);assert.ok(await adminGet(`friendNames/${friendKey}/${other}`));
+   // Both writes use the real signed-in SDK and the owner-only profile rule.
+   await page.evaluate(()=>window.ironPathSocialTest.setAvatar('g:f|face:crop|hair:bob'));
+   await friendPage.evaluate(()=>window.ironPathSocialTest.setAvatar('g:m|face:buzz|hair:side|beard:full'));
 
-   stage='friend request and acceptance';
+   stage='friend request, decline and re-request';
    await page.locator('#menuMultiplayer').waitFor({state:'visible'});await page.locator('#menuFriends').click();
    await page.locator('#friendInput').fill('Bob');await page.locator('#friendSearch').click();
-   await page.locator('#friendResults li').filter({hasText:'Bob'}).getByRole('button',{name:'ADD',exact:true}).click();
-   await friendPage.locator('#menuFriends').click();
-   await friendPage.locator('#friendRequests li').filter({hasText:'Alicia'}).getByRole('button',{name:'ACCEPT',exact:true}).click();
+   const addBob=page.locator('#friendResults li').filter({hasText:'Bob'}).getByRole('button',{name:'ADD',exact:true});
+   await addBob.click();await friendPage.locator('#menuFriends').click();
+   const requestAlice=friendPage.locator('#friendRequests li').filter({hasText:'Alicia'});
+   await requestAlice.getByRole('button',{name:'DECLINE',exact:true}).click();
+   await requestAlice.waitFor({state:'detached',timeout:20000});
+   await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent==='Request declined.',null,{timeout:20000});
+   await page.locator('#friendSent li').filter({hasText:'Bob'}).getByText('Request no longer active').waitFor({state:'visible',timeout:20000});
+   await addBob.click();await requestAlice.getByRole('button',{name:'ACCEPT',exact:true}).click();
    await page.locator('#friendList li').filter({hasText:'Bob'}).waitFor({state:'visible',timeout:20000});
    await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).waitFor({state:'visible',timeout:20000});
+   await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent==='Friend request accepted.',null,{timeout:20000});
+
+   stage='saved friend portraits and private fallback';
+   async function verifyPortrait(viewer,name,encoded,gender){
+    const row=viewer.locator('#friendList li').filter({hasText:name}),image=row.locator('.friend-portrait');
+    await viewer.waitForFunction(()=>document.querySelector('#friendList .friend-portrait')?.getAttribute('src')?.startsWith('data:image/png;base64,'),null,{timeout:30000});
+    const expected=await viewer.evaluate(async({encoded,gender})=>{
+     const {decodeAvatar}=await import('./avatar.mjs?v=20261112-live1'),{composePortrait}=await import('./avatar-layers.mjs?v=20261112-live1');
+     const canvas=document.createElement('canvas');await composePortrait(canvas,decodeAvatar(encoded,gender),128);return canvas.toDataURL('image/png');
+    },{encoded,gender});
+    const list=await image.getAttribute('src');assert.ok(list===expected,`${name}: list shows that account's saved avatar`);
+    await row.getByRole('button',{name:'STATS',exact:true}).click();await viewer.locator('#friendStatsContent').waitFor({state:'visible',timeout:20000});
+    assert.ok(await viewer.locator('#friendStatsPortrait').getAttribute('src')===list,`${name}: dossier uses the identical list image`);
+    return list;
+   }
+   const originalBob=await verifyPortrait(page,'Bob','g:m|face:buzz|hair:side|beard:full','male');
+   await verifyPortrait(friendPage,'Alicia','g:f|face:crop|hair:bob','female');await friendPage.locator('#friendStatsClose').click();
+   await friendPage.evaluate(()=>window.ironPathSocialTest.setAvatar('g:m|face:short|hair:medium|beard:stubble'));
+   await page.waitForFunction(old=>{const list=document.querySelector('#friendList .friend-portrait')?.getAttribute('src'),stats=document.getElementById('friendStatsPortrait').getAttribute('src');return list?.startsWith('data:image/png;base64,')&&list!==old&&list===stats;},originalBob,{timeout:30000});
+   await adminSet(`players/${other}/avatar`,null); // simulate an old profile without a server avatar
+   await page.waitForFunction(()=>document.querySelector('#friendList .friend-portrait')?.getAttribute('src')?.includes('friend-placeholder.svg')&&document.getElementById('friendStatsPortrait').getAttribute('src')?.includes('friend-placeholder.svg'),null,{timeout:20000});
+   await friendPage.evaluate(()=>window.ironPathSocialTest.setAvatar('g:m|face:short|hair:medium|beard:stubble'));
+   await page.waitForFunction(()=>document.querySelector('#friendList .friend-portrait')?.getAttribute('src')?.startsWith('data:image/png;base64,'),null,{timeout:30000});
+
+   stage='remove and re-add friends from both directions';
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).getByRole('button',{name:'REMOVE',exact:true}).click();
+   await page.locator('#friendList li').filter({hasText:'Bob'}).waitFor({state:'detached',timeout:20000});
+   await page.waitForFunction(()=>!document.getElementById('friendStatsDialog').open,null,{timeout:20000});
+   await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent==='Friend removed.',null,{timeout:20000});
+   await addBob.click();await requestAlice.getByRole('button',{name:'ACCEPT',exact:true}).click();
+   await page.locator('#friendList li').filter({hasText:'Bob'}).getByRole('button',{name:'REMOVE',exact:true}).click();
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).waitFor({state:'detached',timeout:20000});
+   await page.waitForFunction(()=>document.getElementById('friendStatus').textContent==='Friend removed.',null,{timeout:20000});
+   await friendPage.locator('#friendInput').fill('Alicia');await friendPage.locator('#friendSearch').click();
+   await friendPage.locator('#friendResults li').filter({hasText:'Alicia'}).getByRole('button',{name:'ADD',exact:true}).click();
+   await page.locator('#friendRequests li').filter({hasText:'Bob'}).getByRole('button',{name:'ACCEPT',exact:true}).click();
+   await page.locator('#friendList li').filter({hasText:'Bob'}).waitFor({state:'visible',timeout:20000});
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).waitFor({state:'visible',timeout:20000});
+   await page.locator('#friendsClose').click();
 
    stage='party invitation and guest join';
    await friendPage.locator('#friendsClose').click();await friendPage.locator('#menuMultiplayer').click();
@@ -172,8 +241,22 @@ function guardedHtml(html){
    const hostCode=await friendPage.locator('#fourPartyCodeDisplay').textContent();assert.match(hostCode,/^\d{4}$/);
    await friendPage.locator('#lobbyFriends').click();
    await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).getByRole('button',{name:'INVITE',exact:true}).click();
+   await page.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:20000});assert.match(await page.locator('#multiplayerPromptBody').textContent(),/Bob invited you/);
+   await page.locator('#multiplayerPromptActions [data-action="view"]').click();await page.locator('#friendsDialog').waitFor({state:'visible'});
+   await page.locator('#coopInviteList li').filter({hasText:'Bob'}).waitFor({state:'visible'});
+   await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent.includes('Invitation sent.'),null,{timeout:20000});
+   const initialInvite=await adminGet(`coopInvites/${uid}/${other}`);assert.ok(initialInvite);
+   await page.evaluate(()=>{window.__staleInviteDecline=[...document.querySelectorAll('#coopInviteList li button')].find(button=>button.textContent==='DECLINE');if(!window.__staleInviteDecline)throw Error('Missing invitation decline control');});
+   await friendPage.locator('#friendList li').filter({hasText:'Alicia'}).getByRole('button',{name:'INVITE',exact:true}).click();
+   const replaceDeadline=Date.now()+15000;let replacementInvite;while(Date.now()<replaceDeadline){replacementInvite=await adminGet(`coopInvites/${uid}/${other}`);if(replacementInvite&&replacementInvite.createdAt!==initialInvite.createdAt)break;await new Promise(resolve=>setTimeout(resolve,50));}
+   assert.ok(replacementInvite);assert.notEqual(replacementInvite.createdAt,initialInvite.createdAt,'the sender created a later invitation');
+   await page.evaluate(()=>window.__staleInviteDecline.click());
+   await page.waitForFunction(()=>document.getElementById('friendStatus').textContent.includes('Invitation changed or is no longer available.'),null,{timeout:20000});
+   assert.deepEqual(await adminGet(`coopInvites/${uid}/${other}`),replacementInvite,'a delayed old decline cannot remove the replacement');
    await page.locator('#coopInviteList li').filter({hasText:'Bob'}).getByRole('button',{name:'JOIN',exact:true}).click();
    await page.locator('#fourPartyActive').waitFor({state:'visible',timeout:30000});
+   const cleanupDeadline=Date.now()+15000;while(Date.now()<cleanupDeadline&&await adminGet(`coopInvites/${uid}/${other}`))await new Promise(resolve=>setTimeout(resolve,50));
+   assert.equal(await adminGet(`coopInvites/${uid}/${other}`),null,'joining removes the matching invitation');
    await friendPage.locator('#fourPartyRoster').getByText(/Alicia/).waitFor({state:'visible',timeout:30000});
    await page.locator('#fourPartyRoster').getByText(/Bob/).waitFor({state:'visible',timeout:30000});
 
@@ -189,27 +272,73 @@ function guardedHtml(html){
    await page.locator('#fourPartyActive').waitFor({state:'visible',timeout:30000});
    await friendPage.locator('#fourPartyRoster').getByText(/Alicia/).waitFor({state:'visible',timeout:30000});
 
+   // A genuine account, browser UI and Firebase SDK now traverse the complete
+   // local emulator path. The guest initiates both decisions; the host must see
+   // the public name and approve them explicitly. This is still not a device or
+   // production-network test. Wave 1 is played through rather than fast-forwarded.
+   stage='guest wave and 2x through browser and Firebase emulators';
+   await friendPage.locator('#friendsClose').click();
+   await friendPage.locator('#fourPartyMode').selectOption('coop');
+   await friendPage.locator('#fourPartyStart').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('gameWorkspace').dataset.onlineReady==='true',null,{timeout:30000});
+   await page.locator('#start').click();
+   await friendPage.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:30000});
+   assert.match(await friendPage.locator('#multiplayerPromptBody').innerText(),/Alicia requests wave 1/);
+   await friendPage.locator('#multiplayerPromptActions [data-action="approve"]').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('wave').textContent.startsWith('1 /'),null,{timeout:30000});
+   await page.locator('#speed').click();
+   await friendPage.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:30000});
+   assert.match(await friendPage.locator('#multiplayerPromptBody').innerText(),/Alicia requests 2× for wave 1/);
+   assert.match(await friendPage.locator('#multiplayerPromptNote').innerText(),/Battle continues/);
+   await friendPage.locator('#multiplayerPromptActions [data-action="approve"]').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('speed').textContent.includes('2× ·'),null,{timeout:30000});
+   stage='complete wave one and request wave two';
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('wave').textContent.startsWith('1 /')&&document.getElementById('start').textContent==='REQUEST WAVE'&&!document.getElementById('start').disabled,null,{timeout:90000});
+   // Wave completion is client-observed and the reward write is asynchronous.
+   // Verify both actual server profiles before starting the next wave.
+   const rewardDeadline=Date.now()+20000;while(Date.now()<rewardDeadline){const guest=await adminGet(`players/${uid}`),host=await adminGet(`players/${other}`);if(guest?.xp>0&&host?.xp>0)break;await new Promise(resolve=>setTimeout(resolve,100));}
+   assert.ok((await adminGet(`players/${uid}`)).xp>0,'guest wave XP confirmed');
+   assert.ok((await adminGet(`players/${other}`)).xp>0,'host wave XP confirmed');
+   await page.locator('#start').click();await friendPage.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:30000});
+   assert.match(await friendPage.locator('#multiplayerPromptBody').innerText(),/Alicia requests wave 2/);
+   await friendPage.locator('#multiplayerPromptActions [data-action="approve"]').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('wave').textContent.startsWith('2 /'),null,{timeout:30000});
+   await page.locator('#speed').click();await friendPage.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:30000});
+   assert.match(await friendPage.locator('#multiplayerPromptBody').innerText(),/Alicia requests 2× for wave 2/);
+   await friendPage.locator('#multiplayerPromptActions [data-action="approve"]').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('speed').textContent.includes('2× ·'),null,{timeout:30000});
+   await friendPage.locator('#speed').click();
+   for(const current of [friendPage,page])await current.waitForFunction(()=>document.getElementById('speed').textContent==='REQUEST 2×',null,{timeout:30000});
+   console.log('Two browser sessions and Firebase emulators: guest wave requests, played wave 1, confirmed XP for both and guest 2× in wave 2 passed.');
+
    stage='host closes party';
-   await friendPage.locator('#friendsClose').click();await friendPage.locator('#fourPartyLeave').click();
-   await friendPage.locator('#gameConfirmAccept').click();
+   await friendPage.locator('#fieldOps > summary').click();await friendPage.locator('#fieldParty').click();
+   await friendPage.locator('#fourPartyLeave').click();await friendPage.locator('#gameConfirmAccept').click();
    await friendPage.locator('#fourPartyEntry').waitFor({state:'visible',timeout:20000});
    await page.locator('#fourPartyEntry').waitFor({state:'visible',timeout:20000});
    assert.equal(await adminGet(`fourCodes/${hostCode}`),null);assert.equal(await adminGet(`fourParties/${hostParty}`),null);
-   await friendPage.locator('#backToCommand').click();await page.locator('#backToCommand').click();
+   for(const current of [friendPage,page]){
+    await current.locator('#runResults').waitFor({state:'visible'});
+    assert.match(await current.locator('#resultsSave').innerText(),/host closed the party/i,'the finished report survives closing the transport');
+    assert.match(await current.locator('#resultsRewards').innerText(),/\+30 XP/);
+    assert.equal(await current.locator('#runResults').getAttribute('data-save'),'confirmed');
+    await current.locator('#resultsDone').click();await current.locator('#menuFriends').waitFor({state:'visible'});
+   }
 
    stage='peer sees character deletion';
    await friendPage.locator('#menuFriends').click();
    const connectedFriend=friendPage.locator('#friendList li').filter({hasText:'Alicia'});
    await connectedFriend.waitFor({state:'visible',timeout:20000});
-   await confirmDelete();await page.locator('#characterView').waitFor({state:'visible',timeout:30000});
+   await confirmDelete();await page.waitForURL('**/test-landing',{timeout:30000});
    await connectedFriend.waitFor({state:'detached',timeout:20000});
-   for(const p of [`players/${uid}`,`friendCodes/${newCode}`,`friendOutgoing/${uid}/${other}`,`friendships/${other}/${uid}`])assert.equal(await adminGet(p),null,p);
+   for(const p of [`players/${uid}`,`friendCodes/${newCode}`,`friendOutgoing/${uid}/${other}`,`friendships/${other}/${uid}`,`friendOutgoing/${other}/${uid}`,`friendships/${uid}/${other}`])assert.equal(await adminGet(p),null,p);
    assert.equal((await adminGet(`players/${other}`)).name,'Bob');assert.equal((await adminGet(`friendCodes/${friendCode}`)).uid,other);
    await friendPage.locator('#friendInput').fill('Alicia');await friendPage.locator('#friendSearch').click();
    await friendPage.waitForFunction(()=>document.getElementById('friendStatus').textContent.includes('No players found.'),null,{timeout:20000});
    assert.equal(await friendPage.locator('#friendResults li').count(),0);
    assert.deepEqual(external,[],'test browser attempted no live service');assert.deepEqual(errors,[]);
-   console.log('Two isolated browser sessions: request, acceptance, invited join, guest leave, host close and peer-visible character cleanup passed.');
+   console.log('Two isolated browser sessions: decline/re-request, removal/re-add in both directions, invited join, guest leave, host close and peer-visible character cleanup passed.');
+   console.log('Friend portraits: old Rules fallback, saved layered avatars, matching list/dossier, live changes, missing avatar and removal passed with local SDKs and candidate Rules.');
   }catch(error){
    console.error('Browser test stage:',stage);
    for(const current of [page,friendPage].filter(Boolean))console.error('Browser state:',await current.evaluate(()=>Object.fromEntries(['authView','connectionView','characterView','gameView','loading','entryMessage','friendStatus','fourPartyStatus','guardedTestHold'].map(id=>{const e=document.getElementById(id);return [id,{hidden:e?.hidden,text:e?.textContent?.slice(0,180)}];}))).catch(()=>({})));

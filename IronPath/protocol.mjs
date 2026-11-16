@@ -1,12 +1,12 @@
-import {createSpeedControl} from './multiplayer-speed.mjs?v=20261104-speedvote1';
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261031-patch3';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261112-tagless1';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-mpview1';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261031-patch3';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-patch3';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261112-tagless1';
-import { stepMatch } from './simulation.mjs?v=20261112-tagless1';
+import { applyCommand } from './match.mjs?v=20261031-patch3';
+import { stepMatch } from './simulation.mjs?v=20261031-patch3';
 export const PROTOCOL_VERSION=1;
 // Snapshots carry only the newest receipts. A client may have exactly ONE
 // command in flight (it sends sequence nextSeq and stays locked until that
@@ -19,11 +19,16 @@ export const SNAPSHOT_RECEIPTS=8;
 export const MAX_PENDING=128;
 export const RECEIPT_HISTORY=128;
 const isFour=match=>match?.mode==='four-coop'||match?.mode==='two-vs-two';
+const hasEnded=match=>(match?.mode==='four-coop'?match.match?.ended:match?.ended)===true;
 const matchIds=match=>Object.keys((isFour(match)?match.members:match.players)||{});
 const validCount=match=>isFour(match)?(match.mode==='four-coop'?[3,4].includes(matchIds(match).length):matchIds(match).length===4):matchIds(match).length>=1&&matchIds(match).length<=2;
 const clone=value=>JSON.parse(JSON.stringify(value));
 const speedCommands=new Set(['requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
-const commandFields={requestSpeed:[],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:[],endRun:[],leaveRun:[],startWave:[],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const waveCommands=new Set(['startWave','approveWave','declineWave','cancelWave']);
+// Both kinds of vote depend on the same locked roster. A late speed request or
+// slow-down can otherwise revive or cancel a vote after someone reconnects.
+export const isRosterVoteCommand=type=>waveCommands.has(type)||speedCommands.has(type);
+const commandFields={requestSpeed:['expectedRequestId'],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:['expectedRequestId'],endRun:[],leaveRun:[],finishParty:[],acknowledgePartyEnd:['endTick'],startWave:['expectedRequestId'],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -31,14 +36,16 @@ export function normalizeCommand(command){
   const result={type:command.type};
   for(const key of fields){
     const value=command[key];
-    if(value===undefined&&['branch','expectedTowerId','expectedLevel'].includes(key))continue;
+    if(value===undefined&&['branch','expectedTowerId','expectedLevel','expectedRequestId'].includes(key))continue;
     if(typeof value!=='number'||!Number.isFinite(value))return null;
+    if(key==='expectedRequestId'&&(!Number.isSafeInteger(value)||value<0))return null;
+    if(key==='endTick'&&(!Number.isSafeInteger(value)||value<1))return null;
     result[key]=value;
   }
   return result;
 }
 function makeHost(data){
-  let {match,tick,players,queue}=data;const speedControl=createSpeedControl(match,data.speedControl);
+  let {match,tick,players,queue,partyEnd=null}=data;const speedControl=createSpeedControl(match,data.speedControl);
   function receive(playerId,envelope){
     if(!Object.hasOwn(players,playerId))return {status:'rejected',reason:'unknown-player'};
     if(!envelope||envelope.version!==PROTOCOL_VERSION)return {status:'rejected',reason:'version'};
@@ -61,17 +68,38 @@ function makeHost(data){
     while(p.receipts.length>RECEIPT_HISTORY){const i=p.receipts.findIndex(r=>r.response.status!=='queued');if(i<0)break;p.receipts.splice(i,1);}
     return clone(response);
   }
-  function advance(){
+  function advance(onlyHostEnd=false){
+    // When a competitive roster is incomplete, permit a host end request
+    // without advancing combat or applying any queued gameplay command.
+    const selected=onlyHostEnd?queue.filter(item=>item.playerId===match.hostId&&['endRun','finishParty'].includes(item.command.type)):queue;
+    if(onlyHostEnd&&!selected.length)return null;
     tick++;const commands=[];
-    for(const item of queue){
-      const result=speedCommands.has(item.command.type)?speedControl.command(item.playerId,item.command):isFour(match)?applyFourCommand(match,item.playerId,item.command):match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
+    for(const item of selected){
+      let result;
+      if(item.command.type==='finishParty'){
+        // A naturally finished match is not an intent to delete the party.
+        // Only its host can start the finalization after seeing the outcome.
+        if(matchIds(match).length<2||item.playerId!==match.hostId||!hasEnded(match))result={ok:false,reason:'Only the host can finish an ended party.'};
+        else{partyEnd??={tick,acknowledged:[]};result={ok:true};}
+      }else if(item.command.type==='acknowledgePartyEnd'){
+        // Identity is bound to the sender by the authenticated input path.
+        // A matching final tick prevents an old acknowledgement from being
+        // reused for a different terminal snapshot.
+        if(!partyEnd||item.command.endTick!==partyEnd.tick||!hasEnded(match))result={ok:false,reason:'Party finalization changed.'};
+        else{if(!partyEnd.acknowledged.includes(item.playerId))partyEnd.acknowledged.push(item.playerId);result={ok:true};}
+      }else{
+        result=speedCommands.has(item.command.type)?speedControl.command(item.playerId,item.command):isFour(match)?applyFourCommand(match,item.playerId,item.command):match.mode==='versus'?applyVersus(match,item.playerId,item.command):applyCommand(match,item.playerId,item.command);
+        // A successful host end is intentional. Presence loss, forfeit and
+        // normal defeat must not silently become permission to close.
+        if(item.command.type==='endRun'&&result.ok&&item.playerId===match.hostId&&matchIds(match).length>1&&hasEnded(match))partyEnd??={tick,acknowledged:[]};
+      }
       const response={status:'applied',seq:item.seq,tick,result};
       const receipt=players[item.playerId].receipts.find(r=>r.seq===item.seq);
       receipt.response=clone(response);
       commands.push({...clone(item),result:clone(result)});
     }
-    queue=[];
-    const events=isFour(match)?stepFour(match):match.mode==='versus'?stepVersus(match):stepMatch(match);
+    queue=onlyHostEnd?queue.filter(item=>!selected.includes(item)):[];
+    const events=onlyHostEnd?[]:isFour(match)?stepFour(match):match.mode==='versus'?stepVersus(match):stepMatch(match);
     speedControl.reconcile();return clone({version:PROTOCOL_VERSION,tick,commands,events});
   }
   // Cancel unprocessed inputs and neutralize movement on transport disconnect.
@@ -87,22 +115,34 @@ function makeHost(data){
     }
     queue=remaining;return true;
   }
+  // A roster change invalidates queued wave AND speed actions, not only the
+  // currently displayed vote. A quick reconnect must not revive a request or
+  // let an old slow-down cancel somebody's new vote.
+  function suspendRosterVotes(playerId=null,seq=null){
+    const remaining=[];
+    for(const item of queue){
+      if(!isRosterVoteCommand(item.command.type)||(playerId!==null&&(item.playerId!==playerId||item.seq!==seq))){remaining.push(item);continue;}
+      const receipt=players[item.playerId].receipts.find(r=>r.seq===item.seq);
+      receipt.response={status:'cancelled',seq:item.seq,reason:'roster-changed'};
+    }
+    queue=remaining;
+  }
   // Player-hosted sessions can suspend an absent player's combat without
   // removing their identity, towers or reconnect receipts from the match.
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
     if(!active)speedControl.reset();
-    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active&&match.pendingWave)match.pendingWave=0;return true;
+    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active){match.pendingWave=0;match.waveRequest=null;}return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
-  function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint()});}
+  function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint(),...(partyEnd?{partyEnd}:{})});}
   // A reconnecting authenticated player receives a detached view and their own receipts.
   function snapshotFor(playerId){
     if(!Object.hasOwn(players,playerId))return null;
     const p=players[playerId];
-    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.slice(-SNAPSHOT_RECEIPTS).map(r=>r.response)});
+    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.slice(-SNAPSHOT_RECEIPTS).map(r=>r.response),...(partyEnd?{partyEnd}:{})});
   }
-  return {receive,advance,checkpoint,snapshotFor,suspendPlayer,setPlayerActive,speed:()=>speedControl.snapshot().speed};
+  return {receive,advance:()=>advance(),advanceHostEnd:()=>advance(true),hasEnded:()=>hasEnded(match),checkpoint,snapshotFor,suspendPlayer,suspendRosterVotes,setPlayerActive,speed:()=>speedControl.snapshot().speed};
 }
 export function createHost(initialMatch){
   const match=clone(initialMatch),ids=matchIds(match);
@@ -113,6 +153,7 @@ export function restoreHost(checkpoint){
   if(!checkpoint||checkpoint.version!==PROTOCOL_VERSION)throw new Error('Unsupported checkpoint version');
   const data=clone(checkpoint),ids=matchIds(data.match);
   if(!Number.isSafeInteger(data.tick)||data.tick<0||!data.players||!Array.isArray(data.queue)||data.queue.length>MAX_PENDING||!validCount(data.match)||Object.keys(data.players).length!==ids.length||ids.some(id=>!Object.hasOwn(data.players,id)||!Number.isSafeInteger(data.players[id].nextSeq)||data.players[id].nextSeq<1||!Array.isArray(data.players[id].receipts)))throw new Error('Invalid trusted checkpoint');
+  if(data.partyEnd!==undefined&&(!data.partyEnd||!Number.isSafeInteger(data.partyEnd.tick)||data.partyEnd.tick<1||data.partyEnd.tick>data.tick||!Array.isArray(data.partyEnd.acknowledged)||new Set(data.partyEnd.acknowledged).size!==data.partyEnd.acknowledged.length||data.partyEnd.acknowledged.some(id=>!ids.includes(id))||!ids.includes(data.match.hostId)||!hasEnded(data.match)))throw new Error('Invalid party finalization checkpoint');
   // Storage is trusted; reject obviously inconsistent pending records rather than
   // accepting checkpoint data from an untrusted client as an authorization source.
   for(const item of data.queue){const p=data.players[item.playerId];if(!p||!normalizeCommand(item.command)||!p.receipts.some(r=>r.seq===item.seq&&r.response.status==='queued'))throw new Error('Invalid pending command');}

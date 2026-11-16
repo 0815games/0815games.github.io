@@ -147,7 +147,7 @@ body:has(#entry:not([hidden])) main>header p{color:#f1e5bf;font-family:Georgia,s
 
 /* Drag the field manual directly; native scrolling remains available to keyboard and wheel. */
 .tree-dialog .skill-tree{touch-action:none;cursor:grab;overscroll-behavior:contain}.tree-dialog .skill-tree.is-dragging{cursor:grabbing;user-select:none}.tree-dialog .skill-tree.is-dragging .tree-node{cursor:grabbing}
-.game-confirm h2,.tower-details h2{font-family:Georgia,serif;color:#344b36}.game-confirm p{color:#52604b;line-height:1.5}.game-confirm-actions{display:flex;gap:8px}.game-confirm-actions button{flex:1;text-align:center;margin:0;min-height:48px}.game-confirm-actions button:not(.primary){background:#e1d3ad;color:#3a5139;border-color:#6a7e58}
+.game-confirm h2,.tower-details h2{font-family:Georgia,serif;color:#344b36}.game-confirm p{color:#52604b;line-height:1.5}.game-confirm-actions{display:flex;gap:8px;flex-wrap:wrap}.game-confirm-actions button{flex:1 1 120px;min-width:0;text-align:center;margin:0;min-height:48px;overflow-wrap:anywhere}.game-confirm-actions button:not(.primary){background:#e1d3ad;color:#3a5139;border-color:#6a7e58}
 /* Firefox and Chromium support themed scrollbars; unsupported browsers retain native controls. */
 html,dialog,.map-viewport,.skill-tree{scrollbar-color:#788e60 #d7c9a1;scrollbar-width:thin}
 html::-webkit-scrollbar,dialog::-webkit-scrollbar,.map-viewport::-webkit-scrollbar,.skill-tree::-webkit-scrollbar{width:11px;height:11px}
@@ -343,7 +343,7 @@ body:has(#entry:not([hidden])){background-image:linear-gradient(#0d1918b8,#101d1
 .command-soldier-actions button{position:relative;margin:0;min-height:44px;background:#30483b;border:1px solid #71876d;color:#f3ecd0;box-shadow:none;border-radius:3px}
 .command-utilities button,.back-to-command{margin:0;min-height:44px;background:#30483b;border:1px solid #71876d;color:#f3ecd0;box-shadow:none;border-radius:3px}
 .command-nav{padding:24px}.command-nav-head{margin-bottom:18px}.command-nav-head h3{font:700 25px Georgia,serif;color:#f0e8cf;margin:8px 0 0}.mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mode-card{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;min-height:250px;margin:0;padding:18px;text-align:left;color:#f3ecd2;border:1px solid #71836a;border-radius:4px;box-shadow:none;overflow:hidden;background-position:center;background-size:cover;transition:transform .18s ease,border-color .18s ease}.mode-card.mode-campaign{background-image:linear-gradient(0deg,#10231ff5,#192f26a0 55%,#203a3240),url('assets/command-campaign.jpg')}.mode-card.mode-endless{background-image:linear-gradient(0deg,#10231ff5,#192f26a0 55%,#203a3240),url('assets/story-outpost.jpg')}.mode-card.mode-multiplayer{background-image:linear-gradient(0deg,#10231ff5,#192f26a0 55%,#203a3240),url('assets/story-tower.jpg')}.mode-card:hover:not(:disabled){transform:translateY(-3px);border-color:#e2ca8c;color:#fff4d6}.mode-card .mode-index{color:#e3c98c;font-size:9px;letter-spacing:.14em}.mode-card strong{font:700 clamp(20px,2vw,28px) Georgia,serif;margin:8px 0;color:#fff0d2}.mode-card>span:not(.mode-index){font-size:11px;line-height:1.4;color:#d2ddc4;letter-spacing:0;font-weight:400}.mode-card b{position:absolute;top:15px;right:16px;font-size:20px;color:#f0ddb0}
-.command-resume{display:flex;justify-content:space-between;align-items:center;background:#e0c682;border:1px solid #e0c682;color:#1c3023;min-height:48px;margin:0 0 12px;padding:12px 16px;box-shadow:none}.command-utilities{display:flex;gap:8px;margin-top:14px}.command-utilities button{display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left}.back-to-command{width:auto;margin:0 0 8px;padding:10px 14px}.command-center button:focus-visible,.back-to-command:focus-visible{outline:3px solid #f1d891;outline-offset:3px}.command-center .mode-card:active:not(:disabled){transform:translateY(0)}
+.command-resume{display:flex;justify-content:space-between;align-items:center;background:#e0c682;border:1px solid #e0c682;color:#1c3023;min-height:48px;margin:0 0 12px;padding:12px 16px;box-shadow:none}.command-utilities{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}.command-utilities button{display:flex;justify-content:space-between;align-items:center;gap:15px;text-align:left;min-width:0}.back-to-command{width:auto;margin:0 0 8px;padding:10px 14px}.command-center button:focus-visible,.back-to-command:focus-visible{outline:3px solid #f1d891;outline-offset:3px}.command-center .mode-card:active:not(:disabled){transform:translateY(0)}
 @media(max-width:850px){.command-hero{min-height:150px;padding:19px}.command-hero-label{display:none}.command-home-layout{grid-template-columns:1fr;gap:10px;margin-top:10px}.command-nav{padding:16px}.command-nav-head{margin-bottom:12px}.command-nav-head h3{font-size:22px}.mode-card{min-height:200px;padding:13px}.back-to-command{min-height:44px}}
 @media(max-width:540px){.command-hero{min-height:135px}.command-hero h2{font-size:32px}.command-hero p{font-size:12px}.command-soldier{gap:10px;padding:10px 12px}.command-soldier-portrait{width:72px;height:72px}.command-soldier-open{display:none}.command-soldier-actions{grid-template-columns:1fr 1fr;gap:5px;margin-bottom:14px}.command-soldier-actions button{font-size:10px;padding:8px}.mode-grid{grid-template-columns:1fr;gap:8px}.mode-card{min-height:110px;padding:13px 15px}.mode-card strong{font-size:22px;margin:4px 0}.command-utilities{flex-wrap:wrap}.command-utilities button{flex:1 1 135px;font-size:10px}.command-center{margin:6px 0 16px}}
 @media(prefers-reduced-motion:reduce){.mode-card{transition:none!important}}
@@ -551,6 +551,7 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 }
 
 /* The character-delete button in the command utilities reads as destructive. */
+#fieldLogout{min-height:44px}
 .command-utilities .danger-utility{color:#d98c8c;border-color:#6e3c3c}
 .command-utilities .danger-utility:hover,.command-utilities .danger-utility:focus-visible{color:#f2b3b3;border-color:#8f4a4a}
 /* The visible build stamp: one line in the loading scene and one in the
@@ -612,3 +613,12 @@ dialog.maintenance-gate .maintenance-scene button.maintenance-language:focus-vis
 .afk-session-status{position:fixed;z-index:200;left:50%;top:50%;transform:translate(-50%,-50%);max-width:calc(100vw - 32px);padding:16px 20px;border:1px solid #c3cf84;border-radius:6px;background:#1b3028;color:#f8f0dc;box-shadow:0 8px 24px #0009;text-align:center;line-height:1.4}
 .afk-session-failure{max-width:min(440px,calc(100vw - 32px));padding:24px;border:1px solid #c3cf84;border-radius:6px;background:#1b3028;color:#f8f0dc;box-shadow:0 8px 24px #0009}
 .afk-session-failure::backdrop{background:#101a16d9}.afk-session-failure p{line-height:1.5;color:#d7dfca}
+
+/* A friend's saved portrait is decorative beside the already visible name.
+   Keep its frame stable while the image is loading or permission is denied. */
+.friends-dialog .friend-portrait,.friends-dialog .friend-stats-portrait{display:block;object-fit:cover;background:#20382d;border:1px solid #78957e;border-radius:4px}
+.friends-dialog .friend-portrait{flex:0 0 48px;width:48px;height:48px}
+.friend-stats-dialog .friend-stats-identity{display:flex;align-items:center;gap:12px;min-width:0}
+.friend-stats-dialog .friend-stats-identity>div{min-width:0}
+.friend-stats-dialog .friend-stats-portrait{flex:0 0 72px;width:72px;height:72px}
+.friend-stats-dialog .friend-stats-identity h2{overflow-wrap:anywhere}

@@ -59,3 +59,13 @@ test('checkpoint validation rejects a mismatched takeover before publishing a ne
  assert.equal([...f.data.keys()].filter(k=>k.includes('/sessions/')).length,1);
  await assert.rejects(guarded.publish(first,f.host.checkpoint(),f.views),/Checkpoint validation failed/);
 });
+
+test('a claimed checkpoint disables old control capability until the new host establishes presence',async()=>{
+ const f=memoryRecovery(),store=f.store();
+ const views=Object.fromEntries(Object.entries(f.views).map(([id,view])=>[id,{...view,ready:true,canEnd:true,connections:['old']} ]));
+ const first=await store.initialize(f.host.checkpoint(),views),next=await store.claim(first.generation);
+ const claimed=f.data.get(`${f.base}/sessions/${next.owner}`);
+ for(const id of ['alice','bob']){
+  const view=JSON.parse(claimed.views[id]);assert.equal(view.ready,false);assert.equal(view.canEnd,false);assert.deepEqual(view.connections,[]);
+ }
+});

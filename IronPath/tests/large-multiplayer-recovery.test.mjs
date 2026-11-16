@@ -61,3 +61,27 @@ for(const mode of ['coop','versus'])test(`large ${mode} checkpoint restores its 
   assert.deepEqual(errors,[]);
  }finally{await Promise.allSettled([host.stop(),guest.stop()]);}
 });
+
+test('a paused recoverable duel can publish host intent and retain missing receipts across a takeover',{timeout:30000},async()=>{
+ const {read,sdk}=memorySdk(),ids=['alice','bob'],partyId='1234567890abcdef1234567890abcdef',manifest={hostId:'alice',playerIds:ids,mode:'versus'};
+ const players=ids.map(id=>createPlayer(id,{name:id,gender:'female',level:1}));
+ let nonce=20;const crypto={getRandomValues(bytes){bytes.fill(++nonce);return bytes;}},ready={},views={},errors=[];
+ const make=(id,extra={})=>createFirebaseRecoverableGame({db:{},auth:{currentUser:{uid:id}},sdk,partyId,manifest,crypto,readFresh:async path=>read(path),...extra,onStatus:value=>ready[id]=value,onSnapshot:value=>views[id]=value,onState:value=>{if(value==='error'||value==='duplicate')errors.push(`${id}:${value}`);}});
+ const wait=async(predicate,label)=>{const deadline=Date.now()+10000;while(!predicate()){if(errors.length)throw Error(`${label}: ${errors}`);if(Date.now()>deadline)throw Error(`Timed out: ${label}`);await new Promise(resolve=>setTimeout(resolve,20));}};
+ let host=make('alice',{players}),guest=make('bob');
+ try{
+  host.start();guest.start();await wait(()=>ready.alice&&ready.bob,'ready');
+  await guest.stop();await wait(()=>ready.alice===false&&host.canRequestHostEnd(),'host control while rival absent');
+  assert.equal((await host.command({type:'move',x:700,y:400})).ok,false,'combat remains paused');
+  assert.equal((await host.command({type:'endRun'})).ok,true);await wait(()=>views.alice?.partyEnd&&ready.alice,'end frame committed');
+  const endTick=views.alice.partyEnd.tick;assert.deepEqual(views.alice.partyEnd.acknowledged,[]);
+  assert.equal((await host.command({type:'acknowledgePartyEnd',endTick})).ok,true);
+  await wait(()=>views.alice.partyEnd.acknowledged.includes('alice'),'host receipt committed');
+  const first=read(`fourParties/${partyId}/recovery/lease`);await host.stop();views.alice=null;
+  host=make('alice',{resumeGeneration:first.generation});host.start();await wait(()=>ready.alice&&views.alice?.partyEnd?.tick===endTick,'takeover with finalization');
+  assert.deepEqual(views.alice.partyEnd.acknowledged,['alice'],'no missing receipt is invented during takeover');
+  guest=make('bob');guest.start();await wait(()=>ready.bob&&views.bob?.partyEnd?.tick===endTick,'rival sees the committed end');
+  assert.equal((await guest.command({type:'acknowledgePartyEnd',endTick})).ok,true);
+  await wait(()=>views.alice.partyEnd.acknowledged.includes('bob'),'rival receipt');assert.deepEqual(errors,[]);
+ }finally{await Promise.allSettled([host.stop(),guest.stop()]);}
+});

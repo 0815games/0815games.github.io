@@ -11,11 +11,15 @@ export function createSpeedControl(match,restored=null){
  function command(id,cmd){
   if(!ids.includes(id)||!active(id))return {ok:false,reason:'Player is offline.'};
   reconcile();
+  // A click can be delayed in the network after another vote has already been
+  // completed or withdrawn. Never apply that click to a newer vote/speed epoch.
+  if((cmd.type==='requestSpeed'||cmd.type==='slowSpeed')&&cmd.expectedRequestId!==undefined&&cmd.expectedRequestId!==next-1)return {ok:false,reason:'The request changed. Please try again.'};
   if(cmd.type==='slowSpeed'){reset();return {ok:true};}
   if(cmd.type==='requestSpeed'){
    const current=wave();if(current===null||!ids.every(active))return {ok:false,reason:'All players must be connected and in an active wave.'};
    if(speed!==1||request)return {ok:false,reason:'Speed is already active or awaiting approval.'};
    if(ids.length<2)return {ok:false,reason:'Multiplayer requires at least two players.'};
+   if(!Number.isSafeInteger(next)||next<1||next>=Number.MAX_SAFE_INTEGER)return {ok:false,reason:'No new speed request ID is available.'};
    request={id:next++,requester:id,wave:current,required:ids.filter(x=>x!==id),approved:[]};return {ok:true,requestId:request.id};
   }
   if(!request||cmd.requestId!==request.id)return {ok:false,reason:'No matching speed request.'};
@@ -25,5 +29,5 @@ export function createSpeedControl(match,restored=null){
   if(cmd.type==='approveSpeed'){request.approved.push(id);if(request.approved.length===request.required.length){speed=2;request=null;}return {ok:true};}
   return {ok:false,reason:'Invalid speed command.'};
  }
- return {command,reconcile,reset,snapshot:()=>({speed,request:request?{...request,required:[...request.required],approved:[...request.approved]}:null}),checkpoint:()=>({next})};
+ return {command,reconcile,reset,snapshot:()=>({speed,lastRequestId:next-1,request:request?{...request,required:[...request.required],approved:[...request.approved]}:null}),checkpoint:()=>({next})};
 }

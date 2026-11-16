@@ -10,7 +10,7 @@ import {strict as assert} from 'node:assert';
 test('the party host owns the roster, the commands and the shared match state',async()=>{
 const match=createMatch([createPlayer('host',{name:'Host',gender:'male'}),createPlayer('guest',{name:'Guest',gender:'female'})]);
 const host=createPartyHost(match);
-const command=(seq,type,fields={})=>({version:1,seq,command:{type,...fields}});
+const command=(seq,type,fields={})=>({version:1,seq,command:{type,...fields},rosterGeneration:host.snapshotFor('host').rosterGeneration});
 assert.equal(host.ready(),false);
 assert.equal(host.advance(),null);
 assert.equal(host.receive('host',command(1,'startWave')).reason,'match-paused');
@@ -34,10 +34,12 @@ assert.equal(snap.receipts.at(-1).status,'cancelled');assert.equal(snap.match.to
 assert.equal(host.receive('guest',command(4,'startWave')).reason,'match-paused');
 host.setPresence('host',true);assert.equal(host.ready(),true);host.advance();
 assert.equal(host.snapshotFor('guest').match.towers.length,1,'cancelled sale must not replay');
-assert.equal(host.receive('guest',command(4,'startWave')).status,'queued');assert.equal(host.advance().commands[0].result.ok,false);
+assert.equal(host.receive('guest',command(4,'startWave')).status,'queued');assert.equal(host.advance().commands[0].result.ok,true);
+let guestRequest=host.snapshotFor('host').match.waveRequest;assert.equal(guestRequest.requester,'guest');
+assert.equal(host.receive('guest',command(5,'cancelWave',{requestId:guestRequest.id})).status,'queued');assert.equal(host.advance().commands[0].result.ok,true);
 assert.equal(host.receive('host',command(2,'startWave')).status,'queued');assert.equal(host.advance().commands[0].result.waitingForGuest,true);
 let requested=host.snapshotFor('host').match;assert.equal(requested.wave,0);assert.equal(requested.pendingWave,1);
-assert.equal(host.receive('guest',command(5,'approveWave',{requestId:requested.waveRequestId})).status,'queued');assert.equal(host.advance().commands[0].result.ok,true);
+assert.equal(host.receive('guest',command(6,'approveWave',{requestId:requested.waveRequestId})).status,'queued');assert.equal(host.advance().commands[0].result.ok,true);
 assert.equal(host.snapshotFor('host').match.wave,1);
 console.log('Player-hosted party command, pause, and reconnect tests passed.');
 // A disconnected soldier must not invisibly fire while the host plays alone.
@@ -58,10 +60,11 @@ focusHost.setFocusPaused(false);assert.equal(focusHost.ready(),true);assert.equa
 test('a wave starts only after every player has approved it',async()=>{
 const h=createPartyHost(createMatch(['h','g'].map(id=>createPlayer(id,{name:id,gender:'female'}))),{hostId:'h'});
 h.setPresence('h',true);h.setPresence('g',true);const seq={h:0,g:0};
-function cmd(id,type,fields={}){assert.equal(h.receive(id,{version:1,seq:++seq[id],command:{type,...fields}}).status,'queued');return h.advance().commands[0].result;}
+function cmd(id,type,fields={}){assert.equal(h.receive(id,{version:1,seq:++seq[id],command:{type,...fields},rosterGeneration:h.snapshotFor(id).rosterGeneration}).status,'queued');return h.advance().commands[0].result;}
 const view=()=>h.snapshotFor('h').match;
 assert.equal(cmd('g','approveWave',{requestId:1}).ok,false);
-assert.equal(cmd('g','startWave').ok,false);
+assert.equal(cmd('g','startWave').waitingForGuest,true);assert.equal(view().waveRequest.requester,'g');
+assert.equal(cmd('g','cancelWave',{requestId:view().waveRequestId}).ok,true);
 assert.equal(cmd('h','startWave').waitingForGuest,true);assert.equal(view().wave,0);
 const first=view().waveRequestId;
 assert.equal(cmd('h','approveWave',{requestId:first}).ok,false);
@@ -74,6 +77,6 @@ h.setPresence('g',true);assert.equal(cmd('g','approveWave',{requestId:view().wav
 assert.equal(cmd('h','startWave').waitingForGuest,true);assert.equal(cmd('g','approveWave',{requestId:view().waveRequestId}).ok,true);assert.equal(view().wave,1);
 assert.equal(cmd('g','approveWave',{requestId:view().waveRequestId}).ok,false);
 assert.equal(cmd('g','leaveRun').ok,true);assert.equal(view().players.g.active,false);assert.equal(view().ended,false);assert.equal(cmd('h','endRun').ok,true);
-const solo=createPartyHost(createMatch(['h','g'].map(id=>createPlayer(id,{name:id,gender:'male'}))),{hostId:'h'});solo.setPresence('h',true);solo.receive('h',{version:1,seq:1,command:{type:'startWave'}});assert.equal(solo.advance().commands[0].result.ok,true);assert.equal(solo.snapshotFor('h').match.wave,1,'host can explicitly start while guest is absent');
-console.log('Host wave requests, stale approvals, cancellation, disconnect and individual leaving passed.');
+const solo=createPartyHost(createMatch(['h','g'].map(id=>createPlayer(id,{name:id,gender:'male'}))),{hostId:'h'});solo.setPresence('h',true);solo.receive('h',{version:1,seq:1,command:{type:'startWave'}});assert.equal(solo.advance().commands[0].result.ok,false);assert.equal(solo.snapshotFor('h').match.wave,0,'the locked roster cannot silently omit an absent guest');
+console.log('Wave requests, stale approvals, cancellation, disconnect and individual leaving passed.');
 });

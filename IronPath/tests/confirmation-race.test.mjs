@@ -15,9 +15,17 @@ test('an open confirmation can change language without changing its pending deci
 // skill-tree pan/zoom. These are the only tests that check the plain answers:
 // accept, decline, and a programmatic cancel from outside the dialog.
 test('accept, decline and an outside cancel all resolve the pending question',async()=>{
- const nodes={};for(const id of ['gameConfirm','gameConfirmTitle','gameConfirmText','gameConfirmAccept','gameConfirmCancel'])nodes[id]={textContent:'',open:false,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;},showModal(){this.open=true},close(){this.open=false;this.handlers.close?.()}};
+ const nodes={};for(const id of ['gameConfirm','gameConfirmTitle','gameConfirmText','gameConfirmAccept','gameConfirmAlternate','gameConfirmCancel'])nodes[id]={textContent:'',open:false,handlers:{},addEventListener(k,fn){this.handlers[k]=fn;},showModal(){this.open=true},close(){this.open=false;this.handlers.close?.()}};
  const c=createConfirmation({getElementById:id=>nodes[id]});
  let p=c.ask({title:'Confirm',text:'Proceed?'});assert.equal(nodes.gameConfirm.open,true);nodes.gameConfirmAccept.onclick();assert.equal(await p,true);
  p=c.ask({title:'Again',text:'Proceed?'});nodes.gameConfirm.handlers.cancel({preventDefault(){}});assert.equal(await p,false);
  p=c.ask({title:'Cancel',text:'Proceed?'});c.cancel();assert.equal(await p,false);assert.equal(nodes.gameConfirm.open,false);
+});
+
+test('an optional third choice is explicit, translated, and hidden again for ordinary confirmations',async()=>{
+ const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{open:false,hidden:false,textContent:'',addEventListener(type,fn){this['on'+type]=fn;},getBoundingClientRect(){return {left:0,right:100,top:0,bottom:100}},showModal(){this.open=true;},close(){this.open=false;}});return nodes.get(id);};
+ let de=false;const c=createConfirmation({getElementById:el},s=>de&&s==='SIGN OUT NOW'?'JETZT ABMELDEN':s);
+ let answer=c.ask({title:'Party',text:'Choose',accept:'WAIT',alternate:'SIGN OUT NOW'});
+ assert.equal(el('gameConfirmAlternate').hidden,false);de=true;c.refresh();assert.equal(el('gameConfirmAlternate').textContent,'JETZT ABMELDEN');el('gameConfirmAlternate').onclick();assert.equal(await answer,'alternate');
+ answer=c.ask({title:'Other',text:'Choose'});assert.equal(el('gameConfirmAlternate').hidden,true);el('gameConfirmAccept').onclick();assert.equal(await answer,true);
 });

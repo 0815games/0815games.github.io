@@ -73,7 +73,10 @@ for(const mode of ['coop','versus','four-coop','two-vs-two']){
  assert.equal(h.receive('a',{version:1,seq:seq.a+1,command:{type:'direction',x:0,y:0}}).reason,'queue-full');assert.equal(h.advance().commands.length,MAX_PENDING);applied+=MAX_PENDING;
  for(let i=0;i<1000;i++){
   for(const id of roster){const msg={version:1,seq:++seq[id],command:{type:'direction',x:i%2?1:-1,y:0}};assert.equal(h.receive(id,msg).status,'queued');assert.equal(h.receive(id,msg).status,'queued');}
-  if(i%25===0){h.setPresence('b',false);assert.equal(h.receive('b',{version:1,seq:seq.b,command:{type:'direction',x:i%2?1:-1,y:0}}).status,'rejected');h.setPresence('b',true);const affected=mode==='two-vs-two'?roster:['b'];for(const id of affected)assert.equal(h.snapshotFor(id).receipts.at(-1).status,'cancelled');cancelled+=affected.length;}
+  if(i%25===0){h.setPresence('b',false);assert.equal(h.receive('b',{version:1,seq:seq.b,command:{type:'direction',x:i%2?1:-1,y:0}}).status,'rejected');h.setPresence('b',true);
+   // Both competitive modes pause and cancel every queued action when one
+   // participant disconnects; co-op only suspends the missing player.
+   const affected=['versus','two-vs-two'].includes(mode)?roster:['b'];for(const id of affected)assert.equal(h.snapshotFor(id).receipts.at(-1).status,'cancelled');cancelled+=affected.length;}
   const frame=h.advance();assert.ok(frame);applied+=frame.commands.length;
  }
  for(const id of roster)assert.equal(h.snapshotFor(id).nextSeq,seq[id]+1);

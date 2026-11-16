@@ -5,7 +5,7 @@
 export function createDurableHostSession({host,store,playerIds,onCommitted=()=>{},onError=()=>{}}){
   if(!host||!store||!['initialize','publish'].every(k=>typeof store[k]==='function')||!['checkpoint','snapshotFor','advance','receive','setPresence','readyFor'].every(k=>typeof host[k]==='function')||!Array.isArray(playerIds)||playerIds.length<2||new Set(playerIds).size!==playerIds.length||typeof onCommitted!=='function'||typeof onError!=='function')throw Error('Invalid durable host configuration');
   let started=false,closed=false,failed=false,busy=false,fence=null,lastCommitted=null,focusFlush=false;const connections=new Map(playerIds.map(id=>[id,[]]));
-  function capture(){const checkpoint=host.checkpoint(),views=Object.fromEntries(playerIds.map(id=>[id,{ready:host.readyFor(id),connections:connections.get(id),snapshot:host.snapshotFor(id)}]));return {checkpoint,views};}
+  function capture(){const checkpoint=host.checkpoint(),views=Object.fromEntries(playerIds.map(id=>[id,{ready:host.readyFor(id),canEnd:host.canEndFor?.(id)===true,connections:connections.get(id),snapshot:host.snapshotFor(id)}]));return {checkpoint,views};}
   function finished(checkpoint){const match=checkpoint?.match;return (match?.mode==='four-coop'?match.match?.ended:match?.ended)===true;}
   function fail(error){if(failed||closed)return;failed=true;onError(error);}
   function localDelivery(frame){if(!closed&&!failed)onCommitted({fence:{...fence},...frame});}

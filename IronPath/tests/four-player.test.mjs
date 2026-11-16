@@ -10,7 +10,7 @@ assert.deepEqual(map.paths[0].at(-1),map.bunker);assert.deepEqual(map.paths[1].a
 assert.throws(()=>createMatch(makePlayers(),'road'));
 assert.throws(()=>createFourCoop([makePlayers()[0]],'a'));
 const s=createFourCoop(makePlayers(),'a');
-assert.equal(applyFourCommand(s,'b',{type:'startWave'}).ok,false);
+const guestRequest=applyFourCommand(s,'b',{type:'startWave'});assert.equal(guestRequest.ok,true);assert.equal(s.pending.requester,'b');assert.equal(applyFourCommand(s,'b',{type:'cancelWave',requestId:guestRequest.requestId}).ok,true);
 assert.equal(applyFourCommand(s,'d',{type:'build',pad:15,towerType:0}).ok,true);
 assert.equal(applyFourCommand(s,'d',{type:'move',x:1400,y:700}).ok,true);
 assert.equal(applyFourCommand(s,'d',{type:'move',x:1430,y:700}).ok,false);

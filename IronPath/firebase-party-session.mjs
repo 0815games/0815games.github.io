@@ -1,4 +1,4 @@
-import {normalizeCommand} from './protocol.mjs?v=20261031-mpview1';
+import {normalizeCommand} from './protocol.mjs?v=20261031-patch3';
 // Session logic for live parties, independent of Firebase SDK wiring and UI.
 // Presence must come from an authenticated, rules-protected Firebase adapter.
 // The host is a player, not a trusted authority; never award validated XP here.
@@ -12,17 +12,20 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
     // Older game screens read match.money. Supply a per-recipient alias so
     // a cached screen never displays an empty balance during an update.
     if(snapshot?.match?.individualSupplies&&Number.isFinite(snapshot.match.players?.[id]?.money))snapshot.match.money=snapshot.match.players[id].money;
-    return {epoch,ready:host.readyFor(id),connections:connections.get(id),snapshot};
+    return {epoch,ready:host.readyFor(id),canEnd:host.canEndFor?.(id)===true,connections:connections.get(id),snapshot};
   }
   function localView(){
     if(!localListener||!localPlayerId||closed||failed)return;
     const snapshot=host.snapshotFor(localPlayerId);if(snapshot?.match?.individualSupplies)snapshot.match.money=snapshot.match.players[localPlayerId].money;
-    localListener({epoch,ready:host.readyFor(localPlayerId),connections:connections.get(localPlayerId),snapshot});
+    localListener({epoch,ready:host.readyFor(localPlayerId),canEnd:host.canEndFor?.(localPlayerId)===true,connections:connections.get(localPlayerId),snapshot});
   }
   function queueView(){
     if(closed||failed)return;
-    latest=Object.fromEntries(playerIds.map(id=>[id,viewFor(id)]));
-    lastViewBytes=JSON.stringify(latest).length;
+    // Coalesce a request to publish, not an already captured snapshot. While a
+    // write is pending a sender-only receipt may be queued after it. Reusing an
+    // older full snapshot afterwards could overwrite that newer receipt at the
+    // same tick and roll the client's nextSeq backwards.
+    latest=true;
     localView();if(!publishing)void pump();
   }
   // Command receipts are latency-critical for exactly ONE player - the
@@ -43,7 +46,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
   }
   async function pump(){
     publishing=true;
-    try{while(latest&&!closed){const view=latest;latest=null;await channel.publishViews(view);}}
+    try{while(latest&&!closed){latest=null;const view=Object.fromEntries(playerIds.map(id=>[id,viewFor(id)]));lastViewBytes=JSON.stringify(view).length;await channel.publishViews(view);}}
     catch(error){failed=true;latest=null;for(const id of playerIds)host.setPresence(id,false);onError(error);}
     finally{publishing=false;}
   }
@@ -77,7 +80,7 @@ export function createFirebasePartyHostSession({channel,host,playerIds,epoch,loc
     localChannel(){
       if(!playerIds.includes(localPlayerId))throw new Error('Local player required');
       return {watchView(fn){localListener=fn;if(started)localView();return()=>{if(localListener===fn)localListener=null;};},
-        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='cancelled')queueReceipts([localPlayerId]);if(result.status==='rejected')throw new Error(result.reason);},
+        async writeInput(packet){if(closed||failed||packet?.epoch!==epoch)throw new Error('Session changed');const result=host.receive(localPlayerId,packet.envelope);if(result.status==='cancelled'){queueReceipts([localPlayerId]);localView();}if(result.status==='rejected')throw new Error(result.reason);},
         async close(){localListener=null;}};
     },
     publish(){if(started&&!closed&&!failed)queueView();},
@@ -105,17 +108,19 @@ export function createFirebasePartyClientSession({channel,onView=()=>{},onState=
   }
   return {
     start(){if(started||closed)throw new Error('Client session already started or closed');started=true;unsubscribe=channel.watchView(observe);onState(latest?.ready?'ready':'waiting');},
+    canEnd:()=>started&&!closed&&!invalid&&latest?.canEnd===true,
     command(command){
-      if(!started||closed||invalid||!latest?.ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});
-      if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});
       const normalized=normalizeCommand(command);if(!normalized)return Promise.resolve({ok:false,reason:'Invalid command.'});
-      const seq=latest.snapshot.nextSeq,activeEpoch=epoch,focusGeneration=latest.snapshot.focusGeneration??0;
+      const hostEnd=latest?.canEnd===true&&['endRun','finishParty'].includes(normalized.type);
+      if(!started||closed||invalid||(!latest?.ready&&!hostEnd))return Promise.resolve({ok:false,reason:'Party is not ready.'});
+      if(pending)return Promise.resolve({ok:false,reason:'Waiting for the previous command to be reconciled.'});
+      const seq=latest.snapshot.nextSeq,activeEpoch=epoch,focusGeneration=latest.snapshot.focusGeneration??0,rosterGeneration=latest.snapshot.rosterGeneration??0;
       return new Promise(resolve=>{
         const item={seq,resolve,settled:false,timer:null};pending=item;
         item.timer=setTimeout(()=>{if(pending===item&&!item.settled){item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}},timeoutMs);
         // A failed/disconnected write can still have reached Firebase. Keep the
         // sequence locked until a receipt or a new host epoch resolves it.
-        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command:normalized,focusGeneration}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
+        Promise.resolve().then(()=>{if(closed||invalid||epoch!==activeEpoch||pending!==item)throw new Error('Session changed');return channel.writeInput({epoch:activeEpoch,envelope:{version:1,seq,command:normalized,focusGeneration,rosterGeneration}});}).catch(()=>{if(pending===item&&!item.settled){clearTimeout(item.timer);item.settled=true;onState('syncing');resolve({ok:false,reason:'Command outcome unknown; waiting for synchronization.'});}});
       });
     },
     async stop(){if(closed)return;closed=true;unsubscribe?.();if(pending){settle(pending,{ok:false,reason:'Party closed.'});pending=null;}await channel.close();}

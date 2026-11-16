@@ -1,12 +1,12 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-loading1';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch3';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
 import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
-export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{}}){
-  if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
+export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,promptCenter=null,onViewRequests=()=>{}}){
+  if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
-  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={};
+  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={},requestSerial=0,requestTokens=new Map(),closingParty=null;
   const retainedParties=new Map();
   function clearRetained(){for(const marker of retainedParties.values())marker.stop?.();retainedParties.clear();}
   function rememberLockedGuest(active,current){
@@ -19,10 +19,11 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     try{marker.stop=active.watchHost(current.partyId,value=>{if(value!==current.hostId)forget();},()=>{});if(retainedParties.get(current.partyId)!==marker)marker.stop?.();}catch{/* Unknown state stays blocked until logout. */}
   }
   function status(message){lastStatus=message;$('fourPartyStatus').textContent=tr(message);}
-  function clear(){generation++;for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requests.replaceChildren();roster.replaceChildren();render();}
+  function clear(){generation++;promptCenter?.reset('party-joins');for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requestTokens.clear();requests.replaceChildren();roster.replaceChildren();render();}
   function render(){
     $('fourPartyEntry').hidden=!!party;$('fourPartyActive').hidden=!party;
     const host=party?.role==='host',pending=party?.role==='pending';
+    if(!host||started)promptCenter?.update('party-joins',[]);else promptCenter?.refresh?.();
     $('fourPartyCodeDisplay').textContent=host?party.inviteCode:'';$('fourPartyCodeArea').hidden=!host;
     $('fourPartySettings').hidden=!host||started;requests.hidden=!host||started;
     $('fourPartyStart').hidden=!host||started;
@@ -66,7 +67,12 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     watchProfiles(gen);
   }
   function watchParty(gen){
-    addWatch(lobby.watchHost(party.partyId,value=>{if(gen===generation&&party&&value!==party.hostId){const wasStarted=started;clear();if(wasStarted)void Promise.resolve(onLeaveMatch()).catch(()=>{});status('The host closed the party.');}},failed));
+    addWatch(lobby.watchHost(party.partyId,value=>{if(gen===generation&&party&&value!==party.hostId){
+      // RTDB applies a host's delete optimistically in its own client. Do not
+      // stop the match until that delete has actually been acknowledged.
+      if(party.role==='host'&&closingParty===party)return;
+      const wasStarted=started;clear();if(wasStarted)void Promise.resolve(onLeaveMatch({preserveReport:true,hostClosed:true})).catch(()=>{});status('The host closed the party.');
+    }},failed));
     addWatch(lobby.watchSlots(party.partyId,value=>{
       if(gen!==generation||!party)return;slots=value||{};
       if(party.role==='pending'&&Object.values(slots).includes(party.uid)&&!joining){joining=true;party.role='guest';render();void (async()=>{
@@ -83,14 +89,22 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
   }
   function showRequests(gen,values){
     if(gen!==generation||party?.role!=='host')return;lastRequests=values||{};requests.replaceChildren();
-    const current=party,active=lobby;
-    for(const [uid,request] of Object.entries(values||{})){
-      if(!request||typeof request.name!=='string'||request.expectedPartyId)continue;
+    const current=party,active=lobby,visible=Object.entries(lastRequests).filter(([,request])=>request&&typeof request.name==='string'&&!request.expectedPartyId),cards=[];
+    const ids=new Set(visible.map(([uid])=>uid));for(const uid of requestTokens.keys())if(!ids.has(uid))requestTokens.delete(uid);
+    for(const [uid,request] of visible){
+      let token=requestTokens.get(uid);if(!token||token.name!==request.name){token={name:request.name,serial:++requestSerial};requestTokens.set(uid,token);}
+      // The current rules identify requests only by account, not by a server
+      // nonce. This local generation catches observed removal/replacement but
+      // cannot fence a replacement the client did not observe in flight.
+      const stillCurrent=()=>gen===generation&&party===current&&!started&&requestTokens.get(uid)===token&&!!lastRequests[uid]&&!lastRequests[uid].expectedPartyId&&!Object.values(slots).includes(uid);
       const row=document.createElement('li'),name=document.createElement('span'),accept=document.createElement('button'),decline=document.createElement('button');
       name.textContent=request.name;accept.type=decline.type='button';accept.textContent=tr('APPROVE');decline.textContent=tr('DECLINE');
-      accept.onclick=()=>run(async()=>{if(gen!==generation||party!==current)return;await active.approve(current.partyId,current.inviteCode,uid);if(gen===generation&&party===current)status('Player approved.');});
-      decline.onclick=()=>run(async()=>{if(gen!==generation||party!==current)return;await active.reject(current.inviteCode,uid);if(gen===generation&&party===current)status('Request declined.');});row.append(name,accept,decline);requests.append(row);
+      accept.onclick=()=>run(async()=>{if(!stillCurrent())return;await active.approve(current.partyId,current.inviteCode,uid);if(gen===generation&&party===current)status('Player approved.');});
+      decline.onclick=()=>run(async()=>{if(!stillCurrent())return;await active.reject(current.inviteCode,uid);if(gen===generation&&party===current)status('Request declined.');});row.append(name,accept,decline);requests.append(row);
+      cards.push({key:JSON.stringify([gen,current.partyId,uid,token.serial]),title:()=>tr('JOIN REQUEST'),body:()=>tr('{name} wants to join.',{name:request.name}),valid:stillCurrent,
+        actions:[{id:'view',label:()=>tr('VIEW PARTY'),run:()=>{if(!stillCurrent())return false;onViewRequests();return true;}}]});
     }
+    promptCenter?.update('party-joins',started?[]:cards);
   }
   $('fourPartyCreate').onclick=()=>run(async gen=>{
     const active=createLobby();lobby=active;const result=await active.create(getProfile());if(gen!==generation){await active.close(result.partyId,result.inviteCode);return;}
@@ -123,15 +137,46 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     await lobby.configure(party.partyId,{mode:selectedMode,teams:teams[selectedTeams]});if(gen!==generation||!party||!ready())return;const result=await lobby.start(party.partyId);if(gen!==generation)return;started=true;render();status('Match started. Connecting…');const ok=await onMatch({...result,partyId:party.partyId},{isCurrent:()=>gen===generation&&!!party&&started});if(gen===generation&&ok===false)status('Could not connect to the match. Close the party and try again.');
   });
   const leaveParty=()=>run(async gen=>{
-    if(!party||joining)return;const current=party,active=lobby;if(current.role==='host'&&(!await confirmClose()||gen!==generation||party!==current))return;if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);
+    if(!party||joining)return;const current=party,active=lobby;if(current.role==='host'&&(!await confirmClose({started})||gen!==generation||party!==current))return;
+    if(started&&current.role==='host'){
+      // A started match stays alive while every player receives the final
+      // report and saves their own rewards; this request is not a deletion.
+      const requested=await onRequestHostEnd(current.partyId);
+      if(gen===generation&&party===current)status(requested?'Waiting for all reports and saved rewards before closing the party.':'Could not end the match yet. Reconnect and try again.');
+      return !!requested;
+    }
+    if(started)await onLeaveMatch();if(current.role==='host')await active.close(current.partyId,current.inviteCode);else if(!started&&current.role==='guest')await active.leave(current.partyId);else if(!started)await active.cancel(current.inviteCode);
     if(gen===generation){const lockedGuest=started&&current.role==='guest';clear();if(lockedGuest)rememberLockedGuest(active,current);status(current.role==='host'?'Party closed.':'You left the party.');return true;}
+  });
+  const completeParty=(partyId,endTick)=>run(async gen=>{
+    const current=party,active=lobby;
+    if(!current||current.role!=='host'||!started||current.partyId!==partyId||!canCompleteEnd(partyId,endTick))return false;
+    closingParty=current;
+    try{
+      // Delete first. An offline/failed delete must leave the session and its
+      // final snapshot available for retry. Once Firebase acknowledges the
+      // atomic delete, a broken or stalled local transport stop cannot make the
+      // already-deleted party exist again or hold the panel open forever.
+      await active.close(current.partyId,current.inviteCode);
+      if(gen!==generation||party!==current)return false;
+      clear();status('Party closed.');
+      try{void Promise.resolve(onLeaveMatch({preserveReport:true,hostClosed:true})).catch(()=>{});}catch{/* The confirmed deletion still stands. */}
+      return true;
+    }finally{if(closingParty===current)closingParty=null;}
   });
   $('fourPartyLeave').onclick=leaveParty;
   async function leaveForLogout(timeoutMs=2000){
     const old=party,active=lobby,wasStarted=started;clear();clearRetained();root.hidden=true;
-    const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host')await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted)await active.cancel(old.inviteCode);})().catch(()=>{});
+    // Signing out or an enforced teardown cannot prove delivery to the other
+    // accounts. Leave a started party intact rather than silently deleting it.
+    const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host'&&!wasStarted)await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted&&old.role!=='host')await active.cancel(old.inviteCode);})().catch(()=>{});
     let timer;await Promise.race([cleanup,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);
   }
+  function completionStatus(partyId,value){
+    if(!party||party.partyId!==partyId||!started)return;
+    const text=value==='saving'?'Saving rewards before closing the party…':value==='closing'?'Closing the party…':'Waiting for all reports and saved rewards before closing the party.';
+    status(text);
+  }
   onLanguageChange(()=>{renderedModes='';render();status(lastStatus);if(party?.role==='host'&&!started)showRequests(generation,lastRequests);});
-  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,isBusy:()=>busy||joining||retainedParties.size>0,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,leaveForLogout};
+  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,isBusy:()=>busy||joining||retainedParties.size>0,startedHostPartyId:()=>started&&party?.role==='host'?party.partyId:null,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,completeParty,completionStatus,leaveForLogout};
 }

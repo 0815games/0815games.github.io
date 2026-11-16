@@ -13,7 +13,15 @@ const service=(db,uid)=>createCoopInvites({db,auth:{currentUser:{uid}},sdk});
 test('accepted friends can receive, request a specific party and decline',async()=>{
  const a=service(alice,'alice'),b=service(bob,'bob');await a.send('bob',{partyId:party,code},'Alice');const invite=(await get(ref(bob,'coopInvites/bob/alice'))).val();assert.equal(invite.partyId,party);assert.equal(invite.name,'Alice');assert.ok(Number.isFinite(invite.createdAt));
  await assertFails(get(ref(eve,'coopInvites/bob')));await assertFails(get(ref(anon,'coopInvites/bob')));await assertFails(get(ref(alice,'coopInvites/bob')));await assertSucceeds(get(ref(alice,'coopInvites/bob/alice')));
- await assertSucceeds(set(ref(bob,`fourCodes/${code}/requests/bob`),{name:'Bob',expectedPartyId:party}));await b.dismiss('alice');assert.equal((await get(ref(bob,'coopInvites/bob/alice'))).val(),null);
+ await assertSucceeds(set(ref(bob,`fourCodes/${code}/requests/bob`),{name:'Bob',expectedPartyId:party}));assert.equal(await b.dismiss('alice',invite),true);assert.equal((await get(ref(bob,'coopInvites/bob/alice'))).val(),null);
+});
+test('a stale invitation dismissal cannot erase a newer sender overwrite',async()=>{
+ const a=service(alice,'alice'),b=service(bob,'bob');await a.send('bob',{partyId:party,code},'Alice');
+ const old=(await get(ref(bob,'coopInvites/bob/alice'))).val();
+ await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();await set(ref(db,`fourParties/${other}`),{hostId:'alice',inviteCode:'5678',config:{mode:'four-coop',teams:[0,0,1,1]}});await set(ref(db,'fourCodes/5678'),{hostId:'alice',partyId:other});});
+ await a.send('bob',{partyId:other,code:'5678'},'Alice');const fresh=(await get(ref(bob,'coopInvites/bob/alice'))).val();
+ assert.equal(await b.dismiss('alice',old),false);assert.deepEqual((await get(ref(bob,'coopInvites/bob/alice'))).val(),fresh);
+ assert.equal(await b.dismiss('alice',fresh),true);assert.equal((await get(ref(bob,'coopInvites/bob/alice'))).val(),null);
 });
 test('rejects nonfriends, spoofing, wrong parties, started parties and forged invitations',async()=>{
  const a=service(alice,'alice');await assertFails(a.send('eve',{partyId:party,code},'Alice'));await assertFails(a.send('bob',{partyId:other,code},'Alice'));await assertFails(a.send('bob',{partyId:party,code},'Eve'));await assertFails(set(ref(eve,'coopInvites/bob/alice'),{partyId:party,code,name:'Alice',createdAt:serverTimestamp()}));

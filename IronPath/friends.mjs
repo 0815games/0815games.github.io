@@ -37,7 +37,14 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
   const outgoing=`friendships/${person.uid}/${uid}`,existing=await read(outgoing);
   await set(`friendOutgoing/${uid}/${person.uid}`,{code,name:person.name});
   if(existing)throw Error(existing.status==='accepted'?'You are already friends.':'Request already sent.');
-  if(!existing){try{await set(outgoing,{status:'pending',senderName:name,receiverName:person.name,code});}catch(error){const after=await read(outgoing);if(!after)throw error;}}
+  try{await set(outgoing,{status:'pending',senderName:name,receiverName:person.name,code});}
+  catch{
+   check();
+   // A later read can see a local pending value or another tab's request. It
+   // does not confirm THIS write; do not claim success or remove the marker,
+   // which may belong to that other request. The user can inspect the list.
+   throw Error('Friend request could not be confirmed. Check your sent list before retrying.');
+  }
   return person.name;
  }
  // Called when an account loads, not when the Friends dialog is opened.

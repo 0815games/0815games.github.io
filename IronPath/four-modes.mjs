@@ -1,9 +1,10 @@
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Transport-independent four-player rules, live through the Firebase party
 // game: three- and four-player squads and 2v2 teams play on the squad fields.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261112-tagless1';
-import {applyCommand} from './match.mjs?v=20261112-tagless1';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261031-patch3';
+import {applyCommand} from './match.mjs?v=20261031-patch3';
 import {getMap} from './maps.mjs?v=20261031-finale1';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261031-patch3';
 export const FOUR_PLAYER_MAP='four-front';
 // Squad fields mix the hand-built frontier with vetted generated retreat
 // sectors: every entry carries two roads and enough pads for four wallets,
@@ -72,7 +73,9 @@ export function applyFourCommand(s,id,command){
   if(!Object.hasOwn(s.members,id)||!command||typeof command.type!=='string')return {ok:false,reason:'Invalid player or command.'};
   if(ended(s))return {ok:false,reason:'The operation is over.'};
   if(!s.members[id].active)return {ok:false,reason:'Player is offline.'};
-  if(!fourReady(s))return {ok:false,reason:'The match is paused until players reconnect.'};
+  // The host may deliberately end a paused match, but may not advance or
+  // manipulate the battlefield while any competitive player is absent.
+  if(!fourReady(s)&&!(command.type==='endRun'&&id===s.hostId))return {ok:false,reason:'The match is paused until players reconnect.'};
   const team=s.mode==='two-vs-two'?teamOf(s,id):0,lane=lanes(s)[team];
   switch(command.type){
     case 'leaveRun':
@@ -84,23 +87,26 @@ export function applyFourCommand(s,id,command){
       if(s.mode==='two-vs-two')finishTeam(s,null,'retired');else{stopPending(s);lane.ended=true;lane.running=false;lane.endReason='retired';}
       return {ok:true};
     case 'startWave': {
-      if(id!==s.hostId)return {ok:false,reason:'Only the host can request a wave.'};
-      const fields=lanes(s);if(s.pending||fields.some(l=>l.running||l.pendingPerk||l.ended)||fields.some(l=>l.wave!==fields[0].wave))return {ok:false,reason:'All fields must be ready.'};
-      const required=Object.keys(s.members).filter(key=>key!==id&&s.members[key].active);
-      if(!required.length)return applyCommand(lane,id,{type:'startWave'});
-      s.pending={id:s.nextRequest++,wave:fields[0].wave+1,required,approved:[]};return {ok:true,waitingForPlayers:true,requestId:s.pending.id};
+      const fields=lanes(s);
+      if(s.pending)return {ok:false,reason:'A wave request is already pending.'};
+      if(!waveRosterPresent(s.members))return {ok:false,reason:'All players must reconnect before requesting a wave.'};
+      if(!waveFieldsReady(fields))return {ok:false,reason:'All fields must be ready for the next wave.'};
+      if(!Number.isSafeInteger(s.nextRequest)||s.nextRequest<1||s.nextRequest>=Number.MAX_SAFE_INTEGER)return {ok:false,reason:'No new wave request ID is available.'};
+      if(command.expectedRequestId!==undefined&&command.expectedRequestId!==s.nextRequest-1)return {ok:false,reason:'The request changed. Please try again.'};
+      s.pending=makeWaveRequest(s.nextRequest++,fields[0].wave+1,id,s.members);
+      return {ok:true,waitingForPlayers:true,requestId:s.pending.id};
     }
-    case 'approveWave': {
-      const request=s.pending;if(!request||command.requestId!==request.id||!request.required.includes(id)||request.approved.includes(id))return {ok:false,reason:'No wave approval is due.'};
-      request.approved.push(id);if(request.approved.length<request.required.length)return {ok:true,waitingForPlayers:true};
+    case 'approveWave': case 'declineWave': case 'cancelWave': {
+      const request=s.pending,fields=lanes(s);
+      if(command.type==='approveWave'&&request&&(!waveRosterPresent(s.members)||!waveFieldsReady(fields,request.wave))){stopPending(s);return {ok:false,reason:'All fields and players must be ready for the next wave.'};}
+      const reply=replyToWaveRequest(request,id,command);if(!reply.ok)return reply;
+      if(reply.cancelled){stopPending(s);return {ok:true};}
+      if(!reply.complete)return {ok:true,waitingForPlayers:true};
+      // Validate ALL fields before mutating either: no lane can start on its own.
       // No lane has hostId: the orchestrator alone owns wave coordination.
-      for(const field of lanes(s)){const result=applyCommand(field,Object.keys(field.players)[0],{type:'startWave'});if(!result.ok)throw new Error('Wave synchronization failed');}
+      for(const field of fields){const result=applyCommand(field,Object.keys(field.players)[0],{type:'startWave'});if(!result.ok)throw new Error('Wave synchronization failed');}
       stopPending(s);return {ok:true};
     }
-    case 'declineWave':
-      if(!s.pending||command.requestId!==s.pending.id||!s.pending.required.includes(id))return {ok:false,reason:'No wave approval is due.'};stopPending(s);return {ok:true};
-    case 'cancelWave':
-      if(id!==s.hostId||!s.pending||command.requestId!==s.pending.id)return {ok:false,reason:'No wave request to cancel.'};stopPending(s);return {ok:true};
     default:return applyCommand(lane,id,command);
   }
 }

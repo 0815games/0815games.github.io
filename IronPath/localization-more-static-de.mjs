@@ -20,7 +20,7 @@ export const germanMoreStatic=Object.freeze({
   "ALPHA TEST": "ALPHATEST",
   "Connect with a four-digit code. The host approves the second player and chooses a game mode.": "Verbinde dich mit einem vierstelligen Code. Der Host bestätigt den zweiten Spieler und wählt einen Spielmodus.",
   "1 vs 1 uses two equally sized, separate battlefields with the same waves.": "1 gegen 1 nutzt zwei gleich große, getrennte Schlachtfelder mit denselben Wellen.",
-  "Complete waves together to earn XP. While both players are active, enemies spawn with 50% more health and each player receives 65% of base supply rewards (rounded down). If your teammate leaves, newly spawned enemies and rewards return to solo rates until they rejoin.": "Schließt gemeinsam Wellen ab, um EP zu verdienen. Solange beide Spieler aktiv sind, erscheinen Gegner mit 50% mehr Lebenspunkten und jeder Spieler erhält 65% der Grundvorratsbelohnungen (abgerundet). Verlässt dein Mitspieler das Spiel, gelten für neu erscheinende Gegner und Belohnungen wieder die Solowerte, bis er zurückkehrt.",
+  "Complete waves together to earn XP. While both players are active, enemies spawn with 50% more health and each player receives 70% of base supply rewards (rounded down). If your teammate leaves, newly spawned enemies and rewards return to solo rates until they rejoin.": "Schließt gemeinsam Wellen ab, um EP zu verdienen. Solange beide Spieler aktiv sind, erscheinen Gegner mit 50% mehr Lebenspunkten und jeder Spieler erhält 70% der Grundvorratsbelohnungen (abgerundet). Verlässt dein Mitspieler das Spiel, gelten für neu erscheinende Gegner und Belohnungen wieder die Solowerte, bis er zurückkehrt.",
   "SOLO CAMPAIGN": "SOLOKAMPAGNE",
   "18 MISSIONS": "18 MISSIONEN",
   "Upgrades and equipment apply in your next match. Duplicate equipment grants 10 extra scrap.": "Verbesserungen und Ausrüstung gelten ab deinem nächsten Spiel. Doppelte Ausrüstung bringt 10 zusätzlichen Schrott.",
@@ -162,6 +162,8 @@ export const germanMoreStatic=Object.freeze({
   "Your friend code needs updated database rules before it can use your new soldier name.": "Dein Freundescode benötigt aktualisierte Datenbankregeln, bevor er den neuen Soldatennamen verwenden kann.",
   "DELETE": "LÖSCHEN",
   "Character deleted.": "Charakter gelöscht.",
+  "Your character has been discharged. Please sign in again.": "Dein Charakter wurde aus dem Dienst entlassen. Bitte melde dich erneut an.",
+  "Character deleted, but sign out failed. Please retry signing out before creating a new soldier.": "Der Charakter wurde gelöscht, aber die Abmeldung ist fehlgeschlagen. Bitte versuche die Abmeldung erneut, bevor du einen neuen Soldaten erstellst.",
 
   // ---- Soldier ranks (derived from the level, shown everywhere) -----------
   "Recruit": "Rekrut",

@@ -1,5 +1,5 @@
 import {readRecoveryFromServer} from './firebase-recovery-server-read.mjs?v=20261103-recovery2';
-import {restorePartyHost} from './party-host.mjs?v=20261031-mpview1';
+import {restorePartyHost} from './party-host.mjs?v=20261031-patch3';
 // Checkpoint store for the opt-in host-recovery trial. Owner-specific paths
 // fence stale writers. A checkpoint and all recipient views are one atomic
 // record.
@@ -41,7 +41,7 @@ export function createFirebaseRecoveryStore({db,auth,sdk,partyId,manifest,crypto
       }
       if(!previous)throw Error('Previous durable checkpoint unavailable');
       const checkpoint=JSON.parse(previous.checkpoint);checkpointData(checkpoint);
-      const views=Object.fromEntries(roster.map(id=>{const view=JSON.parse(previous.views[id]);if(!view||typeof view!=='object'||Array.isArray(view))throw Error('Invalid previous recovery view');return [id,{...view,ready:false,connections:[]}];}));
+      const views=Object.fromEntries(roster.map(id=>{const view=JSON.parse(previous.views[id]);if(!view||typeof view!=='object'||Array.isArray(view))throw Error('Invalid previous recovery view');return [id,{...view,ready:false,canEnd:false,connections:[]}];}));
       const fence={generation:expectedGeneration+1,owner};await publish(fence,checkpoint,views);return {...fence,checkpoint};
     },
     publish

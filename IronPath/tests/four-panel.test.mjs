@@ -4,13 +4,13 @@ import {productionModuleUrl} from './production-module.mjs';
 import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
 const profiles={alice:{name:'Alice',gender:'female',level:1},bob:{name:'Bob',gender:'male',level:1},cara:{name:'Cara',gender:'female',level:1},dan:{name:'Dan',gender:'male',level:1}};
 const manifest={hostId:'alice',playerIds:['alice','bob','cara','dan'],mode:'two-vs-two',teams:[0,1,0,1]};
-function fixture(role='host',matchResult=true){
+function fixture(role='host',matchResult=true,extra={}){
   const nodes=new Map();const make=()=>({hidden:false,disabled:false,textContent:'',value:'',children:[],append(...els){this.children.push(...els);},replaceChildren(...els){this.children=[...els];}});const doc={getElementById(id){if(!nodes.has(id))nodes.set(id,make());return nodes.get(id);},createElement:make};const $=id=>doc.getElementById(id);
   const w={},watchedProfiles={};let calls=[],joined=[],stopped=0;
   const watch=(key,initial)=>(_id,cb)=>{w[key]=cb;if(initial!==undefined)cb(initial);return()=>{if(w[key]===cb)delete w[key];};};
   const lobby={async create(){return {hostId:'alice',partyId:'party',inviteCode:'0123'};},async request(){return {hostId:'alice',partyId:'party',inviteCode:'0123',uid:'bob'};},async claimInvitedSlot(){calls.push(['claim']);w.slots?.({one:'bob'});},async approve(_p,_c,id){calls.push(['approve',id]);},async reject(_c,id){calls.push(['reject',id]);},async publishProfile(_p,p){calls.push(['publish',p.name]);},async configure(_p,c){calls.push(['config',c]);w.config(c);},async start(){calls.push(['start']);return {...manifest,profiles:Object.values(profiles),teamRosters:[['alice','cara'],['bob','dan']]};},async close(){calls.push(['close']);},async leave(){calls.push(['leave']);},async cancel(){calls.push(['cancel']);},
     watchHost:watch('host','alice'),watchSlots:watch('slots',null),watchConfig:watch('config',{mode:'four-coop',teams:[0,0,1,1]}),watchStarted:watch('started',null),watchRequests:watch('requests',{}),watchOwnRequest:watch('own',{name:'Bob'}),watchProfile(_p,id,cb){watchedProfiles[id]=cb;cb(profiles[id]||null);return()=>{if(watchedProfiles[id]===cb)delete watchedProfiles[id];};}};
-  const panel=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles[role==='host'?'alice':'bob'],confirmClose:async()=>true,onMatch:m=>{joined.push(m);return matchResult;},onLeaveMatch:async()=>{stopped++;}});
+  const panel=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles[role==='host'?'alice':'bob'],confirmClose:async()=>true,onRequestHostEnd:async()=>true,canCompleteEnd:()=>true,onMatch:m=>{joined.push(m);return matchResult;},onLeaveMatch:async()=>{stopped++;},...extra});
   return {$,w,watchedProfiles,panel,calls,joined,lobby,get stopped(){return stopped;}};
 }
 test('host lobby handles approvals, roster readiness, teams and start',async()=>{
@@ -18,7 +18,7 @@ test('host lobby handles approvals, roster readiness, teams and start',async()=>
   f.w.requests({bob:{name:'Bob'},eve:{name:'<b>Not HTML</b>'}});const rows=f.$('fourPartyRequests').children;assert.equal(rows[1].children[0].textContent,'<b>Not HTML</b>');await rows[0].children[1].onclick();assert.deepEqual(f.calls[0],['approve','bob']);
   f.w.slots({one:'bob',two:'cara'});assert.equal(f.$('fourPartyStart').disabled,false);assert.deepEqual(f.$('fourPartyMode').children.map(x=>x.value),['four-coop']);f.w.slots({one:'bob',two:'cara',three:'dan'});assert.equal(f.$('fourPartyStart').disabled,false);
   f.$('fourPartyMode').value='two-vs-two';f.$('fourPartyMode').onchange();f.$('fourPartyTeams').value='1';f.$('fourPartyTeams').onchange();assert.equal(f.$('fourPartyTeams').hidden,false);assert.match(f.$('fourPartyRoster').children[2].textContent,/Cara · Team A · Ready/);
-  await f.$('fourPartyStart').onclick();assert.deepEqual(f.calls.find(c=>c[0]==='config')[1],{mode:'two-vs-two',teams:[0,1,0,1]});assert.deepEqual(f.joined[0].playerIds,manifest.playerIds);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.stopped,1);assert.deepEqual(f.calls.at(-1),['close']);assert.equal(f.panel.isActive(),false);
+  await f.$('fourPartyStart').onclick();assert.deepEqual(f.calls.find(c=>c[0]==='config')[1],{mode:'two-vs-two',teams:[0,1,0,1]});assert.deepEqual(f.joined[0].playerIds,manifest.playerIds);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.stopped,0);assert.equal(f.panel.isActive(),true);assert.equal(await f.panel.completeParty('party',1),true);assert.equal(f.stopped,1);assert.deepEqual(f.calls.at(-1),['close']);assert.equal(f.panel.isActive(),false);
 });
 test('guest approval publishes profile and hands off locked match once',async()=>{
   const f=fixture('guest');f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();assert.match(f.$('fourPartyStatus').textContent,/Waiting/);f.w.slots({one:'bob',two:'cara',three:'dan'});await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(f.calls[0],['publish','Bob']);assert.match(f.$('fourPartyStatus').textContent,/Approved/);
@@ -70,12 +70,23 @@ test('a stale request button cannot approve into a later party',async()=>{
   const f=fixture();await f.$('fourPartyCreate').onclick();f.w.requests({bob:{name:'Bob'}});const old=f.$('fourPartyRequests').children[0].children[1];await f.panel.leaveForLogout();await f.$('fourPartyCreate').onclick();await old.onclick();assert.ok(!f.calls.some(c=>c[0]==='approve'));
 });
 
+test('join request cards only open the lobby and observed replacements invalidate old controls',async()=>{
+ const center={items:[],update(_source,items){this.items=items;},reset(){this.items=[];}},views=[];
+ const f=fixture('host',true,{promptCenter:center,onViewRequests:()=>views.push('open')});await f.$('fourPartyCreate').onclick();
+ f.w.requests({bob:{name:'Bob'}});assert.equal(center.items.length,1);assert.deepEqual(center.items[0].actions.map(a=>a.id),['view']);assert.match(center.items[0].body(),/Bob/);
+ const oldCard=center.items[0],oldAccept=f.$('fourPartyRequests').children[0].children[1];f.w.requests({});f.w.requests({bob:{name:'Bob'}});
+ assert.notEqual(center.items[0].key,oldCard.key,'an observed withdrawal/re-request gets a new local identity');
+ assert.equal(oldCard.actions[0].run(),false);await oldAccept.onclick();assert.deepEqual(views,[]);assert.ok(!f.calls.some(c=>c[0]==='approve'));
+ assert.equal(center.items[0].actions[0].run(),true);assert.deepEqual(views,['open']);await f.$('fourPartyRequests').children[0].children[1].onclick();assert.ok(f.calls.some(c=>c[0]==='approve'&&c[1]==='bob'));
+ await f.panel.leaveForLogout();assert.equal(center.items.length,0);
+});
+
 test('guest can cancel joining before an existing solo run is interrupted',async()=>{
   const f=fixture('guest'),doc={getElementById:f.$,createElement:()=>({append(){}})};let requested=false;const lobby={...f.lobby,async request(){requested=true;}};
   const panel=createFourPlayerPanel({document:doc,createLobby:()=>lobby,getProfile:()=>profiles.bob,onMatch:()=>true,confirmStart:async()=>false});f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();assert.equal(requested,false);assert.equal(panel.isActive(),false);
 });
 test('host can re-enter a started match with the original party code',async()=>{
- const f=fixture();f.lobby.resumeHost=async code=>{assert.equal(code,'0123');return {...manifest,partyId:'party',inviteCode:code,uid:'alice',teamRosters:[['alice','cara'],['bob','dan']],resumeGeneration:4};};f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyResume').onclick();assert.equal(f.panel.isActive(),true);assert.equal(f.joined.length,1);assert.equal(f.joined[0].resumeGeneration,4);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.panel.isActive(),false);
+ const f=fixture();f.lobby.resumeHost=async code=>{assert.equal(code,'0123');return {...manifest,partyId:'party',inviteCode:code,uid:'alice',teamRosters:[['alice','cara'],['bob','dan']],resumeGeneration:4};};f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyResume').onclick();assert.equal(f.panel.isActive(),true);assert.equal(f.joined.length,1);assert.equal(f.joined[0].resumeGeneration,4);assert.equal(f.$('fourPartyStart').hidden,true);await f.$('fourPartyLeave').onclick();assert.equal(f.panel.isActive(),true);await f.panel.completeParty('party',1);assert.equal(f.panel.isActive(),false);
 });
 test('invitation uses the expected party and does not replace an active party',async()=>{
  const f=fixture('guest');let request;f.lobby.request=async(...args)=>{request=args;return {hostId:'alice',partyId:'party',inviteCode:'0123',uid:'bob'};};assert.equal(await f.panel.joinInvite({code:'0123',partyId:'expected'}),true);assert.deepEqual(request,['0123','Bob','expected']);assert.equal(await f.panel.joinInvite({code:'9999',partyId:'other'}),false);assert.equal(f.panel.isActive(),true);
@@ -93,4 +104,32 @@ test('changing language refreshes the live lobby without changing party settings
  const f=fixture();await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});f.$('fourPartyMode').value='two-vs-two';f.$('fourPartyMode').onchange();f.$('fourPartyTeams').value='1';f.$('fourPartyTeams').onchange();f.w.requests({eve:{name:'<b>Not HTML</b>'}});
  select.value='de';select.change();assert.equal(f.$('fourPartyMode').value,'two-vs-two');assert.equal(f.$('fourPartyTeams').value,'1');assert.equal(f.$('fourPartyMode').children.find(o=>o.value==='two-vs-two').textContent,'2 gegen 2 · Überleben');assert.match(f.$('fourPartyRoster').children[2].textContent,/Cara · Team A · Bereit/);assert.equal(f.$('fourPartyRequests').children[0].children[0].textContent,'<b>Not HTML</b>');assert.equal(f.$('fourPartyRequests').children[0].children[1].textContent,'BESTÄTIGEN');assert.equal(f.$('fourPartyLeave').textContent,'GRUPPE SCHLIESSEN');assert.equal(f.panel.isActive(),true);
  select.value='en';select.change();assert.equal(f.$('fourPartyLeave').textContent,'CLOSE PARTY');await f.panel.leaveForLogout();
+});
+
+test('a started host requests an end and only confirmed finalization may delete the party',async()=>{
+ let proof=false,requested=[],leaves=[];
+ const f=fixture('host',true,{onRequestHostEnd:async id=>{requested.push(id);return true;},canCompleteEnd:(id,tick)=>proof&&id==='party'&&tick===42,onLeaveMatch:async options=>leaves.push(options)});
+ await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});await f.$('fourPartyStart').onclick();
+ assert.equal(await f.panel.leaveParty(),true);assert.deepEqual(requested,['party']);assert.equal(f.panel.isActive(),true);assert.equal(leaves.length,0);assert.ok(!f.calls.some(call=>call[0]==='close'));
+ assert.equal(await f.panel.completeParty('party',42),false);assert.ok(!f.calls.some(call=>call[0]==='close'));
+ proof=true;assert.equal(await f.panel.completeParty('party',42),true);assert.deepEqual(f.calls.at(-1),['close']);assert.equal(f.panel.isActive(),false);assert.equal(leaves.length,1);assert.equal(leaves[0].preserveReport,true);
+});
+
+test('optimistic local deletion and a failed close do not clear a started party or its match',async()=>{
+ let reject;const f=fixture('host',true,{onRequestHostEnd:async()=>true,canCompleteEnd:()=>true});
+ await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});await f.$('fourPartyStart').onclick();
+ f.lobby.close=()=>new Promise((_resolve,fail)=>{reject=fail;f.w.host(null);});
+ const pending=f.panel.completeParty('party',5);await new Promise(resolve=>setImmediate(resolve));assert.equal(f.panel.isActive(),true);assert.equal(f.stopped,0);
+ reject(Error('offline'));assert.equal(await pending,undefined);assert.equal(f.panel.isActive(),true);assert.equal(f.stopped,0);
+ f.w.host('alice');f.lobby.close=async()=>{};assert.equal(await f.panel.completeParty('party',5),true);assert.equal(f.stopped,1);
+});
+
+test('logout cannot delete an unconfirmed started host party',async()=>{
+ const f=fixture('host',true,{onRequestHostEnd:async()=>true,canCompleteEnd:()=>false});await f.$('fourPartyCreate').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});await f.$('fourPartyStart').onclick();
+ await f.panel.leaveForLogout(50);assert.equal(f.stopped,1);assert.equal(f.panel.isActive(),false);assert.ok(!f.calls.some(call=>call[0]==='close'),'logout leaves an unconfirmed party on the server');
+});
+
+test('a host closure keeps a guest finished report accessible',async()=>{
+ const leaves=[];const f=fixture('guest',true,{onLeaveMatch:async options=>leaves.push(options)});f.$('fourPartyCodeInput').value='0123';await f.$('fourPartyJoin').onclick();f.w.slots({one:'bob',two:'cara',three:'dan'});await new Promise(resolve=>setImmediate(resolve));f.w.started(manifest);await new Promise(resolve=>setImmediate(resolve));
+ f.w.host(null);await new Promise(resolve=>setImmediate(resolve));assert.equal(f.panel.isActive(),false);assert.equal(leaves[0].preserveReport,true);assert.match(f.$('fourPartyStatus').textContent,/host closed/i);
 });

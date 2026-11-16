@@ -1,16 +1,16 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261031-mpview1';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261031-patch3';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
-import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261112-tagless1';
-import {createVersus} from './versus.mjs?v=20261031-mpview1';
+import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261031-patch3';
+import {createVersus} from './versus.mjs?v=20261031-patch3';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
 import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261031-finale1';
 import {MAX_WAVE_MASK} from './combat.mjs?v=20261031-finale1';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261112-lag2';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261031-mpview1';
-import {createPartyHost} from './party-host.mjs?v=20261031-mpview1';
-import {createMatch,STEP} from './simulation.mjs?v=20261112-tagless1';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261031-patch3';
+import {createPartyHost} from './party-host.mjs?v=20261031-patch3';
+import {createMatch,STEP} from './simulation.mjs?v=20261031-patch3';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
@@ -30,6 +30,7 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
     if(next!==ready){ready=next;onStatus(ready);}
     if(active&&!failed){const state=ready?'ready':'waiting';if(state!==lastState){lastState=state;onState(state);}}
   }
+  function canRequestHostEnd(){return !!(active&&!failed&&uid===hostId&&!focusPaused&&localConnection!==null&&acknowledged.includes(localConnection)&&online.get(hostId)&&client?.canEnd?.()===true);}
   function fail(reason='error'){if(!active||failed)return;failed=true;sessionReady=false;refresh();onState(reason==='duplicate'?'duplicate':'error');queueMicrotask(()=>void stop());}
   const options={db,auth,sdk,partyId,hostId,playerIds,partyRoot:partyRoot||(four?'fourParties':'parties'),onError:fail};
   let stopping=null;
@@ -63,7 +64,8 @@ export function createFirebasePartyGame({db,auth,sdk,partyId,hostId,playerIds,pl
       }});
     },
     setFocusPaused(value){if(uid!==hostId||typeof value!=='boolean')return false;if(focusPaused===value)return true;focusPaused=value;ticker?.reset();host?.setFocusPaused(value);return true;},
-    command(command){if(!active||failed||!ready)return Promise.resolve({ok:false,reason:'Party is not ready.'});return client.command(command);},
+    canRequestHostEnd,
+    command(command){if(!active||failed||(!ready&&!(canRequestHostEnd()&&['endRun','finishParty'].includes(command?.type))))return Promise.resolve({ok:false,reason:'Party is not ready.'});return client.command(command);},
     stop
   };
 }
