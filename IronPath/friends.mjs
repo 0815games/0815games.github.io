@@ -1,8 +1,10 @@
 // Friends are consent-based account links, separate from four-digit match codes.
 // Firebase rules are the authorization boundary; the client is not a rate limiter.
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261031-patch3';
 const codePattern=/^[a-f0-9]{32}$/;
-// Hex encoding keeps arbitrary soldier names safe in RTDB paths.
-export function friendNameKey(name){const value=String(name).trim().toLowerCase();if(value.length<2||value.length>24)throw Error('Enter the full soldier name (2–24 characters).');const bytes=new TextEncoder().encode(value);if(bytes.length>96)throw Error('Name is too long.');return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
+// One comparison rule for search and registration, so a name can never be
+// found under one key and reserved under another. See character-name.mjs.
+export function friendNameKey(name){return characterNameKey(name);}
 export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
  const uid=auth.currentUser?.uid;if(!uid||!crypto?.getRandomValues)throw Error('Sign in required');
  const path=p=>sdk.ref(db,p),check=()=>{if(auth.currentUser?.uid!==uid)throw Error('Account changed');};
@@ -67,7 +69,7 @@ export function createFriendService({db,auth,sdk,crypto=globalThis.crypto}){
  async function search(name,after=null){
   const key=friendNameKey(name);check();const q=after?sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.startAfter(after),sdk.limitToFirst(30)):sdk.query(path(`friendNames/${key}`),sdk.orderByKey(),sdk.limitToFirst(30));
   const snap=await sdk.get(q);check();const raw=snap.val()||{},ids=[];snap.forEach(child=>{ids.push(child.key);});const matches=[];
-  for(const id of ids){const item=raw[id];try{if(id!==uid&&typeof item?.name==='string'&&friendNameKey(item.name)===key&&codePattern.test(item.code))matches.push({id,name:item.name,code:item.code});}catch{}}
+  for(const id of ids){const item=raw[id];try{if(id!==uid&&typeof item?.name==='string'&&sameCharacterName(item.name,name)&&codePattern.test(item.code))matches.push({id,name:item.name,code:item.code});}catch{}}
   return {matches,next:ids.length===30?ids.at(-1):null};
  }
  function watch(callback,onError){

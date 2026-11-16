@@ -259,7 +259,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   Treffer für den neuen Token (`git log --all -S`); das ist keine Aussage über
   unbekannte externe Deployments. Die beiden gepinnten Pages-Artefakte wurden
   offline gebaut und geprüft: `release-pages-site.test.mjs` 6/6, kein Skip.
-- **Git / PR / Release:** Nur lokal/uncommittet. Kein neuer Commit, Push, PR,
+- **Git / PR / Release:** Nur lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt. Kein neuer Commit, Push, PR,
   Merge, Deployment, produktive Rules-/Datenänderung oder Wiederöffnung; der
   zuletzt belegte öffentliche Build bleibt `20261031-update3`.
 - **Offen:** Cache-, Mischversions- und Guard-Verhalten zusätzlich im echten
@@ -759,7 +759,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0019 – Block 1: Servernachweis auch bei bereits gespeicherten Rewards
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; Umgebungsuhr
-  2026-11-16 UTC. Branch/Basis wie IPL-0015; Änderungen lokal/uncommittet.
+  2026-11-16 UTC. Branch/Basis wie IPL-0015; Änderungen lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Befund:** Die SDK-Version 10.14.1 kann beim `runTransaction`-Abbruch durch
   `undefined` sofort `committed: false` mit dem lokalen Eingabesnapshot liefern,
   ohne dass ein Server-Write stattgefunden hat. Eine darin schon enthaltene
@@ -855,7 +855,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0021 – Block 2: Freundschaftsabläufe und lokale Freundesporträts
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; Umgebungsuhr
-  2026-11-16 UTC. Derselbe Branch/Basisstand; Änderungen lokal/uncommittet.
+  2026-11-16 UTC. Derselbe Branch/Basisstand; Änderungen lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Freundschaften:** Zusätzliche `friends.test.mjs`-Emulatorfälle prüfen
   Ablehnung mit verbliebener Sendermarkierung, erneute Anfrage, Annahme und
   Entfernen in beiden Richtungen sowie gleichzeitig ausgelöste Gegenanfragen:
@@ -899,7 +899,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0022 – Block 2: Datenschutzschonende Namens-Vorprüfung
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; Umgebungsuhr
-  2026-11-16 UTC. Branch/Basis wie IPL-0020; alles lokal/uncommittet.
+  2026-11-16 UTC. Branch/Basis wie IPL-0020; alles lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Ziel und Änderungen:** `scripts/audit-character-names.py` und
   `firebase/CHARACTER-NAME-AUDIT.md` bereiten eine spätere, separat genehmigte
   Bestandsaufnahme vor. Das Skript ist rein offline, liest einen ausdrücklich
@@ -935,7 +935,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0023 – Regressionen: Einladungs-Test und deterministischer Timeout-Test
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; Umgebungsuhr
-  2026-11-16 UTC. Branch/Basis wie IPL-0020; Änderungen lokal/uncommittet.
+  2026-11-16 UTC. Branch/Basis wie IPL-0020; Änderungen lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Browsertest:** Der umfangreiche `browser-tests/command-center.cjs` traf im
   Training nach Einführung des mittigen Anfragezentrums nicht mehr den markierten
   Bauplatz: Eine nichtmodale Einladungskarte lag an dieser Stelle. Der ältere
@@ -962,7 +962,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0024 – Block 2: Ungültige Freundesporträts und Cache-Testkette
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
-  Umgebungsuhr 2026-11-16 UTC. Branch/Basis wie IPL-0020; lokal/uncommittet.
+  Umgebungsuhr 2026-11-16 UTC. Branch/Basis wie IPL-0020; lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Befund:** Der Decoder für das eigene Profil ersetzt bewusst unbekannte
   Avatarteile durch Standardwerte. Die neue Freundesansicht ließ zuvor auch
   unbekannte IDs, widersprüchliche Geschlechter und weitere ungültige Teile
@@ -994,7 +994,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 ## IPL-0025 – Block 2: Kein Scheinerfolg bei konkurrierenden Freundesanfragen
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
-  Umgebungsuhr 2026-11-16 UTC. Branch/Basis wie IPL-0020; lokal/uncommittet.
+  Umgebungsuhr 2026-11-16 UTC. Branch/Basis wie IPL-0020; lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Reproduktion:** Zwei synthetische Tabs desselben Kontos lasen im Firebase-
   Emulator zunächst dieselbe freie Freundschaftskante und schrieben gleichzeitig.
   Die Rules bestätigten nur einen Schreibvorgang; der Client des anderen Tabs
@@ -1026,7 +1026,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
   Umgebungsuhr 2026-11-16 UTC. Branch `arena/63527f0d-0815games-github-io`,
-  Basis `05542181c2`; alles lokal/uncommittet.
+  Basis `05542181c2`; alles lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Spiel und Staging:** `node --test --test-concurrency=1
   IronPath/tests/*.test.mjs` bestand nach IPL-0025 mit **994/994**, ohne Skips;
   der Lauf enthält das reale lokale Staging des aktuellen Runtimes, die
@@ -1082,7 +1082,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
   Umgebungsuhr 2026-11-16 UTC. Branch `arena/63527f0d-0815games-github-io`,
-  Basis `05542181c2`; Stand dieses Eintrags lokal/uncommittet.
+  Basis `05542181c2`; Stand dieses Eintrags lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Auftrag:** Der Betreiber wünscht nach jedem sinnvollen Schritt eine
   Veröffentlichung und die Wiederöffnung zum Testen. Die ältere Vorgabe einer
   separaten Öffnungsfreigabe wurde in Arbeitsanweisung, Plan, Datenblatt und
@@ -1193,7 +1193,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
   Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`,
   Basis `6c835f8a1e5cb8e9c836141324fb0ef699f5bfdd`; Stand dieses Eintrags
-  lokal/uncommittet.
+  lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Auftrag:** Der Betreiber möchte den Patchlog mit dem Spiel verknüpfen: „Dann
   könnte man es da anschauen was gemacht wurde und was noch ansteht in Zukunft.“
   Zusätzlich soll Block 7 (Leben, Gegenangriffe, Reparaturen) als künftiger
@@ -1297,7 +1297,7 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
 - **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
   Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`;
-  dieser Nachtrag lag beim Schreiben lokal/uncommittet.
+  dieser Nachtrag lag beim Schreiben lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
 - **Veröffentlicht:** [PR #291](https://github.com/0815games/0815games.github.io/pull/291)
   (Commit `959a2a86`, die Absicherung des Browserfalls) wurde in den Merge-Commit
   `17934f06da63e45cfc703f53572ca8fe21b07d39` übernommen. Die
@@ -1323,3 +1323,61 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   Chromium-Fälle sind Emulator- und Testbrowser-Läufe. Block 7 bleibt ein
   künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
   folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
+
+## IPL-0034 – Block 2: eindeutige Soldatennamen für neue Charaktere
+
+Korrektur nach dem ersten CI-Lauf (PR #293):
+
+- **Regulaerer Ausdruck war wirkungslos.** `characterNames` pruefte den Schluessel mit einer nicht erfassenden Gruppe `(?:...)`. Firebase wertet Regex mit RE2 aus, das diese Schreibweise nicht kennt; der Ausdruck passte auf nichts, also scheiterten **jeder** Lese- und Schreibzugriff. Die `assertFails`-Pruefungen liefen deshalb erfolgreich — aus dem falschen Grund. Behoben: dieselbe Schreibweise wie beim veroeffentlichten `friendNames` (`([a-f0-9]{2}){1,96}`), und der Emulatortest prueft jetzt den Positivfall (Schreiben als Alice) **vor** den Ablehnungsfaellen, damit eine Regel, die alles blockiert, auffaellt.
+- **Eintrag nahm Zusatzfelder an.** `hasChildren(['uid','name'])` prueft nur, dass beide Felder vorhanden sind, nicht dass sonst nichts drinsteht. Der Emulator akzeptierte `xp: 999999`. Behoben mit `$other: {".validate": false}` — demselben Muster, das `players` im Referenzstand nutzt.
+- **Dabei der naechste Fehler derselben Art:** `$other` trifft jedes **nicht benannte** Kind. `uid` und `name` standen nur in der `.validate`-Zeile des Elternknotens, waren also nicht benannt — `$other` blockierte damit wieder alles. Behoben, indem `uid` und `name` als eigene Knoten **vor** `$other` stehen, genau wie `name`/`gender`/`xp` bei `players`. Der Emulatortest prueft daher in jedem Anlauf zuerst ein Schreiben, das gelingen muss.
+- **Der Emulator beantwortet die ersten Anfragen, bevor die hochgeladenen Regeln wirken.** In diesem Fenster wird **alles** abgelehnt — Lese- wie Schreibzugriffe. Das sah aus wie ein dritter Regelfehler, war aber keiner: Test 1 und 2 liefen in das Fenster, Test 3 danach war gruen. Behoben durch ein Startfenster-Warten in `before()`: gelesen wird ein Pfad, den **beide** Regelstaende erlauben (`players/<uid>` fuer das eigene Konto), und die Anzahl der Versuche steht im Protokoll. Ein Rueckfall, der „abgelehnt" als Regelfehler liest, waere hier in eine Endlosschleife gelaufen.
+- Diagnose-Hilfen eingebaut: der Emulatortest protokolliert jeden Lese-, Schreib- und Transaktionszugriff mit Code und Meldung, bevor er vergleicht; der Workflow schreibt die vollstaendige Ausgabe in die Job-Zusammenfassung (der `gh`-Logabruf ist in der Sandbox nicht moeglich); `tests/character-name.test.mjs` nagelt die beiden Regelfehler fest.
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/85658107-0815games-github-io`,
+  Basis `0061441b3042195cd24bc1ba6e187bdc88f9b2e4`; Stand dieses Eintrags
+  lokal; mit Commit „Block 2: eindeutige Soldatennamen fuer neue Charaktere (A1)“ eingestellt und als PR #293 zur Abnahme vorgelegt.
+- **Auftrag:** „Weiter mit den Patch Blöcken. Soll mal was passieren.“ Die
+  Reihenfolge im Plan nennt Block 2 als Nächstes; dort ist A1 (kein doppelter
+  Charaktername) der am besten abgrenzbare Teil.
+- **Namensregel (neu, eine Stelle):** `character-name.mjs` mit
+  `NFC_LOWERCASE_V1`: äußere ECMAScript-Leerzeichen entfernen, NFC,
+  Kleinschreibung, NFC. Anzeige bleibt wie eingegeben. Dieselbe Funktion
+  erzeugt jetzt auch den Freundes-Suchschlüssel (`friends.mjs`), damit ein Name
+  nicht unter einem Schlüssel gefunden und unter einem anderen reserviert wird.
+- **Reservierung (neu):** `character-name-claim.mjs` reserviert
+  `characterNames/<Schlüssel>` **vor** dem Profil und gibt frei, wenn die
+  Erstellung danach scheitert oder der Charakter gelöscht wird. Zwei Konten,
+  die gleichzeitig denselben Namen wählen, erhalten höchstens einen Gewinner;
+  der andere liest „Dieser Soldatenname ist bereits vergeben“. Kontowechsel
+  während des Vorgangs wird abgelehnt, ein eigener Wiederholversuch gilt nicht
+  als Konflikt.
+- **Wichtige Grenze:** Die begleitenden Rules sind **nicht veröffentlicht**. Der
+  Server kennt den Pfad heute nicht, deshalb meldet der Client `unsupported`,
+  die Charaktererstellung läuft weiter wie bisher und prüft als Rückfall nur
+  lesend den öffentlichen Freundes-Suchindex (bestmöglich). Eindeutigkeit für
+  **neue** Namen ist damit erst mit den Rules serverseitig wirksam.
+- **Rules-Kandidat:** `firebase/character-name-candidate.mjs` baut aus der
+  gepinnten Referenz einen Kandidaten (ein Eintrag pro Schlüssel, nur mit
+  eigener UID, Löschen nur durch den Inhaber). Er ist bewusst **nicht** in den
+  veröffentlichbaren Kandidaten eingestellt; der vorhandene
+  Veröffentlichungsschutz (`tests/rules-publish-dry-run.test.mjs`) hat das
+  beim ersten Versuch zu Recht als Lücke gemeldet.
+- **Prüfungen:** `node --test IronPath/tests/character-name.test.mjs` **10/10**;
+  vollständiger serieller Lauf `node --test IronPath/tests/*.test.mjs`
+  **1012 bestanden, 1 absichtlich übersprungen, 0 fehlgeschlagen**. Neu ist
+  außerdem der gemeinsame Fallkatalog `firebase/name-policy-fixtures.json`:
+  Spiel und Audit-Skript behaupten jeweils ihre Seite, einschließlich der
+  gewollten Abweichung `Straße`/`STRASSE` (Audit strenger).
+  `firebase/rules-test/character-name.test.mjs` (Datenbank-Emulator, zwei
+  Läufe mit und ohne Index) und die Workflow-Stufe
+  `test:character-names` wurden ergänzt, konnten in dieser Umgebung aber
+  **nicht lokal ausgeführt** werden (kein Java/Emulator vorhanden); ihr
+  Nachweis ist der CI-Lauf.
+- **Offen:** Rules-Veröffentlichung (separate Freigabe, frischer Export,
+  Backup), autorisierte Bestandsaufnahme und Entscheidung zu Alt-Duplikaten,
+  Porträt-Rules, echte Mehrgeräteabnahme.
+- **Git / PR / Release:** Kein Commit, Push, PR, CI-Lauf, Merge, Deployment,
+  keine produktiven Rules-/Datenänderung und kein Wartungsschalter zum
+  Zeitpunkt dieses Eintrags.

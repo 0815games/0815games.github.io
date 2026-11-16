@@ -9,11 +9,11 @@ import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../..',import.meta.url));
 const script=join(root,'IronPath/scripts/audit-character-names.py');
 const run=(...args)=>spawnSync('python3',[script,...args],{encoding:'utf8',cwd:root,timeout:5000});
-async function fixture(t,text){const dir=await mkdtemp(join(tmpdir(),'ironpath-name-audit-'));t.after(()=>rm(dir,{recursive:true,force:true}));const source=join(dir,'export.json');await writeFile(source,text);return {dir,source};}
+async function fixture_(t,text){const dir=await mkdtemp(join(tmpdir(),'ironpath-name-audit-'));t.after(()=>rm(dir,{recursive:true,force:true}));const source=join(dir,'export.json');await writeFile(source,text);return {dir,source};}
 
 test('the offline draft audit examines every exported profile, not only search listings',async t=>{
  const data={players:{a:{name:'  Straße '},b:{name:'STRASSE'},c:{name:'ÉLISE'},d:{name:'e\u0301lise'},e:{name:'Alex'},f:{name:'Ａlex'},bad:{name:42},empty:{name:'  '}},friendNames:{}};
- const {source}=await fixture(t,JSON.stringify(data)),r=run(source);assert.equal(r.status,0,r.stderr);
+ const {source}=await fixture_(t,JSON.stringify(data)),r=run(source);assert.equal(r.status,0,r.stderr);
  const summary=JSON.parse(r.stdout);
  assert.equal(summary.profiles,8);assert.equal(summary.namedProfiles,6);assert.equal(summary.invalidProfiles,2);
  assert.equal(summary.conflictGroups,2);assert.equal(summary.conflictingProfiles,4);
@@ -23,7 +23,7 @@ test('the offline draft audit examines every exported profile, not only search l
 });
 
 test('a deliberately requested private report is outside the repository, mode 0600 and never overwritten',async t=>{
- const {source,dir}=await fixture(t,JSON.stringify({players:{alpha:{name:'Alice'},beta:{name:'ALICE'}}}));
+ const {source,dir}=await fixture_(t,JSON.stringify({players:{alpha:{name:'Alice'},beta:{name:'ALICE'}}}));
  const output=join(dir,'private-report.json'),r=run(source,'--private-report',output);assert.equal(r.status,0,r.stderr);
  assert.ok(!r.stdout.includes('Alice'));assert.ok(!r.stdout.includes('alpha'));
  assert.equal((await stat(output)).mode&0o777,0o600);
@@ -41,28 +41,52 @@ test('a deliberately requested private report is outside the repository, mode 06
  assert.notEqual(run(source,'--private-report',join(repoLink,'__forbidden-private-report.json')).status,0,'a symlinked path into the checkout is also refused');
 });
 
+// The audit and the game must decide "same name" from the same cases. The
+// shared fixture says where they agree and where the audit is deliberately
+// stricter; both engines assert their own side of it.
+test('the offline audit agrees with the shared fixture, including the documented divergence',async t=>{
+ const fixture=JSON.parse(await readFile(new URL('../firebase/name-policy-fixtures.json',import.meta.url),'utf8'));
+ assert.equal(fixture.version,1);
+ for(const entry of fixture.cases){
+  const players={};
+  entry.names.forEach((name,index)=>{players[`uid${index}`]={name};});
+  const {source}=await fixture_(t,JSON.stringify({players})),r=run(source);
+  assert.equal(r.status,0,r.stderr);
+  const summary=JSON.parse(r.stdout);
+  assert.equal(summary.conflictGroups,entry.casefoldSame?1:0,
+   `case folding groups ${JSON.stringify(entry.names)}: ${entry.why}`);
+  assert.equal(summary.policy,'DRAFT_NFC_DEFAULT_CASEFOLD');
+  assert.equal(summary.completeExportVerified,false);
+  assert.ok(!r.stdout.includes('Alex')&&!r.stdout.includes('Straße'),'stdout stays aggregated');
+ }
+ // Where the game and the audit differ, the difference is the one we wrote down.
+ const game=await readFile(new URL('../character-name.mjs',import.meta.url),'utf8');
+ assert.match(game,/CHARACTER_NAME_POLICY='NFC_LOWERCASE_V1'/);
+ assert.match(game,/the audit script is stricter|stricter \(Unicode default case folding\)/i,'the divergence is documented in the module');
+});
+
 test('invalid or incomplete-looking input fails closed without echoing data',async t=>{
  for(const text of ['{}','{"players":null}','{"players":{"one":{"name":"secret"},"one":{"name":"secret2"}}}','{"players":{},"other":NaN}','{bad json']){
-  const {source}=await fixture(t,text),r=run(source);assert.notEqual(r.status,0);assert.equal(r.stdout,'');assert.ok(!r.stderr.includes('secret'));
+  const {source}=await fixture_(t,text),r=run(source);assert.notEqual(r.status,0);assert.equal(r.stdout,'');assert.ok(!r.stderr.includes('secret'));
  }
 });
 
 test('legacy invalid profiles are counted rather than mistaken for a clean inventory',async t=>{
- const {source}=await fixture(t,JSON.stringify({players:{a:{name:'a'},b:{name:' a '},c:null,d:{},e:{name:'\ud800'},f:{name:'valid'}}}));
+ const {source}=await fixture_(t,JSON.stringify({players:{a:{name:'a'},b:{name:' a '},c:null,d:{},e:{name:'\ud800'},f:{name:'valid'}}}));
  const r=run(source);assert.equal(r.status,0,r.stderr);const summary=JSON.parse(r.stdout);
  assert.equal(summary.profiles,6);assert.equal(summary.invalidProfiles,5);
  assert.equal(summary.conflictGroups,1,'even too-short names participate in conflict detection');assert.equal(summary.conflictingProfiles,2);
 });
 
 test('an invalid account key is flagged without excluding its name from collision detection',async t=>{
- const {source}=await fixture(t,JSON.stringify({players:{bob:{name:'Alex'},'bad/path':{name:'alex'}}}));
+ const {source}=await fixture_(t,JSON.stringify({players:{bob:{name:'Alex'},'bad/path':{name:'alex'}}}));
  const r=run(source);assert.equal(r.status,0,r.stderr);const summary=JSON.parse(r.stdout);
  assert.equal(summary.invalidProfiles,1);assert.equal(summary.namedProfiles,1);
  assert.equal(summary.conflictGroups,1);assert.equal(summary.conflictingProfiles,2);
 });
 
 test('oversized files and non-regular inputs are rejected without hanging',async t=>{
- const {dir}=await fixture(t,'{}'),huge=join(dir,'huge.json');const file=await open(huge,'w');await file.truncate(128*1024*1024+1);await file.close();
+ const {dir}=await fixture_(t,'{}'),huge=join(dir,'huge.json');const file=await open(huge,'w');await file.truncate(128*1024*1024+1);await file.close();
  assert.equal(run(huge).status,2);
  if(process.platform!=='win32'){
   const fifo=join(dir,'pipe');assert.equal(spawnSync('mkfifo',[fifo]).status,0);
