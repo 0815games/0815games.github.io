@@ -165,7 +165,7 @@ jobs:
             cat character-names-output.log
           else
             cat character-names-output.log
-            python3 -c "from pathlib import Path; s=Path('character-names-output.log').read_text().splitlines(); i=[n for n,l in enumerate(s) if l.startswith('not ok')]; t='\n'.join('\n'.join(s[n:n+14]) for n in i) if i else '\n'.join(s[-40:]); print('::error title=Character name emulator output::'+t[:8000].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            python3 -c "from pathlib import Path; s=Path('character-names-output.log').read_text(); print('::error title=Character name emulator output::'+s[-8000:].replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
       - name: Run friends rules tests

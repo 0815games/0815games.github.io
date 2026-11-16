@@ -2,6 +2,11 @@
 // Two runs: the default one uses the candidate that KNOWS the index; the
 // `CHARACTER_NAME_BASELINE=1` run uses an older ruleset without it and proves
 // that enlistment then degrades to a best-effort check instead of breaking.
+//
+// Everything here writes a line to stdout before it asserts. The emulator is
+// the only place these rules are exercised, the log is the only evidence it
+// produces, and a bare "permission denied" says nothing about WHICH rule or
+// WHICH direction (read vs. write vs. transaction) refused.
 import {test,before,after,beforeEach} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
@@ -19,20 +24,47 @@ import {buildCharacterNameCandidate} from '../character-name-candidate.mjs';
 //                                as it stands today, which has no index. That
 //                                run proves enlistment still works.
 const baseline=process.env.CHARACTER_NAME_BASELINE==='1';
-// The emulator log is the only evidence this suite produces, and a one-line
-// "expected claimed, got unsupported" is not enough to fix it from CI. Print
-// what actually came back before asserting it.
-const report=(label,value)=>{console.log(`[character-name] ${label}: ${JSON.stringify(value)}`);return value;};
+const log=(...parts)=>console.log('[character-name]',...parts);
+const report=(label,value)=>{log(label+':',JSON.stringify(value));return value;};
+
 let env,alice,bob,anon;
 const sdk={ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst};
 const claimService=(db,uid)=>createCharacterNameClaim({db,auth:{currentUser:{uid}},sdk});
+
+// Run an operation and describe what came back instead of only whether it
+// threw. `permission denied` from a ruleset that is not loaded yet looks
+// exactly like `permission denied` from a rule that refuses the write.
+async function probe(label,operation){
+ try{const value=await operation();log(`ok   ${label}`);return {ok:true,value};}
+ catch(error){
+  log(`DENY ${label} -> code=${String(error?.code)} message=${String(error?.message)}`);
+  return {ok:false,error};
+ }
+}
 
 before(async()=>{
  const bytes=await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url),'utf8');
  const rules=baseline?bytes:JSON.stringify(buildCharacterNameCandidate(bytes));
  env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules}});
  alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();anon=env.unauthenticatedContext().database();
+
+ // The emulator answers requests before the uploaded rules are in effect, and
+ // an unanswered ruleset denies everything. Wait for a read that BOTH
+ // rulesets permit (`players/$uid` is readable by its owner in either), then
+ // note how long that took - a slow warm-up is a fact about the harness, not
+ // about the rules under test.
+ const started=Date.now();
+ for(let attempt=1;;attempt++){
+  const result=await probe(`warm-up read of players/alice (attempt ${attempt})`,()=>get(ref(alice,'players/alice/name')));
+  if(result.ok){log(`rules in effect after ${attempt} attempt(s), ${Date.now()-started} ms`);break;}
+  if(attempt>=60)throw Error('the emulator never accepted the rules');
+  await new Promise(done=>setTimeout(done,500));
+ }
+ // What the ruleset under test thinks of the index path, once, up front.
+ log('index path readable by its owner:',JSON.stringify((await probe('read characterNames/<key> as alice',()=>get(ref(alice,`characterNames/${characterNameKey('Alex')}`)))).ok));
+ log('index path readable by an anonymous client:',JSON.stringify((await probe('read characterNames/<key> as anon',()=>get(ref(anon,`characterNames/${characterNameKey('Alex')}`)))).ok));
 });
+
 beforeEach(async()=>{
  await env.clearDatabase();
  await env.withSecurityRulesDisabled(async ctx=>{
@@ -42,20 +74,33 @@ beforeEach(async()=>{
 });
 after(async()=>env.cleanup());
 
-test('exactly one account wins a name, and case or padding does not create a second one',async()=>{
+// Isolated, so a refusal here says "the rules are wrong" and not "the claim
+// module is wrong".
+test('the ruleset under test is the one we think it is',async()=>{
+ const key=characterNameKey('Alex');
+ const read=await probe('read characterNames/<key> as alice',()=>get(ref(alice,`characterNames/${key}`)));
+ const write=await probe('write {uid:alice,name:Alex} as alice',()=>set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
+ const tx=await probe('transaction as alice',()=>runTransaction(ref(alice,`characterNames/${characterNameKey('Bobby')}`),current=>current==null?{uid:'alice',name:'Bobby'}:undefined,{applyLocally:false}));
+ if(baseline){
+  assert.equal(read.ok,false,'the baseline ruleset has no index, so even a read is refused');
+  assert.equal(write.ok,false);
+  assert.equal(tx.ok,false);
+ }else{
+  // A ruleset that blocks everything makes every assertFails below pass for
+  // the wrong reason. These three are the positive proof.
+  assert.equal(read.ok,true,'the candidate rules let an account read the index');
+  assert.equal(write.ok,true,'the candidate rules let an account reserve a free name');
+  assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
+  assert.equal(tx.ok,true,'the candidate rules let an account claim through a transaction');
+ }
+});
+
+test('exactly one account wins a name, and case or padding does not create a second one',{skip:baseline},async()=>{
  const key=characterNameKey('Alex'),alice$1=claimService(alice,'alice'),bob$1=claimService(bob,'bob');
- // If the candidate rules were not in effect, every read and write below would
- // be refused for the wrong reason - and assertFails cannot tell the
- // difference. Assert the positive case first.
- await assertSucceeds(get(ref(alice,`characterNames/${key}`)));
- // The actual write, not just its absence of failure: a rule that blocks
- // everything also makes assertFails pass.
- await assertSucceeds(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
- assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
  assert.equal(report('alice claims Alex',await alice$1.claim('Alex')).status,'claimed');
  assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
  for(const spelling of ['alex','ALEX','  Alex  '])
-  assert.equal(report(`bob claims ${JSON.stringify(spelling)}`,await bob$1.claim(spelling)).status,'taken',`"${spelling}" is the same name`);
+  assert.equal(report(`bob claims ${JSON.stringify(spelling)}`,await bob$1.claim(spelling)).status,'taken',`${JSON.stringify(spelling)} is the same name`);
  // A different name is still free for the second account.
  assert.equal(report('bob claims Bobby',await bob$1.claim('Bobby')).status,'claimed');
  assert.equal((await get(ref(bob,`characterNames/${characterNameKey('Bobby')}`))).val().uid,'bob');
@@ -64,9 +109,8 @@ test('exactly one account wins a name, and case or padding does not create a sec
  assert.equal(report('alice re-claims Alex',await alice$1.claim('Alex')).status,'claimed');
 });
 
-test('only the owner releases a name, and a released name becomes free',async()=>{
+test('only the owner releases a name, and a released name becomes free',{skip:baseline},async()=>{
  const key=characterNameKey('Alex'),alice$1=claimService(alice,'alice'),bob$1=claimService(bob,'bob');
- await assertSucceeds(get(ref(alice,`characterNames/${key}`)),'the candidate rules are in effect');
  assert.equal(report('alice claims Alex',await alice$1.claim('Alex')).status,'claimed');
  assert.deepEqual(report('bob releases Alex',await bob$1.release('Alex')),{released:false},'another account cannot free it');
  await assertFails(remove(ref(bob,`characterNames/${key}`)));
