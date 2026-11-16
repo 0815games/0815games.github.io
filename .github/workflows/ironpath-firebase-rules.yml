@@ -158,6 +158,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('friend-search-output.log').read_text()[-3500:]; print('::error title=Friend search emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run character name reservation rules tests
+        shell: bash
+        run: |
+          if npm run test:character-names > character-names-output.log 2>&1; then
+            cat character-names-output.log
+          else
+            cat character-names-output.log
+            python3 -c "from pathlib import Path; s=Path('character-names-output.log').read_text()[-3500:]; print('::error title=Character name emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Run friends rules tests
         shell: bash
         run: |

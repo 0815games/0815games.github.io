@@ -17,7 +17,11 @@ function ids(value,uid){
  return keys;
 }
 
-export function createCharacterDeletion({db,auth,sdk,isCurrent=()=>true}={}){
+// `releaseNameKey` is the reservation index key of a name THIS SESSION reserved
+// (see character-name-claim.mjs). It is opt-in on purpose: the published Rules
+// do not contain the index yet, and an unknown path in this atomic update would
+// make character deletion fail for everyone.
+export function createCharacterDeletion({db,auth,sdk,isCurrent=()=>true,releaseNameKey=null}={}){
  const uid=auth?.currentUser?.uid;
  if(!validUid(uid)||![sdk?.ref,sdk?.get,sdk?.update,isCurrent].every(fn=>typeof fn==='function'))throw Error('Invalid character deletion session');
  const ref=path=>sdk.ref(db,path),check=()=>{if(auth.currentUser?.uid!==uid||!isCurrent())throw Error('Account changed');};
@@ -56,6 +60,10 @@ export function createCharacterDeletion({db,auth,sdk,isCurrent=()=>true}={}){
    const peers=new Set([...incoming,...outgoing,...invites]);
    for(const other of peers){drop(`coopInvites/${uid}/${other}`);drop(`coopInvites/${other}/${uid}`);}
    if(searchKey!==undefined){drop(`friendNames/${searchKey}/${uid}`);drop(`friendPrivate/${uid}/searchKey`);}
+   if(releaseNameKey!==null){
+    if(typeof releaseNameKey!=='string'||!keyPattern.test(releaseNameKey))throw Error('Invalid stored name reservation');
+    drop(`characterNames/${releaseNameKey}`);
+   }
    if(code!==undefined){if(codeData!==null)drop(`friendCodes/${code}`);drop(`friendPrivate/${uid}/code`);}
    for(const id of presence)drop(`friendPresence/${uid}/${id}`);
    check();await sdk.update(ref(),paths);check();

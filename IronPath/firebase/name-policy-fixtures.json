@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "note": "Shared comparison cases for the two engines that must agree on what counts as the same soldier name: the game client (IronPath/character-name.mjs, policy NFC_LOWERCASE_V1) and the offline audit script (IronPath/scripts/audit-character-names.py, Unicode default case folding). `same` is what the game ENFORCES; `casefoldSame` is what the audit REPORTS. Where the two differ the audit is deliberately stricter - see CHARACTER-NAME-AUDIT.md. Changing either engine without changing this file means the two drifted apart.",
+  "cases": [
+    {
+      "names": ["Alex", "alex", "ALEX"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "case is not a difference"
+    },
+    {
+      "names": ["  Alex  ", "\tAlex\n"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "outer ECMAScript whitespace is not a difference"
+    },
+    {
+      "names": ["ÉLISE", "élise"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "composed and decomposed accents normalize to the same form"
+    },
+    {
+      "names": ["Иван", "иван"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "non-Latin case is still not a difference"
+    },
+    {
+      "names": ["Straße", "STRASSE"],
+      "same": false,
+      "casefoldSame": true,
+      "why": "KNOWN DIVERGENCE: Unicode default case folding expands the sharp s, plain lowercasing does not. The audit reports it as a conflict, the game does not block it."
+    },
+    {
+      "names": ["Ａlex", "Alex"],
+      "same": false,
+      "casefoldSame": false,
+      "why": "compatibility characters are not conflated by either engine; a stricter character rule would be a separate decision"
+    },
+    {
+      "names": ["Bob", "Bobby"],
+      "same": false,
+      "casefoldSame": false,
+      "why": "different names stay different"
+    },
+    {
+      "names": ["Ana", "Ana "],
+      "same": true,
+      "casefoldSame": true,
+      "why": "trailing space in a stored legacy name is not a new name"
+    }
+  ]
+}

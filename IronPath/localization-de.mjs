@@ -30,6 +30,8 @@ export const germanText=Object.freeze({
   "RETRY": "ERNEUT VERSUCHEN",
   "SIGN OUT": "ABMELDEN",
   "NEW RECRUIT": "NEUER REKRUT",
+  "That soldier name is already taken. Choose another one.": "Dieser Soldatenname ist bereits vergeben. Wähle einen anderen.",
+  "That soldier name cannot be used. Choose another one.": "Dieser Soldatenname kann nicht verwendet werden. Wähle einen anderen.",
   "Create your soldier": "Erstelle deinen Soldaten",
   "Your name and character choice are permanent for now. Signed-in players can find your soldier name and player ID in friend search.": "Dein Name und deine Charakterwahl sind vorerst dauerhaft. Angemeldete Spieler können deinen Soldatennamen und deine Spieler-ID in der Freundesuche finden.",
   "SOLDIER NAME": "SOLDATENNAME",

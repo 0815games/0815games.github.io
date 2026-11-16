@@ -46,7 +46,7 @@ test('changed browser modules and their importers share one cache wave without s
  // This includes transitive importers, not only the files with gameplay edits:
  // cached JS is not re-evaluated just because its own dependency has changed.
  const names=new Set([
-  'account-entry.mjs','account.js','auth-form.mjs','cartoon-art.mjs','command-center.mjs','confirmation.mjs',
+  'account-entry.mjs','account.js','auth-form.mjs','cartoon-art.mjs','character-name-claim.mjs','character-name.mjs','command-center.mjs','confirmation.mjs',
   'coop-input.mjs','coop-invites.mjs','coop-rewards.mjs','discharge-notice.mjs','endless-launcher.mjs','field-menu.mjs',
   'firebase-durable-client-session.mjs','firebase-durable-host-session.mjs','firebase-four-digit-panel.mjs','firebase-four-panel.mjs',
   'firebase-party-game.mjs','firebase-party-session.mjs','firebase-recoverable-game.mjs','firebase-recovery-store.mjs',

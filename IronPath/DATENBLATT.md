@@ -84,9 +84,28 @@ sehen, die Chromium-Fälle schon ([IPL-0031](PATCH-LOG.md#ipl-0031--nachtrag-off
 Danach schlug einmal ein zeitkritischer Browserfall nach einer Display-Drehung
 fehl, der mit den Feldnotizen nichts zu tun hat; er misst jetzt erst nach zwei
 Frames ([IPL-0032](PATCH-LOG.md#ipl-0032--merge-290-pages-auslieferung-und-ein-roter-browserfall-auf-main),
-[IPL-0033](PATCH-LOG.md#ipl-0033--veröffentlicht-abgeschlossen-öffentlicher-status-und-nächster-schritt)).
+[IPL-0033](PATCH-LOG.md#ipl-0033--veröffentlicht-abschluss-öffentlicher-status-und-nächster-schritt)).
 Die Chromium-Fälle sind damit für den aktuellen Stand grün; eine Abnahme auf
 echten Geräten bleibt offen.
+
+**Block 2 / A1 – eindeutige Soldatennamen (lokaler Stand, nicht veröffentlicht):**
+Es gibt jetzt eine gemeinsame Namensregel in genau einem Modul
+(`character-name.mjs`, `NFC_LOWERCASE_V1`): äußere Leerzeichen entfernen, NFC,
+Kleinschreibung. Sie gilt für die Freundessuche und für die Reservierung.
+`character-name-claim.mjs` reserviert `characterNames/<Schlüssel>` vor dem
+Profil und gibt frei, wenn die Erstellung danach scheitert oder der Charakter
+gelöscht wird; zwei Konten mit demselben Namen ergeben höchstens einen
+Gewinner. **Die begleitenden Rules sind nicht veröffentlicht**: der Server kennt
+den Pfad heute nicht, der Client meldet das als „nicht unterstützt“, die
+Charaktererstellung funktioniert weiter wie bisher und prüft als Rückfall nur
+lesend den Freundes-Suchindex. Der Rules-Kandidat
+(`firebase/character-name-candidate.mjs`) liegt bereit und ist bewusst nicht in
+den veröffentlichbaren Kandidaten eingestellt. Eindeutigkeit für **neue** Namen
+ist erst mit den Rules serverseitig wirksam; Alt-Duplikate bleiben bis zur
+autorisierten Bestandsaufnahme bestehen. Bekannte, gewollte Abweichung: Das
+Offline-Audit vergleicht strenger (Case Folding) und meldet `Straße`/`STRASSE`
+als Konflikt. Details in
+[IPL-0034](PATCH-LOG.md#ipl-0034--block-2-eindeutige-soldatennamen-für-neue-charaktere).
 
 ## Übersicht der Anforderungen
 

@@ -16,7 +16,9 @@ import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-patch3';
 import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-patch3';
 import {setupFriends} from './friends-ui.mjs?v=20261031-patch3';
 import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261031-patch3';
-import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-socialcleanup1';
+import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch3';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261031-patch3';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261031-patch3';
 import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261031-patch3';
 import {createCommandCenter} from './command-center.mjs?v=20261031-patch3';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
@@ -365,7 +367,14 @@ async function deleteCharacter(){
   leaderboardUI.reset();notifySession();display('loading');
   message('Deleting your soldier. Keep this page open and check your connection.');
   await Promise.all([scoreStop,socialStop]);if(!current())return;
-  const deletion=createCharacterDeletion({db,auth,sdk:{ref,get,update},isCurrent:current});
+  // A reserved name belongs to the character, not the account: it has to go
+  // when the character does, or the name stays blocked forever. Only ever
+  // asked for when this session actually holds a reservation - the published
+  // Rules do not know the index yet, and an unknown path must not make the
+  // whole atomic deletion fail.
+  let releaseNameKey=null;
+  if(nameReserved)try{releaseNameKey=characterNameKey(currentName);}catch{releaseNameKey=null;}
+  const deletion=createCharacterDeletion({db,auth,sdk:{ref,get,update},isCurrent:current,releaseNameKey});
   await deletion.remove(currentName);if(!current())return;
   // update() is locally optimistic; only sign out after the server has
   // acknowledged it. The profile listener stayed detached while it was pending.
@@ -389,7 +398,23 @@ $('menuDeleteCharacter').onclick=deleteCharacter; $('retryProfile').onclick=()=>
 // The day service began - shown in the service record. Local time, ISO
 // shape, exactly what the published rules accept.
 const enlistmentDate=()=>{const now=new Date(),pad=n=>String(n).padStart(2,'0');return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;};
-$('characterForm').addEventListener('submit',e=>{e.preventDefault();const name=$('soldierName').value.trim();if(name.length<2||name.length>24){message('Soldier name must be 2–24 characters.');return;}const avatar=recruitScreen.getAvatar();const currentUser=user, version=sessionVersion;recruitScreen.stamp();busy(e.submitter,async()=>{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate()}:undefined,{applyLocally:false});
+// Soldier names are meant to be unique across accounts (A1). The reservation
+// index is claimed BEFORE the profile is written and released again if the
+// profile never materializes. Until the companion Rules are published the
+// reservation is refused by the server; then this stays a best-effort check
+// against the existing friend search index and CHARACTER CREATION KEEPS
+// WORKING - an unsupported index must never block a new player.
+let nameReserved=false;
+$('characterForm').addEventListener('submit',e=>{e.preventDefault();const typed=$('soldierName').value;const check=validateCharacterName(typed);if(!check.ok){message(check.reason==='length'?'Soldier name must be 2–24 characters.':'That soldier name cannot be used. Choose another one.');return;}const name=check.name;const avatar=recruitScreen.getAvatar();const currentUser=user, version=sessionVersion;recruitScreen.stamp();busy(e.submitter,async()=>{
+ const claim=createCharacterNameClaim({db,auth:{currentUser},sdk:{ref,get,remove,runTransaction,query,orderByKey,limitToFirst},isCurrent:()=>version===sessionVersion});
+ const reserved=await claim.claim(name).catch(()=>({status:'unsupported'}));
+ if(version!==sessionVersion)return;
+ if(reserved.status==='taken'){message(translateText('That soldier name is already taken. Choose another one.'));return;}
+ nameReserved=reserved.status==='claimed';
+ const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate()}:undefined,{applyLocally:false});
+ // The reservation is only kept when the profile really exists; otherwise the
+ // name would stay blocked for everyone after a failed enlistment.
+ if(!result.committed&&!result.snapshot.exists()&&nameReserved){nameReserved=false;void claim.release(name).catch(()=>{});}
  // The face rides in its own optional field after the profile exists, so a
  // ruleset without the avatar field can never block account creation. Until
  // that field is published the localStorage mirror (written on every change)

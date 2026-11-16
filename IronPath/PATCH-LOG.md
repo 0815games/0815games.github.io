@@ -1323,3 +1323,53 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   Chromium-Fälle sind Emulator- und Testbrowser-Läufe. Block 7 bleibt ein
   künftiger Patch mit ungetesteten Startwerten. Die nächste fachliche Arbeit
   folgt der im Patchplan festgehaltenen Reihenfolge, also zuerst Block 1.
+
+## IPL-0034 – Block 2: eindeutige Soldatennamen für neue Charaktere
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/85658107-0815games-github-io`,
+  Basis `0061441b3042195cd24bc1ba6e187bdc88f9b2e4`; Stand dieses Eintrags
+  lokal/uncommittet.
+- **Auftrag:** „Weiter mit den Patch Blöcken. Soll mal was passieren.“ Die
+  Reihenfolge im Plan nennt Block 2 als Nächstes; dort ist A1 (kein doppelter
+  Charaktername) der am besten abgrenzbare Teil.
+- **Namensregel (neu, eine Stelle):** `character-name.mjs` mit
+  `NFC_LOWERCASE_V1`: äußere ECMAScript-Leerzeichen entfernen, NFC,
+  Kleinschreibung, NFC. Anzeige bleibt wie eingegeben. Dieselbe Funktion
+  erzeugt jetzt auch den Freundes-Suchschlüssel (`friends.mjs`), damit ein Name
+  nicht unter einem Schlüssel gefunden und unter einem anderen reserviert wird.
+- **Reservierung (neu):** `character-name-claim.mjs` reserviert
+  `characterNames/<Schlüssel>` **vor** dem Profil und gibt frei, wenn die
+  Erstellung danach scheitert oder der Charakter gelöscht wird. Zwei Konten,
+  die gleichzeitig denselben Namen wählen, erhalten höchstens einen Gewinner;
+  der andere liest „Dieser Soldatenname ist bereits vergeben“. Kontowechsel
+  während des Vorgangs wird abgelehnt, ein eigener Wiederholversuch gilt nicht
+  als Konflikt.
+- **Wichtige Grenze:** Die begleitenden Rules sind **nicht veröffentlicht**. Der
+  Server kennt den Pfad heute nicht, deshalb meldet der Client `unsupported`,
+  die Charaktererstellung läuft weiter wie bisher und prüft als Rückfall nur
+  lesend den öffentlichen Freundes-Suchindex (bestmöglich). Eindeutigkeit für
+  **neue** Namen ist damit erst mit den Rules serverseitig wirksam.
+- **Rules-Kandidat:** `firebase/character-name-candidate.mjs` baut aus der
+  gepinnten Referenz einen Kandidaten (ein Eintrag pro Schlüssel, nur mit
+  eigener UID, Löschen nur durch den Inhaber). Er ist bewusst **nicht** in den
+  veröffentlichbaren Kandidaten eingestellt; der vorhandene
+  Veröffentlichungsschutz (`tests/rules-publish-dry-run.test.mjs`) hat das
+  beim ersten Versuch zu Recht als Lücke gemeldet.
+- **Prüfungen:** `node --test IronPath/tests/character-name.test.mjs` **10/10**;
+  vollständiger serieller Lauf `node --test IronPath/tests/*.test.mjs`
+  **1012 bestanden, 1 absichtlich übersprungen, 0 fehlgeschlagen**. Neu ist
+  außerdem der gemeinsame Fallkatalog `firebase/name-policy-fixtures.json`:
+  Spiel und Audit-Skript behaupten jeweils ihre Seite, einschließlich der
+  gewollten Abweichung `Straße`/`STRASSE` (Audit strenger).
+  `firebase/rules-test/character-name.test.mjs` (Datenbank-Emulator, zwei
+  Läufe mit und ohne Index) und die Workflow-Stufe
+  `test:character-names` wurden ergänzt, konnten in dieser Umgebung aber
+  **nicht lokal ausgeführt** werden (kein Java/Emulator vorhanden); ihr
+  Nachweis ist der CI-Lauf.
+- **Offen:** Rules-Veröffentlichung (separate Freigabe, frischer Export,
+  Backup), autorisierte Bestandsaufnahme und Entscheidung zu Alt-Duplikaten,
+  Porträt-Rules, echte Mehrgeräteabnahme.
+- **Git / PR / Release:** Kein Commit, Push, PR, CI-Lauf, Merge, Deployment,
+  keine produktiven Rules-/Datenänderung und kein Wartungsschalter zum
+  Zeitpunkt dieses Eintrags.

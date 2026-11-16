@@ -24,7 +24,29 @@ vergebene Reservierungen, zusätzliche Datenquellen und spätere Änderungen
 werden nicht geprüft. Ein autorisierter vollständiger, konsistenter Bestand
 muss unter Wartung gesichert und getrennt auf Vollständigkeit geprüft werden.
 
-## Vergleichsregel ist noch ein Vorschlag
+## Vergleichsregel: im Spiel entschieden, im Audit strenger
+
+Das Spiel hat jetzt eine feste Regel (`IronPath/character-name.mjs`,
+`NFC_LOWERCASE_V1`): äußere ECMAScript-Leerzeichen entfernen, Unicode-NFC,
+Kleinschreibung, erneut NFC. Sie gilt für die Freundessuche **und** für die
+Reservierung neuer Namen – ein Name kann also nicht unter einem Schlüssel
+gefunden und unter einem anderen reserviert werden.
+
+Dieses Offline-Audit vergleicht **strenger** (Unicode Default Case Folding).
+Die praktische Folge: `Straße` und `STRASSE` sind hier ein gemeldeter Konflikt,
+im Spiel zwei erlaubte Namen. `Ａ`/`A` bleibt in beiden verschieden. Diese
+Abweichung ist gewollt, in `firebase/name-policy-fixtures.json` festgehalten und
+wird von beiden Seiten durch Tests behauptet – sie darf nicht stillschweigend in
+nur einer der beiden Prüfmaschinen geändert werden. Vor einer Migration ist zu
+entscheiden, welche der beiden Regeln für Altbestände gilt.
+
+Die Regel garantiert keine Vollständigkeit: Sie wird im Client angewendet. Die
+begleitenden Rules-Kandidaten erzwingen nur, dass pro Schlüssel höchstens ein
+Eintrag existiert und nur dessen Inhaber ihn löscht; sie können nicht prüfen, ob
+ein Schlüssel wirklich die Normalisierung des gespeicherten Namens ist
+(`firebase/character-name-candidate.mjs`).
+
+## Wie dieses Audit vergleicht (strenger als das Spiel)
 
 Für diese Diagnose werden äußere ECMAScript-Leerzeichen entfernt, dann Unicode
 NFC, Unicode Default Case Folding und erneut NFC angewendet. Damit kollidieren
