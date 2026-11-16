@@ -54,7 +54,7 @@ Git, das Patch-Log und das öffentliche Versionsmanifest. Globale
 Namenseindeutigkeit, Prüfung und Integration der Porträt-Rules sowie die
 späteren Blöcke bleiben offen.
 
-**Feldnotizen im Spiel (lokal, noch nicht veröffentlicht):** Der Betreiber
+**Feldnotizen im Spiel (veröffentlicht):** Der Betreiber
 möchte den Patchlog im Spiel sehen können. Dafür wurde eine reine Leseansicht
 gebaut: `patch-notes.mjs` (Daten und Ansicht), `patch-notes.css`, der Dialog
 `#patchNotes` in `index.html` mit den Reitern *Veröffentlicht* und *Was als
@@ -70,9 +70,23 @@ Block 7 ist damit als künftiger Patch nach Block 6 im Patchplan verankert
 ([Reihenfolge](PATCH-BLOECKE.md#kommende-patches--reihenfolge)); seine Werte
 bleiben ungetestete Startvorschläge, und kein Fortschritt, keine Ausrüstung und
 keine Skillpunkte gehen dauerhaft verloren. Die Ansicht schreibt nichts, liest
-keine Firebase-Daten und ändert keinen Spielzustand. Sie ist lokal/uncommittet
-und in dieser Umgebung nicht im Browser abgenommen (kein Playwright/Chromium
-vorhanden).
+keine Firebase-Daten und ändert keinen Spielzustand.
+
+**Auslieferung und Nachbesserungen:** Veröffentlicht mit
+[PR #290](https://github.com/0815games/0815games.github.io/pull/290)
+(Merge `e25ce9b9`) und
+[PR #291](https://github.com/0815games/0815games.github.io/pull/291)
+(Merge `17934f06`); der öffentliche Build bleibt `20261031-patch3`, der
+Wartungsstatus wurde danach erneut als `open` abgefragt. Zwei Befunde aus der
+CI sind dokumentiert: Ein CSS-Detail (`display` ohne `[open]`) legte den Dialog
+zunächst dauerhaft über das Spiel – die lokale Node-Testsuite kann das nicht
+sehen, die Chromium-Fälle schon ([IPL-0031](PATCH-LOG.md#ipl-0031--nachtrag-offener-feldnotizen-dialog-blockierte-das-spiel-css-fix)).
+Danach schlug einmal ein zeitkritischer Browserfall nach einer Display-Drehung
+fehl, der mit den Feldnotizen nichts zu tun hat; er misst jetzt erst nach zwei
+Frames ([IPL-0032](PATCH-LOG.md#ipl-0032--merge-290-pages-auslieferung-und-ein-roter-browserfall-auf-main),
+[IPL-0033](PATCH-LOG.md#ipl-0033--veröffentlicht-abgeschlossen-öffentlicher-status-und-nächster-schritt)).
+Die Chromium-Fälle sind damit für den aktuellen Stand grün; eine Abnahme auf
+echten Geräten bleibt offen.
 
 ## Übersicht der Anforderungen
 
