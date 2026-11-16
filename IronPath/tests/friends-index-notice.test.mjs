@@ -19,12 +19,20 @@ test('the search-listing notice lives inside the friends dialog, not over the ga
 
 test('a failed listing update retries quietly before anything is shown',()=>{
   const source=readFileSync(new URL('../friends-ui.mjs',import.meta.url),'utf8');
-  assert.match(source,/let indexRetries=0,indexTimer=null;/,'retry state exists');
+  assert.match(source,/let indexRetries=0,indexTimer=null,indexFailed=false,connectionStop=null;/,'retry state exists');
   assert.match(source,/if\(indexRetries>=3\)return false;/,'at most three quiet retries');
   assert.match(source,/const delay=30000\*\(indexRetries\+1\);/,'growing delays: 30s, 60s, 120s');
   assert.match(source,/if\(indexSession===session&&getProfile\(\)&&auth\.currentUser\)void indexAccount\(\);/,'a retry only runs while the session is alive');
   assert.match(source,/if\(!scheduleIndexRetry\(current\)\)\{\$\('friendIndexError'\)\.hidden=false;/,'the notice appears only after the quiet retries are exhausted');
   assert.match(source,/indexSession\+\+;indexPromise=null;clearTimeout\(indexTimer\);indexTimer=null;indexRetries=0;/,'start and sign-out clear the retry state');
+  // Three quiet retries are not enough on their own: the notice lives inside
+  // the friends dialog, so a player who never opens it stays unfindable in
+  // silence. The connection coming back earns one more attempt.
+  assert.match(source,/sdk\.onValue\(sdk\.ref\(db,'\.info\/connected'\)/,'the connection is watched');
+  assert.match(source,/if\(snapshot\?\.val\?\.\(\)!==true\|\|!indexFailed\|\|indexPromise\)return;/,'only after a failure, and never while one is running');
+  assert.match(source,/stopConnectionWatch\(\);indexFailed=false;/,'sign-out detaches the watch');
+  assert.match(source,/indexFailed=true;if\(!scheduleIndexRetry\(current\)\)/,'a failure is remembered so a reconnect can retry it');
+  assert.match(source,/indexRetries=0;indexFailed=false;\}return true;/,'and a success forgets it');
   const css=readFileSync(new URL('../interface-redesign.css',import.meta.url),'utf8');
   assert.match(css,/\.friend-index-error\{[^}]*margin:12px/,'styled as a dialog notice');
   assert.match(css,/\.friend-index-error\[hidden\]\{display:none\}/,'still hides cleanly');

@@ -9,7 +9,7 @@
 // avatar string).
 import {defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261112-live1';
 import {layerOptions,composePortrait} from './avatar-layers.mjs?v=20261112-live1';
-import {translateText as tr} from './language.mjs?v=20261031-patch3';
+import {translateText as tr} from './language.mjs?v=20261031-patch4';
 
 
 function deviceRatio(){
