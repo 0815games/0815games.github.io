@@ -48,6 +48,10 @@ test('exactly one account wins a name, and case or padding does not create a sec
  // be refused for the wrong reason - and assertFails cannot tell the
  // difference. Assert the positive case first.
  await assertSucceeds(get(ref(alice,`characterNames/${key}`)));
+ // The actual write, not just its absence of failure: a rule that blocks
+ // everything also makes assertFails pass.
+ await assertSucceeds(set(ref(alice,`characterNames/${key}`),{uid:'alice',name:'Alex'}));
+ assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
  assert.equal(report('alice claims Alex',await alice$1.claim('Alex')).status,'claimed');
  assert.equal((await get(ref(alice,`characterNames/${key}`))).val().uid,'alice');
  for(const spelling of ['alex','ALEX','  Alex  '])

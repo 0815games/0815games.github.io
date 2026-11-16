@@ -170,6 +170,11 @@ test('the reservation is wired into enlistment and released when the character i
   // `hasChildren` only requires the listed children; without $other an entry may
   // carry arbitrary extra fields (the emulator accepted one before this rule).
   assert.equal(rules.rules.characterNames.$key.$other?.['.validate'],false,'no extra fields in a reservation');
+  // `$other` matches every child NOT named here. Naming uid and name first is
+  // what keeps `$other` from blocking the whole node - the emulator denied
+  // every read and write when only the parent `.validate` mentioned them.
+  for(const field of ['uid','name'])assert.ok(rules.rules.characterNames.$key[field],`${field} is a named node before \$other`);
+  assert.equal(rules.rules.characterNames.$key['.validate'],"newData.hasChildren(['uid','name'])");
   assert.match(rules.rules.characterNames.$key['.read'],/\$key\.matches\(\/\^/,'the key regex is inlined into the rules, not left to the client');
   assert.doesNotMatch(rules.rules.characterNames.$key['.write'],/\(\?:/,'RE2 in rules: no non-capturing groups (see the emulator log of PR #293)');
   assert.ok(rules.rules.players,'and nothing else was dropped');
