@@ -3,7 +3,12 @@
    style.css): dark field green, aged paper, one gold accent. The list itself is
    rendered by patch-notes.mjs, so this file only has to survive long text,
    small screens and being scrolled with a thumb. */
-.patch-notes{width:min(560px,calc(100vw - 24px));max-height:min(80vh,720px);display:flex;flex-direction:column}
+/* A closed <dialog> is hidden by a BROWSER rule (`display:none`), and any author
+   `display` beats it: an unscoped `display:flex` here left the notes permanently
+   open over the whole game, which is exactly what CI caught. So `display` only
+   ever applies while the dialog is open. */
+.patch-notes{width:min(560px,calc(100vw - 24px));max-height:min(80vh,720px)}
+.patch-notes[open]{display:flex;flex-direction:column}
 .patch-notes .patch-notes-build{margin:0 0 10px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#b9c39a}
 .patch-notes-tabs{display:flex;gap:6px;margin:0 0 12px}
 .patch-notes-tabs button{flex:1 1 0;min-height:40px;background:#2a4335;border:1px solid #6d7f63;border-radius:3px;color:#d9d2b6;font-size:12px;letter-spacing:.08em}

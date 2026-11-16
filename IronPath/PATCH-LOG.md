@@ -1238,3 +1238,28 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 - **Git / PR / Release:** Kein neuer Commit, Push, PR, CI-Lauf, Merge,
   Deployment oder Wartungsschalter. Die Änderungen liegen lokal/uncommittet und
   sollen mit der nächsten sinnvollen Veröffentlichung mitgenommen werden.
+
+## IPL-0031 – Nachtrag: offener Feldnotizen-Dialog blockierte das Spiel, CSS-Fix
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum 2026-10-31 UTC; abgefragte
+  Umgebungsuhr 2026-11-16 UTC. Branch `arena/aada8412-0815games-github-io`.
+- **Befund aus CI:** Nach dem Commit `231de4a1` schlugen in
+  [PR #290](https://github.com/0815games/0815games.github.io/pull/290) alle neun
+  Browserjobs fehl ([Lauf 43850674154](https://github.com/0815games/0815games.github.io/actions/runs/43850674154));
+  `database-rules` und `game-regressions` bestanden. Die Meldung lautete, dass
+  ein Unterelement des Dialogs `#patchNotes` Zeigerereignisse abfängt – der
+  Dialog lag damit dauerhaft über dem Spiel.
+- **Ursache:** Ein geschlossenes `<dialog>`-Element wird durch eine
+  **Browserregel** (`display:none`) verborgen. Eine Autorenregel mit `display`
+  überschreibt sie: `patch-notes.css` setzte `.patch-notes{…display:flex}`
+  ohne Einschränkung, also auch im geschlossenen Zustand. Die lokale
+  Node-Testsuite kann das nicht sehen; die Chromium-Fälle haben es gefunden.
+- **Korrektur:** `display` gilt nur noch im offenen Zustand
+  (`.patch-notes[open]{display:flex;flex-direction:column}`).
+  `tests/patch-notes.test.mjs` erhielt einen Wächter (Fall 8/8): jede
+  `display`-Regel, deren Ziel der Dialog selbst ist, muss auf `[open]` oder
+  `::backdrop` eingeschränkt sein.
+- **Grenzen:** Die Chromium-Fälle konnten in dieser Umgebung nicht lokal
+  ausgeführt werden (kein Browser, keine Testabhängigkeiten); der Nachweis
+  stammt ausschließlich aus der GitHub-CI. Die Korrektur wird daher erst nach
+  einem grünen CI-Lauf als bestätigt dokumentiert.

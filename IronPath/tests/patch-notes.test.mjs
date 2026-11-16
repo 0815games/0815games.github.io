@@ -156,6 +156,28 @@ test('the rendered list escapes its text and keeps released and open work apart'
   assert.match(renderPatchEntry({id:'x',status:'planned',title:{en:'EN',de:'DE'},shipped:[{en:'s',de:'s'}],open:[{en:'o',de:'o'}]},'planned','de',null),/GEPLANT/);
 });
 
+// The bug CI caught: a closed <dialog> is hidden by a BROWSER rule
+// (`display:none`), so any author `display` on the dialog itself beats it and
+// leaves the notes lying open over the whole game - every click then lands in
+// the notes instead of the match. Keep a guard on it; it is invisible in a
+// unit test and obvious on a phone.
+test('the notes dialog stays hidden while it is closed',()=>{
+  const css=read('patch-notes.css');
+  const rules=[...css.matchAll(/([^{}]+)\{([^}]*)\}/g)].map(match=>({selector:match[1].trim(),body:match[2]}));
+  // Only rules whose SUBJECT is the dialog matter: `.patch-notes-tabs` is a
+  // child and may lay itself out however it likes.
+  const isDialog=selector=>selector.split(',').some(part=>/(^|[>+~])(dialog)?\.patch-notes(\[[^\]]*\])?$/.test(part.trim()));
+  let scoped=0;
+  for(const rule of rules){
+    if(!isDialog(rule.selector)||!/display\s*:/.test(rule.body))continue;
+    assert.match(rule.selector,/\[open\]|::backdrop/,
+      `a display rule on the dialog must be scoped to [open]: ${rule.selector}`);
+    scoped++;
+  }
+  assert.ok(scoped>0,'the open dialog is still laid out as a column');
+  assert.doesNotMatch(css,/\.patch-notes[^{[\n]*\{[^}]*position\s*:\s*fixed/,'the dialog keeps the native centred position');
+});
+
 test('the dialog and its menu entry exist in the real page and are wired',()=>{
   const html=read('index.html'),account=read('account.js');
   for(const id of ['patchNotes','patchNotesClose','patchNotesBuild','patchNotesTabLive','patchNotesTabNext','patchNotesReleased','patchNotesPlanned','menuPatchNotes'])
