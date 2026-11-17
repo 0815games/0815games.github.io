@@ -943,15 +943,39 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
 ### Popups
 
-- [ ] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
-  nachdem [IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups)
-  Einladungen, Feldabstimmungen und die Feldentscheidung in die Mitte geholt
-  hatte. Betroffen ist `#versionNotice` (`.version-notice`): liegt fest **oben
-  rechts**, hat aber Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit
-  genauso wie die anderen. Damit ist die Regel aus IPL-0043 zu schärfen: nicht
-  die Bezeichnung entscheidet, sondern ob ein Element **eine Handlung verlangt**.
-  Beim Bau also `popup-center.css` aufnehmen *und* dessen Kopfkommentar
-  berichtigen, der Hinweisbänder noch pauschal in der Ecke belässt.
+- [x] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
+  gebaut mit [PR #306](https://github.com/0815games/0815games.github.io/pull/306)
+  ([IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt)).
+  `#versionNotice` liegt nicht mehr oben rechts, sondern in der Mitte – es hat
+  Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit wie alle anderen.
+  **Die Regel ist geschärft**, und zwar in `popup-center.css` selbst: nicht die
+  Bezeichnung entscheidet, sondern was ein Element **tut**. Beim Schreiben
+  kamen zwei Sätze hinzu, die vorher fehlten: es muss **schweben** (ein
+  mitlaufendes Band wie die Sandkasten-Leiste ist Möbel, kein Popup), und über
+  einer ohnehin leeren Fläche (Ladehinweis) kostet die Mitte nichts.
+### Abmeldung nach Inaktivität
+
+- [x] **Eine Karte statt einer Textzeile** (Betreiberwunsch vom 2026-11-17,
+  gebaut mit [PR #306](https://github.com/0815games/0815games.github.io/pull/306),
+  [IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt)):
+  nach 30 Minuten ohne Eingabe schließt das Spiel die Sitzung und zeigte bisher
+  einen schlichten Satz auf dem Anmeldebildschirm. Jetzt erscheint ein Dialog
+  mit einem **eigenen Bild**: ein Soldat, der sich setzt – Munitionskiste,
+  Gewehr angelehnt in Reichweite, Laterne an, Becher in der Hand, der Bunker
+  dahinter. Geruht, nicht geschlagen: es hat niemanden getroffen.
+- [x] **Gemalt vom Spiel selbst.** `afk-rest-scene.mjs` zeichnet die Szene mit
+  denselben Tintenlinien, demselben Oliv und Gold und denselben Formen wie das
+  Feld – kein fremdes Bild, kein zweiter Stil. Der Dampf über dem Becher
+  entfällt bei reduzierter Bewegung.
+- [x] **Wegklicken führt zur Anmeldung:** der Knopf schließt die Karte, löscht
+  den Vermerk (sonst käme sie bei jedem Sprachwechsel wieder) und setzt den
+  Zeiger ins Namensfeld. Der Anmeldebildschirm liegt ohnehin dahinter.
+- [ ] **Abnahme offen:** **Niemand hat das Bild gesehen.** Die Geometrie ist
+  gerechnet – Kiste auf dem Boden, Figur darauf, Gewehr angelehnt, Bunker am
+  Horizont –, aber ob der Soldat wie ein Soldat aussieht, entscheidet erst ein
+  Mensch. Ich kann Bilder nicht sehen; diese Zeichnung ist die eine Stelle im
+  Projekt, an der ich blind gearbeitet habe.
+
 ### Sichtbarkeit im Feld
 
 - [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.

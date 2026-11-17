@@ -2131,3 +2131,63 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
 - **Grenzen:** **Niemand hat es gesehen.** Alles hier ist gerechnet und
   geprüft, nicht beurteilt. Ob die Kanone „schwer“ aussieht und die Flak
   „platzt“, entscheidet erst ein Mensch auf dem Schirm.
+## IPL-0046 – Block 8: was ein Element tut, nicht wie es heißt
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`,
+  Basis `dfaaed4` (Main nach dem Merge von #304).
+- **Auftrag:** „New Version update popup mittig – wir hatten ja gesagt alle
+  nachrichten mittig. Bei popups“ und, als eigener Punkt: „Zu Block 8 *Du
+  wurdest nach 30 Minuten Inaktivität abgemeldet*: Hier brauchen wir ein
+  schönes Popup mit Ingame-Art. Soldat der Pause macht oder sonst was. Nach
+  wegklicken kommt man wieder zum Loginbildschirm.“
+- **Das Versions-Popup** liegt jetzt in der Mitte. Es stand – mit zwei Knöpfen,
+  `RETRY CHECK` und `DISMISS` – oben rechts, und zwar aus einem einzigen Grund:
+  es hieß *Hinweisband*. Damit ist der eigentliche Fehler benannt, und er steht
+  jetzt als Regel im Kopf von `popup-center.css`: **nicht die Bezeichnung
+  entscheidet, sondern was ein Element tut.** Beim Aufschreiben kamen zwei
+  Sätze hinzu, die gefehlt hatten:
+  - Es muss **schweben** (`fixed`/`absolute`). Die Sandkasten-Leiste ist
+    *sticky* und läuft mit, solange ein Modus an ist: das ist Möbel, kein
+    Popup, und Möbel gehört an den Rand.
+  - Über einer ohnehin **leeren Fläche** (der Ladehinweis) kostet die Mitte
+    nichts, weil dort nichts im Weg steht.
+  Verlangt ein Element eine Handlung und schwebt es, gehört es in die Mitte;
+  meldet es nur einen Zustand, während weitergespielt wird, bleibt es in der
+  Ecke.
+- **Die Abmelde-Karte.** Bisher stand nach der halben Stunde ein schlichter
+  Satz auf dem Anmeldebildschirm. Jetzt kommt ein Dialog mit einem eigenen
+  Bild: ein Soldat, der sich auf eine Munitionskiste setzt, das Gewehr
+  angelehnt in Reichweite, die Laterne brennt, der Becher dampft, der Bunker am
+  Horizont. **Geruht, nicht geschlagen** – es hat niemanden getroffen, der
+  Soldat hat nur einen Moment hingehalten. Gemalt wird das nicht von einem
+  fremden Bild, sondern vom Spiel selbst: `afk-rest-scene.mjs` zeichnet mit
+  denselben Tintenlinien, demselben Oliv und Gold und denselben Formen, aus
+  denen das Feld besteht. Bei reduzierter Bewegung bleibt der Dampf weg, der
+  Soldat bleibt.
+- **Wegklicken** schließt die Karte, löscht den Vermerk – sonst wäre sie bei
+  jedem Sprachwechsel wiedergekommen – und setzt den Zeiger ins Namensfeld.
+  Der Anmeldebildschirm liegt dahinter; es wird nichts anderes daraus.
+- **Prüfungen:** `tests/afk-rest.test.mjs` **5/5** – die Szene malt und liefert
+  keine einzige unendliche Zahl an die Leinwand, sie überlebt eine Leinwand
+  ohne Farbverläufe, bei reduzierter Bewegung ist sie leiser (und nicht leer),
+  jede Nummer der Karte kommt in `account.js` wirklich vor, beide Sprachen
+  stehen dort, und das Wegklicken löscht den Vermerk nachweislich. Dazu
+  `tests/popup-centering.test.mjs` (jetzt **vier** Einträge, das
+  Versions-Popup ist benannt) und `interface-smoke.cjs`, das die Meldung im
+  echten Chromium in drei Fenstern nachmisst. Vollständiger serieller Lauf
+  **1075 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `afk-rest-scene.mjs`,
+  `tests/afk-rest.test.mjs` (neu); `index.html` (Karte, gemessen);
+  `style.css` (Rahmen der Karte); `account.js` (Karte zeigen, übersetzen,
+  wegklicken, Vermerk löschen); `popup-center.css` (Versionsmeldung und die
+  geschärfte Regel, neue Welle); `tests/popup-centering.test.mjs`;
+  `browser-tests/interface-smoke.cjs`; `PATCH-BLOECKE.md` (Block 8: Popups
+  abgehakt, Abmeldung aufgenommen).
+- **Grenzen – und eine, die ich offenlegen muss:** **Ich kann keine Bilder
+  sehen.** Die Szene ist Geometrie, die ich gerechnet habe: Kiste auf dem
+  Boden, Figur darauf, Gewehr schräg angelehnt, Bunker am Horizont, Laterne
+  rechts. Ob der Soldat **wie ein Soldat aussieht**, kann ich nicht beurteilen
+  – das ist die einzige Stelle in diesem Projekt, an der ich blind gearbeitet
+  habe. Bitte ansehen; die Zeichnung ist so gebaut, dass sie sich leicht
+  korrigieren lässt (ein Modul, eine Funktion, lauter benannte Zahlen).

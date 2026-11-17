@@ -63,6 +63,13 @@ const fs = require('node:fs');
 
       await page.evaluate(()=>{document.querySelector('#menuFriendBadge').textContent='12';document.querySelector('#menuFriendBadge').hidden=false;document.querySelector('#menuFriends').classList.add('has-friend-requests');});await check('#menuFriends');await check('#menuFriendBadge');await page.evaluate(()=>{document.querySelector('#menuFriendBadge').hidden=true;document.querySelector('#menuFriends').classList.remove('has-friend-requests');});
       await page.evaluate(()=>{document.querySelector('#socialPopupTitle').textContent='PARTY INVITATION';document.querySelector('#socialPopupBody').textContent='A very long soldier name invited you to a party.';document.querySelector('#socialPopup').hidden=false;});await check('#socialPopup');await check('#socialPopupOpen');await check('#socialPopupDismiss');await centredPopup('#socialPopup');await page.screenshot({path:`browser-artifacts/${name}-social-popup.png`});await page.evaluate(()=>document.querySelector('#socialPopup').hidden=true);
+      // The new-build notice carries RETRY CHECK and DISMISS, so it is an
+      // interruption and belongs in the middle - it sat in the top-right corner
+      // on the strength of its name alone. Measured like any other popup.
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='A new version is ready. Reload the game to get it.';document.querySelector('#versionNotice').hidden=false;});
+      await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
+      await page.screenshot({path:`browser-artifacts/${name}-version-notice.png`,fullPage:false});
+      await page.evaluate(()=>document.querySelector('#versionNotice').hidden=true);
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#commandCenter').hidden = true; document.querySelector('#gameWorkspace').hidden = false;
