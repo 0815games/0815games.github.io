@@ -2191,3 +2191,48 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   – das ist die einzige Stelle in diesem Projekt, an der ich blind gearbeitet
   habe. Bitte ansehen; die Zeichnung ist so gebaut, dass sie sich leicht
   korrigieren lässt (ein Modul, eine Funktion, lauter benannte Zahlen).
+
+## IPL-0047 – Korrektur: das Fähigkeits-HUD gehört in die Daumennähe, nicht in die Feldmitte
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`.
+- **Der Befund, von Menschenhand:** „Balken für Fähigkeiten geht über die
+  komplette Breite und ist mittig im Bildschirm. Geht ja zum spielen quasi gar
+  nicht?! Was könnte hier sinnvoll sein.“
+- **Was ich gebaut hatte** ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)):
+  der Knopf am **rechten Rand, senkrecht mittig**. Die Anforderung im Block
+  hieß: *innerhalb des Rahmens, auf dem Handy am Rand in Daumennähe statt unter
+  dem Feld*. Ich hatte „am Rand“ gelesen und „in Daumennähe“ überlesen – und die
+  Mitte des Feldes ist kein Rand, sondern **der Ort, an dem gekämpft wird**. Ein
+  HUD in der Feldmitte verdeckt genau das, was es bedienen soll.
+- **Was jetzt gilt:** der Knopf sitzt **unten rechts im Kartenrahmen**, über der
+  Befehlsleiste und oberhalb des Funkbands, das links bleibt. Die zwei
+ Bedien­elemente, die dort schon standen (`ZOOM MAP` und „Feld-Upgrade wählen“),
+  steigen eine Etage höher; wenn das Upgrade-Feld erscheint, steigt der Zoom
+  noch eine weitere. Unten rechts heißt: am Rand **und** in Daumennähe.
+- **Und die Breite:** der Knopf hat jetzt eine **feste Breite** (höchstens
+  196 px, auf schmalen Feldern weniger) statt nur einer Obergrenze, und Name
+  wie Zustand werden abgeschnitten. Damit kann ihn kein Fähigkeitsname – in
+  keiner Sprache, auch nicht „VERSORGUNGSABWURF“ – in die Breite ziehen. Nebenbei
+  springt der Knopf nicht mehr, wenn aus `BEREIT` ein `BEREIT IN 12s` wird; das
+  war unter dem Daumen ohnehin störend.
+- **Was sich beim Prüfen zeigte (und was mich gelehrt hat):** die Maschine
+  hatte die Mitte **nicht** beanstandet. Drei Fenster gemessen, Touchziel
+  geprüft, `#start` nicht verdeckt – alles grün. Was kein Prüfschritt fragte:
+  *liegt das Ding dort, wo gespielt wird?* Ein Prüfschritt kann eine
+  Daumenspitze nicht ersetzen. Nachgezogen sind jetzt zwei Messungen: der Knopf
+  liegt im unteren Teil des Feldes und ist schmaler als zwei Drittel der Breite,
+  und er darf das Funkband nicht überdecken.
+- **Prüfungen:** `tests/ability-hud-placement.test.mjs` verlangt jetzt `bottom`
+  statt `top:50%`, verbietet die Feldmitte ausdrücklich und besteht auf der
+  festen Breite; `interface-smoke.cjs` misst im echten Chromium nach: untere
+  Hälfte, schmaler als 65 % der Breite, kein Überlappen mit der Funkzeile.
+  Vollständiger serieller Lauf **1075 bestanden, 0 fehlgeschlagen**.
+- **Änderungen / Dateien:** `field-command.css` (Lage, feste Breite,
+  Kürzen der Texte, die zwei Nachbarn eine Etage höher); `game.js` und
+  `localization-results-de.mjs` (der Funkspruch nennt jetzt „unten rechts“);
+  `tests/ability-hud-placement.test.mjs`, `tests/ability-hud-ui.test.mjs`,
+  `browser-tests/interface-smoke.cjs`; `PATCH-BLOECKE.md` (D2 berichtigt).
+- **Grenzen:** wieder **gerechnet, nicht gesehen**. Die neue Lage ist
+  kollisionsfrei gegen jede bekannte Box gerechnet und wird im Prüfstand
+  nachgemessen – ob sie bequem ist, entscheidet der Daumen.

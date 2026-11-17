@@ -826,10 +826,14 @@ und Live-Abnahme bleiben offen.
   Cooldown in Sekunden oder „kein Skill“; auch Feld-Feedback existiert. Die
   gewünschte neue Position, Symbolik und Erklärung sind in der geforderten
   Form noch offen.
-- [x] **Platzierung** (gebaut mit [PR #304](https://github.com/0815games/0815games.github.io/pull/304), [IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)):
+- [x] **Platzierung** (gebaut mit [PR #304](https://github.com/0815games/0815games.github.io/pull/304), [IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud), **berichtigt** in [PR #306](https://github.com/0815games/0815games.github.io/pull/306) / [IPL-0047](PATCH-LOG.md#ipl-0047--korrektur-das-fähigkeits-hud-gehört-in-die-daumennähe-nicht-in-die-feldmitte)):
   der Knopf steht nicht mehr unten in den Kampfsteuerungen, sondern **im
-  Kartenrahmen** am rechten Rand, senkrecht mittig. Er wandert nicht mit der
-  Figur mit und liegt nicht über der Mitte, in der die Wellenanfragen erscheinen.
+  Kartenrahmen, unten rechts** – am Rand, in Daumennähe, über der
+  Befehlsleiste und neben dem Funk. Er wandert nicht mit der Figur mit.
+  **Zwischenstand war senkrecht mittig am rechten Rand** – von einem Menschen
+  gesehen und abgelehnt: „Balken für Fähigkeiten … ist mittig im Bildschirm.
+  Geht ja zum spielen quasi gar nicht?!“ Recht hatte er: die Mitte des Feldes
+  ist dort, wo gekämpft wird.
 - [x] **Symbol und Name:** Jede Fähigkeit trägt ihr eigenes gezeichnetes Zeichen
   (Luftschlag, Überlastung, Versorgungsabwurf, Feldreparatur, Unterdrückung)
   neben ihrem Namen. Zustände: `BEREIT`, `BEREIT IN {s}s`, `KEINE ZIELE`,
@@ -851,9 +855,9 @@ und Live-Abnahme bleiben offen.
   ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
 - [ ] **Abnahme offen:** Mobil und Desktop von Menschenhand, alle fünf
   Fähigkeitstypen, Cooldown, keine gültigen Ziele, aktive Dialoge,
-  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung am
-  rechten Rand ist **gerechnet, nicht gesehen** – insbesondere, ob sie auf dem
-  Telefon wirklich in Daumennähe liegt. Bei verletztem/ausgefallenem Soldaten
+  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung
+  **unten rechts** ist erneut gerechnet; ob sie auf dem Telefon wirklich in
+  Daumennähe liegt, sagt erst ein Mensch. Bei verletztem/ausgefallenem Soldaten
   muss Block E den Zustand eindeutig anzeigen.
 
 **Abnahme für D:** Mobil und Desktop, alle aktiven Fähigkeitstypen, ohne gewählten Skill, Cooldown, keine gültigen Ziele, aktive Dialoge und Multiplayer-Verzögerung prüfen. Darstellung darf die Simulation nicht verändern; Lesbarkeit und Spielgefühl zusätzlich auf echten Geräten beurteilen.

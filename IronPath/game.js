@@ -181,7 +181,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(hud.reason==='no-skill'&&!abilityEmptyHinted){abilityEmptyHinted=true;notice(tr('Choose an ability under SKILLS in the command center.'));}
     if(hud.ready&&!coachSeen('ability-hud',hintStorage())){
       markCoachSeen('ability-hud',hintStorage());abilityHint();
-      notice(()=>tr('{ability} is ready. Use it from the button on the right edge of the field.',{ability:tr(hud.name)}));
+      notice(()=>tr('{ability} is ready. Use it from the button at the bottom right of the field.',{ability:tr(hud.name)}));
     }
   }
 function renderResults(target){
