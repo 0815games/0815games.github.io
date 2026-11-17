@@ -66,7 +66,10 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
    // The rank is derived from the published level and never stored: an unknown
    // or missing level shows the lowest rank, it does not invent one.
    const rank=rankForLevel(profile?.level),rankLine=document.createElement('span');
-   const insignia=document.createElement('span');insignia.className='party-card-insignia';insignia.setAttribute('aria-hidden','true');
+   // The SVG marks itself decorative (aria-hidden, focusable=false) and the
+   // rank name is written out next to it, so the mark is never the only
+   // carrier of the information.
+   const insignia=document.createElement('span');insignia.className='party-card-insignia';
    insignia.innerHTML=rankInsigniaSvg(rank,{size:20});
    rankLine.className='party-card-rank';rankLine.append(insignia,tag('party-card-rankname',tr(rank.name)));
    const tags=document.createElement('span');tags.className='party-card-tags';
