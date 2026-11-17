@@ -213,9 +213,9 @@ const fs = require('node:fs');
       });
       for(const probe of throughCard)
         assert.equal(probe.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${probe.at} at ${probe.x},${probe.y})`);
-      // And it steps aside on its own, so it cannot sit on the field forever.
-      await page.waitForFunction(()=>document.getElementById('radioAlert').hidden,null,{timeout:12000});
-      assert.equal(await page.locator('#radioAlert').isVisible(),false,`${name}: the warning takes its turn and goes`);
+      // (That it steps aside on its own is a matter of the clock, and the clock
+      // is checked in `tests/field-alert.test.mjs`, where it can be held. Here
+      // the card was opened by hand, so no turn is running.)
       await page.evaluate(()=>{document.querySelector('#radioAlert').hidden=true;document.querySelector('#radioAlertMore').hidden=true;});
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
