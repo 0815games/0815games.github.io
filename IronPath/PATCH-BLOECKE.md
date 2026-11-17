@@ -412,7 +412,10 @@ entstand, ist nicht sicher belegt.
     **Nicht** verschoben wurden Hinweisbänder (Versionsmeldung, Sandkasten),
     Bottom-Sheets (Turmblatt) und der Bauring: sie melden einen Zustand oder
     gehören zu dem Ding, an dem sie geöffnet wurden.
-  - [ ] **Schussdarstellung** (D1) und **Fähigkeits-HUD** (D2) offen.
+  - [x] **Fähigkeits-HUD (D2):** gebaut mit
+    [PR #304](https://github.com/0815games/0815games.github.io/pull/304)
+    ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
+  - [ ] **Schussdarstellung (D1)** offen.
 
 ### 4. Charaktererstellung und Avatare – genehmigte Überarbeitung bereits live
 
@@ -790,10 +793,35 @@ und Live-Abnahme bleiben offen.
   Cooldown in Sekunden oder „kein Skill“; auch Feld-Feedback existiert. Die
   gewünschte neue Position, Symbolik und Erklärung sind in der geforderten
   Form noch offen.
-- [ ] Den derzeit unten in den Kampfsteuerungen stehenden Fähigkeitsbutton als gut erreichbares HUD-Element **innerhalb des sichtbaren Spielfeldrahmens** platzieren, auf dem Handy am Rand in Daumennähe statt unter dem Feld. Nicht an der beweglichen Figur „mitwandern“ und weder Karteingaben noch Wellenanfragen verdecken.
-- [ ] Symbol **und** Name der gewählten Fähigkeit; klarer Zustand „bereit“, sichtbarer Cooldown mit Sekunden und eine verständliche Ursache für „nicht nutzbar“. Ohne gewählte Fähigkeit erklären, wo sie freigeschaltet/ausgewählt wird, statt einen scheinbar defekten Button zu zeigen.
-- [ ] Eine dezente, einmalige Einführung beim ersten sinnvollen Einsatz und ein kurzes, zum Fähigkeitstyp passendes Feedback auf dem Feld. Ein Tap löst weiterhin direkt den bestehenden Befehl aus; keine zusätzliche störende Bestätigung, keine Mehrfachauslösung bei Netzverzögerung.
-- [ ] Touchziel mindestens 44 × 44 px, sichere Geräteabstände, Tastatur/Fokus, Screenreader, Übersetzungen und reduzierte Bewegung. Bei verletztem/ausgefallenem Soldaten muss Block E den Zustand eindeutig anzeigen.
+- [x] **Platzierung** (gebaut mit [PR #304](https://github.com/0815games/0815games.github.io/pull/304), [IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)):
+  der Knopf steht nicht mehr unten in den Kampfsteuerungen, sondern **im
+  Kartenrahmen** am rechten Rand, senkrecht mittig. Er wandert nicht mit der
+  Figur mit und liegt nicht über der Mitte, in der die Wellenanfragen erscheinen.
+- [x] **Symbol und Name:** Jede Fähigkeit trägt ihr eigenes gezeichnetes Zeichen
+  (Luftschlag, Überlastung, Versorgungsabwurf, Feldreparatur, Unterdrückung)
+  neben ihrem Namen. Zustände: `BEREIT`, `BEREIT IN {s}s`, `KEINE ZIELE`,
+  `WELLE STARTEN`, `PANEL SCHLIESSEN`, `WARTEN`, `EINSATZ BEENDET` – in der
+  Reihenfolge, in der ein Spieler sie sich fragt, nicht in der Reihenfolge des
+  Codes. **Ohne** gewählte Fähigkeit steht `WÄHLEN UNTER FÄHIGKEITEN`, und der
+  Funk nennt einmal, wo sie zu wählen ist – der Knopf bleibt in diesem Zustand
+  deaktiviert und geht aus dem Treffertest heraus, damit er keine Drucke auf
+  den Bauplatz darunter schluckt.
+- [x] **Einmalige Einführung:** Beim ersten wirklich bereiten Zustand trägt der
+  Knopf für einige Atemzüge einen Ring, und der Funk nennt ihn einmal. Ein Tap
+  löst weiterhin direkt aus; ein laufendes Save kann ihn nicht ein zweites Mal
+  auslösen (Pending-Sperre). Das Feld-Feedback pro Fähigkeitstyp war bereits
+  vorhanden und bleibt unverändert.
+- [x] **Touchziel:** mindestens 48 × 48 px, im echten Chromium in drei Fenstern
+  nachgemessen (320×700, 390×844, 1440×900). Gemessen wird auch, dass das HUD
+  **nicht auf dem `DEPLOY`-Knopf liegt** und dieser wirklich erreichbar bleibt:
+  die erste Fassung stand im Befehlsfeld, und Chromium weigerte sich zu drücken
+  ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
+- [ ] **Abnahme offen:** Mobil und Desktop von Menschenhand, alle fünf
+  Fähigkeitstypen, Cooldown, keine gültigen Ziele, aktive Dialoge,
+  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung am
+  rechten Rand ist **gerechnet, nicht gesehen** – insbesondere, ob sie auf dem
+  Telefon wirklich in Daumennähe liegt. Bei verletztem/ausgefallenem Soldaten
+  muss Block E den Zustand eindeutig anzeigen.
 
 **Abnahme für D:** Mobil und Desktop, alle aktiven Fähigkeitstypen, ohne gewählten Skill, Cooldown, keine gültigen Ziele, aktive Dialoge und Multiplayer-Verzögerung prüfen. Darstellung darf die Simulation nicht verändern; Lesbarkeit und Spielgefühl zusätzlich auf echten Geräten beurteilen.
 
@@ -880,6 +908,17 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   meisten Aussetzer auf. Frühere Läufe dieser Welle schlugen aus anderen Gründen
   fehl (`database-rules`, z. B. `e8445a6`, `dd30eda`).
 
+### Popups
+
+- [ ] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
+  nachdem [IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups)
+  Einladungen, Feldabstimmungen und die Feldentscheidung in die Mitte geholt
+  hatte. Betroffen ist `#versionNotice` (`.version-notice`): liegt fest **oben
+  rechts**, hat aber Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit
+  genauso wie die anderen. Damit ist die Regel aus IPL-0043 zu schärfen: nicht
+  die Bezeichnung entscheidet, sondern ob ein Element **eine Handlung verlangt**.
+  Beim Bau also `popup-center.css` aufnehmen *und* dessen Kopfkommentar
+  berichtigen, der Hinweisbänder noch pauschal in der Ecke belässt.
 ### Sichtbarkeit im Feld
 
 - [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
