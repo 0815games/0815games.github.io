@@ -56,8 +56,13 @@ test('without a chosen ability the button explains where to get one',async()=>{
   assert.equal(f.el('abilityState').textContent,'CHOOSE IN SKILLS','not a dead button: a direction');
   assert.equal(f.el('ability').dataset.state,'no-skill');
   assert.equal(f.el('abilityIcon').innerHTML,'','and no mark for an ability that does not exist');
+  // Disabled on purpose: it cannot be used, and the stylesheet takes a disabled
+  // HUD out of the hit test, so it never eats a tap meant for a build pad under
+  // it. The direction is spoken on its own instead of waiting to be asked.
+  assert.equal(f.el('ability').disabled,true,'it stays out of the way of the field');
+  assert.match(f.el('message').textContent,/Choose an ability under SKILLS/,'the radio says where abilities are chosen, unprompted');
   f.el('ability').onclick();
-  assert.match(f.el('message').textContent,/Choose an ability under SKILLS/,'pressing it repeats the direction instead of doing nothing');
+  assert.match(f.el('message').textContent,/Choose an ability under SKILLS/,'and asking again repeats it');
 });
 
 test('a recharging ability counts its seconds down, from the player state',async()=>{

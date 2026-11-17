@@ -152,7 +152,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     ended:()=>tr('OPERATION OVER'),
     'no-skill':()=>tr('CHOOSE IN SKILLS'),
   };
-  let abilityView=null,abilityPending=false;
+  let abilityView=null,abilityPending=false,abilityEmptyHinted=false;
   // The storage lives further down this closure; reading it too early would be
   // a question nobody asked, so the hint simply stays available instead.
   function hintStorage(){try{return tutorialStorage??null;}catch{return null;}}
@@ -164,13 +164,21 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   function renderAbility(player){
     const hud=abilityHud({skills:player?.skills,cooldown:player?.cooldown,running:!!state.running,enemies:state.enemies?.length||0,menuOpen:!menu.hidden,coopReady:coop?coopReady:true,ended:!!state.ended});
     abilityView=hud;
-    const node=$('ability');node.dataset.state=hud.reason;node.disabled=!hud.ready||abilityPending;
+    const node=$('ability');node.dataset.state=hud.reason;
+    // A HUD that cannot be used is disabled - and the stylesheet takes it out of
+    // the way entirely (pointer-events), so it never swallows a tap meant for a
+    // build pad underneath it. That matters most in the state a new player sees
+    // first: no ability chosen yet.
+    node.disabled=!hud.ready||abilityPending;
     $('abilityName').textContent=tr(hud.name).toUpperCase();
     $('abilityState').textContent=(ABILITY_STATE[hud.reason]||ABILITY_STATE.ready)(hud);
     try{$('abilityIcon').innerHTML=abilityHudSvg(hud.active,{size:26});}catch{/* No DOM in unit tests. */}
     try{node.setAttribute('aria-label',`${tr(hud.name)}: ${$('abilityState').textContent}`);}catch{}
     // One quiet introduction, once per device: the first time an ability is
     // really ready, the button wears a ring for a moment and the radio says it.
+    // With nothing chosen the button cannot be asked, so it says its piece on
+    // its own - once, in the radio, the first time the field runs empty-handed.
+    if(hud.reason==='no-skill'&&!abilityEmptyHinted){abilityEmptyHinted=true;notice(tr('Choose an ability under SKILLS in the command center.'));}
     if(hud.ready&&!coachSeen('ability-hud',hintStorage())){
       markCoachSeen('ability-hud',hintStorage());abilityHint();
       notice(()=>tr('{ability} is ready. Use it from the button on the right edge of the field.',{ability:tr(hud.name)}));

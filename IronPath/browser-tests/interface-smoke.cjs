@@ -152,6 +152,22 @@ const fs = require('node:fs');
       assert.ok(ability.x+ability.width<=width+1&&ability.x>=-1,`${name}: the ability HUD stays inside the width`);
       assert.ok(ability.y>=-1&&ability.y+ability.height<=height+1,`${name}: the ability HUD stays inside the height`);
       assert.ok(ability.x+ability.width>width/2,`${name}: the ability HUD sits at the right edge, away from the pads it would cover`);
+      // And it must not sit ON the control row. It was first built inside the
+      // command panel - a positioned box at the bottom - so `absolute` measured
+      // from there and the HUD landed on DEPLOY / START WAVE. Chromium refused
+      // the click: a disabled button still answers the hit test. Two guards:
+      // the boxes must not overlap, and the deploy button must really be on top.
+      const startBox=await page.locator('#start').boundingBox();
+      const overlaps=!(ability.x+ability.width<=startBox.x||startBox.x+startBox.width<=ability.x||ability.y+ability.height<=startBox.y||startBox.y+startBox.height<=ability.y);
+      assert.equal(overlaps,false,`${name}: the ability HUD keeps its hands off the deploy button`);
+      const reached=await page.evaluate(()=>{
+        const centre=selector=>{const b=document.querySelector(selector).getBoundingClientRect();return {x:Math.round(b.left+b.width/2),y:Math.round(b.top+b.height/2)};};
+        const hit=(x,y)=>{const e=document.elementFromPoint(x,y);return e?{id:e.id||e.className,inside:e.closest?!!e.closest('#ability'):false}:null;};
+        const start=centre('#start'),hud=centre('#ability'),startHit=hit(start.x,start.y),hudHit=hit(hud.x,hud.y);
+        return {start:startHit,hud:hudHit};
+      });
+      assert.equal(reached.start.id,'start',`${name}: the deploy button is reachable, not covered (hit ${reached.start.id})`);
+      assert.equal(reached.hud.inside,true,`${name}: the ability HUD is reachable itself (hit ${reached.hud.id})`);
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.

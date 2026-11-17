@@ -2046,3 +2046,28 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   hinter dem Knopf wird teilweise verdeckt – das ist bei jedem HUD so, hier aber
   ungeprüft. Die Chromium-Messung läuft erst im Prüfstand; ihre Log-Dateien
   kann ich nicht lesen (siehe Block 8).
+- **Korrektur nach dem ersten Prüflauf (derselbe Tag).** Der Knopf stand im
+  Kartenrahmen – aber als Kind des **Befehlsfelds**, das selbst `position:
+  absolute` trägt. `absolute` rechnet gegen den nächsten positionierten Vor-
+  fahren, nicht gegen den Rahmen: der Knopf landete **auf** `DEPLOY / START
+  WAVE`. Chromium hat es gefunden, nicht ich: `command-center.cjs` wollte
+  `#start` drücken und meldete „subtree intercepts pointer events“ – ein
+  deaktivierter Knopf antwortet dem Treffertest weiterhin, er schluckt den
+  Druck bloß. Zwei Lehren:
+  - Die **Lage im Dokument** ist Teil der Regel, nicht Beiwerk. Wer ein Element
+    mit `absolute` setzt, muss sagen, gegen welche Box es rechnet.
+    `tests/ability-hud-placement.test.mjs` prüft das jetzt ohne Browser: der
+    Knopf ist Kind des Rahmens, kein offenes Tag dazwischen, und der Rahmen
+    ist `position:relative`. Der Test fällt, sowie man den Knopf zurück in das
+    Befehlsfeld schiebt – nachgemessen, nicht behauptet.
+  - Ein HUD, das nicht benutzt werden kann, gehört **aus dem Treffertest
+    heraus** (`pointer-events:none`). Sonst schluckt es den Druck auf den Bau-
+    punkt darunter – und das ausgerechnet im Zustand, den ein neuer Spieler als
+    erstes sieht: keine Fähigkeit gewählt. Darum bleibt der Knopf in diesem
+    Zustand deaktiviert, statt ihn zum Antippen freizugeben; was er zu sagen
+    hat, sagt er von selbst – einmal, über den Funk.
+  - Der Prüfstand ist nicht stumm. Die Workflow-Datei schreibt das Ende des
+    Protokolls als Annotation (`::error title=Browser smoke::`), und die ist
+    über die API lesbar, obwohl ich die Log-Datei selbst nicht herunterladen
+    kann. Das ist der Weg, wie die Prüfliste zu mir spricht.
+
