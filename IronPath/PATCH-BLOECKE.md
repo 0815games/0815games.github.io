@@ -1013,12 +1013,18 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
     gegenseitig zu überschreiben. Der gewöhnliche Funkverkehr bleibt in der
     Zeile. **Entscheidungen** (Wellen- und 2×-Abstimmung, Feldentscheidung)
     waren schon vorher mittige Popups.
-  - [ ] **Teil 2 – der Rest:** Ob die Funkzeile und die Kampagnen-Funkkarte
-    künftig minimiert starten und hinter einem Funkgerät sitzen, ist **nicht
-    entschieden** und hängt an einer Frage an den Betreiber: soll der
-    Funkverkehr tatsächlich ganz aus dem Bild, oder genügt es, dass das
-    Wichtige nicht mehr darin untergeht? Der Ungelesen-Hinweis ist damit
-    ebenfalls offen.
+  - [x] **Teil 2 – der Funk wird zum Funkgerät** (Betreiberentscheidung vom
+    2026-11-17: **„Funkgerät“** – ein kleiner Handapparat, der **geschlossen
+    startet**). Gebaut mit
+    [PR #309](https://github.com/0815games/0815games.github.io/pull/309)
+    ([IPL-0051](PATCH-LOG.md#ipl-0051--block-8-der-funk-wird-zum-funkgerät-er-startet-geschlossen)):
+    der Handapparat steht in der Ecke, **zählt**, was dazugekommen ist, und
+    öffnet auf Antippen die letzten zwölf Meldungen – ein Tipp aufs Feld oder
+    die Escape-Taste schließt wieder. Die dauerhafte Funkzeile ist damit aus
+    dem Bild; für Screenreader bleibt ein versteckter Live-Bereich (die Ansage
+    bleibt, die Fläche nicht). Die **Kampagnen-Funkkarte** `#storyRadio` bleibt
+    absichtlich, wie sie ist: sie erscheint für Sekunden und ist eher mit der
+    Warnkarte verwandt. **Kein Mensch hat es gesehen.**
 - [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
   [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
   [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):

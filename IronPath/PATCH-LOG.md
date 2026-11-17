@@ -2465,6 +2465,26 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   läuft. Das Schließen gehört nun zum Gerät und ist damit im seriellen Test
   fahrbar (Kreuz, Feld-Tipp, Escape, und `destroy()` nimmt die Hände wieder vom
   Dokument). Keine Prüfung wurde dafür abgeschwächt.
+- **Was Chromium in drei Runden gefunden hat (PR #309):**
+  1. `interface-smoke.cjs` **sperrt Skripte absichtlich** – es misst Markup und
+     CSS. Ein Tipptest auf „der Handapparat öffnet das Log“ war dort ehrlich
+     nicht zu gewinnen: die Verdrahtung läuft in dieser Prüfung gar nicht. Der
+     Prüfstand misst dort jetzt das **ausgelieferte** Aussehen (geschlossen,
+     `aria-expanded="false"`, kein Zähler) und die Geometrie des geöffneten Logs.
+     Das Öffnen und Schließen selbst prüfen `wave-consensus.cjs` im laufenden
+     Spiel (Tipp öffnet, Kreuz schließt, Escape schließt) und
+     `tests/field-radio.test.mjs` seriell.
+  2. `wave-consensus.cjs` las das Log, während es längst geschlossen war: jeder
+     Tipp aufs Feld schließt das Funkgerät – auch der auf die Tempo-Taste. Das
+     Log wird nur im offenen Zustand gezeichnet, folglich stand dort eine
+     veraltete Liste. Der Prüfstand **öffnet den Handapparat jetzt vor jedem
+     Lesen** (`readRadio`), so wie ein Spieler es tut – und bewusst ohne auf
+     laufende Wellen-Operationen zu warten, weil der Test genau so eine in der
+     Luft hält.
+  3. `multiplayer-field.cjs` hat **Marken und einen Wächter** bekommen: der
+     Prüfling schreibt nur am Ende, ein Hänger schrieb gar nichts, und die
+     Pipeline beschuldigte das falsche Skript. Jede Marke nennt den letzten
+     Stand.
 - **Änderungen / Dateien:** `field-radio.mjs` (neu), `index.html`,
   `field-command.css`, `game.js`, `localization-de.mjs` (FUNK, Funkverkehr
   öffnen/schließen), `tests/field-radio.test.mjs` (neu), elf Test-Harnesse (das
