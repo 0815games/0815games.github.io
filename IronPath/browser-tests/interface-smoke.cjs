@@ -204,10 +204,14 @@ const fs = require('node:fs');
       assert.equal(overAbility,false,`${name}: the warning keeps out of the ability button's corner (warning ${JSON.stringify(warning)} vs hud ${JSON.stringify(ability)})`);
       const warningReached=await page.evaluate(()=>{
         const box=document.querySelector('#radioAlertDismiss').getBoundingClientRect();
-        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
-        return {inside:!!(hit&&hit.closest('#radioAlert'))};
+        const x=Math.round(box.left+box.width/2),y=Math.round(box.top+box.height/2);
+        const hit=document.elementFromPoint(x,y);
+        return {inside:!!(hit&&hit.closest('#radioAlert')),
+          at:hit?`${hit.tagName}#${hit.id||''}.${hit.className||''}`:'nothing',
+          point:{x,y},size:{w:Math.round(box.width),h:Math.round(box.height)},
+          viewport:{w:innerWidth,h:innerHeight}};
       });
-      assert.equal(warningReached.inside,true,`${name}: the warning can be dismissed, so it does not cover the field forever`);
+      assert.equal(warningReached.inside,true,`${name}: the warning can be dismissed, so it does not cover the field forever (${JSON.stringify(warningReached)})`);
       await page.evaluate(()=>{document.querySelector('#radioAlert').hidden=true;document.querySelector('#radioAlertMore').hidden=true;});
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
