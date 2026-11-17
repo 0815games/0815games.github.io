@@ -173,9 +173,11 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     const beforeSpawn=matchFields().map(field=>field.spawnIndex);for(let n=0;n<100;n++)core.advance();
     assert.ok(matchFields().some((field,i)=>field.spawnIndex>beforeSpawn[i]),`${mode}: the wave advanced while the card was open`);await sync();
     await tapOrClick(host,decline,true);await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    // The battle status is not painted over the field: the device that kept it
-    // is gone, and what is said is said out of sight unless it is important.
-    assert.equal(await guest.locator('#fieldNotice').isVisible(),false,'ordinary traffic raises no notice over the field');
+    // The battle status is not raised as a notice: the device that kept it is
+    // gone, and ordinary traffic is spoken out of sight. (A warning from an
+    // earlier step may well still be standing - it has its own turn - so this
+    // checks WHAT the notice says, not whether it is there at all.)
+    assert.doesNotMatch(await guest.locator('#fieldNoticeText').textContent(),/2× request ended/i,'ordinary traffic is spoken, not raised over the field');
     assert.match(await readRadio(guest),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
     assert.equal(core.snapshotFor('alice').speedControl.speed,1,'decline never accelerates the wave');
     // Hold only the guest's success receipt: the host declines meanwhile, so a
