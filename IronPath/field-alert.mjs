@@ -31,6 +31,12 @@
 //   * stands down when the run does. A warning from a battlefield that no
 //     longer exists is noise.
 //
+// One thing the stylesheet has to know: the radio box is click-through, because
+// it is a caption over the field and a tap on it must reach the ground. The
+// warning card is not - it asks for a tap - so `field-command.css` gives it
+// `pointer-events:auto`. Chromium found that by hitting the canvas through the
+// dismiss button.
+//
 // The queue is deliberately small. Three waiting warnings are three things to
 // read; a fourth pushes out the oldest waiting one, because a warning that is
 // minutes old describes a field that has already changed. Nothing is stored and
