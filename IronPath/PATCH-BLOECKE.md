@@ -1007,7 +1007,7 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   - [x] **Teil 1 – Warnungen haben ihre eigene Stimme** (Betreiberentscheidung
     vom 2026-11-17: *„Ins Popup wandern nur Meldungen, die eine Entscheidung
     oder eine Warnung sind. Der Rest bleibt in der Zeile, wie heute.“*). Gebaut
-    mit [PR #308](#) ([IPL-0050](PATCH-LOG.md#ipl-0050--block-8--der-funk-bekommt-eine-zweite-stimme-warnungen-statt-nur-meldungen)):
+    mit [PR #308](https://github.com/0815games/0815games.github.io/pull/308) ([IPL-0050](PATCH-LOG.md#ipl-0050--block-8--der-funk-bekommt-eine-zweite-stimme-warnungen-statt-nur-meldungen)):
     Warnungen stehen auf einer eigenen Karte **über** dem Funk, bleiben stehen,
     bis sie weggeklickt werden, und stellen sich hinten an, statt sich
     gegenseitig zu überschreiben. Der gewöhnliche Funkverkehr bleibt in der
