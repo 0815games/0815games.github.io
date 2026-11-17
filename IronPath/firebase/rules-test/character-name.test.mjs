@@ -245,8 +245,9 @@ test('a rename onto a name another account holds is refused',{skip:baseline},asy
  assert.equal((await get(ref(alice,'players/alice/name'))).val(),'Alice','nothing moved');
  assert.equal((await get(ref(alice,`friendNames/${oldKey}/alice`))).val().name,'Alice','still published under the old name');
  assert.equal((await get(ref(alice,`characterNames/${characterNameKey('Bobby')}`))).val().uid,'bob');
- // Case and padding are the same name: they collide too.
- assert.equal(report('alice renames to "  bob BY  "',await rename.rename('  bob BY  ')).status,'taken');
+ // The comparison key ignores case and padding, so they collide too. (An inner
+ // space is a DIFFERENT key: "bob BY" is not "Bobby".)
+ assert.equal(report('alice renames to "  BOBBY  "',await rename.rename('  BOBBY  ')).status,'taken');
 });
 
 // Today's rules make the name immutable, and the index does not exist. Renaming
