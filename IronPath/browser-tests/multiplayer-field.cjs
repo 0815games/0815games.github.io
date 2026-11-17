@@ -19,8 +19,25 @@ const assert=require('node:assert/strict');
       return route.continue();
     });
     const page=await context.newPage(),errors=[];
+    // Progress marks: this harness prints only when it is done, and a hang in
+    // Chromium prints nothing at all - the pipeline then blames the wrong
+    // script. Each mark names the last thing that worked.
+    let stage='booting';
+    const mark=label=>{stage=label;console.log('· multiplayer field: '+label);};
+    const watchdog=setTimeout(async()=>{
+      console.log(`WATCHDOG: stuck at "${stage}"`);
+      const probe=page.evaluate(()=>({menu:document.getElementById('radialMenu')?.hidden,sheet:document.getElementById('sheetTitle')?.textContent,
+        radio:document.getElementById('radioLog')?.hidden,foot:document.getElementById('battleFoot')?getComputedStyle(document.getElementById('battleFoot')).pointerEvents:null,
+        screen:document.getElementById('gameWorkspace')?.dataset.screen,full:document.getElementById('game')?.dataset.fullBattle})).then(value=>JSON.stringify(value),error=>'probe failed: '+error.message);
+      console.log('WATCHDOG state: '+await Promise.race([probe,new Promise(resolve=>setTimeout(()=>resolve('the page stopped answering'),8000))]));
+      // No exit: a slow but healthy run must still be allowed to finish. The
+      // pipeline's own 180s timeout ends a run that is really stuck, and by
+      // then the marks above say where.
+    },160000);
+    watchdog.unref?.();
     page.on('pageerror',error=>errors.push(String(error)));
     await page.goto('http://127.0.0.1:8765/IronPath/');
+    mark('page loaded');
     const boot=await page.evaluate(async()=>{
       for(const id of ['languageGate','introOverlay','loading','authView','entry'])document.getElementById(id)?.setAttribute('hidden','');
       document.getElementById('gameView').hidden=false;
@@ -47,9 +64,11 @@ const assert=require('node:assert/strict');
       return {mine,theirs,started};
     });
     assert.ok(boot.started&&boot.mine.ok&&boot.theirs.ok);
+    mark('game booted');
     await page.waitForFunction(()=>document.getElementById('game').dataset.fullBattle==='true');
     const size=await page.locator('#game').boundingBox();
     assert.ok(size.width>=389&&size.height>=800,`portrait battlefield fills the phone, got ${JSON.stringify(size)}`);
+    mark('portrait battlefield measured');
 
     // Reference the same documented camera geometry, not the old 960x540
     // projection: the logical height changes with the portrait canvas.
@@ -93,24 +112,31 @@ const assert=require('node:assert/strict');
     // to a centred fill for the deterministic pad projections used below.
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='true')b.click();b.click();});
     await setView(true);
+    mark('camera on centred fill');
 
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'own tower stays open after mouse click');
+mark('pad 4 tapped with the mouse');
     assert.ok((await page.evaluate(()=>window.__clicks)).some(e=>e.trusted&&e.detail>0),'a real compatibility click was dispatched');
     await page.locator('#radial0').click();
     await page.waitForFunction(()=>window.__match.match.towers.find(t=>t.pad===4)?.level===2);
+    mark('own upgrade applied');
     assert.equal(await page.evaluate(()=>window.__match.match.players.alice.money),230,'own upgrade spends the payer’s supplies');
     await tapPad(4);
     const commandsBefore=await page.evaluate(()=>window.__commands.length);await closeOutside();
     assert.equal(await page.evaluate(()=>window.__commands.length),commandsBefore,'outside dismissal does not also move the hero');
+    mark('outside dismissal closes the ring');
 
     await tapPad(3,true);assert.match(await page.locator('#sheetTitle').textContent(),/Build defense/,'empty spot stays open after touch and reservation');
+mark('pad 3 tapped with touch');
     assert.equal(await page.evaluate(()=>window.__match.match.buildReservations[3]?.playerId),'alice');
     await page.locator('#radial0').focus();await page.keyboard.press('Enter');
     assert.equal(await page.locator('#towerDetails').evaluate(el=>el.open),true,'keyboard activation is not swallowed as a compatibility click');
     await page.keyboard.press('Escape');await page.waitForFunction(()=>document.getElementById('radialMenu').hidden);
     await page.waitForFunction(()=>!window.__match.match.buildReservations[3]);
+    mark('reservation released');
 
     await tapPad(11,true);assert.match(await page.locator('#sheetTitle').textContent(),/Cannon/,'another player’s tower stays open');
+mark('pad 11 tapped with touch');
     const ownerBefore=await page.evaluate(()=>window.__match.match.players.bob.money);
     await page.locator('#radial0').tap();
     await page.waitForFunction(()=>window.__match.match.towers.find(t=>t.pad===11)?.level===2);
@@ -120,10 +146,12 @@ const assert=require('node:assert/strict');
     await page.mouse.move(200,400);await page.mouse.down();await page.mouse.move(80,400,{steps:8});await page.mouse.up();
     await page.evaluate(async()=>{const {panBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect();window.__view=panBattleViewport(window.__view,-120*960/r.width,0);});
     await tapPad(5);assert.match(await page.locator('#sheetTitle').textContent(),/Build defense/,'pan retains correct touch projection');await closeOutside();
+mark('pad 5 tapped after a pan');
     await page.waitForFunction(()=>!window.__match.match.buildReservations[5]);
     await page.mouse.move(200,400);await page.mouse.wheel(0,-200);
     await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,Math.exp(.3),{x:(200-r.left)*v.width/r.width,y:(400-r.top)*v.height/r.height});});
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'wheel zoom retains world coordinates');await closeOutside();
+mark('pad 4 tapped after a wheel zoom');
 
     // Return to overview, pinch with two actual touch points, and select again.
     await page.evaluate(()=>document.getElementById('mapZoom').click());await setView(false);
@@ -134,6 +162,7 @@ const assert=require('node:assert/strict');
     await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,1.5,{x:(195-r.left)*v.width/r.width,y:(420-r.top)*v.height/r.height});});
     assert.equal(await page.locator('#radialMenu').isHidden(),true,'pinching is not interpreted as a tap');
     await tapPad(4,true);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'pinch zoom retains world coordinates');await closeOutside();
+mark('pad 4 tapped after a pinch');
 
     // Rotation changes the logical height but both orientations fill the
     // screen. Reset to overview before checking landscape coordinates.
@@ -141,6 +170,7 @@ const assert=require('node:assert/strict');
     await page.waitForFunction(()=>{const c=document.getElementById('game'),r=c.getBoundingClientRect();return c.dataset.fullBattle==='true'&&Math.abs(r.width-844)<3&&Math.abs(r.height-390)<3;});
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='true')b.click();});await setView(false);
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'landscape still selects the correct tower');
+mark('pad 4 tapped in landscape');
     await page.evaluate(()=>document.getElementById('radialClose').click());
     await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>{const r=document.getElementById('game').getBoundingClientRect();return Math.abs(r.width-390)<3&&Math.abs(r.height-844)<3;});
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='false')b.click();});
@@ -153,6 +183,7 @@ const assert=require('node:assert/strict');
     await page.locator('#game').scrollIntoViewIfNeeded();
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='true')b.click();});await setView(false);
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/Build defense/,'solo field still accepts tower input');
+mark('solo field accepted a tap after leaving multiplayer');
     // Classic maps omit width, height and explicit bunker fields. Their old
     // non-viewport scroll path must still receive finite quick-jump targets.
     const jumps=await page.evaluate(async()=>{
@@ -162,9 +193,11 @@ const assert=require('node:assert/strict');
       document.getElementById('mapBunker').click();document.getElementById('mapEntry').click();
       return {map:window.__control.getMapId(),calls};
     });
+    assert.equal(jumps.map,'road');    mark('classic map quick jumps measured');
     assert.equal(jumps.map,'road');assert.equal(jumps.calls.length,2);
     for(const call of jumps.calls)assert.ok(Number.isFinite(call.left)&&Number.isFinite(call.top),`classic jump: ${JSON.stringify(call)}`);
     assert.deepEqual(errors,[],'no browser errors');
+    clearTimeout(watchdog);
     await context.close();
   }finally{await browser.close();}
   console.log('Multiplayer field mouse, touch, pinch, rotation and solo regressions passed.');
