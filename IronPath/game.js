@@ -37,6 +37,7 @@ import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-patc
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-patch4';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
+import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
 import { specializationRank, upgradeCostFor } from './tower-specialization.mjs?v=20261112-kits1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
@@ -101,6 +102,9 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   $('cinematicNext').onclick=()=>{if(!cinematic)return;if(cinematic.index+1<cinematic.frames.length){cinematic.index++;renderCinematic();}else closeCinematic();};
   $('cinematicSkip').onclick=()=>closeCinematic();$('storyCinematic').addEventListener('cancel',e=>{e.preventDefault();closeCinematic();});bindDialogBackdrop($('storyCinematic'),()=>closeCinematic());
   const me=()=>coop?account.getUserId():'local';
+  // The soldier tile reads only what the account has confirmed. There is no way
+  // to hand it a wave's XP: a save that has not come back must not lift a level.
+  const xpHud=createBattleXpHud({document,getProfile:()=>account.getProfile(),tr});
   let report=null,lastReport=null,hasCoopSnapshot=false,currentPartyEnd=null,partyFinalizationEnabled=false;const coopReports=new Map(),releaseReports=new Set();
   function newReport(id=null){
     // A previous report can still be waiting to subscribe to the profile, before
@@ -517,17 +521,24 @@ function renderResults(target){
   function showDecisionPanel(entry){decisionChoices=entry.choices;$('storyDecisionSpeaker').textContent=`${entry.speaker} / ${tr(EVENT_TEMPLATES.decisionTitle)}`;$('storyDecisionText').textContent=tr(entry.text);$('storyDecisionNote').textContent=tr(EVENT_TEMPLATES.decisionPending);entry.choices.slice(0,2).forEach((choice,index)=>{const button=$('storyChoice'+index);button.replaceChildren();const label=document.createElement('b');label.textContent=tr(choice.label);const detail=document.createElement('small');detail.textContent=tr(choice.detail);button.append(label,detail);});$('storyDecision').hidden=false;}
   function hideDecisionPanel(){$('storyDecision').hidden=true;decisionChoices=null;}
   function pickDecision(index){if(!activeStory||!decisionChoices||state?.ended)return;const choice=decisionChoices[index];if(choice)resolveStoryDecision(activeStory,state,choice.id);}
-  let hudBottom='',actionBar='';
+  let hudBottom='',mapHudBottom='',actionBar='';
   // Bottom edge of the status dashboard, measured against the battlefield box.
   // Re-measured only when the number actually moves, so scrolling never thrashes layout.
   function measureHud(){
     try{
-      const query=node=>typeof node?.querySelector==='function'?node.querySelector('.dashboard'):null;
+      const query=(node,selector)=>typeof node?.querySelector==='function'?node.querySelector(selector):null;
       const battle=typeof $('gameView')?.querySelector==='function'?$('gameView').querySelector('.battle'):null;
-      const dashboard=query(battle);
+      const dashboard=query(battle,'.dashboard');
       if(!dashboard||typeof dashboard.getBoundingClientRect!=='function'||typeof battle.getBoundingClientRect!=='function')return;
-      const bottom=Math.round(dashboard.getBoundingClientRect().bottom-battle.getBoundingClientRect().top);
-      if(bottom>0&&`${bottom}px`!==hudBottom){hudBottom=`${bottom}px`;document.documentElement.style.setProperty('--hud-bottom',hudBottom);}
+      const bottom=dashboard.getBoundingClientRect().bottom;
+      const edge=Math.round(bottom-battle.getBoundingClientRect().top);
+      if(edge>0&&`${edge}px`!==hudBottom){hudBottom=`${edge}px`;document.documentElement.style.setProperty('--hud-bottom',hudBottom);}
+      // The same edge for overlays that live INSIDE the map frame: its top sits
+      // below the battle head, so the number above is not their coordinate system.
+      const frame=query(battle,'.map-frame');
+      if(!frame||typeof frame.getBoundingClientRect!=='function')return;
+      const inside=Math.round(bottom-frame.getBoundingClientRect().top);
+      if(inside>0&&`${inside}px`!==mapHudBottom){mapHudBottom=`${inside}px`;document.documentElement.style.setProperty('--map-hud-bottom',mapHudBottom);}
     }catch{/* a headless harness without layout must never break the frame loop */}
   }
   // The coach card sits ABOVE the action bar, never on it: Deploy has to stay
@@ -596,12 +607,6 @@ function renderResults(target){
   function updateUI(){
     renderCampaign();
     const showObjective=(!!activeMission||activeTraining)&&!coop;$('soloObjective').hidden=!showObjective;
-    // The objective card is positioned BELOW the status dashboard and the field menu
-    // instead of at a guessed offset: the dashboard's height depends on the number of
-    // stats, the language and the width of the phone. Publish its measured bottom edge,
-    // relative to the battlefield box (the card is positioned inside that box), so the
-    // stylesheet can place the card under it on every device and every screen size.
-    if(showObjective)measureHud();
     measureActionBar();
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
     else if(showObjective){const status=storyStatus(activeStory,state);
@@ -657,7 +662,13 @@ function renderResults(target){
     }
     const threats=countFieldThreats(state.enemies);for(const [kind,id] of [['infantry','threatInfantry'],['runner','threatRunner'],['tank','threatTank'],['plane','threatPlane']])$(id).textContent=String(threats[kind]);const summary=Object.entries(threats).filter(([,n])=>n).map(([kind,n])=>`${tr(ENEMY_TYPES[kind].label)} ${n}`).join(' · ');$('threatSummary').textContent=summary||tr('No enemies on field');
     const preview=state.ended?tr(coop?'Run ended. Close the party to start a new operation.':'Run ended. Restart to play again.'):tr('Next: ')+waveSummary(state.wave+1); if($('wavePreview').textContent!==preview)$('wavePreview').textContent=preview;
-    $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?tr('YOUR SUPPLIES'):tr('SUPPLIES'); $('enemies').textContent=state.enemies.length+state.spawnLeft; const levelNode=$('level');if(levelNode)levelNode.textContent=String(state.players[me()]?.level||1);
+    $('wave').textContent=`${state.wave} / ∞`; $('health').textContent=Math.max(0,Math.ceil(state.hp)); $('money').textContent=supplies();if($('moneyLabel'))$('moneyLabel').textContent=coop?tr('YOUR SUPPLIES'):tr('SUPPLIES'); $('enemies').textContent=state.enemies.length+state.spawnLeft; xpHud.render(state.players[me()]?.level);
+    // The objective card and the boss alert sit BELOW the status dashboard instead
+    // of at a guessed offset: the row's height depends on the number of stats, the
+    // language and the width of the phone. Measure it after the row has been
+    // written, so a wrapped row or a soldier tile that just grew its XP block
+    // moves everything underneath in the same frame.
+    measureHud();
     const player=state.players[me()],speedVote=state.speedRequest; $('speed').textContent=coop?tr(state.speed===2?'SPEED: 2× · SET 1×':speedVote?(speedVote.requester===me()?'CANCEL 2× REQUEST':'2× VOTE PENDING'):'REQUEST 2×'):tr('SPEED: {speed}×',{speed:state.speed}); const ability=tr(abilityName(player?.skills)).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active); $('ability').textContent=!player?.skills?.active?tr('NO SKILL'):player?.cooldown>0?tr('{ability}: {seconds}s',{ability,seconds:Math.ceil(player.cooldown)}):tr('{ability} READY',{ability}); $('ability').disabled=state.ended||!player?.skills?.active||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!menu.hidden||!!coop&&(!coopReady||state.ended||!state.running||!!speedVote&&speedVote.requester!==me());
     const speedEligible=!!speedVote&&speedVote.required.includes(me())&&!speedVote.approved.includes(me());$('speedRequest').hidden=!coop||!speedVote;$('speedRequestText').textContent=speedVote?tr('{name} requests 2× for wave {wave}. {approved}/{required} approved.',{name:state.speedRequesterName||state.players[speedVote.requester]?.name||tr('A player'),wave:speedVote.wave,approved:speedVote.approved.length,required:speedVote.required.length}):'';$('speedApprove').hidden=$('speedDecline').hidden=!speedEligible;$('speedApprove').disabled=$('speedDecline').disabled=!coopReady;
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),host=!!coop&&state.hostId===me(),vote=coop?currentWaveRequest():null;

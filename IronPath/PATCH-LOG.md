@@ -1736,3 +1736,62 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
 - **Git / PR / Release:** Kein Commit, Push, PR, CI-Lauf, Merge, Deployment,
   keine produktiven Rules-/Datenänderung und kein Wartungsschalter zum
   Zeitpunkt dieses Eintrags.
+
+## IPL-0040 – Block 3 / B: XP im Kampf-HUD
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 04:42 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/19598e48-0815games-github-io`,
+  Basis `1f04744` (Main nach dem Merge von #299).
+- **Auftrag:** Block 3 · Oberfläche, der nächste offene Punkt. Die Kachel
+  SOLDIER zeigte bis dahin nur die nackte Stufenzahl, und die kam aus dem
+  Match-State (`createPlayer`), in dem gar keine EP geführt werden.
+- **Was gebaut wurde:** Die Kachel trägt jetzt Stufe, `aktuell / benötigt EP`,
+  einen Balken und die Restmenge („Noch 330 EP bis Stufe 3“). Neues Modul
+  `battle-xp-hud.mjs`; `game.js` ruft es dort auf, wo vorher die Stufe
+  geschrieben wurde.
+- **Die eigentliche Entscheidung – woher die Zahl kommt:** Das Modul hat
+  **keinen** Parameter für „eine Welle hat gerade 120 EP gebracht“. Einzige
+  Quelle ist das Profil, das das Konto bestätigt hat (`account.getProfile()`).
+  Damit ist die geforderte Bedingung keine Zusicherung, sondern eine Folge der
+  Bauart: Eine Welle, die noch speichert, kann den Balken nicht um ein Pixel
+  bewegen und keine Stufe heben. Wer STUFE 4 auf dem Feld liest und STUFE 3 im
+  Bericht findet, wurde belogen – das nimmt keine Wiederholungsschlange zurück.
+  Alle EP-Schreibwege (`workshop-solo-credit.mjs`, `coop-rewards.mjs`) laufen
+  ohnehin über `runTransaction` mit `applyLocally:false`, der Profil-Hörer sieht
+  also nur vom Server Bestätigtes.
+- **Ohne bestätigte Zahl:** kein Balken, keine Restmenge; die Kachel zeigt die
+  Stufe, mit der der Soldat angetreten ist (`state.players[me()].level`), und
+  behauptet nichts. Ebenso bei Sandbox/Übung, bevor der Hörer antwortet, oder
+  bei unlesbarem Profil.
+- **Befund beim Bauen (Layout):** Die Kachel wird breiter und höher. Die
+  Statuszeile darf jetzt umbrechen (`flex-wrap:wrap`), und die Soldatenkachel
+  bleibt unteilbar (`flex:0 0 auto`) – auf einem sehr schmalen Telefon fällt sie
+  in eine zweite Zeile, statt über die Kartensteuerung zu wandern.
+- **Befund beim Bauen (zwei Koordinatensysteme):** Die Boss-Warnung liegt im
+  `.map-frame`, die Vertragskarte in `.battle`. `--hud-bottom` wird gegen
+  `.battle` gemessen und hätte die Warnung um die Höhe des Kartenkopfs zu tief
+  gesetzt. `measureHud()` veröffentlicht darum zusätzlich `--map-hud-bottom`
+  (gegen die Map-Frame-Oberkante) und läuft jetzt in jedem Einsatz, nicht nur
+  bei Kampagne/Training. Die Warnung folgt damit der gemessenen Zeile statt
+  eines geratenen Versatzes – vorher stand sie starr auf 75/80 px, was mit der
+  höheren Kachel kollidiert wäre.
+- **Übersetzung:** Zwei neue Strings (`{current} / {required} XP`,
+  `{amount} XP to level {level}`) liegen in `localization-battle-de.mjs`; der
+  Wächter in `translation-coverage.test.mjs` verlangt sie.
+- **Änderungen / Dateien:** `battle-xp-hud.mjs` (neu),
+  `tests/battle-xp-hud.test.mjs` (neu, sieben Fälle), `index.html` (Kachel),
+  `game.js` (Anschluss, `measureHud` ergänzt), `field-command.css` (Kachel,
+  Umbruch, Boss-Warnung), `localization-battle-de.mjs` (zwei Strings),
+  `PATCH-BLOECKE.md` (Punkt abgehakt). Acht Test-Harnesse, die `game.js` über
+  eine Daten-URL laden, kennen das neue Modul jetzt in ihrer
+  Umleitungsliste.
+- **Prüfungen:** 7/7 in `battle-xp-hud.test.mjs`; vollständiger serieller Lauf
+  `node --test IronPath/tests/*.test.mjs` **1039 bestanden, 0 fehlgeschlagen,
+  1 absichtlich übersprungen**. 15/15 in `first-run-layout.test.mjs` (dort war
+  das Prüffenster von 900 Zeichen zu knapp für die gewachsene `measureHud`,
+  auf 1600 angehoben; die Aussage bleibt).
+- **Grenzen:** Kein Mensch hat die Kachel gesehen. Maße sind gerechnet, nicht
+  geprüft; die Abnahme auf echten Geräten – besonders im Hochformat, wo die
+  Zeile umbrechen kann – bleibt offen. Der Balken hinkt einer Welle hinterher,
+  weil er nur Bestätigtes zeigt; das ist die gewollte Antwort, der Feldreport
+  meldet das Speichern separat.
