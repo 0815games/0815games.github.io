@@ -45,7 +45,7 @@
    not answering, then swallowing a tap meant for a build pad - and a field that
    cannot be tapped because a message is showing is worse than a message. Its
    own clock moves the queue on. */
-#gameView .field-notice{position:absolute;z-index:6;left:50%;top:calc(var(--map-hud-bottom,calc(58px + env(safe-area-inset-top,0px))) + 6px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:min(340px,calc(100% - 16px));padding:6px 10px 6px 13px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;line-height:1.3;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;pointer-events:none;animation:field-notice-flutter .34s ease-out}
+#gameView .field-notice{position:absolute;z-index:6;left:50%;top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 6px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:min(340px,calc(100% - 16px));padding:6px 10px 6px 13px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;line-height:1.3;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;pointer-events:none;animation:field-notice-flutter .34s ease-out}
 #gameView .field-notice[hidden]{display:none}
 #gameView .field-notice::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}
 #gameView .field-notice-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
@@ -63,6 +63,8 @@
 }
 @media(max-width:850px){
  #gameView .map-frame .dashboard{top:5px;left:5px;right:51px;gap:3px;max-width:calc(100% - 56px)}
+ /* A narrower row: the notice hangs closer under it. */
+ #gameView .field-notice{top:calc(var(--map-hud-bottom,calc(52px + env(safe-area-inset-top,0px))) + 6px)}
  #gameView .map-frame .dashboard>div{min-width:0;padding:5px 6px;gap:4px}
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:0}
