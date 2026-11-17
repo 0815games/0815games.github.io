@@ -415,7 +415,12 @@ entstand, ist nicht sicher belegt.
   - [x] **Fähigkeits-HUD (D2):** gebaut mit
     [PR #304](https://github.com/0815games/0815games.github.io/pull/304)
     ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
-  - [ ] **Schussdarstellung (D1)** offen.
+  - [x] **Schussdarstellung (D1):** gebaut mit
+    [PR #305](https://github.com/0815games/0815games.github.io/pull/305)
+    ([IPL-0045](PATCH-LOG.md#ipl-0045--block-3--d1-schüsse-als-spur-statt-als-linie)):
+    statt der ganzen Linie eine kurze Spur, die läuft; jede Waffe mit eigener
+    Handschrift; höchstens 24 Spuren gleichzeitig. Die **Datenmenge** der
+    Schüsse blieb unangetastet – sie ist Sache der Simulation, nicht des Malers.
 
 ### 4. Charaktererstellung und Avatare – genehmigte Überarbeitung bereits live
 
