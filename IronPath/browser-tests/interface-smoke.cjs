@@ -179,6 +179,48 @@ const fs = require('node:fs');
       });
       assert.equal(reached.start.id,'start',`${name}: the deploy button is reachable, not covered (hit ${reached.start.id})`);
       assert.equal(reached.hud.inside,true,`${name}: the ability HUD is reachable itself (hit ${reached.hud.id})`);
+      // The field radio is a handset now, not a line of text: small, closed, and
+      // in the corner. It must still clear the ability button - and it must be
+      // tappable, because the messages live behind it.
+      const handset=await page.locator('#radioToggle').boundingBox();
+      assert.ok(handset.width<=width*0.4,`${name}: the radio handset is a device, not a noticeboard (${Math.round(handset.width)}px of ${width})`);
+      assert.ok(handset.height>=24,`${name}: and it is big enough to hit (${Math.round(handset.height)}px)`);
+      const handsetHit=await page.evaluate(()=>{
+        const box=document.querySelector('#radioToggle').getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
+        return {inside:!!(hit&&hit.closest('#radioToggle')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+      });
+      assert.equal(handsetHit.inside,true,`${name}: the handset answers a tap (hit ${handsetHit.at})`);
+      // Scripts are blocked in this harness by design, so the radio's wiring is
+      // measured where the game really runs: wave-consensus.cjs taps the handset
+      // in Chromium with the scripts on, and tests/field-radio.test.mjs drives
+      // the closing (cross, field tap, Escape). What a browser owes us here is
+      // the SHIPPED SHAPE - it starts shut - and the geometry of the panel it
+      // becomes, which no unit test can see.
+      const shipped=await page.evaluate(()=>({hidden:document.getElementById('radioLog').hidden,
+        expanded:document.getElementById('radioToggle').getAttribute('aria-expanded'),
+        unread:document.getElementById('radioUnread').hidden}));
+      assert.equal(shipped.hidden,true,`${name}: the radio starts shut in the shipped markup (${JSON.stringify(shipped)})`);
+      assert.equal(shipped.expanded,'false',`${name}: and the handset says it is shut`);
+      assert.equal(shipped.unread,true,`${name}: nothing is unread before a word was said`);
+      await page.evaluate(()=>{document.getElementById('radioLog').hidden=false;});
+      const log=await page.locator('#radioLog').boundingBox();
+      assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(shipped)})`);
+      assert.ok(log.x+log.width/2<width*0.75,`${name}: the radio log opens in the corner, not over the middle of the field`);
+      assert.ok(log.y>height*0.3,`${name}: and low enough to be out of the fighting`);
+      assert.ok(log.x>=-1&&log.x+log.width<=width+1,`${name}: the open log stays inside the width (${JSON.stringify(log)})`);
+      assert.ok(log.y>=-1&&log.y+log.height<=height+1,`${name}: and inside the frame's height (${JSON.stringify(log)})`);
+      // Open, it takes taps: the cross that shuts it is a real target, and a
+      // target Chromium can reach is the only kind that counts.
+      const shutter=await page.locator('#radioLogClose').boundingBox();
+      assert.ok(shutter.width>=24&&shutter.height>=24,`${name}: the cross is big enough to hit (${Math.round(shutter.width)}x${Math.round(shutter.height)})`);
+      const shutterHit=await page.evaluate(()=>{
+        const box=document.getElementById('radioLogClose').getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
+        return {inside:!!(hit&&hit.closest('#radioLogClose')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+      });
+      assert.equal(shutterHit.inside,true,`${name}: the open log answers a tap on its cross (hit ${shutterHit.at})`);
+      await page.evaluate(()=>{document.getElementById('radioLog').hidden=true;});
       // The field radio keeps its own corner: the HUD must not lie across it.
       const radio=await page.locator('.battle-foot').boundingBox();
       const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);
@@ -196,8 +238,14 @@ const fs = require('node:fs');
         document.querySelector('#radioAlertMore').textContent='+2 more';
       });
       const warning=await page.locator('#radioAlert').boundingBox();
-      assert.ok(warning.y+warning.height<=radio.y+1,`${name}: the warning floats above the radio, not across it (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radio)})`);
-      assert.ok(warning.x>=radio.x-1&&warning.x+warning.width<=radio.x+radio.width+1,`${name}: it keeps the radio's width, so the corner rules still hold`);
+      // The card is the top line of the radio's own column now, so the box grows
+      // around it: measured again, with the card in it, against the handset it
+      // must not cover. (Comparing against the shut box measured above would be
+      // comparing a child with its parent - the card is in the column, not on
+      // top of it any more.)
+      const radioWithCard=await page.locator('.battle-foot').boundingBox();
+      assert.ok(warning.x>=radioWithCard.x-1&&warning.x+warning.width<=radioWithCard.x+radioWithCard.width+1,`${name}: the warning keeps the radio's column, so the corner rules still hold (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radioWithCard)})`);
+      assert.ok(warning.y+warning.height<=handset.y+1,`${name}: the warning floats above the handset, not across it (warning ${JSON.stringify(warning)} vs handset ${JSON.stringify(handset)})`);
       assert.ok(warning.width<=width*0.7,`${name}: the warning is a card, not a banner (${Math.round(warning.width)}px of ${width})`);
       assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
       const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
