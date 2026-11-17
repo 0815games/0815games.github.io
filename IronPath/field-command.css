@@ -197,9 +197,19 @@
    less the two 8px margins - and the two can never touch, whatever the radio
    says or however tall it grows. Measured on a phone: at 196px the HUD reached
    into the radio's corner. */
+/* Narrow screens keep a 150px column free along the right edge - the same
+   column the zoom and the field-upgrade button live in - and the ability HUD
+   shares it. Measured on a 320px field: the radio took the whole width
+   (`min(400px,100% - 16px)`) and the HUD, 196px wide, lay across its last two
+   pixels. Once the two are side by side, the radio can be as tall as it likes:
+   they never meet. */
+@media(max-width:850px){
+ #gameView .battle-foot{max-width:calc(100% - 150px)}
+ #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
+}
 @media(pointer:coarse){
  #gameView .battle-foot{max-width:calc(100% - 150px)}
- #gameView .map-frame .ability-hud{width:min(134px,calc(50vw - 20px))}
+ #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
 }
 
 /* ---------------------------------------------------------------------------
