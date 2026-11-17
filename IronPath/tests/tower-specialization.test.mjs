@@ -7,7 +7,7 @@ import {readFileSync} from 'node:fs';
 import {createMatch,stepMatch} from '../simulation.mjs';
 import {getMap} from '../maps.mjs';
 import {createPlayer,applyCommand,TOWER_COSTS} from '../match.mjs';
-import {specializationRank,towerKit,upgradeCostFor} from '../tower-specialization.mjs';
+import {specializationRank,towerKit,upgradeCostFor,branchUnlockLevel,branchUnlocked,anyBranchUnlocked,BRANCH_COUNT} from '../tower-specialization.mjs';
 
 function field({type=0,branch=null,level=3,enemies=[],players}={}){
   const state=createMatch(players||[createPlayer('local',{name:'A',gender:'female'})],'road');
@@ -139,6 +139,27 @@ test('Boss Hunter II punches through the shield phase and III pays a bounty',()=
   assert.ok(state.money>=before+25,'the bounty was paid: '+before+' -> '+state.money);
 });
 
+test('one rule decides which specialization is open, and the protocol asks it',()=>{
+  // Branch 2 is the Veteran kit, branch 3 the Boss Hunter; the first two are
+  // open from the very first tower. Three places ask this - the protocol, the
+  // menu and the field shimmer - so the answer lives in one exported rule.
+  assert.equal(BRANCH_COUNT,4,'every tower type offers four branches');
+  assert.deepEqual([0,1,2,3].map(branchUnlockLevel),[0,0,5,10]);
+  assert.equal(branchUnlocked(2,4),false);assert.equal(branchUnlocked(2,5),true);
+  assert.equal(branchUnlocked(3,9),false);assert.equal(branchUnlocked(3,10),true);
+  assert.equal(anyBranchUnlocked(1),true,'the first two branches are open from the start');
+  assert.equal(anyBranchUnlocked(undefined),false,'an unknown soldier level unlocks nothing');
+  // And the protocol refuses at exactly those thresholds, wording unchanged.
+  for(const [branch,level,message] of [[2,4,'Veteran specialization unlocks at soldier level 5.'],[3,9,'Boss Hunter specialization unlocks at soldier level 10.']]){
+    const state=createMatch([createPlayer('local',{name:'A',gender:'female',level})],'road');
+    state.money=9999;state.towers=[{pad:0,type:0,level:2,branch:null,ownerId:'local',timer:0}];
+    const refused=applyCommand(state,'local',{type:'upgrade',pad:0,branch});
+    assert.equal(refused.ok,false);assert.equal(refused.reason,message);
+    state.players.local.level=branch===2?5:10;
+    assert.equal(applyCommand(state,'local',{type:'upgrade',pad:0,branch}).ok,true,'one level higher and the door is open');
+  }
+});
+
 test('the kit data, UI and wiring are pinned',()=>{
   const game=readFileSync(new URL('../game.js',import.meta.url),'utf8');
   assert.match(game,/RANK II at level 4: \{rank2\}\. RANK III at level 5: \{rank3\}\./,'the branch sheet shows the rank track');
@@ -152,6 +173,9 @@ test('the kit data, UI and wiring are pinned',()=>{
   assert.match(sim,/\*towerIntervalFactor\(state,tower,p\)/,'kit fire rate rides the timer');
   const match=readFileSync(new URL('../match.mjs',import.meta.url),'utf8');
   assert.match(match,/upgradeCostFor\(tower,upgradeCost\(tower\.level\)\)/,'the upgrade price honors the Veteran discount');
+  assert.match(match,/branchUnlocked\(command\.branch,player\.level\)/,'the protocol asks the shared unlock rule');
+  assert.doesNotMatch(match,/player\.level<5|player\.level<10/,'and keeps no second copy of the thresholds');
+  assert.match(game,/branchUnlockLevel\(i\)/,'the branch menu asks it too');
   const art=readFileSync(new URL('../cartoon-art.mjs',import.meta.url),'utf8');
   assert.match(art,/specializationRank\(tower\)/,'the canvas draws rank chevrons');
   const de=readFileSync(new URL('../localization-towers-de.mjs',import.meta.url),'utf8');
