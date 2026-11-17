@@ -132,7 +132,11 @@
    are - and its panel opens UPWARD from there, so it never covers the strip.
    Written out as MENU where the strip has room; where it is tight the words go
    and the three-line burger stays. */
-.field-ops{flex:.8 1 0;min-width:0;position:relative}
+/* The panel is NOT anchored to the button: on a phone the button sits in the
+   middle of the strip, and a 300px panel pinned to its right edge hangs half
+   off the screen (Chromium measured -57px). It is anchored to the strip, which
+   spans the field, and opens upward from there. */
+.field-ops{flex:.8 1 0;min-width:0}
 .field-ops>summary{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:46px;padding:7px 8px;font:inherit;font-size:11px;font-weight:bold;line-height:1.15;letter-spacing:.03em;background:#2b4738;border:1px solid #7a9179;color:#f4ebd1;box-shadow:none;cursor:pointer;list-style:none}
 .field-ops>summary::-webkit-details-marker{display:none}
 .field-ops>summary:hover{filter:brightness(1.15)}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}
