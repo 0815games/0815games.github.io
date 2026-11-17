@@ -77,8 +77,13 @@ test('reduced graphics keeps the mark and drops the breathing',async()=>{
   clock=1220;const b=live.paint();
   assert.equal(a.length,1);
   assert.notEqual(b[0].ellipse[2],a[0].ellipse[2],'with full graphics the ring breathes');
-  assert.equal(first[0].ellipse[2],37,'the calm ring keeps exactly the resting size');
-  assert.ok(Math.abs(a[0].ellipse[2]-37)<=2&&Math.abs(b[0].ellipse[2]-37)<=2,'the breathing stays subtle');
+  assert.equal(first[0].ellipse[2],40,'the calm ring keeps exactly the resting size');
+  assert.ok(Math.abs(a[0].ellipse[2]-40)<=2&&Math.abs(b[0].ellipse[2]-40)<=2,'the breathing stays subtle');
+  // Found too faint on the field: the mark has to be seen, not looked for. A
+  // hairline at a quarter opacity is a rumour, not an invitation.
+  assert.ok(a[0].width>=3,`the ring is a line one can see (${a[0].width}px)`);
+  assert.ok(Math.min(a[0].alpha,b[0].alpha)>=.38,`it never fades out of sight (${Math.min(a[0].alpha,b[0].alpha).toFixed(2)})`);
+  assert.ok(first[0].alpha>.7,'and with reduced graphics it stands firm');
 });
 
 test('the tower whose own sheet is open steps back, and returns when it closes',async()=>{

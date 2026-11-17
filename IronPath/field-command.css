@@ -99,7 +99,10 @@
 /* The ability HUD: one button on the field, in the bottom-right corner where a
    thumb rests - out of the middle of the field, where the fighting and the
    wave votes are, and within reach instead of below the field. */
-#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;width:min(196px,calc(100% - 16px));min-height:48px;overflow:hidden;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
+#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;/* At most half the viewport, minus margins: the field radio owns the bottom
+     left with up to 45vw, so the HUD can never lie across it - however tall
+     either of them gets. */
+   width:min(196px,calc(50vw - 20px));min-height:48px;overflow:hidden;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
 #gameView .map-frame .ability-hud[hidden]{display:none}
 #gameView .map-frame .ability-hud-icon{display:grid;place-items:center;width:26px;height:26px;flex:none;color:#e4ca89}
 #gameView .map-frame .ability-hud-copy{display:flex;flex-direction:column;gap:2px;line-height:1.1}

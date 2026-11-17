@@ -2223,11 +2223,18 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Daumenspitze nicht ersetzen. Nachgezogen sind jetzt zwei Messungen: der Knopf
   liegt im unteren Teil des Feldes und ist schmaler als zwei Drittel der Breite,
   und er darf das Funkband nicht überdecken.
+- **Ein zweiter Fehler, wieder nur vom Telefon:** mit fester Breite von 196 px
+  greift der Knopf auf einem 360 px breiten Bildschirm in die linke untere Ecke
+  – dorthin, wo die Funkzeile steht. Der Prüfstand hat das gemessen. Die Breite
+  ist deshalb **höchstens die halbe Bildschirmbreite minus Ränder**: die
+  Funkzeile besitzt links unten bis zu 45 vw, also kann der Knopf ihr bei jeder
+  Höhe und jedem Text aus dem Weg bleiben.
 - **Prüfungen:** `tests/ability-hud-placement.test.mjs` verlangt jetzt `bottom`
   statt `top:50%`, verbietet die Feldmitte ausdrücklich und besteht auf der
-  festen Breite; `interface-smoke.cjs` misst im echten Chromium nach: untere
-  Hälfte, schmaler als 65 % der Breite, kein Überlappen mit der Funkzeile.
-  Vollständiger serieller Lauf **1075 bestanden, 0 fehlgeschlagen**.
+  festen Breite und der Halbe-Bildschirm-Regel; `interface-smoke.cjs` misst im
+  echten Chromium nach: untere Hälfte, schmaler als 65 % der Breite, kein
+  Überlappen mit der Funkzeile. Vollständiger serieller Lauf **1079 bestanden,
+  0 fehlgeschlagen**.
 - **Änderungen / Dateien:** `field-command.css` (Lage, feste Breite,
   Kürzen der Texte, die zwei Nachbarn eine Etage höher); `game.js` und
   `localization-results-de.mjs` (der Funkspruch nennt jetzt „unten rechts“);
@@ -2236,3 +2243,47 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
 - **Grenzen:** wieder **gerechnet, nicht gesehen**. Die neue Lage ist
   kollisionsfrei gegen jede bekannte Box gerechnet und wird im Prüfstand
   nachgemessen – ob sie bequem ist, entscheidet der Daumen.
+
+## IPL-0048 – Block 8: Der Turm soll leuchten (Schimmer und Prestige-Schein)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`.
+- **Auftrag:** „Glow am Turm zu gering“ – der Schein müsse **deutlich stärker**
+  werden. Auf die Frage, welcher Schein gemeint sei – der ruhige Schimmerring
+  aus [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer) oder
+  der Schein der Turmgrafik – kam die Antwort: **beides**. Erst die Grafik,
+  dann den Ring nachziehen.
+- **Der Prestige-Schein** (`cartoon-art.mjs`): bisher ein einziger matter Ring
+  (`shadowBlur` 15, Füllung `.12`). Jetzt liegt unter dem Turm ein **Lichtteich**
+  (radialer Verlauf, 58 × 46 px, gold, Deckkraft .36 innen bis 0 außen), dazu
+  ein kräftigerer Ring (`shadowBlur` 26) und ein feiner Außenring. Das Ganze
+  wird **vor** dem Turm gemalt – der Turm selbst landt obenauf. Genau das ist
+  die Regel, die in [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer)
+  als Warnung steht: *ein zu heller Schimmer verdeckt den Turm selbst*. Heller
+  machen heißt hier: mehr Licht **um** den Turm, nicht **auf** ihm.
+- **Der Schimmerring** (`game.js`): Radius 37 × 26 auf **40 × 28**, Linie 2 auf
+  **3 px**, Deckkraft von .42–.62 auf **.58–.78**, und der Strich führt jetzt
+  einen eigenen Schein (`shadowBlur`). Bei reduzierter Bewegung: Deckkraft
+  **.82** statt .72, Linie 3,5 px.
+- **Prüfungen:** `tests/tower-shimmer.test.mjs` besteht weiter (ein Ring auf der
+  bezahlbaren Bauplatte, still bei reduzierter Grafik, atmet sonst) und prüft
+  jetzt auch, dass der Ring nie unter .38 Deckraft fällt und mindestens 3 px
+  dick ist – ein Haarlineal ist eine Einladung, die man suchen muss.
+  `tests/tower-glow.test.mjs` ist neu (3/3): ein gewöhnlicher Turm verlangt kein
+  Licht, ein Prestige-Turm verlangt welches und zwar mindestens 20 px
+  Zerstreuung; das Licht liegt laut Quelltext **unter** dem Turm; beides gilt
+  mit und ohne reduzierte Bewegung. Vollständiger serieller Lauf **1079
+  bestanden, 0 fehlgeschlagen**.
+- **Was mich der Cache-Test gelehrt hat:** ich hatte `cartoon-art.mjs` auf eine
+  eigene Welle `20261117-towerglow1` gesetzt. Der Bestandstest
+  `multiplayer-build-stamp` hat das abgelehnt, und zu Recht: ein Modul, das das
+  Spiel einmal hält, darf nicht in zwei Fassungen nebeneinander im Cache
+  liegen. Es bleibt beim Veröffentlichungsstempel `20261031-patch4` – der Schein
+  kommt also mit dem nächsten Stand, nicht vor ihm.
+- **Änderungen / Dateien:** `cartoon-art.mjs` (Lichtteich, Ringe),
+  `game.js` (Schimmerring), `tests/tower-glow.test.mjs` (neu),
+  `tests/tower-shimmer.test.mjs`, `PATCH-BLOECKE.md` (Punkt abgehakt).
+- **Grenzen:** **Kein Mensch hat es gesehen.** Die Maschine liest die
+  Pinselstriche, nicht das Bild. Ob der Schein jetzt stark genug ist – und ob
+  er bei vielen bezahlbaren Türmen im späten Endless-Lauf das Feld zumatscht –
+  entscheidet ein Blick, den ich nicht habe.

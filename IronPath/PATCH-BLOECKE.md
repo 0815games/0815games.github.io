@@ -991,14 +991,17 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   dauerhaft im Bild. Offene Fragen für den Bau: Welche Nachrichten landen im
   Popup und bleiben dort (Verlauf?), wie zählt der Ungelesen-Hinweis, und was
   passiert bei reduzierter Bewegung.
-- [ ] **Glow am Turm zu gering.** Der Schein am Turm muss **deutlich stärker**
-  werden. Zu klären, welcher Schein gemeint ist: der Schimmerring aus
-  [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer) (ruhig und
-  zurückhaltend gebaut, Radius 37 × 26 px, Deckkraft .42–.62) oder der
-  allgemeine Schein der Turmgrafik in `cartoon-art.mjs`. Beides ist messbar
-  verschieden und sollte getrennt betrachtet werden – der Schimmer darf nicht
-  so hell werden, dass er den Turm selbst verdeckt, und bei reduzierter
-  Bewegung bleibt er ohnehin stehen.
+- [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
+  [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
+  [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):
+  der Betreiber wollte nicht wählen, sondern beides – erst den Schein der
+  Turmgrafik deutlich stärker, danach den Schimmerring aus
+  [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer)
+  (vorher Radius 37 × 26 px, Deckkraft .42–.62) nachziehen. Beides ist
+  gebaut, und beides bleibt **unter** dem Turm: ein Schein, der heller ist als
+  das, was er zeigt, verdeckt es. Bei reduzierter Bewegung stehen beide still
+  und sind etwas kräftiger als die bewegte Fassung. **Kein Mensch hat das
+  Ergebnis gesehen.**
 
 ### Nachgelagert, weil es die Blöcke berührt
 

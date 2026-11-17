@@ -52,6 +52,10 @@ test('the frame is the box the HUD measures against',()=>{
   // A width, not a maximum: no ability name, in any language, may stretch the
   // button into a bar across the field.
   assert.match(hudRule,/width:min\(196px/,'a button, not a bar');
+  // Found on a phone: 196px on a 360px screen reaches into the bottom-left
+  // corner, and the field radio lives there. Half the viewport minus margins is
+  // the most the HUD can ever take without meeting it.
+  assert.match(hudRule,/calc\(50vw - 20px\)/,'and never wider than the half that is not the field radio');
   // A disabled HUD must not swallow taps meant for the battlefield under it.
   const disabled=css.split('\n').find(line=>line.includes('.ability-hud:disabled'))||'';
   assert.match(disabled,/pointer-events:none/,'a disabled HUD lets taps through to the field');
