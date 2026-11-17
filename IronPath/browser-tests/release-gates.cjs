@@ -109,6 +109,20 @@ async function fixture(browser,{control=open,user='alice',authTime=300,served=bu
 }
 const unmask=page=>page.evaluate(()=>{document.getElementById('introOverlay').hidden=true;});
 async function waitForMenu(page){await page.locator('#menuMultiplayer').waitFor({state:'visible'});await unmask(page);}
+
+// The idle sign-out no longer writes its reason on the sign-in form: it puts a
+// card on the screen, with the field's own picture. The card IS the message, so
+// the message is read off the card - it opens, it names the reason, and closing
+// it clears the notice, so it cannot come back on every language change.
+async function waitForAfkCard(page){
+  const card=page.locator('#afkRestDialog');
+  await card.waitFor({state:'visible'});
+  assert.match(await page.locator('#afkRestText').innerText(),/30 minutes of inactivity/);
+  await page.locator('#afkRestAccept').click();
+  await card.waitFor({state:'hidden'});
+  assert.equal(await page.evaluate(()=>sessionStorage.getItem('ironpath:afk-signed-out')),null,
+    'closing the card clears the notice, so it cannot return');
+}
 async function prepareEndless(page){
  await page.locator('#menuEndless').click();await page.locator('#endlessLaunch').waitFor({state:'visible'});
  await page.locator('#endlessDeploy').click();await page.locator('#gameWorkspace').waitFor({state:'visible'});
@@ -381,7 +395,7 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     assert.equal(await page.locator('#commandCenter').isVisible(),true,'29 minutes does not sign out');
     await advanceAfk(page,61_000);await page.locator('#authView').waitFor({state:'visible'});
     assert.ok((await page.evaluate(()=>__events)).includes('signout'));
-    assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+    await waitForAfkCard(page);
     assert.equal(state.documentLoads,1,'the current build is not reloaded after AFK sign-out');
     console.log('AFK: signs out after 30 idle minutes, checks the version and does not reload the current build');
    }finally{await f.close();}
@@ -392,7 +406,7 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     await waitForMenu(page);state.published=nextBuild;state.served=nextBuild;
     await advanceAfk(page,31*60_000);await waitForNewBuild(page);await page.locator('#authView').waitFor({state:'visible'});
     assert.equal(await page.evaluate(()=>sessionStorage.getItem('__testSignedOut')),'1');
-    assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+    await waitForAfkCard(page);
     assert.equal(state.documentLoads,2,'a newer version loads exactly once after sign-out');
     console.log('AFK: a newer build reloads after sign-out and leaves the player at login');
    }finally{await f.close();}
