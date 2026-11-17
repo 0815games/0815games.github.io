@@ -1450,6 +1450,82 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   `players/<uid>/name` heute unveränderlich ist) und Alt-Duplikate bleiben
   offen.
 
+## IPL-0038 – Block 2 / A1: Umbenennung als Mechanismus (Regeln vorbereitet)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/6fa854f3-0815games-github-io`,
+  Basis `6fde2f8` (Main nach dem Merge von #297).
+- **Auftrag:** „Export, lass uns Block 2 fertig machen. Bis auf meine Tests.“
+  Ein Export lag nicht vor (keine Datei, kein Zugang), damit bleibt die
+  Veröffentlichung, wo sie war. Der letzte Rest von Block 2, den ich bauen
+  kann, war die Umbenennung.
+- **Warum eine Umbenennung zu Block 2 gehört:** Sie ist der Ausweg aus dem
+  Alt-Duplikat-Fall, den die Bestandsaufnahme zutage bringen wird: zwei Konten
+  halten denselben Namen, eines behält ihn, das andere wählt neu. Ohne
+  Mechanismus gäbe es nur „löschen und neu anlegen“ – mit Fortschrittsverlust.
+- **Der Name steht an vier Stellen:** Profil (`players/<uid>/name`),
+  Suchindex (`friendNames/<Schlüssel>/<uid>` plus
+  `friendPrivate/<uid>/searchKey`), Freundescode (`friendCodes/<Code>/name`)
+  und Namensreservierung (`characterNames/<Schlüssel>`).
+- **Der Befund, der den Entwurf gekippt hat:** `root` in einer Regel ist der
+  Datenstand **vor** dem Schreiben. Eine Regel sieht also nie, was ein Client
+  im selben Mehrpfad-Zug mitbewegt. Bewiesen am eigenen Bestand: die
+  Charakterlöschung schreibt Spieler und Bestenlisten in **einem** Zug, und die
+  Bestenlisten-Regeln verlangen, dass der Spieler bei der Auswertung noch
+  existiert – das funktioniert nur, wenn `root` der Stand davor ist.
+  Entsprechend schreibt `friends.mjs` den Suchschlüssel und den Eintrag in
+  **zwei** Schritten, nicht in einem.
+- **Folge:** Die Regeln können nicht prüfen, dass die vier Stellen zueinander
+  passen. Der erste Entwurf (ein Mehrpfad-Zug, Prüfung „der Eintrag unter dem
+  aktuellen Suchschlüssel trägt schon den neuen Namen“) **hätte nie gegriffen**
+  – er wäre immer abgelehnt worden. Verworfen, nicht abgeschwächt.
+- **Was stattdessen gilt:** eine Bedingung, die keinen Widerspruch zulässt und
+  die eine Regel prüfen KANN: **Ein Soldat, der im Suchindex steht, kann seinen
+  Namen nicht ändern.** Also: erst aus dem Index nehmen, dann umbenennen, dann
+  unter dem neuen Namen neu veröffentlichen. Jeder Schritt einzeln geprüft,
+  jeder Zwischenzustand einer, den das Spiel heute schon erzeugt und beim
+  nächsten Konto-Laden selbst heilt.
+- **Reihenfolge ist die Sicherheit:** (1) neuer Name reservieren – das ist der
+  Schritt, den die Regeln verweigern, wenn ein anderes Konto ihn hält;
+  (2) alten Eintrag entfernen; (3) Profilnamen ändern; (4) alten Namen
+  freigeben – **zuletzt**, weil ihn zwischen „freigegeben“ und „umbenannt“ ein
+  anderes Konto nehmen könnte; (5) unter dem neuen Namen neu veröffentlichen
+  (Suchschlüssel, Eintrag, Freundescode).
+- **Drei Regelergänzungen, alle als ODER** (nichts, was heute erlaubt ist, wird
+  verboten): `players/$uid/name` darf sich ändern, solange der Soldat nicht im
+  Index steht; `friendPrivate/$uid/searchKey` darf mitziehen, solange unter dem
+  alten Schlüssel kein Eintrag liegt (heute kann er überhaupt nur einmal
+  geschrieben werden – ein umbenannter Soldat wäre nie mehr auffindbar
+  gewesen); `friendCodes/$code` darf vom Inhaber auf den eigenen aktuellen
+  Profilnamen aufgefrischt werden (heute nur erzeugbar, nie erneuerbar).
+- **Sichere Richtung:** Ohne die neuen Regeln ist der Name unveränderlich. Das
+  Modul meldet „nicht unterstützt“ und ändert **nichts** – statt in einen Namen
+  zu wechseln, den niemand geprüft hat. Auch eine halbe Antwort des Index
+  (lesbar, aber ohne Eintrag) gilt nicht als „frei“. Ein abgebrochener Schritt
+  lässt den Soldaten unauffindbar, nie unter einem fremden Namen findbar; ein
+  teilweise geglückter Ablauf wird als solcher gemeldet und nicht als Erfolg
+  ausgegeben.
+- **Bewusst offen:** wer umbenennen darf, wann, wie oft und über welchen
+  Einstiegspunkt im Spiel, ist eine Nutzerentscheidung **nach** der
+  Bestandsaufnahme. Darum hat das Modul absichtlich noch keine Schaltfläche.
+- **Grenze, nicht still „repariert“:** bestehende Freundschaften, offene
+  Anfragen und Bestenlisten-Einträge behalten den Namen vom Zeitpunkt ihres
+  Schreibens. Ein manipulierter Client, der den Namen ändert, ohne vorher zu
+  reservieren, bleibt möglich – die Regeln können nicht hashen; dieselbe
+  Grenze, die der Index insgesamt hat.
+- **Änderungen / Dateien:** neu `character-rename.mjs` (Ablauf statt eines
+  Zugs) und `firebase/character-rename-candidate.mjs` (drei ODER-Regeln, jeder
+  Wächter prüft die Referenzregel); `firebase/block2-rules-candidate.mjs`
+  nimmt den Umbenenn-Block auf und hat eine eindeutige Kommandozeile (Basis und
+  Ausgabe als Argumente, Standardbasis ist der Stand vor Block 2 – am schon
+  zusammengesetzten Entwurf schlagen die Wächter zu Recht an); neu
+  `tests/character-rename.test.mjs` (7 Fälle, prüft auch die Reihenfolge);
+  Emulatorfälle für Umbenennung, Kollision, „nur im Index stehend verweigert“
+  und „ohne die Regeln“ ergänzt; der eingestellte Entwurf neu gebaut.
+- **Prüfungen:** 7/7 neue Einzelfälle, vollständiger serieller Lauf 1027
+  bestanden, 0 fehlgeschlagen; Publish-Trockenlauf 9/9. Die Emulatorfälle sind
+  der eigentliche Nachweis und laufen in CI.
+
 ## IPL-0036 – Block 2 / A2: Suchindex nach Rückkehr der Verbindung erneut versuchen
 
 - **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-16 UTC; vorgegebenes

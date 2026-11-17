@@ -262,10 +262,22 @@ test('the reservation is wired into enlistment and released when the character i
   // And nothing that was there before was dropped or rewritten on the way in.
   const before=JSON.parse(read('firebase/pre-block2.complete.draft.rules.json')).rules;
   for(const key of Object.keys(before))assert.ok(key in publishable.rules,`${key} survived the rebuild`);
-  for(const path of ['/friendCodes','/friendOutgoing','/friendPresence','/friendPrivate']){
-   const node=path.slice(1);
+  for(const node of ['friendOutgoing','friendPresence'])
    assert.equal(JSON.stringify(publishable.rules[node]),JSON.stringify(before[node]),`${node} is untouched`);
-  }
+  // friendPrivate is one of the paths the rename deliberately touches: the
+  // search key could only ever be written ONCE, so a renamed soldier could
+  // never be published under their new name again. OR-ed, like the two below.
+  const searchKey=publishable.rules.friendPrivate.$uid.searchKey['.write'],keyWas=before.friendPrivate.$uid.searchKey['.write'];
+  assert.equal(searchKey,`(${keyWas}) || (auth != null && auth.uid === $uid && data.exists() && !root.child('friendNames').child(data.val()).child($uid).exists())`);
+  assert.match(searchKey,/data\.exists\(\) && !root\.child\('friendNames'\)/,'the key only moves while no listing sits under the old one');
+  assert.deepEqual(publishable.rules.friendPrivate.$uid.code,before.friendPrivate.$uid.code,'the code itself is untouched');
+  // friendCodes is another: an entry can only be created today, never
+  // refreshed, so a renamed soldier's code would advertise the old name
+  // forever. The change is OR-ed onto the old rule, so nothing that was
+  // allowed becomes forbidden.
+  const codes=publishable.rules.friendCodes.$code['.write'],was=before.friendCodes.$code['.write'];
+  assert.equal(codes,`(${was}) || (auth != null && $code.matches(/^[a-f0-9]{32}$/) && data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid && newData.child('name').val() === root.child('players').child(auth.uid).child('name').val())`);
+  assert.match(codes,/newData\.child\('name'\)\.val\(\) === root\.child\('players'\)/,'only ever to the owner’s own current name');
   const rules={rules:buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json')).rules??buildCharacterNameCandidate(read('firebase/WORKSHOP-RULES-TO-PUBLISH.json'))};
   assert.ok(rules.rules.characterNames?.$key?.['.write'],'the candidate carries the index');
   // `hasChildren` only requires the listed children; without $other an entry may
