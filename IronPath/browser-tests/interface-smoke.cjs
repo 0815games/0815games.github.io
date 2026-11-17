@@ -150,7 +150,14 @@ const fs = require('node:fs');
       assert.equal(coversCentre,false,`${name}: the pad in the middle stays visible and tappable`);
       await page.screenshot({path:`browser-artifacts/${name}-tower-ring.png`,fullPage:false});
       await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=true;});
-      await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
+      await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');
+      // The radio line is no longer painted: what the game says is spoken into a
+      // live region for a screen reader and is not on the field at all. A box
+      // that cannot be seen cannot cover the battlefield, which is the point.
+      const spoken=await page.evaluate(()=>{const el=document.getElementById('message');const box=el.getBoundingClientRect();
+        return {live:el.getAttribute('aria-live'),width:box.width,height:box.height};});
+      assert.equal(spoken.live,'polite',`${name}: the spoken line is still a live region`);
+      assert.ok(spoken.width<=2&&spoken.height<=2,`${name}: and it is not painted over the field (${JSON.stringify(spoken)})`);
       // The ability HUD moved out of the command strip onto the field. It has to
       // be a real touch target, it has to be reachable at the right edge, and it
       // must not fall off the screen - all three measured, not assumed.
@@ -179,92 +186,83 @@ const fs = require('node:fs');
       });
       assert.equal(reached.start.id,'start',`${name}: the deploy button is reachable, not covered (hit ${reached.start.id})`);
       assert.equal(reached.hud.inside,true,`${name}: the ability HUD is reachable itself (hit ${reached.hud.id})`);
-      // The field radio is a handset now, not a line of text: small, closed, and
-      // in the corner. It must still clear the ability button - and it must be
-      // tappable, because the messages live behind it.
-      const handset=await page.locator('#radioToggle').boundingBox();
-      assert.ok(handset.width<=width*0.4,`${name}: the radio handset is a device, not a noticeboard (${Math.round(handset.width)}px of ${width})`);
-      assert.ok(handset.height>=24,`${name}: and it is big enough to hit (${Math.round(handset.height)}px)`);
-      const handsetHit=await page.evaluate(()=>{
-        const box=document.querySelector('#radioToggle').getBoundingClientRect();
-        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
-        return {inside:!!(hit&&hit.closest('#radioToggle')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
-      });
-      assert.equal(handsetHit.inside,true,`${name}: the handset answers a tap (hit ${handsetHit.at})`);
-      // Scripts are blocked in this harness by design, so the radio's wiring is
-      // measured where the game really runs: wave-consensus.cjs taps the handset
-      // in Chromium with the scripts on, and tests/field-radio.test.mjs drives
-      // the closing (cross, field tap, Escape). What a browser owes us here is
-      // the SHIPPED SHAPE - it starts shut - and the geometry of the panel it
-      // becomes, which no unit test can see.
-      const shipped=await page.evaluate(()=>({hidden:document.getElementById('radioLog').hidden,
-        expanded:document.getElementById('radioToggle').getAttribute('aria-expanded'),
-        unread:document.getElementById('radioUnread').hidden}));
-      assert.equal(shipped.hidden,true,`${name}: the radio starts shut in the shipped markup (${JSON.stringify(shipped)})`);
-      assert.equal(shipped.expanded,'false',`${name}: and the handset says it is shut`);
-      assert.equal(shipped.unread,true,`${name}: nothing is unread before a word was said`);
-      await page.evaluate(()=>{document.getElementById('radioLog').hidden=false;});
-      const log=await page.locator('#radioLog').boundingBox();
-      assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(shipped)})`);
-      assert.ok(log.x+log.width/2<width*0.75,`${name}: the radio log opens in the corner, not over the middle of the field`);
-      assert.ok(log.y>height*0.3,`${name}: and low enough to be out of the fighting`);
-      assert.ok(log.x>=-1&&log.x+log.width<=width+1,`${name}: the open log stays inside the width (${JSON.stringify(log)})`);
-      assert.ok(log.y>=-1&&log.y+log.height<=height+1,`${name}: and inside the frame's height (${JSON.stringify(log)})`);
-      // Open, it takes taps: the cross that shuts it is a real target, and a
-      // target Chromium can reach is the only kind that counts.
-      const shutter=await page.locator('#radioLogClose').boundingBox();
-      assert.ok(shutter.width>=24&&shutter.height>=24,`${name}: the cross is big enough to hit (${Math.round(shutter.width)}x${Math.round(shutter.height)})`);
-      const shutterHit=await page.evaluate(()=>{
-        const box=document.getElementById('radioLogClose').getBoundingClientRect();
-        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
-        return {inside:!!(hit&&hit.closest('#radioLogClose')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
-      });
-      assert.equal(shutterHit.inside,true,`${name}: the open log answers a tap on its cross (hit ${shutterHit.at})`);
-      await page.evaluate(()=>{document.getElementById('radioLog').hidden=true;});
-      // The field radio keeps its own corner: the HUD must not lie across it.
-      const radio=await page.locator('.battle-foot').boundingBox();
-      const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);
-      assert.equal(overRadio,false,`${name}: the ability HUD leaves the field radio alone (hud ${JSON.stringify(ability)} vs radio ${JSON.stringify(radio)})`);
-      // The radio's other voice: a warning card, floated above the radio. It is
-      // not centred - it must not stand where the fighting is - and it takes the
-      // radio's own width, which is the width every corner rule here is already
-      // pinned against. Measured, because a card that overlaps the ability
-      // button or the radio is exactly the kind of thing nobody notices until
-      // it is played.
+      // What the field no longer shows. Three things were taken out on the
+      // operator's word, and a browser is the only place that can prove they
+      // are really gone from the page - not just hidden by a rule.
+      const removed=await page.evaluate(()=>({
+        flag:document.querySelectorAll('.wave-info').length,
+        xp:document.querySelectorAll('#levelXpBox,#levelXpBar,#levelXpText,#levelXpLeft').length,
+        radio:document.querySelectorAll('#battleFoot,.radio-toggle,.radio-log').length}));
+      assert.equal(removed.flag,0,`${name}: the wave flag and its next-wave popover are gone (${JSON.stringify(removed)})`);
+      assert.equal(removed.xp,0,`${name}: the XP bar and the "still missing" line are gone from the status row`);
+      assert.equal(removed.radio,0,`${name}: the radio handset and its log are gone`);
+      // The status row keeps the level itself - one number, not a character sheet.
+      assert.equal(await page.locator('#level').isVisible(),true,`${name}: the soldier's level is still there`);
+      // The one message that is left: it flutters in UNDER the status row, it
+      // is a card and not a banner, and a tap anywhere on it reaches the field
+      // beneath. Measured, because a message over the battlefield is a wall
+      // unless it is proven not to be.
+      const statusRow=await page.locator('.dashboard').boundingBox();
       await page.evaluate(()=>{
-        document.querySelector('#radioAlert').hidden=false;
-        document.querySelector('#radioAlertText').textContent='Bomber struck the bunker! −2.5 health.';
-        document.querySelector('#radioAlertMore').hidden=false;
-        document.querySelector('#radioAlertMore').textContent='+2 more';
+        document.querySelector('#fieldNotice').hidden=false;
+        document.querySelector('#fieldNoticeText').textContent='Thin ice broke! Tanks slow down and take more damage.';
+        document.querySelector('#fieldNoticeMore').hidden=false;
+        document.querySelector('#fieldNoticeMore').textContent='+2 more';
       });
-      const warning=await page.locator('#radioAlert').boundingBox();
-      // The card is the top line of the radio's own column now, so the box grows
-      // around it: measured again, with the card in it, against the handset it
-      // must not cover. (Comparing against the shut box measured above would be
-      // comparing a child with its parent - the card is in the column, not on
-      // top of it any more.)
-      const radioWithCard=await page.locator('.battle-foot').boundingBox();
-      assert.ok(warning.x>=radioWithCard.x-1&&warning.x+warning.width<=radioWithCard.x+radioWithCard.width+1,`${name}: the warning keeps the radio's column, so the corner rules still hold (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radioWithCard)})`);
-      assert.ok(warning.y+warning.height<=handset.y+1,`${name}: the warning floats above the handset, not across it (warning ${JSON.stringify(warning)} vs handset ${JSON.stringify(handset)})`);
-      assert.ok(warning.width<=width*0.7,`${name}: the warning is a card, not a banner (${Math.round(warning.width)}px of ${width})`);
-      assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
-      const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
-      assert.equal(overAbility,false,`${name}: the warning keeps out of the ability button's corner (warning ${JSON.stringify(warning)} vs hud ${JSON.stringify(ability)})`);
-      // The card is a caption, not a wall: a tap anywhere on it must reach the
-      // ground beneath, or a player cannot build under a message. There is no
-      // dismiss button for exactly this reason - Chromium found the button twice,
-      // first not answering, then swallowing a tap meant for a build pad.
-      const throughCard=await page.evaluate(()=>{
-        const card=document.querySelector('#radioAlert').getBoundingClientRect();
+      const notice=await page.locator('#fieldNotice').boundingBox();
+      assert.ok(notice&&notice.height>0,`${name}: the notice shows on the field (${JSON.stringify(notice)})`);
+      assert.ok(notice.y>=statusRow.y+statusRow.height-1,`${name}: it hangs under the status row, not over it (notice ${JSON.stringify(notice)} vs row ${JSON.stringify(statusRow)})`);
+      assert.ok(notice.y+notice.height<height*0.35,`${name}: and high enough to be out of the fighting`);
+      assert.ok(notice.x>=-1&&notice.x+notice.width<=width+1,`${name}: it stays inside the width (${JSON.stringify(notice)})`);
+      // A card, not a banner: a banner grows with the field, a card stops at a
+      // readable line - and on a narrow field it keeps a margin on both sides
+      // instead of spanning the whole width edge to edge.
+      assert.ok(notice.width<=341,`${name}: it is a card of a fixed width, not a banner across the field (${Math.round(notice.width)}px)`);
+      assert.ok(notice.x>=7&&notice.x+notice.width<=width-7,`${name}: and it keeps a margin on both sides (${JSON.stringify(notice)})`);
+      // Centred on the field it hangs over - not on the window, which the frame
+      // does not fill exactly on every layout.
+      const frameBox=await page.locator('.map-frame').boundingBox();
+      assert.ok(Math.abs((notice.x+notice.width/2)-(frameBox.x+frameBox.width/2))<=2,`${name}: and it is centred under the row, so it reads as one line (notice ${JSON.stringify(notice)} vs frame ${JSON.stringify(frameBox)})`);
+      const throughNotice=await page.evaluate(()=>{
+        const card=document.querySelector('#fieldNotice').getBoundingClientRect();
         const points=[[4,0.5],[0.5,0.5],[card.width-4,0.5]].map(([rx,ry])=>[Math.round(card.left+card.width*rx),Math.round(card.top+card.height*ry)]);
-        return points.map(([x,y])=>{const hit=document.elementFromPoint(x,y);return {x,y,inside:!!(hit&&hit.closest('#radioAlert')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};});
+        return points.map(([x,y])=>{const hit=document.elementFromPoint(x,y);return {x,y,inside:!!(hit&&hit.closest('#fieldNotice')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};});
       });
-      for(const probe of throughCard)
-        assert.equal(probe.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${probe.at} at ${probe.x},${probe.y})`);
-      // (That it steps aside on its own is a matter of the clock, and the clock
-      // is checked in `tests/field-alert.test.mjs`, where it can be held. Here
-      // the card was opened by hand, so no turn is running.)
-      await page.evaluate(()=>{document.querySelector('#radioAlert').hidden=true;document.querySelector('#radioAlertMore').hidden=true;});
+      for(const probe of throughNotice)
+        assert.equal(probe.inside,false,`${name}: a tap through the notice reaches the field, not the message (hit ${probe.at} at ${probe.x},${probe.y})`);
+      assert.equal(await page.locator('#fieldNotice button').count(),0,`${name}: and there is no dismiss button on it`);
+      await page.evaluate(()=>{document.querySelector('#fieldNotice').hidden=true;document.querySelector('#fieldNoticeMore').hidden=true;});
+      // The field menu moved out of the top-right corner into the command strip,
+      // between SPEED and END RUN where the other controls are. Written out on
+      // a desktop; where the strip is tight it is the three-line burger.
+      const menuBox=await page.locator('#fieldOps > summary').boundingBox();
+      const speedBox=await page.locator('#speed').boundingBox();
+      const endBox=await page.locator('#endRun').boundingBox();
+      assert.ok(menuBox.x>=speedBox.x+speedBox.width-1,`${name}: the menu sits after SPEED (menu ${JSON.stringify(menuBox)} vs speed ${JSON.stringify(speedBox)})`);
+      assert.ok(menuBox.x+menuBox.width<=endBox.x+1,`${name}: and before END RUN (menu ${JSON.stringify(menuBox)} vs end ${JSON.stringify(endBox)})`);
+      assert.ok(menuBox.height>=44&&menuBox.width>=44,`${name}: it is a touch target, not a dot (${Math.round(menuBox.width)}x${Math.round(menuBox.height)})`);
+      assert.ok(Math.abs((menuBox.y+menuBox.height/2)-(speedBox.y+speedBox.height/2))<=2,`${name}: on the same row as the other controls`);
+      const menuShape=await page.evaluate(()=>{
+        const label=document.querySelector('#fieldOps .field-ops-label'),burger=document.querySelector('#fieldOps .field-ops-burger');
+        return {label:getComputedStyle(label).display,burger:getComputedStyle(burger).display,bars:burger.querySelectorAll('i').length};
+      });
+      // 320 and 390 are the phone widths this harness runs; 1440 is the desktop.
+      if(width<=430){
+        assert.equal(menuShape.label,'none',`${name}: a tight strip shows no words`);
+        assert.equal(menuShape.burger,'flex',`${name}: it shows the burger instead (${JSON.stringify(menuShape)})`);
+      }else{
+        assert.equal(menuShape.burger,'none',`${name}: a roomy strip needs no burger`);
+        assert.notEqual(menuShape.label,'none',`${name}: it says MENU (${JSON.stringify(menuShape)})`);
+      }
+      assert.equal(menuShape.bars,3,`${name}: the burger is three lines, not two or four`);
+      // Opened, the panel grows UPWARD out of the strip and stays in the frame:
+      // a panel that opens downwards is a panel behind the player's own thumb.
+      await page.locator('#fieldOps > summary').click();
+      const panel=await page.locator('.field-ops-panel').boundingBox();
+      assert.ok(panel&&panel.height>0,`${name}: the field menu opens (${JSON.stringify(panel)})`);
+      assert.ok(panel.y+panel.height<=menuBox.y+1,`${name}: it opens upward, clear of the strip (panel ${JSON.stringify(panel)} vs menu ${JSON.stringify(menuBox)})`);
+      assert.ok(panel.y>=-1&&panel.x>=-1&&panel.x+panel.width<=width+1,`${name}: and stays inside the frame (${JSON.stringify(panel)})`);
+      await page.locator('#fieldOps > summary').click();
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.

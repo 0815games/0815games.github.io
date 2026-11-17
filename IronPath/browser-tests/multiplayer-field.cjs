@@ -27,7 +27,7 @@ const assert=require('node:assert/strict');
     const watchdog=setTimeout(async()=>{
       console.log(`WATCHDOG: stuck at "${stage}"`);
       const probe=page.evaluate(()=>({menu:document.getElementById('radialMenu')?.hidden,sheet:document.getElementById('sheetTitle')?.textContent,
-        radio:document.getElementById('radioLog')?.hidden,foot:document.getElementById('battleFoot')?getComputedStyle(document.getElementById('battleFoot')).pointerEvents:null,
+        notice:document.getElementById('fieldNotice')?.hidden,
         screen:document.getElementById('gameWorkspace')?.dataset.screen,full:document.getElementById('game')?.dataset.fullBattle})).then(value=>JSON.stringify(value),error=>'probe failed: '+error.message);
       console.log('WATCHDOG state: '+await Promise.race([probe,new Promise(resolve=>setTimeout(()=>resolve('the page stopped answering'),8000))]));
       // No exit: a slow but healthy run must still be allowed to finish. The

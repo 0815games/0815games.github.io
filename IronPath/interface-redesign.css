@@ -107,8 +107,6 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .threat-intel summary strong,.terrain-briefing summary,.run-perk-panel strong{color:#eed7a0}
 .threat-key span{background:#385140;border-color:#789073;color:#f3ead2}.threat-key b{background:#172b22;color:#f4dda7}.threat-key em{color:#ffd28c}
 .run-perk-panel p{color:#d2dcc7}.run-perk-choices button{background:#37513e;color:#f3ead0;border:1px solid #82967b;box-shadow:none}.run-perk-choices button small{color:#d6e1cb}
-.map-frame .wave-info summary{background:#20372cef;color:#f3dda9;border:1px solid #aab793;box-shadow:0 3px 12px #0008}.map-frame .wave-info[open] summary{background:#e4ca89;color:#1c3024}
-.map-frame .wave-popover{background:#1b3025f5;color:#f0ead4;border:1px solid #96a986}.map-frame .wave-popover strong{color:#e4cd94}.map-frame .wave-popover p{color:#d8e2d0}
 .tree-dialog .tree-detail .eyebrow{color:#d8c68d}
 .tree-dialog .tree-summary{box-shadow:none}
 .tree-dialog .development-head{border-bottom:1px solid #8b997355}

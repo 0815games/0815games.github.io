@@ -120,7 +120,7 @@ const assert=require('node:assert/strict');
      if(spec.touch)await page.touchscreen.tap(point.rival.x,point.rival.y);else await page.mouse.click(point.rival.x,point.rival.y);
      // A broken rule is a WARNING now, on the card above the radio - not radio
 // traffic in the line.
-await page.waitForFunction(()=>document.getElementById('radioAlertText').textContent.includes('opponent'));
+await page.waitForFunction(()=>document.getElementById('fieldNoticeText').textContent.includes('opponent'));
      assert.equal(await page.evaluate(()=>window.__commands.length),count,'tapping the opponent lane sends no command');
      assert.equal(await page.locator('#radialMenu').isHidden(),true);
     }

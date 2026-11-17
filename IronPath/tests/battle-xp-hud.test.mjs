@@ -8,45 +8,35 @@ import {createBattleXpHud} from '../battle-xp-hud.mjs';
 // has no parameter for "a wave just paid 120 XP" - it can only read the profile
 // the account has already confirmed, so these cases are about what it does with
 // what it is allowed to see.
-const GERMAN={'{current} / {required} XP':'{current} / {required} EP','{amount} XP to level {level}':'Noch {amount} EP bis Stufe {level}'};
+//
+// The second rule is newer: the tile shows the LEVEL and nothing else. The XP
+// bar, the "0 / 450 XP" and the "450 XP to level 3" were removed from the field
+// on the operator's word - the status row was unreadable with them in it.
 function fixture(profile){
   const elements=new Map();
   for(const id of ['level','levelXpBox','levelXpBar','levelXpText','levelXpLeft'])elements.set(id,{id,textContent:'',hidden:false});
   const state={language:'en'};
-  // The real `tr` answers in the language the field is showing at that moment.
-  const tr=(text,values={})=>String(state.language==='de'&&GERMAN[text]||text).replace(/\{(\w+)\}/g,(whole,key)=>key in values?String(values[key]):whole);
+  const tr=(text,values={})=>String(text).replace(/\{(\w+)\}/g,(whole,key)=>key in values?String(values[key]):whole);
   const document={getElementById:id=>elements.get(id)??null};
   return {elements,state,hud:createBattleXpHud({document,getProfile:()=>profile,tr})};
 }
 const shown=f=>f.elements.get('level').textContent;
-const text=f=>f.elements.get('levelXpText').textContent;
-const left=f=>f.elements.get('levelXpLeft').textContent;
 
-test('a confirmed profile shows level, current/required, the bar and what is missing',()=>{
-  // 300 XP is exactly the step from level 1 to level 2: 0 of the next 450 earned.
+test('a confirmed profile shows the level - and writes no XP anywhere',()=>{
+  // 300 XP is exactly the step from level 1 to level 2.
   const f=fixture({xp:300});
   assert.deepEqual(f.hud.render(1),{level:2,current:0,required:450,remaining:450});
   assert.equal(shown(f),'2');
-  assert.equal(text(f),'0 / 450 XP');
-  assert.equal(left(f),'450 XP to level 3');
-  assert.equal(f.elements.get('levelXpBar').max,450);
-  assert.equal(f.elements.get('levelXpBar').value,0);
-  assert.equal(f.elements.get('levelXpBox').hidden,false);
+  // The numbers are still returned for the report; they are just not painted.
+  for(const id of ['levelXpBar','levelXpText','levelXpLeft'])
+    assert.equal(f.elements.get(id).textContent,'',`${id} is not written any more`);
 });
 
-test('a partly filled level counts what is still missing, not what was earned',()=>{
-  const f=fixture({xp:470});
-  assert.deepEqual(f.hud.render(1),{level:2,current:170,required:450,remaining:280});
-  assert.equal(text(f),'170 / 450 XP');
-  assert.equal(left(f),'280 XP to level 3');
-});
-
-test('no confirmed XP hides the progress and keeps the level the soldier came in with',()=>{
+test('no confirmed XP keeps the level the soldier came in with',()=>{
   for(const profile of [null,undefined,{},{xp:undefined},{xp:null},{xp:-1},{xp:12.5},{xp:'300'}]){
     const f=fixture(profile);
     assert.equal(f.hud.render(4),null,JSON.stringify(profile));
     assert.equal(shown(f),'4');
-    assert.equal(f.elements.get('levelXpBox').hidden,true,'no confirmed number, no bar');
   }
   // A missing or unusable fallback still shows a soldier, never a blank tile.
   const f=fixture({xp:null});
@@ -61,40 +51,26 @@ test('a wave that has not been saved cannot lift the level',()=>{
   // would push it over, and the tile must not care.
   let profile={xp:299};
   const elements=new Map();
-  for(const id of ['level','levelXpBox','levelXpBar','levelXpText','levelXpLeft'])elements.set(id,{id,textContent:'',hidden:false});
+  for(const id of ['level'])elements.set(id,{id,textContent:'',hidden:false});
   const hud=createBattleXpHud({document:{getElementById:id=>elements.get(id)??null},getProfile:()=>profile,
     tr:(text,values={})=>text.replace(/\{(\w+)\}/g,(whole,key)=>key in values?String(values[key]):whole)});
   hud.render(1);
   assert.equal(elements.get('level').textContent,'1');
-  assert.equal(elements.get('levelXpText').textContent,'299 / 300 XP');
   // The save comes back: only now does the level move.
   profile={xp:419};
-  hud.render(1);
+  assert.deepEqual(hud.render(1),{level:2,current:119,required:450,remaining:331});
   assert.equal(elements.get('level').textContent,'2');
-  assert.equal(elements.get('levelXpText').textContent,'119 / 450 XP');
-  assert.equal(elements.get('levelXpLeft').textContent,'331 XP to level 3');
 });
 
-test('a language switch re-renders the strings instead of keeping the old ones',()=>{
-  const f=fixture({xp:300});
-  f.hud.render(1);
-  assert.equal(text(f),'0 / 450 XP');
-  f.state.language='de';
-  f.hud.render(1);
-  assert.equal(text(f),'0 / 450 EP');
-  assert.equal(left(f),'Noch 450 EP bis Stufe 3');
-  assert.equal(shown(f),'2','the level is a number in every language');
-});
-
-test('the tile it writes is part of the real page and starts hidden',()=>{
-  // The ids live in index.html, but no other guard scans this module's lookups.
+test('the tile it writes is part of the real page, and the XP furniture is not',()=>{
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  assert.match(html,/id="level"/,'the level is on the field');
+  // Removed on the operator's word: the bar, the current/required line and the
+  // "still missing" line. A guard, so they do not creep back in.
+  for(const id of ['levelXpBox','levelXpBar','levelXpText','levelXpLeft'])
+    assert.doesNotMatch(html,new RegExp(`id="${id}"`),`${id} is gone from the status row`);
   const css=readFileSync(new URL('../field-command.css',import.meta.url),'utf8');
-  for(const id of ['level','levelXpBox','levelXpBar','levelXpText','levelXpLeft'])assert.match(html,new RegExp(`id="${id}"`),id);
-  assert.match(html,/id="levelXpBox" hidden>/,'nothing is claimed before the first confirmed read');
-  // `.hud-xp{display:block}` outranks the browser's `[hidden]` rule, so the
-  // stylesheet has to say it again - otherwise hiding the block does nothing.
-  assert.match(css,/\.hud-xp\[hidden\]\{display:none\}/);
+  assert.doesNotMatch(css,/hud-xp/,'and so is the stylesheet that dressed it');
 });
 
 test('the factory rejects a caller that cannot read a confirmed profile',()=>{

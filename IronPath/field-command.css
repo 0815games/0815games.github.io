@@ -22,10 +22,6 @@
    account has not reached. The tile is the widest one and may drop to its own
    row on a narrow phone rather than push the row over the map controls. */
 #gameView .map-frame .dashboard>div.hud-soldier{flex:0 0 auto}
-#gameView .map-frame .dashboard .hud-xp{display:block;margin-top:5px;min-width:88px}
-#gameView .map-frame .dashboard .hud-xp[hidden]{display:none}
-#gameView .map-frame .dashboard .hud-xp progress{display:block;width:100%;height:5px;margin:0 0 3px;accent-color:#d3b56f;background:#0d1c15;border:1px solid #5f7860}
-#gameView .map-frame .dashboard .hud-xp small{color:#a7bda0;font-size:8px;letter-spacing:.04em;line-height:1.3;white-space:nowrap}
 #gameView .map-frame .command{position:absolute;z-index:4;left:50%;bottom:12px;transform:translateX(-50%);width:min(690px,calc(100% - 24px));padding:7px;background:#10231eea;border:1px solid #81977c;border-radius:5px;box-shadow:0 5px 22px #000a}
 #gameView .map-frame .command .panel-heading{display:none}
 #gameView .map-frame .command-controls{display:flex;gap:6px}
@@ -33,63 +29,29 @@
 #gameView .map-frame .command-controls .primary{flex:1.5 1 0;background:#e4c980;color:#1b2c22;border-color:#e6d398}
 #gameView .map-frame .command-controls .end-run{flex:.8 1 0;background:#4d3630;border-color:#9a7565}
 #gameView .map-frame .command-controls button:hover:not(:disabled){filter:brightness(1.15)}
-#gameView .map-frame .wave-info{top:10px;right:10px;z-index:5}
 /* `--map-hud-bottom` is the measured bottom edge of the status row, in the map
    frame's own coordinates; the fallback assumes the soldier tile shows its XP,
    which is the tallest the row gets. */
-#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);z-index:3}
+#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 36px);z-index:3}
 #gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
 #gameView .map-frame .story-decision{bottom:80px;z-index:5;max-width:min(360px,calc(100% - 24px))}
-#gameView .battle-foot{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:0;padding:5px 7px;background:#0000;border:0;color:#e6e6ce;line-height:1.35}
-#gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em}
-/* The radio is a device, not a noticeboard: it starts closed and opens into the
-   messages when the player taps it. Everything below lives in the box that is
-   already pinned to this corner, so nothing here can meet the ability button or
-   the zoom column.
-   The box itself stays click-through (`pointer-events:none`, inherited from the
-   radio row) - only the handset and the open panel take taps. */
-.radio-toggle{flex:none;display:flex;align-items:center;gap:6px;min-height:30px;padding:4px 10px;background:#1d3a2c;color:#e8e4c8;border:1px solid #7d9a84;font:inherit;font-size:10px;font-weight:700;letter-spacing:.14em;cursor:pointer;pointer-events:auto}
-.radio-toggle:hover{background:#265239}
-.radio-unread{flex:none;min-width:16px;padding:1px 4px;background:#e0a95c;color:#2a1d1d;font-size:9px;font-weight:700;letter-spacing:0}
-.radio-log{display:flex;flex-direction:column;gap:4px;margin-bottom:5px;padding:6px 8px;background:#142a22f2;border:1px solid #75907c;color:#e6e6ce;pointer-events:auto}
-.radio-log[hidden]{display:none}
-.radio-log-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.radio-log-close{flex:none;min-height:26px;padding:2px 8px;background:#2b4a38;color:#e8e4c8;border:1px solid #7d9a84;font:inherit;font-size:9px;font-weight:700;letter-spacing:.12em;cursor:pointer}
-.radio-log-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;max-height:min(38dvh,220px);overflow:auto}
-.radio-log-entry{font-size:11px;line-height:1.25;color:#e6e6ce;overflow-wrap:anywhere}
-.radio-log-entry:last-child{color:#f3e8c9;font-weight:600}
-/* The spoken line is still there for screen readers; it is no longer painted
-   over the field, because the log carries the words from now on. */
-.radio-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
-/* The radio has two voices and only one box. This is the other one: a warning
-   floats directly ABOVE the radio, spans exactly its width and grows upward, so
-   it cannot collide with anything the radio already clears - the ability button
-   and the zoom column live in the corner on the right, and their geometry is
-   pinned against the radio. It is not centred like a vote or an invitation: it
-   does not ask the player to stop playing, and the middle of the field is where
-   the playing happens.
-   It does NOT take the radio's place: the line below keeps speaking, because a
-   warning about a refused upgrade must not hide "Run ended".
-   It takes no taps at all, and there is no dismiss button: the radio box is
-   click-through so a tap reaches the ground beneath it, and a warning must do
-   the same. Chromium found both halves - a button that did not answer, then a
-   button that swallowed a tap meant for a build pad. The clock moves the queue
-   on instead. */
-.radio-alert{position:relative;width:100%;display:flex;align-items:center;gap:8px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
-  pointer-events:none}
-.radio-alert[hidden]{display:none}
-.radio-alert::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}
-.radio-alert-label{flex:none;color:#ffcf8a;font-size:9px;font-weight:700;letter-spacing:.15em}
-.radio-alert-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
-.radio-alert-more{flex:none;font-size:9px;font-weight:700;letter-spacing:.12em;color:#ffcf8a;background:#e0a95c1f;border:1px solid #e0a95c66;padding:2px 5px}
-/* The radio box - and the warning with it - is click-through on purpose: it is a
-   caption over the field, and a tap where it floats must reach the ground
-   beneath. A field that cannot be tapped because a message is showing is worse
-   than a message. Only the dismiss button takes taps for itself. Both halves were
-   found in Chromium: without `pointer-events` on the button the dismiss hit the
-   canvas, and with it on the whole card the card swallowed a build pad. */
-@media(prefers-reduced-motion:reduce){.radio-alert{box-shadow:none}}
-#gameView .battle-foot #message{font-size:12px;letter-spacing:normal}
+/* The one message the field still shows.
+   It flutters in UNDER THE STATUS BAR - not in a corner, because the bottom
+   corners belong to the ability button, the zoom column and the command strip,
+   and not in the middle, because that is where the fighting is. `top` follows
+   the measured bottom edge of the status row, so it never creeps over it.
+   It takes no taps at all and it has no dismiss button: a button over the
+   battlefield is a wall however small it is - Chromium found that twice, first
+   not answering, then swallowing a tap meant for a build pad - and a field that
+   cannot be tapped because a message is showing is worse than a message. Its
+   own clock moves the queue on. */
+#gameView .field-notice{position:absolute;z-index:6;left:50%;top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 6px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:min(340px,calc(100% - 16px));padding:6px 10px 6px 13px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;line-height:1.3;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;pointer-events:none;animation:field-notice-flutter .34s ease-out}
+#gameView .field-notice[hidden]{display:none}
+#gameView .field-notice::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}
+#gameView .field-notice-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+#gameView .field-notice-more{flex:none;font-size:9px;font-weight:700;letter-spacing:.12em;color:#ffcf8a;background:#e0a95c1f;border:1px solid #e0a95c66;padding:2px 5px}
+@keyframes field-notice-flutter{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
+@media(prefers-reduced-motion:reduce){#gameView .field-notice{animation:none;box-shadow:none}}
 #gameView .layout>aside{margin-top:8px}
 #gameView .help{background:#1a3027;border:1px solid #627e69;border-radius:4px}
 #gameView .help summary{min-height:38px;display:flex;align-items:center;color:#e8d39b}
@@ -101,25 +63,25 @@
 }
 @media(max-width:850px){
  #gameView .map-frame .dashboard{top:5px;left:5px;right:51px;gap:3px;max-width:calc(100% - 56px)}
+ /* A narrower row: the notice hangs closer under it. */
+ #gameView .field-notice{top:calc(var(--map-hud-bottom,calc(52px + env(safe-area-inset-top,0px))) + 6px)}
  #gameView .map-frame .dashboard>div{min-width:0;padding:5px 6px;gap:4px}
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:0}
  #gameView .map-frame .dashboard strong{font-size:14px;margin-top:2px}
- #gameView .map-frame .dashboard .hud-xp{min-width:78px;margin-top:4px}
- #gameView .map-frame .dashboard .hud-xp small{font-size:8px;letter-spacing:0}
  #gameView .map-frame .command{position:fixed;bottom:0;left:0;right:0;transform:none;width:100%;padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));border-radius:0;z-index:10}
  #gameView .map-frame .command-controls{gap:4px}
  #gameView .map-frame .command-controls button{font-size:9px;min-height:48px;padding:5px 3px;overflow-wrap:anywhere;letter-spacing:0}
- #gameView .map-frame .wave-info{top:5px;right:5px}
- #gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 6px)}
+ /* Tight strip: the words go, the burger stays. It is still a 44px target. */
+ #gameView .field-ops .field-ops-label{display:none}
+ #gameView .field-ops .field-ops-burger{display:flex}
+ #gameView .field-ops>summary{min-width:44px;padding:5px}
+ #gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 32px)}
  #gameView .map-frame .story-radio{bottom:12px}
  #gameView .map-frame .story-decision{bottom:12px}
- #gameView .battle-foot{padding:7px;min-height:40px}
- #gameView .battle-foot .radio-label{font-size:8px}
 }
 @media(min-width:851px){#gameView .map-viewport canvas[data-lanes="versus"]:not(.map-large canvas){width:min(100%,calc((100dvh - 150px)*.872727));}}
 /* The radio message is the last span; older mobile styles hid the old map label. */
-#gameView .battle-foot #message{display:block;min-width:0}
 
 /* Map-first field view. The lobby and campaign board retain normal page flow. */
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle{position:fixed;inset:0;z-index:11;border:0;overflow:hidden;background:#0c1811}
@@ -130,14 +92,10 @@
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-viewport{height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain}
 #gameView .map-frame .dashboard{top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:70px;max-width:calc(100% - 78px)}
 #gameView .map-frame .dashboard>div{padding:6px 8px}
-#gameView .map-frame .wave-info{top:calc(60px + env(safe-area-inset-top,0px));right:8px}
-#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px)}
+#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 36px)}
 #gameView .map-frame .command{position:absolute;left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(690px,calc(100% - 16px));z-index:4;border-radius:5px;padding:6px}
 #gameView .map-frame .story-radio{bottom:calc(150px + env(safe-area-inset-bottom,0px));}
 #gameView .map-frame .story-decision{bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:5}
-#gameView .battle-foot{position:absolute;z-index:5;left:8px;bottom:calc(66px + env(safe-area-inset-bottom,0px));max-width:min(400px,calc(100% - 16px));min-height:0;padding:6px 9px;background:#11281fe8;border:1px solid #779378;box-shadow:0 3px 15px #0008;pointer-events:none}
-#gameView .battle-foot .radio-label{white-space:nowrap}
-#gameView .battle-foot #message{font-size:11px}
 #gameView .battle .wave-request:not([hidden]){position:absolute;z-index:8;left:8px;right:8px;bottom:calc(112px + env(safe-area-inset-bottom,0px));border:1px solid #cfbc82;background:#1c3529;color:#f7ecd0;border-radius:4px;box-shadow:0 4px 18px #0009}
 #gameView .battle .speed-request:not([hidden]){bottom:calc(168px + env(safe-area-inset-bottom,0px))}
 #gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(156px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
@@ -168,10 +126,23 @@
 @keyframes ability-hud-hint{0%,100%{box-shadow:0 6px 18px #0009}50%{box-shadow:0 0 0 3px #e4ca89b0, 0 6px 18px #0009}}
 @media(prefers-reduced-motion:reduce){#gameView .map-frame .ability-hud--new{animation:none;border-color:#e4ca89}}
 @media(max-width:850px){#gameView .map-frame .ability-hud{gap:6px;padding:7px 9px}}
-.field-ops{position:absolute;z-index:9;right:8px;top:calc(8px + env(safe-area-inset-top,0px));}
-.field-ops>summary{display:grid;place-items:center;min-width:56px;min-height:44px;padding:6px;background:#162d23ed;border:1px solid #a4b395;border-radius:3px;box-shadow:0 3px 12px #0008;color:#f2e2b0;font-size:10px;font-weight:bold;letter-spacing:.06em;cursor:pointer;list-style:none}
-.field-ops>summary::-webkit-details-marker{display:none}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}
-.field-ops-panel{position:absolute;right:0;top:50px;width:min(300px,calc(100vw - 16px));max-height:min(75dvh,650px);overflow:auto;padding:12px;background:#142b22f7;border:1px solid #96a985;box-shadow:0 10px 35px #000b;color:#f1ead3}
+/* The field menu used to float in the top-right corner over the battlefield,
+   under the flag and the map controls, where nobody looked for it. It belongs
+   to the command strip now, between SPEED and END RUN, where the other controls
+   are - and its panel opens UPWARD from there, so it never covers the strip.
+   Written out as MENU where the strip has room; where it is tight the words go
+   and the three-line burger stays. */
+/* The panel is NOT anchored to the button: on a phone the button sits in the
+   middle of the strip, and a 300px panel pinned to its right edge hangs half
+   off the screen (Chromium measured -57px). It is anchored to the strip, which
+   spans the field, and opens upward from there. */
+.field-ops{flex:.8 1 0;min-width:0}
+.field-ops>summary{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:46px;padding:7px 8px;font:inherit;font-size:11px;font-weight:bold;line-height:1.15;letter-spacing:.03em;background:#2b4738;border:1px solid #7a9179;color:#f4ebd1;box-shadow:none;cursor:pointer;list-style:none}
+.field-ops>summary::-webkit-details-marker{display:none}
+.field-ops>summary:hover{filter:brightness(1.15)}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}
+.field-ops-burger{display:none;flex:none;flex-direction:column;justify-content:center;gap:3px;width:16px;height:14px}
+.field-ops-burger i{display:block;height:2px;background:currentColor}
+.field-ops-panel{position:absolute;z-index:12;right:0;bottom:calc(100% + 8px);width:min(300px,calc(100vw - 16px));max-height:min(75dvh,650px);overflow:auto;padding:12px;background:#142b22f7;border:1px solid #96a985;box-shadow:0 10px 35px #000b;color:#f1ead3}
 .field-menu-title{display:block;color:#e2cb90;font-size:10px;letter-spacing:.15em;margin:0 0 8px}
 .field-ops-panel>button,.field-ops-panel select{width:100%;min-height:40px;margin:0 0 6px;padding:7px 10px;background:#304b3a;border:1px solid #7e9578;color:#f4edda;text-align:left;box-shadow:none}
 .field-ops-panel label{margin:8px 0 4px;color:#d4c894}
@@ -225,17 +196,13 @@
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:.05em}
  #gameView .map-frame .dashboard strong{font-size:15px;margin-top:2px}
- #gameView .map-frame .dashboard .hud-xp{min-width:70px;margin-top:3px}
  #gameView .map-frame .command{bottom:calc(5px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 20px));padding:4px}
  #gameView .map-frame .command-controls{gap:4px}
  #gameView .map-frame .command-controls button{min-height:44px;padding:4px;font-size:10px}
- #gameView .battle-foot{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(58px + env(safe-area-inset-bottom,0px));padding:4px 7px;max-width:min(310px,45vw)}
  #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));max-width:180px;padding:3px 7px}
  #gameView .battle-head .eyebrow{display:none}
  #gameView .battle-head h2{font-size:11px}
- #gameView .map-frame .wave-info{right:max(8px,env(safe-area-inset-right,0px));top:calc(55px + env(safe-area-inset-top,0px))}
  #gameView .map-quick-zoom{bottom:calc(146px + env(safe-area-inset-bottom,0px))}
- .field-ops{right:max(8px,env(safe-area-inset-right,0px))}
 }
 #gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(212px + env(safe-area-inset-bottom,0px))}
 /* Touch keeps a 150px column free along the right edge for the zoom and the
@@ -251,11 +218,9 @@
    pixels. Once the two are side by side, the radio can be as tall as it likes:
    they never meet. */
 @media(max-width:850px){
- #gameView .battle-foot{max-width:calc(100% - 150px)}
  #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
 }
 @media(pointer:coarse){
- #gameView .battle-foot{max-width:calc(100% - 150px)}
  #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
 }
 

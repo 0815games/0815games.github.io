@@ -84,14 +84,14 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     // double-tap; that separate behavior belongs in the protocol tests.
     const idle=page=>page.waitForFunction(()=>window.__wavePending===0);
     const tapOrClick=async(page,selector,mobile)=>{await idle(page);if(mobile)await page.locator(selector).tap();else await page.locator(selector).click();await idle(page);};
-    // Reading the radio the way a player does: the log is only on the field
-    // while the handset is open, and any tap out on the field shuts it - so a
-    // test that taps the speed button and then reads the log is reading a panel
-    // that closed three taps ago. Open it, then read it.
-    // No `idle` here: opening the handset is not a wave operation, and this
-    // harness deliberately holds one in flight to test a late receipt - a wait
-    // for `__wavePending` would wait for the very thing the test is holding.
-    const readRadio=async(page,mobile)=>{if(await page.locator('#radioLog').isHidden()){if(mobile)await page.locator('#radioToggle').tap();else await page.locator('#radioToggle').click();}return page.locator('#radioLogList').innerText();};
+    // There is no radio device any more: ordinary traffic is SPOKEN into a
+    // live region that is not painted over the field, so the test reads what
+    // the game last said. (`textContent`, not `innerText`: the region is
+    // deliberately invisible, and `innerText` of an unrendered box is empty.)
+    // No `idle` either - this harness deliberately holds a wave operation in
+    // flight to test a late receipt, and waiting for `__wavePending` would wait
+    // for the very thing it is holding.
+    const readRadio=async page=>page.locator('#message').textContent();
     const guestMobile=(count-1)%3!==2,prompt='#multiplayerPrompt',approve='#multiplayerPromptActions [data-action="approve"]',decline='#multiplayerPromptActions [data-action="decline"]',later='#multiplayerPromptActions [data-action="later"]';
     const waitPrompt=page=>page.locator(prompt).waitFor({state:'visible'});
     const checkPrompt=async page=>{const box=await page.locator(prompt).evaluate(element=>{const r=element.getBoundingClientRect(),buttons=[...element.querySelectorAll('button')].map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height};});return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,scroll:element.scrollWidth,client:element.clientWidth,buttons};});assert.ok(box.left>=0&&box.top>=0&&box.right<=box.width+1&&box.bottom<=box.height+1&&box.scroll<=box.client+1,`${mode}: centered card fits: ${JSON.stringify(box)}`);assert.ok(Math.abs((box.left+box.right)/2-box.width/2)<2&&Math.abs((box.top+box.bottom)/2-box.height/2)<2,`${mode}: card is centered`);assert.ok(box.buttons.every(b=>b.width>=44&&b.height>=44),`${mode}: buttons have touch-sized targets`);};
@@ -173,21 +173,21 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     const beforeSpawn=matchFields().map(field=>field.spawnIndex);for(let n=0;n<100;n++)core.advance();
     assert.ok(matchFields().some((field,i)=>field.spawnIndex>beforeSpawn[i]),`${mode}: the wave advanced while the card was open`);await sync();
     await tapOrClick(host,decline,true);await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    // The radio is a device now: it starts closed and opens into the log. The
-    // battle status is not printed over the field any more, it is kept - and
-    // counted - until the player asks for it.
-    await guest.locator('#radioToggle').click();
-    assert.equal(await guest.locator('#radioLog').isVisible(),true,'the requester can open the battle radio on mobile');
-    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
+    // The battle status is not raised as a notice: the device that kept it is
+    // gone, and ordinary traffic is spoken out of sight. (A warning from an
+    // earlier step may well still be standing - it has its own turn - so this
+    // checks WHAT the notice says, not whether it is there at all.)
+    assert.doesNotMatch(await guest.locator('#fieldNoticeText').textContent(),/2× request ended/i,'ordinary traffic is spoken, not raised over the field');
+    assert.match(await readRadio(guest),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
     assert.equal(core.snapshotFor('alice').speedControl.speed,1,'decline never accelerates the wave');
     // Hold only the guest's success receipt: the host declines meanwhile, so a
     // late receipt must not replace the newer status with a false waiting bar.
     holdGuestReceipt=true;await idle(guest);if(guestMobile)await guest.locator('#speed').tap();else await guest.locator('#speed').click();
     await waitPrompt(host);await chain;assert.equal(typeof releaseHeldReceipt,'function');await tapOrClick(host,decline,true);
     await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i);
+    assert.match(await readRadio(guest),/2× request ended\. Check the current speed/i);
     releaseHeldReceipt();releaseHeldReceipt=null;await idle(guest);
-    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
+    assert.match(await readRadio(guest),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
     await tapOrClick(guest,'#speed',guestMobile);await guest.waitForFunction(()=>!document.getElementById('speedRequest').hidden);await waitPrompt(host);
     await tapOrClick(guest,'#speed',guestMobile);await host.locator(prompt).waitFor({state:'hidden'});
     await tapOrClick(guest,'#speed',guestMobile);await waitPrompt(host);
@@ -209,16 +209,9 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
      if(i<count-2)assert.equal(core.snapshotFor('alice').speedControl.speed,1,'all other players must approve');
     }
     for(const {page} of pages){await page.waitForFunction(()=>document.getElementById('speedRequest').hidden);assert.match(await page.locator('#speed').innerText(),/2×/);}
-    assert.match(await readRadio(guest,guestMobile),/2× approved by all players/i);
-    // And it shuts: the panel is over the battlefield, so reading is a visit,
-    // not a state. Both ways a player does it, in a real browser with the game
-    // running - the cross on the panel, and the Escape key.
-    await tapOrClick(guest,'#radioLogClose',guestMobile);
-    assert.equal(await guest.locator('#radioLog').isVisible(),false,`${mode}: the cross shuts the radio`);
-    await tapOrClick(guest,'#radioToggle',guestMobile);
-    assert.equal(await guest.locator('#radioLog').isVisible(),true,`${mode}: and the handset opens it again`);
-    await guest.keyboard.press('Escape');
-    assert.equal(await guest.locator('#radioLog').isVisible(),false,`${mode}: Escape shuts the radio`);
+    assert.match(await readRadio(guest),/2× approved by all players/i);
+    // And nothing of the old device is left on the field to read it from.
+    assert.equal(await guest.locator('#radioLog').count(),0,`${mode}: the radio log is gone`);
     assert.equal(core.snapshotFor('alice').speedControl.speed,2);
     await tapOrClick(host,'#speed',true);assert.equal(core.snapshotFor('alice').speedControl.speed,1);
     assert.deepEqual(errors,[]);mark('complete');
