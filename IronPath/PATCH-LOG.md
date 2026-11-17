@@ -2541,6 +2541,18 @@ Gebaut:
   Knopf, keine Tipps** (`pointer-events:none`), bei reduzierter Bewegung ohne
   Animation.
 
+- **Was Chromium beim ersten Lauf gefunden hat:** eine Klassenregel reicht nicht.
+  „Karte einpassen“ und der Upgrade-Hinweis sahen nicht nur anders aus, weil sie
+  eigene Regeln hatten – sie erbten den **gestanzten Eisenknopf** aus
+  `interface-redesign.css` (`button:not(.primary):not([disabled]):not(.mode-card):not(.act-node)`,
+  Spezifität **0-3-1**): Farbverlauf statt dunkler Platte, Silberkante statt
+  Haarlinie. Eine Regel `.field-controls>button` (0-1-1) verliert dagegen, egal
+  in welcher Datei sie steht. Die gemeinsame Regel trägt deshalb eine **ID**
+  (`#gameView .field-controls>button:not(.ability-hud)`) und lässt die Fähigkeit
+  draußen, damit deren eigene Maße – vor allem die Breite `min(196px, 50vw -
+  20px)` – nicht überschrieben werden. `tests/ability-hud-placement.test.mjs`
+  hält das fest, samt Wächter, dass die Eisenregel, die es zu überstimmen gilt,
+  noch existiert.
 - **Warum die Titelkarte keine Tipps nimmt:** sie liegt über einem Feld, auf dem
   der Spieler vielleicht schon baut. Eine Karte, die einen Tipp schluckt, ist
   eine Wand – dieselbe Lektion, die die Warnkarte zweimal im Chromium gelernt

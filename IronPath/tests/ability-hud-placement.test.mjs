@@ -88,6 +88,22 @@ test('the frame is the box the HUD measures against',()=>{
   // the same crowding.
   const reserved=[...css.matchAll(/@media\((?:max-width:850px|pointer:coarse)\)\{\n #gameView \.map-frame \.ability-hud\{width:min\(130px[^}]*\)\}\n\}/g)];
   assert.equal(reserved.length,2,`the 150px column is reserved for narrow screens and for touch alike (${reserved.length} of 2)`);
+  // The shared frame has to outrank the iron-stamp rule in
+  // interface-redesign.css (`button:not(.primary):not([disabled]):not(.mode-card):not(.act-node)`,
+  // specificity 0-3-1). Chromium measured what happens otherwise: the zoom button
+  // stayed a stamped gradient bar with a silver rim next to the ability's dark
+  // plate - "verschiedene Optik", exactly the complaint. A class-only rule
+  // (0-1-1) loses to it, so the frame carries an id.
+  const iron=readFileSync(new URL('../interface-redesign.css',import.meta.url),'utf8');
+  assert.match(iron,/button:not\(\.primary\):not\(\[disabled\]\):not\(\.mode-card\):not\(\.act-node\)[\s\S]*?\{[^}]*background:linear-gradient/,
+    'the stamped-iron button rule this has to outrank still exists');
+  const sharedFrame=css.split('\n').find(line=>line.includes('.field-controls>button')&&line.includes('border-radius'))||'';
+  assert.match(sharedFrame,/#gameView \.field-controls>button:not\(\.ability-hud\)\{[^}]*background:#162b21f2/,
+    'the frame is declared with an id, so it beats the 0-3-1 iron rule');
+  assert.match(sharedFrame,/min-height:48px/,'and it carries the ability button\'s own height');
+  assert.match(sharedFrame,/padding:8px 12px 8px 10px/,'its padding');
+  assert.match(sharedFrame,/border-radius:8px/,'and its corner - the three field buttons are one family');
+  assert.doesNotMatch(sharedFrame,/width:min\(196px/,'but not the ability\'s width - that one belongs to the HUD alone');
   // A disabled HUD must not swallow taps meant for the battlefield under it.
   const disabled=css.split('\n').find(line=>line.includes('.ability-hud:disabled'))||'';
   assert.match(disabled,/pointer-events:none/,'a disabled HUD lets taps through to the field');

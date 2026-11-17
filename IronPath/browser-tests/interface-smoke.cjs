@@ -294,21 +294,32 @@ const fs = require('node:fs');
       const rim=await page.evaluate(()=>{
         const zoom=document.getElementById('mapQuickZoom'),perk=document.getElementById('runPerkReopen'),ability=document.getElementById('ability');
         zoom.style.display='block';perk.hidden=false;ability.hidden=false;
+        // The ability glows gold while it is ready - that is a STATE, not a
+        // second frame. It is measured neutral, and the glow is checked after.
+        const state=ability.dataset.state;ability.dataset.state='cooldown';
         const column=document.getElementById('fieldControls'),command=document.querySelector('#gameView .map-frame .command');
         const read=el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);
           return {id:el.id,top:box.top,bottom:box.bottom,left:box.left,right:box.right,
             radius:style.borderRadius,frame:style.borderTopWidth+' '+style.borderTopStyle,plate:style.backgroundColor};};
         const columnBox=column.getBoundingClientRect(),commandBox=command.getBoundingClientRect();
-        return {parts:[perk,zoom,ability].map(read),
+        const parts=[perk,zoom,ability].map(read);
+        const neutral=parts[2].plate;
+        ability.dataset.state=state;
+        return {parts,neutral,glow:getComputedStyle(ability).backgroundColor,
           column:{top:columnBox.top,bottom:columnBox.bottom,left:columnBox.left,right:columnBox.right},
           command:{top:commandBox.top}};
       });
+      // The plate is measured with the ability NOT glowing: three buttons, one
+      // look. Before this they were three guesses - the zoom button was a stamped
+      // gradient bar (the iron rule in interface-redesign.css outranked it) next
+      // to the ability's dark plate.
       for(const part of rim.parts){
-        assert.equal(part.radius,rim.parts[0].radius,`${name}: ${part.id} has the same corner as the ability button (${part.radius} vs ${rim.parts[0].radius})`);
+        assert.equal(part.radius,rim.parts[0].radius,`${name}: ${part.id} has the same corner as the other field buttons (${part.radius} vs ${rim.parts[0].radius})`);
         assert.equal(part.frame,rim.parts[0].frame,`${name}: ${part.id} has the same frame (${part.frame} vs ${rim.parts[0].frame})`);
-        assert.equal(part.plate,rim.parts[0].plate,`${name}: ${part.id} has the same plate (${part.plate} vs ${rim.parts[0].plate})`);
+        assert.equal(part.plate,rim.neutral,`${name}: ${part.id} has the same plate (${part.plate} vs ${rim.neutral})`);
         assert.ok(Math.abs(part.right-rim.parts[0].right)<=1,`${name}: ${part.id} ends on the same rim (${Math.round(part.right)} vs ${Math.round(rim.parts[0].right)})`);
       }
+      assert.notEqual(rim.glow,rim.neutral,`${name}: the ready ability still glows - a state, not a second frame (${rim.glow})`);
       for(let i=1;i<rim.parts.length;i++)
         assert.ok(rim.parts[i].top>=rim.parts[i-1].bottom-1,`${name}: ${rim.parts[i].id} does not sit on ${rim.parts[i-1].id} (${Math.round(rim.parts[i].top)} < ${Math.round(rim.parts[i-1].bottom)})`);
       assert.ok(rim.column.right<=width+1&&rim.column.left>=-1,`${name}: the column stays inside the width (${JSON.stringify(rim.column)})`);

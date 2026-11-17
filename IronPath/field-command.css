@@ -131,12 +131,15 @@
 #gameView .map-frame .field-controls>*{pointer-events:auto}
 #gameView .map-frame .field-controls>[hidden]{display:none}
 /* One look for all three of them - the look the ability button always had: a
-   dark plate, a hairline rim, the same corner and the same shadow. */
-/* Deliberately a plain class rule: the ability button's own `#gameView
-   .map-frame .ability-hud` measurements must keep winning, so this only fills
-   in what the zoom button and the upgrade reminder lack. */
-.field-controls>button{width:auto;max-width:min(45vw,320px);min-height:48px;margin:0;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;font-size:10px;font-weight:bold;letter-spacing:.06em;text-align:left;cursor:pointer}
-.field-controls>button:hover:not(:disabled){filter:brightness(1.15)}
+   dark plate, a hairline rim, the same corner and the same shadow.
+   It has to outrank the iron-stamp rule in interface-redesign.css
+   (`button:not(.primary):not([disabled]):not(.mode-card):not(.act-node)`,
+   specificity 0-3-1) - that rule is what made the zoom button a stamped gradient
+   bar next to the ability's plate. The ability is excluded, not forgotten: its
+   own `#gameView .map-frame .ability-hud` rule carries the same frame and the
+   width it needs. */
+#gameView .field-controls>button:not(.ability-hud){width:auto;max-width:min(45vw,320px);min-height:48px;margin:0;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;font-size:10px;font-weight:bold;letter-spacing:.06em;text-align:left;cursor:pointer}
+#gameView .field-controls>button:not(.ability-hud):hover:not(:disabled){filter:brightness(1.15)}
 #gameView .battle .solo-objective:not([hidden]),#gameView .battle .versus-status:not([hidden]){position:absolute;z-index:5;top:calc(65px + env(safe-area-inset-top,0px));left:8px;max-width:min(360px,calc(100% - 76px));margin:0;background:#183027ed}
 #gameView .map-frame .run-perk-panel{z-index:12}
 /* The ability HUD: one button on the field, in the bottom-right corner where a
