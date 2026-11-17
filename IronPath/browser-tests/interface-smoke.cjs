@@ -262,6 +262,110 @@ const fs = require('node:fs');
       assert.ok(panel&&panel.height>0,`${name}: the field menu opens (${JSON.stringify(panel)})`);
       assert.ok(panel.y+panel.height<=menuBox.y+1,`${name}: it opens upward, clear of the strip (panel ${JSON.stringify(panel)} vs menu ${JSON.stringify(menuBox)})`);
       assert.ok(panel.y>=-1&&panel.x>=-1&&panel.x+panel.width<=width+1,`${name}: and stays inside the frame (${JSON.stringify(panel)})`);
+      // ONE FAMILY. DEPLOY, SPEED, the MENU burger and END RUN share a frame and
+      // a row. The burger used to be styled beside the buttons: square corners
+      // where the buttons are rounded, and a box that stopped short of the row,
+      // so it sat higher than its neighbours.
+      const strip=await page.evaluate(()=>{
+        const parts=[...['start','speed','endRun'].map(id=>document.getElementById(id)),document.querySelector('#fieldOps > summary')];
+        return parts.map(el=>{
+          const box=el.getBoundingClientRect(),style=getComputedStyle(el);
+          return {id:el.id||'menu',top:box.top,bottom:box.bottom,left:box.left,right:box.right,
+            radius:style.borderRadius,frame:style.borderTopWidth+' '+style.borderTopStyle,
+            type:style.fontFamily,size:style.fontSize,weight:style.fontWeight};
+        });
+      });
+      for(const part of strip.slice(1)){
+        assert.equal(part.radius,strip[0].radius,`${name}: ${part.id} has the same corner as #start (${part.radius} vs ${strip[0].radius})`);
+        assert.equal(part.frame,strip[0].frame,`${name}: ${part.id} has the same frame (${part.frame} vs ${strip[0].frame})`);
+        assert.equal(part.type,strip[0].type,`${name}: ${part.id} uses the same typeface`);
+        assert.equal(part.size,strip[0].size,`${name}: ${part.id} uses the same type size (${part.size} vs ${strip[0].size})`);
+        assert.equal(part.weight,strip[0].weight,`${name}: ${part.id} uses the same type weight`);
+        assert.ok(Math.abs(part.top-strip[0].top)<=1,`${name}: ${part.id} starts on the same line (${Math.round(part.top)} vs ${Math.round(strip[0].top)})`);
+        assert.ok(Math.abs(part.bottom-strip[0].bottom)<=1,`${name}: ${part.id} ends on the same line (${Math.round(part.bottom)} vs ${Math.round(strip[0].bottom)})`);
+      }
+      const ordered=[...strip].sort((a,b)=>a.left-b.left);
+      for(let i=1;i<ordered.length;i++)
+        assert.ok(ordered[i].left>=ordered[i-1].right-1,`${name}: ${ordered[i].id} does not sit on ${ordered[i-1].id} (${Math.round(ordered[i].left)} < ${Math.round(ordered[i-1].right)})`);
+      // THE RIGHT RIM, ONE COLUMN. "Fit map", the field-upgrade reminder and the
+      // ability button used to be positioned independently and met each other on
+      // a phone. The zoom button only shows for a coarse pointer, so it is forced
+      // visible here - this is what a touch player sees.
+      // The ability glows gold while it is ready - that is a STATE, not a second
+      // frame. It is measured neutral here, and the glow is checked afterwards.
+      // Buttons transition their colours over 150 ms, so the reading waits: right
+      // after the attribute change the computed value is still the old one.
+      await page.evaluate(()=>{
+        const zoom=document.getElementById('mapQuickZoom'),perk=document.getElementById('runPerkReopen'),ability=document.getElementById('ability');
+        zoom.style.display='block';perk.hidden=false;ability.hidden=false;
+        window.__abilityState=ability.dataset.state;ability.dataset.state='cooldown';
+      });
+      await page.waitForTimeout(300);
+      const rim=await page.evaluate(()=>{
+        const zoom=document.getElementById('mapQuickZoom'),perk=document.getElementById('runPerkReopen'),ability=document.getElementById('ability');
+        const column=document.getElementById('fieldControls'),command=document.querySelector('#gameView .map-frame .command');
+        const read=el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);
+          return {id:el.id,top:box.top,bottom:box.bottom,left:box.left,right:box.right,
+            radius:style.borderRadius,frame:style.borderTopWidth+' '+style.borderTopStyle,plate:style.backgroundColor};};
+        const columnBox=column.getBoundingClientRect(),commandBox=command.getBoundingClientRect();
+        const parts=[perk,zoom,ability].map(read);
+        return {parts,neutral:parts[2].plate,
+          column:{top:columnBox.top,bottom:columnBox.bottom,left:columnBox.left,right:columnBox.right},
+          command:{top:commandBox.top}};
+      });
+      // The plate is measured with the ability NOT glowing: three buttons, one
+      // look. Before this they were three guesses - the zoom button was a stamped
+      // gradient bar (the iron rule in interface-redesign.css outranked it) next
+      // to the ability's dark plate.
+      for(const part of rim.parts){
+        assert.equal(part.radius,rim.parts[0].radius,`${name}: ${part.id} has the same corner as the other field buttons (${part.radius} vs ${rim.parts[0].radius})`);
+        assert.equal(part.frame,rim.parts[0].frame,`${name}: ${part.id} has the same frame (${part.frame} vs ${rim.parts[0].frame})`);
+        assert.equal(part.plate,rim.neutral,`${name}: ${part.id} has the same plate (${part.plate} vs ${rim.neutral})`);
+        assert.ok(Math.abs(part.right-rim.parts[0].right)<=1,`${name}: ${part.id} ends on the same rim (${Math.round(part.right)} vs ${Math.round(rim.parts[0].right)})`);
+      }
+      for(let i=1;i<rim.parts.length;i++)
+        assert.ok(rim.parts[i].top>=rim.parts[i-1].bottom-1,`${name}: ${rim.parts[i].id} does not sit on ${rim.parts[i-1].id} (${Math.round(rim.parts[i].top)} < ${Math.round(rim.parts[i-1].bottom)})`);
+      assert.ok(rim.column.right<=width+1&&rim.column.left>=-1,`${name}: the column stays inside the width (${JSON.stringify(rim.column)})`);
+      assert.ok(rim.column.bottom<=rim.command.top+1,`${name}: and above the command strip, not across it (column bottom ${Math.round(rim.column.bottom)} vs strip top ${Math.round(rim.command.top)})`);
+      // Restored, the glow is back: the same button, one state lighter.
+      await page.evaluate(()=>{
+        document.getElementById('mapQuickZoom').style.display='';
+        document.getElementById('runPerkReopen').hidden=true;
+        document.getElementById('ability').dataset.state=window.__abilityState;
+      });
+      await page.waitForTimeout(300);
+      const glow=await page.evaluate(()=>getComputedStyle(document.getElementById('ability')).backgroundColor);
+      assert.notEqual(glow,rim.neutral,`${name}: the ready ability still glows - a state, not a second frame (${glow})`);
+      // THE MAP ANNOUNCES ITSELF ONCE. A title card, centred, with the field
+      // drawn in the game's own art - and then it goes away.
+      await page.evaluate(()=>{
+        const card=document.getElementById('mapIntro');
+        card.hidden=false;
+        document.getElementById('mapIntroLabel').textContent='FREE PLAY';
+        document.getElementById('mapName').textContent='The Last Road';
+      });
+      await centredPopup('#mapIntro');
+      const title=await page.evaluate(()=>{
+        const card=document.getElementById('mapIntro'),style=getComputedStyle(card),box=card.getBoundingClientRect();
+        const art=document.getElementById('mapIntroArt').getBoundingClientRect();
+        const points=[[0.5,0.5],[4,0.5],[box.width-4,0.5]].map(([rx,ry])=>[Math.round(box.left+box.width*rx),Math.round(box.top+box.height*ry)]);
+        return {pointer:style.pointerEvents,buttons:card.querySelectorAll('button').length,
+          art:{width:art.width,height:art.height},
+          taps:points.map(([x,y])=>{const hit=document.elementFromPoint(x,y);return {x,y,inside:!!(hit&&hit.closest('#mapIntro')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};})};
+      });
+      assert.equal(title.pointer,'none',`${name}: the title takes no taps`);
+      assert.equal(title.buttons,0,`${name}: and it has no button to dismiss`);
+      assert.ok(title.art.width>40&&title.art.height>20,`${name}: it carries the battlefield artwork (${Math.round(title.art.width)}x${Math.round(title.art.height)})`);
+      for(const tap of title.taps)
+        assert.equal(tap.inside,false,`${name}: a tap through the title reaches the field, not the title (hit ${tap.at} at ${tap.x},${tap.y})`);
+      // And the corner no longer repeats it: the map name is said once, then never.
+      const corner=await page.evaluate(()=>{
+        const head=document.querySelector('.battle-head');
+        return {visible:!!head&&head.checkVisibility(),names:document.querySelectorAll('#gameView #mapName').length};
+      });
+      assert.equal(corner.visible,false,`${name}: the corner plate is gone from the field`);
+      assert.equal(corner.names,1,`${name}: the map name exists once, on the title (${corner.names})`);
+      await page.evaluate(()=>{document.getElementById('mapIntro').hidden=true;});
       await page.locator('#fieldOps > summary').click();
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the

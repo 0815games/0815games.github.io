@@ -21,8 +21,14 @@ function oval(ctx,x,y,rx,ry,fill,stroke=ink,width=2){ctx.beginPath();ctx.ellipse
 function fallbackMarker(ctx,x,y,label,color='#d9c08a',rx=15,ry=13){
  ctx.save();oval(ctx,x,y,rx,ry,'#1c3029',color,2);ctx.fillStyle=color;ctx.font='bold 10px Arial';ctx.textAlign='center';ctx.fillText(label,x,y+3);ctx.restore();
 }
+// The colour of the ground under a theme. Exported: the opening title paints a
+// picture of the map with the very same colours the field will use seconds
+// later, and a second copy of this palette is a palette that drifts apart.
+export function themeGroundColor(theme='road'){
+  return ({forest:'#354b3c',outpost:'#5b5748',urban:'#555a55',scrub:'#6f5445',arctic:'#a8c1c3',marsh:'#41594b',junction:'#3b4340'})[theme]||'#455740';
+}
 function ground(ctx,theme='road',width=960,height=540){
-  ctx.fillStyle=({forest:'#354b3c',outpost:'#5b5748',urban:'#555a55',scrub:'#6f5445',arctic:'#a8c1c3',marsh:'#41594b',junction:'#3b4340'})[theme]||'#455740';ctx.fillRect(0,0,width,height);
+  ctx.fillStyle=themeGroundColor(theme);ctx.fillRect(0,0,width,height);
   // Restrained map-like contour detail while a texture is unavailable.
   ctx.save();ctx.globalAlpha=.12;
   for(let i=0;i<75;i++){const x=(i*163+47)%width,y=(i*113+31)%height;oval(ctx,x,y,14+(i%4)*6,4+(i%3)*3,i%2?'#182a23':'#d7d3b1',null);}

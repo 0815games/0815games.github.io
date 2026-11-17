@@ -1046,6 +1046,22 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   - [x] Der **Menü-Knopf** sitzt jetzt ganz unten in der Befehlsleiste zwischen
     TEMPO und EINSATZ BEENDEN – ausgeschrieben, und als Burger mit drei Strichen,
     wenn die Leiste zu eng wird.
+- [x] **Einheitlich: eine Spalte rechts, ein Rahmen unten, der Kartenname als
+  Überschrift** (Betreiber, 2026-11-17, auf dem Gerät gesehen). Drei
+  Meldungen, gebaut mit [IPL-0053](PATCH-LOG.md#ipl-0053--block-9-einheitlich--der-kartenname-wird-einmal-zur-überschrift):
+  - [x] *„Karte einpassen“ und der Fähigkeitsknopf sitzen ein bisschen
+    aufeinander und haben verschiedene Optik – es sollte alles einheitlich
+    sein.“* → eine Spalte am rechten Rand mit einem Abstand, ein Aussehen für
+    alle drei Knöpfe (Upgrade-Hinweis, Zoom, Fähigkeit).
+  - [x] *„Der Bürger-Button hat einen anderen Rahmen und sitzt anders als die
+    Buttons drum herum.“* → Rahmen, Rundung und Schrift der Befehlsleiste
+    gelten jetzt für den Burger genauso, und er füllt die Reihe.
+  - [x] *„Unten links steht permanent der Kartenname. Ich möchte ihn einmal wie
+    als Überschrift des Kampfes am Anfang, schön und prunkvoll, gerne auch mit
+    Artwork im Ingame-Stil, mittig am Bildschirm haben, wenn die Karte geladen
+    wird – und dann weggehen.“* → das Kästchen unten links ist entfernt; die
+    Karte bekommt eine **Titelkarte** mit dem gemalten Feld, einmal, zentriert,
+    ohne Knopf und ohne Tipps.
 - [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
   [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
   [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):

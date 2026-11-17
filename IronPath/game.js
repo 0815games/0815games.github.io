@@ -44,6 +44,7 @@ import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpg
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
 import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261117-shimmer1';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
+import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
 import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261112-kits1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
@@ -499,7 +500,7 @@ function renderResults(target){
     // Only replace the old run after the version check and confirmation succeed.
     soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -536,6 +537,11 @@ function renderResults(target){
   // No dismiss button: the notice is a caption over the field and takes no
   // taps. It steps aside on its own, and the game clears it when the run does.
   const fieldNotice=createFieldNotice(document,{translate:tr});
+  // The map announces itself once, when it is loaded - a title card with the
+  // battlefield drawn in the game's own art. After that the field says nothing
+  // more about itself: the player knows where they are.
+  const mapIntro=createMapIntro(document,{translate:tr,getMap:mapId=>{try{return getMap(mapId);}catch{return null;}}});
+  let announcedMap=null;
   let lastNotice=null;
   // Ordinary traffic: spoken for a screen reader, not painted over the field.
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
@@ -698,6 +704,9 @@ function renderResults(target){
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
     $('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
+    // One announcement per loaded map. `reset()` clears `announcedMap`, so a new
+    // run on the same ground is announced again - it is a new battle.
+    if(announcedMap!==state.mapId){announcedMap=state.mapId;mapIntro.show(state.mapId,{label:$('battleLabel').textContent});}
     const workspace=$('gameWorkspace');
     const fullBattle=!!coop&&!workspace.hidden&&workspace.dataset.screen==='online'&&workspace.dataset.onlineReady==='true'&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0;
     const canvasHeight=fullBattle?Math.max(1,Math.round(logicalWidth*mapViewport.clientHeight/mapViewport.clientWidth)):versus?Math.round(logicalWidth*((map.height||540)*2+20)/(map.width||960)):540;
