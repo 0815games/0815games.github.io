@@ -568,7 +568,6 @@ function renderAfkText(){
  $('afkFailureTitle').textContent=afkText('Session protection unavailable','Sitzungsschutz nicht verfügbar');
  $('afkFailureDetail').textContent=afkText('The browser could not protect the shared session. Reload the game before continuing.','Der Browser konnte die gemeinsame Sitzung nicht schützen. Lade das Spiel neu, bevor du fortfährst.');
  $('afkSessionReload').textContent=afkText('RELOAD GAME','SPIEL NEU LADEN');
- if(afkNotice()&&!user&&!auth.currentUser)showAfkRestCard();
 }
 // Half an hour away and the session is closed. That deserves the field's own
 // picture, not a line of text nobody reads: a soldier sitting down, the rifle
@@ -590,6 +589,12 @@ function showAfkRestCard(){
  const dialog=$('afkRestDialog');if(dialog&&!dialog.open)dialog.showModal?.();
 }
 onLanguageChange(renderAfkText);renderAfkText();
+// The card is an event, not a text render: it opens once the sign-out is over,
+// and again after a reload (the notice lives in sessionStorage). Never from
+// inside the sign-out itself - that is the moment the page is held inert and a
+// version probe is still to come.
+function maybeShowAfkCard(){if(afkNotice()&&!user&&!auth.currentUser)showAfkRestCard();}
+maybeShowAfkCard();
 $('afkRestAccept').onclick=()=>{try{$('afkRestDialog').close();}catch{}afkNotice(false);try{$('email').focus();}catch{}};
 $('afkSessionFailure').addEventListener('cancel',event=>event.preventDefault());
 $('afkSessionReload').onclick=()=>window.location.reload();
@@ -617,6 +622,7 @@ async function signOutAfterIdle({stillIdle}){
   afkTransition=false;$('afkSessionStatus').hidden=true;
   if(!accountTerminated&&!releaseFrozen){
    document.documentElement.inert=wasInert;
+   maybeShowAfkCard();
    if(!sessionTabLock.isHeld()){
     // Never continue as an unprotected cooperating tab after a lock failure.
     releaseFrozen=true;document.documentElement.inert=false;
