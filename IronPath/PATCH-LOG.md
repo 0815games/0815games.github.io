@@ -2071,3 +2071,63 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
     über die API lesbar, obwohl ich die Log-Datei selbst nicht herunterladen
     kann. Das ist der Weg, wie die Prüfliste zu mir spricht.
 
+## IPL-0045 – Block 3 / D1: Schüsse als Spur statt als Linie
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/423312cc-0815games-github-io`,
+  Basis `010db2c` (Main; PR #304 mit D2 davor).
+- **Auftrag:** „Und weiter geht's.“ – der Rest von Block 3, hier D1: Schüsse
+  lesbar und passend zum Spielstil.
+- **Was vorher gemalt wurde:** die **ganze Linie** vom Lauf bis zum Ziel, in
+  voller Länge, für das ganze Leben des Schusses, ohne Ausblenden. Zwanzig
+  feuernde Türme ergaben zwanzig Linien, die ein Viertelsekunde lang über dem
+  Feld lagen. Gegner, Wege und Warnungen verschwanden dahinter – genau die
+  Beschwerde, deretwegen der Block geschrieben wurde.
+- **Was jetzt gemalt wird:** eine **kurze Spur, die läuft**. Sie verlässt den
+  Lauf, wandert die Linie entlang und ist wieder weg. Der Mündungsblitz und der
+  Einschlag sind zwei Schläge, nicht ein Brei: der Blitz ist erloschen, bevor
+  das Geschoss ankommt.
+- **Fünf Handschriften** (Zahlen in `shot-tracers.mjs`, Weltmaß):
+
+  | Waffe | Reisezeit | Spurlänge | Kern / Kontur | Einschlag |
+  | --- | --- | --- | --- | --- |
+  | MG | 42 % des Lebens | 44 | 1,7 / 3,4 | Ring, klein |
+  | Kanone | 72 % | 26 | 3,2 / 5,6 | Ring, warm und schwer |
+  | Flak | 52 % | 32 | 2,1 / 4,2 | **doppelt**, platzt in der Luft |
+  | Scharfschütze | 18 % | 130 | 1,3 / 2,8 | heller Ring mit Kreuz |
+  | Soldat | 34 % | 36 | 1,8 / 3,4 | Ring, klein |
+
+  Drei Achsen, auf denen sich die Waffen unterscheiden: Länge, Gewicht, Tempo –
+  und dazu die Form des Einschlags.
+- **Was der Prüfschritt fand:** Der Scharfschütze hatte seinen Mündungsblitz
+  auf 26 % des Lebens gesetzt, brauchte für den Weg aber nur 18 %: der Blitz
+  brannte noch, wenn die Kugel längst saß. Der Prüfschritt „der Blitz ist aus,
+  bevor das Geschoss ankommt“ schlug an – bei der Waffe, bei der man es am
+  wenigsten erwartet, weil alles so schnell geht. Auf 12 % gesetzt.
+- **Verdecken:** höchstens 24 Spuren gleichzeitig, und zwar die **neuesten**;
+  die älteren werden nicht gemalt – sie haben trotzdem getroffen. Die Spur
+  behält ihr Gewicht auf dem Schirm, wenn herausgezoomt wird, aber der Ausgleich
+  ist **begrenzt** (auf 0,6…1,6-fach): eine Spur, die beim Zoomen über das Feld
+  wächst, verdeckt genau das, was sie nicht verdecken darf. Blitze sind
+  gedimmt (0,9 / 0,85), damit ein volles Feld blendfrei bleibt.
+- **Nur Darstellung:** `shot-tracers.mjs` rechnet nur; es schrebt nichts in den
+  Schuss zurück (Prüfschritt). Treffer, Schaden, Reichweite, Schussfrequenz und
+  Belohnungen sind unberührt; es entstehen keine zusätzlichen und keine
+  nachträglichen Treffer.
+- **Was offen bleibt:** die **Datenmenge**. Wie viele Schüsse über das Netz
+  gehen, bestimmt die Simulation, nicht der Maler – und für D1 sollte zunächst
+  nur die Darstellung wechseln. Notiert, nicht angefasst.
+- **Prüfungen:** `tests/shot-tracers.test.mjs` **10/10** – die Spur deckt nie
+  die ganze Linie ab, sie wandert und hält am Ziel, jede Waffe trägt ihre eigene
+  Handschrift, der Blitz ist vor dem Einschlag aus, reduzierte Bewegung behält
+  die Spur und lässt das Theater weg, der Zoom-Ausgleich bleibt bescheiden,
+  unlesbare Schüsse malen nichts statt Unsinn, das Lesen schreibt nicht zurück,
+  und der Maler lässt den Überschuss tatsächlich weg (ein Schuss mehr als 24
+  kostet **keinen** einzigen Strich mehr). Vollständiger serieller Lauf
+  **1080 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `shot-tracers.mjs`,
+  `tests/shot-tracers.test.mjs` (neu); `cartoon-art.mjs` (Maler und Obergrenze);
+  `PATCH-BLOECKE.md` (D1 abgehakt, Datenmenge und Abnahme offengelassen).
+- **Grenzen:** **Niemand hat es gesehen.** Alles hier ist gerechnet und
+  geprüft, nicht beurteilt. Ob die Kanone „schwer“ aussieht und die Flak
+  „platzt“, entscheidet erst ein Mensch auf dem Schirm.
