@@ -2496,6 +2496,88 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   wollte, verliert sie jetzt aus dem Blick – das ist der Preis des Wunsches, und
   der Zähler ist der Ersatz dafür.
 
+## IPL-0053 – Block 9: Einheitlich – der Kartenname wird einmal zur Überschrift
+
+Der Betreiber hat auf dem Gerät drei Dinge gesehen und gemeldet:
+
+- **„Karte einpassen“ und der Fähigkeitsknopf sitzen ein bisschen aufeinander
+  und haben verschiedene Optik – es sollte alles einheitlich sein.“**
+- **„Der Bürger-Button hat einen anderen Rahmen und sitzt anders als die Buttons
+  drum herum.“**
+- **„Unten links steht permanent der Kartenname. Ich möchte ihn einmal wie als
+  Überschrift des Kampfes am Anfang, schön und prunkvoll, gerne auch mit Artwork
+  im Ingame-Stil, mittig am Bildschirm haben, wenn die Karte geladen wird – und
+  dann weggehen; dann brauche ich keine Information mehr über die Karte selbst.“**
+
+Gebaut:
+
+- **Eine Spalte am rechten Rand.** Der Hinweis auf das Feld-Upgrade, „Karte
+  einpassen“ und der Fähigkeitsknopf lagen jeder für sich absolut im Rahmen –
+  drei Schätzungen, die sich auf dem Telefon getroffen haben (der Upgrade-Hinweis
+  und die Zoom-Taste standen beide auf 156 px). Jetzt teilen sie eine
+  `flex`-Spalte mit **einem** Abstand (8 px), unten verankert, wo der Daumen
+  liegt: die Fähigkeit bleibt ganz unten auf 100 px, darüber die Zoom-Taste,
+  darüber der Upgrade-Hinweis. Weil sie eine Spalte sind, können sie sich nicht
+  mehr überlagern, egal wie lang einer von ihnen wird.
+- **Ein Aussehen für alle drei** – das Aussehen, das der Fähigkeitsknopf immer
+  hatte: dunkle Platte, Haarlinien-Rand, gleiche Rundung (8 px), gleicher
+  Schatten, gleiche Schriftgröße. Der Rahmen der drei ist jetzt **eine**
+  Regel, nicht drei Kopien, die auseinanderlaufen können.
+- **Eine Familie in der Befehlsleiste.** Der Burger ist ein `<summary>`, kein
+  `<button>`, und wurde bisher **neben** den Knöpfen gestylt: eckig, wo die
+  Knöpfe gerundet sind (`4px 7px 5px 4px` kommt aus `style.css`), und mit einer
+  Box, die nur auf ihre eigenen 46 px kam – deshalb saß er höher als seine
+  Nachbarn, sobald ein Text umbrach. Rahmen, Schrift und Rundung stehen jetzt in
+  **derselben** Regel für beide Arten von Kind, und das Menü ist selbst eine
+  Flexbox, damit sein Knopf die Reihe füllt.
+- **Der Kartenname ist kein Dauerelement mehr.** Das Kästchen unten links ist
+  **weg** (es war der Rahmen des Kartennamens – mit nur noch „FREIES SPIEL“
+  darin hätte es auf dem Telefon leer gestanden). Dafür bekommt die Karte ihre
+  **Titelkarte**: mittig, das Feld in der **eigenen Grafik des Spiels** gemalt
+  (Boden der Karte, Straßen, Baupunkte, Bunker – aus der Kartengeometrie und dem
+  Kartensamen, also dasselbe Bild, das Sekunden später das Feld ist), darüber der
+  Modus, darunter der Name in Black Ops One mit Goldlinie. Sie kommt **einmal**,
+  wenn die Karte geladen wird, hält 2,6 s, blendet aus und ist weg – **kein
+  Knopf, keine Tipps** (`pointer-events:none`), bei reduzierter Bewegung ohne
+  Animation.
+
+- **Warum die Titelkarte keine Tipps nimmt:** sie liegt über einem Feld, auf dem
+  der Spieler vielleicht schon baut. Eine Karte, die einen Tipp schluckt, ist
+  eine Wand – dieselbe Lektion, die die Warnkarte zweimal im Chromium gelernt
+  hat.
+- **Prüfungen:** `tests/map-intro.test.mjs` neu **9/9** (Turnus mit gehaltener
+  Uhr, Ausblenden, Ende des Laufs räumt sie weg, keine Taste, keine
+  `pointer-events`, das Bild wird aus der Kartengeometrie gemalt, **jede** Karte
+  im Spiel malt sich – feste wie erzeugte –, dieselbe Karte malt dasselbe Bild,
+  zwei Karten malen verschiedene, und ein kaputtes Canvas kostet den Titel
+  nicht). `tests/ability-hud-placement.test.mjs` umgeschrieben: die Fähigkeit
+  misst nicht mehr selbst gegen den Rahmen, sondern hängt an der Spalte – die
+  Spalte ist Kind des Rahmens, die Fähigkeit Kind der Spalte, und **nie** ein
+  Kind der Befehlsleiste. Der Prüfstand im echten Chromium
+  (`interface-smoke.cjs`) misst neu, auf allen drei Breiten: die vier Leisten
+  (EINSATZ, TEMPO, MENÜ, EINSATZ BEENDEN) haben **dieselbe Rundung, dieselbe
+  Rahmendicke, dieselbe Schriftart und -größe**, beginnen und enden auf
+  derselben Linie und überlappen nicht; die drei Feldknöpfe am rechten Rand
+  haben dieselbe Rundung, denselben Rahmen, dieselbe Platte, dieselbe
+  Abschlusskante, sitzen **untereinander statt aufeinander** und bleiben über
+  der Befehlsleiste; die Titelkarte ist zentriert, enthält das Artwork, hat
+  keinen Knopf und lässt jeden Tipp durch; und der Kartenname kommt im Feld nur
+  **einmal** vor. Vollständiger serieller Lauf **1107 bestanden, 0
+  fehlgeschlagen**.
+- **Änderungen / Dateien:** `map-intro.mjs` (neu),
+  `tests/map-intro.test.mjs` (neu), `index.html`, `field-command.css`,
+  `game.js`, `cartoon-art.mjs` (`themeGroundColor` ausgezogen, damit die
+  Titelgrafik dieselbe Palette benutzt wie das Feld),
+  `tests/ability-hud-placement.test.mjs`, elf Test-Harnesse (neues Modul in der
+  Import-Liste), `browser-tests/interface-smoke.cjs`.
+- **Grenzen:** **Kein Mensch hat das Ergebnis gesehen.** Ich habe kein Augenlicht
+  und kann die Titelgrafik nicht beurteilen – `browser-artifacts/map-title-card.png`
+  zeigt drei nachgebaute Karten (Feldgrafik aus echter Kartengeometrie, gerendert
+  mit `@napi-rs/canvas`), damit ein Mensch sie ansehen kann. Die Maschine hat
+  gemessen, dass jede Karte ein Bild malt (150+ Farben, nie eine Fläche) und dass
+  die Karte zentriert ist – ob sie „prunkvoll“ aussieht, entscheidet erst der
+  Blick des Betreibers.
+
 ## IPL-0052 – Block 8: Ausgemistet – kein Funkgerät, keine Flagge, das Menü nach unten
 
 Der Betreiber hat das Feld gesehen und vier Dinge entschieden, nachdem

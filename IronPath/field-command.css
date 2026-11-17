@@ -3,7 +3,6 @@
 #gameView .layout{display:block;max-width:100%;}
 #gameView .battle{overflow:visible;position:relative;background:#13251d;border:1px solid #667f68;}
 #gameView .battle-head{display:flex;align-items:center;min-height:44px;padding:6px 14px;background:#192e25;border-bottom:1px solid #6a8067;}
-#gameView .battle-head h2{font-size:16px;line-height:1.2;margin:0;color:#f3e9cb}
 #gameView .battle-head .eyebrow{font-size:9px;line-height:1.2;display:block;color:#d8c487}
 #gameView .legend{font-size:9px}
 #gameView .map-frame{border:0;background:#0d1b14;position:relative;isolation:isolate}
@@ -25,10 +24,15 @@
 #gameView .map-frame .command{position:absolute;z-index:4;left:50%;bottom:12px;transform:translateX(-50%);width:min(690px,calc(100% - 24px));padding:7px;background:#10231eea;border:1px solid #81977c;border-radius:5px;box-shadow:0 5px 22px #000a}
 #gameView .map-frame .command .panel-heading{display:none}
 #gameView .map-frame .command-controls{display:flex;gap:6px}
-#gameView .map-frame .command-controls button{flex:1 1 0;min-width:0;min-height:46px;margin:0;padding:7px 8px;font-size:11px;line-height:1.15;letter-spacing:.03em;background:#2b4738;border:1px solid #7a9179;color:#f4ebd1;box-shadow:none}
+/* One look for the whole strip - DEPLOY, SPEED, MENU, END RUN.
+   The burger is a `<summary>`, and it used to be styled BESIDE the buttons:
+   square corners where the buttons are rounded, and a box that stopped short of
+   the row, so it sat higher than its neighbours. The frame is declared once now,
+   for both kinds of child, so there is no second copy that can drift. */
+#gameView .map-frame .command-controls button,#gameView .map-frame .command-controls .field-ops>summary{flex:1 1 0;min-width:0;min-height:46px;margin:0;padding:7px 8px;font:inherit;font-size:11px;font-weight:bold;line-height:1.15;letter-spacing:.03em;text-align:center;background:#2b4738;border:1px solid #7a9179;border-radius:4px 7px 5px 4px;color:#f4ebd1;box-shadow:none;cursor:pointer}
 #gameView .map-frame .command-controls .primary{flex:1.5 1 0;background:#e4c980;color:#1b2c22;border-color:#e6d398}
 #gameView .map-frame .command-controls .end-run{flex:.8 1 0;background:#4d3630;border-color:#9a7565}
-#gameView .map-frame .command-controls button:hover:not(:disabled){filter:brightness(1.15)}
+#gameView .map-frame .command-controls button:hover:not(:disabled),#gameView .map-frame .command-controls .field-ops>summary:hover{filter:brightness(1.15)}
 /* `--map-hud-bottom` is the measured bottom edge of the status row, in the map
    frame's own coordinates; the fallback assumes the soldier tile shows its XP,
    which is the tallest the row gets. */
@@ -52,6 +56,24 @@
 #gameView .field-notice-more{flex:none;font-size:9px;font-weight:700;letter-spacing:.12em;color:#ffcf8a;background:#e0a95c1f;border:1px solid #e0a95c66;padding:2px 5px}
 @keyframes field-notice-flutter{from{opacity:0;transform:translate(-50%,-16px)}to{opacity:1;transform:translate(-50%,0)}}
 @media(prefers-reduced-motion:reduce){#gameView .field-notice{animation:none;box-shadow:none}}
+/* The map, ONCE, when it is loaded.
+   The name used to sit bottom-left for the whole battle; the operator wants it
+   as a title card instead - the map drawn in the game's own art, the name set
+   wide, centred, and gone again. It takes no taps: it is a title over a field
+   the player may already be building on. */
+#gameView .map-intro{position:absolute;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);width:min(420px,calc(100% - 32px));pointer-events:none;animation:map-intro-in .5s ease-out both}
+#gameView .map-intro[hidden]{display:none}
+#gameView .map-intro-frame{position:relative;padding:12px 12px 14px;background:linear-gradient(#1b2f25f2,#101d18f7);border:1px solid #c8a95e;box-shadow:0 0 0 1px #0d1712,0 0 0 4px #c8a95e33,0 18px 44px #000b;text-align:center}
+#gameView .map-intro-frame::after{content:'';position:absolute;inset:4px;border:1px solid #c8a95e4d;pointer-events:none}
+#gameView .map-intro-art{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#2d3829;border:1px solid #6f7f66}
+#gameView .map-intro-label{display:block;margin-top:10px;color:#cfa963;font-family:'Black Ops One','Trebuchet MS',Arial,sans-serif;font-size:9px;letter-spacing:.34em;text-transform:uppercase}
+#gameView .map-intro-name{display:block;margin-top:4px;color:#f6e9c0;font-family:'Black Ops One','Trebuchet MS',Arial,sans-serif;font-size:clamp(19px,5.4vw,27px);font-weight:400;letter-spacing:.08em;line-height:1.15;text-shadow:0 2px 0 #101d18,0 0 18px #d8b96a40}
+#gameView .map-intro-rule{display:block;width:64px;height:2px;margin:9px auto 0;background:linear-gradient(90deg,#c8a95e00,#d9bd77,#c8a95e00)}
+#gameView .map-intro.is-leaving{animation:map-intro-out .45s ease-in both}
+@keyframes map-intro-in{from{opacity:0;transform:translate(-50%,-46%) scale(.96)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes map-intro-out{from{opacity:1;transform:translate(-50%,-50%) scale(1)}to{opacity:0;transform:translate(-50%,-54%) scale(.99)}}
+@media(prefers-reduced-motion:reduce){#gameView .map-intro,#gameView .map-intro.is-leaving{animation:none}}
+@media(max-width:600px){#gameView .map-intro{width:min(340px,calc(100% - 24px))}#gameView .map-intro-frame{padding:9px 9px 11px}}
 #gameView .layout>aside{margin-top:8px}
 #gameView .help{background:#1a3027;border:1px solid #627e69;border-radius:4px}
 #gameView .help summary{min-height:38px;display:flex;align-items:center;color:#e8d39b}
@@ -71,7 +93,7 @@
  #gameView .map-frame .dashboard strong{font-size:14px;margin-top:2px}
  #gameView .map-frame .command{position:fixed;bottom:0;left:0;right:0;transform:none;width:100%;padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));border-radius:0;z-index:10}
  #gameView .map-frame .command-controls{gap:4px}
- #gameView .map-frame .command-controls button{font-size:9px;min-height:48px;padding:5px 3px;overflow-wrap:anywhere;letter-spacing:0}
+ #gameView .map-frame .command-controls button,#gameView .map-frame .command-controls .field-ops>summary{font-size:9px;min-height:48px;padding:5px 3px;overflow-wrap:anywhere;letter-spacing:0}
  /* Tight strip: the words go, the burger stays. It is still a 44px target. */
  #gameView .field-ops .field-ops-label{display:none}
  #gameView .field-ops .field-ops-burger{display:flex}
@@ -85,8 +107,11 @@
 
 /* Map-first field view. The lobby and campaign board retain normal page flow. */
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle{position:fixed;inset:0;z-index:11;border:0;overflow:hidden;background:#0c1811}
-#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{position:absolute;z-index:2;left:10px;bottom:calc(108px + env(safe-area-inset-bottom,0px));min-height:0;max-width:220px;background:#10231edb;border:1px solid #789078;padding:5px 8px;pointer-events:none}
-#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head h2{font-size:13px}
+/* The map no longer names itself in the corner. It announces itself once, in
+   the middle of the field, when it is loaded - a title card with the
+   battlefield drawn in the game's own art - and then the corner says nothing
+   more about the map. The player knows where they are. */
+#gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{display:none}
 #gameView .battle-head .legend{display:none}
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-frame{height:100%;width:100%}
 #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .map-viewport{height:100%;width:100%;display:flex;align-items:center;overflow:auto;overscroll-behavior:contain}
@@ -98,14 +123,27 @@
 #gameView .map-frame .story-decision{bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:5}
 #gameView .battle .wave-request:not([hidden]){position:absolute;z-index:8;left:8px;right:8px;bottom:calc(112px + env(safe-area-inset-bottom,0px));border:1px solid #cfbc82;background:#1c3529;color:#f7ecd0;border-radius:4px;box-shadow:0 4px 18px #0009}
 #gameView .battle .speed-request:not([hidden]){bottom:calc(168px + env(safe-area-inset-bottom,0px))}
-#gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(156px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
+/* One column at the right rim, not three absolute guesses: the field-upgrade
+   reminder, the "fit map" button and the ability button used to be positioned
+   independently and met each other on a phone. They share a stack now, with one
+   gap, bottom-anchored where the thumb is. */
+#gameView .map-frame .field-controls{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:flex-end;gap:8px;pointer-events:none}
+#gameView .map-frame .field-controls>*{pointer-events:auto}
+#gameView .map-frame .field-controls>[hidden]{display:none}
+/* One look for all three of them - the look the ability button always had: a
+   dark plate, a hairline rim, the same corner and the same shadow. */
+/* Deliberately a plain class rule: the ability button's own `#gameView
+   .map-frame .ability-hud` measurements must keep winning, so this only fills
+   in what the zoom button and the upgrade reminder lack. */
+.field-controls>button{width:auto;max-width:min(45vw,320px);min-height:48px;margin:0;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;font-size:10px;font-weight:bold;letter-spacing:.06em;text-align:left;cursor:pointer}
+.field-controls>button:hover:not(:disabled){filter:brightness(1.15)}
 #gameView .battle .solo-objective:not([hidden]),#gameView .battle .versus-status:not([hidden]){position:absolute;z-index:5;top:calc(65px + env(safe-area-inset-top,0px));left:8px;max-width:min(360px,calc(100% - 76px));margin:0;background:#183027ed}
 #gameView .map-frame .run-perk-panel{z-index:12}
 /* The ability HUD: one button on the field, in the bottom-right corner where a
    thumb rests - out of the middle of the field, where the fighting and the
    wave votes are, and within reach instead of below the field. */
-#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;/* At most half the viewport, minus margins: the field radio owns the bottom
-     left with up to 45vw, so the HUD can never lie across it - however tall
+#gameView .map-frame .ability-hud{position:relative;right:auto;bottom:auto;display:flex;align-items:center;gap:8px;/* At most half the viewport, minus margins: the bottom-left belongs to the
+     command strip, so the HUD can never lie across the field - however tall
      either of them gets. */
    width:min(196px,calc(50vw - 20px));min-height:48px;overflow:hidden;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
 #gameView .map-frame .ability-hud[hidden]{display:none}
@@ -136,8 +174,10 @@
    middle of the strip, and a 300px panel pinned to its right edge hangs half
    off the screen (Chromium measured -57px). It is anchored to the strip, which
    spans the field, and opens upward from there. */
-.field-ops{flex:.8 1 0;min-width:0}
-.field-ops>summary{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0;min-height:46px;padding:7px 8px;font:inherit;font-size:11px;font-weight:bold;line-height:1.15;letter-spacing:.03em;background:#2b4738;border:1px solid #7a9179;color:#f4ebd1;box-shadow:none;cursor:pointer;list-style:none}
+/* The menu is a flex box itself so its summary can fill the row: a burger that
+   only reaches its own 46px sits high when a neighbour's label wraps. */
+.field-ops{flex:.8 1 0;min-width:0;display:flex}
+.field-ops>summary{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:6px;list-style:none}
 .field-ops>summary::-webkit-details-marker{display:none}
 .field-ops>summary:hover{filter:brightness(1.15)}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}
 .field-ops-burger{display:none;flex:none;flex-direction:column;justify-content:center;gap:3px;width:16px;height:14px}
@@ -158,7 +198,6 @@
  #gameView .map-frame .dashboard small{font-size:8px}
  #gameView .map-frame .dashboard strong{font-size:14px}
  #gameView .map-frame .dashboard .hud-icon{display:none}
- #gameView .battle-head .eyebrow{display:none}
 }
 @media(min-width:851px){
  #gameView .map-viewport canvas{height:auto;width:min(100%,calc(100dvh * 1.777778));max-width:none;flex:none}
@@ -188,7 +227,7 @@
    camera fills the available area without stretching the map; FIT and pan
    reveal the remainder. The ID also overrides the 1v1 lane sizing rules. */
 #gameView #mapViewport.map-viewport canvas[data-full-battle="true"]{width:100%;height:100%;max-width:none}
-#gameView .map-quick-zoom{display:none;position:absolute;z-index:6;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(156px + env(safe-area-inset-bottom,0px));width:auto;min-height:44px;margin:0;padding:6px 10px;font-size:10px;letter-spacing:.04em;background:#142b23ed;border:1px solid #98ad91;color:#f5e7ba;box-shadow:0 3px 12px #0009}
+#gameView .map-quick-zoom{display:none}
 @media(pointer:coarse){#gameView .map-quick-zoom{display:block}#gameView .map-viewport canvas{touch-action:pan-x pan-y}}
 @media(orientation:landscape) and (max-height:600px){
  #gameView .map-frame .dashboard{top:calc(5px + env(safe-area-inset-top,0px));left:max(8px,env(safe-area-inset-left,0px));gap:3px;right:110px;max-width:calc(100% - 120px)}
@@ -198,13 +237,8 @@
  #gameView .map-frame .dashboard strong{font-size:15px;margin-top:2px}
  #gameView .map-frame .command{bottom:calc(5px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 20px));padding:4px}
  #gameView .map-frame .command-controls{gap:4px}
- #gameView .map-frame .command-controls button{min-height:44px;padding:4px;font-size:10px}
- #gameWorkspace:not([hidden]):is([data-screen="endless"],[data-screen="online"][data-online-ready="true"],[data-screen="campaign"]:has(#campaignPanel[data-board-open="false"])) .battle-head{left:max(8px,env(safe-area-inset-left,0px));bottom:calc(90px + env(safe-area-inset-bottom,0px));max-width:180px;padding:3px 7px}
- #gameView .battle-head .eyebrow{display:none}
- #gameView .battle-head h2{font-size:11px}
- #gameView .map-quick-zoom{bottom:calc(146px + env(safe-area-inset-bottom,0px))}
+ #gameView .map-frame .command-controls button,#gameView .map-frame .command-controls .field-ops>summary{min-height:44px;padding:4px;font-size:10px}
 }
-#gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(212px + env(safe-area-inset-bottom,0px))}
 /* Touch keeps a 150px column free along the right edge for the zoom and the
    field-upgrade button: the field radio is `calc(100% - 150px)` wide because of
    it. The ability HUD lives in that same column, so it is 134px there - 150
@@ -246,12 +280,7 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
   position:fixed;inset:0;z-index:11;border:0;overflow:hidden;background:#0c1811;
   display:flex;flex-direction:column;
 }
-#gameWorkspace:not([hidden])[data-screen="training"] .battle-head{
-  position:relative;z-index:2;min-height:0;padding:4px 10px;background:#10231e;
-  border-bottom:1px solid #789078;pointer-events:none;
-}
-#gameWorkspace:not([hidden])[data-screen="training"] .battle-head h2{font-size:13px}
-#gameWorkspace[data-screen="training"] .battle-head .legend{display:none}
+#gameWorkspace:not([hidden])[data-screen="training"] .battle-head{display:none}
 #gameWorkspace:not([hidden])[data-screen="training"] .battle .map-frame{
   flex:1 1 auto;min-height:0;height:auto;width:100%;
 }
@@ -356,7 +385,3 @@ body:has(#gameWorkspace:not([hidden])[data-screen="training"]) main{
   #gameView #gameWorkspace[data-screen="training"] .battle .solo-objective:not([hidden]) p{display:none}
 }
 
-/* The training header keeps the map name and drops its second line: the contract row
-   underneath says what this run is, and repeating it in the header cost a row of
-   battlefield on a phone. */
-#gameView #gameWorkspace[data-screen="training"] .battle-head .eyebrow{display:none}
