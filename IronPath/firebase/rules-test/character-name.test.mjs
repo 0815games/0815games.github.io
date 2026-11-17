@@ -35,7 +35,7 @@ const log=(...parts)=>console.log('[character-name]',...parts);
 const report=(label,value)=>{log(label+':',JSON.stringify(value));return value;};
 
 let env,alice,bob,anon;
-const sdk={ref,set,get,remove,update,runTransaction,query,orderByKey,limitToFirst};
+const sdk={ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst};
 const claimService=(db,uid)=>createCharacterNameClaim({db,auth:{currentUser:{uid}},sdk});
 
 // Run an operation and describe what came back instead of only whether it
