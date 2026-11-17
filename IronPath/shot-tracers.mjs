@@ -93,7 +93,9 @@ export function shotTrace(shot,age=0,options={}){
     head:{x:x+ux*headAt,y:y+uy*headAt},
     tail:{x:x+ux*tailAt,y:y+uy*tailAt},
     headAt,tailAt,
-    ink:width(style.ink),core:width(style.core),tip:width(style.tip),
+    // The tip is always fatter than the streak it rides: a head that is
+    // thinner than the line is not a head, it is invisible.
+    ink:width(style.ink),core:width(style.core),tip:width(Math.max(style.tip,style.core*1.4)),
     alpha:1-landed*landed,
   };
   if(reducedMotion) return {...base,flash:null,impact:null};
