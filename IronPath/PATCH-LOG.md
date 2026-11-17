@@ -2287,3 +2287,57 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Pinselstriche, nicht das Bild. Ob der Schein jetzt stark genug ist – und ob
   er bei vielen bezahlbaren Türmen im späten Endless-Lauf das Feld zumatscht –
   entscheidet ein Blick, den ich nicht habe.
+
+## IPL-0049 – Bestandsaufnahme: Block 3 ist gebaut, was fehlt, ist Abnahme
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`.
+- **Anlass:** Der Betreiber bat, **alles zu mergen** und die Protokolle nicht zu
+  vergessen – und danach weiterzumachen, falls in einem Block noch etwas offen
+  ist. Beim Nachtragen fiel auf, dass die Bestandsaufnahme an zwei Stellen
+  hinter dem Code herlief.
+- **Gemerged (beides grün, 13 von 13 Prüfungen):**
+  - [PR #305](https://github.com/0815games/0815games.github.io/pull/305) –
+    Block 3 / D1: Schüsse als Spur statt als Linie
+    ([IPL-0045](PATCH-LOG.md#ipl-0045--block-3--d1-schüsse-als-spur-statt-als-linie)).
+  - [PR #306](https://github.com/0815games/0815games.github.io/pull/306) –
+    Versions-Popup mittig, Karte für die Pause, Fähigkeits-HUD aus der Feldmitte
+    in die Daumennähe, stärkerer Turmschein
+    ([IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt),
+    [IPL-0047](PATCH-LOG.md#ipl-0047--korrektur-das-fähigkeits-hud-gehört-in-die-daumennähe-nicht-in-die-feldmitte),
+    [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)).
+    Vor dem Merge auf Main nach dem #305-Merge umgestellt (Aufholen), weil beide
+    Zweige an dieselbe Stelle des Protokolls schrieben; der Zusammenstoß war
+    zwei überschriebene Zeilen, keine verlorene Aussage.
+- **Erster Befund – eine veraltete Zeile:** Der Punkt **Party-Roster** stand
+  offen mit der Begründung „Die aktuelle Darstellung ist eine Liste“. Sie ist
+  keine: `firebase-four-panel.mjs` baut seit dem Umbau des Online-Panels eine
+  Karte je Slot, `interface-redesign.css` legt sie ins Raster. Die Zeile ist
+  jetzt abgehakt **und belegt** – nicht einfach durchgestrichen.
+- **Zweiter Befund – ein erledigter Sammelpunkt:** Die **Zusatzwünsche**
+  (Popups mittig, Fähigkeits-HUD, Schussdarstellung) sind alle drei gebaut; der
+  übergeordnete Punkt stand dennoch offen. Auch das ist jetzt berichtigt.
+- **Neue Prüfung:** `tests/party-roster-layout.test.mjs` (3/3) macht die
+  Behauptung nachprüfbar: das Raster ist `repeat(auto-fit,minmax(150px,1fr))`
+  und **nicht** ein starres `repeat(2,…)`, das auf dem Telefon nicht
+  zusammenklappen könnte; die Karte trägt Bild, Namen, Rangabzeichen **und**
+  Rangnamen, Host-/Team-Marke und Bereitschaft; ein leerer Slot bleibt als
+  leerer Slot benannt; und die Karte malt **keine eigene Farbe**, sondern trägt,
+  was das jeweils aktive Thema einer Zeile gibt – sonst sähe sie nach dem
+  nächsten Themenwechsel falsch aus. Vollständiger serieller Lauf **1092
+  bestanden, 0 fehlgeschlagen**.
+- **Was jetzt offen ist, ehrlich gesagt:** In Block 3 ist **nichts mehr zu
+  bauen**. Offen ist ausschließlich Abnahme von Menschenhand: die Karten, der
+  Schimmer, die Spuren, das HUD – alles gerechnet und gemessen, nichts gesehen.
+  In [Block 8](PATCH-BLOECKE.md#8-was-nach-den-patches-ansteht--sammelstelle)
+  steht noch der Punkt **Feldmeldungen als Popup**, und der hat offene
+  Baufragen, die ich nicht allein beantworten sollte (welche Meldungen bleiben
+  im Popup, wie zählt der Ungelesen-Hinweis, was passiert bei reduzierter
+  Bewegung). Der gelegentlich rote Browser-Job braucht ein Menschenauge auf dem
+  Protokoll; ich kann ihn weder lesen noch neu anstoßen.
+- **Änderungen / Dateien:** `PATCH-BLOECKE.md` (zwei Punkte berichtigt),
+  `tests/party-roster-layout.test.mjs` (neu), `PATCH-LOG.md` (dieser Eintrag).
+- **Grenzen:** Ich habe nur die zwei Punkte berichtigt, die ich mit Code und
+  Prüfung belegen konnte. Die übrigen offenen Punkte sind mit Absicht offen
+  geblieben: sie verlangen echte Geräte, produktive Dienste oder Altbestände –
+  nichts davon liegt in diesem Arbeitsraum.
