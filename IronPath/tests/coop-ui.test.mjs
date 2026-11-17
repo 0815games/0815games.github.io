@@ -91,10 +91,8 @@ assert.equal(match.towers.length,1);
 // A refused sell is a warning now: it stands on the card, and the older warning
 // it displaced waits one tap behind it.
 assert.match(el('radioAlertText').textContent,/Tower changed/);
-assert.equal(el('radioAlertMore').hidden,false,'and the one it displaced is still there');
-el('radioAlertDismiss').onclick();
-assert.match(el('radioAlertText').textContent,/Not enough supplies to upgrade/,'one tap back through the history');
-el('radioAlertDismiss').onclick();
+assert.equal(el('radioAlertMore').hidden,false,'and the one it displaced is still in the history');
+assert.match(el('radioAlertText').textContent,/Tower changed/);
 el('radialClose').onclick();
 opts.onState('duplicate');assert.match(el('message').textContent,/another tab/);opts.onState('error');assert.match(el('message').textContent,/host reloaded/);
 // Show whose balance pays for a teammate's tower and who receives a sale refund.

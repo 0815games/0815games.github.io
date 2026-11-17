@@ -49,9 +49,13 @@
    pinned against the radio. It is not centred like a vote or an invitation: it
    does not ask the player to stop playing, and the middle of the field is where
    the playing happens.
-   It stays until it is dismissed, and it does NOT take the radio's place: the
-   line below keeps speaking, because a warning about a refused upgrade must not
-   hide "Run ended". */
+   It does NOT take the radio's place: the line below keeps speaking, because a
+   warning about a refused upgrade must not hide "Run ended".
+   It takes no taps at all, and there is no dismiss button: the radio box is
+   click-through so a tap reaches the ground beneath it, and a warning must do
+   the same. Chromium found both halves - a button that did not answer, then a
+   button that swallowed a tap meant for a build pad. The clock moves the queue
+   on instead. */
 .radio-alert{position:absolute;left:0;right:0;bottom:100%;z-index:8;display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
   pointer-events:none}
 .radio-alert[hidden]{display:none}
@@ -65,8 +69,6 @@
    than a message. Only the dismiss button takes taps for itself. Both halves were
    found in Chromium: without `pointer-events` on the button the dismiss hit the
    canvas, and with it on the whole card the card swallowed a build pad. */
-.radio-alert-dismiss{flex:none;min-height:28px;padding:3px 9px;background:#e0a95c;color:#2a1d1d;border:1px solid #f0c98a;font:inherit;font-size:9px;font-weight:700;letter-spacing:.12em;cursor:pointer;pointer-events:auto}
-.radio-alert-dismiss:hover{background:#f0c98a}
 @media(prefers-reduced-motion:reduce){.radio-alert{box-shadow:none}}
 #gameView .battle-foot #message{font-size:12px;letter-spacing:normal}
 #gameView .layout>aside{margin-top:8px}

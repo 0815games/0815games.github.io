@@ -20,7 +20,12 @@
 //     the middle of the field is where the playing happens;
 //   * does not take the radio's place. The line below keeps speaking, because a
 //     warning about a refused upgrade must not hide "Run ended";
-//   * STAYS until it is dismissed, instead of fading on a timer;
+//   * takes its turn and steps aside. Each warning is shown for `showMs`, then
+//     the next follows; there is no dismiss button, because a button floating
+//     over the battlefield is a wall however small it is - Chromium found it
+//     twice: first the button did not answer (the radio box is click-through),
+//     then, made to answer, it swallowed a tap meant for a build pad. The card
+//     is a CAPTION, like the radio below it: taps go through it to the field;
 //   * QUEUES instead of overwriting. The NEWEST warning is the one on the card,
 //     because it describes the field as it is now; the one it displaces is kept
 //     behind it - most recent first - and a count says there is more. Dismissing
@@ -33,24 +38,32 @@
 //
 // One thing the stylesheet has to know: the radio box is click-through, because
 // it is a caption over the field - and a field that cannot be tapped because a
-// message is showing is worse than a message. The warning rides on the same
-// rule: only its dismiss button takes taps for itself. Both halves of that were
-// found in Chromium - the button by not answering, then the card by swallowing a
-// build pad.
+// message is showing is worse than a message. The warning rides on the same rule
+// and takes no taps at all.
 //
 // The queue is deliberately small. Three waiting warnings are three things to
 // read; a fourth pushes out the oldest waiting one, because a warning that is
 // minutes old describes a field that has already changed. Nothing is stored and
 // nothing is announced over the network: this is one player's screen.
-export function createFieldAlert(document,{translate=text=>text,maxWaiting=3,onChange=null}={}){
+export function createFieldAlert(document,{translate=text=>text,maxWaiting=3,showMs=8000,
+  setTimer=setTimeout,clearTimer=clearTimeout,onChange=null}={}){
   if(!document||typeof document.getElementById!=='function')throw Error('Invalid field alert');
   if(!Number.isSafeInteger(maxWaiting)||maxWaiting<1)throw Error('Invalid field alert queue');
+  if(!Number.isSafeInteger(showMs)||showMs<500)throw Error('Invalid field alert timing');
+  if([setTimer,clearTimer].some(fn=>typeof fn!=='function'))throw Error('Invalid field alert timer');
   const $=id=>document.getElementById(id);
-  const card=$('radioAlert'),text=$('radioAlertText'),more=$('radioAlertMore'),dismiss=$('radioAlertDismiss');
+  const card=$('radioAlert'),text=$('radioAlertText'),more=$('radioAlertMore');
   // `waiting` is a history, most recent first: what was on the card before the
   // warning that displaced it.
   const waiting=[];
-  let current=null;
+  let current=null,timer=null;
+  function cancel(){if(timer!==null){clearTimer(timer);timer=null;}}
+  // No button, so the clock is the only thing that moves the queue on. It is
+  // injected rather than taken from the window, so a test can hold it.
+  function schedule(){
+    cancel();
+    if(current)timer=setTimer(()=>{timer=null;advance();},showMs);
+  }
   // A function is asked again on every render (a refusal names a tower, a pad
   // or a number that has since changed); a plain string is translated here, so
   // switching language re-reads the warning instead of keeping yesterday's
@@ -64,12 +77,11 @@ export function createFieldAlert(document,{translate=text=>text,maxWaiting=3,onC
     if(card)card.hidden=!alerting;
     if(text)text.textContent=resolve(current);
     if(more){more.hidden=waiting.length<1;if(waiting.length)more.textContent=translate('+{count} more',{count:waiting.length});}
-    if(dismiss)dismiss.hidden=!alerting;
     onChange?.({alerting,waiting:waiting.length});
   }
   function advance(){
     current=waiting.shift()||null;
-    render();
+    render();schedule();
   }
   // The quiet state is worth setting once: a card that has never been asked for
   // anything is hidden, whichever way the template left it.
@@ -81,8 +93,10 @@ export function createFieldAlert(document,{translate=text=>text,maxWaiting=3,onC
       if(current)waiting.unshift(current);
       if(waiting.length>maxWaiting)waiting.length=maxWaiting;
       current=entry;
-      render();
+      render();schedule();
     },
+    // Skip to the next warning. There is no button for it: the card takes no
+    // taps at all, so this is for the game, not for the player.
     dismiss(){
       if(!current)return false;
       advance();
@@ -90,7 +104,7 @@ export function createFieldAlert(document,{translate=text=>text,maxWaiting=3,onC
     },
     // The run is over, or a new one begins: warnings from a battlefield that no
     // longer exists are noise. The radio line is not ours and stays as it is.
-    clear(){current=null;waiting.length=0;render();},
+    clear(){cancel();current=null;waiting.length=0;render();},
     refresh(){render();},
     alerting(){return !!current;},
     waiting(){return waiting.length;}

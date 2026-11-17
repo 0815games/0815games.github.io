@@ -65,7 +65,6 @@ test('without a chosen ability the button explains where to get one',async()=>{
   // dismissed, and the radio line is left alone.
   assert.match(f.el('radioAlertText').textContent,/Choose an ability under SKILLS/,'the field says where abilities are chosen, unprompted');
   assert.equal(f.el('radioAlertMore').hidden,true,'once - the second attempt is the same answer, not a second warning');
-  f.el('radioAlertDismiss').onclick();
   f.el('ability').onclick();
   assert.match(f.el('radioAlertText').textContent,/Choose an ability under SKILLS/,'and asking again says it again');
 });

@@ -202,25 +202,20 @@ const fs = require('node:fs');
       assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
       const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
       assert.equal(overAbility,false,`${name}: the warning keeps out of the ability button's corner (warning ${JSON.stringify(warning)} vs hud ${JSON.stringify(ability)})`);
-      // The card is a caption, not a wall: a tap where it floats must reach the
-      // ground beneath, or a player cannot build under a message. Only its
-      // dismiss button takes taps - and that one must really answer.
+      // The card is a caption, not a wall: a tap anywhere on it must reach the
+      // ground beneath, or a player cannot build under a message. There is no
+      // dismiss button for exactly this reason - Chromium found the button twice,
+      // first not answering, then swallowing a tap meant for a build pad.
       const throughCard=await page.evaluate(()=>{
         const card=document.querySelector('#radioAlert').getBoundingClientRect();
-        const hit=document.elementFromPoint(Math.round(card.left+4),Math.round(card.top+card.height/2));
-        return {inside:!!(hit&&hit.closest('#radioAlert')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+        const points=[[4,0.5],[0.5,0.5],[card.width-4,0.5]].map(([rx,ry])=>[Math.round(card.left+card.width*rx),Math.round(card.top+card.height*ry)]);
+        return points.map(([x,y])=>{const hit=document.elementFromPoint(x,y);return {x,y,inside:!!(hit&&hit.closest('#radioAlert')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};});
       });
-      assert.equal(throughCard.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${throughCard.at})`);
-      const warningReached=await page.evaluate(()=>{
-        const box=document.querySelector('#radioAlertDismiss').getBoundingClientRect();
-        const x=Math.round(box.left+box.width/2),y=Math.round(box.top+box.height/2);
-        const hit=document.elementFromPoint(x,y);
-        return {inside:!!(hit&&hit.closest('#radioAlert')),
-          at:hit?`${hit.tagName}#${hit.id||''}.${hit.className||''}`:'nothing',
-          point:{x,y},size:{w:Math.round(box.width),h:Math.round(box.height)},
-          viewport:{w:innerWidth,h:innerHeight}};
-      });
-      assert.equal(warningReached.inside,true,`${name}: the warning can be dismissed, so it does not cover the field forever (${JSON.stringify(warningReached)})`);
+      for(const probe of throughCard)
+        assert.equal(probe.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${probe.at} at ${probe.x},${probe.y})`);
+      // And it steps aside on its own, so it cannot sit on the field forever.
+      await page.waitForFunction(()=>document.getElementById('radioAlert').hidden,null,{timeout:12000});
+      assert.equal(await page.locator('#radioAlert').isVisible(),false,`${name}: the warning takes its turn and goes`);
       await page.evaluate(()=>{document.querySelector('#radioAlert').hidden=true;document.querySelector('#radioAlertMore').hidden=true;});
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the

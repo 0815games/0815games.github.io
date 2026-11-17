@@ -26,26 +26,50 @@ function stubDocument(){
   };
 }
 const alert=(document,options={})=>createFieldAlert(document,{translate:(text,vars={})=>Object.entries(vars).reduce((out,[key,value])=>out.replace(`{${key}}`,value),text),...options});
+// A clock the test holds: with no button, the clock is the only thing that
+// moves the queue on, so it has to be checkable rather than waited for.
+function clock(){
+  const jobs=new Map();let serial=0;
+  return {
+    set:fn=>{const id=++serial;jobs.set(id,fn);return id;},
+    clear:id=>{jobs.delete(id);},
+    tick(){for(const [id,fn] of [...jobs])if(jobs.delete(id))fn();},
+    pending:()=>jobs.size
+  };
+}
 
-test('a warning takes the card and stays there until it is dismissed',()=>{
-  const doc=stubDocument(),a=alert(doc);
+test('a warning takes the card, holds it for its turn, then steps aside',()=>{
+  const doc=stubDocument(),time=clock();
+  const a=alert(doc,{setTimer:time.set,clearTimer:time.clear,showMs:8000});
   assert.equal(doc.node('radioAlert').hidden,true,'the card is quiet while nothing is wrong');
 
   a.warn('Not enough supplies to upgrade.');
   assert.equal(doc.node('radioAlert').hidden,false,'the warning raises the card');
   assert.equal(doc.node('radioAlertText').textContent,'Not enough supplies to upgrade.');
-  assert.equal(doc.node('radioAlertDismiss').hidden,false,'and there is something to dismiss');
   assert.equal(doc.node('radioAlertMore').hidden,true,'with nothing waiting behind it');
+  assert.equal(time.pending(),1,'and the clock is set: nothing else can end its turn');
 
-  // Ordinary radio traffic goes to the LINE, not to the card: a warning about a
-  // refused upgrade must not hide "Run ended", and vice versa.
-  assert.equal(a.dismiss(),true);
-  assert.equal(doc.node('radioAlert').hidden,true);
+  time.tick();
+  assert.equal(doc.node('radioAlert').hidden,true,'its turn is over and the card goes');
+  assert.equal(time.pending(),0,'with nothing left to show');
   assert.equal(a.dismiss(),false,'nothing left to dismiss');
 });
 
+test('there is no dismiss button: the card takes no taps at all',()=>{
+  // A button floating over the battlefield is a wall however small it is. The
+  // card is a caption, like the radio below it, and taps go through it.
+  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+  const card=html.slice(html.indexOf('id="radioAlert"'),html.indexOf('id="radioLabel"'));
+  assert.ok(card,'the card markup exists');
+  assert.doesNotMatch(card,/<button/,'no button on the card');
+  const css=readFileSync(new URL('../field-command.css',import.meta.url),'utf8');
+  const rule=/\.radio-alert\{([^}]*)\}/.exec(css)?.[1]||'';
+  assert.match(rule,/pointer-events:none/,'the card lets taps through to the field');
+  assert.doesNotMatch(css,/\.radio-alert-dismiss/,'and there is no dismiss control left to style');
+});
+
 test('the newest warning is on the card; the one it displaces waits behind it',()=>{
-  const doc=stubDocument(),a=alert(doc);
+  const doc=stubDocument(),time=clock(),a=alert(doc,{setTimer:time.set,clearTimer:time.clear});
   a.warn('Bomber struck the bunker! −2.5 health.');
   a.warn('Not enough supplies to upgrade.');
   // Newest first: it describes the field as it is now. (The first version of
@@ -74,12 +98,12 @@ test('the history is short: the oldest warning goes when a fourth arrives',()=>{
 });
 
 test('a finished run clears the warnings: they describe a field that no longer exists',()=>{
-  const doc=stubDocument(),a=alert(doc);
+  const doc=stubDocument(),time=clock(),a=alert(doc,{setTimer:time.set,clearTimer:time.clear});
   a.warn('Bunker lost. The operation has failed.');a.warn('Thin ice broke! Tanks slow down and take more damage.');
   a.clear();
   assert.equal(a.alerting(),false);assert.equal(a.waiting(),0);
   assert.equal(doc.node('radioAlert').hidden,true);
-  assert.equal(doc.node('radioAlertDismiss').hidden,true);
+  assert.equal(time.pending(),0,'and no turn is left ticking - it would wake a card on a field that is gone');
 });
 
 test('a language change re-reads the warning instead of showing yesterday’s words',()=>{
@@ -102,7 +126,7 @@ test('a language change re-reads the warning instead of showing yesterday’s wo
 });
 
 test('a field without the card is not a broken field',()=>{
-  const doc=stubDocument();doc.remove('radioAlert');doc.remove('radioAlertText');
+  const doc=stubDocument();doc.remove('radioAlert');doc.remove('radioAlertText');doc.remove('radioAlertMore');
   const a=alert(doc);
   a.warn('Bomber struck the bunker! −2.5 health.');
   assert.equal(a.alerting(),true,'the warning is still recorded');

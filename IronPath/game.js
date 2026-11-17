@@ -533,8 +533,9 @@ function renderResults(target){
   // traffic replaces the previous line and never covers a warning; a warning
   // stays until it is dismissed. Letting both write to the box is how a warning
   // gets silently overwritten by the next "Hero moving to position."
+  // No dismiss button: the card is a caption over the field and takes no taps.
+  // It steps aside on its own, and the game clears it when the run does.
   const fieldAlert=createFieldAlert(document,{translate:tr});
-  $('radioAlertDismiss').onclick=()=>fieldAlert.dismiss();
   let lastNotice=null;
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
   // A warning: the player asked for something and did not get it, or something

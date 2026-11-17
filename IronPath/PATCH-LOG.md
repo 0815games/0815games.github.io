@@ -2381,13 +2381,18 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Die Karte liegt in der Ecke, in die das Auge ohnehin geht, und sie teilt die
   Breite des Funkkastens – also genau die Geometrie, gegen die der
   Fähigkeitsknopf und die Zoomspalte schon vermessen sind.
-- **Ehrliche Grenzen:** (1) **Kein Mensch hat es gesehen.** (2) Die Karte
-  bleibt, bis sie weggeklickt wird – wer sie ignoriert, hat sie dauerhaft in der
-  Ecke; das ist gewollt, kann aber nerven. (3) Ein Screenreader wird beim
+- **Ehrliche Grenzen:** (1) **Kein Mensch hat es gesehen.** (2) Die Karte wird
+  **nicht** weggeklickt, und sie hat **keinen Knopf**. Sie ist eine
+  Bildunterschrift wie der Funk darunter: jeder Tipp geht durch sie hindurch aufs
+  Feld. Chromium hat das in zwei Schritten erzwungen – erst antwortete der Knopf
+  nicht (der Funkkasten ist mit Absicht durchlässig), dann, zum Antworten
+  gebracht, schluckte er einen Tipp, der einem Bauplatz galt. Ein Knopf über dem
+  Schlachtfeld ist eine Wand, egal wie klein. Stattdessen zeigt jede Warnung sich
+  acht Sekunden, dann folgt die nächste. (3) Ein Screenreader wird beim
   Erscheinen **nicht** unterbrochen (`aria-live` bleibt `polite`); die Karte
   bleibt stehen, also geht nichts verloren. (4) Die Warnung wird nicht
   gespeichert und nicht übertragen: sie gilt für genau einen Bildschirm.
-- **Prüfungen:** `tests/field-alert.test.mjs` neu (7/7): die Karte erscheint und
+- **Prüfungen:** `tests/field-alert.test.mjs` neu (8/8): die Karte erscheint und
   bleibt; die neueste steht vorn und die verdrängte einen Tipp dahinter; die
   Historie ist kurz (drei); Sprachwechsel liest neu; ein Feld ohne Karte ist kein
   kaputtes Feld; und die **Liste der Warnungen ist festgenagelt** – samt der
