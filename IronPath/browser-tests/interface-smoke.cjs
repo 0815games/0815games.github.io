@@ -193,7 +193,11 @@ const fs = require('node:fs');
       assert.equal(handsetHit.inside,true,`${name}: the handset answers a tap (hit ${handsetHit.at})`);
       // Opened, the log shows what was said - in the corner, not in the middle.
       await page.locator('#radioToggle').click();
+      const logState=await page.evaluate(()=>{const el=document.getElementById('radioLog');
+        return {hidden:el.hidden,display:getComputedStyle(el).display,rect:el.getBoundingClientRect().toJSON(),text:el.textContent.slice(0,40)};});
+      assert.equal(logState.hidden,false,`${name}: tapping the handset opens the log (${JSON.stringify(logState)})`);
       const log=await page.locator('#radioLog').boundingBox();
+      assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(logState)})`);
       assert.ok(log.x+log.width/2<width*0.75,`${name}: the radio log opens in the corner, not over the middle of the field`);
       assert.ok(log.y>height*0.3,`${name}: and low enough to be out of the fighting`);
       await page.locator('#radioLogClose').click();
