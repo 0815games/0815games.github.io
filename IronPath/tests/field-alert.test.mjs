@@ -59,7 +59,7 @@ test('there is no dismiss button: the card takes no taps at all',()=>{
   // A button floating over the battlefield is a wall however small it is. The
   // card is a caption, like the radio below it, and taps go through it.
   const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
-  const card=html.slice(html.indexOf('id="radioAlert"'),html.indexOf('id="radioLabel"'));
+  const card=html.slice(html.indexOf('id="radioAlert"'),html.indexOf('<button type="button" class="radio-toggle"'));
   assert.ok(card,'the card markup exists');
   assert.doesNotMatch(card,/<button/,'no button on the card');
   const css=readFileSync(new URL('../field-command.css',import.meta.url),'utf8');

@@ -997,7 +997,7 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
 ### Sichtbarkeit im Feld
 
-- [~] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
+- [x] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
   Gewünscht: ein kleines **Funkgerät** als Ausgangspunkt, das **minimiert**
   startet – erst ein Antippen öffnet die Nachrichten als Popup. Betroffen sind
   die Funkkarte `#storyRadio` (`.story-radio`, bis zu 370 px breit, liegt links

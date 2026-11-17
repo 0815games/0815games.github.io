@@ -40,8 +40,27 @@
 #gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);z-index:3}
 #gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
 #gameView .map-frame .story-decision{bottom:80px;z-index:5;max-width:min(360px,calc(100% - 24px))}
-#gameView .battle-foot{display:flex;justify-content:flex-start;align-items:center;gap:10px;min-height:44px;padding:8px 14px;background:#142a22;border-top:1px solid #617a66;color:#e6e6ce;line-height:1.35}
-#gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em;border-right:1px solid #758872;padding-right:10px}
+#gameView .battle-foot{display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-height:0;padding:5px 7px;background:#0000;border:0;color:#e6e6ce;line-height:1.35}
+#gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em}
+/* The radio is a device, not a noticeboard: it starts closed and opens into the
+   messages when the player taps it. Everything below lives in the box that is
+   already pinned to this corner, so nothing here can meet the ability button or
+   the zoom column.
+   The box itself stays click-through (`pointer-events:none`, inherited from the
+   radio row) - only the handset and the open panel take taps. */
+.radio-toggle{flex:none;display:flex;align-items:center;gap:6px;min-height:30px;padding:4px 10px;background:#1d3a2c;color:#e8e4c8;border:1px solid #7d9a84;font:inherit;font-size:10px;font-weight:700;letter-spacing:.14em;cursor:pointer;pointer-events:auto}
+.radio-toggle:hover{background:#265239}
+.radio-unread{flex:none;min-width:16px;padding:1px 4px;background:#e0a95c;color:#2a1d1d;font-size:9px;font-weight:700;letter-spacing:0}
+.radio-log{display:flex;flex-direction:column;gap:4px;margin-bottom:5px;padding:6px 8px;background:#142a22f2;border:1px solid #75907c;color:#e6e6ce;pointer-events:auto}
+.radio-log[hidden]{display:none}
+.radio-log-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.radio-log-close{flex:none;min-height:26px;padding:2px 8px;background:#2b4a38;color:#e8e4c8;border:1px solid #7d9a84;font:inherit;font-size:9px;font-weight:700;letter-spacing:.12em;cursor:pointer}
+.radio-log-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px;max-height:min(38dvh,220px);overflow:auto}
+.radio-log-entry{font-size:11px;line-height:1.25;color:#e6e6ce;overflow-wrap:anywhere}
+.radio-log-entry:last-child{color:#f3e8c9;font-weight:600}
+/* The spoken line is still there for screen readers; it is no longer painted
+   over the field, because the log carries the words from now on. */
+.radio-live{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;border:0}
 /* The radio has two voices and only one box. This is the other one: a warning
    floats directly ABOVE the radio, spans exactly its width and grows upward, so
    it cannot collide with anything the radio already clears - the ability button
@@ -56,7 +75,7 @@
    the same. Chromium found both halves - a button that did not answer, then a
    button that swallowed a tap meant for a build pad. The clock moves the queue
    on instead. */
-.radio-alert{position:absolute;left:0;right:0;bottom:100%;z-index:8;display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
+.radio-alert{position:relative;width:100%;display:flex;align-items:center;gap:8px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
   pointer-events:none}
 .radio-alert[hidden]{display:none}
 .radio-alert::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}

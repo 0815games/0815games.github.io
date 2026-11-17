@@ -165,17 +165,21 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     const beforeSpawn=matchFields().map(field=>field.spawnIndex);for(let n=0;n<100;n++)core.advance();
     assert.ok(matchFields().some((field,i)=>field.spawnIndex>beforeSpawn[i]),`${mode}: the wave advanced while the card was open`);await sync();
     await tapOrClick(host,decline,true);await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    assert.equal(await guest.locator('#message').isVisible(),true,'the requester can see the battle status on mobile');
-    assert.match(await guest.locator('#message').innerText(),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
+    // The radio is a device now: it starts closed and opens into the log. The
+    // battle status is not printed over the field any more, it is kept - and
+    // counted - until the player asks for it.
+    await guest.locator('#radioToggle').click();
+    assert.equal(await guest.locator('#radioLog').isVisible(),true,'the requester can open the battle radio on mobile');
+    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
     assert.equal(core.snapshotFor('alice').speedControl.speed,1,'decline never accelerates the wave');
     // Hold only the guest's success receipt: the host declines meanwhile, so a
     // late receipt must not replace the newer status with a false waiting bar.
     holdGuestReceipt=true;await idle(guest);if(guestMobile)await guest.locator('#speed').tap();else await guest.locator('#speed').click();
     await waitPrompt(host);await chain;assert.equal(typeof releaseHeldReceipt,'function');await tapOrClick(host,decline,true);
     await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    assert.match(await guest.locator('#message').innerText(),/2× request ended\. Check the current speed/i);
+    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i);
     releaseHeldReceipt();releaseHeldReceipt=null;await idle(guest);
-    assert.match(await guest.locator('#message').innerText(),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
+    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
     await tapOrClick(guest,'#speed',guestMobile);await guest.waitForFunction(()=>!document.getElementById('speedRequest').hidden);await waitPrompt(host);
     await tapOrClick(guest,'#speed',guestMobile);await host.locator(prompt).waitFor({state:'hidden'});
     await tapOrClick(guest,'#speed',guestMobile);await waitPrompt(host);
@@ -197,7 +201,7 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
      if(i<count-2)assert.equal(core.snapshotFor('alice').speedControl.speed,1,'all other players must approve');
     }
     for(const {page} of pages){await page.waitForFunction(()=>document.getElementById('speedRequest').hidden);assert.match(await page.locator('#speed').innerText(),/2×/);}
-    assert.match(await guest.locator('#message').innerText(),/2× approved by all players/i);
+    assert.match(await guest.locator('#radioLogList').innerText(),/2× approved by all players/i);
     assert.equal(core.snapshotFor('alice').speedControl.speed,2);
     await tapOrClick(host,'#speed',true);assert.equal(core.snapshotFor('alice').speedControl.speed,1);
     assert.deepEqual(errors,[]);mark('complete');

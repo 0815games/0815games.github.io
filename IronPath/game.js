@@ -44,6 +44,7 @@ import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpg
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
 import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261117-shimmer1';
 import { createFieldAlert } from './field-alert.mjs?v=20261117-fieldalert1';
+import { createFieldRadio } from './field-radio.mjs?v=20261117-fieldradio1';
 import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261112-kits1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
@@ -499,7 +500,7 @@ function renderResults(target){
     // Only replace the old run after the version check and confirmation succeed.
     soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldAlert.clear();closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldAlert.clear();fieldRadio.clear();closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -536,8 +537,22 @@ function renderResults(target){
   // No dismiss button: the card is a caption over the field and takes no taps.
   // It steps aside on its own, and the game clears it when the run does.
   const fieldAlert=createFieldAlert(document,{translate:tr});
+  // The radio is a device: it starts closed, counts what it was told, and opens
+  // into the log when the player taps it. The line the radio used to print over
+  // the battlefield is now for screen readers only - the words are in the log.
+  const fieldRadio=createFieldRadio(document,{translate:tr});
+  $('radioToggle').onclick=()=>fieldRadio.toggle();
+  $('radioLogClose').onclick=()=>fieldRadio.close();
+  // Tapping the field closes it: the battle goes on while the panel is open, and
+  // a panel that has to be closed by its own button is a panel in the way.
+  document.addEventListener('pointerdown',event=>{
+    if(!fieldRadio.isOpen())return;
+    if(event.target?.closest?.('#battleFoot'))return;
+    fieldRadio.close();
+  },true);
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&fieldRadio.isOpen())fieldRadio.close();});
   let lastNotice=null;
-  function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);$('message').textContent=lastNotice();}
+  function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);fieldRadio.say(lastNotice);$('message').textContent=lastNotice();}
   // A warning: the player asked for something and did not get it, or something
   // went wrong on the field. See field-alert.mjs for what that costs it.
   function warn(text){fieldAlert.warn(typeof text==='function'?text:()=>localizeGameMessage(text,tr));}

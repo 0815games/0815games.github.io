@@ -179,6 +179,25 @@ const fs = require('node:fs');
       });
       assert.equal(reached.start.id,'start',`${name}: the deploy button is reachable, not covered (hit ${reached.start.id})`);
       assert.equal(reached.hud.inside,true,`${name}: the ability HUD is reachable itself (hit ${reached.hud.id})`);
+      // The field radio is a handset now, not a line of text: small, closed, and
+      // in the corner. It must still clear the ability button - and it must be
+      // tappable, because the messages live behind it.
+      const handset=await page.locator('#radioToggle').boundingBox();
+      assert.ok(handset.width<=width*0.4,`${name}: the radio handset is a device, not a noticeboard (${Math.round(handset.width)}px of ${width})`);
+      assert.ok(handset.height>=24,`${name}: and it is big enough to hit (${Math.round(handset.height)}px)`);
+      const handsetHit=await page.evaluate(()=>{
+        const box=document.querySelector('#radioToggle').getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
+        return {inside:!!(hit&&hit.closest('#radioToggle')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+      });
+      assert.equal(handsetHit.inside,true,`${name}: the handset answers a tap (hit ${handsetHit.at})`);
+      // Opened, the log shows what was said - in the corner, not in the middle.
+      await page.locator('#radioToggle').click();
+      const log=await page.locator('#radioLog').boundingBox();
+      assert.ok(log.x+log.width/2<width*0.75,`${name}: the radio log opens in the corner, not over the middle of the field`);
+      assert.ok(log.y>height*0.3,`${name}: and low enough to be out of the fighting`);
+      await page.locator('#radioLogClose').click();
+      assert.equal(await page.locator('#radioLog').isVisible(),false,`${name}: and it closes again`);
       // The field radio keeps its own corner: the HUD must not lie across it.
       const radio=await page.locator('.battle-foot').boundingBox();
       const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);

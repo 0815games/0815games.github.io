@@ -2413,3 +2413,55 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
 - **Offen geblieben:** Ob der Funk künftig **minimiert** startet, ist nicht
   entschieden. Das ist eine Frage an den Betreiber, keine, die ich mir selbst
   beantworten sollte.
+
+## IPL-0051 – Block 8: Der Funk wird zum Funkgerät (er startet geschlossen)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/095361b2-0815games-github-io`,
+  Basis `b5e5054` (Main nach dem Merge von #308).
+- **Auftrag:** „Feldmeldungen als Popup“ – Teil 1 (nur das Wichtige als eigene
+  Warnkarte) war mit
+  [IPL-0050](PATCH-LOG.md#ipl-0050--block-8--der-funk-bekommt-eine-zweite-stimme-warnungen-statt-nur-meldungen)
+  gebaut. Auf die Rückfrage, ob der Funkverkehr künftig **minimiert** starten
+  soll, kam die Entscheidung: **Funkgerät** – ein kleiner Handapparat, der
+  geschlossen startet, die Nachrichten auf Antippen öffnet und zählt, was
+  dazugekommen ist.
+- **Was jetzt im Feld steht:** ein Handapparat (`RADIO`/`FUNK`) in der Ecke, in
+  der vorher die Funkzeile lag. Er **startet geschlossen**. Ein Zähler zeigt,
+  wie viele Meldungen seit dem letzten Öffnen eingegangen sind. Antippen öffnet
+  das **Log** darüber: die letzten zwölf Meldungen, älteste oben, neueste unten
+  und fett. Ein Antippen aufs Feld oder die Taste `Escape` schließt es wieder –
+  der Kampf läuft weiter, während es offen ist, also darf es nicht erst per
+  Knopf verschwinden.
+- **Was nicht mehr im Bild ist:** die dauerhafte Zeile. Die Worte stehen jetzt
+  im Log, und für Screenreader bleibt ein versteckter Live-Bereich
+  (`#message`, per `clip-path` aus dem Bild genommen) – die Ansage bleibt, die
+  Fläche nicht.
+- **Warum die Ecke und nicht die Mitte:** der Spieler öffnet das Log, um zu
+  lesen, während der Kampf weiterläuft. Die Mitte des Feldes ist der Ort, an dem
+  gekämpft wird – die Lektion aus
+  [IPL-0047](PATCH-LOG.md#ipl-0047--korrektur-das-fähigkeits-hud-gehört-in-die-daumennähe-nicht-in-die-feldmitte)
+  gilt auch hier.
+- **Was es nicht darf, und wie das geprüft ist:** keine Meldung verlieren, nur
+  weil das Log geschlossen war (das Log führt sie alle, zwölf lang); den Zähler
+  beim **Öffnen** löschen und nicht schon beim Eintreffen; keine Tipps vom Feld
+  nehmen, solange es geschlossen ist (`pointer-events:none` am Kasten, `auto`
+  nur am Handapparat und am offenen Log); und mit einem neuen Lauf leer
+  starten.
+- **Prüfungen:** `tests/field-radio.test.mjs` neu (8/8). Der Prüfstand im echten
+  Chromium (`interface-smoke.cjs`) misst dazu: der Handapparat ist klein
+  (höchstens 40 % der Breite), mindestens 24 px hoch und **antwortet einem
+  Tipp**; das geöffnete Log steht in der Ecke und nicht über der Mitte; und es
+  schließt sich wieder. `wave-consensus.cjs` liest den Kampfstatus jetzt aus dem
+  Log statt aus der alten Zeile. Vollständiger serieller Lauf **1108 bestanden,
+  0 fehlgeschlagen**.
+- **Änderungen / Dateien:** `field-radio.mjs` (neu), `index.html`,
+  `field-command.css`, `game.js`, `localization-de.mjs` (FUNK, Funkverkehr
+  öffnen/schließen), `tests/field-radio.test.mjs` (neu), elf Test-Harnesse (das
+  neue Modul in ihrer Umleitungsliste), `browser-tests/interface-smoke.cjs`,
+  `browser-tests/wave-consensus.cjs`, `PATCH-BLOECKE.md` (Punkt abgehakt).
+- **Grenzen:** **Kein Mensch hat es gesehen.** Die **Kampagnen-Funkkarte**
+  (`#storyRadio`) bleibt unangetastet: sie erscheint für Sekunden und ist eher
+  mit der Warnkarte verwandt. Wer die letzte Meldung im Vorbeigehen lesen
+  wollte, verliert sie jetzt aus dem Blick – das ist der Preis des Wunsches, und
+  der Zähler ist der Ersatz dafür.
