@@ -194,7 +194,11 @@ const fs = require('node:fs');
       // Opened, the log shows what was said - in the corner, not in the middle.
       await page.locator('#radioToggle').click();
       const logState=await page.evaluate(()=>{const el=document.getElementById('radioLog');
-        return {hidden:el.hidden,display:getComputedStyle(el).display,rect:el.getBoundingClientRect().toJSON(),text:el.textContent.slice(0,40)};});
+        const read=()=>({hidden:el.hidden,expanded:document.getElementById('radioToggle').getAttribute('aria-expanded')});
+        const afterTap=read();
+        document.getElementById('radioToggle').click();
+        const afterSynthetic=read();
+        return {...afterTap,afterSynthetic};});
       assert.equal(logState.hidden,false,`${name}: tapping the handset opens the log (${JSON.stringify(logState)})`);
       const log=await page.locator('#radioLog').boundingBox();
       assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(logState)})`);
