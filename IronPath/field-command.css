@@ -10,12 +10,22 @@
 #gameView .map-viewport{background:#101d15;}
 #gameView .map-viewport canvas{margin:0 auto;}
 /* Small individual panels leave the world visible between them. */
-#gameView .map-frame .dashboard{position:absolute;z-index:3;top:10px;left:10px;right:65px;display:flex;align-items:stretch;gap:4px;width:max-content;max-width:calc(100% - 75px);margin:0;background:transparent;border:0;box-shadow:none;pointer-events:none}
+#gameView .map-frame .dashboard{position:absolute;z-index:3;top:10px;left:10px;right:65px;display:flex;flex-wrap:wrap;align-items:stretch;gap:4px;width:max-content;max-width:calc(100% - 75px);margin:0;background:transparent;border:0;box-shadow:none;pointer-events:none}
 #gameView .map-frame .dashboard>div{display:flex;align-items:center;gap:7px;min-width:90px;padding:7px 10px;background:#11261fe8;border:1px solid #80977cb3;border-radius:3px;box-shadow:0 3px 12px #0008;}
 #gameView .map-frame .dashboard>div:last-child{border:1px solid #80977cb3}
 #gameView .map-frame .dashboard small{color:#bdd0b4;font-size:9px;letter-spacing:.1em;white-space:nowrap}
 #gameView .map-frame .dashboard strong{color:#f7edcf;font:700 19px Georgia,serif;line-height:1;margin:4px 0 0;white-space:nowrap}
 #gameView .map-frame .hud-icon{width:29px;height:29px;padding:5px;flex:none;background:#294538;border:1px solid #69816d;stroke:#e8d092}
+/* The soldier tile shows the CONFIRMED progress: level, current/required XP, bar
+   and what is still missing. `battle-xp-hud.mjs` writes it and has no way to be
+   told about a wave that has not been saved, so this can never show a level the
+   account has not reached. The tile is the widest one and may drop to its own
+   row on a narrow phone rather than push the row over the map controls. */
+#gameView .map-frame .dashboard>div.hud-soldier{flex:0 0 auto}
+#gameView .map-frame .dashboard .hud-xp{display:block;margin-top:5px;min-width:88px}
+#gameView .map-frame .dashboard .hud-xp[hidden]{display:none}
+#gameView .map-frame .dashboard .hud-xp progress{display:block;width:100%;height:5px;margin:0 0 3px;accent-color:#d3b56f;background:#0d1c15;border:1px solid #5f7860}
+#gameView .map-frame .dashboard .hud-xp small{color:#a7bda0;font-size:8px;letter-spacing:.04em;line-height:1.3;white-space:nowrap}
 #gameView .map-frame .command{position:absolute;z-index:4;left:50%;bottom:12px;transform:translateX(-50%);width:min(690px,calc(100% - 24px));padding:7px;background:#10231eea;border:1px solid #81977c;border-radius:5px;box-shadow:0 5px 22px #000a}
 #gameView .map-frame .command .panel-heading{display:none}
 #gameView .map-frame .command-controls{display:flex;gap:6px}
@@ -24,7 +34,10 @@
 #gameView .map-frame .command-controls .end-run{flex:.8 1 0;background:#4d3630;border-color:#9a7565}
 #gameView .map-frame .command-controls button:hover:not(:disabled){filter:brightness(1.15)}
 #gameView .map-frame .wave-info{top:10px;right:10px;z-index:5}
-#gameView .map-frame .boss-alert{top:75px;z-index:3}
+/* `--map-hud-bottom` is the measured bottom edge of the status row, in the map
+   frame's own coordinates; the fallback assumes the soldier tile shows its XP,
+   which is the tallest the row gets. */
+#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px);z-index:3}
 #gameView .map-frame .story-radio{bottom:80px;z-index:4;max-width:min(360px,calc(100% - 24px))}
 /* The field decision takes the radio's slot; the radio lifts above it while the
    call is open. Both stay clear of the command bar they must never cover. */
@@ -48,11 +61,13 @@
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:0}
  #gameView .map-frame .dashboard strong{font-size:14px;margin-top:2px}
+ #gameView .map-frame .dashboard .hud-xp{min-width:78px;margin-top:4px}
+ #gameView .map-frame .dashboard .hud-xp small{font-size:8px;letter-spacing:0}
  #gameView .map-frame .command{position:fixed;bottom:0;left:0;right:0;transform:none;width:100%;padding:6px 6px max(6px,env(safe-area-inset-bottom,0px));border-radius:0;z-index:10}
  #gameView .map-frame .command-controls{gap:4px}
  #gameView .map-frame .command-controls button{font-size:9px;min-height:48px;padding:5px 3px;overflow-wrap:anywhere;letter-spacing:0}
  #gameView .map-frame .wave-info{top:5px;right:5px}
- #gameView .map-frame .boss-alert{top:52px}
+ #gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(66px + env(safe-area-inset-top,0px))) + 6px)}
  #gameView .map-frame .story-radio{bottom:12px}
  #gameView .map-frame .story-decision{bottom:12px}
  #gameView .map-frame:has(.story-decision:not([hidden])) .story-radio{bottom:202px}
@@ -73,7 +88,7 @@
 #gameView .map-frame .dashboard{top:calc(8px + env(safe-area-inset-top,0px));left:8px;right:70px;max-width:calc(100% - 78px)}
 #gameView .map-frame .dashboard>div{padding:6px 8px}
 #gameView .map-frame .wave-info{top:calc(60px + env(safe-area-inset-top,0px));right:8px}
-#gameView .map-frame .boss-alert{top:calc(80px + env(safe-area-inset-top,0px))}
+#gameView .map-frame .boss-alert{top:calc(var(--map-hud-bottom,calc(84px + env(safe-area-inset-top,0px))) + 8px)}
 #gameView .map-frame .command{position:absolute;left:50%;right:auto;bottom:calc(8px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(690px,calc(100% - 16px));z-index:4;border-radius:5px;padding:6px}
 #gameView .map-frame .story-radio{bottom:calc(150px + env(safe-area-inset-bottom,0px));}
 #gameView .map-frame .story-decision{bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:5}
@@ -143,6 +158,7 @@
  #gameView .map-frame .dashboard .hud-icon{display:none}
  #gameView .map-frame .dashboard small{font-size:8px;letter-spacing:.05em}
  #gameView .map-frame .dashboard strong{font-size:15px;margin-top:2px}
+ #gameView .map-frame .dashboard .hud-xp{min-width:70px;margin-top:3px}
  #gameView .map-frame .command{bottom:calc(5px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px) - 20px));padding:4px}
  #gameView .map-frame .command-controls{gap:4px}
  #gameView .map-frame .command-controls button{min-height:44px;padding:4px;font-size:10px}

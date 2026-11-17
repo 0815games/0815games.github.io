@@ -371,10 +371,14 @@ entstand, ist nicht sicher belegt.
   Upgrades markieren; reduzierte Grafik erhält eine ruhige Markierung. Im
   vorhandenen Turmmenü gibt es bereits Preis- und Sperranzeigen, nicht aber
   diesen Schimmer auf dem Spielfeld.
-- [ ] **XP im Kampf-HUD:** Bestätigtes Level, aktuellen/benötigten XP-Wert,
+- [x] **XP im Kampf-HUD:** Bestätigtes Level, aktuellen/benötigten XP-Wert,
   Balken und Restmenge während des Einsatzes zeigen. Vorhandene Menü-/Report-
   Balken erfüllen dies nicht; unbestätigte Saves dürfen keinen Levelaufstieg
-  vortäuschen.
+  vortäuschen. Gebaut mit [PR #300](https://github.com/0815games/0815games.github.io/pull/300)
+  ([IPL-0040](PATCH-LOG.md#ipl-0040--block-3--b-xp-im-kampf-hud)): die Kachel
+  SOLDIER trägt Stufe, `aktuell / benötigt EP`, Balken und Restmenge; Quelle ist
+  ausschließlich das bestätigte Profil, es gibt keinen Weg, ihr eine Welle
+  zuzuflüstern.
 - [ ] **After-Action Report:** Rangname und Abzeichen neben dem Level, bei
   Beförderung den neuen Rang zeigen. „What’s Next“ in den aufklappbaren
   Reportbereich verschieben, wichtige Ergebnisse oben lassen.

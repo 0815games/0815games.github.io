@@ -39,5 +39,8 @@ export const germanBattle=Object.freeze({
  'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'Dies beendet den gemeinsamen Einsatz. Die Gruppe schließt sich, sobald alle ihren Bericht erhalten und ihre Belohnungen für abgeschlossene Wellen gespeichert haben.',
  'This closes the multiplayer party.':'Dies schließt die Mehrspielergruppe.',
  'Only the host can finish an ended party.':'Nur der Host kann eine beendete Gruppe abschließen.',
- 'Party finalization changed.':'Der Gruppenabschluss hat sich geändert.'
+ 'Party finalization changed.':'Der Gruppenabschluss hat sich geändert.',
+ // Der Soldaten-Kachel im Kampf-HUD: nur bestätigte Werte.
+ '{current} / {required} XP':'{current} / {required} EP',
+ '{amount} XP to level {level}':'Noch {amount} EP bis Stufe {level}'
 });

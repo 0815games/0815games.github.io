@@ -100,9 +100,12 @@ test('the training-specific offset overrides the general one, in that order', ()
 
 test('game.js publishes the measured header height relative to the field, not the page', () => {
   assert.match(game, /--hud-bottom/, 'the measurement is published as a custom property');
-  const measure = game.slice(game.indexOf('function measureHud'), game.indexOf('function measureHud') + 900);
+  // The window only has to contain the whole function; it grew when the boss
+  // alert started following the measured row as well.
+  const measure = game.slice(game.indexOf('function measureHud'), game.indexOf('function measureHud') + 1600);
   assert.match(measure, /getBoundingClientRect\(\)\.bottom/, 'it reads the dashboard bottom');
   assert.match(measure, /-\s*battle\.getBoundingClientRect\(\)\.top/, 'relative to the battlefield box');
+  assert.match(measure, /--map-hud-bottom/, 'and once more for overlays inside the map frame, whose top is not the battle top');
   // A headless harness (and a very early frame) has no layout: the loop must not throw.
   assert.match(measure, /try\s*\{[\s\S]*catch/, 'measuring never breaks the frame loop');
   assert.match(game, /window\.addEventListener\('resize',measureHud\)/, 'rotation re-measures');
