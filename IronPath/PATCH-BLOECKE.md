@@ -101,6 +101,7 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, Punkterückgabe. | Geplant |
 | 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Große vertonte Mission mit Generalstimme und anschließender Menüführung. | Geplant |
 | 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | Geplant (neu aufgenommen) |
+| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Kein eigener Patch: Sammelstelle für Dinge, die erst nach den Blöcken 1–7 sinnvoll sind (Testumgebung, Altbestände, Veröffentlichung). | Sammelstelle |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
@@ -822,6 +823,52 @@ Die eigene Lebensanzeige ist im HUD sichtbar; bei Auswahl oder Beschädigung sin
 - [ ] Online führt weiterhin der **Spieler-Host** die Simulation; neue Zustände und Befehle in Snapshots/Protokoll, Grenzen und Versionierung berücksichtigen. Reconnect und das **experimentelle** Host-Recovery gesondert prüfen; daraus keine neue Host-Migration oder manipulationssichere Serverautorität ableiten. Alte Clients/Checkpoints nicht still mit inkompatiblem Zustand mischen.
 - [ ] Unit-/Replay- und Simulationsfälle für alle Ziele und Modi: Ausweichen, Tod vor Treffer, gleichzeitige Treffer, null/maximales Leben, Reparatur während Schaden, Konkurrenz um denselben Turm, Soldatenrückkehr, Wellenende, Bossangriffe und gleichzeitige Bunkerniederlage. Bestehende Saves, Fähigkeiten, Ausrüstung und Belohnungen regressionsprüfen.
 - [ ] Multiplayer- und Emulatorfälle für 2–4 Clients, verzögerte/doppelte Befehle, Disconnect/Reconnect, Zuschauerzustand und Snapshot-Größen; keine Doppelzahlungen oder abweichenden Treffer. Browser-/Gerätetests für Lesbarkeit, FPS, Trefferwarnungen, Touch und reduzierte Bewegung. Erst danach gemeinsam mit Block C menschlich balancieren.
+
+## 8. Was nach den Patches ansteht – Sammelstelle
+
+Dieser Block ist **kein eigener Patch** und hat keine Reihenfolge. Er sammelt,
+was erst sinnvoll wird, wenn die Blöcke 1–7 stehen – und alles, was beim
+Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
+
+### Prüfstand: gelegentlich rote Browser-Tests
+
+- [ ] **`test:party-recovery-browser` einmal rot, zweimal grün mit demselben
+  Code.** Nach dem Merge von [PR #301](https://github.com/0815games/0815games.github.io/pull/301)
+  (Endless-Turmschimmer, Main `749f58b`) schlug der Job
+  `party-finalization-browser (test:party-recovery-browser)` im Lauf
+  [44026363385](https://github.com/0815games/0815games.github.io/actions/runs/44026363385/job/133847546415)
+  fehl – Ausstieg 1, Testschritt selbst, nach rund zwei Minuten, im
+  Vier-Spieler-Szenario *Host-Reload, fenced Recovery, Receipt-Revalidierung*.
+  Dieselben beiden Jobs liefen auf dem Branch zweimal grün
+  ([44024819713](https://github.com/0815games/0815games.github.io/actions/runs/44024819713),
+  [44024968901](https://github.com/0815games/0815games.github.io/actions/runs/44024968901))
+  mit inhaltsgleichem Baum. **Einschätzung: Flake, nicht Regression – unbewiesen.**
+  Der Schimmer berührt keine Netz-, Recovery- oder XP-Logik, und der Test prüft
+  keine Bildinhalte.
+- [ ] **Drei Wege, es zu beweisen, waren im Arbeitsraum versperrt.** Die
+  Job-Logs liegen auf `blob.core.windows.net`, das außerhalb des Netzes des
+  Arbeitsraums liegt; `gh run view --log` bricht mit `EOF` ab. Ein erneuter
+  Start scheitert: `gh run rerun` lehnt den Lauf ab, `workflow_dispatch` gibt es
+  nicht, und ein Re-Trigger würde einen Push auf `main` brauchen. Lokal
+  nachstellen ließ es sich nicht (kein Java, keine Firebase-Emulatoren,
+  Chromium-Download blockiert). **Nächster Versuch mit Menschenhand:** Log im
+  Browser öffnen oder über einen belanglosen Folge-PR die Welle neu anstoßen.
+- [ ] **Grundsätzlich klären:** Soll die Browser-Matrix (acht Jobs, jeweils
+  Chromium plus Emulatoren) einen Wiederholungslauf bekommen? Sie ist die
+  einzige Stelle im Prüfstand ohne jede Wiederholung, und genau dort traten die
+  meisten Aussetzer auf. Frühere Läufe dieser Welle schlugen aus anderen Gründen
+  fehl (`database-rules`, z. B. `e8445a6`, `dd30eda`).
+
+### Nachgelagert, weil es die Blöcke berührt
+
+- [ ] **Block 2 veröffentlichen:** Die Charakter- und Freundesregeln sind
+  gebaut, aber nicht live; die Veröffentlichung ist seit längerem offen.
+- [ ] **Altbestände und Alt-Geräte:** Kontoübergreifend eindeutige
+  Charakternamen einschließlich Alt-Duplikaten, alte Clients, alte Saves und
+  gecachte `?v=`-Wellen prüfen – erst, wenn die Blöcke stehen.
+- [ ] **Echte Abnahmen nachholen:** Für jeden Punkt, den bislang nur die
+  Maschine gesehen hat, fehlt die menschliche Sichtung auf echten Geräten
+  (zuletzt beim Turmschimmer: kein Mensch hat den Ring auf dem Feld gesehen).
 
 ## Gemeinsame Freigabe
 
