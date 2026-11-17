@@ -182,7 +182,7 @@ const fs = require('node:fs');
       // The field radio keeps its own corner: the HUD must not lie across it.
       const radio=await page.locator('.battle-foot').boundingBox();
       const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);
-      assert.equal(overRadio,false,`${name}: the ability HUD leaves the field radio alone`);
+      assert.equal(overRadio,false,`${name}: the ability HUD leaves the field radio alone (hud ${JSON.stringify(ability)} vs radio ${JSON.stringify(radio)})`);
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.

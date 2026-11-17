@@ -191,7 +191,16 @@
  .field-ops{right:max(8px,env(safe-area-inset-right,0px))}
 }
 #gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(212px + env(safe-area-inset-bottom,0px))}
-@media(pointer:coarse){#gameView .battle-foot{max-width:calc(100% - 150px)}}
+/* Touch keeps a 150px column free along the right edge for the zoom and the
+   field-upgrade button: the field radio is `calc(100% - 150px)` wide because of
+   it. The ability HUD lives in that same column, so it is 134px there - 150
+   less the two 8px margins - and the two can never touch, whatever the radio
+   says or however tall it grows. Measured on a phone: at 196px the HUD reached
+   into the radio's corner. */
+@media(pointer:coarse){
+ #gameView .battle-foot{max-width:calc(100% - 150px)}
+ #gameView .map-frame .ability-hud{width:min(134px,calc(50vw - 20px))}
+}
 
 /* ---------------------------------------------------------------------------
    The training screen owns the viewport, like the endless screen already does.
