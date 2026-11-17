@@ -202,6 +202,15 @@ const fs = require('node:fs');
       assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
       const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
       assert.equal(overAbility,false,`${name}: the warning keeps out of the ability button's corner (warning ${JSON.stringify(warning)} vs hud ${JSON.stringify(ability)})`);
+      // The card is a caption, not a wall: a tap where it floats must reach the
+      // ground beneath, or a player cannot build under a message. Only its
+      // dismiss button takes taps - and that one must really answer.
+      const throughCard=await page.evaluate(()=>{
+        const card=document.querySelector('#radioAlert').getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(card.left+4),Math.round(card.top+card.height/2));
+        return {inside:!!(hit&&hit.closest('#radioAlert')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+      });
+      assert.equal(throughCard.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${throughCard.at})`);
       const warningReached=await page.evaluate(()=>{
         const box=document.querySelector('#radioAlertDismiss').getBoundingClientRect();
         const x=Math.round(box.left+box.width/2),y=Math.round(box.top+box.height/2);

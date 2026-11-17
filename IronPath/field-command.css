@@ -53,17 +53,19 @@
    line below keeps speaking, because a warning about a refused upgrade must not
    hide "Run ended". */
 .radio-alert{position:absolute;left:0;right:0;bottom:100%;z-index:8;display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
-  /* The radio box is click-through on purpose - it is a caption over the field,
-     and a tap on it must reach the ground beneath. A warning is not: it asks
-     for a tap, so it takes its own back. Chromium found this by hitting the
-     canvas through the dismiss button. */
-  pointer-events:auto}
+  pointer-events:none}
 .radio-alert[hidden]{display:none}
 .radio-alert::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}
 .radio-alert-label{flex:none;color:#ffcf8a;font-size:9px;font-weight:700;letter-spacing:.15em}
 .radio-alert-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
 .radio-alert-more{flex:none;font-size:9px;font-weight:700;letter-spacing:.12em;color:#ffcf8a;background:#e0a95c1f;border:1px solid #e0a95c66;padding:2px 5px}
-.radio-alert-dismiss{flex:none;min-height:28px;padding:3px 9px;background:#e0a95c;color:#2a1d1d;border:1px solid #f0c98a;font:inherit;font-size:9px;font-weight:700;letter-spacing:.12em;cursor:pointer}
+/* The radio box - and the warning with it - is click-through on purpose: it is a
+   caption over the field, and a tap where it floats must reach the ground
+   beneath. A field that cannot be tapped because a message is showing is worse
+   than a message. Only the dismiss button takes taps for itself. Both halves were
+   found in Chromium: without `pointer-events` on the button the dismiss hit the
+   canvas, and with it on the whole card the card swallowed a build pad. */
+.radio-alert-dismiss{flex:none;min-height:28px;padding:3px 9px;background:#e0a95c;color:#2a1d1d;border:1px solid #f0c98a;font:inherit;font-size:9px;font-weight:700;letter-spacing:.12em;cursor:pointer;pointer-events:auto}
 .radio-alert-dismiss:hover{background:#f0c98a}
 @media(prefers-reduced-motion:reduce){.radio-alert{box-shadow:none}}
 #gameView .battle-foot #message{font-size:12px;letter-spacing:normal}

@@ -32,10 +32,11 @@
 //     longer exists is noise.
 //
 // One thing the stylesheet has to know: the radio box is click-through, because
-// it is a caption over the field and a tap on it must reach the ground. The
-// warning card is not - it asks for a tap - so `field-command.css` gives it
-// `pointer-events:auto`. Chromium found that by hitting the canvas through the
-// dismiss button.
+// it is a caption over the field - and a field that cannot be tapped because a
+// message is showing is worse than a message. The warning rides on the same
+// rule: only its dismiss button takes taps for itself. Both halves of that were
+// found in Chromium - the button by not answering, then the card by swallowing a
+// build pad.
 //
 // The queue is deliberately small. Three waiting warnings are three things to
 // read; a fourth pushes out the oldest waiting one, because a warning that is
