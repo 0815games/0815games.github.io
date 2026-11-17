@@ -145,11 +145,27 @@ function replaceOnce(source,pattern,replacement,label){
    }
   }
   async function advance(page,ms){await page.evaluate(value=>{__advanceIdleClock(value);document.dispatchEvent(new Event('visibilitychange'));},ms);}
+  // What the player is TOLD after half an hour away. It used to be a bare line
+  // on the sign-in form; it is a card with the field's own picture now. The card
+  // is the message, so the message is asserted on the card: it opens, it names
+  // the reason, and dismissing it leaves the player on the sign-in screen and
+  // clears the notice - otherwise the card would come back on every language
+  // change, which is exactly the sort of thing nobody notices until it is live.
+  async function waitForAfkCard(page){
+   const card=page.locator('#afkRestDialog');
+   await card.waitFor({state:'visible'});
+   assert.match(await page.locator('#afkRestText').innerText(),/30 minutes of inactivity/);
+   await page.locator('#afkRestAccept').click();
+   await card.waitFor({state:'hidden'});
+   assert.equal(await page.evaluate(()=>sessionStorage.getItem('ironpath:afk-signed-out')),null,
+     'dismissing the card clears the notice, so it cannot return');
+   assert.equal(await page.locator('#authView').isVisible(),true,'and the sign-in screen is what is left');
+  }
   async function waitForLogout(page){
    await page.locator('#authView').waitFor({state:'visible'});
    await page.locator('#afkSessionStatus').waitFor({state:'hidden'});
    assert.equal(await page.evaluate(()=>__testAuth.currentUser),null);
-   assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+   await waitForAfkCard(page);
   }
   {
    const f=await fixture(),{state}=f;
@@ -172,7 +188,7 @@ function replaceOnce(source,pattern,replacement,label){
     await page.waitForFunction(expected=>document.querySelector('meta[name="ironpath-build"]')?.content===expected,nextBuild,{timeout:20000});
     await page.locator('#authView').waitFor({state:'visible'});
     assert.equal(await page.evaluate(()=>__testAuth.currentUser),null,'the persisted game account remains signed out after navigation');
-    assert.match(await page.locator('#entryMessage').innerText(),/30 minutes of inactivity/);
+    await waitForAfkCard(page);
     assert.ok(state.postLogoutChecks>=1);assert.equal(state.documents,2,'only one automatic reload occurs');
     console.log('Real SDK AFK: a confirmed newer build reloads once after sign-out.');
    }finally{await f.close();}
