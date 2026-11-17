@@ -144,6 +144,14 @@ const fs = require('node:fs');
       await page.screenshot({path:`browser-artifacts/${name}-tower-ring.png`,fullPage:false});
       await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=true;});
       await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
+      // The ability HUD moved out of the command strip onto the field. It has to
+      // be a real touch target, it has to be reachable at the right edge, and it
+      // must not fall off the screen - all three measured, not assumed.
+      const ability=await page.locator('#ability').boundingBox();
+      assert.ok(ability.width>=44&&ability.height>=44,`${name}: the ability HUD is a touch target (${Math.round(ability.width)}x${Math.round(ability.height)})`);
+      assert.ok(ability.x+ability.width<=width+1&&ability.x>=-1,`${name}: the ability HUD stays inside the width`);
+      assert.ok(ability.y>=-1&&ability.y+ability.height<=height+1,`${name}: the ability HUD stays inside the height`);
+      assert.ok(ability.x+ability.width>width/2,`${name}: the ability HUD sits at the right edge, away from the pads it would cover`);
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.

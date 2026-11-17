@@ -16,8 +16,8 @@ import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStory
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
 import {projectFourGameView} from './four-game-view.mjs?v=20261031-patch4';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261031-mpview1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261031-mpview1';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261117-ability1';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261117-ability1';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
@@ -35,7 +35,8 @@ import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
 import { createCoopInput } from './coop-input.mjs?v=20261031-patch4';
 import { createTutorial } from './tutorial.mjs?v=20261031-patch4';
-import { createCoach, coachSeen } from './first-run-coach.mjs?v=20261031-patch4';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261031-patch4';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261117-ability1';
 import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-patch4';
 import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-patch4';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
@@ -137,6 +138,44 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   if(reason==='locked')return 'Your saved story progress is behind this mission. Reload the page to sync, then replay it.';
   return 'Mission progress could not be confirmed. Retry saving before leaving.';
 }
+  // The ability HUD. One button on the field with its mark, its name and - the
+  // part that used to be missing - the reason it cannot be used right now. The
+  // reasons are ordered the way a player asks: over, nothing chosen, panel in
+  // the way, recharging, party not ready, wave not started, nothing to hit.
+  const ABILITY_STATE={
+    ready:()=>tr('READY'),
+    cooldown:hud=>tr('READY IN {seconds}s',{seconds:hud.seconds}),
+    'no-targets':()=>tr('NO TARGETS'),
+    'not-running':()=>tr('START THE WAVE'),
+    'panel-open':()=>tr('CLOSE THE PANEL'),
+    waiting:()=>tr('WAITING'),
+    ended:()=>tr('OPERATION OVER'),
+    'no-skill':()=>tr('CHOOSE IN SKILLS'),
+  };
+  let abilityView=null,abilityPending=false;
+  // The storage lives further down this closure; reading it too early would be
+  // a question nobody asked, so the hint simply stays available instead.
+  function hintStorage(){try{return tutorialStorage??null;}catch{return null;}}
+  function abilityHint(){
+    try{$('ability').classList.add('ability-hud--new');}catch{/* A stubbed field has no class list. */}
+    const timer=setTimeout(()=>{try{$('ability').classList.remove('ability-hud--new');}catch{}},6000);
+    timer?.unref?.();
+  }
+  function renderAbility(player){
+    const hud=abilityHud({skills:player?.skills,cooldown:player?.cooldown,running:!!state.running,enemies:state.enemies?.length||0,menuOpen:!menu.hidden,coopReady:coop?coopReady:true,ended:!!state.ended});
+    abilityView=hud;
+    const node=$('ability');node.dataset.state=hud.reason;node.disabled=!hud.ready||abilityPending;
+    $('abilityName').textContent=tr(hud.name).toUpperCase();
+    $('abilityState').textContent=(ABILITY_STATE[hud.reason]||ABILITY_STATE.ready)(hud);
+    try{$('abilityIcon').innerHTML=abilityHudSvg(hud.active,{size:26});}catch{/* No DOM in unit tests. */}
+    try{node.setAttribute('aria-label',`${tr(hud.name)}: ${$('abilityState').textContent}`);}catch{}
+    // One quiet introduction, once per device: the first time an ability is
+    // really ready, the button wears a ring for a moment and the radio says it.
+    if(hud.ready&&!coachSeen('ability-hud',hintStorage())){
+      markCoachSeen('ability-hud',hintStorage());abilityHint();
+      notice(()=>tr('{ability} is ready. Use it from the button on the right edge of the field.',{ability:tr(hud.name)}));
+    }
+  }
 function renderResults(target){
     const snapshot=target.snapshot;if(!snapshot)return;const waves=waveRewardSummary(snapshot,target.playerId),p=snapshot.players?.[target.playerId],damage=p?.towerDamage||[],combos=Object.entries(p?.comboCounts||{}).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]);
     const outcome=snapshot.fourInfo?.mode==='two-vs-two'?(snapshot.fourInfo.winnerTeam===null?'Match ended in a draw':snapshot.fourInfo.winnerTeam===snapshot.fourInfo.team?'Victory!':'Defeat'):snapshot.mode==='versus'?(snapshot.winnerId?(snapshot.winnerId===target.playerId?'Victory!':'Defeat'):'Match ended'):(target.left?'You left the operation':snapshot.endReason==='retired'?'Operation ended':snapshot.endReason==='training-complete'?'Training complete!':snapshot.endReason==='campaign-victory'?'Mission complete!':snapshot.endReason==='story-failure'?'Mission failed':'Bunker lost');
@@ -683,7 +722,7 @@ function renderResults(target){
     // written, so a wrapped row or a soldier tile that just grew its XP block
     // moves everything underneath in the same frame.
     measureHud();
-    const player=state.players[me()],speedVote=state.speedRequest; $('speed').textContent=coop?tr(state.speed===2?'SPEED: 2× · SET 1×':speedVote?(speedVote.requester===me()?'CANCEL 2× REQUEST':'2× VOTE PENDING'):'REQUEST 2×'):tr('SPEED: {speed}×',{speed:state.speed}); const ability=tr(abilityName(player?.skills)).toUpperCase(),needsEnemies=['assault','recon'].includes(player?.skills?.active); $('ability').textContent=!player?.skills?.active?tr('NO SKILL'):player?.cooldown>0?tr('{ability}: {seconds}s',{ability,seconds:Math.ceil(player.cooldown)}):tr('{ability} READY',{ability}); $('ability').disabled=state.ended||!player?.skills?.active||player.cooldown>0||(needsEnemies?!state.enemies.length:!state.running)||!menu.hidden||(!!coop&&!coopReady); $('speed').disabled=!menu.hidden||!!coop&&(!coopReady||state.ended||!state.running||!!speedVote&&speedVote.requester!==me());
+    const player=state.players[me()],speedVote=state.speedRequest; $('speed').textContent=coop?tr(state.speed===2?'SPEED: 2× · SET 1×':speedVote?(speedVote.requester===me()?'CANCEL 2× REQUEST':'2× VOTE PENDING'):'REQUEST 2×'):tr('SPEED: {speed}×',{speed:state.speed}); renderAbility(player); $('speed').disabled=!menu.hidden||!!coop&&(!coopReady||state.ended||!state.running||!!speedVote&&speedVote.requester!==me());
     const speedEligible=!!speedVote&&speedVote.required.includes(me())&&!speedVote.approved.includes(me());$('speedRequest').hidden=!coop||!speedVote;$('speedRequestText').textContent=speedVote?tr('{name} requests 2× for wave {wave}. {approved}/{required} approved.',{name:state.speedRequesterName||state.players[speedVote.requester]?.name||tr('A player'),wave:speedVote.wave,approved:speedVote.approved.length,required:speedVote.required.length}):'';$('speedApprove').hidden=$('speedDecline').hidden=!speedEligible;$('speedApprove').disabled=$('speedDecline').disabled=!coopReady;
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),host=!!coop&&state.hostId===me(),vote=coop?currentWaveRequest():null;
     const requester=!!vote&&vote.requester===me(),eligible=!!vote&&vote.required.includes(me())&&!vote.approved.includes(me());
@@ -742,7 +781,13 @@ function renderResults(target){
     }
     dispatch({type:'endRun'},result=>{if(!result.ok){notice(result.reason);return;}keys.clear();notice(session?(partyFinalizationEnabled?'Waiting for all reports and saved rewards before closing the party.':'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.'):'Run ended. Completed-wave rewards are kept. Restart for a new battlefield.');updateUI();onReturnToCommand();});
   };
-  $('ability').onclick=()=>{const solo=!coop,player=state.players[me()],targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{if(!result.ok){notice(result.reason);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');if(result.combos?.length){combatFx.emit('combo',{x:player.comboCue.x,y:player.comboCue.y,comboLabel:result.combos.join(' + ')},state);sound.play('combo');}}notice(()=>tr('{ability} deployed!',{ability:tr(abilityName(state.players[me()]?.skills))})+(result.combos?.length?tr(' {combos} combo!',{combos:result.combos.map(x=>tr(x)).join(' + ')}):''));updateUI();});};
+  $('ability').onclick=()=>{const player=state.players[me()];
+    // Without a chosen ability the button used to sit there looking broken. It
+    // now says where the choice lives, and pressing it repeats the directions.
+    if(!abilityView?.active){notice(tr('Choose an ability under SKILLS in the command center.'));return;}
+    if(abilityPending)return; // A slow network must never fire it twice.
+    abilityPending=true;$('ability').disabled=true;
+    const solo=!coop,targets=solo?state.enemies.map(e=>({...e})):[];dispatch({type:'airstrike'},result=>{abilityPending=false;if(!result.ok){notice(result.reason);renderAbility(state.players[me()]);return;}if(solo){combatFx.emit(player?.skills?.active||'assault',player,{enemies:targets});sound.play('ability');if(result.combos?.length){combatFx.emit('combo',{x:player.comboCue.x,y:player.comboCue.y,comboLabel:result.combos.join(' + ')},state);sound.play('combo');}}notice(()=>tr('{ability} deployed!',{ability:tr(abilityName(state.players[me()]?.skills))})+(result.combos?.length?tr(' {combos} combo!',{combos:result.combos.map(x=>tr(x)).join(' + ')}):''));updateUI();});};
   function sendDirection(){const x=(keys.has('d')||keys.has('arrowright')?1:0)-(keys.has('a')||keys.has('arrowleft')?1:0),y=(keys.has('s')||keys.has('arrowdown')?1:0)-(keys.has('w')||keys.has('arrowup')?1:0);if(coop){const key=`${x},${y}`;if(key!==lastDirection){lastDirection=key;coopInput.direction({type:'direction',x,y});
         // Render-only prediction: the own soldier answers instantly instead
         // of after the database round trip. The next authoritative snapshot

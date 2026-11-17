@@ -96,6 +96,24 @@
 #gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
 #gameView .battle .solo-objective:not([hidden]),#gameView .battle .versus-status:not([hidden]){position:absolute;z-index:5;top:calc(65px + env(safe-area-inset-top,0px));left:8px;max-width:min(360px,calc(100% - 76px));margin:0;background:#183027ed}
 #gameView .map-frame .run-perk-panel{z-index:12}
+/* The ability HUD: one button on the field, on the right edge where a thumb
+   finds it, never wandering with the soldier it belongs to and never over the
+   middle of the field, where the wave votes land. */
+#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;min-width:48px;min-height:48px;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
+#gameView .map-frame .ability-hud[hidden]{display:none}
+#gameView .map-frame .ability-hud-icon{display:grid;place-items:center;width:26px;height:26px;flex:none;color:#e4ca89}
+#gameView .map-frame .ability-hud-copy{display:flex;flex-direction:column;gap:2px;line-height:1.1}
+#gameView .map-frame .ability-hud-copy strong{font-size:10px;letter-spacing:.12em}
+#gameView .map-frame .ability-hud-copy small{font-size:9px;letter-spacing:.08em;color:#c6d4b8}
+#gameView .map-frame .ability-hud[data-state="ready"]{border-color:#e4ca89;background:#263d2bf7}
+#gameView .map-frame .ability-hud[data-state="ready"]:not(:disabled):hover{border-color:#f6e3a6;background:#2e4832f7}
+#gameView .map-frame .ability-hud:disabled{opacity:.6;cursor:default}
+/* The one-time introduction: a ring that fades after a few breaths. With
+   reduced motion it simply stays outlined instead of pulsing. */
+#gameView .map-frame .ability-hud--new{animation:ability-hud-hint 1.1s ease-in-out 3}
+@keyframes ability-hud-hint{0%,100%{box-shadow:0 6px 18px #0009}50%{box-shadow:0 0 0 3px #e4ca89b0, 0 6px 18px #0009}}
+@media(prefers-reduced-motion:reduce){#gameView .map-frame .ability-hud--new{animation:none;border-color:#e4ca89}}
+@media(max-width:850px){#gameView .map-frame .ability-hud{gap:6px;padding:7px 9px}}
 .field-ops{position:absolute;z-index:9;right:8px;top:calc(8px + env(safe-area-inset-top,0px));}
 .field-ops>summary{display:grid;place-items:center;min-width:56px;min-height:44px;padding:6px;background:#162d23ed;border:1px solid #a4b395;border-radius:3px;box-shadow:0 3px 12px #0008;color:#f2e2b0;font-size:10px;font-weight:bold;letter-spacing:.06em;cursor:pointer;list-style:none}
 .field-ops>summary::-webkit-details-marker{display:none}.field-ops[open]>summary{background:#d9c486;color:#1a2d23}

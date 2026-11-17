@@ -1978,3 +1978,71 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   echten Gerät gesehen.** Insbesondere die Feldentscheidung liegt jetzt über dem
   Spielfeld, wo vorher der untere Rand frei blieb – das ist gewollt, aber es ist
   eine Entscheidung über Sicht, die ich nur aus dem Auftrag abgeleitet habe.
+
+## IPL-0044 – Block 3 / Zusatzwünsche, Teil 2: Fähigkeits-HUD
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/423312cc-0815games-github-io`,
+  Basis `010db2c` (Main nach dem Merge von #303).
+- **Auftrag:** „Versions popups auch mittig. Trag es in Block 8 ein.“ und
+  „Mach jetzt weiter.“ Der erste Teil steht als Eintrag in **Block 8**
+  (`### Popups`): `#versionNotice` liegt oben rechts, hat aber Knöpfe, und
+  darum gehört auch es in die Mitte. Notiert wurde zugleich die **Schärfe der
+  Regel**: nicht die Bezeichnung entscheidet („Hinweisband“), sondern ob ein
+  Element eine Handlung verlangt. Der Kopfkommentar von `popup-center.css` sagt
+  heute noch das Gegenteil und ist beim Bau mitzuberichtigen. Der zweite Teil
+  ist dieser Eintrag: D2.
+- **Was gebaut wurde:** Der Fähigkeitsknopf steht nicht mehr unten in den
+  Kampfsteuerungen, sondern **im Kartenrahmen** – am rechten Rand, senkrecht
+  mittig. Er trägt das gezeichnete Zeichen seiner Fähigkeit, deren Namen und
+  einen Zustand.
+- **Die Reihenfolge der Gründe.** Vorher gab es eine einzige Wahrheit: „geht
+  nicht“. Jetzt wird die Frage beantwortet, die ein Spieler wirklich stellt, und
+  zwar in der Reihenfolge, in der er sie stellen würde: Einsatz vorbei → nichts
+  gewählt → ein Panel steht im Weg → lädt noch auf → Gruppe nicht vollständig →
+  Welle läuft nicht → nichts zu treffen. Bei `EINSATZ BEENDET` gewinnt immer der
+  erste Grund – da gibt es nichts mehr zu warten.
+- **Kein scheinbar defekter Knopf.** Ohne gewählte Fähigkeit steht
+  `WÄHLEN UNTER FÄHIGKEITEN` statt `NO SKILL`, und ein Antippen wiederholt den
+  Hinweis (`Wähle eine Fähigkeit unter FÄHIGKEITEN in der Kommandozentrale.`)
+  statt nichts zu tun.
+- **Einmalige Einführung:** Beim ersten wirklich bereiten Zustand trägt der
+  Knopf für einige Atemzüge einen Ring, und der Funk nennt ihn einmal. Bei
+  reduzierter Bewegung bleibt der Ring einfach stehen.
+- **Ein Tap, keine doppelte Auslösung:** Der Knopf löst weiterhin direkt aus.
+  Eine Pending-Sperre verhindert, dass eine langsame Verbindung denselben Befehl
+  ein zweites Mal sendet; erst das Ergebnis gibt den Knopf frei (bei Ablehnung
+  sofort, bei Erfolg über den Cooldown).
+- **Was sich beim Bauen zeigte:** `field-command.css` hängt an der **Kamera-
+  Welle**. `tests/multiplayer-build-stamp.test.mjs` verlangt, dass
+  `battle-viewport.mjs`, `battle-viewport-controller.mjs` und das Feld-Layout
+  dieselbe Revision nennen – damit drei Routen nie alte und neue Dateien
+  mischen. Das Anheben des Feld-Layouts allein machte die Prüfung rot; die
+  Kamera-Welle musste mit. Gemerkt für die nächsten Schritte.
+- **Prüfungen:** `tests/ability-hud.test.mjs` 6/6 (die reine Regel: jeder Grund,
+  seine Reihenfolge, gezielte Fähigkeiten warten auf Ziele, ganze Sekunden,
+  unlesbare Eingabe ergibt einen stillen Knopf, fünf unterscheidbare Zeichen)
+  und `tests/ability-hud-ui.test.mjs` 3/3 (der echte Bericht aus dem echten
+  `game.js`: Name, Zeichen und `WELLE STARTEN` vor der Welle; `BEREIT` samt
+  Einführungsring und Funkspruch, sobald Gegner im Feld stehen;
+  `WÄHLEN UNTER FÄHIGKEITEN` ohne Fähigkeit samt Hinweis beim Antippen;
+  `BEREIT IN {s}s` nach dem Einsatz). Dazu `browser-tests/interface-smoke.cjs`:
+  das HUD wird im echten Chromium in drei Fenstern nachgemessen – mindestens
+  44 × 44 px, ganz im Bild, auf der rechten Hälfte. Vollständiger serieller Lauf
+  **1068 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `ability-hud.mjs`,
+  `tests/ability-hud.test.mjs`, `tests/ability-hud-ui.test.mjs` (neu);
+  `game.js` (HUD, Gründe, Einführung, Pending-Sperre); `index.html` (Knopf aus
+  der Befehlsleiste in den Kartenrahmen, mit Zeichen, Name und Zustand);
+  `field-command.css` (HUD, Ring, reduzierte Bewegung) samt angehobener
+  Kamera-Welle in `game.js` und `battle-viewport-controller.mjs`;
+  `localization-results-de.mjs` (zwölf neue Zeichenketten);
+  `browser-tests/interface-smoke.cjs`; `PATCH-BLOECKE.md` (D2 abgehakt,
+  Abnahme offengelassen, Block 8 ergänzt). Dreizehn Test-Harnesse kennen das
+  neue Modul in ihrer Umleitungsliste.
+- **Grenzen:** **Niemand hat den Knopf gesehen.** Die Platzierung am rechten
+  Rand ist gerechnet: sie kollidiert mit keinem bekannten Element, aber ob sie
+  auf dem Telefon wirklich in Daumennähe liegt, weiß erst ein Mensch. Das Feld
+  hinter dem Knopf wird teilweise verdeckt – das ist bei jedem HUD so, hier aber
+  ungeprüft. Die Chromium-Messung läuft erst im Prüfstand; ihre Log-Dateien
+  kann ich nicht lesen (siehe Block 8).
