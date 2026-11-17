@@ -366,8 +366,18 @@ entstand, ist nicht sicher belegt.
 - [x] [PR #284](https://github.com/0815games/0815games.github.io/pull/284)
   führte aus dem Level abgeleitete Rangabzeichen und Rangnamen im Menü,
   Soldatendossier und Kampfprofil ein. Dies ist kein eigener Rang im Report.
-- [ ] **Party-Roster:** Vier kompakte Karten mit Avatar, Name, Rang, Host/Team
-  und Bereitschaft; 2×2, wo Platz ist. Die aktuelle Darstellung ist eine Liste.
+- [x] **Party-Roster:** Vier kompakte Karten mit Avatar, Name, Rang, Host/Team
+  und Bereitschaft; 2×2, wo Platz ist. **Die Karten stehen bereits** – diese
+  Zeile war veraltet, sie behauptete weiterhin eine Liste. Nachprüfbar seit
+  [PR #307](https://github.com/0815games/0815games.github.io/pull/307)
+  ([IPL-0049](PATCH-LOG.md#ipl-0049--bestandsaufnahme-block-3-ist-gebaut-was-fehlt-ist-abnahme)):
+  `firebase-four-panel.mjs` baut je Slot eine Karte (Bild, Name,
+  Rangabzeichen **und** Rangname, Host-/Team-Marke, Bereitschaft; ein leerer
+  Slot bleibt als solcher benannt), `interface-redesign.css` legt das Raster an
+  (`auto-fit, minmax(150px,1fr)` – so viele Spalten wie passen, also zwei, wo
+  das Feldbrett breit genug ist, eine auf dem schmalen Telefon), und
+  `tests/party-roster-layout.test.mjs` prüft genau das. **Kein Mensch hat die
+  Karten gesehen.**
 - [x] **Endless-Turmschimmer:** Nur freigeschaltete und tatsächlich bezahlbare
   Upgrades markieren; reduzierte Grafik erhält eine ruhige Markierung. Im
   vorhandenen Turmmenü gibt es bereits Preis- und Sperranzeigen, nicht aber
@@ -398,9 +408,14 @@ entstand, ist nicht sicher belegt.
   „What’s Next“ liegt jetzt im aufklappbaren Bereich; die Ergebnisse, die dort
   standen (gewonnene Stufen, neue Freischaltungen), blieben oben bei den
   bestätigten Belohnungen.
-- [ ] **Zusatzwünsche:** Schussdarstellung und Fähigkeits-HUD weiter verbessern
+- [x] **Zusatzwünsche:** Schussdarstellung und Fähigkeits-HUD weiter verbessern
   sowie Multiplayer-Anfragen mittig anzeigen (Details B2 und D). Vorhandene
-  Schuss- und Fähigkeitsanzeigen sind dort gesondert aufgeführt.
+  Schuss- und Fähigkeitsanzeigen sind dort gesondert aufgeführt. **Alle drei
+  Unterpunkte sind gebaut** (mit
+  [#303](https://github.com/0815games/0815games.github.io/pull/303),
+  [#304](https://github.com/0815games/0815games.github.io/pull/304),
+  [#305](https://github.com/0815games/0815games.github.io/pull/305)); was
+  fehlt, ist ausschließlich die menschliche Abnahme.
   - [x] **Alle Popups mittig** – nicht nur die Mehrspieler-Anfragen, auf
     Betreiberwunsch ausdrücklich alle. Gebaut mit
     [PR #303](https://github.com/0815games/0815games.github.io/pull/303)
