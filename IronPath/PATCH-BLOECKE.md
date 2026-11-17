@@ -997,15 +997,28 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
 ### Sichtbarkeit im Feld
 
-- [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
+- [~] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
   Gewünscht: ein kleines **Funkgerät** als Ausgangspunkt, das **minimiert**
   startet – erst ein Antippen öffnet die Nachrichten als Popup. Betroffen sind
   die Funkkarte `#storyRadio` (`.story-radio`, bis zu 370 px breit, liegt links
   unten im Kartenrahmen und hebt sich bei einer Feldentscheidung nach oben)
   **und** die Funkzeile `.battle-foot` mit `#message`; beide stehen heute
-  dauerhaft im Bild. Offene Fragen für den Bau: Welche Nachrichten landen im
-  Popup und bleiben dort (Verlauf?), wie zählt der Ungelesen-Hinweis, und was
-  passiert bei reduzierter Bewegung.
+  dauerhaft im Bild.
+  - [x] **Teil 1 – Warnungen haben ihre eigene Stimme** (Betreiberentscheidung
+    vom 2026-11-17: *„Ins Popup wandern nur Meldungen, die eine Entscheidung
+    oder eine Warnung sind. Der Rest bleibt in der Zeile, wie heute.“*). Gebaut
+    mit [PR #308](#) ([IPL-0050](PATCH-LOG.md#ipl-0050--block-8--der-funk-bekommt-eine-zweite-stimme-warnungen-statt-nur-meldungen)):
+    Warnungen stehen auf einer eigenen Karte **über** dem Funk, bleiben stehen,
+    bis sie weggeklickt werden, und stellen sich hinten an, statt sich
+    gegenseitig zu überschreiben. Der gewöhnliche Funkverkehr bleibt in der
+    Zeile. **Entscheidungen** (Wellen- und 2×-Abstimmung, Feldentscheidung)
+    waren schon vorher mittige Popups.
+  - [ ] **Teil 2 – der Rest:** Ob die Funkzeile und die Kampagnen-Funkkarte
+    künftig minimiert starten und hinter einem Funkgerät sitzen, ist **nicht
+    entschieden** und hängt an einer Frage an den Betreiber: soll der
+    Funkverkehr tatsächlich ganz aus dem Bild, oder genügt es, dass das
+    Wichtige nicht mehr darin untergeht? Der Ungelesen-Hinweis ist damit
+    ebenfalls offen.
 - [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
   [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
   [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):

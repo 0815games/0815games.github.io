@@ -1,5 +1,5 @@
 export const germanBattle=Object.freeze({
- 'WAVE REQUEST':'WELLENANFRAGE','SPEED REQUEST':'TEMPOANFRAGE','JOIN REQUEST':'BEITRITTSANFRAGE','VIEW PARTY':'GRUPPE ANSEHEN','LATER':'SPÄTER',
+ '+{count} more':'+{count} weitere','WAVE REQUEST':'WELLENANFRAGE','SPEED REQUEST':'TEMPOANFRAGE','JOIN REQUEST':'BEITRITTSANFRAGE','VIEW PARTY':'GRUPPE ANSEHEN','LATER':'SPÄTER',
  'You can also answer using the battle controls.':'Du kannst auch über die Kampfbefehle antworten.','Battle continues while you decide.':'Der Kampf läuft während deiner Entscheidung weiter.',
  '2× request ended. Check the current speed.':'Die 2×-Anfrage ist beendet. Prüfe das aktuelle Tempo.',
  'Wave request ended. Check the current status.':'Die Wellenanfrage ist beendet. Prüfe den aktuellen Status.',

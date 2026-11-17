@@ -17,7 +17,7 @@ async function field({skills}={}){
   globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,devicePixelRatio:1,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
   let frame;globalThis.requestAnimationFrame=fn=>{frame=fn;};
   let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-  for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','ability-hud.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])
+  for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','ability-hud.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','field-alert.mjs'])
     source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
   source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
   const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
@@ -60,9 +60,14 @@ test('without a chosen ability the button explains where to get one',async()=>{
   // HUD out of the hit test, so it never eats a tap meant for a build pad under
   // it. The direction is spoken on its own instead of waiting to be asked.
   assert.equal(f.el('ability').disabled,true,'it stays out of the way of the field');
-  assert.match(f.el('message').textContent,/Choose an ability under SKILLS/,'the radio says where abilities are chosen, unprompted');
+  // Where to get an ability is a WARNING, not radio traffic: the player tried to
+  // use one and could not. It stands on the card above the radio until it is
+  // dismissed, and the radio line is left alone.
+  assert.match(f.el('radioAlertText').textContent,/Choose an ability under SKILLS/,'the field says where abilities are chosen, unprompted');
+  assert.equal(f.el('radioAlertMore').hidden,true,'once - the second attempt is the same answer, not a second warning');
+  f.el('radioAlertDismiss').onclick();
   f.el('ability').onclick();
-  assert.match(f.el('message').textContent,/Choose an ability under SKILLS/,'and asking again repeats it');
+  assert.match(f.el('radioAlertText').textContent,/Choose an ability under SKILLS/,'and asking again says it again');
 });
 
 test('a recharging ability counts its seconds down, from the player state',async()=>{
