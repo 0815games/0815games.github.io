@@ -614,6 +614,19 @@ dialog.maintenance-gate .maintenance-scene button.maintenance-language:focus-vis
 .afk-session-failure{max-width:min(440px,calc(100vw - 32px));padding:24px;border:1px solid #c3cf84;border-radius:6px;background:#1b3028;color:#f8f0dc;box-shadow:0 8px 24px #0009}
 .afk-session-failure::backdrop{background:#101a16d9}.afk-session-failure p{line-height:1.5;color:#d7dfca}
 
+/* The card that greets a player who was away for half an hour. The picture is
+   drawn by the game itself (afk-rest-scene.mjs); the frame around it is the
+   same stamped metal as the rest of the interface. */
+.afk-rest{max-width:min(400px,calc(100vw - 32px));padding:0;overflow:hidden;border:1px solid #c3cf84;border-radius:8px;background:#1b3028;color:#f8f0dc;box-shadow:0 18px 46px #000b}
+.afk-rest::backdrop{background:#101a16d9}
+.afk-rest-art{display:block;width:100%;height:auto;background:#16241d;border-bottom:1px solid #46593b}
+.afk-rest-body{display:grid;gap:9px;padding:20px 22px 22px}
+.afk-rest-kicker{font-size:10px;letter-spacing:.22em;color:#f0d68a}
+.afk-rest-body h2{margin:0;font:700 22px/1.15 Georgia,serif;color:#f7edcf}
+.afk-rest-body p{margin:0;line-height:1.55;color:#d7dfca}
+.afk-rest-body button{margin-top:6px;min-height:46px}
+@media(max-width:480px){.afk-rest-body{padding:16px 16px 18px}.afk-rest-body h2{font-size:19px}.afk-rest-body button{width:100%}}
+
 /* A friend's saved portrait is decorative beside the already visible name.
    Keep its frame stable while the image is loading or permission is denied. */
 .friends-dialog .friend-portrait,.friends-dialog .friend-stats-portrait{display:block;object-fit:cover;background:#20382d;border:1px solid #78957e;border-radius:4px}

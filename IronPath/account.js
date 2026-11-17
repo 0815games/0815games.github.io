@@ -37,6 +37,7 @@ import {createAccountServices,requiresAccountGuard} from './account-services.mjs
 import {createVersionUI} from './version-ui.mjs?v=20261031-patch4';
 import {createWriteTracker} from './version-check.mjs?v=20261031-patch4';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
+import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
@@ -551,7 +552,11 @@ function normalReleaseSafety(){
     [...releaseScoreReporters].some(reporter=>!reporter.isSettled())||
     savingSkills||savingArmory||deletingCharacter||deletionPending||workshopPrepare||
     workshopAccount.isBusy()||friendsUI.hasPending())return 'saving';
- if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]'))return 'dialog';
+ // The rest card is not a form: it holds nothing a reload could lose, and it
+ // comes back on its own after one, because the notice lives in sessionStorage.
+ // Blocking the reload on it would leave the player on an old build until they
+ // happened to dismiss the picture.
+ if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
  return 'ready';
 }
 releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
@@ -567,9 +572,34 @@ function renderAfkText(){
  $('afkFailureTitle').textContent=afkText('Session protection unavailable','Sitzungsschutz nicht verfügbar');
  $('afkFailureDetail').textContent=afkText('The browser could not protect the shared session. Reload the game before continuing.','Der Browser konnte die gemeinsame Sitzung nicht schützen. Lade das Spiel neu, bevor du fortfährst.');
  $('afkSessionReload').textContent=afkText('RELOAD GAME','SPIEL NEU LADEN');
- if(afkNotice()&&!user&&!auth.currentUser)message(afkText('You were signed out after 30 minutes of inactivity. Sign in to continue.','Du wurdest nach 30 Minuten Inaktivität abgemeldet. Melde dich erneut an.'));
+}
+// Half an hour away and the session is closed. That deserves the field's own
+// picture, not a line of text nobody reads: a soldier sitting down, the rifle
+// leaned on the crate, the lantern lit. Dismissing the card leaves the player
+// on the sign-in screen behind it - and clears the notice, so the card cannot
+// come back every time the language changes.
+function paintAfkRestCard(){
+ $('afkRestKicker').textContent=afkText('FIELD BREAK','PAUSE IM FELD');
+ $('afkRestTitle').textContent=afkText('You were signed out','Du wurdest abgemeldet');
+ $('afkRestText').textContent=afkText('You were signed out after 30 minutes of inactivity. Sign in to continue.','Du wurdest nach 30 Minuten Inaktivität abgemeldet. Melde dich erneut an.');
+ $('afkRestAccept').textContent=afkText('BACK TO SIGN IN','ZUR ANMELDUNG');
+}
+function showAfkRestCard(){
+ paintAfkRestCard();
+ try{
+  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  drawAfkRestScene($('afkRestArt'),{scale:Math.min(2,window.devicePixelRatio||1),reducedMotion:reduced});
+ }catch{/* A card without its picture is still a card with the right words. */}
+ const dialog=$('afkRestDialog');if(dialog&&!dialog.open)dialog.showModal?.();
 }
 onLanguageChange(renderAfkText);renderAfkText();
+// The card is an event, not a text render: it opens once the sign-out is over,
+// and again after a reload (the notice lives in sessionStorage). Never from
+// inside the sign-out itself - that is the moment the page is held inert and a
+// version probe is still to come.
+function maybeShowAfkCard(){if(afkNotice()&&!user&&!auth.currentUser)showAfkRestCard();}
+maybeShowAfkCard();
+$('afkRestAccept').onclick=()=>{try{$('afkRestDialog').close();}catch{}afkNotice(false);try{$('email').focus();}catch{}};
 $('afkSessionFailure').addEventListener('cancel',event=>event.preventDefault());
 $('afkSessionReload').onclick=()=>window.location.reload();
 async function signOutAfterIdle({stillIdle}){
@@ -596,6 +626,7 @@ async function signOutAfterIdle({stillIdle}){
   afkTransition=false;$('afkSessionStatus').hidden=true;
   if(!accountTerminated&&!releaseFrozen){
    document.documentElement.inert=wasInert;
+   maybeShowAfkCard();
    if(!sessionTabLock.isHeld()){
     // Never continue as an unprotected cooperating tab after a lock failure.
     releaseFrozen=true;document.documentElement.inert=false;

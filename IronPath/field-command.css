@@ -93,18 +93,25 @@
 #gameView .battle-foot #message{font-size:11px}
 #gameView .battle .wave-request:not([hidden]){position:absolute;z-index:8;left:8px;right:8px;bottom:calc(112px + env(safe-area-inset-bottom,0px));border:1px solid #cfbc82;background:#1c3529;color:#f7ecd0;border-radius:4px;box-shadow:0 4px 18px #0009}
 #gameView .battle .speed-request:not([hidden]){bottom:calc(168px + env(safe-area-inset-bottom,0px))}
-#gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(68px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
+#gameView .battle .run-perk-reopen:not([hidden]){position:absolute;right:8px;bottom:calc(156px + env(safe-area-inset-bottom,0px));z-index:6;width:auto;max-width:45%;margin:0;min-height:44px}
 #gameView .battle .solo-objective:not([hidden]),#gameView .battle .versus-status:not([hidden]){position:absolute;z-index:5;top:calc(65px + env(safe-area-inset-top,0px));left:8px;max-width:min(360px,calc(100% - 76px));margin:0;background:#183027ed}
 #gameView .map-frame .run-perk-panel{z-index:12}
-/* The ability HUD: one button on the field, on the right edge where a thumb
-   finds it, never wandering with the soldier it belongs to and never over the
-   middle of the field, where the wave votes land. */
-#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px;min-width:48px;min-height:48px;max-width:calc(100% - 16px);padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
+/* The ability HUD: one button on the field, in the bottom-right corner where a
+   thumb rests - out of the middle of the field, where the fighting and the
+   wave votes are, and within reach instead of below the field. */
+#gameView .map-frame .ability-hud{position:absolute;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(100px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;/* At most half the viewport, minus margins: the field radio owns the bottom
+     left with up to 45vw, so the HUD can never lie across it - however tall
+     either of them gets. */
+   width:min(196px,calc(50vw - 20px));min-height:48px;overflow:hidden;padding:8px 12px 8px 10px;background:#162b21f2;border:1px solid #6f7f66;border-radius:8px;color:#efe2bf;box-shadow:0 6px 18px #0009;font:inherit;text-align:left;cursor:pointer}
 #gameView .map-frame .ability-hud[hidden]{display:none}
 #gameView .map-frame .ability-hud-icon{display:grid;place-items:center;width:26px;height:26px;flex:none;color:#e4ca89}
 #gameView .map-frame .ability-hud-copy{display:flex;flex-direction:column;gap:2px;line-height:1.1}
-#gameView .map-frame .ability-hud-copy strong{font-size:10px;letter-spacing:.12em}
-#gameView .map-frame .ability-hud-copy small{font-size:9px;letter-spacing:.08em;color:#c6d4b8}
+/* The button keeps its width: a state that changes from "READY" to "READY IN
+   12s" must not resize the thing under the thumb - and no ability name, in any
+   language, may stretch it into a bar across the field. */
+#gameView .map-frame .ability-hud-copy{min-width:0;overflow:hidden}
+#gameView .map-frame .ability-hud-copy strong{font-size:10px;letter-spacing:.12em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#gameView .map-frame .ability-hud-copy small{font-size:9px;letter-spacing:.08em;color:#c6d4b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #gameView .map-frame .ability-hud[data-state="ready"]{border-color:#e4ca89;background:#263d2bf7}
 #gameView .map-frame .ability-hud[data-state="ready"]:not(:disabled):hover{border-color:#f6e3a6;background:#2e4832f7}
 #gameView .map-frame .ability-hud:disabled{opacity:.6;cursor:default;pointer-events:none}
@@ -163,7 +170,7 @@
    camera fills the available area without stretching the map; FIT and pan
    reveal the remainder. The ID also overrides the 1v1 lane sizing rules. */
 #gameView #mapViewport.map-viewport canvas[data-full-battle="true"]{width:100%;height:100%;max-width:none}
-#gameView .map-quick-zoom{display:none;position:absolute;z-index:6;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(68px + env(safe-area-inset-bottom,0px));width:auto;min-height:44px;margin:0;padding:6px 10px;font-size:10px;letter-spacing:.04em;background:#142b23ed;border:1px solid #98ad91;color:#f5e7ba;box-shadow:0 3px 12px #0009}
+#gameView .map-quick-zoom{display:none;position:absolute;z-index:6;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(156px + env(safe-area-inset-bottom,0px));width:auto;min-height:44px;margin:0;padding:6px 10px;font-size:10px;letter-spacing:.04em;background:#142b23ed;border:1px solid #98ad91;color:#f5e7ba;box-shadow:0 3px 12px #0009}
 @media(pointer:coarse){#gameView .map-quick-zoom{display:block}#gameView .map-viewport canvas{touch-action:pan-x pan-y}}
 @media(orientation:landscape) and (max-height:600px){
  #gameView .map-frame .dashboard{top:calc(5px + env(safe-area-inset-top,0px));left:max(8px,env(safe-area-inset-left,0px));gap:3px;right:110px;max-width:calc(100% - 120px)}
@@ -180,11 +187,30 @@
  #gameView .battle-head .eyebrow{display:none}
  #gameView .battle-head h2{font-size:11px}
  #gameView .map-frame .wave-info{right:max(8px,env(safe-area-inset-right,0px));top:calc(55px + env(safe-area-inset-top,0px))}
- #gameView .map-quick-zoom{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+ #gameView .map-quick-zoom{bottom:calc(146px + env(safe-area-inset-bottom,0px))}
  .field-ops{right:max(8px,env(safe-area-inset-right,0px))}
 }
-#gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(118px + env(safe-area-inset-bottom,0px))}
-@media(pointer:coarse){#gameView .battle-foot{max-width:calc(100% - 150px)}}
+#gameView .battle:has(.run-perk-reopen:not([hidden])) .map-quick-zoom{bottom:calc(212px + env(safe-area-inset-bottom,0px))}
+/* Touch keeps a 150px column free along the right edge for the zoom and the
+   field-upgrade button: the field radio is `calc(100% - 150px)` wide because of
+   it. The ability HUD lives in that same column, so it is 134px there - 150
+   less the two 8px margins - and the two can never touch, whatever the radio
+   says or however tall it grows. Measured on a phone: at 196px the HUD reached
+   into the radio's corner. */
+/* Narrow screens keep a 150px column free along the right edge - the same
+   column the zoom and the field-upgrade button live in - and the ability HUD
+   shares it. Measured on a 320px field: the radio took the whole width
+   (`min(400px,100% - 16px)`) and the HUD, 196px wide, lay across its last two
+   pixels. Once the two are side by side, the radio can be as tall as it likes:
+   they never meet. */
+@media(max-width:850px){
+ #gameView .battle-foot{max-width:calc(100% - 150px)}
+ #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
+}
+@media(pointer:coarse){
+ #gameView .battle-foot{max-width:calc(100% - 150px)}
+ #gameView .map-frame .ability-hud{width:min(130px,calc(50vw - 20px))}
+}
 
 /* ---------------------------------------------------------------------------
    The training screen owns the viewport, like the endless screen already does.

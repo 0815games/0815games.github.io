@@ -181,7 +181,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     if(hud.reason==='no-skill'&&!abilityEmptyHinted){abilityEmptyHinted=true;notice(tr('Choose an ability under SKILLS in the command center.'));}
     if(hud.ready&&!coachSeen('ability-hud',hintStorage())){
       markCoachSeen('ability-hud',hintStorage());abilityHint();
-      notice(()=>tr('{ability} is ready. Use it from the button on the right edge of the field.',{ability:tr(hud.name)}));
+      notice(()=>tr('{ability} is ready. Use it from the button at the bottom right of the field.',{ability:tr(hud.name)}));
     }
   }
 function renderResults(target){
@@ -1227,8 +1227,14 @@ function renderResults(target){
       const now=performance.now();
       for(const cue of towerUpgradeCues(visual,{supplies:supplies(),level:state.players[me()]?.level,pads,skipPad:menuPad})){
         const breath=reducedMotion?0:Math.sin(now/420);
-        ctx.save();ctx.beginPath();ctx.ellipse(cue.x,cue.y,37+breath*2,26+breath*1.5,0,0,Math.PI*2);
-        ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?2.5:2;ctx.globalAlpha=reducedMotion?.72:.42+.2*breath;ctx.stroke();ctx.restore();
+        // Built faint, then found too faint to notice on the field: the ring is
+        // wider, thicker and brighter now, and it carries its own glow. The
+        // warning from the day it was built still holds - a shimmer that is
+        // brighter than the tower it rings is not an invitation but a smudge -
+        // so the light is a blurred edge around a thin line, never a filled disc.
+        ctx.save();ctx.beginPath();ctx.ellipse(cue.x,cue.y,40+breath*2,28+breath*1.5,0,0,Math.PI*2);
+        ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?3.5:3;ctx.shadowColor='#f2d891';
+        ctx.shadowBlur=reducedMotion?14:10+4*breath;ctx.globalAlpha=reducedMotion?.82:.58+.2*breath;ctx.stroke();ctx.restore();
       }
       if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
     };

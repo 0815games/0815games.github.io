@@ -826,10 +826,14 @@ und Live-Abnahme bleiben offen.
   Cooldown in Sekunden oder „kein Skill“; auch Feld-Feedback existiert. Die
   gewünschte neue Position, Symbolik und Erklärung sind in der geforderten
   Form noch offen.
-- [x] **Platzierung** (gebaut mit [PR #304](https://github.com/0815games/0815games.github.io/pull/304), [IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)):
+- [x] **Platzierung** (gebaut mit [PR #304](https://github.com/0815games/0815games.github.io/pull/304), [IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud), **berichtigt** in [PR #306](https://github.com/0815games/0815games.github.io/pull/306) / [IPL-0047](PATCH-LOG.md#ipl-0047--korrektur-das-fähigkeits-hud-gehört-in-die-daumennähe-nicht-in-die-feldmitte)):
   der Knopf steht nicht mehr unten in den Kampfsteuerungen, sondern **im
-  Kartenrahmen** am rechten Rand, senkrecht mittig. Er wandert nicht mit der
-  Figur mit und liegt nicht über der Mitte, in der die Wellenanfragen erscheinen.
+  Kartenrahmen, unten rechts** – am Rand, in Daumennähe, über der
+  Befehlsleiste und neben dem Funk. Er wandert nicht mit der Figur mit.
+  **Zwischenstand war senkrecht mittig am rechten Rand** – von einem Menschen
+  gesehen und abgelehnt: „Balken für Fähigkeiten … ist mittig im Bildschirm.
+  Geht ja zum spielen quasi gar nicht?!“ Recht hatte er: die Mitte des Feldes
+  ist dort, wo gekämpft wird.
 - [x] **Symbol und Name:** Jede Fähigkeit trägt ihr eigenes gezeichnetes Zeichen
   (Luftschlag, Überlastung, Versorgungsabwurf, Feldreparatur, Unterdrückung)
   neben ihrem Namen. Zustände: `BEREIT`, `BEREIT IN {s}s`, `KEINE ZIELE`,
@@ -851,9 +855,9 @@ und Live-Abnahme bleiben offen.
   ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
 - [ ] **Abnahme offen:** Mobil und Desktop von Menschenhand, alle fünf
   Fähigkeitstypen, Cooldown, keine gültigen Ziele, aktive Dialoge,
-  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung am
-  rechten Rand ist **gerechnet, nicht gesehen** – insbesondere, ob sie auf dem
-  Telefon wirklich in Daumennähe liegt. Bei verletztem/ausgefallenem Soldaten
+  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung
+  **unten rechts** ist erneut gerechnet; ob sie auf dem Telefon wirklich in
+  Daumennähe liegt, sagt erst ein Mensch. Bei verletztem/ausgefallenem Soldaten
   muss Block E den Zustand eindeutig anzeigen.
 
 **Abnahme für D:** Mobil und Desktop, alle aktiven Fähigkeitstypen, ohne gewählten Skill, Cooldown, keine gültigen Ziele, aktive Dialoge und Multiplayer-Verzögerung prüfen. Darstellung darf die Simulation nicht verändern; Lesbarkeit und Spielgefühl zusätzlich auf echten Geräten beurteilen.
@@ -943,15 +947,39 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
 ### Popups
 
-- [ ] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
-  nachdem [IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups)
-  Einladungen, Feldabstimmungen und die Feldentscheidung in die Mitte geholt
-  hatte. Betroffen ist `#versionNotice` (`.version-notice`): liegt fest **oben
-  rechts**, hat aber Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit
-  genauso wie die anderen. Damit ist die Regel aus IPL-0043 zu schärfen: nicht
-  die Bezeichnung entscheidet, sondern ob ein Element **eine Handlung verlangt**.
-  Beim Bau also `popup-center.css` aufnehmen *und* dessen Kopfkommentar
-  berichtigen, der Hinweisbänder noch pauschal in der Ecke belässt.
+- [x] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
+  gebaut mit [PR #306](https://github.com/0815games/0815games.github.io/pull/306)
+  ([IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt)).
+  `#versionNotice` liegt nicht mehr oben rechts, sondern in der Mitte – es hat
+  Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit wie alle anderen.
+  **Die Regel ist geschärft**, und zwar in `popup-center.css` selbst: nicht die
+  Bezeichnung entscheidet, sondern was ein Element **tut**. Beim Schreiben
+  kamen zwei Sätze hinzu, die vorher fehlten: es muss **schweben** (ein
+  mitlaufendes Band wie die Sandkasten-Leiste ist Möbel, kein Popup), und über
+  einer ohnehin leeren Fläche (Ladehinweis) kostet die Mitte nichts.
+### Abmeldung nach Inaktivität
+
+- [x] **Eine Karte statt einer Textzeile** (Betreiberwunsch vom 2026-11-17,
+  gebaut mit [PR #306](https://github.com/0815games/0815games.github.io/pull/306),
+  [IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt)):
+  nach 30 Minuten ohne Eingabe schließt das Spiel die Sitzung und zeigte bisher
+  einen schlichten Satz auf dem Anmeldebildschirm. Jetzt erscheint ein Dialog
+  mit einem **eigenen Bild**: ein Soldat, der sich setzt – Munitionskiste,
+  Gewehr angelehnt in Reichweite, Laterne an, Becher in der Hand, der Bunker
+  dahinter. Geruht, nicht geschlagen: es hat niemanden getroffen.
+- [x] **Gemalt vom Spiel selbst.** `afk-rest-scene.mjs` zeichnet die Szene mit
+  denselben Tintenlinien, demselben Oliv und Gold und denselben Formen wie das
+  Feld – kein fremdes Bild, kein zweiter Stil. Der Dampf über dem Becher
+  entfällt bei reduzierter Bewegung.
+- [x] **Wegklicken führt zur Anmeldung:** der Knopf schließt die Karte, löscht
+  den Vermerk (sonst käme sie bei jedem Sprachwechsel wieder) und setzt den
+  Zeiger ins Namensfeld. Der Anmeldebildschirm liegt ohnehin dahinter.
+- [ ] **Abnahme offen:** **Niemand hat das Bild gesehen.** Die Geometrie ist
+  gerechnet – Kiste auf dem Boden, Figur darauf, Gewehr angelehnt, Bunker am
+  Horizont –, aber ob der Soldat wie ein Soldat aussieht, entscheidet erst ein
+  Mensch. Ich kann Bilder nicht sehen; diese Zeichnung ist die eine Stelle im
+  Projekt, an der ich blind gearbeitet habe.
+
 ### Sichtbarkeit im Feld
 
 - [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
@@ -963,14 +991,17 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   dauerhaft im Bild. Offene Fragen für den Bau: Welche Nachrichten landen im
   Popup und bleiben dort (Verlauf?), wie zählt der Ungelesen-Hinweis, und was
   passiert bei reduzierter Bewegung.
-- [ ] **Glow am Turm zu gering.** Der Schein am Turm muss **deutlich stärker**
-  werden. Zu klären, welcher Schein gemeint ist: der Schimmerring aus
-  [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer) (ruhig und
-  zurückhaltend gebaut, Radius 37 × 26 px, Deckkraft .42–.62) oder der
-  allgemeine Schein der Turmgrafik in `cartoon-art.mjs`. Beides ist messbar
-  verschieden und sollte getrennt betrachtet werden – der Schimmer darf nicht
-  so hell werden, dass er den Turm selbst verdeckt, und bei reduzierter
-  Bewegung bleibt er ohnehin stehen.
+- [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
+  [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
+  [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):
+  der Betreiber wollte nicht wählen, sondern beides – erst den Schein der
+  Turmgrafik deutlich stärker, danach den Schimmerring aus
+  [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer)
+  (vorher Radius 37 × 26 px, Deckkraft .42–.62) nachziehen. Beides ist
+  gebaut, und beides bleibt **unter** dem Turm: ein Schein, der heller ist als
+  das, was er zeigt, verdeckt es. Bei reduzierter Bewegung stehen beide still
+  und sind etwas kräftiger als die bewegte Fassung. **Kein Mensch hat das
+  Ergebnis gesehen.**
 
 ### Nachgelagert, weil es die Blöcke berührt
 

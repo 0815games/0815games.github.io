@@ -11,11 +11,15 @@ import {readFileSync} from 'node:fs';
 // worse than no rule, because it looks like the work was done.
 //
 // It deliberately does NOT cover:
-//   * banners (.version-notice, .sandbox-banner) - they report a state and stay
-//     out of the way in a corner;
+//   * the sandbox bar (.sandbox-banner) - it is sticky furniture that stays
+//     while a mode is switched on, not an interruption;
 //   * sheets and rings (.tower-sheet, #radialMenu) - they belong to the pad or
 //     the page they were opened from, and moving them would move the finger;
 //   * native <dialog> elements - the browser already centres those.
+//
+// The version notice IS covered, and that is the point of this file: it used to
+// be exempt because it is called a banner, while carrying RETRY CHECK and
+// DISMISS. What decides is what an element does, not what it is called.
 const css=readFileSync(new URL('../popup-center.css',import.meta.url),'utf8').replace(/\/\*[\s\S]*?\*\//g,'');
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const fieldCommand=readFileSync(new URL('../field-command.css',import.meta.url),'utf8');
@@ -34,7 +38,7 @@ function declarations(body){
 }
 
 test('every popup that interrupts is centred, and named in one place',()=>{
-  assert.equal(rules.length,3,'three popups are covered; a new one belongs in this file');
+  assert.equal(rules.length,4,'four notices are covered; a new one belongs in this file');
   for(const rule of rules){
     const style=declarations(rule.body);
     assert.equal(style.left,'50%',`${rule.selector} sits on the horizontal middle`);
@@ -44,10 +48,10 @@ test('every popup that interrupts is centred, and named in one place',()=>{
     assert.equal(style.bottom,'auto',`${rule.selector} releases the old bottom edge`);
     assert.ok(!('position' in style),`${rule.selector} keeps the position its own stylesheet gave it`);
   }
-  // The three, by name: the site-wide invitation, the battle vote and the
-  // mission decision.
+  // The four, by name: the site-wide invitation, the new-build notice, the
+  // battle vote and the mission decision.
   assert.deepEqual(rules.map(rule=>rule.selector.split(',')[0].trim()),
-    ['.social-popup','#gameView .battle .wave-request:not([hidden])','#gameView .map-frame .story-decision:not([hidden])']);
+    ['.social-popup','.version-notice','#gameView .battle .wave-request:not([hidden])','#gameView .map-frame .story-decision:not([hidden])']);
 });
 
 test('every selector in the file matches an element in the real page',()=>{

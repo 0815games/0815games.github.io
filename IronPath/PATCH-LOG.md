@@ -2131,3 +2131,159 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
 - **Grenzen:** **Niemand hat es gesehen.** Alles hier ist gerechnet und
   geprüft, nicht beurteilt. Ob die Kanone „schwer“ aussieht und die Flak
   „platzt“, entscheidet erst ein Mensch auf dem Schirm.
+## IPL-0046 – Block 8: was ein Element tut, nicht wie es heißt
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`,
+  Basis `dfaaed4` (Main nach dem Merge von #304).
+- **Auftrag:** „New Version update popup mittig – wir hatten ja gesagt alle
+  nachrichten mittig. Bei popups“ und, als eigener Punkt: „Zu Block 8 *Du
+  wurdest nach 30 Minuten Inaktivität abgemeldet*: Hier brauchen wir ein
+  schönes Popup mit Ingame-Art. Soldat der Pause macht oder sonst was. Nach
+  wegklicken kommt man wieder zum Loginbildschirm.“
+- **Das Versions-Popup** liegt jetzt in der Mitte. Es stand – mit zwei Knöpfen,
+  `RETRY CHECK` und `DISMISS` – oben rechts, und zwar aus einem einzigen Grund:
+  es hieß *Hinweisband*. Damit ist der eigentliche Fehler benannt, und er steht
+  jetzt als Regel im Kopf von `popup-center.css`: **nicht die Bezeichnung
+  entscheidet, sondern was ein Element tut.** Beim Aufschreiben kamen zwei
+  Sätze hinzu, die gefehlt hatten:
+  - Es muss **schweben** (`fixed`/`absolute`). Die Sandkasten-Leiste ist
+    *sticky* und läuft mit, solange ein Modus an ist: das ist Möbel, kein
+    Popup, und Möbel gehört an den Rand.
+  - Über einer ohnehin **leeren Fläche** (der Ladehinweis) kostet die Mitte
+    nichts, weil dort nichts im Weg steht.
+  Verlangt ein Element eine Handlung und schwebt es, gehört es in die Mitte;
+  meldet es nur einen Zustand, während weitergespielt wird, bleibt es in der
+  Ecke.
+- **Die Abmelde-Karte.** Bisher stand nach der halben Stunde ein schlichter
+  Satz auf dem Anmeldebildschirm. Jetzt kommt ein Dialog mit einem eigenen
+  Bild: ein Soldat, der sich auf eine Munitionskiste setzt, das Gewehr
+  angelehnt in Reichweite, die Laterne brennt, der Becher dampft, der Bunker am
+  Horizont. **Geruht, nicht geschlagen** – es hat niemanden getroffen, der
+  Soldat hat nur einen Moment hingehalten. Gemalt wird das nicht von einem
+  fremden Bild, sondern vom Spiel selbst: `afk-rest-scene.mjs` zeichnet mit
+  denselben Tintenlinien, demselben Oliv und Gold und denselben Formen, aus
+  denen das Feld besteht. Bei reduzierter Bewegung bleibt der Dampf weg, der
+  Soldat bleibt.
+- **Wegklicken** schließt die Karte, löscht den Vermerk – sonst wäre sie bei
+  jedem Sprachwechsel wiedergekommen – und setzt den Zeiger ins Namensfeld.
+  Der Anmeldebildschirm liegt dahinter; es wird nichts anderes daraus.
+- **Prüfungen:** `tests/afk-rest.test.mjs` **5/5** – die Szene malt und liefert
+  keine einzige unendliche Zahl an die Leinwand, sie überlebt eine Leinwand
+  ohne Farbverläufe, bei reduzierter Bewegung ist sie leiser (und nicht leer),
+  jede Nummer der Karte kommt in `account.js` wirklich vor, beide Sprachen
+  stehen dort, und das Wegklicken löscht den Vermerk nachweislich. Dazu
+  `tests/popup-centering.test.mjs` (jetzt **vier** Einträge, das
+  Versions-Popup ist benannt) und `interface-smoke.cjs`, das die Meldung im
+  echten Chromium in drei Fenstern nachmisst. Vollständiger serieller Lauf
+  **1075 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `afk-rest-scene.mjs`,
+  `tests/afk-rest.test.mjs` (neu); `index.html` (Karte, gemessen);
+  `style.css` (Rahmen der Karte); `account.js` (Karte zeigen, übersetzen,
+  wegklicken, Vermerk löschen); `popup-center.css` (Versionsmeldung und die
+  geschärfte Regel, neue Welle); `tests/popup-centering.test.mjs`;
+  `browser-tests/interface-smoke.cjs`; `PATCH-BLOECKE.md` (Block 8: Popups
+  abgehakt, Abmeldung aufgenommen).
+- **Grenzen – und eine, die ich offenlegen muss:** **Ich kann keine Bilder
+  sehen.** Die Szene ist Geometrie, die ich gerechnet habe: Kiste auf dem
+  Boden, Figur darauf, Gewehr schräg angelehnt, Bunker am Horizont, Laterne
+  rechts. Ob der Soldat **wie ein Soldat aussieht**, kann ich nicht beurteilen
+  – das ist die einzige Stelle in diesem Projekt, an der ich blind gearbeitet
+  habe. Bitte ansehen; die Zeichnung ist so gebaut, dass sie sich leicht
+  korrigieren lässt (ein Modul, eine Funktion, lauter benannte Zahlen).
+
+## IPL-0047 – Korrektur: das Fähigkeits-HUD gehört in die Daumennähe, nicht in die Feldmitte
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`.
+- **Der Befund, von Menschenhand:** „Balken für Fähigkeiten geht über die
+  komplette Breite und ist mittig im Bildschirm. Geht ja zum spielen quasi gar
+  nicht?! Was könnte hier sinnvoll sein.“
+- **Was ich gebaut hatte** ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)):
+  der Knopf am **rechten Rand, senkrecht mittig**. Die Anforderung im Block
+  hieß: *innerhalb des Rahmens, auf dem Handy am Rand in Daumennähe statt unter
+  dem Feld*. Ich hatte „am Rand“ gelesen und „in Daumennähe“ überlesen – und die
+  Mitte des Feldes ist kein Rand, sondern **der Ort, an dem gekämpft wird**. Ein
+  HUD in der Feldmitte verdeckt genau das, was es bedienen soll.
+- **Was jetzt gilt:** der Knopf sitzt **unten rechts im Kartenrahmen**, über der
+  Befehlsleiste und oberhalb des Funkbands, das links bleibt. Die zwei
+ Bedien­elemente, die dort schon standen (`ZOOM MAP` und „Feld-Upgrade wählen“),
+  steigen eine Etage höher; wenn das Upgrade-Feld erscheint, steigt der Zoom
+  noch eine weitere. Unten rechts heißt: am Rand **und** in Daumennähe.
+- **Und die Breite:** der Knopf hat jetzt eine **feste Breite** (höchstens
+  196 px, auf schmalen Feldern weniger) statt nur einer Obergrenze, und Name
+  wie Zustand werden abgeschnitten. Damit kann ihn kein Fähigkeitsname – in
+  keiner Sprache, auch nicht „VERSORGUNGSABWURF“ – in die Breite ziehen. Nebenbei
+  springt der Knopf nicht mehr, wenn aus `BEREIT` ein `BEREIT IN 12s` wird; das
+  war unter dem Daumen ohnehin störend.
+- **Was sich beim Prüfen zeigte (und was mich gelehrt hat):** die Maschine
+  hatte die Mitte **nicht** beanstandet. Drei Fenster gemessen, Touchziel
+  geprüft, `#start` nicht verdeckt – alles grün. Was kein Prüfschritt fragte:
+  *liegt das Ding dort, wo gespielt wird?* Ein Prüfschritt kann eine
+  Daumenspitze nicht ersetzen. Nachgezogen sind jetzt zwei Messungen: der Knopf
+  liegt im unteren Teil des Feldes und ist schmaler als zwei Drittel der Breite,
+  und er darf das Funkband nicht überdecken.
+- **Ein zweiter Fehler, wieder nur vom Telefon:** mit fester Breite von 196 px
+  greift der Knopf auf einem 360 px breiten Bildschirm in die linke untere Ecke
+  – dorthin, wo die Funkzeile steht. Der Prüfstand hat das gemessen. Die Breite
+  ist deshalb **höchstens die halbe Bildschirmbreite minus Ränder**: die
+  Funkzeile besitzt links unten bis zu 45 vw, also kann der Knopf ihr bei jeder
+  Höhe und jedem Text aus dem Weg bleiben.
+- **Prüfungen:** `tests/ability-hud-placement.test.mjs` verlangt jetzt `bottom`
+  statt `top:50%`, verbietet die Feldmitte ausdrücklich und besteht auf der
+  festen Breite und der Halbe-Bildschirm-Regel; `interface-smoke.cjs` misst im
+  echten Chromium nach: untere Hälfte, schmaler als 65 % der Breite, kein
+  Überlappen mit der Funkzeile. Vollständiger serieller Lauf **1079 bestanden,
+  0 fehlgeschlagen**.
+- **Änderungen / Dateien:** `field-command.css` (Lage, feste Breite,
+  Kürzen der Texte, die zwei Nachbarn eine Etage höher); `game.js` und
+  `localization-results-de.mjs` (der Funkspruch nennt jetzt „unten rechts“);
+  `tests/ability-hud-placement.test.mjs`, `tests/ability-hud-ui.test.mjs`,
+  `browser-tests/interface-smoke.cjs`; `PATCH-BLOECKE.md` (D2 berichtigt).
+- **Grenzen:** wieder **gerechnet, nicht gesehen**. Die neue Lage ist
+  kollisionsfrei gegen jede bekannte Box gerechnet und wird im Prüfstand
+  nachgemessen – ob sie bequem ist, entscheidet der Daumen.
+
+## IPL-0048 – Block 8: Der Turm soll leuchten (Schimmer und Prestige-Schein)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/9e0009e7-0815games-github-io`.
+- **Auftrag:** „Glow am Turm zu gering“ – der Schein müsse **deutlich stärker**
+  werden. Auf die Frage, welcher Schein gemeint sei – der ruhige Schimmerring
+  aus [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer) oder
+  der Schein der Turmgrafik – kam die Antwort: **beides**. Erst die Grafik,
+  dann den Ring nachziehen.
+- **Der Prestige-Schein** (`cartoon-art.mjs`): bisher ein einziger matter Ring
+  (`shadowBlur` 15, Füllung `.12`). Jetzt liegt unter dem Turm ein **Lichtteich**
+  (radialer Verlauf, 58 × 46 px, gold, Deckkraft .36 innen bis 0 außen), dazu
+  ein kräftigerer Ring (`shadowBlur` 26) und ein feiner Außenring. Das Ganze
+  wird **vor** dem Turm gemalt – der Turm selbst landt obenauf. Genau das ist
+  die Regel, die in [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer)
+  als Warnung steht: *ein zu heller Schimmer verdeckt den Turm selbst*. Heller
+  machen heißt hier: mehr Licht **um** den Turm, nicht **auf** ihm.
+- **Der Schimmerring** (`game.js`): Radius 37 × 26 auf **40 × 28**, Linie 2 auf
+  **3 px**, Deckkraft von .42–.62 auf **.58–.78**, und der Strich führt jetzt
+  einen eigenen Schein (`shadowBlur`). Bei reduzierter Bewegung: Deckkraft
+  **.82** statt .72, Linie 3,5 px.
+- **Prüfungen:** `tests/tower-shimmer.test.mjs` besteht weiter (ein Ring auf der
+  bezahlbaren Bauplatte, still bei reduzierter Grafik, atmet sonst) und prüft
+  jetzt auch, dass der Ring nie unter .38 Deckraft fällt und mindestens 3 px
+  dick ist – ein Haarlineal ist eine Einladung, die man suchen muss.
+  `tests/tower-glow.test.mjs` ist neu (3/3): ein gewöhnlicher Turm verlangt kein
+  Licht, ein Prestige-Turm verlangt welches und zwar mindestens 20 px
+  Zerstreuung; das Licht liegt laut Quelltext **unter** dem Turm; beides gilt
+  mit und ohne reduzierte Bewegung. Vollständiger serieller Lauf **1079
+  bestanden, 0 fehlgeschlagen**.
+- **Was mich der Cache-Test gelehrt hat:** ich hatte `cartoon-art.mjs` auf eine
+  eigene Welle `20261117-towerglow1` gesetzt. Der Bestandstest
+  `multiplayer-build-stamp` hat das abgelehnt, und zu Recht: ein Modul, das das
+  Spiel einmal hält, darf nicht in zwei Fassungen nebeneinander im Cache
+  liegen. Es bleibt beim Veröffentlichungsstempel `20261031-patch4` – der Schein
+  kommt also mit dem nächsten Stand, nicht vor ihm.
+- **Änderungen / Dateien:** `cartoon-art.mjs` (Lichtteich, Ringe),
+  `game.js` (Schimmerring), `tests/tower-glow.test.mjs` (neu),
+  `tests/tower-shimmer.test.mjs`, `PATCH-BLOECKE.md` (Punkt abgehakt).
+- **Grenzen:** **Kein Mensch hat es gesehen.** Die Maschine liest die
+  Pinselstriche, nicht das Bild. Ob der Schein jetzt stark genug ist – und ob
+  er bei vielen bezahlbaren Türmen im späten Endless-Lauf das Feld zumatscht –
+  entscheidet ein Blick, den ich nicht habe.

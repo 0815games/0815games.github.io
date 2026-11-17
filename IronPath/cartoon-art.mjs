@@ -224,8 +224,17 @@ function pad(ctx,p,tower,selected,types,notify){
   if(selected){ctx.save();ctx.strokeStyle='#cfe3d6';ctx.lineWidth=2.5;ctx.setLineDash([7,6]);ctx.beginPath();ctx.ellipse(x,y,33,23,0,0,Math.PI*2);ctx.stroke();ctx.restore();}
   if(!tower){line(ctx,[[x-13,y-8],[x+13,y-8]],'#78988b',1);ctx.fillStyle='#dce7d7';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(tr('BUILD'),x,y+5);ctx.textAlign='start';return;}
   const display=towerDisplay(tower.level);
+  // A prestige tower has been paid for twice over, so it is allowed to glow.
+  // Everything here is painted BEFORE the tower itself (the artwork lands at
+  // the end of this function), so the glow can be strong without covering the
+  // tower it belongs to - a glow that hides its own tower is worse than none.
   // A static gold halo remains visible even when reduced motion is enabled.
-  if(display.prestige){ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=15;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.12)','#f8d572',2);ctx.restore();
+  if(display.prestige){
+    const pool=radial(ctx,x,y-6,2,x,y-6,58);
+    if(pool){pool.addColorStop(0,'rgba(255,214,110,.36)');pool.addColorStop(.5,'rgba(255,196,72,.18)');pool.addColorStop(1,'rgba(255,196,72,0)');
+      ctx.save();ctx.beginPath();ctx.ellipse(x,y-6,58,46,0,0,Math.PI*2);ctx.fillStyle=pool;ctx.fill();ctx.restore();}
+    ctx.save();ctx.shadowColor='#ffd75c';ctx.shadowBlur=26;oval(ctx,x,y-4,30,26,'rgba(255,207,79,.20)','#f8d572',2.5);ctx.restore();
+    ctx.save();ctx.strokeStyle='rgba(255,228,156,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(x,y-4,37,32,0,0,Math.PI*2);ctx.stroke();ctx.restore();
     ctx.fillStyle='#ffe59a';ctx.font='bold 9px Arial';ctx.textAlign='center';ctx.fillText(`★${display.prestige}`,x,y-28);ctx.textAlign='start';}
   // Specialization rank chevrons under the plate: one small gold wedge per
   // earned rank (level 4/5; prestige keeps three forever).

@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
-  <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter1">
+  <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter2">
   <link rel="stylesheet" href="patch-notes.css?v=20261031-notes1">
 </head>
 <body>
@@ -30,6 +30,19 @@
     <h2 id="afkFailureTitle">Session protection unavailable</h2>
     <p id="afkFailureDetail">The browser could not protect the shared session. Reload the game before continuing.</p>
     <button id="afkSessionReload" type="button">RELOAD GAME</button>
+  </dialog>
+  <!-- Half an hour away and the session is closed. The card says so with the
+       field's own hand: a soldier sitting down, rifle within reach, the lantern
+       lit. Resting, not defeated - nobody was hit. Closing the card leaves the
+       player on the sign-in screen, which is already behind it. -->
+  <dialog id="afkRestDialog" class="afk-rest" aria-labelledby="afkRestTitle" aria-describedby="afkRestText">
+    <canvas id="afkRestArt" class="afk-rest-art" width="360" height="180" aria-hidden="true"></canvas>
+    <div class="afk-rest-body">
+      <span class="afk-rest-kicker" id="afkRestKicker">FIELD BREAK</span>
+      <h2 id="afkRestTitle">You were signed out</h2>
+      <p id="afkRestText">You were signed out after 30 minutes of inactivity. Sign in to continue.</p>
+      <button id="afkRestAccept" class="primary" type="button">BACK TO SIGN IN</button>
+    </div>
   </dialog>
   <dialog id="maintenanceGate" class="maintenance-gate" aria-labelledby="maintenanceTitle" aria-describedby="maintenanceDetail" hidden>
     <div class="maintenance-scene">

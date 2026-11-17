@@ -1,18 +1,32 @@
-/* One place decides where a popup appears: the middle.
+/* One place decides where a floating notice appears.
  *
- * A popup is not a banner and not a sheet. A banner (version notice, sandbox
- * notice) reports a state and stays in a corner; a sheet (tower panel, build
- * ring) belongs to the thing it was opened from. A popup interrupts: it asks
- * for a decision or reports something that needs an answer, so it goes where
- * the eye already is - the centre of the view, on the phone as on the desktop.
+ * The test that decides is NOT what a thing is called. "Banner", "notice" and
+ * "hint" are names, and a name can be wrong: the version notice was filed as a
+ * banner and therefore parked in a corner - while carrying two buttons that ask
+ * the player to do something. What counts is what the element DOES:
  *
- * Everything here is an OFFSET, never a new position: the rules below only
- * move popups that already float (`position:fixed` or `absolute` from their own
- * stylesheet). That keeps each popup's own colours, borders and stacking, and
- * the phone rules that anchor them stay in force where they differ.
+ *   1. It must float (position:fixed or absolute). An element in the flow, or a
+ *      sticky ribbon that stays while a mode is switched on (the sandbox bar),
+ *      is furniture. Furniture has its place at the edge of the screen, and
+ *      dragging it into the middle would take the room away from the game.
+ *   2. If it demands an answer - a decision, a confirmation, a dismissal - it
+ *      goes where the eye already is: the centre of the view, on the phone as
+ *      on the desktop. That is what "interrupting" means.
+ *   3. If it only reports a state while the player keeps playing, it stays in a
+ *      corner, out of the way.
+ *   4. Over an otherwise empty screen (a loading notice) the middle costs
+ *      nothing, because there is nothing to get out of the way of.
  *
- * Popups covered, in the order they appear here:
+ * Everything here is an OFFSET, never a new position: the rules below only move
+ * notices that already float, from their own stylesheet. That keeps each one's
+ * colours, borders and stacking, and the phone rules that anchor them stay in
+ * force where they differ.
+ *
+ * Notices covered, in the order they appear here:
  *   .social-popup    party invitations, join and friend requests (site-wide)
+ *   .version-notice  a new build is ready, with RETRY CHECK and DISMISS: it was
+ *                    filed as a banner and sat in the top-right corner, which
+ *                    is exactly the corner a player on a phone never looks at
  *   .wave-request    wave and 2x speed votes in the battle (the fallback card
  *                    for the centred request centre in multiplayer-prompts.css)
  *   .story-decision  a mission decision with choices, over the battlefield
@@ -20,6 +34,15 @@
 .social-popup{
   left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);
   width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;
+  box-shadow:0 14px 44px #000a;
+}
+/* The version notice keeps every colour and button its own stylesheet gave it;
+   only its corner is taken away. It is the one notice that follows the player
+   into the field, so it also gets a shadow: centred over a battlefield it must
+   read as being ON TOP of the game, not printed into it. */
+.version-notice{
+  left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);
+  width:min(460px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;
   box-shadow:0 14px 44px #000a;
 }
 #gameView .battle .wave-request:not([hidden]),

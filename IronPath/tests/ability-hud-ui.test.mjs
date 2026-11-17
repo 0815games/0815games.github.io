@@ -47,7 +47,7 @@ test('the button names the ability, shows its mark and says why it is waiting',a
   assert.equal(f.el('abilityState').textContent,'READY');
   assert.equal(hud.disabled,false);
   assert.equal(hud.classList.contains('ability-hud--new'),true,'the first ready ability is introduced once');
-  assert.match(f.el('message').textContent,/Airstrike is ready\. Use it from the button on the right edge/,'and the radio says where it is');
+  assert.match(f.el('message').textContent,/Airstrike is ready\. Use it from the button at the bottom right/,'and the radio says where it is');
 });
 
 test('without a chosen ability the button explains where to get one',async()=>{

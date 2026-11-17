@@ -63,6 +63,13 @@ const fs = require('node:fs');
 
       await page.evaluate(()=>{document.querySelector('#menuFriendBadge').textContent='12';document.querySelector('#menuFriendBadge').hidden=false;document.querySelector('#menuFriends').classList.add('has-friend-requests');});await check('#menuFriends');await check('#menuFriendBadge');await page.evaluate(()=>{document.querySelector('#menuFriendBadge').hidden=true;document.querySelector('#menuFriends').classList.remove('has-friend-requests');});
       await page.evaluate(()=>{document.querySelector('#socialPopupTitle').textContent='PARTY INVITATION';document.querySelector('#socialPopupBody').textContent='A very long soldier name invited you to a party.';document.querySelector('#socialPopup').hidden=false;});await check('#socialPopup');await check('#socialPopupOpen');await check('#socialPopupDismiss');await centredPopup('#socialPopup');await page.screenshot({path:`browser-artifacts/${name}-social-popup.png`});await page.evaluate(()=>document.querySelector('#socialPopup').hidden=true);
+      // The new-build notice carries RETRY CHECK and DISMISS, so it is an
+      // interruption and belongs in the middle - it sat in the top-right corner
+      // on the strength of its name alone. Measured like any other popup.
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='A new version is ready. Reload the game to get it.';document.querySelector('#versionNotice').hidden=false;});
+      await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
+      await page.screenshot({path:`browser-artifacts/${name}-version-notice.png`,fullPage:false});
+      await page.evaluate(()=>document.querySelector('#versionNotice').hidden=true);
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#commandCenter').hidden = true; document.querySelector('#gameWorkspace').hidden = false;
@@ -151,7 +158,11 @@ const fs = require('node:fs');
       assert.ok(ability.width>=44&&ability.height>=44,`${name}: the ability HUD is a touch target (${Math.round(ability.width)}x${Math.round(ability.height)})`);
       assert.ok(ability.x+ability.width<=width+1&&ability.x>=-1,`${name}: the ability HUD stays inside the width`);
       assert.ok(ability.y>=-1&&ability.y+ability.height<=height+1,`${name}: the ability HUD stays inside the height`);
-      assert.ok(ability.x+ability.width>width/2,`${name}: the ability HUD sits at the right edge, away from the pads it would cover`);
+      assert.ok(ability.x+ability.width>width/2,`${name}: the ability HUD sits on the right half of the field`);
+      // Low in the frame, where a thumb rests - the first version was centred
+      // vertically and landed in the middle of the fighting.
+      assert.ok(ability.y+ability.height/2>height*0.55,`${name}: the ability HUD sits low, not in the middle of the battlefield`);
+      assert.ok(ability.width<=width*0.65,`${name}: the ability HUD is a button, not a bar across the field (${Math.round(ability.width)}px of ${width})`);
       // And it must not sit ON the control row. It was first built inside the
       // command panel - a positioned box at the bottom - so `absolute` measured
       // from there and the HUD landed on DEPLOY / START WAVE. Chromium refused
@@ -168,6 +179,10 @@ const fs = require('node:fs');
       });
       assert.equal(reached.start.id,'start',`${name}: the deploy button is reachable, not covered (hit ${reached.start.id})`);
       assert.equal(reached.hud.inside,true,`${name}: the ability HUD is reachable itself (hit ${reached.hud.id})`);
+      // The field radio keeps its own corner: the HUD must not lie across it.
+      const radio=await page.locator('.battle-foot').boundingBox();
+      const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);
+      assert.equal(overRadio,false,`${name}: the ability HUD leaves the field radio alone (hud ${JSON.stringify(ability)} vs radio ${JSON.stringify(radio)})`);
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.
