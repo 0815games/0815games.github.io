@@ -703,10 +703,14 @@ function renderResults(target){
     $('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
     if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
-    $('mapName').textContent=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
+    // The title the field writes and the title the card shows are the SAME text:
+    // the corner is gone, so this node is the only place the map is named, and
+    // the retreat flow reads the sector back out of it.
+    const mapTitle=versus?`${tr(map.name)} · 1 VS 1`:sector>1?`${tr(map.name)} · ${tr('SECTOR {number}',{number:sector})}`:tr(map.name);
+    $('mapName').textContent=mapTitle;
     // One announcement per loaded map. `reset()` clears `announcedMap`, so a new
     // run on the same ground is announced again - it is a new battle.
-    if(announcedMap!==state.mapId){announcedMap=state.mapId;mapIntro.show(state.mapId,{label:$('battleLabel').textContent});}
+    if(announcedMap!==state.mapId){announcedMap=state.mapId;mapIntro.show(state.mapId,{label:$('battleLabel').textContent,name:mapTitle});}
     const workspace=$('gameWorkspace');
     const fullBattle=!!coop&&!workspace.hidden&&workspace.dataset.screen==='online'&&workspace.dataset.onlineReady==='true'&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0;
     const canvasHeight=fullBattle?Math.max(1,Math.round(logicalWidth*mapViewport.clientHeight/mapViewport.clientWidth)):versus?Math.round(logicalWidth*((map.height||540)*2+20)/(map.width||960)):540;

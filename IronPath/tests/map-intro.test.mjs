@@ -157,6 +157,19 @@ test('the title takes no taps and needs no button',()=>{
   assert.doesNotMatch(head,/id="mapName"/,'the bottom-left corner no longer repeats the name');
 });
 
+test('the caller names the title - the card does not shorten the name',()=>{
+  // The field composes "map · SECTOR 4" and reads it back later (the retreat
+  // flow does). A card that named the map from its own geometry would eat the
+  // sector - Chromium measured exactly that. What the caller says wins; the
+  // module's own name is only the fallback for a caller that knows just the id.
+  const doc=stubDocument(),time=clock();
+  const card=intro(doc,{setTimer:time.set,clearTimer:time.clear});
+  card.show('g3-0e9c6f21d',{label:'FREE PLAY',name:'The Ice Road · SECTOR 4'});
+  assert.equal(doc.node('mapName').textContent,'The Ice Road · SECTOR 4','the composed title survives');
+  card.show('road',{label:'FREE PLAY'});
+  assert.equal(doc.node('mapName').textContent,'The Last Road','without one, the card names the map itself');
+});
+
 test('every map in the game paints a picture of itself',async()=>{
   // Not one theme: the title card has to survive all of them, and the generated
   // battlefields too - the grid maps with two roads and the four-player front.

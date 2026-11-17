@@ -2553,6 +2553,18 @@ Gebaut:
   20px)` – nicht überschrieben werden. `tests/ability-hud-placement.test.mjs`
   hält das fest, samt Wächter, dass die Eisenregel, die es zu überstimmen gilt,
   noch existiert.
+- **Was Chromium nach dem Zusammenführen auf `main` gefunden hat:** die Karte
+  darf den Namen nicht selbst schreiben. `#mapName` ist jetzt der **einzige**
+  Ort, an dem die Karte benannt wird (die Ecke ist weg), und das Feld schreibt
+  dort „Kartenname · SEKTOR 4“ – der Rückzugs-Ablauf liest den Sektor daraus
+  wieder heraus. Die Titelkarte setzte den Knoten aus ihrer eigenen Geometrie
+  neu und fraß dabei den Sektor: „Urban Ruin & Industrial Complex“ statt
+  „… · SEKTOR 4“. Der Name kommt deshalb vom Aufrufer
+  (`mapIntro.show(id,{label,name})`); die Karte benennt sich nur noch selbst,
+  wenn ihr niemand einen Namen gibt. `tests/map-name-title.test.mjs` (2) fährt
+  das Spiel mit einem Sektor-4-Feld hoch und prüft, dass der Sektor steht und
+  die Karte genau den Text des Feldes zeigt – der Test schlägt fehl, wenn man
+  den Namen wieder weglässt.
 - **Warum die Titelkarte keine Tipps nimmt:** sie liegt über einem Feld, auf dem
   der Spieler vielleicht schon baut. Eine Karte, die einen Tipp schluckt, ist
   eine Wand – dieselbe Lektion, die die Warnkarte zweimal im Chromium gelernt
@@ -2574,14 +2586,15 @@ Gebaut:
   Abschlusskante, sitzen **untereinander statt aufeinander** und bleiben über
   der Befehlsleiste; die Titelkarte ist zentriert, enthält das Artwork, hat
   keinen Knopf und lässt jeden Tipp durch; und der Kartenname kommt im Feld nur
-  **einmal** vor. Vollständiger serieller Lauf **1107 bestanden, 0
+  **einmal** vor. Vollständiger serieller Lauf **1109 bestanden, 0
   fehlgeschlagen**.
 - **Änderungen / Dateien:** `map-intro.mjs` (neu),
   `tests/map-intro.test.mjs` (neu), `index.html`, `field-command.css`,
   `game.js`, `cartoon-art.mjs` (`themeGroundColor` ausgezogen, damit die
   Titelgrafik dieselbe Palette benutzt wie das Feld),
-  `tests/ability-hud-placement.test.mjs`, elf Test-Harnesse (neues Modul in der
-  Import-Liste), `browser-tests/interface-smoke.cjs`.
+  `tests/ability-hud-placement.test.mjs`, `tests/map-name-title.test.mjs` (neu),
+  elf Test-Harnesse (neues Modul in der Import-Liste),
+  `browser-tests/interface-smoke.cjs`.
 - **Grenzen:** **Kein Mensch hat das Ergebnis gesehen.** Ich habe kein Augenlicht
   und kann die Titelgrafik nicht beurteilen – `browser-artifacts/map-title-card.png`
   zeigt drei nachgebaute Karten (Feldgrafik aus echter Kartengeometrie, gerendert

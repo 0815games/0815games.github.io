@@ -105,10 +105,15 @@ export function createMapIntro(document,{translate=text=>text,getMap=()=>null,ho
   return Object.freeze({
     // The map is loaded: show its name, its label and its picture, then let it
     // go. Called again for a new battle, never for a redraw of this one.
-    show(mapId,{label:mode=''}={}){
+    // The name is the caller's, not the module's: the field composes it (map plus
+    // sector, or "1 VS 1") and reads it back, so the title must not rewrite it
+    // with a shorter version of its own. Chromium found that: a retreat flow read
+    // "Urban Ruin" where "SEKTOR 4" belonged. Without a name the module still
+    // names the map itself from its own geometry.
+    show(mapId,{label:mode='',name:title=null}={}){
       const map=typeof getMap==='function'?getMap(mapId):null;
       current=mapId??null;
-      if(name)name.textContent=map?translate(String(map.name)):'';
+      if(name)name.textContent=title??(map?translate(String(map.name)):'');
       if(label)label.textContent=mode?translate(String(mode)):'';
       if(art)paintMapPreview(art,map);
       fading(false);
