@@ -214,7 +214,11 @@ const fs = require('node:fs');
       assert.ok(notice.y>=statusRow.y+statusRow.height-1,`${name}: it hangs under the status row, not over it (notice ${JSON.stringify(notice)} vs row ${JSON.stringify(statusRow)})`);
       assert.ok(notice.y+notice.height<height*0.35,`${name}: and high enough to be out of the fighting`);
       assert.ok(notice.x>=-1&&notice.x+notice.width<=width+1,`${name}: it stays inside the width (${JSON.stringify(notice)})`);
-      assert.ok(notice.width<=width*0.7,`${name}: it is a card, not a banner (${Math.round(notice.width)}px of ${width})`);
+      // A card, not a banner: a banner grows with the field, a card stops at a
+      // readable line - and on a narrow field it keeps a margin on both sides
+      // instead of spanning the whole width edge to edge.
+      assert.ok(notice.width<=341,`${name}: it is a card of a fixed width, not a banner across the field (${Math.round(notice.width)}px)`);
+      assert.ok(notice.x>=7&&notice.x+notice.width<=width-7,`${name}: and it keeps a margin on both sides (${JSON.stringify(notice)})`);
       // Centred on the field it hangs over - not on the window, which the frame
       // does not fill exactly on every layout.
       const frameBox=await page.locator('.map-frame').boundingBox();
