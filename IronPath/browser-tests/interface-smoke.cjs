@@ -238,8 +238,14 @@ const fs = require('node:fs');
         document.querySelector('#radioAlertMore').textContent='+2 more';
       });
       const warning=await page.locator('#radioAlert').boundingBox();
-      assert.ok(warning.y+warning.height<=radio.y+1,`${name}: the warning floats above the radio, not across it (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radio)})`);
-      assert.ok(warning.x>=radio.x-1&&warning.x+warning.width<=radio.x+radio.width+1,`${name}: it keeps the radio's width, so the corner rules still hold`);
+      // The card is the top line of the radio's own column now, so the box grows
+      // around it: measured again, with the card in it, against the handset it
+      // must not cover. (Comparing against the shut box measured above would be
+      // comparing a child with its parent - the card is in the column, not on
+      // top of it any more.)
+      const radioWithCard=await page.locator('.battle-foot').boundingBox();
+      assert.ok(warning.x>=radioWithCard.x-1&&warning.x+warning.width<=radioWithCard.x+radioWithCard.width+1,`${name}: the warning keeps the radio's column, so the corner rules still hold (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radioWithCard)})`);
+      assert.ok(warning.y+warning.height<=handset.y+1,`${name}: the warning floats above the handset, not across it (warning ${JSON.stringify(warning)} vs handset ${JSON.stringify(handset)})`);
       assert.ok(warning.width<=width*0.7,`${name}: the warning is a card, not a banner (${Math.round(warning.width)}px of ${width})`);
       assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
       const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
