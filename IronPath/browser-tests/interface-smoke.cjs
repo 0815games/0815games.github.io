@@ -291,21 +291,25 @@ const fs = require('node:fs');
       // ability button used to be positioned independently and met each other on
       // a phone. The zoom button only shows for a coarse pointer, so it is forced
       // visible here - this is what a touch player sees.
-      const rim=await page.evaluate(()=>{
+      // The ability glows gold while it is ready - that is a STATE, not a second
+      // frame. It is measured neutral here, and the glow is checked afterwards.
+      // Buttons transition their colours over 150 ms, so the reading waits: right
+      // after the attribute change the computed value is still the old one.
+      await page.evaluate(()=>{
         const zoom=document.getElementById('mapQuickZoom'),perk=document.getElementById('runPerkReopen'),ability=document.getElementById('ability');
         zoom.style.display='block';perk.hidden=false;ability.hidden=false;
-        // The ability glows gold while it is ready - that is a STATE, not a
-        // second frame. It is measured neutral, and the glow is checked after.
-        const state=ability.dataset.state;ability.dataset.state='cooldown';
+        window.__abilityState=ability.dataset.state;ability.dataset.state='cooldown';
+      });
+      await page.waitForTimeout(300);
+      const rim=await page.evaluate(()=>{
+        const zoom=document.getElementById('mapQuickZoom'),perk=document.getElementById('runPerkReopen'),ability=document.getElementById('ability');
         const column=document.getElementById('fieldControls'),command=document.querySelector('#gameView .map-frame .command');
         const read=el=>{const box=el.getBoundingClientRect(),style=getComputedStyle(el);
           return {id:el.id,top:box.top,bottom:box.bottom,left:box.left,right:box.right,
             radius:style.borderRadius,frame:style.borderTopWidth+' '+style.borderTopStyle,plate:style.backgroundColor};};
         const columnBox=column.getBoundingClientRect(),commandBox=command.getBoundingClientRect();
         const parts=[perk,zoom,ability].map(read);
-        const neutral=parts[2].plate;
-        ability.dataset.state=state;
-        return {parts,neutral,glow:getComputedStyle(ability).backgroundColor,
+        return {parts,neutral:parts[2].plate,
           column:{top:columnBox.top,bottom:columnBox.bottom,left:columnBox.left,right:columnBox.right},
           command:{top:commandBox.top}};
       });
@@ -319,12 +323,19 @@ const fs = require('node:fs');
         assert.equal(part.plate,rim.neutral,`${name}: ${part.id} has the same plate (${part.plate} vs ${rim.neutral})`);
         assert.ok(Math.abs(part.right-rim.parts[0].right)<=1,`${name}: ${part.id} ends on the same rim (${Math.round(part.right)} vs ${Math.round(rim.parts[0].right)})`);
       }
-      assert.notEqual(rim.glow,rim.neutral,`${name}: the ready ability still glows - a state, not a second frame (${rim.glow})`);
       for(let i=1;i<rim.parts.length;i++)
         assert.ok(rim.parts[i].top>=rim.parts[i-1].bottom-1,`${name}: ${rim.parts[i].id} does not sit on ${rim.parts[i-1].id} (${Math.round(rim.parts[i].top)} < ${Math.round(rim.parts[i-1].bottom)})`);
       assert.ok(rim.column.right<=width+1&&rim.column.left>=-1,`${name}: the column stays inside the width (${JSON.stringify(rim.column)})`);
       assert.ok(rim.column.bottom<=rim.command.top+1,`${name}: and above the command strip, not across it (column bottom ${Math.round(rim.column.bottom)} vs strip top ${Math.round(rim.command.top)})`);
-      await page.evaluate(()=>{document.getElementById('mapQuickZoom').style.display='';document.getElementById('runPerkReopen').hidden=true;});
+      // Restored, the glow is back: the same button, one state lighter.
+      await page.evaluate(()=>{
+        document.getElementById('mapQuickZoom').style.display='';
+        document.getElementById('runPerkReopen').hidden=true;
+        document.getElementById('ability').dataset.state=window.__abilityState;
+      });
+      await page.waitForTimeout(300);
+      const glow=await page.evaluate(()=>getComputedStyle(document.getElementById('ability')).backgroundColor);
+      assert.notEqual(glow,rim.neutral,`${name}: the ready ability still glows - a state, not a second frame (${glow})`);
       // THE MAP ANNOUNCES ITSELF ONCE. A title card, centred, with the field
       // drawn in the game's own art - and then it goes away.
       await page.evaluate(()=>{
