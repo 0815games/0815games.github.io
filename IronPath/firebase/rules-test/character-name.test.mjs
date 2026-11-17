@@ -11,7 +11,7 @@ import {test,before,after,beforeEach} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
-import {ref,set,get,remove,update,runTransaction,query,orderByKey,limitToFirst} from 'firebase/database';
+import {ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst} from 'firebase/database';
 import {createCharacterNameClaim} from '../../character-name-claim.mjs';
 import {createCharacterRename} from '../../character-rename.mjs';
 import {createFriendService} from '../../friends.mjs';
@@ -182,23 +182,38 @@ test('only the owner releases a name, and a released name becomes free',{skip:ba
 // the payloads carry a valid `at`: leave it out and the entry is refused for
 // missing its reservation time, and every case below turns green for the wrong
 // reason - the same trap as the regex in PR #293.
-// A rename has to move four places at once. The Rules can only check that they
-// AGREE - they cannot compute the name hash - so this asserts the outcome a
-// player would notice: findable under the new name, gone from the old one.
-test('a rename moves the soldier to the new name without leaving the old one behind',{skip:baseline},async()=>{
- const oldKey=characterNameKey('Alice'),newKey=characterNameKey('Alicia');
- const alice$1=claimService(alice,'alice'),rename=createCharacterRename({db:alice,auth:{currentUser:{uid:'alice'}},sdk});
- const code=(await get(ref(alice,'friendPrivate/alice/code'))).val();
- assert.ok(code,'the test account published a friend code');
+// A rename has to move four places: profile, search listing, friend code and
+// reservation. `root` inside a rule is the data BEFORE the write, so no rule
+// can see what a client moves in one update - the Rules therefore allow the
+// rename only while the soldier is NOT published. The module unlists first,
+// renames, then publishes again; every step below is checked on its own.
+//
+// A soldier as the game writes them today: profile, search key and listing,
+// friend code, and the reservation they hold for their own name.
+async function publish(uid,name){
+ const key=characterNameKey(name),code=(uid==='alice'?'a':'b').repeat(32);
+ await env.withSecurityRulesDisabled(async ctx=>{
+  const db=ctx.database();
+  await set(ref(db,`friendPrivate/${uid}`),{code,searchKey:key});
+  await set(ref(db,`friendCodes/${code}`),{uid,name});
+  await set(ref(db,`friendNames/${key}/${uid}`),{name,code});
+  await set(ref(db,`characterNames/${key}`),{uid,name,at:Date.now()});
+ });
+ return {key,code};
+}
+const renamer=(db,uid)=>createCharacterRename({db,auth:{currentUser:{uid}},sdk});
 
- const result=report('alice renames to Alicia',await rename.rename('Alicia'));
+test('a rename moves the soldier to the new name without leaving the old one behind',{skip:baseline},async()=>{
+ const {key:oldKey,code}=await publish('alice','Alice'),newKey=characterNameKey('Alicia');
+ const result=report('alice renames to Alicia',await renamer(alice,'alice').rename('Alicia'));
  assert.equal(result.status,'renamed');
+ assert.equal(result.republished,true,'the soldier is published again, not left unfindable');
  assert.equal((await get(ref(alice,'players/alice/name'))).val(),'Alicia');
  assert.equal((await get(ref(alice,'friendPrivate/alice/searchKey'))).val(),newKey);
  assert.equal((await get(ref(alice,`friendNames/${oldKey}/alice`))).val(),null,'gone from the old listing');
  assert.equal((await get(ref(alice,`friendNames/${newKey}/alice`))).val().name,'Alicia');
  assert.equal((await get(ref(alice,`characterNames/${oldKey}`))).val(),null,'the old name is free again');
- assert.equal((await get(ref(alice,`characterNames/${newKey}`))).val().name,'Alicia');
+ assert.equal((await get(ref(alice,`characterNames/${newKey}`))).val().uid,'alice');
  assert.equal((await get(ref(alice,`friendCodes/${code}/name`))).val(),'Alicia','the code follows the soldier');
  // What a friend actually notices: the new name is searchable, the old is not.
  const finder=createFriendService({db:bob,auth:{currentUser:{uid:'bob'}},sdk,crypto:{getRandomValues(bytes){bytes.fill(5);}}});
@@ -206,22 +221,42 @@ test('a rename moves the soldier to the new name without leaving the old one beh
  assert.deepEqual((await finder.search('Alice')).matches.map(m=>m.id),[]);
 });
 
-test('a rename onto a name another account holds is refused',{skip:baseline},async()=>{
- const bob$1=claimService(bob,'bob'),rename=createCharacterRename({db:alice,auth:{currentUser:{uid:'alice'}},sdk});
- assert.equal((await bob$1.claim('Bobby')).status,'claimed');
- assert.deepEqual(report('alice renames to Bobby',await rename.rename('Bobby')),{status:'taken',key:characterNameKey('Bobby'),source:'index'});
- assert.equal((await get(ref(alice,'players/alice/name'))).val(),'Alice','nothing moved');
- assert.equal((await get(ref(alice,`characterNames/${characterNameKey('Bobby')}`))).val().uid,'bob');
- // Case and padding collide too.
- assert.equal((await rename.rename('  bob BY  ')).status,'taken');
+// The invariant the Rules enforce. Everything else in this file could be true
+// and a rename would still be unsafe if these two refusals were missing.
+test('the rules refuse a rename and a moved search key while the soldier is published',{skip:baseline},async()=>{
+ const {key:oldKey,code}=await publish('alice','Alice'),newKey=characterNameKey('Alicia');
+ const namePath=()=>set(ref(alice,'players/alice/name'),'Alicia');
+ const keyPath=()=>set(ref(alice,'friendPrivate/alice/searchKey'),newKey);
+ await probe('rename while published',namePath);
+ await probe('move the search key while published',keyPath);
+ await assertFails(namePath(),'a published soldier cannot change their name');
+ await assertFails(keyPath(),'nor move the key out from under their own listing');
+ // Unpublish, and both become possible - which is exactly what the module does.
+ await assertSucceeds(remove(ref(alice,`friendNames/${oldKey}/alice`)));
+ assert.equal((await probe('rename once unpublished',namePath)).ok,true,'the rename is allowed once unpublished');
+ await assertSucceeds(keyPath(),'the key may follow once no listing sits under the old one');
+ await assertSucceeds(set(ref(alice,`friendNames/${newKey}/alice`),{name:'Alicia',code}),'and the listing is published under the new key');
 });
 
-// Today's rules make the name immutable. Renaming anyway would be worse than
-// refusing: it could land on a name nobody checked.
+test('a rename onto a name another account holds is refused',{skip:baseline},async()=>{
+ const {key:oldKey}=await publish('alice','Alice'),rename=renamer(alice,'alice');
+ assert.equal((await claimService(bob,'bob').claim('Bobby')).status,'claimed');
+ assert.deepEqual(report('alice renames to Bobby',await rename.rename('Bobby')),{status:'taken',key:characterNameKey('Bobby'),source:'index'});
+ assert.equal((await get(ref(alice,'players/alice/name'))).val(),'Alice','nothing moved');
+ assert.equal((await get(ref(alice,`friendNames/${oldKey}/alice`))).val().name,'Alice','still published under the old name');
+ assert.equal((await get(ref(alice,`characterNames/${characterNameKey('Bobby')}`))).val().uid,'bob');
+ // Case and padding are the same name: they collide too.
+ assert.equal(report('alice renames to "  bob BY  "',await rename.rename('  bob BY  ')).status,'taken');
+});
+
+// Today's rules make the name immutable, and the index does not exist. Renaming
+// anyway would be worse than refusing: it could land on a name nobody checked.
 test('without the rename rules nothing changes and the player is told',{skip:!baseline},async()=>{
- const rename=createCharacterRename({db:alice,auth:{currentUser:{uid:'alice'}},sdk});
- assert.equal(report('alice renames under the baseline rules',await rename.rename('Alicia')).status,'unsupported');
+ const {key:oldKey,code}=await publish('alice','Alice');
+ assert.equal(report('alice renames under the baseline rules',await renamer(alice,'alice').rename('Alicia')).status,'unsupported');
  assert.equal((await get(ref(alice,'players/alice/name'))).val(),'Alice');
+ assert.equal((await get(ref(alice,`friendNames/${oldKey}/alice`))).val().name,'Alice','still published');
+ assert.equal((await get(ref(alice,`friendCodes/${code}/name`))).val(),'Alice');
 });
 
 test('the rules refuse forged, mis-shaped and anonymous reservations',{skip:baseline},async()=>{

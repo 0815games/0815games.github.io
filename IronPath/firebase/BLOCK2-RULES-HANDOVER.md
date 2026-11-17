@@ -8,10 +8,10 @@ Veröffentlichen zwingend zu tun bleibt. Sie ersetzt keine Freigabe.
 
 Der veröffentlichbare Kandidat `workshop.complete.draft.rules.json` enthält
 jetzt drei Blöcke. Alle sind **additiv**: 6 Pfade neu (`characterNames/**`),
-4 um je ein Leserecht ergänzt (`players/$uid/{gender,avatar}`), 2 Bedingungen
-per **ODER** erweitert (`players/$uid/name`, `friendCodes/$code`). Nichts wurde
-entfernt und nichts, was heute erlaubt ist, wird verboten — der Vergleich
-steht unten.
+4 um je ein Leserecht ergänzt (`players/$uid/{gender,avatar}`), 3 Bedingungen
+per **ODER** erweitert (`players/$uid/name`,
+`friendPrivate/$uid/searchKey`, `friendCodes/$code`). Nichts wurde entfernt und
+nichts, was heute erlaubt ist, wird verboten — der Vergleich steht unten.
 
 ### 1. Soldatenname-Index (`characterNames/<Schlüssel>`)
 
@@ -31,23 +31,58 @@ Ausführlich, mit Begründung und Grenzen:
 und
 [IPL-0035](../../IronPath/PATCH-LOG.md#ipl-0035--block-2--a1-verwaiste-reservierungen-namensverzeichnis-geschlossen).
 
-### 2. Umbenennen (`players/$uid/name`, `friendCodes/$code`)
+### 2. Umbenennen (`players/$uid/name`, `friendPrivate/$uid/searchKey`, `friendCodes/$code`)
 
-Der Mechanismus für den Alt-Duplikat-Fall: ein Soldat kann seinen Namen
-ändern, und dabei ziehen **alle vier Stellen in einem Zug** um — Profilname,
-Suchindex (neuer Schlüssel und Eintrag, alter Eintrag weg), Freundescode und
-Namensreservierung. Zwei Änderungen, beide als **ODER** ergänzt (nichts, was
-heute erlaubt ist, wird verboten):
+Der Mechanismus für den Alt-Duplikat-Fall: ein Soldat kann seinen Namen ändern,
+und dabei ziehen **alle vier Stellen** um — Profilname, Suchindex
+(Schlüssel und Eintrag), Freundescode und Namensreservierung.
 
-- `players/$uid/name` darf sich ändern, aber nur, wenn der Eintrag unter dem
-  **aktuellen** Suchschlüssel schon den neuen Namen trägt. Den Schlüssel selbst
-  können die Regeln nicht nachrechnen (keine Unicode-Normalisierung); sie
-  können nur verlangen, dass Listing und Profil **übereinstimmen**. Ein
-  Umbenennen, das den Suchindex vergisst, wird abgelehnt.
-- `friendCodes/$code` darf vom Inhaber erneuert werden — ausschließlich zum
-  eigenen aktuellen Profilnamen. Bisher konnte ein Eintrag nur **erzeugt**
-  werden; nach einer Umbenennung hätte der Code dauerhaft den alten Namen
-  beworben.
+**Warum es eine Folge von Schritten ist und kein einziger Schreibzug:** `root`
+in einer Regel ist der Datenstand **vor** dem Schreiben. Eine Regel sieht nie,
+was ein Client im selben Mehrpfad-Zug mitbewegt. Bewiesen am eigenen Bestand:
+die Charakterlöschung schreibt Spieler und Bestenlisten in **einem** Zug, und
+die Bestenlisten-Regeln verlangen, dass der Spieler bei der Auswertung noch
+existiert. Also können die Regeln nicht prüfen, dass die vier Stellen
+zueinander passen — und ein erster Entwurf, der genau das versprach, hätte nie
+gegriffen.
+
+Was sie prüfen können, ist eine Bedingung, die keinen Widerspruch zulässt:
+
+> **Ein Soldat, der im Suchindex steht, kann seinen Namen nicht ändern.**
+
+Drei Ergänzungen, alle als **ODER** (nichts, was heute erlaubt ist, wird
+verboten):
+
+- `players/$uid/name` darf sich ändern, solange der Soldat **nicht** im Index
+  steht — kein Eintrag unter seinem aktuellen Suchschlüssel. Was einen neuen
+  Namen widerlegen könnte, ist der Eintrag unter dem alten; und der ist dann
+  weg.
+- `friendPrivate/$uid/searchKey` darf mitziehen, solange unter dem alten
+  Schlüssel kein Eintrag liegt. **Heute kann er überhaupt nur einmal
+  geschrieben werden** (`!data.exists()`) — ein umbenannter Soldat wäre nie
+  wieder auffindbar gewesen.
+- `friendCodes/$code` darf vom Inhaber aufgefrischt werden — ausschließlich zum
+  eigenen aktuellen Profilnamen. Heute kann ein Eintrag nur **erzeugt** werden;
+  nach einer Umbenennung hätte der Code dauerhaft den alten Namen beworben.
+
+Der Ablauf in `character-rename.mjs` — die Reihenfolge ist die Sicherheit:
+
+1. **Reservieren.** Der neue Name wird zuerst in den Index geschrieben. Das ist
+   der Schritt, den die Regeln verweigern, wenn ein anderes Konto ihn hält.
+   Ohne den Index (heutiger Stand) meldet er „nicht unterstützt“ und es wird
+   **nichts** angefasst.
+2. **Aus dem Index nehmen.** Der alte Eintrag wird gelöscht.
+3. **Umbenennen.** Erst jetzt darf das Profil den neuen Namen tragen.
+4. **Alten Namen freigeben — zuletzt.** Zwischen „freigegeben“ und „umbenannt“
+   könnte ihn sonst ein anderes Konto nehmen, und genau das soll der Index
+   verhindern.
+5. **Neu veröffentlichen.** Suchschlüssel, Eintrag und Freundescode ziehen nach
+   (ganz normale Einzel-Schreibvorgänge, dieselben, die `friends.mjs` bei jedem
+   Konto-Laden macht).
+
+Jeder Zwischenzustand ist einer, den das Spiel heute schon erzeugt und beim
+nächsten Laden selbst heilt. Ein Abbruch lässt den Soldaten **unauffindbar**,
+nie unter einem Namen findbar, der ihm nicht gehört.
 
 **Absichtlich noch nicht entschieden:** wer umbenennen darf, wann, wie oft und
 über welchen Einstiegspunkt im Spiel. Das Modul `character-rename.mjs` hat
@@ -65,10 +100,11 @@ schreibbar war.
 ## Wie geprüft wurde
 
 - **Datenbank-Emulator** (`test:character-names`): mit dem zusammengesetzten
-  Kandidaten — inklusive Umbenennung, Kollision und Suchbarkeit unter dem neuen
-  Namen — und ohne ihn („was heute live ist"). Der Lauf ohne die neuen Regeln
-  beweist, dass Charaktererstellung und Name unverändert funktionieren und eine
-  Umbenennung nichts anfasst.
+  Kandidaten — inklusive Umbenennung (auffindbar unter dem neuen Namen, weg vom
+  alten, Code zieht nach), Kollision, der Verweigerung „solange der Soldat
+  gelistet ist" und der Suche unter dem neuen Namen — und ohne ihn („was heute
+  live ist"). Der Lauf ohne die neuen Regeln beweist, dass Charaktererstellung
+  und Name unverändert funktionieren und eine Umbenennung nichts anfasst.
 - **Datenbank-Emulator, drei Läufe** (`test:friend-portraits`): gegen die
   Referenz, gegen die Referenz hinter dem Veröffentlichungs-Guard und **gegen
   den eingestellten Entwurf selbst** — also gegen genau die Datei, die
@@ -128,6 +164,7 @@ jede Basis.
   wirksam**. Bis dahin meldet der Client „nicht unterstützt" bzw. zeigt den
   Platzhalter; die Charaktererstellung läuft unverändert weiter.
 - Alt-Duplikate bleiben unberührt. Wer einen kollidierenden Namen behält, ist
-  nach der autorisierten Bestandsaufnahme gesondert zu entscheiden; eine
-  Umbenennung braucht eine eigene Regeländerung, weil `players/$uid/name`
-  heute unveränderlich ist.
+  nach der autorisierten Bestandsaufnahme gesondert zu entscheiden. Der
+  **Mechanismus** zum Umbenennen liegt im selben Kandidaten (siehe oben);
+  ob, wann und für wen er freigeschaltet wird, bleibt eine eigene Entscheidung
+  — `character-rename.mjs` hat absichtlich noch keine Schaltfläche.
