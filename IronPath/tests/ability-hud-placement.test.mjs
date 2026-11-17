@@ -52,15 +52,14 @@ test('the frame is the box the HUD measures against',()=>{
   // A width, not a maximum: no ability name, in any language, may stretch the
   // button into a bar across the field.
   assert.match(hudRule,/width:min\(196px/,'a button, not a bar');
-  // Found on a phone: 196px on a 360px screen reaches into the bottom-left
-  // corner, and the field radio lives there. Half the viewport minus margins is
-  // the most the HUD can ever take without meeting it.
-  assert.match(hudRule,/calc\(50vw - 20px\)/,'and never wider than the half that is not the field radio');
+  // Found on a phone: 196px on a 360px screen reaches across the field. Half
+  // the viewport minus margins is the most the HUD can ever take.
+  assert.match(hudRule,/calc\(50vw - 20px\)/,'and never wider than half the field');
   // Narrow screens, not only touch ones: measured on a 320px field, where the
-  // radio spans the whole width and the HUD lay across it. Both the width query
-  // and the pointer query have to reserve the column - a narrow desktop window
-  // has a fine pointer and exactly the same crowding.
-  const reserved=[...css.matchAll(/@media\((?:max-width:850px|pointer:coarse)\)\{\n #gameView \.battle-foot\{max-width:calc\(100% - 150px\)\}\n #gameView \.map-frame \.ability-hud\{width:min\(130px[^}]*\)\}\n\}/g)];
+  // HUD lay across the whole width. Both the width query and the pointer query
+  // have to narrow it - a narrow desktop window has a fine pointer and exactly
+  // the same crowding.
+  const reserved=[...css.matchAll(/@media\((?:max-width:850px|pointer:coarse)\)\{\n #gameView \.map-frame \.ability-hud\{width:min\(130px[^}]*\)\}\n\}/g)];
   assert.equal(reserved.length,2,`the 150px column is reserved for narrow screens and for touch alike (${reserved.length} of 2)`);
   // A disabled HUD must not swallow taps meant for the battlefield under it.
   const disabled=css.split('\n').find(line=>line.includes('.ability-hud:disabled'))||'';

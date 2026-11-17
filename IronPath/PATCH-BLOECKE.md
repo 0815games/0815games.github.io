@@ -1024,7 +1024,28 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
     dem Bild; für Screenreader bleibt ein versteckter Live-Bereich (die Ansage
     bleibt, die Fläche nicht). Die **Kampagnen-Funkkarte** `#storyRadio` bleibt
     absichtlich, wie sie ist: sie erscheint für Sekunden und ist eher mit der
-    Warnkarte verwandt. **Kein Mensch hat es gesehen.**
+    Warnkarte verwandt. **Zurückgenommen** (gleicher Tag, Betreiber hat es auf
+    dem Feld gesehen): der Schließen-Knopf stand zu weit über das Fenster, und
+    Handapparat samt Fenster lagen über dem Kartennamen und den Spielmodi. Siehe
+    [IPL-0052](PATCH-LOG.md#ipl-0052--block-8-ausgemistet--kein-funkgerät-keine-flagge-das-menü-nach-unten).
+- [x] **Ausgemistet: kein Funkgerät, keine Flagge, das Menü nach unten**
+  (Betreiber, 2026-11-17). Vier Entscheidungen, gebaut mit
+  [PR #310](https://github.com/0815games/0815games.github.io/pull/310) /
+  [IPL-0052](PATCH-LOG.md#ipl-0052--block-8-ausgemistet--kein-funkgerät-keine-flagge-das-menü-nach-unten):
+  - [x] Das **Funkgerät ist weg** – Handapparat, Log und Zähler, *„minimalismus
+    is fine“*. Was der Funk gesagt hat, wird nur noch für Screenreader
+    gesprochen.
+  - [x] **Eine Meldung bleibt, von oben:** was wichtig ist (Bosse, gebrochenes
+    Eis, Trümmer, Schlamm, abgelehnte Anforderungen) flattert unter der
+    Statusleiste herein, bleibt kurz und geht von selbst. Keine Tipps, kein
+    Knopf.
+  - [x] **Statusleiste:** Erfahrungsbalken, „10 / 300“ und „noch X bis Stufe Y“
+    sind entfernt (*„Sieht wild aus“*); die Stufe bleibt.
+  - [x] **Flagge und Next-Wave-Info** sind gänzlich entfernt (*„Man benutzt es
+    eh nie“*).
+  - [x] Der **Menü-Knopf** sitzt jetzt ganz unten in der Befehlsleiste zwischen
+    TEMPO und EINSATZ BEENDEN – ausgeschrieben, und als Burger mit drei Strichen,
+    wenn die Leiste zu eng wird.
 - [x] **Glow am Turm zu gering** (geklärt: **beides**, gebaut in
   [PR #306](https://github.com/0815games/0815games.github.io/pull/306) /
   [IPL-0048](PATCH-LOG.md#ipl-0048--block-8--der-turm-soll-leuchten-schimmer-und-prestige-schein)):

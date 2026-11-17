@@ -2495,3 +2495,72 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   mit der Warnkarte verwandt. Wer die letzte Meldung im Vorbeigehen lesen
   wollte, verliert sie jetzt aus dem Blick – das ist der Preis des Wunsches, und
   der Zähler ist der Ersatz dafür.
+
+## IPL-0052 – Block 8: Ausgemistet – kein Funkgerät, keine Flagge, das Menü nach unten
+
+Der Betreiber hat das Feld gesehen und vier Dinge entschieden, nachdem
+[IPL-0051](PATCH-LOG.md#ipl-0051--block-8-der-funk-wird-zum-funkgerät-er-startet-geschlossen)
+das Funkgerät gebaut hatte:
+
+- **Das Funkgerät ist weg** – Handapparat, Log und Ungelesen-Zähler, das ganze
+  in [IPL-0051](PATCH-LOG.md#ipl-0051--block-8-der-funk-wird-zum-funkgerät-er-startet-geschlossen)
+  gebaute Menü. Begründung des Betreibers: der Schließen-Knopf stand zu weit
+  über das Fenster hinaus, und Handapparat samt Fenster lagen über dem
+  Kartennamen und den Spielmodi. *„Wir entfernen den Radio button und das gerade
+  gebaute Menü gänzlich – minimalismus is fine.“*
+- **Eine Meldung bleibt, von oben.** Was wichtig ist, flattert **unter der
+  Statusleiste** herein, bleibt kurz und geht von selbst wieder: Bosse, die den
+  Bunker treffen, gebrochenes Eis, beseitigte Trümmer, Schlamm – und alles, was
+  der Spieler angefordert und nicht bekommen hat. Sie nimmt **keine Tipps an**
+  (`pointer-events:none`) und hat keinen Knopf; ihre eigene Uhr (6 s) und eine
+  kurze Warteschlange (drei, „+N mehr“) bewegen sie weiter. Damit ist die alte
+  Warnkarte oben angekommen und die dauerhafte Funkzeile verschwunden.
+- **Die Statusleiste ist aufgeräumt:** der Erfahrungsbalken, das „10 / 300“ und
+  das „noch 290 bis Stufe 3“ sind weg – *„Sieht wild aus.“* Die Stufe selbst
+  bleibt stehen: eine Zahl, kein Charakterbogen. (Balken und Zahlen stehen
+  weiter in der Kommandozentrale und im Bericht, wo Platz dafür ist.)
+- **Die Flagge ist weg**, samt Popover „NEXT WAVE“: *„Man benutzt es eh nie.“*
+- **Der Menü-Knopf ist nach unten gewandert** in die Befehlsleiste, zwischen
+  TEMPO und EINSATZ BEENDEN, wo die anderen Bedienelemente sind – vorher saß er
+  oben rechts unter der Flagge, wo ihn niemand gesucht hat. Ausgeschrieben
+  „MENÜ“, wo die Leiste Platz hat; wird es eng (≤ 430 px, gemessen im Browser),
+  bleiben drei Striche übereinander. Das Panel öffnet sich nach **oben**, damit
+  es nicht unter dem eigenen Daumen sitzt.
+- **Warum die Meldung von oben und nicht in eine Ecke:** die unteren Ecken
+  gehören dem Fähigkeitsknopf, der Zoom-Spalte und der Befehlsleiste, und die
+  Mitte des Feldes ist der Ort, an dem gekämpft wird. `top` folgt der gemessenen
+  Unterkante der Statusleiste (`--map-hud-bottom`), damit die Meldung nie über
+  sie kriecht; die Boss-Karte rückt dafür um 28 px nach unten.
+- **Prüfungen:** `field-alert.mjs` → **`field-notice.mjs`** (die Karten-Ids
+  heißen `#fieldNotice*`); `tests/field-notice.test.mjs` **8/8** (Turnus mit
+  gehaltener Uhr, kein Knopf, Warteschlange neueste zuerst, Sprachwechsel,
+  fehlende Knoten, und die Vertragsliste: für genau diese Meldungen wird eine
+  Meldung erhoben). `tests/battle-xp-hud.test.mjs` neu geschrieben **5/5** – die
+  Stufe bleibt, die XP-Möbel sind weg, inklusive Wächter, dass sie nicht
+  zurückkommen. Der Prüfstand im echten Chromium (`interface-smoke.cjs`) misst
+  neu: Flagge, XP-Balken, Handapparat und Log sind **nicht mehr im Dokument**;
+  die Meldung hängt unter der Statusleiste, bleibt im Rahmen, ist eine Karte und
+  keine Fahne, ist zentriert und **lässt jeden Tipp durch**; der Menü-Knopf
+  sitzt zwischen TEMPO und EINSATZ BEENDEN, ist ein 44-px-Ziel, zeigt auf dem
+  Telefon den Burger (drei Striche) und auf dem Schreibtisch das Wort, und sein
+  Panel öffnet nach oben und bleibt im Rahmen. `wave-consensus.cjs` liest den
+  Kampfstatus wieder aus dem Live-Bereich (`textContent`, nicht `innerText` –
+  der Bereich ist mit Absicht unsichtbar), `multiplayer-fullscreen.cjs` wartet
+  auf `#fieldNoticeText`. Vollständiger serieller Lauf **1098 bestanden, 0
+  fehlgeschlagen**.
+- **Änderungen / Dateien:** `field-notice.mjs` (aus `field-alert.mjs`),
+  `field-radio.mjs` und `tests/field-radio.test.mjs` **entfernt**,
+  `index.html`, `field-command.css`, `style.css`, `interface-redesign.css`,
+  `game.js`, `battle-xp-hud.mjs`, `localization-de.mjs`,
+  `localization-static-de.mjs`, `tests/field-notice.test.mjs` (aus
+  `field-alert.test.mjs`), `tests/battle-xp-hud.test.mjs`,
+  `tests/ability-hud-placement.test.mjs`, `tests/ability-hud-ui.test.mjs`,
+  `tests/coop-ui.test.mjs`, `tests/solo-smoke.test.mjs`, elf Test-Harnesse,
+  `browser-tests/interface-smoke.cjs`, `browser-tests/wave-consensus.cjs`,
+  `browser-tests/multiplayer-fullscreen.cjs`,
+  `browser-tests/command-center.cjs`, `browser-tests/multiplayer-field.cjs`.
+- **Grenzen:** **Kein Mensch hat das Ergebnis gesehen.** Wer eine Meldung
+  verpasst, weil er gerade nicht hinschaut, hat keine zweite Chance mehr – es
+  gibt kein Log, in dem sie stünde. Das ist gewollt („minimalismus is fine“);
+  falls es zu wenig ist, ist der Zähler aus IPL-0051 die erste Idee, die wieder
+  hervorgeholt werden sollte.

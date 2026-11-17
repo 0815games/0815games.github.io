@@ -1,15 +1,18 @@
-// The soldier's confirmed experience, shown while they are deployed.
+// The soldier's level while they are deployed.
 //
-// Block 3 asks for the level, the current and the required XP, a bar and what
-// is still missing — DURING the mission, not only in the menu and the report.
+// It used to be a bar as well: current XP, required XP and what was still
+// missing, all in the status row over the battlefield. The operator's verdict
+// was that it looked wild, and they were right - a combat HUD is not a
+// character sheet. The level stays (it is one number, and it is the soldier);
+// the bar, the "10 / 300" and the "still 290 to level 2" are gone. The Command
+// Center and the report still show all of it, where there is room.
 //
-// The one hard rule is that this panel cannot guess. It has no way to be told
-// "add 120 XP": the only input is the profile the account has already
-// confirmed, so a save that has not come back cannot move the bar by a pixel
-// and cannot lift the level. That is exactly what the requirement means by
-// "unconfirmed saves must not fake a level-up" — a soldier who reads STUFE 4
-// on the field and STUFE 3 in the report has been lied to, and no retry queue
-// can take that back. The field radio reports saves on its own.
+// The hard rule is unchanged and is the reason this file exists: this panel
+// cannot guess. It has no way to be told "add 120 XP": the only input is the
+// profile the account has already confirmed, so a save that has not come back
+// cannot lift the level. That is exactly what "unconfirmed saves must not fake a
+// level-up" means - a soldier who reads STUFE 4 on the field and STUFE 3 in the
+// report has been lied to, and no retry queue can take that back.
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 
 export function createBattleXpHud(options){
@@ -25,20 +28,16 @@ export function createBattleXpHud(options){
     // when nothing is confirmed yet, so the tile is never empty and never shows
     // a number nobody has confirmed.
     render(fallbackLevel){
-      const profile=getProfile()||{},xp=profile.xp,box=node('levelXpBox');
+      const profile=getProfile()||{},xp=profile.xp;
       if(!Number.isSafeInteger(xp)||xp<0){
         const level=Number.isFinite(fallbackLevel)&&fallbackLevel>=1?Math.floor(fallbackLevel):1;
         write('level',String(level));
-        if(box)box.hidden=true;
         return null;
       }
       const progress=characterProgress(xp),remaining=progress.required-progress.current;
       write('level',String(progress.level));
-      write('levelXpText',tr('{current} / {required} XP',progress));
-      write('levelXpLeft',tr('{amount} XP to level {level}',{amount:remaining,level:progress.level+1}));
-      const bar=node('levelXpBar');
-      if(bar){bar.max=progress.required;bar.value=progress.current;}
-      if(box)box.hidden=false;
+      // `remaining` is no longer painted anywhere on the field; it stays in the
+      // return value because the report and the tests still ask for it.
       return {...progress,remaining};
     },
   };
