@@ -1795,3 +1795,10 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Zeile umbrechen kann – bleibt offen. Der Balken hinkt einer Welle hinterher,
   weil er nur Bestätigtes zeigt; das ist die gewollte Antwort, der Feldreport
   meldet das Speichern separat.
+- **Git / PR / Release (nachträglich):** Arbeitscommit `6b50c60` auf
+  `arena/19598e48-0815games-github-io`, gepusht; PR
+  [#300](https://github.com/0815games/0815games.github.io/pull/300)
+  „Block 3 / B: bestätigte EP im Kampf-HUD“ mit **23/23 Checks grün**,
+  gemergt 2026-11-17 04:53 UTC als `8672840`. Die Checks auf Main danach
+  **14/14 grün**. Kein Deployment, keine produktiven Rules-/Datenänderung,
+  kein Wartungsschalter. Die Veröffentlichung von Block 2 bleibt offen.
