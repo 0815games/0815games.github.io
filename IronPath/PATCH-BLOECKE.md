@@ -880,6 +880,17 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   meisten Aussetzer auf. Frühere Läufe dieser Welle schlugen aus anderen Gründen
   fehl (`database-rules`, z. B. `e8445a6`, `dd30eda`).
 
+### Popups
+
+- [ ] **Versions-Popups ebenfalls mittig.** Betreiberwunsch vom 2026-11-17,
+  nachdem [IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups)
+  Einladungen, Feldabstimmungen und die Feldentscheidung in die Mitte geholt
+  hatte. Betroffen ist `#versionNotice` (`.version-notice`): liegt fest **oben
+  rechts**, hat aber Knöpfe (`RETRY CHECK`, `DISMISS`) und unterbricht damit
+  genauso wie die anderen. Damit ist die Regel aus IPL-0043 zu schärfen: nicht
+  die Bezeichnung entscheidet, sondern ob ein Element **eine Handlung verlangt**.
+  Beim Bau also `popup-center.css` aufnehmen *und* dessen Kopfkommentar
+  berichtigen, der Hinweisbänder noch pauschal in der Ecke belässt.
 ### Sichtbarkeit im Feld
 
 - [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
