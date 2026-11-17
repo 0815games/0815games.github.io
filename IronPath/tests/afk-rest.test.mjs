@@ -78,3 +78,17 @@ test('dismissing the card clears the notice, so it cannot come back',()=>{
   // The sign-in screen itself is untouched: the card is on top of it, not instead.
   assert.match(source,/function display\(view\)/,'the views are still switched by display()');
 });
+
+// Found by the Continuous Integration, and by nothing else: the card is a
+// dialog, the release safety refuses to reload while any dialog is open, and the
+// card is shown at the end of the idle sign-out - which is precisely when the
+// version is checked again. The two deadlocked: the page could never take the
+// newer build until the player dismissed the picture, and the test that waits
+// for the reload timed out. The card holds no data, so it must not hold the
+// reload hostage.
+test('the card does not block an automatic reload',()=>{
+  const source=readFileSync(new URL('../account.js',import.meta.url),'utf8');
+  const guard=source.split('\n').find(row=>row.includes("dialog[open]"))||'';
+  assert.ok(guard,'the release safety still refuses to reload over an open dialog');
+  assert.match(guard,/dialog\[open\]:not\(#afkRestDialog\)/,'but the rest card is exempt: it survives a reload by design');
+});

@@ -552,7 +552,11 @@ function normalReleaseSafety(){
     [...releaseScoreReporters].some(reporter=>!reporter.isSettled())||
     savingSkills||savingArmory||deletingCharacter||deletionPending||workshopPrepare||
     workshopAccount.isBusy()||friendsUI.hasPending())return 'saving';
- if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]'))return 'dialog';
+ // The rest card is not a form: it holds nothing a reload could lose, and it
+ // comes back on its own after one, because the notice lives in sessionStorage.
+ // Blocking the reload on it would leave the player on an old build until they
+ // happened to dismiss the picture.
+ if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
  return 'ready';
 }
 releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
