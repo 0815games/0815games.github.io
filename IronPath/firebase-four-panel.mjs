@@ -2,11 +2,17 @@ import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-pa
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
 import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
-export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,promptCenter=null,onViewRequests=()=>{}}){
+import {rankForLevel,rankInsigniaSvg} from './rank-insignia.mjs?v=20261031-patch4';
+import {FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261031-patch4';
+export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,promptCenter=null,onViewRequests=()=>{},portraitFor=null}={}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
+  // Optional, and deliberately the caller's decision: WHOSE face may be shown
+  // and where it comes from is not this panel's business. Without it every card
+  // keeps the neutral placeholder.
+  if(portraitFor!==null&&typeof portraitFor!=='function')throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
-  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={},requestSerial=0,requestTokens=new Map(),closingParty=null;
+  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),portraitWatches=new Map(),cardImages=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={},requestSerial=0,requestTokens=new Map(),closingParty=null;
   const retainedParties=new Map();
   function clearRetained(){for(const marker of retainedParties.values())marker.stop?.();retainedParties.clear();}
   function rememberLockedGuest(active,current){
@@ -19,7 +25,7 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     try{marker.stop=active.watchHost(current.partyId,value=>{if(value!==current.hostId)forget();},()=>{});if(retainedParties.get(current.partyId)!==marker)marker.stop?.();}catch{/* Unknown state stays blocked until logout. */}
   }
   function status(message){lastStatus=message;$('fourPartyStatus').textContent=tr(message);}
-  function clear(){generation++;promptCenter?.reset('party-joins');for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requestTokens.clear();requests.replaceChildren();roster.replaceChildren();render();}
+  function clear(){generation++;promptCenter?.reset('party-joins');for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();for(const entry of portraitWatches.values())entry.stop?.();portraitWatches.clear();cardImages.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requestTokens.clear();requests.replaceChildren();roster.replaceChildren();render();}
   function render(){
     $('fourPartyEntry').hidden=!!party;$('fourPartyActive').hidden=!party;
     const host=party?.role==='host',pending=party?.role==='pending';
@@ -37,11 +43,59 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     if(signature!==renderedModes){renderedModes=signature;$('fourPartyMode').replaceChildren();for(const mode of modes){const option=document.createElement('option');option.value=mode;option.textContent=tr(({coop:'Co-op · defend together',versus:'1 vs 1 · survival', 'four-coop':'Large-map co-op · two roads','two-vs-two':'2 vs 2 · survival'})[mode]);$('fourPartyMode').append(option);}}
     if(selectedMode)$('fourPartyMode').value=selectedMode;$('fourPartyTeams').value=String(selectedTeams);
     $('fourPartyTeamsLabel').hidden=$('fourPartyTeams').hidden=selectedMode!=='two-vs-two';
-    roster.replaceChildren();if(!party||pending)return;
-    [party.hostId,slots.one,slots.two,slots.three].forEach((id,index)=>{
-      const item=document.createElement('li'),profile=id&&profiles[id],team=selectedMode==='two-vs-two'?` · Team ${teams[selectedTeams][index]===0?'A':'B'}`:'';
-      item.textContent=id?`${profile?.name||tr('Waiting for soldier')}${index===0?' · '+tr('Host'):''}${team}${' · '+tr(profile?'Ready':'Not ready')}`:tr('Slot {number} · Open',{number:index+1});roster.append(item);
-    });
+    roster.replaceChildren();cardImages.clear();
+    const ids=party&&!pending?[party.hostId,slots.one,slots.two,slots.three]:[];
+    for(const [index,id] of ids.entries())roster.append(buildCard(id,index));
+    syncPortraits(ids);
+  }
+  // One card per slot: portrait, name, rank, role and readiness. The roster is
+  // still a list for screen readers - only the presentation is a card.
+  function tag(className,text){const node=document.createElement('span');node.className=className;node.textContent=text;return node;}
+  function buildCard(id,index){
+   const item=document.createElement('li');
+   if(!id){item.className='party-card party-card-open';item.textContent=tr('Slot {number} · Open',{number:index+1});return item;}
+   const profile=profiles[id];
+   item.className='party-card';
+   const portrait=document.createElement('img');
+   // Decorative: the soldier's name is written next to it. Until a portrait
+   // arrives the placeholder stands in, and it also stays if none ever does.
+   portrait.className='party-card-portrait';portrait.alt='';portrait.src=FRIEND_PORTRAIT_PLACEHOLDER;
+   cardImages.set(id,portrait);
+   const body=document.createElement('div');body.className='party-card-body';
+   const name=document.createElement('span');name.className='party-card-name';name.textContent=profile?.name||tr('Waiting for soldier');
+   // The rank is derived from the published level and never stored: an unknown
+   // or missing level shows the lowest rank, it does not invent one.
+   const rank=rankForLevel(profile?.level),rankLine=document.createElement('span');
+   const insignia=document.createElement('span');insignia.className='party-card-insignia';insignia.setAttribute('aria-hidden','true');
+   insignia.innerHTML=rankInsigniaSvg(rank,{size:20});
+   rankLine.className='party-card-rank';rankLine.append(insignia,tag('party-card-rankname',tr(rank.name)));
+   const tags=document.createElement('span');tags.className='party-card-tags';
+   if(index===0)tags.append(tag('party-tag',tr('Host')));
+   if(selectedMode==='two-vs-two')tags.append(tag('party-tag',tr('Team {letter}',{letter:teams[selectedTeams][index]===0?'A':'B'})));
+   const state=document.createElement('span');
+   state.className=profile?'party-card-state is-ready':'party-card-state is-waiting';
+   state.textContent=tr(profile?'Ready':'Not ready');
+   body.append(name,rankLine,tags,state);
+   item.append(portrait,body);
+   const held=portraitWatches.get(id)?.url;if(held)portrait.src=held;
+   return item;
+  }
+  // One watch per soldier, kept across re-renders: a card is rebuilt on every
+  // status change, and restarting the watch each time would drop the face back
+  // to the placeholder on every tick.
+  function syncPortraits(ids){
+   if(typeof portraitFor!=='function')return;
+   for(const [id,entry] of portraitWatches)if(!ids.includes(id)){entry.stop?.();portraitWatches.delete(id);}
+   for(const id of ids){
+    if(!id||portraitWatches.has(id))continue;
+    const entry={stop:null,url:null};portraitWatches.set(id,entry);
+    try{entry.stop=portraitFor(id,url=>{if(portraitWatches.get(id)!==entry)return;entry.url=url;applyPortrait(id,url);});}
+    catch{portraitWatches.delete(id);continue;} // A failed watch stays failed; the placeholder is the honest answer.
+   }
+  }
+  function applyPortrait(id,url){
+   const image=cardImages.get(id);
+   if(image&&typeof url==='string'&&url)image.src=url;
   }
   function ready(){const ids=party?[party.hostId,slots.one,slots.two,slots.three].filter(Boolean):[];return !!config&&availablePartyModes(ids.length).includes(selectedMode)&&ids.every(id=>profiles[id]);}
   function addWatch(stop){unwatch.push(stop);}

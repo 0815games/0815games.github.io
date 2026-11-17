@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
 
 async function setup(onLeaveMatch){
- const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:'',children:[],append(...x){this.children.push(...x);},replaceChildren(...x){this.children=x;}});return nodes.get(id);};
+ const nodes=new Map(),el=id=>{if(!nodes.has(id))nodes.set(id,{hidden:false,disabled:false,textContent:'',value:'',className:'',src:'',alt:'',innerHTML:'',title:'',children:[],setAttribute(name,value){this[name]=value;},append(...x){this.children.push(...x);},replaceChildren(...x){this.children=x;}});return nodes.get(id);};
  const watchers={};let closes=0,creates=0;
  const watch=(name,initial)=>(_id,cb)=>{watchers[name]=cb;if(initial!==undefined)cb(initial);return()=>{};};
  const manifest={hostId:'alice',playerIds:['alice','bob'],mode:'coop',teams:[0,0,1,1],profiles:[{name:'Alice'},{name:'Bob'}]};

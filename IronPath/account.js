@@ -29,6 +29,7 @@ import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} 
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
 import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-patch4';
 import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-patch4';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261031-patch4';
 import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
 import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
 import {setupAuthForm} from './auth-form.mjs?v=20261031-patch4';
@@ -236,6 +237,15 @@ const partyPanel=createFourDigitPanel({document,createApproval:lobby=>createFour
 if(fourPlayerTest){
   fourPanel=createFourPlayerPanel({document,createLobby:()=>{if(partyPanel.isActive())throw Error('Leave the current party first');return createFirebaseFourLobby({db,auth,sdk:partySdk,recoveryEnabled:hostRecoveryEnabled});},
     getProfile:()=>({name:profile.name,gender:profile.gender,level:level(profile.xp),...(profile.skills?{skills:profile.skills}:{}),...(profile.armory?{loadout:encodeLoadout(profile.armory)}:{})}),
+    // WHOSE face a card may show is decided here, not in the panel: the local
+    // soldier's own portrait is already rendered, a party member's is watched
+    // live from the two profile fields the portrait rules permit. Until those
+    // rules are published that read is refused and the card keeps its
+    // placeholder - the honest answer, and the same one the friends list gives.
+    portraitFor:(id,onChange)=>{
+      if(id===auth.currentUser?.uid){onChange(recruitPortraitUrl());return ()=>{};}
+      return watchFriendPortrait({db,auth,sdk:partySdk,id,document,onChange});
+    },
     confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
     onRequestHostEnd:id=>gameControl?.requestHostPartyEnd(id)??false,
     canCompleteEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canClose(tick),

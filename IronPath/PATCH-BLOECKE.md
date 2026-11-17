@@ -96,7 +96,7 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | --- | --- | --- | --- |
 | 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Geräte-, Netzwechsel- und Langzeitabnahme; Umgang mit dauerhaft fehlenden Mitgliedern. | In Arbeit |
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Namensregel und Reservierung stehen ([A1](#a1-charaktername-darf-nicht-doppelt-vergeben-werden)); offen: Rules-Veröffentlichung, Altbestände, Porträt-Rules, Mehrgeräteabnahme. | In Arbeit |
-| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Karten, Kampf-HUD, Bericht mit Rang/Beförderung, „What’s Next“. | Geplant |
+| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Karten, Kampf-HUD, Bericht mit Rang/Beförderung, „What’s Next“. | In Arbeit |
 | 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Weitere Looks, einheitliche Anzeige und Speicherung auf allen Geräten. | Geplant |
 | 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, Punkterückgabe. | Geplant |
 | 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Große vertonte Mission mit Generalstimme und anschließender Menüführung. | Geplant |
