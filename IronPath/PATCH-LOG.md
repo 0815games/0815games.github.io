@@ -1853,3 +1853,63 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   aber nicht, ob er auf dem Feld gut aussieht – besonders nicht, wenn im späten
   Endless-Lauf viele Türme gleichzeitig bezahlbar sind und entsprechend viele
   Ringe leuchten. Das ist die offene Frage dieses Schritts.
+
+## IPL-0042 – Block 3 / D: After-Action Report mit Rang und Beförderung
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/4546501e-0815games-github-io`,
+  Basis `749f58b` (Main nach dem Merge von #301).
+- **Auftrag:** „Schreib es in Block 8 / to do after patches“ und „mach mir Block
+  3 weiter“. Der erste Teil legte **Block 8** in `PATCH-BLOECKE.md` neu an – als
+  Sammelstelle, nicht als achten Patch. Erster Eintrag dort: der nach dem Merge
+  von #301 einmal rote Job `test:party-recovery-browser`, den ich weder lesen
+  (Logs liegen außerhalb des Netzes des Arbeitsraums) noch erneut starten
+  (`gh run rerun` verweigert, kein `workflow_dispatch`) noch lokal nachstellen
+  konnte (kein Java, keine Emulatoren, Chromium blockiert). Derselbe Code war
+  auf dem Branch zweimal grün – **Einschätzung Flake, unbewiesen**. Der zweite
+  Teil ist dieser Eintrag: Block 3 / D.
+- **Was gebaut wurde:** Im After-Action Report steht neben `LEVEL 6` eine
+  Plakette mit Abzeichen und Rangname. Hat der Einsatz eine Schwelle
+  überschritten, erscheint darüber ein Banner: `BEFÖRDERT`, das Abzeichen, der
+  neue Rang und „Zuvor Gefreiter“. „What’s Next“ liegt jetzt im aufklappbaren
+  Bereich; was dort an **Ergebnissen** stand, blieb oben.
+- **Die Regel:** Ein Rang ist abgeleitet, nie gespeichert, nie verliehen – er
+  wird aus der Stufe gelesen, genau wie im Menü, im Dossier und im
+  Vier-Spieler-Panel. Für die Beförderung zählen ausschließlich **bestätigte**
+  Zahlen: die EP-Summe des gespeicherten Profils und die Stufen aus den Deltas
+  der abge schlossenen Saves dieses Berichts. Ein laufendes, noch nicht
+  bestätigtes Save kann niemanden befördern – dieselbe Disziplin wie die
+  EP-Kachel aus [IPL-0040](#ipl-0040--block-3--b-xp-im-kampf-hud).
+- **Eine Stufe ist noch keine Beförderung.** Von Stufe 4 auf 5 bleibt der
+  Soldat Gefreiter; der Bericht schweigt dann zum Rang, statt etwas zu feiern.
+  Erst eine überschrittene Schwelle zählt (Rekrut 1, Gefreiter 3, Feldwebel 6,
+  Leutnant 10, Hauptmann 15). Über dem letzten Rang wird kein nächster
+  angeboten.
+- **Umbau am Bericht:** Die Freischaltzeile („1 Stufe gewonnen · 1 neuer
+  Fähigkeitspunkt“, „Neue Verbesserungen: …“) war ein **Ergebnis**, kein
+  Ausblick – sie steht jetzt bei den bestätigten Belohnungen über dem
+  aufklappbaren Teil. Unten im aufklappbaren Bereich bleibt nur der Ausblick
+  (`nextSteps`): nächster Fähigkeitspunkt, nächste Ausrüstung, bezahlbare
+  Waffenkammer-Upgrades.
+- **Prüfungen:** `tests/report-rank.test.mjs` 5/5 (neu). Der mittlere Test
+  rendert den echten Bericht über das echte `game.js`: Bericht mit Profil von
+  3000 EP (Stufe 6) **ohne** Stufengewinn ⇒ `Sergeant` neben der Stufe, kein
+  Banner; derselbe Bericht **mit** einer gewonnenen Stufe ⇒ Banner sichtbar,
+  „Zuvor Private.“; Bericht mit 2900 EP (Stufe 5) und einer Stufe ⇒ `Private`,
+  Banner bleibt aus. Der letzte Test liest `index.html` und prüft die
+  Umstellung: „What’s Next“ im `<details>`, Freischaltungen, Fortschritt und
+  Beförderung davor. Vollständiger serieller Lauf **1055 bestanden,
+  0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `report-promotion.mjs` und
+  `tests/report-rank.test.mjs` (neu), `game.js` (Rangzeile und Banner),
+  `index.html` (Bericht umgestellt), `results-debrief.css` (Plakette, Banner,
+  Freischaltzeile; Banner auch in der Regel für reduzierte Bewegung),
+  `localization-results-de.mjs` (`BEFÖRDERT`, `Zuvor {rank}.`) mit angehobener
+  Cache-Welle in `language.mjs`, `PATCH-BLOECKE.md` (Block 3 / D abgehakt,
+  Block 8 neu). Neun Test-Harnesse, die `game.js` über eine Daten-URL laden,
+  kennen `report-promotion.mjs` und `rank-insignia.mjs` in ihrer Liste.
+- **Grenzen:** Kein Mensch hat es gesehen, und diesmal fehlt mehr als der
+  Blick: die Plakette sitzt in einer Zeile, die auf dem Telefon schon mit
+  „SOLDATEN-FORTSCHRITT“ und „STUFE 6“ gefüllt ist. Dass sie dort gut umbricht,
+  ist geraten, nicht geprüft – im Gegensatz zur Zeilenprüfung des Betreibers
+  bei IPL-0040.

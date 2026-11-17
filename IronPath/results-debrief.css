@@ -36,6 +36,15 @@
 #runResults .debrief-progress-heading{display:flex;justify-content:space-between;gap:8px;color:#e8d49d;font-size:.7rem;letter-spacing:.1em;font-weight:800}
 #runResults .debrief-progress progress{display:block;width:100%;height:10px;margin:10px 0 4px;accent-color:#d3b56f}
 #runResults .debrief-progress p{font-size:.74rem;color:#bfceb8;margin:0}
+#runResults .debrief-progress-standing{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap;justify-content:flex-end}
+#runResults .debrief-rank{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border:1px solid #6d6144;background:#22331f;color:#f2dfae;text-transform:uppercase}
+#runResults .debrief-rank-insignia{display:inline-flex;align-items:center}
+#runResults .debrief-rank-insignia svg{display:block}
+#runResults .debrief-promotion{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;border:1px solid #c8a765;background:linear-gradient(90deg,#3b3520,#1d3025);animation:debrief-reveal .35s ease-out both}
+#runResults .debrief-promotion-kicker{font-size:.66rem;letter-spacing:.2em;font-weight:800;color:#1d2a1c;background:#dbbe76;padding:3px 7px}
+#runResults .debrief-promotion strong{color:#f8ecc6;font:700 1.05rem/1 Georgia,serif;letter-spacing:.06em;text-transform:uppercase}
+#runResults .debrief-promotion-from{font-size:.7rem;color:#c9d3c2}
+#runResults .debrief-unlocks{font-size:.78rem;color:#d5e0cc;line-height:1.4;margin:10px 0}
 #runResults .debrief-details{margin-top:18px;border-top:1px solid #53634d;border-bottom:1px solid #53634d;padding:12px 0}
 #runResults .debrief-details summary{cursor:pointer;color:#e9d8a4;font-size:.73rem;letter-spacing:.08em;font-weight:800}
 #runResults .results-grid{margin-top:12px}
@@ -45,4 +54,4 @@
 #runResults .results-actions button[hidden],#runResults [hidden]{display:none!important}
 @keyframes debrief-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){#runResults.results-dialog{width:96vw;max-height:92dvh}#runResults .debrief-hero{min-height:165px;background-position:62% center}#runResults .debrief-hero-copy{padding:25px 18px 19px;max-width:85%}#runResults .debrief-body{padding:0 16px 20px}#runResults .debrief-stat{padding:11px 8px;min-height:98px}#runResults .debrief-stat>span:last-child{font-size:.59rem}#runResults .debrief-reward{padding:10px;gap:8px}#runResults .debrief-reward-symbol{width:32px;height:32px}#runResults .results-actions button{flex:1 1 100%}}
-@media(prefers-reduced-motion:reduce){#runResults .debrief-reward,#runResults .debrief-equipment{animation:none}}
+@media(prefers-reduced-motion:reduce){#runResults .debrief-reward,#runResults .debrief-equipment,#runResults .debrief-promotion{animation:none}}

@@ -386,9 +386,18 @@ entstand, ist nicht sicher belegt.
   SOLDIER trägt Stufe, `aktuell / benötigt EP`, Balken und Restmenge; Quelle ist
   ausschließlich das bestätigte Profil, es gibt keinen Weg, ihr eine Welle
   zuzuflüstern.
-- [ ] **After-Action Report:** Rangname und Abzeichen neben dem Level, bei
+- [x] **After-Action Report:** Rangname und Abzeichen neben dem Level, bei
   Beförderung den neuen Rang zeigen. „What’s Next“ in den aufklappbaren
-  Reportbereich verschieben, wichtige Ergebnisse oben lassen.
+  Reportbereich verschieben, wichtige Ergebnisse oben lassen. Gebaut mit
+  [PR #302](https://github.com/0815games/0815games.github.io/pull/302)
+  ([IPL-0042](PATCH-LOG.md#ipl-0042--block-3--d-after-action-report)): neben
+  `LEVEL 6` steht eine Plakette mit Abzeichen und Rangname; bei einer echten
+  Beförderung kommt ein Banner mit dem **neuen** Rang darüber. Eine Stufe ist
+  noch keine Beförderung – erst eine überschrittene Schwelle
+  (Rekrut 1, Gefreiter 3, Feldwebel 6, Leutnant 10, Hauptmann 15) zählt.
+  „What’s Next“ liegt jetzt im aufklappbaren Bereich; die Ergebnisse, die dort
+  standen (gewonnene Stufen, neue Freischaltungen), blieben oben bei den
+  bestätigten Belohnungen.
 - [ ] **Zusatzwünsche:** Schussdarstellung und Fähigkeits-HUD weiter verbessern
   sowie Multiplayer-Anfragen mittig anzeigen (Details B2 und D). Vorhandene
   Schuss- und Fähigkeitsanzeigen sind dort gesondert aufgeführt.
