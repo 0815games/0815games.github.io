@@ -4,6 +4,7 @@ import {specializationRank} from './tower-specialization.mjs?v=20261112-kits1';
 import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261031-patch4';
 import {ENEMY_INTEL} from './combat.mjs?v=20261031-finale1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
+import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -735,7 +736,10 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     }
     enemy(ctx,e,reducedMotion,onSpritesReady,heading,bank,Number.isFinite(storyTime)?storyTime:0,theme==='junction');ctx.restore();
   }
-  if(!state.ended)for(const s of state.shots)drawShot(ctx,s,shotAge,reducedMotion);
+  // A busy field fires more shots than it can show. The oldest are left out of
+  // the paint - they still happened, they still hit, they simply do not lie
+  // across the battlefield any more than the newest two dozen do.
+  if(!state.ended)for(const s of shotsToDraw(state.shots))drawShot(ctx,s,shotAge,reducedMotion,renderScale);
   if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');
     // V3 deaths: embers fly outward in the emblem's metals and a smoke wisp
     // rises off the wreck - a kill reads as a strike, not a popped bubble.
@@ -756,21 +760,50 @@ function burst(ctx,x,y,r,fill){
 }
 // The gold field star - the emblem's heart - as an FX flash shape.
 function star(ctx,x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,d=i%2?r*.45:r;const px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();}
-function drawShot(ctx,s,age,reduced){
-  const life=(Number.isFinite(s.life)?s.life:.12)-age;if(life<=0)return;
-  const duration=s.duration||.12,progress=1-Math.max(0,Math.min(1,life/duration));
-  // V3: the tracer casts its own thin shadow on the ground, and the impact
-  // ring is polished silver - the shot reads as a struck spark, not a noodle.
-  ctx.save();if(s.kind===3)ctx.setLineDash([9,5]);
-  ctx.globalAlpha=.22;line(ctx,[[s.x+2,s.y+3],[s.tx+2,s.ty+3]],'#0c120e',s.kind===1?6:4);ctx.globalAlpha=1;
-  line(ctx,[[s.x,s.y],[s.tx,s.ty]],ink,s.kind===1?6:4);line(ctx,[[s.x,s.y],[s.tx,s.ty]],s.color||'#ffec9e',s.kind===1?4:2);ctx.restore();
+function drawShot(ctx,s,age,reduced,renderScale=1){
+  // A short streak that RUNS from the barrel to the target, a flash where it
+  // leaves, a mark where it lands. The whole line at once is what buried the
+  // field before: enemies, roads and warnings disappeared behind it.
+  const t=shotTrace(s,age,{renderScale,reducedMotion:reduced});if(!t)return;
+  ctx.save();ctx.globalAlpha=.2*t.alpha;line(ctx,[[t.tail.x+2,t.tail.y+3],[t.head.x+2,t.head.y+3]],'#0c120e',t.ink);
+  ctx.globalAlpha=t.alpha;
+  line(ctx,[[t.tail.x,t.tail.y],[t.head.x,t.head.y]],ink,t.ink);
+  line(ctx,[[t.tail.x,t.tail.y],[t.head.x,t.head.y]],t.colour,t.core);
+  // The bright tip says which way it is going - a streak without a head is a
+  // scratch on the screen, not a shot.
+  ctx.beginPath();ctx.arc(t.head.x,t.head.y,t.tip,0,Math.PI*2);ctx.fillStyle='#fff8e2';ctx.fill();
+  ctx.restore();
   if(reduced)return;
-  const scale=s.kind===1?1.35:s.kind===3?.75:1;
-  // V3: the first beat of a shot is a muzzle flash at the barrel - a gold
-  // spark in a silver ring, right where the tracer leaves the tower.
-  if(progress<.22){star(ctx,s.x,s.y,(5+9*(1-progress/.22))*scale);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=1.6;ctx.stroke();}
-  if(progress<.65)burst(ctx,s.x,s.y,(7+(1-progress)*4)*scale,'#ffe39b');
-  if(progress>.12){ctx.save();ctx.globalAlpha=Math.max(.2,1-progress*.65);ctx.beginPath();ctx.arc(s.tx,s.ty,(5+progress*9)*scale,0,Math.PI*2);ctx.strokeStyle=s.kind===1?'#f0aa72':'#d9dde1';ctx.lineWidth=2;ctx.stroke();ctx.restore();burst(ctx,s.tx,s.ty,(5+progress*8)*scale,s.kind===1?'#e89964':'#f6d787');}
+  ctx.save();
+  if(t.flash){
+    ctx.globalAlpha=Math.max(0,t.flash.alpha);
+    star(ctx,t.x,t.y,t.flash.r);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=1.6;ctx.stroke();
+    burst(ctx,t.x,t.y,t.flash.r*.8,'#ffe39b');
+  }
+  if(t.impact){
+    ctx.globalAlpha=Math.max(0,t.impact.alpha);
+    if(t.style==='cannon'){
+      // A shell lands heavy: a warm ring, then the struck spark.
+      ctx.beginPath();ctx.arc(t.tx,t.ty,t.impact.r,0,Math.PI*2);ctx.strokeStyle='#f0aa72';ctx.lineWidth=2.4;ctx.stroke();
+      burst(ctx,t.tx,t.ty,t.impact.r*.6,'#e89964');
+    }else if(t.style==='flak'){
+      // Flak opens in the air: two rings, the outer one thinner and fainter.
+      ctx.beginPath();ctx.arc(t.tx,t.ty,t.impact.r,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
+      ctx.globalAlpha=Math.max(0,t.impact.alpha*.6);
+      ctx.beginPath();ctx.arc(t.tx,t.ty,t.impact.r*.55,0,Math.PI*2);ctx.strokeStyle='#f6d787';ctx.lineWidth=1.6;ctx.stroke();
+      ctx.globalAlpha=Math.max(0,t.impact.alpha);
+      burst(ctx,t.tx,t.ty,t.impact.r*.45,'#f6d787');
+    }else if(t.style==='sniper'){
+      // A crack: a small hard ring and four short spokes where it hit.
+      ctx.beginPath();ctx.arc(t.tx,t.ty,t.impact.r*.8,0,Math.PI*2);ctx.strokeStyle='#e6e0f2';ctx.lineWidth=1.6;ctx.stroke();
+      const spokes=t.impact.r*1.5;
+      for(let i=0;i<4;i++){const a=Math.PI/4+i*Math.PI/2;line(ctx,[[t.tx-Math.cos(a)*spokes*.35,t.ty-Math.sin(a)*spokes*.35],[t.tx+Math.cos(a)*spokes*.9,t.ty+Math.sin(a)*spokes*.9]],'#e6e0f2',1.4);}
+    }else{
+      ctx.beginPath();ctx.arc(t.tx,t.ty,t.impact.r,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
+      burst(ctx,t.tx,t.ty,t.impact.r*.55,'#f6d787');
+    }
+  }
+  ctx.restore();
 }
 function drawAbility(ctx,e){
   const t=e.progress,fade=Math.max(0,1-t);ctx.save();ctx.globalAlpha=fade;

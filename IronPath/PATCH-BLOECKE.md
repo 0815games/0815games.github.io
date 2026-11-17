@@ -415,7 +415,12 @@ entstand, ist nicht sicher belegt.
   - [x] **Fähigkeits-HUD (D2):** gebaut mit
     [PR #304](https://github.com/0815games/0815games.github.io/pull/304)
     ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
-  - [ ] **Schussdarstellung (D1)** offen.
+  - [x] **Schussdarstellung (D1):** gebaut mit
+    [PR #305](https://github.com/0815games/0815games.github.io/pull/305)
+    ([IPL-0045](PATCH-LOG.md#ipl-0045--block-3--d1-schüsse-als-spur-statt-als-linie)):
+    statt der ganzen Linie eine kurze Spur, die läuft; jede Waffe mit eigener
+    Handschrift; höchstens 24 Spuren gleichzeitig. Die **Datenmenge** der
+    Schüsse blieb unangetastet – sie ist Sache der Simulation, nicht des Malers.
 
 ### 4. Charaktererstellung und Avatare – genehmigte Überarbeitung bereits live
 
@@ -783,9 +788,37 @@ und Live-Abnahme bleiben offen.
   Treffereffekte (`cartoon-art.mjs`) sowie gesonderte clientseitige Effekte;
   reduzierte Bewegung wird berücksichtigt. Die konkrete neue Lesbarkeits- und
   Qualitätsanforderung unten ist damit noch nicht vollständig abgenommen.
-- [ ] Soldaten- und Turmschüsse visuell überarbeiten: kürzere, gerichtete Spuren statt dominanter Dauerlinien, gut erkennbare Mündungsblitze und Treffer. MG, Kanone, Flak und Scharfschütze sollen sich in Form/Timing nachvollziehbar unterscheiden und zum bestehenden illustrierten Stil passen.
-- [ ] Viele gleichzeitige Schüsse dürfen Gegner, Wege und Warnungen nicht verdecken. Bei Zoom, auf kleinen Handys und im Mehrspieler-Snapshot sollen sie konsistent sichtbar bleiben; Effekte begrenzen, damit Bildrate und Datenmenge nicht ausufern. Reduzierte Bewegung, Blendung und Kontrast beachten.
-- [ ] Zunächst **nur Darstellung** ändern: Treffer, Schaden, Reichweite, Schussfrequenz und Belohnungen bleiben unverändert. Die Darstellung darf keine zusätzlichen oder nachträglichen Treffer erzeugen.
+- [x] **Überarbeitet** (gebaut mit [PR #305](https://github.com/0815games/0815games.github.io/pull/305), [IPL-0045](PATCH-LOG.md#ipl-0045--block-3--d1-schüsse-als-spur-statt-als-linie)):
+  statt der ganzen Linie eine **kurze Spur, die läuft**: sie verlässt den Lauf,
+  läuft die Linie entlang und ist wieder weg. Jede Waffe hat ihre Handschrift:
+
+  | Waffe | Spur | Gewicht | Timing | Einschlag |
+  | --- | --- | --- | --- | --- |
+  | MG | kurz, leicht | dünn | schnell | kleiner Ring |
+  | Kanone | kurz, dick | schwer | langsam | schwerer, warmer Ring |
+  | Flak | mittel | mittel | mittel | **platzt doppelt** in der Luft |
+  | Scharfschütze | **lang, dünn** | hauchdünn | fast sofort | heller Ring mit Kreuz |
+  | Soldat | kurz, hell | leicht | flink | kleiner Ring |
+
+  Abgang und Einschlag sind **zwei Schläge**: der Mündungsblitz ist erloschen,
+  bevor das Geschoss ankommt. Ein Prüfschritt erzwingt das – er hat den
+  Scharfschützen erwischt, dessen Blitz noch brannte, wenn die Kugel längst saß.
+- [x] **Verdecken begrenzt:** höchstens 24 Spuren gleichzeitig, die neuesten;
+  die übrigen sind nicht gemalt, sie haben trotzdem getroffen. Die Spur bleibt
+  beim Zoomen und auf dem kleinen Telefon sichtbar (Ausgleich, aber
+  **begrenzt**, damit sie beim Herauszoomen nicht über das Feld wächst), und
+  die Blitze sind gedimmt, damit ein volles Feld nicht blendet.
+- [ ] **Datenmenge offen:** Wie viele Schüsse über das Netz gehen, ist Sache der
+  Simulation, nicht des Malers – und hier sollte zunächst **nur die Darstellung**
+  wechseln. Notiert, nicht angefasst.
+- [x] **Nur Darstellung:** Treffer, Schaden, Reichweite, Schussfrequenz und
+  Belohnungen sind unberührt; `shot-tracers.mjs` schreibt nichts in den
+  Schuss zurück (Prüfschritt). Keine zusätzlichen und keine nachträglichen
+  Treffer.
+- [ ] **Abnahme offen:** Menschenaugen auf allen vier Türmen plus Soldat, bei
+  vielen gleichzeitigen Schüssen, gezoomt, auf dem Telefon, im Mehrspieler und
+  mit reduzierter Bewegung. **Niemand hat es gesehen** – gerechnet und
+  geprüft, nicht beurteilt.
 
 ### D2. Fähigkeit als Teil des Gameflows
 
