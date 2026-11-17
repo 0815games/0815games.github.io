@@ -2341,3 +2341,75 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Prüfung belegen konnte. Die übrigen offenen Punkte sind mit Absicht offen
   geblieben: sie verlangen echte Geräte, produktive Dienste oder Altbestände –
   nichts davon liegt in diesem Arbeitsraum.
+
+## IPL-0050 – Block 8: Der Funk bekommt eine zweite Stimme (Warnungen statt nur Meldungen)
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/8763f0d7-0815games-github-io`,
+  Basis `4ce014d4` (Main nach den Merges von #305, #306 und #307).
+- **Auftrag:** „Feldmeldungen als Popup“, auf die Rückfrage **eingeschränkt auf
+  das Wichtige**: *„Ins Popup wandern nur Meldungen, die eine Entscheidung oder
+  eine Warnung sind. Der Rest bleibt in der Zeile, wie heute.“*
+- **Erste Feststellung:** die **Entscheidungen** sind längst Popups. Wellen- und
+  2×-Abstimmungen sowie die Feldentscheidung stehen mittig
+  ([IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups),
+  [IPL-0046](PATCH-LOG.md#ipl-0046--block-8--was-ein-element-tut-nicht-wie-es-heißt)).
+  Zu bauen blieben also die **Warnungen**.
+- **Was eine Warnung ist, in einem Satz:** der Spieler hat um etwas gebeten und
+  es nicht bekommen, oder auf dem Feld ist etwas schiefgegangen. Also: jede
+  Ablehnung der Simulation (`result.reason`), eine unmögliche oder abgelaufene
+  Handlung (keine Fähigkeit gewählt, nicht genug Vorräte, Bauplatz belegt oder
+  verfallen, fremde Lane, offener Kampagnenspeicher) und Schaden am Bunker,
+  brechendes Eis, verlorener Einsatz. Der Rest – „Held bewegt sich“,
+  „Welle gestartet“, Funde, Belohnungen – bleibt Funkverkehr in der Zeile.
+- **Zwei Entwürfe, und der erste war falsch.** Zuerst nahm die Warnung den Platz
+  des Funkkastens selbst ein. Das hat zwei Prüfungen zerschlagen, und beide
+  hatten recht: eine Warnung, die stehen bleibt, **verdeckt den laufenden Funk**
+  – „Einsatz beendet“ verschwand hinter „Wähle eine Fähigkeit“. Jetzt hat die
+  Warnung **ihre eigene Karte über dem Funk**: dieselbe Breite, wächst nach oben,
+  und die Zeile darunter redet weiter.
+- **Der zweite Fehler war die Schlange.** Sie war falsch herum: die **älteste**
+  Warnung stand vorn, die neueste wartete dahinter – ausgerechnet die Meldung,
+  die sagt, was gerade schiefging. Jetzt steht die **neueste** auf der Karte und
+  die verdrängte wartet einen Tipp dahinter (`+N`); dreimal tippen führt durch
+  die letzten drei. Ein Bunkertreffer geht also nicht verloren, nur weil danach
+  ein Upgrade abgelehnt wurde.
+- **Warum nicht mittig:** eine Warnung unterbricht das Spiel nicht, sie meldet
+  nur etwas. Die Mitte des Feldes ist der Ort, an dem gekämpft wird – der
+  Betreiber hat das beim Fähigkeits-HUD deutlich gesagt
+  ([IPL-0047](PATCH-LOG.md#ipl-0047--korrektur-das-fähigkeits-hud-gehört-in-die-daumennähe-nicht-in-die-feldmitte)).
+  Die Karte liegt in der Ecke, in die das Auge ohnehin geht, und sie teilt die
+  Breite des Funkkastens – also genau die Geometrie, gegen die der
+  Fähigkeitsknopf und die Zoomspalte schon vermessen sind.
+- **Ehrliche Grenzen:** (1) **Kein Mensch hat es gesehen.** (2) Die Karte wird
+  **nicht** weggeklickt, und sie hat **keinen Knopf**. Sie ist eine
+  Bildunterschrift wie der Funk darunter: jeder Tipp geht durch sie hindurch aufs
+  Feld. Chromium hat das in zwei Schritten erzwungen – erst antwortete der Knopf
+  nicht (der Funkkasten ist mit Absicht durchlässig), dann, zum Antworten
+  gebracht, schluckte er einen Tipp, der einem Bauplatz galt. Ein Knopf über dem
+  Schlachtfeld ist eine Wand, egal wie klein. Stattdessen zeigt jede Warnung sich
+  acht Sekunden, dann folgt die nächste. (3) Ein Screenreader wird beim
+  Erscheinen **nicht** unterbrochen (`aria-live` bleibt `polite`); die Karte
+  bleibt stehen, also geht nichts verloren. (4) Die Warnung wird nicht
+  gespeichert und nicht übertragen: sie gilt für genau einen Bildschirm.
+- **Prüfungen:** `tests/field-alert.test.mjs` neu (8/8): die Karte erscheint und
+  bleibt; die neueste steht vorn und die verdrängte einen Tipp dahinter; die
+  Historie ist kurz (drei); Sprachwechsel liest neu; ein Feld ohne Karte ist kein
+  kaputtes Feld; und die **Liste der Warnungen ist festgenagelt** – samt der
+  Zusage, dass gewöhnlicher Funkverkehr in der Zeile bleibt. Drei Bestandstests
+  (`coop-ui`, `solo-smoke`, `ability-hud-ui`) lesen ihre Ablehnungen jetzt von
+  der Karte statt aus der Zeile – nicht abgeschwächt, sondern auf das neue
+  Ziel gerichtet. `interface-smoke.cjs` misst im echten Chromium nach, dass die
+  Karte über dem Funk liegt, dessen Breite hält, im Rahmen bleibt, dem
+  Fähigkeitsknopf aus dem Weg geht und erreichbar ist. Vollständiger serieller
+  Lauf **1099 bestanden, 0 fehlgeschlagen**.
+- **Änderungen / Dateien:** `field-alert.mjs` (neu), `index.html` (Karte),
+  `field-command.css` (Karte und ihr Gesicht), `game.js` (`warn()` neben
+  `notice()`, Einordnung der Meldungen, Aufräumen bei Einsatzende und neuem
+  Lauf), `localization-de.mjs` und `localization-battle-de.mjs` (WARNUNG,
+  SCHLIESSEN, „+N weitere“), `tests/field-alert.test.mjs` (neu), elf
+  Test-Harnesse (das neue Modul in ihrer Umleitungsliste),
+  `PATCH-BLOECKE.md` (Punkt geteilt, Teil 1 abgehakt).
+- **Offen geblieben:** Ob der Funk künftig **minimiert** startet, ist nicht
+  entschieden. Das ist eine Frage an den Betreiber, keine, die ich mir selbst
+  beantworten sollte.

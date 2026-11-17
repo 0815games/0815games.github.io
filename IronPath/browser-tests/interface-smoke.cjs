@@ -183,6 +183,40 @@ const fs = require('node:fs');
       const radio=await page.locator('.battle-foot').boundingBox();
       const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);
       assert.equal(overRadio,false,`${name}: the ability HUD leaves the field radio alone (hud ${JSON.stringify(ability)} vs radio ${JSON.stringify(radio)})`);
+      // The radio's other voice: a warning card, floated above the radio. It is
+      // not centred - it must not stand where the fighting is - and it takes the
+      // radio's own width, which is the width every corner rule here is already
+      // pinned against. Measured, because a card that overlaps the ability
+      // button or the radio is exactly the kind of thing nobody notices until
+      // it is played.
+      await page.evaluate(()=>{
+        document.querySelector('#radioAlert').hidden=false;
+        document.querySelector('#radioAlertText').textContent='Bomber struck the bunker! −2.5 health.';
+        document.querySelector('#radioAlertMore').hidden=false;
+        document.querySelector('#radioAlertMore').textContent='+2 more';
+      });
+      const warning=await page.locator('#radioAlert').boundingBox();
+      assert.ok(warning.y+warning.height<=radio.y+1,`${name}: the warning floats above the radio, not across it (warning ${JSON.stringify(warning)} vs radio ${JSON.stringify(radio)})`);
+      assert.ok(warning.x>=radio.x-1&&warning.x+warning.width<=radio.x+radio.width+1,`${name}: it keeps the radio's width, so the corner rules still hold`);
+      assert.ok(warning.width<=width*0.7,`${name}: the warning is a card, not a banner (${Math.round(warning.width)}px of ${width})`);
+      assert.ok(warning.x>=-1&&warning.y>=-1,`${name}: and it stays inside the frame`);
+      const overAbility=!(warning.x+warning.width<=ability.x||ability.x+ability.width<=warning.x||warning.y+warning.height<=ability.y||ability.y+ability.height<=warning.y);
+      assert.equal(overAbility,false,`${name}: the warning keeps out of the ability button's corner (warning ${JSON.stringify(warning)} vs hud ${JSON.stringify(ability)})`);
+      // The card is a caption, not a wall: a tap anywhere on it must reach the
+      // ground beneath, or a player cannot build under a message. There is no
+      // dismiss button for exactly this reason - Chromium found the button twice,
+      // first not answering, then swallowing a tap meant for a build pad.
+      const throughCard=await page.evaluate(()=>{
+        const card=document.querySelector('#radioAlert').getBoundingClientRect();
+        const points=[[4,0.5],[0.5,0.5],[card.width-4,0.5]].map(([rx,ry])=>[Math.round(card.left+card.width*rx),Math.round(card.top+card.height*ry)]);
+        return points.map(([x,y])=>{const hit=document.elementFromPoint(x,y);return {x,y,inside:!!(hit&&hit.closest('#radioAlert')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};});
+      });
+      for(const probe of throughCard)
+        assert.equal(probe.inside,false,`${name}: a tap through the warning reaches the field, not the card (hit ${probe.at} at ${probe.x},${probe.y})`);
+      // (That it steps aside on its own is a matter of the clock, and the clock
+      // is checked in `tests/field-alert.test.mjs`, where it can be held. Here
+      // the card was opened by hand, so no turn is running.)
+      await page.evaluate(()=>{document.querySelector('#radioAlert').hidden=true;document.querySelector('#radioAlertMore').hidden=true;});
       // Two more popups live on the field itself: a wave vote and a mission
       // decision with choices. Both interrupt, so both take the middle - the
       // same place the request centre and the field-upgrade card already use.

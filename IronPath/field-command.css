@@ -42,6 +42,34 @@
 #gameView .map-frame .story-decision{bottom:80px;z-index:5;max-width:min(360px,calc(100% - 24px))}
 #gameView .battle-foot{display:flex;justify-content:flex-start;align-items:center;gap:10px;min-height:44px;padding:8px 14px;background:#142a22;border-top:1px solid #617a66;color:#e6e6ce;line-height:1.35}
 #gameView .battle-foot .radio-label{display:block;flex:none;color:#e5cb87;font-size:9px;font-weight:700;letter-spacing:.15em;border-right:1px solid #758872;padding-right:10px}
+/* The radio has two voices and only one box. This is the other one: a warning
+   floats directly ABOVE the radio, spans exactly its width and grows upward, so
+   it cannot collide with anything the radio already clears - the ability button
+   and the zoom column live in the corner on the right, and their geometry is
+   pinned against the radio. It is not centred like a vote or an invitation: it
+   does not ask the player to stop playing, and the middle of the field is where
+   the playing happens.
+   It does NOT take the radio's place: the line below keeps speaking, because a
+   warning about a refused upgrade must not hide "Run ended".
+   It takes no taps at all, and there is no dismiss button: the radio box is
+   click-through so a tap reaches the ground beneath it, and a warning must do
+   the same. Chromium found both halves - a button that did not answer, then a
+   button that swallowed a tap meant for a build pad. The clock moves the queue
+   on instead. */
+.radio-alert{position:absolute;left:0;right:0;bottom:100%;z-index:8;display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:6px 9px;background:#3a2116;border:1px solid #e0a95c;color:#f7e6cd;font-size:11px;box-shadow:0 0 0 1px #e0a95c59,0 10px 26px #0009;
+  pointer-events:none}
+.radio-alert[hidden]{display:none}
+.radio-alert::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#e0a95c}
+.radio-alert-label{flex:none;color:#ffcf8a;font-size:9px;font-weight:700;letter-spacing:.15em}
+.radio-alert-text{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.radio-alert-more{flex:none;font-size:9px;font-weight:700;letter-spacing:.12em;color:#ffcf8a;background:#e0a95c1f;border:1px solid #e0a95c66;padding:2px 5px}
+/* The radio box - and the warning with it - is click-through on purpose: it is a
+   caption over the field, and a tap where it floats must reach the ground
+   beneath. A field that cannot be tapped because a message is showing is worse
+   than a message. Only the dismiss button takes taps for itself. Both halves were
+   found in Chromium: without `pointer-events` on the button the dismiss hit the
+   canvas, and with it on the whole card the card swallowed a build pad. */
+@media(prefers-reduced-motion:reduce){.radio-alert{box-shadow:none}}
 #gameView .battle-foot #message{font-size:12px;letter-spacing:normal}
 #gameView .layout>aside{margin-top:8px}
 #gameView .help{background:#1a3027;border:1px solid #627e69;border-radius:4px}

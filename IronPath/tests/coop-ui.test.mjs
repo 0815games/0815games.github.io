@@ -11,7 +11,7 @@ const documentHandlers={},windowHandlers={};globalThis.document={hasFocus:()=>tr
 globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,confirm:()=>true,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(type,fn){(windowHandlers[type]??=[]).push(fn);}};
 globalThis.requestAnimationFrame=fn=>{frame=fn;};
 let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','field-alert.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
 source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
 const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const match=createMatch([createPlayer('alice',{name:'Alice',gender:'female'}),createPlayer('bob',{name:'Bob',gender:'male'})]);let opts,awards=0,stopCalled=false,commands=[];match.hostId='alice';
@@ -37,7 +37,10 @@ match.players.bob.skills.active='recon';opts.onSnapshot({match:structuredClone(m
 opts.onStatus(false);opts.onStatus(true);drawnText.length=0;opts.onSnapshot({match:structuredClone(match)});frame(performance.now()+200);assert.ok(!drawnText.includes('SUPPRESSION'),'reconnect does not replay an old ability');await new Promise(resolve=>setTimeout(resolve,0));
 // Another player's active reservation prevents opening the build sheet.
 assert.equal(applyCommand(match,'bob',{type:'reserveBuild',pad:0}).ok,true);opts.onSnapshot({match:structuredClone(match)});
-await el('game').onclick({clientX:105,clientY:210});assert.match(el('message').textContent,/Another player/);assert.equal(el('radialMenu').hidden,true);
+await el('game').onclick({clientX:105,clientY:210});assert.equal(el('radialMenu').hidden,true);
+// A refusal is a warning now: it stands on its own card above the radio instead
+// of in the line, and it stays there instead of being replaced by the next one.
+assert.equal(el('radioAlert').hidden,false);assert.match(el('radioAlertText').textContent,/Another player/);
 applyCommand(match,'bob',{type:'releaseBuild',pad:0});opts.onSnapshot({match:structuredClone(match)});
 await el('game').onclick({clientX:105,clientY:210});assert.equal(match.buildReservations[0].playerId,'alice');assert.equal(el('sheetMode').textContent,'BATTLE CONTINUES');el('radial0').onclick();el('towerDetailsConfirm').onclick();await new Promise(resolve=>setTimeout(resolve,0));
 assert.equal(match.towers.length,1);assert.equal(match.buildReservations[0],undefined,'building releases the reservation');assert.equal(el('money').textContent,75);
@@ -84,7 +87,12 @@ el('game').onclick({clientX:105,clientY:210});el('radial1').onclick();
 assert.equal(applyCommand(match,'bob',{type:'sell',pad:0}).ok,true);
 assert.equal(applyCommand(match,'bob',{type:'build',pad:0,towerType:0}).ok,true);
 opts.onSnapshot({match:structuredClone(match)});el('radial0').onclick();await new Promise(resolve=>setTimeout(resolve,0));
-assert.equal(match.towers.length,1);assert.match(el('message').textContent,/Tower changed/);
+assert.equal(match.towers.length,1);
+// A refused sell is a warning now: it stands on the card, and the older warning
+// it displaced waits one tap behind it.
+assert.match(el('radioAlertText').textContent,/Tower changed/);
+assert.equal(el('radioAlertMore').hidden,false,'and the one it displaced is still in the history');
+assert.match(el('radioAlertText').textContent,/Tower changed/);
 el('radialClose').onclick();
 opts.onState('duplicate');assert.match(el('message').textContent,/another tab/);opts.onState('error');assert.match(el('message').textContent,/host reloaded/);
 // Show whose balance pays for a teammate's tower and who receives a sale refund.
@@ -125,7 +133,9 @@ const duel=createVersus([createPlayer('alice',{name:'Alice',gender:'female'}),cr
 const duelFactory=options=>{duelOptions=options;return {start(){options.onSnapshot({match:versusView(duel,'alice')});options.onStatus(true);},stop(){},async command(command){duelCommands.push(command);const result=applyVersus(duel,'alice',command);options.onSnapshot({match:versusView(duel,'alice')});return result;}};};
 const duelGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUserId:()=> 'alice',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){}},{nextMapId:()=> 'road'});
 assert.equal(duelGame.beginCoop(cb=>duelFactory(cb)),true);assert.equal(el('game').height,1100);assert.equal(el('versusStatus').hidden,false);assert.equal(el('start').textContent,'REQUEST WAVE');
-const count=duelCommands.length;el('game').onclick({clientX:100,clientY:350});assert.equal(duelCommands.length,count);assert.match(el('message').textContent,/opponent’s battlefield/);
+const count=duelCommands.length;el('game').onclick({clientX:100,clientY:350});assert.equal(duelCommands.length,count);
+// A rule the player broke is a warning, not radio traffic.
+assert.match(el('radioAlertText').textContent,/opponent’s battlefield/);
 duel.lanes.bob.hp=0;stepVersus(duel);duelOptions.onSnapshot({match:versusView(duel,'alice')});assert.equal(el('versusTitle').textContent,'VICTORY');assert.match(el('resultsTitle').textContent,/Victory/);el('resultsDone').onclick();await duelGame.leaveCoop();assert.equal(el('game').height,540);
 // The real four-player protocol wrapper is projected onto the local 2v2 field.
 const {createTwoVsTwo,applyFourCommand,stepFour}=await import('../four-modes.mjs');
@@ -238,17 +248,17 @@ const queueGame=startGame({getProfile:()=>({name:'Alice',gender:'female'}),getUs
 queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();assert.match(el('message').textContent,/after movement is synchronized/);assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,0);
 releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'2x tap is sent once after movement');
 queueSpeedVote=null;queueOptions.onSnapshot(queueSnapshot());queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();queueGeneration++;queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
-assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'a changed roster invalidates the deferred 2x request');assert.match(el('message').textContent,/request changed/i);
+assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'a changed roster invalidates the deferred 2x request');assert.match(el('radioAlertText').textContent,/request changed/i,'a refused request is a warning, not radio traffic');
 // A vote may start and be cancelled before this client sees any pending vote.
 // The counter still advances, so a queued tap cannot revive the old request.
 queueOptions.onStatus(false);queueOptions.onStatus(true);el('speed').onclick();queueSpeedLast++;queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
-assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'an unseen completed 2x vote invalidates the deferred request');assert.match(el('message').textContent,/request changed/i);
+assert.equal(queueCalls.filter(c=>c.type==='requestSpeed').length,1,'an unseen completed 2x vote invalidates the deferred request');assert.match(el('radioAlertText').textContent,/request changed/i,'a refused request is a warning, not radio traffic');
 queueMatch.running=false;queueSpeedVote=null;queueOptions.onSnapshot(queueSnapshot());queueOptions.onStatus(false);queueOptions.onStatus(true);el('start').onclick();
 const unseen=applyCommand(queueMatch,'bob',{type:'startWave'});assert.equal(unseen.ok,true);assert.equal(applyCommand(queueMatch,'bob',{type:'cancelWave',requestId:unseen.requestId}).ok,true);queueOptions.onSnapshot(queueSnapshot());releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));
-assert.ok(!queueCalls.some(c=>c.type==='startWave'),'an unseen withdrawn wave invalidates the deferred request');assert.match(el('message').textContent,/request changed/i);
+assert.ok(!queueCalls.some(c=>c.type==='startWave'),'an unseen withdrawn wave invalidates the deferred request');assert.match(el('radioAlertText').textContent,/request changed/i,'a refused request is a warning, not radio traffic');
 assert.equal(applyCommand(queueMatch,'bob',{type:'startWave'}).ok,true);queueOptions.onSnapshot(queueSnapshot());const oldWaveId=queueMatch.waveRequest.id;
 queueOptions.onStatus(false);queueOptions.onStatus(true);el('start').onclick();assert.equal(applyCommand(queueMatch,'alice',{type:'declineWave',requestId:oldWaveId}).ok,true);assert.equal(applyCommand(queueMatch,'bob',{type:'startWave'}).ok,true);queueOptions.onSnapshot(queueSnapshot());
-releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.ok(!queueCalls.some(c=>c.type==='approveWave'),'an approval cannot jump to a replacement request');assert.match(el('message').textContent,/request changed/i);await queueGame.leaveCoop();
+releaseDirection({ok:true});await new Promise(resolve=>setTimeout(resolve,0));assert.ok(!queueCalls.some(c=>c.type==='approveWave'),'an approval cannot jump to a replacement request');assert.match(el('radioAlertText').textContent,/request changed/i,'a refused request is a warning, not radio traffic');await queueGame.leaveCoop();
 
 // Opening an occupied pad while movement is still being acknowledged must not
 // drop the first upgrade tap. Closing/changing the menu cancels a deferred tap.
