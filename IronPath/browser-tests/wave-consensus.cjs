@@ -84,6 +84,11 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     // double-tap; that separate behavior belongs in the protocol tests.
     const idle=page=>page.waitForFunction(()=>window.__wavePending===0);
     const tapOrClick=async(page,selector,mobile)=>{await idle(page);if(mobile)await page.locator(selector).tap();else await page.locator(selector).click();await idle(page);};
+    // Reading the radio the way a player does: the log is only on the field
+    // while the handset is open, and any tap out on the field shuts it - so a
+    // test that taps the speed button and then reads the log is reading a panel
+    // that closed three taps ago. Open it, then read it.
+    const readRadio=async(page,mobile)=>{if(await page.locator('#radioLog').isHidden())await tapOrClick(page,'#radioToggle',mobile);return page.locator('#radioLogList').innerText();};
     const guestMobile=(count-1)%3!==2,prompt='#multiplayerPrompt',approve='#multiplayerPromptActions [data-action="approve"]',decline='#multiplayerPromptActions [data-action="decline"]',later='#multiplayerPromptActions [data-action="later"]';
     const waitPrompt=page=>page.locator(prompt).waitFor({state:'visible'});
     const checkPrompt=async page=>{const box=await page.locator(prompt).evaluate(element=>{const r=element.getBoundingClientRect(),buttons=[...element.querySelectorAll('button')].map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height};});return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,scroll:element.scrollWidth,client:element.clientWidth,buttons};});assert.ok(box.left>=0&&box.top>=0&&box.right<=box.width+1&&box.bottom<=box.height+1&&box.scroll<=box.client+1,`${mode}: centered card fits: ${JSON.stringify(box)}`);assert.ok(Math.abs((box.left+box.right)/2-box.width/2)<2&&Math.abs((box.top+box.bottom)/2-box.height/2)<2,`${mode}: card is centered`);assert.ok(box.buttons.every(b=>b.width>=44&&b.height>=44),`${mode}: buttons have touch-sized targets`);};
@@ -170,16 +175,16 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     // counted - until the player asks for it.
     await guest.locator('#radioToggle').click();
     assert.equal(await guest.locator('#radioLog').isVisible(),true,'the requester can open the battle radio on mobile');
-    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
+    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i,'a missing vote has no fabricated reason');
     assert.equal(core.snapshotFor('alice').speedControl.speed,1,'decline never accelerates the wave');
     // Hold only the guest's success receipt: the host declines meanwhile, so a
     // late receipt must not replace the newer status with a false waiting bar.
     holdGuestReceipt=true;await idle(guest);if(guestMobile)await guest.locator('#speed').tap();else await guest.locator('#speed').click();
     await waitPrompt(host);await chain;assert.equal(typeof releaseHeldReceipt,'function');await tapOrClick(host,decline,true);
     await guest.waitForFunction(()=>document.getElementById('speedRequest').hidden);
-    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i);
+    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i);
     releaseHeldReceipt();releaseHeldReceipt=null;await idle(guest);
-    assert.match(await guest.locator('#radioLogList').innerText(),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
+    assert.match(await readRadio(guest,guestMobile),/2× request ended\. Check the current speed/i,'a late request receipt does not restore waiting');
     await tapOrClick(guest,'#speed',guestMobile);await guest.waitForFunction(()=>!document.getElementById('speedRequest').hidden);await waitPrompt(host);
     await tapOrClick(guest,'#speed',guestMobile);await host.locator(prompt).waitFor({state:'hidden'});
     await tapOrClick(guest,'#speed',guestMobile);await waitPrompt(host);
@@ -201,7 +206,7 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
      if(i<count-2)assert.equal(core.snapshotFor('alice').speedControl.speed,1,'all other players must approve');
     }
     for(const {page} of pages){await page.waitForFunction(()=>document.getElementById('speedRequest').hidden);assert.match(await page.locator('#speed').innerText(),/2×/);}
-    assert.match(await guest.locator('#radioLogList').innerText(),/2× approved by all players/i);
+    assert.match(await readRadio(guest,guestMobile),/2× approved by all players/i);
     // And it shuts: the panel is over the battlefield, so reading is a visit,
     // not a state. Both ways a player does it, in a real browser with the game
     // running - the cross on the panel, and the Escape key.
