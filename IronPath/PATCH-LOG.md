@@ -1913,3 +1913,68 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   „SOLDATEN-FORTSCHRITT“ und „STUFE 6“ gefüllt ist. Dass sie dort gut umbricht,
   ist geraten, nicht geprüft – im Gegensatz zur Zeilenprüfung des Betreibers
   bei IPL-0040.
+
+## IPL-0043 – Block 3 / Zusatzwünsche, Teil 1: ein Ort für alle Popups
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/2a294859-0815games-github-io`,
+  Basis `ca03c10` (Main nach dem Merge von #302).
+- **Auftrag, zweigeteilt:** „Dann bitte Rest von Block 3. nicht nur Multiplayer
+  Anfragen mittig, allgemein alle Popups bitte.“ Und: „Füge zu Block 8 bitte
+  hinzu: Feldfunk minimiert starten …; glow am Turm zu gering muss stärker
+  werden.“
+- **Block 8 (nur notiert, nicht gebaut):** Zwei neue Einträge unter
+  **Sichtbarkeit im Feld**. Beim Lesen des Codes fielen zwei Fragen auf, die vor
+  dem Bau geklärt werden sollten: (1) Beim **Feldfunk** sind es *zwei* Flächen –
+  die Funkkarte `#storyRadio` (bis zu 370 px breit, links unten im Kartenrahmen)
+  und die Funkzeile `.battle-foot` mit `#message`; außerdem ist offen, welche
+  Nachrichten im Popup bleiben (Verlauf?) und wie ein Ungelesen-Hinweis zählt.
+  (2) Beim **Glow am Turm** ist unklar, welcher Schein gemeint ist: der
+  Schimmerring aus IPL-0041 (ruhig gebaut, Deckkraft .42–.62) oder der Schein
+  der Turmgrafik in `cartoon-art.mjs`. Beides ist messbar verschieden – notiert
+  samt der Warnung, dass ein zu heller Schimmer den Turm selbst verdeckt.
+- **Was gebaut wurde:** Eine einzige Datei, `popup-center.css`, legt fest, wo
+  ein Popup erscheint: **in der Mitte**. Drei Popups zogen um –
+  - Partyeinladungen, Beitritts- und Freundschaftsanfragen (`.social-popup`),
+    vorher oben rechts;
+  - Wellen- und 2×-Abstimmungen im Feld (`#waveRequest`, `#speedRequest`),
+    vorher eine Leiste am unteren Rand bzw. auf dem Handy fest am Bildschirmrand;
+  - die Feldentscheidung mit ihren zwei Wahlknöpfen (`#storyDecision`), vorher
+    links unten.
+- **Die Regel dahinter:** Ein Popup ist kein Hinweisband und kein Sheet. Ein
+  Hinweisband (Versionsmeldung, Sandkasten-Hinweis) meldet einen Zustand und
+  bleibt in der Ecke; ein Sheet (Turmblatt, Bauring) gehört zu dem Ding, an dem
+  es geöffnet wurde – es zu verschieben hieße, den Finger zu verschieben.
+  Ein Popup **unterbricht** und verlangt eine Entscheidung; darum kommt es
+  dorthin, wo der Blick ohnehin ist. Genau das tat das mittige Anfragezentrum aus
+  [IPL-0014](PATCH-LOG.md#ipl-0014--b2-einheitliches-anfragezentrum-und-frische-einladungen) schon; der Auftrag war, daraus eine
+  Regel zu machen statt einer Ausnahme.
+- **Nur Versatz, nie Position:** Die Regeln setzen ausschließlich
+  `left/top/transform` und lösen `right/bottom`. Farben, Rahmen, Ebenenreihenfolge
+  und die Handy-Verankerung bleiben in den Stylesheets, die sie erklären. Ein
+  Popup behält also sein Aussehen und seinen Bezugsrahmen (Feld oder Ansicht) –
+  es steht nur in dessen Mitte statt an dessen Rand.
+- **Prüfungen:** `tests/popup-centering.test.mjs` 4/4 (neu): alle drei Popups
+  sind zentriert und geben ihre alten Kanten frei; **jeder Selektor trifft ein
+  wirkliches Element** (eine Regel, die nichts trifft, ist schlimmer als keine,
+  weil sie aussieht als wäre die Arbeit getan); die Datei ist nach
+  `style.css` und `field-command.css` eingebunden, sonst würden ihre Versätze
+  verpuffen. Dazu `browser-tests/interface-smoke.cjs`: die vier Popups werden im
+  echten Chromium in drei Fenstern (320×700, 390×844, 1440×900) gegen ihren
+  **tatsächlichen Bezugsrahmen** gemessen – Ansicht bei `fixed`, nächstgelegener
+  positionierter Vorfahr bei `absolute` – und dürfen höchstens 2 px von der
+  Mitte abweichen. Vollständiger serieller Lauf **1059 bestanden,
+  0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- **Änderungen / Dateien:** `popup-center.css` (neu, mit eigener Cache-Welle),
+  `index.html` (Einbindung), `field-command.css` (drei überholte
+  Radio-Anhebungen entfernt – sie galten nur, solange die Feldentscheidung links
+  unten stand), `tests/popup-centering.test.mjs` (neu),
+  `browser-tests/interface-smoke.cjs`, `PATCH-BLOECKE.md` (Punkt angereichert,
+  Block 8 ergänzt).
+- **Grenzen:** Die Chromium-Prüfung läuft erst im Prüfstand; im Arbeitsraum
+  fehlt Playwright samt Browser, und ihre Log-Dateien kann ich nicht lesen
+  (siehe Block 8). Sollte die Prüfung rot werden, ist die Messung zu prüfen,
+  nicht die Zentrierung. Und wie zuvor: **kein Mensch hat die Popups auf einem
+  echten Gerät gesehen.** Insbesondere die Feldentscheidung liegt jetzt über dem
+  Spielfeld, wo vorher der untere Rand frei blieb – das ist gewollt, aber es ist
+  eine Entscheidung über Sicht, die ich nur aus dem Auftrag abgeleitet habe.
