@@ -401,6 +401,18 @@ entstand, ist nicht sicher belegt.
 - [ ] **Zusatzwünsche:** Schussdarstellung und Fähigkeits-HUD weiter verbessern
   sowie Multiplayer-Anfragen mittig anzeigen (Details B2 und D). Vorhandene
   Schuss- und Fähigkeitsanzeigen sind dort gesondert aufgeführt.
+  - [x] **Alle Popups mittig** – nicht nur die Mehrspieler-Anfragen, auf
+    Betreiberwunsch ausdrücklich alle. Gebaut mit
+    [PR #303](https://github.com/0815games/0815games.github.io/pull/303)
+    ([IPL-0043](PATCH-LOG.md#ipl-0043--block-3--zusatzwünsche-teil-1-ein-ort-für-alle-popups)):
+    eine einzige Datei (`popup-center.css`) legt fest, wo ein Popup erscheint.
+    Umgezogen sind Partyeinladungen samt Beitritts- und Freundschaftsanfragen
+    (vorher oben rechts), die Wellen- und 2×-Abstimmungen im Feld (vorher eine
+    Leiste am unteren Rand) und die Feldentscheidung (vorher links unten).
+    **Nicht** verschoben wurden Hinweisbänder (Versionsmeldung, Sandkasten),
+    Bottom-Sheets (Turmblatt) und der Bauring: sie melden einen Zustand oder
+    gehören zu dem Ding, an dem sie geöffnet wurden.
+  - [ ] **Schussdarstellung** (D1) und **Fähigkeits-HUD** (D2) offen.
 
 ### 4. Charaktererstellung und Avatare – genehmigte Überarbeitung bereits live
 
@@ -867,6 +879,26 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   einzige Stelle im Prüfstand ohne jede Wiederholung, und genau dort traten die
   meisten Aussetzer auf. Frühere Läufe dieser Welle schlugen aus anderen Gründen
   fehl (`database-rules`, z. B. `e8445a6`, `dd30eda`).
+
+### Sichtbarkeit im Feld
+
+- [ ] **Feldfunk minimiert starten.** Der Funkverkehr nimmt zu viel Platz ein.
+  Gewünscht: ein kleines **Funkgerät** als Ausgangspunkt, das **minimiert**
+  startet – erst ein Antippen öffnet die Nachrichten als Popup. Betroffen sind
+  die Funkkarte `#storyRadio` (`.story-radio`, bis zu 370 px breit, liegt links
+  unten im Kartenrahmen und hebt sich bei einer Feldentscheidung nach oben)
+  **und** die Funkzeile `.battle-foot` mit `#message`; beide stehen heute
+  dauerhaft im Bild. Offene Fragen für den Bau: Welche Nachrichten landen im
+  Popup und bleiben dort (Verlauf?), wie zählt der Ungelesen-Hinweis, und was
+  passiert bei reduzierter Bewegung.
+- [ ] **Glow am Turm zu gering.** Der Schein am Turm muss **deutlich stärker**
+  werden. Zu klären, welcher Schein gemeint ist: der Schimmerring aus
+  [IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer) (ruhig und
+  zurückhaltend gebaut, Radius 37 × 26 px, Deckkraft .42–.62) oder der
+  allgemeine Schein der Turmgrafik in `cartoon-art.mjs`. Beides ist messbar
+  verschieden und sollte getrennt betrachtet werden – der Schimmer darf nicht
+  so hell werden, dass er den Turm selbst verdeckt, und bei reduzierter
+  Bewegung bleibt er ohnehin stehen.
 
 ### Nachgelagert, weil es die Blöcke berührt
 

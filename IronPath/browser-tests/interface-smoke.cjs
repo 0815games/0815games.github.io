@@ -26,6 +26,22 @@ const fs = require('node:fs');
         assert.ok(box.x >= -1 && box.x + box.width <= width + 1, `${name}: ${selector} extends outside viewport: ${JSON.stringify(box)}`);
       };
       await page.evaluate(() => { document.querySelector('#introOverlay').hidden = true; document.querySelector('#loading').hidden = true; document.querySelector('#authView').hidden = false; });
+      // A popup belongs in the middle. The reference box is the containing
+      // block the browser really uses: the viewport for `fixed`, the nearest
+      // positioned ancestor for `absolute` - so a popup centred over the
+      // battlefield and one centred over the page are both measured fairly.
+      const centredPopup = async (selector) => {
+        const measured = await page.evaluate(sel => {
+          const el = document.querySelector(sel), box = el.getBoundingClientRect(), style = getComputedStyle(el);
+          const host = style.position === 'fixed' ? { x: 0, y: 0, width: innerWidth, height: innerHeight }
+            : (el.offsetParent || document.body).getBoundingClientRect();
+          return { box, dx: (box.x + box.width / 2) - (host.x + host.width / 2), dy: (box.y + box.height / 2) - (host.y + host.height / 2) };
+        }, selector);
+        assert.ok(measured.box.width > 0 && measured.box.height > 0, `${name}: ${selector} is visible`);
+        assert.ok(Math.abs(measured.dx) <= 2 && Math.abs(measured.dy) <= 2,
+          `${name}: ${selector} is centred, not parked in a corner (off by ${Math.round(measured.dx)}/${Math.round(measured.dy)})`);
+        assert.ok(measured.box.x >= -1 && measured.box.x + measured.box.width <= width + 1, `${name}: ${selector} stays inside the width`);
+      };
       await check('#authForm'); await check('#authSubmit');
       await page.screenshot({ path: `browser-artifacts/${name}-signin.png`, fullPage: true });
       await page.evaluate(() => {
@@ -47,6 +63,7 @@ const fs = require('node:fs');
 
       await page.evaluate(()=>{document.querySelector('#menuFriendBadge').textContent='12';document.querySelector('#menuFriendBadge').hidden=false;document.querySelector('#menuFriends').classList.add('has-friend-requests');});await check('#menuFriends');await check('#menuFriendBadge');await page.evaluate(()=>{document.querySelector('#menuFriendBadge').hidden=true;document.querySelector('#menuFriends').classList.remove('has-friend-requests');});
       await page.evaluate(()=>{document.querySelector('#socialPopupTitle').textContent='PARTY INVITATION';document.querySelector('#socialPopupBody').textContent='A very long soldier name invited you to a party.';document.querySelector('#socialPopup').hidden=false;});await check('#socialPopup');await check('#socialPopupOpen');await check('#socialPopupDismiss');await page.screenshot({path:`browser-artifacts/${name}-social-popup.png`});await page.evaluate(()=>document.querySelector('#socialPopup').hidden=true);
+      await centredPopup('#socialPopup');
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#commandCenter').hidden = true; document.querySelector('#gameWorkspace').hidden = false;
@@ -55,7 +72,7 @@ const fs = require('node:fs');
       await check('#fourPartyCodeInput'); await check('#fourPartyJoin'); await check('#fourPartyCreate');
       await page.evaluate(()=>{document.querySelector('#runPerkPanel').hidden=false;document.querySelector('#runPerk0').textContent='Defenses';document.querySelector('#runPerk1').textContent='Supplies';document.querySelector('#runPerk2').textContent='Repair';});await check('#runPerkPanel');await check('#runPerkClose');const centered=await page.locator('#runPerkPanel').evaluate(el=>{const p=el.getBoundingClientRect(),m=el.parentElement.getBoundingClientRect();return {x:(p.left+p.right-m.left-m.right)/2,y:(p.top+p.bottom-m.top-m.bottom)/2};});assert.ok(Math.abs(centered.x)<2&&Math.abs(centered.y)<2,`${name}: field upgrade popup is centered`);await page.screenshot({path:`browser-artifacts/${name}-field-upgrade.png`});await page.evaluate(()=>document.querySelector('#runPerkPanel').hidden=true);
 
-      await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#speedRequest').hidden=false;document.querySelector('#speedRequestText').textContent='A long soldier name requests 2× for wave 12. 1/3 approved.';});await check('#speedRequest');await check('#speedApprove');await check('#speedDecline');await page.evaluate(()=>{document.querySelector('#speedRequest').hidden=true;document.querySelector('#fourPartyPanel').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#speedRequest').hidden=false;document.querySelector('#speedRequestText').textContent='A long soldier name requests 2× for wave 12. 1/3 approved.';});await check('#speedRequest');await check('#speedApprove');await check('#speedDecline');await centredPopup('#speedRequest');await page.evaluate(()=>{document.querySelector('#speedRequest').hidden=true;document.querySelector('#fourPartyPanel').hidden=false;});
       await page.screenshot({ path: `browser-artifacts/${name}-lobby.png`, fullPage: true });
       // Inspect the actual battlefield layout independently of Firebase.
       await page.evaluate(()=>{document.querySelector('#fourPartyPanel').hidden=true;document.querySelector('#gameWorkspace').dataset.screen='endless';});
@@ -128,6 +145,22 @@ const fs = require('node:fs');
       await page.screenshot({path:`browser-artifacts/${name}-tower-ring.png`,fullPage:false});
       await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=true;});
       await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');await check('#message');
+      // Two more popups live on the field itself: a wave vote and a mission
+      // decision with choices. Both interrupt, so both take the middle - the
+      // same place the request centre and the field-upgrade card already use.
+      await page.evaluate(()=>{
+        document.querySelector('#waveRequest').hidden=false;
+        document.querySelector('#waveRequestText').textContent='A long soldier name requests wave 12. 1 approval still needed.';
+        document.querySelector('#storyDecision').hidden=false;
+        document.querySelector('#storyDecisionSpeaker').textContent='Mara Voss / FIELD DECISION';
+        document.querySelector('#storyDecisionText').textContent='The convoy can take the valley road or the ridge. Choose before the next wave.';
+        document.querySelector('#storyChoice0').textContent='VALLEY ROAD';
+        document.querySelector('#storyChoice1').textContent='RIDGE';
+      });
+      await centredPopup('#waveRequest');await centredPopup('#storyDecision');
+      await check('#storyChoice0');await check('#storyChoice1');
+      await page.screenshot({path:`browser-artifacts/${name}-field-popups.png`,fullPage:false});
+      await page.evaluate(()=>{document.querySelector('#waveRequest').hidden=true;document.querySelector('#storyDecision').hidden=true;});
       const hud=await page.evaluate(()=>{const b=document.querySelector('#game').getBoundingClientRect(),d=document.querySelector('.dashboard').getBoundingClientRect(),c=document.querySelector('.command').getBoundingClientRect();return {b:{top:b.top,bottom:b.bottom,left:b.left,right:b.right},d:{top:d.top,bottom:d.bottom,left:d.left,right:d.right},c:{top:c.top,bottom:c.bottom,left:c.left,right:c.right}};});
       assert.ok(hud.d.top>=0 && hud.d.top<height/4,`${name}: HUD overlays the top of the battlefield`);
       // All five status chips (wave, bunker, supplies, enemies, soldier) have to

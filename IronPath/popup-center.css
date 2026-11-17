@@ -1,0 +1,35 @@
+/* One place decides where a popup appears: the middle.
+ *
+ * A popup is not a banner and not a sheet. A banner (version notice, sandbox
+ * notice) reports a state and stays in a corner; a sheet (tower panel, build
+ * ring) belongs to the thing it was opened from. A popup interrupts: it asks
+ * for a decision or reports something that needs an answer, so it goes where
+ * the eye already is - the centre of the view, on the phone as on the desktop.
+ *
+ * Everything here is an OFFSET, never a new position: the rules below only
+ * move popups that already float (`position:fixed` or `absolute` from their own
+ * stylesheet). That keeps each popup's own colours, borders and stacking, and
+ * the phone rules that anchor them stay in force where they differ.
+ *
+ * Popups covered, in the order they appear here:
+ *   .social-popup    party invitations, join and friend requests (site-wide)
+ *   .wave-request    wave and 2x speed votes in the battle (the fallback card
+ *                    for the centred request centre in multiplayer-prompts.css)
+ *   .story-decision  a mission decision with choices, over the battlefield
+ */
+.social-popup{
+  left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);
+  width:min(340px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;
+  box-shadow:0 14px 44px #000a;
+}
+#gameView .battle .wave-request:not([hidden]),
+#gameView .battle .speed-request:not([hidden]){
+  left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);
+  width:min(420px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;
+  border:2px solid #46593b;border-radius:4px;box-shadow:0 10px 30px #000a;
+}
+#gameView .map-frame .story-decision:not([hidden]){
+  left:50%;right:auto;bottom:auto;top:50%;transform:translate(-50%,-50%);
+  width:min(370px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;
+  box-shadow:0 12px 34px #000a;
+}
