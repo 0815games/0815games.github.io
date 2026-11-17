@@ -540,17 +540,10 @@ function renderResults(target){
   // The radio is a device: it starts closed, counts what it was told, and opens
   // into the log when the player taps it. The line the radio used to print over
   // the battlefield is now for screen readers only - the words are in the log.
+  // The radio wires itself: the handset opens it, its cross shuts it, and a tap
+  // on the field or the Escape key shuts it too. See field-radio.mjs - it lives
+  // there so the closing is testable without a browser.
   const fieldRadio=createFieldRadio(document,{translate:tr});
-  $('radioToggle').onclick=()=>fieldRadio.toggle();
-  $('radioLogClose').onclick=()=>fieldRadio.close();
-  // Tapping the field closes it: the battle goes on while the panel is open, and
-  // a panel that has to be closed by its own button is a panel in the way.
-  document.addEventListener('pointerdown',event=>{
-    if(!fieldRadio.isOpen())return;
-    if(event.target?.closest?.('#battleFoot'))return;
-    fieldRadio.close();
-  },true);
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&fieldRadio.isOpen())fieldRadio.close();});
   let lastNotice=null;
   function notice(text){lastNotice=typeof text==='function'?text:()=>localizeGameMessage(text,tr);fieldRadio.say(lastNotice);$('message').textContent=lastNotice();}
   // A warning: the player asked for something and did not get it, or something

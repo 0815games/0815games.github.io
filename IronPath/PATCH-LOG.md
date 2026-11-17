@@ -2448,13 +2448,23 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   nehmen, solange es geschlossen ist (`pointer-events:none` am Kasten, `auto`
   nur am Handapparat und am offenen Log); und mit einem neuen Lauf leer
   starten.
-- **Prüfungen:** `tests/field-radio.test.mjs` neu (8/8). Der Prüfstand im echten
-  Chromium (`interface-smoke.cjs`) misst dazu: der Handapparat ist klein
+- **Prüfungen:** `tests/field-radio.test.mjs` neu (**12/12**). Der Prüfstand im
+  echten Chromium (`interface-smoke.cjs`) misst dazu: der Handapparat ist klein
   (höchstens 40 % der Breite), mindestens 24 px hoch und **antwortet einem
-  Tipp**; das geöffnete Log steht in der Ecke und nicht über der Mitte; und es
-  schließt sich wieder. `wave-consensus.cjs` liest den Kampfstatus jetzt aus dem
-  Log statt aus der alten Zeile. Vollständiger serieller Lauf **1108 bestanden,
-  0 fehlgeschlagen**.
+  Tipp**; das ausgelieferte Markup **startet geschlossen** (Log versteckt,
+  `aria-expanded="false"`, kein Zähler); und das geöffnete Log steht in der Ecke,
+  nicht über der Mitte, bleibt im Rahmen und sein Kreuz ist ein erreichbares
+  Ziel. `wave-consensus.cjs` liest den Kampfstatus aus dem Log statt aus der
+  alten Zeile und schließt es im laufenden Spiel per Kreuz und per Escape.
+  Vollständiger serieller Lauf **1112 bestanden, 0 fehlgeschlagen**.
+- **Nachtrag (gleicher Block):** das Funkgerät verkabelt sich jetzt **selbst**
+  (Handapparat, Kreuz, Tipp aufs Feld, Escape) statt durch `game.js`. Der Grund
+  ist ein Fund im Prüfstand: `interface-smoke.cjs` sperrt Skripte absichtlich,
+  damit nur CSS und Markup gemessen werden – ein Tipptest auf das Öffnen war dort
+  **nicht ehrlich zu gewinnen**, weil die Verdrahtung in `game.js` gar nicht
+  läuft. Das Schließen gehört nun zum Gerät und ist damit im seriellen Test
+  fahrbar (Kreuz, Feld-Tipp, Escape, und `destroy()` nimmt die Hände wieder vom
+  Dokument). Keine Prüfung wurde dafür abgeschwächt.
 - **Änderungen / Dateien:** `field-radio.mjs` (neu), `index.html`,
   `field-command.css`, `game.js`, `localization-de.mjs` (FUNK, Funkverkehr
   öffnen/schließen), `tests/field-radio.test.mjs` (neu), elf Test-Harnesse (das

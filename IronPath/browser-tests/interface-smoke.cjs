@@ -191,21 +191,36 @@ const fs = require('node:fs');
         return {inside:!!(hit&&hit.closest('#radioToggle')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
       });
       assert.equal(handsetHit.inside,true,`${name}: the handset answers a tap (hit ${handsetHit.at})`);
-      // Opened, the log shows what was said - in the corner, not in the middle.
-      await page.locator('#radioToggle').click();
-      const logState=await page.evaluate(()=>{const el=document.getElementById('radioLog');
-        const read=()=>({hidden:el.hidden,expanded:document.getElementById('radioToggle').getAttribute('aria-expanded')});
-        const afterTap=read();
-        document.getElementById('radioToggle').click();
-        const afterSynthetic=read();
-        return {...afterTap,afterSynthetic};});
-      assert.equal(logState.hidden,false,`${name}: tapping the handset opens the log (${JSON.stringify(logState)})`);
+      // Scripts are blocked in this harness by design, so the radio's wiring is
+      // measured where the game really runs: wave-consensus.cjs taps the handset
+      // in Chromium with the scripts on, and tests/field-radio.test.mjs drives
+      // the closing (cross, field tap, Escape). What a browser owes us here is
+      // the SHIPPED SHAPE - it starts shut - and the geometry of the panel it
+      // becomes, which no unit test can see.
+      const shipped=await page.evaluate(()=>({hidden:document.getElementById('radioLog').hidden,
+        expanded:document.getElementById('radioToggle').getAttribute('aria-expanded'),
+        unread:document.getElementById('radioUnread').hidden}));
+      assert.equal(shipped.hidden,true,`${name}: the radio starts shut in the shipped markup (${JSON.stringify(shipped)})`);
+      assert.equal(shipped.expanded,'false',`${name}: and the handset says it is shut`);
+      assert.equal(shipped.unread,true,`${name}: nothing is unread before a word was said`);
+      await page.evaluate(()=>{document.getElementById('radioLog').hidden=false;});
       const log=await page.locator('#radioLog').boundingBox();
-      assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(logState)})`);
+      assert.ok(log,`${name}: the open log is on the field (${JSON.stringify(shipped)})`);
       assert.ok(log.x+log.width/2<width*0.75,`${name}: the radio log opens in the corner, not over the middle of the field`);
       assert.ok(log.y>height*0.3,`${name}: and low enough to be out of the fighting`);
-      await page.locator('#radioLogClose').click();
-      assert.equal(await page.locator('#radioLog').isVisible(),false,`${name}: and it closes again`);
+      assert.ok(log.x>=-1&&log.x+log.width<=width+1,`${name}: the open log stays inside the width (${JSON.stringify(log)})`);
+      assert.ok(log.y>=-1&&log.y+log.height<=height+1,`${name}: and inside the frame's height (${JSON.stringify(log)})`);
+      // Open, it takes taps: the cross that shuts it is a real target, and a
+      // target Chromium can reach is the only kind that counts.
+      const shutter=await page.locator('#radioLogClose').boundingBox();
+      assert.ok(shutter.width>=24&&shutter.height>=24,`${name}: the cross is big enough to hit (${Math.round(shutter.width)}x${Math.round(shutter.height)})`);
+      const shutterHit=await page.evaluate(()=>{
+        const box=document.getElementById('radioLogClose').getBoundingClientRect();
+        const hit=document.elementFromPoint(Math.round(box.left+box.width/2),Math.round(box.top+box.height/2));
+        return {inside:!!(hit&&hit.closest('#radioLogClose')),at:hit?`${hit.tagName}#${hit.id||''}`:'nothing'};
+      });
+      assert.equal(shutterHit.inside,true,`${name}: the open log answers a tap on its cross (hit ${shutterHit.at})`);
+      await page.evaluate(()=>{document.getElementById('radioLog').hidden=true;});
       // The field radio keeps its own corner: the HUD must not lie across it.
       const radio=await page.locator('.battle-foot').boundingBox();
       const overRadio=!(ability.x+ability.width<=radio.x||radio.x+radio.width<=ability.x||ability.y+ability.height<=radio.y||radio.y+radio.height<=ability.y);

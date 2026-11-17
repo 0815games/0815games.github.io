@@ -22,13 +22,13 @@
 //     middle is where the fighting is.
 //
 // Nothing here is stored or sent anywhere: one player's screen, one battle.
-export function createFieldRadio(document,{translate=text=>text,maxEntries=12,onChange=null}={}){
+export function createFieldRadio(document,{translate=text=>text,maxEntries=12,onChange=null,rootId='battleFoot',closeOnOutsideTap=true,closeOnEscape=true}={}){
   if(!document||typeof document.getElementById!=='function')throw Error('Invalid field radio');
   if(!Number.isSafeInteger(maxEntries)||maxEntries<1)throw Error('Invalid field radio log');
   const $=id=>document.getElementById(id);
-  const panel=$('radioLog'),list=$('radioLogList'),badge=$('radioUnread'),toggle=$('radioToggle');
+  const panel=$('radioLog'),list=$('radioLogList'),badge=$('radioUnread'),toggle=$('radioToggle'),shutter=$('radioLogClose');
   const entries=[];
-  let open=false,unread=0;
+  let open=false,unread=0,disposed=false;
   function resolve(entry){try{return entry==null?'':typeof entry.text==='function'?entry.text():translate(String(entry.text));}catch{return '';}}
   function render(){
     if(panel)panel.hidden=!open;
@@ -47,9 +47,33 @@ export function createFieldRadio(document,{translate=text=>text,maxEntries=12,on
     }
     onChange?.({open,unread,entries:entries.length});
   }
+  function reveal(){
+    if(open)return false;
+    open=true;unread=0;render();
+    return true;
+  }
+  function shut(){
+    if(!open)return false;
+    open=false;render();
+    return true;
+  }
+  // The radio owns its own hands: the handset opens it, the panel's cross shuts
+  // it, and a tap anywhere on the field shuts it too. Wiring that from game.js
+  // meant the one thing a player does most - tap the field to close the panel -
+  // was the one thing no test could reach. Here it is dispatchable.
+  function onOutsideTap(event){
+    if(disposed||!open)return;
+    if(event?.target?.closest?.('#'+rootId))return;
+    shut();
+  }
+  function onKeyDown(event){if(disposed||!open||event?.key!=='Escape')return;shut();}
   // The closed state is worth setting once: a radio that has never been asked
   // for anything is shut, whichever way the template left it.
   render();
+  if(toggle)toggle.onclick=()=>open?shut():reveal();
+  if(shutter)shutter.onclick=()=>shut();
+  if(closeOnOutsideTap)document.addEventListener?.('pointerdown',onOutsideTap,true);
+  if(closeOnEscape)document.addEventListener?.('keydown',onKeyDown);
   return Object.freeze({
     // What the radio would have said. It goes into the log either way - a
     // message that was never on screen still happened.
@@ -59,21 +83,22 @@ export function createFieldRadio(document,{translate=text=>text,maxEntries=12,on
       if(entries.length>maxEntries)entries.shift();
       if(open)render();else{unread++;render();}
     },
-    open(){
-      if(open)return false;
-      open=true;unread=0;render();
-      return true;
-    },
-    close(){
-      if(!open)return false;
-      open=false;render();
-      return true;
-    },
-    toggle(){return open?this.close():this.open();},
+    open:reveal,
+    close:shut,
+    toggle(){return open?shut():reveal();},
     isOpen(){return open;},
     unread(){return unread;},
     // A new run: the old battle's traffic describes nothing.
     clear(){entries.length=0;unread=0;open=false;render();},
-    refresh(){render();}
+    refresh(){render();},
+    // Test seams and teardown: the listeners are the radio's, so the radio takes
+    // them off the document again.
+    destroy(){
+      disposed=true;
+      if(closeOnOutsideTap)document.removeEventListener?.('pointerdown',onOutsideTap,true);
+      if(closeOnEscape)document.removeEventListener?.('keydown',onKeyDown);
+      if(toggle)toggle.onclick=null;
+      if(shutter)shutter.onclick=null;
+    }
   });
 }

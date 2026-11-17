@@ -202,6 +202,15 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     }
     for(const {page} of pages){await page.waitForFunction(()=>document.getElementById('speedRequest').hidden);assert.match(await page.locator('#speed').innerText(),/2×/);}
     assert.match(await guest.locator('#radioLogList').innerText(),/2× approved by all players/i);
+    // And it shuts: the panel is over the battlefield, so reading is a visit,
+    // not a state. Both ways a player does it, in a real browser with the game
+    // running - the cross on the panel, and the Escape key.
+    await tapOrClick(guest,'#radioLogClose',guestMobile);
+    assert.equal(await guest.locator('#radioLog').isVisible(),false,`${mode}: the cross shuts the radio`);
+    await tapOrClick(guest,'#radioToggle',guestMobile);
+    assert.equal(await guest.locator('#radioLog').isVisible(),true,`${mode}: and the handset opens it again`);
+    await guest.keyboard.press('Escape');
+    assert.equal(await guest.locator('#radioLog').isVisible(),false,`${mode}: Escape shuts the radio`);
     assert.equal(core.snapshotFor('alice').speedControl.speed,2);
     await tapOrClick(host,'#speed',true);assert.equal(core.snapshotFor('alice').speedControl.speed,1);
     assert.deepEqual(errors,[]);mark('complete');

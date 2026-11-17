@@ -13,19 +13,32 @@ import {createFieldRadio} from '../field-radio.mjs';
 
 function stubDocument(){
   const nodes=new Map();
-  for(const id of ['radioLog','radioLogList','radioUnread','radioToggle'])
-    nodes.set(id,{id,textContent:'',hidden:false,children:[],dataset:{},attributes:{},
+  const radioRoot={id:'battleFoot'};
+  // Every radio node lives inside #battleFoot, so `closest` answers the way the
+  // real DOM does - and a node out on the field does not.
+  const inside=new Set(['radioLog','radioLogList','radioUnread','radioToggle','radioLogClose']);
+  for(const id of inside)
+    nodes.set(id,{id,textContent:'',hidden:false,children:[],dataset:{},attributes:{},onclick:null,
       setAttribute(name,value){this.attributes[name]=value;},
       getAttribute(name){return this.attributes[name]??null;},
+      closest(selector){return selector==='#battleFoot'&&inside.has(this.id)?radioRoot:selector==='#'+this.id?this:null;},
       replaceChildren(...children){this.children=children;},
       append(child){this.children.push(child);}});
+  const listeners=new Map();
   const document={
     getElementById:id=>nodes.get(id)??null,
     createElement:()=>({className:'',textContent:''}),
+    addEventListener(type,handler){if(!listeners.has(type))listeners.set(type,[]);listeners.get(type).push(handler);},
+    removeEventListener(type,handler){const list=listeners.get(type)??[];const at=list.indexOf(handler);if(at>=0)list.splice(at,1);},
+    listenerCount:type=>(listeners.get(type)??[]).length,
+    // A real event: capture phase, so it reaches the radio's own listener first.
+    dispatch(type,event){for(const handler of [...(listeners.get(type)??[])])handler(event);},
     node:id=>nodes.get(id)
   };
   return document;
 }
+// A tap somewhere out on the battlefield, where the player is fighting.
+function fieldTap(){return {target:{closest:()=>null}};}
 const radio=(document,options={})=>createFieldRadio(document,{translate:text=>text,...options});
 
 test('it starts closed, and a message closes nothing: it counts instead',()=>{
@@ -131,4 +144,53 @@ test('the radio is a handset in the field, not a line printed over it',()=>{
   assert.match(css,/\.radio-toggle\{[^}]*pointer-events:auto/,'the handset takes taps');
   assert.match(css,/\.radio-log\{[^}]*pointer-events:auto/,'and so does the open panel - deliberately');
   assert.match(css,/#gameView \.battle-foot\{[^}]*pointer-events:none/,'but the box around them stays out of the way');
+});
+
+test('the handset opens it and the panel\'s own cross shuts it',()=>{
+  const doc=stubDocument(),r=radio(doc);
+  r.say('Hero moving to position.');
+  doc.node('radioToggle').onclick();
+  assert.equal(r.isOpen(),true,'the handset answers the player');
+  assert.equal(doc.node('radioLog').hidden,false,'and the log is on the field');
+  doc.node('radioLogClose').onclick();
+  assert.equal(r.isOpen(),false,'the cross shuts it');
+  assert.equal(doc.node('radioLog').hidden,true);
+});
+
+test('a tap out on the field shuts it, a tap on the radio does not',()=>{
+  const doc=stubDocument(),r=radio(doc);
+  r.open();
+  doc.dispatch('pointerdown',{target:doc.node('radioLog')});
+  assert.equal(r.isOpen(),true,'reading the log is not a tap outside it');
+  doc.dispatch('pointerdown',{target:doc.node('radioToggle')});
+  assert.equal(r.isOpen(),true,'and the handset is part of the radio, not the field');
+  doc.dispatch('pointerdown',fieldTap());
+  assert.equal(r.isOpen(),false,'a tap on the battlefield closes the panel');
+  // Shut already: a tap on the field is a tap on the field, nothing more.
+  doc.dispatch('pointerdown',fieldTap());
+  assert.equal(r.isOpen(),false);
+});
+
+test('Escape shuts it, every other key leaves it alone',()=>{
+  const doc=stubDocument(),r=radio(doc);
+  r.open();
+  doc.dispatch('keydown',{key:'Enter'});
+  assert.equal(r.isOpen(),true,'a key that is not Escape is not a command');
+  doc.dispatch('keydown',{key:'Escape'});
+  assert.equal(r.isOpen(),false,'Escape closes the panel');
+  doc.dispatch('keydown',{key:'Escape'});
+  assert.equal(r.isOpen(),false,'and it is not a toggle');
+});
+
+test('destroy() takes its hands off the document again',()=>{
+  const doc=stubDocument(),r=radio(doc);
+  assert.equal(doc.listenerCount('pointerdown'),1,'it listens while it lives');
+  assert.equal(doc.listenerCount('keydown'),1);
+  r.destroy();
+  assert.equal(doc.listenerCount('pointerdown'),0,'and stops when it is taken away');
+  assert.equal(doc.listenerCount('keydown'),0);
+  assert.equal(doc.node('radioToggle').onclick,null,'the handset is unwired too');
+  r.open();
+  doc.dispatch('pointerdown',fieldTap());
+  assert.equal(r.isOpen(),true,'a dead radio does not answer the field');
 });
