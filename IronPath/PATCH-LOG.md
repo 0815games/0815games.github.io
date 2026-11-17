@@ -1450,6 +1450,114 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   `players/<uid>/name` heute unveränderlich ist) und Alt-Duplikate bleiben
   offen.
 
+## IPL-0039 – Block 3 / A: Party-Roster als Karten
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/422699c8-0815games-github-io`,
+  Basis `b3dd1a2` (Main nach dem Merge von #298).
+- **Auftrag:** „Oke. Weiter." Block 2 ist bis auf die Veröffentlichung (die
+  einen frischen Export braucht) und die Abnahme auf echten Geräten fertig,
+  also der nächste Punkt der Reihe: Block 3 · Oberfläche.
+- **Was gebaut wurde:** Das Party-Roster war eine Textzeile pro Soldat
+  („Cara · Host · Team A · Bereit"). Es sind jetzt vier Karten: Portrait, Name,
+  Rang mit Abzeichen, Rolle und Bereitschaft.
+- **Rang:** Aus dem veröffentlichten Level abgeleitet und nie gespeichert
+  (`rank-insignia.mjs`, PR #284). Ein fehlendes oder unlesbares Level zeigt den
+  niedrigsten Rang und erfindet keinen.
+- **Bereitschaft:** gefüllter Punkt für „bereit", hohler für „nicht bereit".
+  Bewusst nicht über eine Farbe allein, damit die Aussage in beiden Themes und
+  bei Farbfehlsichtigkeit erhalten bleibt.
+- **Layout:** Zwei Spalten, wo das Panel breit genug ist, sonst eine
+  (`repeat(auto-fit,minmax(150px,1fr))`). Leere Plätze bleiben als leerer Platz
+  sichtbar und werden nicht als Soldat verkleidet.
+- **Portraits:** WESSEN Gesicht eine Karte zeigen darf, entscheidet der Aufrufer,
+  nicht das Panel (`portraitFor`). Das eigene kommt aus dem schon gerenderten
+  Portrait, das eines Mitspielers live aus genau den zwei Profilfeldern, die die
+  Block-2-Regeln freigeben. Solange die nicht veröffentlicht sind, wird das
+  Lesen verweigert und die Karte zeigt den neutralen Platzhalter – dieselbe
+  ehrliche Antwort, die die Freundesliste heute schon gibt.
+- **Befund beim Bauen (CSS):** `.four-party-list li` ist eine Klasse plus ein
+  Element und gewinnt damit gegen ein nacktes `.party-card` – die Karte hätte
+  die zentrierte Ausrichtung der Zeile geerbt. Die Regel heißt deshalb
+  `.party-roster .party-card`.
+- **Befund beim Bauen (Cache):** `style.css` ist per Test an die
+  Release-Welle (`release-version.json`) genagelt. Eine Änderung mitten in der
+  Welle würde ein zurückkehrendes Browserfenster mit neuem Markup und alter CSS
+  treffen. Das Layout liegt darum in `interface-redesign.css`, das eine eigene
+  Cache-Welle trägt.
+- **Übersetzung:** „Team {letter}" war der einzige neue String; er liegt jetzt
+  im deutschen Wörterbuch (der Wächter in `translation-coverage.test.mjs`
+  bestand darauf, zu Recht).
+- **Änderungen / Dateien:** `firebase-four-panel.mjs` (Karten, Portrait-Wachen),
+  `account.js` (Anschluss der Portraits), `index.html` (Klasse am Roster und
+  neue Cache-Welle für `interface-redesign.css`), `interface-redesign.css`
+  (Kartenlayout), `localization-de.mjs` (ein String),
+  `tests/four-panel.test.mjs` (fünf neue Fälle, zwei umgestellte) und
+  `tests/party-end-panel-race.test.mjs` (Dokument-Double trägt die
+  Eigenschaften, die eine Karte braucht).
+- **Prüfungen:** 27/27 in `four-panel.test.mjs`; vollständiger serieller Lauf
+  1031 bestanden, 0 fehlgeschlagen. Die Browserläufe in CI (`multiplayer-browser`
+  und `social-cleanup-browser`) suchen den Namen im Roster weiterhin als Text –
+  die Karte schreibt ihn genau einmal, damit diese Suche eindeutig bleibt.
+- **Grenzen:** Kein Mensch hat die Karten gesehen. Das Layout ist gerechnet,
+  nicht geprüft; die Abnahme auf echten Geräten (Hochformat, kleine Displays)
+  bleibt offen.
+
+## IPL-0039 – Block 3 / A: Party-Roster als Karten
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/422699c8-0815games-github-io`,
+  Basis `b3dd1a2` (Main nach dem Merge von #298).
+- **Auftrag:** „Oke. Weiter." Block 2 ist bis auf die Veröffentlichung (die
+  einen frischen Export braucht) und die Abnahme auf echten Geräten fertig,
+  also der nächste Punkt der Reihe: Block 3 · Oberfläche.
+- **Was gebaut wurde:** Das Party-Roster war eine Textzeile pro Soldat
+  („Cara · Host · Team A · Bereit"). Es sind jetzt vier Karten: Portrait, Name,
+  Rang mit Abzeichen, Rolle und Bereitschaft.
+- **Rang:** Aus dem veröffentlichten Level abgeleitet und nie gespeichert
+  (`rank-insignia.mjs`, PR #284). Ein fehlendes oder unlesbares Level zeigt den
+  niedrigsten Rang und erfindet keinen.
+- **Bereitschaft:** gefüllter Punkt für „bereit", hohler für „nicht bereit".
+  Bewusst nicht über eine Farbe allein, damit die Aussage in beiden Themes und
+  bei Farbfehlsichtigkeit erhalten bleibt.
+- **Layout:** Zwei Spalten, wo das Panel breit genug ist, sonst eine
+  (`repeat(auto-fit,minmax(150px,1fr))`). Leere Plätze bleiben als leerer Platz
+  sichtbar und werden nicht als Soldat verkleidet.
+- **Portraits:** WESSEN Gesicht eine Karte zeigen darf, entscheidet der
+  Aufrufer, nicht das Panel (`portraitFor`). Das eigene kommt aus dem schon
+  gerenderten Portrait, das eines Mitspielers live aus genau den zwei
+  Profilfeldern, die die Block-2-Regeln freigeben. Solange die nicht
+  veröffentlicht sind, wird das Lesen verweigert und die Karte zeigt den
+  neutralen Platzhalter – dieselbe ehrliche Antwort, die die Freundesliste
+  heute schon gibt.
+- **Befund beim Bauen (CSS):** `.four-party-list li` ist eine Klasse plus ein
+  Element und gewinnt damit gegen ein nacktes `.party-card` – die Karte hätte
+  die zentrierte Ausrichtung der Zeile geerbt. Die Regel heißt deshalb
+  `.party-roster .party-card`.
+- **Befund beim Bauen (Cache):** `style.css` ist per Test an die Release-Welle
+  (`release-version.json`) genagelt. Eine Änderung mitten in der Welle würde
+  ein zurückkehrendes Browserfenster mit neuem Markup und alter CSS treffen.
+  Das Layout liegt darum in `interface-redesign.css`, das eine eigene
+  Cache-Welle trägt.
+- **Übersetzung:** „Team {letter}" war der einzige neue String; er liegt jetzt
+  im deutschen Wörterbuch (der Wächter in `translation-coverage.test.mjs`
+  bestand darauf, zu Recht).
+- **Änderungen / Dateien:** `firebase-four-panel.mjs` (Karten,
+  Portrait-Wachen), `account.js` (Anschluss der Portraits), `index.html`
+  (Klasse am Roster und neue Cache-Welle für `interface-redesign.css`),
+  `interface-redesign.css` (Kartenlayout), `localization-de.mjs` (ein String),
+  `tests/four-panel.test.mjs` (fünf neue Fälle, zwei umgestellte) und
+  `tests/party-end-panel-race.test.mjs` (Dokument-Double trägt die
+  Eigenschaften, die eine Karte braucht).
+- **Prüfungen:** 27/27 in `four-panel.test.mjs`; vollständiger serieller Lauf
+  1031 bestanden, 0 fehlgeschlagen. Die Browserläufe in CI
+  (`multiplayer-browser`, `social-cleanup-browser`) suchen den Namen im Roster
+  weiterhin als Text – die Karte schreibt ihn genau einmal, damit diese Suche
+  eindeutig bleibt.
+- **Grenzen:** Kein Mensch hat die Karten gesehen. Das Layout ist gerechnet,
+  nicht geprüft; die Abnahme auf echten Geräten (Hochformat, kleine Displays)
+  bleibt offen.
+
 ## IPL-0038 – Block 2 / A1: Umbenennung als Mechanismus (Regeln vorbereitet)
 
 - **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes

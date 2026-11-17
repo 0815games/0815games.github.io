@@ -28,6 +28,31 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .firebase-party .party-mode{background:#233b2e;border:1px solid #6e8268;color:#f1ead4;border-radius:3px}
 .firebase-party .party-mode label,.firebase-party .party-mode .hint{color:#d2dac3}
 .firebase-party .four-party-list li,.firebase-party .party-requests>div{background:#2d4738;color:#f3ead1;border:1px solid #71866d;border-radius:3px}
+
+/* Party roster as cards: portrait, name, rank, role and readiness. This rides
+   the redesign file's own cache wave on purpose - style.css is pinned to the
+   release build, so a mid-wave change there would reach a returning browser
+   without its layout. Two columns wherever the panel is wide enough, one when
+   it is not; no colours, the card keeps whatever the active theme gives a row. */
+.party-roster{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+/* `.four-party-list li` is one class plus one element, so a bare `.party-card`
+   would lose to it and inherit the row's centred alignment. */
+.party-roster .party-card{align-items:flex-start;gap:9px;padding:8px 9px}
+.party-card-open{opacity:.7}
+.party-roster .party-card span{flex:none}
+.party-card-portrait{width:40px;height:40px;flex:0 0 auto;object-fit:cover;border:1px solid currentColor;border-radius:3px;opacity:.9}
+.party-card-body{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-width:0}
+.party-card-name{font-size:13px;font-weight:bold;line-height:1.25;overflow-wrap:anywhere}
+.party-card-rank{display:flex;align-items:center;gap:5px;font-size:10px;letter-spacing:.06em;opacity:.85}
+.party-card-insignia{display:block;width:20px;line-height:0}
+.party-card-insignia svg{display:block;width:100%;height:auto}
+.party-card-tags{display:flex;flex-wrap:wrap;gap:4px}
+.party-tag{font-size:9px;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;padding:1px 4px;border:1px solid currentColor;border-radius:2px;opacity:.75}
+.party-card-state{display:flex;align-items:center;font-size:9px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase}
+.party-card-state::before{content:'';box-sizing:border-box;flex:0 0 auto;width:7px;height:7px;margin-right:5px;border:1px solid currentColor;border-radius:50%}
+/* Ready is a filled dot, "not ready" a hollow one: the same meaning in both themes, and never carried by colour alone. */
+.party-card-state.is-ready::before{background:currentColor}
+.party-card-state.is-waiting{opacity:.65}
 .firebase-party .four-party h3,.firebase-party h3{color:#e0cb97;letter-spacing:.12em}
 
 /* Tactical sheet and confirmation windows remain compact and scrollable. */

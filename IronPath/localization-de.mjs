@@ -131,6 +131,7 @@ export const germanText=Object.freeze({
   "Not ready": "Nicht bereit",
   "Open": "Frei",
   "Host": "Host",
+  "Team {letter}": "Team {letter}",
   "Slot {number} · Open": "Platz {number} · Frei",
   "Party connection lost. Check your connection or leave and try again.": "Verbindung zur Gruppe verloren. Prüfe deine Verbindung oder verlasse die Gruppe und versuche es erneut.",
   "Could not complete that action. Check your connection and try again.": "Aktion fehlgeschlagen. Prüfe deine Verbindung und versuche es erneut.",
