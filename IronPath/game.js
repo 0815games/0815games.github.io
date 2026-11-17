@@ -38,7 +38,8 @@ import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trai
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { specializationRank, upgradeCostFor } from './tower-specialization.mjs?v=20261112-kits1';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261117-shimmer1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261112-kits1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -892,7 +893,9 @@ function renderResults(target){
       menuNotice(coop?'Tap a tower for details. Grey options need more supplies. Battle continues in co-op.':'Tap a tower for details. Grey options need more supplies. Battle paused.');
     }else if(mode==='branches'){
       const cost=upgradeCostFor(tower,upgradeCost(tower.level)),sharedUpgrade=state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):'';
-      branches[tower.type].forEach((branch,i)=>{const required=i===2?5:i===3?10:0,locked=(state.players[me()]?.level||1)<required;actions.push({icon:'branch',price:cost,label:tr(branch.name),summary:tr(branch.description)+(locked?tr(' · LOCKED UNTIL LEVEL {level}',{level:required}):''),unaffordable:supplies()<cost,locked,lockLevel:required,description:tr('View {name}: {description}. {cost} supplies',{name:tr(branch.name),description:tr(branch.description),cost})+(locked?tr('. Unlocks at level {level}.',{level:required}):'')+(supplies()<cost?tr('. Not enough supplies.') :''),run:()=>showDetails(()=>tr(branch.name),()=>tr('{description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.',{description:tr(branch.description)})+' '+tr('RANK II at level 4: {rank2}. RANK III at level 5: {rank3}.',{rank2:tr(branch.rank2),rank3:tr(branch.rank3)})+(state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):''),cost,'UPGRADE',()=>upgrade(i),required)});});
+      // The unlock level is the protocol's rule and the field shimmer's, not a
+      // third copy of the numbers.
+      branches[tower.type].forEach((branch,i)=>{const required=branchUnlockLevel(i),locked=(state.players[me()]?.level||1)<required;actions.push({icon:'branch',price:cost,label:tr(branch.name),summary:tr(branch.description)+(locked?tr(' · LOCKED UNTIL LEVEL {level}',{level:required}):''),unaffordable:supplies()<cost,locked,lockLevel:required,description:tr('View {name}: {description}. {cost} supplies',{name:tr(branch.name),description:tr(branch.description),cost})+(locked?tr('. Unlocks at level {level}.',{level:required}):'')+(supplies()<cost?tr('. Not enough supplies.') :''),run:()=>showDetails(()=>tr(branch.name),()=>tr('{description}. Level 3 also increases the base damage multiplier before specialization and enemy modifiers. This specialization is permanent.',{description:tr(branch.description)})+' '+tr('RANK II at level 4: {rank2}. RANK III at level 5: {rank3}.',{rank2:tr(branch.rank2),rank3:tr(branch.rank3)})+(state.individualSupplies&&tower.ownerId!==me()?tr(' You pay for this upgrade; any sale refund goes to {name}.',{name:state.players[tower.ownerId]?.name||tr('the builder')}):''),cost,'UPGRADE',()=>upgrade(i),required)});});
       menuNotice(coop?'Tap a specialization to see its effects. Battle continues in co-op.':'Tap a specialization to see its effects. Battle paused.');
     }else if(mode==='confirmSell'){
       const ownerName=state.players[tower.ownerId]?.name||tr('tower owner'),mine=!state.individualSupplies||tower.ownerId===me();
@@ -1149,6 +1152,18 @@ function renderResults(target){
     // is drawn at screen coordinates while taps/panning use world coordinates.
     const drawBattle=()=>{
       drawOwn();
+      // The field shimmer: a tower whose next step is unlocked AND paid for
+      // gets a ring, and nothing else on the field says "improve this one". A
+      // ring on a tower the soldier cannot afford would promise an upgrade the
+      // menu then refuses, so the wallet decides - every frame, never cached.
+      // Reduced graphics keeps the ring and drops the breathing: the mark
+      // stands still instead of pulsing.
+      const now=performance.now();
+      for(const cue of towerUpgradeCues(visual,{supplies:supplies(),level:state.players[me()]?.level,pads,skipPad:menuPad})){
+        const breath=reducedMotion?0:Math.sin(now/420);
+        ctx.save();ctx.beginPath();ctx.ellipse(cue.x,cue.y,37+breath*2,26+breath*1.5,0,0,Math.PI*2);
+        ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?2.5:2;ctx.globalAlpha=reducedMotion?.72:.42+.2*breath;ctx.stroke();ctx.restore();
+      }
       if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
     };
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();

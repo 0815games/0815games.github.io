@@ -1795,3 +1795,61 @@ Korrektur nach dem ersten CI-Lauf (PR #293):
   Zeile umbrechen kann – bleibt offen. Der Balken hinkt einer Welle hinterher,
   weil er nur Bestätigtes zeigt; das ist die gewollte Antwort, der Feldreport
   meldet das Speichern separat.
+
+## IPL-0041 – Block 3 / C: Endless-Turmschimmer
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
+  Sitzungsdatum 2026-10-31 UTC. Branch `arena/e813b4d8-0815games-github-io`,
+  Basis `8672840` (Main nach dem Merge von #300).
+- **Abnahme durch den Betreiber (erste menschliche Sichtung der Kachel von
+  IPL-0040):** „zum jetzigen Zeitpunkt passt die Zeile im VW Modus beim Handy
+  ganz gut“ – die Statuszeile mit der EP-Kachel passt auf dem Telefon. Damit ist
+  die größte offene Frage aus IPL-0040 (Umbruch auf schmalen Displays) erstmals
+  von einem Menschen gesehen und für gut befunden, wenn auch nur in dieser einen
+  Ansicht.
+- **Auftrag:** „dann weiter mit dem nächsten Punkt“ – Block 3, der nächste
+  offene Punkt: der Endless-Turmschimmer.
+- **Was gebaut wurde:** Ein goldener Ring um jeden Turm, dessen nächster Schritt
+  offen **und** bezahlt ist (Radius 37 × 26 um die Bauplatte). Der Ring atmet
+  leicht; bei reduzierter Grafik steht er still und etwas kräftiger da. Ein
+  beendeter Einsatz lädt zu nichts mehr ein, und der Turm, dessen eigenes Blatt
+  offen ist, tritt zurück – das Blatt nennt den Preis bereits.
+- **Die Bedingung:** Ein Ring an einem Turm, den der Soldat nicht bezahlen
+  kann, verspricht ein Upgrade, das das Menü dann verweigert. `supplies()` ist
+  die Zahl, die sich in jedem Bild bewegt, also wird die Antwort jeden Frame neu
+  aus der Geldbörse gerechnet und nie gemerkt (`tower-upgrade-cue.mjs`). Der
+  Veteran-Rabatt von 15 % gilt auch hier: der Ring erscheint beim Preis, den das
+  Menü wirklich abrechnet, nicht beim Grundpreis.
+- **„Freigeschaltet“ – eine Regel, ein Ort:** Die einzige Sperre im Spiel ist
+  die Spezialisierung (Veteran ab Soldatenstufe 5, Bossjäger ab 10). Vorher
+  standen die Schwellen an zwei Stellen (Protokoll in `match.mjs`, Menü in
+  `game.js`); mit dem Schimmer wären es drei gewesen. Sie liegen jetzt einmal in
+  `tower-specialization.mjs` (`branchUnlockLevel`, `branchUnlocked`,
+  `anyBranchUnlocked`), und das Protokoll und das Menü fragen dieselbe Regel –
+  die Wortlaute der Ablehnung sind unverändert (`tests/tower-specialization.test.mjs`
+  prüft die Ablehnung bei Stufe 4 und 9 durch `applyCommand`).
+- **Ehrliche Einordnung der Sperre:** Die ersten beiden Zweige sind von Anfang
+  an offen, darum ist die Stufe-2-Stufe praktisch immer freigegeben – der
+  Geldbeutel entscheidet fast immer. Der Schimmer stellt die Frage trotzdem,
+  damit er bei einer späteren Regeländerung nicht plötzlich auf eine
+  verschlossene Tür zeigt.
+- **Prüfungen:** `tests/tower-upgrade-cue.test.mjs` 7/7 und
+  `tests/tower-shimmer.test.mjs` 3/3 (neu). Der zweite Test fährt das echte
+  `game.js` gegen eine Stub-Leinwand und liest die Striche zurück: nach dem
+  Bauen eines MG (50 von 125, nächste Stufe 70) liegt genau ein Ring auf der
+  Bauplatte; nach einem zweiten Turm (25 übrig) ist das Feld still. Für
+  „ruhige Markierung“ wird `performance.now()` festgehalten: bei reduzierter
+  Grafik ist der Ring in zwei Bildern identisch, mit voller Grafik atmet er.
+  Vollständiger serieller Lauf 1049 bestanden, 0 fehlgeschlagen,
+  1 absichtlich übersprungen.
+- **Änderungen / Dateien:** `tower-upgrade-cue.mjs` (neu),
+  `tests/tower-upgrade-cue.test.mjs` und `tests/tower-shimmer.test.mjs` (neu),
+  `game.js` (Ring, Menü fragt die gemeinsame Regel), `match.mjs` (Protokoll
+  fragt sie ebenfalls), `tower-specialization.mjs` (Regel),
+  `tests/tower-specialization.test.mjs` (Regel + Ablehnungsschwellen),
+  `PATCH-BLOECKE.md` (Punkt abgehakt). Acht Test-Harnesse, die `game.js` über
+  eine Daten-URL laden, kennen das neue Modul in ihrer Umleitungsliste.
+- **Grenzen:** Kein Mensch hat den Ring gesehen. Die Maschine sieht die Striche,
+  aber nicht, ob er auf dem Feld gut aussieht – besonders nicht, wenn im späten
+  Endless-Lauf viele Türme gleichzeitig bezahlbar sind und entsprechend viele
+  Ringe leuchten. Das ist die offene Frage dieses Schritts.

@@ -8,7 +8,7 @@ import {parseBuild,abilityName,webBonuses} from './skills.mjs?v=20261107-balance
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { waveFormation,missionFormation } from './combat.mjs?v=20261031-finale1';
-import { upgradeCostFor } from './tower-specialization.mjs?v=20261112-kits1';
+import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261112-kits1';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
 import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261031-patch4';
@@ -146,8 +146,9 @@ export function applyCommand(state, playerId, command) {
       if(command.expectedTowerId!==undefined&&(tower.id!==command.expectedTowerId||tower.level!==command.expectedLevel))return {ok:false,reason:'Tower changed. Select it again.'};
       if(upgradeCost(tower.level)===null||towerUpgradeInvestment(tower.level+1)===null||!Number.isSafeInteger(TOWER_COSTS[tower.type]+towerUpgradeInvestment(tower.level+1)))return {ok:false,reason:'Tower cannot be upgraded further.'};
       if(tower.level===2&&![0,1,2,3].includes(command.branch))return {ok:false,reason:'Choose a valid specialization.'};
-      if(tower.level===2&&command.branch===2&&player.level<5)return {ok:false,reason:'Veteran specialization unlocks at soldier level 5.'};
-      if(tower.level===2&&command.branch===3&&player.level<10)return {ok:false,reason:'Boss Hunter specialization unlocks at soldier level 10.'};
+      // One rule for "is this branch open to this soldier", shared with the menu
+      // and with the field shimmer; only the wording of the refusal stays here.
+      if(tower.level===2&&!branchUnlocked(command.branch,player.level))return {ok:false,reason:command.branch===2?'Veteran specialization unlocks at soldier level 5.':'Boss Hunter specialization unlocks at soldier level 10.'};
       const cost=upgradeCostFor(tower,upgradeCost(tower.level));if(getSupplies(state,playerId)<cost)return {ok:false,reason:`Not enough supplies. You need ${cost}.`};
       addSupplies(state,playerId,-cost);if(tower.level===2)tower.branch=command.branch;tower.level++;return {ok:true};
     }

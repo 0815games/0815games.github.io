@@ -367,10 +367,16 @@ entstand, ist nicht sicher belegt.
   Soldatendossier und Kampfprofil ein. Dies ist kein eigener Rang im Report.
 - [ ] **Party-Roster:** Vier kompakte Karten mit Avatar, Name, Rang, Host/Team
   und Bereitschaft; 2×2, wo Platz ist. Die aktuelle Darstellung ist eine Liste.
-- [ ] **Endless-Turmschimmer:** Nur freigeschaltete und tatsächlich bezahlbare
+- [x] **Endless-Turmschimmer:** Nur freigeschaltete und tatsächlich bezahlbare
   Upgrades markieren; reduzierte Grafik erhält eine ruhige Markierung. Im
   vorhandenen Turmmenü gibt es bereits Preis- und Sperranzeigen, nicht aber
-  diesen Schimmer auf dem Spielfeld.
+  diesen Schimmer auf dem Spielfeld. Gebaut mit
+  [PR #301](https://github.com/0815games/0815games.github.io/pull/301)
+  ([IPL-0041](PATCH-LOG.md#ipl-0041--block-3--c-endless-turmschimmer)): ein
+  goldener Ring um jeden Turm, dessen nächster Schritt offen **und** bezahlt
+  ist. Die einzige Sperre im Spiel ist die Spezialisierung (Veteran ab Stufe 5,
+  Bossjäger ab 10) – die Frage stellt der Schimmer über dieselbe Regel, die das
+  Protokoll durchsetzt. Bei reduzierter Grafik steht der Ring still.
 - [x] **XP im Kampf-HUD:** Bestätigtes Level, aktuellen/benötigten XP-Wert,
   Balken und Restmenge während des Einsatzes zeigen. Vorhandene Menü-/Report-
   Balken erfüllen dies nicht; unbestätigte Saves dürfen keinen Levelaufstieg

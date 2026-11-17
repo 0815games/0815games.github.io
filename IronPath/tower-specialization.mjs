@@ -123,3 +123,17 @@ export function upgradeCostFor(tower,cost){
   if(!Number.isFinite(cost))return cost;
   return isKit(tower,undefined,2,3)?Math.ceil(cost*.85):cost;
 }
+
+// How many branches a tower type offers, and which soldier level each one
+// needs: branch 2 is the Veteran kit, branch 3 the Boss Hunter, the first two
+// are open from the very first tower. Three places ask this question - the
+// protocol that rejects the command, the menu that greys the choice out, and
+// the field shimmer that marks a tower - and they must never disagree, so the
+// answer lives here once.
+export const BRANCH_COUNT=4;
+export function branchUnlockLevel(branch){return branch===2?5:branch===3?10:0;}
+export function branchUnlocked(branch,level){return Number.isFinite(level)&&level>=branchUnlockLevel(branch);}
+export function anyBranchUnlocked(level){
+  for(let branch=0;branch<BRANCH_COUNT;branch++)if(branchUnlocked(branch,level))return true;
+  return false;
+}
