@@ -19,6 +19,9 @@ import {projectFourGameView} from './four-game-view.mjs?v=20261031-patch4';
 import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261031-mpview1';
 import {drawInBattleViewport} from './battle-viewport.mjs?v=20261031-mpview1';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
+import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
+// The rank mark is painted by the kit that owns ranks; the report only asks which one.
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-patch4';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261112-tagless1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
@@ -145,6 +148,16 @@ function renderResults(target){
     $('resultsRewardXp').textContent=tr('+{value} XP',{value:target.xp});$('resultsRewardScrap').textContent=`+${target.scrap}`;$('resultsEquipment').hidden=!target.items.length;$('resultsEquipment').textContent=target.items.length?tr('New equipment: {items}',{items:target.items.map(x=>tr(x)).join(', ')}):'';
     const currentProfile=account.getProfile(),profiles=[target.profile,currentProfile].filter(p=>Number.isSafeInteger(p?.xp)&&p.xp>=0),profile=profiles.sort((a,b)=>b.xp-a.xp)[0];$('resultsProgressSection').hidden=!profile;
     if(profile){const progress=characterProgress(profile.xp);$('resultsProgressLevel').textContent=tr('LEVEL {level}',{level:progress.level});$('resultsProgressBar').max=progress.required;$('resultsProgressBar').value=progress.current;$('resultsProgressText').textContent=tr('{current} / {required} XP to next level',{current:progress.current,required:progress.required});}
+    // The rank sits next to the level because that is what a uniform shows:
+    // derived from the confirmed profile, never stored. A promotion is claimed
+    // only when the committed saves of THIS report carried the soldier across a
+    // threshold - levels alone are not a new rank, and a pending save is not a
+    // promotion.
+    const standing=profile?reportRank({xp:profile.xp,levelsGained:target.levels}):null;
+    $('resultsRank').hidden=!standing;
+    if(standing){renderRankInsignia(document,$('resultsRankInsignia'),{level:standing.level},{size:22});$('resultsRankName').textContent=tr(standing.rank.name);}
+    $('resultsPromotion').hidden=!standing?.promoted;
+    if(standing?.promoted){renderRankInsignia(document,$('resultsPromotionInsignia'),{level:standing.level},{size:34});$('resultsPromotionRank').textContent=tr(standing.rank.name);$('resultsPromotionFrom').textContent=tr('Previously {rank}.',{rank:tr(standing.previous.name)});}
     // An earlier receipt may cover only one block. For coordinated parties,
     // show full confirmation only after every final mask has been verified.
     const coopUnconfirmed=target.mode==='coop'&&(target.partyFinalizationRequired?!target.partyRewardsConfirmed:!target.confirmedEarlier&&!target.partyRewardsConfirmed);
