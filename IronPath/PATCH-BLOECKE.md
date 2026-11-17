@@ -802,15 +802,20 @@ und Live-Abnahme bleiben offen.
   neben ihrem Namen. Zustände: `BEREIT`, `BEREIT IN {s}s`, `KEINE ZIELE`,
   `WELLE STARTEN`, `PANEL SCHLIESSEN`, `WARTEN`, `EINSATZ BEENDET` – in der
   Reihenfolge, in der ein Spieler sie sich fragt, nicht in der Reihenfolge des
-  Codes. **Ohne** gewählte Fähigkeit steht `WÄHLEN UNTER FÄHIGKEITEN`, und ein
-  Antippen wiederholt den Hinweis, statt nichts zu tun.
+  Codes. **Ohne** gewählte Fähigkeit steht `WÄHLEN UNTER FÄHIGKEITEN`, und der
+  Funk nennt einmal, wo sie zu wählen ist – der Knopf bleibt in diesem Zustand
+  deaktiviert und geht aus dem Treffertest heraus, damit er keine Drucke auf
+  den Bauplatz darunter schluckt.
 - [x] **Einmalige Einführung:** Beim ersten wirklich bereiten Zustand trägt der
   Knopf für einige Atemzüge einen Ring, und der Funk nennt ihn einmal. Ein Tap
   löst weiterhin direkt aus; ein laufendes Save kann ihn nicht ein zweites Mal
   auslösen (Pending-Sperre). Das Feld-Feedback pro Fähigkeitstyp war bereits
   vorhanden und bleibt unverändert.
 - [x] **Touchziel:** mindestens 48 × 48 px, im echten Chromium in drei Fenstern
-  nachgemessen (320×700, 390×844, 1440×900).
+  nachgemessen (320×700, 390×844, 1440×900). Gemessen wird auch, dass das HUD
+  **nicht auf dem `DEPLOY`-Knopf liegt** und dieser wirklich erreichbar bleibt:
+  die erste Fassung stand im Befehlsfeld, und Chromium weigerte sich zu drücken
+  ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
 - [ ] **Abnahme offen:** Mobil und Desktop von Menschenhand, alle fünf
   Fähigkeitstypen, Cooldown, keine gültigen Ziele, aktive Dialoge,
   Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung am
