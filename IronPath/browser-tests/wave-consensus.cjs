@@ -88,7 +88,10 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     // while the handset is open, and any tap out on the field shuts it - so a
     // test that taps the speed button and then reads the log is reading a panel
     // that closed three taps ago. Open it, then read it.
-    const readRadio=async(page,mobile)=>{if(await page.locator('#radioLog').isHidden())await tapOrClick(page,'#radioToggle',mobile);return page.locator('#radioLogList').innerText();};
+    // No `idle` here: opening the handset is not a wave operation, and this
+    // harness deliberately holds one in flight to test a late receipt - a wait
+    // for `__wavePending` would wait for the very thing the test is holding.
+    const readRadio=async(page,mobile)=>{if(await page.locator('#radioLog').isHidden()){if(mobile)await page.locator('#radioToggle').tap();else await page.locator('#radioToggle').click();}return page.locator('#radioLogList').innerText();};
     const guestMobile=(count-1)%3!==2,prompt='#multiplayerPrompt',approve='#multiplayerPromptActions [data-action="approve"]',decline='#multiplayerPromptActions [data-action="decline"]',later='#multiplayerPromptActions [data-action="later"]';
     const waitPrompt=page=>page.locator(prompt).waitFor({state:'visible'});
     const checkPrompt=async page=>{const box=await page.locator(prompt).evaluate(element=>{const r=element.getBoundingClientRect(),buttons=[...element.querySelectorAll('button')].map(button=>{const b=button.getBoundingClientRect();return {width:b.width,height:b.height};});return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:innerWidth,height:innerHeight,scroll:element.scrollWidth,client:element.clientWidth,buttons};});assert.ok(box.left>=0&&box.top>=0&&box.right<=box.width+1&&box.bottom<=box.height+1&&box.scroll<=box.client+1,`${mode}: centered card fits: ${JSON.stringify(box)}`);assert.ok(Math.abs((box.left+box.right)/2-box.width/2)<2&&Math.abs((box.top+box.bottom)/2-box.height/2)<2,`${mode}: card is centered`);assert.ok(box.buttons.every(b=>b.width>=44&&b.height>=44),`${mode}: buttons have touch-sized targets`);};
