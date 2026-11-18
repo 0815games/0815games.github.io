@@ -3248,4 +3248,104 @@ Grenzen / Offen:
   - **CI-Matrix-Wiederholung (`.github/workflows/ironpath-firebase-rules.yml`):** `party-finalization-browser` auf `timeout-minutes: 20` mit maximal 1 automatischem Wiederholungsversuch (`timeout 480` pro Versuch, `::warning` und gezielter Bereinigung von `java .*emulator|firebase-tools|chrome-headless|headless_shell|chromium` nach einem fehlgeschlagenen ersten Versuch).
   - **Cache-Welle `20261031-patch8` (`IronPath/release-version.json`, `IronPath/index.html`, `IronPath/patch-notes.mjs`, Stammmodule, `IronPath/tests/multiplayer-build-stamp.test.mjs`, `IronPath/browser-tests/cache-wave.cjs`):** Sämtliche Browser-Importer von `20261031-patch7`, `combat.mjs?v=20261031-finale1`, `tower-specialization.mjs?v=20261112-kits1` und `tower-upgrade-cue.mjs?v=20261117-shimmer1` auf `?v=20261031-patch8` gehoben und im Build-Stamp- und Cache-Wave-Test fest verankert.
 
+## IPL-0066 – Block 5: 6-Klassen-System (`Air Defense`), Klassenturmwege, V2-Migration, RTDB-Rules-Kandidat & Cache-Welle `20261118-block5` (lokal)
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC` (Arbeitsstand auf
+  Branch `arena/8eb7d0fe-0815games-github-io` ausgehend von `main` Commit
+  `e3954cd0efeed20faa2e0f984b5f96da9cf363e0`, nach Merge von PR `#317`).
+- **Block / Ziel:** Vollständige Umsetzung von Block 5 (Skills & exklusive
+  Klassen) inklusive sechster Luftabwehrklasse `Air Defense`, zweiphasigem
+  14-Knoten-Klassenbaum, getrennten Klassenturmwegen, einmaliger V1→V2-Migration
+  mit lokalem Altbuild-Backup, Protokollverdichtung, Cache-Welle `20261118-block5`
+  sowie additivem RTDB-Rules-Kandidat ohne automatisches Überschreiben der
+  Live-Produktionsregeln.
+- **Umfang im Detail:**
+  - **1 · V2-Skillsystem & 6. Klasse `Air Defense` (`IronPath/skills.mjs`,
+    `IronPath/skill-combos.mjs`, `IronPath/simulation.mjs`, `IronPath/combat.mjs`,
+    `IronPath/match.mjs`, `IronPath/ability-hud.mjs`, `IronPath/combat-fx.mjs`,
+    `IronPath/first-run-guide.mjs`):**
+    V2-Format `v2;<classId>;<rank>;<variant>;<14-bit-web>` mit `DEFAULT_BUILD = 'v2;none'`
+    und `MAX_CLASS_POINTS = 17`; exklusive Klassenwahl ab Level 2; neue Klasse
+    `airDefense` (*Luftabwehr*: aktive Hauptfähigkeit *Flak Curtain*,
+    Spezialistenvarianten *Interceptor* & *Iron Dome*, Air-Defense-Markierung
+    `markedByAirDefense` und Klassen-Capstone *Sky Sovereign*); sämtliche sechs
+    Klassen mit je 2 Spezialisten-Aktiven, 4 Doktrinen, 5 Meisterschaften inkl.
+    Capstone und 3 Kombos im fokussierten 14-Knoten-Baum (`development-ui.mjs`,
+    `skill-planner.mjs`, `skill-menu.css`, sechs SVG-Klassenabzeichen).
+  - **2 · Klassenturmwege getrennt von Level-3-Turmkits (`IronPath/tower-class-paths.mjs`,
+    `IronPath/match.mjs`, `IronPath/protocol.mjs`, `IronPath/game.js`,
+    `IronPath/cartoon-art.mjs`):**
+    Alle Grundtürme bleiben für jeden baubar; ab Klassenrang 2 (Stufe I) bzw. 3
+    (Stufe II) schaltet jeder Turm des Spielers den klassenspezifischen 2-Stufen-
+    Ausbauweg (`classUpgrade` mit `classPath` / `classTier`, proportionaler
+    Erstattung bei Verkauf und Sektorwechsel) zusätzlich und getrennt von den
+    zehn universellen Stufe-3-Turmkits (`tower-specialization.mjs`) frei.
+    `protocol.mjs` (`compactSkills` / `compactViewMatch`) verdichtet ausgehende
+    Multiplayer-Snapshots unter Beibehaltung von `classPath`, `classTier` und
+    `markedByAirDefense`.
+  - **3 · Einmalige V1→V2-Migration, UI & DE-Lokalisierung (`IronPath/skills-migration.mjs`,
+    `IronPath/account.js`, `IronPath/skill-summary-localization.mjs`,
+    `IronPath/localization-{de,skills-de,advanced-skills-de,towers-de,results-de,firstrun-de,game-errors-de}.mjs`):**
+    Atomare `runTransaction`-Migration in `account.js` überführt Altbuilds
+    einmalig auf `v2;none` (Sicherung unter `ironpath:skills-legacy-backup:<uid>`),
+    erstattet sämtliche verdienten Punkte bis `MAX_CLASS_POINTS` unter Erhalt
+    von XP, Level und Ausrüstung und blendet `#skillMigrationNotice` in EN/DE ein.
+  - **4 · Additiver RTDB-Rules-Kandidat (`IronPath/firebase/{block5-skills-candidate.mjs,block5.complete.draft.rules.json,firebase-block5.emulator.json,BLOCK5-SKILLS-ROLLOUT.md}` & `.github/workflows/ironpath-firebase-rules.yml`):**
+    Generiert ausgehend vom unveränderten Basis-Artefakt `WORKSHOP-RULES-TO-PUBLISH.json`
+    ausschließlich die drei `skills/.validate`-Pfade (`players/$uid/skills`,
+    `parties/$party/profiles/$uid/skills`, `fourParties/$party/profiles/$uid/skills`)
+    für V1 + V2 und ergänzt Emulator-Regeltests (`block5-skills-rules.test.mjs`,
+    `rules-test/block5-skills.test.mjs`). Keine automatische Änderung an
+    produktiven Firebase-Rules.
+  - **5 · Cache-Welle `20261118-block5`, Patch-Notes & Tests (`IronPath/release-version.json`,
+    `IronPath/index.html`, `IronPath/patch-notes.mjs`, `IronPath/tests/*.test.mjs`,
+    `IronPath/tests/balance-harness.mjs`, `IronPath/stress-tests/run.mjs`,
+    `IronPath/browser-tests/{command-center,friends-sections,interface-smoke,cache-wave}.cjs`):**
+    Alle Browser-Importer einheitlich auf `?v=20261118-block5` gehoben (`progression.mjs`
+    unverändert auf `20261105-prestige1`); sämtliche Testsuiten, Balance-Suiten,
+    Stresstests und Browser-Skripte auf V2 aktualisiert und um dedizierte Unit-Tests
+    `skills-migration.test.mjs`, `tower-class-paths.test.mjs` und
+    `block5-skills-rules.test.mjs` ergänzt.
+  - **6 · Klassen-Artworks, verzweigte Klassenbäume & Spezialisten-/Turmpfad-Effekte
+    (`IronPath/assets/class-*.jpg`, `IronPath/development-ui.mjs`, `IronPath/skill-menu.css`,
+    `IronPath/account.js`, `IronPath/combat-fx.mjs`, `IronPath/cartoon-art.mjs`,
+    `IronPath/ability-hud.mjs`, `IronPath/game.js`, `IronPath/localization-{skills,towers}-de.mjs`):**
+    Sechs optimierte `512x512`-Klassen-Embleme erstellt, Klassenwahlkarten und
+    fokussierte Klassen-Hero-Banner gestaltet, den Klassenbaum pro Klasse in
+    Kern-Stamm, parallele Spezialisierungs-/Doktrin-Äste (Pfad A/B mit
+    Verbindungslinien), Meisterschaft/Capstone und Klassen-Kombos gegliedert
+    sowie `towerClassIcon` klassenspezifisch ausgeprägt und mobile
+    Scroll-Erhaltung in `account.js` auf `.skills-workspace` ergänzt. Im Kampf
+    propagiert `combat-fx.mjs` `variant`, `recon`-Ziele und eigene
+    `engineer`-Türme; `cartoon-art.mjs` zeichnet individuelle Canvas-Effekte für
+    alle zwölf Spezialisten-Varianten sowie klassenfarbene Boden-Auren,
+    Klassen-Medaillons und Rang-I/II-Krönchen an Türmen; `ability-hud.mjs` und
+    `game.js` kennzeichnen Spezialisten-Varianten direkt im HUD-Symbol.
+- **Prüfungen & Grenzen (gemessen):**
+  - `node --test IronPath/tests/*.test.mjs` (über alle **255** Testdateien in 11
+    Teil-Batches): **1.140 bestanden**, `0` fehlgeschlagen, `1` bekannter
+    übersprungener Emulator-Lauf ohne lokales Java (`rules-publish-dry-run` /
+    Emulator-Suite). Darin enthalten: `balance-suite` (`17/17`), `squad-maps`
+    (`5/5`), die neuen Block-5-Suiten (`block5-skills-rules` `25/25` über 7
+    Rules-Hilfssuiten, `skills-migration` `2/2`, `tower-class-paths` `3/3`) sowie
+    erweiterte Tests in `development-ui.test.mjs`, `combat-fx.test.mjs`,
+    `cartoon-art.test.mjs` und `ability-hud.test.mjs`.
+  - `node IronPath/stress-tests/run.mjs`: alle 18 8-Wellen-Durchläufe
+    (Solo, Koop, Versus, 3er-Koop, 4er-Koop, 2v2), 6 Langläufe bis Welle 30,
+    500 Karten-Stichproben, 4er-/2v2-Dichte- sowie Protokoll-Tests bestanden.
+  - `node -c` über sämtliche Skripte in `IronPath/browser-tests/*.cjs`
+    bestanden (`command-center.cjs`, `friends-sections.cjs`, `interface-smoke.cjs`
+    und `cache-wave.cjs` auf V2 bzw. `20261118-block5` aktualisiert).
+  - `stageVersion({ sourceDir: './IronPath', outputDir: <tmp>, build: '20261118-block5' })`:
+    **634** Dateien fehlerfrei gestagt (`index.html`, `release-version.json`
+    `20261118-block5`, 6 `assets/class-*.jpg`, `skills-migration.mjs`,
+    `tower-class-paths.mjs`, `localization-results-de.mjs`,
+    `localization-game-errors-de.mjs`).
+  - **Grenzen:** Kein lokales `chromium` / `java` in dieser Sandbox; echte
+    Playwright-Chromium-Läufe, Firebase-Emulator-CI-Läufe, die separate
+    Produktionsveröffentlichung des RTDB-Rules-Kandidaten sowie echte
+    Mehrgeräte-Abnahme folgen gesondert.
+- **Git / PR / Status:** Lokal auf `arena/8eb7d0fe-0815games-github-io`
+  (`e3954cd0` Basis); bereit für Commit, Push und PR-CI.
+
 

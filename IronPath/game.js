@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261031-patch8';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261118-block5';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
+import {localizeGameMessage} from './game-localization.mjs?v=20261118-block5';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261031-patch8';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261118-block5';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -15,37 +15,39 @@ import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261031-patch8';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261031-patch8';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261031-patch8';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
+import {projectFourGameView} from './four-game-view.mjs?v=20261118-block5';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261118-block5';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261118-block5';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261118-block5';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-patch8';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261112-tagless1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261118-block5';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261118-block5';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-patch8';
-import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-patch8';
-import {abilityName} from './skills.mjs?v=20261107-balance1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261118-block5';
+import {createCombatEffects} from './combat-fx.mjs?v=20261118-block5';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261118-block5';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261118-block5';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261118-block5';
+import {towerClassIcon} from './development-ui.mjs?v=20261118-block5';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261031-patch8';
-import { createTutorial } from './tutorial.mjs?v=20261031-patch8';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261031-patch8';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261117-ability1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-patch8';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-patch8';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-patch8';
+import { createCoopInput } from './coop-input.mjs?v=20261118-block5';
+import { createTutorial } from './tutorial.mjs?v=20261118-block5';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261118-block5';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261118-block5';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261118-block5';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261118-block5';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261118-block5';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261031-patch8';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261118-block5';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261031-patch8';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261118-block5';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -175,7 +177,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     node.disabled=!hud.ready||abilityPending;
     $('abilityName').textContent=tr(hud.name).toUpperCase();
     $('abilityState').textContent=(ABILITY_STATE[hud.reason]||ABILITY_STATE.ready)(hud);
-    try{$('abilityIcon').innerHTML=abilityHudSvg(hud.active,{size:26});}catch{/* No DOM in unit tests. */}
+    try{$('abilityIcon').innerHTML=abilityHudSvg(hud.active,{size:26,variant:hud.variant});}catch{/* No DOM in unit tests. */}
     try{node.setAttribute('aria-label',`${tr(hud.name)}: ${$('abilityState').textContent}`);}catch{}
     if(hud.reason==='cooldown')abilityReadyNotified=false;
     if(hud.reason==='no-skill'&&!abilityEmptyHinted){abilityEmptyHinted=true;warn(tr('Choose an ability under SKILLS in the command center.'));}
@@ -509,7 +511,8 @@ function renderResults(target){
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
     const active=coop,input=coopInput,roster=rosterGeneration,focus=focusGeneration,wave=state.wave;
-    const running=state.running,mapId=state.mapId,menuAtClick=command.type==='upgrade'?menuRevision:null,detailsAtClick=command.type==='upgrade'&&$('towerDetails').open;
+    const isTowerUpgradeCmd=command.type==='upgrade'||command.type==='classUpgrade';
+    const running=state.running,mapId=state.mapId,menuAtClick=isTowerUpgradeCmd?menuRevision:null,detailsAtClick=isTowerUpgradeCmd&&$('towerDetails').open;
     const waveCounter=Number.isSafeInteger(state.waveRequestId)?state.waveRequestId:0;
     const speedCounter=Number.isSafeInteger(state.speedRequestId)?state.speedRequestId:null;
     // Stamp new requests and slow-downs with the last observed vote epoch.
@@ -527,11 +530,11 @@ function renderResults(target){
       if(command.type==='requestSpeed')return (state.speedRequestId??null)===speedCounter&&state.running&&state.speed!==2&&!state.speedRequest;
       if(['approveSpeed','declineSpeed','cancelSpeed'].includes(command.type))return state.running&&state.speedRequest?.id===command.requestId;
       if(command.type==='slowSpeed')return (state.speedRequestId??null)===speedCounter&&state.running&&state.speed===2;
-      if(command.type==='upgrade')return menuAtClick===menuRevision&&!menu.hidden&&menuPad===command.pad&&$('towerDetails').open===detailsAtClick&&state.mapId===mapId&&state.running===running&&state.towers.some(t=>t.pad===command.pad&&t.id===command.expectedTowerId&&t.level===command.expectedLevel);
+      if(command.type==='upgrade'||command.type==='classUpgrade')return menuAtClick===menuRevision&&!menu.hidden&&menuPad===command.pad&&$('towerDetails').open===detailsAtClick&&state.mapId===mapId&&state.running===running&&state.towers.some(t=>t.pad===command.pad&&t.id===command.expectedTowerId&&t.level===command.expectedLevel);
       return false;
     };
     const options=voteCommands.has(command.type)?{waitForDirection:true,isCurrent,onQueued:()=>notice('Sending request after movement is synchronized…')}:
-      command.type==='upgrade'?{waitForTower:true,isCurrent,staleReason:'Tower changed. Select it again.',onQueued:()=>{const text='Sending upgrade after the previous action is synchronized…';if(detailsAtClick&&$('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(text,tr);else notice(text);}}:undefined;
+      isTowerUpgradeCmd?{waitForTower:true,isCurrent,staleReason:'Tower changed. Select it again.',onQueued:()=>{const text='Sending upgrade after the previous action is synchronized…';if(detailsAtClick&&$('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(text,tr);else notice(text);}}:undefined;
     return input.execute(outgoing,options).then(result=>{if(coop===active)done(result);return result;});
   }
   // ONE message and one writer (field-notice.mjs). What matters flutters in
@@ -743,7 +746,7 @@ function renderResults(target){
       $('sectorPanel').hidden=!waiting;
       if(waiting){
         $('sectorTitle').textContent=tr('SECTOR {number} CLEARED',{number:sectorOf(state.mapId)});
-        $('sectorText').textContent=tr('Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0))),0)});
+        $('sectorText').textContent=tr('Fall back now. Your towers are lost in the retreat; you carry over a {refund} supply demolition refund.',{refund:state.towers.reduce((sum,tower)=>sum+Math.floor(.6*(TOWER_COSTS[tower.type]+(towerUpgradeInvestment(tower.level)??0)+classPathInvested(tower))),0)});
       }
     }
     if($('bossAlert')){
@@ -964,7 +967,7 @@ function renderResults(target){
       void reservationCommand(session,input,{type:'releaseBuild',pad}).finally(()=>{if(orphanReleases.get(pad)===marker)orphanReleases.delete(pad);});
     }
   }
-  const towerKey=t=>t?`${t.id??''}:${t.type}:${t.level}`:'empty';
+  const towerKey=t=>t?`${t.id??''}:${t.type}:${t.level}:${t.classPath||''}:${t.classTier||0}`:'empty';
   function closeMenu(){selectionEpoch++;menuRevision++;releaseReservation();menu.hidden=true;menuPad=null;menuTowerKey=null;detailAvailability=null;detailContent=null;}
   function showMenu(pad,mode='actions',refresh=false){
     const tower=state.towers.find(t=>t.pad===pad);menuPad=pad;menuMode=mode;state.selectedPad=tower?pad:null;
@@ -1002,6 +1005,39 @@ function renderResults(target){
       actions.push({icon:'upgrade',price:max?null:cost,unaffordable:!max&&supplies()<cost,label:max?tr('Upgrade unavailable'):tr(tower.level===2?'Choose specialization · {cost}':prestiging?'Prestige · {cost}':'Confirm upgrade · {cost}',{cost}),summary:max?tr('This tower cannot be upgraded further.'):tower.level===2?tr('Choose a permanent specialization.'):(prestiging?tr('Prestige {prestige}: level resets to 1; power and specialization stay, and damage increases.',{prestige:display.prestige+1}):tr('Confirm purchase: +0.3 damage multiplier.')+(tower.branch!=null&&tower.level>=3&&tower.level<5?' '+tr('Then RANK {rank}: {mechanic}',{rank:tower.level+1===4?2:3,mechanic:tr(branches[tower.type][tower.branch]['rank'+(tower.level+1===4?2:3)])}):''))+sharedUpgrade,disabled:max,unaffordable:!max&&supplies()<cost,description:max?tr('Upgrade unavailable'):tr('Upgrade to level {level}, prestige {prestige}, {cost} supplies',{level:towerDisplay(tower.level+1).level,prestige:towerDisplay(tower.level+1).prestige,cost})+(supplies()<cost?tr('. Not enough supplies.'):''),run:()=>{if(tower.level===2)showMenu(pad,'branches');else if(supplies()>=cost)upgrade(0);else warn('Not enough supplies to upgrade.');}});
       const mine=!state.individualSupplies||tower.ownerId===me(),ownerName=state.players[tower.ownerId]?.name||tr('the owner');
       actions.push({icon:'sell',label:mine?tr('Sell · +{amount}',{amount:towerRefund(tower)}):tr('Sell tower'),summary:mine?tr('Recover half of build and upgrade costs.'):tr('Half the costs go to {name}.',{name:ownerName}),description:mine?tr('Sell tower for {amount} supplies',{amount:towerRefund(tower)}):tr('Sell tower; refund goes to {name}',{name:ownerName}), run:()=>showMenu(pad,'confirmSell')});
+      const cls=classUpgradeState(state.players[me()],tower);
+      const clsCfg=classPathConfig(cls.classId),clsClassName=SKILL_PATH_MAP[cls.classId]?.name||cls.classId||'';
+      const clsReady=cls.reason==='ready',clsMaxed=cls.reason==='maxed',clsLocked=!clsReady&&!clsMaxed;
+      const clsLockRank=cls.reason==='rank-locked'?cls.requiredRank:0;
+      const clsOwnerName=state.players[tower.ownerId]?.name||tr('the builder');
+      const clsReason=cls.reason==='not-owner'?tr('Owned by {name}. Only the builder may attach their class path.',{name:clsOwnerName}):cls.reason==='no-class'?tr('Choose a class in Skills at level 2.'):cls.reason==='rank-locked'?tr('Requires {name} rank {rank} in Skills.',{name:tr(clsClassName),rank:cls.requiredRank}):clsMaxed?tr('Class upgrade path mastered.'):'';
+      const clsPathLabel=cls.spec?.label||clsCfg?.name||'Class Path';
+      const clsSummary=cls.spec?.summary||'';
+      actions.push({
+        icon:'classUpgrade',
+        classId:cls.classId||null,
+        price:cls.cost??null,
+        unaffordable:clsReady&&supplies()<cls.cost,
+        locked:clsLocked,
+        lockRank:clsLockRank,
+        label:cls.reason==='no-class'||cls.reason==='not-owner'?tr(clsCfg?.name||'Class Path'):clsReady?tr(clsPathLabel):tr(clsCfg?.name||'Class Path'),
+        summary:clsReady?tr(clsSummary):clsReason,
+        description:clsReady?tr('{name}, {cost} supplies. {effect}',{name:tr(clsPathLabel),cost:cls.cost,effect:tr(clsSummary)}):`${tr(clsPathLabel)}. ${clsReason}`,
+        run:()=>{
+          const title=()=>clsCfg?`${tr(clsClassName)} · ${tr(clsPathLabel)}`:tr('Class Tower Upgrade');
+          const detailText=()=>cls.reason==='no-class'?tr('Choose a soldier class in Skills at level 2 and reach rank 2 to unlock your class tower upgrade path on every tower.'):cls.reason==='not-owner'?tr('Only {name} can apply their class tower upgrade path to this tower (separate from level-3 tower kits).',{name:clsOwnerName}):clsMaxed?`${tr('Tier I')}: ${tr(clsCfg.tiers[0].summary)} · ${tr('Tier II')}: ${tr(clsCfg.tiers[1].summary)}`:`${clsReady?tr('Tier {tier}',{tier:cls.nextTier===2?'II':'I'}):clsReason}: ${tr(clsSummary)} ${tr('Separate from level-3 tower kits.')}`;
+          showDetails(title,detailText,cls.cost??null,'CLASS UPGRADE',()=>{
+            if(!clsReady)return;
+            dispatch({type:'classUpgrade',pad,...(coop?{expectedTowerId:tower.id,expectedLevel:tower.level}:{})},result=>{
+              if(!result.ok){if($('towerDetails').open)$('towerDetailsCost').textContent=localizeGameMessage(result.reason,tr);else warn(result.reason);return;}
+              if(!coop){combatFx.emit('classUpgrade',getMap(state.mapId).pads[pad],state);sound.play('upgrade');}
+              notice(()=>tr('{name} applied.',{name:tr(result.label||clsPathLabel)}));
+              if($('towerDetails').open)$('towerDetails').close();
+              closeMenu();updateUI();
+            });
+          },0,{lockReason:clsReason,forceDisabled:!clsReady});
+        }
+      });
       const name=tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name;
       menuNotice(()=>tr(towerDisplay(tower.level).prestige?'{name} · level {level} · prestige {prestige} · range {range}. {battle}':'{name} · level {level} · range {range}. {battle}',{name:tr(name),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige,range:Math.round(getTowerRange(tower)),battle:tr(coop?'Battle continues in co-op.':'Battle paused.')}));
     }
@@ -1010,15 +1046,15 @@ function renderResults(target){
     $('sheetMode').textContent=tr(coop?'BATTLE CONTINUES':'BATTLE PAUSED');
     $('sheetTitle').textContent=!tower?tr('Build defense'):mode==='branches'?tr('Choose specialization'):mode==='confirmSell'?tr('Sell tower?'):tr(towerDisplay(tower.level).prestige?'{name} · Level {level} · Prestige {prestige}':'{name} · Level {level}',{name:tr(tower.branch!=null?branches[tower.type][tower.branch].name:types[tower.type].name)+(tower.branch!=null&&specializationRank(tower)>0?tr(' · Rank {rank}',{rank:specializationRank(tower)}):''),level:towerDisplay(tower.level).level,prestige:towerDisplay(tower.level).prestige});
     $('sheetHint').textContent=!tower?tr('Choose a tower to inspect.'):mode==='branches'?tr('This choice is permanent.'):mode==='confirmSell'?tr('Confirm or cancel the sale.'):tr('Range {range} · tap an action for details',{range:Math.round(getTowerRange(tower))});
-    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;if(action?.icon)button.dataset.icon=action.icon;else delete button.dataset.icon;button.classList.toggle('unaffordable',!!(action?.unaffordable||action?.locked));button.classList.toggle('locked',!!action?.locked);$('menuName'+i).textContent=action?action.label:'';const priceNode=$('menuPrice'+i);if(priceNode)priceNode.textContent=action?(action.locked?tr('Lv {level}',{level:action.lockLevel}):(action.price!=null?String(action.price):'')):'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?tr(' · Not enough supplies'):''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
+    options.forEach((button,i)=>{const action=actions[i];button.hidden=!action;button.disabled=!action||!!action.disabled;if(action?.icon)button.dataset.icon=action.icon;else delete button.dataset.icon;button.classList.toggle('unaffordable',!!(action?.unaffordable||action?.locked));button.classList.toggle('locked',!!action?.locked);$('menuName'+i).textContent=action?action.label:'';const artNode=$('menuArt'+i);if(artNode&&typeof artNode.replaceChildren==='function'){if(action?.icon==='classUpgrade'&&typeof document.createElementNS==='function')artNode.replaceChildren(towerClassIcon(document,action.classId));else artNode.replaceChildren();}const priceNode=$('menuPrice'+i);if(priceNode)priceNode.textContent=action?(action.locked?(action.lockLevel?tr('Lv {level}',{level:action.lockLevel}):action.lockRank?tr('Rank {rank}',{rank:action.lockRank}):'—'):(action.price!=null?String(action.price):'')):'';$('menuDesc'+i).textContent=action?(action.summary||'')+(action.unaffordable?tr(' · Not enough supplies'):''):'';button.setAttribute('aria-label',action?action.description:'');button.onclick=action?()=>action.run():null;});
     menu.hidden=false;if(!refresh)updateUI();
   }
   function refreshDetails(){
     if(!$('towerDetails').open||!detailAvailability)return;
-    const {cost,required}=detailAvailability;if(detailContent){$('towerDetailsTitle').textContent=detailContent.title();$('towerDetailsText').textContent=detailContent.text();$('towerDetailsConfirm').textContent=`${tr(detailContent.verb)} · ${cost}`;}const changed=menuPad===null||towerKey(state.towers.find(t=>t.pad===menuPad))!==menuTowerKey;
-    const locked=(state.players[me()]?.level||1)<required,reason=changed?'Tower changed. Close and select it again.':locked?tr('Unlocks at soldier level {level}.',{level:required}):supplies()<cost?'Not enough supplies':'';
-    $('towerDetailsCost').textContent=tr('Cost: {cost} supplies · Available: {available}',{cost,available:supplies()})+(reason?' · '+tr(reason):'');
-    $('towerDetailsConfirm').disabled=changed||locked||supplies()<cost;
+    const {cost,required,lockReason,forceDisabled}=detailAvailability;if(detailContent){$('towerDetailsTitle').textContent=detailContent.title();$('towerDetailsText').textContent=detailContent.text();$('towerDetailsConfirm').textContent=cost!=null?`${tr(detailContent.verb)} · ${cost}`:tr(detailContent.verb);}const changed=menuPad===null||towerKey(state.towers.find(t=>t.pad===menuPad))!==menuTowerKey;
+    const locked=(state.players[me()]?.level||1)<required,cantAfford=cost!=null&&supplies()<cost,reason=changed?'Tower changed. Close and select it again.':lockReason?lockReason:locked?tr('Unlocks at soldier level {level}.',{level:required}):cantAfford?'Not enough supplies':'';
+    $('towerDetailsCost').textContent=(cost!=null?tr('Cost: {cost} supplies · Available: {available}',{cost,available:supplies()}):tr('Available: {available} supplies',{available:supplies()}))+(reason?' · '+tr(reason):'');
+    $('towerDetailsConfirm').disabled=!!forceDisabled||changed||locked||cantAfford;
   }
   function refreshTowerMenu(){
     if(menu.hidden||menuPad===null)return;
@@ -1033,9 +1069,9 @@ function renderResults(target){
     if(towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey)showMenu(menuPad,menuMode,true);
     refreshDetails();
   }
-  function showDetails(title,text,cost,verb,confirm,required=0){
+  function showDetails(title,text,cost,verb,confirm,required=0,{lockReason='',forceDisabled=false}={}){
     menuRevision++;detailContent={title:typeof title==='function'?title:()=>title,text:typeof text==='function'?text:()=>text,verb};
-    detailAvailability={cost,required};const button=$('towerDetailsConfirm');button.onclick=confirm;
+    detailAvailability={cost,required,lockReason,forceDisabled};const button=$('towerDetailsConfirm');button.onclick=confirm;
     $('towerDetails').showModal();refreshDetails();
   }
   $('towerDetailsBack').onclick=()=>{menuRevision++;$('towerDetails').close();};

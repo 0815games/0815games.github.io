@@ -1,12 +1,26 @@
-import {getMap} from './maps.mjs?v=20261031-patch8';
+import {getMap} from './maps.mjs?v=20261118-block5';
 // Client-only effects. They never affect commands, damage, rewards or match state.
 export function createCombatEffects({clock=()=>performance.now(),reducedMotion=false}={}){
   let effects=[],cooldowns=null,comboSeqs=null,previous=null;
+  function resolveTargets(kind,player,match){
+    if(kind==='assault'||kind==='airDefense'||kind==='recon'){
+      return (match?.enemies||[]).filter(e=>e.hp>0&&Number.isFinite(e.x)&&Number.isFinite(e.y)).slice(0,10).map(e=>({x:e.x,y:e.y,air:e.kind==='plane'||e.baseKind==='plane'}));
+    }
+    if(kind==='engineer'&&match?.mapId&&Array.isArray(match?.towers)){
+      try{
+        const pads=getMap(match.mapId)?.pads||[];
+        return match.towers.filter(t=>!player?.id||t.ownerId===player.id).map(t=>pads[t.pad]).filter(pt=>pt&&Number.isFinite(pt.x)&&Number.isFinite(pt.y)).slice(0,10).map(pt=>({x:pt.x,y:pt.y,air:false}));
+      }catch{}
+    }
+    return [];
+  }
   function emit(kind,player,match){
     if(reducedMotion||!player||!Number.isFinite(player.x)||!Number.isFinite(player.y))return;
-    const now=clock(),targets=kind==='assault'?(match?.enemies||[]).filter(e=>e.hp>0&&Number.isFinite(e.x)&&Number.isFinite(e.y)).slice(0,8).map(e=>({x:e.x,y:e.y})):[];
-    const x=kind==='medic'?910:player.x,y=kind==='medic'?400:player.y;
-    effects.push({kind,x,y,targets,label:player.comboLabel||"",started:now,duration:950});if(effects.length>12)effects=effects.slice(-12);
+    const now=clock(),targets=resolveTargets(kind,player,match);
+    const variant=Number.isInteger(player.skills?.variant)?player.skills.variant:0;
+    const x=kind==='medic'&&variant!==1?910:player.x,y=kind==='medic'&&variant!==1?400:player.y;
+    effects.push({kind,variant,x,y,hx:player.x,hy:player.y,targets,label:player.comboLabel||"",started:now,duration:950});
+    if(effects.length>12)effects=effects.slice(-12);
   }
   return {
     emit,
@@ -23,12 +37,12 @@ export function createCombatEffects({clock=()=>performance.now(),reducedMotion=f
         emit('bunkerHit',{x:at.x,y:at.y,comboLabel:`−${Math.round(hit.damage*10)/10}`},match);changes.push('impact');}
       for(const [id,p] of Object.entries(match.players)){
         const value=Number.isFinite(p.cooldown)?p.cooldown:0;next.set(id,value);const seq=p.comboCue?.seq||0;nextCombos.set(id,seq);if(comboSeqs?.has(id)&&seq>comboSeqs.get(id)&&p.active!==false){emit('combo',{x:p.comboCue.x,y:p.comboCue.y,comboLabel:p.comboCue.name},match);changes.push('combo');}
-        if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',p,previous||match);changes.push('ability');}
+        if(cooldowns?.has(id)&&p.active!==false&&value>cooldowns.get(id)+1){emit(p.skills?.active||'assault',{...p,id},previous||match);changes.push('ability');}
       }
       if(Array.isArray(previous?.towers)&&Array.isArray(match.towers)&&Array.isArray(pads)){
         for(const tower of match.towers){const old=previous.towers.find(t=>t.id===tower.id&&t.pad===tower.pad),point=pads[tower.pad];
           if(!point||!Number.isSafeInteger(tower.id))continue;
-          const kind=!old?'build':tower.level>old.level?'upgrade':null;if(kind){emit(kind,point,match);changes.push(kind);}
+          const kind=!old?'build':(tower.classTier||0)>(old.classTier||0)?'classUpgrade':tower.level>old.level?'upgrade':null;if(kind){emit(kind,point,match);changes.push(kind);}
         }
       }
       cooldowns=next;comboSeqs=nextCombos;previous=match;return changes;

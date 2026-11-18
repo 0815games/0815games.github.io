@@ -79,4 +79,8 @@ test('every ability carries its own mark, and the marks differ',()=>{
   assert.equal(abilityHudSvg('assault',{size:8}).includes('width="8"'),true,'the size is honoured');
   assert.equal(abilityHudSvg(null),'','an unknown ability gets no mark at all');
   assert.equal(abilityHudSvg('assault',{size:-3}).includes('width="8"'),true,'and never a broken one');
+  const v0=abilityHudSvg('assault',{size:26,variant:0}),v1=abilityHudSvg('assault',{size:26,variant:1}),v2=abilityHudSvg('assault',{size:26,variant:2});
+  assert.notEqual(v0,v1,'variant 1 HUD mark differentiates from base ability');
+  assert.notEqual(v1,v2,'variant 2 HUD mark differentiates from variant 1');
+  assert.equal(abilityHud({skills:skills('recon',{variant:2}),running:true,enemies:1}).variant,2);
 });

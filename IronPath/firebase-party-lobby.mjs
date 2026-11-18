@@ -1,4 +1,4 @@
-import {parseBuild,encodeBuild} from './skills.mjs?v=20261107-balance1';
+import {parseBuild,encodeBuild,isLegacyBuildString} from './skills.mjs?v=20261118-block5';
 import {createPartyCode} from './party-code.mjs?v=20261101-shortcode1';
 // Player-hosted Firebase lobby primitives, live behind the party panel.
 // Access control MUST be provided by Realtime Database rules; this module is
@@ -54,7 +54,7 @@ export function createFirebasePartyLobby({db,auth,sdk,crypto=globalThis.crypto})
       if(hostId!==uid||!validUid(guestId)||guestId===uid)throw new Error('Party is not ready');
       const [a,b]=await Promise.all([sdk.get(ref(partyId,`profiles/${uid}`)),sdk.get(ref(partyId,`profiles/${guestId}`))]);check();
       const profiles=[a.val(),b.val()];
-      if(profiles.some(p=>!p||typeof p.name!=='string'||p.name.length<2||p.name.length>24||!['male','female'].includes(p.gender)||!Number.isInteger(p.level)||p.level<1||p.level>1000||(p.loadout!==undefined&&!/^([0-3],){2}(10|[0-9])(;[0-3],[0-3](;[0-3],[0-3])?)?$/.test(p.loadout))||(p.skills!==undefined&&encodeBuild(parseBuild(p.skills,p.level))!==p.skills)))throw new Error('Players are not ready');
+      if(profiles.some(p=>!p||typeof p.name!=='string'||p.name.length<2||p.name.length>24||!['male','female'].includes(p.gender)||!Number.isInteger(p.level)||p.level<1||p.level>1000||(p.loadout!==undefined&&!/^([0-3],){2}(10|[0-9])(;[0-3],[0-3](;[0-3],[0-3])?)?$/.test(p.loadout))||(p.skills!==undefined&&!isLegacyBuildString(p.skills)&&encodeBuild(parseBuild(p.skills,p.level))!==p.skills)))throw new Error('Players are not ready');
       const result=await sdk.runTransaction(ref(partyId,'startedGuest'),value=>value===null?guestId:undefined,{applyLocally:false});check();
       if(!result.committed)throw new Error('Match already started');
       return {partyId,hostId,guestId,profiles};

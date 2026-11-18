@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261031-patch8';
+import {getLanguage} from './language.mjs?v=20261118-block5';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block5',build:'20261118-block5',pr:318,
+    title:{en:'Block 5 · Exclusive 6-Class Skill Tree, Air Defense & Class Tower Paths',de:'Block 5 · Exklusiver 6-Klassen-Skillbaum, Luftabwehr & Klassenturmpfade'},
+    shipped:[
+      {en:'Added Air Defense as the sixth class (Sky Sweep active ability, aircraft/marked-target passive, two specialist branches, 14-node specialization tree and Skyburst Guidance class tower path).',de:'Luftabwehr als sechste Klasse ergänzt (Luftraumfeger, Luft-/Markierungs-Passiv, zwei Spezialfähigkeiten, 14-Knoten-Spezialisierungsbaum und Klassenturmpfad Flak-Zielsteuerung).'},
+      {en:'Switched skills to exclusive level-2 class choice: pick one class at level 2 to unlock its focused 14-node tree, class tower upgrades (Tier I/II separate from level-3 tower kits) and safe Draft Reset before saving.',de:'Skillbaum auf exklusive Klassenwahl ab Stufe 2 umgestellt: Klassenwahl öffnet den fokussierten 14-Knoten-Baum, klassenexklusive Turmausbauwege (Stufe I/II unabhängig von Stufe-3-Turmkits) und sicheren Entwurf-Reset vor dem Speichern.'},
+      {en:'Added one-time V1-to-V2 skill migration archiving previous builds locally and refunding all earned points, compact multiplayer wire snapshots, six custom class artworks and branched class trees, 12 specialist battlefield effects plus class tower halos, German/English UI copy, and an additive Firebase RTDB skills validation rules candidate.',de:'Einmalige V1-zu-V2-Migration mit lokalem Altsave-Backup und vollständiger Punkterückerstattung, kompakte Mehrspieler-Snapshots, sechs Klassen-Artworks mit verzweigten Klassenbäumen, zwölf Spezialisten-Kampfeffekte samt Turm-Auren, DE/EN-Übersetzungen sowie ein additiver Firebase-RTDB-Regelkandidat ergänzt.'},
+    ],
+    open:[
+      {en:'Publish the additive Block 5 Firebase RTDB skills validation rules after live export/backup and verify all six classes and class tower upgrades on real devices.',de:'Additiven Block-5-RTDB-Regelkandidaten nach Live-Export/Sicherung veröffentlichen sowie alle sechs Klassen und Klassenturmpfade auf echten Geräten prüfen.'},
+    ],
+  },
   {
     id:'patch8',build:'20261031-patch8',pr:317,
     title:{en:'Boss Hunter III & Twin MG III kit fixes + CI matrix retry',de:'Korrekturen für Bossjäger III & Doppel-MG III + CI-Wiederholung'},
@@ -189,10 +201,10 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block5',status:'planned',
     title:{en:'Block 5 · Skills',de:'Block 5 · Fähigkeiten'},
     shipped:[
-      {en:'Five classes and ten tower kits with ranks I–III exist; veteran price fix plus Boss Hunter III bounty and Twin MG III aircraft full-damage fixes are implemented.',de:'Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; Veteranenpreis-Fix sowie die Korrekturen für Bossjäger III (+25 Kopfgeld) und Doppel-MG III (Vollschaden gegen Flugzeuge) sind umgesetzt.'},
+      {en:'Implemented the sixth Air Defense class, exclusive level-2 class selection, focused 14-node specialization trees, separate Tier I/II class tower upgrade paths, six class medallions, one-time skill refund migration and additive RTDB validation candidate.',de:'Sechste Luftabwehrklasse, exklusive Klassenwahl ab Stufe 2, fokussierte 14-Knoten-Bäume, getrennte Stufe-I/II-Klassenturmpfade, sechs Klassen-Medaillons, einmalige Punkterückgabe samt Backup und additiver RTDB-Regelkandidat sind umgesetzt.'},
     ],
     open:[
-      {en:'Add the sixth Air Defense class, exclusive level-2 class choice, class-unlocked tower upgrade paths, six icons and a safe one-time skill reset.',de:'Sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Turm-Ausbauwege, sechs Icons und sichere einmalige Punkterückgabe umsetzen.'},
+      {en:'Publish the additive Block 5 RTDB skills ruleset after live export/backup and confirm all V2 class builds, upgrades and migration notice on real phones and desktop.',de:'Additiven Block-5-RTDB-Regelsatz nach Live-Export/Sicherung veröffentlichen und V2-Klassenauswahl, Klassenturmpfade sowie Migrationshinweis auf echten Handys und am Desktop prüfen.'},
     ],
   },
   {

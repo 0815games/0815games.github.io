@@ -72,8 +72,8 @@ test('every card explains one screen, and the classes are actually explained', (
     assert.ok(html.includes(`id="${step.target.element.slice(1)}"`), `${step.id} points at a real element`);
     assert.ok(['button', 'action'].includes(step.advance));
   }
-  // The four paths are the thing the armory never explained.
-  assert.deepEqual(CLASSES.map(c => c.id), ['assault', 'engineer', 'recon', 'command']);
+  // The six classes are the thing the armory never explained.
+  assert.deepEqual(CLASSES.map(c => c.id), ['assault', 'engineer', 'logistics', 'medic', 'recon', 'airDefense']);
   for (const klass of CLASSES) assert.ok(klass.what.length > 20, `${klass.id} says what it does`);
 });
 

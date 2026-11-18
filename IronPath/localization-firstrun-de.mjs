@@ -1,17 +1,5 @@
-// German for the first run: the seven coach cards on the field, the four cards after
-// the match, and the four class explanations.
-//
-// Why a file of its own: `translateText()` falls back to the English string when a
-// lookup misses, so a missing translation is invisible in code review and in every
-// test that does not look for it. It showed: the seven cards a new soldier sees FIRST
-// were 4 of 21 German, the guide after the match was 0 of 20, and the class lines 3 of
-// 16 - while the menu, the battle and the armory around them were translated. These
-// are the strings of the part of the game that explains the rest.
-//
-// Tone follows localization-battle-de.mjs and localization-towers-de.mjs: Du-form,
-// short sentences, German punctuation, `EP` for XP and `Vorfäte` for supplies. The
-// strings are keys, so they must match the English source EXACTLY - a test in
-// tests/first-run-german.test.mjs fails on any card that has no entry here.
+// German for the first run: the seven coach cards on the field, the three cards after
+// the match, and the six class explanations.
 export const germanFirstRun=Object.freeze({
   // ---- The seven coach cards on the live field ------------------------------
   'Welcome, soldier':'Willkommen, Soldat',
@@ -60,38 +48,50 @@ export const germanFirstRun=Object.freeze({
     'In der Waffenkammer liegt, was dir gehört. Jedes Stück hebt einen Wert – Schaden, Gesundheit, Vorräte pro Welle. Rüste das Stück aus, das du gerade gewonnen hast: Was in der Tasche liegt, wirkt überhaupt nicht.',
   'ARMORY · EQUIPMENT':'WAFFENKAMMER · AUSRÜSTUNG',
 
-  'Four classes, one point':'Vier Klassen, ein Punkt',
-  'The skill tree has four paths and you have one point. Assault adds damage and rate of fire. Engineer makes towers cheaper and tougher. Recon moves your soldier faster and further. Command buffs the whole field. Pick the one that matches how you played.':
-    'Der Fähigkeitsbaum hat vier Pfade, du hast einen Punkt. Angriff bringt Schaden und Feuerrate. Pionier macht Türme billiger und robuster. Aufklärung macht deinen Soldaten schneller und lässt ihn weiter sehen. Kommando stärkt das ganze Feld. Nimm den Pfad, der zu deiner Spielweise passt.',
-  'SKILLS · CHOOSE A PATH':'FÄHIGKEITEN · WÄHLE EINEN PFAD',
+  'Six classes, one choice':'Sechs Klassen, eine Wahl',
+  'At level 2 you pick one of six classes: Assault, Engineer, Logistics, Medic, Recon, or Air Defense. Each opens its own skill tree, active ability, and tower upgrade path.':
+    'Ab Stufe 2 wählst du eine von sechs Klassen: Angriff, Pionier, Logistik, Sanitäter, Aufklärung oder Luftabwehr. Jede öffnet ihren eigenen Baum, eine aktive Fähigkeit und einen eigenen Turm-Pfad.',
+  'SKILLS · CHOOSE A CLASS':'FÄHIGKEITEN · KLASSE WÄHLEN',
 
   'Where gear comes from':'Woher die Ausrüstung kommt',
   'The workshop builds new equipment from scrap, which arrives as you clear waves. This is the long game: the first run paid for one item, the workshop is how you earn the rest.':
     'Die Werkstatt baut neue Ausrüstung aus Schrott, und Schrott kommt, wenn du Wellen schaffst. Das ist die lange Strecke: Der erste Einsatz hat ein Stück bezahlt, die Werkstatt ist der Weg zum Rest.',
   'ARMORY · WORKSHOP':'WAFFENKAMMER · WERKSTATT',
 
-  // ---- The four class explanations ----------------------------------------
+  // ---- The six class explanations -----------------------------------------
   'Assault':'Angriff',
-  'More damage per shot and a faster rate of fire.':
-    'Mehr Schaden pro Schuss und eine schnellere Feuerrate.',
-  'If you want the towers to kill things.':
-    'Wenn du willst, dass die Türme wirklich töten.',
+  'Hero damage, airstrikes, and heavy storm tower ordnance.':
+    'Heldenschaden, Luftschläge und schwere Sturmgeschütz-Munition.',
+  'If you want direct firepower and boss pressure.':
+    'Wenn du direkte Feuerkraft und Druck auf Bosse willst.',
 
   'Engineer':'Pionier',
-  'Towers cost less and take more damage before they fall.':
-    'Türme kosten weniger und halten mehr aus, bevor sie fallen.',
-  'If you would rather build a lot than hit hard.':
-    'Wenn du lieber viel baust, statt hart zu treffen.',
+  'Faster tower cadence, overdrives, and field overclock cores.':
+    'Schnellere Turmkadenz, Übersteuerung und Feld-Übertaktungskerne.',
+  'If you want rapid turret networks.':
+    'Wenn du schnelle Geschützstellungen magst.',
+
+  'Logistics':'Logistik',
+  'Extra supplies, cheaper builds, and salvage bounties on kills.':
+    'Zusätzliche Vorräte, günstigere Bauten und Bergungsprämien pro Kill.',
+  'If you want strong field economy.':
+    'Wenn du eine starke Feldwirtschaft aufbauen willst.',
+
+  'Medic':'Sanitäter',
+  'Bunker repairs, healing zones, and triage relays on towers.':
+    'Bunkerreparatur, Heilfelder und Triage-Relais an den Türmen.',
+  'If you want steady defense and bunker sustain.':
+    'Wenn du den Bunker dauerhaft stabil halten willst.',
 
   'Recon':'Aufklärung',
-  'The soldier moves faster and sees further.':
-    'Der Soldat läuft schneller und sieht weiter.',
-  'If you like running the hero around the road.':
-    'Wenn du deinen Helden gern über die Straße schickst.',
+  'Longer range, suppression control, and pinning spotter optics.':
+    'Mehr Reichweite, Unterdrückung und markierende Zieloptiken.',
+  'If you like controlling lanes with hero positioning.':
+    'Wenn du Wege gezielt mit deinem Helden kontrollierst.',
 
-  'Command':'Kommando',
-  'Auras that help every tower near the bunker.':
-    'Auren, die jedem Turm am Bunker helfen.',
-  'If you would rather hold the last line.':
-    'Wenn du lieber die letzte Linie hältst.',
+  'Air Defense':'Luftabwehr',
+  'Sky sweeps, target marks, and anti-air flak guidance.':
+    'Luftraumfeger, Zielmarkierungen und Flak-Leitsysteme.',
+  'If you want dedicated sky control and marked-target focus.':
+    'Wenn du gezielt den Luftraum sichern und markierte Ziele fokussieren willst.',
 });

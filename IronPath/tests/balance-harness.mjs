@@ -21,9 +21,9 @@ export const GEARS={
   // storyProgress models the relics the account has earned: a veteran has
   // finished act I (relic I), an elite soldier has finished the shipped story
   // (relics I-III). The relics ride into the match via createSoloDeployment.
-  rookie:{label:'rookie',level:1,skills:'0,0,0,0,0;assault',loadout:'0,0,0',storyProgress:0},
-  veteran:{label:'veteran',level:12,skills:'2,2,1,0,0;assault',loadout:'1,1,1',storyProgress:4},
-  elite:{label:'elite',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10',storyProgress:12},
+  rookie:{label:'rookie',level:1,skills:'v2;none',loadout:'0,0,0',storyProgress:0},
+  veteran:{label:'veteran',level:12,skills:'v2;assault;3;1;10111101100100',loadout:'1,1,1',storyProgress:4},
+  elite:{label:'elite',level:25,skills:'v2;engineer;3;1;11111111111111',loadout:'3,3,10',storyProgress:12},
 };
 // `branch` is the autopilot's specialization policy (Punkt 8 balance gear):
 // which kit every tower takes at level 2->3. Default 0 keeps every pinned

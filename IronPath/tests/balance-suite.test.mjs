@@ -166,12 +166,12 @@ test('flat gear and abilities keep their share of the late game',()=>{
 });
 
 test('contracts and duels never fall back a sector',()=>{
-  const player=createPlayer('local',{name:'A',gender:'female',level:5,skills:'1,0,0,0,0;assault',loadout:'0,0,0'});
+  const player=createPlayer('local',{name:'A',gender:'female',level:5,skills:'v2;assault;1;0;00000000000000',loadout:'0,0,0'});
   const mission=createSoloDeployment({player,mapId:'g3-04e114f5c',workshopEnabled:false,campaign:{id:'tidelock',threat:'legendary'}});
   mission.wave=10;mission.running=true;mission.spawnLeft=0;mission.enemies=[];
   stepMatch(mission);
   assert.equal(mission.pendingSector,undefined,'a mission holds its map');
-  const duel=createVersus([player,createPlayer('guest',{name:'B',gender:'male',level:5,skills:'1,0,0,0,0;assault',loadout:'0,0,0'})],'g3-0b9f45231','local');
+  const duel=createVersus([player,createPlayer('guest',{name:'B',gender:'male',level:5,skills:'v2;assault;1;0;00000000000000',loadout:'0,0,0'})],'g3-0b9f45231','local');
   const lane=duel.lanes.local;
   lane.wave=10;lane.running=true;lane.spawnLeft=0;lane.enemies=[];
   stepMatch(lane);

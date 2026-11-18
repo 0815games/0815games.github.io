@@ -66,7 +66,7 @@ const assert=require('node:assert/strict');
   // updating together, and use a neutral placeholder if access is lost.
   await page.evaluate(()=>{
    window.__emit('players/bob/gender','male');window.__emit('players/bob/avatar','g:m|face:buzz|hair:side|beard:full');
-   window.__emit('players/bob/xp',750);window.__emit('players/bob/skills','1,1,0,0,0;assault');window.__emit('players/bob/armory',null);
+   window.__emit('players/bob/xp',750);window.__emit('players/bob/skills','v2;assault;2;0;00000000000000');window.__emit('players/bob/armory',null);
    window.__emit('friendships/alice',{bob:{status:'accepted',senderName:'Bob'}});
   });
   await page.waitForFunction(()=>document.querySelector('#friendList .friend-portrait')?.getAttribute('src')?.startsWith('data:image/png;base64,'),null,{timeout:15000});

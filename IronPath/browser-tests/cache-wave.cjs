@@ -9,6 +9,9 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261031-patch8','account.js?v=20261031-patch8',
+ 'game.js?v=20261031-patch8','field-menu.mjs?v=20261031-patch8','language.mjs?v=20261031-patch8','patch-notes.mjs?v=20261031-patch8',
+ 'simulation.mjs?v=20261031-patch8','match.mjs?v=20261031-patch8','combat.mjs?v=20261031-patch8','tower-specialization.mjs?v=20261031-patch8','tower-upgrade-cue.mjs?v=20261031-patch8',
  'account-entry.mjs?v=20261031-patch1','account.js?v=20261031-patch1',
  'account-entry.mjs?v=20261031-patch4','account.js?v=20261031-patch4',
  'account-entry.mjs?v=20261031-patch5','account.js?v=20261031-patch5',

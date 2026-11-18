@@ -12,7 +12,7 @@ import {makeEnemy} from '../combat.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {MAX_PENDING} from '../protocol.mjs';
 const ids=['a','b','c','d'];
-const players=n=>ids.slice(0,n).map((id,i)=>createPlayer(id,{name:`Stress ${id}`,gender:'female',level:3,skills:'1,1,0,0,0;assault'},n>2?1220:850,n>2?270+i*60:450));
+const players=n=>ids.slice(0,n).map((id,i)=>createPlayer(id,{name:`Stress ${id}`,gender:'female',level:3,skills:'v2;assault;2;0;00000000000000'},n>2?1220:850,n>2?270+i*60:450));
 const seed=i=>`g2-${(i*2654435761>>>0).toString(16).padStart(8,'0')}`;
 const summary={playthroughs:[],extended:[],maps:{count:0,themes:{}},density:[],protocol:[]};
 function validate(field){
