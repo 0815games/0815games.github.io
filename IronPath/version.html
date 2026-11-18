@@ -24,7 +24,7 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
 <p>Diese Seite vergleicht die an <strong>dein Gerät</strong> gelieferten Kennungen von Spielseite und Versionsmanifest. Bitte mache einen Screenshot, falls etwas nicht stimmt.</p>
 <div class="result" id="url"><span class="verdict">DU BIST HIER</span><p><code id="here">…</code></p><p class="small" id="agent"></p></div>
 <div class="result" id="r1"><span class="verdict">VERGLEICHE SPIELSEITE UND MANIFEST…</span><p id="r1d">Wird geladen…</p></div>
-<div class="result" id="r2"><span class="verdict">PRÜFE CHARAKTER-KACHELN…</span><p id="r2d">Wird geladen…</p></div>
+<div class="result" id="r2"><span class="verdict">PRÜFE AVATAR-STYLESHEET…</span><p id="r2d">Wird geladen…</p></div>
 <a class="button" id="openGame" href="./">SPIEL NEU ÖFFNEN</a>
 <p class="small">Die eindeutige Adresse und <code>no-store</code> helfen gegen übliche Caches, garantieren aber keinen frischen Inhalt bei Proxys oder Service Workern. Übereinstimmende Kennungen beweisen nicht, welche Module der Spiel-Tab tatsächlich ausführt.</p>
 <p class="build">DIAGNOSE-SEITE · KENNUNGSVERGLEICH</p>
@@ -63,8 +63,8 @@ a.button{display:block;text-align:center;margin:18px 0 6px;padding:14px;backgrou
   try{
     if(!cssToken)throw Error('Kein Stylesheet-Token in der Spielseite gefunden');
     const css=await probe('style.css?v='+encodeURIComponent(cssToken));
-    const found=/\.recruit-showcase\{/.test(css)&&/\.recruit-look canvas\{/.test(css);
-    set('r2',found,found?'Stylesheet enthält Showcase und komponierte Charakter-Kacheln.':'Stylesheet enthält die erwarteten Charakter-Kacheln nicht.');
+    const found=/\.recruit-showcase\{/.test(css)&&/\.recruit-stage\{/.test(css)&&/\.recruit-step\{/.test(css)&&/\.recruit-color-dot\{/.test(css);
+    set('r2',found,found?'Stylesheet enthält Avatar-Bühne, Stepper und Farbpunkte.':'Stylesheet enthält die erwarteten Avatar-Regeln nicht.');
   }catch(error){set('r2',false,'Abruf fehlgeschlagen: '+error.message);}
 })();
 </script>

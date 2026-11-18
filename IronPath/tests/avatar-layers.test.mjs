@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {existsSync,readdirSync} from 'node:fs';
-import {layerOptions,composePortrait,layerTransform,facePortrait} from '../avatar-layers.mjs';
-import {FACES,HAIRS,BEARDS} from '../assets/layers/manifest.mjs';
+import {layerOptions,composePortrait,layerTransform,facePortrait,tintTone,stopsForColor} from '../avatar-layers.mjs';
+import {FACES,HAIRS,BEARDS,HAIR_COLORS} from '../assets/layers/manifest.mjs';
 
 function recorder(){
   const calls={drawImages:[],cleared:0};
@@ -17,107 +17,103 @@ function recorder(){
   return {ctx,calls};
 }
 
-const fakeImage=(file)=>({naturalWidth:1024,naturalHeight:1024,file});
+const fakeImage=(file)=>({naturalWidth:512,naturalHeight:512,file});
 const fakeLoader=(files)=>(src)=>{for(const [name,image] of Object.entries(files))if(src.startsWith(name))return Promise.resolve(image);return Promise.reject(new Error('no such layer: '+src));};
 
-test('the manifest ships only well-formed layers whose files exist',()=>{
-  assert.equal(FACES.length,13,'every painted portrait in the game is a face: seven female + six male');
-  assert.equal(FACES.filter(f=>f.gender==='female').length,7);
+test('the manifest ships 12 aligned base heads, 17 hairs, 6 beards and 5 tint palettes',()=>{
+  assert.equal(FACES.length,12,'six female + six male bald/clean-shaven base heads');
+  assert.equal(FACES.filter(f=>f.gender==='female').length,6);
   assert.equal(FACES.filter(f=>f.gender==='male').length,6);
+  assert.equal(HAIRS.filter(h=>h.gender==='female').length,9);
+  assert.equal(HAIRS.filter(h=>h.gender==='male').length,8);
+  assert.equal(BEARDS.length,6);
+  assert.equal(HAIR_COLORS.length,5);
   for(const layer of [...FACES,...HAIRS,...BEARDS]){
-    assert.match(layer.file,/^assets\/(portraits|layers)\//,'asset path is repo-relative');
+    assert.match(layer.file,/^assets\/(portraits|layers)\//);
     assert.ok(existsSync(new URL('../'+layer.file.split('?')[0],import.meta.url)),'file exists: '+layer.file);
-    assert.ok(layer.face.cx>0&&layer.face.cx<1&&layer.face.cy>0&&layer.face.cy<1&&layer.face.size>0&&layer.face.size<1,'face box in range: '+layer.id);
+    assert.ok(layer.face.cx>0&&layer.face.cx<1&&layer.face.cy>0&&layer.face.cy<1&&layer.face.size>0&&layer.face.size<1);
   }
-  assert.ok(BEARDS.every(b=>b.gender==='male'),'beards are a male-only row');
-  // The first braid edit (66% of the image changed) was rejected by the
-  // pipeline's coverage gate; the second attempt passed and ships.
-  assert.ok(HAIRS.some(h=>h.id==='braid'),'the braid overlay ships (retry passed the gate)');
+  assert.ok(BEARDS.every(b=>b.gender==='male'));
 });
 
-test('the rows: equal option counts for women and men (reported parity request)',()=>{
-  const female=layerOptions('female');
-  const male=layerOptions('male');
-  assert.equal(female.faces.length,7,'seven female faces');
-  assert.equal(male.faces.length,6,'six male faces');
-  assert.equal(female.hairs.length,6,'six female hair overlays (braid, bun, curly included)');
-  assert.equal(male.hairs.length,3);
-  assert.equal(female.beards.length,0,'no beard row for women');
-  assert.equal(male.beards.length,3);
-  // total tiles per gender: women 7+1+6 = men 6+1+3+1+3 = 14
-  const femaleTiles=female.faces.length+female.hairs.length+1;
-  const maleTiles=male.faces.length+male.hairs.length+1+male.beards.length+1;
-  assert.equal(femaleTiles,maleTiles,'same number of choices for both genders');
-  assert.equal(femaleTiles,14,'fourteen tiles each');
-});
-
-test('no painted portrait is left behind: every file in the folder is a pickable face',()=>{
-  // Eight finished portraits sat in the folder that only the legacy mapping
-  // could still reach - shipped art nobody could choose. The operator asked for
-  // more looks, so the folder and the picker must never drift apart again.
+test('every shipped portrait file is in FACES and every face id is unique and ordered',()=>{
   const folder=readdirSync(new URL('../assets/portraits',import.meta.url)).filter(name=>name.endsWith('.jpg')).sort();
   const shipped=FACES.map(face=>face.file.split('?')[0].split('/').pop()).sort();
-  assert.deepEqual(shipped,folder,'every portrait file is a face, and every face has a file');
-  // Ids are unique per gender and every face carries a label and a face box.
+  assert.deepEqual(shipped,folder,'every portrait file in assets/portraits is a pickable face');
   for(const gender of ['female','male']){
     const {faces}=layerOptions(gender);
-    assert.equal(new Set(faces.map(face=>face.id)).size,faces.length,`${gender} face ids are unique`);
-    assert.deepEqual(faces.map(face=>face.label),faces.map((face,index)=>`Face ${index+1}`),`${gender} faces are numbered in order`);
+    assert.equal(new Set(faces.map(f=>f.id)).size,faces.length);
+    assert.deepEqual(faces.map(f=>f.label),faces.map((_f,i)=>`Face ${i+1}`));
   }
-  // The flat-haired base stays first per gender: that is the cut every hair
-  // overlay covers cleanly, and it is what "no hair" shows.
-  assert.equal(layerOptions('female').faces[0].id,'crop');
-  assert.equal(layerOptions('male').faces[0].id,'buzz');
+});
+
+test('tintTone maps luminance cleanly across all 5 palettes without clipping',()=>{
+  for(const color of HAIR_COLORS){
+    const stops=stopsForColor(color.id);
+    const dark=tintTone(0,stops),mid=tintTone(128,stops),bright=tintTone(255,stops);
+    assert.ok(dark[0]<bright[0]&&dark[1]<bright[1]&&dark[2]<bright[2],`monotonic brightness for ${color.id}`);
+    assert.ok(mid.every(c=>c>=0&&c<=255));
+  }
+  assert.deepEqual(stopsForColor('unknown'),stopsForColor('brown'),'unknown color falls back to brown');
 });
 
 test('layerTransform maps the overlay face box exactly onto the target face box',()=>{
-  // Hand-computed: overlay face sits at (0.5, 0.4) covering 40% of a
-  // 1024px image; target face at (0.5, 0.5) covering 50% of a 200px canvas.
-  const rect=layerTransform({cx:.5,cy:.5,size:.5},{cx:.5,cy:.4,size:.4},200,1024,1024);
-  assert.ok(rect,'a transform is returned');
-  const scale=rect.w/1024;
-  assert.equal(rect.w,250,'overlay width scales by target/ref face size (0.5/0.4 * 200)');
-  assert.equal(rect.h,250,'aspect is preserved');
-  // the overlay's face center lands on the target's face center:
-  assert.ok(Math.abs((.5*1024)*scale+rect.dx-.5*200)<1e-9,'x centers coincide');
-  assert.ok(Math.abs((.4*1024)*scale+rect.dy-.5*200)<1e-9,'y centers coincide');
-  assert.equal(layerTransform(null,{cx:.5},100,10,10),null,'no target means no transform');
+  const rect=layerTransform({cx:.5,cy:.5,size:.5},{cx:.5,cy:.4,size:.4},200,512,512);
+  assert.ok(rect);
+  const scale=rect.w/512;
+  assert.equal(rect.w,250);
+  assert.ok(Math.abs((.5*512)*scale+rect.dx-.5*200)<1e-9);
+  assert.ok(Math.abs((.4*512)*scale+rect.dy-.5*200)<1e-9);
+  assert.equal(layerTransform(null,{cx:.5},100,10,10),null);
 });
 
 function canvasOf({ctx}){
   return {width:0,height:0,getContext:()=>ctx};
 }
 
-test('composePortrait draws base, then hair, then beard - and clamps stale ids',async ()=>{
+test('composePortrait draws base, then hair, then beard, clamps stale ids, and guards async races',async ()=>{
   const rec=recorder();
-  const {ctx,calls}=rec;
+  const {calls}=rec;
   const files={};
   for(const face of FACES)files[face.file]=fakeImage(face.file);
   for(const layer of [...HAIRS,...BEARDS])files[layer.file]=fakeImage(layer.file);
   const hair=HAIRS.find(h=>h.gender==='male');
   const beard=BEARDS[0];
-  const result=await composePortrait(canvasOf(rec),{gender:'male',faceId:'buzz',hairId:hair.id,beardId:beard.id},240,{loadImage:fakeLoader(files)});
-  assert.equal(calls.cleared,1,'the canvas starts clean');
+  const canvas=canvasOf(rec);
+  const result=await composePortrait(canvas,{gender:'male',faceId:'m1',hairId:hair.id,beardId:beard.id,colorId:'auburn'},240,{loadImage:fakeLoader(files)});
+  assert.equal(calls.cleared,1);
   assert.equal(calls.drawImages.length,3,'base + hair + beard');
   assert.equal(result.hairId,hair.id);
   assert.equal(result.beardId,beard.id);
-  // base first: full-canvas draw
+  assert.equal(result.colorId,'auburn');
   assert.deepEqual(calls.drawImages[0].slice(1),[0,0,240,240]);
-  // stale save with ids that no longer exist clamps instead of breaking
-  const clamped=await composePortrait(canvasOf(rec),{gender:'male',faceId:'gone',hairId:'nonsense',beardId:'nope'},240,{loadImage:fakeLoader(files)});
-  assert.equal(clamped.faceId,layerOptions('male').faces[0].id,'unknown face falls back to the first');
-  assert.equal(clamped.hairId,null,'unknown hair falls back to the base cut');
-  assert.equal(clamped.beardId,null,'unknown beard falls back to no beard');
-  // female selection never draws a beard
-  const female=layerOptions('female');
-  const before=calls.drawImages.length;
-  await composePortrait(canvasOf(rec),{gender:'female',faceId:female.faces[0].id,hairId:female.hairs[0].id,beardId:'full'},240,{loadImage:fakeLoader(files)});
-  assert.equal(calls.drawImages.length-before,2,'female draws base + hair only');
+
+  const clamped=await composePortrait(canvas,{gender:'male',faceId:'gone',hairId:'nonsense',beardId:'nope',colorId:'neon'},240,{loadImage:fakeLoader(files)});
+  assert.equal(clamped.faceId,'m1');
+  assert.equal(clamped.hairId,null);
+  assert.equal(clamped.beardId,null);
+  assert.equal(clamped.colorId,'brown');
+
+  // Async race guard: an earlier slower render must NOT overwrite a newer fast render!
+  let resolveSlow;
+  const slowLoader=src=>src.includes('m-head-02')
+    ?new Promise(r=>{resolveSlow=()=>r(fakeImage(src));})
+    :Promise.resolve(fakeImage(src));
+  const drawsBefore=calls.drawImages.length;
+  const slow=composePortrait(canvas,{gender:'male',faceId:'m2',hairId:hair.id},240,{loadImage:slowLoader});
+  const fast=await composePortrait(canvas,{gender:'male',faceId:'m3',hairId:null},240,{loadImage:slowLoader});
+  assert.equal(fast.faceId,'m3');
+  const drawsAfterFast=calls.drawImages.length;
+  assert.equal(drawsAfterFast-drawsBefore,1,'only fast draw ran');
+  resolveSlow();
+  const staleResult=await slow;
+  assert.equal(staleResult,null,'stale composition aborted cleanly');
+  assert.equal(calls.drawImages.length,drawsAfterFast,'stale render never painted over newer portrait');
 });
 
 test('facePortrait returns the base face file for sync callers',()=>{
-  assert.match(facePortrait({gender:'male',faceId:'buzz'}),/^assets\/portraits\/m-buzz\.jpg\?v=/,'the male base face');
-  assert.match(facePortrait({gender:'female',faceId:'bun'}),/^assets\/portraits\/f-bun\.jpg\?v=/,'the second female face');
-  assert.match(facePortrait({gender:'female'}),/^assets\/portraits\/f-crop\.jpg\?v=/,'an unknown face id falls back to the first of the gender');
-  assert.equal(facePortrait(null),null,'no avatar means no URL');
+  assert.match(facePortrait({gender:'male',faceId:'m1'}),/^assets\/portraits\/m-head-01\.jpg\?v=/);
+  assert.match(facePortrait({gender:'female',faceId:'f2'}),/^assets\/portraits\/f-head-02\.jpg\?v=/);
+  assert.match(facePortrait({gender:'female'}),/^assets\/portraits\/f-head-01\.jpg\?v=/);
+  assert.equal(facePortrait(null),null);
 });

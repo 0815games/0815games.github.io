@@ -12,7 +12,7 @@ const assert=require('node:assert/strict');
 
 // The mirror this device has been keeping: a layered combination, not the
 // gender default, so a hand-over of the wrong face would be visible.
-const MIRROR='g:f|face:bun|hair:braid';
+const MIRROR='g:f|face:f2|hair:braid';
 
 const mocks={
  'firebase-app.js':`export function initializeApp(){return {}}`,
@@ -106,11 +106,11 @@ async function diagnose(page){
      // rejected module, which is the only way to name the module that failed.
      const detail=await page.evaluate(async()=>{
       const probe=async url=>{try{await import(url);return 'ok';}catch(e){return String(e&&e.stack||e);}};
-      return {account:await probe('./account.js?v=20261031-patch4'),
-       sync:await probe('./avatar-sync.mjs?v=20261118-faces13'),
-       avatar:await probe('./avatar.mjs?v=20261118-faces13'),
-       layers:await probe('./avatar-layers.mjs?v=20261118-faces13'),
-       manifest:await probe('./assets/layers/manifest.mjs?v=20261118-faces13')};
+      return {account:await probe('./account.js?v=20261031-patch5'),
+       sync:await probe('./avatar-sync.mjs?v=20261119-avatar3'),
+       avatar:await probe('./avatar.mjs?v=20261119-avatar3'),
+       layers:await probe('./avatar-layers.mjs?v=20261119-avatar3'),
+       manifest:await probe('./assets/layers/manifest.mjs?v=20261119-avatar3')};
      }).catch(e=>'probe failed: '+e);
      console.error('Boot state',JSON.stringify(await diagnose(page),null,1),'pending:',requested,'errors:',errors,'modules:',JSON.stringify(detail,null,1),'last responses:',settled.slice(-20));
      throw error;

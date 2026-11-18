@@ -500,11 +500,20 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 .entry.recruiting:before{content:'IRON PATH / RECRUITING OFFICE';margin:0;padding:13px 22px;background:#192f25;color:#e3ca8b;border-bottom:1px solid #6c8068;font-size:9px;letter-spacing:.18em}
 .recruit-card{position:relative;display:grid;gap:12px;padding:20px 22px 16px}
 .recruit-head{display:flex;gap:16px;align-items:center}
-/* The showcase: the composed portrait is the centrepiece, not a thumbnail
-   (reported: the big picture was "nicht komplett sichtbar und zu klein"
-   when it sat as a small square in the head row). */
-.recruit-showcase{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap}
-.recruit-portrait-canvas{flex:none;width:clamp(170px,52vw,240px);aspect-ratio:1;display:block;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+/* The showcase ("Umsetzungsidee A"): central layered portrait flanked at
+   forehead, face and chin heights by direct ◀ / ▶ steppers, with an
+   active readout strip and 5-dot hair/beard color bar right beneath. */
+.recruit-gender-bar{display:grid}
+.recruit-showcase{display:grid;gap:12px;justify-items:center}
+.recruit-stage{display:grid;grid-template-columns:auto auto auto;grid-template-rows:repeat(3,1fr);gap:6px 10px;align-items:center;justify-content:center}
+.recruit-portrait-canvas{grid-column:2;grid-row:1 / span 3;flex:none;width:clamp(170px,52vw,240px);aspect-ratio:1;display:block;border:1px solid #525c54;border-top-color:#6d766e;border-radius:4px;background:#10231c;box-shadow:0 6px 18px var(--iron-shadow,rgba(8,12,9,.5))}
+.recruit-step{width:44px;height:44px;min-height:44px;margin:0;padding:0;display:inline-flex;align-items:center;justify-content:center;font-size:15px;line-height:1;border:1px solid #5a675c;border-radius:6px;background:rgba(19,35,28,.9);color:#e7d79d;box-shadow:0 3px 10px rgba(6,10,8,.42)}
+.recruit-step:hover:not(:disabled),.recruit-step:focus-visible{border-color:var(--iron-gold,#f0d68a);color:#fff;background:#1e362b}
+.recruit-step-prev{grid-column:1}
+.recruit-step-next{grid-column:3}
+.recruit-band-hair{grid-row:1;align-self:start;margin-top:10%}
+.recruit-band-face{grid-row:2;align-self:center}
+.recruit-band-beard{grid-row:3;align-self:end;margin-bottom:10%}
 .recruit-head-text{min-width:0}
 .recruit-kicker{display:block;font-size:9px;font-weight:bold;letter-spacing:.16em;color:var(--iron-gold,#f0d68a)}
 .recruit-card h2{font:700 clamp(21px,5vw,27px)/1.1 Georgia,serif;color:#f2e9cc;margin:5px 0 0}
@@ -513,22 +522,22 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 .recruit-name{min-width:0;display:grid;gap:6px}
 .recruit-name label{margin:0;font-size:10px;letter-spacing:.12em}
 .recruit-name input{width:100%;min-height:48px;margin:0;padding:10px 12px;font-size:16px}
-.recruit-options{display:grid;gap:11px}
+.recruit-options{width:100%;display:grid;gap:10px}
 .recruit-row{display:grid;gap:6px}
 .recruit-row-label{font-size:9px;letter-spacing:.14em;font-weight:bold;color:#c0cda9}
 .recruit-choices{display:flex;gap:8px}
-.recruit-choice{flex:1;min-height:44px;margin:0;padding:8px;font-size:11px;letter-spacing:.04em}
+.recruit-choice{flex:1;min-height:42px;margin:0;padding:8px;font-size:11px;letter-spacing:.04em}
 .recruit-choice[aria-checked="true"]{outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px;border-color:var(--iron-gold,#f0d68a);color:#fff}
-.recruit-looks{display:flex;gap:8px;overflow-x:auto;padding-bottom:3px;scrollbar-width:thin}
-/* Option tiles are LIVE COMPOSITES now, not cropped background photos: each
-   canvas is drawn by avatar-layers.mjs from the option combined with the
-   current rest of the selection (requested: separate FACE / HAIR / BEARD
-   rows, "verschiedene Varianten mit Haaren und Bart"). No background-image,
-   no crop maths here - the face anchoring happens in the compositor. */
-.recruit-look{flex:none;width:clamp(60px,18vw,76px);aspect-ratio:3/4;margin:0;padding:0;border:1px solid #4c564e;border-radius:3px;overflow:hidden;opacity:.72}
-.recruit-look canvas{display:block;width:100%;height:100%;object-fit:cover;border-radius:2px}
-.recruit-look:hover:not(:disabled){opacity:1}
-.recruit-look[aria-checked="true"]{opacity:1;outline:2px solid var(--iron-gold,#f0d68a);outline-offset:-2px}
+.recruit-readout{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.recruit-readout-pill{flex:1 1 92px;min-height:38px;margin:0;padding:5px 9px;display:grid;gap:1px;text-align:center;border:1px solid #485349;border-radius:4px;background:rgba(20,34,27,.72);color:#eef2e6;box-shadow:none}
+.recruit-readout-pill:hover:not(:disabled){border-color:var(--iron-gold,#f0d68a);background:rgba(28,46,37,.9)}
+.recruit-readout-key{font-size:8.5px;letter-spacing:.13em;color:#a9b898;font-weight:bold}
+.recruit-readout-val{font-size:11.5px;font-weight:600;color:#f5ebd0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recruit-color-row{justify-items:center;gap:7px}
+.recruit-color-dots{display:flex;gap:12px;justify-content:center;align-items:center}
+.recruit-color-dot{width:34px;height:34px;min-height:34px;margin:0;padding:0;border-radius:50%;border:2px solid rgba(255,255,255,.22);box-shadow:inset 0 2px 4px rgba(0,0,0,.45),0 2px 6px rgba(0,0,0,.35);opacity:.86}
+.recruit-color-dot:hover:not(:disabled){opacity:1;transform:scale(1.06)}
+.recruit-color-dot[aria-checked="true"]{opacity:1;border-color:#fff;outline:2px solid var(--iron-gold,#f0d68a);outline-offset:2px}
 .recruit-actions{display:grid;grid-template-columns:minmax(110px,1fr) 2fr;gap:9px}
 .recruit-actions button{min-height:48px;margin:0;padding:10px;font-size:11px}
 #avatarRandom{background:transparent;border:1px dashed #6d8066;box-shadow:none;color:#c9d4ba}
@@ -544,9 +553,11 @@ body:has(#characterView:not([hidden])) main{padding:18px 12px}
 @media (prefers-reduced-motion:reduce){.enlist-stamp.stamped{animation:none;opacity:1;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}.recruit-card.stamped{animation:none}}
 @media(max-width:480px){
  .entry.recruiting{margin:3vh auto}
- .recruit-card{padding:16px 14px 12px;gap:11px}
+ .recruit-card{padding:16px 14px 12px;gap:10px}
  .recruit-head{gap:12px}
- .recruit-showcase{gap:12px}
+ .recruit-showcase{gap:10px}
+ .recruit-stage{gap:4px 7px}
+ .recruit-step{width:40px;height:40px;min-height:40px;font-size:14px}
  .recruit-actions{grid-template-columns:1fr 1.5fr}
 }
 

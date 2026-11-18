@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261031-patch4">
+  <meta name="ironpath-build" content="20261031-patch5">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261031-patch4">
+  <link rel="stylesheet" href="style.css?v=20261031-patch5">
   <link rel="stylesheet" href="interface-redesign.css?v=20261117-partycards1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261117-ability1">
@@ -95,7 +95,7 @@
     </div>
     <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
     <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261031-patch4</p>
+      <p class="build-stamp" aria-hidden="true">BUILD 20261031-patch5</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
@@ -180,7 +180,7 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-patch4</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-patch5</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden>RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
@@ -201,7 +201,7 @@
         </form>
         <div class="dossier-footer" aria-hidden="true"><span data-i18n-text="FIELD RECORD · 01">FIELD RECORD · 01</span><span data-i18n-text="HOLD THE LINE ★">HOLD THE LINE ★</span></div>
       </div>
-<div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div class="recruit-showcase"><canvas id="avatarPreview" class="recruit-portrait-canvas" role="img" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"></canvas></div><div class="recruit-name recruit-name-row"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div><div id="avatarOptions" class="recruit-options"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div>
+<div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div id="avatarGenderBar" class="recruit-gender-bar"></div><div class="recruit-showcase"><div id="avatarStage" class="recruit-stage"><canvas id="avatarPreview" class="recruit-portrait-canvas" role="img" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"></canvas></div><div id="avatarOptions" class="recruit-options"></div></div><div class="recruit-name recruit-name-row"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true">ENLISTED · IRON PATH</div></form></div>
       <p id="entryMessage" class="entry-message" role="status"></p>
     </section>
     <div id="gameView" hidden><p id="scoreSaveStatus" role="status"></p><button id="inviteNotification" class="invite-notification" type="button" hidden>INVITATIONS</button>
@@ -316,7 +316,7 @@
     <div class="friends-sections"><section id="friendInvitesSection" hidden><h3 data-i18n="friends.invites">Party invitations</h3><p id="coopInvitesEmpty" data-i18n-text="No party invitations.">No party invitations.</p><ul id="coopInviteList"></ul></section><section id="friendRequestsSection" hidden><h3 data-i18n="friends.requests">Requests</h3><p id="requestsEmpty" data-i18n-text="No incoming requests.">No incoming requests.</p><ul id="friendRequests"></ul></section><section id="friendListSection"><h3 data-i18n="friends.list">Friends</h3><p id="friendsEmpty" data-i18n-text="No friends yet.">No friends yet.</p><ul id="friendList"></ul></section><section id="friendSentSection" hidden><h3 data-i18n="friends.sent">Sent requests</h3><p id="sentEmpty" data-i18n-text="No sent requests.">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
   <dialog id="friendStatsDialog" class="friends-dialog friend-stats-dialog" aria-labelledby="friendStatsTitle">
-    <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch4" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
+    <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch5" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
     <p id="friendStatsStatus" role="status" aria-live="polite"></p>
     <div id="friendStatsContent" hidden><div class="friend-stats-grid"><section><h3 id="friendStatsLevelHeading">LEVEL</h3><p id="friendStatsLevel"></p><h3 id="friendStatsAbilityHeading">ACTIVE SKILL</h3><p id="friendStatsAbility"></p></section><section><h3 id="friendStatsEquipmentHeading">EQUIPMENT</h3><p id="friendStatsEquipment"></p><h3 id="friendStatsBunkerHeading">BUNKER UPGRADES</h3><p id="friendStatsBunker"></p></section></div><section class="friend-stats-skills"><h3 id="friendStatsSkillsHeading">SKILLS</h3><p id="friendStatsSkills"></p><p id="friendStatsSpecialists"></p><p id="friendStatsMasteries"></p><p id="friendStatsOwned"></p></section><small id="friendStatsNote">Snapshot of saved progression. Stats are player-reported and not verified.</small></div>
   </dialog>
@@ -422,7 +422,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261031-patch4"></script>
+  <script type="module" src="intro.mjs?v=20261031-patch5"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261031-patch4"></script>
+  <script type="module" src="account-entry.mjs?v=20261031-patch5"></script>
 </body></html>

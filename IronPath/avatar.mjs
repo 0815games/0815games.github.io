@@ -1,21 +1,17 @@
-// The soldier's face: a layered portrait chosen at enlistment and worn
-// everywhere the soldier appears (recruiting showcase, dossier portrait,
-// soldier screen). It stores no stat, grants no bonus and never touches the
-// match.
+// The soldier's face: a layered frontal portrait chosen at enlistment and
+// worn everywhere the soldier appears (recruiting showcase, dossier portrait,
+// soldier screen, friend list). It stores no stat, grants no bonus and never
+// touches the match.
 //
-// Since the layered build the avatar is a combination: one base FACE per
-// gender plus optional HAIR and BEARD overlays (requested: "verschiedene
-// Varianten mit Haaren und Bart" as separate rows). The fine-grained color
-// sliders of the first comic build went away long ago (reported: the face
-// should be "realistisches Rendering"); the single-look filmstrip followed
-// the layered rows.
-//
-// Storage: the encoded string "g:f|face:crop|hair:bob|beard:full" rides in
-// the profile field `avatar` (bounded string, see the rules); the same string
-// is mirrored to localStorage as the offline bridge. Reading prefers the
-// profile, then the mirror, then the gender's default face. Old saves that
-// still carry "look:bob" (the single-look era, twelve ids) are mapped to the
-// closest combination on decode - nobody loses their soldier.
+// Storage: "g:f|face:f1|hair:bob|beard:full|color:auburn" (8..64 chars in
+// players/{uid}/avatar); mirrored locally as offline fallback. Default brown
+// omits `color:brown` to stay compact. Legacy "look:*" saves and PR #313
+// single-cut face ids ("crop", "bun", "beard", ...) migrate cleanly onto the
+// closest new frontal head + hair/beard combination so zero ghosting survives.
+
+import {DEFAULT_COLOR_ID,layerOptions} from './avatar-layers.mjs?v=20261119-avatar3';
+
+export const DEFAULT_HAIR_COLOR=DEFAULT_COLOR_ID;
 
 export const FEMALE_LOOKS=Object.freeze([
   Object.freeze({id:'crop',file:'f-crop.jpg',name:'Crop'}),
@@ -34,38 +30,58 @@ export const MALE_LOOKS=Object.freeze([
   Object.freeze({id:'beard',file:'m-beard.jpg',name:'Full beard'}),
 ]);
 
-// The two lists are deliberately never merged: asking for a gender always
-// yields only that gender's hairstyles. They remain the source of truth for
-// decoding the legacy single-look strings.
 export function looksFor(gender){return gender==='male'?MALE_LOOKS:FEMALE_LOOKS;}
 
-// The twelve single-look-era ids and the layered combination each one
-// becomes. Face 2 of a gender keeps its own base image where one exists;
-// stubble and full beard survive as beard choices.
 const LEGACY_COMBINATIONS={
   female:{
-    crop:{faceId:'crop',hairId:null,beardId:null},
-    bob:{faceId:'crop',hairId:'bob',beardId:null},
-    ponytail:{faceId:'crop',hairId:'ponytail',beardId:null},
-    bun:{faceId:'bun',hairId:null,beardId:null},
-    long:{faceId:'crop',hairId:'long',beardId:null},
-    braid:{faceId:'crop',hairId:'braid',beardId:null},
+    crop:{faceId:'f1',hairId:'crop',beardId:null},
+    bob:{faceId:'f1',hairId:'bob',beardId:null},
+    ponytail:{faceId:'f1',hairId:'ponytail',beardId:null},
+    bun:{faceId:'f2',hairId:'bun',beardId:null},
+    long:{faceId:'f1',hairId:'long',beardId:null},
+    braid:{faceId:'f1',hairId:'braid',beardId:null},
   },
   male:{
-    buzz:{faceId:'buzz',hairId:null,beardId:null},
-    short:{faceId:'buzz',hairId:'short',beardId:null},
-    side:{faceId:'buzz',hairId:'side',beardId:null},
-    medium:{faceId:'buzz',hairId:'medium',beardId:null},
-    stubble:{faceId:'buzz',hairId:null,beardId:'stubble'},
-    beard:{faceId:'buzz',hairId:null,beardId:'full'},
+    buzz:{faceId:'m1',hairId:'buzz',beardId:null},
+    short:{faceId:'m1',hairId:'short',beardId:null},
+    side:{faceId:'m1',hairId:'side',beardId:null},
+    medium:{faceId:'m1',hairId:'medium',beardId:null},
+    stubble:{faceId:'m1',hairId:'buzz',beardId:'stubble'},
+    beard:{faceId:'m1',hairId:'buzz',beardId:'full'},
   },
 };
+
+export const LEGACY_FACES=Object.freeze({
+  female:{
+    crop:{faceId:'f1',hairId:'crop',beardId:null},
+    bun:{faceId:'f2',hairId:'bun',beardId:null},
+    ponytail:{faceId:'f3',hairId:'ponytail',beardId:null},
+    bob:{faceId:'f4',hairId:'bob',beardId:null},
+    long:{faceId:'f5',hairId:'long',beardId:null},
+    braid:{faceId:'f6',hairId:'braid',beardId:null},
+    slick:{faceId:'f1',hairId:'slick',beardId:null},
+  },
+  male:{
+    buzz:{faceId:'m1',hairId:'buzz',beardId:null},
+    short:{faceId:'m2',hairId:'short',beardId:null},
+    side:{faceId:'m3',hairId:'side',beardId:null},
+    medium:{faceId:'m4',hairId:'medium',beardId:null},
+    stubble:{faceId:'m5',hairId:'short',beardId:'stubble'},
+    beard:{faceId:'m6',hairId:'short',beardId:'full'},
+  },
+});
 
 export const AVATAR_STORAGE_KEY='ironpath:avatar';
 
 export function defaultAvatar(gender='female'){
-  return Object.freeze({gender:gender==='male'?'male':'female',
-    faceId:gender==='male'?'buzz':'crop',hairId:null,beardId:null});
+  const g=gender==='male'?'male':'female';
+  return Object.freeze({
+    gender:g,
+    faceId:g==='male'?'m1':'f1',
+    hairId:g==='male'?'buzz':'crop',
+    beardId:null,
+    colorId:DEFAULT_HAIR_COLOR,
+  });
 }
 
 function partId(value){
@@ -73,64 +89,95 @@ function partId(value){
 }
 
 export function encodeAvatar(avatar){
-  const face=avatar||defaultAvatar();
-  const gender=face.gender==='male'?'m':'f';
+  const spec=avatar||defaultAvatar();
+  const gender=spec.gender==='male'?'m':'f';
+  const g=gender==='m'?'male':'female';
   const parts=[`g:${gender}`];
-  const faceId=partId(face.faceId)??defaultAvatar(face.gender).faceId;
+  const faceId=partId(spec.faceId)??defaultAvatar(g).faceId;
   parts.push(`face:${faceId}`);
-  const hair=partId(face.hairId);
+  const hair=partId(spec.hairId);
   if(hair)parts.push(`hair:${hair}`);
-  const beard=partId(face.beardId);
+  const beard=g==='male'?partId(spec.beardId):null;
   if(beard)parts.push(`beard:${beard}`);
+  const color=partId(spec.colorId);
+  if(color&&color!==DEFAULT_HAIR_COLOR)parts.push(`color:${color}`);
   return parts.join('|');
 }
 
 export function decodeAvatar(encoded,gender='female'){
-  const face={...defaultAvatar(gender)};
-  if(typeof encoded!=='string'||!encoded)return Object.freeze(face);
-  if(encoded.split('|').length>8)return Object.freeze(face);
-  for(const part of encoded.split('|')){
+  const base=defaultAvatar(gender);
+  if(typeof encoded!=='string'||!encoded)return base;
+  const rawParts=encoded.split('|');
+  if(rawParts.length>8)return base;
+
+  const face={gender:base.gender,faceId:base.faceId,hairId:base.hairId,beardId:base.beardId,colorId:DEFAULT_HAIR_COLOR};
+  let legacyHair,legacyBeard,explicitHair,explicitBeard,hasValidGender=false;
+
+  for(const part of rawParts){
     const [key,value]=part.split(':');
     if(value===undefined)continue;
     if(key==='g'){
       if(value==='m')face.gender='male';
       else if(value==='f')face.gender='female';
       else continue;
-      // The gender's own default face unless a later part says otherwise.
-      face.faceId=defaultAvatar(face.gender).faceId;
-      face.hairId=null;face.beardId=null;
+      hasValidGender=true;
+      face.faceId=face.gender==='male'?'m1':'f1';
+      face.hairId=null;face.beardId=null;face.colorId=DEFAULT_HAIR_COLOR;
+      legacyHair=undefined;legacyBeard=undefined;
       continue;
     }
     if(key==='face'){
       const id=partId(value);
-      if(id)face.faceId=id;
+      if(!id)continue;
+      const legacy=LEGACY_FACES[face.gender]?.[id];
+      if(legacy){
+        face.faceId=legacy.faceId;
+        legacyHair=legacy.hairId;
+        legacyBeard=legacy.beardId;
+      }else{
+        face.faceId=id;
+      }
       continue;
     }
     if(key==='hair'){
-      const id=partId(value);
-      face.hairId=id; // null when malformed: no hair overlay
+      explicitHair=partId(value);
       continue;
     }
     if(key==='beard'){
+      explicitBeard=partId(value);
+      continue;
+    }
+    if(key==='color'){
       const id=partId(value);
-      face.beardId=id;
+      const {colors}=layerOptions(face.gender);
+      face.colorId=colors.some(c=>c.id===id)?id:DEFAULT_HAIR_COLOR;
       continue;
     }
     if(key==='look'){
-      // Legacy single-look saves: map the old id to its combination. An
-      // unknown id decodes to the gender's default and never throws.
       const mapped=LEGACY_COMBINATIONS[face.gender]?.[value];
-      if(mapped){face.faceId=mapped.faceId;face.hairId=mapped.hairId;face.beardId=mapped.beardId;}
+      if(mapped){
+        face.faceId=mapped.faceId;
+        legacyHair=mapped.hairId;
+        legacyBeard=mapped.beardId;
+      }else if(hasValidGender){
+        // Unknown foreign look id reverts cleanly to the gender default
+        const def=defaultAvatar(face.gender);
+        face.faceId=def.faceId;legacyHair=def.hairId;legacyBeard=def.beardId;
+      }
       continue;
     }
-    // Older legacy faces from the comic build (s/h/c/e/b/x parts) have no
-    // layered equivalent; they decode to their gender's default face.
   }
+
+  if(explicitHair!==undefined)face.hairId=explicitHair;
+  else if(legacyHair!==undefined)face.hairId=legacyHair;
+
+  if(explicitBeard!==undefined)face.beardId=explicitBeard;
+  else if(legacyBeard!==undefined)face.beardId=legacyBeard;
+
+  if(face.gender!=='male')face.beardId=null;
   return Object.freeze(face);
 }
 
-// Profile field first (cross-device), then the local mirror from before the
-// rules publish, then the plain default for the gender the account chose.
 export function resolveAvatar(profile,storage){
   const gender=profile?.gender==='male'?'male':'female';
   let mirrored=null;
@@ -144,19 +191,18 @@ export function storeAvatar(storage,avatar){
   return encoded;
 }
 
-// "SURPRISE ME": one free roll across the gender's faces, hairs and beards -
-// the base cut and no beard are valid rolls too, and hair and beard roll
-// independently (that is the point of the layered build).
-import { layerOptions } from './avatar-layers.mjs?v=20261118-faces13';
 export function randomAvatar(gender='female',random=Math.random){
   const g=gender==='male'?'male':'female';
-  const {faces,hairs,beards}=layerOptions(g);
+  const {faces,hairs,beards,colors}=layerOptions(g);
   const face=faces[Math.floor(random()*faces.length)%faces.length]??faces[0];
-  // Roll space per row is options+1, with the "none" choice first: roll 0
-  // is the base cut / clean shave, the deepest roll the last option.
   const hairRoll=Math.floor(random()*(hairs.length+1))%(hairs.length+1);
-  const beardRoll=Math.floor(random()*(beards.length+1))%(beards.length+1);
-  return Object.freeze({gender:g,faceId:face.id,
+  const beardRoll=beards.length?Math.floor(random()*(beards.length+1))%(beards.length+1):0;
+  const color=colors[Math.floor(random()*colors.length)%colors.length]??colors[0];
+  return Object.freeze({
+    gender:g,
+    faceId:face.id,
     hairId:hairRoll>0?hairs[hairRoll-1].id:null,
-    beardId:beardRoll>0?beards[beardRoll-1].id:null});
+    beardId:beardRoll>0?beards[beardRoll-1].id:null,
+    colorId:color?.id??DEFAULT_HAIR_COLOR,
+  });
 }

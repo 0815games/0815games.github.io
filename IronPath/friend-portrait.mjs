@@ -1,17 +1,16 @@
-import {decodeAvatar,looksFor} from './avatar.mjs?v=20261118-faces13';
-import {composePortrait,layerOptions} from './avatar-layers.mjs?v=20261118-faces13';
+import {decodeAvatar,LEGACY_FACES,looksFor} from './avatar.mjs?v=20261119-avatar3';
+import {composePortrait,layerOptions} from './avatar-layers.mjs?v=20261119-avatar3';
 
 // No other account's local avatar mirror is ever read. Until both permitted
 // profile fields are available, a neutral placeholder is the honest answer.
-export const FRIEND_PORTRAIT_PLACEHOLDER='assets/friend-placeholder.svg?v=20261031-patch4';
+export const FRIEND_PORTRAIT_PLACEHOLDER='assets/friend-placeholder.svg?v=20261031-patch5';
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const isImage=value=>typeof value==='string'&&value.length<=1000000&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value);
 
 // decodeAvatar deliberately clamps stale or malformed parts for the owner's
 // own UI. For a friend's portrait that could misrepresent an unknown face as a
-// real one, so recognize only the formats produced by the old and current
-// encoders, with choices that the current renderer can actually reproduce.
-// Comic-era values and future/unknown layers stay neutral until supported.
+// real one, so recognize only the formats produced by the legacy, PR #313, and
+// current encoders, with choices the renderer can accurately reproduce.
 function knownAvatar(encoded,gender){
  if(typeof encoded!=='string'||encoded.length<8||encoded.length>64||!['male','female'].includes(gender))return null;
  const legacy=/^g:([mf])\|look:([a-z0-9]{1,24})$/.exec(encoded);
@@ -19,12 +18,14 @@ function knownAvatar(encoded,gender){
   if(legacy[1]!==gender[0]||!looksFor(gender).some(item=>item.id===legacy[2]))return null;
   return decodeAvatar(encoded,gender);
  }
- const current=/^g:([mf])\|face:([a-z0-9]{1,24})(?:\|hair:([a-z0-9]{1,24}))?(?:\|beard:([a-z0-9]{1,24}))?$/.exec(encoded);
+ const current=/^g:([mf])\|face:([a-z0-9]{1,24})(?:\|hair:([a-z0-9]{1,24}))?(?:\|beard:([a-z0-9]{1,24}))?(?:\|color:([a-z0-9]{1,24}))?$/.exec(encoded);
  if(!current||current[1]!==gender[0])return null;
- const {faces,hairs,beards}=layerOptions(gender);
- if(!faces.some(item=>item.id===current[2])||
+ const {faces,hairs,beards,colors}=layerOptions(gender);
+ const faceKnown=faces.some(item=>item.id===current[2])||Object.hasOwn(LEGACY_FACES[gender]||{},current[2]);
+ if(!faceKnown||
     (current[3]&&!hairs.some(item=>item.id===current[3]))||
-    (current[4]&&!beards.some(item=>item.id===current[4])))return null;
+    (current[4]&&!beards.some(item=>item.id===current[4]))||
+    (current[5]&&!colors.some(item=>item.id===current[5])))return null;
  return decodeAvatar(encoded,gender);
 }
 

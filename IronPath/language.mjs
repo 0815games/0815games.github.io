@@ -9,12 +9,12 @@ import {germanSettings} from './localization-settings-de.mjs?v=20261112-tagless1
 // without tests/first-run-german.test.mjs noticing.
 import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261112-tagless1';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-patch4';
-import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261031-patch4';
-import {germanAccount} from './localization-account-de.mjs?v=20261031-patch4';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261031-patch5';
+import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261031-patch5';
+import {germanAccount} from './localization-account-de.mjs?v=20261031-patch5';
 import {germanTowers} from './localization-towers-de.mjs?v=20261112-kits1';
 import {germanStatic} from './localization-static-de.mjs?v=20261220-actintros';
-import {germanBattle} from './localization-battle-de.mjs?v=20261031-patch4';
+import {germanBattle} from './localization-battle-de.mjs?v=20261031-patch5';
 import {germanResults} from './localization-results-de.mjs?v=20261117-rank1';
 import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261107-balance1';
 import {germanCampaign} from './localization-campaign-de.mjs?v=20261112-pressure1';
@@ -22,7 +22,7 @@ import {germanCinematics} from './localization-cinematics-de.mjs?v=20261112-pres
 import {germanEvents} from './localization-events-de.mjs?v=20261206-acttwo1';
 import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
-import {germanText} from './localization-de.mjs?v=20261118-faces13';
+import {germanText} from './localization-de.mjs?v=20261119-avatar3';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.

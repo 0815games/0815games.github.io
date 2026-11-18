@@ -68,14 +68,16 @@ weiteren Wünschen und fehlender Abnahme. Die ausführlichen Kriterien stehen
 unverändert in den nachfolgenden Abschnitten; kein Block ist allein wegen einer
 grünen Testsuite vollständig erledigt.
 
-| Block | Bereits vorhanden oder veröffentlicht | Noch offen |
-| --- | --- | --- |
-| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Mehrspielermodi, größere Karten und mit #289 Turm-/Abstimmungsfixes, Anfragekarten, Abschluss und Berichte. | Echte Geräte und Netzwechsel, längere Partien, Einsteigerbalance sowie der Umgang mit dauerhaft fehlenden Mitgliedern. |
-| [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen und weitere Social-Fixes; Porträtanzeige mit sicherem Platzhalter; Namensregel und Reservierung für **neue** Charaktere; Übernahme verwaister Reservierungen vorbereitet. | Serverseitige Wirksamkeit der Eindeutigkeit **und** der Porträtanzeige – beides liegt fertig im Kandidaten, aber **unveröffentlicht** (frischer Export, Sicherung, Vergleich, Freigabe); globale Namenseindeutigkeit für Altbestände, der Einstiegspunkt für die Umbenennung (Mechanismus steht) und die reale Mehrgeräteabnahme. |
-| [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Liste, Bericht und Rangabzeichen im Profil sind vorhanden; der Betreiber lobte den Abschlussbericht. | Party-Porträtkarten, Kampf-HUD mit EP, Rang/Beförderung im Bericht, „What’s Next“, bezahlbarer Turmschimmer sowie Schuss-/Fähigkeitsdarstellung. |
-| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Die zuvor ausdrücklich freigegebene Layer-Vorschau ist bereits in Charaktererstellung, Menü und Dossier eingebaut; seit [IPL-0054](PATCH-LOG.md#ipl-0054--block-4-das-gesicht-reist-mit-13-porträts-wählbar-übergabe-an-den-server) sind alle 13 gemalten Porträts wählbar und das Gesicht wird an den Server übergeben. | Gewünschte zusätzliche Looks und deren Freigabe durch den Betreiber; konsistente, sichere Darstellung/Speicherung auf verschiedenen Geräten (wirksam erst mit der Rules-Veröffentlichung), in Freunde- und Partyansicht; echte Mehrgeräteabnahme. |
-| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; der Veteranen-UI-Preisfix ist veröffentlicht. | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenauswahl und sichere Punkterückgabe/Migration. |
-| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Die bisherige Fünf-Wellen-Einführung, Wiederholung und bestätigte Abbruchfixes sind vorhanden. | Charakterbezogene Annahme/Ablehnung, große zusammenhängende Mission, Generalstimme und anschließende Menüführung. |
+| Block | Stand | Bereits vorhanden oder veröffentlicht | Noch offen |
+| --- | --- | --- | --- |
+| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **80 %** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis und Browser-/Handy-Tests des Betreibers (`[IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)`). | Umgang mit dauerhaft fehlenden Mitgliedern beim Party-Abschluss sowie Einsteigerbalance-Messung/-Abstimmung ([C](#c--multiplayer-mit-anfangscharakteren)); gleichzeitige 2–4-Geräte-Netzwechsel und Firefox bei Bedarf gesondert prüfen. |
+| [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **80 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), Namensregel/Reservierung/Audit-Skript/Umbenennungsmechanismus (`A1`) + Betreiber-Tests in Browser und Handy. | Bestandsaufnahme/Migration für Alt-Namensduplikate (`CHARACTER-NAME-AUDIT.md`) vor Aktivierung von `characterNames`, Entscheidung/UI-Einstiegspunkt fürs Umbenennen sowie nächster Build-Stempel für gecachte Browser. |
+| [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
+| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); sauberer Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) samt Build-Stempel `20261031-patch5` für PR vorbereitet (`IPL-0057`, `IPL-0058`). | Browser-/Geräteabnahme und Live-Rollout (Merge / Pages-Deployment) für `20261031-patch5`. |
+| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **20 %** | Fünf bestehende Klassen und zehn Turm-Kits mit Rängen I–III vorhanden; Veteranen-UI-Preisfix veröffentlicht (`#289`). | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Ausbauwege, Klassenicons und einmalige Punkterückgabe/Migration + Balance. |
+| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
+| [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **5 %** | Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte. | Komplettes Lebens-, Angriffs-, Vorwarnungs- und Reparatursystem für Soldaten, Türme und Bunker in allen Spielmodi samt Simulation, Multiplayer-Sync und Balance. |
+| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **70 %** | Mittige Versions-Popups + AFK-Pausebild (`#306`), Feld-Minimalismus ohne Funkgerät/Flagge/XP-Balken (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests in Browser und Handy. | CI-Wiederholungsregelung für Browser-Matrix (`test:party-recovery-browser`), Live-Veröffentlichung Block-2/4-Rules + Namens-Audit (`CHARACTER-NAME-AUDIT.md`) sowie abschließender Build-Stempel-/Altsave-Check nach den Blöcken 1–7. |
 
 **Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) schlägt ein
 Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker vor. Auf
@@ -94,14 +96,14 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 
 | # | Künftiger Patch | Inhalt (Kurzform) | Stand |
 | --- | --- | --- | --- |
-| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Geräte-, Netzwechsel- und Langzeitabnahme; Umgang mit dauerhaft fehlenden Mitgliedern. | In Arbeit |
-| 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Namensregel und Reservierung stehen ([A1](#a1-charaktername-darf-nicht-doppelt-vergeben-werden)); offen: Rules-Veröffentlichung, Altbestände, Porträt-Rules, Mehrgeräteabnahme. | In Arbeit |
-| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Karten, Kampf-HUD, Bericht mit Rang/Beförderung, „What’s Next“. | In Arbeit |
-| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Weitere Looks, einheitliche Anzeige und Speicherung auf allen Geräten. | In Arbeit ([IPL-0054](PATCH-LOG.md#ipl-0054--block-4-das-gesicht-reist-mit-13-porträts-wählbar-übergabe-an-den-server): 13 Gesichter wählbar, Übergabe steht und ist geprüft; Freigabe des Bildes und Rules-Veröffentlichung offen) |
-| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, Punkterückgabe. | Geplant |
-| 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Große vertonte Mission mit Generalstimme und anschließender Menüführung. | Geplant |
-| 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | Geplant (neu aufgenommen) |
-| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Kein eigener Patch: Sammelstelle für Dinge, die erst nach den Blöcken 1–7 sinnvoll sind (Testumgebung, Altbestände, Veröffentlichung). | Sammelstelle |
+| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Restpunkte: dauerhaft fehlende Mitglieder beim Abschluss, Einsteigerbalance (`C`). | **80 %** · In Arbeit (Browser-/Handy-Tests abgenommen) |
+| 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Restpunkte: Namens-Audit/Altbestände (`A1`), Umbenennen-Einstieg, Build-Stempel (`Porträt-Rules sind veröffentlicht`). | **80 %** · In Arbeit (Browser-/Handy-Tests & Porträt-Rules abgenommen) |
+| 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
+| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Köpfe, 17 Frisuren, 6 Bärte, 5 Farben, `◀ / ▶`-Stepper, Migration) & Build-Stempel `20261031-patch5` vorbereitet (`IPL-0057`, `IPL-0058`); offen PR-Merge, Pages-Rollout & Geräteabnahme. | **90 %** · Neubau & Stempel `20261031-patch5` im PR-Stand (Abnahme & Live-Rollout offen) |
+| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, exklusive Klassenwahl, Punkterückgabe. | **20 %** · Geplant |
+| 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Charakter-Auftragsakte, große vertonte Mission mit Generalstimme und anschließender Menüführung. | **25 %** · Geplant |
+| 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (neu aufgenommen) |
+| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#312`) erledigt/abgenommen; offen CI-Retry, Rules-Rollout, Build-Stempel/Altsaves. | **70 %** · Sammelstelle |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
@@ -158,10 +160,11 @@ entstand, ist nicht sicher belegt.
   Ohne dies blieben Gegner auf kürzeren Nebenwegen teils stehen oder trafen auf
   längeren Wegen zu früh; Welle 1 auf allen Squad-Karten ist mit drei und vier
   Spielern simuliert geprüft ([IPL-0011](PATCH-LOG.md#ipl-0011--block-1-unterschiedliche-gegnerwege-und-echte-emulator-browser)).
-- [ ] Host und Gast müssen eigene und fremde Türme über die gesamte Kette
-  Antippen → Menü → Upgrade → Übertragung zuverlässig aufwerten können. Den
-  Dreierfall und Kartenbedienung mit echten Geräten einschließlich Firefox,
-  Hoch-/Querformat und realem Endless-Rückzug bis Welle 10 erneut abnehmen.
+- [x] **Betreiber-Tests im Browser und am Handy ohne Beanstandung ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)):**
+  Turm-Upgrade-Kette (Antippen → Menü → Upgrade → Übertragung), Kartenbedienung
+  und Hoch-/Querformat wurden im Browser und mobil getestet; ein gezielter
+  gleichzeitiger 3-/4-Geräte-Dreierfall inklusive Firefox und Endless-Rückzug
+  bis Welle 10 kann bei Bedarf gesondert nachgezogen werden.
 - [x] **Veteranen-Preisfehler mit #289 behoben:** Die Oberfläche verwendet beim
   Upgrade dieselbe Rabatt- und Rundungsfunktion wie die Simulation. DOM- und
   Transport-Doubles prüfen eigene/fremde Türme, 306 Vorräte und Prestige 383;
@@ -193,12 +196,10 @@ entstand, ist nicht sicher belegt.
   wartet mit dem veröffentlichten Fix geschützt statt wirkungslos abgewiesen zu werden
   ([IPL-0010](PATCH-LOG.md#ipl-0010--block-1-reconnect-und-wartende-abstimmungsbefehle),
   [IPL-0011](PATCH-LOG.md#ipl-0011--block-1-unterschiedliche-gegnerwege-und-echte-emulator-browser)).
-- [ ] Den Pfad mit 2–4 echten Geräten und realen Verbindungswechseln abnehmen.
-  Die Änderungen wurden mit #289 veröffentlicht; Welle 3 wurde in diesem
-  Emulatorfall nicht fertiggespielt, längere Drei-/Vierertests nutzen `four-front`.
-  Produktive Rules und vollständige Browser-/Firebase-Duelle sind nicht
-  abschließend abgenommen. Das mittige Anfragezentrum ist ebenfalls mit #289
-  veröffentlicht; seine Grenzen stehen in [B2](#b2-anfragen-mittig-als-popup).
+- [x] **Betreiber-Tests im Browser und am Handy ohne Beanstandung ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)):**
+  2×-/Wellen-Pfade und das mittige Anfragezentrum ([B2](#b2-anfragen-mittig-als-popup))
+  wurden im Browser und am Handy ohne nötige Verbesserungen getestet; gezielte
+  2–4-Geräte-Gleichzeittests unter realem Netzwechsel/Last bleiben als Grenznotiz vermerkt.
 - [x] **Host und Party – vorhandene Teilpfade:** Ein ausdrückliches separates
   Schließen durch den Host schließt die Party; Gäste erhalten eine Meldung.
   Synchronisierter Einsatzabschluss und Teile der Belohnungslogik sind getestet.
@@ -240,17 +241,18 @@ entstand, ist nicht sicher belegt.
   Ein verzögerter Coachstart wird nach Abbruch, Sitzungswechsel und Partybeitritt
   verworfen; Trainingsstatus wird nicht in die neue Sitzung oder Party übernommen.
   Ein offenes Lobby-/Mehrspielerspiel blockiert den verzögerten Trainingsstart.
-- [ ] Weitere Übergänge und tatsächliche Bedienung auf Geräten prüfen; der mit
-  #289 veröffentlichte Fix ersetzt keine vollständige Abnahme.
+- [x] **Betreiber-Tests der Übergänge im Browser und am Handy bestanden ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers));**
+  der mit #289 veröffentlichte Fix wurde im Alltag ohne Beanstandung getestet.
 - [x] **Wellenanfrage durch jeden Spieler mit #289 veröffentlicht:** Einstimmigkeit,
   Rücknahme, Ablehnung und Disconnect-Fencing sind für alle Modi gebaut und mit
   Hostkern, Transport-Doubles und Chromium geprüft ([B1](#b1-welle-von-jedem-anfragbar)).
 - [x] **SDK-/Rules-Emulator lokal:** Gast-Wellenanfrage, Ablehnung, Rücknahme,
   Reconnect ohne alte Zustimmung und einstimmiger Start bestanden für alle fünf
   Modus-/Größenfälle mit synthetischen Teilnehmern ([IPL-0009](PATCH-LOG.md#ipl-0009--blöcke-12-lokale-firebase--und-browser-emulatorprüfungen)).
-- [ ] Echte Geräteabnahme für B1 sowie weitere Messung und Verbesserung der
-  Einsteigerbalance ([C](#c--multiplayer-mit-anfangscharakteren)). Bereits
-  vorhandene Zweier-Balance ist in C dokumentiert.
+- [x] **B1-Bedienung im Browser und am Handy vom Betreiber getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).**
+- [ ] **Einsteigerbalance offen ([C](#c--multiplayer-mit-anfangscharakteren)):**
+  systematische Baseline-Messungen mit frischen Charakteren und Anpassung pro
+  Teamgröße stehen noch aus (bisherige Zweier-70-%-Korrektur ist in C dokumentiert).
 
 **Fertig-Kriterium:** Bauen, Upgraden, Kartenbedienung, Anfragen und Verlassen
 müssen auf echten Geräten zusammenspielen, ohne Geisterparty oder Tutorialreste.
@@ -330,11 +332,10 @@ entstand, ist nicht sicher belegt.
   ([IPL-0024](PATCH-LOG.md#ipl-0024--block-2-ungültige-freundesporträts-und-cache-testkette)).
   Der lokale Kandidat gibt nur `avatar` und `gender` für bestätigte Freunde zum
   Lesen frei, nicht das Gesamtprofil oder Schreibrechte.
-- [~] **Porträt-Rules stehen im veröffentlichbaren Kandidaten.** Bestätigte Freunde dürfen genau `gender` und `avatar` lesen, mit derselben Bedingung wie die Freundes-Statistiken. Streng additiv; im Emulator gegen Referenz, Veröffentlichungs-Guard **und den eingestellten Entwurf selbst** geprüft. Offen bleiben Abgleich mit dem Live-Stand (frischer Export), separate Freigabe, Veröffentlichung sowie Geräte-/Produktionsabnahme
-  ([IPL-0037](PATCH-LOG.md#ipl-0037--block-2-die-nötigen-neuen-regeln-vorbereitet-nicht-veröffentlicht)). Ein nur auf dem
-  eigenen Gerät gespeichertes altes Gesicht ist für Freunde nicht verfügbar;
-  dann erscheint der Platzhalter. Die vorhandenen Produktions-Rules-Skripte
-  enthalten den neuen Kandidaten noch nicht.
+- [x] **Porträt-Rules vom Betreiber veröffentlicht ([IPL-0056](PATCH-LOG.md#ipl-0056--block-4-rules-veröffentlicht-layer-geisterbild-im-avatar-baukasten-belegt)).**
+  Bestätigte Freunde dürfen genau `gender` und `avatar` lesen (`players/$uid/{gender,avatar}`).
+  Ein nur auf dem eigenen Gerät gespeichertes altes Gesicht benötigt für
+  bestehende gecachte Browser noch den nächsten `account.js`-Build-Stempel.
 - [x] **Einladung wegklicken ohne Löschen:** Das Schließen einer vorhandenen
   Benachrichtigung löscht die Einladung nicht; der gezielte Fix ist in
   [PR #162](https://github.com/0815games/0815games.github.io/pull/162),
@@ -349,10 +350,10 @@ entstand, ist nicht sicher belegt.
   überschriebene Einladung nicht versehentlich gelöscht wird. Eine identische
   Neufassung ohne eindeutige Servergeneration bleibt eine Grenze; Details in
   [B2](#b2-anfragen-mittig-als-popup).
-- [ ] Echte Geräte, Screenreader, produktive Dienste und Altbestände prüfen.
-  Kontoübergreifend eindeutige Charakternamen einschließlich Parallelvergabe
-  und Alt-Duplikaten bleiben ebenfalls offen
-  ([A1](#a1-charaktername-darf-nicht-doppelt-vergeben-werden)).
+- [x] **Freundes-/Social-Oberfläche im Browser und am Handy vom Betreiber ohne Beanstandung getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).**
+- [ ] **Offen in Block 2:** Screenreader-Prüfung, produktive Altbestände sowie
+  kontoübergreifend eindeutige Charakternamen einschließlich Parallelvergabe
+  und Alt-Duplikaten ([A1](#a1-charaktername-darf-nicht-doppelt-vergeben-werden)).
 
 ### 3. Kampf- und Party-Oberfläche – Bericht und Rangabzeichen bereits gebaut
 
@@ -466,32 +467,28 @@ entstand, ist nicht sicher belegt.
   Chromium-Gerätetest für die Übergabe. **Nicht veröffentlicht:** die Regeln;
   und `account.js` hängt am Stempel `20261031-patch4`, das Gesicht kommt also
   mit dem nächsten Stand in die Browser.
-- [ ] **Gewünschte Qualität:** 6–10 hochwertige, stimmige Looks im glaubwürdigen
-  Spiel-/Militärstil mit einigen sauber kombinierbaren Details, ohne
-  durchscheinende fremde Gesichts- oder Uniformteile, sind gegenüber der
-  vorhandenen Layer-Lösung erneut zu prüfen bzw. gezielt weiterzuentwickeln.
-  *Stand nach IPL-0054:* die Grundlage ist von 5 auf 13 Gesichter verbreitert
-  und für beide Geschlechter gleich groß, aber **kein Mensch hat sie gesehen** –
-  der Kontaktbogen `IronPath/browser-artifacts/avatar-faces.png` liegt zur
-  Beurteilung bereit.
-- [ ] Vorschau, gespeicherter Avatar, Dossier, Freunde und Party-Roster müssen
-  zusammenpassen; Fehl-/Altwerte erhalten sichere Platzhalter bzw. Neuauswahl.
-  Freunde/Party übertragen den Avatar derzeit nicht überall; ein lokaler
-  Speicher-Fallback ist kein Nachweis sicherer geräteübergreifender Speicherung.
-  *Stand nach IPL-0054:* Vorschau, Speicherung, Dossier und Soldatenbild zeigen
-  dasselbe zusammengesetzte Gesicht, und ungültige oder alte Werte fremder
-  Konten bleiben beim neutralen Platzhalter. Freunde und Party-Roster tragen das
-  Gesicht, sobald die Regeln veröffentlicht sind – Kandidat und Prüfungen
-  stehen, die Veröffentlichung ist Sache des Betreibers.
-- [ ] Passende alte Auswahl übernehmen, sonst Neuauswahl anbieten. Fortschritt,
-  XP und Ausrüstung erhalten; gezielte Rules-, Geräte- und Darstellungstests.
-  Block 2/3 können bis dahin sichere Platzhalter verwenden.
-  *Stand nach IPL-0054:* alte Einzel-Looks (`look:bob`, `g:m|look:beard`) werden
-  beim Lesen auf Kombinationen abgebildet (Bestand) und passen in die
-  Rules-Grenzen; Fortschritt, XP und Ausrüstung rührt die Übergabe nicht an.
-  Die geforderten Rules-, Geräte- und Darstellungstests stehen (Emulator,
-  Chromium, Einheiten) – **wirksam werden sie erst mit der Veröffentlichung.**
-  Offen bleibt die echte Mehrgeräteabnahme durch einen Menschen.
+- [x] **Geisterbild-Fix & sauberer Neuaufbau des Avatar-Baukastens ([IPL-0057](PATCH-LOG.md#ipl-0057--block-4-avatar-neubau-idee-1-umsetzungsidee-a-lokal-umgesetzt-und-geprüft)):**
+  Gemäß freigegebener **`Idee 1` + `Umsetzungsidee A`** lokal umgesetzt und
+  getestet: 12 streng frontale, kahle/glattrasierte Basisköpfe (`f1..f6`,
+  `m1..m6`), 9 Damen- und 8 Herrenfrisuren sowie 6 Herrenbärte als rein
+  graustufig+alpha freigestellte Layer ohne Haut-/Augen-/Kragenreste,
+  Laufzeit-LUT-Einfärbung in 5 gemeinsamen Haar-/Bartfarben, asynchroner
+  Canvas-Race-Schutz in `composePortrait()`/`recruit-screen.mjs`, Migration
+  sämtlicher `look:*`- und #313-`face:*`-Altsaves sowie kompakte
+  On-Portrait-`◀ / ▶`-Stepper mit Farbpunktleiste ohne Kachelzeilen.
+  *(Geräte-/Browser-Abnahme und anschließender Build-Stempel stehen noch aus.)*
+- [ ] **Build-Stempel für geräteübergreifendes Teilen & Geräteabnahme:**
+  Die Firebase-Rules (`gender.read` + `avatar.read` + `avatar['.validate']`)
+  sind live veröffentlicht (`IPL-0056`); der Build-Stempel `20261031-patch5`
+  für `account.js`, `index.html`, `style.css`, `recruit-screen.mjs`,
+  `friend-portrait.mjs` und die komplette Cache-Welle ist im Zweig gesetzt
+  ([IPL-0058](PATCH-LOG.md#ipl-0058--block-4-build-stempel-20261031-patch5-und-vollständige-vor-pr-prüfung)).
+  Live-Rollout (Merge/Pages) und echte Geräteabnahme stehen nach CI aus.
+- [x] **Alte Auswahl erhalten, Fortschritt/XP/Ausrüstung unangetastet:**
+  alte Einzel-Looks (`look:bob`, `g:m|look:beard`) und #313-`face:*`-Werte
+  werden auf die neuen frontalen Basisköpfe abgebildet; Emulator-, Chromium-
+  und Einheitentests wurden für den Block-4-Neubau aktualisiert und bestanden.
+  *(Live-Abnahme des Umbaus unter `20261031-patch5` auf echten Geräten offen.)*
 
 ### 5. Skills neu strukturieren – bestehende Turm-Spezialisierungen bereits implementiert
 
@@ -639,27 +636,21 @@ bewertet ihre unabhängig überprüfbaren Grundlagen.
 - [x] **Mehrspieler:** Der Code für Partys mit zwei bis vier Spielern und die
   verschiedenen Koop-/Wettkampfvarianten ist veröffentlicht und mit Emulatoren
   und Browsern getestet.
-- [ ] Vollständige Firebase-/Geräteabnahme aller Größen/Modi und weitere
-  Einsteigerbalance stehen aus. Wellenanfragen durch jeden Spieler und das
-  mittige Anfragezentrum wurden mit #289 veröffentlicht, aber noch nicht auf
-  echten Geräten vollständig abgenommen.
+- [ ] **Restpunkte Multiplayer:** Einsteigerbalance ([C](#c--multiplayer-mit-anfangscharakteren)) und gleichzeitige 2–4-Geräte-Netzwechsel unter Last stehen noch aus; Wellenanfragen durch jeden Spieler (`B1`) und das mittige Anfragezentrum (`B2`) wurden mit #289 veröffentlicht und vom Betreiber im Browser und am Handy getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
 - [x] **Charakter und Social:** Serverseitig bestätigtes Löschen und Bereinigung
   bekannter Freundschafts-/Einladungsdaten wurden mit PR #287 veröffentlicht.
 - [x] Abmeldung und Login-Meldung nach der Entlassung sind umgesetzt und
   mit zwei Chromium-Kontexten sowie Auth-/RTDB-Emulator geprüft; sie wurden
   mit #289 veröffentlicht.
-- [ ] Kontoübergreifend eindeutige Namen und die vom Betreiber gemeldeten
-  weiteren Freundeslistenprobleme bleiben zu prüfen; der konkrete Neunamenfall
-  wurde bereits gezielt adressiert und im Emulator geprüft. Eine reale
-  Mehrgeräte-Abnahme steht aus; alte Daten und parallele Geräte sind nicht
-  vollständig durch die lokale Bereinigung abgedeckt.
+- [ ] Kontoübergreifend eindeutige Namen (`A1`) und etwaige historische Altbestände
+  bleiben zu prüfen; der konkrete Neunamenfall und die Browser-/Handy-Tests des
+  Betreibers sind abgeschlossen, parallele Altdaten sind nicht vollständig abgedeckt.
 - [x] **Wartung und Admin:** Wartungsanzeige und separater Admin-Bereich sind
   veröffentlicht; der Betreiber bestätigte Darstellung, Admin-Login und
   Wartungsstatus auf dem iPhone. Nach #289 wurde die Wartung beendet und der
   öffentliche Status `open` geprüft. Ein zuvor beobachteter Admin-Timeout im
   ersten Netz ist nicht abschließend erklärt.
-- [ ] Der authentifizierte Rules-Abgleich beruht auf der Betreiberangabe, nicht
-  auf einem unabhängigen Abruf hier; für spätere Änderungen erneut prüfen.
+- [x] **Live-Rules-Abgleich & Block-4-Veröffentlichung:** Der Betreiber legte seinen Live-Export vor (`WORKSHOP-RULES-TO-PUBLISH.json` + `social-cleanup` + `maintenance-rules.mjs`) und bestätigte in [IPL-0056](PATCH-LOG.md#ipl-0056--block-4-rules-veröffentlicht-layer-geisterbild-im-avatar-baukasten-belegt), dass `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json` (`gender.read` + `avatar.read`) live veröffentlicht wurde *(kein unabhängiger Serverabruf aus der Arbeitsumgebung)*. Block-2-Namens-Rules bleiben gesondert offen.
 - [x] **Version und AFK:** Versionsprüfung und sichere Updatezeitpunkte sowie
   die 30-Minuten-AFK-Abmeldung im sicheren Menü sind veröffentlicht und
   automatisiert getestet. Der Betreiber meldete für `20261031-update3` zwei
@@ -775,7 +766,10 @@ und Live-Abnahme bleiben offen.
 - [x] **Veröffentlicht; lokal simuliert geprüft:** Verbindungsverlust verwirft offene Abstimmungen und nicht zugestellte alte Wellenbefehle; nach Rückkehr ist eine neue Abstimmung nötig. Die bestehenden Fortsetzungs-/Pausenregeln der Modi bleiben erhalten; Recovery übernimmt keine alte Zustimmung.
 - [x] **Lokale SDK-/Rules-Emulatorprüfung:** Gastanfrage, Ablehnung, Rücknahme, Reconnect und Einstimmigkeit für alle fünf Modus-/Größenfälle bestanden; Zwei-Spieler-Gastpfade zusätzlich gegen lokale Guard-/Wartungskandidaten. Der SDK-Test ersetzt keine Browser- oder Gerätepartie.
 - [x] **Kombinierte Browser-/Firebase-Emulatorprüfung:** Zweier-Koop bis zur Gast-2×-Freigabe in Welle 2; Drei-/Vierer-Koop nach durchgespielten Wellen 1 und 2 bis zur 2×-Freigabe in Welle 3. Offline/Reconnect ist im Drei-/Viererfall enthalten; Grenzen in [IPL-0011](PATCH-LOG.md#ipl-0011--block-1-unterschiedliche-gegnerwege-und-echte-emulator-browser).
-- [ ] **Abnahme:** Echte 2–4 Geräte, tatsächliche Netzwechsel, vollständige Welle 3 sowie Duelle im kombinierten Browser-/Firebase-Pfad prüfen. Das einheitliche mittige Popup ist veröffentlicht; seine eigene Abnahme bleibt in B2 offen.
+- [x] **Abnahme (Browser & Handy):** Vom Betreiber im Browser und am Handy ohne
+  Beanstandung getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers));
+  gleichzeitige 2–4-Geräte-Netzwechsel und Duelle unter Last bleiben bei Bedarf
+  als Ergänzung vermerkt. Das einheitliche mittige Popup steht in [B2](#b2-anfragen-mittig-als-popup).
 
 ### B2. Anfragen mittig als Popup
 
@@ -804,10 +798,10 @@ und Live-Abnahme bleiben offen.
   mit emulierten Hoch-/Querformaten und Desktop in Chromium geprüft. Das ist
   keine Screenreader- oder echte Geräteabnahme; die Sicht wird durch eine
   mittige Karte weiterhin teilweise verdeckt.
-- [ ] **Abnahme:** Host und Gäste auf 2–4 echten Geräten und mit tatsächlichen
-  Verbindungswechseln testen; Screenreader und Firefox/Safari separat prüfen.
-  Vollständige Firebase-Browser-Duelle, Mischversionen und produktive Dienste
-  sind nicht abgenommen. Die Implementierung ist mit #289 veröffentlicht.
+- [x] **Abnahme (Browser & Handy):** Vom Betreiber im Browser und am Handy
+  positiv getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
+  *(Screenreader, Firefox/Safari-Quertest und Mischversionen bleiben als
+  technische Restnotiz dokumentiert.)*
 
 ## C – Multiplayer mit Anfangscharakteren
 
@@ -861,10 +855,9 @@ und Live-Abnahme bleiben offen.
   Belohnungen sind unberührt; `shot-tracers.mjs` schreibt nichts in den
   Schuss zurück (Prüfschritt). Keine zusätzlichen und keine nachträglichen
   Treffer.
-- [ ] **Abnahme offen:** Menschenaugen auf allen vier Türmen plus Soldat, bei
-  vielen gleichzeitigen Schüssen, gezoomt, auf dem Telefon, im Mehrspieler und
-  mit reduzierter Bewegung. **Niemand hat es gesehen** – gerechnet und
-  geprüft, nicht beurteilt.
+- [x] **Abnahme (Browser & Handy):** Alle Schussspuren wurden vom Betreiber im
+  Browser und am Handy ohne Beanstandung getestet
+  ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
 
 ### D2. Fähigkeit als Teil des Gameflows
 
@@ -899,12 +892,11 @@ und Live-Abnahme bleiben offen.
   **nicht auf dem `DEPLOY`-Knopf liegt** und dieser wirklich erreichbar bleibt:
   die erste Fassung stand im Befehlsfeld, und Chromium weigerte sich zu drücken
   ([IPL-0044](PATCH-LOG.md#ipl-0044--block-3--zusatzwünsche-teil-2-fähigkeits-hud)).
-- [ ] **Abnahme offen:** Mobil und Desktop von Menschenhand, alle fünf
-  Fähigkeitstypen, Cooldown, keine gültigen Ziele, aktive Dialoge,
-  Mehrspielerverzögerung, Screenreader, reduzierte Bewegung. Die Platzierung
-  **unten rechts** ist erneut gerechnet; ob sie auf dem Telefon wirklich in
-  Daumennähe liegt, sagt erst ein Mensch. Bei verletztem/ausgefallenem Soldaten
-  muss Block E den Zustand eindeutig anzeigen.
+- [x] **Abnahme (Browser & Handy):** Positionierung unten rechts und Bedienung
+  wurden vom Betreiber im Browser und auf dem Handy ohne Änderungswünsche
+  positiv getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
+  *(Screenreader und spätere Darstellung bei verletztem Soldaten aus Block E
+  bleiben getrennt.)*
 
 **Abnahme für D:** Mobil und Desktop, alle aktiven Fähigkeitstypen, ohne gewählten Skill, Cooldown, keine gültigen Ziele, aktive Dialoge und Multiplayer-Verzögerung prüfen. Darstellung darf die Simulation nicht verändern; Lesbarkeit und Spielgefühl zusätzlich auf echten Geräten beurteilen.
 
@@ -1020,11 +1012,9 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 - [x] **Wegklicken führt zur Anmeldung:** der Knopf schließt die Karte, löscht
   den Vermerk (sonst käme sie bei jedem Sprachwechsel wieder) und setzt den
   Zeiger ins Namensfeld. Der Anmeldebildschirm liegt ohnehin dahinter.
-- [ ] **Abnahme offen:** **Niemand hat das Bild gesehen.** Die Geometrie ist
-  gerechnet – Kiste auf dem Boden, Figur darauf, Gewehr angelehnt, Bunker am
-  Horizont –, aber ob der Soldat wie ein Soldat aussieht, entscheidet erst ein
-  Mensch. Ich kann Bilder nicht sehen; diese Zeichnung ist die eine Stelle im
-  Projekt, an der ich blind gearbeitet habe.
+- [x] **Abnahme (Browser & Handy):** Vom Betreiber im Rahmen der
+  Browser-/Handy-Tests ohne Beanstandung abgenommen
+  ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
 
 ### Sichtbarkeit im Feld
 
@@ -1107,14 +1097,18 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
 ### Nachgelagert, weil es die Blöcke berührt
 
-- [ ] **Block 2 veröffentlichen:** Die Charakter- und Freundesregeln sind
-  gebaut, aber nicht live; die Veröffentlichung ist seit längerem offen.
+- [x] **Block-4-Porträt-Rules veröffentlicht ([IPL-0056](PATCH-LOG.md#ipl-0056--block-4-rules-veröffentlicht-layer-geisterbild-im-avatar-baukasten-belegt)); Block-2-Namens-Rules noch offen:**
+  `gender.read` und `avatar.read` sind live; der Block-2-Namensindex
+  (`characterNames` / Umbenennung) folgt erst nach der Bestandsaufnahme
+  (`CHARACTER-NAME-AUDIT.md`) mit eigener Freigabe.
 - [ ] **Altbestände und Alt-Geräte:** Kontoübergreifend eindeutige
   Charakternamen einschließlich Alt-Duplikaten, alte Clients, alte Saves und
-  gecachte `?v=`-Wellen prüfen – erst, wenn die Blöcke stehen.
-- [ ] **Echte Abnahmen nachholen:** Für jeden Punkt, den bislang nur die
-  Maschine gesehen hat, fehlt die menschliche Sichtung auf echten Geräten
-  (zuletzt beim Turmschimmer: kein Mensch hat den Ring auf dem Feld gesehen).
+  nächste Build-Stempel-Welle (`?v=`) für `account.js` prüfen bzw. ausrollen.
+- [x] **Sichtungen im Browser und auf dem Handy nachgeholt:** Alle bisherigen
+  sichtbaren UI- und Gameplay-Änderungen (inklusive Turmschimmer, Titelkarte,
+  Notice, Burger-Menü, AFK-Karte, Popups, Schussspuren und Fähigkeits-HUD)
+  wurden vom Betreiber im Browser und am Handy ohne Verbesserungsbedarf
+  bestätigt ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
 
 ## Gemeinsame Freigabe
 

@@ -25,7 +25,7 @@
 //
 // The profile listener delivers the new value on its own after a successful
 // write, so nothing here mutates the profile in memory.
-import {encodeAvatar,resolveAvatar} from './avatar.mjs?v=20261118-faces13';
+import {encodeAvatar,resolveAvatar} from './avatar.mjs?v=20261119-avatar3';
 
 // A broken caller (no write, no session counter, no codec) is refused here and
 // now, instead of failing later inside a profile listener where nobody would

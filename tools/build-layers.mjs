@@ -1,58 +1,126 @@
-// Builds the portrait layer assets (hair / beard overlays) from the raw AI
-// edits in IronPath/assets/layers/src/.
+// Builds the portrait base heads and clean alpha-masked hair/beard overlays
+// from the curated raw inputs in tools/raw-edits/ (or tools/raw-v2/).
 //
-// How it works: every raw edit was made from ONE base portrait per gender
-// (female: f-crop.jpg, male: m-buzz.jpg) with the instruction to change ONLY
-// hair or beard. So the pixel DIFFERENCE between base and edit is exactly the
-// changed hair or beard - that diff becomes the overlay's alpha mask. The
-// mask is clipped to a generous head (or lower-face) box as a safety net
-// against global lighting drift, dilated and feathered, and written as a PNG
-// with transparency. The face detector (pico.js + facefinder cascade, both
-// vendored in tools/vendor/) measures the face box of every image; overlays
-// are later anchored onto any target face by mapping their face box onto the
-// target's, which makes the edits self-correcting against small shifts.
-//
-// Output: IronPath/assets/layers/<name>.png (the overlay) and
-// IronPath/assets/layers/manifest.mjs (baked tables for the engine).
+// Design:
+//   - 12 strictly frontal, bare-scalp, clean-shaven base heads (6 female, 6 male)
+//     aligned to canonical framing and exported at 512x512 JPEG to
+//     IronPath/assets/portraits/.
+//   - 9 female hairstyles, 8 male hairstyles, and 6 male beards rendered as
+//     neutral silver-gray comic-ink edits on the gender's reference base head,
+//     extracted as clean grayscale+alpha PNGs (0 pixels of eyes/nose/mouth/
+//     neck/collar) so IronPath/avatar-layers.mjs can tint hair & beard at
+//     runtime into 5 shared colors without ghosting.
 //
 // Run from tools/:  npm install && node build-layers.mjs
-import {readFileSync,writeFileSync} from 'node:fs';
-import {join,dirname} from 'node:path';
+import {existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync} from 'node:fs';
+import {dirname, join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import jpeg from 'jpeg-js';
 import {PNG} from 'pngjs';
 
 const ROOT=join(dirname(fileURLToPath(import.meta.url)),'..');
 const IRON=join(ROOT,'IronPath');
-// Raw AI edits are BUILD INPUTS, not game assets - they live under tools/ so
-// the deployed assets folder only ever contains what the game loads.
-const SRC=join(ROOT,'tools/raw-edits');
+const SRC=existsSync(join(ROOT,'tools/raw-edits/f-head-01.jpg'))
+  ?join(ROOT,'tools/raw-edits')
+  :join(ROOT,'tools/raw-v2');
 const OUT=join(IRON,'assets/layers');
 const PORTRAITS=join(IRON,'assets/portraits');
 
-// pico.js is a browser script: evaluate it and grab the global.
+// pico.js face cascade stays in tools/vendor/ as a sanity check that every
+// shipped portrait passes automated face detection.
 const picoSrc=readFileSync(join(ROOT,'tools/vendor/pico.js'),'utf8');
 (0,eval)(picoSrc+'\nglobalThis.pico=pico;');
 const classify=pico.unpack_cascade(new Int8Array(readFileSync(join(ROOT,'tools/vendor/facefinder'))));
 
-function decode(file){
-  const img=jpeg.decode(readFileSync(file),{useTArray:true,formatAsRGBA:true,tolerantDecoding:true});
-  return {width:img.width,height:img.height,data:img.data};
+export const LAYER_TOKEN='20261119-avatar3';
+export const PORTRAIT_TOKEN='20261119-avatar3';
+
+export const HAIR_COLORS=[
+  {id:'black', label:'Black',      swatch:'#1c1d22',stops:[[7,8,10],[17,18,22],[34,36,42],[68,72,82]]},
+  {id:'brown', label:'Dark brown', swatch:'#4a2f1d',stops:[[12,8,6],[40,24,15],[74,47,29],[124,84,54]]},
+  {id:'auburn',label:'Auburn',     swatch:'#a44426',stops:[[16,10,9],[102,38,22],[164,68,38],[218,124,78]]},
+  {id:'blonde',label:'Blonde',     swatch:'#ceac5e',stops:[[24,20,13],[148,114,54],[206,172,94],[246,226,158]]},
+  {id:'silver',label:'Silver',     swatch:'#b0b8c0',stops:[[16,18,20],[110,116,124],[176,184,192],[232,238,244]]},
+];
+
+const HEAD_FILES={
+  female:[
+    {id:'f1',src:'f-head-01',out:'f-head-01.jpg'},
+    {id:'f2',src:'f-head-02',out:'f-head-02.jpg'},
+    {id:'f3',src:'f-head-03',out:'f-head-03.jpg'},
+    {id:'f4',src:'f-head-04',out:'f-head-04.jpg'},
+    {id:'f5',src:'f-head-05',out:'f-head-05.jpg'},
+    {id:'f6',src:'f-head-06',out:'f-head-06.jpg'},
+  ],
+  male:[
+    {id:'m1',src:'m-head-01',out:'m-head-01.jpg'},
+    {id:'m2',src:'m-head-02',out:'m-head-02.jpg'},
+    {id:'m3',src:'m-head-03',out:'m-head-03.jpg'},
+    {id:'m4',src:'m-head-04',out:'m-head-04.jpg'},
+    {id:'m5',src:'m-head-05',out:'m-head-05.jpg'},
+    {id:'m6',src:'m-head-06',out:'m-head-06.jpg'},
+  ],
+};
+
+// Canonical reference geometry measured across all 12 bald frontal heads.
+const REF={
+  female:{eyeMidX:0.503,eyeY:0.347,face:{cx:0.503,cy:0.383,size:0.402}},
+  male:  {eyeMidX:0.500,eyeY:0.340,face:{cx:0.500,cy:0.376,size:0.380}},
+};
+
+const LAYERS=[
+  {src:'f-hair-crop',    kind:'hair',gender:'female',id:'crop',    label:'Short crop'},
+  {src:'f-hair-slick',   kind:'hair',gender:'female',id:'slick',   label:'Slicked back'},
+  {src:'f-hair-bob',     kind:'hair',gender:'female',id:'bob',     label:'Bob'},
+  {src:'f-hair-sidebob', kind:'hair',gender:'female',id:'sidebob', label:'Side bob'},
+  {src:'f-hair-bun',     kind:'hair',gender:'female',id:'bun',     label:'Bun'},
+  {src:'f-hair-ponytail',kind:'hair',gender:'female',id:'ponytail',label:'Ponytail'},
+  {src:'f-hair-braid',   kind:'hair',gender:'female',id:'braid',   label:'Braid'},
+  {src:'f-hair-long',    kind:'hair',gender:'female',id:'long',    label:'Long hair'},
+  {src:'f-hair-curly',   kind:'hair',gender:'female',id:'curly',   label:'Curly'},
+
+  {src:'m-hair-buzz',    kind:'hair',gender:'male',id:'buzz',   label:'Buzz cut'},
+  {src:'m-hair-short',   kind:'hair',gender:'male',id:'short',  label:'Short'},
+  {src:'m-hair-fade',    kind:'hair',gender:'male',id:'fade',   label:'Fade'},
+  {src:'m-hair-side',    kind:'hair',gender:'male',id:'side',   label:'Side part'},
+  {src:'m-hair-spiky',   kind:'hair',gender:'male',id:'spiky',  label:'Spiky'},
+  {src:'m-hair-medium',  kind:'hair',gender:'male',id:'medium', label:'Medium'},
+  {src:'m-hair-curly',   kind:'hair',gender:'male',id:'curly',  label:'Curly'},
+  {src:'m-hair-mohawk',  kind:'hair',gender:'male',id:'mohawk', label:'Mohawk'},
+
+  {src:'m-beard-stubble', kind:'beard',gender:'male',id:'stubble', label:'Stubble'},
+  {src:'m-beard-mustache',kind:'beard',gender:'male',id:'mustache',label:'Mustache'},
+  {src:'m-beard-goatee',  kind:'beard',gender:'male',id:'goatee',  label:'Goatee'},
+  {src:'m-beard-anchor',  kind:'beard',gender:'male',id:'anchor',  label:'Jawline'},
+  {src:'m-beard-boxed',   kind:'beard',gender:'male',id:'boxed',   label:'Boxed beard'},
+  {src:'m-beard-full',    kind:'beard',gender:'male',id:'full',    label:'Full beard'},
+];
+
+function decodeInput(stem){
+  for(const ext of ['.png','.jpg']){
+    const file=join(SRC,stem+ext);
+    if(!existsSync(file))continue;
+    const raw=readFileSync(file);
+    if(ext==='.png'){
+      const p=PNG.sync.read(raw);
+      return {width:p.width,height:p.height,data:new Uint8Array(p.data)};
+    }
+    const j=jpeg.decode(raw,{useTArray:true,formatAsRGBA:true,tolerantDecoding:true});
+    return {width:j.width,height:j.height,data:new Uint8Array(j.data)};
+  }
+  throw new Error(`Missing raw asset for ${stem} in ${SRC}`);
 }
 
-function detectFace(img){
+function assertFaceDetectable(img,label){
   const {width,height,data}=img;
   const gray=new Uint8Array(width*height);
   for(let r=0;r<height;r++)for(let c=0;c<width;c++)
     gray[r*width+c]=(2*data[r*width*4+4*c]+7*data[r*width*4+4*c+1]+1*data[r*width*4+4*c+2])/10;
   const dets=pico.cluster_detections(pico.run_cascade({pixels:gray,nrows:height,ncols:width,ldim:width},classify,{shiftfactor:.1,minsize:40,maxsize:1000,scalefactor:1.1}),0.2)
-    .filter(d=>d[3]>5).sort((a,b)=>b[3]-a[3]);
-  if(!dets.length)throw new Error('no face found');
-  const d=dets[0];
-  return {cx:d[1]/width,cy:d[0]/height,size:d[2]/width};
+    .filter(d=>d[3]>5);
+  if(!dets.length)throw new Error(`No face detected in ${label}`);
 }
 
-// Bilinear resize to the base dimensions, so the diff is pixel-true.
 function resizeTo(img,w,h){
   if(img.width===w&&img.height===h)return img;
   const out=new Uint8Array(w*h*4);
@@ -65,191 +133,251 @@ function resizeTo(img,w,h){
       for(let ch=0;ch<4;ch++){
         const a=img.data[(y0*img.width+x0)*4+ch],b=img.data[(y0*img.width+x1)*4+ch];
         const c=img.data[(y1*img.width+x0)*4+ch],d=img.data[(y1*img.width+x1)*4+ch];
-        out[(y*w+x)*4+ch]=(a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy;
+        out[(y*w+x)*4+ch]=Math.round((a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy);
       }
     }
   }
   return {width:w,height:h,data:out};
 }
 
-function dilate(mask,w,h,r){
-  if(r<=0)return mask;
-  const out=new Uint8Array(mask);
-  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-    if(mask[y*w+x])continue;
-    let hit=0;
-    for(let dy=-r;dy<=r&&!hit;dy++)for(let dx=-r;dx<=r&&!hit;dx++){
-      const nx=x+dx,ny=y+dy;
-      if(nx>=0&&nx<w&&ny>=0&&ny<h&&mask[ny*w+nx])hit=1;
-    }
-    out[y*w+x]=hit;
-  }
-  return out;
-}
-
-function feather(mask,w,h,r){
-  if(r<=0)return mask;
-  const out=new Float32Array(w*h);
-  // separable box blur
-  const tmp=new Float32Array(w*h);
-  for(let y=0;y<h;y++){
-    let sum=0;
-    for(let x=-r;x<=r;x++)sum+=mask[y*w+Math.min(w-1,Math.max(0,x))];
+// Gently scales only the upper head silhouette slightly around the eye center
+// (e.g. when one base head's ears flare 2% wider than the canonical hairline),
+// keeping shoulders & collar untouched.
+function zoomUpperHead(img,scale,anchorX,anchorY){
+  if(!scale||Math.abs(scale-1)<1e-4)return img;
+  const {width:w,height:h,data}=img;
+  const out=new Uint8Array(data);
+  const bgR=data[0],bgG=data[1],bgB=data[2];
+  const ax=anchorX*w,ay=anchorY*h;
+  for(let y=0;y<Math.round(0.62*h);y++){
+    // Smoothly blend back to 1.0 between jaw (0.48h) and neck/collar (0.62h)
+    const blend=y<=0.48*h?1:Math.max(0,1-(y-0.48*h)/(0.14*h));
+    const effScale=1+(scale-1)*blend;
     for(let x=0;x<w;x++){
-      tmp[y*w+x]=sum/(2*r+1);
-      const add=mask[y*w+Math.min(w-1,Math.max(0,x+r+1))];
-      const sub=mask[y*w+Math.min(w-1,Math.max(0,x-r))];
-      sum+=add-sub;
+      const sx=ax+(x-ax)/effScale,sy=ay+(y-ay)/effScale;
+      const di=(y*w+x)*4;
+      if(sx<0||sx>=w-1||sy<0||sy>=h-1){
+        out[di]=bgR;out[di+1]=bgG;out[di+2]=bgB;out[di+3]=255;continue;
+      }
+      const x0=Math.floor(sx),y0=Math.floor(sy),fx=sx-x0,fy=sy-y0;
+      for(let ch=0;ch<3;ch++){
+        const a=data[(y0*w+x0)*4+ch],b=data[(y0*w+x0+1)*4+ch];
+        const c=data[((y0+1)*w+x0)*4+ch],d=data[((y0+1)*w+x0+1)*4+ch];
+        out[di+ch]=Math.round((a*(1-fx)+b*fx)*(1-fy)+(c*(1-fx)+d*fx)*fy);
+      }
+      out[di+3]=255;
     }
   }
-  for(let x=0;x<w;x++){
-    let sum=0;
-    for(let y=-r;y<=r;y++)sum+=tmp[Math.min(h-1,Math.max(0,y))*w+x];
-    for(let y=0;y<h;y++){
-      out[y*w+x]=sum/(2*r+1);
-      const add=tmp[Math.min(h-1,Math.max(0,y+r+1))*w+x];
-      const sub=tmp[Math.min(h-1,Math.max(0,y-r))*w+x];
-      sum+=add-sub;
-    }
-  }
-  return out;
+  return {width:w,height:h,data:out};
 }
 
-const BASES={
-  female:{file:'f-crop.jpg'},
-  male:{file:'m-buzz.jpg'},
-};
+// Extracts ONLY clean grayscale hair or beard + smooth alpha from a silver-gray
+// edit over the gender's bald/clean-shaven base head.
+function extractLayer(base,edit,layer){
+  const ref=REF[layer.gender];
+  const {eyeMidX,eyeY}=ref;
+  const {width:w,height:h,data:e}=edit;
+  const b=base.data;
+  const rawMask=new Uint8Array(w*h);
+  const strength=new Float32Array(w*h);
+  const browTopY=(eyeY-0.025)*h;
+  const chinY=(eyeY+0.245)*h;
 
-const LAYERS=[
-  {src:'f-hair-bob.jpg',kind:'hair',gender:'female',id:'bob',label:'Bob'},
-  {src:'f-hair-long.jpg',kind:'hair',gender:'female',id:'long',label:'Long hair'},
-  {src:'f-hair-braid.jpg',kind:'hair',gender:'female',id:'braid',label:'Braid'},
-  {src:'f-hair-ponytail.jpg',kind:'hair',gender:'female',id:'ponytail',label:'Ponytail'},
-  {src:'f-hair-bun.jpg',kind:'hair',gender:'female',id:'bun',label:'Bun'},
-  {src:'f-hair-curly.jpg',kind:'hair',gender:'female',id:'curly',label:'Curly'},
-  {src:'m-hair-short.jpg',kind:'hair',gender:'male',id:'short',label:'Short'},
-  {src:'m-hair-side.jpg',kind:'hair',gender:'male',id:'side',label:'Side part'},
-  {src:'m-hair-medium.jpg',kind:'hair',gender:'male',id:'medium',label:'Medium'},
-  {src:'m-beard-stubble.jpg',kind:'beard',gender:'male',id:'stubble',label:'Stubble'},
-  {src:'m-beard-mustache.jpg',kind:'beard',gender:'male',id:'mustache',label:'Mustache'},
-  {src:'m-beard-full.jpg',kind:'beard',gender:'male',id:'full',label:'Full beard'},
-];
-
-const PORTRAIT_TOKEN='20261112-avatar2';
-const LAYER_TOKEN='20261118-faces13';
-
-const baseImgs={};
-for(const [gender,base] of Object.entries(BASES)){
-  const img=decode(join(PORTRAITS,base.file));
-  base.face=detectFace(img);
-  baseImgs[gender]=img;
-  console.log(`base ${gender}: ${base.file} face x=${(base.face.cx*100).toFixed(1)}% y=${(base.face.cy*100).toFixed(1)}% size=${(base.face.size*100).toFixed(1)}%`);
-}
-
-// Quality gate: a well-behaved edit changes only hair (at most ~a third of
-// the image, long hair draped over shoulders included) or beard (a few
-// percent). An overlay that changes more than that re-interpreted the scene
-// (first braid attempt: 66% of all pixels) and is REJECTED, not shipped.
-const MAX_COVERAGE={hair:0.30,beard:0.08};
-const manifest={hairs:[],beards:[]};
-const rejected=[];
-for(const layer of LAYERS){
-  const base=BASES[layer.gender];
-  let img=decode(join(SRC,layer.src));
-  const face=detectFace(img);
-  img=resizeTo(img,baseImgs[layer.gender].width,baseImgs[layer.gender].height);
-  const {width:w,height:h}=img;
-  const b=baseImgs[layer.gender];
-  // diff mask, clipped to a generous region around the face so global
-  // lighting drift can never leak in (hair: head + shoulders where long hair
-  // drapes; beard: the lower face box only)
-  const diff=new Float32Array(w*h);
-  let region;
-  if(layer.kind==='hair')
-    region={x0:face.cx-1.6*face.size,x1:face.cx+1.6*face.size,y0:face.cy-1.35*face.size,y1:face.cy+1.15*face.size};
-  else
-    region={x0:face.cx-0.8*face.size,x1:face.cx+0.8*face.size,y0:face.cy-0.2*face.size,y1:face.cy+1.15*face.size};
-  const X0=Math.max(0,Math.floor(region.x0*w)),X1=Math.min(w,Math.ceil(region.x1*w));
-  const Y0=Math.max(0,Math.floor(region.y0*h)),Y1=Math.min(h,Math.ceil(region.y1*h));
-  let changed=0;
-  for(let y=Y0;y<Y1;y++)for(let x=X0;x<X1;x++){
-    const i=(y*w+x)*4;
-    const d=Math.abs(img.data[i]-b.data[i])+Math.abs(img.data[i+1]-b.data[i+1])+Math.abs(img.data[i+2]-b.data[i+2]);
-    if(d>48){diff[y*w+x]=1;changed++;}
-  }
-  const coverage=changed/(w*h);
-  if(coverage>MAX_COVERAGE[layer.kind]){
-    rejected.push(`${layer.src}: ${(coverage*100).toFixed(1)}% changed (max ${(MAX_COVERAGE[layer.kind]*100).toFixed(0)}%) - REJECTED, regenerate this edit`);
-    continue;
-  }
-  const mask=dilate(diff,w,h,4);
-  const alpha=feather(mask,w,h,3);
-  // Compose the final RGBA at full resolution, then downscale to at most
-  // 512px: the largest on-screen use is the 240px preview portrait at 2x
-  // device pixel ratio (480px), so 512 keeps it sharp while cutting the
-  // shipped weight to about a quarter. Face boxes are fractions and survive
-  // the resize unchanged.
-  const full={width:w,height:h,data:new Uint8Array(w*h*4)};
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const i=(y*w+x)*4;
-    full.data[i]=img.data[i];full.data[i+1]=img.data[i+1];full.data[i+2]=img.data[i+2];
-    // soft knee: 0.25..0.75 of the feathered mask ramps 0..255
-    full.data[i+3]=Math.round(Math.min(1,Math.max(0,(alpha[y*w+x]-0.25)/0.5))*255);
+    const d=Math.abs(e[i]-b[i])+Math.abs(e[i+1]-b[i+1])+Math.abs(e[i+2]-b[i+2]);
+    const r=e[i],g=e[i+1],bl=e[i+2];
+    const lum=0.299*r+0.587*g+0.114*bl;
+    const chroma=Math.max(r,g,bl)-Math.min(r,g,bl);
+    const warm=r-bl;
+
+    if(layer.kind==='hair'){
+      if(y>0.99*h)continue;
+      // Inner face oval (eyebrows, eyes, nose, cheeks, mouth, center jaw) stays 100% clean.
+      if(y>=browTopY&&y<=chinY){
+        const t=(y-browTopY)/(chinY-browTopY);
+        const rx=(0.143-0.042*Math.max(0,t-0.35))*w;
+        if(Math.abs(x-eyeMidX*w)<rx)continue;
+      }
+      // Front throat and center uniform shirt collar stay clean while braids drape beside neck.
+      if(y>chinY-0.01*h){
+        const centerHalf=y<0.72*h?0.105*w:0.085*w;
+        if(Math.abs(x-eyeMidX*w)<centerHalf)continue;
+      }
+      const minD=y>0.72*h?78:34;
+      if(d<minD)continue;
+
+      const isSilver=chroma<46&&lum>82;
+      const isPartCrevice=y<0.24*h&&chroma<34&&lum>52;
+      const isRimHighlight=warm>=15&&lum>155&&chroma<85&&x<(eyeMidX-0.165)*w&&d>95;
+      const isDarkInk=lum<62&&d>65;
+      const db=b[i]-b[i+2];
+      const cooledOrDarkened=((warm<db-8)||(lum<0.299*b[i]+0.587*b[i+1]+0.114*b[i+2]-18))&&y<eyeY*h+0.04*h;
+      if(isSilver||isPartCrevice||isRimHighlight||isDarkInk||cooledOrDarkened){
+        rawMask[y*w+x]=1;
+        strength[y*w+x]=(d>85||isDarkInk||(isSilver&&d>65))?1.0:Math.min(1.0,Math.max(0.2,(d-28)/62));
+      }
+    }else{
+      // Beard zone: strictly lower face (below eyes/nose/upper cheeks, above shirt collar).
+      const topBeardY=(eyeY+0.095)*h;
+      const botBeardY=(eyeY+0.300)*h;
+      if(y<topBeardY||y>botBeardY)continue;
+      if(Math.abs(x-eyeMidX*w)>0.185*w)continue;
+
+      // Protect nose tip & nostrils
+      const noseCy=(eyeY+0.105)*h;
+      const ndx=(x-eyeMidX*w)/(0.042*w),ndy=(y-noseCy)/(0.030*h);
+      if(ndx*ndx+ndy*ndy<1.0)continue;
+
+      // Protect lips interior unless strongly covered by beard hair
+      const mouthCy=(eyeY+0.168)*h;
+      const mdx=(x-eyeMidX*w)/(0.050*w),mdy=(y-mouthCy)/(0.017*h);
+      if(mdx*mdx+mdy*mdy<1.0&&d<125)continue;
+
+      const isStubble=layer.id==='stubble';
+      const baseLum=0.299*b[i]+0.587*b[i+1]+0.114*b[i+2];
+      const baseWarm=b[i]-b[i+2];
+
+      if(isStubble){
+        // Stubble: only keep follicles/hairs (cool silver flecks & dark ink pores),
+        // keeping soft alpha so underlying skin tone shines cleanly through!
+        const coolDrop=baseWarm-warm;
+        const darkDrop=baseLum-lum;
+        const silverSpeck=(chroma<48&&coolDrop>10&&d>32);
+        const inkSpeck=(lum<92&&darkDrop>18);
+        if(silverSpeck||inkSpeck){
+          rawMask[y*w+x]=1;
+          strength[y*w+x]=Math.min(0.86,Math.max(0.24,(Math.max(d,darkDrop*2.2)-26)/115));
+        }
+      }else{
+        const minD=55;
+        if(d<minD)continue;
+        const isSilver=chroma<46&&lum>85;
+        const isDarkInk=lum<65&&d>65;
+        const coolFoliage=baseWarm-warm>18&&d>60;
+        if(isSilver||isDarkInk||coolFoliage){
+          rawMask[y*w+x]=1;
+          strength[y*w+x]=(d>92||isDarkInk)?1.0:Math.min(1.0,Math.max(0.25,(d-45)/75));
+        }
+      }
+    }
   }
-  const down=Math.min(1,512/Math.max(w,h));
-  const ow=Math.max(1,Math.round(w*down)),oh=Math.max(1,Math.round(h*down));
-  const small=down<1?resizeTo(full,ow,oh):full;
-  const png=new PNG({width:small.width,height:small.height});
+
+  // Keep connected components (tighter threshold for dotted stubble, standard for solid styles)
+  const minComp=layer.id==='stubble'?4:60;
+  const visited=new Uint8Array(w*h),keep=new Uint8Array(w*h),queue=new Int32Array(w*h);
+  for(let idx=0;idx<w*h;idx++){
+    if(!rawMask[idx]||visited[idx])continue;
+    let qh=0,qt=0,maxS=0;
+    queue[qt++]=idx;visited[idx]=1;
+    while(qh<qt){
+      const cur=queue[qh++],cx=cur%w,cy=(cur/w)|0;
+      if(strength[cur]>maxS)maxS=strength[cur];
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){
+        const nx=cx+dx,ny=cy+dy;
+        if(nx>=0&&nx<w&&ny>=0&&ny<h){
+          const ni=ny*w+nx;
+          if(rawMask[ni]&&!visited[ni]){visited[ni]=1;queue[qt++]=ni;}
+        }
+      }
+    }
+    if(qt>=minComp||(qt>=18&&maxS>0.8))for(let k=0;k<qt;k++)keep[queue[k]]=1;
+  }
+
+  if(layer.id!=='stubble'){
+    for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
+      if(keep[y*w+x])continue;
+      let n=0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)if(keep[(y+dy)*w+(x+dx)])n++;
+      if(n>=6){keep[y*w+x]=1;strength[y*w+x]=0.9;}
+    }
+  }
+
+  const full={width:w,height:h,data:new Uint8Array(w*h*4)};
+  let opaqueCount=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const idx=y*w+x,i=idx*4;
+    if(!keep[idx]){full.data[i+3]=0;continue;}
+    let sum=0;
+    for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++)
+      sum+=keep[Math.min(h-1,Math.max(0,y+dy))*w+Math.min(w-1,Math.max(0,x+dx))];
+    const edge=layer.id==='stubble'?1:(sum>=7?1:sum/9);
+    const alpha=Math.round(Math.min(1,edge*strength[idx])*255);
+    const lum=Math.min(255,Math.max(0,Math.round(0.299*e[i]+0.587*e[i+1]+0.114*e[i+2])));
+    full.data[i]=lum;full.data[i+1]=lum;full.data[i+2]=lum;full.data[i+3]=alpha;
+    if(alpha>32)opaqueCount++;
+  }
+  return {img:full,coverage:opaqueCount/(w*h)};
+}
+
+const pendingWrites=[];
+const desiredPortraits=new Set();
+const desiredLayers=new Set();
+
+const FACES=[];
+const baseRefs={};
+for(const gender of ['female','male']){
+  let idx=0;
+  for(const spec of HEAD_FILES[gender]){
+    idx++;
+    let img=decodeInput(spec.src);
+    if(spec.scaleHead)img=zoomUpperHead(img,spec.scaleHead,REF[gender].eyeMidX,REF[gender].eyeY);
+    if(idx===1)baseRefs[gender]=img;
+    assertFaceDetectable(img,`${gender} ${spec.id}`);
+    const out512=resizeTo(img,512,512);
+    const encoded=jpeg.encode({width:512,height:512,data:out512.data},90);
+    desiredPortraits.add(spec.out);
+    pendingWrites.push([join(PORTRAITS,spec.out),encoded.data,`${spec.out} (${encoded.data.length} bytes)`]);
+    FACES.push({
+      gender,id:spec.id,label:`Face ${idx}`,
+      file:`assets/portraits/${spec.out}?v=${PORTRAIT_TOKEN}`,
+      face:REF[gender].face,
+    });
+  }
+}
+
+const manifest={hairs:[],beards:[]};
+for(const layer of LAYERS){
+  const base=baseRefs[layer.gender];
+  let edit=decodeInput(layer.src);
+  edit=resizeTo(edit,base.width,base.height);
+  const {img,coverage}=extractLayer(base,edit,layer);
+  const maxCov=layer.kind==='hair'?0.42:0.10;
+  if(coverage<=0.001||coverage>maxCov){
+    throw new Error(`Unexpected coverage for ${layer.src}: ${(coverage*100).toFixed(2)}%`);
+  }
+  const small=resizeTo(img,512,512);
+  const png=new PNG({width:512,height:512});
   png.data.set(small.data);
   const outFile=`${layer.kind}-${layer.gender}-${layer.id}.png`;
-  writeFileSync(join(OUT,outFile),PNG.sync.write(png,{deflateLevel:9}));
-  const entry={id:layer.id,label:layer.label,file:`assets/layers/${outFile}?v=${LAYER_TOKEN}`,face};
-  manifest[layer.kind==='hair'?'hairs':'beards'].push({...entry,gender:layer.gender});
-  console.log(`${outFile}: face x=${(face.cx*100).toFixed(1)}% y=${(face.cy*100).toFixed(1)}% size=${(face.size*100).toFixed(1)}% | mask ${(coverage*100).toFixed(1)}% of image | drift dx=${((face.cx-base.face.cx)*100).toFixed(1)}% dy=${((face.cy-base.face.cy)*100).toFixed(1)}%`);
+  desiredLayers.add(outFile);
+  pendingWrites.push([join(OUT,outFile),PNG.sync.write(png,{deflateLevel:9}),`${outFile} (${(coverage*100).toFixed(2)}% mask)`]);
+  const entry={
+    gender:layer.gender,id:layer.id,label:layer.label,
+    file:`assets/layers/${outFile}?v=${LAYER_TOKEN}`,
+    face:REF[layer.gender].face,
+  };
+  manifest[layer.kind==='hair'?'hairs':'beards'].push(entry);
 }
 
-// The faces the player can pick: EVERY portrait in the game, not only the
-// flat-haired bases. Eight finished portraits were sitting in the assets
-// folder that only the legacy mapping could still reach - the operator asked
-// for more looks, and they are already painted. The first entry per gender
-// stays the flat-haired base (f-crop / m-buzz), because that is the cut every
-// hair overlay covers cleanly; the others bring their own hair, and an overlay
-// on top of it is the player's choice, not a mistake.
-const PORTRAIT_FACES=[
-  {gender:'female',id:'crop',file:'f-crop.jpg'},
-  {gender:'female',id:'bun',file:'f-bun.jpg'},
-  {gender:'female',id:'slick',file:'f-slick.jpg'},
-  {gender:'female',id:'bob',file:'f-bob.jpg'},
-  {gender:'female',id:'braid',file:'f-braid.jpg'},
-  {gender:'female',id:'long',file:'f-long.jpg'},
-  {gender:'female',id:'ponytail',file:'f-ponytail.jpg'},
-  {gender:'male',id:'buzz',file:'m-buzz.jpg'},
-  {gender:'male',id:'short',file:'m-short.jpg'},
-  {gender:'male',id:'medium',file:'m-medium.jpg'},
-  {gender:'male',id:'side',file:'m-side.jpg'},
-  {gender:'male',id:'stubble',file:'m-stubble.jpg'},
-  {gender:'male',id:'beard',file:'m-beard.jpg'},
-];
-const faceNumbers={};
-const FACES=PORTRAIT_FACES.map(({gender,id,file})=>{
-  // Any portrait whose face the detector cannot find is a build error, not a
-  // face to ship: the overlays are anchored by that box.
-  const img=decode(join(PORTRAITS,file));
-  const face=img===baseImgs[gender]?BASES[gender].face:detectFace(img);
-  faceNumbers[gender]=(faceNumbers[gender]||0)+1;
-  console.log(`face ${gender} ${id}: ${file} x=${(face.cx*100).toFixed(1)}% y=${(face.cy*100).toFixed(1)}% size=${(face.size*100).toFixed(1)}%`);
-  return {gender,id,label:`Face ${faceNumbers[gender]}`,file:`assets/portraits/${file}?v=${PORTRAIT_TOKEN}`,face};
-});
+mkdirSync(OUT,{recursive:true});
+mkdirSync(PORTRAITS,{recursive:true});
+for(const f of readdirSync(PORTRAITS))if(f.endsWith('.jpg')&&!desiredPortraits.has(f))rmSync(join(PORTRAITS,f));
+for(const f of readdirSync(OUT))if(f.endsWith('.png')&&!desiredLayers.has(f))rmSync(join(OUT,f));
+for(const [dest,buf,logLine] of pendingWrites){
+  writeFileSync(dest,buf);
+  console.log(logLine);
+}
 
 const js=`// GENERATED by tools/build-layers.mjs - do not edit by hand.
-// Face boxes are measured with the pico.js face detector (see tools/).
-// Overlays are anchored by mapping their face box onto the target face box,
-// so a small drift in the AI edit self-corrects at composite time.
+// Every portrait is a strictly frontal bald/clean-shaven base head (512x512 JPEG),
+// and every overlay is a clean neutral grayscale+alpha PNG (zero skin/eyes/collar)
+// tinted at runtime across HAIR_COLORS.
 export const LAYER_TOKEN='${LAYER_TOKEN}';
+export const HAIR_COLORS=${JSON.stringify(HAIR_COLORS,null,2)};
 export const FACES=${JSON.stringify(FACES,null,2)};
 export const HAIRS=${JSON.stringify(manifest.hairs,null,2)};
 export const BEARDS=${JSON.stringify(manifest.beards,null,2)};
 `;
 writeFileSync(join(OUT,'manifest.mjs'),js);
-console.log('manifest.mjs written');
-if(rejected.length){console.log('\nREJECTED LAYERS (not shipped):\n  '+rejected.join('\n  '));}
+console.log('manifest.mjs written:',FACES.length,'faces,',manifest.hairs.length,'hairs,',manifest.beards.length,'beards');
