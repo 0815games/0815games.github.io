@@ -123,20 +123,42 @@ test('Veteran Kit II fires faster near its hero and III discounts its upgrades',
   assert.equal(upgradeCostFor({type:0,level:5,branch:0},300),300,'other kits pay full price');
 });
 
+test('Twin MG III removes the aircraft penalty against planes and air bosses',async()=>{
+  const {towerDamage}=await import('../combat.mjs');
+  assert.ok(Math.abs(towerDamage(0,4,0,'plane')-10*1.9*.6)<1e-9,'rank II still carries the 0.6 aircraft multiplier');
+  assert.ok(Math.abs(towerDamage(0,5,0,'plane')-22)<1e-9,'rank III deals full base damage (22) to aircraft');
+  assert.ok(Math.abs(towerDamage(0,6,0,'plane')-25)<1e-9,'prestige keeps rank III full aircraft damage');
+  assert.ok(Math.abs(towerDamage(0,5,0,'bossBomber')-22)<1e-9,'air bosses also take full Twin MG III damage');
+  assert.ok(Math.abs(towerDamage(0,5,1,'plane')-10*2.2*2.1*.6)<1e-9,'Heavy MG keeps the 0.6 aircraft multiplier');
+  const {state,tower}=field({type:0,branch:0,level:5,enemies:[{kind:'plane',x:PAD.x+60,y:PAD.y,hp:100,maxHp:100,segment:3,speed:10,reward:12,road:0}]});
+  tower.timer=0;stepMatch(state);
+  assert.ok(Math.abs((100-state.enemies[0].hp)-22)<1e-9,'simulation deals the exact 22 Twin MG III aircraft hit');
+});
+
 test('Boss Hunter II punches through the shield phase and III pays a bounty',()=>{
   const {towerDamageBonus}=awaitImport();
   const shielded={boss:'bossIronclad',kind:'tank',hp:1,bossClock:9};
   const factor=towerDamageBonus({towers:[]},{type:1,level:4,branch:3,shotCount:1},shielded);
   assert.ok(factor>=1.25,'shield phase counter');
+  // Rank II (level 4) kills the boss without paying the Rank III bounty.
+  const rank2=field({type:1,branch:3,level:4,enemies:[]});
+  rank2.state.enemies=[{boss:'bossIronclad',kind:'tank',x:PAD.x+60,y:PAD.y,hp:1,maxHp:1000,segment:3,speed:10,reward:50,road:0,bossClock:0}];
+  rank2.tower.timer=0;
+  const before2=rank2.state.money;
+  const step2=stepMatch(rank2.state);
+  assert.equal(rank2.state.money-before2,70,'rank II gets only the normal boss kill + wave share (+50 + +20)');
+  assert.equal(step2.some(e=>e.type==='bounty'),false,'rank II must not emit bounty');
+  // Rank III (level 5) on the same kill pays +25 bounty once and does not double-count logistics.
   const {state,tower}=field({type:1,branch:3,level:5,enemies:[]});
+  state.players.local.skills={logistics:3};
   const boss={boss:'bossIronclad',kind:'tank',x:PAD.x+60,y:PAD.y,hp:1,maxHp:1000,segment:3,speed:10,reward:50,road:0,bossClock:0};
   state.enemies=[boss];tower.timer=0;
-  let events=[];
-  // Spy on the event array by stepping once and checking the reward landed.
   const before=state.money;
-  stepMatch(state);
+  const step3=stepMatch(state);
   assert.ok(boss.hp<=0,'the boss died');
-  assert.ok(state.money>=before+25,'the bounty was paid: '+before+' -> '+state.money);
+  assert.equal(boss.bountyPaid,true,'bountyPaid flag prevents duplicate payouts');
+  assert.equal(step3.filter(e=>e.type==='bounty').length,1,'emits exactly one bounty notice event');
+  assert.equal(state.money-before,98,'rank III adds +25 bounty cleanly without double logistics (+50 + +3 logistics + +20 wave + +25 bounty)');
 });
 
 test('one rule decides which specialization is open, and the protocol asks it',()=>{

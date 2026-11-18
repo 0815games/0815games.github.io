@@ -74,10 +74,10 @@ grünen Testsuite vollständig erledigt.
 | [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **80 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), Namensregel/Reservierung/Audit-Skript/Umbenennungsmechanismus (`A1`) + Betreiber-Tests in Browser und Handy. | Bestandsaufnahme/Migration für Alt-Namensduplikate (`CHARACTER-NAME-AUDIT.md`) vor Aktivierung von `characterNames`, Entscheidung/UI-Einstiegspunkt fürs Umbenennen sowie nächster Build-Stempel für gecachte Browser. |
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
 | [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
-| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **20 %** | Fünf bestehende Klassen und zehn Turm-Kits mit Rängen I–III vorhanden; Veteranen-UI-Preisfix veröffentlicht (`#289`). | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Ausbauwege, Klassenicons und einmalige Punkterückgabe/Migration + Balance. |
+| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **25 %** | Fünf bestehende Klassen und zehn Turm-Kits mit Rängen I–III vorhanden; Veteranen-UI-Preisfix (`#289`) live; Bossjäger III (+25 Kopfgeld) & Doppel-MG III (Vollschaden gegen Flugzeuge) lokal korrigiert (`20261031-patch8`, `IPL-0065`). | Sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Ausbauwege, sechs Klassenicons und einmalige Punkterückgabe/Migration + Balance & Rules-Kandidat. |
 | [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
 | [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **5 %** | Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte. | Komplettes Lebens-, Angriffs-, Vorwarnungs- und Reparatursystem für Soldaten, Türme und Bunker in allen Spielmodi samt Simulation, Multiplayer-Sync und Balance. |
-| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **75 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; lokal auf `20261031-patch7` (`IPL-0063`): `g4`-West↔Ost-Seeding, aufgeräumtes `#fieldOps`, `READY`-Signal + Hinweisbanner für `#ability` und Admin-Login-Link auf `#authView`. | CI-Retry-Regelung (`test:party-recovery-browser`), Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie Browser-CI-/Geräteabnahme von `20261031-patch7` (`IPL-0063`). |
+| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **80 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; `20261031-patch7` via [PR #316](https://github.com/0815games/0815games.github.io/pull/316) (`a69675bb`, CI 13/13, Pages `44316906495`, Main-CI `44316907201`) live; begrenzter Max-1-Retry in `party-finalization-browser` (`IPL-0065`). | Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie echte Geräteabnahme von `20261031-patch7` / `20261031-patch8`. |
 
 **Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) schlägt ein
 Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker vor. Auf
@@ -100,10 +100,10 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Restpunkte: Namens-Audit/Altbestände (`A1`), Umbenennen-Einstieg, Build-Stempel (`Porträt-Rules sind veröffentlicht`). | **80 %** · In Arbeit (Browser-/Handy-Tests & Porträt-Rules abgenommen) |
 | 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
 | 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **90 %** · Live auf `20261031-patch6` (Popup bestätigt; Avatar-Abnahme offen) |
-| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, exklusive Klassenwahl, Punkterückgabe. | **20 %** · Geplant |
+| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III & Doppel-MG III lokal für `20261031-patch8` korrigiert; offen: 6. Luftabwehrklasse, exklusive Klassenwahl ab Level 2, Klassen-Turmwege, Icons & Punkterückgabe. | **25 %** · Kit-Vorabpatch bereit |
 | 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Charakter-Auftragsakte, große vertonte Mission mit Generalstimme und anschließender Menüführung. | **25 %** · Geplant |
 | 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (neu aufgenommen) |
-| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) live; Block-8-Zwischenpatch (`IPL-0063`, `20261031-patch7`: West↔Ost-Karten, `#fieldOps`, `READY`-Signal, Admin-Login) lokal gebaut/geprüft; offen: CI-/Geräteabnahme + CI-Retry, Rules-Rollout, Altsaves. | **75 %** · Sammelstelle (Zwischenpatch lokal fertig) |
+| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Rules-Rollout, Namens-Audit, Altsaves & Geräteabnahme. | **80 %** · Sammelstelle |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
@@ -522,23 +522,27 @@ entstand, ist nicht sicher belegt.
 #### Konkrete Befunde zur bestehenden Turm-Spezialisierung
 
 Diese Befunde stammen aus der Code- und Simulationsprüfung. Die ersten beiden
-sind noch offen; der dritte ist behoben, getestet und mit #289 veröffentlicht.
+sind für `20261031-patch8` ([IPL-0065](PATCH-LOG.md#ipl-0065--pr-316-live-kit-fixes-bossj%C3%A4ger-iii--doppel-mg-iii-ci-retry--cache-welle-20261031-patch8))
+behoben; der dritte ist seit #289 veröffentlicht.
 Sie machen das eingebaute System nicht zu einem bloßen Konzept, und die frühere
 grüne Testsuite belegte nicht jede versprochene Wirkung.
 
-1. **Bossjäger III:** Der versprochene Bonus von 25 Vorräten für einen vom Turm
-   erledigten Boss wird nicht erreicht: `applyHitEffects` kehrt bei `hp <= 0`
-   zurück, bevor der spätere Bonuszweig mit genau dieser Bedingung läuft
-   ([Code](tower-specialization.mjs)). Im synthetischen Simulationsvergleich
-   erhielten Turmlevel 4 und 5 jeweils +70: 50 Grundbelohnung plus 20 für die
-   Welle; weder `bountyPaid` noch ein `bounty`-Event erschien. Der vorhandene
-   [Test](tests/tower-specialization.test.mjs) verlangt nur mindestens +25 und
-   ist damit wegen der normalen Belohnung trotzdem grün.
-2. **Doppel-MG III:** Die Oberfläche verspricht vollen Schaden gegen Flugzeuge;
-   im neutralen Simulationstest blieb der Flugzeug-Faktor auch auf Turmlevel 5
-   bei 0,6: 13,2 statt 22 Grundschaden. Die Stufenerhöhung wirkt, der angekündigte
-   zusätzliche Rank-III-Effekt aber nicht.
-3. **Veteranen-Rabatt in der UI – mit #289 korrigiert:** Bei einem Veteranenturm
+1. [x] **Bossjäger III (`20261031-patch8`):** Der versprochene Bonus von 25 Vorräten
+   für einen vom Turm erledigten Boss wird nun vor der `hp <= 0`-Rückkehr in
+   `applyHitEffects` ([Code](tower-specialization.mjs)) mit `rewardTeam?.(state, 25, false)`
+   ausgezahlt, sodass weder normale Wellen-/Plünderboni doppelt gezählt noch
+   das `{type:'bounty'}`-Ereignis verschluckt werden. Der [Test](tests/tower-specialization.test.mjs)
+   vergleicht jetzt Rang II (Stufe 4: +70, kein `bounty`-Event) strikt gegen
+   Rang III (Stufe 5 mit `logistics: 3`: +98 inklusive exakt einem `bounty`-Event
+   und `bountyPaid === true`).
+2. [x] **Doppel-MG III (`20261031-patch8`):** `towerDamage` in [`combat.mjs`](combat.mjs)
+   setzt für `type === 0 && branch === 0 && level >= 5 && baseKind === 'plane'`
+   den Flugzeug-Faktor auf `1`, sodass Doppel-MG III gegen Flugzeuge und Luft-Bosse
+   volle **22** (Stufe 6 Prestige **25**) Grundschaden statt 13,2 erzielt, während
+   Schweres MG (`branch === 1`) bei 0,6 bleibt. Geprüft in
+   [Tests](tests/tower-specialization.test.mjs) und der Endloskurve in
+   [`balance-suite.test.mjs`](tests/balance-suite.test.mjs).
+3. [x] **Veteranen-Rabatt in der UI – mit #289 korrigiert:** Bei einem Veteranenturm
    auf Stufe 5 verlangt die Simulation **306** statt 360 Vorräte. Vor dem Fix
    zeigte der UI-Test Preis 360 und blockierte den Kauf; danach sind Anzeige,
    Zahlung und Prestige-Rundung für eigene und fremde Türme mit Doubles geprüft.
@@ -977,11 +981,12 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   nachstellen ließ es sich nicht (kein Java, keine Firebase-Emulatoren,
   Chromium-Download blockiert). **Nächster Versuch mit Menschenhand:** Log im
   Browser öffnen oder über einen belanglosen Folge-PR die Welle neu anstoßen.
-- [ ] **Grundsätzlich klären:** Soll die Browser-Matrix (acht Jobs, jeweils
-  Chromium plus Emulatoren) einen Wiederholungslauf bekommen? Sie ist die
-  einzige Stelle im Prüfstand ohne jede Wiederholung, und genau dort traten die
-  meisten Aussetzer auf. Frühere Läufe dieser Welle schlugen aus anderen Gründen
-  fehl (`database-rules`, z. B. `e8445a6`, `dd30eda`).
+- [x] **Begrenzte CI-Wiederholung beschlossen und umgesetzt (`20261031-patch8`, `IPL-0065`):**
+  Auf Betreiber-Entscheidung führt die 8-Job-Browser-Matrix `party-finalization-browser`
+  in `.github/workflows/ironpath-firebase-rules.yml` maximal **1** automatischen
+  Wiederholungslauf aus (`timeout-minutes: 20`, zwei Versuche à `timeout 480`,
+  zwischen Versuch 1 und 2 gezielte Bereinigung hängender Emulator-/Chromium-Prozesse
+  samt `::warning`). Ursprünglicher Flake aus Lauf `44026363385` ist damit abgesichert.
 
 ### Popups
 

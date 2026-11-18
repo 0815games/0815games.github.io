@@ -3233,4 +3233,19 @@ Grenzen / Offen:
 - **Änderung:** `IronPath/browser-tests/command-center.cjs` öffnet vor dem `#tutorialReplay`-Block explizit ein Endlos-Schlachtfeld (`#menuEndless` → `#endlessDeploy`), merkt sich `#mapName` (`preTourMap`) und bestätigt nach Tour-Abschluss zusätzlich zur unveränderten `trainingMarker === 'done'`-Prüfung, dass `#mapName === preTourMap` erhalten bleibt und `#game` sichtbar sowie `#commandCenter` verborgen bleibt, bevor `#backToCommand` zurückwechselt.
 - **Prüfung:** `node -c IronPath/browser-tests/command-center.cjs` und `node --test IronPath/tests/*.test.mjs` bestanden; anschließend Push auf PR `#316` für erneute Chromium-CI-Prüfung (`interface-browser-smoke`).
 
+## IPL-0065 – PR #316 live, Kit-Fixes (Bossjäger III & Doppel-MG III), CI-Retry & Cache-Welle `20261031-patch8`
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-10-31 UTC (Merge von PR `#316` als `a69675bb60b5c6c4a95be4d2dcea53d9fbae33f4`, neuer Arbeitsstand `20261031-patch8`).
+- **Veröffentlicht (`PR #316`, `20261031-patch7`):**
+  - PR `#316` nach grünem CI (`13 / 13` Checks inklusive `interface-browser-smoke` auf `518700d`) per Merge-Commit `a69675bb` auf `main` gemergt.
+  - GitHub Pages (`44316906495`) und `main`-CI (`44316907201`, `11 / 11` Checks) grün abgeschlossen.
+- **Umfang & Betreiber-Entscheidungen für `20261031-patch8` + Block 5:**
+  - Vorgehen bestätigt: erst die korrigierten Rang-III-Turmkits samt Cache-Welle `20261031-patch8` und der CI-Wiederholung ausliefern, danach den großen Block-5-Klassen-/Skill-Umbau (6. Luftabwehrklasse `Air Defense`, exklusive Klassenwahl ab Level 2, klassenabhängige Ausbauwege zusätzlich zu den Grundtürmen, 6 Icons, einmalige Punkterückgabe unter Erhalt von XP/Level/Ausrüstung, Balance & getesteter RTDB-Rules-Kandidat ohne automatisches Überschreiben der Live-Rules).
+- **Änderungen (`20261031-patch8`):**
+  - **Bossjäger III (`IronPath/tower-specialization.mjs`):** `applyHitEffects` prüft die Rang-III-Kopfgeldbedingung (`isKit(tower, undefined, 3, 3) && target.boss && !target.bountyPaid && target.hp <= 0`) jetzt **vor** `if (target.hp <= 0) return;` und ruft `rewardTeam?.(state, 25, false)` auf, damit die versprochenen +25 Team-Vorräte samt `{type: 'bounty'}`-Hinweis gezahlt werden, ohne `logistics`/Wellen-Boni doppelt zu verrechnen.
+  - **Doppel-MG III (`IronPath/combat.mjs`):** `towerDamage` setzt für `type === 0 && branch === 0 && level >= 5 && baseKind === 'plane'` den Multiplikator auf `1` (volle **22** auf Stufe 5, **25** bei Prestige Stufe 6 statt 13,2 gegen Flugzeuge und Luft-Bosse); Schweres MG (`branch === 1`) bleibt bei `0.6`.
+  - **Tests (`IronPath/tests/tower-specialization.test.mjs`, `IronPath/tests/balance-suite.test.mjs`):** Strenge Rang-II-vs.-Rang-III-Prüfung (inkl. `logistics: 3`, `bounty`-Event und `bountyPaid`), explizite Doppel-MG-III-Schadens- und Simulationsprüfungen sowie Anpassung des Forest-Endloskurven-Laufs auf 55 Wellen (`MIXED_KIT` fällt mit gefixtem Doppel-MG III auf Welle 50 statt 49).
+  - **CI-Matrix-Wiederholung (`.github/workflows/ironpath-firebase-rules.yml`):** `party-finalization-browser` auf `timeout-minutes: 20` mit maximal 1 automatischem Wiederholungsversuch (`timeout 480` pro Versuch, `::warning` und gezielter Bereinigung von `java .*emulator|firebase-tools|chrome-headless|headless_shell|chromium` nach einem fehlgeschlagenen ersten Versuch).
+  - **Cache-Welle `20261031-patch8` (`IronPath/release-version.json`, `IronPath/index.html`, `IronPath/patch-notes.mjs`, Stammmodule, `IronPath/tests/multiplayer-build-stamp.test.mjs`, `IronPath/browser-tests/cache-wave.cjs`):** Sämtliche Browser-Importer von `20261031-patch7`, `combat.mjs?v=20261031-finale1`, `tower-specialization.mjs?v=20261112-kits1` und `tower-upgrade-cue.mjs?v=20261117-shimmer1` auf `?v=20261031-patch8` gehoben und im Build-Stamp- und Cache-Wave-Test fest verankert.
+
 

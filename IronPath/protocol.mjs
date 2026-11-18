@@ -1,12 +1,12 @@
-import {createSpeedControl} from './multiplayer-speed.mjs?v=20261031-patch7';
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261031-patch8';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261031-patch7';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-patch7';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261031-patch8';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-patch8';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261031-patch7';
-import { stepMatch } from './simulation.mjs?v=20261031-patch7';
+import { applyCommand } from './match.mjs?v=20261031-patch8';
+import { stepMatch } from './simulation.mjs?v=20261031-patch8';
 export const PROTOCOL_VERSION=1;
 // Snapshots carry only the newest receipts. A client may have exactly ONE
 // command in flight (it sends sequence nextSeq and stays locked until that

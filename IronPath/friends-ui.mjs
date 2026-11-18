@@ -1,12 +1,12 @@
 import {loadFriendStats} from './friend-stats.mjs?v=20261112-tagless1';
 import {renderFriendIndicators} from './friend-indicator.mjs?v=20261104-friendbadge1';
 import {createFriendPresence} from './friend-presence.mjs?v=20261104-presence1';
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch7';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261031-patch8';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {createSocialNotifications} from './social-notifications.mjs?v=20261031-patch7';
-import {createCoopInvites} from './coop-invites.mjs?v=20261031-patch7';
-import {createFriendService} from './friends.mjs?v=20261031-patch7';
-import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261031-patch7';
+import {createSocialNotifications} from './social-notifications.mjs?v=20261031-patch8';
+import {createCoopInvites} from './coop-invites.mjs?v=20261031-patch8';
+import {createFriendService} from './friends.mjs?v=20261031-patch8';
+import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261031-patch8';
 export function setupFriends({document,db,auth,sdk,getProfile,getHostInvite=()=>null,joinInvite=async()=>false,crypto=globalThis.crypto,promptCenter=null}){
  const $=id=>document.getElementById(id),dialog=$('friendsDialog');let generation=0,service=null,unsubscribe=null,busy=false,next=null,searchName='',invitations={},inviteService=null,stopInvites=null,stopRequests=null,indexPromise=null,indexSession=0,noticeUid=null,requestCount=0,requestUnavailable=false,presence=null,presenceStops=new Map(),presenceStates=new Map(),presenceLabels=new Map(),portraitStops=new Map(),portraitStates=new Map(),portraitNodes=new Map(),statsId=null,statsGeneration=0,statsData=null,statsName='',lastFriendData=null,searchRows=[],lastMessage={text:'',values:{}};
  const popup=createSocialNotifications({document,container:$('socialPopup'),title:$('socialPopupTitle'),body:$('socialPopupBody'),openButton:$('socialPopupOpen'),dismissButton:$('socialPopupDismiss'),onOpen:()=>open(),promptCenter});
