@@ -2728,7 +2728,7 @@ Gebaut:
 Prüfungen:
 
 - Vollständiger serieller Lauf `node --test IronPath/tests/*.test.mjs`:
-  **1127 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+  **1129 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
 - `tests/avatar-layers.test.mjs` **6/6** – 13 Gesichter (7 weiblich, 6 männlich),
   gleiche Kachelzahl je Geschlecht, und ein neuer Prüfschritt vergleicht den
   Porträtordner mit dem Manifest: **kein gemaltes Porträt bleibt liegen**.
@@ -2750,6 +2750,8 @@ Prüfungen:
   abgelehnt) und jede vom Client erzeugte Kombination wird angenommen. Dazu
   eine **vierte Basis** `FRIEND_PORTRAIT_NOFIELD=1`: eine Regel, die das Gesicht
   nie kannte. Nur sie beweist, dass das angelegte Feld wirklich schreibbar ist.
+- `tests/browser-doubles.test.mjs` neu **3/3** – jeder Firebase-Double in
+  `browser-tests/` wird so geparst wie der Browser es tut (siehe unten).
 - `browser-tests/avatar-handover.cjs` neu (Chromium, CI): das echte Konto mit
   einem Profil **ohne** Gesicht und einem Spiegel im Speicher. Geprüft wird: das
   Konto startet in beiden Fällen; die Übergabe kommt **genau einmal** und mit
@@ -2764,7 +2766,7 @@ Prüfungen:
 Änderungen / Dateien: `tools/build-layers.mjs` und
 `IronPath/assets/layers/manifest.mjs` (13 Gesichter, neue Layer-Welle
 `20261118-faces13`); `IronPath/avatar-sync.mjs` (neu) samt
-`tests/avatar-sync.test.mjs` (neu); `account.js` (Übergabe im
+`tests/avatar-sync.test.mjs` (neu) und `tests/browser-doubles.test.mjs` (neu); `account.js` (Übergabe im
 Profil-Horchposten, Porträt vor dem Neuzeichnen); `localization-de.mjs`
 (`Gesicht 4`–`Gesicht 7`); `firebase/friend-portrait-candidate.mjs` (Feld
 anlegen, einheitliche Freundes-Bedingung) samt

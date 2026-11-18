@@ -40,7 +40,7 @@ const mocks={
    for(const [key,value] of Object.entries(patch))values.set((r.path?r.path+'/':'')+key,value);
   }
   export async function runTransaction(){return {committed:false,snapshot:{val:()=>null,exists:()=>false}}}
-  export function onDisconnect(){return {cancel:async(){},remove:async(){}}}
+  export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}}
   export function serverTimestamp(){return Date.now()}export function query(r){return r}export function orderByKey(){return {}}
   export function startAfter(){return {}}export function limitToFirst(){return {}}export function orderByChild(){return {}}export function limitToLast(){return {}}
  `,
