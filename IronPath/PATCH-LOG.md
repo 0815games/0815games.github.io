@@ -3030,3 +3030,101 @@ Grenzen / Offen:
 - **Offen / nächster Schritt:** Fix-Commit auf `arena/7aff6629-0815games-github-io`
   pushen, grünen Abschluss aller CI-Checks auf PR #314 bestätigen und an
   den Betreiber zum Merge/Testen übergeben.
+
+## IPL-0060 – PR #314 gemerged (20261031-patch5); Live-Befund am #versionNotice-Popup
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  GitHub-/Live-Ereignisse am `2026-11-18`.
+- **Block / Ziel:** Nachvollziehbarer Nachtrag zu Commit `c0a5041`, PR-#314-Merge
+  und Live-Pages-Deployment sowie Dokumentation des beim Live-Test von
+  `20261031-patch5` gemeldeten Layoutfehlers am `#versionNotice`-Popup.
+- **Git / CI / Live-Status:**
+  - Commit `c0a5041` auf `arena/7aff6629-0815games-github-io` brachte alle 13
+    PR-Checks (Run `44293352808`) zum Bestehen.
+  - [PR #314](https://github.com/0815games/0815games.github.io/pull/314) wurde
+    als Merge-Commit [`533d1dbf`](https://github.com/0815games/0815games.github.io/commit/533d1dbfc6155f8b998075319cc70e0d044e85cf)
+    in `main` übernommen; `pages-build-deployment` (Run `44295548602`) sowie
+    die anschließende `main`-CI (Run `44295549826`, alle `11 / 11` Jobs inkl.
+    `interface-browser-smoke`, `database-rules`, `game-regressions` und der
+    8er-`party-finalization-browser`-Matrix) liefen vollständig grün durch.
+- **Gemeldeter Live-Befund (`20261031-patch5`):**
+  - Auf dem Live-Screenshot von `20261031-patch5` erschien das mittig
+    positionierte `#versionNotice`-Popup („New version 20261031-patch5 loaded.“)
+    mit Wort-für-Wort vertikal umgebrochenem Text (`New / ve... / 20... /
+    patch5 / loaded.`), einem nach rechts überlaufenden/überlappenden
+    `DISMISS`-Button und horizontalem Scrollbalken.
+  - Ursache im CSS-Kaskadenaufbau: `IronPath/style.css:1` setzte global
+    `button,select{width:100%;margin-bottom:8px}`, und `.version-notice button`
+    (`flex:none`, ohne `width:auto;margin:0`) zwang `#versionNoticeDismiss`
+    innerhalb der einzeiligen `.version-notice`-Flexbox auf volle Kartenbreite,
+    wodurch `#versionNoticeText` auf wenige Pixel zusammengedrückt wurde.
+    Zudem vergaß `body:has(#gameWorkspace:not([hidden])) .version-notice` ein
+    `transform:none` gegen das `translate(-50%,-50%)` aus `popup-center.css`.
+  - Wunsch des Betreibers: Popup-Rahmengröße beibehalten, Überlappung /
+    vertikales Zerbrechen / Scrollbalken beseitigen und eine zum Thema „neue
+    Version“ passende Iron-Path-Spielstil-Artwork einfügen.
+- **Offen:** Fix umsetzen, testen, als neue Cache-Welle bereitstellen und auf
+  echtem Gerät verifizieren.
+
+## IPL-0061 – version-notice Layoutfix und Dispatch-Artwork 20261031-patch6 lokal
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  Arbeitsbranch `arena/881f3e73-0815games-github-io` ab `main` (`533d1dbf`).
+- **Block / Ziel:** Behebung des in `IPL-0060` dokumentierten `#versionNotice`-
+  Layoutfehlers, Integration einer passenden Iron-Path-Artwork sowie
+  Synchronisierung von `patch-notes.mjs` und Cache-Welle `20261031-patch6`,
+  damit Live-Nutzer von `20261031-patch5` automatisch frisches CSS, Bild und
+  die sichtbare „Neue Version … geladen“-Meldung im korrigierten Layout erhalten.
+- **Änderungen / Dateien:**
+  - `IronPath/assets/version-dispatch.jpg`: neue `1376×768`-JPG-Illustration im
+    Iron-Path-Comic-Ink-Stil (Ausguck über das Nebeltal mit Bunker bei
+    Sonnenaufgang, leuchtender Laterne, Feldfunkgerät, Karte und Feldakte,
+    ohne eingebetteten Text).
+  - `IronPath/index.html`: `#versionNotice` um `.version-notice-art` (`img` +
+    übersetzter Gold-Kicker `data-i18n-text="FIELD DISPATCH"`),
+    `.version-notice-body` und `.version-notice-actions` erweitert; alle
+    bisherigen IDs (`#versionNotice`, `#versionNoticeText`,
+    `#versionNoticeRetry`, `#versionNoticeDismiss`) bleiben unverändert.
+  - `IronPath/localization-more-static-de.mjs`: deutscher Eintrag
+    `"FIELD DISPATCH": "FELDDEPESCHE"` ergänzt.
+  - `IronPath/style.css`: vertikaler Kartenaufbau für `.version-notice`
+    (`flex-direction:column`, Rahmengröße `min(460px, calc(100vw - 24px))`
+    aus `popup-center.css` unverändert erhalten ohne dessen 4-Regel-Vertrag zu
+    verletzen), `16/7`-Banner-Crop (`border-radius:7px 7px 0 0`), volle
+    Textbreite für `#versionNoticeText` (`overflow-wrap:anywhere`),
+    `.version-notice-actions`-Ausblendung ohne sichtbare Buttons,
+    `width:auto;margin:0;min-height:44px` für die Aktionsbuttons samt goldenem
+    `.primary`-Stil für `#versionNoticeDismiss`, Mobilregeln (`<=480px`) sowie
+    Kompakt-Streifen im aktiven Kampf (`#gameWorkspace:not([hidden])`:
+    `transform:none`, ausgeblendete Artwork, saubere Eckenpositionierung).
+  - `IronPath/tests/version-ui.test.mjs` &
+    `IronPath/browser-tests/interface-smoke.cjs`: Regressionstests gegen
+    horizontales Überlaufen, gequetschte Textbreite, Button-Überlappung und
+    Artwork-Laden ergänzt.
+  - `IronPath/patch-notes.mjs`, `IronPath/PATCH-BLOECKE.md`,
+    `IronPath/release-version.json` und Cache-Welle: belegten PR-#314-Eintrag
+    samt aktuellem Block-3-/Block-4-Status in `FELDNOTIZEN` eingetragen und
+    die Cache-Welle über 48 Dateien von `20261031-patch5` auf
+    `20261031-patch6` angehoben (`cache-wave.cjs` um `patch5`-`oldUrls`
+    erweitert).
+- **Prüfungen (lokal auf `arena/881f3e73-0815games-github-io`):**
+  - Gezielte Tests (`popup-centering`, `version-ui`, `translation-coverage`,
+    `dom-contract`, `build-stamp`, `multiplayer-build-stamp`, `patch-notes`,
+    `recruit-screen`, `release-stage-version`, `release-site-packaging`):
+    **45 / 45 bestanden** (`0` Fehler).
+  - Vollständige Testsuite `IronPath/tests/*.test.mjs` in alphabetischen
+    Teilbatches (`[a-f]`, `[g-l]`, `[m-r]`, `[s-z]`): alle Läufe ohne
+    Fehlschläge bestanden (in `[m-r]` `332 / 333` + 1 absichtlich
+    übersprungener Rules-Test; `[g-l]` `55 / 55`; `[s-z]` `315 / 315`; `[a-f]`
+    vollständig bestanden).
+  - `node IronPath/stress-tests/run.mjs`: alle Solo-/Koop-/Versus-/3er-/4er-/
+    2v2-/Dichte-/Karten- (`500`) und Protokoll-Workloads bestanden.
+  - **Grenzen:** Kein lokaler Chromium-Browser / Java-Emulator in der Sandbox;
+    die echten Chromium-Renderings (`interface-smoke.cjs` inkl.
+    `*-version-notice.png` bei `320px`, `390px` und `1440px`) laufen im
+    anschließenden PR-CI-Lauf, echte Handy-Abnahme erfolgt danach durch den
+    Betreiber.
+- **Git / PR / Release:** Lokal umgesetzt und geprüft; bereit für Commit, Push
+  und PR gegen `main` (inkl. `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json`
+  weiterhin bewusst ausgeschlossen).
+

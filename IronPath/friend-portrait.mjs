@@ -3,7 +3,7 @@ import {composePortrait,layerOptions} from './avatar-layers.mjs?v=20261119-avata
 
 // No other account's local avatar mirror is ever read. Until both permitted
 // profile fields are available, a neutral placeholder is the honest answer.
-export const FRIEND_PORTRAIT_PLACEHOLDER='assets/friend-placeholder.svg?v=20261031-patch5';
+export const FRIEND_PORTRAIT_PLACEHOLDER='assets/friend-placeholder.svg?v=20261031-patch6';
 const validId=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const isImage=value=>typeof value==='string'&&value.length<=1000000&&/^data:image\/png;base64,[A-Za-z0-9+/=]+$/.test(value);
 
