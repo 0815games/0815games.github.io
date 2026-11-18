@@ -100,7 +100,21 @@ async function diagnose(page){
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     try{await page.locator('#menuDeleteCharacter').waitFor({state:'visible',timeout:45000});}
-    catch(error){console.error('Boot state',JSON.stringify(await diagnose(page),null,1),'pending:',requested,'errors:',errors,'last responses:',settled.slice(-20));throw error;}
+    catch(error){
+     // A rejected dynamic import inside account-entry.mjs is caught there, so
+     // Chromium reports nothing. Re-importing the same URL returns the SAME
+     // rejected module, which is the only way to name the module that failed.
+     const detail=await page.evaluate(async()=>{
+      const probe=async url=>{try{await import(url);return 'ok';}catch(e){return String(e&&e.stack||e);}};
+      return {account:await probe('./account.js?v=20261031-patch4'),
+       sync:await probe('./avatar-sync.mjs?v=20261118-faces13'),
+       avatar:await probe('./avatar.mjs?v=20261118-faces13'),
+       layers:await probe('./avatar-layers.mjs?v=20261118-faces13'),
+       manifest:await probe('./assets/layers/manifest.mjs?v=20261118-faces13')};
+     }).catch(e=>'probe failed: '+e);
+     console.error('Boot state',JSON.stringify(await diagnose(page),null,1),'pending:',requested,'errors:',errors,'modules:',JSON.stringify(detail,null,1),'last responses:',settled.slice(-20));
+     throw error;
+    }
     // 1. The account loads. A refused hand-over is not an error and must never
     //    push the soldier back to the connection screen.
     assert.equal(await page.locator('#connectionView').isVisible(),false,scenario+': a refused avatar write does not break the account');
