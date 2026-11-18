@@ -2998,3 +2998,35 @@ Grenzen / Offen:
   beobachten und nach Merge/Pages-Rollout echte Geräteabnahme im Browser und am
   Handy durchführen (danach `patch-notes.mjs` um den belegten Block-4-Release
   ergänzen).
+
+## IPL-0059 – PR #314 eröffnet; CI-Befund an version.html (#r2) behoben
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  GitHub-Ereignisse zu PR #314 am `2026-11-18`.
+- **Block / Ziel:** Nachtrag zum tatsächlichen Commit/Push/PR #314 sowie
+  Behebung des in CI (`interface-browser-smoke`) festgestellten Fehlers an
+  `IronPath/version.html`.
+- **Branch / PR / Commit:** `arena/7aff6629-0815games-github-io`, Commit
+  `c5d0cb6` gepusht und [PR #314](https://github.com/0815games/0815games.github.io/pull/314)
+  gegen `main` eröffnet.
+- **Erster CI-Lauf (`44292094881`):**
+  - **Bestanden:** `database-rules`, `game-regressions`, alle 8 Jobs der
+    `party-finalization-browser`-Matrix sowie die Vercel-Preview-Prüfung. In
+    `interface-browser-smoke` bestanden u. a. `interface-smoke.cjs`,
+    `command-center.cjs`, `cache-wave.cjs`, `friends-sections.cjs`,
+    `character-discharge.cjs` und `avatar-handover.cjs` (`synced` + `refused`).
+  - **Fehlgeschlagen:** `release-gates.cjs:308` meldete Timeout auf `#r2.ok`
+    in `IronPath/version.html`: die Diagnoseseite prüfte noch die alte
+    CSS-Regel `.recruit-look canvas` statt der neuen `.recruit-stage`-,
+    `.recruit-step`- und `.recruit-color-dot`-Klassen von `Umsetzungsidee A`.
+- **Änderungen / Dateien:** `IronPath/version.html` (`#r2` prüft jetzt
+  `.recruit-showcase`, `.recruit-stage`, `.recruit-step` und
+  `.recruit-color-dot`), `IronPath/tests/recruit-screen.test.mjs` (Regressionstest
+  gegen veraltete Selektoren in `version.html`) sowie `IronPath/PATCH-LOG.md`
+  (`IPL-0059`).
+- **Prüfungen:** `node --test IronPath/tests/recruit-screen.test.mjs` und
+  relevante Regressionssuiten nach der Anpassung ausgeführt (siehe erneuter
+  PR-Push); vollständige Chromium-Suite läuft im Anschluss in PR-#314-CI.
+- **Offen / nächster Schritt:** Fix-Commit auf `arena/7aff6629-0815games-github-io`
+  pushen, grünen Abschluss aller CI-Checks auf PR #314 bestätigen und an
+  den Betreiber zum Merge/Testen übergeben.

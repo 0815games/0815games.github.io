@@ -161,6 +161,12 @@ test('the markup and css carry Umsetzungsidee A stage, steppers, readout, and co
   assert.match(css,/\.recruit-color-dot\{/);
   assert.match(css,/\.recruit-portrait-canvas\{[^}]*width:clamp\(170px,52vw,240px\)/);
   assert.doesNotMatch(css,/\.recruit-look\{/);
+
+  const versionHtml=readFileSync(new URL('../version.html',import.meta.url),'utf8');
+  assert.doesNotMatch(versionHtml,/recruit-look/);
+  assert.match(versionHtml,/recruit-stage/);
+  assert.match(versionHtml,/recruit-step/);
+  assert.match(versionHtml,/recruit-color-dot/);
 });
 
 test('German labels exist for every UI control, face, hairstyle, beard, and color',()=>{
