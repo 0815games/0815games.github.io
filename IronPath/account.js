@@ -500,9 +500,10 @@ function loadProfile(currentUser,version){
  // The same for the face. Every soldier who enlisted before the avatar field
  // existed - or before the rules accepted it - would keep the face in the local
  // mirror and nowhere else: no second device, no friend, no party roster could
- // ever show it. One hand-over per session; the moment the rules accept the
- // field the face follows the soldier. A refused write is not an error.
- if(!value.avatar)void avatarSync.sync(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});// A face that arrives during the session - the hand-over above landing, or
+ // ever show it. The decision is taken ONCE, from the first snapshot of the
+ // session: a face that is removed later (cleanup, a purged field) is not
+ // quietly written back, and a refused write is not an error.
+ void avatarSync.sync(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});// A face that arrives during the session - the hand-over above landing, or
  // another device choosing one - has to reach the dossier too, not just the
  // next reload. refreshSoldierPortrait recomposes only when the encoded face
  // really changed, and it runs before the menu repaints so the command center

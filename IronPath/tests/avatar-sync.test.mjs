@@ -42,6 +42,23 @@ test('a server value is the truth and is never overwritten',async()=>{
   assert.equal(await sync.sync({name:'Alice',gender:'female',xp:0,avatar:'g:f|face:ponytail'}),'skipped');
 });
 
+// Reported by the Chromium social test: the hand-over only ran when the field
+// was EMPTY, so a face that was removed later in the same session (a purged
+// field, a cleanup) was quietly written back - the friends list showed a face
+// again where the game had just shown the neutral placeholder. The decision is
+// taken from the first snapshot, once.
+test('a face removed during the session is not quietly written back',async()=>{
+  const {sync,calls,bump}=harness({mirror:'g:m|face:beard|hair:short'});
+  assert.equal(await sync.sync({gender:'male',avatar:'g:m|face:short'}),'present');
+  assert.equal(await sync.sync({gender:'male'}),'skipped','the field is empty now, but the session already knows the soldier had a face');
+  assert.equal(await sync.sync({gender:'male'}),'skipped');
+  assert.equal(calls.length,0,'nothing is written back');
+  // A fresh session is a fresh decision - and then the face does follow.
+  bump();
+  assert.equal(await sync.sync({gender:'male'}),'written');
+  assert.deepEqual(calls,[{avatar:'g:m|face:beard|hair:short'}]);
+});
+
 test('one attempt per session - a refused ruleset is not asked twice a minute',async()=>{
   const {sync,calls,bump}=harness({mirror:'g:f|face:crop'});
   assert.equal(await sync.sync({gender:'female'}),'written');
@@ -110,8 +127,10 @@ test('account.js hands the face over on every profile load',async()=>{
   const end=source.indexOf('const account={',start);
   assert.ok(start>=0&&end>start,'loadProfile found in account.js');
   const body=source.slice(start,end);
-  assert.match(body,/if\(!value\.avatar\)void avatarSync\.sync\(value\);/,
-    'a profile without a server-side face is handed over, the same way a missing service date is stamped');
+  assert.match(body,/void avatarSync\.sync\(value\);/,
+    'every profile snapshot goes through the hand-over, which decides once per session');
+  assert.doesNotMatch(body,/if\(!value\.avatar\)void avatarSync\.sync/,
+    'the decision is not re-taken when a face disappears later in the session');
   assert.match(source,/const avatarSync=createAvatarSync\(\{[\s\S]*?session:\(\)=>sessionVersion\}\);/,
     'the sync is bound to the session counter, so a sign-out or a new sign-in gets its own attempt');
   assert.match(source,/import \{ createAvatarSync \} from '\.\/avatar-sync\.mjs\?v=[^']+';/,

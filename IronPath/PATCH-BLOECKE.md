@@ -462,7 +462,7 @@ entstand, ist nicht sicher belegt.
   ankommt. Der Rules-Kandidat (`friend-portrait-candidate.mjs`) legt das Feld
   `players/$uid/avatar` jetzt auch dort an, wo die Regel es nie kannte –
   genau das ist der veröffentlichte Stand, der jeden Schreibversuch frisst.
-  Prüfungen: 1127/0 lokal, neuer Emulator-Fall „Regel ohne Gesicht“, neues
+  Prüfungen: 1130/0 lokal (1 absichtlich übersprungen), neuer Emulator-Fall „Regel ohne Gesicht“, neues
   Chromium-Gerätetest für die Übergabe. **Nicht veröffentlicht:** die Regeln;
   und `account.js` hängt am Stempel `20261031-patch4`, das Gesicht kommt also
   mit dem nächsten Stand in die Browser.

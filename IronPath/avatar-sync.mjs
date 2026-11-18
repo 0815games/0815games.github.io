@@ -7,11 +7,15 @@
 // no party roster can ever show it, and the mirror is deliberately NOT a
 // cross-device record (it is a convenience, see avatar.mjs).
 //
-// So a profile load hands the face over once per session:
+// So the profile listener hands the face over, and the decision is taken from
+// the FIRST snapshot of the session:
 //
 //   * the server value, once it exists, is the truth and is never overwritten -
 //     another device may have chosen a newer face, and that is the soldier's
 //     business, not this session's;
+//   * a face that disappears later in the same session (a purged field, a
+//     cleanup) is NOT written back. The hand-over is a migration for soldiers
+//     who never had one, not a claim that the field must always be filled;
 //   * a refused write is NOT an error. Until the rules are published the field
 //     does not exist, and a failed sync must never surface as a broken account,
 //     a message or a retry loop - the mirror keeps the face and the next

@@ -2703,8 +2703,10 @@ Gebaut:
   Soldaten, deren Schreiben von den veröffentlichten Regeln abgelehnt wird – im
   localStorage-Spiegel und sonst nirgends: kein zweites Gerät, keine
   Freundesliste, keine Party konnte es je zeigen. Neu ist `avatar-sync.mjs`:
-  beim Laden des Profils übergibt es das Gesicht **einmal je Sitzung**, wenn der
-  Server noch keins hat. Ein Wert auf dem Server gewinnt immer (ein anderes
+  beim Laden des Profils entscheidet es am **ersten Schnappschuss der Sitzung**
+  einmalig, ob ein Gesicht fehlt, und übergibt es dann – verschwindet ein
+  Gesicht später in derselben Sitzung (etwa bei Bereinigung), wird es nicht
+  still zurückgeschrieben. Ein Wert auf dem Server gewinnt immer (ein anderes
   Gerät darf neuer sein); eine abgelehnte Übergabe ist **kein Fehler**, sondern
   der heutige Zustand – der Spiegel behält das Gesicht, und die nächste Sitzung
   versucht es wieder. Sobald die Regeln das Feld kennen, folgt das Gesicht
@@ -2728,15 +2730,16 @@ Gebaut:
 Prüfungen:
 
 - Vollständiger serieller Lauf `node --test IronPath/tests/*.test.mjs`:
-  **1129 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+  **1130 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
 - `tests/avatar-layers.test.mjs` **6/6** – 13 Gesichter (7 weiblich, 6 männlich),
   gleiche Kachelzahl je Geschlecht, und ein neuer Prüfschritt vergleicht den
   Porträtordner mit dem Manifest: **kein gemaltes Porträt bleibt liegen**.
-- `tests/avatar-sync.test.mjs` neu **12/12** – Spiegel wird übergeben, ohne
+- `tests/avatar-sync.test.mjs` neu **13/13** – Spiegel wird übergeben, ohne
   Spiegel kommt die Vorgabe des Geschlechts (nie ein anderes Gesicht als das
-  gezeigte), ein Serverwert wird nie überschrieben, genau ein Versuch je
-  Sitzung, eine abgelehnte Übergabe ist kein Fehler, Abmeldung und
-  Charakterlöschung starten die nächste Sitzung sauber, und zwei
+  gezeigte), ein Serverwert wird nie überschrieben, ein erst im Lauf derselben
+  Sitzung entferntes Gesicht wird nicht still zurückgeschrieben, genau ein
+  Versuch je Sitzung, eine abgelehnte Übergabe ist kein Fehler, Abmeldung und
+  Charakterlöschung starten die nächste Sitzung sauber, und drei
   Quelltext-Verträge nageln die Verdrahtung in `account.js` fest.
 - `tests/friend-portrait-rules.test.mjs` **5/5** – der Kandidat ändert an der
   Referenz weiterhin nur die zwei Lese-Rechte; eine Basis ohne Feld bekommt
