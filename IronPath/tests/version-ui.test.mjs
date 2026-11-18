@@ -1,5 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
+import {existsSync, readFileSync} from 'node:fs';
 import {createVersionUI} from '../version-ui.mjs';
 
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
@@ -77,4 +78,15 @@ test('a visibility event during a pending background check causes one fresh foll
 test('the game sees a waiting reason instead of being interrupted when a new build appears',async()=>{
  const f=fixture();await f.ui.start();f.setPublished('new');f.setSafety('game');
  assert.equal(await f.ui.beforeGame(),false);assert.match(f.nodes.get('versionNoticeText').textContent,/Finish your current operation/);assert.equal(f.nodes.get('versionNoticeDismiss').hidden,true);assert.deepEqual(f.navigations,[]);f.ui.stop();
+});
+
+test('version notice markup includes dispatch artwork and prevents 100% button crushing text',()=>{
+ const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const css=readFileSync(new URL('../style.css',import.meta.url),'utf8');
+ assert.match(html,/id="versionNotice"[^>]*>[\s\S]*class="version-notice-art"[\s\S]*assets\/version-dispatch\.jpg\?v=/);
+ assert.match(html,/id="versionNoticeText"[\s\S]*class="version-notice-actions"[\s\S]*id="versionNoticeRetry"[\s\S]*id="versionNoticeDismiss"/);
+ assert.ok(existsSync(new URL('../assets/version-dispatch.jpg',import.meta.url)),'version-dispatch.jpg artwork exists');
+ assert.match(css,/\.version-notice\{[^}]*flex-direction:column/);
+ assert.match(css,/\.version-notice \.version-notice-actions button\{[^}]*width:auto[^}]*margin:0/);
+ assert.match(css,/body:has\(#gameWorkspace:not\(\[hidden\]\)\) \.version-notice\{[^}]*transform:none/);
 });

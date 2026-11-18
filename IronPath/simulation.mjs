@@ -10,7 +10,7 @@ import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mj
 // Not a networking protocol or an anti-cheat system by itself.
 import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261031-finale1';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261031-patch5';
+import {addSupplies} from './match.mjs?v=20261031-patch6';
 import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261112-kits1';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;

@@ -11,6 +11,8 @@ const root=path.resolve(__dirname,'..');
 const oldUrls=[
  'account-entry.mjs?v=20261031-patch1','account.js?v=20261031-patch1',
  'account-entry.mjs?v=20261031-patch4','account.js?v=20261031-patch4',
+ 'account-entry.mjs?v=20261031-patch5','account.js?v=20261031-patch5',
+ 'game.js?v=20261031-patch5','language.mjs?v=20261031-patch5','patch-notes.mjs?v=20261031-patch5','recruit-screen.mjs?v=20261031-patch5',
  'game.js?v=20261031-patch4','friends-ui.mjs?v=20261031-patch4','friend-portrait.mjs?v=20261031-patch4',
  'language.mjs?v=20261031-patch4','recruit-screen.mjs?v=20261031-patch4',
  'match.mjs?v=20261031-patch4','simulation.mjs?v=20261031-patch4','party-host.mjs?v=20261031-patch4','protocol.mjs?v=20261031-patch4',

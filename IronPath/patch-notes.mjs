@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261031-patch5';
+import {getLanguage} from './language.mjs?v=20261031-patch6';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -45,7 +45,20 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'patch3',build:'20261031-patch5',pr:289,
+    id:'patch5',build:'20261031-patch6',pr:314,
+    title:{en:'Block 4 avatar rebuild & wave rollout',de:'Block-4-Avatar-Neubau & Rollout-Welle'},
+    shipped:[
+      {en:'Rebuilt avatar generator: 12 clean frontal base heads, 17 hairstyles, 6 beards and 5 shared hair/beard colors tinted at runtime.',de:'Neu aufgebauter Avatar-Baukasten: 12 frontale Basisköpfe, 17 Frisuren, 6 Bärte und 5 gemeinsame Haar-/Bartfarben mit Laufzeit-Färbung.'},
+      {en:'Compact on-portrait ◀/▶ steppers with color dots, safe migration of older avatar saves, and matching friend/dossier portraits.',de:'Kompakte ◀/▶-Stepper direkt am Porträt mit Farbpunkten, sichere Migration älterer Avatar-Speicherstände sowie passende Freundes-/Dossier-Porträts.'},
+      {en:'Published live friend/avatar database rules (gender/avatar reads and avatar format validation) and earlier interface polish (#299–#312).',de:'Freundes-/Avatar-Datenbankregeln (gender-/avatar-Reads und Avatar-Formatprüfung) sowie vorheriger Oberflächen-Feinschliff (#299–#312) veröffentlicht.'},
+    ],
+    open:[
+      {en:'Real-device acceptance of the new avatars and the redesigned version notice popup.',de:'Echte Geräteabnahme der neuen Avatare sowie des neu gestalteten Versionshinweis-Popups.'},
+      {en:'Earlier network-traffic tuning for projectile visuals (D1) and Block 5/6/7 roadmap items.',de:'Frühere Netzdaten-Optimierung der Schussgrafik (D1) sowie die Punkte aus Block 5, 6 und 7.'},
+    ],
+  },
+  {
+    id:'patch3',build:'20261031-patch3',pr:289,
     title:{en:'Multiplayer fixes, party end and rewards',de:'Mehrspieler-Fixes, Gruppenabschluss und Belohnungen'},
     shipped:[
       {en:'Tower menu and upgrades inside a party: your own and other players’ towers open and improve reliably again.',de:'Türme und Upgrades in der Gruppe: eigene und fremde Türme öffnen und verbessern wieder zuverlässig.'},
@@ -122,20 +135,20 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block3',status:'planned',
     title:{en:'Block 3 · Interface',de:'Block 3 · Oberfläche'},
     shipped:[
-      {en:'Party list, report and rank insignia in the profile exist.',de:'Party-Liste, Bericht und Rangabzeichen im Profil sind vorhanden.'},
+      {en:'Party portrait cards, compact battle rank HUD, tower glow/shimmer, debrief rank & promotion, centered popups, lower-right ability HUD and shot tracers (#299–#312) are live and tested by the operator.',de:'Party-Porträtkarten, schlankes Kampf-Rang-HUD, Turm-Glow/Schimmer, Berichts-Rang & Beförderung, mittige Popups, Fähigkeits-HUD rechts unten und Schussspuren (#299–#312) sind live und vom Betreiber getestet.'},
     ],
     open:[
-      {en:'Party portrait cards, battle HUD with XP, rank and promotion in the report, “What’s next”, affordable tower shimmer, readable shots and ability.',de:'Party-Porträtkarten, Kampf-HUD mit EP, Rang und Beförderung im Bericht, „What’s Next“, bezahlbarer Turmschimmer, lesbare Schüsse und Fähigkeit.'},
+      {en:'Verify the fixed version-notice dispatch layout on real phones and decide later on projectile network traffic (D1).',de:'Korrigiertes Versionshinweis-Popup am echten Handy prüfen und später über die Netzdatenmenge der Schüsse (D1) entscheiden.'},
     ],
   },
   {
     id:'block4',status:'planned',
     title:{en:'Block 4 · Avatars',de:'Block 4 · Avatare'},
     shipped:[
-      {en:'The approved layer preview is in character creation, menu and dossier.',de:'Die freigegebene Layer-Vorschau ist in Charaktererstellung, Menü und Dossier eingebaut.'},
+      {en:'Rebuilt avatar generator (12 frontal base heads, 17 hairstyles, 6 beards, 5 colors, ◀/▶ steppers, legacy migration), server sync and published portrait rules (#313–#314) are live.',de:'Avatar-Neubau (12 frontale Basisköpfe, 17 Frisuren, 6 Bärte, 5 Farben, ◀/▶-Stepper, Altsave-Migration), Server-Abgleich und veröffentlichte Porträt-Rules (#313–#314) sind live.'},
     ],
     open:[
-      {en:'More looks and consistent, safe display and storage on different devices, in friends and party views.',de:'Weitere Looks sowie einheitliche, sichere Anzeige und Speicherung auf verschiedenen Geräten, in Freunde- und Partyansicht.'},
+      {en:'Final operator confirmation on real devices across character creation, menu, dossier, friends and party.',de:'Abschließende Betreiber-Bestätigung auf echten Geräten in Charaktererstellung, Menü, Dossier, Freunden und Party.'},
     ],
   },
   {

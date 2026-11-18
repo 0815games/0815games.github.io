@@ -4,13 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261031-patch5">
+  <meta name="ironpath-build" content="20261031-patch6">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261031-patch5">
+  <link rel="stylesheet" href="style.css?v=20261031-patch6">
   <link rel="stylesheet" href="interface-redesign.css?v=20261117-partycards1">
   <link rel="stylesheet" href="skill-menu.css?v=20261126-guidefull1">
   <link rel="stylesheet" href="field-command.css?v=20261117-ability1">
@@ -95,7 +95,7 @@
     </div>
     <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
     <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261031-patch5</p>
+      <p class="build-stamp" aria-hidden="true">BUILD 20261031-patch6</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
@@ -172,7 +172,7 @@
   <noscript><style>#introOverlay{display:none!important}</style></noscript>
     <div id="sandboxBanner" class="sandbox-banner" role="status" hidden><strong data-i18n-text="TUTORIAL · SAMPLE DATA">TUTORIAL · SAMPLE DATA</strong><span data-i18n-text="Nothing you do here is saved. Your soldier is not changed.">Nothing you do here is saved. Your soldier is not changed.</span><button id="sandboxExit" type="button" data-i18n-text="LEAVE SAMPLE">LEAVE SAMPLE</button></div>
 <main>
-    <div id="versionNotice" class="version-notice" role="status" aria-live="polite" hidden><span id="versionNoticeText"></span><button id="versionNoticeRetry" type="button" hidden>RETRY CHECK</button><button id="versionNoticeDismiss" type="button">DISMISS</button></div>
+    <div id="versionNotice" class="version-notice" role="status" aria-live="polite" hidden><div class="version-notice-art" aria-hidden="true"><img src="assets/version-dispatch.jpg?v=20261031-patch6" width="1376" height="768" alt="" decoding="async"><span class="version-notice-kicker" data-i18n-text="FIELD DISPATCH">FIELD DISPATCH</span></div><div class="version-notice-body"><span id="versionNoticeText"></span><div class="version-notice-actions"><button id="versionNoticeRetry" type="button" hidden>RETRY CHECK</button><button id="versionNoticeDismiss" class="primary" type="button">DISMISS</button></div></div></div>
     <div id="deploymentCheck" class="deployment-check" role="status" aria-live="polite" hidden>Preparing the operation / Einsatz wird vorbereitet …</div>
     <header><div><span class="eyebrow" data-i18n-text="0815 GAMES / FIELD PROTOTYPE">0815 GAMES / FIELD PROTOTYPE</span><h1 class="brand-title"><img class="brand-logo" src="assets/iron-path-brand-cutout.png?v=20261103-brand2" width="1000" height="351" alt="Iron Path"></h1><p data-i18n-text="Hold the line. Protect the bunker.">Hold the line. Protect the bunker.</p></div><span class="badge" data-i18n-text="FIELD COMMAND / ONLINE">FIELD COMMAND / ONLINE</span></header>
     <section id="entry" class="entry panel" aria-live="polite">
@@ -180,7 +180,7 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-patch5</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261031-patch6</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden>RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
@@ -316,7 +316,7 @@
     <div class="friends-sections"><section id="friendInvitesSection" hidden><h3 data-i18n="friends.invites">Party invitations</h3><p id="coopInvitesEmpty" data-i18n-text="No party invitations.">No party invitations.</p><ul id="coopInviteList"></ul></section><section id="friendRequestsSection" hidden><h3 data-i18n="friends.requests">Requests</h3><p id="requestsEmpty" data-i18n-text="No incoming requests.">No incoming requests.</p><ul id="friendRequests"></ul></section><section id="friendListSection"><h3 data-i18n="friends.list">Friends</h3><p id="friendsEmpty" data-i18n-text="No friends yet.">No friends yet.</p><ul id="friendList"></ul></section><section id="friendSentSection" hidden><h3 data-i18n="friends.sent">Sent requests</h3><p id="sentEmpty" data-i18n-text="No sent requests.">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
   <dialog id="friendStatsDialog" class="friends-dialog friend-stats-dialog" aria-labelledby="friendStatsTitle">
-    <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch5" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
+    <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch6" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
     <p id="friendStatsStatus" role="status" aria-live="polite"></p>
     <div id="friendStatsContent" hidden><div class="friend-stats-grid"><section><h3 id="friendStatsLevelHeading">LEVEL</h3><p id="friendStatsLevel"></p><h3 id="friendStatsAbilityHeading">ACTIVE SKILL</h3><p id="friendStatsAbility"></p></section><section><h3 id="friendStatsEquipmentHeading">EQUIPMENT</h3><p id="friendStatsEquipment"></p><h3 id="friendStatsBunkerHeading">BUNKER UPGRADES</h3><p id="friendStatsBunker"></p></section></div><section class="friend-stats-skills"><h3 id="friendStatsSkillsHeading">SKILLS</h3><p id="friendStatsSkills"></p><p id="friendStatsSpecialists"></p><p id="friendStatsMasteries"></p><p id="friendStatsOwned"></p></section><small id="friendStatsNote">Snapshot of saved progression. Stats are player-reported and not verified.</small></div>
   </dialog>
@@ -422,7 +422,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261031-patch5"></script>
+  <script type="module" src="intro.mjs?v=20261031-patch6"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261031-patch5"></script>
+  <script type="module" src="account-entry.mjs?v=20261031-patch6"></script>
 </body></html>

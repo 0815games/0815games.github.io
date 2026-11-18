@@ -66,8 +66,23 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='A new version is ready. Reload the game to get it.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261031-patch6 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
+      const noticeLayout=await page.evaluate(()=>{
+        const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
+          dismiss=document.querySelector('#versionNoticeDismiss'),art=document.querySelector('#versionNotice .version-notice-art img');
+        const b=box.getBoundingClientRect(),t=text.getBoundingClientRect(),d=dismiss.getBoundingClientRect(),a=art.getBoundingClientRect();
+        return {
+          scrollWidth:box.scrollWidth,clientWidth:box.clientWidth,
+          textWidth:t.width,textBottom:t.bottom,dismissTop:d.top,dismissRight:d.right,boxRight:b.right,
+          artComplete:art.complete,artNaturalWidth:art.naturalWidth,artWidth:a.width,artHeight:a.height
+        };
+      });
+      assert.ok(noticeLayout.scrollWidth<=noticeLayout.clientWidth+1,`${name}: version notice must not overflow horizontally (${noticeLayout.scrollWidth} > ${noticeLayout.clientWidth})`);
+      assert.ok(noticeLayout.textWidth>=180,`${name}: version notice text keeps readable width (${noticeLayout.textWidth})`);
+      assert.ok(noticeLayout.textBottom<=noticeLayout.dismissTop+1,`${name}: version notice text sits above dismiss button`);
+      assert.ok(noticeLayout.dismissRight<=noticeLayout.boxRight+1,`${name}: dismiss button stays inside version notice`);
+      assert.ok(noticeLayout.artComplete&&noticeLayout.artNaturalWidth>0&&noticeLayout.artWidth>=200&&noticeLayout.artHeight>=80,`${name}: version notice artwork loads cleanly`);
       await page.screenshot({path:`browser-artifacts/${name}-version-notice.png`,fullPage:false});
       await page.evaluate(()=>document.querySelector('#versionNotice').hidden=true);
       await page.screenshot({ path: `browser-artifacts/${name}-command.png`, fullPage: true });
