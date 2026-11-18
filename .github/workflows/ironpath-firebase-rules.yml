@@ -333,6 +333,7 @@ jobs:
                timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && \
                timeout 180 node IronPath/browser-tests/friends-sections.cjs && \
                timeout 180 node IronPath/browser-tests/character-discharge.cjs && \
+               timeout 180 node IronPath/browser-tests/avatar-handover.cjs && \
                timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && \
                timeout 180 node IronPath/browser-tests/release-stage.cjs && \
                timeout 180 node IronPath/browser-tests/release-gates.cjs && \

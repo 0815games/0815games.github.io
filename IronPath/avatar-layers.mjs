@@ -11,7 +11,7 @@
 // by mapping ITS face box onto the TARGET face's box - small drift in the AI
 // edit therefore self-corrects, and one overlay fits every face of its
 // gender.
-import {FACES,HAIRS,BEARDS} from './assets/layers/manifest.mjs?v=20261112-layers2';
+import {FACES,HAIRS,BEARDS} from './assets/layers/manifest.mjs?v=20261118-faces13';
 
 // The option a row offers when no overlay is drawn: the base portrait's own
 // cut. Ids are null so they simply skip the layer.

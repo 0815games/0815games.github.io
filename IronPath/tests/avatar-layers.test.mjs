@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {existsSync,readFileSync} from 'node:fs';
+import {existsSync,readdirSync} from 'node:fs';
 import {layerOptions,composePortrait,layerTransform,facePortrait} from '../avatar-layers.mjs';
 import {FACES,HAIRS,BEARDS} from '../assets/layers/manifest.mjs';
 
@@ -21,9 +21,9 @@ const fakeImage=(file)=>({naturalWidth:1024,naturalHeight:1024,file});
 const fakeLoader=(files)=>(src)=>{for(const [name,image] of Object.entries(files))if(src.startsWith(name))return Promise.resolve(image);return Promise.reject(new Error('no such layer: '+src));};
 
 test('the manifest ships only well-formed layers whose files exist',()=>{
-  assert.equal(FACES.length,5,'three female + two male faces');
-  assert.equal(FACES.filter(f=>f.gender==='female').length,3,'three female faces (parity request)');
-  assert.equal(FACES.filter(f=>f.gender==='male').length,2);
+  assert.equal(FACES.length,13,'every painted portrait in the game is a face: seven female + six male');
+  assert.equal(FACES.filter(f=>f.gender==='female').length,7);
+  assert.equal(FACES.filter(f=>f.gender==='male').length,6);
   for(const layer of [...FACES,...HAIRS,...BEARDS]){
     assert.match(layer.file,/^assets\/(portraits|layers)\//,'asset path is repo-relative');
     assert.ok(existsSync(new URL('../'+layer.file.split('?')[0],import.meta.url)),'file exists: '+layer.file);
@@ -38,16 +38,36 @@ test('the manifest ships only well-formed layers whose files exist',()=>{
 test('the rows: equal option counts for women and men (reported parity request)',()=>{
   const female=layerOptions('female');
   const male=layerOptions('male');
-  assert.equal(female.faces.length,3,'three female faces');
-  assert.equal(male.faces.length,2);
+  assert.equal(female.faces.length,7,'seven female faces');
+  assert.equal(male.faces.length,6,'six male faces');
   assert.equal(female.hairs.length,6,'six female hair overlays (braid, bun, curly included)');
   assert.equal(male.hairs.length,3);
   assert.equal(female.beards.length,0,'no beard row for women');
   assert.equal(male.beards.length,3);
-  // total tiles per gender: women 3+1+6 = men 2+1+3+1+3 = 10
+  // total tiles per gender: women 7+1+6 = men 6+1+3+1+3 = 14
   const femaleTiles=female.faces.length+female.hairs.length+1;
   const maleTiles=male.faces.length+male.hairs.length+1+male.beards.length+1;
   assert.equal(femaleTiles,maleTiles,'same number of choices for both genders');
+  assert.equal(femaleTiles,14,'fourteen tiles each');
+});
+
+test('no painted portrait is left behind: every file in the folder is a pickable face',()=>{
+  // Eight finished portraits sat in the folder that only the legacy mapping
+  // could still reach - shipped art nobody could choose. The operator asked for
+  // more looks, so the folder and the picker must never drift apart again.
+  const folder=readdirSync(new URL('../assets/portraits',import.meta.url)).filter(name=>name.endsWith('.jpg')).sort();
+  const shipped=FACES.map(face=>face.file.split('?')[0].split('/').pop()).sort();
+  assert.deepEqual(shipped,folder,'every portrait file is a face, and every face has a file');
+  // Ids are unique per gender and every face carries a label and a face box.
+  for(const gender of ['female','male']){
+    const {faces}=layerOptions(gender);
+    assert.equal(new Set(faces.map(face=>face.id)).size,faces.length,`${gender} face ids are unique`);
+    assert.deepEqual(faces.map(face=>face.label),faces.map((face,index)=>`Face ${index+1}`),`${gender} faces are numbered in order`);
+  }
+  // The flat-haired base stays first per gender: that is the cut every hair
+  // overlay covers cleanly, and it is what "no hair" shows.
+  assert.equal(layerOptions('female').faces[0].id,'crop');
+  assert.equal(layerOptions('male').faces[0].id,'buzz');
 });
 
 test('layerTransform maps the overlay face box exactly onto the target face box',()=>{

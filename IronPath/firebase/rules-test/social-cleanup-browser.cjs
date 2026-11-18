@@ -202,7 +202,7 @@ function guardedHtml(html){
     const row=viewer.locator('#friendList li').filter({hasText:name}),image=row.locator('.friend-portrait');
     await viewer.waitForFunction(()=>document.querySelector('#friendList .friend-portrait')?.getAttribute('src')?.startsWith('data:image/png;base64,'),null,{timeout:30000});
     const expected=await viewer.evaluate(async({encoded,gender})=>{
-     const {decodeAvatar}=await import('./avatar.mjs?v=20261112-live1'),{composePortrait}=await import('./avatar-layers.mjs?v=20261112-live1');
+     const {decodeAvatar}=await import('./avatar.mjs?v=20261118-faces13'),{composePortrait}=await import('./avatar-layers.mjs?v=20261112-live1');
      const canvas=document.createElement('canvas');await composePortrait(canvas,decodeAvatar(encoded,gender),128);return canvas.toDataURL('image/png');
     },{encoded,gender});
     const list=await image.getAttribute('src');assert.ok(list===expected,`${name}: list shows that account's saved avatar`);

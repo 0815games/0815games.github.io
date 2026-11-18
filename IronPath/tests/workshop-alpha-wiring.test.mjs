@@ -48,7 +48,11 @@ test('armory state exists before the first language render',()=>{
 test('repeated profile snapshots never restart the game or social listeners',()=>{
  // showProfile() starts the game, the friend listener and the score reporter;
  // running it again on every snapshot duplicated popups and leaderboard writes.
- assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);if\(featureEnabled\('tutorial'\)\)void startFirstRunTutorial\(\);\}else \{commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
+ // The portrait is recomposed BEFORE the command center renders, so a face that
+ // arrived with this snapshot (the hand-over, another device) is what the menu
+ // paints - not the one from before.
+ assert.match(source,/if\(first\)\{showProfile\(value\);void backfillPrestige\(value\);if\(featureEnabled\('tutorial'\)\)void startFirstRunTutorial\(\);\}else \{void refreshSoldierPortrait\(\);commandCenter\?\.render\(\);/,'showProfile still runs exactly once');
+ assert.equal(source.match(/showProfile\(value\)/g).length,2,'one definition, one call - never per snapshot');
 });
 
 test('the workshop view is cache-busted with the build',()=>{

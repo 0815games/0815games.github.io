@@ -147,7 +147,7 @@ export function storeAvatar(storage,avatar){
 // "SURPRISE ME": one free roll across the gender's faces, hairs and beards -
 // the base cut and no beard are valid rolls too, and hair and beard roll
 // independently (that is the point of the layered build).
-import { layerOptions } from './avatar-layers.mjs?v=20261112-live1';
+import { layerOptions } from './avatar-layers.mjs?v=20261118-faces13';
 export function randomAvatar(gender='female',random=Math.random){
   const g=gender==='male'?'male':'female';
   const {faces,hairs,beards}=layerOptions(g);

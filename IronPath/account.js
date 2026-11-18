@@ -63,8 +63,9 @@ import { startGame } from './game.js?v=20261031-patch4';
 import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-patch4';
 import { createPlayer } from './match.mjs?v=20261031-patch4';
 import { bunkerStart } from './solo-deployment.mjs?v=20261031-patch4';
-import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261112-live1';
-import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261112-live1';
+import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261118-faces13';
+import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261118-faces13';
+import { createAvatarSync } from './avatar-sync.mjs?v=20261118-faces13';
 import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-patch4';
 import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-patch4';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
@@ -481,11 +482,31 @@ function refreshProfileRank(value){
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
 function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+// The face, handed over to the server once per session (see avatar-sync.mjs):
+// soldiers from before the avatar field - or before rules that allow it - would
+// otherwise keep their face in this browser alone. The write is refused until
+// those rules are published; then it simply starts working, for every returning
+// soldier, without another client update. Built here so the write always goes
+// to the account this listener belongs to.
+ const avatarSync=createAvatarSync({
+  write:values=>update(ref(db,`players/${currentUser.uid}`),values),
+  storage:languageStorage,session:()=>sessionVersion});
 function loadProfile(currentUser,version){if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
  // Accounts from before the service-date rework carry none; stamp one once.
  // If the rules are not live yet this fails silently and retries on the
  // next load - the service record shows the placeholder until then.
- if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+ if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});
+ // The same for the face. Every soldier who enlisted before the avatar field
+ // existed - or before the rules accepted it - would keep the face in the local
+ // mirror and nowhere else: no second device, no friend, no party roster could
+ // ever show it. One hand-over per session; the moment the rules accept the
+ // field the face follows the soldier. A refused write is not an error.
+ if(!value.avatar)void avatarSync.sync(value);$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);refreshProfileRank(value);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});// A face that arrives during the session - the hand-over above landing, or
+ // another device choosing one - has to reach the dossier too, not just the
+ // next reload. refreshSoldierPortrait recomposes only when the encoded face
+ // really changed, and it runs before the menu repaints so the command center
+ // shows the new face, not the previous one.
+ if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {void refreshSoldierPortrait();commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
 const account={...(versionUI?{beforeNewGame}:{}),recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getSessionVersion:()=>sessionVersion,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user&&!deletingCharacter,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
   // A realtime-database transaction only settles once the server answers; while
   // offline it stays pending forever, and the results screen would sit on
