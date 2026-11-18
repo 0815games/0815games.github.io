@@ -553,10 +553,16 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     // tap - closing with an unsaved draft goes through the X, and THAT asks.
     await page.locator('#skillCancel').click();assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.mouse.click(1,1);assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),false,'outside a confirmation cancels instead of accepting');assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true,'cancel preserves the draft');
     await page.keyboard.press('Escape');assert.equal(await page.locator('#gameConfirm').evaluate(e=>e.open),true);await page.locator('#gameConfirmAccept').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),false);await page.evaluate(()=>{const dialog=document.querySelector('#skillDialog');dialog.dispatchEvent(new Event('close'));});
-    // The eleven-step briefing is the Help tour now: the field opens it through its own
-    // replay button. `#menuTutorial` is a different thing on purpose - it restarts the
-    // whole first run, which is checked further down. Language is German here, so the
-    // tour has to be German too.
+    // The eleven-step briefing is the Help tour now: open a real endless field first so
+    // the field's own replay button is tested over a live battlefield. `#menuTutorial` is a
+    // different thing on purpose - it restarts the whole first run, which is checked
+    // further down. Language is German here, so the tour has to be German too.
+    await page.locator('#menuEndless').click();
+    await page.locator('#endlessLaunch').waitFor({state:'visible'});
+    await page.locator('#endlessDeploy').click();
+    await page.locator('#gameWorkspace').waitFor({state:'visible'});
+    assert.equal(await visible('#game'),true,'an endless field is open before replaying its help tour');
+    const preTourMap=await page.locator('#mapName').innerText();
     await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});
     await page.locator('#tutorialReplay').evaluate(button=>button.click());
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),true);
@@ -611,7 +617,7 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     await advance();
     // Finishing the tour hands a soldier the training contract - but this one already
     // played it: the first login above deployed it and marked it seen, so the replay
-    // must NOT deploy a second time. The briefing closes, the Command Center stays.
+    // must NOT deploy a second time and must keep the active endless battlefield open.
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false);
     await page.waitForTimeout(700); // longer than the 400ms handoff timer
     // Read the marker instead of the objective strip: the strip is also on screen while
@@ -622,6 +628,7 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
       return key?localStorage.getItem(key):null;
     });
     assert.equal(trainingMarker,'done','a tour replay does not redeploy the one-time contract');
+    assert.equal(await page.locator('#mapName').innerText(),preTourMap,'tour replay keeps the endless battlefield instead of redeploying the training map');
     // The tour was opened from the field (`#tutorialReplay`), so closing it returns to
     // the field - not to the Command Center it used to come from.
     assert.equal(await visible('#game'),true,'the tour closes back onto the field it was opened over');

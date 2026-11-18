@@ -3224,7 +3224,13 @@ Grenzen / Offen:
   - **Grenzen:** Kein lokaler Chromium-Browser / Java-Emulator in dieser
     Sandbox; Playwright- und Emulator-Läufe laufen über den PR-CI-Workflow,
     anschließend folgt echte Geräteabnahme durch den Betreiber.
-- **Git / PR / Status:** Lokal umgesetzt und verifiziert; bereit für Commit,
-  Push und PR gegen `main`.
+- **Git / PR / Status:** Commit `cabf5c1` auf PR `#316` gegen `main` eröffnet.
+
+## IPL-0064 – PR-#316-CI-Analyse & Korrektur in `command-center.cjs`
+
+- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-10-31 UTC (PR `#316`, Lauf `44310262159`, Job `134822247816`).
+- **Befund:** In Lauf `44310262159` bestanden `12 / 13` Checks (`interface-smoke.cjs` in allen drei Viewports grün); `command-center.cjs:627` scheiterte (`visible('#game') === false`). Durch den Abbau des entfernten `#fieldCoachReplay`-Klicks (der zuvor unbemerkt `forgetTrainingSeen` ausgelöst hatte, sodass `tutorial.onFinish` nach 400 ms den Übungseinsatz erneut über `#commandCenter` startete) blieb `#gameWorkspace` nach `#resultsDone` verborgen, obwohl `#tutorialReplay` als Feld-Tour getestet wurde.
+- **Änderung:** `IronPath/browser-tests/command-center.cjs` öffnet vor dem `#tutorialReplay`-Block explizit ein Endlos-Schlachtfeld (`#menuEndless` → `#endlessDeploy`), merkt sich `#mapName` (`preTourMap`) und bestätigt nach Tour-Abschluss zusätzlich zur unveränderten `trainingMarker === 'done'`-Prüfung, dass `#mapName === preTourMap` erhalten bleibt und `#game` sichtbar sowie `#commandCenter` verborgen bleibt, bevor `#backToCommand` zurückwechselt.
+- **Prüfung:** `node -c IronPath/browser-tests/command-center.cjs` und `node --test IronPath/tests/*.test.mjs` bestanden; anschließend Push auf PR `#316` für erneute Chromium-CI-Prüfung (`interface-browser-smoke`).
 
 
