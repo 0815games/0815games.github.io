@@ -10,6 +10,10 @@ const root=path.resolve(__dirname,'..');
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
  'account-entry.mjs?v=20261031-patch1','account.js?v=20261031-patch1',
+ 'account-entry.mjs?v=20261031-patch4','account.js?v=20261031-patch4',
+ 'game.js?v=20261031-patch4','friends-ui.mjs?v=20261031-patch4','friend-portrait.mjs?v=20261031-patch4',
+ 'language.mjs?v=20261031-patch4','recruit-screen.mjs?v=20261031-patch4',
+ 'match.mjs?v=20261031-patch4','simulation.mjs?v=20261031-patch4','party-host.mjs?v=20261031-patch4','protocol.mjs?v=20261031-patch4',
  'game.js?v=20261031-patch1','friends-ui.mjs?v=20261031-patch1',
  'firebase-four-panel.mjs?v=20261031-patch1','social-notifications.mjs?v=20261031-patch1',
  'language.mjs?v=20261031-patch1','localization-battle-de.mjs?v=20261031-patch1',
@@ -85,9 +89,9 @@ const oldUrls=[
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
   for(const name of ['game.js','field-menu.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
-  assert.ok(requests.includes('avatar.mjs?v=20261118-faces13'),'the portrait reuses the existing avatar decoder');
-  assert.ok(requests.includes('avatar-layers.mjs?v=20261118-faces13'),'the portrait reuses the existing renderer');
-  assert.ok(requests.includes('assets/layers/manifest.mjs?v=20261118-faces13'),'the real layer manifest is available');
+  assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
+  assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');
+  assert.ok(requests.includes('assets/layers/manifest.mjs?v=20261119-avatar3'),'the real layer manifest is available');
   assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
   console.log('New game, social prompts, invitations, language and online/recovery paths bypassed a populated synthetic stale HTTP cache; guest wave request passed.');
   await context.close();

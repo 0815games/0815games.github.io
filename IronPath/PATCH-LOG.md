@@ -1503,61 +1503,6 @@ und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
   nicht geprüft; die Abnahme auf echten Geräten (Hochformat, kleine Displays)
   bleibt offen.
 
-## IPL-0039 – Block 3 / A: Party-Roster als Karten
-
-- **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
-  Sitzungsdatum 2026-10-31 UTC. Branch `arena/422699c8-0815games-github-io`,
-  Basis `b3dd1a2` (Main nach dem Merge von #298).
-- **Auftrag:** „Oke. Weiter." Block 2 ist bis auf die Veröffentlichung (die
-  einen frischen Export braucht) und die Abnahme auf echten Geräten fertig,
-  also der nächste Punkt der Reihe: Block 3 · Oberfläche.
-- **Was gebaut wurde:** Das Party-Roster war eine Textzeile pro Soldat
-  („Cara · Host · Team A · Bereit"). Es sind jetzt vier Karten: Portrait, Name,
-  Rang mit Abzeichen, Rolle und Bereitschaft.
-- **Rang:** Aus dem veröffentlichten Level abgeleitet und nie gespeichert
-  (`rank-insignia.mjs`, PR #284). Ein fehlendes oder unlesbares Level zeigt den
-  niedrigsten Rang und erfindet keinen.
-- **Bereitschaft:** gefüllter Punkt für „bereit", hohler für „nicht bereit".
-  Bewusst nicht über eine Farbe allein, damit die Aussage in beiden Themes und
-  bei Farbfehlsichtigkeit erhalten bleibt.
-- **Layout:** Zwei Spalten, wo das Panel breit genug ist, sonst eine
-  (`repeat(auto-fit,minmax(150px,1fr))`). Leere Plätze bleiben als leerer Platz
-  sichtbar und werden nicht als Soldat verkleidet.
-- **Portraits:** WESSEN Gesicht eine Karte zeigen darf, entscheidet der
-  Aufrufer, nicht das Panel (`portraitFor`). Das eigene kommt aus dem schon
-  gerenderten Portrait, das eines Mitspielers live aus genau den zwei
-  Profilfeldern, die die Block-2-Regeln freigeben. Solange die nicht
-  veröffentlicht sind, wird das Lesen verweigert und die Karte zeigt den
-  neutralen Platzhalter – dieselbe ehrliche Antwort, die die Freundesliste
-  heute schon gibt.
-- **Befund beim Bauen (CSS):** `.four-party-list li` ist eine Klasse plus ein
-  Element und gewinnt damit gegen ein nacktes `.party-card` – die Karte hätte
-  die zentrierte Ausrichtung der Zeile geerbt. Die Regel heißt deshalb
-  `.party-roster .party-card`.
-- **Befund beim Bauen (Cache):** `style.css` ist per Test an die Release-Welle
-  (`release-version.json`) genagelt. Eine Änderung mitten in der Welle würde
-  ein zurückkehrendes Browserfenster mit neuem Markup und alter CSS treffen.
-  Das Layout liegt darum in `interface-redesign.css`, das eine eigene
-  Cache-Welle trägt.
-- **Übersetzung:** „Team {letter}" war der einzige neue String; er liegt jetzt
-  im deutschen Wörterbuch (der Wächter in `translation-coverage.test.mjs`
-  bestand darauf, zu Recht).
-- **Änderungen / Dateien:** `firebase-four-panel.mjs` (Karten,
-  Portrait-Wachen), `account.js` (Anschluss der Portraits), `index.html`
-  (Klasse am Roster und neue Cache-Welle für `interface-redesign.css`),
-  `interface-redesign.css` (Kartenlayout), `localization-de.mjs` (ein String),
-  `tests/four-panel.test.mjs` (fünf neue Fälle, zwei umgestellte) und
-  `tests/party-end-panel-race.test.mjs` (Dokument-Double trägt die
-  Eigenschaften, die eine Karte braucht).
-- **Prüfungen:** 27/27 in `four-panel.test.mjs`; vollständiger serieller Lauf
-  1031 bestanden, 0 fehlgeschlagen. Die Browserläufe in CI
-  (`multiplayer-browser`, `social-cleanup-browser`) suchen den Namen im Roster
-  weiterhin als Text – die Karte schreibt ihn genau einmal, damit diese Suche
-  eindeutig bleibt.
-- **Grenzen:** Kein Mensch hat die Karten gesehen. Das Layout ist gerechnet,
-  nicht geprüft; die Abnahme auf echten Geräten (Hochformat, kleine Displays)
-  bleibt offen.
-
 ## IPL-0038 – Block 2 / A1: Umbenennung als Mechanismus (Regeln vorbereitet)
 
 - **Zeit / Quelle:** Abgefragte Umgebungsuhr 2026-11-17 UTC; vorgegebenes
@@ -2816,3 +2761,240 @@ Grenzen / Offen:
   ist. Von diesem Schritt ist nichts live – nicht bevor die Regeln veröffentlicht
   sind und der nächste Stempel ausgeliefert wird –, darum steht dort auch
   weiterhin nur der alte Punkt. Das ist Absicht und kein Vergessen.
+
+## IPL-0055 – Merge #313, Block-4-Rules-Datei und Browser-/Handy-Abnahme des Betreibers
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  GitHub-Ereignisse zu PR #313 mit Zeitstempel `2026-11-18T06:31:26Z`.
+- **Block / Ziel:** Nachtrag zum in `IPL-0054` noch offenen CI-/Merge-Ergebnis
+  von PR #313, Abgleich gegen die live exportierten Firebase-RTDB-Rules samt
+  Erstellung der kopierfertigen Block-4-Rules-Datei sowie Fortschreibung der
+  Abnahmen und Fortschrittsübersicht in `PATCH-BLOECKE.md`.
+- **Branch / Basis:** `arena/7aff6629-0815games-github-io`, Basis
+  `9e26739792ff9ca1c427abe9b7218705b299b343` (`main` nach Merge von PR #313).
+- **Git / PR / Deployment zu #313:** [PR #313](https://github.com/0815games/0815games.github.io/pull/313)
+  (Head `be9d1a4`) bestand alle 23 Check-Runs (`success`) und wurde am
+  `2026-11-18T06:31:26Z` auf `main` unter
+  `9e26739792ff9ca1c427abe9b7218705b299b343` gemergt. Die anschließenden
+  `main`-Workflows `pages build and deployment` (`44251965579`) und
+  `Iron Path Firebase party rules` (`44251966623`) bestanden alle 14
+  Check-Runs (`success`). *(Nachtrag zu `IPL-0054`.)*
+- **Live-Rules-Abgleich & kopierfertige Rules-Datei:** Der Betreiber legte den
+  Live-Export seiner aktiven Firebase-RTDB-Rules vor. Bestätigt live vorhanden
+  sind `firebase/WORKSHOP-RULES-TO-PUBLISH.json` (inklusive
+  `players/$uid/avatar['.validate']`), alle 5 `.write`-Ausdrücke aus
+  `firebase/social-cleanup-candidate.mjs` sowie das Wartungs-Gate aus
+  `release-tools/maintenance-rules.mjs` mit der konfigurierten Betreiber-Admin-UID
+  (UID hier gemäß Protokollregel nicht abgedruckt). Darauf aufbauend wurde
+  lokal (untracked, außerhalb von Git)
+  `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json` über
+  `buildMaintenanceRulesCandidate(buildFriendPortraitCandidate(WORKSHOP-RULES-TO-PUBLISH.json), ...)`
+  erzeugt. Gegenüber dem rekonstruierten Live-Modell ergänzt die Datei exakt
+  zwei friend-scoped `.read`-Regeln (`players/$uid/gender['.read']` und
+  `players/$uid/avatar['.read']`, jeweils mit `MAINTENANCE_GATE`). `characterNames`
+  bleibt bewusst ausgeklammert, weil `character-name-claim.mjs` bei aktivem
+  `characterNames`-Pfad den `friendNames`-Fallback überspringt und dafür zuerst
+  die Bestandsaufnahme nach `firebase/CHARACTER-NAME-AUDIT.md` nötig ist.
+- **Betreiber-Abnahme (Browser & Mobil):** Der Betreiber bestätigte nach eigenen
+  Tests im Browser und auf dem Handy, dass bislang keine Verbesserungen nötig
+  waren und alle seine Tests gut liefen. Die entsprechenden
+  Browser-/Handy-Sichtungs- und Bedienpunkte in `PATCH-BLOECKE.md` wurden
+  als vom Betreiber getestet abgehakt (`[x]`); ungebauter Funktionsumfang
+  (insbesondere Block 5, 6, 7 sowie `C`-Einsteigerbalance und dauerhaft
+  fehlende Gruppenmitglieder in Block 1), Altbestands-/Namens-Audit (`A1`),
+  CI-Wiederholungspolitik (`Block 8`) und ausstehende Veröffentlichungen
+  bleiben getrennt als offen geführt.
+- **Änderungen / Dateien:** `IronPath/PATCH-LOG.md` (doppelten Abschnitt
+  `IPL-0039` entfernt, `IPL-0055` ergänzt), `IronPath/PATCH-BLOECKE.md`
+  (Schnellübersicht, Prozent-/Standangaben und Betreiber-Abnahme-Haken
+  aktualisiert), `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json`
+  (untracked Auslieferungsartefakt für die Firebase Console). `patch-notes.mjs`
+  bleibt unverändert auf Stempel `20261031-patch4`, solange kein neuer
+  Build-Stempel ausgerollt wird (`IPL-0054`).
+- **Prüfungen:**
+  - Struktur-/Diff-Prüfung auf `firebase-rtdb-rules-ready.json`: gültiges JSON,
+    kein `(?:...)` (RE2), `compareRules` gegen das rekonstruierte Live-Modell
+    `0` Blocker / `0` Warnungen / `0` fehlende Pfade; exakter symmetrischer Diff
+    nur `rules.players.$uid.gender..read` und `rules.players.$uid.avatar..read`;
+    `compareRepoDrafts` deckt 15/15 `*.complete.draft.rules.json`-Entwürfe ab.
+  - `node --test`: **27/27 bestanden** (`friend-portrait-rules.test.mjs`,
+    `social-cleanup-rules.test.mjs`, `publish-rules-contract.test.mjs`,
+    `maintenance-check.test.mjs`, `maintenance-rules-prep.test.mjs`,
+    `multiplayer-build-stamp.test.mjs`, `module-syntax.test.mjs`,
+    `release-site-packaging.test.mjs`) sowie zuvor **44/44 bestanden** inkl.
+    `character-name.test.mjs`, `character-rename.test.mjs`,
+    `release-production-rules-prep.test.mjs` und `release-rules-candidate.test.mjs`.
+  - Grenzen: Der vollständige `IronPath/tests/*.test.mjs`-Glob lief im
+    120s-Bash-Timeout nicht bis zum Ende durch; lokale Emulator-/Chromium-Läufe
+    benötigen Java/Chromium und liefen in der CI auf `main` (`9e26739`) grün.
+- **Git / PR / Release:** `lokal/uncommittet` auf
+  `arena/7aff6629-0815games-github-io` (`firebase-rtdb-rules-ready.json` bleibt
+  absichtlich untracked). Veröffentlichung der Rules-Datei in der Firebase
+  Console und ein künftiger Build-Stempel-Release für `account.js` liegen
+  weiter beim Betreiber.
+- **Offen / nächster Schritt:** Rules-Datei in der Firebase Console veröffentlichen
+  (vorher aktuelles Live-Backup sichern), danach für gecachte Browser bei
+  Bedarf neuen Build-Stempel ausrollen, fehlende Restpunkte aus Blöcken 1–2
+  entscheiden (dauerhaft abwesende Party-Mitglieder, Einsteigerbalance `C`,
+  `CHARACTER-NAME-AUDIT.md`) und anschließend gemäß Reihenfolge Block 5 starten.
+
+## IPL-0056 – Block-4-Rules veröffentlicht; Layer-Geisterbild im Avatar-Baukasten belegt
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  Betreiberrückmeldung aus dieser Sitzung.
+- **Block / Ziel:** Live-Veröffentlichung der vorbereiteten Firebase-RTDB-Rules
+  protokollieren und die Ursache für das gemeldete Durchscheinen alter
+  Figuren in der Charaktererstellung anhand der tatsächlichen Asset-Dateien
+  festhalten.
+- **Branch / Basis:** `arena/7aff6629-0815games-github-io`, Basis
+  `9e26739792ff9ca1c427abe9b7218705b299b343`.
+- **Live-Rules-Status:** Der Betreiber bestätigte, dass die neuen Rules
+  (auf Basis von `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json`,
+  inklusive `players/$uid/gender['.read']` und `players/$uid/avatar['.read']`)
+  jetzt live in Firebase **veröffentlicht** sind. *(Kein unabhängiger
+  authentifizierter Abruf aus der Arbeitsumgebung.)*
+- **Befund am Avatar-System (visuelle Bildprüfung von 12 Layer-PNGs & 13 Porträts):**
+  1. **Alle 12 Layer-PNGs in `IronPath/assets/layers/*.png` enthalten Teile der
+     Ursprungsfigur (`f-crop` / `m-buzz`):** Der grobe Pixel-Diff in
+     `tools/build-layers.mjs` (`d > 48` innerhalb des großen Rechtecks) hat
+     Leucht-/Schattierungs- und Positionsabweichungen der KI-Edits im Gesicht,
+     an Augen, Brauen, Nasen, Lippen, Ohren, Hals und Uniformkragen als
+     Deckpixel übernommen. Bei Wahl eines anderen Basiskopfes malt der Layer
+     dadurch fleckig die alte Figur über das neue Gesicht.
+  2. **Ungeeignete Basisköpfe seit #313:** Langhaar-/Bart- und 3/4-Porträts
+     (`f-long`, `f-braid`, `f-bob`, `f-ponytail`, `f-bun`, `m-beard`,
+     `m-medium`, `m-stubble`) als Basiskopf unter fremden Haaren/Bärten
+     lassen alte Haare oder verdrehte Kopfkonturen dahinter stehen.
+  3. **Fehlender Render-Abbruch bei schnellen Klicks:** `recruit-screen.mjs`
+     (`paintAvatar`) und `avatar-layers.mjs` (`composePortrait`) prüfen bei
+     asynchronem Laden keine Render-Generation, sodass ein langsamerer älterer
+     Lauf ein neueres Canvas-Bild übermalen kann.
+- **Änderungen / Dateien:** `IronPath/PATCH-LOG.md` (`IPL-0056`),
+  `IronPath/PATCH-BLOECKE.md` (Block-2-Porträt-Rules auf `[x]`, Block 2 auf
+  80 %, Block 4 auf 65 % mit offenem Umbau-Punkt nach Rücksprache).
+- **Prüfungen:** Direkte visuelle Sichtung aller 13 `IronPath/assets/portraits/*.jpg`,
+  aller 12 `IronPath/assets/layers/*.png` und zweier `tools/raw-edits/*.jpg`
+  sowie Code-Inspektion von `tools/build-layers.mjs`, `avatar-layers.mjs` und
+  `recruit-screen.mjs`.
+- **Git / PR / Release:** `lokal/uncommittet` auf
+  `arena/7aff6629-0815games-github-io`.
+- **Offen / nächster Schritt:** Entscheidung des Betreibers über die
+  Neustrukturierung (reine frontale Basisköpfe ohne störende Haare/Bärte +
+  strikt freigestellte Frisuren/Bärte vs. kuratierte fertige Komplettporträts).
+
+## IPL-0057 – Block-4-Avatar-Neubau (Idee 1, Umsetzungsidee A) lokal umgesetzt und geprüft
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`; Uhrzeit der
+  Sandbox-Umgebung `2026-11-18`.
+- **Block / Ziel:** Block 4 – Vollständige Behebung des Layer-Geisterbilds,
+  sauberer Neubau aller Basisköpfe/Haar-/Bart-Layer mit 5 gemeinsamen Farben
+  und Umstellung der Charaktererstellung auf direkte `◀ / ▶`-Stepper am Porträt.
+- **Branch / Basis:** `arena/7aff6629-0815games-github-io`, Basis
+  `9e26739792ff9ca1c427abe9b7218705b299b343`.
+- **Änderungen / Dateien:**
+  - `tools/raw-edits/*` & `tools/build-layers.mjs`: 35 neue einheitliche
+    Quell-Assets aufgebaut (je 6 streng frontale, kahle/glattrasierte
+    Basisköpfe `f1..f6` und `m1..m6` mit einheitlichem Comic-Ink-Shading,
+    9 silbergraue Damenfrisuren, 8 silbergraue Herrenfrisuren und 6
+    silbergraue Herrenbärte inkl. weicher Stubble-Alpha-Extraktion).
+    Sicherheitshärtung in `build-layers.mjs`, sodass alte Outputs erst nach
+    vollständiger Validierung im Speicher ersetzt werden.
+  - `IronPath/assets/portraits/*.jpg` (12 × 512 px), `IronPath/assets/layers/*.png`
+    (23 × 512 px saubere Graustufen+Alpha-Masken ohne Gesicht/Augen/Kragen)
+    und `IronPath/assets/layers/manifest.mjs` (`LAYER_TOKEN = '20261119-avatar3'`,
+    5 `HAIR_COLORS`: `black`, `brown`, `auburn`, `blonde`, `silver`).
+  - `IronPath/avatar-layers.mjs`: Laufzeit-LUT-Einfärbung (`tintTone` /
+    `stopsForColor`) mit Offscreen-Canvas-Cache und asynchronem
+    Render-Token-Schutz (`canvasRenderTokens`) gegen Überholen bei schnellen Klicks.
+  - `IronPath/avatar.mjs`: Kodierung inkl. `color:<id>` innerhalb der
+    RTDB-Schranke (`11..51` Zeichen bei erlaubten `8..64`), Altsave-Migration
+    für sämtliche `look:*`- und #313-`face:*`-Kennungen auf die neuen
+    frontalen Basisköpfe (`LEGACY_FACES` / `LEGACY_COMBINATIONS`) sowie
+    `randomAvatar()` über alle Farben.
+  - `IronPath/friend-portrait.mjs`: `knownAvatar()` erkennt Altbestände und
+    neue `color:<id>`-Strings für gemeinsame Freundesporträts.
+  - `IronPath/index.html`, `IronPath/style.css`, `IronPath/recruit-screen.mjs`,
+    `IronPath/localization-de.mjs`: Kompaktes Layout `Umsetzungsidee A`
+    (Geschlechtswahl oben, zentriertes Porträt mit direkten `◀ / ▶`-Pfeilen
+    auf Stirn-, Gesichts- und Kinnhöhe, Live-Statusleiste und 5-Punkte-Farbleiste
+    ohne Kachelzeilen; vollständige deutsche Lokalisierung).
+  - Cache-Welle `?v=20261119-avatar3` auf `avatar*.mjs`, `manifest.mjs`,
+    `localization-de.mjs`, `browser-tests/cache-wave.cjs`,
+    `browser-tests/avatar-handover.cjs` und `firebase/rules-test/social-cleanup-browser.cjs`
+    (der gemeinsame App-Stempel `20261031-patch4` auf `account.js` etc. bleibt
+    bis zum eigentlichen Release-Bump konsistent).
+  - Tests aktualisiert und erweitert: `IronPath/tests/avatar.test.mjs`,
+    `avatar-layers.test.mjs`, `avatar-sync.test.mjs`, `friend-portrait.test.mjs`,
+    `recruit-screen.test.mjs`.
+- **Prüfungen:**
+  - Visuelles Kontaktblatt (`tools/verify-roster.png`, nach Prüfung entfernt):
+    alle 12 Köpfe, 17 Frisuren, 6 Bärte und 5 Farben über helle und dunkle
+    Hauttöne ohne Geisterbild, Doppelbrauen oder Kragenreste bestätigt.
+  - `node tools/build-layers.mjs`: alle 12 `pico.js`-Gesichtschecks + 23 Masken
+    bestanden (`manifest.mjs` mit 12 Köpfen, 17 Haaren, 6 Bärten).
+  - Unit-/Integrationsläufe `IronPath/tests/*.test.mjs`: alle geprüften Dateien
+    bestanden (gezielter Lauf der geänderten/betroffenen Suiten: 157/157 pass,
+    0 fail, 1 erwarteter Skip in `release-pages-site.test.mjs`;
+    `translation-coverage.test.mjs` ohne fehlende oder doppelte Keys).
+  - **Grenzen:** Kein Live-Chromium/Firebase-Emulator-Browsertest im
+    Sandbox-Lauf mangels lokal installiertem Playwright-Browser; visuelle
+    Browser-Stichprobe von `recruit-screen` steht beim Review aus.
+- **Git / PR / Release:** `lokal/uncommittet` auf
+  `arena/7aff6629-0815games-github-io`.
+- **Offen / nächster Schritt:** Browser-/Geräteabnahme des neuen
+  Rekrutierungsbildschirms und anschließender Release-Build-Stempel (damit
+  `account.js` die neue Schicht in bestehende Browser ausrollt), danach
+  Block 5 (Skills) bzw. Block 1-Restpunkte.
+
+## IPL-0058 – Block-4-Build-Stempel 20261031-patch5 und vollständige Vor-PR-Prüfung
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`; Uhrzeit der
+  Sandbox-Umgebung `2026-11-18`. Betreiberfreigabe über Rückfrage („Block 4
+  fertigstellen: Stempel + Commit/PR").
+- **Block / Ziel:** Gemeinsamen App-Build-Stempel von `20261031-patch4` auf
+  `20261031-patch5` anheben, damit zurückkehrende gecachte Browser `index.html`,
+  `style.css`, `account.js`, `recruit-screen.mjs`, `friend-portrait.mjs` und
+  die damit verbundene `?v=20261119-avatar3`-Schicht konsistent neu laden;
+  anschließende Vollprüfung vor Commit und PR-Eröffnung.
+- **Branch / Basis:** `arena/7aff6629-0815games-github-io`, Basis
+  `9e26739792ff9ca1c427abe9b7218705b299b343`.
+- **Änderungen / Dateien:**
+  - `IronPath/release-version.json` (`20261031-patch5`), `IronPath/index.html`
+    (`meta[name="ironpath-build"]`, beide `BUILD`-Stempel, `style.css`,
+    `friend-placeholder.svg`, `intro.mjs`, `account-entry.mjs`),
+    `IronPath/account-entry.mjs`, `IronPath/account.js` sowie alle 41 weiteren
+    Module derselben gemeinsamen Cache-Welle auf `?v=20261031-patch5` gehoben.
+  - `IronPath/patch-notes.mjs` (`language.mjs?v=20261031-patch5` sowie
+    `RELEASED_PATCHES[0].build = '20261031-patch5'`, ohne ungemergten PR
+    vorwegzunehmen) und `IronPath/tests/patch-notes.test.mjs`.
+  - `IronPath/browser-tests/avatar-handover.cjs` (`account.js?v=20261031-patch5`)
+    und `IronPath/browser-tests/cache-wave.cjs` (`20261031-patch4`-URLs in
+    `oldUrls` ergänzt).
+  - `IronPath/PATCH-BLOECKE.md`: Schnellübersicht und Block-4-Abschnitt auf
+    den `20261031-patch5`-Stand nachgezogen. (`IronPath/browser-artifacts/firebase-rtdb-rules-ready.json`
+    bleibt bewusst lokal untracked und wird nicht mitcommittet.)
+- **Prüfungen (nach dem Stempel-Bump ausgeführt):**
+  - Gezielte Wave-/Avatar-/UI-/Packaging-Suite (**97 / 97 bestanden**, `0`
+    Fehler, inkl. `multiplayer-build-stamp`, `build-stamp`, `patch-notes`,
+    `version-check`, `version-ui`, `loading-scene`, `dom-contract`,
+    `browser-doubles`, `workshop-alpha-wiring`, `translation-coverage`,
+    `module-syntax` über `227` Module, `release-stage-version`,
+    `release-site-packaging`, `avatar*`, `recruit-screen`, `friend-portrait`).
+  - Vollständiger Lauf aller **252 Testdateien** in `IronPath/tests/*.test.mjs`
+    in drei Batches (`[a-l]`, `[m-r]`, `[s-z]`): alle `252` Dateien bestanden
+    (`0` Fehler).
+  - `node IronPath/stress-tests/run.mjs`: alle Solo-/Koop-/Versus-/3er-/4er-/
+    2v2-/Dichte-/Karten- und Protokoll-Workloads bestanden (`500` Karten,
+    `40..200` Reconnect-Zyklen).
+  - **Grenzen:** `IronPath/release-tools/runtime-compatibility.test.mjs` &
+    `session-config.test.mjs` benötigen dort nicht lokal installierte
+    `firebase-admin`-Abhängigkeiten (`npm ci --prefix IronPath/release-tools`
+    läuft in CI); Chromium-/Firebase-Emulator-Tests laufen mangels lokalem
+    Browser/Java anschließend in der GitHub-Actions-PR-CI.
+- **Git / PR / Release:** Commit- und PR-Vorbereitung abgeschlossen (`lokal
+  vor Commit`).
+- **Offen / nächster Schritt:** Commit & Push auf
+  `arena/7aff6629-0815games-github-io`, PR gegen `main` eröffnen, CI-Läufe
+  beobachten und nach Merge/Pages-Rollout echte Geräteabnahme im Browser und am
+  Handy durchführen (danach `patch-notes.mjs` um den belegten Block-4-Release
+  ergänzen).
