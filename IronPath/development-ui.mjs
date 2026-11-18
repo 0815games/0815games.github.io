@@ -91,7 +91,7 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
       shell.style.setProperty('--path-color',CLASS_COLORS[path.id]);
       button.type='button';
       button.className=`skill-card is-main-ability class-choice-card${locked?' is-locked':''}${expanded?' is-selected':''}`;
-      button.dataset.path=path.id;button.dataset.rank='1';button.dataset.phase='choose-class';
+      button.dataset.path=path.id;button.dataset.rank='1';
       media.className='class-choice-media';
       const artImg=classArtElement(document,path.id,'class-choice-art');
       if(artImg)media.append(artImg);

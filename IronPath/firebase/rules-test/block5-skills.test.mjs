@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,runTransaction,update} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
-import {createFirebaseFourLobby} from '../../four-lobby.mjs';
+import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
 import {encodeBuild,parseBuild,SKILL_PATHS,DEFAULT_BUILD} from '../../skills.mjs';
 import {migrateSkillsProfile} from '../../skills-migration.mjs';
 
@@ -36,8 +36,9 @@ after(async()=>env.cleanup());
 test('Block 5 candidate accepts V2 builds for all 6 classes including airDefense and rejects malformed shapes',async()=>{
   await assertSucceeds(set(ref(alice,'players/alice/skills'),'v2;none'));
   for(const path of SKILL_PATHS){
-    const b=parseBuild(`v2;${path.id};3;1;10111111101110`,18);
+    const b=parseBuild(`v2;${path.id};3;1;11111111110111`,18);
     const encoded=encodeBuild(b);
+    assert.ok(encoded.startsWith(`v2;${path.id};3;1;`));
     await assertSucceeds(set(ref(alice,'players/alice/skills'),encoded));
   }
   await assertFails(set(ref(bob,'players/alice/skills'),'v2;none'));
