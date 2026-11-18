@@ -23,7 +23,7 @@
 // German. Writing the raw strings to the screen was a real bug - the guide was the
 // one part of the first run with no German at all, because nobody ever asked for a
 // translation.
-import {translateText as tr} from './language.mjs?v=20261031-patch8';
+import {translateText as tr} from './language.mjs?v=20261118-block5';
 
 export const STEPS = Object.freeze([
   Object.freeze({
@@ -36,9 +36,9 @@ export const STEPS = Object.freeze([
   }),
   Object.freeze({
     id: 'skills',
-    title: 'Four classes, one point',
-    text: 'The skill tree has four paths and you have one point. Assault adds damage and rate of fire. Engineer makes towers cheaper and tougher. Recon moves your soldier faster and further. Command buffs the whole field. Pick the one that matches how you played.',
-    caption: 'SKILLS · CHOOSE A PATH',
+    title: 'Six classes, one choice',
+    text: 'At level 2 you pick one of six classes: Assault, Engineer, Logistics, Medic, Recon, or Air Defense. Each opens its own skill tree, active ability, and tower upgrade path.',
+    caption: 'SKILLS · CHOOSE A CLASS',
     target: { element: '#skillPaths' },
     advance: 'action',
   }),
@@ -56,10 +56,12 @@ export const STEPS = Object.freeze([
 // not in a tooltip somewhere. Kept in the interface language of the game: the
 // player meets them before they have ever opened the tree.
 export const CLASSES = Object.freeze([
-  Object.freeze({id: 'assault', name: 'Assault', what: 'More damage per shot and a faster rate of fire.', forYou: 'If you want the towers to kill things.'}),
-  Object.freeze({id: 'engineer', name: 'Engineer', what: 'Towers cost less and take more damage before they fall.', forYou: 'If you would rather build a lot than hit hard.'}),
-  Object.freeze({id: 'recon', name: 'Recon', what: 'The soldier moves faster and sees further.', forYou: 'If you like running the hero around the road.'}),
-  Object.freeze({id: 'command', name: 'Command', what: 'Auras that help every tower near the bunker.', forYou: 'If you would rather hold the last line.'}),
+  Object.freeze({id: 'assault', name: 'Assault', what: 'Hero damage, airstrikes, and heavy storm tower ordnance.', forYou: 'If you want direct firepower and boss pressure.'}),
+  Object.freeze({id: 'engineer', name: 'Engineer', what: 'Faster tower cadence, overdrives, and field overclock cores.', forYou: 'If you want rapid turret networks.'}),
+  Object.freeze({id: 'logistics', name: 'Logistics', what: 'Extra supplies, cheaper builds, and salvage bounties on kills.', forYou: 'If you want strong field economy.'}),
+  Object.freeze({id: 'medic', name: 'Medic', what: 'Bunker repairs, healing zones, and triage relays on towers.', forYou: 'If you want steady defense and bunker sustain.'}),
+  Object.freeze({id: 'recon', name: 'Recon', what: 'Longer range, suppression control, and pinning spotter optics.', forYou: 'If you like controlling lanes with hero positioning.'}),
+  Object.freeze({id: 'airDefense', name: 'Air Defense', what: 'Sky sweeps, target marks, and anti-air flak guidance.', forYou: 'If you want dedicated sky control and marked-target focus.'}),
 ]);
 
 const EDITION = 1;

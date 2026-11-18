@@ -33,7 +33,7 @@ export function createCoopInput(client,onError=()=>{}){
     // upgrade may also wait behind movement or reservation cleanup, never a
     // purchase. All other discrete actions remain strictly one-at-a-time.
     const vote=waitForDirection&&deferredVotes.has(command?.type)&&busyType==='direction';
-    const upgrade=waitForTower&&command?.type==='upgrade'&&['direction','releaseBuild'].includes(busyType);
+    const upgrade=waitForTower&&['upgrade','classUpgrade'].includes(command?.type)&&['direction','releaseBuild'].includes(busyType);
     if((!vote&&!upgrade)||queuedAction||typeof isCurrent!=='function'||!Number.isFinite(maxWaitMs)||maxWaitMs<=0)return {ok:false,reason:'Wait for the previous action.'};
     return new Promise(resolve=>{
       const item={command:{...command},epoch,isCurrent,resolve,staleReason,timer:null};queuedAction=item;

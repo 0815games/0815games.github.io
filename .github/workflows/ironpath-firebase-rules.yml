@@ -188,6 +188,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('doctrine-output.log').read_text()[-3500:]; print('::error title=Doctrine emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run Block 5 skill migration and V2 skills rules tests
+        shell: bash
+        run: |
+          if npm run test:block5 > block5-output.log 2>&1; then
+            cat block5-output.log
+          else
+            cat block5-output.log
+            python3 -c "from pathlib import Path; s=Path('block5-output.log').read_text()[-3500:]; print('::error title=Block 5 skills emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Run complete story rules tests
         shell: bash
         run: |

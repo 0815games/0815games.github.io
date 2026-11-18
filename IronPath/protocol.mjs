@@ -1,12 +1,12 @@
-import {createSpeedControl} from './multiplayer-speed.mjs?v=20261031-patch8';
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261118-block5';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261031-patch8';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261031-patch8';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261118-block5';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261118-block5';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261031-patch8';
-import { stepMatch } from './simulation.mjs?v=20261031-patch8';
+import { applyCommand } from './match.mjs?v=20261118-block5';
+import { stepMatch } from './simulation.mjs?v=20261118-block5';
 export const PROTOCOL_VERSION=1;
 // Snapshots carry only the newest receipts. A client may have exactly ONE
 // command in flight (it sends sequence nextSeq and stays locked until that
@@ -28,7 +28,7 @@ const waveCommands=new Set(['startWave','approveWave','declineWave','cancelWave'
 // Both kinds of vote depend on the same locked roster. A late speed request or
 // slow-down can otherwise revive or cancel a vote after someone reconnects.
 export const isRosterVoteCommand=type=>waveCommands.has(type)||speedCommands.has(type);
-const commandFields={requestSpeed:['expectedRequestId'],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:['expectedRequestId'],endRun:[],leaveRun:[],finishParty:[],acknowledgePartyEnd:['endTick'],startWave:['expectedRequestId'],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
+const commandFields={requestSpeed:['expectedRequestId'],approveSpeed:['requestId'],declineSpeed:['requestId'],cancelSpeed:['requestId'],slowSpeed:['expectedRequestId'],endRun:[],leaveRun:[],finishParty:[],acknowledgePartyEnd:['endTick'],startWave:['expectedRequestId'],approveWave:['requestId'],declineWave:['requestId'],cancelWave:['requestId'],choosePerk:['index'],airstrike:[],direction:['x','y'],move:['x','y'],reserveBuild:['pad'],releaseBuild:['pad'],build:['pad','towerType'],upgrade:['pad','branch','expectedTowerId','expectedLevel'],classUpgrade:['pad','expectedTowerId','expectedLevel'],sell:['pad','expectedTowerId','expectedLevel']};
 export function normalizeCommand(command){
   if(!command||typeof command!=='object'||Array.isArray(command)||typeof command.type!=='string'||!Object.hasOwn(commandFields,command.type))return null;
   const fields=commandFields[command.type];
@@ -136,11 +136,32 @@ function makeHost(data){
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint(),...(partyEnd?{partyEnd}:{})});}
+  // Strip redundant web bit-arrays and migration flags from wire snapshots while
+  // keeping all fields read by client UI, coop motion, and class upgrades.
+  function compactSkills(s){
+    if(!s||typeof s!=='object')return s;
+    const out={active:s.active??null,variant:s.variant||0,classId:s.classId??null,rank:s.rank||0};
+    if(s.classId&&s[s.classId])out[s.classId]=s[s.classId];
+    if(s.recon&&out.recon===undefined)out.recon=s.recon;
+    if(Array.isArray(s.extra)&&s.extra.some(Boolean))out.extra=s.extra;
+    return out;
+  }
+  function compactViewMatch(m){
+    if(!m||typeof m!=='object')return m;
+    const stripPlayers=players=>{if(!players||typeof players!=='object')return;for(const pl of Object.values(players))if(pl?.skills)pl.skills=compactSkills(pl.skills);};
+    stripPlayers(m.players);
+    if(m.match)stripPlayers(m.match.players);
+    if(Array.isArray(m.lanes))for(const lane of m.lanes)stripPlayers(lane?.players);
+    else if(m.lanes&&typeof m.lanes==='object')for(const lane of Object.values(m.lanes))stripPlayers(lane?.players);
+    return m;
+  }
   // A reconnecting authenticated player receives a detached view and their own receipts.
   function snapshotFor(playerId){
     if(!Object.hasOwn(players,playerId))return null;
     const p=players[playerId];
-    return clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.slice(-SNAPSHOT_RECEIPTS).map(r=>r.response),...(partyEnd?{partyEnd}:{})});
+    const view=clone({version:PROTOCOL_VERSION,tick,speedControl:speedControl.snapshot(),match:match.mode==='versus'?versusView(match,playerId):match,nextSeq:p.nextSeq,receipts:p.receipts.slice(-SNAPSHOT_RECEIPTS).map(r=>r.response),...(partyEnd?{partyEnd}:{})});
+    compactViewMatch(view.match);
+    return view;
   }
   return {receive,advance:()=>advance(),advanceHostEnd:()=>advance(true),hasEnded:()=>hasEnded(match),checkpoint,snapshotFor,suspendPlayer,suspendRosterVotes,setPlayerActive,speed:()=>speedControl.snapshot().speed};
 }

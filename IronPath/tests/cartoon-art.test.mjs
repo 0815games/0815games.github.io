@@ -55,3 +55,19 @@ const prestige=createMatch([p]);prestige.towers=[{id:1,type:0,pad:0,level:13,bra
   }
 }
 console.log('Ground variety: per-seed details are deterministic and distinct.');
+
+// Block 5: all 12 specialist ability variant FX and all 6 class-path tower tiers draw cleanly.
+{
+  const classState=createMatch([p]);
+  const classes=['assault','engineer','logistics','medic','recon','airDefense'];
+  classState.towers=classes.map((classPath,i)=>({id:i+1,type:i%4,pad:i%PADS.length,level:3,ownerId:'a',classPath,classTier:i%2===0?1:2}));
+  const variantEffects=classes.flatMap(kind=>[1,2].map(variant=>({kind,variant,x:240,y:210,hx:240,hy:210,targets:[{x:80,y:140,air:kind==='airDefense'}],progress:.45})));
+  calls.length=0;
+  const classBefore=structuredClone(classState);
+  drawCartoonBattle(ctx,classState,{...opts,effects:variantEffects});
+  assert.deepEqual(classState,classBefore,'variant FX and class-path towers do not mutate state');
+  for(const label of ['SUPPRESSIVE BOMBARDMENT','PRECISION STRIKE','SUSTAINED OVERDRIVE','SURGE OVERDRIVE','+45','+20 · +6','HEAVY REPAIR','TRIAGE +12','EXTENDED SUPPRESSION','TARGETED DISRUPTION','SPOTTER BARRAGE','FLAK CURTAIN']){
+    assert.ok(calls.some(([name,text])=>name==='fillText'&&text===label),`specialist variant renders ${label}`);
+  }
+  console.log('Block 5 specialist VFX (all 12 variants) and class-path tower markers passed.');
+}

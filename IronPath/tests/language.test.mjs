@@ -27,7 +27,7 @@ test('armory translations cover equipment and medals without changing source dat
 });
 
 test('German core skill names, effects and specialist effects are translated without changing builds',async()=>{
- const {SKILL_PATHS,parseBuild,encodeBuild}=await import('../skills.mjs');const f=fixture('de'),build=parseBuild('2,0,0,0,0;assault',3),before=encodeBuild(build);
+ const {SKILL_PATHS,parseBuild,encodeBuild}=await import('../skills.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),before=encodeBuild(build);
  for(const path of SKILL_PATHS){assert.notEqual(translateText(path.name),path.name);assert.notEqual(translateText(path.passive),path.passive);assert.notEqual(translateText(path.description),path.description);for(const branch of path.branches){assert.notEqual(translateText(branch.abilityDescription),branch.abilityDescription);assert.notEqual(translateText(branch.description),branch.description);}}
  assert.equal(translateText('Requires {name} rank {rank}',{name:translateText('Recon'),rank:2}),'Benötigt Aufklärung Rang 2');assert.equal(encodeBuild(build),before);f.selector.value='en';f.selector.change();assert.equal(translateText('Suppression'),'Suppression');
 });
@@ -39,7 +39,7 @@ test('campaign and cinematics have complete authored German text without alterin
 });
 
 test('advanced skills include German names, descriptions and prerequisites without changing builds',async()=>{
- const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('2,0,0,0,0;assault',3),code=encodeBuild(build);
+ const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),code=encodeBuild(build);
  for(const n of WEB_NODES){for(const text of [n.name,n.description,webRequirement(n)])assert.ok(Object.hasOwn(germanAdvancedSkills,text),`${n.id}: ${text}`);assert.notEqual(translateText(n.description),n.description);}
  assert.equal(encodeBuild(build),code);assert.deepEqual(WEB_NODES,before);f.selector.value='en';f.selector.change();assert.equal(translateText(WEB_NODES[0].description),WEB_NODES[0].description);
 });
@@ -49,8 +49,8 @@ test('story status templates translate numbers and retain unknown text',async()=
 });
 
 test('skill summary and next-step localization preserve numeric values and source data',async()=>{
- const {parseBuild}=await import('../skills.mjs'),{skillBuildSummary}=await import('../skill-planner.mjs'),{localizeSkillSummary}=await import('../skill-summary-localization.mjs'),{nextSteps}=await import('../run-results.mjs');const f=fixture('de'),build=parseBuild('2,1,0,0,0;assault',5),original=structuredClone(build),raw=skillBuildSummary(build,5),summary=localizeSkillSummary(raw,translateText);
- assert.ok(summary.values.every((v,i)=>v!==raw.values[i]),summary.values.join('\n'));assert.match(summary.values[0],/\+4/);assert.match(summary.active,/AKTIV/);assert.match(nextSteps({xp:0},translateText),/Stufe 1:/);assert.deepEqual(build,original);f.selector.value='en';f.selector.change();const english=localizeSkillSummary(raw,translateText);assert.deepEqual(english.values,raw.values);assert.equal(nextSteps({xp:0},translateText),nextSteps({xp:0}));
+ const {parseBuild}=await import('../skills.mjs'),{skillBuildSummary}=await import('../skill-planner.mjs'),{localizeSkillSummary}=await import('../skill-summary-localization.mjs'),{nextSteps}=await import('../run-results.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;10000000000000',5),original=structuredClone(build),raw=skillBuildSummary(build,5),summary=localizeSkillSummary(raw,translateText);
+ assert.ok(summary.values.every((v,i)=>v!==raw.values[i]),summary.values.join('\n'));assert.match(summary.values[1],/\+4/);assert.match(summary.active,/AKTIV/);assert.match(nextSteps({xp:0},translateText),/Stufe 1:/);assert.deepEqual(build,original);f.selector.value='en';f.selector.change();const english=localizeSkillSummary(raw,translateText);assert.deepEqual(english.values,raw.values);assert.equal(nextSteps({xp:0},translateText),nextSteps({xp:0}));
 });
 
 test('static German campaign, results and battlefield labels have translations',async()=>{

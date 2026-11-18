@@ -1,8 +1,8 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261031-patch8';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261118-block5';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261031-patch8';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261031-patch8';
-import {ENEMY_INTEL} from './combat.mjs?v=20261031-patch8';
+import {specializationRank} from './tower-specialization.mjs?v=20261118-block5';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261118-block5';
+import {ENEMY_INTEL} from './combat.mjs?v=20261118-block5';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
@@ -258,8 +258,33 @@ function pad(ctx,p,tower,selected,types,notify){
   // dug-in howitzer, flak platform, camouflaged sniper hide - anchored on
   // the emplacement plate, sized from each artwork's own aspect.
   const artwork=sprite(ctx,['mg2','cannon2','flak2','sniper2'][tower.type],notify);
+  if(tower.classPath&&tower.classTier>=1){
+    const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
+    const tier2=tower.classTier>=2;
+    ctx.save();
+    if(tier2){
+      const aura=radial(ctx,x,y+12,4,x,y+12,34);
+      if(aura){aura.addColorStop(0,badgeColor);aura.addColorStop(1,'rgba(25,43,35,0)');ctx.globalAlpha=.28;ctx.fillStyle=aura;ctx.beginPath();ctx.ellipse(x,y+12,34,15,0,0,Math.PI*2);ctx.fill();}
+    }
+    ctx.globalAlpha=tier2?.85:.6;
+    ctx.beginPath();ctx.ellipse(x,y+12,26,11.5,0,0,Math.PI*2);ctx.strokeStyle=badgeColor;ctx.lineWidth=tier2?2.2:1.6;
+    if(!tier2)ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
+    ctx.restore();
+  }
   if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
+  if(tower.classPath&&tower.classTier>=1){
+    const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
+    const mx=x-18,my=y-13;
+    oval(ctx,mx,my,10,10,'#172720',badgeColor,1.8);
+    if(tower.classPath==='assault'){shape(ctx,[[mx,my-5],[mx+4,my+1],[mx,my+3.5],[mx-4,my+1]],badgeColor,null);}
+    else if(tower.classPath==='engineer'){oval(ctx,mx,my,4,4,null,badgeColor,1.6);line(ctx,[[mx,my-6],[mx,my-4]],badgeColor,1.5);line(ctx,[[mx,my+4],[mx,my+6]],badgeColor,1.5);line(ctx,[[mx-6,my],[mx-4,my]],badgeColor,1.5);line(ctx,[[mx+4,my],[mx+6,my]],badgeColor,1.5);}
+    else if(tower.classPath==='logistics'){shape(ctx,[[mx-4,my-3.5],[mx+4,my-3.5],[mx+4,my+3.5],[mx-4,my+3.5]],null,badgeColor,1.5);line(ctx,[[mx,my-3.5],[mx,my+3.5]],badgeColor,1.3);line(ctx,[[mx-4,my],[mx+4,my]],badgeColor,1.3);}
+    else if(tower.classPath==='medic'){line(ctx,[[mx,my-4.5],[mx,my+4.5]],badgeColor,2.2);line(ctx,[[mx-4.5,my],[mx+4.5,my]],badgeColor,2.2);}
+    else if(tower.classPath==='recon'){oval(ctx,mx,my,4,4,null,badgeColor,1.4);line(ctx,[[mx,my-6],[mx,my+6]],badgeColor,1.2);line(ctx,[[mx-6,my],[mx+6,my]],badgeColor,1.2);}
+    else{ctx.beginPath();ctx.arc(mx,my+2,5.5,Math.PI,0);ctx.strokeStyle=badgeColor;ctx.lineWidth=1.6;ctx.stroke();line(ctx,[[mx-3,my+5],[mx,my-2],[mx+3,my+5]],badgeColor,1.4);}
+    if(tower.classTier>=2){oval(ctx,mx+4,my-8,3,3,'#f0d68a','#172720',1);oval(ctx,mx-4,my-8,3,3,'#f0d68a','#172720',1);}
+  }
   oval(ctx,x+18,y+13,9,9,paper);ctx.fillStyle=ink;ctx.font='bold 11px Georgia';ctx.textAlign='center';ctx.fillText(String(display.level),x+18,y+17);ctx.textAlign='start';
 }
 function soldier(ctx,p,own,pose={},notify){
@@ -738,6 +763,10 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     if(e.boss==='bossBomber'&&bossPhase(e)==='bomb-warning'){
       ctx.save();ctx.strokeStyle='#f2aa78';ctx.lineWidth=3;ctx.setLineDash(reducedMotion?[]:[7,6]);ctx.beginPath();ctx.arc(bunkerPosition.x,bunkerPosition.y,36,0,Math.PI*2);ctx.stroke();ctx.restore();
     }
+    if(e.marked>0&&e.markedByAirDefense){
+      ctx.save();ctx.beginPath();ctx.arc(e.x,e.y,19,0,Math.PI*2);ctx.strokeStyle='#f284a8';ctx.lineWidth=2.4;ctx.setLineDash(reducedMotion?[]:[4,4]);ctx.stroke();ctx.setLineDash([]);
+      oval(ctx,e.x,e.y-21,3,3,'#ffe3a8','#192b23',1);ctx.restore();
+    }
     if(e.boss==='bossBomber'&&e.bossFlash>0&&!reducedMotion)burst(ctx,bunkerPosition.x,bunkerPosition.y,20+(1-e.bossFlash)*12,'#ef9e68');
     if(e.boss==='bossJuggernaut'&&e.bossFlash>0&&!reducedMotion)burst(ctx,e.x,e.y-20,15,'#cce7a2');
     ctx.save();if(state.running&&!reducedMotion){const offset=Math.sin((Number.isFinite(storyTime)?storyTime:0)*5+(e.x+e.y)*.035)*(e.kind==='plane'?.8:1.2);ctx.translate(0,offset);}// Where is this unit going? The next path point gives the heading, the
@@ -831,7 +860,7 @@ function drawAbility(ctx,e){
   }else if(e.kind==='combo'){
     // V3: the combo wears the emblem - a silver ring with the gold star at
     // its heart, the pair's own tint glowing underneath.
-    const palette={'War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};
+    const palette={'Siege Commander':'#f6b273','Iron Bastion':'#f39467','Supply Line':'#e9d37b','Lifeline':'#b0dc9c','Deadeye':'#8acdda','Sky Sovereign':'#f284a8','War Hero':'#f6b273','War Machine':'#f39467','War Economy':'#e9d37b','Bunker Guardian':'#b0dc9c','Ghost Operative':'#8acdda'};
     const tint=palette[e.label]||'#88e3d3',cy=e.y-20;
     const g=radial(ctx,e.x,cy,2,e.x,cy,20+16*t);
     if(g){g.addColorStop(0,tint);g.addColorStop(1,'rgba(120,140,120,0)');ctx.fillStyle=g;}else ctx.fillStyle=tint;
@@ -840,50 +869,136 @@ function drawAbility(ctx,e){
     star(ctx,e.x,cy,8+5*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();
     ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(e.label?e.label.split(' + ').map(name=>tr(name)).join(' + '):tr('COMBO!'),e.x,e.y-43-12*t);
   }else if(e.kind==='assault'){
-    // V3: the airstrike wears the emblem - a silver shock ring, warm light on
-    // the ground, then the gold field star burning out where it landed.
-    const targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];
-    for(const p of targets){
-      ctx.beginPath();ctx.arc(p.x,p.y,6+26*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
-      const g=radial(ctx,p.x,p.y,1,p.x,p.y,14+22*t);
-      if(g){g.addColorStop(0,'rgba(255,236,170,.85)');g.addColorStop(1,'rgba(255,190,110,0)');ctx.fillStyle=g;}else ctx.fillStyle='#f9dc91';
-      ctx.beginPath();ctx.arc(p.x,p.y,14+22*t,0,Math.PI*2);ctx.fill();
-      star(ctx,p.x,p.y,9+13*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
+    const v=e.variant||0,targets=e.targets.length?e.targets:[{x:e.x,y:e.y}];
+    if(v===1){
+      // Suppressive Bombardment: concussion shock shells + icy suppression dust halo.
+      for(const p of targets){
+        ctx.beginPath();ctx.arc(p.x,p.y,8+30*t,0,Math.PI*2);ctx.strokeStyle='#9fd5e8';ctx.lineWidth=3-2*t;ctx.stroke();
+        ctx.beginPath();ctx.arc(p.x,p.y,5+18*t,0,Math.PI*2);ctx.strokeStyle='#f3be7a';ctx.lineWidth=2.4-1.4*t;ctx.stroke();
+        burst(ctx,p.x,p.y,9+10*t,'#f2c57c');
+      }
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SUPPRESSIVE BOMBARDMENT'),e.x,e.y-42-12*t);
+    }else if(v===2){
+      // Precision Strike: vertical orbital laser lock + crimson-gold crosshair burst on strongest target.
+      const p=targets[0];
+      const beamTop=Math.max(0,p.y-220*(1-t*.3));
+      line(ctx,[[p.x,beamTop],[p.x,p.y]],'#ffdf9a',6-4*t);
+      line(ctx,[[p.x,beamTop],[p.x,p.y]],'#f07f65',2.5);
+      ctx.beginPath();ctx.arc(p.x,p.y,14+20*(1-t),0,Math.PI*2);ctx.strokeStyle='#f07f65';ctx.lineWidth=2.5;ctx.stroke();
+      line(ctx,[[p.x-22,p.y],[p.x+22,p.y]],'#ffdf9a',1.8);line(ctx,[[p.x,p.y-22],[p.x,p.y+22]],'#ffdf9a',1.8);
+      star(ctx,p.x,p.y,12+12*t);ctx.fillStyle='#ffdf9a';ctx.fill();
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('PRECISION STRIKE'),p.x,p.y-36-12*t);
+    }else{
+      // Airstrike: silver shock ring, warm ground light, burning gold star.
+      for(const p of targets){
+        ctx.beginPath();ctx.arc(p.x,p.y,6+26*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+        const g=radial(ctx,p.x,p.y,1,p.x,p.y,14+22*t);
+        if(g){g.addColorStop(0,'rgba(255,236,170,.85)');g.addColorStop(1,'rgba(255,190,110,0)');ctx.fillStyle=g;}else ctx.fillStyle='#f9dc91';
+        ctx.beginPath();ctx.arc(p.x,p.y,14+22*t,0,Math.PI*2);ctx.fill();
+        star(ctx,p.x,p.y,9+13*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#d9dde1';ctx.lineWidth=2;ctx.stroke();
+      }
     }
-  }else if(e.kind==='build'||e.kind==='upgrade'){
+  }else if(e.kind==='airDefense'){
+    const v=e.variant||0,targets=e.targets.length?e.targets:[{x:e.x,y:e.y}],hx=Number.isFinite(e.hx)?e.hx:e.x,hy=Number.isFinite(e.hy)?e.hy:e.y;
+    if(v===1){
+      // Spotter Barrage: twin sweeping radar cones + cyan-rose crosshair pings on every target.
+      for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(hx,hy-10,20+64*t+i*22,0,Math.PI*2);ctx.strokeStyle=i?'#8edbe8':'#f284a8';ctx.lineWidth=2.8-1.5*t;ctx.stroke();}
+      for(const p of targets){
+        line(ctx,[[hx,hy-12],[p.x,p.y]],'rgba(242,132,168,.55)',1.8);
+        ctx.beginPath();ctx.arc(p.x,p.y,10+16*(1-t),0,Math.PI*2);ctx.strokeStyle='#f59eb8';ctx.lineWidth=2.2;ctx.stroke();
+        star(ctx,p.x,p.y,7+8*t);ctx.fillStyle='#ffe2a8';ctx.fill();
+      }
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SPOTTER BARRAGE'),hx,hy-44-12*t);
+    }else if(v===2){
+      // Flak Curtain: crystalline iron dome arch + vertical flak tracer streaks at all planes & ground targets.
+      ctx.beginPath();ctx.arc(hx,hy,26+96*t,Math.PI,0);ctx.strokeStyle='#f284a8';ctx.lineWidth=3.5-2*t;ctx.stroke();
+      ctx.beginPath();ctx.arc(hx,hy,16+74*t,Math.PI,0);ctx.setLineDash([7,5]);ctx.strokeStyle='#a8f0e8';ctx.lineWidth=2.2;ctx.stroke();ctx.setLineDash([]);
+      for(const p of targets){
+        const sx=hx+(p.x-hx)*Math.min(1,t*1.5),sy=hy+(p.y-hy)*Math.min(1,t*1.5);
+        line(ctx,[[hx,hy-10],[sx,sy]],'#ffd98e',2.4);
+        burst(ctx,p.x,p.y,10+14*t,p.air?'#9ef0e4':'#f59eb8');
+      }
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('FLAK CURTAIN'),hx,hy-46-12*t);
+    }else{
+      ctx.beginPath();ctx.arc(e.x,e.y-12,18+52*t,0,Math.PI*2);ctx.strokeStyle='#f284a8';ctx.lineWidth=3-2*t;ctx.stroke();
+      for(const p of targets){
+        ctx.beginPath();ctx.arc(p.x,p.y,8+20*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=2.5-1.5*t;ctx.stroke();
+        burst(ctx,p.x,p.y,8+10*t,'#f59eb8');
+      }
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SKY SWEEP'),e.x,e.y-42-12*t);
+    }
+  }else if(e.kind==='build'||e.kind==='upgrade'||e.kind==='classUpgrade'){
     // V3: a stamp in the emblem's metal - silver ring, iron smoke for a new
     // emplacement, the gold star for a level gained.
-    ctx.beginPath();ctx.arc(e.x,e.y-12,12+14*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+    ctx.beginPath();ctx.arc(e.x,e.y-12,12+14*t,0,Math.PI*2);ctx.strokeStyle=e.kind==='classUpgrade'?'#f0c478':'#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
     if(e.kind==='build'){burst(ctx,e.x,e.y-12,9+8*t,'#b8d69d');for(let i=0;i<2;i++)oval(ctx,e.x+(i?7:-7),e.y-22-t*16,4+2*t,3+2*t,`rgba(78,84,78,${(.35*fade).toFixed(3)})`,null);}
-    else{star(ctx,e.x,e.y-12,8+6*t);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();}
-    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr(e.kind==='build'?'BUILT':'UPGRADED'),e.x,e.y-38-12*t);
+    else{star(ctx,e.x,e.y-12,8+6*t);ctx.fillStyle=e.kind==='classUpgrade'?'#f39db8':'#f0d68a';ctx.fill();ctx.strokeStyle='#1d3028';ctx.lineWidth=1.5;ctx.stroke();}
+    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr(e.kind==='build'?'BUILT':e.kind==='classUpgrade'?'CLASS PATH':'UPGRADED'),e.x,e.y-38-12*t);
   }else if(e.kind==='engineer'){
-    // V3: overdrive as a struck iron plate - double silver ring, hot centre.
-    ctx.beginPath();ctx.arc(e.x,e.y-20,10+16*t,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
-    ctx.beginPath();ctx.arc(e.x,e.y-20,16+22*t,0,Math.PI*2);ctx.strokeStyle=`rgba(217,221,225,${(.6*fade).toFixed(3)})`;ctx.lineWidth=2;ctx.stroke();
-    const g=radial(ctx,e.x,e.y-20,1,e.x,e.y-20,10+10*t);
-    if(g){g.addColorStop(0,'#ffe9a8');g.addColorStop(1,'rgba(238,212,117,0)');ctx.fillStyle=g;}else ctx.fillStyle='#eed475';
-    ctx.beginPath();ctx.arc(e.x,e.y-20,10+10*t,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('OVERDRIVE',e.x,e.y-42-12*t);
+    const v=e.variant||0,targets=e.targets||[];
+    for(const p of targets){
+      line(ctx,[[e.x,e.y-12],[p.x,p.y]],v===2?'#ffe680':v===1?'#9fd0e8':'rgba(238,212,117,.5)',v===2?2.4:1.6);
+      ctx.beginPath();ctx.arc(p.x,p.y,10+18*t,0,Math.PI*2);ctx.strokeStyle=v===2?'#ffd266':v===1?'#9fd0e8':'#d9dde1';ctx.lineWidth=2.5-1.4*t;ctx.stroke();
+    }
+    ctx.beginPath();ctx.arc(e.x,e.y-20,10+16*t,0,Math.PI*2);ctx.strokeStyle=v===1?'#9fd0e8':'#d9dde1';ctx.lineWidth=3-2*t;ctx.stroke();
+    ctx.beginPath();ctx.arc(e.x,e.y-20,16+22*t,0,Math.PI*2);ctx.strokeStyle=v===2?`rgba(255,214,92,${(.8*fade).toFixed(3)})`:`rgba(217,221,225,${(.6*fade).toFixed(3)})`;ctx.lineWidth=2;ctx.stroke();
+    if(v===2){star(ctx,e.x,e.y-20,11+12*t);ctx.fillStyle='#ffe89c';ctx.fill();}
+    else{const g=radial(ctx,e.x,e.y-20,1,e.x,e.y-20,10+10*t);if(g){g.addColorStop(0,'#ffe9a8');g.addColorStop(1,'rgba(238,212,117,0)');ctx.fillStyle=g;}else ctx.fillStyle='#eed475';ctx.beginPath();ctx.arc(e.x,e.y-20,10+10*t,0,Math.PI*2);ctx.fill();}
+    const label=v===1?tr('SUSTAINED OVERDRIVE'):v===2?tr('SURGE OVERDRIVE'):'OVERDRIVE';
+    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(label,e.x,e.y-42-12*t);
   }else if(e.kind==='logistics'){
-    // V3: the supply drop as a stamped iron crate.
-    const y=e.y-24-12*t;
+    const v=e.variant||0,y=e.y-24-12*t;
     oval(ctx,e.x,y+11,13,4,'rgba(12,18,14,.28)',null);
-    shape(ctx,[[e.x-12,y-9],[e.x+12,y-9],[e.x+12,y+9],[e.x-12,y+9]],'#d7b276','#d9dde1',3);
+    if(v===1){
+      // Heavy Airdrop: canvas parachute canopy overhead + oversized gold-trimmed crate (+45).
+      ctx.beginPath();ctx.arc(e.x,y-18,15,Math.PI,0);ctx.fillStyle='#8c9c72';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=2;ctx.stroke();
+      line(ctx,[[e.x-14,y-18],[e.x-9,y-9]],'#d9dde1',1.4);line(ctx,[[e.x+14,y-18],[e.x+9,y-9]],'#d9dde1',1.4);
+      line(ctx,[[e.x,y-33],[e.x,y-9]],'#d9dde1',1.2);
+    }else if(v===2){
+      // Emergency Supply: teal repair shockwave ring alongside armored crate (+20 / +6 HP).
+      ctx.beginPath();ctx.arc(e.x,y,18+24*t,0,Math.PI*2);ctx.strokeStyle='#8ac7b1';ctx.lineWidth=2.5-1.5*t;ctx.stroke();
+    }
+    shape(ctx,[[e.x-12,y-9],[e.x+12,y-9],[e.x+12,y+9],[e.x-12,y+9]],v===2?'#8fa79a':'#d7b276','#d9dde1',3);
     line(ctx,[[e.x-11,y],[e.x+11,y]],ink,2);line(ctx,[[e.x,y-9],[e.x,y+9]],ink,2);
-    star(ctx,e.x,y,5);ctx.fillStyle='#f0d68a';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.stroke();
-    ctx.fillStyle=ink;ctx.font='bold 14px Georgia';ctx.textAlign='center';ctx.fillText('+30',e.x,y-15);
+    star(ctx,e.x,y,5);ctx.fillStyle=v===2?'#9ce8cc':'#f0d68a';ctx.fill();ctx.strokeStyle=ink;ctx.lineWidth=1;ctx.stroke();
+    ctx.fillStyle=ink;ctx.font='bold 14px Georgia';ctx.textAlign='center';ctx.fillText(v===1?'+45':v===2?'+20 · +6':'+30',e.x,v===1?y-38:y-16);
   }else if(e.kind==='medic'){
-    // V3: the medic ring in emblem metal around the field dressing.
-    ctx.beginPath();ctx.arc(e.x,e.y,26+14*t,0,Math.PI*2);ctx.strokeStyle=`rgba(217,221,225,${(.75*fade).toFixed(3)})`;ctx.lineWidth=2.5;ctx.stroke();
-    const g=radial(ctx,e.x,e.y,4,e.x,e.y,22+12*t);
-    if(g){g.addColorStop(0,'rgba(206,230,166,.85)');g.addColorStop(1,'rgba(206,230,166,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,22+12*t,0,Math.PI*2);ctx.fill();}
-    oval(ctx,e.x,e.y,22+12*t,22+12*t,'#cee6a6',null,0);shape(ctx,[[e.x-4,e.y-12],[e.x+4,e.y-12],[e.x+4,e.y-4],[e.x+12,e.y-4],[e.x+12,e.y+4],[e.x+4,e.y+4],[e.x+4,e.y+12],[e.x-4,e.y+12],[e.x-4,e.y+4],[e.x-12,e.y+4],[e.x-12,e.y-4],[e.x-4,e.y-4]],'#f1e6c4');
+    const v=e.variant||0,hx=Number.isFinite(e.hx)?e.hx:e.x,hy=Number.isFinite(e.hy)?e.hy:e.y;
+    const drawCross=(cx,cy,rad,tint)=>{
+      ctx.beginPath();ctx.arc(cx,cy,rad+14*t,0,Math.PI*2);ctx.strokeStyle=tint;ctx.lineWidth=2.6;ctx.stroke();
+      oval(ctx,cx,cy,rad+8*t,rad+8*t,v===2?'rgba(240,214,138,.78)':'rgba(206,230,166,.85)',null,0);
+      shape(ctx,[[cx-4,cy-12],[cx+4,cy-12],[cx+4,cy-4],[cx+12,cy-4],[cx+12,cy+4],[cx+4,cy+4],[cx+4,cy+12],[cx-4,cy+12],[cx-4,cy+4],[cx-12,cy+4],[cx-12,cy-4],[cx-4,cy-4]],'#f1e6c4');
+    };
+    if(v===1){
+      // Heavy Repair: heavy pulse both at the bunker AND hero aura.
+      drawCross(910,400,26,'#92e0b9');
+      drawCross(hx,hy-12,18,'#92e0b9');
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('HEAVY REPAIR'),910,356-10*t);
+    }else if(v===2){
+      // Triage: golden sanctuary + mint healing flare on bunker.
+      drawCross(e.x,e.y,24,'#f0d68a');
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(`${tr('TRIAGE')} +12`,e.x,e.y-36-10*t);
+    }else{
+      ctx.beginPath();ctx.arc(e.x,e.y,26+14*t,0,Math.PI*2);ctx.strokeStyle=`rgba(217,221,225,${(.75*fade).toFixed(3)})`;ctx.lineWidth=2.5;ctx.stroke();
+      const g=radial(ctx,e.x,e.y,4,e.x,e.y,22+12*t);
+      if(g){g.addColorStop(0,'rgba(206,230,166,.85)');g.addColorStop(1,'rgba(206,230,166,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(e.x,e.y,22+12*t,0,Math.PI*2);ctx.fill();}
+      oval(ctx,e.x,e.y,22+12*t,22+12*t,'#cee6a6',null,0);shape(ctx,[[e.x-4,e.y-12],[e.x+4,e.y-12],[e.x+4,e.y-4],[e.x+12,e.y-4],[e.x+12,e.y+4],[e.x+4,e.y+4],[e.x+4,e.y+12],[e.x-4,e.y+12],[e.x-4,e.y+4],[e.x-12,e.y+4],[e.x-12,e.y-4],[e.x-4,e.y-4]],'#f1e6c4');
+    }
   }else if(e.kind==='recon'){
-    // V3: suppression ripples out in polished silver, the inner tick in gold.
-    for(let i=0;i<2;i++){ctx.beginPath();ctx.arc(e.x,e.y,16+36*t+i*15,0,Math.PI*2);ctx.strokeStyle='#d9dde1';ctx.lineWidth=3.5-i;ctx.stroke();}
-    ctx.beginPath();ctx.arc(e.x,e.y,10+36*t,0,Math.PI*2);ctx.setLineDash([6,5]);ctx.strokeStyle='#f0d68a';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('SUPPRESSION'),e.x,e.y-35-12*t);
+    const v=e.variant||0,targets=e.targets||[];
+    if(v===2){
+      // Targeted Disruption: crisp cyan laser sightlines from hero onto enemies + disruption bursts.
+      for(const p of targets){
+        line(ctx,[[e.x,e.y-8],[p.x,p.y]],'#7fe3ff',2);
+        ctx.beginPath();ctx.arc(p.x,p.y,8+14*(1-t),0,Math.PI*2);ctx.strokeStyle='#7fe3ff';ctx.lineWidth=2;ctx.stroke();
+        burst(ctx,p.x,p.y,6+8*t,'#b6f2ff');
+      }
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('TARGETED DISRUPTION'),e.x,e.y-38-12*t);
+    }else{
+      for(let i=0;i<(v===1?3:2);i++){ctx.beginPath();ctx.arc(e.x,e.y,16+36*t+i*15,0,Math.PI*2);ctx.strokeStyle=v===1?'#a4d8f0':'#d9dde1';ctx.lineWidth=3.5-i;ctx.stroke();}
+      ctx.beginPath();ctx.arc(e.x,e.y,10+36*t,0,Math.PI*2);ctx.setLineDash([6,5]);ctx.strokeStyle='#f0d68a';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle=ink;ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr(v===1?'EXTENDED SUPPRESSION':'SUPPRESSION'),e.x,e.y-35-12*t);
+    }
   }
   ctx.restore();
 }

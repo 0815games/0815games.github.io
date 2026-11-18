@@ -54,19 +54,19 @@ test('the host session paces to an uplink budget across roster sizes',async()=>{
     await session.stop();
     return publishes;
   };
-  const mk=id=>createPlayer(id,{name:id,gender:'male',level:25,skills:'3,3,2,2,1;engineer;1100000000',loadout:'3,3,10',storyProgress:12});
-  // The quantization ladder on a stable duo set (~3.4 KB at rest).
+  const mk=id=>createPlayer(id,{name:id,gender:'male',level:25,skills:'v2;engineer;3;1;11111111111111',loadout:'3,3,10',storyProgress:12});
+  // The quantization ladder on a compact V2 duo set (~2.8 KB at rest).
   const duo=()=>createMatch([mk('alice'),mk('bob')],'road');
   assert.equal(await countPublishes(duo,['alice','bob']),15,'the default budget gives a lean duo fifteen hertz');
-  assert.equal(await countPublishes(duo,['alice','bob'],25000),8,'a tighter budget quantizes to seven and a half');
-  assert.equal(await countPublishes(duo,['alice','bob'],20000),6,'and to six hertz');
+  assert.equal(await countPublishes(duo,['alice','bob'],21000),8,'a tighter budget quantizes to seven and a half');
+  assert.equal(await countPublishes(duo,['alice','bob'],16500),6,'and to six hertz');
   assert.equal(await countPublishes(duo,['alice','bob'],1000),5,'a starvation budget floors at five hertz');
-  // The roster amplification itself: a two-vs-two set (both lanes in every
-  // view) runs ~13.4 KB at rest - four times the duo - and must pace below
-  // the duo on the same budget.
+  // The roster amplification itself: a V2 two-vs-two set (both lanes in every
+  // view) runs ~10.7 KB at rest - nearly four times the duo - and must pace
+  // below the duo on the same budget.
   const four=['a','b','c','d'].map(mk);
-  assert.equal(await countPublishes(()=>createTwoVsTwo(four,'a',[['a','b'],['c','d']]),['a','b','c','d'],100000,'2v2'),8,'two-vs-two paces below the duo on the same budget');
-  await countPublishes(duo,['alice','bob'],100000,'duo');
+  assert.equal(await countPublishes(()=>createTwoVsTwo(four,'a',[['a','b'],['c','d']]),['a','b','c','d'],80000,'2v2'),8,'two-vs-two paces below the duo on the same budget');
+  await countPublishes(duo,['alice','bob'],80000,'duo');
   assert.ok(sizes['2v2']>sizes['duo']*3,`rosters amplify the view set (${sizes['duo']} -> ${sizes['2v2']} bytes)`);
 });
 

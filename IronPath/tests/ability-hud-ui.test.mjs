@@ -17,7 +17,7 @@ async function field({skills}={}){
   globalThis.window={scrollBy(){},innerWidth:400,innerHeight:800,devicePixelRatio:1,matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}};
   let frame;globalThis.requestAnimationFrame=fn=>{frame=fn;};
   let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-  for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','ability-hud.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','field-notice.mjs','map-intro.mjs'])
+  for(const file of ['features.mjs','solo-deployment.mjs','workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','first-run-coach.mjs','four-game-view.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','tower-class-paths.mjs','development-ui.mjs','report-promotion.mjs','rank-insignia.mjs','ability-hud.mjs','ability-hud.mjs','ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','field-notice.mjs','map-intro.mjs'])
     source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
   source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
   const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
@@ -33,7 +33,7 @@ async function field({skills}={}){
 }
 
 test('the button names the ability, shows its mark and says why it is waiting',async()=>{
-  const f=await field({skills:'2,0,0,0,0;assault'});
+  const f=await field({skills:'v2;assault;2;0;00000000000000'});
   const hud=f.el('ability');
   assert.equal(f.el('abilityName').textContent,'AIRSTRIKE','the chosen ability is named');
   assert.match(f.el('abilityIcon').innerHTML,/^<svg /,'and carries its mark');
@@ -73,7 +73,7 @@ test('without a chosen ability the button explains where to get one',async()=>{
 test('a recharging ability counts its seconds down, from the player state, and alerts again when ready',async()=>{
   // Supply Drop needs nothing but a running wave - a full bunker would refuse
   // Field Repair and prove nothing about the cooldown.
-  const f=await field({skills:'0,0,2,0,0;logistics'});
+  const f=await field({skills:'v2;logistics;2;0;00000000000000'});
   f.el('start').onclick();f.tick();
   assert.equal(f.el('abilityName').textContent,'SUPPLY DROP');
   assert.equal(f.el('ability').dataset.state,'ready','logistics needs nothing but a running wave');

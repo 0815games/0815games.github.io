@@ -1,30 +1,129 @@
-import {WEB_NODES,webRequirement,SKILL_PATHS} from './skills.mjs?v=20261107-balance1';
-import {germanSkills} from './localization-skills-de.mjs?v=20261107-balance1';
-// These labels describe existing nodes only; their IDs and bonuses remain canonical.
-const mastery=['Scharfschütze','Gefechtsübungen','Veteranenziel','Tödlicher Fokus','Kriegsheld','Kalibrierung','Verstärkte Geschütze','Fortgeschrittene Mechanik','Meisteringenieur','Kriegsmaschine','Bergungsrouten','Versorgungslinien','Quartiermeister','Ressourcennetz','Kriegswirtschaft','Erstversorgung','Feldlazarett','Gefechtsmedizin','Lebensretter','Bunkerwächter','Wegbereiter','Vorhutspäher','Schnelle Verlegung','Pfadfinder','Schattenagent'];
-const comboNames=['Belagerungskommando','Gefechtslogistik','Humanitäre Versorgung','Schnelle Reaktion','Vorhut','Versorgungsschlag','Gefechtsanitäter','Mobile Versorgung','Gefechtslazarett','Aufklärungstechnik'];
-const doctrine=['Feuerdisziplin','Veteranenschütze','Lange Wache','Adlerauge','Präzisionsarbeit','Meisterkalibrierung','Fernmeldetruppe','Kommandonetz','Gefechtsbergung','Versorgungskette','Hilfsvorrat','Notreserve','Feldtriage','Leitender Sanitäter','Verstärkter Bunker','Letztes Gefecht','Pfadfinderausbildung','Schneller Vormarsch','Vorausschau','Beobachternetz'];
-const bonuses={damage:n=>`+${n} Soldatenschaden`,heroSpeed:n=>`+${n}% Feuergeschwindigkeit des Soldaten`,heroRange:n=>`+${n} Schussreichweite des Soldaten`,tower:n=>`+${n}% Turmschaden`,towerSpeed:n=>`+${n}% Turmfeuergeschwindigkeit`,cooldown:n=>`+${n} Sek. weniger Abklingzeit für Fähigkeiten`,supplies:n=>`+${n} Vorräte pro Abschuss`,start:n=>`+${n} Startvorräte`,health:n=>`+${n} gemeinsame Bunker-Lebenspunkte`,movement:n=>`+${n} Bewegungsgeschwindigkeit des Soldaten`};
-const capstones={4:'Jeder fünfte Soldatenschuss verursacht bei einem weiteren Gegner in der Nähe 20 Schaden.',9:'Jeder vierte Schuss deiner Türme verursacht bei einem Gegner in der Nähe 20 Flächenschaden.',14:'Nach jeder abgeschlossenen Welle erhältst du 10 persönliche Vorräte.',19:'Einmal pro Welle werden 20 Bunker-Lebenspunkte wiederhergestellt, wenn sie unter 30% fallen und der Bunker den Treffer überlebt.',24:'Jeder vierte Soldatenschuss hält sein Ziel 3 Sekunden lang fest.'};
-const combos=['Deine Turmtreffer markieren Gegner 5 Sekunden lang. Angriffs- oder Pionierfähigkeiten lösen deine Markierungen aus und verursachen 10 Schaden pro Stufe.','Pionier- und Logistikfähigkeiten geben dir 4 Vorräte pro Stufe.','Logistik- und Sanitäterfähigkeiten heilen den Bunker während einer laufenden Welle über 6 Sekunden um 3 Lebenspunkte pro Stufe.','Sanitäterfähigkeiten unterdrücken Gegner 2 Sekunden pro Stufe; Aufklärungsfähigkeiten verlängern die Unterdrückung um denselben Wert.','Aufklärer- und Sturmfähigkeiten halten bis zu 8 lebende Gegner 2 Sekunden plus 1 Sekunde pro Stufe fest.','Angriffs- und Logistikfähigkeiten treffen den stärksten lebenden Gegner für 10 Schaden pro Stufe.','Pionier- und Sanitäterfähigkeiten geben deinen Türmen 25% zusätzlichen Schaden für 3 Sekunden plus 1 Sekunde pro Stufe, ohne einen bestehenden Overdrive zu schwächen.','Logistik- und Aufklärungsfähigkeiten geben dir 5 Sekunden lang 15 Bewegungsgeschwindigkeit pro Stufe.','Sanitäter- und Sturmfähigkeiten stellen pro lebendem Gegner und Stufe 1 Bunker-Lebenspunkt wieder her, höchstens 6 pro Stufe.','Pionierfähigkeiten unterdrücken Gegner 2 Sekunden pro Stufe. Deine Türme verursachen 8% zusätzlichen Schaden pro Stufe, solange Gegner unterdrückt sind.'];
-const names=WEB_NODES.map(n=>n.id<25?mastery[n.id]:n.id<55?`${comboNames[Math.floor((n.id-25)/3)]} ${['I','II','III'][(n.id-25)%3]}`:doctrine[n.id-55]);
+import {WEB_NODES,webRequirement,SKILL_PATHS,SKILL_PATH_MAP} from './skills.mjs?v=20261118-block5';
+import {CAPSTONES} from './skill-combos.mjs?v=20261118-block5';
+import {germanSkills} from './localization-skills-de.mjs?v=20261118-block5';
+// Canonical German translations for all 84 single-class tree nodes (6 classes x 14 slots).
+const masteryByClass={
+ assault:['Scharfschütze','Gefechtsübungen','Veteranenziel','Tödlicher Fokus','Kriegsheld'],
+ engineer:['Kalibrierung','Verstärkte Geschütze','Fortgeschrittene Mechanik','Meisteringenieur','Kriegsmaschine'],
+ logistics:['Bergungsrouten','Versorgungslinien','Quartiermeister','Ressourcennetz','Kriegswirtschaft'],
+ medic:['Erstversorgung','Feldlazarett','Gefechtsmedizin','Lebensretter','Bunkerwächter'],
+ recon:['Wegbereiter','Vorhutspäher','Schnelle Verlegung','Pfadfinder','Schattenagent'],
+ airDefense:['Radar-Suchlauf','Schnellnachladung','Zielmarkier-Link','Himmelsschild','Himmelssouverän']
+};
+const doctrineByClass={
+ assault:['Feuerdisziplin','Veteranenschütze','Lange Wache','Adlerauge'],
+ engineer:['Präzisionsarbeit','Meisterkalibrierung','Fernmeldetruppe','Kommandonetz'],
+ logistics:['Gefechtsbergung','Versorgungskette','Hilfsvorrat','Notreserve'],
+ medic:['Feldtriage','Leitender Sanitäter','Verstärkter Bunker','Letztes Gefecht'],
+ recon:['Pfadfinderausbildung','Schneller Vormarsch','Vorausschau','Beobachternetz'],
+ airDefense:['Leuchtspuroptik','Prioritätsziel','Flak-Kalibrierung','Luftraumsperre']
+};
+const comboBaseByClass={
+ assault:'Sturm-Salve',
+ engineer:'Gefechtsnetz',
+ logistics:'Mobiler Konvoi',
+ medic:'Feldhospital',
+ recon:'Vorhut-Stoß',
+ airDefense:'Flak-Resonanz'
+};
+const capstoneGerman={
+ assault:'Jeder vierte Soldatenschuss springt mit 24 Schaden auf einen weiteren Gegner über.',
+ engineer:'Jeder vierte Schuss deiner Türme verursacht 22 Flächenschaden an einem nahen Gegner.',
+ logistics:'Nach jeder abgeschlossenen Welle erhältst du 12 persönliche Vorräte.',
+ medic:'Stellt einmal pro Welle 22 Bunker-Lebenspunkte wieder her, wenn sie unter 35 % fallen und der Bunker den Treffer überlebt.',
+ recon:'Jeder vierte Soldatenschuss fixiert sein Ziel 3 Sekunden lang.',
+ airDefense:'Luftabwehr-markierte Ziele erleiden +20 % zusätzlichen Schaden und jeder fünfte Soldatenschuss erneuert eine 3-s-Markierung.'
+};
+const comboGerman={
+ assault:['Sturmfähigkeiten feuern eine Bodensalve ab: +8 Schaden und 2 s Fixierung.',
+  'Bodensalve wächst auf +16 Schaden und 2,5 s Fixierung sowie +16 Treffer am stärksten Gegner.',
+  'Bodensalve wächst auf +24 Schaden und 3 s Fixierung sowie +24 Treffer am stärksten Gegner.'],
+ engineer:['Pionierfähigkeiten geben +4 Vorräte und unterdrücken Gegner 2 s lang.',
+  'Pionierfähigkeiten geben +8 Vorräte und unterdrücken Gegner 4 s lang.',
+  'Pionierfähigkeiten geben +12 Vorräte und unterdrücken Gegner 6 s lang.'],
+ logistics:['Logistikfähigkeiten verleihen 5 s lang +15 Tempo und heilen 6 s lang 3 Bunker-LP.',
+  'Logistikfähigkeiten verleihen 5 s lang +30 Tempo und heilen 6 s lang 6 Bunker-LP.',
+  'Logistikfähigkeiten verleihen 5 s lang +45 Tempo und heilen 6 s lang 9 Bunker-LP.'],
+ medic:['Sanitäterfähigkeiten heilen 1 Bunker-LP pro lebendem Gegner (max. 6) und geben 4 s lang +25 % Turmschaden.',
+  'Sanitäterfähigkeiten heilen bis zu 12 Bunker-LP und geben 5 s lang +25 % Turmschaden.',
+  'Sanitäterfähigkeiten heilen bis zu 18 Bunker-LP und geben 6 s lang +25 % Turmschaden.'],
+ recon:['Aufklärungsfähigkeiten fixieren bis zu 8 Gegner 3 s lang und verlängern Unterdrückung um 1,5 s.',
+  'Aufklärungsfähigkeiten fixieren bis zu 8 Gegner 4 s lang und verlängern Unterdrückung um 3 s.',
+  'Aufklärungsfähigkeiten fixieren bis zu 8 Gegner 5 s lang und verlängern Unterdrückung um 4,5 s.'],
+ airDefense:['Luftabwehrfähigkeiten richten +12 Flakschaden an Flugzeugen (+6 an schweren Bodeneinheiten) an und markieren 4 s lang.',
+  'Luftabwehrfähigkeiten richten +24 Flakschaden an Flugzeugen (+12 an schweren Bodeneinheiten) an und markieren 5 s lang.',
+  'Luftabwehrfähigkeiten richten +36 Flakschaden an Flugzeugen (+18 an schweren Bodeneinheiten) an und markieren 6 s lang.']
+};
+const bonuses={
+ damage:n=>`+${n} Soldatenschaden`,
+ heroSpeed:n=>`+${n} % Feuergeschwindigkeit des Soldaten`,
+ heroRange:n=>`+${n} Schussreichweite des Soldaten`,
+ tower:n=>`+${n} % Turmschaden`,
+ towerSpeed:n=>`+${n} % Turmfeuergeschwindigkeit`,
+ cooldown:n=>`${n} Sek. weniger Fähigkeits-Abklingzeit`,
+ supplies:n=>`+${n} Vorräte pro Abschuss`,
+ start:n=>`+${n} Startvorräte`,
+ health:n=>`+${n} gemeinsame Bunker-Lebenspunkte`,
+ movement:n=>`+${n} Bewegungsgeschwindigkeit des Soldaten`,
+ airDamage:n=>`+${n} % Turmschaden gegen Flugzeuge`,
+ markDamage:n=>`+${n} % Schaden gegen Luftabwehr-markierte Ziele`
+};
 const entries={};
-for(let i=0;i<comboNames.length;i++)entries[WEB_NODES[25+i*3].name.replace(/ I$/,'')]=comboNames[i];
-for(const n of WEB_NODES){
- if(!names[n.id])throw Error(`Missing advanced skill name ${n.id}`);
- const parts=n.bonuses.map(([key,value])=>{if(!bonuses[key])throw Error(`Missing bonus translation ${key}`);return bonuses[key](value);});
- let description=parts.join(' und ')+'.';
- if(capstones[n.id])description+=` MEISTERFÄHIGKEIT: ${capstones[n.id]}`;
- if(n.id>=25&&n.id<55)description+=` KOMBO (Stufe ${n.tier+1}): ${combos[Math.floor((n.id-25)/3)]}`;
- entries[n.name]=names[n.id];entries[n.description]=description;
+for(const p of SKILL_PATHS){
+ const cap=CAPSTONES[p.id];
+ if(cap){
+  entries[cap.name]=masteryByClass[p.id][4];
+  entries[cap.description]=capstoneGerman[p.id];
+ }
+ const comboSample=WEB_NODES.find(n=>n.path===p.id&&n.kind==='combo'&&n.tier===0);
+ if(comboSample){
+  entries[comboSample.name.replace(/ I$/,'')]=comboBaseByClass[p.id];
+ }
 }
+const nodeNameDe=n=>{
+ if(n.kind==='specialist')return germanSkills[n.name]||n.name;
+ if(n.kind==='mastery')return masteryByClass[n.path][n.tier];
+ if(n.kind==='doctrine')return doctrineByClass[n.path][n.slot-7];
+ return `${comboBaseByClass[n.path]} ${['I','II','III'][n.tier]}`;
+};
 for(const n of WEB_NODES){
- const req=webRequirement(n), match=req.match(/^Requires (.+)\.$/);
- if(!match)throw Error(`Unknown skill requirement ${req}`);
- let target=match[1];
- for(const [en,de] of [...WEB_NODES.map(x=>[x.name,names[x.id]]),...SKILL_PATHS.map(x=>[x.name,germanSkills[x.name]||x.name]),...SKILL_PATHS.flatMap(x=>x.branches.map(b=>[b.ability,germanSkills[b.ability]||b.ability]))].sort((a,b)=>b[0].length-a[0].length))target=target.replace(en,de);
+ const deName=nodeNameDe(n);
+ entries[n.name]=deName;
+ if(n.kind==='specialist'){
+  const p=SKILL_PATH_MAP[n.path],b=p.branches[n.branch];
+  entries[n.description]=`${germanSkills[b.description]||b.description} Schaltet ${germanSkills[b.ability]||b.ability} frei: ${germanSkills[b.abilityDescription]||b.abilityDescription}`;
+ }else{
+  const parts=n.bonuses.map(([k,v])=>bonuses[k](v));
+  let desc=parts.join(' und ')+'.';
+  if(n.capstone)desc+=` MEISTERFÄHIGKEIT: ${capstoneGerman[n.path]}`;
+  if(n.kind==='combo')desc+=` SYNERGIE (Stufe ${n.tier+1}): ${comboGerman[n.path][n.tier]}`;
+  entries[n.description]=desc;
+ }
+}
+const replacers=[
+ ...WEB_NODES.map(n=>[n.name,nodeNameDe(n)]),
+ ...SKILL_PATHS.map(p=>[p.name,germanSkills[p.name]||p.name]),
+ ...SKILL_PATHS.flatMap(p=>p.branches.map(b=>[b.ability,germanSkills[b.ability]||b.ability]))
+].sort((a,b)=>b[0].length-a[0].length);
+for(const n of WEB_NODES){
+ const req=webRequirement(n),m=req.match(/^Requires (.+)\.$/);
+ if(!m)continue;
+ let target=m[1];
+ for(const [en,de] of replacers)if(target.includes(en))target=target.split(en).join(de);
  target=target.replace(' and ',' und ').replace(' rank ',' Rang ');
  entries[req]=`Benötigt ${target}.`;
 }
-Object.assign(entries,{'MASTERY / CAPSTONE':'MEISTERSCHAFT / MEISTERFÄHIGKEIT','SPECIALIST DOCTRINE':'SPEZIALISTENDOKTRIN','HYBRID COMBO':'HYBRID-KOMBO','MASTERY CAPSTONE':'MEISTERFÄHIGKEIT','ADVANCED MASTERY':'FORTGESCHRITTENE MEISTERSCHAFT','Each node costs one point.':'Jeder Knoten kostet einen Punkt.','MASTERY / {tier}':'MEISTERSCHAFT / {tier}','DOCTRINE / {branch}':'DOKTRIN / {branch}','COMBO / {first} + {second}':'KOMBO / {first} + {second}'});
+Object.assign(entries,{
+ 'MASTERY / CAPSTONE':'MEISTERSCHAFT / MEISTERFÄHIGKEIT',
+ 'SPECIALIST DOCTRINE':'SPEZIALISTENDOKTRIN',
+ 'CLASS COMBO':'KLASSENKOMBO',
+ 'HYBRID COMBO':'HYBRID-KOMBO',
+ 'MASTERY CAPSTONE':'MEISTERFÄHIGKEIT',
+ 'ADVANCED MASTERY':'FORTGESCHRITTENE MEISTERSCHAFT',
+ 'Each node costs one point.':'Jeder Knoten kostet einen Punkt.',
+ 'MASTERY / {tier}':'MEISTERSCHAFT / {tier}',
+ 'DOCTRINE / {branch}':'DOKTRIN / {branch}',
+ 'COMBO / {tier}':'KOMBO / {tier}',
+ 'COMBO / {first} + {second}':'KOMBO / {first} + {second}'
+});
 export const germanAdvancedSkills=Object.freeze(entries);

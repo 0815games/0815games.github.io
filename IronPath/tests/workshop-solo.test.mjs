@@ -1,6 +1,6 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {createPlayer,applyCommand} from '../match.mjs';import {createMatch,stepMatch} from '../simulation.mjs';import {createWorkshopSoloMatch} from '../workshop-solo.mjs';import {migrateWorkshop} from '../workshop-model.mjs';import {projectCoopMotion} from '../coop-motion.mjs';
-const player=item=>createPlayer('p',{name:'Soldier',gender:'male',level:2,skills:'1,0,0,0,0;assault',loadout:`0,0,${item}`},100,130);
+const player=item=>createPlayer('p',{name:'Soldier',gender:'male',level:2,skills:'v2;assault;1;0;00000000000000',loadout:`0,0,${item}`},100,130);
 function prepare(state,wave=6){state.wave=wave;state.running=true;state.spawnLeft=2;state.spawnTimer=100;state.enemies.push({hp:1000,maxHp:1000,kind:'infantry',segment:1,x:100,y:130,speed:0,reward:0});return state;}
 test('actual solo engine applies stacked workshop equipment, mods and ability cooldown',()=>{
  const w=migrateWorkshop(null);w.owned=['marksman','mechanic','radio'];w.equipped={weapon:'marksman',gear:'mechanic',gadget:'radio'};w.mods={marksman:'precision',mechanic:'lightweight',radio:'efficient'};

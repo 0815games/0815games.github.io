@@ -1,73 +1,74 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261031-patch8';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261110-storyde1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261118-block5';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261118-block5';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261031-patch8';
+import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261118-block5';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261031-patch8';
+import {setupFieldMenu} from './field-menu.mjs?v=20261118-block5';
 import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261031-patch8';
+import {createPatchNotes} from './patch-notes.mjs?v=20261118-block5';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261031-patch8';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261031-patch8';
-import {setupFriends} from './friends-ui.mjs?v=20261031-patch8';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261031-patch8';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261118-block5';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261118-block5';
+import {setupFriends} from './friends-ui.mjs?v=20261118-block5';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261118-block5';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261031-patch8';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261031-patch8';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261031-patch8';
-import {createCommandCenter} from './command-center.mjs?v=20261031-patch8';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261118-block5';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261118-block5';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261118-block5';
+import {createCommandCenter} from './command-center.mjs?v=20261118-block5';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261031-patch8';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261118-block5';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261031-patch8';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261031-patch8';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261031-patch8';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261031-socialcleanup1';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261107-balance1';
-import {setupAuthForm} from './auth-form.mjs?v=20261031-patch8';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261118-block5';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261118-block5';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261118-block5';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261118-block5';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261118-block5';
+import {setupAuthForm} from './auth-form.mjs?v=20261118-block5';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261031-patch8';
-import {createWriteTracker} from './version-check.mjs?v=20261031-patch8';
+import {createVersionUI} from './version-ui.mjs?v=20261118-block5';
+import {createWriteTracker} from './version-check.mjs?v=20261118-block5';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261031-patch8';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261107-balance1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261031-patch8';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261031-patch8';
+import {createConfirmation} from './confirmation.mjs?v=20261118-block5';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261118-block5';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261118-block5';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261118-block5';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261107-balance1';
-import {rewardDelta} from './run-results.mjs?v=20261112-tagless1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261031-patch8';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261031-patch8';
-import {createPartySignOut} from './party-signout.mjs?v=20261031-patch8';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261118-block5';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261118-block5';
+import {rewardDelta} from './run-results.mjs?v=20261118-block5';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261118-block5';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261118-block5';
+import {createPartySignOut} from './party-signout.mjs?v=20261118-block5';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261107-balance1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261031-patch8';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261118-block5';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261118-block5';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261031-patch8';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261031-patch8';
-import { createPlayer } from './match.mjs?v=20261031-patch8';
-import { bunkerStart } from './solo-deployment.mjs?v=20261031-patch8';
+import { startGame } from './game.js?v=20261118-block5';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261118-block5';
+import { createPlayer } from './match.mjs?v=20261118-block5';
+import { bunkerStart } from './solo-deployment.mjs?v=20261118-block5';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261031-patch8';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261031-patch8';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261118-block5';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261118-block5';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -482,6 +483,30 @@ function refreshProfileRank(value){
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
 function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+const attemptedSkillMigrations=new Set();
+let skillMigrationSummary=null;
+async function runSkillMigration(currentUser,version,snapshotValue){
+ if(inSandbox()||!currentUser||!snapshotValue||!needsSkillMigration(snapshotValue))return;
+ const attemptKey=`${currentUser.uid}:${version}:${snapshotValue.skills}`;
+ if(attemptedSkillMigrations.has(attemptKey))return;
+ attemptedSkillMigrations.add(attemptKey);
+ const prep=migrateSkillsProfile(snapshotValue,{uid:currentUser.uid,storage:languageStorage});
+ if(!prep.migrated||!prep.profile)return;
+ try{
+  const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{
+   if(!current||!needsSkillMigration(current)||version!==sessionVersion||user?.uid!==currentUser.uid)return;
+   return {...current,skills:prep.profile.skills};
+  },{applyLocally:false});
+  if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
+  if(result.committed){
+   profile=result.snapshot.val();
+   skillMigrationSummary=prep.summary;
+   commandCenter?.render();soldierUI?.refresh();updateSkillPrompt(profile);
+   if($('skillDialog')?.open)renderSkills();
+   $('saveStatus').textContent=translateText('Skill points refunded for the new 6-class system.');
+  }
+ }catch{/* Rules or connection unavailable: parseBuild transparently handles legacy strings locally until the next save. */}
+}
 function loadProfile(currentUser,version){
  // The face, handed over to the server once per session (see avatar-sync.mjs):
  // soldiers from before the avatar field - or before rules that allow it - would
@@ -497,6 +522,8 @@ function loadProfile(currentUser,version){
  // If the rules are not live yet this fails silently and retries on the
  // next load - the service record shows the placeholder until then.
  if(!value.enlisted)update(ref(db,`players/${currentUser.uid}`),{enlisted:enlistmentDate()}).catch(()=>{});
+ if(needsSkillMigration(value))void runSkillMigration(currentUser,version,value);
+ else if(!skillMigrationSummary){const savedBackup=readLegacySkillBackup(currentUser.uid,languageStorage);if(savedBackup&&value.skills==='v2;none')skillMigrationSummary=summarizeSkillMigration({xp:value.xp,skills:savedBackup.skills});}
  // The same for the face. Every soldier who enlisted before the avatar field
  // existed - or before the rules accepted it - would keep the face in the local
  // mirror and nowhere else: no second device, no friend, no party roster could
@@ -730,30 +757,81 @@ if(!accountTerminated)accountServices.observe(currentUser=>{
 
 function canEditSkills(){return !!profile&&!partyPanel.isActive()&&!fourPanel?.isActive()&&!!gameControl&&(gameControl.canEditSkills()||!$('commandCenter').hidden);}
 function renderSkills(){
-  if(!viewProfile())return;
-  document.querySelectorAll('[data-skill-path]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.skillPath===$('skillPathFilter').value)));
-  const lvl=level(viewProfile().xp),left=pointsLeft(draftSkills,lvl),index=SKILL_PATHS.findIndex(p=>p.id===selectedSkill.path),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100,extraIndex=(index<0?0:index)*2+rank-5;
+  const activeProfile=viewProfile();
+  if(!activeProfile)return;
+  const lvl=level(activeProfile.xp),left=pointsLeft(draftSkills,lvl),chosenClass=draftSkills.classId||null;
+  const effectivePath=chosenClass||selectedSkill.path;
+  const index=SKILL_PATHS.findIndex(p=>p.id===effectivePath),path=SKILL_PATHS[index<0?0:index],rank=selectedSkill.rank,specialist=rank>=5&&rank<100;
+  if(chosenClass&&selectedSkill.path!==chosenClass){selectedSkill={path:chosenClass,rank:1};}
+  document.querySelectorAll('[data-skill-path]').forEach(button=>{
+    const btnPath=button.dataset.skillPath;
+    if(chosenClass)button.hidden=btnPath!==chosenClass;
+    else button.hidden=false;
+    button.setAttribute('aria-pressed',String(btnPath===(chosenClass||$('skillPathFilter').value)));
+  });
+  const filterWrap=document.querySelector?.('.skills-filter');
+  if(filterWrap)filterWrap.hidden=!chosenClass;
+  const noticeEl=$('skillMigrationNotice');
+  if(noticeEl){
+    const hasMigration=!inSandbox()&&typeof skillMigrationSummary==='object'&&skillMigrationSummary!==null&&!!skillMigrationSummary.hadLegacy&&draftSkills.classId===null&&draftSkills.rank===0;
+    noticeEl.hidden=!hasMigration;
+    if(hasMigration)noticeEl.textContent=translateText('Your previous skill build was archived and all {points} earned skill points were refunded for free selection in the new 6-class tree.',{points:skillMigrationSummary.refundedPoints});
+  }
   $('skillPoints').textContent=translateText(left===1?'LEVEL {level} · {points} POINT AVAILABLE':'LEVEL {level} · {points} POINTS AVAILABLE',{level:lvl,points:left});
   const summary=localizeSkillSummary(skillBuildSummary(draftSkills,lvl),translateText);$('skillSummaryActive').textContent=summary.active;$('skillSummaryStats').textContent=summary.values.join('\n');$('skillSummaryCombos').textContent=summary.combos;$('skillSummaryCaps').textContent=summary.caps;
   if(!savingSkills)$('skillStatus').textContent=translateText(encodeBuild(draftSkills)===openedSkills?'Saved build unchanged.':'Unsaved draft — save to apply; closing discards these changes.');
 
-  const scroll=$('skillDialog').scrollTop,restoreActionFocus=document.activeElement===$('skillDetailAction');
-  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:$('skillPathFilter').value,inspector:$('skillInspector'),inspectorHome:$('skillInspectorHome'),translate:translateText,onSelect:(value,keyboard)=>{const selector=`[data-path="${value.path}"][data-rank="${value.rank}"]`,previous=$('skillPaths').querySelector(selector)?.getBoundingClientRect().top;selectedSkill=value;renderSkills();const current=$('skillPaths').querySelector(selector);if(current&&Number.isFinite(previous))$('skillDialog').scrollTop+=current.getBoundingClientRect().top-previous;if(keyboard)current?.focus({preventScroll:true});}});
+  const workspace=$('skillDialog').querySelector?.('.skills-workspace');
+  const scroll=$('skillDialog').scrollTop,wsScroll=workspace?.scrollTop,restoreActionFocus=document.activeElement===$('skillDetailAction');
+  renderSkillTree({document,container:$('skillPaths'),build:draftSkills,level:lvl,selected:selectedSkill,filter:$('skillFilter').value,pathFilter:chosenClass||'all',inspector:$('skillInspector'),inspectorHome:$('skillInspectorHome'),translate:translateText,onSelect:(value,keyboard)=>{const selector=`[data-path="${value.path}"][data-rank="${value.rank}"]`,previous=$('skillPaths').querySelector(selector)?.getBoundingClientRect().top;selectedSkill=value;renderSkills();const current=$('skillPaths').querySelector(selector);if(current&&Number.isFinite(previous)){const delta=current.getBoundingClientRect().top-previous;$('skillDialog').scrollTop+=delta;if(workspace)workspace.scrollTop+=delta;}if(keyboard)current?.focus({preventScroll:true});}});
   if(restoreActionFocus)$('skillDetailAction').focus({preventScroll:true});
   if(Number.isFinite(scroll))$('skillDialog').scrollTop=scroll;
+  if(workspace&&Number.isFinite(wsScroll))workspace.scrollTop=wsScroll;
   const action=$('skillDetailAction');
-  if(rank>=100){const node=WEB_NODES[rank-100];if(!node)return;const unlocked=!!draftSkills.web[node.id],ready=webReady(draftSkills,node);$('skillDetailType').textContent=translateText(node.kind==='doctrine'?'SPECIALIST DOCTRINE':node.kind!=='mastery'?'HYBRID COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY');$('skillDetailTitle').textContent=translateText(node.name);$('skillDetailText').textContent=`${translateText(node.description)} ${translateText(webRequirement(node))} ${translateText('Each node costs one point.')}`;action.textContent=translateText(unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT');action.disabled=savingSkills||unlocked||!ready||!left;action.onclick=()=>{if(!savingSkills&&!draftSkills.web[node.id]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills.web[node.id]=1;renderSkills();}};return;}
-$('skillDetailType').textContent=rank===1?translateText('MAIN SKILL'):`${translateText(path.name).toUpperCase()} / ${translateText(specialist?'SPECIAL SKILL':'PASSIVE')}`;
+  if(!chosenClass){
+    $('skillDetailType').textContent=translateText('CLASS SELECTION');
+    $('skillDetailTitle').textContent=`${translateText(path.name)} — ${translateText(path.ability)}`;
+    $('skillDetailText').textContent=`${translateText(path.description)} ${translateText(path.passive)}. ${translateText('Choosing a class locks in its 14-node specialization tree and class tower path. Use Reset Draft to preview another class before saving.')}`;
+    action.textContent=translateText(lvl<2?'UNLOCKS AT LEVEL 2':!left?'NO POINTS AVAILABLE':'CHOOSE CLASS · 1 POINT');
+    action.disabled=savingSkills||lvl<2||left<1;
+    action.onclick=()=>{if(savingSkills||lvl<2||left<1)return;draftSkills=parseBuild(`v2;${path.id};1;0;00000000000000`,lvl);selectedSkill={path:path.id,rank:1};renderSkills();};
+    return;
+  }
+  if(rank>=100){
+    const node=WEB_NODES.find(n=>n.id===rank-100);if(!node)return;
+    const unlocked=!!draftSkills.extra?.[node.slot],ready=webReady(draftSkills,node);
+    $('skillDetailType').textContent=translateText(node.kind==='doctrine'?'SPECIALIST DOCTRINE':node.kind==='combo'?'CLASS COMBO':node.tier===4?'MASTERY CAPSTONE':'ADVANCED MASTERY');
+    $('skillDetailTitle').textContent=translateText(node.name);
+    $('skillDetailText').textContent=`${translateText(node.description)} ${translateText(webRequirement(node))} ${translateText('Each node costs one point.')}`;
+    action.textContent=translateText(unlocked?'UNLOCKED':!ready?'PREREQUISITES REQUIRED':!left?'NO POINTS AVAILABLE':'UNLOCK · 1 POINT');
+    action.disabled=savingSkills||unlocked||!ready||!left;
+    action.onclick=()=>{if(!savingSkills&&!draftSkills.extra?.[node.slot]&&webReady(draftSkills,node)&&pointsLeft(draftSkills,level(activeProfile.xp))>0){draftSkills.extra[node.slot]=1;draftSkills.web[node.id]=1;renderSkills();}};
+    return;
+  }
+  $('skillDetailType').textContent=rank===1?translateText('MAIN SKILL'):`${translateText(path.name).toUpperCase()} / ${translateText(specialist?'SPECIAL SKILL':'PASSIVE')}`;
   $('skillDetailTitle').textContent=rank===1?translateText(path.ability):specialist?translateText(path.branches[rank-5].ability):translateText('{name} · Rank {rank}',{name:translateText(path.name),rank});
-  $('skillDetailText').textContent=rank===1?`${translateText(path.description)} ${translateText(path.passive)}. ${translateText(draftSkills[path.id]>=1?'Unlocked main skills can be selected for free.':'Spend one point to unlock this main skill.')}`:specialist?`${translateText(path.branches[rank-5].abilityDescription)} ${translateText('Passive: {text} Requires {name} rank 2. Selecting it replaces your current active skill.',{text:translateText(path.branches[rank-5].description),name:translateText(path.name)})}`:`${translateText(path.passive)}. ${translateText('Requires {name} rank {rank}. {count} of 3 ranks unlocked.',{name:translateText(path.name),rank:rank-1,count:draftSkills[path.id]})}`;
-  if(specialist){const unlocked=!!draftSkills.extra[extraIndex],ready=draftSkills[path.id]>=2,selected=unlocked&&draftSkills.active===path.id&&draftSkills.variant===rank-4;action.textContent=translateText(selected?'SPECIAL SKILL SELECTED':unlocked?'SELECT SPECIAL SKILL':!ready?'REQUIRES RANK 2':!left?'NO POINTS AVAILABLE':'UNLOCK & SELECT · 1 POINT');action.disabled=savingSkills||selected||(!unlocked&&(!ready||!left));action.onclick=()=>{if(savingSkills)return;if(!draftSkills.extra[extraIndex]){if(draftSkills[path.id]<2||pointsLeft(draftSkills,level(profile.xp))<1)return;draftSkills.extra[extraIndex]=1;}draftSkills.active=path.id;draftSkills.variant=rank-4;renderSkills();};}
-  else if(rank===1){const unlocked=draftSkills[path.id]>=1,selected=draftSkills.active===path.id&&!draftSkills.variant;action.textContent=translateText(selected?'MAIN SKILL SELECTED':unlocked?'SELECT MAIN SKILL':!left?'NO POINTS AVAILABLE':'UNLOCK & SELECT · 1 POINT');action.disabled=savingSkills||selected||(!unlocked&&!left);action.onclick=()=>{if(savingSkills)return;if(!draftSkills[path.id]){if(!pointsLeft(draftSkills,level(profile.xp)))return;draftSkills[path.id]=1;}draftSkills.active=path.id;draftSkills.variant=0;renderSkills();};}
-  else {const unlocked=rank<=draftSkills[path.id],next=rank===draftSkills[path.id]+1;action.textContent=translateText(unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT');action.disabled=savingSkills||unlocked||!next||!left;action.onclick=()=>{if(!savingSkills&&rank===draftSkills[path.id]+1&&pointsLeft(draftSkills,level(profile.xp))>0){draftSkills[path.id]++;renderSkills();}};}
+  $('skillDetailText').textContent=rank===1?`${translateText(path.description)} ${translateText(path.passive)}. ${translateText('Unlocked main skills can be selected for free.')}`:specialist?`${translateText(path.branches[rank-5].abilityDescription)} ${translateText('Passive: {text} Requires {name} rank 2. Selecting it replaces your current active skill.',{text:translateText(path.branches[rank-5].description),name:translateText(path.name)})}`:`${translateText(path.passive)}. ${translateText('Requires {name} rank {rank}. {count} of 3 ranks unlocked.',{name:translateText(path.name),rank:rank-1,count:draftSkills.rank})}`;
+  if(specialist){
+    const slot=rank-5,unlocked=!!draftSkills.extra[slot],ready=draftSkills.rank>=2,selected=unlocked&&draftSkills.active===path.id&&draftSkills.variant===slot+1;
+    action.textContent=translateText(selected?'SPECIAL SKILL SELECTED':unlocked?'SELECT SPECIAL SKILL':!ready?'REQUIRES RANK 2':!left?'NO POINTS AVAILABLE':'UNLOCK & SELECT · 1 POINT');
+    action.disabled=savingSkills||selected||(!unlocked&&(!ready||!left));
+    action.onclick=()=>{if(savingSkills)return;if(!draftSkills.extra[slot]){if(draftSkills.rank<2||pointsLeft(draftSkills,level(activeProfile.xp))<1)return;draftSkills.extra[slot]=1;const specNode=WEB_NODES.find(n=>n.path===path.id&&n.slot===slot);if(specNode)draftSkills.web[specNode.id]=1;}draftSkills.active=path.id;draftSkills.variant=slot+1;renderSkills();};
+  }else if(rank===1){
+    const selected=draftSkills.active===path.id&&!draftSkills.variant;
+    action.textContent=translateText(selected?'MAIN SKILL SELECTED':'SELECT MAIN SKILL');
+    action.disabled=savingSkills||selected;
+    action.onclick=()=>{if(savingSkills)return;draftSkills.active=path.id;draftSkills.variant=0;renderSkills();};
+  }else{
+    const unlocked=rank<=draftSkills.rank,next=rank===draftSkills.rank+1;
+    action.textContent=translateText(unlocked?'UNLOCKED':!next?'UNLOCK PREVIOUS RANK':!left?'NO POINTS AVAILABLE':'UPGRADE · 1 POINT');
+    action.disabled=savingSkills||unlocked||!next||!left;
+    action.onclick=()=>{if(!savingSkills&&rank===draftSkills.rank+1&&pointsLeft(draftSkills,level(activeProfile.xp))>0){draftSkills.rank++;draftSkills[path.id]=draftSkills.rank;renderSkills();}};
+  }
 }
 document.querySelectorAll('[data-skill-path]').forEach(button=>{button.onclick=()=>{ $('skillPathFilter').value=button.dataset.skillPath; if(button.dataset.skillPath!=='all')selectedSkill={path:button.dataset.skillPath,rank:1}; $('skillPaths').scrollTop=0;renderSkills(); };});
 $('skillFilter').onchange=()=>renderSkills();$('skillPathFilter').onchange=()=>renderSkills();
-$('skillOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to edit skills between deployments, or leave your party first.');return;}skillsOpenGeneration++;draftSkills=parseBuild(viewProfile().skills,level(viewProfile().xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value='assault';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
-$('skillReset').onclick=async()=>{if(inSandbox())return;if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));renderSkills();}};
+$('skillOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to edit skills between deployments, or leave your party first.');return;}skillsOpenGeneration++;draftSkills=parseBuild(viewProfile().skills,level(viewProfile().xp));openedSkills=encodeBuild(draftSkills);selectedSkill={path:draftSkills.classId||'assault',rank:1};$('skillFilter').value='all';$('skillPathFilter').value=draftSkills.classId||'all';renderSkills();$('skillDialog').showModal();$('skillPaths').scrollLeft=0;$('skillPaths').scrollTop=0;};
+$('skillReset').onclick=async()=>{if(inSandbox()){draftSkills=parseBuild(undefined,level(viewProfile().xp));selectedSkill={path:'assault',rank:1};renderSkills();return;}if(!canEditSkills()||savingSkills)return;const version=sessionVersion;if(await confirmation.ask({title:'Reset draft skill points?',text:'This refunds every point for free in this draft, letting you choose another class too. Your saved build will only change if you press Save Build. Close the skill tree without saving to keep it.',accept:'RESET DRAFT'})&&version===sessionVersion&&$('skillDialog').open&&canEditSkills()&&!savingSkills){draftSkills=parseBuild(undefined,level(profile.xp));selectedSkill={path:'assault',rank:1};renderSkills();}};
 async function closeSkills(){
   if(!$('skillDialog').open||savingSkills||closingSkills)return;
   if(encodeBuild(draftSkills)===openedSkills){$('skillDialog').close();return;}
@@ -771,7 +849,7 @@ $('skillSave').onclick=async()=>{
   if(inSandbox()){
     const build=encodeBuild(draftSkills);
     sandboxAPI.apply({...viewProfile(),skills:build});
-    sandboxAPI.markSkill({upgraded:viewProfile().skills!==''&&pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
+    sandboxAPI.markSkill({upgraded:build!=='v2;none'&&pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
     $('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');
     $('skillDialog').close();
     return;
@@ -785,7 +863,7 @@ $('skillSave').onclick=async()=>{
     },{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
     if(!result.committed){$('skillStatus').textContent=translateText('Could not save: your saved build may have changed elsewhere, or this draft is no longer valid. Close and reopen Skills to reload it.');return;}
-    profile=result.snapshot.val();commandCenter?.render();$('skillDialog').close();if(gameControl?.canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);$('saveStatus').textContent=translateText('Skill build saved for the next match.');
+    profile=result.snapshot.val();skillMigrationSummary=null;commandCenter?.render();$('skillDialog').close();if(gameControl?.canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);$('saveStatus').textContent=translateText('Skill build saved for the next match.');
   }catch(error){if(version===sessionVersion)$('skillStatus').textContent=translateText('Could not save skills. Check your connection and Firebase rules.');}
   finally{if(version===sessionVersion){savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;if($('skillDialog').open){const message=$('skillStatus').textContent;renderSkills();$('skillStatus').textContent=message;}}}
 };
@@ -850,7 +928,7 @@ const SANDBOX_SCRAP=240;
 function exampleProfile(base){
   // A fresh level 2 soldier: one point to spend, nothing unlocked. Practice has to
   // teach the first skill point, so it must not inherit a build that already has one.
-  const example={...(base||{name:'Example Soldier',gender:'male',xp:0}),xp:300,skills:'',armory:{scrap:SANDBOX_SCRAP,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:1,equipped:1}};
+  const example={...(base||{name:'Example Soldier',gender:'male',xp:0}),xp:300,skills:'v2;none',armory:{scrap:SANDBOX_SCRAP,fortify:0,plating:0,repair:0,gun:0,supply:0,safeguard:0,owned:1,equipped:1}};
   // Same initialiser the live save uses, so the example panel cannot drift from it.
   return initializeWireWorkshop(example)||example;
 }

@@ -7,7 +7,8 @@ const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
 
 // A minimal document: the panels are filled with innerHTML, the tabs only need
 // aria-selected and `hidden`, and the dialog only needs open/close.
-function fixture({build='20261031-patch8'}={}){
+const CURRENT_BUILD=JSON.parse(read('release-version.json')).build;
+function fixture({build=CURRENT_BUILD}={}){
   const nodes=new Map(),events=[];
   const el=id=>{
     if(!nodes.has(id))nodes.set(id,{id,hidden:false,innerHTML:'',textContent:'',open:false,dataset:{},
@@ -102,12 +103,12 @@ test('the view renders both lists, marks the running build and reacts to the tab
   assert.equal((released.match(/class="patch-entry"/g)||[]).length,RELEASED_PATCHES.length,'one card per release');
   // Exactly one live card: the build the player is running.
   assert.equal((released.match(/data-live="true"/g)||[]).length,1);
-  assert.match(released,/data-live="true"[^>]*>[\s\S]*?20261031-patch8/,'the live card is the newest release');
+  assert.match(released,new RegExp(`data-live="true"[^>]*>[\\s\\S]*?${CURRENT_BUILD}`),'the live card is the newest release');
   assert.equal((planned.match(/data-live="true"/g)||[]).length,0,'a planned block is never marked live');
-  assert.match(f.el('patchNotesBuild').textContent,/20261031-patch8/,'the header shows the installed build');
+  assert.match(f.el('patchNotesBuild').textContent,new RegExp(CURRENT_BUILD),'the header shows the installed build');
   assert.match(f.el('patchNotesBuild').textContent,/INSTALLIERTER BUILD|INSTALLED BUILD/,'labelled, not a bare number');
   // The build comes from the page, so it cannot drift from the files that loaded.
-  assert.equal(f.ui.build,'20261031-patch8');
+  assert.equal(f.ui.build,CURRENT_BUILD);
   // Tabs: released first, and switching swaps the panels without a reload.
   assert.equal(f.el('patchNotesTabLive').getAttribute('aria-selected'),'true');
   assert.equal(f.el('patchNotesTabNext').getAttribute('aria-selected'),'false');
@@ -186,7 +187,7 @@ test('the dialog and its menu entry exist in the real page and are wired',()=>{
   const button=html.indexOf('id="menuPatchNotes"');
   const settings=html.indexOf('id="menuSettings"');
   assert.ok(utilities>0&&button>utilities&&button<settings,'the FIELD NOTES entry sits in the utility row before SETTINGS');
-  assert.match(account,/patch-notes\.mjs\?v=20261031-patch8/,'the account imports the notes on the current cache wave');
+  assert.match(account,new RegExp(`patch-notes\\.mjs\\?v=${CURRENT_BUILD}`),'the account imports the notes on the current cache wave');
   assert.match(account,/\$\('menuPatchNotes'\)\.onclick=[^\n]*patchNotes\.open/,'the menu button opens the notes');
   assert.match(account,/onLanguageChange\(\(\)=>patchNotes\.render\(\)\)/,'a language switch repaints the list');
   assert.ok(html.includes('patch-notes.css?v='),'the stylesheet is linked and versioned');
