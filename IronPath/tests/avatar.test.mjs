@@ -118,11 +118,11 @@ test('randomAvatar rolls a valid combination within the chosen gender',()=>{
   }
   // A deterministic deep roll lands on the last face/hair/beard of the list.
   const deep=randomAvatar('male',()=>0.999);
-  assert.equal(deep.faceId,'short');
+  assert.equal(deep.faceId,'beard');
   assert.equal(deep.hairId,'medium');
   assert.equal(deep.beardId,'full');
   const deepFemale=randomAvatar('female',()=>0.999);
-  assert.equal(deepFemale.faceId,'slick');
+  assert.equal(deepFemale.faceId,'ponytail');
   assert.equal(deepFemale.hairId,'curly');
   assert.equal(deepFemale.beardId,null);
 });

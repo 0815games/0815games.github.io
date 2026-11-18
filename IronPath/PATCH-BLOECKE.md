@@ -73,7 +73,7 @@ grünen Testsuite vollständig erledigt.
 | [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Mehrspielermodi, größere Karten und mit #289 Turm-/Abstimmungsfixes, Anfragekarten, Abschluss und Berichte. | Echte Geräte und Netzwechsel, längere Partien, Einsteigerbalance sowie der Umgang mit dauerhaft fehlenden Mitgliedern. |
 | [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen und weitere Social-Fixes; Porträtanzeige mit sicherem Platzhalter; Namensregel und Reservierung für **neue** Charaktere; Übernahme verwaister Reservierungen vorbereitet. | Serverseitige Wirksamkeit der Eindeutigkeit **und** der Porträtanzeige – beides liegt fertig im Kandidaten, aber **unveröffentlicht** (frischer Export, Sicherung, Vergleich, Freigabe); globale Namenseindeutigkeit für Altbestände, der Einstiegspunkt für die Umbenennung (Mechanismus steht) und die reale Mehrgeräteabnahme. |
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Liste, Bericht und Rangabzeichen im Profil sind vorhanden; der Betreiber lobte den Abschlussbericht. | Party-Porträtkarten, Kampf-HUD mit EP, Rang/Beförderung im Bericht, „What’s Next“, bezahlbarer Turmschimmer sowie Schuss-/Fähigkeitsdarstellung. |
-| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Die zuvor ausdrücklich freigegebene Layer-Vorschau ist bereits in Charaktererstellung, Menü und Dossier eingebaut. | Gewünschte zusätzliche Looks und konsistente, sichere Darstellung/Speicherung auf verschiedenen Geräten, in Freunde- und Partyansicht. |
+| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Die zuvor ausdrücklich freigegebene Layer-Vorschau ist bereits in Charaktererstellung, Menü und Dossier eingebaut; seit [IPL-0054](PATCH-LOG.md#ipl-0054--block-4-das-gesicht-reist-mit-13-porträts-wählbar-übergabe-an-den-server) sind alle 13 gemalten Porträts wählbar und das Gesicht wird an den Server übergeben. | Gewünschte zusätzliche Looks und deren Freigabe durch den Betreiber; konsistente, sichere Darstellung/Speicherung auf verschiedenen Geräten (wirksam erst mit der Rules-Veröffentlichung), in Freunde- und Partyansicht; echte Mehrgeräteabnahme. |
 | [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; der Veteranen-UI-Preisfix ist veröffentlicht. | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenauswahl und sichere Punkterückgabe/Migration. |
 | [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Die bisherige Fünf-Wellen-Einführung, Wiederholung und bestätigte Abbruchfixes sind vorhanden. | Charakterbezogene Annahme/Ablehnung, große zusammenhängende Mission, Generalstimme und anschließende Menüführung. |
 
@@ -97,7 +97,7 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Geräte-, Netzwechsel- und Langzeitabnahme; Umgang mit dauerhaft fehlenden Mitgliedern. | In Arbeit |
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Namensregel und Reservierung stehen ([A1](#a1-charaktername-darf-nicht-doppelt-vergeben-werden)); offen: Rules-Veröffentlichung, Altbestände, Porträt-Rules, Mehrgeräteabnahme. | In Arbeit |
 | 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Party-Karten, Kampf-HUD, Bericht mit Rang/Beförderung, „What’s Next“. | In Arbeit |
-| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Weitere Looks, einheitliche Anzeige und Speicherung auf allen Geräten. | Geplant |
+| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Weitere Looks, einheitliche Anzeige und Speicherung auf allen Geräten. | In Arbeit ([IPL-0054](PATCH-LOG.md#ipl-0054--block-4-das-gesicht-reist-mit-13-porträts-wählbar-übergabe-an-den-server): 13 Gesichter wählbar, Übergabe steht und ist geprüft; Freigabe des Bildes und Rules-Veröffentlichung offen) |
 | 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, Punkterückgabe. | Geplant |
 | 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Große vertonte Mission mit Generalstimme und anschließender Menüführung. | Geplant |
 | 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | Geplant (neu aufgenommen) |
@@ -450,17 +450,48 @@ entstand, ist nicht sicher belegt.
   bereits im Hauptmenü und Soldatendossier; alte Einzel-Looks werden beim
   Lesen auf Kombinationen abgebildet. Die damalige Vorschau und Einführung sind
   also erledigt, nicht nur eine ungenutzte Grundlage.
+- [x] **Schritt 1 – alle gemalten Gesichter wählbar, das Gesicht reist mit**
+  ([IPL-0054](PATCH-LOG.md#ipl-0054--block-4-das-gesicht-reist-mit-13-porträts-wählbar-übergabe-an-den-server)):
+  auf Wunsch des Betreibers („Vorhandene 13 Porträts freischalten“, „Alle
+  Kombinationen erlauben“) sind statt fünf nun **alle 13** gemalten Porträts
+  Gesichter – ohne neues Bildmaterial, mit gemessenen Gesichtsfeldern, weiter
+  ausgeglichen (14 Kacheln je Geschlecht). Das Gesicht wird beim Laden des
+  Profils **einmal je Sitzung** an den Server übergeben, wenn dort noch keins
+  liegt; ein Wert auf dem Server gewinnt, eine abgelehnte Übergabe ist kein
+  Fehler, und das Dossier zieht mit, wenn ein Gesicht während der Sitzung
+  ankommt. Der Rules-Kandidat (`friend-portrait-candidate.mjs`) legt das Feld
+  `players/$uid/avatar` jetzt auch dort an, wo die Regel es nie kannte –
+  genau das ist der veröffentlichte Stand, der jeden Schreibversuch frisst.
+  Prüfungen: 1130/0 lokal (1 absichtlich übersprungen), neuer Emulator-Fall „Regel ohne Gesicht“, neues
+  Chromium-Gerätetest für die Übergabe. **Nicht veröffentlicht:** die Regeln;
+  und `account.js` hängt am Stempel `20261031-patch4`, das Gesicht kommt also
+  mit dem nächsten Stand in die Browser.
 - [ ] **Gewünschte Qualität:** 6–10 hochwertige, stimmige Looks im glaubwürdigen
   Spiel-/Militärstil mit einigen sauber kombinierbaren Details, ohne
   durchscheinende fremde Gesichts- oder Uniformteile, sind gegenüber der
   vorhandenen Layer-Lösung erneut zu prüfen bzw. gezielt weiterzuentwickeln.
+  *Stand nach IPL-0054:* die Grundlage ist von 5 auf 13 Gesichter verbreitert
+  und für beide Geschlechter gleich groß, aber **kein Mensch hat sie gesehen** –
+  der Kontaktbogen `IronPath/browser-artifacts/avatar-faces.png` liegt zur
+  Beurteilung bereit.
 - [ ] Vorschau, gespeicherter Avatar, Dossier, Freunde und Party-Roster müssen
   zusammenpassen; Fehl-/Altwerte erhalten sichere Platzhalter bzw. Neuauswahl.
   Freunde/Party übertragen den Avatar derzeit nicht überall; ein lokaler
   Speicher-Fallback ist kein Nachweis sicherer geräteübergreifender Speicherung.
+  *Stand nach IPL-0054:* Vorschau, Speicherung, Dossier und Soldatenbild zeigen
+  dasselbe zusammengesetzte Gesicht, und ungültige oder alte Werte fremder
+  Konten bleiben beim neutralen Platzhalter. Freunde und Party-Roster tragen das
+  Gesicht, sobald die Regeln veröffentlicht sind – Kandidat und Prüfungen
+  stehen, die Veröffentlichung ist Sache des Betreibers.
 - [ ] Passende alte Auswahl übernehmen, sonst Neuauswahl anbieten. Fortschritt,
   XP und Ausrüstung erhalten; gezielte Rules-, Geräte- und Darstellungstests.
   Block 2/3 können bis dahin sichere Platzhalter verwenden.
+  *Stand nach IPL-0054:* alte Einzel-Looks (`look:bob`, `g:m|look:beard`) werden
+  beim Lesen auf Kombinationen abgebildet (Bestand) und passen in die
+  Rules-Grenzen; Fortschritt, XP und Ausrüstung rührt die Übergabe nicht an.
+  Die geforderten Rules-, Geräte- und Darstellungstests stehen (Emulator,
+  Chromium, Einheiten) – **wirksam werden sie erst mit der Veröffentlichung.**
+  Offen bleibt die echte Mehrgeräteabnahme durch einen Menschen.
 
 ### 5. Skills neu strukturieren – bestehende Turm-Spezialisierungen bereits implementiert
 

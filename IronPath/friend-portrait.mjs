@@ -1,5 +1,5 @@
-import {decodeAvatar,looksFor} from './avatar.mjs?v=20261112-live1';
-import {composePortrait,layerOptions} from './avatar-layers.mjs?v=20261112-live1';
+import {decodeAvatar,looksFor} from './avatar.mjs?v=20261118-faces13';
+import {composePortrait,layerOptions} from './avatar-layers.mjs?v=20261118-faces13';
 
 // No other account's local avatar mirror is ever read. Until both permitted
 // profile fields are available, a neutral placeholder is the honest answer.

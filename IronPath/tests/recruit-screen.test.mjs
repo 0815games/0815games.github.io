@@ -3,6 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFileSync,existsSync} from 'node:fs';
 import {setupRecruitScreen} from '../recruit-screen.mjs';
 import {defaultAvatar,encodeAvatar,decodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
+import {layerOptions} from '../avatar-layers.mjs';
 
 function memory(saved={}){
   const store={...saved};
@@ -44,7 +45,7 @@ test('the editor is four rows: gender, face, hair - and beard for men only',()=>
   const rows=nodes.get('avatarOptions').children;
   assert.deepEqual(rows.map(row=>row.attrs['aria-label']),['CHARACTER','FACE','HAIR']);
   assert.equal(rows[0].children[1].children.length,2,'two gender chips');
-  assert.equal(rows[1].children[1].children.length,3,'three female faces');
+  assert.equal(rows[1].children[1].children.length,7,'every painted female portrait is a face');
   assert.equal(rows[2].children[1].children.length,7,'BASIC CUT plus six hairs');
   // Every tile is a live composite canvas, not a cropped background photo.
   for(const tile of rows[1].children[1].children){
@@ -102,7 +103,7 @@ test('SURPRISE ME rolls a different combination within the gender',()=>{
   const after=encodeAvatar(screen.getAvatar());
   assert.ok(storage.dump[AVATAR_STORAGE_KEY],'the roll is mirrored');
   assert.equal(screen.getAvatar().gender,'female','the gender stays');
-  assert.equal(screen.getAvatar().faceId,'slick','the roll lands on the last female face');
+  assert.equal(screen.getAvatar().faceId,'ponytail','the roll lands on the last female face');
   assert.equal(screen.getAvatar().hairId,'curly','the roll lands on the last female hair');
   assert.notEqual(after,before,'the roll changed the default');
 });
@@ -158,8 +159,15 @@ test('the markup and css carry the showcase and composite tiles',()=>{
   assert.doesNotMatch(css,/\.recruit-look\{[^}]*background-size/,'no background photo crop left in the tiles');
 });
 
-test('German labels exist for the three new rows and every option',()=>{
+test('German labels exist for the rows and for every option the picker can show',()=>{
   const de=readFileSync(new URL('../localization-de.mjs',import.meta.url),'utf8');
-  for(const key of ['"FACE"','"HAIR"','"BEARD"','"BASIC CUT"','"NO BEARD"','"Braid"','"Bun"','"Curly"','"Long hair"','"Ponytail"','"Side part"','"Medium"','"Stubble"','"Mustache"','"Full beard"','"Face 1"','"Face 2"','"Face 3"'])
-    assert.ok(de.includes(key),'missing German label: '+key);
+  // Derived from the manifest, not from a copied list: a face added to the
+  // portrait folder ships as a tile, so it needs its German tooltip too.
+  const labels=['CHARACTER','FACE','HAIR','BEARD','BASIC CUT','NO BEARD','Female soldier','Male soldier'];
+  for(const gender of ['female','male']){
+    const {faces,hairs,beards}=layerOptions(gender);
+    for(const option of [...faces,...hairs,...beards])labels.push(option.label);
+  }
+  assert.ok(labels.length>20,'the picker really offers a full set of labelled options');
+  for(const label of labels)assert.ok(de.includes('"'+label+'":'),'missing German label: '+label);
 });

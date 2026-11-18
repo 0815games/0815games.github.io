@@ -85,9 +85,9 @@ const oldUrls=[
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
   for(const name of ['game.js','field-menu.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
-  assert.ok(requests.includes('avatar.mjs?v=20261112-live1'),'the portrait reuses the existing avatar decoder');
-  assert.ok(requests.includes('avatar-layers.mjs?v=20261112-live1'),'the portrait reuses the existing renderer');
-  assert.ok(requests.includes('assets/layers/manifest.mjs?v=20261112-layers2'),'the real layer manifest is available');
+  assert.ok(requests.includes('avatar.mjs?v=20261118-faces13'),'the portrait reuses the existing avatar decoder');
+  assert.ok(requests.includes('avatar-layers.mjs?v=20261118-faces13'),'the portrait reuses the existing renderer');
+  assert.ok(requests.includes('assets/layers/manifest.mjs?v=20261118-faces13'),'the real layer manifest is available');
   assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
   console.log('New game, social prompts, invitations, language and online/recovery paths bypassed a populated synthetic stale HTTP cache; guest wave request passed.');
   await context.close();

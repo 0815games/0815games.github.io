@@ -2671,3 +2671,148 @@ das Funkgerät gebaut hatte:
   gibt kein Log, in dem sie stünde. Das ist gewollt („minimalismus is fine“);
   falls es zu wenig ist, ist der Zähler aus IPL-0051 die erste Idee, die wieder
   hervorgeholt werden sollte.
+
+## IPL-0054 – Block 4: Das Gesicht reist mit (13 Porträts wählbar, Übergabe an den Server)
+
+Der Betreiber hat Block 4 aufgerufen („Patch Block 4, lets gooo“) und die drei
+offenen Fragen vorab entschieden:
+
+- **„Vorhandene 13 Porträts freischalten“** – kein neues Bildmaterial, sondern
+  das, was gemalt ist, auswählbar machen.
+- **„Alle Kombinationen erlauben“** – Haar- und Bart-Layer dürfen auf **jedes**
+  Gesicht, auch auf eines, das schon eine Frisur trägt; eigene Haare, die unter
+  einem Layer hervorschauen, sind kein Fehler.
+- **„Ja, vorbereiten“** – der Rules-Kandidat für das Gesicht gehört in diesen
+  Block. Das Veröffentlichen bleibt seine Sache.
+
+Gebaut:
+
+- **Alle 13 gemalten Porträts sind Gesichter.** Bisher waren es fünf: drei
+  weibliche (`crop`, `bun`, `slick`) und zwei männliche (`buzz`, `short`). Der
+  Generator `tools/build-layers.mjs` trägt jetzt alle 13 Dateien aus
+  `assets/portraits/` als Gesichter ein, nummeriert sie selbst
+  (`Gesicht 1 … 7` / `Gesicht 1 … 6`) und misst zu jeder das Gesichtsfeld mit
+  demselben pico.js-Detektor, den die Layer schon nutzen – die Layer richten
+  sich darüber selbst aus, deshalb passen die vorhandenen zwölf Overlays ohne
+  Nacharbeit auf jedes neue Gesicht. Der neue Durchlauf hat alle zwölf Overlays
+  **Bit für Bit identisch** wieder erzeugt; geändert hat sich nur das Manifest.
+  Die Reihenfolge bleibt vorn bei `crop` bzw. `buzz`, weil das der Schnitt ist,
+  den jeder Haar-Layer überdeckt und den „BASIS-FRISUR“ zeigt. Die Auswahl ist
+  weiter ausgeglichen: **14 Kacheln je Geschlecht**.
+- **Das Gesicht kommt auf den Server.** Bisher lag es – außer bei ganz neuen
+  Soldaten, deren Schreiben von den veröffentlichten Regeln abgelehnt wird – im
+  localStorage-Spiegel und sonst nirgends: kein zweites Gerät, keine
+  Freundesliste, keine Party konnte es je zeigen. Neu ist `avatar-sync.mjs`:
+  beim Laden des Profils entscheidet es am **ersten Schnappschuss der Sitzung**
+  einmalig, ob ein Gesicht fehlt, und übergibt es dann – verschwindet ein
+  Gesicht später in derselben Sitzung (etwa bei Bereinigung), wird es nicht
+  still zurückgeschrieben. Ein Wert auf dem Server gewinnt immer (ein anderes
+  Gerät darf neuer sein); eine abgelehnte Übergabe ist **kein Fehler**, sondern
+  der heutige Zustand – der Spiegel behält das Gesicht, und die nächste Sitzung
+  versucht es wieder. Sobald die Regeln das Feld kennen, folgt das Gesicht
+  jedem zurückkehrenden Soldaten, ohne ein weiteres Client-Update.
+- **Das Dossier zieht mit.** Kam ein Gesicht während der Sitzung an (die
+  Übergabe, ein anderes Gerät), blieb das alte Bild bis zum Neuladen stehen.
+  Der Profil-Horchposten lässt das Porträt jetzt neu zusammensetzen – und zwar
+  **bevor** das Menü neu zeichnet, damit die Kommandozentrale das neue Gesicht
+  zeigt und nicht das vorige.
+- **Der Rules-Kandidat kann das Feld auch anlegen.** `friend-portrait-candidate.mjs`
+  war reine Lese-Erlaubnis: er setzte `.read` auf `gender` und `avatar` und
+  lehnte eine Basis ohne `avatar` ab. Genau eine solche Basis ist aber
+  veröffentlicht – deshalb frisst die Auffangregel (`$other`, `.validate:false`)
+  jeden Schreibversuch, und `account.js` muss ihn verschlucken. Der Kandidat
+  legt das Feld jetzt **an**, mit derselben Prüfung, die die Referenz, der
+  Block-2-Entwurf und der Staging-Entwurf tragen (Zeichenkette, 8–64 Zeichen),
+  und lehnt eine Basis, die schon eine **andere** Avatar- oder
+  Freundes-Regel hat, weiterhin laut ab – zwei Schreibweisen derselben
+  Erlaubnis sind, wie ein Ruleset auseinanderläuft.
+
+Prüfungen:
+
+- Vollständiger serieller Lauf `node --test IronPath/tests/*.test.mjs`:
+  **1130 bestanden, 0 fehlgeschlagen, 1 absichtlich übersprungen**.
+- `tests/avatar-layers.test.mjs` **6/6** – 13 Gesichter (7 weiblich, 6 männlich),
+  gleiche Kachelzahl je Geschlecht, und ein neuer Prüfschritt vergleicht den
+  Porträtordner mit dem Manifest: **kein gemaltes Porträt bleibt liegen**.
+- `tests/avatar-sync.test.mjs` neu **13/13** – Spiegel wird übergeben, ohne
+  Spiegel kommt die Vorgabe des Geschlechts (nie ein anderes Gesicht als das
+  gezeigte), ein Serverwert wird nie überschrieben, ein erst im Lauf derselben
+  Sitzung entferntes Gesicht wird nicht still zurückgeschrieben, genau ein
+  Versuch je Sitzung, eine abgelehnte Übergabe ist kein Fehler, Abmeldung und
+  Charakterlöschung starten die nächste Sitzung sauber, und drei
+  Quelltext-Verträge nageln die Verdrahtung in `account.js` fest.
+- `tests/friend-portrait-rules.test.mjs` **5/5** – der Kandidat ändert an der
+  Referenz weiterhin nur die zwei Lese-Rechte; eine Basis ohne Feld bekommt
+  genau Feld plus Lese-Recht und sonst nichts; die Prüfzeile stimmt byteweise
+  mit Referenz, Block-2-Entwurf und Staging-Entwurf überein; doppeltes Anwenden
+  und abweichende Basen werden abgelehnt; und **jedes** Gesicht, das der Client
+  erzeugen kann (Vorgaben und 80 Zufallswürfe), liegt innerhalb der Grenzen.
+- `firebase/rules-test/friend-portrait.test.mjs` (Emulator, CI): zwei neue
+  Prüfungen – der Besitzer darf das Gesicht speichern und nichts anderes (zu
+  kurz, zu lang, kein Text, Löschen, fremde und abgemeldete Schreiber werden
+  abgelehnt) und jede vom Client erzeugte Kombination wird angenommen. Dazu
+  eine **vierte Basis** `FRIEND_PORTRAIT_NOFIELD=1`: eine Regel, die das Gesicht
+  nie kannte. Nur sie beweist, dass das angelegte Feld wirklich schreibbar ist.
+- `tests/browser-doubles.test.mjs` neu **3/3** – jeder Firebase-Double in
+  `browser-tests/` wird so geparst wie der Browser es tut (siehe unten).
+- `browser-tests/avatar-handover.cjs` neu (Chromium, CI): das echte Konto mit
+  einem Profil **ohne** Gesicht und einem Spiegel im Speicher. Geprüft wird: das
+  Konto startet in beiden Fällen; die Übergabe kommt **genau einmal** und mit
+  dem Gesicht, das dieses Gerät zeigt; sie rührt den Namen nicht an; und das
+  Soldatendossier zeigt in beiden Fällen das **zusammengesetzte** Gesicht
+  (`data:image/png`), nicht die Platzhalter-Datei des Geschlechts – auch dann,
+  wenn die Regel das Schreiben ablehnt.
+- **Grenzen:** Die Emulator- und Chromium-Prüfungen laufen erst in der CI; lokal
+  fehlt die Java-Laufzeit für den Datenbank-Emulator und Chromium. Dieser
+  Eintrag wird nach dem CI-Lauf um das belegte Ergebnis ergänzt.
+
+Änderungen / Dateien: `tools/build-layers.mjs` und
+`IronPath/assets/layers/manifest.mjs` (13 Gesichter, neue Layer-Welle
+`20261118-faces13`); `IronPath/avatar-sync.mjs` (neu) samt
+`tests/avatar-sync.test.mjs` (neu) und `tests/browser-doubles.test.mjs` (neu); `account.js` (Übergabe im
+Profil-Horchposten, Porträt vor dem Neuzeichnen); `localization-de.mjs`
+(`Gesicht 4`–`Gesicht 7`); `firebase/friend-portrait-candidate.mjs` (Feld
+anlegen, einheitliche Freundes-Bedingung) samt
+`tests/friend-portrait-rules.test.mjs` und
+`firebase/rules-test/friend-portrait.test.mjs`; `browser-tests/avatar-handover.cjs`
+(neu) und `.github/workflows/ironpath-firebase-rules.yml`;
+`tests/avatar-layers.test.mjs`, `tests/avatar.test.mjs`
+(tiefster Wurf landet auf dem letzten Gesicht), `tests/recruit-screen.test.mjs`
+(sieben Gesichter; die deutschen Beschriftungen werden jetzt aus dem Manifest
+abgeleitet statt aufgeschrieben), `tests/workshop-alpha-wiring.test.mjs`,
+`browser-tests/cache-wave.cjs` und `firebase/rules-test/social-cleanup-browser.cjs`
+(neue Welle der Porträtmodule).
+
+Was mich der Cache-Test wieder gelehrt hat: `avatar.mjs`, `avatar-layers.mjs`
+und das Manifest liegen nicht auf der Veröffentlichungswelle, deshalb durften
+sie auf eine eigene Welle – aber **alle** ihre Importeure mussten mit
+(`account.js`, `recruit-screen.mjs`, `friend-portrait.mjs`, `avatar.mjs` selbst,
+die neue Übergabe und die beiden Prüfstände), damit nirgends zwei Fassungen
+nebeneinander im Cache liegen. `account.js` selbst hängt dagegen am Stempel
+`20261031-patch4`: ihn auf eine eigene Welle zu setzen, lehnt
+`tests/multiplayer-build-stamp.test.mjs` ab – dieselbe Lektion wie bei
+`cartoon-art.mjs` in IPL-0051. **Die Übergabe und die neuen Gesichter kommen
+also erst mit dem nächsten Stempel in die Browser**, nicht vorher; der Code
+selbst ist fertig und geprüft.
+
+Grenzen / Offen:
+
+- **Kein Mensch hat die neuen Gesichter gesehen.** Ich habe kein Augenlicht. Der
+  Kontaktbogen `IronPath/browser-artifacts/avatar-faces.png` zeigt alle 13
+  Gesichter in einer Zeile je Gesicht: ganz links der eigene Schnitt, daneben
+  jeder Haar-Layer, daneben jeder Bart. Die Maschine hat gemessen, dass alle 13
+  Bilder quadratisch sind und dass die Gesichtsfelder zwischen 34,6 % und
+  46,2 % Bildbreite liegen (die größte Abweichung ist der weibliche Dutt mit
+  43,6 % Mitte) – ob die Kombinationen „hochwertig und stimmig“ sind,
+  entscheidet erst der Blick des Betreibers.
+- **Die Regeln sind nicht veröffentlicht.** Kandidat und Prüfungen stehen; bis
+  zur Veröffentlichung bleibt das Gesicht ein Gerät pro Soldat. Der Betreiber
+  veröffentlicht.
+- **Die Qualitätsfrage ist damit nicht beantwortet**, nur die Grundlage
+  verbreitert: 13 statt 5 Gesichtern, gleiche Auswahl für beide Geschlechter.
+  Der Punkt „6–10 hochwertige, stimmige Looks“ bleibt offen, bis ein Mensch den
+  Bogen beurteilt hat.
+- **Die FELDNOTIZEN im Spiel bleiben unberührt.** Sie zeigen Spielern, was live
+  ist. Von diesem Schritt ist nichts live – nicht bevor die Regeln veröffentlicht
+  sind und der nächste Stempel ausgeliefert wird –, darum steht dort auch
+  weiterhin nur der alte Punkt. Das ist Absicht und kein Vergessen.
