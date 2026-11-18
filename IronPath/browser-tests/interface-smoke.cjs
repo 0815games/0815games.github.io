@@ -42,7 +42,8 @@ const fs = require('node:fs');
           `${name}: ${selector} is centred, not parked in a corner (off by ${Math.round(measured.dx)}/${Math.round(measured.dy)})`);
         assert.ok(measured.box.x >= -1 && measured.box.x + measured.box.width <= width + 1, `${name}: ${selector} stays inside the width`);
       };
-      await check('#authForm'); await check('#authSubmit');
+      await check('#authForm'); await check('#authSubmit'); await check('#adminLoginLink');
+      assert.equal(await page.locator('#adminLoginLink').getAttribute('href'), 'admin.html', `${name}: admin link points to admin.html`);
       await page.screenshot({ path: `browser-artifacts/${name}-signin.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#entry').hidden = true; document.querySelector('#gameView').hidden = false;
@@ -66,7 +67,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261031-patch6 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261031-patch7 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),

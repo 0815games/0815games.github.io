@@ -279,7 +279,8 @@ const waitForNewBuild=page=>page.waitForFunction(expected=>document.querySelecto
     assert.equal(await page.locator('meta[name="ironpath-build"]').getAttribute('content'),build,'a deployed field is already an operation, even before the first wave');
     await page.locator('#fieldOps > summary').click();
     assert.equal(await page.locator('#versionNotice').isVisible(),false,'the update notice does not cover the open field menu');
-    await page.locator('#fieldBack').click();
+    assert.equal(await page.locator('#fieldBack').count(),0,'field menu omits redundant Command Center button');
+    await page.locator('#backToCommand').evaluate(button=>button.click());
     await page.locator('#menuResume').waitFor({state:'visible'});await page.locator('#menuResume').click();
     const samePad=await visiblePad(page,pad.index);assert.ok(samePad,'the built tower remains on the same field');await page.mouse.click(samePad.x,samePad.y);
     await page.waitForFunction(()=>!document.getElementById('radialMenu').hidden&&document.getElementById('radialMenu').dataset.mode==='actions');

@@ -40,10 +40,11 @@ assert.ok(paths.size>1500,'generated seeds must produce a wide variety of roads'
 assert.equal(isMapId('gen-abcdefgh'),false);assert.equal(isMapId('gen-000000000'),false);
 
 const fixedRandom={getRandomValues(bytes){bytes[0]=0;return bytes;}};
-assert.equal(createRandomMapId(undefined,fixedRandom),'g3-000000000');
-assert.equal(createRandomMapId('g3-000000000',fixedRandom),'g3-000000001','restarts cannot reuse the immediately previous seed');
-assert.equal(createRandomMapId(undefined,fixedRandom,3),'g3-200000000','the sector rides in the id');
+assert.equal(createRandomMapId(undefined,fixedRandom),'g4-000000000');
+assert.equal(createRandomMapId('g4-000000000',fixedRandom),'g4-000000001','restarts cannot reuse the immediately previous seed');
+assert.equal(createRandomMapId(undefined,fixedRandom,3),'g4-200000000','the sector rides in the id');
 assert.equal(isMapId('g3-00000000'),false);assert.equal(isMapId('g3-0000000000'),false);assert.equal(isMapId('g3-0000000g'),false);assert.equal(isMapId('g3-'),false);
+assert.equal(isMapId('g4-00000000'),false);assert.equal(isMapId('g4-0000000000'),false);assert.equal(isMapId('g4-0000000g'),false);assert.equal(isMapId('g4-'),false);
 
 const themes=new Set(),roads=new Set();let saved;
 for(let i=0;i<3000;i++){
@@ -141,4 +142,32 @@ host.setPresence('host',true);host.setPresence('guest',true);host.setPresence('g
 assert.equal(host.snapshotFor('guest').match.mapId,'g3-1096af9a3');
 assert.deepEqual(getMap(host.snapshotFor('guest').match.mapId),getMap('g3-1096af9a3'));
 console.log('Grid-walk sector maps passed.');
+});
+
+test('cross-field g4 random maps march left-to-right or right-to-left across the entire field',()=>{
+for(const [index,spec] of SECTOR_SPECS.entries()){
+ const sector=index+1,edges=new Set();let multi=0;
+ for(let i=0;i<120;i++){
+  const id=`g4-${index.toString(16)}${(Math.imul(i+1,2654435761)>>>0).toString(16).padStart(8,'0')}`,map=getMap(id);
+  assert.equal(isMapId(id),true);assert.equal(map.sector,sector);assert.equal(sectorOf(id),sector);
+  const paths=map.paths||[map.path];
+  if(paths.length>1)multi++;
+  const firstEdge=map.path[0].x<0?'W':map.path[0].x>map.width?'E':null;
+  assert.ok(firstEdge==='W'||firstEdge==='E',`${id} cross-field starts only on West or East edge`);
+  edges.add(firstEdge);
+  for(const road of paths){
+   const edge=road[0].x<0?'W':road[0].x>map.width?'E':null;
+   assert.equal(edge,firstEdge,`${id} every lane starts on ${firstEdge}`);
+   assert.deepEqual(road.at(-1),map.bunker,`${id} ends in the bunker`);
+  }
+  if(firstEdge==='W')assert.ok(map.bunker.x>=map.width*0.72,`${id} W->E bunker sits on the opposite side`);
+  else assert.ok(map.bunker.x<=map.width*0.28,`${id} E->W bunker sits on the opposite side`);
+  const xs=map.path.map(p=>Math.max(0,Math.min(map.width,p.x)));
+  const spanPct=(Math.max(...xs)-Math.min(...xs))/map.width;
+  assert.ok(spanPct>=0.75,`${id} road spans ${(spanPct*100).toFixed(0)}% of field width`);
+  assert.ok(map.pads.filter(p=>p.x<map.width/2).length>=2&&map.pads.filter(p=>p.x>=map.width/2).length>=2,`${id} pads cover both halves of the field`);
+ }
+ assert.equal(edges.size,2,`sector ${sector}: uses both W->E and E->W directions`);
+ if(spec.roads>1)assert.ok(multi>=110,`sector ${sector}: keeps dual lanes on cross-field maps (${multi}/120)`);
+}
 });

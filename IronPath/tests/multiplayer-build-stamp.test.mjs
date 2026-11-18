@@ -52,8 +52,8 @@ test('changed browser modules and their importers share one cache wave without s
   'firebase-party-game.mjs','firebase-party-session.mjs','firebase-recoverable-game.mjs','firebase-recovery-store.mjs',
   'first-run-coach.mjs','first-run-ending.mjs','first-run-guide.mjs','four-game-view.mjs','four-modes.mjs',
   'friend-portrait.mjs','friends-ui.mjs','friends.mjs','game.js','intro.mjs','language.mjs','leaderboards-ui.mjs','leaderboards.mjs',
-  'localization-account-de.mjs','localization-battle-de.mjs','localization-game-errors-de.mjs','localization-more-static-de.mjs',
-  'match.mjs','multiplayer-prompts.mjs','multiplayer-speed.mjs','party-end-coordinator.mjs','party-signout.mjs','party-host.mjs','patch-notes.mjs','protocol.mjs','rank-insignia.mjs','recruit-screen.mjs','simulation.mjs',
+  'localization-account-de.mjs','localization-battle-de.mjs','localization-game-errors-de.mjs','localization-more-static-de.mjs','localization-results-de.mjs',
+  'maps.mjs','match.mjs','multiplayer-prompts.mjs','multiplayer-speed.mjs','party-end-coordinator.mjs','party-signout.mjs','party-host.mjs','patch-notes.mjs','protocol.mjs','rank-insignia.mjs','recruit-screen.mjs','simulation.mjs',
   'social-notifications.mjs','soldier-screen.mjs','solo-deployment.mjs','story-map-art.mjs','tutorial.mjs',
   'version-check.mjs','version-ui.mjs','versus.mjs','wave-consensus.mjs','workshop-multiplayer-game.mjs','workshop-solo.mjs'
  ]);

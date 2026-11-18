@@ -47,7 +47,7 @@ const partyGame=`import {createMatch} from './simulation.mjs';import {applyComma
     await page.waitForFunction(()=>document.getElementById('game').dataset.fullBattle==='true');
     const selected=await page.evaluate(async()=>{const {getMap}=await import('./maps.mjs'),{bunkerStart}=await import('./solo-deployment.mjs');const s=window.__selected,m=getMap(s.mapId);return {mapId:s.mapId,mode:s.mode,width:m.width,height:m.height,pads:m.pads.length,players:s.players.map(p=>({x:p.x,y:p.y})),spawns:s.players.map((_,i)=>bunkerStart(s.mapId,i)),laneStarts:window.__laneStarts};});
     assert.equal(selected.mode,mode);
-    assert.match(selected.mapId,/^g3-1[0-9a-f]{8}$/,`real account passes ${mode} to the large-map selector`);
+    assert.match(selected.mapId,/^g4-1[0-9a-f]{8}$/,`real account passes ${mode} to the large-map selector`);
     assert.equal(selected.width,1320);assert.equal(selected.height,720);assert.ok(selected.pads>=14);
     assert.deepEqual(selected.players,selected.spawns,'both roster players are created at the selected map bunker');
     if(mode==='versus')assert.deepEqual(selected.laneStarts,[selected.spawns[0],selected.spawns[0]],'both duelists start at the same bunker-relative point');

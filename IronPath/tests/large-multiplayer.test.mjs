@@ -11,7 +11,7 @@ const seed=value=>({getRandomValues(array){array.fill(value);return array;}});
 test('two-player large maps use reproducible sector-two geometry and valid bunker spawns',()=>{
  for(let i=0;i<100;i++){
   const id=createRandomMapId(null,seed(Math.imul(i,2654435761)>>>0),2),map=getMap(id);
-  assert.match(id,/^g3-1[0-9a-f]{8}$/);
+  assert.match(id,/^g4-1[0-9a-f]{8}$/);
   assert.equal(map.width,1320);assert.equal(map.height,720);
   assert.ok(map.pads.length>=14);
   assert.equal(map.paths?.length??1,1);
