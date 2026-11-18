@@ -143,7 +143,7 @@ export function renderSkillTree({document,container,build,level,selected,onSelec
   const heroPortrait=classArtElement(document,path.id,'class-hero-portrait');
   if(heroPortrait)emblemBox.append(heroPortrait);
   const badge=classBadgeSvg(document,path.id,34);
-  badge.className='class-hero-seal';
+  badge.setAttribute('class','class-hero-seal');
   emblemBox.append(badge);
   const headerInfo=document.createElement('div');
   headerInfo.className='class-hero-info';

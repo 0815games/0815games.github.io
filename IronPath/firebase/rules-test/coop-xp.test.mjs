@@ -55,7 +55,7 @@ test('actual game adapters show each balance and credit both players for a compl
   const qa=createCoopRewardQueue({db:alice,auth:authA,sdk:fullSdk,partyId:party}),qb=createCoopRewardQueue({db:bob,auth:authB,sdk:fullSdk,partyId:party});
   let readyA=false,readyB=false,viewA,viewB,stateA,stateB;
   const common={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids,clock:()=>performance.now()*16};
-  const a=createFirebasePartyGame({...common,db:alice,auth:authA,mapId:'g2-12345678',players:ids.map((id,i)=>createPlayer(id,{name:id,gender:'female',level:21,skills:i?'v2;medic;2;0;01000000000000':'v2;assault;2;0;10000000000000',loadout:i?'0,2,2':'1,0,1'},100,130)),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;},onWaveRewards:v=>qa.observe(v)});
+  const a=createFirebasePartyGame({...common,db:alice,auth:authA,mapId:'g2-12345678',players:ids.map((id,i)=>createPlayer(id,{name:id,gender:'female',level:21,skills:i?'v2;medic;2;0;11000000000000':'v2;assault;2;0;10000000000000',loadout:i?'0,2,2':'1,0,1'},100,130)),onStatus:v=>{readyA=v;},onState:v=>{stateA=v;},onSnapshot:v=>{viewA=v;},onWaveRewards:v=>qa.observe(v)});
   const b=createFirebasePartyGame({...common,db:bob,auth:authB,onStatus:v=>{readyB=v;},onState:v=>{stateB=v;},onSnapshot:v=>{viewB=v;},onWaveRewards:v=>qb.observe(v)});
   t.after(async()=>{qa.close();qb.close();await Promise.all([a.stop(),b.stop()]);});
   // Accelerate only the game tick; network and presence timers use real time.

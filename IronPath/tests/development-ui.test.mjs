@@ -11,7 +11,14 @@ class Element{
   prepend(...nodes){this.children.unshift(...nodes);}
   replaceChildren(...nodes){this.children=nodes;}
 }
-const document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new Element(tag)};
+const document={
+  createElement:tag=>new Element(tag),
+  createElementNS:(_,tag)=>{
+    const el=new Element(tag);
+    Object.defineProperty(el,'className',{get(){return el.attrs.class||'';},set(){throw new TypeError('Cannot set property className of #<SVGElement> which has only a getter');}});
+    return el;
+  }
+};
 
 // Phase 1: Unchosen build renders the 6 exclusive classes including Air Defense.
 const chooseContainer=new Element('div'),unchosen=parseBuild('v2;none',3);let selection;
