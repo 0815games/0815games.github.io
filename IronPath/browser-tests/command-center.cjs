@@ -563,6 +563,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#endlessLaunch').waitFor({state:'visible'});
     await page.locator('#endlessDeploy').click();
     await page.locator('#gameWorkspace').waitFor({state:'visible'});
+    await page.waitForFunction(()=>!document.getElementById('gameWorkspace').inert&&document.getElementById('message')?.textContent.includes('Free play ready.'),null,{timeout:15000});
     assert.equal(await visible('#game'),true,'an endless field is open before replaying its help tour');
     const preTourMap=await page.locator('#mapName').innerText();
     await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});
