@@ -48,6 +48,8 @@ test('an explicitly guarded build and versioned launcher stage separately from t
  // the guarded staging tree rather than accidentally exposing that project to
  // an isolated/test site. The real GitHub Pages source retains admin.html.
  assert.match(await readFile(join(source,'admin.html'),'utf8'),/ironpath-admin-database-url/);
+ assert.match(await readFile(join(source,'index.html'),'utf8'),/<a id="adminLoginLink" class="dossier-admin-link" href="admin\.html"/,'the main login dossier offers a direct Admin login link');
+ assert.doesNotMatch(html,/admin\.html|adminLoginLink/,'guarded builds exclude admin.html and strip any link to it');
  await assert.rejects(stat(join(result.directory,'admin.html')),error=>error.code==='ENOENT');
  await assert.rejects(stat(join(site,'admin.html')),error=>error.code==='ENOENT');
  assert.equal(Object.hasOwn(inventory.files,'admin.html'),false);

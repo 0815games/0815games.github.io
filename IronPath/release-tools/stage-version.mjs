@@ -135,8 +135,9 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
     const style='<style>#ironpath-guarded-game[hidden],#ironpath-guarded-hold[hidden]{display:none!important}#ironpath-guarded-hold{min-height:100vh;display:grid;place-items:center;padding:24px;background:#14241c;color:#f8f0dc;font:16px/1.6 Arial,sans-serif}#ironpath-guarded-hold .ironpath-guarded-message{max-width:560px;padding:32px;border:1px solid #95a080;background:#1b3028}#ironpath-guarded-hold b{color:#ead39a;font-size:11px;letter-spacing:.14em}#ironpath-guarded-hold h1{font:700 36px/1.1 Georgia,serif}#ironpath-guarded-hold a{color:#ead39a}</style>';
     // The guarded entry obtains its (possibly test-project) configuration from
     // release-config.mjs; do not leak the ordinary production database URL into
-    // an isolated build that never runs the ordinary bootstrap.
-    html=html.replace(maintenanceMeta,'').replace('</head>',`${style}</head>`).replace('<body>',`<body>${hold}`)
+    // an isolated build that never runs the ordinary bootstrap, and drop any link
+    // to admin.html which is intentionally omitted from guarded builds.
+    html=html.replace(maintenanceMeta,'').replace(/\s*<div class="dossier-admin">[\s\S]*?<\/div>/g,'').replace('</head>',`${style}</head>`).replace('<body>',`<body>${hold}`)
       .replace(account,'<script type="module" src="release-tools/guarded-game-entry.mjs"></script>')
       .replace('</body>','</div></body>');
   }

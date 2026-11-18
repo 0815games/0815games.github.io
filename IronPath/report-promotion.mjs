@@ -12,7 +12,7 @@
 // so a report whose rewards are still in the air cannot promote anybody - the
 // rule the XP tile in the battle HUD already follows.
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {rankForLevel,rankProgress} from './rank-insignia.mjs?v=20261031-patch6';
+import {rankForLevel,rankProgress} from './rank-insignia.mjs?v=20261031-patch7';
 
 // `levelsGained` is the number of levels THIS report added - not a lifetime
 // count, and not a guess at what the last wave was worth.

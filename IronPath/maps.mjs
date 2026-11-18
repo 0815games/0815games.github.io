@@ -24,14 +24,14 @@ export function getMap(id){
   if(typeof id==='string'&&Object.hasOwn(MAPS,id))return MAPS[id];
   if(typeof id==='string'&&Object.hasOwn(SQUAD_MAPS,id))return SQUAD_MAPS[id];
   if(!seeded(id))return MAPS[DEFAULT_MAP];
-  if(!generated.has(id)){if(generated.size>=MAX_CACHED)generated.delete(generated.keys().next().value);generated.set(id,id.startsWith('g2-')?buildRoadside(id):id.startsWith('g3-')?buildGridMap(id):buildGenerated(id));}
+  if(!generated.has(id)){if(generated.size>=MAX_CACHED)generated.delete(generated.keys().next().value);generated.set(id,id.startsWith('g2-')?buildRoadside(id):id.startsWith('g3-')?buildGridMap(id):id.startsWith('g4-')?buildGridMap(id,{crossField:true}):buildGenerated(id));}
   return generated.get(id);
 }
 
 // A compact seed is sent in the match snapshot, so every client reconstructs
 // identical roads and pads without sending bulky or untrusted geometry.
 const generated=new Map(),MAX_CACHED=128;
-const seeded=id=>/^(?:gen|g2)-[0-9a-f]{8}$|^g3-[0-9a-f]{9}$/.test(id);
+const seeded=id=>/^(?:gen|g2)-[0-9a-f]{8}$|^g[34]-[0-9a-f]{9}$/.test(id);
 function rng(seed){let x=seed>>>0;return ()=>{x=(Math.imul(x,1664525)+1013904223)>>>0;return x/4294967296;};}
 function pointDistance(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,len2=dx*dx+dy*dy,t=len2?Math.max(0,Math.min(1,((p.x-a.x)*dx+(p.y-a.y)*dy)/len2)):0;return Math.hypot(p.x-a.x-t*dx,p.y-a.y-t*dy);}
 function buildGenerated(id){
@@ -145,7 +145,7 @@ export const SECTOR_SPECS=Object.freeze([
   {width:1680,height:960, pads:18, roads:2, ruins:12,gates:3},
   {width:2040,height:1140,pads:22, roads:2, ruins:15,gates:4},
 ]);
-export function sectorOf(mapId){return /^g3-[0-9a-f]{9}$/.test(mapId||'')?Math.min(4,parseInt(mapId[3],16)+1):0;}
+export function sectorOf(mapId){return /^g[34]-[0-9a-f]{9}$/.test(mapId||'')?Math.min(4,parseInt(mapId[3],16)+1):0;}
 // How many soldiers a field can carry: the squad frontier by flag, generated
 // retreat sectors from the second onward (they have the pads and the room),
 // everything else - including generated sector one - stays a duo field.
@@ -208,7 +208,7 @@ function torchesFor(paths,pads,deco,bunker,width,height){
   if(!torches.length)pass(true);
   return torches;
 }
-function buildGridMap(id){
+function buildGridMap(id,{crossField=false}={}){
   const sector=Math.min(4,parseInt(id[3],16)+1),spec=SECTOR_SPECS[sector-1],random=rng(parseInt(id.slice(4),16));
   const cell=60,cols=spec.width/cell,rows=spec.height/cell;
   const themes=[['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arctic Tundra & Frozen Lake'],['marsh','Marshland & Delta Mudflats']];
@@ -219,11 +219,12 @@ function buildGridMap(id){
   // generator and free play keeps its five rotating themes.
   const story=STORY_FIELDS[id];
   const theme=story?story.theme:picked[0],name=story?story.name:picked[1];
-  // Reported: "Anfang irgendwo am Rand der Karte halt" - and the bunker is no
-  // longer glued to the right edge either. The end cell keeps two cells of
-  // distance to every edge so the gate and the bunker always sit fully on the
-  // field; the start is any cell on any of the four borders.
-  const bc=2+Math.floor(random()*(cols-5)),br=2+Math.floor(random()*(rows-5)),bunker={x:bc*cell+cell/2,y:br*cell+cell/2};
+  // Legacy g3 seeds keep their four-edge start and open interior bunker. Cross-
+  // field g4 seeds guarantee a full left-to-right or right-to-left crossing so
+  // endless and multiplayer maps never leave half the battlefield empty.
+  const leftToRight=crossField?random()<.5:false;
+  const bc=crossField?(leftToRight?cols-4+Math.floor(random()*2):2+Math.floor(random()*2)):2+Math.floor(random()*(cols-5));
+  const br=2+Math.floor(random()*(rows-5)),bunker={x:bc*cell+cell/2,y:br*cell+cell/2};
   const key=(c,r)=>r*cols+c,centre=(c,r)=>({x:c*cell+cell/2,y:r*cell+cell/2});
   const pickStart=edge=>edge==='W'?[0,1+Math.floor(random()*(rows-2))]:edge==='E'?[cols-1,1+Math.floor(random()*(rows-2))]:edge==='N'?[1+Math.floor(random()*(cols-2)),0]:[1+Math.floor(random()*(cols-2)),rows-1];
   const edgeCells=()=>{
@@ -368,7 +369,7 @@ function buildGridMap(id){
     return deco;
   }
   for(let attempt=0;attempt<80;attempt++){
-    const edges=['W','E','N','S'],firstEdge=edges[Math.floor(random()*edges.length)];
+    const edges=['W','E','N','S'],firstEdge=crossField?(leftToRight?'W':'E'):edges[Math.floor(random()*edges.length)];
     const first=walk(pickStart(firstEdge),[],Math.round(cols*1.3));
     if(!first)continue;
     let roadKeys=[first],roadEdges=[firstEdge];
@@ -379,11 +380,12 @@ function buildGridMap(id){
       for(const k of first){const c=k%cols,r=Math.floor(k/cols);for(const [dc,dr] of [[0,0],[1,0],[-1,0],[0,1],[0,-1]])blocked.add(key(c+dc,r+dr));}
       // The funnel: the two cells around the bunker belong to both roads, so
       // the second one can always finish no matter where the first wedged
-      // itself. Every border cell is tried, in random order.
+      // itself. Cross-field seeds keep both entrances on the same front edge.
       const shared=new Set();
       for(let dc=-2;dc<=2;dc++)for(let dr=-2;dr<=2;dr++)shared.add(key(bc+dc,br+dr));
       let second=null,secondEdge=null;
       for(const [ec,er,e] of edgeCells()){
+        if(crossField&&e!==firstEdge)continue;
         if(blocked.has(key(ec,er)))continue;
         const road=walk([ec,er],blocked,Math.round(cols*1.05),shared);
         if(road){second=road;secondEdge=e;break;}
@@ -419,7 +421,7 @@ function buildGridMap(id){
 export function createRandomMapId(previous,random=globalThis.crypto,sector=1){
   let value;if(random&&typeof random.getRandomValues==='function'){const bytes=new Uint32Array(1);random.getRandomValues(bytes);value=bytes[0];}else value=Math.floor(Math.random()*4294967296)>>>0;
   const tag=(Math.max(1,Math.min(4,Math.round(sector)))-1).toString(16);
-  let id=`g3-${tag}${value.toString(16).padStart(8,'0')}`;
-  if(id===previous)id=`g3-${tag}${((value+1)>>>0).toString(16).padStart(8,'0')}`;
+  let id=`g4-${tag}${value.toString(16).padStart(8,'0')}`;
+  if(id===previous)id=`g4-${tag}${((value+1)>>>0).toString(16).padStart(8,'0')}`;
   return id;
 }

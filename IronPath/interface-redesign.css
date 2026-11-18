@@ -123,7 +123,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .dossier-portrait img{width:100%;height:100%;display:block;object-fit:cover;object-position:center 28%}
 .dossier-portrait span{position:absolute;bottom:0;left:0;right:0;padding:20px 10px 10px;background:linear-gradient(transparent,#14261fea);color:#ebd49c;text-align:left}
 .dossier-intro{padding:0 2px}.dossier-kicker{color:#dfc991}.entry .dossier h2{font-size:28px;color:#f5ead0}.dossier-stamp{transform:none;color:#d7c28c;border:1px solid #8e9a77}
-.dossier-copy{align-self:end;margin:0;color:#c9d6bf}.entry .dossier-form{margin:15px 0 0}.dossier-footer{grid-column:1/-1;margin-top:16px;border-top:1px solid #627961;color:#bccbb3}
+.dossier-copy{align-self:end;margin:0;color:#c9d6bf}.entry .dossier-form{margin:15px 0 0}.dossier-bottom{grid-column:1/-1;margin-top:14px}.dossier-admin{display:flex;justify-content:center;padding-top:4px;margin-bottom:6px}.dossier-admin-link{display:inline-flex;align-items:center;min-height:44px;padding:6px 10px;color:#c8d3b8;font-size:12px;text-decoration:underline;text-underline-offset:3px}.dossier-admin-link:hover{color:#f3e4b2}.dossier-footer{margin-top:0;border-top:1px solid #627961;color:#bccbb3}
 .tutorial-dialog{width:min(620px,calc(100vw - 24px));background:#172b23;color:#f1ead4;border:1px solid #899b7b;padding:20px;box-shadow:0 22px 85px #000d}
 .tutorial-dialog .eyebrow{color:#dec98e}.tutorial-dialog h2{color:#f6e9ca;font:700 27px Georgia,serif}.tutorial-dialog .tutorial-text{color:#d4dfcc;min-height:0;line-height:1.55}
 .tutorial-scene{aspect-ratio:5/2;border:1px solid #819575;border-radius:3px;box-shadow:none;background:linear-gradient(#11231b60,#11231b72),url('assets/story-outpost.jpg') center 58%/cover}
@@ -132,7 +132,7 @@ button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visi
 .tutorial-dialog .practice-armory>div{background:#354e3d;border:1px solid #7d9275}.tutorial-dialog .practice-armory small,.tutorial-dialog .practice-icon{color:#d8c995}
 .tutorial-dialog button{background:#36503e;border:1px solid #8b9b80;color:#f3e9ce;box-shadow:none;border-radius:3px}.tutorial-dialog button.primary{background:#e4ca89;border-color:#e4ca89;color:#1b3024}.tutorial-dialog .tutorial-skip,.tutorial-dialog .tutorial-practice-skip{color:#e5d09c;border-color:#829475}
 .tutorial-dialog .tutorial-practice button[aria-pressed=true]{background:#bb774e;color:#fff7d6}
-@media(max-width:600px){.dossier{grid-template-columns:1fr;gap:0;padding:15px}.dossier-heading{grid-row:auto;display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center}.dossier-portrait{height:130px}.entry .dossier h2{font-size:24px}.dossier-copy{margin:14px 0 0}.dossier-footer{grid-column:auto}.tutorial-dialog{padding:14px}.tutorial-dialog h2{font-size:23px}}
+@media(max-width:600px){.dossier{grid-template-columns:1fr;gap:0;padding:15px}.dossier-heading{grid-row:auto;display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center}.dossier-portrait{height:130px}.entry .dossier h2{font-size:24px}.dossier-copy{margin:14px 0 0}.dossier-bottom,.dossier-footer{grid-column:auto}.tutorial-dialog{padding:14px}.tutorial-dialog h2{font-size:23px}}
 
 /* Iron Path identity and field equipment refresh. */
 .brand-logo{filter:drop-shadow(0 3px 7px #0009)}

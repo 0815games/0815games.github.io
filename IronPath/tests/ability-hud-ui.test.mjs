@@ -41,12 +41,13 @@ test('the button names the ability, shows its mark and says why it is waiting',a
   assert.equal(f.el('abilityState').textContent,'START THE WAVE');
   assert.equal(hud.disabled,true);
 
-  // A wave with an enemy on the field: ready, and the ring that introduces it.
+  // A wave with an enemy on the field: ready, with attention ring, notice banner and radio intro.
   f.el('start').onclick();f.tick();
   assert.equal(hud.dataset.state,'ready','the wave runs and there is something to hit');
   assert.equal(f.el('abilityState').textContent,'READY');
   assert.equal(hud.disabled,false);
-  assert.equal(hud.classList.contains('ability-hud--new'),true,'the first ready ability is introduced once');
+  assert.equal(hud.classList.contains('ability-hud--new'),true,'the ready ability announces itself visibly');
+  assert.match(f.el('fieldNoticeText').textContent,/Airstrike is ready!/,'and the field notice alerts the player when it becomes ready');
   assert.match(f.el('message').textContent,/Airstrike is ready\. Use it from the button at the bottom right/,'and the radio says where it is');
 });
 
@@ -69,15 +70,26 @@ test('without a chosen ability the button explains where to get one',async()=>{
   assert.match(f.el('fieldNoticeText').textContent,/Choose an ability under SKILLS/,'and asking again says it again');
 });
 
-test('a recharging ability counts its seconds down, from the player state',async()=>{
+test('a recharging ability counts its seconds down, from the player state, and alerts again when ready',async()=>{
   // Supply Drop needs nothing but a running wave - a full bunker would refuse
   // Field Repair and prove nothing about the cooldown.
   const f=await field({skills:'0,0,2,0,0;logistics'});
   f.el('start').onclick();f.tick();
   assert.equal(f.el('abilityName').textContent,'SUPPLY DROP');
   assert.equal(f.el('ability').dataset.state,'ready','logistics needs nothing but a running wave');
+  assert.match(f.el('fieldNoticeText').textContent,/Supply Drop is ready!/,'announces readiness via the visible field notice');
+  f.el('fieldNoticeText').textContent='';
+  f.el('ability').classList.remove('ability-hud--new');
   f.el('ability').onclick();f.tick(2);
   assert.equal(f.el('ability').dataset.state,'cooldown','and after use it recharges');
   assert.match(f.el('abilityState').textContent,/^READY IN \d+s$/,'with the seconds written out');
   assert.equal(f.el('ability').disabled,true);
+  // Let the 30s cooldown finish inside the running wave so readiness returns
+  // (the loop clamps each tick to 0.05s, so advance in 50ms steps).
+  for(let i=0;i<700&&f.el('ability').dataset.state==='cooldown';i++)f.tick(1,50);
+  if(f.el('ability').dataset.state==='not-running'){f.el('start').onclick();f.tick();}
+  assert.equal(f.el('ability').dataset.state,'ready','returns to ready after recharging');
+  assert.equal(f.el('ability').disabled,false);
+  assert.equal(f.el('ability').classList.contains('ability-hud--new'),true,'re-triggers the visible ring burst after recharging');
+  assert.match(f.el('fieldNoticeText').textContent,/Supply Drop is ready!/,'alerts the player again when cooldown finishes');
 });

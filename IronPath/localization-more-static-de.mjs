@@ -106,6 +106,7 @@ export const germanMoreStatic=Object.freeze({
   "No endless run yet on this device.": "Auf diesem Gerät gab es noch keine Endlos-Runde.",
   "SIGN IN": "ANMELDEN",
   "CREATE ACCOUNT": "KONTO ERSTELLEN",
+  "Admin login": "Admin-Login",
   "BACK TO SIGN IN": "ZURÜCK ZUR ANMELDUNG",
   "RECRUITING OFFICE": "MUSTERUNG",
   "Your name and face are permanent. Friends can find you by soldier name and player ID.": "Dein Name und dein Gesicht bleiben dauerhaft. Freunde finden dich über Soldatennamen und Spieler-ID.",

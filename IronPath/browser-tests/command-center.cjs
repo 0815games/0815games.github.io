@@ -324,13 +324,12 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     assert.equal(await page.locator('#coachRecall').isHidden(),true,'an open card needs no recall');
     await page.locator('#coachClose').click();
     await page.locator('#coachRecall').waitFor({state:'visible',timeout:5000});
-    // Dismissing must not be the end of it: the field menu and the Command Center both
-    // replay the same seven cards. The old replay path opened the retired modal tour.
+    // Dismissing pauses the coaching card; SHOW TASK brings it back cleanly, while
+    // the cluttered field menu no longer carries Replay Coaching or Command Center.
     await page.locator('#fieldOps > summary').click();
-    await page.locator('#fieldCoachReplay').click();
-    await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
-    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/,'the replay starts at the first card');
-    await page.locator('#coachClose').click();
+    assert.equal(await page.locator('#fieldCoachReplay').count(),0,'Replay Coaching is removed from the field menu');
+    assert.equal(await page.locator('#fieldBack').count(),0,'Command Center button is removed from the field menu');
+    await page.locator('#fieldOps > summary').click();
     // Back to the Command Center for the rest of the sweep. Ending a run opens the
     // debrief, which is modal, so close it before touching anything else.
     await page.locator('#endRun').click();
@@ -425,7 +424,7 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     assert.equal(await visible('#campaignPanel'),false); assert.equal(await visible('#fourPartyPanel'),false);
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;});await page.locator('#game').click({position:{x:5,y:5}});assert.equal(await page.locator('#radialMenu').isHidden(),true,'outside click closes the tower sheet');
     await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=false;document.querySelector('#towerDetails').showModal();});await page.mouse.click(1,1);assert.equal(await page.locator('#towerDetails').evaluate(e=>e.open),false,'backdrop closes tower details');assert.equal(await page.locator('#radialMenu').isHidden(),true);
-    await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();
+    await page.locator('#fieldOps > summary').click();assert.equal(await page.locator('#fieldBack').count(),0);await page.locator('#fieldOps > summary').click();await page.locator('#backToCommand').evaluate(button=>button.click());
     await page.locator('#menuMultiplayer').click(); await page.locator('#fourPartyPanel').waitFor({state:'visible'});await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='de';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('#fourPartyCreate').innerText(),'GRUPPE ERSTELLEN');assert.equal(await page.locator('label[for=fourPartyCodeInput]').innerText(),'MIT CODE BEITRETEN');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});await page.locator('#lobbyFriends').click();assert.equal(await page.locator('#friendsDialog').evaluate(e=>e.open),true);await page.locator('#friendsClose').click();
     await page.locator('.multiplayer-help summary').click(); assert.match(await page.locator('.multiplayer-help').innerText(),/codes can be guessed/i); assert.match(await page.locator('.multiplayer-help').innerText(),/host reload/i);await page.locator('#fourPartyCodeInput').click();assert.equal(await page.locator('.multiplayer-help').evaluate(e=>e.open),false,'outside click closes disclosure');
     assert.equal(await visible('.profile-bar'),false,'no soldier header in lobby'); assert.equal(await visible('#campaignPanel'),false);
@@ -450,8 +449,8 @@ if (!languageToken) throw new Error('game.js does not import language.mjs with a
     await page.locator('#fullscreenToggle').click();await page.waitForFunction(()=>!document.fullscreenElement);
     assert.equal(await page.locator('#fullscreenToggle').getAttribute('aria-pressed'),'false');
     await page.locator('#settingsClose').click();assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false,'the dialog the field menu opened closes again');
-    // Back to the field: the menu is usable again once no dialog owns the pointer.
-    await page.locator('#fieldOps > summary').click();await page.locator('#fieldBack').click();await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
+    // Back to the Command Center: pause the solo run via Command Center workspace navigation.
+    await page.locator('#backToCommand').evaluate(button=>button.click());await page.locator('#menuSkills').click();assert.equal(await page.locator('#skillDialog').evaluate(e=>e.open),true);await page.locator('#skillCancel').click();
     await page.setViewportSize({width:390,height:844});
     mark('endless run');
     // Ending a solo run returns to the command center underneath its report.

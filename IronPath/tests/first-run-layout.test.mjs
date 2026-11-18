@@ -270,16 +270,20 @@ test('the coach can be reopened after it was dismissed', () => {
   const replay = coach.slice(coach.indexOf('replay(id){'), coach.indexOf('stop(){hide()'));
   assert.match(replay, /index=0/, 'which starts at the first card');
   assert.doesNotMatch(replay, /coachSeen/, 'and does not ask the seen marker');
-  // One replay path only: the Command Center button and the field menu use the same
-  // thing, because two paths drift apart (the old one replayed the retired modal).
+  // One replay path only: Command Center's Field Tutorial button and Settings
+  // both replay the live coach (`showTutorial` -> `coach?.replay`), while the
+  // cluttered field-menu shortcut and redundant Command Center exit stay out of
+  // `#fieldOps`.
   const game = readFileSync(resolve(root, 'game.js'), 'utf8');
   const show = game.slice(game.indexOf('showTutorial:()=>'), game.indexOf('showTutorial:()=>') + 420);
   // Stufe 1: the coach is feature-gated, so the replay is optional-chained -
   // with the flag off the action falls through to the tutorial replay.
   assert.match(show, /coach\?\.replay/, 'the field tutorial action replays the coach');
-  assert.match(readFileSync(resolve(root, 'field-menu.mjs'), 'utf8'), /fieldCoachReplay/,
-    'and the field menu offers it in-match');
-  assert.match(html, /id="fieldCoachReplay"/);
+  const commandCenter = readFileSync(resolve(root, 'command-center.mjs'), 'utf8');
+  assert.match(commandCenter, /menuTutorial[\s\S]*showTutorial/, 'the Command Center routes tutorial replay into showTutorial');
+  const fieldMenu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  assert.doesNotMatch(fieldMenu, /fieldCoachReplay|fieldBack/, 'field menu no longer wires redundant replay/back buttons');
+  assert.doesNotMatch(html, /id="fieldCoachReplay"|id="fieldBack"/, 'field menu no longer renders redundant replay/back buttons');
 });
 
 test('sprites ask for a redraw when they finish loading', () => {

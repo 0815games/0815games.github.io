@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261031-patch6';
+import {getLanguage} from './language.mjs?v=20261031-patch7';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -45,7 +45,31 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
-    id:'patch5',build:'20261031-patch6',pr:314,
+    id:'patch7',build:'20261031-patch7',pr:316,
+    title:{en:'Cross-field maps, cleaner field menu, READY alert & admin link',de:'Durchgehende Karten, aufgeräumtes Feldmenü, READY-Signal & Admin-Login'},
+    shipped:[
+      {en:'Random endless and multiplayer battlefields (g4 seeds) now always march West↔East across the full width with pads in both halves, while keeping campaign and legacy seeds unchanged.',de:'Zufällige Endlos- und Mehrspieler-Karten (g4-Seeds) verlaufen jetzt immer quer über die volle Breite West↔Ost mit Bauplätzen in beiden Hälften, während Kampagnen- und Altsave-Seeds stabil bleiben.'},
+      {en:'Removed redundant Replay Coaching and Command Center buttons from the in-match menu, placing Settings and Sign Out cleanly separated at the bottom.',de:'Unnötige Knöpfe „Coaching wiederholen“ und „Kommandozentrale“ aus dem Gefechtsmenü entfernt; Einstellungen und Abmelden sitzen sauber getrennt ganz unten.'},
+      {en:'Added a glowing READY badge and pulse on the action skill button plus a non-blocking readiness alert banner when an ability first becomes ready or finishes recharging.',de:'Aktion-Skill-Knopf mit leuchtendem BEREIT-Abzeichen und Puls hervorgehoben sowie unaufdringliche Bereitschafts-Meldung beim ersten Bereitwerden und nach Abklingzeit ergänzt.'},
+      {en:'Added a direct Admin login link inside the sign-in dossier while continuing to strip it from isolated guarded builds.',de:'Direkten Admin-Login-Link in der Anmelde-Akte ergänzt; in isolierten geschützten Test-Builds wird er weiterhin entfernt.'},
+    ],
+    open:[
+      {en:'Playwright CI sweep and real phone/desktop check across sign-in, cross-field random maps, field menu and ready indicator.',de:'Playwright-CI-Lauf sowie echte Handy-/Desktop-Prüfung von Login, West↔Ost-Karten, Feldmenü und READY-Signal.'},
+      {en:'Final device sign-off of Block 4 avatars and upcoming Block 5/6/7 roadmap.',de:'Abschließende Geräteabnahme der Block-4-Avatare sowie die nächsten Blöcke 5, 6 und 7.'},
+    ],
+  },
+  {
+    id:'patch6',build:'20261031-patch6',pr:315,
+    title:{en:'Version dispatch card layout & artwork',de:'Versionshinweis-Layout & Felddepeschen-Motiv'},
+    shipped:[
+      {en:'Fixed the update dispatch popup with landscape field-dispatch artwork above the text and action row so long German notices never get crushed on narrow phones.',de:'Versionshinweis-Popup mit querformatigem Felddepeschen-Motiv über Text und Knöpfen korrigiert, damit lange deutsche Texte auf schmalen Handys sauber lesbar bleiben.'},
+    ],
+    open:[
+      {en:'Final device acceptance of Block 4 avatars and remaining roadmap blocks.',de:'Abschließende Geräteabnahme der Block-4-Avatare sowie offene Roadmap-Blöcke.'},
+    ],
+  },
+  {
+    id:'patch5',build:'20261031-patch5',pr:314,
     title:{en:'Block 4 avatar rebuild & wave rollout',de:'Block-4-Avatar-Neubau & Rollout-Welle'},
     shipped:[
       {en:'Rebuilt avatar generator: 12 clean frontal base heads, 17 hairstyles, 6 beards and 5 shared hair/beard colors tinted at runtime.',de:'Neu aufgebauter Avatar-Baukasten: 12 frontale Basisköpfe, 17 Frisuren, 6 Bärte und 5 gemeinsame Haar-/Bartfarben mit Laufzeit-Färbung.'},
@@ -53,8 +77,7 @@ export const RELEASED_PATCHES=Object.freeze([
       {en:'Published live friend/avatar database rules (gender/avatar reads and avatar format validation) and earlier interface polish (#299–#312).',de:'Freundes-/Avatar-Datenbankregeln (gender-/avatar-Reads und Avatar-Formatprüfung) sowie vorheriger Oberflächen-Feinschliff (#299–#312) veröffentlicht.'},
     ],
     open:[
-      {en:'Real-device acceptance of the new avatars and the redesigned version notice popup.',de:'Echte Geräteabnahme der neuen Avatare sowie des neu gestalteten Versionshinweis-Popups.'},
-      {en:'Earlier network-traffic tuning for projectile visuals (D1) and Block 5/6/7 roadmap items.',de:'Frühere Netzdaten-Optimierung der Schussgrafik (D1) sowie die Punkte aus Block 5, 6 und 7.'},
+      {en:'Real-device acceptance of the new avatars and earlier Block 5/6/7 roadmap items.',de:'Echte Geräteabnahme der neuen Avatare sowie die Punkte aus Block 5, 6 und 7.'},
     ],
   },
   {

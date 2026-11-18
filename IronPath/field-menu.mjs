@@ -14,14 +14,9 @@ export function setupFieldMenu({document, onLanguageChange = () => () => {}, onS
   const menu = $('fieldOps');
   if (!menu) return;
 
-  for (const [source, target] of [['fieldBack', 'backToCommand'], ['fieldParty', 'partyToggle'], ['fieldMissionBoard', 'campaignShowBoard'], ['fieldLogout', 'menuLogout']]) {
+  for (const [source, target] of [['fieldParty', 'partyToggle'], ['fieldMissionBoard', 'campaignShowBoard'], ['fieldLogout', 'menuLogout']]) {
     $(source)?.addEventListener('click', () => { menu.open = false; $(target)?.click(); });
   }
-
-  // Dismissing the coaching card must not be a one-way door: this replays the seven
-  // cards on the live field. It borrows the Command Center's "first run again" action
-  // so there is exactly one replay path, not two that can drift apart.
-  $('fieldCoachReplay')?.addEventListener('click', () => { menu.open = false; $('menuTutorial')?.click(); });
 
   // Settings: same dialog the Command Center opens, closed over the field.
   $('fieldSettings')?.addEventListener('click', () => {

@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261031-patch6';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261031-patch7';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 import {localizeGameMessage} from './game-localization.mjs?v=20261107-balance1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261031-patch6';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261031-patch7';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -15,30 +15,30 @@ import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
 import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261031-patch6';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261117-ability1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261117-ability1';
+import {projectFourGameView} from './four-game-view.mjs?v=20261031-patch7';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261031-patch7';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261031-patch7';
 import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261112-tagless1';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-patch6';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261031-patch7';
 import {projectCoopMotion} from './coop-motion.mjs?v=20261112-tagless1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-finale1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261031-patch7';
 import {createCombatEffects} from './combat-fx.mjs?v=20261031-finale1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-patch6';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261031-patch7';
 import {abilityName} from './skills.mjs?v=20261107-balance1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261031-patch6';
-import { createTutorial } from './tutorial.mjs?v=20261031-patch6';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261031-patch6';
+import { createCoopInput } from './coop-input.mjs?v=20261031-patch7';
+import { createTutorial } from './tutorial.mjs?v=20261031-patch7';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261031-patch7';
 import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261117-ability1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-patch6';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-patch6';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261031-patch7';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261031-patch7';
 import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261031-finale1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
@@ -154,14 +154,15 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     ended:()=>tr('OPERATION OVER'),
     'no-skill':()=>tr('CHOOSE IN SKILLS'),
   };
-  let abilityView=null,abilityPending=false,abilityEmptyHinted=false;
+  let abilityView=null,abilityPending=false,abilityEmptyHinted=false,wasAbilityReady=false,abilityReadyNotified=false,abilityHintTimer=null;
   // The storage lives further down this closure; reading it too early would be
   // a question nobody asked, so the hint simply stays available instead.
   function hintStorage(){try{return tutorialStorage??null;}catch{return null;}}
   function abilityHint(){
-    try{$('ability').classList.add('ability-hud--new');}catch{/* A stubbed field has no class list. */}
-    const timer=setTimeout(()=>{try{$('ability').classList.remove('ability-hud--new');}catch{}},6000);
-    timer?.unref?.();
+    if(abilityHintTimer!==null){clearTimeout(abilityHintTimer);abilityHintTimer=null;}
+    try{$('ability').classList.remove('ability-hud--new');void $('ability').offsetWidth;$('ability').classList.add('ability-hud--new');}catch{/* A stubbed field has no class list. */}
+    abilityHintTimer=setTimeout(()=>{abilityHintTimer=null;try{$('ability').classList.remove('ability-hud--new');}catch{}},6000);
+    abilityHintTimer?.unref?.();
   }
   function renderAbility(player){
     const hud=abilityHud({skills:player?.skills,cooldown:player?.cooldown,running:!!state.running,enemies:state.enemies?.length||0,menuOpen:!menu.hidden,coopReady:coop?coopReady:true,ended:!!state.ended});
@@ -176,15 +177,18 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     $('abilityState').textContent=(ABILITY_STATE[hud.reason]||ABILITY_STATE.ready)(hud);
     try{$('abilityIcon').innerHTML=abilityHudSvg(hud.active,{size:26});}catch{/* No DOM in unit tests. */}
     try{node.setAttribute('aria-label',`${tr(hud.name)}: ${$('abilityState').textContent}`);}catch{}
-    // One quiet introduction, once per device: the first time an ability is
-    // really ready, the button wears a ring for a moment and the radio says it.
-    // With nothing chosen the button cannot be asked, so it says its piece on
-    // its own - once, in the radio, the first time the field runs empty-handed.
+    if(hud.reason==='cooldown')abilityReadyNotified=false;
     if(hud.reason==='no-skill'&&!abilityEmptyHinted){abilityEmptyHinted=true;warn(tr('Choose an ability under SKILLS in the command center.'));}
-    if(hud.ready&&!coachSeen('ability-hud',hintStorage())){
-      markCoachSeen('ability-hud',hintStorage());abilityHint();
-      notice(()=>tr('{ability} is ready. Use it from the button at the bottom right of the field.',{ability:tr(hud.name)}));
+    if(hud.ready&&!wasAbilityReady&&!abilityReadyNotified){
+      abilityReadyNotified=true;
+      abilityHint();
+      warn(()=>tr('{ability} is ready!',{ability:tr(hud.name)}));
+      if(!coachSeen('ability-hud',hintStorage())){
+        markCoachSeen('ability-hud',hintStorage());
+        notice(()=>tr('{ability} is ready. Use it from the button at the bottom right of the field.',{ability:tr(hud.name)}));
+      }
     }
+    wasAbilityReady=hud.ready;
   }
 function renderResults(target){
     const snapshot=target.snapshot;if(!snapshot)return;const waves=waveRewardSummary(snapshot,target.playerId),p=snapshot.players?.[target.playerId],damage=p?.towerDamage||[],combos=Object.entries(p?.comboCounts||{}).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]);
@@ -500,7 +504,7 @@ function renderResults(target){
     // Only replace the old run after the version check and confirmation succeed.
     soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -1315,6 +1319,7 @@ function renderResults(target){
   function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
   function beginCoop(factory,onUpdate=()=>{},reportId=null,mode=null,onFinalSnapshot=null){
     if(releaseStopped||coop||!account.isReady()||(onFinalSnapshot!==null&&typeof onFinalSnapshot!=='function'))return false;
+    wasAbilityReady=false;abilityReadyNotified=false;
     $('gameWorkspace').dataset.onlineReady='false';$('onlineConnecting').textContent=tr('Connecting to the multiplayer battlefield…');hostFocusPaused=false;rosterGeneration=0;focusGeneration=0;
     // Both two-player modes get an existing larger, one-road sector-two map.
     // The host's snapshot carries its seed to the guest; recovery retains the

@@ -73,11 +73,11 @@ grünen Testsuite vollständig erledigt.
 | [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **80 %** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis und Browser-/Handy-Tests des Betreibers (`[IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)`). | Umgang mit dauerhaft fehlenden Mitgliedern beim Party-Abschluss sowie Einsteigerbalance-Messung/-Abstimmung ([C](#c--multiplayer-mit-anfangscharakteren)); gleichzeitige 2–4-Geräte-Netzwechsel und Firefox bei Bedarf gesondert prüfen. |
 | [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **80 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), Namensregel/Reservierung/Audit-Skript/Umbenennungsmechanismus (`A1`) + Betreiber-Tests in Browser und Handy. | Bestandsaufnahme/Migration für Alt-Namensduplikate (`CHARACTER-NAME-AUDIT.md`) vor Aktivierung von `characterNames`, Entscheidung/UI-Einstiegspunkt fürs Umbenennen sowie nächster Build-Stempel für gecachte Browser. |
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
-| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) auf `main` veröffentlicht (`IPL-0060`), plus korrigiertes `#versionNotice`-Dispatch-Popup mit Spielstil-Artwork auf `20261031-patch6` vorbereitet (`IPL-0061`). | Echte Browser-/Handy-Abnahme der neuen Avatare und des korrigierten `#versionNotice`-Popups nach Merge von `20261031-patch6`. |
+| [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
 | [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **20 %** | Fünf bestehende Klassen und zehn Turm-Kits mit Rängen I–III vorhanden; Veteranen-UI-Preisfix veröffentlicht (`#289`). | Bossjäger III und Doppel-MG III korrigieren; sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Ausbauwege, Klassenicons und einmalige Punkterückgabe/Migration + Balance. |
 | [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
 | [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **5 %** | Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte. | Komplettes Lebens-, Angriffs-, Vorwarnungs- und Reparatursystem für Soldaten, Türme und Bunker in allen Spielmodi samt Simulation, Multiplayer-Sync und Balance. |
-| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **75 %** | Mittige Popups + AFK-Pausebild (`#306`), korrigiertes `#versionNotice`-Dispatch-Popup mit `version-dispatch.jpg` (`20261031-patch6` lokal), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests in Browser und Handy. | CI-Wiederholungsregelung für Browser-Matrix (`test:party-recovery-browser`), Live-Veröffentlichung Block-2/4-Rules + Namens-Audit (`CHARACTER-NAME-AUDIT.md`), `#versionNotice`-Abnahme auf echtem Handy sowie abschließender Build-Stempel-/Altsave-Check nach den Blöcken 1–7. |
+| [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **75 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; lokal auf `20261031-patch7` (`IPL-0063`): `g4`-West↔Ost-Seeding, aufgeräumtes `#fieldOps`, `READY`-Signal + Hinweisbanner für `#ability` und Admin-Login-Link auf `#authView`. | CI-Retry-Regelung (`test:party-recovery-browser`), Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie Browser-CI-/Geräteabnahme von `20261031-patch7` (`IPL-0063`). |
 
 **Zusätzlich, nicht Teil der sechs Originalblöcke:** [Block 7/E](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) schlägt ein
 Lebens-, Angriffs- und Reparatursystem für Soldaten, Türme und Bunker vor. Auf
@@ -99,11 +99,11 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Restpunkte: dauerhaft fehlende Mitglieder beim Abschluss, Einsteigerbalance (`C`). | **80 %** · In Arbeit (Browser-/Handy-Tests abgenommen) |
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Restpunkte: Namens-Audit/Altbestände (`A1`), Umbenennen-Einstieg, Build-Stempel (`Porträt-Rules sind veröffentlicht`). | **80 %** · In Arbeit (Browser-/Handy-Tests & Porträt-Rules abgenommen) |
 | 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
-| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`) live via PR #314 (`20261031-patch5`); `#versionNotice`-Layout-Fix + Spielstil-Artwork auf `20261031-patch6` vorbereitet (`IPL-0061`); offen echte Geräteabnahme. | **90 %** · Live auf `20261031-patch5` (`20261031-patch6`-Follow-up lokal bereit; Abnahme offen) |
+| 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **90 %** · Live auf `20261031-patch6` (Popup bestätigt; Avatar-Abnahme offen) |
 | 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | Bossjäger III/Doppel-MG III korrigieren, Luftabwehrklasse, exklusive Klassenwahl, Punkterückgabe. | **20 %** · Geplant |
 | 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Charakter-Auftragsakte, große vertonte Mission mit Generalstimme und anschließender Menüführung. | **25 %** · Geplant |
 | 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (neu aufgenommen) |
-| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#312`) erledigt/abgenommen; offen CI-Retry, Rules-Rollout, Build-Stempel/Altsaves. | **70 %** · Sammelstelle |
+| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) live; Block-8-Zwischenpatch (`IPL-0063`, `20261031-patch7`: West↔Ost-Karten, `#fieldOps`, `READY`-Signal, Admin-Login) lokal gebaut/geprüft; offen: CI-/Geräteabnahme + CI-Retry, Rules-Rollout, Altsaves. | **75 %** · Sammelstelle (Zwischenpatch lokal fertig) |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
@@ -480,13 +480,10 @@ entstand, ist nicht sicher belegt.
 - [ ] **Build-Stempel für geräteübergreifendes Teilen, `#versionNotice`-Layoutfix & Geräteabnahme:**
   Die Firebase-Rules (`gender.read` + `avatar.read` + `avatar['.validate']`)
   sind live veröffentlicht (`IPL-0056`), und [PR #314](https://github.com/0815games/0815games.github.io/pull/314)
-  (`533d1dbf`) wurde als Build `20261031-patch5` erfolgreich gemerged und über
-  Pages ausgerollt (`IPL-0060`). Beim Live-Test von `20261031-patch5` zeigte
-  das zentrierte `#versionNotice`-Popup vertikal gequetschten Text neben einem
-  100-%-breiten `DISMISS`-Button samt horizontalem Scrollbalken. Dieser
-  Layoutfehler wurde mit neuer Spielstil-Artwork (`assets/version-dispatch.jpg`)
-  und der Cache-Welle `20261031-patch6` behoben ([IPL-0061](PATCH-LOG.md#ipl-0061--version-notice-layoutfix-und-dispatch-artwork-20261031-patch6-lokal));
-  Merge/Rollout und echte Geräteabnahme von Avataren und Popup stehen noch aus.
+  (`533d1dbf`, `20261031-patch5`) sowie [PR #315](https://github.com/0815games/0815games.github.io/pull/315)
+  (`c5607827`, `20261031-patch6`, `#versionNotice`-Layoutfix + `assets/version-dispatch.jpg`)
+  sind auf `main`/Pages live (`IPL-0062`). Das neue Versions-Popup wurde vom
+  Betreiber bestätigt; die echte Geräteabnahme der neuen Avatare steht noch aus.
 - [x] **Alte Auswahl erhalten, Fortschritt/XP/Ausrüstung unangetastet:**
   alte Einzel-Looks (`look:bob`, `g:m|look:beard`) und #313-`face:*`-Werte
   werden auf die neuen frontalen Basisköpfe abgebildet; Emulator-, Chromium-
@@ -1111,7 +1108,36 @@ Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
   sichtbaren UI- und Gameplay-Änderungen (inklusive Turmschimmer, Titelkarte,
   Notice, Burger-Menü, AFK-Karte, Popups, Schussspuren und Fähigkeits-HUD)
   wurden vom Betreiber im Browser und am Handy ohne Verbesserungsbedarf
-  bestätigt ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).
+  bestätigt ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers));
+  das korrigierte `#versionNotice`-Popup mit Bild unter `20261031-patch6`
+  ebenfalls (`IPL-0062`).
+
+### Neue Spiel-/UI-Nacharbeiten (Wunschliste vom 2026-11-18, `IPL-0062` / lokal umgesetzt `IPL-0063`)
+
+- [x] **Karten-Seeding links ↔ rechts statt halb leerer Endloskarten (`maps.mjs`):**
+  Versionierte `g4-<sector><8-hex>`-Seeds in `IronPath/maps.mjs` legen Start
+  konsequent auf die West- oder Ostkante (`W↔E`), den Bunker gegenüber (links
+  oder rechts) und verteilen Bauplätze über beide Feldhälften (`1.600/1.600`
+  Sektor-1–4-Seeds sowie `tests/maps.test.mjs` bestanden); Kampagnen- und
+  Altsave-`g3-`-Seeds bleiben unverändert stabil. *(CI-/Geräteabnahme offen.)*
+- [x] **Ingame-Feldmenü bereinigen und Abstände ordnen (`index.html`, `field-menu.mjs`, `field-command.css`):**
+  **„Coaching wiederholen“** (`#fieldCoachReplay`) und **„Kommandozentrale“**
+  (`#fieldBack`) aus `#fieldOps` und `field-menu.mjs` entfernt;
+  **„Einstellungen“** (`#fieldSettings`) und **„Abmelden“** (`#fieldLogout`)
+  in `.field-ops-footer` mit Trennlinie und `8px`-Abstand unten angeordnet.
+  *(CI-/Geräteabnahme offen.)*
+- [x] **Aktion-Skill-Button mit klarem `READY`-Signal (`field-command.css`, `game.js`, `localization-results-de.mjs`):**
+  Dauerhafte Hervorhebung für `#ability[data-state="ready"]` (goldener Rahmen,
+  leuchtendes Medaillon, kontrastreiches `READY`/`BEREIT`-Badge und sanfter
+  Impuls mit `prefers-reduced-motion: reduce`), erneuter Aufmerksamkeitsring
+  `.ability-hud--new` plus nicht-blockierende Feldmeldung `{ability} is ready!` /
+  `{ability} ist bereit!` beim Bereitwerden sowie nach Abklingzeit.
+  *(Unit-Tests inkl. Abklingzeit bestanden; CI-/Geräteabnahme offen.)*
+- [x] **Admin-Login-Einstieg im Loginscreen (`index.html`, `interface-redesign.css`, `localization-more-static-de.mjs`, `release-tools/stage-version.mjs`):**
+  Übersetzter Link `#adminLoginLink` (`Admin login` / `Admin-Login`) in
+  `.dossier-bottom` außerhalb von `aria-hidden` auf `#authView` ergänzt; in
+  isolierten geschützten Test-Builds (`stage-version.mjs`) wird `.dossier-admin`
+  automatisch entfernt. *(Packaging-Tests bestanden; CI-/Geräteabnahme offen.)*
 
 ## Gemeinsame Freigabe
 

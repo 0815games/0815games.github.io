@@ -3128,3 +3128,103 @@ Grenzen / Offen:
   und PR gegen `main` (inkl. `IronPath/browser-artifacts/firebase-rtdb-rules-ready.json`
   weiterhin bewusst ausgeschlossen).
 
+## IPL-0062 – PR #315 gemerged, #versionNotice bestätigt und neue Block-8-Punkte aufgenommen
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  GitHub-/Pages-Ereignisse am `2026-11-18` und Rückmeldung des Betreibers auf
+  Branch `arena/df03e963-0815games-github-io`.
+- **Block / Ziel:** Nachtrag zum Merge von PR #315 (`20261031-patch6`),
+  Bestätigung des `#versionNotice`-Dispatch-Popups durch den Betreiber sowie
+  Aufnahme der neuen Block-8-Wünsche in `IronPath/PATCH-BLOECKE.md`.
+- **Git / CI / Live-Status:**
+  - [PR #315](https://github.com/0815games/0815games.github.io/pull/315)
+    lief vor dem Merge komplett grün durch (Run `44298787512`: `13 / 13` Checks
+    bestanden inkl. `interface-browser-smoke` über `320px`, `390px` und
+    `1440px`, `database-rules`, `game-regressions`, 8× `party-finalization-browser`
+    und Vercel-Preview).
+  - Merge in `main` als Commit [`c5607827`](https://github.com/0815games/0815games.github.io/commit/c5607827c136da9ff766512d48caca94a74213f3);
+    `pages-build-deployment` (Run `44300670501`) sowie Post-Merge-CI auf `main`
+    (Run `44300672349`, alle `11 / 11` Jobs) schlossen mit `success` ab.
+- **Rückmeldung und neue Punkte des Betreibers:**
+  - `#versionNotice`-Artwork/Layout unter `20261031-patch6` vom Betreiber
+    bestätigt (*„Das mit dem Bild hat gepasst zwecks neuer Verison.“*); die
+    Punkte AFK-Popup mit Soldat-Artwork, Rückkehr zum Loginscreen und mittiges
+    Versions-Popup waren bereits in Block 8 eingebaut und bestätigt.
+  - Neu in Block 8 von `IronPath/PATCH-BLOECKE.md` aufgenommen (`lokal vor
+    Implementierung`): (1) Karten-Seeding konsequent links ↔ rechts ohne halb
+    leere Endloskarten, (2) Ingame-Feldmenü ohne Coaching/Kommandozentrale
+    samt Einstellungen & Abmelden sauber mit Abstand unten, (3) sichtbares
+    Bereitschafts-/Benachrichtigungssignal am Aktion-Skill-Button bei `READY`,
+    (4) Admin-Login-Einstieg direkt im Loginscreen.
+- **Offen:** Prioritätsentscheidung des Betreibers (Block-8-Feinschliff
+  vorziehen oder Block 5 Skills beginnen) sowie abschließende
+  Handy-Abnahme der Block-4-Avatare.
+
+## IPL-0063 – Block-8-Zwischenpatch 20261031-patch7 (g4-Seeding, Feldmenü, READY-Signal, Admin-Link) lokal
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC` (Arbeitsstand auf
+  Branch `arena/df03e963-0815games-github-io`, nach Freigabe *„Block 8 go“*).
+- **Block / Ziel:** Umsetzung der vier unter `IPL-0062` aufgenommenen
+  Block-8-Nacharbeiten vor Start von Block 5 (Skills), inklusive vollständiger
+  Cache-Welle `20261031-patch7`, Feldnotizen-Synchronisierung und automatisierter
+  Tests.
+- **Umsetzung im Detail:**
+  - **1 · Durchgehendes West↔Ost-Karten-Seeding (`IronPath/maps.mjs`):**
+    Versioniertes Seed-Präfix `g4-<sector><8-hex>` ergänzt (`isMapId` /
+    `sectorOf` erkennen `g[34]-`; `createRandomMapId()` erzeugt `g4-`); in
+    `buildGridMap(id, {crossField: true})` starten alle Straßen auf `W` oder
+    `E`, marschieren quer über die gesamte Karte zum gegenüberliegenden Bunker
+    (`cols - 4..cols - 3` bzw. `2..3`) und verteilen Bauplätze auf beide
+    Hälften; bestehende Kampagnen-, Story- und Legacy-`g3-`-Seeds bleiben
+    unverändert. Abhängige Tests/Browser-Checks angepasst
+    (`IronPath/tests/maps.test.mjs` inkl. 4×120-Sektortest für `g4-`,
+    `IronPath/tests/large-multiplayer.test.mjs`,
+    `IronPath/browser-tests/multiplayer-account-handoff.cjs`).
+  - **2 · Bereinigtes Ingame-Feldmenü (`IronPath/index.html`, `IronPath/field-menu.mjs`, `IronPath/field-command.css`):**
+    `#fieldCoachReplay` („Coaching wiederholen“) und `#fieldBack`
+    („Kommandozentrale“) aus `#fieldOps` und `field-menu.mjs` entfernt;
+    `#fieldSettings` („Einstellungen“) und `#fieldLogout` („Abmelden“) liegen
+    in `.field-ops-footer` mit Trennlinie und `8px`-Abstand sauber unten
+    (`min-height: 44px`). Zugehörige Tests/Skripte aktualisiert
+    (`IronPath/tests/field-signout.test.mjs` korrigiert verschachteltes
+    `</details>`-Slicing, `IronPath/tests/first-run-layout.test.mjs`,
+    `IronPath/browser-tests/{command-center,release-gates}.cjs`).
+  - **3 · Deutliches `READY`-Signal am Aktion-Skill (`IronPath/field-command.css`, `IronPath/game.js`, `IronPath/localization-results-de.mjs`):**
+    `#ability[data-state="ready"]` erhält goldenen Rahmen, beleuchtetes
+    Icon-Medaillon, kontrastreiches `READY`/`BEREIT`-Badge und sanften Puls
+    (`@keyframes ability-hud-ready`, unter `prefers-reduced-motion: reduce`
+    deaktiviert). `game.js` verfolgt `wasAbilityReady` / `abilityReadyNotified`
+    (Zurücksetzen bei Reset, Koop-Start und `cooldown`) und löst sowohl beim
+    ersten Bereitwerden als auch nach Ablauf der Abklingzeit `.ability-hud--new`
+    plus eine nicht-blockierende `#fieldNotice`-Meldung (`{ability} is ready!` /
+    `{ability} ist bereit!`) aus (`IronPath/tests/ability-hud-ui.test.mjs` um
+    Abklingzeit-Rückkehr erweitert).
+  - **4 · Admin-Login-Link im Loginscreen (`IronPath/index.html`, `IronPath/interface-redesign.css`, `IronPath/localization-more-static-de.mjs`, `IronPath/release-tools/stage-version.mjs`):**
+    `<a id="adminLoginLink" href="admin.html">` innerhalb von `.dossier-bottom`
+    (außerhalb `aria-hidden`, `min-height: 44px`) in `index.html` verankert und
+    auf Deutsch (`Admin-Login`) übersetzt; `stage-version.mjs` entfernt
+    `.dossier-admin` in isolierten geschützten Builds (`tests/release-site-packaging.test.mjs`
+    und `browser-tests/interface-smoke.cjs` um `#adminLoginLink` ergänzt).
+  - **5 · Cache-Welle & Dokumentation:** Build-Stempel (`20261031-patch7`),
+    `maps.mjs`, `localization-results-de.mjs`, `interface-redesign.css`,
+    `field-command.css`, `battle-viewport*.mjs`, `release-version.json`,
+    `patch-notes.mjs`, `tests/multiplayer-build-stamp.test.mjs`,
+    `tests/patch-notes.test.mjs`, `browser-tests/cache-wave.cjs` und
+    `PATCH-BLOECKE.md` (Block 8 auf `75 %`) aktualisiert.
+- **Prüfung (Rechnerstand):**
+  - `g4-`-Generator-Prüfung über `1.600 / 1.600` Zufalls-Seeds (je 400 in
+    Sektor 1–4): `edges=E,W`, `minSpan >= 78%`, `multi=400/400` in Sektor 3–4,
+    `badPads=0`.
+  - `node -c` auf den fünf geänderten `.cjs`-Browser-Skripten bestanden.
+  - `node --test IronPath/tests/*.test.mjs`: `1132 / 1133` bestanden (`0` Fehler,
+    `1` bekannter übersprungener Rules-Test ohne lokalen Java-Emulator).
+  - `node IronPath/stress-tests/run.mjs`: alle 18 Solo-/Koop-/Versus-/3er-/
+    4er-/2v2-Durchläufe, 6 Langläufe bis Welle 30, 500 Karten-Stichproben,
+    Dichte- und Protokoll-Tests bestanden.
+  - **Grenzen:** Kein lokaler Chromium-Browser / Java-Emulator in dieser
+    Sandbox; Playwright- und Emulator-Läufe laufen über den PR-CI-Workflow,
+    anschließend folgt echte Geräteabnahme durch den Betreiber.
+- **Git / PR / Status:** Lokal umgesetzt und verifiziert; bereit für Commit,
+  Push und PR gegen `main`.
+
+
