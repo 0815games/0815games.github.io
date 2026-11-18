@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261031-patch7';
+import {getLanguage} from './language.mjs?v=20261031-patch8';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -45,6 +45,18 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
+    id:'patch8',build:'20261031-patch8',pr:317,
+    title:{en:'Boss Hunter III & Twin MG III kit fixes + CI matrix retry',de:'Korrekturen für Bossjäger III & Doppel-MG III + CI-Wiederholung'},
+    shipped:[
+      {en:'Fixed Boss Hunter III (Rank III) so destroying a boss awards the promised +25 team supply bounty and emits the bounty notice without double-counting wave salvage bonuses.',de:'Bossjäger III (Rang III) korrigiert: ein vom Turm zerstörter Boss zahlt jetzt die versprochenen +25 Team-Vorräte samt Kopfgeld-Hinweis aus, ohne Wellen-/Plünderboni doppelt zu zählen.'},
+      {en:'Fixed Twin MG III (Rank III) so the aircraft damage multiplier rises to 1.0 (full 22 base damage against planes and air bosses instead of 13.2), while leaving Heavy MG unchanged at 0.6.',de:'Doppel-MG III (Rang III) korrigiert: der Luftziel-Faktor steigt auf 1,0 (volle 22 Grundschaden gegen Flugzeuge und Luft-Bosse statt 13,2), während Schweres MG bei 0,6 bleibt.'},
+      {en:'Added at most one automatic retry with child-process cleanup on the 8-job party-finalization-browser CI matrix.',de:'Maximal einen automatischen Wiederholungslauf samt Kindprozess-Bereinigung für die 8-Job-Browser-Matrix party-finalization-browser ergänzt.'},
+    ],
+    open:[
+      {en:'PR #317 CI matrix confirmation, Pages rollout and Block 5 major class/skill overhaul (6th Air Defense class, exclusive level-2 class tree & safe point reset).',de:'PR-#317-CI-Prüfung, Pages-Ausrollung sowie der große Block-5-Klassen-/Skill-Umbau (6. Luftabwehrklasse, exklusive Klassenwahl ab Level 2 & sichere Punkterückgabe).'},
+    ],
+  },
+  {
     id:'patch7',build:'20261031-patch7',pr:316,
     title:{en:'Cross-field maps, cleaner field menu, READY alert & admin link',de:'Durchgehende Karten, aufgeräumtes Feldmenü, READY-Signal & Admin-Login'},
     shipped:[
@@ -54,8 +66,7 @@ export const RELEASED_PATCHES=Object.freeze([
       {en:'Added a direct Admin login link inside the sign-in dossier while continuing to strip it from isolated guarded builds.',de:'Direkten Admin-Login-Link in der Anmelde-Akte ergänzt; in isolierten geschützten Test-Builds wird er weiterhin entfernt.'},
     ],
     open:[
-      {en:'Playwright CI sweep and real phone/desktop check across sign-in, cross-field random maps, field menu and ready indicator.',de:'Playwright-CI-Lauf sowie echte Handy-/Desktop-Prüfung von Login, West↔Ost-Karten, Feldmenü und READY-Signal.'},
-      {en:'Final device sign-off of Block 4 avatars and upcoming Block 5/6/7 roadmap.',de:'Abschließende Geräteabnahme der Block-4-Avatare sowie die nächsten Blöcke 5, 6 und 7.'},
+      {en:'Real phone and desktop verification across sign-in, cross-field random maps, field menu and READY indicator (CI 13/13 & Pages live via PR #316).',de:'Echte Handy-/Desktop-Abnahme von Login, West↔Ost-Karten, Feldmenü und READY-Signal (CI 13/13 & Pages via PR #316 live).'},
     ],
   },
   {
@@ -178,10 +189,10 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block5',status:'planned',
     title:{en:'Block 5 · Skills',de:'Block 5 · Fähigkeiten'},
     shipped:[
-      {en:'Five classes and ten tower kits with ranks I–III exist; the veteran price fix is live.',de:'Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; der Veteranenpreis-Fix ist live.'},
+      {en:'Five classes and ten tower kits with ranks I–III exist; veteran price fix plus Boss Hunter III bounty and Twin MG III aircraft full-damage fixes are implemented.',de:'Fünf Klassen und zehn Turm-Kits mit Rängen I–III existieren; Veteranenpreis-Fix sowie die Korrekturen für Bossjäger III (+25 Kopfgeld) und Doppel-MG III (Vollschaden gegen Flugzeuge) sind umgesetzt.'},
     ],
     open:[
-      {en:'Fix Boss Hunter III and Twin MG III, add the sixth anti-air class, exclusive class choice and a safe point refund.',de:'Bossjäger III und Doppel-MG III korrigieren, die sechste Luftabwehrklasse, exklusive Klassenauswahl und eine sichere Punkterückgabe.'},
+      {en:'Add the sixth Air Defense class, exclusive level-2 class choice, class-unlocked tower upgrade paths, six icons and a safe one-time skill reset.',de:'Sechste Luftabwehrklasse, exklusive Klassenwahl ab Level 2, klassenabhängige Turm-Ausbauwege, sechs Icons und sichere einmalige Punkterückgabe umsetzen.'},
     ],
   },
   {

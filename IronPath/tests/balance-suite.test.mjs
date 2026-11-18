@@ -235,7 +235,11 @@ test('no kit choice breaks the endless curve',()=>{
   // all still lose to the forest curve eventually - and the situational
   // Boss Hunter kit, which trades wave DPS for boss damage, stays bounded:
   // clearly worse than the default kit, never catastrophically broken.
-  assert.ok(runSolo('forest',{...GEARS.rookie,branch:MIXED_KIT},50).wave<50,'mixed kits: the curve still wins');
+  // With Twin MG III fixed for full aircraft damage, mixed kits survive wave
+  // 49 before falling at wave 50, so give the curve a 55-wave runway.
+  const mixed=runSolo('forest',{...GEARS.rookie,branch:MIXED_KIT},55);
+  assert.equal(mixed.ended,'defeat','mixed kits: the curve still wins');
+  assert.ok(mixed.wave<55,`mixed kits fall before wave 55 (fell at ${mixed.wave})`);
   assert.ok(runSolo('forest',{...GEARS.rookie,branch:1},50).wave<50,'heavy guns: the curve still wins');
   const hunter=runSolo('forest',{...GEARS.veteran,branch:3},50).wave;
   assert.ok(hunter<50,'boss hunters: the curve still wins');

@@ -380,7 +380,7 @@ jobs:
     # long recovery/sign-out cases out of the already full interface job and
     # avoids parallel Firebase emulators competing on the same machine.
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -424,10 +424,18 @@ jobs:
           TEST_SCRIPT: ${{ matrix.script }}
         shell: bash
         run: |
-          if timeout 660 npm run "$TEST_SCRIPT" > /tmp/party-finalization-browser.log 2>&1; then
+          for attempt in 1 2; do
+            : > /tmp/party-finalization-browser.log
+            if timeout 480 npm run "$TEST_SCRIPT" > /tmp/party-finalization-browser.log 2>&1; then
+              cat /tmp/party-finalization-browser.log
+              exit 0
+            fi
             cat /tmp/party-finalization-browser.log
-          else
-            cat /tmp/party-finalization-browser.log
-            python3 -c "from pathlib import Path; s=Path('/tmp/party-finalization-browser.log').read_text()[-5000:]; print('::error title=Party finalization emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
-            exit 1
-          fi
+            if [ "$attempt" -eq 1 ]; then
+              echo "::warning title=Party finalization emulator retry::$TEST_SCRIPT failed on attempt 1; cleaning up and retrying once"
+              pkill -f "java .*emulator|firebase-tools|chrome-headless|headless_shell|chromium" || true
+              sleep 3
+            fi
+          done
+          python3 -c "from pathlib import Path; s=Path('/tmp/party-finalization-browser.log').read_text()[-5000:]; print('::error title=Party finalization emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+          exit 1

@@ -50,7 +50,9 @@ export function makeEnemy(kind, wave) {
 }
 export function towerDamage(type, level, branch, enemyKind) {
   const baseKind=BOSS_CATALOG.find(b=>b.kind===enemyKind)?.base||enemyKind;
-  const multiplier=DAMAGE_MULTIPLIERS[type]?.[baseKind];
+  // Twin MG III (type 0, branch 0, rank III at level 5+) strips the aircraft
+  // penalty and deals full base damage against planes and air bosses.
+  const multiplier=(type===0 && branch===0 && level>=5 && baseKind==='plane')?1:DAMAGE_MULTIPLIERS[type]?.[baseKind];
   if(multiplier===undefined) throw new Error('Invalid tower or enemy');
   const base=[10,34,17,45][type];
   const armorBonus=type===3 && branch===1 && baseKind==='tank'?1.4:1;

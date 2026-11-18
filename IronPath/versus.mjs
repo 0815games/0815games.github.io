@@ -1,8 +1,8 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261031-patch7';
-import {applyCommand} from './match.mjs?v=20261031-patch7';
-import {WAVE_COUNT} from './combat.mjs?v=20261031-finale1';
-import {bunkerStart} from './solo-deployment.mjs?v=20261031-patch7';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261031-patch7';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261031-patch8';
+import {applyCommand} from './match.mjs?v=20261031-patch8';
+import {WAVE_COUNT} from './combat.mjs?v=20261031-patch8';
+import {bunkerStart} from './solo-deployment.mjs?v=20261031-patch8';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261031-patch8';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.

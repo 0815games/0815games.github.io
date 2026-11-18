@@ -22,7 +22,7 @@
 //     without a picture;
 //   * one map, one announcement. The same map loaded twice is announced again
 //     (it is a new battle), but a redraw of the same battle is not.
-import {drawRoad,drawGroundDetails,themeGroundColor} from './cartoon-art.mjs?v=20261031-patch7';
+import {drawRoad,drawGroundDetails,themeGroundColor} from './cartoon-art.mjs?v=20261031-patch8';
 
 // The seed the ground is drawn from, so the same map always paints the same
 // picture. A number from the map's own id - no new randomness, no second truth.

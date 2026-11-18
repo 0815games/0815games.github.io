@@ -79,7 +79,16 @@ export function towerDamageBonus(state,tower,target){
 // `events` is the step's event array; `rewardTeam` is passed in by the
 // simulation so this module stays dependency-free.
 export function applyHitEffects(state,tower,target,dealt,events,rewardTeam){
-  if(!target||target.hp<=0)return;
+  if(!target)return;
+  // Boss Hunter III: the trophy gun pays +25 supplies for a boss it finishes.
+  // Check the lethal hit before early-returning on target.hp<=0 so the bonus
+  // actually triggers when a tower lands the killing blow.
+  if(isKit(tower,undefined,3,3)&&target.boss&&!target.bountyPaid&&target.hp<=0){
+    target.bountyPaid=true;
+    rewardTeam?.(state,25,false);
+    events?.push?.({type:'bounty'});
+  }
+  if(target.hp<=0)return;
   // Twin MG II: suppression nest - every hit pins ground enemies for 1s.
   if(isKit(tower,0,0,2)&&target.kind!=='plane')target.pinned=Math.max(target.pinned||0,1);
   // Heavy MG II: interdiction - every hit pins for 2s.
@@ -110,12 +119,6 @@ export function applyHitEffects(state,tower,target,dealt,events,rewardTeam){
   }
   // Siege Cannon III: the blast clears dust clouds at the impact point.
   if(isKit(tower,1,1,3)&&state.dustClouds?.length)state.dustClouds=state.dustClouds.filter(c=>Math.hypot(c.x-target.x,c.y-target.y)>60);
-  // Boss Hunter III: the trophy gun pays +25 supplies for a boss it finishes.
-  if(isKit(tower,undefined,3,3)&&target.boss&&!target.bountyPaid&&target.hp<=0){
-    target.bountyPaid=true;
-    rewardTeam?.(state,25,true);
-    events?.push?.({type:'bounty'});
-  }
 }
 
 // Veteran Kit III: a commanded crew's own upgrades cost 15% less.
