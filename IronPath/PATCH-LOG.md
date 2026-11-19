@@ -3528,9 +3528,10 @@ Grenzen / Offen:
   - **Artworks (`IronPath/assets/`, alle `1376×768` text-/randfreie JPEGs):** `login-bunker-watch.jpg`, `login-radio-rain.jpg`, `login-convoy-prep.jpg`, `login-tactical-map.jpg`, `mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`, `endless-random.jpg`.
   - **Markup, Styling & Tests:** `IronPath/index.html`, `IronPath/style.css`, `IronPath/menu-redesign.css` (inkl. `flex-wrap: nowrap` auf Freunde-/Bestenlisten-Header für 320px-EN/DE-Breite), `IronPath/tests/{login-scene,first-run-layout,settings,endless-launcher,menu-redesign,multiplayer-build-stamp,skill-draft-ui}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,multiplayer-prompt-layout,wave-consensus}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9e`, `pr: 324`) & vollständige `?v=20261119-block9e`-Cache-Welle.
 - **Prüfungen:**
-  - `node --test IronPath/tests/*.test.mjs`, `node IronPath/stress-tests/run.mjs` und Syntaxprüfung (`node --check`) vor Commit ausgeführt; Chromium/Playwright-Browsertests sowie Java/Firebase-Emulator-Tests laufen mangels lokalem Browser/Java über die GitHub-Actions-Pipeline auf PR #324.
-- **Git / PR / Release:** `lokal/uncommittet` vor Commit/Push auf `arena/f7cdd26a-0815games-github-io` (PR #324 offen).
-- **Offen:** Grüner CI-Lauf auf `20261119-block9e` sowie anschließende echte Geräteabnahme vor Block 6.
+  - `node --test IronPath/tests/*.test.mjs` (**1.163 bestanden, 0 fehlgeschlagen, 1 erwarteter Ancestor-Skip** in `release-pages-site.test.mjs`), `node IronPath/stress-tests/run.mjs` und Syntaxprüfung (`node --check`) vor Commit ausgeführt.
+  - GitHub CI Run `44533883836` auf `4f7d7cd` (PR #324): **13/13 Checks bestanden** (`database-rules` inkl. `test:block9d`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `active-session-browser.cjs` Schritte `1b`–`1c`, `interface-smoke.cjs` EN/DE auf `320/390/1440px`, `command-center.cjs`, `wave-consensus.cjs`, `multiplayer-prompt-layout.cjs`, alle 8 `party-finalization-browser`-Jobs sowie Vercel-Preview).
+- **Git / PR / Release:** Commit `689f1a6` + Testfix `4f7d7cd` auf `arena/f7cdd26a-0815games-github-io` gepusht; **PR #324 offen** (CI `44533883836` 13/13 grün). Dokumentation anschließend per Patch-Log-Commit aktualisiert.
+- **Offen:** Merge von PR #324 durch den Betreiber sowie echte Desktop- und Handy-Abnahme auf `20261119-block9e` vor Beginn von Block 6.
 
 
 
