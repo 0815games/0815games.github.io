@@ -208,6 +208,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('block9d-output.log').read_text()[-3500:]; print('::error title=Block 9D session emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run Block 2 publish rules & conflict migration emulator tests
+        shell: bash
+        run: |
+          if npm run test:block2 > block2-output.log 2>&1; then
+            cat block2-output.log
+          else
+            cat block2-output.log
+            python3 -c "from pathlib import Path; s=Path('block2-output.log').read_text()[-3500:]; print('::error title=Block 2 publish emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Run complete story rules tests
         shell: bash
         run: |
@@ -366,6 +376,7 @@ jobs:
                timeout 180 node IronPath/browser-tests/multiplayer-account-handoff.cjs && \
                timeout 180 node IronPath/browser-tests/friends-sections.cjs && \
                timeout 180 node IronPath/browser-tests/character-discharge.cjs && \
+               timeout 180 node IronPath/browser-tests/name-conflict.cjs && \
                timeout 180 node IronPath/browser-tests/avatar-handover.cjs && \
                timeout 180 node IronPath/browser-tests/maintenance-preview.cjs && \
                timeout 180 node IronPath/browser-tests/release-stage.cjs && \

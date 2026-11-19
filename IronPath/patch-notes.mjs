@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9g';
+import {getLanguage} from './language.mjs?v=20261119-block2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block2',build:'20261119-block2',pr:327,
+    title:{en:'Block 2 · Strict Global Soldier-Name Uniqueness & Legacy Duplicate Conflict Resolution',de:'Block 2 · Weltweit eindeutige Soldatennamen & konfliktfreie Altbestands-Auflösung'},
+    shipped:[
+      {en:'Upgraded soldier-name normalization across client (`character-name.mjs`, `NFC_CASEFOLD_V2`) and audit (`audit-character-names.py`) to full Unicode case folding (`0` discrepancies across all 282,230 Unicode characters: `Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`) with 2–24 UTF-16 character limits and 96-byte normalized keys.',de:'Soldatennamen-Normalisierung in Client (`character-name.mjs`, `NFC_CASEFOLD_V2`) und Audit (`audit-character-names.py`) auf vollständiges Unicode-Case-Folding umgestellt (`0` Abweichungen über alle 282.230 Unicode-Zeichen: `Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`) bei 2–24 Zeichen Anzeigelänge und 96-Byte-Indexschlüsseln.'},
+      {en:'Wired silent login reservation backfill (`character-name-conflict.mjs`) + cross-session deletion release fallback (`account.js`) and a blocking duplicate conflict modal (`#nameConflictDialog`) with no public general rename control, letting affected legacy accounts rename atomically (`createCharacterRename`) without losing XP, gear, skills, or campaign progress.',de:'Stille Hintergrund-Reservierung beim Login (`character-name-conflict.mjs`), sitzungsübergreifende Löschfreigabe (`account.js`) sowie einen blockierenden Konflikt-Dialog (`#nameConflictDialog`) ohne allgemeine Umbenennungs-Schaltfläche integriert, sodass betroffene Alt-Konten sich per `createCharacterRename` umbenennen können – bei vollem Erhalt von EP, Ausrüstung, Fähigkeiten und Kampagne.'},
+      {en:'Built `BLOCK2-RULES-TO-PUBLISH.json` strictly additively on the live `BLOCK9D` RTDB ruleset (`MAINTENANCE_GATE`-protected `characterNames/$key` index + unlisted `players/$uid/name` rename permission), plus emulator and Chromium verification.',de:'`BLOCK2-RULES-TO-PUBLISH.json` streng additiv auf dem live laufenden `BLOCK9D`-Regelwerk aufgebaut (`characterNames/$key` mit `MAINTENANCE_GATE`-Schutz und Umbenennungsrecht für ungelistete Spieler) samt Emulator- und Chromium-Tests.'},
+    ],
+    open:[
+      {en:'Publish `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in Firebase RTDB Console to enforce server-side uniqueness live, followed by real-device checks.',de:'Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole zur serverseitigen Aktivierung sowie echte Geräteprüfung.'},
+    ],
+  },
   {
     id:'block9g',build:'20261119-block9g',pr:326,
     title:{en:'Block 9g · Redesigned Soldier Card (Bottom EXP), Painted HQ Action Cards & Balanced Results Placement',de:'Block 9g · Überarbeitete Soldatenkarte (EXP unten), gestaltete HQ-Aktionskarten & ausgerichtete Ergebnis-Schaltfläche'},
@@ -255,10 +267,10 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block2',status:'planned',
     title:{en:'Block 2 · Character and friends',de:'Block 2 · Charakter und Freunde'},
     shipped:[
-      {en:'Character cleanup, sign-out afterwards, friendship, invitations and further social fixes; portraits with a safe placeholder.',de:'Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen und weitere Social-Fixes; Porträts mit sicherem Platzhalter.'},
+      {en:'Character cleanup, sign-out afterwards, friendship, invitations, friend portraits & published portrait/social rules, plus strict `NFC_CASEFOLD_V2` soldier-name uniqueness, silent login backfill, conflict-only duplicate rename UI, and `BLOCK2-RULES-TO-PUBLISH.json` candidate.',de:'Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen, Freundesporträts samt Live-Rules sowie strenges `NFC_CASEFOLD_V2`-Namenssystem, stille Login-Reservierung, Konflikt-Dialog bei Alt-Duplikaten und `BLOCK2-RULES-TO-PUBLISH.json`-Kandidat umgesetzt.'},
     ],
     open:[
-      {en:'Globally unique names and legacy duplicates, released portrait rules, and a real multi-device acceptance.',de:'Global eindeutige Namen und Altbestände, freigegebene Porträt-Rules sowie eine echte Mehrgeräteabnahme.'},
+      {en:'Publish `BLOCK2-RULES-TO-PUBLISH.json` to Firebase RTDB Console and complete real multi-device verification.',de:'`BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole veröffentlichen und auf echten Geräten gegenprüfen.'},
     ],
   },
   {

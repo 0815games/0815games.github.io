@@ -92,21 +92,30 @@ function ancestorModes(live,path){
 }
 
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
- const args=process.argv.slice(2),json=args.includes('--json'),file=args.find(arg=>!arg.startsWith('--'));
+ const args=process.argv.slice(2),json=args.includes('--json');
+ const candIdx=args.indexOf('--candidate');
+ const candidateFile=candIdx>=0?args[candIdx+1]:null;
+ if(candIdx>=0&&(!candidateFile||candidateFile.startsWith('--'))){
+  console.error('Missing path after --candidate');
+  process.exit(2);
+ }
+ const positional=args.filter((arg,index)=>!arg.startsWith('--')&&(candIdx<0||index!==candIdx+1));
+ const file=positional[0];
+ const candidatePath=candidateFile?resolve(candidateFile):CANDIDATE;
  if(!file){
-  console.error('Usage: node IronPath/scripts/rules-publish-dry-run.mjs <exported-live-rules.json> [--json]');
+  console.error('Usage: node IronPath/scripts/rules-publish-dry-run.mjs <exported-live-rules.json> [--candidate <candidate.json>] [--json]');
   console.error('Export first: Firebase Console → Realtime Database → Rules, then paste into a local file (never commit it).');
   process.exit(2);
  }
  try{
   const live=unwrapRules(JSON.parse(await readFile(resolve(file),'utf8')));
-  const candidate=unwrapRules(JSON.parse(await readFile(CANDIDATE,'utf8')));
+  const candidate=unwrapRules(JSON.parse(await readFile(candidatePath,'utf8')));
   const report=compareRules(live,candidate);
   report.repoDrafts=await compareRepoDrafts(candidate);
   for(const gap of report.repoDrafts.missing)report.blockers.push({path:gap.draft,reason:'candidate lacks paths from another complete draft',gaps:gap.gaps});
   if(json)console.log(JSON.stringify(report,null,2));
   else{
-   console.log(`Candidate: ${CANDIDATE}`);
+   console.log(`Candidate: ${candidatePath}`);
    console.log(`Live paths: ${report.counts.live} · candidate paths: ${report.counts.candidate} · new in candidate: ${report.counts.added}`);
    console.log(`Complete drafts cross-checked: ${report.repoDrafts.drafts}`);
    console.log(`Blockers: ${report.blockers.length} · review items: ${report.warnings.length}`);

@@ -1,10 +1,8 @@
 // OFFLINE candidate only. No credentials, network calls or deployment.
 //
-// Letting a soldier change their name. Block 2 needs this for the one case the
-// operator's inventory will surface: two accounts already holding the same
-// name, where exactly one of them keeps it. Who that is, and when a player may
-// rename at all, is THEIR decision (see PATCH-BLOECKE.md, A1). What lives here
-// is the mechanism, and the guard rails around it.
+// Letting a soldier change their name. Block 2 needs this for legacy duplicate
+// conflict resolution on login: two accounts already holding the same name,
+// where the later login picks a new unique name without losing progress.
 //
 // Every change below is an OR added to an existing rule: nothing that is
 // allowed today becomes forbidden.
@@ -27,16 +25,16 @@
 // intermediate state is one the game already produces today and already knows
 // how to heal (friends.mjs `ensureSearchListing` republishes on the next load).
 //
-// Three permissions, all OR-ed:
+// Three permissions, all additive (and recognizing bases such as BLOCK9D that
+// already shipped owner searchKey/friendCode updates under MAINTENANCE_GATE):
 //
 //   1. `players/$uid/name` may change - while the soldier is not listed.
-//   2. `friendPrivate/$uid/searchKey` may move - while no listing sits under
-//      the old key. Today it can only ever be written ONCE (`!data.exists()`),
-//      so a renamed soldier could never be published under a new name again.
-//   3. `friendCodes/$code` may be refreshed by its owner - only to their own
-//      current profile name. Today an entry can only be created, never
-//      updated, so a renamed soldier's code would keep advertising the old
-//      name forever.
+//   2. `friendPrivate/$uid/searchKey` may move - either added via OR on legacy
+//      single-write rules, or preserved when social-cleanup/BLOCK9D already
+//      allows owner searchKey updates.
+//   3. `friendCodes/$code` may be refreshed by its owner - either added via OR
+//      on legacy create-only rules, or preserved when social-cleanup/BLOCK9D
+//      already allows owner refreshes matching `players/$uid/name`.
 const NAME_IMMUTABLE='(!data.exists() || newData.val() === data.val())';
 
 // No listing of this account under the key the account currently publishes.
@@ -44,14 +42,16 @@ const NAME_IMMUTABLE='(!data.exists() || newData.val() === data.val())';
 // the listing that belonged to it is already gone.
 const UNLISTED="!root.child('friendPrivate').child($uid).child('searchKey').exists() || !root.child('friendNames').child(root.child('friendPrivate').child($uid).child('searchKey').val()).child($uid).exists()";
 
-// The search key, twice: the rule that exists today (first write only) and the
-// one that moves an existing key. `data.exists()` separates the two, so the
-// first publication of a key stays governed by the rule shipped today.
+// The search key, twice: the legacy rule (first write only), the social-cleanup /
+// BLOCK9D owner repair rule, and the move rule for legacy bases.
 const SEARCH_KEY_FIRST_WRITE="auth != null && auth.uid === $uid && !data.exists() && root.child('players').child(auth.uid).exists()";
+const SEARCH_KEY_SOCIAL_REPAIR="(!newData.exists() && data.exists()) || (newData.isString() && root.child('players').child(auth.uid).exists())";
 const SEARCH_KEY_MOVE="auth != null && auth.uid === $uid && data.exists() && !root.child('friendNames').child(data.val()).child($uid).exists()";
 
 // Only the owner, only their own code, only to their own current profile name.
 const CODE_REFRESH="data.exists() && data.child('uid').val() === auth.uid && newData.child('uid').val() === auth.uid && newData.child('name').val() === root.child('players').child(auth.uid).child('name').val()";
+const CODE_SOCIAL_REPAIR="data.exists() && data.child('uid').val() === auth.uid && (!newData.exists() || (newData.child('uid').val() === auth.uid && root.child('players').child(auth.uid).exists()))";
+const CODE_SOCIAL_VALIDATE="newData.child('name').val() === root.child('players').child(auth.uid).child('name').val()";
 
 export function applyCharacterRenameRules(rules){
  // 1. The name itself. The listing is the only thing that could contradict a
@@ -65,14 +65,29 @@ export function applyCharacterRenameRules(rules){
  //    never be found under the new one.
  const private$=rules.friendPrivate?.$uid;
  const searchKey=private$?.searchKey?.['.write'];
- if(typeof searchKey!=='string'||!searchKey.includes(SEARCH_KEY_FIRST_WRITE))throw Error('Search key rule reference changed; re-audit before building a candidate');
- private$.searchKey['.write']=`(${searchKey}) || (${SEARCH_KEY_MOVE})`;
+ if(typeof searchKey!=='string')throw Error('Search key rule reference changed; re-audit before building a candidate');
+ if(searchKey.includes(SEARCH_KEY_SOCIAL_REPAIR)){
+  // Already supports moving/updating searchKey (WORKSHOP / BLOCK5 / BLOCK9D),
+  // preserving MAINTENANCE_GATE and owner boundary verbatim.
+ }else if(searchKey.includes(SEARCH_KEY_FIRST_WRITE)){
+  private$.searchKey['.write']=`(${searchKey}) || (${SEARCH_KEY_MOVE})`;
+ }else{
+  throw Error('Search key rule reference changed; re-audit before building a candidate');
+ }
 
  // 3. The friend code advertises the name; let its owner refresh it.
  const code=rules.friendCodes?.$code;
  const write=code?.['.write'];
- if(typeof write!=='string'||!write.includes('!data.exists()'))throw Error('Friend code rule reference changed; re-audit before building a candidate');
- code['.write']=`(${write}) || (auth != null && $code.matches(/^[a-f0-9]{32}$/) && ${CODE_REFRESH})`;
+ const codeValidate=code?.['.validate'];
+ if(typeof write!=='string')throw Error('Friend code rule reference changed; re-audit before building a candidate');
+ if(write.includes(CODE_SOCIAL_REPAIR)&&typeof codeValidate==='string'&&codeValidate.includes(CODE_SOCIAL_VALIDATE)){
+  // Already allows owner name refreshes under MAINTENANCE_GATE while enforcing
+  // match with players/$uid/name (WORKSHOP / BLOCK5 / BLOCK9D).
+ }else if(write.includes('!data.exists()')){
+  code['.write']=`(${write}) || (auth != null && $code.matches(/^[a-f0-9]{32}$/) && ${CODE_REFRESH})`;
+ }else{
+  throw Error('Friend code rule reference changed; re-audit before building a candidate');
+ }
 
  return rules;
 }

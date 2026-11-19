@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "note": "Shared comparison cases for the two engines that must agree on what counts as the same soldier name: the game client (IronPath/character-name.mjs, policy NFC_LOWERCASE_V1) and the offline audit script (IronPath/scripts/audit-character-names.py, Unicode default case folding). `same` is what the game ENFORCES; `casefoldSame` is what the audit REPORTS. Where the two differ the audit is deliberately stricter - see CHARACTER-NAME-AUDIT.md. Changing either engine without changing this file means the two drifted apart.",
+  "version": 2,
+  "note": "Shared comparison cases for the two engines that must agree on what counts as the same soldier name: the game client (IronPath/character-name.mjs, policy NFC_CASEFOLD_V2) and the offline audit script (IronPath/scripts/audit-character-names.py, Unicode default case folding). Both engines now agree on every case: `same` and `casefoldSame` match across the board, including expanding sharp s (`Straße` == `STRASSE`), final sigma (`ΜΑΡΚΟΣ` == `μαρκοσ`), and typographic ligatures (`ﬁn` == `FIN`). Changing either engine without updating this file causes both test suites to fail.",
   "cases": [
     {
       "names": ["Alex", "alex", "ALEX"],
@@ -27,16 +27,34 @@
       "why": "non-Latin case is still not a difference"
     },
     {
-      "names": ["Straße", "STRASSE"],
-      "same": false,
+      "names": ["Straße", "STRASSE", "STRAẞE"],
+      "same": true,
       "casefoldSame": true,
-      "why": "KNOWN DIVERGENCE: Unicode default case folding expands the sharp s, plain lowercasing does not. The audit reports it as a conflict, the game does not block it."
+      "why": "UNIFIED STRICT CASEFOLD (NFC_CASEFOLD_V2): Unicode default case folding expands ß and ẞ to ss in both client and audit"
+    },
+    {
+      "names": ["Μάρκος", "ΜΑΡΚΟΣ"],
+      "same": false,
+      "casefoldSame": false,
+      "why": "accented vs unaccented letters remain distinct in both engines"
+    },
+    {
+      "names": ["ΜΑΡΚΟΣ", "μαρκοσ"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "Greek medial and final sigma fold identically under Unicode default case folding"
+    },
+    {
+      "names": ["ﬁn", "FIN"],
+      "same": true,
+      "casefoldSame": true,
+      "why": "Unicode default case folding expands Latin typographic ligatures identically"
     },
     {
       "names": ["Ａlex", "Alex"],
       "same": false,
       "casefoldSame": false,
-      "why": "compatibility characters are not conflated by either engine; a stricter character rule would be a separate decision"
+      "why": "compatibility fullwidth characters are not conflated by either engine; a stricter character rule would be a separate decision"
     },
     {
       "names": ["Bob", "Bobby"],

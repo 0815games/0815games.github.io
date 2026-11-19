@@ -68,5 +68,16 @@ export const germanAccount=Object.freeze({
  'Could not create party':'Gruppe konnte nicht erstellt werden',
  'Players are not ready':'Spieler sind noch nicht bereit',
  'Match already started':'Spiel bereits gestartet',
- 'Password update functions unavailable':'Passwortänderung derzeit nicht verfügbar'
+ 'Password update functions unavailable':'Passwortänderung derzeit nicht verfügbar',
+ 'PERSONNEL CONFLICT':'PERSONAL-KONFLIKT',
+ 'Soldier name already in use':'Soldatenname bereits vergeben',
+ 'Another account already holds this soldier name. All of your progress, XP, gear, skills, and campaign missions stay intact — choose a unique name to continue.':'Ein anderes Konto verwendet diesen Soldatennamen bereits. Dein gesamter Fortschritt (EP, Ausrüstung, Fähigkeiten und Kampagne) bleibt vollständig erhalten – wähle einen eindeutigen neuen Namen, um fortzufahren.',
+ 'CURRENT NAME':'AKTUELLER NAME',
+ 'NEW SOLDIER NAME':'NEUER SOLDATENNAME',
+ 'Enter a new name':'Neuen Namen eingeben',
+ 'CLAIM NEW NAME':'NEUEN NAMEN ÜBERNEHMEN',
+ 'Choose a different name from your current duplicate name.':'Wähle einen anderen Namen als deinen bisherigen doppelten Namen.',
+ 'Checking availability and updating your soldier name…':'Verfügbarkeit wird geprüft und Soldatenname aktualisiert…',
+ 'Could not update soldier name. Check your connection and try again.':'Der Soldatenname konnte nicht aktualisiert werden. Prüfe deine Verbindung und versuche es erneut.',
+ 'Soldier name updated. All progress and gear remain intact.':'Soldatenname aktualisiert. Alle Fortschritte und Ausrüstung bleiben erhalten.'
 });

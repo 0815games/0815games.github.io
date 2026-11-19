@@ -3,8 +3,10 @@ import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
 import {createCharacterNameClaim} from '../character-name-claim.mjs';
+import {createCharacterNameConflictHandler} from '../character-name-conflict.mjs';
 import {friendNameKey} from '../friends.mjs';
 import {buildCharacterNameCandidate,characterNameIndexRules} from '../firebase/character-name-candidate.mjs';
+import {buildBlock2PublishCandidate,BLOCK9D_RULES_SHA256} from '../firebase/block2-publish-candidate.mjs';
 
 const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
 
@@ -71,40 +73,43 @@ test('the policy is versioned, so a stored key can always be traced to a rule',(
 
 // The two engines that decide "same name" must agree. The shared fixture is the
 // contract: change one engine without the other and this goes red.
-test('the client comparison matches the shared fixtures, including the known divergence',()=>{
+test('the client comparison matches the shared fixtures cleanly under NFC_CASEFOLD_V2',()=>{
+  assert.equal(CHARACTER_NAME_POLICY,'NFC_CASEFOLD_V2');
   const fixture=JSON.parse(read('firebase/name-policy-fixtures.json'));
-  assert.equal(fixture.version,1);
-  assert.ok(fixture.cases.length>=6);
+  assert.equal(fixture.version,2);
+  assert.match(fixture.note,/NFC_CASEFOLD_V2/);
+  assert.ok(fixture.cases.length>=8);
   for(const entry of fixture.cases){
     const [first,...rest]=entry.names;
     for(const other of rest){
       const equal=normalizeCharacterName(first)===normalizeCharacterName(other);
       assert.equal(equal,entry.same,`"${first}" vs "${other}": ${entry.why}`);
       assert.equal(sameCharacterName(first,other),entry.same);
+      assert.equal(entry.same,entry.casefoldSame,`no divergence in v2 for ${entry.names.join(' / ')}`);
     }
     assert.ok(entry.why,'every case says why it matters');
   }
-  // The one place the stricter audit disagrees with the game is documented,
-  // not accidental: `Straße`/`STRASSE`.
-  const divergence=fixture.cases.filter(entry=>entry.same!==entry.casefoldSame);
-  assert.equal(divergence.length,1,'exactly one documented difference');
-  assert.deepEqual(divergence[0].names,['Straße','STRASSE']);
-  assert.match(divergence[0].why,/case folding/i);
 });
 
-test('names are stored as typed and compared by the normalized key',()=>{
+test('names are stored as typed and compared by strict Unicode casefold key',()=>{
   assert.equal(validateCharacterName('  Alex  ').name,'Alex','the display name keeps its own spelling');
   assert.equal(friendNameKey('Alex'),characterNameKey('alex'),'search and reservation share one key');
   assert.equal(friendNameKey('Alex'),'616c6578','lowercase hex of the comparison form');
+  assert.equal(characterNameKey('Straße'),characterNameKey('STRASSE'));
+  assert.equal(characterNameKey('STRAẞE'),characterNameKey('strasse'));
+  assert.equal(characterNameKey('ﬁn'),characterNameKey('FIN'));
+  assert.equal(characterNameKey('ΜΑΡΚΟΣ'),characterNameKey('μαρκοσ'));
   // Hex keeps any Unicode out of the path, including things that would break it.
-  for(const name of ['Ünïcode','Иван','Ａlex','a/b','a.b']){
+  for(const name of ['Ünïcode','Иван','Ａlex','Straße','a/b','a.b']){
     assert.match(characterNameKey(name),/^(?:[a-f0-9]{2}){1,96}$/,name);
   }
   for(const bad of ['', ' ', 'a', 'x'.repeat(25), 42, null, undefined, 'a'.repeat(97)])assert.equal(validateCharacterName(bad).ok,false,String(bad));
   // Lone surrogates would encode into a key that can never be typed again.
   assert.equal(validateCharacterName('a\ud800b').ok,false);
-  // The 96-byte guard is a backstop: within the 24-character bound a name can
-  // hold at most 3 UTF-8 bytes per UTF-16 unit, so 72 bytes is the real ceiling.
+  // Display limits remain 2..24 UTF-16 code units even when casefolding expands length (e.g. 24 x 'ß' -> 48 's').
+  assert.equal(validateCharacterName('ß'.repeat(24)).ok,true,'24-char expanding casefold stays valid');
+  assert.equal(characterNameKey('ß'.repeat(24)).length,96,'48 folded ASCII chars = 96 hex chars <= 96 bytes');
+  // The 96-byte guard checks encoded UTF-8 bytes after normalization, keeping 24 3-byte chars (72 bytes) valid.
   assert.equal(characterNameKey('ꀀ'.repeat(24)).length,144,'24 three-byte characters stay inside the key');
 });
 
@@ -225,6 +230,10 @@ test('a ruleset without the index degrades to a read-only check instead of block
   assert.equal((await alice.claim('Alexa')).status,'unsupported');
   // A release against rules without the index is a no-op, never a throw.
   assert.equal((await alice.release('Alex')).unsupported,true);
+  // Synthetic browser-smoke runTransaction stubs that return uncommitted/null
+  // without invoking the reducer callback must degrade to unsupported instead of taken.
+  const noopStub={...fire.sdk,get:async()=>({val:()=>null}),runTransaction:async()=>({committed:false,snapshot:{val:()=>null}})};
+  assert.equal((await createCharacterNameClaim({db:{},auth:session('alice'),sdk:noopStub}).claim('Alex')).status,'unsupported');
 });
 
 test('an account switch mid-flight is refused rather than reserving for the wrong soldier',async()=>{
@@ -310,6 +319,154 @@ test('the German client never sees an untranslated name error',()=>{
   const dictionaries=['localization-de.mjs','localization-account-de.mjs'].map(read).join('\n');
   // Dictionaries use single or double quotes depending on the string.
   const quoted=text=>`['"]${text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}['"]\s*:`;
-  for(const text of ['That soldier name is already taken. Choose another one.','That soldier name cannot be used. Choose another one.','Soldier name must be 2–24 characters.'])
+  for(const text of [
+    'That soldier name is already taken. Choose another one.',
+    'That soldier name cannot be used. Choose another one.',
+    'Soldier name must be 2–24 characters.',
+    'Soldier name already in use',
+    'Choose a different name from your current duplicate name.',
+    'Checking availability and updating your soldier name…',
+    'Could not update soldier name. Check your connection and try again.',
+    'Soldier name updated. All progress and gear remain intact.',
+  ])
     assert.match(dictionaries,new RegExp(quoted(text)),'German entry for: '+text);
+});
+
+test('block2-publish-candidate composes cleanly on BLOCK9D-RULES-TO-PUBLISH.json with MAINTENANCE_GATE preserved',()=>{
+  const block9dText=read('firebase/BLOCK9D-RULES-TO-PUBLISH.json');
+  const built=buildBlock2PublishCandidate(block9dText);
+  const committed=JSON.parse(read('firebase/BLOCK2-RULES-TO-PUBLISH.json'));
+  assert.deepEqual(built,committed,'BLOCK2-RULES-TO-PUBLISH.json matches block2-publish-candidate output');
+  const base=JSON.parse(block9dText).rules;
+  assert.equal(base.activeSessions!==undefined,true);
+  assert.deepEqual(built.rules.activeSessions,base.activeSessions,'activeSessions rules preserved verbatim');
+  assert.deepEqual(built.rules._ironpathMaintenance,base._ironpathMaintenance,'maintenance control rules preserved verbatim');
+  assert.equal(built.rules.players.$uid.skills['.validate'],base.players.$uid.skills['.validate'],'block5 v2 skills schema preserved');
+  assert.equal(built.rules.players.$uid.gender['.read'],base.players.$uid.gender['.read'],'gated friend gender read preserved');
+  assert.equal(built.rules.players.$uid.avatar['.read'],base.players.$uid.avatar['.read'],'gated friend avatar read preserved');
+  assert.match(built.rules.characterNames.$key['.read'],/_ironpathMaintenance/,'characterNames reads gated by maintenance');
+  assert.match(built.rules.characterNames.$key['.write'],/_ironpathMaintenance/,'characterNames writes gated by maintenance');
+  assert.ok(BLOCK9D_RULES_SHA256.length===64);
+});
+
+function createConflictDialogMock(){
+  const makeEl=()=>({textContent:'',value:'',disabled:false,listeners:{},onclick:null,open:false,
+    addEventListener(type,fn){(this.listeners[type]??=[]).push(fn);},
+    showModal(){this.open=true;},
+    close(){this.open=false;},
+    focus(){},
+  });
+  const elements={
+    nameConflictDialog:makeEl(),
+    nameConflictForm:makeEl(),
+    nameConflictCurrentName:makeEl(),
+    nameConflictInput:makeEl(),
+    nameConflictStatus:makeEl(),
+    nameConflictSubmit:makeEl(),
+    nameConflictLogout:makeEl(),
+  };
+  return {
+    elements,
+    document:{getElementById:id=>elements[id]??null},
+  };
+}
+
+test('legacy login conflict handler silently claims free names, blocks on duplicates without data loss, and never exposes a general rename control',async()=>{
+  const fire=firebase();
+  const mock=createConflictDialogMock();
+  let reserved=0,renamedTo=null,beforeOpened=0,signedOut=0;
+  let currentUid='bob';
+  fire.players.add('alice');
+  fire.players.add('bob');
+  fire.store.set(`players/bob`,{name:'Alex',gender:'male',xp:4200,armory:'1;2',campaign:'m1'});
+  fire.store.set(`characterNames/${characterNameKey('Alex')}`,{uid:'alice',name:'Alex',at:Date.now()});
+
+  // Account with a free name (e.g. Charlie) backfills quietly without opening the modal.
+  const freeFire=firebase();
+  freeFire.players.add('charlie');
+  const freeMock=createConflictDialogMock();
+  const freeHandler=createCharacterNameConflictHandler({
+    document:freeMock.document,db:{},auth:{currentUser:{uid:'charlie'}},sdk:freeFire.sdk,
+    onReserved:()=>{reserved++;},
+  });
+  const freeRes=await freeHandler.reconcile('Charlie');
+  assert.equal(freeRes.status,'claimed');
+  assert.equal(reserved,1);
+  assert.equal(freeMock.elements.nameConflictDialog.open,false);
+  assert.equal(freeFire.store.get(`characterNames/${characterNameKey('Charlie')}`).uid,'charlie');
+
+  // Legacy duplicate opens the modal, ignores Escape, refuses same/taken names, then renames atomically keeping XP/gear/campaign.
+  player.uid='bob';
+  const getAt=(path)=>{
+    if(fire.store.has(path))return fire.store.get(path);
+    const parts=path.split('/'),last=parts.pop(),parent=parts.join('/');
+    if(fire.store.has(parent)&&fire.store.get(parent)&&typeof fire.store.get(parent)==='object')return fire.store.get(parent)[last]??null;
+    return null;
+  };
+  const setAt=(path,value)=>{
+    if(fire.store.has(path)||path.split('/').length<=2){fire.store.set(path,value);return;}
+    const parts=path.split('/'),last=parts.pop(),parent=parts.join('/');
+    if(fire.store.has(parent)&&fire.store.get(parent)&&typeof fire.store.get(parent)==='object'){fire.store.get(parent)[last]=value;return;}
+    fire.store.set(path,value);
+  };
+  const renameSdk={
+    ...fire.sdk,
+    ref:(db,path)=>({path}),
+    get:async({path})=>{const v=getAt(path);return {val:()=>v===null?null:JSON.parse(JSON.stringify(v))};},
+    set:async({path},value)=>{setAt(path,value);},
+    remove:async({path})=>{fire.store.delete(path);},
+  };
+  const handler=createCharacterNameConflictHandler({
+    document:mock.document,
+    db:{},
+    auth:{get currentUser(){return {uid:currentUid};}},
+    sdk:renameSdk,
+    beforeOpen:()=>{beforeOpened++;},
+    onReserved:()=>{reserved++;},
+    onRenamed:name=>{renamedTo=name;},
+    onSignOut:()=>{signedOut++;},
+  });
+  const takenRes=await handler.reconcile('Alex');
+  assert.equal(takenRes.status,'taken');
+  assert.equal(mock.elements.nameConflictDialog.open,true);
+  assert.equal(handler.isActive(),true);
+  assert.equal(beforeOpened,1);
+  assert.equal(mock.elements.nameConflictCurrentName.textContent,'Alex');
+
+  // Cancel / Escape is blocked while unresolved.
+  let cancelled=false;
+  for(const fn of mock.elements.nameConflictDialog.listeners.cancel||[])fn({preventDefault(){cancelled=true;}});
+  assert.equal(cancelled,true);
+
+  // Trying the same casefold-equivalent duplicate ("ALEX") is rejected locally.
+  mock.elements.nameConflictInput.value='ALEX';
+  for(const fn of mock.elements.nameConflictForm.listeners.submit||[])await fn({preventDefault(){}});
+  assert.match(mock.elements.nameConflictStatus.textContent,/different name/i);
+  assert.equal(mock.elements.nameConflictDialog.open,true);
+
+  // Claiming a taken name fails cleanly without closing.
+  fire.store.set(`characterNames/${characterNameKey('Viper')}`,{uid:'dave',name:'Viper',at:Date.now()});
+  mock.elements.nameConflictInput.value='Viper';
+  for(const fn of mock.elements.nameConflictForm.listeners.submit||[])await fn({preventDefault(){}});
+  assert.match(mock.elements.nameConflictStatus.textContent,/already taken/i);
+  assert.equal(mock.elements.nameConflictDialog.open,true);
+
+  // Claiming a fresh unique name renames player record while keeping existing name index of Alice and all progress.
+  mock.elements.nameConflictInput.value='AlexTwo';
+  for(const fn of mock.elements.nameConflictForm.listeners.submit||[])await fn({preventDefault(){}});
+  assert.equal(renamedTo,'AlexTwo');
+  assert.equal(mock.elements.nameConflictDialog.open,false);
+  assert.equal(handler.isActive(),false);
+  assert.equal(fire.store.get('players/bob').name,'AlexTwo');
+  assert.equal(fire.store.get(`characterNames/${characterNameKey('Alex')}`).uid,'alice','other owner reservation untouched');
+  assert.equal(fire.store.get(`characterNames/${characterNameKey('AlexTwo')}`).uid,'bob');
+  assert.equal(fire.store.get('players/bob').xp,4200);
+  assert.equal(fire.store.get('players/bob').armory,'1;2');
+
+  // Sign out triggers onSignOut; no general rename trigger exists in Soldier Dossier or Settings.
+  mock.elements.nameConflictLogout.onclick();
+  assert.equal(signedOut,1);
+  const html=read('index.html');
+  assert.doesNotMatch(html,/id="(?:soldier|settings)[^"]*Rename/i,'no public general rename button');
+  assert.match(read('account.js'),/nameConflictHandler\.reconcile\(value\.name/, 'login silently reconciles and prompts on duplicate');
 });
