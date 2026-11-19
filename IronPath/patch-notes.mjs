@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261118-block5';
+import {getLanguage} from './language.mjs?v=20261119-block9';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9',build:'20261119-block9',pr:320,
+    title:{en:'Block 9 · Unified Command HQ, Dialog Banners, Endless Terrain & Settings Account',de:'Block 9 · Einheitliches Kommando-HQ, Dialogbanner, Endlos-Gelände & Einstellungen → Konto'},
+    shipped:[
+      {en:'Consolidated the Command HQ into a fixed desktop 2-column station (>= 860px) and mobile app shell (< 860px) with a compact soldier bar and fixed 4-button bottom navigation bar.',de:'Kommandozentrale als feste Desktop-2-Spalten-Station (>= 860px) und Mobile App-Shell (< 860px) mit kompakter Soldatenzeile und fester 4-Knopf-Daumenleiste vereinheitlicht.'},
+      {en:'Applied a unified dark pine and gold palette, [open]-scoped fullscreen dialog sheets, uniform 44x44px close buttons, illustrated 3-zone dialog headers, terrain-illustrated Endless selector cards and matching party/campaign boards.',de:'Durchgängige Tannengrün-/Gold-Optik, [open]-gekoppelte Vollbild-Dialoge, einheitliche 44×44-px-Schließen-Knöpfe, illustrierte 3-Zonen-Dialogbanner, Endlos-Geländekarten sowie angeglichene Party- und Kampagnentafeln umgesetzt.'},
+      {en:'Added General / Account tabs inside Settings with in-app password change and reset-email fallback (`password-change.mjs`), moved character discharge (`#menuDeleteCharacter`) into Settings -> Account, and refreshed DE/EN copy.',de:'Einstellungen um die Tabs Allgemein / Konto mit In-App-Passwortänderung und Reset-Mail-Fallback (`password-change.mjs`) erweitert, Charakterentlassung (`#menuDeleteCharacter`) in die Gefahrenzone verschoben und DE/EN-Texte ergänzt.'},
+    ],
+    open:[
+      {en:'Real phone and desktop inspection across the redesigned Command HQ, dialog banners, terrain cards and Settings Account flow before starting Block 6.',de:'Echte Handy- und Desktop-Sichtung von Kommando-HQ, Dialogbannern, Geländekarten und Konto-Reiter vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block5',build:'20261118-block5',pr:318,
     title:{en:'Block 5 · Exclusive 6-Class Skill Tree, Air Defense & Class Tower Paths',de:'Block 5 · Exklusiver 6-Klassen-Skillbaum, Luftabwehr & Klassenturmpfade'},
@@ -208,21 +220,21 @@ export const PLANNED_PATCHES=Object.freeze([
     ],
   },
   {
-    id:'block9',status:'active',
+    id:'block9',status:'planned',
     title:{en:'Block 9 · Unified Menu & Command HQ Redesign',de:'Block 9 · Einheitliches Menü & Kommando-HQ'},
     note:{
-      en:'Inserted ahead of Block 6 so the guided tutorial walkthrough introduces the finished menu layout.',
-      de:'Vor Block 6 eingeschoben, damit die künftige Tutorial-Menüführung direkt auf dem fertigen Menü aufbaut.',
+      en:'Shipped ahead of Block 6 so the guided tutorial walkthrough introduces the finished menu layout.',
+      de:'Vor Block 6 ausgeliefert, damit die Tutorial-Menüführung direkt auf dem fertigen Menü aufbaut.',
     },
     shipped:[
-      {en:'Unified Command HQ (desktop 2-column station & mobile thumb-bar app shell), illustrated 3-zone dialog headers, terrain-illustrated Endless cards, unified party/campaign boards and Settings Account tab (password change + protected character discharge).',de:'Einheitliches Kommando-HQ (Desktop 2-Spalten-Station & Mobile App-Shell mit unterer Daumenleiste), einheitliche 3-Zonen-Dialogbanner, illustrierte Endlos-Geländekarten, angeglichene Party-/Kampagnentafeln sowie Einstellungen → Konto (Passwortänderung & geschützte Entlassung).'},
+      {en:'Unified Command HQ (desktop 2-column station & mobile thumb-bar app shell), illustrated 3-zone dialog headers, terrain-illustrated Endless cards, unified party/campaign boards and Settings Account tab (password change + protected character discharge) (#320, 20261119-block9).',de:'Einheitliches Kommando-HQ (Desktop 2-Spalten-Station & Mobile App-Shell mit unterer Daumenleiste), illustrierte 3-Zonen-Dialogbanner, Endlos-Geländekarten, angeglichene Party-/Kampagnentafeln sowie Einstellungen → Konto (#320, 20261119-block9).'},
     ],
     open:[
-      {en:'Real desktop and mobile device inspection before moving straight into Block 6.',de:'Echte Desktop- und Handy-Sichtung vor dem direkten Start von Block 6.'},
+      {en:'Final confirmation on real phones and desktops ahead of Block 6.',de:'Abschließende Bestätigung auf echten Handys und am Desktop vor Block 6.'},
     ],
   },
   {
-    id:'block6',status:'next',
+    id:'block6',status:'active',
     title:{en:'Block 6 · Tutorial',de:'Block 6 · Tutorial'},
     shipped:[
       {en:'The five-wave introduction, its replay and the confirmed cancel fixes exist.',de:'Die Fünf-Wellen-Einführung, ihre Wiederholung und die bestätigten Abbruchfixes sind vorhanden.'},

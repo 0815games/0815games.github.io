@@ -88,11 +88,11 @@ test('block 7 is a planned future patch and stays last in the agreed order',()=>
   // The standing constraint: no permanent loss of progress or equipment.
   assert.match(block7.open.map(item=>patchText(item,'en')).join(' '),/No permanent loss/i);
   assert.match(block7.open.map(item=>patchText(item,'de')).join(' '),/kein dauerhafter verlust/i);
-  // Block 9 is currently in progress ahead of Block 6.
+  // Block 9 shipped in PR #320 ahead of Block 6; Block 6 is now active next.
   const block9=PLANNED_PATCHES.find(entry=>entry.id==='block9');
   const block6=PLANNED_PATCHES.find(entry=>entry.id==='block6');
-  assert.equal(block9?.status,'active');
-  assert.equal(block6?.status,'next');
+  assert.equal(block9?.status,'planned');
+  assert.equal(block6?.status,'active');
 });
 
 test('the view renders both lists, marks the running build and reacts to the tab buttons',()=>{

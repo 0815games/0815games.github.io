@@ -106,7 +106,8 @@ async function diagnose(page){
      // rejected module, which is the only way to name the module that failed.
      const detail=await page.evaluate(async()=>{
       const probe=async url=>{try{await import(url);return 'ok';}catch(e){return String(e&&e.stack||e);}};
-      return {account:await probe('./account.js?v=20261031-patch8'),
+      const build=document.querySelector('meta[name="ironpath-build"]')?.content||'20261119-block9';
+      return {account:await probe(`./account.js?v=${build}`),
        sync:await probe('./avatar-sync.mjs?v=20261119-avatar3'),
        avatar:await probe('./avatar.mjs?v=20261119-avatar3'),
        layers:await probe('./avatar-layers.mjs?v=20261119-avatar3'),

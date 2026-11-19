@@ -1,9 +1,9 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261118-block5';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261119-block9';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261118-block5';
-import {rankForLevel,rankInsigniaSvg} from './rank-insignia.mjs?v=20261118-block5';
-import {FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261118-block5';
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261119-block9';
+import {rankForLevel,rankInsigniaSvg} from './rank-insignia.mjs?v=20261119-block9';
+import {FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261119-block9';
 export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,promptCenter=null,onViewRequests=()=>{},portraitFor=null}={}){
   if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   // Optional, and deliberately the caller's decision: WHOSE face may be shown

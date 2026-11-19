@@ -1,6 +1,6 @@
 // Ordinary GitHub Pages update UI. No Vercel or Firebase credentials are used.
 // A matching page stamp is not proof that every cached module or asset matches.
-import {BUILD_ID_PATTERN,createVersionProbe,createVersionCoordinator} from './version-check.mjs?v=20261118-block5';
+import {BUILD_ID_PATTERN,createVersionProbe,createVersionCoordinator} from './version-check.mjs?v=20261119-block9';
 
 const messages={
   en:{checking:'Checking the game version…',unavailable:'The current version could not be checked. Check your connection and try again before starting a new game.',
