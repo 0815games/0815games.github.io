@@ -9,6 +9,9 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261119-block9','account.js?v=20261119-block9',
+ 'game.js?v=20261119-block9','endless-launcher.mjs?v=20261119-block9','language.mjs?v=20261119-block9','patch-notes.mjs?v=20261119-block9',
+ 'localization-campaign-de.mjs?v=20261119-block9','localization-more-static-de.mjs?v=20261119-block9',
  'account-entry.mjs?v=20261118-block5','account.js?v=20261118-block5',
  'game.js?v=20261118-block5','field-menu.mjs?v=20261118-block5','language.mjs?v=20261118-block5','patch-notes.mjs?v=20261118-block5',
  'endless-launcher.mjs?v=20261118-block5','localization-account-de.mjs?v=20261118-block5',

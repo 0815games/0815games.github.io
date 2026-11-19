@@ -1,7 +1,7 @@
 // Account-transaction reducer for the live co-op reward queues. It cannot
 // prove a wave was completed. Call inside a single transaction against
 // the latest account and use a stable per-run/receipt identity for retries.
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261119-block9';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261119-block9b';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
 import {rewardWave} from './armory.mjs?v=20261112-tagless1';
 import {decodeWorkshop,encodeWorkshop} from './workshop-wire.mjs?v=20261112-tagless1';

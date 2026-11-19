@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9';
+import {getLanguage} from './language.mjs?v=20261119-block9b';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9b',build:'20261119-block9b',pr:321,
+    title:{en:'Block 9b · Endless Quick-Deploy, Unified Campaign Dossier & Cohesive Artwork',de:'Block 9b · Endlos-Schnellstart, einheitliche Kampagnen-Akte & durchgängige Gemälde'},
+    shipped:[
+      {en:'Restructured the Endless launcher (`#endlessLaunch`) with a top Quick-Deploy bar (active battlefield readout, Armory/Skills shortcuts, Deploy/Cancel), six cohesive panoramic battlefield cards, and the Endless Record tucked cleanly below.',de:'Endlos-Starter (`#endlessLaunch`) umgebaut: Schnellstart-Leiste oben (gewähltes Gefechtsfeld, Waffenkammer/Skills, Einsatz starten/Abbrechen), sechs stimmige Panorama-Schlachtfelder in der Mitte und Endlos-Bilanz übersichtlich darunter.'},
+      {en:'Unified the Campaign Dossier (`#campaignPanel`) with side-by-side Story So Far & painted Act Relic cards (`story-act1..5-relic.jpg`), Act detail banners (`story-act1..5-title.jpg`), Field School artwork cards, Recruiting header painting (`field-recruiting.jpg`), and matching tactical dialogs.',de:'Kampagnen-Akte (`#campaignPanel`) mit paralleler „Bisherige Geschichte“ und illustrierten Akt-Relikten (`story-act1..5-relic.jpg`), Akt-Bannern (`story-act1..5-title.jpg`), Feldschule-Karten, Musterungs-Banner (`field-recruiting.jpg`) sowie passenden Gefechts-Dialogen harmonisiert.'},
+      {en:'Replaced flat ground tiles across the Command HQ and Endless Mode with hand-inked panoramic artwork (`endless-frontline.jpg` & biome paintings) and completed DE/EN labels.',de:'Flache Bodenkacheln in Kommandozentrale und Endlos-Modus durch handgezeichnete Panorama-Gemälde (`endless-frontline.jpg` & Biom-Gemälde) ersetzt und DE/EN-Texte ergänzt.'},
+    ],
+    open:[
+      {en:'Real phone and desktop inspection across the updated Endless launcher, Campaign Dossier, Recruiting Office and Command HQ before starting Block 6.',de:'Echte Handy- und Desktop-Sichtung von Endlos-Starter, Kampagnen-Akte, Musterung und Kommando-HQ vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block9',build:'20261119-block9',pr:320,
     title:{en:'Block 9 · Unified Command HQ, Dialog Banners, Endless Terrain & Settings Account',de:'Block 9 · Einheitliches Kommando-HQ, Dialogbanner, Endlos-Gelände & Einstellungen → Konto'},

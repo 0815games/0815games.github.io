@@ -1,9 +1,9 @@
 // Builds a multiplayer match that carries validated workshop loadouts; used
 // by the live Firebase party game and the recovery path. A validated lock
 // does not establish trusted ownership.
-import {createMatch} from './simulation.mjs?v=20261119-block9';
-import {createVersus} from './versus.mjs?v=20261119-block9';
-import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261119-block9';
+import {createMatch} from './simulation.mjs?v=20261119-block9b';
+import {createVersus} from './versus.mjs?v=20261119-block9b';
+import {createFourCoop,createTwoVsTwo} from './four-modes.mjs?v=20261119-block9b';
 import {verifyWorkshopRoster,decodeMatchLoadout} from './workshop-multiplayer.mjs?v=20261112-tagless1';
 import {workshopEffects} from './workshop-effects.mjs?v=20261112-tagless1';
 function attach(lane,lock){

@@ -1,6 +1,6 @@
 // Keep sign-in and account creation as real form submissions so password
 // managers can identify the username and the appropriate password purpose.
-import {translateText} from './language.mjs?v=20261119-block9';
+import {translateText} from './language.mjs?v=20261119-block9b';
 export function setupAuthForm({form,email,password,submit,register,forgot,confirm=null,confirmField=null,onSignIn,onRegister,onError=()=>{}}){
  let creating=false,busy=false;
  // Reported: "im Login-Screen steht teilweise noch englische Schrift". The
