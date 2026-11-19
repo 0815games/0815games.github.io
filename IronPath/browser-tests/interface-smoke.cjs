@@ -549,7 +549,7 @@ const fs = require('node:fs');
             const btn=document.getElementById('languageToggle');
             const b=btn.getBoundingClientRect(),style=getComputedStyle(btn);
             const code=btn.querySelector('.login-lang-code')?.textContent?.trim();
-            const flag=btn.querySelector('.flag-icon');
+            const flag=btn.querySelector('.login-lang-flag');
             return {width:b.width,height:b.height,opacity:style.opacity,code,flagBg:flag?getComputedStyle(flag).backgroundImage:''};
           });
           assert.equal(langControl.opacity,'1',`${name}: #languageToggle is visible in Settings`);

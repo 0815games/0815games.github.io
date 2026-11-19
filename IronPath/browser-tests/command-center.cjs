@@ -385,10 +385,10 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     });
     assert.ok(settingsFrame.close.r<=settingsFrame.dialog.r+1&&settingsFrame.close.l>=settingsFrame.dialog.l-1&&settingsFrame.close.t>=settingsFrame.dialog.t-1&&settingsFrame.close.b<=settingsFrame.dialog.b+1,'the settings back button sits inside the dialog frame');
     assert.equal(await page.locator('#settingsClose').innerText(),'← COMMAND CENTER');
-    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);
+    assert.match(await page.locator('#settingsDialog .login-lang-flag').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);
     assert.equal(await page.locator('#settingsDialog .login-lang-code').innerText(),'EN');
     await page.locator('#languageToggle').click();
-    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('#settingsDialog .login-lang-code').innerText(),'DE');assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.equal(await page.locator('#menuResults span[data-i18n-text]').innerText(),'LETZTES ERGEBNIS');assert.equal(await page.locator('#settingsClose').innerText(),'← KOMMANDOZENTRALE');assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
+    assert.match(await page.locator('#settingsDialog .login-lang-flag').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('#settingsDialog .login-lang-code').innerText(),'DE');assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.equal(await page.locator('#menuResults span[data-i18n-text]').innerText(),'LETZTES ERGEBNIS');assert.equal(await page.locator('#settingsClose').innerText(),'← KOMMANDOZENTRALE');assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
     await page.locator('#settingsClose').click();
     assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false);assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await setLang('en');assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
 
@@ -417,7 +417,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     await page.locator('#endlessNext').click();
     assert.equal(await page.locator('#endlessThemeCard').getAttribute('data-theme'),'scrub');
     assert.equal(await page.locator('#endlessSelectedTheme').innerText(),'Scorched Scrubland');
-    assert.match(await page.locator('#endlessThemeCard').evaluate(e=>getComputedStyle(e).backgroundImage),/terrain-desert/);
+    assert.match(await page.locator('#endlessThemeCard').evaluate(e=>getComputedStyle(e).backgroundImage),/story-outpost/);
     await page.locator('#endlessPrev').click();
     assert.equal(await page.locator('#endlessThemeCard').getAttribute('data-theme'),'random');
     assert.match(await page.locator('#endlessBestWave').innerText(),/./,'the record card renders');
