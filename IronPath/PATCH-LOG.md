@@ -3507,9 +3507,17 @@ Grenzen / Offen:
   - **Paket 4 (DE-Lokalisierung):** `IronPath/endless-launcher.mjs` (`translate('command.none')`), `IronPath/tests/endless-launcher.test.mjs`, `IronPath/recruit-screen.mjs` (`refresh()` aktualisiert `#enlistStamp`), `IronPath/account.js` (`recruitScreen.refresh()` & `paintAfkRestCard()` bei Sprachwechsel), `IronPath/index.html` (`data-i18n-text`-Attribute ergänzt), `IronPath/localization-more-static-de.mjs` & `IronPath/localization-account-de.mjs` vervollständigt.
   - **Cache-Welle & Tests:** `IronPath/tests/{menu-redesign,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,cache-wave,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9d`, `pr: 323`) & gesamte `?v=20261119-block9d`-Cache-Welle.
 - **Prüfungen:**
-  - Lokale `IronPath/tests/*.test.mjs`, `node IronPath/stress-tests/run.mjs` und Wörterbuch-/HTML-Audits grün; GitHub CI (`database-rules` inkl. `test:block9d` & `test:block9d-browser`, `game-regressions`, `interface-browser-smoke`, `party-finalization-browser`, Vercel) läuft nach PR-Erstellung.
-- **Offen:** Veröffentlichung von `IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json` in der Firebase Console (Schritt-für-Schritt-Anleitung in `IronPath/firebase/BLOCK9D-SESSION-ROLLOUT.md`) sowie echte Desktop- und Handy-Abnahme auf `20261119-block9d`.
-- **Git / PR / Release:** Arbeitsbranch `arena/92c6a81f-0815games-github-io` für PR #323 vorbereitet.
+  - `node --test IronPath/tests/*.test.mjs` (über alle 258 Dateien: **1.159 bestanden, 0 fehlgeschlagen, 1 übersprungen**), `node IronPath/stress-tests/run.mjs` sowie GitHub CI Run `44518821803` (**13/13 Checks bestanden**, inkl. `database-rules` mit `test:block9d` und `interface-browser-smoke` mit `active-session-browser.cjs`).
+  - Nach Merge auf `main` (`6e634551`, `2026-11-19T12:06:00Z`): `pages-build-deployment` (`44520734267`) und `Iron Path Firebase party rules` (`44520735878`, **11/11 Jobs**) komplett **grün**.
+- **Git / PR / Release:** PR #323 gemergt (`6e634551`) auf `main`; `20261119-block9d` auf GitHub Pages live.
+
+## IPL-0074 – Block-9d-RTDB-Rules live bestätigt (`BLOCK9D-RULES-TO-PUBLISH.json`)
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); nach Merge von [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`6e634551830de16ab6fcd690144b4c0a929e5f08`).
+- **Branch / Basis:** `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`).
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json`](firebase/BLOCK9D-RULES-TO-PUBLISH.json) bereitgestellten Block-9d-RTDB-Rules (inkl. `/rules/activeSessions/$uid`) live in der Firebase Console veröffentlicht wurden.
+- **Änderungen / Dateien:**
+  - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (`IPL-0073` Merge/Deploy nachgetragen + `IPL-0074` protokolliert), `IronPath/patch-notes.mjs` (`block9d`-Eintrag aktualisiert: `BLOCK9D-RULES-TO-PUBLISH.json` als vom Betreiber veröffentlicht dokumentiert, verbleibender offener Punkt auf echte Desktop-/Handy-Sichtung vor Block 6 bereinigt).
+- **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Schutz über mehrere Fenster/Geräte) vor Beginn von Block 6.
 
 
 
