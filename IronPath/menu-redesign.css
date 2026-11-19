@@ -30,6 +30,14 @@
   --hq-danger: #e08274;
   --hq-danger-bg: rgba(132, 42, 34, 0.26);
   --hq-radius: 6px;
+  --hq-op-width: min(880px, calc(100vw - 48px));
+}
+
+@media (min-width: 860px) {
+  body:has(#gameView:not([hidden])) main {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
 }
 
 /* ==========================================================================
@@ -116,6 +124,47 @@
 #commandCenter #menuSoldier.command-soldier:hover {
   border-color: #f3dfb0;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(228, 202, 137, 0.25);
+}
+
+#commandCenter .command-soldier-info {
+  min-width: 0;
+  width: 100%;
+  justify-items: stretch;
+}
+
+#commandCenter .command-soldier-xp {
+  display: grid;
+  grid-template-columns: minmax(48px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+#commandCenter .command-soldier-xp progress {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+}
+
+#commandCenter #menuXp {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Move SHOW TASK pill clear of bottom-left .command-utilities while on Command Center */
+body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
+  left: auto;
+  right: max(14px, env(safe-area-inset-right, 0px));
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 859px) {
+  body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
+    left: auto;
+    right: max(10px, env(safe-area-inset-right, 0px));
+    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 #commandCenter .command-soldier-portrait {
@@ -282,6 +331,12 @@
   line-height: 1.35;
 }
 
+@media (min-width: 860px) {
+  #commandCenter .mode-card > span:last-child {
+    min-height: 2.7em;
+  }
+}
+
 #commandCenter .command-utilities {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -326,7 +381,7 @@
 
   #commandCenter .command-nav {
     display: grid;
-    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-columns: 336px minmax(0, 1fr);
     grid-template-rows: auto auto auto auto auto auto;
     column-gap: 20px;
     row-gap: 0;
@@ -693,20 +748,84 @@
   flex: 1 1 auto;
 }
 
+/* Uniform TOP-LEFT anchor for every "← COMMAND CENTER" / "← KOMMANDOZENTRALE" back button
+   across Settings, Field Notes, Endless, Soldier, Armory, Skills, Friends, High Scores,
+   Results, Campaign, and Multiplayer. In-battle [data-context="field"] "✕" closes stay top-right. */
+.dialog-banner .settings-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px 12px;
+  margin-bottom: 6px;
+}
+
+#settingsClose:not([data-context="field"]),
+#patchNotesClose,
+#endlessClose {
+  order: -1;
+}
+
+#settingsClose[data-context="field"] {
+  order: 2;
+  margin-left: auto;
+}
+
+#friendsDialog .dialog-banner > header:has(#friendsClose:not([data-context="field"])),
+#leaderboardDialog .dialog-banner > header,
+#soldierDialog .soldier-hero,
+#armoryDialog .development-head:has(#armoryClose:not([data-context="field"])),
+#skillDialog .skills-header:has(#skillCancel:not([data-context="field"])) {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#friendsDialog .dialog-banner > header:has(#friendsClose[data-context="field"]),
+#armoryDialog .development-head:has(#armoryClose[data-context="field"]),
+#skillDialog .skills-header:has(#skillCancel[data-context="field"]) {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#runResults .debrief-hero:has(#resultsClose:not([data-context="field"])) {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12px;
+  min-height: 185px;
+  padding: 20px 24px 22px;
+}
+
 #runResults .debrief-hero:has(#resultsClose:not([data-context="field"])) .debrief-hero-copy {
-  padding-top: 64px;
+  padding: 0;
+  max-width: 100%;
+}
+
+#runResults #resultsClose:not([data-context="field"]) {
+  position: static;
+  align-self: flex-start;
+  order: 0;
+  margin: 0;
 }
 
 @media (max-width: 480px) {
-  #settingsClose,
+  #settingsClose:not([data-context="field"]),
   #patchNotesClose,
   #endlessClose,
   #soldierDialog #soldierClose,
-  #armoryDialog #armoryClose,
-  #skillDialog #skillCancel,
-  #friendsClose,
+  #armoryDialog #armoryClose:not([data-context="field"]),
+  #skillDialog #skillCancel:not([data-context="field"]),
+  #friendsClose:not([data-context="field"]),
   #leaderboardClose,
-  #runResults #resultsClose {
+  #runResults #resultsClose:not([data-context="field"]) {
     padding: 8px 10px;
     font-size: 9.5px;
     letter-spacing: 0.05em;
@@ -760,14 +879,6 @@
     url("assets/story-act1-dawn.jpg");
 }
 
-.dialog-banner .settings-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 4px;
-}
-
 .dialog-banner h2 {
   margin: 0;
   color: var(--hq-text);
@@ -784,20 +895,23 @@
 }
 
 /* Keep <header> inside friends/leaderboard flush with its wrapper padding so
-   closeButton.right matches header.right (< 2px) for interface-smoke.cjs */
+   closeButton.left matches header.left (< 2px) cleanly */
 #friendsDialog .dialog-banner > header,
 #friendStatsDialog .dialog-banner > header,
 #leaderboardDialog .dialog-banner > header {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
   width: 100%;
   margin: 0;
   padding: 0;
   border: 0;
   background: none;
+}
+
+#friendStatsDialog .dialog-banner > header {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 /* Existing atmospheric headers harmonized into the shared Block 9 banner rhythm */
@@ -887,7 +1001,50 @@
   border-color: var(--hq-border);
 }
 
-/* Four-player lobby & Campaign boards aligned to Command HQ palette */
+/* Four-player lobby & Campaign boards aligned cleanly to shared Command HQ width */
+#gameWorkspace[data-screen="lobby"] > .workspace-nav,
+#gameWorkspace[data-screen="lobby"] #fourPartyPanel,
+#gameWorkspace[data-screen="campaign"]:has(#campaignPanel[data-board-open="true"]) > .workspace-nav,
+#campaignPanel[data-board-open="true"].campaign.panel {
+  width: 100%;
+  max-width: var(--hq-op-width);
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+#gameWorkspace > .workspace-nav #backToCommand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.88);
+  color: var(--hq-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+}
+
+#gameWorkspace > .workspace-nav #backToCommand:hover {
+  border-color: var(--hq-gold);
+  background: rgba(34, 56, 45, 0.94);
+  color: var(--hq-gold);
+}
+
+@media (max-width: 859px) {
+  #gameWorkspace[data-screen="lobby"] > .workspace-nav,
+  #gameWorkspace[data-screen="lobby"] #fourPartyPanel,
+  #gameWorkspace[data-screen="campaign"]:has(#campaignPanel[data-board-open="true"]) > .workspace-nav,
+  #campaignPanel[data-board-open="true"].campaign.panel {
+    max-width: 100%;
+  }
+}
+
 #fourPartyPanel {
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
@@ -917,8 +1074,8 @@
    ========================================================================== */
 
 #settingsDialog {
-  width: min(640px, calc(100vw - 24px));
-  max-width: 640px;
+  width: var(--hq-op-width);
+  max-width: var(--hq-op-width);
   max-height: min(90dvh, 860px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1056,31 +1213,75 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
   min-width: 20px;
 }
 
-.entry:has(.dossier:not([hidden])) {
-  max-width: 500px;
+/* ==========================================================================
+   5B. REDESIGNED SINGLE-COLUMN DOSSIER LOGIN VIEW (#authView)
+   ========================================================================== */
+
+body:has(#authView:not([hidden])) main {
+  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  padding-bottom: 24px;
 }
 
-#authView .dossier-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
+body:has(#authView:not([hidden])) main > header {
+  margin: 4px auto 10px;
+  padding: 0 4px 10px;
+  border-bottom-color: rgba(186, 204, 173, 0.16);
 }
 
-#authView .dossier-topbar .dossier-kicker {
+body:has(#authView:not([hidden])) main > header .brand-logo {
+  width: min(296px, 66vw);
+  margin: 0 auto 4px;
+}
+
+body:has(#authView:not([hidden])) main > header p {
   margin: 0;
+  font-size: 12.5px;
+}
+
+.entry:has(.dossier:not([hidden])) {
+  width: min(468px, 100%);
+  max-width: 468px;
+  margin: 10px auto 20px;
+  padding: 0;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #13221c 0%, #0d1813 100%);
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.74), inset 0 1px 0 rgba(228, 202, 137, 0.2);
+  overflow: hidden;
+}
+
+.entry:has(.dossier:not([hidden]))::before {
+  display: none;
+}
+
+#entry #authView.dossier {
+  display: flex;
+  flex-direction: column;
+  grid-template-columns: none;
+  column-gap: 0;
+  row-gap: 0;
+  padding: 0;
+}
+
+#authView .dossier-hero-stage {
+  position: relative;
+  width: 100%;
+  height: 186px;
+  margin: 0;
+  overflow: hidden;
+  background: #0d1813;
 }
 
 #authView .dossier-scene {
-  position: relative;
-  aspect-ratio: 16 / 9;
+  position: absolute;
+  inset: 0;
   width: 100%;
-  margin: 0 0 14px;
-  border: 1px solid var(--hq-border-strong);
-  border-radius: var(--hq-radius);
+  height: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
   overflow: hidden;
-  background: #0e1914;
+  background: #0d1813;
 }
 
 #authView .dossier-scene img {
@@ -1088,45 +1289,276 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 42%;
 }
 
 #authView .dossier-scene::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(10, 18, 14, 0.05) 35%, rgba(10, 18, 14, 0.72) 100%);
+  background:
+    linear-gradient(180deg, rgba(8, 15, 12, 0.56) 0%, rgba(10, 18, 14, 0.08) 42%, rgba(19, 34, 28, 0.78) 84%, #13221c 100%);
   pointer-events: none;
 }
 
-#authView .dossier-scene-caption {
-  position: absolute;
-  right: 10px;
-  bottom: 8px;
-  z-index: 1;
+#authView .dossier-topbar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px 0;
+  margin: 0;
+}
+
+#authView .dossier-topbar .dossier-kicker {
+  margin: 0;
+  padding: 5px 10px;
+  border: 1px solid rgba(228, 202, 137, 0.36);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.72);
+  backdrop-filter: blur(8px);
   color: var(--hq-gold);
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.14em;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
+#authView .dossier-topbar .login-lang-toggle {
+  min-height: 36px;
+  padding: 5px 10px;
+  background: rgba(11, 20, 16, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+#authView .dossier-hero-meta {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 22px;
+}
+
+#authView .dossier-stamp {
+  transform: none;
+  padding: 4px 8px;
+  border: 1px solid rgba(228, 202, 137, 0.52);
+  border-radius: 4px;
+  background: rgba(16, 29, 23, 0.84);
+  color: var(--hq-gold);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+#authView .dossier-scene-caption {
+  color: rgba(243, 236, 220, 0.78);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+#authView .dossier-body {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 24px 18px;
 }
 
 #authView .dossier-heading {
+  grid-row: auto;
   display: block;
 }
 
 #authView .dossier-intro {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px 12px;
+  display: block;
 }
 
 #authView .dossier-intro h2 {
   margin: 0;
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(24px, 4.5vw, 29px);
+  line-height: 1.08;
 }
 
-@media (max-width: 420px) {
+#authView .dossier-copy {
+  margin: 6px 0 0;
+  color: var(--hq-muted);
+  font-size: 13.5px;
+  line-height: 1.4;
+  align-self: stretch;
+}
+
+#entry #authView .dossier-form {
+  margin: 14px 0 0;
+  display: grid;
+  gap: 12px;
+}
+
+#entry #authView .dossier-field {
+  display: grid;
+  gap: 5px;
+}
+
+#entry #authView .dossier-field label {
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+#entry #authView .dossier-field input {
+  height: 46px;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: rgba(9, 17, 13, 0.92);
+  color: var(--hq-text);
+  font-size: 15px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.45);
+}
+
+#entry #authView .dossier-field input:focus {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 1px;
+  border-color: var(--hq-gold);
+}
+
+#entry #authView .dossier-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+#entry #authView .dossier-actions button {
+  min-height: 46px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--hq-radius);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#entry #authView .dossier-actions .primary {
+  border: 1px solid var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+#entry #authView .dossier-actions .primary:hover:not(:disabled) {
+  background: #f3dfb0;
+  border-color: #f3dfb0;
+}
+
+#entry #authView #register {
+  border: 1px solid var(--hq-border-strong);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#entry #authView #register:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#authView .dossier-aux {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 12px;
+  margin-top: 2px;
+}
+
+#entry #authView #forgot {
+  margin: 0;
+  padding: 8px 4px;
+  min-height: 44px;
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: var(--hq-gold);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#authView .dossier-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  margin: 0;
+}
+
+#authView .dossier-admin-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 4px;
+  color: var(--hq-muted);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+#authView .dossier-admin-link:hover {
+  color: var(--hq-gold);
+}
+
+#authView .dossier-bottom {
+  grid-column: auto;
+  margin-top: 6px;
+}
+
+#authView .dossier-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(186, 204, 173, 0.16);
+  color: rgba(184, 197, 177, 0.72);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+@media (max-width: 480px) {
+  body:has(#authView:not([hidden])) main > header .brand-logo {
+    width: min(250px, 64vw);
+  }
+
+  #authView .dossier-hero-stage {
+    height: 148px;
+  }
+
+  #authView .dossier-hero-meta {
+    padding: 0 16px;
+  }
+
+  #authView .dossier-body {
+    padding: 4px 16px 14px;
+  }
+
+  #entry #authView .dossier-actions {
+    grid-template-columns: 1fr;
+  }
+
   #authView .dossier-scene-caption {
     font-size: 8px;
   }
@@ -1498,42 +1930,77 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
 
 #endlessLaunch .endless-carousel {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  grid-template-columns: 54px minmax(0, 1fr) 54px;
   align-items: stretch;
   gap: 10px;
+  height: 256px;
   margin-bottom: 12px;
 }
 
 #endlessLaunch .endless-arrow {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 48px;
-  min-width: 48px;
+  width: 54px;
+  min-width: 54px;
+  height: 100%;
   min-height: 48px;
   margin: 0;
   padding: 0;
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
-  background: rgba(16, 29, 23, 0.94);
+  background:
+    linear-gradient(180deg, rgba(28, 46, 37, 0.96) 0%, rgba(15, 27, 22, 0.98) 50%, rgba(24, 41, 33, 0.96) 100%);
   color: var(--hq-gold);
-  font-size: 18px;
-  line-height: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(228, 202, 137, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+    0 8px 20px rgba(0, 0, 0, 0.36);
   cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+#endlessLaunch .endless-arrow .endless-arrow-icon {
+  display: block;
+  width: 24px;
+  height: 42px;
+  transition: transform 140ms ease;
 }
 
 #endlessLaunch .endless-arrow:hover {
   border-color: var(--hq-gold);
-  background: rgba(34, 56, 45, 0.96);
-  color: #f7e4b2;
+  background:
+    linear-gradient(180deg, rgba(42, 68, 55, 0.98) 0%, rgba(24, 42, 34, 0.98) 50%, rgba(36, 58, 47, 0.98) 100%);
+  color: #f8e6b4;
+  box-shadow:
+    inset 0 1px 0 rgba(248, 230, 180, 0.34),
+    0 0 0 1px rgba(228, 202, 137, 0.24),
+    0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+#endlessLaunch .endless-arrow-prev:hover .endless-arrow-icon {
+  transform: translateX(-2px);
+}
+
+#endlessLaunch .endless-arrow-next:hover .endless-arrow-icon {
+  transform: translateX(2px);
+}
+
+#endlessLaunch .endless-arrow:focus-visible {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 2px;
 }
 
 #endlessLaunch .endless-theme-card {
   position: relative;
   display: flex;
   align-items: flex-end;
-  min-height: 200px;
-  aspect-ratio: 16 / 9;
-  padding: 18px 20px;
+  height: 256px;
+  min-height: 256px;
+  max-height: 256px;
+  aspect-ratio: auto;
+  padding: 18px 22px;
+  box-sizing: border-box;
   border: 1px solid var(--hq-gold);
   border-radius: var(--hq-radius);
   overflow: hidden;
@@ -1550,11 +2017,17 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
 }
 
 #endlessLaunch #endlessSelectedTheme {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 0;
+  max-height: 2.35em;
   color: var(--hq-text);
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(20px, 3vw, 26px);
+  font-size: clamp(19px, 2.5vw, 25px);
   line-height: 1.15;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.92);
 }
 
 #endlessLaunch .endless-theme-card[data-theme="random"] {
@@ -1630,17 +2103,30 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
 
   #endlessLaunch .endless-carousel {
     grid-template-columns: 44px minmax(0, 1fr) 44px;
-    gap: 6px;
+    gap: 8px;
+    height: 176px;
   }
 
   #endlessLaunch .endless-arrow {
     width: 44px;
     min-width: 44px;
+    height: 100%;
+  }
+
+  #endlessLaunch .endless-arrow .endless-arrow-icon {
+    width: 20px;
+    height: 34px;
   }
 
   #endlessLaunch .endless-theme-card {
-    min-height: 145px;
-    padding: 14px;
+    height: 176px;
+    min-height: 176px;
+    max-height: 176px;
+    padding: 14px 16px;
+  }
+
+  #endlessLaunch #endlessSelectedTheme {
+    font-size: clamp(17px, 4.6vw, 21px);
   }
 
   #endlessLaunch #endlessCancel {
@@ -1692,8 +2178,8 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
   }
 
   #commandCenter .command-soldier-xp {
-    flex-wrap: wrap;
-    gap: 4px 8px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
   }
 
   #commandCenter .command-utilities button {
@@ -1742,44 +2228,38 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
    ========================================================================== */
 
 @media (min-width: 860px) {
-  #settingsDialog[open] {
-    width: min(620px, 92vw);
-    max-height: min(88vh, 800px);
+  #settingsDialog[open],
+  #endlessLaunch[open],
+  #friendsDialog[open],
+  #friendStatsDialog[open],
+  #leaderboardDialog[open],
+  #runResults[open] {
+    width: var(--hq-op-width);
+    max-width: var(--hq-op-width);
+    max-height: min(88vh, 840px);
     overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
   }
 
   #patchNotes[open] {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    width: min(740px, 92vw);
-    max-height: min(86vh, 780px);
+    width: var(--hq-op-width);
+    max-width: var(--hq-op-width);
+    max-height: min(86vh, 820px);
   }
 
   #patchNotes[open] > :not(.patch-notes-panel) {
     flex: 0 0 auto;
   }
 
-  #endlessLaunch[open] {
-    width: min(760px, 94vw);
-    max-height: min(88vh, 820px);
-    overflow-y: auto;
-  }
-
-  #friendsDialog[open],
-  #friendStatsDialog[open],
-  #leaderboardDialog[open] {
-    width: min(760px, 94vw);
-    max-height: min(86vh, 780px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    overscroll-behavior: contain;
-  }
-
   #soldierDialog[open],
   #armoryDialog[open],
   #skillDialog[open] {
-    width: min(1020px, 94vw);
+    width: var(--hq-op-width);
+    max-width: var(--hq-op-width);
     max-height: min(88vh, 840px);
   }
 
@@ -1788,6 +2268,10 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
+  }
+
+  #skillDialog .skills-workspace {
+    grid-template-columns: minmax(0, 1fr) 268px;
   }
 }
 
@@ -1868,10 +2352,13 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
 
   #skillDialog[open] .skills-header {
     margin: 0;
-    padding: 10px 14px;
+    padding: 12px 14px;
     min-height: 62px;
+    gap: 10px;
+  }
+
+  #skillDialog[open] .skills-header:has(#skillCancel[data-context="field"]) {
     align-items: center;
-    gap: 12px;
   }
 
   #skillDialog[open] .skills-header p {
@@ -2847,7 +3334,7 @@ html[lang="de"] .login-lang-toggle .login-lang-flag {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.74);
 }
 
-#runResults .debrief-close {
+#runResults .debrief-close[data-context="field"] {
   display: grid;
   place-items: center;
   width: 44px;

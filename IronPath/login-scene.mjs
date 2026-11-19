@@ -2,6 +2,7 @@
 // Advances sequentially on each login view / reload (persisted best-effort in
 // localStorage) so returning players see a fresh painted outpost each time.
 export const LOGIN_SCENE_STORAGE_KEY='ironpath:loginSceneIndex';
+export const LOGIN_SCENE_VERSION='20261119-block9f';
 export const LOGIN_SCENES=Object.freeze([
  'assets/login-bunker-watch.jpg',
  'assets/login-radio-rain.jpg',
@@ -26,7 +27,7 @@ export function nextLoginSceneIndex(storage=null){
 
 export function applyLoginScene({document,storage=null}={}){
  const index=nextLoginSceneIndex(storage);
- const src=LOGIN_SCENES[index];
+ const src=`${LOGIN_SCENES[index]}?v=${LOGIN_SCENE_VERSION}`;
  const img=document?.getElementById?.('authSceneImg');
  if(img){
   if('src' in img)img.src=src;

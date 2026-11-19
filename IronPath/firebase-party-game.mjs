@@ -1,16 +1,16 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261119-block9e';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261119-block9f';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
-import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261119-block9e';
-import {createVersus} from './versus.mjs?v=20261119-block9e';
+import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261119-block9f';
+import {createVersus} from './versus.mjs?v=20261119-block9f';
 import {createFixedStepClock} from './fixed-step-clock.mjs?v=20261102-coopmotion1';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261119-block9e';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261119-block9e';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261119-block9f';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261119-block9f';
 import {createFirebasePartyChannel} from './firebase-party-channel.mjs?v=20261112-lag2';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261119-block9e';
-import {createPartyHost} from './party-host.mjs?v=20261119-block9e';
-import {createMatch,STEP} from './simulation.mjs?v=20261119-block9e';
+import {createFirebasePartyClientSession,createFirebasePartyHostSession} from './firebase-party-session.mjs?v=20261119-block9f';
+import {createPartyHost} from './party-host.mjs?v=20261119-block9f';
+import {createMatch,STEP} from './simulation.mjs?v=20261119-block9f';
 
 // Game-facing adapter for an already-established party. It is not a lobby or
 // an authentication boundary. Security rules must enforce the roster and paths.
