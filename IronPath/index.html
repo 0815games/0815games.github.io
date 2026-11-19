@@ -4,23 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261119-block9e">
+  <meta name="ironpath-build" content="20261119-block9f">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261119-block9e">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261119-block9e">
-  <link rel="stylesheet" href="skill-menu.css?v=20261119-block9e">
-  <link rel="stylesheet" href="field-command.css?v=20261119-block9e">
+  <link rel="stylesheet" href="style.css?v=20261119-block9f">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261119-block9f">
+  <link rel="stylesheet" href="skill-menu.css?v=20261119-block9f">
+  <link rel="stylesheet" href="field-command.css?v=20261119-block9f">
   <link rel="stylesheet" href="multiplayer-prompts.css?v=20261031-prompt1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
   <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter2">
   <link rel="stylesheet" href="patch-notes.css?v=20261031-notes1">
-  <link rel="stylesheet" href="menu-redesign.css?v=20261119-block9e">
+  <link rel="stylesheet" href="menu-redesign.css?v=20261119-block9f">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -176,7 +176,7 @@
         <button type="button" id="menuDeleteCharacter" class="danger-utility"><span data-i18n-text="DELETE CHARACTER">DELETE CHARACTER</span> <span aria-hidden="true">✖</span></button>
       </div>
     </div>
-    <p class="build-stamp" aria-hidden="true">BUILD 20261119-block9e</p>
+    <p class="build-stamp" aria-hidden="true">BUILD 20261119-block9f</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
@@ -209,11 +209,23 @@
       <button id="endlessDeploy" class="primary" type="button" data-i18n-text="DEPLOY">DEPLOY</button>
     </div>
     <div class="endless-carousel" role="group" aria-label="Choose battlefield" data-i18n-aria-label="Choose battlefield">
-      <button id="endlessPrev" class="endless-arrow" type="button" aria-label="Previous battlefield" data-i18n-aria-label="Previous battlefield">◀</button>
+      <button id="endlessPrev" class="endless-arrow endless-arrow-prev" type="button" aria-label="Previous battlefield" data-i18n-aria-label="Previous battlefield">
+        <svg class="endless-arrow-icon" viewBox="0 0 28 48" width="24" height="42" aria-hidden="true" focusable="false">
+          <path d="M19 7L7 24l12 17" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="miter"/>
+          <path d="M23 14l-7 10 7 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.55"/>
+          <line x1="4" y1="18" x2="4" y2="30" stroke="currentColor" stroke-width="2" opacity="0.72"/>
+        </svg>
+      </button>
       <div id="endlessThemeCard" class="endless-theme-card" data-theme="random" tabindex="0" role="region" aria-live="polite" aria-label="Random battlefield">
         <strong id="endlessSelectedTheme">Random battlefield</strong>
       </div>
-      <button id="endlessNext" class="endless-arrow" type="button" aria-label="Next battlefield" data-i18n-aria-label="Next battlefield">▶</button>
+      <button id="endlessNext" class="endless-arrow endless-arrow-next" type="button" aria-label="Next battlefield" data-i18n-aria-label="Next battlefield">
+        <svg class="endless-arrow-icon" viewBox="0 0 28 48" width="24" height="42" aria-hidden="true" focusable="false">
+          <path d="M9 7l12 17L9 41" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="square" stroke-linejoin="miter"/>
+          <path d="M5 14l7 10-7 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.55"/>
+          <line x1="24" y1="18" x2="24" y2="30" stroke="currentColor" stroke-width="2" opacity="0.72"/>
+        </svg>
+      </button>
     </div>
     <div class="endless-cancel-row"><button id="endlessCancel" type="button" data-i18n-text="CANCEL">CANCEL</button></div>
     <div class="endless-record-panel">
@@ -277,33 +289,42 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261119-block9e</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261119-block9f</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle" data-i18n-text="Checking the game version…">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden data-i18n-text="RETRY CHECK">RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
-        <div class="dossier-topbar">
-          <span class="dossier-kicker" data-i18n-text="0815 GAMES · PERSONNEL">0815 GAMES · PERSONNEL</span>
-          <button id="authLanguageToggle" class="login-lang-toggle" type="button" data-lang="en" aria-pressed="false" aria-label="Switch language" data-i18n-aria-label="Switch language"><span class="login-lang-flag" aria-hidden="true"></span><span class="login-lang-code">EN</span></button>
+        <div class="dossier-hero-stage">
+          <div class="dossier-scene" aria-hidden="true">
+            <img id="authSceneImg" src="assets/login-bunker-watch.jpg?v=20261119-block9f" width="1376" height="768" alt="" decoding="async">
+          </div>
+          <div class="dossier-topbar">
+            <span class="dossier-kicker" data-i18n-text="0815 GAMES · PERSONNEL">0815 GAMES · PERSONNEL</span>
+            <button id="authLanguageToggle" class="login-lang-toggle" type="button" data-lang="en" aria-pressed="false" aria-label="Switch language" data-i18n-aria-label="Switch language"><span class="login-lang-flag" aria-hidden="true"></span><span class="login-lang-code">EN</span></button>
+          </div>
+          <div class="dossier-hero-meta">
+            <span class="dossier-stamp" data-i18n="auth.heading">IDENTITY CHECK</span>
+            <span class="dossier-scene-caption" data-i18n-text="PERSONNEL / 01">PERSONNEL / 01</span>
+          </div>
         </div>
-        <div class="dossier-scene" aria-hidden="true">
-          <img id="authSceneImg" src="assets/login-bunker-watch.jpg" width="1376" height="768" alt="" decoding="async">
-          <span class="dossier-scene-caption" data-i18n-text="PERSONNEL / 01">PERSONNEL / 01</span>
-        </div>
-        <div class="dossier-heading">
-          <div class="dossier-intro"><h2><span data-i18n-text="Soldier’s">Soldier’s</span> <span data-i18n-text="field dossier">field dossier</span></h2><span class="dossier-stamp" data-i18n="auth.heading">IDENTITY CHECK</span></div>
-        </div>
-        <p class="dossier-copy" data-i18n="auth.copy">Sign in to access your soldier and saved progress.</p>
-        <form id="authForm" class="dossier-form" method="post">
-          <div class="dossier-field"><label for="email" data-i18n="auth.email">EMAIL ADDRESS</label><input id="email" name="username" type="email" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" required></div>
-          <div class="dossier-field"><label for="password" data-i18n="auth.password">PASSWORD</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="6" required></div>
-          <div class="dossier-field" id="passwordConfirmField" hidden><label for="passwordConfirm" data-i18n="auth.passwordConfirm">CONFIRM PASSWORD</label><input id="passwordConfirm" name="password-confirm" type="password" autocomplete="new-password" minlength="6"></div>
-          <label id="sessionTakeoverField" class="session-takeover-field" hidden><input id="sessionTakeoverCheck" type="checkbox"><span data-i18n-text="End the active session on the other window or device and sign in here">End the active session on the other window or device and sign in here</span></label>
-          <div class="dossier-actions"><button id="authSubmit" class="primary" type="submit" data-i18n="auth.signin">SIGN IN</button><button id="register" type="button" data-i18n="auth.register">CREATE ACCOUNT</button></div>
-          <button id="forgot" type="button" data-i18n="auth.forgot">Forgot your password?</button>
-        </form>
-        <div class="dossier-bottom">
-          <div class="dossier-admin"><a id="adminLoginLink" class="dossier-admin-link" href="admin.html" data-i18n-text="Admin login">Admin login</a></div>
-          <div class="dossier-footer" aria-hidden="true"><span data-i18n-text="FIELD RECORD · 01">FIELD RECORD · 01</span><span data-i18n-text="HOLD THE LINE ★">HOLD THE LINE ★</span></div>
+        <div class="dossier-body">
+          <div class="dossier-heading">
+            <div class="dossier-intro"><h2><span data-i18n-text="Soldier’s">Soldier’s</span> <span data-i18n-text="field dossier">field dossier</span></h2></div>
+          </div>
+          <p class="dossier-copy" data-i18n="auth.copy">Sign in to access your soldier and saved progress.</p>
+          <form id="authForm" class="dossier-form" method="post">
+            <div class="dossier-field"><label for="email" data-i18n="auth.email">EMAIL ADDRESS</label><input id="email" name="username" type="email" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false" required></div>
+            <div class="dossier-field"><label for="password" data-i18n="auth.password">PASSWORD</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="6" required></div>
+            <div class="dossier-field" id="passwordConfirmField" hidden><label for="passwordConfirm" data-i18n="auth.passwordConfirm">CONFIRM PASSWORD</label><input id="passwordConfirm" name="password-confirm" type="password" autocomplete="new-password" minlength="6"></div>
+            <label id="sessionTakeoverField" class="session-takeover-field" hidden><input id="sessionTakeoverCheck" type="checkbox"><span data-i18n-text="End the active session on the other window or device and sign in here">End the active session on the other window or device and sign in here</span></label>
+            <div class="dossier-actions"><button id="authSubmit" class="primary" type="submit" data-i18n="auth.signin">SIGN IN</button><button id="register" type="button" data-i18n="auth.register">CREATE ACCOUNT</button></div>
+            <div class="dossier-aux">
+              <button id="forgot" type="button" data-i18n="auth.forgot">Forgot your password?</button>
+              <div class="dossier-admin"><a id="adminLoginLink" class="dossier-admin-link" href="admin.html" data-i18n-text="Admin login">Admin login</a></div>
+            </div>
+          </form>
+          <div class="dossier-bottom">
+            <div class="dossier-footer" aria-hidden="true"><span data-i18n-text="FIELD RECORD · 01">FIELD RECORD · 01</span><span data-i18n-text="HOLD THE LINE ★">HOLD THE LINE ★</span></div>
+          </div>
         </div>
       </div>
 <div id="characterView" hidden><form id="characterForm" class="recruit-card"><div class="recruit-head"><div class="recruit-head-text"><span class="recruit-kicker" data-i18n-text="RECRUITING OFFICE">RECRUITING OFFICE</span><h2 data-i18n-text="Create your soldier">Create your soldier</h2></div></div><p class="hint recruit-note" data-i18n-text="Your name and face are permanent. Friends can find you by soldier name and player ID.">Your name and face are permanent. Friends can find you by soldier name and player ID.</p><div id="avatarGenderBar" class="recruit-gender-bar"></div><div class="recruit-showcase"><div id="avatarStage" class="recruit-stage"><canvas id="avatarPreview" class="recruit-portrait-canvas" role="img" aria-label="Avatar preview" data-i18n-aria-label="Avatar preview"></canvas></div><div id="avatarOptions" class="recruit-options"></div></div><div class="recruit-name recruit-name-row"><label for="soldierName" data-i18n-text="SOLDIER NAME">SOLDIER NAME</label><input id="soldierName" maxlength="24" minlength="2" required autocomplete="off" placeholder="Enter a name" data-i18n-placeholder="Enter a name"></div><div class="recruit-actions"><button id="avatarRandom" type="button" data-i18n-text="SURPRISE ME">SURPRISE ME</button><button class="primary" type="submit" data-i18n-text="ENLIST">ENLIST</button></div><button id="setupLogout" type="button" class="recruit-logout" data-i18n-text="SIGN OUT">SIGN OUT</button><div id="enlistStamp" class="enlist-stamp" hidden aria-hidden="true" data-i18n-text="ENLISTED · IRON PATH">ENLISTED · IRON PATH</div></form></div>
@@ -533,7 +554,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261119-block9e"></script>
+  <script type="module" src="intro.mjs?v=20261119-block9f"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){var el=document.getElementById("loading");if(el)el.textContent=(navigator.language||"").toLowerCase().indexOf("de")===0?"Verbindung zu Iron Path konnte nicht hergestellt werden. Prüfe deine Verbindung und lade die Seite neu.":"Could not connect to Iron Path. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261119-block9e"></script>
+  <script type="module" src="account-entry.mjs?v=20261119-block9f"></script>
 </body></html>

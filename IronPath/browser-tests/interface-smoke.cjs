@@ -46,12 +46,35 @@ const fs = require('node:fs');
       const authImgOk = await page.locator('#authSceneImg').evaluate(img => img.complete && img.naturalWidth > 0);
       assert.equal(authImgOk, true, `${name}: #authSceneImg rotating banner loads cleanly`);
       assert.equal(await page.locator('#adminLoginLink').getAttribute('href'), 'admin.html', `${name}: admin link points to admin.html`);
+      const authLayout=await page.evaluate(()=>{
+        const header=document.querySelector('main > header')?.getBoundingClientRect();
+        const scene=document.querySelector('#authView .dossier-scene')?.getBoundingClientRect();
+        const form=document.querySelector('#authView .dossier-form')?.getBoundingClientRect();
+        const card=document.querySelector('#authView')?.getBoundingClientRect();
+        return {headerTop:header?.top??-1,sceneBottom:scene?.bottom??0,formTop:form?.top??0,formWidthRatio:(form?.width??0)/Math.max(1,card?.width??1)};
+      });
+      assert.ok(authLayout.headerTop>=0,`${name}: IRON PATH header is not clipped above the viewport (${Math.round(authLayout.headerTop)})`);
+      assert.ok(authLayout.sceneBottom<=authLayout.formTop+2,`${name}: #authView stacks hero scene cleanly above single-column form`);
+      assert.ok(authLayout.formWidthRatio>=0.75,`${name}: #authView form spans single column cleanly (${Math.round(authLayout.formWidthRatio*100)}%)`);
       await page.screenshot({ path: `browser-artifacts/${name}-signin.png`, fullPage: true });
       await page.evaluate(() => {
         document.querySelector('#entry').hidden = true; document.querySelector('#gameView').hidden = false;
         document.querySelector('#menuName').textContent = 'Field Commander'; document.querySelector('#menuLevel').textContent = 'LEVEL 12';
+        document.querySelector('#menuXp').textContent = '340 / 900 XP';
       });
       await check('#menuMultiplayer'); await check('#menuCampaign');
+      const commandCardFit=await page.evaluate(()=>{
+        const card=document.getElementById('menuSoldier').getBoundingClientRect();
+        const xp=document.getElementById('menuXp').getBoundingClientRect();
+        const recall=document.getElementById('guideRecall'),wasRecallHidden=recall.hidden;
+        recall.hidden=false;
+        const rr=recall.getBoundingClientRect(),ur=document.querySelector('.command-utilities').getBoundingClientRect();
+        const overlapsUtils=!(rr.right<=ur.left||rr.left>=ur.right||rr.bottom<=ur.top||rr.top>=ur.bottom);
+        recall.hidden=wasRecallHidden;
+        return {xpRight:xp.right,cardRight:card.right,overlapsUtils};
+      });
+      assert.ok(commandCardFit.xpRight<=commandCardFit.cardRight+1,`${name}: #menuXp stays inside #menuSoldier (${Math.round(commandCardFit.xpRight)} <= ${Math.round(commandCardFit.cardRight)})`);
+      assert.equal(commandCardFit.overlapsUtils,false,`${name}: #guideRecall (SHOW TASK) does not overlap .command-utilities`);
       const resultsPlacement=await page.evaluate(()=>{
         const res=document.getElementById('menuResults'),wasHidden=res.hidden;
         res.hidden=false;
@@ -78,7 +101,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9e loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9f loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -536,13 +559,27 @@ const fs = require('node:fs');
           await check('#endlessPrev'); await check('#endlessNext'); await check('#endlessThemeCard');
           const carouselLayout=await page.evaluate(()=>{
             const deploy=document.getElementById('endlessDeploy').getBoundingClientRect();
-            const card=document.getElementById('endlessThemeCard').getBoundingClientRect();
+            const card=document.getElementById('endlessThemeCard');
+            const label=document.getElementById('endlessSelectedTheme');
+            const prevIcon=document.querySelector('#endlessPrev svg.endless-arrow-icon')?.getBoundingClientRect();
+            const nextIcon=document.querySelector('#endlessNext svg.endless-arrow-icon')?.getBoundingClientRect();
             const cancel=document.getElementById('endlessCancel').getBoundingClientRect();
-            return {deployBottom:deploy.bottom,cardTop:card.top,cardBottom:card.bottom,cancelTop:cancel.top,art:getComputedStyle(document.getElementById('endlessThemeCard')).backgroundImage};
+            const heights=[];
+            const origTheme=card.dataset.theme,origText=label.textContent;
+            for(const [theme,text] of [['random','Random battlefield'],['scrub','Scorched Scrubland'],['forest','Dense Temperate Forest'],['urban','Urban Ruin & Industrial Complex'],['arctic','Arktische Tundra & Eissee'],['marsh','Tiefe Sumpfgebiete']]) {
+              card.dataset.theme=theme; label.textContent=text;
+              heights.push(card.getBoundingClientRect().height);
+            }
+            card.dataset.theme=origTheme; label.textContent=origText;
+            const r=card.getBoundingClientRect();
+            return {deployBottom:deploy.bottom,cardTop:r.top,cardBottom:r.bottom,cancelTop:cancel.top,art:getComputedStyle(card).backgroundImage,heights,prevIconWidth:prevIcon?.width??0,nextIconWidth:nextIcon?.width??0,dialogWidth:document.getElementById('endlessLaunch').getBoundingClientRect().width};
           });
           assert.ok(carouselLayout.deployBottom<=carouselLayout.cardTop+2,`${name}: #endlessDeploy sits above #endlessThemeCard`);
           assert.ok(carouselLayout.cardBottom<=carouselLayout.cancelTop+2,`${name}: #endlessCancel sits below #endlessThemeCard`);
           assert.match(carouselLayout.art,/endless-random/,`${name}: #endlessThemeCard opens on Random artwork`);
+          assert.ok(carouselLayout.prevIconWidth>=12&&carouselLayout.nextIconWidth>=12,`${name}: #endlessPrev and #endlessNext render custom vector arrows`);
+          const minH=Math.min(...carouselLayout.heights),maxH=Math.max(...carouselLayout.heights);
+          assert.ok(maxH-minH<=1,`${name}: Endless terrain cards stay identical height across all 6 themes (${minH.toFixed(1)}..${maxH.toFixed(1)})`);
         }
         if(id==='settingsDialog'){
           const langControl=await page.evaluate(()=>{
@@ -558,19 +595,38 @@ const fs = require('node:fs');
           assert.match(langControl.flagBg,/flag-gb/,`${name}: #languageToggle shows flag icon`);
         }
         if(id==='friendsDialog'||id==='leaderboardDialog'){
-          const layout=await page.locator(control).evaluate(el=>{const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect(),style=getComputedStyle(el);return {rightGap:h.right-r.right,textAlign:style.textAlign,width:r.width,height:r.height};});
-          assert.ok(Math.abs(layout.rightGap)<2,`${name}: ${control} should align to the right edge of its header (gap=${layout.rightGap})`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);
+          const layout=await page.locator(control).evaluate(el=>{const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect(),style=getComputedStyle(el);return {leftGap:r.left-h.left,topGap:r.top-h.top,textAlign:style.textAlign,width:r.width,height:r.height};});
+          assert.ok(Math.abs(layout.leftGap)<2&&Math.abs(layout.topGap)<2,`${name}: ${control} anchors top-left of its header (leftGap=${layout.leftGap}, topGap=${layout.topGap})`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);
           const deGap=await page.locator(control).evaluate(el=>{
             const label=el.querySelector('span'),prev=label?label.textContent:null;
             if(label)label.textContent='← KOMMANDOZENTRALE';
             const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect();
             if(label&&prev!==null)label.textContent=prev;
-            return h.right-r.right;
+            return {leftGap:r.left-h.left,fits:r.right<=h.right+1};
           });
-          assert.ok(Math.abs(deGap)<2,`${name}: ${control} keeps header alignment in German (← KOMMANDOZENTRALE, gap=${deGap})`);
+          assert.ok(Math.abs(deGap.leftGap)<2&&deGap.fits,`${name}: ${control} keeps top-left alignment in German (← KOMMANDOZENTRALE, leftGap=${deGap.leftGap})`);
         }
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
+      }
+      if(width>=860){
+        const opWidths=await page.evaluate(()=>{
+          const ws=document.getElementById('gameWorkspace');
+          const camp=document.getElementById('campaignPanel');
+          const party=document.getElementById('fourPartyPanel');
+          const endless=document.getElementById('endlessLaunch');
+          const prevScreen=ws.dataset.screen,prevWsHidden=ws.hidden,prevBoard=camp.dataset.boardOpen,prevCampHidden=camp.hidden,prevPartyHidden=party.hidden;
+          ws.hidden=false;ws.dataset.screen='campaign';camp.hidden=false;camp.dataset.boardOpen='true';
+          const cw=camp.getBoundingClientRect().width;
+          ws.dataset.screen='lobby';party.hidden=false;
+          const pw=party.getBoundingClientRect().width;
+          endless.showModal();
+          const ew=endless.getBoundingClientRect().width;
+          endless.close();
+          ws.hidden=prevWsHidden;ws.dataset.screen=prevScreen;camp.dataset.boardOpen=prevBoard;camp.hidden=prevCampHidden;party.hidden=prevPartyHidden;
+          return {cw,pw,ew};
+        });
+        assert.ok(Math.abs(opWidths.cw-opWidths.ew)<=2&&Math.abs(opWidths.pw-opWidths.ew)<=2,`${name}: Campaign (${opWidths.cw}), Endless (${opWidths.ew}), and Multiplayer (${opWidths.pw}) match width`);
       }
       // Scripts are blocked here, so the tour never fills its card in: give it the kind
       // of text it renders and check the layout of the real markup and CSS.

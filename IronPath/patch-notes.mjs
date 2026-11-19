@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9e';
+import {getLanguage} from './language.mjs?v=20261119-block9f';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9f',build:'20261119-block9f',pr:325,
+    title:{en:'Block 9f · Redesigned Login Artwork & Card, Unified Operation Windows, Consistent Back Buttons & Locked Endless Card Heights',de:'Block 9f · Neues Login-Design & Artwork, einheitliche Modus-Breiten, konsistente Zurück-Buttons & feste Endlos-Kartenhöhen'},
+    shipped:[
+      {en:'Completely rebuilt the sign-in screen (`#authView`, four brand-new `1376x768` painterly valley artworks `login-bunker-watch`, `login-radio-rain`, `login-convoy-prep`, `login-tactical-map`) into a single-column hero dossier card and compacted `<header>` vertical clearance so the top Iron Path crest stays unclipped across tablets and phones.',de:'Anmeldebildschirm (`#authView`, vier nagelneue `1376x768`-Szenengemälde `login-bunker-watch`, `login-radio-rain`, `login-convoy-prep`, `login-tactical-map`) als einspaltige Hero-Karte komplett neu gestaltet und oberen Logo-Abstand so angepasst, dass das Iron-Path-Logo auf Tablet & Handy nicht mehr abschneidet.'},
+      {en:'Unified desktop widths (`880px`) across Campaign, Endless, Multiplayer, and all Command HQ modals, standardized every `← COMMAND CENTER` / `← KOMMANDOZENTRALE` back button in the same top-left header slot (keeping in-battle `✕` close buttons top-right), fixed `#menuSoldier` XP progress overflow, and moved `#guideRecall` (`SHOW TASK`) clear of bottom-left HQ utilities.',de:'Desktop-Breiten (`880 px`) über Kampagne, Endlos, Mehrspieler und alle HQ-Modale vereinheitlicht, sämtliche `← COMMAND CENTER` / `← KOMMANDOZENTRALE`-Zurück-Buttons einheitlich oben links verankert (`✕` im Gefecht bleibt oben rechts), XP-Überlauf im Soldatenfeld korrigiert und `#guideRecall` (`AUFGABE ZEIGEN`) von den unteren HQ-Schaltflächen gelöst.'},
+      {en:'Locked uniform card height across every Endless battlefield image (`256px` desktop / `176px` mobile) regardless of 1- vs 2-line titles and replaced basic arrows on `#endlessPrev` / `#endlessNext` with custom beveled Iron Path vector arrows.',de:'Feste einheitliche Höhe für alle Endlos-Schlachtfeld-Karten (`256 px` Desktop / `176 px` Mobil) unabhängig von 1- oder 2-zeiligen Titeln erzwungen und die einfachen Karussell-Pfeile durch maßgeschneiderte taktische Iron-Path-Vektorpfeile ersetzt.'},
+    ],
+    open:[
+      {en:'Real tablet, desktop, and mobile device inspection on `20261119-block9f` before starting Block 6.',de:'Echte Tablet-, Desktop- und Handy-Abnahme auf `20261119-block9f` vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block9e',build:'20261119-block9e',pr:324,
     title:{en:'Block 9e · Same-Browser Multi-Tab Session Lock, Rotating Sign-In Artwork, Unified HQ Back Navigation & Endless Carousel',de:'Block 9e · Mehrfenster-Sitzungsschutz, rotierende Login-Banner, einheitliche HQ-Navigation & Endlos-Karussell'},

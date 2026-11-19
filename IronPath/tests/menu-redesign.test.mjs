@@ -179,4 +179,20 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
   }
   const launcher = read('endless-launcher.mjs');
   assert.doesNotMatch(launcher, /translateText\(\s*['"]command\.none['"]/, 'endless-launcher.mjs must not pass dotted message key to translateText');
+
+  // Paket 2: single-column hero login dossier override without interface-redesign 2-column squeeze
+  assert.match(html, /class="dossier-hero-stage"/, '#authView uses dedicated .dossier-hero-stage container');
+  assert.match(css, /#entry\s+#authView\.dossier\s*\{[^}]*flex-direction:\s*column/, '#authView resets grid into clean single column');
+  assert.match(css, /\.entry:has\(\.dossier:not\(\[hidden\]\)\)::before\s*\{[^}]*display:\s*none/, 'redundant personnel header strip hidden on redesigned login');
+
+  // Paket 3: unified operation shell width & uniform top-left back buttons
+  assert.match(css, /--hq-op-width:\s*min\(880px/, 'shared 880px HQ shell width defined');
+  assert.match(css, /#gameWorkspace\[data-screen="lobby"\]\s*>\s*\.workspace-nav[\s\S]*#fourPartyPanel[\s\S]*#campaignPanel\[data-board-open="true"\]/, 'Campaign and Multiplayer share --hq-op-width');
+  assert.match(css, /flex-direction:\s*column-reverse;\s*align-items:\s*flex-start/, 'HQ dialog headers anchor ← COMMAND CENTER top-left');
+  assert.match(css, /body:has\(#commandCenter:not\(\[hidden\]\)\)\s+#guideRecall\.coach-recall/, 'SHOW TASK clears Command Center bottom-left utility row');
+
+  // Paket 4: fixed card height on Endless themes + custom SVG arrows
+  assert.match(html, /id="endlessPrev"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessPrev renders custom Iron Path vector arrow');
+  assert.match(html, /id="endlessNext"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessNext renders custom Iron Path vector arrow');
+  assert.match(css, /#endlessLaunch\s+\.endless-theme-card\s*\{[^}]*height:\s*256px;[^}]*min-height:\s*256px;[^}]*max-height:\s*256px/, 'Endless terrain cards keep uniform fixed desktop height');
 });

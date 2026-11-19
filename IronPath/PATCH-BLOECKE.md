@@ -639,7 +639,7 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   und `<380px`-Mobilregeln korrigiert sowie fehlende DE-Texte/Fehlertexte
   vervollständigt (`endless-launcher.mjs`, `recruit-screen.mjs`, `localization-*-de.mjs`).
   *(Live-Veröffentlichung von `BLOCK9D-RULES-TO-PUBLISH.json` laut Betreiber in der Firebase Console bestätigt — `IPL-0074`; echte Geräteabnahme offen.)*
-- [ ] **Block 9e Feinschliff (`20261119-block9e`, [PR #324](https://github.com/0815games/0815games.github.io/pull/324)):**
+- [x] **Block 9e Feinschliff (`20261119-block9e`, [PR #324](https://github.com/0815games/0815games.github.io/pull/324)):**
   Mehrfenster-Sitzungssperre ohne Auth-Verlust zwischen Tabs desselben Browsers
   (`createWindowSessionId` + `createSameBrowserSessionMonitor`, `pagehide`-Freigabe,
   10-s-Heartbeat), rotierende Login-Banner (`login-scene.mjs`, `login-*.jpg`),
@@ -647,7 +647,18 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   einheitliche HQ-Zurück-Navigation (`← COMMAND CENTER` / `← KOMMANDOZENTRALE`
   bzw. `✕` im Gefecht), eigene `1376×768`-Modus-Artworks (`mode-*.jpg`) sowie
   schlankes Endlos-Einzelbild-Karussell (`endless-random.jpg`, `DEPLOY` oben,
-  `CANCEL` direkt darunter). *(Lokale Unit-/Stress-Tests ausgeführt; CI-Browser/Emulator-Lauf und echte Geräteabnahme offen.)*
+  `CANCEL` direkt darunter). *(Gemergt mit `57ebfaf4e79ff67db09c06ec780344158a7e133f`; Geräteabnahme auf `20261119-block9e` ergab Nachbesserungen in Block 9f.)*
+- [ ] **Block 9f Layout-, Hero- & Breitenabgleich (`20261119-block9f`, PR #325):**
+  Einspaltiges Login-Dossier (`#authView`) mit vollbreiter oberer Key-Art-Bühne,
+  unbeschnittenem Header-Logo und vier neuen zu `command-horizon.jpg` passenden
+  `16:9`-Login-Gemälden (`login-*.jpg` + `LOGIN_SCENE_VERSION`), ausgerichtetes
+  Command-Center-Grid (inkl. XP-Anzeige innerhalb `#menuSoldier`, `#guideRecall`
+  getrennt von `.command-utilities`, bündiges `#backToCommand`), einheitliche
+  Links-oben-Verankerung aller HQ-Zurück-Buttons, feste `256px`/`176px`
+  Endlos-Karussellkarte mit eigenen SVG-Pfeilen sowie einheitliche
+  `--hq-op-width`-Breite (`min(880px, calc(100vw - 48px))`) für Kampagne,
+  Endlos und Mehrspieler. *(Lokale 259-Dateien-/1.163-Tests, Stress-Suite &
+  561-Dateien-Syntaxprüfung grün; PR-CI-Browser-Check & Geräteabnahme offen.)*
 
 ### 6. Tutorial als großer zusammenhängender Einsatz – bisheriges Tutorial gebaut und Teilfix bestätigt
 
