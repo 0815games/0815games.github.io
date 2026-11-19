@@ -49,7 +49,7 @@ test('writing the last run is best effort',()=>{
   function good0(){return {waves:0,bosses:0,sector:0};}
 });
 
-function fixture({record={},bestWave=0,lastRun=null,deployed=[],armory=[],skills=[],savedTheme=null}={}){
+function fixture({record={},bestWave=0,lastRun=null,deployed=[],savedTheme=null}={}){
   const nodes=new Map();
   const make=kind=>({kind,hidden:false,textContent:'',value:'',children:[],type:'',className:'',
     append(...els){this.children.push(...els);},
@@ -65,7 +65,7 @@ function fixture({record={},bestWave=0,lastRun=null,deployed=[],armory=[],skills
   const store=memory(savedTheme===null?{}:{[ENDLESS_THEME_KEY]:savedTheme});
   const launcher=createEndlessLauncher({document,storage:store,
     getRecord:()=>record,getBestWave:async()=>bestWave,getLastRun:()=>lastRun,
-    onDeploy:theme=>deployed.push(theme),onOpenArmory:()=>armory.push(1),onOpenSkills:()=>skills.push(1)});
+    onDeploy:theme=>deployed.push(theme)});
   return {launcher,nodes,themes,store,dialog,document};
 }
 
@@ -129,9 +129,9 @@ test('the last-run line renders the summary or the empty state',()=>{
   assert.equal(empty.nodes.get('endlessLastRun').textContent,'No endless run yet on this device.');
 });
 
-test('deploy closes the dialog with the chosen theme; the other buttons route out',()=>{
-  const deployed=[],armory=[],skills=[];
-  const {launcher,nodes,dialog}=fixture({deployed,armory,skills});
+test('deploy closes the dialog with the chosen theme; cancel and close never deploy',()=>{
+  const deployed=[];
+  const {launcher,nodes,dialog}=fixture({deployed});
   launcher.open();
   nodes.get('endlessDeploy').onclick();
   assert.deepEqual(deployed,[null],'random is the default choice');
@@ -139,17 +139,12 @@ test('deploy closes the dialog with the chosen theme; the other buttons route ou
   nodes.get('endlessCancel').onclick();
   nodes.get('endlessClose').onclick();
   assert.deepEqual(deployed,[null]);
-  nodes.get('endlessArmory').onclick();
-  assert.deepEqual(armory,[1]);
-  nodes.get('endlessSkills').onclick();
-  assert.deepEqual(skills,[1]);
-  assert.deepEqual(deployed,[null],'nav buttons never start a run');
 });
 
 test('without a dialog element the launcher degrades to a no-op',()=>{
   const document={getElementById:()=>null,createElement:()=>null};
   let deployed=0;
-  const launcher=createEndlessLauncher({document,getRecord:()=>({}),getBestWave:async()=>0,getLastRun:()=>null,onDeploy:()=>deployed++,onOpenArmory:()=>{},onOpenSkills:()=>{}});
+  const launcher=createEndlessLauncher({document,getRecord:()=>({}),getBestWave:async()=>0,getLastRun:()=>null,onDeploy:()=>deployed++});
   assert.doesNotThrow(()=>launcher.open());
   assert.equal(launcher.getSelectedTheme(),null);
   assert.equal(deployed,0);

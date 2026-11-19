@@ -158,16 +158,26 @@ onLanguageChange(()=>{versionUI?.refresh();maintenanceUI?.refresh();});versionUI
 const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());
 const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
-// One dialog for language, sound, graphics and fullscreen, reached from the Command
-// Center menu and from the field menu. It owns no game state: language stays in
-// language.mjs, sound and effects live in game.js behind the hooks below.
+// One dialog for language, sound, graphics, effects and fullscreen, reached from
+// both the Command Center menu and the in-game field menu. It is the single shared
+// console in and out of battle: audio, voice-over, visual effects and map view flow
+// live into gameControl while language stays in language.mjs.
 const storedSettings=readSettings(languageStorage);
 let passwordChange=null;
+let settingsSoundEnabled=storedSettings.soundEnabled!==false&&Math.round(storedSettings.volume*100)>0;
 const settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
+ sound:{
+  setVolume:value=>gameControl?.setVolume?.(value)??value,
+  setEnabled:value=>{
+   settingsSoundEnabled=!!value;
+   return gameControl?.setSoundEnabled?.(settingsSoundEnabled)??settingsSoundEnabled;
+  },
+ },
  onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
+ onVisualChange:prefs=>gameControl?.applySettings?.(prefs),
  onResetFirstRun:()=>replayFirstRun(),
- onOpen:()=>passwordChange?.refresh(),
+ onOpen:()=>{passwordChange?.refresh();settings.paint();},
  onClose:()=>passwordChange?.reset(),
 });
 passwordChange=createPasswordChange({
@@ -177,8 +187,7 @@ passwordChange=createPasswordChange({
  translate:translateText,
 });
 bindDialogBackdrop($('settingsDialog'),()=>settings.close());
-onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();});
-let settingsSoundEnabled=false;
+onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();settings.paint();});
 const openSettings=(from,options)=>{settings.apply();settings.open(from,options);};
 setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
 $('menuSettings').onclick=()=>openSettings($('menuSettings'));
@@ -493,8 +502,7 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
     // A late check from a previous login must not navigate a new user's game.
     if(accountTerminated||version!==sessionVersion||user?.uid!==uid||gameControl!==control)return;
     if(loaded)control.setMenuOpen(false);else center.showMenu();
-  },
-  onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
+  }}):null;
 bindDialogBackdrop($('endlessLaunch'),()=>{try{$('endlessLaunch').close();}catch{}});
 // The rank is derived from the level on every snapshot - the combat profile
 // strip gets its own paint, the menu card and the dossier re-render themselves.
@@ -502,7 +510,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -639,15 +647,15 @@ function afkNotice(value){try{
 const afkText=(en,de)=>getLanguage()==='de'?de:en;
 function renderAfkText(){
  $('afkSessionStatus').textContent=afkText('Signing out after inactivity…','Abmeldung wegen Inaktivität…');
+ if($('afkFailureKicker'))$('afkFailureKicker').textContent=afkText('FIELD SECURITY','SITZUNGSSCHUTZ');
  $('afkFailureTitle').textContent=afkText('Session protection unavailable','Sitzungsschutz nicht verfügbar');
  $('afkFailureDetail').textContent=afkText('The browser could not protect the shared session. Reload the game before continuing.','Der Browser konnte die gemeinsame Sitzung nicht schützen. Lade das Spiel neu, bevor du fortfährst.');
  $('afkSessionReload').textContent=afkText('RELOAD GAME','SPIEL NEU LADEN');
 }
 // Half an hour away and the session is closed. That deserves the field's own
-// picture, not a line of text nobody reads: a soldier sitting down, the rifle
-// leaned on the crate, the lantern lit. Dismissing the card leaves the player
-// on the sign-in screen behind it - and clears the notice, so the card cannot
-// come back every time the language changes.
+// painted shelter scene instead of plain placeholder text: the soldier resting
+// beside the lit lantern. Dismissing the card leaves the player on the sign-in
+// screen behind it and clears the notice so language changes cannot reopen it.
 function paintAfkRestCard(){
  $('afkRestKicker').textContent=afkText('FIELD BREAK','PAUSE IM FELD');
  $('afkRestTitle').textContent=afkText('You were signed out','Du wurdest abgemeldet');
@@ -657,8 +665,11 @@ function paintAfkRestCard(){
 function showAfkRestCard(){
  paintAfkRestCard();
  try{
-  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  drawAfkRestScene($('afkRestArt'),{scale:Math.min(2,window.devicePixelRatio||1),reducedMotion:reduced});
+  const art=$('afkRestArt');
+  if(art?.getContext){
+   const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   drawAfkRestScene(art,{scale:Math.min(2,window.devicePixelRatio||1),reducedMotion:reduced});
+  }
  }catch{/* A card without its picture is still a card with the right words. */}
  const dialog=$('afkRestDialog');if(dialog&&!dialog.open)dialog.showModal?.();
 }

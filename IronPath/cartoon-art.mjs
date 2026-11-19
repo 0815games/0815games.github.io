@@ -718,8 +718,8 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
   const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');
@@ -727,7 +727,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   const fx=flinch?flinch*Math.sin((hit.progress||0)*34):0,fy=flinch?flinch*Math.cos((hit.progress||0)*29):0;
   ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
-  if(!reducedMotion&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
+  if(!reducedMotion&&weatherEffects&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
   // Enemy entries live where the roads actually cross the border - any of
   // the four edges - instead of two fixed labels on the left rim.
   ctx.font='bold 12px Georgia';
@@ -783,8 +783,8 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   // A busy field fires more shots than it can show. The oldest are left out of
   // the paint - they still happened, they still hit, they simply do not lie
   // across the battlefield any more than the newest two dozen do.
-  if(!state.ended)for(const s of shotsToDraw(state.shots))drawShot(ctx,s,shotAge,reducedMotion,renderScale);
-  if(!reducedMotion)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');
+  if(!state.ended)for(const s of shotsToDraw(state.shots))drawShot(ctx,s,shotAge,reducedMotion||!combatTracers,renderScale);
+  if(!reducedMotion&&combatTracers)for(const pop of state.combatPops||[]){const life=Math.max(0,pop.life-shotAge);if(life>0){ctx.save();ctx.globalAlpha=Math.min(1,life/.35);burst(ctx,pop.x,pop.y,(pop.boss?25:10)+(1-life/.65)*(pop.boss?20:10),pop.boss?'#f5ae70':'#ebd69e');
     // V3 deaths: embers fly outward in the emblem's metals and a smoke wisp
     // rises off the wreck - a kill reads as a strike, not a popped bubble.
     const age=1-life/.65;
@@ -792,7 +792,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
       ctx.beginPath();ctx.arc(ex,ey,2.2*(1-age)+.6,0,Math.PI*2);ctx.fillStyle=i%2?'#f0d68a':'#d9dde1';ctx.fill();}
     oval(ctx,pop.x+Math.sin(age*7)*2,pop.y-8-age*16,5+age*7,4+age*5,`rgba(78,84,78,${(.34*(1-age)).toFixed(3)})`,null);
     ctx.restore();}}
-  if(!reducedMotion)for(const effect of effects)drawAbility(ctx,effect);
+  if(!reducedMotion&&combatTracers)for(const effect of effects)drawAbility(ctx,effect);
   ctx.restore();
 }
 

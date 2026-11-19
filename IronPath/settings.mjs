@@ -11,21 +11,36 @@
 //
 //   * it owns no state the rest of the game reads directly. Language stays in
 //     `language.mjs`, sound stays in `battle-sound.mjs`, fullscreen stays in
-//     `fullscreen.mjs`. This dialog is a view over three modules that already
-//     exist, so a setting cannot have a second source of truth;
-//   * it never opens itself. `open()` is called by the menu buttons, and it
-//     remembers what had focus so closing returns the player where they were;
-//   * the destructive choices ask first. Resetting the first run replays a match
-//     and writes progress markers, so it goes through the same confirmation
-//     dialog as ending a run.
+//     `fullscreen.mjs`, and visual/battle preferences forward directly into the
+//     active game engine. This dialog is a single synchronized console, so an
+//     in-game change and an out-of-game change never diverge;
+//   * it never opens itself. `open()` is called by the menu buttons (Command
+//     Center or in-game field menu), and remembers what had focus so closing
+//     returns the player where they were;
+//   * destructive choices ask first. Resetting the first run replays a match
+//     and writes progress markers, changing graphics mode asks first, and
+//     restoring defaults confirms before wiping customizations.
 export const SETTINGS_KEY = 'ironpath:settings';
 
-// The three things a player can change here besides the language. Graphics is
-// stored and read by the game (reduced motion is decided by the same switch, so a
-// player who needs it does not have to find an operating-system setting).
+// Graphics quality presets and battlefield camera defaults.
 export const GRAPHICS = Object.freeze(['full', 'reduced']);
+export const MAP_VIEWS = Object.freeze(['fit', 'large']);
 
-const DEFAULTS = Object.freeze({ volume: 0.7, graphics: 'full' });
+const DEFAULTS = Object.freeze({
+  volume: 0.7,
+  soundEnabled: true,
+  voiceOver: true,
+  graphics: 'full',
+  screenShake: true,
+  weatherEffects: true,
+  combatTracers: true,
+  autoPause: true,
+  mapZoom: 'fit',
+});
+
+export function defaultSettings() {
+  return { ...DEFAULTS };
+}
 
 export function readSettings(storage) {
   const value = { ...DEFAULTS };
@@ -36,7 +51,14 @@ export function readSettings(storage) {
       // Out of range means the blob was not written by this module: a volume of 9 is
       // not "maximum", it is corrupt, and guessing hides the bug. Ignore it.
       if (Number.isFinite(parsed?.volume) && parsed.volume >= 0 && parsed.volume <= 1) value.volume = parsed.volume;
+      if (typeof parsed?.soundEnabled === 'boolean') value.soundEnabled = parsed.soundEnabled;
+      if (typeof parsed?.voiceOver === 'boolean') value.voiceOver = parsed.voiceOver;
       if (GRAPHICS.includes(parsed?.graphics)) value.graphics = parsed.graphics;
+      if (typeof parsed?.screenShake === 'boolean') value.screenShake = parsed.screenShake;
+      if (typeof parsed?.weatherEffects === 'boolean') value.weatherEffects = parsed.weatherEffects;
+      if (typeof parsed?.combatTracers === 'boolean') value.combatTracers = parsed.combatTracers;
+      if (typeof parsed?.autoPause === 'boolean') value.autoPause = parsed.autoPause;
+      if (MAP_VIEWS.includes(parsed?.mapZoom)) value.mapZoom = parsed.mapZoom;
     }
   } catch { /* An unreadable blob must not stop the game from starting. */ }
   return value;
@@ -45,15 +67,19 @@ export function readSettings(storage) {
 export function writeSettings(storage, next) {
   const value = {
     volume: Number.isFinite(next?.volume) ? Math.max(0, Math.min(1, next.volume)) : DEFAULTS.volume,
+    soundEnabled: typeof next?.soundEnabled === 'boolean' ? next.soundEnabled : DEFAULTS.soundEnabled,
+    voiceOver: typeof next?.voiceOver === 'boolean' ? next.voiceOver : DEFAULTS.voiceOver,
     graphics: GRAPHICS.includes(next?.graphics) ? next.graphics : DEFAULTS.graphics,
+    screenShake: typeof next?.screenShake === 'boolean' ? next.screenShake : DEFAULTS.screenShake,
+    weatherEffects: typeof next?.weatherEffects === 'boolean' ? next.weatherEffects : DEFAULTS.weatherEffects,
+    combatTracers: typeof next?.combatTracers === 'boolean' ? next.combatTracers : DEFAULTS.combatTracers,
+    autoPause: typeof next?.autoPause === 'boolean' ? next.autoPause : DEFAULTS.autoPause,
+    mapZoom: MAP_VIEWS.includes(next?.mapZoom) ? next.mapZoom : DEFAULTS.mapZoom,
   };
   try { storage?.setItem(SETTINGS_KEY, JSON.stringify(value)); } catch { /* session-only */ }
   return value;
 }
 
-// `confirm` is the game's own confirmation dialog - the same object that asks before
-// a run is ended (`createConfirmation(...).ask`). It is optional so the module can be
-// driven by a test, or by a screen that has no confirm dialog at all.
 export function createSettings({
   document,
   window: win,
@@ -63,6 +89,7 @@ export function createSettings({
   confirm = null,
   fullscreen = null,
   onGraphicsChange = () => {},
+  onVisualChange = () => {},
   onResetFirstRun = null,
   onOpen = null,
   onClose = null,
@@ -75,11 +102,23 @@ export function createSettings({
 
   const volumeInput = $('soundVolume');
   const volumeStatus = $('soundVolumeStatus');
+  const soundEnabledToggle = $('soundEnabledToggle');
+  const voiceOverToggle = $('voiceOverToggle');
   const graphicsSelect = $('graphicsQuality');
+  const screenShakeToggle = $('screenShakeToggle');
+  const weatherEffectsToggle = $('weatherEffectsToggle');
+  const combatTracersToggle = $('combatTracersToggle');
+  const autoPauseToggle = $('autoPauseToggle');
+  const mapZoomSelect = $('defaultMapZoom');
+  const restoreButton = $('settingsRestoreDefaults');
   const tabGeneral = $('settingsTabGeneral');
   const tabAccount = $('settingsTabAccount');
   const panelGeneral = $('settingsPanelGeneral');
   const panelAccount = $('settingsPanelAccount');
+
+  function snapshot() {
+    return { ...current };
+  }
 
   function setTab(next) {
     activeTab = next === 'account' ? 'account' : 'general';
@@ -92,11 +131,34 @@ export function createSettings({
   tabGeneral?.addEventListener?.('click', () => setTab('general'));
   tabAccount?.addEventListener?.('click', () => setTab('account'));
 
+  function paintSwitch(node, enabled, { disabled = false } = {}) {
+    if (!node) return;
+    const on = !!enabled;
+    node.setAttribute?.('aria-checked', String(on));
+    node.dataset.state = on ? 'on' : 'off';
+    node.disabled = !!disabled;
+    node.textContent = translate(on ? 'ON' : 'OFF');
+  }
+
   function paint() {
-    if (volumeInput) volumeInput.value = String(Math.round(current.volume * 100));
-    if (volumeStatus) volumeStatus.textContent = `${Math.round(current.volume * 100)} %`;
+    const pct = Math.round(current.volume * 100);
+    const audioActive = current.soundEnabled && pct > 0;
+    const reduced = current.graphics === 'reduced';
+    if (volumeInput) {
+      volumeInput.value = String(pct);
+      volumeInput.setAttribute?.('aria-valuetext', `${pct} %`);
+      volumeInput.style?.setProperty?.('--vol', `${pct}%`);
+    }
+    if (volumeStatus) volumeStatus.textContent = `${pct} %`;
     if (graphicsSelect) graphicsSelect.value = current.graphics;
-    if (volumeInput) volumeInput.setAttribute('aria-valuetext', volumeStatus?.textContent ?? '');
+    if (mapZoomSelect) mapZoomSelect.value = current.mapZoom;
+    paintSwitch(soundEnabledToggle, audioActive);
+    paintSwitch(voiceOverToggle, current.voiceOver);
+    paintSwitch(screenShakeToggle, !reduced && current.screenShake, { disabled: reduced });
+    paintSwitch(weatherEffectsToggle, !reduced && current.weatherEffects, { disabled: reduced });
+    paintSwitch(combatTracersToggle, !reduced && current.combatTracers, { disabled: reduced });
+    paintSwitch(autoPauseToggle, current.autoPause);
+    if (dialog?.dataset) dialog.dataset.graphics = current.graphics;
   }
 
   function save() {
@@ -104,31 +166,67 @@ export function createSettings({
     paint();
   }
 
-  // Sound is a real gain now: the slider scales every cue. 0 is a real mute, which
-  // is why the engine keeps its own on/off - the slider never silently turns a
-  // soldier's sound back on after they muted it on purpose.
-  function applyVolume() {
+  function applyAudio() {
     const level = Math.round(current.volume * 100);
     if (sound && typeof sound.setVolume === 'function') sound.setVolume(current.volume);
     if (sound && typeof sound.setEnabled === 'function') {
-      // Turning the slider up from zero is the explicit gesture the browser needs
-      // before audio may start; turning it to zero mutes without losing the level.
-      void sound.setEnabled(level > 0);
+      void sound.setEnabled(!!current.soundEnabled && level > 0);
     }
   }
 
+  function applyVisuals() {
+    try { onGraphicsChange(current.graphics === 'reduced'); } catch { /* noop */ }
+    try { onVisualChange(snapshot()); } catch { /* noop */ }
+  }
+
+  function apply() {
+    applyAudio();
+    applyVisuals();
+  }
+
   volumeInput?.addEventListener('input', () => {
-    current.volume = Math.max(0, Math.min(1, Number(volumeInput.value) / 100));
+    const next = Math.max(0, Math.min(1, Number(volumeInput.value) / 100));
+    current.volume = next;
+    current.soundEnabled = Math.round(next * 100) > 0;
     save();
-    applyVolume();
+    applyAudio();
+  });
+
+  soundEnabledToggle?.addEventListener('click', () => {
+    const currentlyActive = current.soundEnabled && Math.round(current.volume * 100) > 0;
+    if (currentlyActive) {
+      current.soundEnabled = false;
+    } else {
+      current.soundEnabled = true;
+      if (Math.round(current.volume * 100) <= 0) current.volume = 0.5;
+    }
+    save();
+    applyAudio();
+  });
+
+  function bindBooleanToggle(node, key) {
+    node?.addEventListener('click', () => {
+      current[key] = !current[key];
+      save();
+      applyVisuals();
+    });
+  }
+
+  bindBooleanToggle(voiceOverToggle, 'voiceOver');
+  bindBooleanToggle(screenShakeToggle, 'screenShake');
+  bindBooleanToggle(weatherEffectsToggle, 'weatherEffects');
+  bindBooleanToggle(combatTracersToggle, 'combatTracers');
+  bindBooleanToggle(autoPauseToggle, 'autoPause');
+
+  mapZoomSelect?.addEventListener('change', () => {
+    current.mapZoom = MAP_VIEWS.includes(mapZoomSelect.value) ? mapZoomSelect.value : 'fit';
+    save();
+    applyVisuals();
   });
 
   graphicsSelect?.addEventListener('change', async () => {
     const next = GRAPHICS.includes(graphicsSelect.value) ? graphicsSelect.value : 'full';
     if (next === current.graphics) return;
-    // Reduced graphics turn off the animated battlefield effects. That changes how
-    // the game looks, not how it plays - but it is still a choice the player might
-    // not have meant to make with one tap, so it asks.
     const ok = !confirm || await confirm.ask({
       title: 'Change graphics?',
       text: next === 'reduced'
@@ -139,7 +237,19 @@ export function createSettings({
     if (!ok) { paint(); return; }
     current.graphics = next;
     save();
-    onGraphicsChange(next);
+    applyVisuals();
+  });
+
+  restoreButton?.addEventListener('click', async () => {
+    const ok = !confirm || await confirm.ask({
+      title: 'Reset settings?',
+      text: 'Restore default audio, graphics, and battlefield display preferences. Language and your account stay unchanged.',
+      accept: 'RESET',
+    });
+    if (!ok) return;
+    Object.assign(current, DEFAULTS);
+    save();
+    apply();
   });
 
   async function open(from, { tab = 'general' } = {}) {
@@ -152,9 +262,6 @@ export function createSettings({
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.open = true;
     }
-    // Focus lands on the dialog itself, never on the language select: focusing a
-    // <select> opens its picker on a phone, so the settings opened straight into
-    // the language dropdown. Reported exactly that way.
     try { dialog.focus?.(); } catch { /* focus is a courtesy, not a requirement */ }
     return true;
   }
@@ -182,9 +289,6 @@ export function createSettings({
     await onResetFirstRun();
   });
 
-  // Fullscreen lives in the dialog now, so its button is driven here instead of by
-  // a permanent chip in the page corner. `fullscreen` is the object fullscreen.mjs
-  // already returns; when it is missing the button is hidden rather than dead.
   const fullscreenButton = $('fullscreenToggle');
   if (fullscreenButton && !fullscreen) fullscreenButton.hidden = true;
 
@@ -192,13 +296,15 @@ export function createSettings({
     open,
     close,
     paint,
+    apply,
+    snapshot,
     setTab,
     get tab() { return activeTab; },
     get volume() { return current.volume; },
+    get soundEnabled() { return current.soundEnabled && Math.round(current.volume * 100) > 0; },
+    get voiceOver() { return current.voiceOver; },
     get graphics() { return current.graphics; },
-    // The game asks this once at start and after every change, instead of reading
-    // storage itself: one reader, one shape.
+    get mapZoom() { return current.mapZoom; },
     isReduced() { return current.graphics === 'reduced'; },
-    apply() { applyVolume(); },
   };
 }

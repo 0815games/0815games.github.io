@@ -24,7 +24,7 @@ export function writeLastEndlessRun(storage,summary){try{storage?.setItem(ENDLES
 
 const fmt=n=>Number.isFinite(n)&&n>0?String(n):'—';
 
-export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=async()=>0,getLastRun=()=>null,onDeploy=()=>{},onOpenArmory=()=>{},onOpenSkills=()=>{},storage}){
+export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=async()=>0,getLastRun=()=>null,onDeploy=()=>{},storage}){
   const $=id=>document.getElementById(id);
   const dialog=$('endlessLaunch');
   if(!dialog||typeof dialog.showModal!=='function')return {open:()=>{},getSelectedTheme:()=>null};
@@ -68,8 +68,6 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
   }
   const close=()=>{try{dialog.close();}catch{}};
   $('endlessClose').onclick=close;$('endlessCancel').onclick=close;
-  $('endlessArmory').onclick=()=>{close();onOpenArmory();};
-  $('endlessSkills').onclick=()=>{close();onOpenSkills();};
   $('endlessDeploy').onclick=()=>{close();onDeploy(selected);};
   return {open,getSelectedTheme:()=>selected};
 }

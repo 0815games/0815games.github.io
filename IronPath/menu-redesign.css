@@ -645,10 +645,14 @@
 }
 
 .dialog-banner-settings {
+  min-height: 118px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   background-image:
-    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.78) 60%, rgba(12, 22, 18, 0.56) 100%),
-    url("assets/command-horizon.jpg");
-  background-position: center 40%;
+    linear-gradient(96deg, rgba(10, 18, 14, 0.94) 0%, rgba(15, 27, 21, 0.78) 54%, rgba(12, 22, 18, 0.36) 100%),
+    url("assets/settings-command.jpg");
+  background-position: center 42%;
 }
 
 .dialog-banner-notes {
@@ -828,18 +832,26 @@
 }
 
 /* ==========================================================================
-   5. SETTINGS -> GENERAL & ACCOUNT (PASSWORD CHANGE + DANGER ZONE)
+   5. SETTINGS -> GENERAL & ACCOUNT (SHARED IN-GAME & COMMAND HQ CONSOLE)
    ========================================================================== */
 
-.settings-tabs {
+#settingsDialog {
+  width: min(640px, calc(100vw - 24px));
+  max-width: 640px;
+  max-height: min(90dvh, 860px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#settingsDialog .settings-tabs {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin: 0 0 14px;
 }
 
-.settings-tabs button {
-  min-height: 42px;
+#settingsDialog .settings-tabs button {
+  min-height: 44px;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
   background: var(--hq-surface-elevated);
@@ -850,14 +862,256 @@
   cursor: pointer;
 }
 
-.settings-tabs button[aria-selected="true"] {
+#settingsDialog .settings-tabs button[aria-selected="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-text);
+  box-shadow: inset 0 -2px 0 var(--hq-gold);
+}
+
+#settingsDialog .settings-panel[hidden] {
+  display: none;
+}
+
+#settingsPanelGeneral {
+  display: grid;
+  gap: 12px;
+}
+
+#settingsDialog .settings-card {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: linear-gradient(180deg, rgba(24, 41, 33, 0.88), rgba(16, 29, 23, 0.94));
+}
+
+#settingsDialog .settings-card-title {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--hq-gold);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+#settingsDialog .settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-top: 1px solid rgba(186, 204, 173, 0.12);
+  flex-wrap: wrap;
+}
+
+#settingsDialog .settings-card .settings-card-title + .settings-row {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+#settingsDialog .settings-row label,
+#settingsDialog .settings-row .settings-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--hq-text);
+}
+
+#settingsDialog .language-flag-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#settingsDialog .settings-row select {
+  width: auto;
+  min-width: 170px;
+  min-height: 40px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: #0e1914;
+  color: var(--hq-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+#settingsDialog .settings-row select:focus-visible {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 2px;
+}
+
+#settingsDialog .settings-volume {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 210px;
+  max-width: 280px;
+}
+
+#settingsDialog .settings-volume input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 auto;
+  min-width: 120px;
+  height: 8px;
+  margin: 0;
+  border: 1px solid var(--hq-border);
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--hq-gold) 0%,
+    var(--hq-gold) var(--vol, 70%),
+    #0e1914 var(--vol, 70%),
+    #0e1914 100%
+  );
+  cursor: pointer;
+}
+
+#settingsDialog .settings-volume input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #0e1914;
+  border-radius: 50%;
+  background: var(--hq-gold);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+#settingsDialog .settings-volume input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #0e1914;
+  border-radius: 50%;
+  background: var(--hq-gold);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.55);
+}
+
+#settingsDialog .settings-volume output {
+  min-width: 48px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--hq-gold);
+  font-variant-numeric: tabular-nums;
+}
+
+#settingsDialog .settings-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 84px;
+  min-height: 38px;
+  margin: 0;
+  padding: 6px 14px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: #101b16;
+  color: var(--hq-muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+
+#settingsDialog .settings-switch::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5b6d61;
+  transition: background-color 140ms ease, box-shadow 140ms ease;
+}
+
+#settingsDialog .settings-switch[data-state="on"]:not(:disabled) {
   border-color: var(--hq-gold);
   background: var(--hq-gold-soft);
   color: var(--hq-text);
 }
 
-.settings-panel[hidden] {
-  display: none;
+#settingsDialog .settings-switch[data-state="on"]:not(:disabled)::before {
+  background: var(--hq-gold);
+  box-shadow: 0 0 8px rgba(228, 202, 137, 0.65);
+}
+
+#settingsDialog .settings-switch:disabled {
+  opacity: 0.52;
+  cursor: not-allowed;
+}
+
+#settingsDialog .fullscreen-toggle {
+  min-width: 170px;
+  min-height: 40px;
+  margin: 0;
+  padding: 8px 14px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#settingsDialog .fullscreen-toggle[aria-pressed="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-gold);
+}
+
+#settingsDialog .fullscreen-status {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--hq-gold);
+}
+
+#settingsDialog .settings-row-actions {
+  border-top: 1px solid rgba(186, 204, 173, 0.12);
+  padding-top: 10px;
+  padding-bottom: 2px;
+}
+
+#settingsDialog .settings-row-actions button {
+  flex: 1 1 180px;
+  min-height: 44px;
+  margin: 0;
+  padding: 9px 14px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+#settingsDialog .settings-row-actions button:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#settingsDialog #settingsRestoreDefaults:hover:not(:disabled) {
+  border-color: rgba(224, 130, 116, 0.72);
+  color: #f6c4bc;
+}
+
+#settingsDialog .settings-note {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--hq-muted);
+}
+
+#settingsDialog .build-stamp {
+  margin: 14px 0 0;
+  color: var(--hq-muted);
+  opacity: 0.72;
 }
 
 .settings-account-card {
@@ -1035,30 +1289,6 @@
   color: var(--hq-muted);
   font-size: 12px;
   line-height: 1.35;
-}
-
-#endlessLaunch .endless-loadout-links {
-  display: inline-flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-#endlessLaunch .endless-loadout-links button {
-  min-height: 36px;
-  margin: 0;
-  padding: 6px 10px;
-  border: 1px solid var(--hq-border);
-  border-radius: var(--hq-radius);
-  background: rgba(12, 22, 18, 0.72);
-  color: var(--hq-text);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-#endlessLaunch .endless-loadout-links button:hover {
-  border-color: var(--hq-gold);
-  color: var(--hq-gold);
 }
 
 #endlessLaunch .endless-actions {
@@ -2055,7 +2285,8 @@
   #commandCenter #fieldSchool .field-school-card,
   #campaignPanel .campaign-dossier-records .story-journal,
   #campaignPanel .campaign-dossier-records .relic-panel,
-  #endlessLaunch .endless-theme {
+  #endlessLaunch .endless-theme,
+  #settingsDialog .settings-switch::before {
     transition: none;
   }
 
@@ -2063,3 +2294,560 @@
     transform: none;
   }
 }
+
+/* ==========================================================================
+   11. BATCH 1 OVERHAUL: AFK MODALS, REMAINING DIALOGS & MOBILE SHEETS (<860px)
+   ========================================================================== */
+
+/* AFK rest & session protection surfaces */
+.afk-session-status {
+  border: 1px solid var(--hq-border-strong);
+  border-left: 3px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, 0.68);
+}
+
+#afkSessionFailure.afk-session-failure {
+  --dlg-pad-x: 20px;
+  --dlg-pad-y: 20px;
+  width: min(440px, calc(100vw - 24px));
+  max-width: 440px;
+  padding: var(--dlg-pad-y) var(--dlg-pad-x);
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.72);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+#afkSessionFailure::backdrop,
+#afkRestDialog::backdrop {
+  background: rgba(6, 11, 9, 0.8);
+  backdrop-filter: blur(4px);
+}
+
+.dialog-banner-afk-alert {
+  min-height: 98px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-image:
+    linear-gradient(96deg, rgba(10, 18, 14, 0.94) 0%, rgba(15, 27, 21, 0.82) 56%, rgba(12, 22, 18, 0.45) 100%),
+    url("assets/afk-rest.jpg");
+  background-position: center 36%;
+}
+
+.afk-failure-body {
+  display: grid;
+  gap: 14px;
+}
+
+.afk-failure-body p {
+  margin: 0;
+  color: var(--hq-muted);
+  line-height: 1.55;
+}
+
+.afk-failure-body button.primary {
+  width: 100%;
+  min-height: 46px;
+  margin: 0;
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#afkRestDialog.afk-rest {
+  width: min(440px, calc(100vw - 24px));
+  max-width: 440px;
+  padding: 0;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.afk-rest-hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--hq-bg-deep);
+  border-bottom: 1px solid var(--hq-border-strong);
+}
+
+.afk-rest-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 18, 14, 0.08) 0%, rgba(10, 18, 14, 0.24) 60%, rgba(19, 32, 26, 0.94) 100%);
+  pointer-events: none;
+}
+
+#afkRestDialog .afk-rest-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center 36%;
+  border-bottom: 0;
+}
+
+#afkRestDialog .afk-rest-body {
+  display: grid;
+  gap: 10px;
+  padding: 18px 22px 22px;
+}
+
+#afkRestDialog .afk-rest-kicker {
+  color: var(--hq-gold);
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+}
+
+#afkRestDialog .afk-rest-body h2 {
+  margin: 0;
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  line-height: 1.15;
+}
+
+#afkRestDialog .afk-rest-body p {
+  margin: 0;
+  color: var(--hq-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+#afkRestDialog #afkRestAccept {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 6px;
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#afkRestDialog #afkRestAccept:hover {
+  background: #f0da9f;
+}
+
+/* First-run language gate aligned with Iron Path dark Command HQ language */
+#languageGate.language-gate {
+  background:
+    radial-gradient(ellipse at 50% 24%, rgba(28, 46, 36, 0.72) 0%, rgba(12, 21, 17, 0.92) 70%),
+    url("assets/command-horizon.jpg") center / cover no-repeat,
+    var(--hq-bg-deep);
+}
+
+#languageGate .language-gate-card {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(18, 31, 25, 0.96);
+  color: var(--hq-text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.72);
+}
+
+#languageGate .language-gate-kicker {
+  color: var(--hq-gold);
+  letter-spacing: 0.2em;
+}
+
+#languageGate .language-gate-title {
+  color: var(--hq-text);
+}
+
+#languageGate .language-gate-title span {
+  color: var(--hq-muted);
+}
+
+#languageGate .language-gate-button {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#languageGate .language-gate-button:hover,
+#languageGate .language-gate-button:focus-visible {
+  border-color: var(--hq-gold);
+  background: rgba(41, 66, 53, 0.96);
+}
+
+#languageGate .language-gate-code,
+#languageGate .language-gate-button small {
+  color: var(--hq-gold);
+}
+
+#languageGate .language-gate-note {
+  color: var(--hq-muted);
+}
+
+/* Field briefing / tutorial dialog & Story cinematic unified onto --hq-* */
+#tutorialDialog.tutorial-dialog {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.74);
+}
+
+#tutorialDialog .eyebrow {
+  color: var(--hq-gold);
+  letter-spacing: 0.16em;
+}
+
+#tutorialDialog h2 {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+#tutorialDialog .tutorial-scene {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+}
+
+#tutorialDialog button {
+  min-height: 44px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#tutorialDialog button.primary {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#storyCinematic.story-cinematic {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 26px 68px rgba(0, 0, 0, 0.78);
+}
+
+#storyCinematic .cinematic-content {
+  background: var(--hq-surface);
+}
+
+#storyCinematic .cinematic-meta,
+#storyCinematic .cinematic-dialogue strong {
+  color: var(--hq-gold);
+}
+
+#storyCinematic h2 {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+#storyCinematic .cinematic-progress {
+  accent-color: var(--hq-gold);
+}
+
+#storyCinematic .cinematic-actions button {
+  min-height: 44px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#storyCinematic #cinematicNext {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+/* Debrief (#runResults), Patch notes (#patchNotes), Skills (#skillDialog) harmonization */
+#runResults.results-dialog {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.74);
+}
+
+#runResults .debrief-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.84);
+  color: var(--hq-text);
+  font-size: 18px;
+}
+
+#runResults .debrief-close:hover {
+  border-color: var(--hq-gold);
+  background: rgba(34, 56, 45, 0.94);
+  color: var(--hq-gold);
+}
+
+#runResults .debrief-stat,
+#runResults .debrief-reward,
+#runResults .debrief-progress,
+#runResults .results-next {
+  border-color: var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+#runResults .results-actions #resultsDone {
+  border-color: var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#patchNotes .patch-notes-build {
+  margin: 6px 0 0;
+  color: var(--hq-gold);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+#patchNotes .patch-notes-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+#patchNotes .patch-notes-tabs button {
+  min-height: 42px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+#patchNotes .patch-notes-tabs button[aria-selected="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-text);
+}
+
+#patchNotes .patch-entry {
+  border: 1px solid var(--hq-border);
+  border-left: 3px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+#patchNotes .patch-entry[data-live="true"] {
+  border-left-color: var(--hq-gold);
+}
+
+#patchNotes .patch-badge {
+  border-color: var(--hq-gold);
+  border-radius: 3px;
+  color: var(--hq-gold);
+}
+
+#skillDialog {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+}
+
+#skillDialog .skills-header h2 {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+#skillDialog .skill-actions {
+  border-top-color: var(--hq-border-strong);
+  background: rgba(14, 24, 19, 0.96);
+}
+
+#skillDialog .skill-actions .primary {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+/* Floating & non-modal tactical notices (#socialPopup, #multiplayerPrompt, #versionNotice, #deploymentCheck) */
+#socialPopup.social-popup,
+#multiplayerPrompt.multiplayer-prompt {
+  border: 1px solid var(--hq-border-strong);
+  border-left: 3px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.68);
+}
+
+#socialPopup strong,
+#multiplayerPrompt strong {
+  color: var(--hq-gold);
+  letter-spacing: 0.14em;
+}
+
+#multiplayerPrompt .multiplayer-prompt-note {
+  color: var(--hq-muted);
+}
+
+#socialPopup .social-popup-actions button,
+#multiplayerPrompt .multiplayer-prompt-actions button {
+  min-height: 44px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#socialPopup #socialPopupOpen,
+#multiplayerPrompt .multiplayer-prompt-actions button:first-child {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#socialPopup #socialPopupDismiss {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+
+#versionNotice.version-notice {
+  z-index: 1090;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.68);
+}
+
+/* Keep the full centered notice in Lobby (no battlefield present) and avoid
+   stacking over mission objectives, versus badges, or interactive popups. */
+body:has(#gameWorkspace:not([hidden])[data-screen="lobby"]) #versionNotice.version-notice {
+  left: 50%;
+  right: auto;
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  width: min(460px, calc(100vw - 24px));
+  max-width: min(460px, calc(100vw - 24px));
+}
+
+body:has(#gameWorkspace:not([hidden])[data-screen="lobby"]) #versionNotice .version-notice-art {
+  display: block;
+}
+
+body:has(#gameWorkspace:not([hidden]) :is(#soloObjective:not([hidden]), #versusStatus:not([hidden]))) #versionNotice.version-notice {
+  top: auto;
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+
+body:has(:is(#socialPopup:not([hidden]), #multiplayerPrompt:not([hidden]))) #versionNotice.version-notice {
+  visibility: hidden;
+}
+
+#versionNotice .version-notice-kicker {
+  color: var(--hq-gold);
+}
+
+#versionNotice .version-notice-actions button.primary {
+  border-color: var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#deploymentCheck.deployment-check {
+  border: 1px solid var(--hq-border-strong);
+  border-left: 3px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.66);
+}
+
+#gameConfirm h2,
+#towerDetails h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--hq-text);
+}
+
+/* Unified full-screen mobile sheets (<860px) across all primary dialogs */
+@media (max-width: 859px) {
+  #settingsDialog[open],
+  #patchNotes[open],
+  #endlessLaunch[open],
+  #soldierDialog[open],
+  #armoryDialog[open],
+  #friendsDialog[open],
+  #friendStatsDialog[open],
+  #leaderboardDialog[open],
+  #runResults[open] {
+    width: 100vw;
+    max-width: 100vw;
+    min-height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+
+  #skillDialog[open] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+
+  #skillDialog[open] > * {
+    flex: 0 0 auto;
+  }
+
+  #skillDialog[open] .skills-workspace {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  #settingsDialog .settings-row select,
+  #settingsDialog .fullscreen-toggle {
+    min-width: 150px;
+  }
+}
+

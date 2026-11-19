@@ -48,7 +48,7 @@ import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261119-block9b';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
 import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261119-block9b';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
   let releaseStopped=false,frameHandle=null;
@@ -61,14 +61,22 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   // Graphics setting - the setting only ever makes it MORE reduced, never less, so a
   // soldier who needs it for medical reasons is never overruled by a game default.
   const systemReducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let graphicsReduced=!!reducedGraphics;
+  let graphicsReduced=!!(reducedGraphics||initialSettings?.graphics==='reduced');
   let reducedMotion=systemReducedMotion||graphicsReduced;
+  const visualPrefs={
+    voiceOver:initialSettings?.voiceOver!==false,
+    screenShake:initialSettings?.screenShake!==false,
+    weatherEffects:initialSettings?.weatherEffects!==false,
+    combatTracers:initialSettings?.combatTracers!==false,
+    autoPause:initialSettings?.autoPause!==false,
+    mapZoom:initialSettings?.mapZoom==='large'?'large':'fit',
+  };
   function applyGraphics(reduced){graphicsReduced=!!reduced;reducedMotion=systemReducedMotion||graphicsReduced;}
-  const sound=createBattleSound(window.AudioContext||window.webkitAudioContext);let soundEnabled=false;
-  // The sound button inside the field briefing is the same switch the Settings dialog
-  // drives. Both read and write `soundEnabled`, so the two can never disagree.
-  function paintSound(){$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');$('soundToggle').setAttribute('aria-pressed',String(soundEnabled));}
-  $('soundToggle').onclick=async()=>{soundEnabled=await sound.setEnabled(!soundEnabled);paintSound();if(soundEnabled)sound.play('clear');};
+  const sound=createBattleSound(window.AudioContext||window.webkitAudioContext);
+  if(Number.isFinite(initialSettings?.volume))sound.setVolume(initialSettings.volume);
+  let soundEnabled=false;
+  let desiredSoundEnabled=initialSettings?.soundEnabled!==false&&Math.round((initialSettings?.volume??0.7)*100)>0;
+  function ensureAudioGesture(){if(desiredSoundEnabled&&!soundEnabled)void sound.setEnabled(true).then(ok=>{soundEnabled=ok;}).catch(()=>{});}
   const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion();let lastSnapshotAt=0;
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
@@ -262,7 +270,7 @@ function renderResults(target){
   // A large, horizontally scrollable map is the default in portrait on phones.
   const mapViewport=$('mapViewport'), zoomButton=$('mapZoom');
   const portrait=window.matchMedia('(max-width: 850px) and (orientation: portrait)');
-  let largeMap=false, battleViewport=null, savedLargeMap=false, touchZoom=null, fullBattleView=false;
+  let largeMap=visualPrefs.mapZoom==='large', battleViewport=null, savedLargeMap=false, touchZoom=null, fullBattleView=false;
   // The controller selects on pointerup. Its subsequent compatibility click
   // must not close the sheet it just opened or activate a button underneath it.
   let viewportTap=null;
@@ -435,7 +443,7 @@ function renderResults(target){
   function stopMissionVoice(){if(missionVoice){try{missionVoice.pause();}catch{}missionVoice=null;}}
   function playMissionVoice(missionId,part,index){
     stopMissionVoice();
-    if(!featureEnabled('voiceOver'))return;
+    if(!featureEnabled('voiceOver')||!visualPrefs.voiceOver)return;
     try{
       const audio=new Audio(`assets/voice/${getLanguage()==='de'?'de':'en'}/${missionId}/${part}${index}.mp3`);
       audio.volume=.9;audio.onerror=()=>{};
@@ -804,7 +812,7 @@ function renderResults(target){
     const command=vote?(vote.requester===me()?'cancelWave':'approveWave'):'startWave',context=coop?requestFeedbackContext():null;
     dispatch(command==='startWave'?{type:command}:{type:command,requestId:vote.id},result=>{if(!result.ok){warn(result.reason);return;}if(!coop)soloDeployed=true;coach.event('deploy');if(!coop)sound.play(state.wave%5===0?'boss':'wave');if(coop&&command==='startWave'&&(result.waitingForGuest||result.waitingForPlayers))requestReceipt('wave',result,context);else notice(!coop?tr('Wave {wave} incoming: {summary}.',{wave:state.wave,summary:waveSummary(state.wave)}):command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest||result.waitingForPlayers?'Waiting for player approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
   }
-  $('start').onclick=()=>startFromButton();
+  $('start').onclick=()=>{ensureAudioGesture();startFromButton();};
   $('waveDecline').onclick=()=>{const vote=coop?currentWaveRequest():null;if(!vote||!vote.required.includes(me()))return;dispatch({type:'declineWave',requestId:vote.id},result=>{notice(result.ok?'Wave postponed. Anyone can request again when ready.':result.reason);updateUI();});};
   $('endRun').onclick=async()=>{
     const guest=!!coop&&!!state.hostId&&state.hostId!==me(),teamMatch=state.fourInfo?.mode==='two-vs-two';
@@ -1092,6 +1100,7 @@ function renderResults(target){
     dismissTower();event.preventDefault();event.stopPropagation();
   },true);
   async function selectBattlePoint(x,y){
+    ensureAudioGesture();
     if(battleViewport&&!menu.hidden){dismissTower();return;}
     selectionEpoch++;
     if(state.ended||(coop&&!coopReady))return;const rect=canvas.getBoundingClientRect(),map=getMap(state.mapId),view=battleViewport?.getViewport();
@@ -1183,7 +1192,9 @@ function renderResults(target){
   const onSpritesReady=()=>{artVersion++;};
   function update(dt){
     if(radioTime>0&&!cinematic){radioTime=Math.max(0,radioTime-dt);if(!radioTime)$('storyRadio').hidden=true;}
-    if(coop||focusPause.isSoloPaused()||state.ended||commandMenuOpen||missionBoardOpen||cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady()){accumulator=0;return;}
+    const dialogPause=$('gameConfirm')?.open||$('settingsDialog')?.open;
+    const focusPaused=visualPrefs.autoPause&&focusPause.isSoloPaused();
+    if(coop||focusPaused||state.ended||commandMenuOpen||missionBoardOpen||cinematic||!menu.hidden||tutorial.isOpen()||dialogPause||!account.isReady()){accumulator=0;return;}
     accumulator+=dt*state.speed;
     while(accumulator>=STEP){
       accumulator-=STEP;
@@ -1257,12 +1268,12 @@ function renderResults(target){
     const impactSeq=state?.bunkerImpact?.seq||0;
     if(impactSeq>lastImpactSeq){lastImpactSeq=impactSeq;shakeStart=performance.now();}
     const shakeAge=(performance.now()-shakeStart)/450;
-    if(shakeAge>=0&&shakeAge<1&&!reducedMotion){const amp=4.5*(1-shakeAge);ctx.translate(amp*Math.sin(shakeAge*47),amp*Math.cos(shakeAge*39));}const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state;
+    if(shakeAge>=0&&shakeAge<1&&!reducedMotion&&visualPrefs.screenShake){const amp=4.5*(1-shakeAge);ctx.translate(amp*Math.sin(shakeAge*47),amp*Math.cos(shakeAge*39));}const visual=coop&&coopReady&&lastSnapshotAt?projectCoopMotion(state,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state;
     // The first-run coach is NOT part of this list, by design: its card is a hint
     // over a live battlefield, and adding it here is what made the first run
     // unplayable on a phone.
-    const paused=!!coop&&!coopReady||!coop&&(focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});
-    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:combatFx.active(),reducedMotion,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
+    const paused=!!coop&&!coopReady||!coop&&(visualPrefs.autoPause&&focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||$('settingsDialog')?.open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
 
     if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);
       // The label plate never leaves the canvas: field markers can sit near
@@ -1476,7 +1487,7 @@ function renderResults(target){
    if(!state.ended&&(soloDeployed||state.running||state.wave>0||state.towers.length||activeMission||activeTraining))return 'game';
    return 'ready';
   }
-  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();paintSound();$('soundToggle').textContent=tr(soundEnabled?'SOUND: ON':'SOUND: OFF');if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.
@@ -1506,14 +1517,26 @@ function renderResults(target){
     return startTrainingRun({rewards:false,restart:true});
    });
   },
-  // The Settings dialog owns the controls, the game owns the effects. These two hooks
-  // are the whole contract: no second copy of "is the sound on" or "are effects off"
-  // exists outside this closure.
-  setSoundEnabled:async value=>{soundEnabled=await sound.setEnabled(!!value);paintSound();return soundEnabled;},
+  // The Settings dialog owns the controls, the game owns the effects. These hooks
+  // keep Audio, Graphics, Voice-Over, Effects, Auto-Pause, and Map View synced.
+  setSoundEnabled:async value=>{desiredSoundEnabled=!!value;soundEnabled=await sound.setEnabled(desiredSoundEnabled);return soundEnabled;},
   isSoundEnabled:()=>soundEnabled,
   setVolume:value=>{sound.setVolume(value);return sound.getVolume();},
   setReducedGraphics:applyGraphics,
   isReducedGraphics:()=>reducedMotion,
+  applySettings:prefs=>{
+    if(!prefs)return;
+    applyGraphics(prefs.graphics==='reduced');
+    const prevZoom=visualPrefs.mapZoom;
+    visualPrefs.voiceOver=prefs.voiceOver!==false;
+    visualPrefs.screenShake=prefs.screenShake!==false;
+    visualPrefs.weatherEffects=prefs.weatherEffects!==false;
+    visualPrefs.combatTracers=prefs.combatTracers!==false;
+    visualPrefs.autoPause=prefs.autoPause!==false;
+    visualPrefs.mapZoom=prefs.mapZoom==='large'?'large':'fit';
+    if(!visualPrefs.voiceOver)stopMissionVoice();
+    if(prevZoom!==visualPrefs.mapZoom&&!battleViewport&&!touchZoom)setMapZoom(visualPrefs.mapZoom==='large');
+  },
    // The training contract is a real deployment, not a mock: six weakened waves
    // that pay level 2. Called once by the account after the first-run tutorial.
    startTrainingRun:options=>requestTrainingStart(()=>startTrainingRun(options)),

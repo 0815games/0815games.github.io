@@ -598,12 +598,31 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   und `#campaignPanel` (parallele „Bisherige Geschichte“ & illustrierte
   Akt-Relikte `story-act1..5-relic.jpg`, Akt-Banner `story-act1..5-title.jpg`).
   *(Echte Geräteabnahme offen.)*
+- [x] **Einstellungen → Allgemein, Audio/FX & In-Game-Parität:**
+  Gemeinsamer Einstellungs-Dialog (`settings.mjs`, `assets/settings-command.jpg`)
+  mit einheitlichem Schalter für Soundeffekte, Master-Lautstärke,
+  Missions-Sprachausgabe (`voiceOver`), Grafikvoreinstellung (`full`/`reduced`),
+  Kamerawackeln (`screenShake`), Wetter-/Atmosphäreneffekten (`weatherEffects`),
+  Kampfleuchtspuren (`combatTracers`), Fokus-Autopause (`autoPause`),
+  Standard-Kartenansicht (`fit`/`large`), Vollbild-Umschalter und bestätigtem
+  Zurücksetzen. Der doppelte `#soundToggle` im Feldmenü entfällt vollständig.
+  *(Unit- & Logik-Tests grün; Browser-/Geräteabnahme offen.)*
 - [x] **Einstellungen → Konto (Passwortänderung & geschützte Entlassung):**
   Angemeldete E-Mail-Adresse, In-App-Passwortänderung über `password-change.mjs`
   (`reauthenticateWithCredential` / `updatePassword` + Passwort-Reset-Fallback)
   sowie Gefahrenzone mit `#menuDeleteCharacter` (umgezogen aus der alten
   Utility-Zeile, Party-Sperre direkt im Konto-Abschnitt sichtbar, sicheres
   Schließen offener Dialoge beim Entlassen/Abmelden). *(Unit-, Browser-Smoke- & Emulator-Tests in PR #320 bestanden; echte Geräteabnahme offen.)*
+- [x] **AFK-Schutzszene, Kopie-Korrekturen & visuelle Dialog-Harmonisierung:**
+  `#afkRestDialog` nutzt die neue handgemalte Bunker-Szene (`assets/afk-rest.jpg`)
+  statt der prozeduralen Leinwand (Canvas-Fallback im Code erhalten); alle
+  verbleibenden Modale (`#languageGate`, `#tutorialDialog`, `#storyCinematic`,
+  `#skillDialog`, `#runResults`, `#patchNotes`, `#socialPopup`, `#multiplayerPrompt`,
+  `#versionNotice`) wurden auf gemeinsame `--hq-*`-Tokens, einheitliche
+  `✕`-Schließen-Symbole und `<860px`-Vollbild-Sheets ohne `#versionNotice`-Kollisionen
+  angeglichen. Fakten-/Textbereinigung (`18` → `50` Missionen, `three` → `five`
+  Akte, Entfall redundanter Endlos-Abzweige `#endlessArmory`/`#endlessSkills`,
+  lokalisierter Fallback-Hinweis). *(Unit- & Logik-Tests grün; Browser-/Geräteabnahme offen.)*
 
 ### 6. Tutorial als großer zusammenhängender Einsatz – bisheriges Tutorial gebaut und Teilfix bestätigt
 
