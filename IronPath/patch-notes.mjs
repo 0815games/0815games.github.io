@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9f';
+import {getLanguage} from './language.mjs?v=20261119-block9g';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9g',build:'20261119-block9g',pr:326,
+    title:{en:'Block 9g · Redesigned Soldier Card (Bottom EXP), Painted HQ Action Cards & Balanced Results Placement',de:'Block 9g · Überarbeitete Soldatenkarte (EXP unten), gestaltete HQ-Aktionskarten & ausgerichtete Ergebnis-Schaltfläche'},
+    shipped:[
+      {en:'Restructured `#menuSoldier` (`Your Soldier`) with an atmospheric workbench backdrop, clean portrait + inline `OPEN DOSSIER →` header row, level badge, and moved the `EXP` dock and golden progress bar to a recessed full-width footer at the bottom of the card.',de:'`#menuSoldier` (`Dein Soldat`) mit atmosphärischem Werkbank-Hintergrund, klar strukturiertem Porträt-/Namensbereich samt integriertem `DOSSIER ÖFFNEN →`-Chip und Level-Plakette neu aufgebaut sowie die komplette `EXP`-Anzeige samt goldenem Fortschrittsbalken sauber an die Unterkante der Karte verlegt.'},
+      {en:'Upgraded `ARMORY`, `SKILLS`, `FRIENDS`, and `HIGH SCORES` (`.command-soldier-actions`) from flat blank rectangles into cohesive painted battlefield cards (`arsenal-workbench.jpg`, `skills-banner.jpg`, new borderless `action-friends.jpg` & `action-scores.jpg`) paired with crisp custom SVG tactical emblems.',de:'Die vier Schaltflächen `WAFFENKAMMER`, `FÄHIGKEITEN`, `FREUNDE` und `BESTENLISTE` (`.command-soldier-actions`) von leeren Rechtecken zu stimmigen gestalteten HQ-Karten (`arsenal-workbench.jpg`, `skills-banner.jpg` sowie den neuen randfreien Gemälden `action-friends.jpg` & `action-scores.jpg`) inklusive maßgeschneiderter taktischer SVG-Symbole aufgewertet.'},
+      {en:'Refined desktop/tablet hero and mode-card vertical proportions so `VIEW LAST RESULTS` (`#menuResults`) remains visibly docked directly below the three operation cards (`Campaign`, `Endless`, `Multiplayer`), never above them.',de:'Vertikale Abstände von HQ-Kopf und Moduskarten auf Desktop und iPad ausbalanciert, sodass `LETZTES ERGEBNIS` (`#menuResults`) stets sichtbar und eindeutig direkt unterhalb der drei Spielmodi (`Kampagne`, `Endlos`, `Mehrspieler`) sitzt.'},
+    ],
+    open:[
+      {en:'Real tablet, desktop, and mobile device inspection on `20261119-block9g` before starting Block 6.',de:'Echte Tablet-, Desktop- und Handy-Abnahme auf `20261119-block9g` vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block9f',build:'20261119-block9f',pr:325,
     title:{en:'Block 9f · Redesigned Login Artwork & Card, Unified Operation Windows, Consistent Back Buttons & Locked Endless Card Heights',de:'Block 9f · Neues Login-Design & Artwork, einheitliche Modus-Breiten, konsistente Zurück-Buttons & feste Endlos-Kartenhöhen'},

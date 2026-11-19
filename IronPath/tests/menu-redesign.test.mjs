@@ -155,6 +155,11 @@ test('endless quick-deploy sits above single-card carousel, cancel below, and re
     'assets/field-recruiting.jpg',
     'assets/settings-command.jpg',
     'assets/afk-rest.jpg',
+    'assets/soldier-workbench.jpg',
+    'assets/arsenal-workbench.jpg',
+    'assets/skills-banner.jpg',
+    'assets/action-friends.jpg',
+    'assets/action-scores.jpg',
   ]) {
     assert.ok(css.includes(art), `menu-redesign.css integrates ${art}`);
   }
@@ -195,4 +200,20 @@ test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ di
   assert.match(html, /id="endlessPrev"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessPrev renders custom Iron Path vector arrow');
   assert.match(html, /id="endlessNext"[\s\S]*?<svg class="endless-arrow-icon"/, '#endlessNext renders custom Iron Path vector arrow');
   assert.match(css, /#endlessLaunch\s+\.endless-theme-card\s*\{[^}]*height:\s*256px;[^}]*min-height:\s*256px;[^}]*max-height:\s*256px/, 'Endless terrain cards keep uniform fixed desktop height');
+
+  // Command Center soldier XP footer dock & painted action cards
+  const soldierStart = nav.indexOf('id="menuSoldier"');
+  const soldierEnd = nav.indexOf('class="command-soldier-actions"', soldierStart);
+  const soldierHtml = nav.slice(soldierStart, soldierEnd);
+  assert.ok(soldierHtml.indexOf('class="command-soldier-top"') > 0
+    && soldierHtml.indexOf('class="command-soldier-top"') < soldierHtml.indexOf('class="command-soldier-xp"'),
+    '#menuSoldier places .command-soldier-xp strictly below .command-soldier-top');
+  assert.ok(soldierHtml.indexOf('id="menuPortrait"') < soldierHtml.indexOf('class="command-soldier-xp"'),
+    '#menuXp / #menuXpBar move out from beside the portrait to the bottom footer of #menuSoldier');
+  for (const actionId of ['menuArmory', 'menuSkills', 'menuFriends', 'menuLeaderboard']) {
+    const btnStart = nav.indexOf(`id="${actionId}"`);
+    const btnHtml = nav.slice(btnStart, nav.indexOf('</button>', btnStart));
+    assert.match(btnHtml, /<svg class="action-card-icon"/, `#${actionId} carries a vector emblem`);
+    assert.match(btnHtml, /class="action-card-label"\s+data-i18n="/, `#${actionId} isolates its translated label span`);
+  }
 });
