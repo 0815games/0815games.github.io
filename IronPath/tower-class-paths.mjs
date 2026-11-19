@@ -1,4 +1,4 @@
-import {SKILL_PATH_MAP} from './skills.mjs?v=20261119-block9b';
+import {SKILL_PATH_MAP} from './skills.mjs?v=20261119-block9c';
 
 // Exclusive class upgrade paths on basic towers, separated completely from the
 // 10 universal level-3 tower kits (tower-specialization.mjs).

@@ -1,18 +1,18 @@
 import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-tagless1';
 import {reserveBuildPad,releaseBuildPad,releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261119-block9b';
-import {activateCombos} from './skill-combos.mjs?v=20261119-block9b';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261119-block9c';
+import {activateCombos} from './skill-combos.mjs?v=20261119-block9c';
 import {parseLoadout} from './armory.mjs?v=20261112-tagless1';
-import {parseBuild,abilityName,webBonuses,specialistUnlocked} from './skills.mjs?v=20261119-block9b';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261119-block9b';
+import {parseBuild,abilityName,webBonuses,specialistUnlocked} from './skills.mjs?v=20261119-block9c';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261119-block9c';
 // Shared command rules. These functions have no DOM, Firebase or network dependency.
 // The caller must derive playerId from the authenticated session, never the payload.
 import { upgradeCost, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
-import { waveFormation,missionFormation } from './combat.mjs?v=20261119-block9b';
-import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261119-block9b';
+import { waveFormation,missionFormation } from './combat.mjs?v=20261119-block9c';
+import { upgradeCostFor, branchUnlocked } from './tower-specialization.mjs?v=20261119-block9c';
 import { RUN_PERKS,perkOffers } from './run-perks.mjs?v=20261102-terrain4';
 import {campaignSurge} from './campaign-pressure.mjs?v=20261112-pressure1';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block9b';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block9c';
 export const TOWER_COSTS = [50, 80, 65, 75];
 export const PAD_COUNT = 10;
 

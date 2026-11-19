@@ -3480,8 +3480,8 @@ Grenzen / Offen:
   - GitHub CI Run `44487622595` auf PR #321 (`2f4fdb9`): **13/13 Checks bestanden** (`database-rules`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `interface-smoke.cjs` & `command-center.cjs`, alle 8 `party-finalization-browser`-Jobs, Vercel). Finaler Release-CI-Lauf auf `20261119-block9b` unmittelbar vor Merge auf `main`.
 - **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9b`.
 
-## IPL-0072 – Block 9c (lokal): Einheitliche Einstellungen, AFK-Artwork, Kopie-Korrekturen & vollständige Dialog-Harmonisierung
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/cd3317c7-0815games-github-io` ab `0e26018634033c37b9baf5a1c4fae07c668345ba` (`main`).
+## IPL-0072 – Block 9c (`20261119-block9c`, PR #322): Einheitliche Einstellungen, AFK-Artwork, Kopie-Korrekturen & vollständige Dialog-Harmonisierung
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/cd3317c7-0815games-github-io` ab `0e26018634033c37b9baf5a1c4fae07c668345ba` (`main`), PR #322.
 - **Block / Ziel:** Verbleibende UI-/Einstellungs- und Textlücken in Block 9 schließen: Einstellungs-Konsole (`#settingsDialog`) mit vollständigen Audio-, Grafik-, FX-, Kamera- und Autopause-Reglern für Kommandozentrale und Gefecht vereinheitlichen, doppelten Feldmenü-Sound-Schalter entfernen, `#afkRestDialog` / `#afkSessionFailure` mit handgemalter Bunker-Szene aufwerten, sämtliche Rest-Modale/Popups auf gemeinsame Tokens, einheitliche `✕`-Schließsymbole und kollisionsfreie `#versionNotice`-Positionierung abstimmen sowie veraltete Fakten (`18` → `50` Missionen, `three` → `five` Akte, redundante Endlos-Links) bereinigen.
 - **Änderungen / Dateien:**
   - `IronPath/assets/{afk-rest,settings-command}.jpg`: zwei neue text- und randlose `1376×768`-Gemälde erzeugt und beschnitten.
@@ -3490,12 +3490,12 @@ Grenzen / Offen:
   - `IronPath/endless-launcher.mjs`, `IronPath/tests/endless-launcher.test.mjs`, `IronPath/index.html`: `#endlessArmory` / `#endlessSkills` entfernt, `50 MISSIONS` / `five acts` korrigiert, `OPEN DOSSIER →` & Lade-Fallback zweisprachig gemacht, Lobby-Hinweise gestrafft, einheitliche `✕`-Close-Buttons gesetzt und `#towerDetailsBack` auf `CANCEL` vereinheitlicht.
   - `IronPath/localization-{static,more-static,}-de.mjs`, `IronPath/language.mjs`: deutsche Übersetzungen (`50 MISSIONEN`, `fünf Akte`, `AKTE ÖFFNEN →`, gestraffte Lobby-Hilfe) synchronisiert und Cache-Import `localization-static-de.mjs` nachgezogen.
   - `IronPath/menu-redesign.css`, `IronPath/style.css`, `IronPath/interface-redesign.css`: `#settingsDialog`-Banner/Karten/Schalter/Slider, `#afkRestDialog` / `#afkSessionFailure`, Harmonisierung von `#languageGate`/`#tutorialDialog`/`#storyCinematic`/`#runResults`/`#patchNotes`/`#skillDialog`/`#socialPopup`/`#multiplayerPrompt`/`#versionNotice`/`#deploymentCheck`, `<860px`-Vollbild-Sheets, `#versionNotice`-Lobby-/Kampf-Kollisionsschutz, tote CSS-Regeln entfernt (`#soundToggle`, `.danger-utility`, `.endless-loadout-links`).
-  - `IronPath/tests/{menu-redesign,endless-launcher}.test.mjs`, `IronPath/browser-tests/{command-center,interface-smoke}.cjs`: erweiterte Assertions für neue Settings-Regler, AFK-Bild, Faktenkorrektur und Mobile-Layouts.
+  - `IronPath/tests/{menu-redesign,endless-launcher,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{command-center,interface-smoke,cache-wave,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9c`, `pr: 322`) & gesamte `?v=20261119-block9c`-Cache-Welle.
 - **Prüfungen:**
-  - `node --test IronPath/tests/*.test.mjs`: alle Unit-Suiten (inkl. `settings`, `afk-rest`, `menu-redesign`, `endless-launcher`, `campaign-ui`, `translation-coverage`, `dom-contract`, `patch-notes`, `multiplayer-build-stamp`) **grün** (`release-pages-site` erwarteter Checkout-Skip).
-  - `node IronPath/stress-tests/run.mjs`: deterministische 8-/30-Wellen- & Dichte-Stressläufe **grün**.
-  - **Grenzen:** Kein Chromium / Firebase-Emulator lokal verfügbar; Playwright-Smokes & RTDB-Tests folgen in der GitHub-PR-CI.
-- **Git / PR / Release:** `lokal/uncommittet` auf `arena/cd3317c7-0815games-github-io`. `IronPath/release-version.json` vor PR-Eröffnung/Cache-Welle noch auf `20261119-block9b`.
+  - `node --test IronPath/tests/*.test.mjs` & `node IronPath/stress-tests/run.mjs`: alle Unit-Suiten (inkl. `multiplayer-build-stamp`, `patch-notes`, `settings`, `afk-rest`, `menu-redesign`, `endless-launcher`, `campaign-ui`, `translation-coverage`, `dom-contract`) und Stressläufe **grün** (`release-pages-site` erwarteter Checkout-Skip).
+  - GitHub CI Run `44499916298` auf PR #322 (`dffbd20`, vor Cache-Stamp-Welle): **13/13 Checks bestanden** (`database-rules`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `interface-smoke.cjs` & `command-center.cjs`, alle 8 `party-finalization-browser`-Jobs, Vercel). Finaler CI-Lauf auf `20261119-block9c` folgt direkt nach Push auf PR #322.
+- **Offen:** Finale CI-Grünmeldung auf `20261119-block9c`, Merge von PR #322 (noch offen), anschließender Pages-Lauf sowie echte Desktop- und Handy-Sichtung auf `20261119-block9c`.
+- **Git / PR / Release:** PR #322 offen auf `arena/cd3317c7-0815games-github-io`; nach erstem grünen CI-Lauf auf `20261119-block9c` gestempelt und zum Commit/Push vorbereitet.
 
 
 

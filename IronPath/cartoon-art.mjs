@@ -1,8 +1,8 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block9b';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block9c';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261119-block9b';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261119-block9b';
-import {ENEMY_INTEL} from './combat.mjs?v=20261119-block9b';
+import {specializationRank} from './tower-specialization.mjs?v=20261119-block9c';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261119-block9c';
+import {ENEMY_INTEL} from './combat.mjs?v=20261119-block9c';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
