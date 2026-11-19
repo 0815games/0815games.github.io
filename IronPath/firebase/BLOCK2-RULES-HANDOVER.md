@@ -1,17 +1,25 @@
-# Block 2 – Eindeutige Soldatennamen & Konfliktauflösung (Übergabe zur Freigabe)
+# Block 2 & vorgezogenes Block-6-Tutorial-Schema (Übergabe zur einmaligen RTDB-Freigabe)
 
-**Stand: Client + `BLOCK2-RULES-TO-PUBLISH.json` fertig implementiert und im Trockenlauf / den Unit-Tests geprüft. Vor dem Live-Schalten in der Firebase Console ist die fertige Regeldatei `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` zu veröffentlichen.**
+**Stand: Client + konsolidierte Publish-Datei `BLOCK2-RULES-TO-PUBLISH.json` fertig implementiert und im Trockenlauf / den Unit-Tests / dem Firebase-Emulator geprüft. Mit dieser einen Veröffentlichung sind sowohl Block 2 (`characterNames`) als auch der einzige noch offene RTDB-Regelbedarf des gesamten Restplans (Block 6 · charakterbezogener Tutorial-Status `players/$uid/tutorial`) komplett abgedeckt.**
 
 ## Fertiges Publish-Artefakt
 
 - Publish-Datei (baut streng additiv auf dem live laufenden `BLOCK9D-RULES-TO-PUBLISH.json` auf):
   **`IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`**
-- Generator: `node IronPath/firebase/block2-publish-candidate.mjs`
+- Generator: `node IronPath/firebase/block2-publish-candidate.mjs` (kombiniert `block2-rules-candidate.mjs` + `block6-tutorial-candidate.mjs`)
 - Trockenlauf gegen die aktuell live geschaltete Baseline (`BLOCK9D-RULES-TO-PUBLISH.json`):
   `node IronPath/scripts/rules-publish-dry-run.mjs IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json --candidate IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`
-  Ergebnis: **0 Blocker**, **6 neue Pfade** (`characterNames/**`, durch `MAINTENANCE_GATE` abgesichert), **1 geprüfte `OR`-Erweiterung** (`players/$uid/name['.validate']`).
+  Ergebnis: **0 Blocker**, **14 neue Pfade** (`characterNames/**` mit `MAINTENANCE_GATE` + `players/$uid/tutorial/**` mit `$other: false` und monotonen Locks), **2 geprüfte Review-Erweiterungen** (`players/$uid['.validate']` schützt `tutorial` vor versehentlichem Überschreiben bei vollem Profil-Neuschrieb; `players/$uid/name['.validate']` erlaubt ungelistete Umbenennung).
 
 Alle bestehenden Live-Regeln (`MAINTENANCE_GATE`, Block 9D `activeSessions`, Block 5 V2 `skills`, Block 4 Freundesporträts `avatar`/`gender`, `social-cleanup` inkl. `friendPrivate/$uid/searchKey` und `friendCodes/$code`, sowie alle Workshop-/Kampagnen-/Koop-Regeln) bleiben unverändert erhalten.
+
+## Prüfung der verbleibenden Roadmap-Blöcke (warum danach kein weiteres RTDB-Rules-Release nötig ist)
+
+- **Block 1 Rest & Einsteigerbalance `C`:** Party-Schließung durch den Host, Abbruch-Handhabung fehlender Mitglieder und Balance-Werte laufen vollständig über bestehende `fourParties/$partyId`-Hostrechte, `views/$uid` (`262 KB`), `inputs/$uid` (`4 KB`) und Client-Logik.
+- **Block 3 (`D1` Netz-Datenmenge):** Reine Simulations-/Protokolloptimierung innerhalb bestehender Paketlimits.
+- **Block 6 (Tutorial):** **Einziger offener Block mit Bedarf an neuem Charakter-Speicher in RTDB.** Deshalb enthält `BLOCK2-RULES-TO-PUBLISH.json` bereits jetzt das optionale Schema `players/$uid/tutorial` (`edition` `1..100` monoton, `status` `'offered' | 'accepted' | 'declined' | 'completed'`, `rewarded` & `missionCompleted` monoton `true`, optional `phase` `'dossier' | 'mission' | 'menu' | 'done'` und `step` `0..1000`, `$other: false`), das bei voller Charakterlöschung (`players/$uid = null`) atomar mitentfernt wird.
+- **Block 7 (`E` Leben, Gegenangriffe & Reparaturen):** Laut Plan ausdrücklich einsatzbezogen und niemals dauerhaft im Charakterprofil gespeichert; im Multiplayer transportiert `views/$uid` / `checkpoint` die Werte ohne neues DB-Schema.
+- **Block 8 (Wartung/Versionsprüfung/Admin):** `_ironpathMaintenance` und `_ironpathMaintenanceAdminAccess` sind bereits live.
 
 ## Was Block 2 technisch umfasst
 

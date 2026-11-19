@@ -168,3 +168,64 @@ test('BLOCK2-RULES-TO-PUBLISH runs silent login backfill, resolves legacy duplic
   assert.equal((await get(ref(alice,`characterNames/${charlieKey}`))).val(),null,'deleted character frees its reservation');
   assert.equal((await claimA.claim('Charlie')).status,'claimed');
 });
+
+test('BLOCK2-RULES-TO-PUBLISH pre-wires Block 6 per-character tutorial persistence, monotonic reward lock, and deletion reset',async()=>{
+  // Owner records dossier offer, permanent decline, and settings restart.
+  await assertSucceeds(set(ref(alice,'players/alice/tutorial'),{
+    edition:3,
+    status:'offered',
+    rewarded:false,
+    phase:'dossier',
+    step:0,
+  }));
+  await assertSucceeds(update(ref(alice,'players/alice/tutorial'),{status:'declined',phase:'dossier'}));
+  assert.equal((await get(ref(alice,'players/alice/tutorial/status'))).val(),'declined');
+  await assertSucceeds(update(ref(alice,'players/alice/tutorial'),{status:'accepted',phase:'mission',step:2}));
+
+  // Reward & mission completion lock irreversibly onto the character.
+  await assertSucceeds(runTransaction(ref(alice,'players/alice'),current=>({
+    ...current,
+    xp:current.xp+150,
+    tutorial:{...current.tutorial,status:'completed',missionCompleted:true,rewarded:true,phase:'done',step:6},
+  })));
+  // Replaying from settings works, but rewarded/missionCompleted/edition may never regress.
+  await assertSucceeds(update(ref(alice,'players/alice/tutorial'),{status:'accepted',phase:'mission',step:0}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{rewarded:false}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{missionCompleted:false}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{edition:2}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{status:'bogus'}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{phase:'bogus'}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{step:1001}));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{extraFlag:true}));
+  // Dropping only `tutorial` while keeping the character must fail; other users & anon are blocked.
+  await assertFails(remove(ref(alice,'players/alice/tutorial')));
+  await assertFails(get(ref(bob,'players/alice/tutorial')));
+  await assertFails(set(ref(bob,'players/alice/tutorial'),{edition:3,status:'declined',rewarded:false}));
+  await assertFails(get(ref(anon,'players/alice/tutorial')));
+
+  // Full character deletion clears `tutorial` atomically so a new soldier on the same UID starts fresh.
+  const claimC=createCharacterNameClaim({db:charlie,auth:{currentUser:{uid:'charlie'}},sdk});
+  assert.equal((await claimC.claim('Charlie')).status,'claimed');
+  await assertSucceeds(set(ref(charlie,'players/charlie/tutorial'),{
+    edition:3,
+    status:'completed',
+    missionCompleted:true,
+    rewarded:true,
+    phase:'done',
+    step:8,
+  }));
+  const del=createCharacterDeletion({db:charlie,auth:{currentUser:{uid:'charlie'}},sdk,releaseNameKey:characterNameKey('Charlie')});
+  await assertSucceeds(del.remove('Charlie'));
+  assert.equal((await get(ref(charlie,'players/charlie'))).val(),null);
+  await assertSucceeds(set(ref(charlie,'players/charlie'),{
+    name:'CharlieNew',
+    gender:'female',
+    xp:0,
+    tutorial:{edition:3,status:'offered',rewarded:false,phase:'dossier',step:0},
+  }));
+
+  // Maintenance mode locks players/$uid/tutorial along with players/$uid.
+  await env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),MAINTENANCE_PATH),{format:1,mode:'maintenance',authAfterMs:0}));
+  await assertFails(get(ref(alice,'players/alice/tutorial')));
+  await assertFails(update(ref(alice,'players/alice/tutorial'),{status:'declined'}));
+});

@@ -360,8 +360,8 @@ entstand, ist nicht sicher belegt.
   [B2](#b2-anfragen-mittig-als-popup).
 - [x] **Freundes-/Social-Oberfläche im Browser und am Handy vom Betreiber ohne Beanstandung getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).**
 - [x] **Block-2-Namenssystem & Altbestands-Konfliktauflösung (`20261119-block2`, [IPL-0078](PATCH-LOG.md#ipl-0078--block-2-20261119-block2-strenges-nfc_casefold_v2-stiller-login-backfill-konflikt-dialog--block2-rules-kandidat)):**
-  `NFC_CASEFOLD_V2` (`Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`, `0` Abweichungen zwischen Client & Python-Audit über 282.230 Unicode-Zeichen), stiller Login-Backfill für freie Namen, blockierender `#nameConflictDialog` nur bei Alt-Duplikaten ohne Fortschritts-/EP-/Ausrüstungsverlust (keine allgemeine Umbenennungs-Schaltfläche), sitzungsübergreifende Freigabe beim Charakterlöschen sowie auf das live laufende `BLOCK9D`-Regelwerk aufgesetztes [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json).
-- [ ] **Offen in Block 2:** Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole zur serverseitigen Aktivierung von `characterNames`, Screenreader-Prüfung sowie echte Mehrgeräte-Abnahme.
+  `NFC_CASEFOLD_V2` (`Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`, `0` Abweichungen zwischen Client & Python-Audit über 282.230 Unicode-Zeichen), stiller Login-Backfill für freie Namen, blockierender `#nameConflictDialog` nur bei Alt-Duplikaten ohne Fortschritts-/EP-/Ausrüstungsverlust (keine allgemeine Umbenennungs-Schaltfläche), sitzungsübergreifende Freigabe beim Charakterlöschen sowie auf das live laufende `BLOCK9D`-Regelwerk aufgesetztes [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json) (inkl. vorgezogenem Block-6-`players/$uid/tutorial`-Schema für eine einzige RTDB-Veröffentlichung).
+- [ ] **Offen in Block 2:** Einmalige Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole zur Aktivierung von `characterNames` + `players/$uid/tutorial`, Screenreader-Prüfung sowie echte Mehrgeräte-Abnahme.
 
 ### 3. Kampf- und Party-Oberfläche – Bericht und Rangabzeichen bereits gebaut
 
@@ -674,6 +674,13 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
 - [x] Die in Block 1 beschriebenen Abbruch-/Menü-Fixes #196 und #278–#279
   wurden gebaut; #280 hält die damalige Nutzerbestätigung „Tutorial hört sauber
   auf“ fest. Parken und vollständiges Zustandsende sind nicht dasselbe.
+- [x] **Vorgezogene RTDB-Regel für charakterbezogenen Tutorialstatus (`players/$uid/tutorial`):**
+  Bereits in [`firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json)
+  via [`firebase/block6-tutorial-candidate.mjs`](firebase/block6-tutorial-candidate.mjs)
+  enthalten (`edition` `1..100` monoton, `status` `'offered'|'accepted'|'declined'|'completed'`,
+  `rewarded` & `missionCompleted` monoton `true`, optionale `phase`/`step` zur
+  Wiederaufnahme, atomare Löschung bei Charakterentlassung), damit vor dem
+  eigentlichen Block-6-Clientbau kein zweiter Firebase-Rules-Deploy nötig wird.
 - [ ] Nach jeder neuen Charaktererstellung zuerst Hauptmenü und eine Akte mit
   „Auftrag annehmen/ablehnen“ zeigen. Ablehnung dauerhaft respektieren und
   späteren Neustart in den Einstellungen ermöglichen. Der Status muss zum
