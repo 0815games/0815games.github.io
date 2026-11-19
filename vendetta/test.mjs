@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {init,advance,build,recruit,rooms,units} from './engine.mjs';
+test('Historischer Referenzzustand und eine Stunde Produktion',()=>{let s=init(0);advance(s,3600000);assert.deepEqual(s.cash,[760,510,260,0])});
+test('Keine Doppelbuchung; neue Raten gelten erst nach Fertigstellung',()=>{let s=init(0);assert.ok(build(s,'ammo'));assert.ok(!build(s,'brew'));advance(s,120000+3600000);assert.equal(s.lvl.ammo,1);assert.ok(Math.abs(s.cash[1]-(500-120+1/3+90))<1e-8)});
+test('Vom Start bis zur stationierten Einheit',()=>{let s=init(0);assert.ok(!recruit(s,'thug',1));build(s,'ammo');advance(s,3600000);assert.ok(build(s,'camp'));advance(s,13*3600000);assert.ok(recruit(s,'thug',1));advance(s,s.t+1400000);assert.equal(s.men.thug,1);assert.equal(s.queue.length,0)});
+test('Kneipe benötigt Brauerei; kein negativer Alkohol',()=>{let s=init(0);assert.ok(!build(s,'pub'));s.lvl.pub=5;s.cash[2]=0;advance(s,3600000);assert.equal(s.cash[2],0);assert.equal(s.cash[3],5)});
+test('Lagerlimit und kein Zurückspulen',()=>{let s=init(0);advance(s,1e12);assert.deepEqual(s.cash,[10000,10000,10000,0]);advance(s,10);assert.equal(s.t,1e12)});
+test('FIFO, Kostenabzug, ungültige Menge',()=>{let s=init(0);s.lvl.camp=1;s.cash=[5000,5000,5000,5000];assert.ok(!recruit(s,'thug',0));assert.ok(recruit(s,'thug',2));assert.ok(recruit(s,'porter',1));assert.deepEqual(s.cash,[4300,2900,5000,4000]);advance(s,2800000);assert.equal(s.men.thug,2);assert.equal(s.men.porter,0);advance(s,6400000);assert.equal(s.men.porter,1)});
