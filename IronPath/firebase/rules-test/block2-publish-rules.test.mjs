@@ -183,11 +183,14 @@ test('BLOCK2-RULES-TO-PUBLISH pre-wires Block 6 per-character tutorial persisten
   await assertSucceeds(update(ref(alice,'players/alice/tutorial'),{status:'accepted',phase:'mission',step:2}));
 
   // Reward & mission completion lock irreversibly onto the character.
-  await assertSucceeds(runTransaction(ref(alice,'players/alice'),current=>({
-    ...current,
-    xp:current.xp+150,
-    tutorial:{...current.tutorial,status:'completed',missionCompleted:true,rewarded:true,phase:'done',step:6},
-  })));
+  await assertSucceeds(runTransaction(ref(alice,'players/alice'),current=>{
+    if(!current)return current;
+    return {
+      ...current,
+      xp:current.xp+150,
+      tutorial:{...current.tutorial,status:'completed',missionCompleted:true,rewarded:true,phase:'done',step:6},
+    };
+  }));
   // Replaying from settings works, but rewarded/missionCompleted/edition may never regress.
   await assertSucceeds(update(ref(alice,'players/alice/tutorial'),{status:'accepted',phase:'mission',step:0}));
   await assertFails(update(ref(alice,'players/alice/tutorial'),{rewarded:false}));
