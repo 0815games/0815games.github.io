@@ -3466,4 +3466,19 @@ Grenzen / Offen:
   - `IronPath/release-version.json` bleibt bis zum eigentlichen Build/Release unverändert auf `20261118-block5`; keine ungeprüfte Geräte- oder Produktionsabnahme behauptet (`patch-notes.mjs` führt Block 9 weiterhin unter `PLANNED_PATCHES` als `active`).
 - **Git / PR / Release:** `lokal/uncommittet` auf `arena/66c63134-0815games-github-io`. Kein neuer Commit, Push, PR oder Deployment.
 
+## IPL-0071 – Block 9b (`20261119-block9b`, PR #321): Endlos-Schnellstart, Kampagnen-Akte & durchgängige Gemälde
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Branch `arena/271d41c0-0815games-github-io` ab `c640712` (`main`), [PR #321](https://github.com/0815games/0815games.github.io/pull/321) (CI-Run `44487622595` auf `2f4fdb9` 13/13 grün).
+- **Block / Ziel:** Feinschliff des Block-9-Menüs vor der Geräteabnahme: Endlos-Starter (`#endlessLaunch`) sofort einsatzbereit mit Schnellstartleiste oben & Bilanz darunter, alle verbliebenen Kacheln/Flächen (`#menuEndless`, `#endlessThemes`, `#campaignPanel` mit Akt-Bannern & Relikten, `#fieldSchool`, Musterung, Gefechts-Dialoge) mit stimmigen handgezeichneten Gemälden harmonisieren und über Cache-Welle `20261119-block9b` ausliefern.
+- **Änderungen / Dateien:**
+  - `IronPath/assets/{endless-frontline,story-act2-relic,story-act3-relic,story-act4-relic,story-act5-relic,field-recruiting}.jpg`: 6 neue randlose `1376×768`-Gemälde im Iron-Path-Stil erzeugt und beschnitten.
+  - `IronPath/index.html`, `IronPath/endless-launcher.mjs` (`syncSelectedSummary` für `#endlessSelectedTheme`), `IronPath/menu-redesign.css`: `#endlessLaunch` mit `.endless-quick-start` oben, Panorama-Gemälden (`endless-frontline.jpg`, `story-outpost.jpg`, `story-pinewood.jpg`, `story-city.jpg`, `story-ice.jpg`, `story-marsh.jpg`) in der Mitte und `.endless-record-panel` unten; flache `endless-ground.jpg` / `terrain3-*.jpg` vollständig ersetzt.
+  - `IronPath/index.html`, `IronPath/game.js`, `IronPath/menu-redesign.css`: `#campaignPanel` mit `.campaign-dossier-records` (parallele „Bisherige Geschichte“ & „Akt-Relikte“), `data-act` auf `.act-detail-head` (`story-act1..5-title.jpg`), illustrierten `.relic-slot`-Karten (`story-act1..5-relic.jpg`, `VERDIENT`/`GESPERRT`/`BEVORSTEHEND`), `#fieldSchool`-Kartenbildern, Musterungs-Banner (`field-recruiting.jpg`) sowie angepassten `#gameConfirm`/`#towerDetails`.
+  - `IronPath/localization-campaign-de.mjs`, `IronPath/localization-more-static-de.mjs`, `IronPath/language.mjs`: deutsche Übersetzungen (`EARNED`, `UPCOMING`, `BATTLEFIELD`, `YOUR ENDLESS RECORD`).
+  - `IronPath/tests/{menu-redesign,endless-launcher,campaign-ui,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{cache-wave,avatar-handover,interface-smoke}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9b`, `pr: 321`) & gesamte `?v=20261119-block9b`-Cache-Welle.
+- **Prüfungen:**
+  - Lokale `IronPath/tests/*.test.mjs` (inkl. `menu-redesign`, `endless-launcher`, `campaign-ui`, `patch-notes`, `build-stamp`, `multiplayer-build-stamp`, `translation-coverage`) + `node IronPath/stress-tests/run.mjs`.
+  - GitHub CI Run `44487622595` auf PR #321 (`2f4fdb9`): **13/13 Checks bestanden** (`database-rules`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `interface-smoke.cjs` & `command-center.cjs`, alle 8 `party-finalization-browser`-Jobs, Vercel). Finaler Release-CI-Lauf auf `20261119-block9b` unmittelbar vor Merge auf `main`.
+- **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9b`.
+
+
 

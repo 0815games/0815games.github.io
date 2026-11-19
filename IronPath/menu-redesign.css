@@ -7,8 +7,10 @@
  *   3. Mobile (<860px) app-shell with compact identity header & bottom 4-button dock
  *   4. Atmospheric 3-zone dialog banners across Settings, Field Notes, Endless,
  *      Friends, Friend Stats, High Scores, Soldier Dossier, Armory, Skills & Party
- *   5. Endless battlefield terrain cards backed by assets/terrain3-*.jpg
+ *   5. Endless Quick-Deploy launcher backed by cohesive painted frontline & biome art
  *   6. Settings -> Account tab (email readout, password update & Danger Zone)
+ *   7. Unified Campaign Dossier (#campaignPanel, Story So Far, painted Act Relics),
+ *      Field School cards, Recruiting header & tactical confirm dialogs
  *
  * Top-layer discipline: ALL dialog `display:` rules MUST be scoped to `[open]`
  * so closed <dialog> elements retain native `display: none`.
@@ -220,8 +222,8 @@
 #commandCenter .mode-card.mode-endless,
 #commandCenter .mode-card.mode-endless:hover:not(:disabled) {
   background-image:
-    linear-gradient(180deg, rgba(12, 22, 18, 0.18) 0%, rgba(11, 20, 16, 0.74) 56%, rgba(10, 17, 14, 0.96) 100%),
-    url("assets/endless-ground.jpg") !important;
+    linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.72) 56%, rgba(10, 17, 14, 0.96) 100%),
+    url("assets/endless-frontline.jpg") !important;
   background-size: cover, cover !important;
   background-position: center, center !important;
   background-repeat: no-repeat, no-repeat;
@@ -475,7 +477,7 @@
   #commandCenter .mode-card.mode-endless:hover:not(:disabled) {
     background-image:
       linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
-      url("assets/endless-ground.jpg") !important;
+      url("assets/endless-frontline.jpg") !important;
   }
 
   #commandCenter .mode-card.mode-multiplayer,
@@ -657,8 +659,9 @@
 
 .dialog-banner-endless {
   background-image:
-    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.76) 60%, rgba(12, 22, 18, 0.54) 100%),
-    url("assets/endless-ground.jpg");
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.72) 58%, rgba(12, 22, 18, 0.42) 100%),
+    url("assets/endless-frontline.jpg");
+  background-position: center 46%;
 }
 
 .dialog-banner-friends {
@@ -971,16 +974,160 @@
 }
 
 /* ==========================================================================
-   6. ENDLESS TERRAIN ARTWORK CARDS
+   6. ENDLESS QUICK-DEPLOY BAR, PAINTED TERRAIN CARDS & BOTTOM STATS
    ========================================================================== */
+
+#endlessLaunch .endless-quick-start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: linear-gradient(120deg, rgba(25, 43, 35, 0.96), rgba(16, 29, 23, 0.98));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(228, 202, 137, 0.14);
+}
+
+#endlessLaunch .endless-deploy-meta {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+#endlessLaunch .endless-selected-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+#endlessLaunch .endless-selected-line .eyebrow {
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+}
+
+#endlessLaunch #endlessSelectedTheme {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+#endlessLaunch .endless-loadout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#endlessLaunch #endlessLoadout {
+  color: var(--hq-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+#endlessLaunch .endless-loadout-links {
+  display: inline-flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+#endlessLaunch .endless-loadout-links button {
+  min-height: 36px;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: rgba(12, 22, 18, 0.72);
+  color: var(--hq-text);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+#endlessLaunch .endless-loadout-links button:hover {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#endlessLaunch .endless-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 1 auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+
+#endlessLaunch #endlessCancel,
+#endlessLaunch #endlessDeploy {
+  min-height: 46px;
+  margin: 0;
+  padding: 10px 18px;
+  border-radius: var(--hq-radius);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+#endlessLaunch #endlessCancel {
+  border: 1px solid var(--hq-border);
+  background: var(--hq-surface);
+  color: var(--hq-muted);
+}
+
+#endlessLaunch #endlessCancel:hover {
+  border-color: var(--hq-border-strong);
+  color: var(--hq-text);
+}
+
+#endlessLaunch #endlessDeploy {
+  min-width: 148px;
+  border: 1px solid var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+}
+
+#endlessLaunch #endlessDeploy:hover {
+  background: #f3dfb0;
+  border-color: #f3dfb0;
+}
 
 #endlessLaunch .endless-themes {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-@media (max-width: 560px) {
+@media (max-width: 680px) {
+  #endlessLaunch .endless-quick-start {
+    align-items: stretch;
+  }
+
+  #endlessLaunch .endless-actions {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: minmax(96px, 0.75fr) minmax(0, 1.45fr);
+  }
+
+  #endlessLaunch .endless-themes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
   #endlessLaunch .endless-themes {
     grid-template-columns: 1fr;
   }
@@ -991,8 +1138,9 @@
   flex-direction: column;
   justify-content: flex-end;
   gap: 3px;
-  min-height: 92px;
-  padding: 12px 14px;
+  min-height: 78px;
+  margin: 0;
+  padding: 10px 12px;
   text-align: left;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
@@ -1007,50 +1155,50 @@
 
 #endlessLaunch .endless-theme strong {
   color: var(--hq-text);
-  font-size: 14px;
+  font-size: 13.5px;
   line-height: 1.2;
 }
 
 #endlessLaunch .endless-theme small {
   color: var(--hq-muted);
-  font-size: 12px;
-  line-height: 1.3;
+  font-size: 11.5px;
+  line-height: 1.25;
 }
 
 #endlessLaunch .endless-theme[data-theme="random"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.28) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/endless-ground.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/endless-frontline.jpg");
 }
 
 #endlessLaunch .endless-theme[data-theme="scrub"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/terrain3-desert.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/story-outpost.jpg");
 }
 
 #endlessLaunch .endless-theme[data-theme="forest"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/terrain3-forest.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/story-pinewood.jpg");
 }
 
 #endlessLaunch .endless-theme[data-theme="urban"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/terrain3-city.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/story-city.jpg");
 }
 
 #endlessLaunch .endless-theme[data-theme="arctic"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/terrain3-snow.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/story-ice.jpg");
 }
 
 #endlessLaunch .endless-theme[data-theme="marsh"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
-    url("assets/terrain3-marsh.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    url("assets/story-marsh.jpg");
 }
 
 #endlessLaunch .endless-theme[aria-pressed="true"] {
@@ -1058,10 +1206,60 @@
   box-shadow: inset 0 0 0 1px var(--hq-gold), 0 8px 22px rgba(0, 0, 0, 0.45);
 }
 
+#endlessLaunch .endless-record-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--hq-border);
+}
+
+#endlessLaunch .endless-record-heading {
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
 #endlessLaunch .endless-record {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px 12px;
+  margin: 0;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
   background: var(--hq-surface-elevated);
+}
+
+@media (max-width: 680px) {
+  #endlessLaunch .endless-record {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+#endlessLaunch .endless-record > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+#endlessLaunch .endless-record small {
+  color: var(--hq-muted);
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+
+#endlessLaunch .endless-record strong {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+}
+
+#endlessLaunch #endlessLastRun {
+  margin: 0;
+  color: var(--hq-muted);
+  font-size: 12px;
 }
 
 /* ==========================================================================
@@ -1234,11 +1432,629 @@
   }
 }
 
+/* ==========================================================================
+   8. CAMPAIGN DOSSIER (#campaignPanel): STORY SO FAR & PAINTED ACT RELICS
+   ========================================================================== */
+
+#campaignPanel.campaign.panel {
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.48);
+}
+
+#campaignPanel .campaign-cover {
+  border-bottom: 1px solid var(--hq-border-strong);
+  background:
+    linear-gradient(100deg, rgba(10, 18, 15, 0.94) 0%, rgba(14, 26, 21, 0.72) 56%, rgba(12, 22, 18, 0.36) 100%),
+    linear-gradient(0deg, rgba(12, 22, 18, 0.92), transparent 55%),
+    url("assets/command-campaign.jpg") center 50% / cover no-repeat;
+}
+
+#campaignPanel .campaign-kicker,
+#campaignPanel .board-eyebrow,
+#campaignPanel .campaign-cover-index {
+  color: var(--hq-gold);
+}
+
+#campaignPanel .campaign-show-board {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+  font-weight: 700;
+}
+
+#campaignPanel .campaign-show-board:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#campaignPanel .campaign-board {
+  padding: 6px 24px 24px;
+}
+
+#campaignPanel .campaign-board-head {
+  padding: 16px 0 18px;
+  border-bottom: 1px solid var(--hq-border);
+}
+
+#campaignPanel .campaign-board-head h3,
+#campaignPanel .mission-brief h3 {
+  color: var(--hq-text);
+}
+
+#campaignPanel .campaign-board-head p {
+  color: var(--hq-muted);
+}
+
+#campaignPanel .board-progress span {
+  color: var(--hq-gold);
+}
+
+#campaignPanel .board-progress progress {
+  accent-color: var(--hq-gold);
+}
+
+#campaignPanel #campaignContinue {
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#campaignPanel #campaignContinue:hover:not(:disabled) {
+  background: #f3dfb0;
+  border-color: #f3dfb0;
+}
+
+#campaignPanel #campaignCloseBoard {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
+#campaignPanel #campaignCloseBoard:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#campaignPanel .campaign-map {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.42);
+}
+
+#campaignPanel .act-detail-head {
+  margin: 16px 0 12px;
+  padding: 16px 18px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.78) 60%, rgba(12, 22, 18, 0.48) 100%),
+    url("assets/command-campaign.jpg") center / cover no-repeat;
+}
+
+#campaignPanel .act-detail-head[data-act="1"] {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.76) 60%, rgba(12, 22, 18, 0.44) 100%),
+    url("assets/story-act1-title.jpg");
+}
+
+#campaignPanel .act-detail-head[data-act="2"] {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.76) 60%, rgba(12, 22, 18, 0.44) 100%),
+    url("assets/story-act2-title.jpg");
+}
+
+#campaignPanel .act-detail-head[data-act="3"] {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.76) 60%, rgba(12, 22, 18, 0.44) 100%),
+    url("assets/story-act3-title.jpg");
+}
+
+#campaignPanel .act-detail-head[data-act="4"] {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.76) 60%, rgba(12, 22, 18, 0.44) 100%),
+    url("assets/story-act4-title.jpg");
+}
+
+#campaignPanel .act-detail-head[data-act="5"] {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(15, 28, 22, 0.76) 60%, rgba(12, 22, 18, 0.44) 100%),
+    url("assets/story-act5-title.jpg");
+}
+
+#campaignPanel .act-detail-back,
+#campaignPanel .act-intro-replay {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(12, 22, 18, 0.86);
+  color: var(--hq-text);
+}
+
+#campaignPanel .act-detail-back:hover,
+#campaignPanel .act-intro-replay:hover {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#campaignPanel .mission-card {
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+}
+
+#campaignPanel .mission-card[aria-pressed="true"] {
+  border: 2px solid var(--hq-gold);
+  box-shadow: 0 0 0 1px rgba(228, 202, 137, 0.4);
+}
+
+#campaignPanel .mission-brief {
+  padding: 20px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background:
+    linear-gradient(100deg, rgba(25, 43, 35, 0.98) 0%, rgba(25, 43, 35, 0.94) 56%, rgba(16, 29, 23, 0.76) 100%),
+    url("assets/story-dawn-road.jpg") center / cover no-repeat;
+  box-shadow: inset 0 1px 0 rgba(228, 202, 137, 0.12);
+}
+
+#campaignPanel .mission-brief #campaignBriefing {
+  color: var(--hq-muted);
+}
+
+#campaignPanel .mission-brief-actions button {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(14, 26, 21, 0.9);
+  color: var(--hq-text);
+  font-weight: 700;
+}
+
+#campaignPanel .mission-brief-actions #campaignLoad {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#campaignPanel .mission-brief-actions #campaignLoad:hover:not(:disabled) {
+  background: #f3dfb0;
+  border-color: #f3dfb0;
+}
+
+/* Unified Campaign Dossier Records ("STORY SO FAR" + "ACT RELICS") */
+#campaignPanel .campaign-quick-select {
+  margin: 0 24px 14px;
+  padding: 10px 16px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+#campaignPanel .campaign-quick-select summary {
+  color: var(--hq-gold);
+}
+
+#campaignPanel .campaign-quick-select .campaign-controls select {
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-bg-deep);
+  color: var(--hq-text);
+}
+
+#campaignPanel .campaign-quick-select .campaign-controls button {
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#campaignPanel .campaign-dossier-records {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+@media (min-width: 860px) {
+  #campaignPanel .campaign-dossier-records {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+#campaignPanel .campaign-dossier-records .story-journal,
+#campaignPanel .campaign-dossier-records .relic-panel {
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  overflow: hidden;
+  transition: border-color 140ms ease;
+}
+
+#campaignPanel .campaign-dossier-records .story-journal[open],
+#campaignPanel .campaign-dossier-records .relic-panel[open] {
+  border-color: var(--hq-border-strong);
+}
+
+#campaignPanel .campaign-dossier-records .story-journal > summary,
+#campaignPanel .campaign-dossier-records .relic-panel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 16px;
+  background: rgba(12, 22, 18, 0.45);
+  color: var(--hq-gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+}
+
+#campaignPanel .campaign-dossier-records .story-journal > summary::-webkit-details-marker,
+#campaignPanel .campaign-dossier-records .relic-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+#campaignPanel .campaign-dossier-records .story-journal > summary::after,
+#campaignPanel .campaign-dossier-records .relic-panel > summary::after {
+  content: "+";
+  display: grid;
+  place-items: center;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--hq-border);
+  border-radius: 4px;
+  background: rgba(18, 32, 26, 0.88);
+  color: var(--hq-text);
+  font-size: 15px;
+  line-height: 1;
+}
+
+#campaignPanel .campaign-dossier-records .story-journal[open] > summary,
+#campaignPanel .campaign-dossier-records .relic-panel[open] > summary {
+  border-bottom: 1px solid var(--hq-border);
+}
+
+#campaignPanel .campaign-dossier-records .story-journal[open] > summary::after,
+#campaignPanel .campaign-dossier-records .relic-panel[open] > summary::after {
+  content: "−";
+  border-color: var(--hq-border-strong);
+  color: var(--hq-gold);
+}
+
+#campaignPanel .campaign-dossier-records .story-journal > summary:focus-visible,
+#campaignPanel .campaign-dossier-records .relic-panel > summary:focus-visible {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: -2px;
+}
+
+#campaignPanel .campaign-dossier-records #storyJournal {
+  margin: 0;
+  padding: 14px 16px;
+  max-height: 360px;
+  overflow-y: auto;
+  color: var(--hq-muted);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+#campaignPanel .campaign-dossier-records .relic-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+}
+
+#campaignPanel .relic-slot {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  min-height: 78px;
+  overflow: hidden;
+  border: 1px solid var(--hq-border);
+  border-left: 3px solid rgba(186, 204, 173, 0.35);
+  border-radius: var(--hq-radius);
+  background: #13211b;
+  opacity: 1;
+}
+
+@media (max-width: 859px) {
+  #campaignPanel .campaign-board {
+    padding: 4px 14px 16px;
+  }
+
+  #campaignPanel .campaign-quick-select {
+    margin: 0 14px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  #campaignPanel .relic-slot {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+}
+
+#campaignPanel .relic-slot-art {
+  min-height: 76px;
+  border-right: 1px solid var(--hq-border);
+  background-color: var(--hq-bg-deep);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+#campaignPanel .relic-slot[data-act="1"] .relic-slot-art {
+  background-image: url("assets/story-act1-relic.jpg");
+}
+
+#campaignPanel .relic-slot[data-act="2"] .relic-slot-art {
+  background-image: url("assets/story-act2-relic.jpg");
+}
+
+#campaignPanel .relic-slot[data-act="3"] .relic-slot-art {
+  background-image: url("assets/story-act3-relic.jpg");
+}
+
+#campaignPanel .relic-slot[data-act="4"] .relic-slot-art {
+  background-image: url("assets/story-act4-relic.jpg");
+}
+
+#campaignPanel .relic-slot[data-act="5"] .relic-slot-art {
+  background-image: url("assets/story-act5-relic.jpg");
+}
+
+#campaignPanel .relic-slot[data-state="locked"] .relic-slot-art {
+  filter: grayscale(0.55) brightness(0.75);
+}
+
+#campaignPanel .relic-slot[data-state="upcoming"] .relic-slot-art {
+  filter: grayscale(0.85) brightness(0.55);
+}
+
+#campaignPanel .relic-slot-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+}
+
+#campaignPanel .relic-slot-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#campaignPanel .relic-slot-act {
+  color: var(--hq-muted);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#campaignPanel .relic-slot-badge {
+  flex: 0 0 auto;
+  padding: 2px 6px;
+  border: 1px solid var(--hq-border);
+  border-radius: 3px;
+  background: rgba(12, 22, 18, 0.72);
+  color: var(--hq-muted);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+#campaignPanel .relic-slot strong {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+#campaignPanel .relic-slot span:not(.relic-slot-act):not(.relic-slot-badge) {
+  color: var(--hq-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+#campaignPanel .relic-slot[data-state="earned"] {
+  border-color: var(--hq-gold);
+  border-left-color: var(--hq-gold);
+  background: linear-gradient(96deg, rgba(31, 50, 38, 0.96), rgba(19, 33, 27, 0.98));
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.22);
+}
+
+#campaignPanel .relic-slot[data-state="earned"] .relic-slot-art {
+  border-right-color: var(--hq-border-strong);
+}
+
+#campaignPanel .relic-slot[data-state="earned"] .relic-slot-act,
+#campaignPanel .relic-slot[data-state="earned"] strong {
+  color: var(--hq-gold);
+}
+
+#campaignPanel .relic-slot[data-state="earned"] .relic-slot-badge {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+}
+
+#campaignPanel .relic-slot[data-state="locked"] {
+  opacity: 0.9;
+}
+
+#campaignPanel .relic-slot[data-state="upcoming"] {
+  opacity: 0.72;
+}
+
+/* ==========================================================================
+   9. FIELD SCHOOL CARDS (#fieldSchool) WITH MATCHING PAINTED ARTWORK
+   ========================================================================== */
+
+#commandCenter #fieldSchool {
+  padding: 16px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34);
+}
+
+#commandCenter #fieldSchool .field-school-head h3 {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 18px;
+}
+
+#commandCenter #fieldSchool .field-school-card {
+  min-height: 92px;
+  justify-content: flex-end;
+  padding: 12px 14px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background-color: var(--hq-surface-elevated);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+#commandCenter #fieldSchool .field-school-card strong {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 15px;
+}
+
+#commandCenter #fieldSchool .field-school-card span {
+  color: var(--hq-muted);
+  opacity: 1;
+}
+
+#commandCenter #fieldSchool #fieldSchool-armory,
+#commandCenter #fieldSchool #fieldSchool-armory:hover {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
+    url("assets/arsenal-workbench.jpg");
+}
+
+#commandCenter #fieldSchool #fieldSchool-skills,
+#commandCenter #fieldSchool #fieldSchool-skills:hover {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
+    url("assets/skills-banner.jpg");
+}
+
+#commandCenter #fieldSchool #fieldSchool-campaign,
+#commandCenter #fieldSchool #fieldSchool-campaign:hover {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
+    url("assets/command-campaign.jpg");
+}
+
+#commandCenter #fieldSchool #fieldSchool-multiplayer,
+#commandCenter #fieldSchool #fieldSchool-multiplayer:hover {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
+    url("assets/story-tower.jpg");
+}
+
+#commandCenter #fieldSchool .field-school-card:hover,
+#commandCenter #fieldSchool .field-school-card:focus-visible {
+  border-color: var(--hq-gold);
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.25);
+}
+
+/* ==========================================================================
+   10. RECRUITING OFFICE HEADER PAINTING & TACTICAL CONFIRM DIALOGS
+   ========================================================================== */
+
+.entry.recruiting {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  overflow: hidden;
+}
+
+.entry.recruiting .recruit-head {
+  min-height: 112px;
+  align-items: flex-end;
+  margin: -20px -22px 4px;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.72) 58%, rgba(12, 22, 18, 0.34) 100%),
+    url("assets/field-recruiting.jpg") center / cover no-repeat;
+}
+
+.entry.recruiting .recruit-kicker {
+  color: var(--hq-gold);
+}
+
+@media (max-width: 480px) {
+  .entry.recruiting .recruit-head {
+    min-height: 92px;
+    margin: -16px -14px 2px;
+    padding: 14px;
+  }
+}
+
+#gameConfirm,
+#towerDetails {
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.68);
+}
+
+#gameConfirm .eyebrow,
+#towerDetails .eyebrow {
+  color: var(--hq-gold);
+}
+
+#gameConfirm button.primary,
+#towerDetails button.primary {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#gameConfirm button:not(.primary),
+#towerDetails button:not(.primary) {
+  border: 1px solid var(--hq-border);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+}
+
 /* Reduced motion respects user preference across hover & UI transitions */
 @media (prefers-reduced-motion: reduce) {
   #commandCenter #menuSoldier.command-soldier,
   #commandCenter .command-soldier-actions button,
   #commandCenter .mode-card,
+  #commandCenter #fieldSchool .field-school-card,
+  #campaignPanel .campaign-dossier-records .story-journal,
+  #campaignPanel .campaign-dossier-records .relic-panel,
   #endlessLaunch .endless-theme {
     transition: none;
   }

@@ -104,3 +104,44 @@ test('account.js wires password-change, backdrop dismiss, menu dialog cleanup, a
     assert.match(css, new RegExp(`data-theme="${key}"`), `menu-redesign.css styles endless terrain "${key}"`);
   }
 });
+
+test('endless quick-deploy sits at the top above terrain cards and record; campaign dossier records unify story and relics with cohesive art', () => {
+  const html = read('index.html');
+  const css = read('menu-redesign.css');
+
+  const endlessStart = html.indexOf('id="endlessLaunch"');
+  const endlessEnd = html.indexOf('</dialog>', endlessStart);
+  const endless = html.slice(endlessStart, endlessEnd);
+  const quickStart = endless.indexOf('class="endless-quick-start"');
+  const deployPos = endless.indexOf('id="endlessDeploy"');
+  const selectedPos = endless.indexOf('id="endlessSelectedTheme"');
+  const themesPos = endless.indexOf('id="endlessThemes"');
+  const recordPos = endless.indexOf('class="endless-record"');
+  const lastRunPos = endless.indexOf('id="endlessLastRun"');
+  assert.ok(quickStart > 0 && selectedPos > quickStart && deployPos > quickStart);
+  assert.ok(deployPos < themesPos, '#endlessDeploy sits above battlefield cards so players can start immediately');
+  assert.ok(themesPos < recordPos && recordPos < lastRunPos, '.endless-record and #endlessLastRun sit below #endlessThemes');
+
+  const boardStart = html.indexOf('id="campaignBoard"');
+  const boardEnd = html.indexOf('class="campaign-quick-select"', boardStart);
+  const board = html.slice(boardStart, boardEnd);
+  const recordsPos = board.indexOf('class="campaign-dossier-records"');
+  const journalPos = board.indexOf('class="story-journal"');
+  const relicPos = board.indexOf('class="relic-panel"');
+  assert.ok(recordsPos > 0 && journalPos > recordsPos && relicPos > journalPos,
+    '#campaignBoard groups .story-journal and .relic-panel inside .campaign-dossier-records');
+
+  assert.doesNotMatch(css, /assets\/(?:endless-ground|terrain3-[a-z]+)\.jpg/,
+    'menu-redesign.css replaces flat ground tiles with panoramic painted artwork');
+  for (const art of [
+    'assets/endless-frontline.jpg',
+    'assets/story-act1-relic.jpg',
+    'assets/story-act2-relic.jpg',
+    'assets/story-act3-relic.jpg',
+    'assets/story-act4-relic.jpg',
+    'assets/story-act5-relic.jpg',
+    'assets/field-recruiting.jpg',
+  ]) {
+    assert.ok(css.includes(art), `menu-redesign.css integrates ${art}`);
+  }
+});

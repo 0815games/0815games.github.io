@@ -48,5 +48,7 @@ assert.equal(el('actOverview').hidden,false,'the board returns to the valley map
 assert.equal(el('actBanner0').dataset.state,'complete','finished stations carry their state');
 assert.equal(el('actBanner4').dataset.state,'complete','the junction station stands complete');
 assert.equal(el('actBanner4').disabled,false,'every station opens once its act is complete');
+assert.match(el('relicStrip').innerHTML,/data-act="5" data-relic="relic-iron-path" data-state="earned"/,'completed campaign marks all five act relics earned');
+  assert.match(el('relicStrip').innerHTML,/data-act="5" data-relic="relic-iron-path" data-state="earned"/,'completed campaign marks all five act relics earned');
 delete globalThis.__campaignTestStep;delete globalThis.__storyTestStep;
 });
