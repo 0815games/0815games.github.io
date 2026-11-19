@@ -47,8 +47,9 @@ function fakeDocument(ids) {
   };
 }
 
-const IDS = ['settingsDialog', 'settingsClose', 'languageSelect', 'soundVolume', 'soundVolumeStatus',
-  'graphicsQuality', 'settingsTutorialReset', 'fullscreenToggle'];
+const IDS = ['settingsDialog', 'settingsClose', 'settingsTabGeneral', 'settingsTabAccount',
+  'settingsPanelGeneral', 'settingsPanelAccount', 'languageSelect', 'soundVolume',
+  'soundVolumeStatus', 'graphicsQuality', 'settingsTutorialReset', 'fullscreenToggle'];
 
 test('an unreadable or missing settings blob falls back to the defaults', () => {
   assert.deepEqual(readSettings(memory()), { volume: 0.7, graphics: 'full' });
@@ -164,6 +165,39 @@ test('the dialog opens and closes over the game without becoming a second menu',
   settings.close();
   assert.equal(document.nodes.get('settingsDialog').open, false);
   assert.equal(opener.focused, true, 'closing returns the player where they were');
+});
+
+test('General and Account tabs switch cleanly and open() notifies lifecycle hooks', () => {
+  const document = fakeDocument(IDS);
+  const events = [];
+  const settings = createSettings({
+    document,
+    storage: memory(),
+    onOpen: () => events.push('open'),
+    onClose: () => events.push('close'),
+  });
+  assert.equal(settings.tab, 'general');
+
+  document.nodes.get('settingsTabAccount').listeners.click();
+  assert.equal(settings.tab, 'account');
+  assert.equal(document.nodes.get('settingsTabGeneral')['aria-selected'], 'false');
+  assert.equal(document.nodes.get('settingsTabAccount')['aria-selected'], 'true');
+  assert.equal(document.nodes.get('settingsPanelGeneral').hidden, true);
+  assert.equal(document.nodes.get('settingsPanelAccount').hidden, false);
+
+  // Opening without an explicit tab resets to General so a casual reopen starts on settings.
+  settings.open();
+  assert.equal(settings.tab, 'general');
+  assert.equal(document.nodes.get('settingsPanelGeneral').hidden, false);
+  assert.equal(document.nodes.get('settingsPanelAccount').hidden, true);
+
+  settings.close();
+  settings.open(null, { tab: 'account' });
+  assert.equal(settings.tab, 'account');
+  assert.equal(document.nodes.get('settingsPanelAccount').hidden, false);
+  settings.close();
+
+  assert.deepEqual(events, ['open', 'close', 'open', 'close']);
 });
 
 test('the field menu opens this dialog instead of carrying its own copies', () => {

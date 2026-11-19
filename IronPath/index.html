@@ -4,22 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261118-block5">
+  <meta name="ironpath-build" content="20261119-block9">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261118-block5">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261118-block5">
-  <link rel="stylesheet" href="skill-menu.css?v=20261118-block5">
-  <link rel="stylesheet" href="field-command.css?v=20261118-block5">
+  <link rel="stylesheet" href="style.css?v=20261119-block9">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261119-block9">
+  <link rel="stylesheet" href="skill-menu.css?v=20261119-block9">
+  <link rel="stylesheet" href="field-command.css?v=20261119-block9">
   <link rel="stylesheet" href="multiplayer-prompts.css?v=20261031-prompt1">
   <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
   <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter2">
   <link rel="stylesheet" href="patch-notes.css?v=20261031-notes1">
+  <link rel="stylesheet" href="menu-redesign.css?v=20261119-block9">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -75,36 +76,69 @@
        The German translation is complete, so the old "Deutsch (Vorschau)" label
        and the preview note are gone: no preview claim the game no longer keeps. -->
   <dialog id="settingsDialog" tabindex="-1" class="settings-dialog" aria-labelledby="settingsTitle">
-    <div class="settings-head"><span class="eyebrow" data-i18n-text="SETTINGS">SETTINGS</span><button id="settingsClose" class="settings-close" type="button" aria-label="Close settings" data-i18n-aria-label="Close settings">×</button></div>
-    <h2 id="settingsTitle" data-i18n-text="Settings">Settings</h2>
-    <div class="settings-row">
-      <label for="languageSelect" data-i18n-text="Language">Language</label>
-      <span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache"><option value="en">English</option><option value="de">Deutsch</option></select></span>
+    <div class="dialog-banner dialog-banner-settings">
+      <div class="settings-head"><span class="eyebrow" data-i18n-text="SETTINGS">SETTINGS</span><button id="settingsClose" class="settings-close" type="button" aria-label="Close settings" data-i18n-aria-label="Close settings">×</button></div>
+      <h2 id="settingsTitle" data-i18n-text="Settings">Settings</h2>
     </div>
-    <div class="settings-row">
-      <label for="soundVolume" data-i18n-text="Sound">Sound</label>
-      <span class="settings-volume"><input id="soundVolume" type="range" min="0" max="100" step="5" value="70" aria-describedby="soundVolumeStatus"><output id="soundVolumeStatus" for="soundVolume">70 %</output></span>
+    <div class="settings-tabs" role="tablist" aria-label="Settings sections" data-i18n-aria-label="Settings sections">
+      <button type="button" id="settingsTabGeneral" role="tab" aria-selected="true" aria-controls="settingsPanelGeneral" data-i18n-text="GENERAL">GENERAL</button>
+      <button type="button" id="settingsTabAccount" role="tab" aria-selected="false" aria-controls="settingsPanelAccount" data-i18n-text="ACCOUNT">ACCOUNT</button>
     </div>
-    <div class="settings-row">
-      <label for="graphicsQuality" data-i18n-text="Graphics">Graphics</label>
-      <select id="graphicsQuality"><option value="full" data-i18n-text="Full">Full</option><option value="reduced" data-i18n-text="Reduced">Reduced</option></select>
+    <div id="settingsPanelGeneral" class="settings-panel" role="tabpanel" aria-labelledby="settingsTabGeneral">
+      <div class="settings-row">
+        <label for="languageSelect" data-i18n-text="Language">Language</label>
+        <span class="language-flag-control"><span class="flag-icon" aria-hidden="true"></span><select id="languageSelect" aria-label="Language / Sprache"><option value="en">English</option><option value="de">Deutsch</option></select></span>
+      </div>
+      <div class="settings-row">
+        <label for="soundVolume" data-i18n-text="Sound">Sound</label>
+        <span class="settings-volume"><input id="soundVolume" type="range" min="0" max="100" step="5" value="70" aria-describedby="soundVolumeStatus"><output id="soundVolumeStatus" for="soundVolume">70 %</output></span>
+      </div>
+      <div class="settings-row">
+        <label for="graphicsQuality" data-i18n-text="Graphics">Graphics</label>
+        <select id="graphicsQuality"><option value="full" data-i18n-text="Full">Full</option><option value="reduced" data-i18n-text="Reduced">Reduced</option></select>
+      </div>
+      <div class="settings-row settings-row-actions">
+        <button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-pressed="false">FULLSCREEN</button>
+        <button id="settingsTutorialReset" type="button" data-i18n-text="PLAY THE FIRST RUN AGAIN">PLAY THE FIRST RUN AGAIN</button>
+      </div>
+      <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
+      <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
     </div>
-    <div class="settings-row settings-row-actions">
-      <button id="fullscreenToggle" class="fullscreen-toggle" type="button" aria-pressed="false">FULLSCREEN</button>
-      <button id="settingsTutorialReset" type="button" data-i18n-text="PLAY THE FIRST RUN AGAIN">PLAY THE FIRST RUN AGAIN</button>
+    <div id="settingsPanelAccount" class="settings-panel" role="tabpanel" aria-labelledby="settingsTabAccount" hidden>
+      <div class="settings-account-card">
+        <span class="eyebrow" data-i18n-text="Signed in as">Signed in as</span>
+        <strong id="settingsAccountEmail" class="settings-account-email">—</strong>
+      </div>
+      <form id="settingsPasswordForm" class="settings-password-form" method="post">
+        <h3 data-i18n-text="Change password">Change password</h3>
+        <input id="settingsAccountUsername" type="text" name="username" autocomplete="username" tabindex="-1" hidden>
+        <div class="settings-password-field"><label for="settingsCurrentPassword" data-i18n-text="Current password">Current password</label><input id="settingsCurrentPassword" type="password" autocomplete="current-password" minlength="6"></div>
+        <div class="settings-password-field"><label for="settingsNewPassword" data-i18n-text="New password">New password</label><input id="settingsNewPassword" type="password" autocomplete="new-password" minlength="6"></div>
+        <div class="settings-password-field"><label for="settingsConfirmPassword" data-i18n-text="Confirm new password">Confirm new password</label><input id="settingsConfirmPassword" type="password" autocomplete="new-password" minlength="6"></div>
+        <div class="settings-row settings-row-actions">
+          <button id="settingsPasswordSubmit" class="primary" type="submit" data-i18n-text="UPDATE PASSWORD">UPDATE PASSWORD</button>
+          <button id="settingsPasswordResetEmail" type="button" data-i18n-text="SEND RESET EMAIL">SEND RESET EMAIL</button>
+        </div>
+      </form>
+      <p id="settingsAccountStatus" class="settings-account-status" role="status" aria-live="polite"></p>
+      <div class="settings-danger-zone">
+        <span class="eyebrow" data-i18n-text="DANGER ZONE">DANGER ZONE</span>
+        <p class="settings-note" data-i18n-text="Discharging your soldier permanently removes your character, progression, gear and friend links after confirmation. Leave any active multiplayer party first.">Discharging your soldier permanently removes your character, progression, gear and friend links after confirmation. Leave any active multiplayer party first.</p>
+        <button type="button" id="menuDeleteCharacter" class="danger-utility"><span data-i18n-text="DELETE CHARACTER">DELETE CHARACTER</span> <span aria-hidden="true">✖</span></button>
+      </div>
     </div>
-    <span id="fullscreenStatus" class="fullscreen-status" role="status" hidden></span>
-    <p class="settings-note" data-i18n-text="Sound, graphics and the first run ask for confirmation before anything changes.">Sound, graphics and the first run ask for confirmation before anything changes.</p>
-      <p class="build-stamp" aria-hidden="true">BUILD 20261118-block5</p>
+    <p class="build-stamp" aria-hidden="true">BUILD 20261119-block9</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
        one header line with the installed build, two tabs, two panels. Nothing
        here writes to the account or touches the match - it is a reading view. -->
   <dialog id="patchNotes" class="settings-dialog patch-notes" tabindex="-1" aria-labelledby="patchNotesTitle">
-    <div class="settings-head"><span class="eyebrow" data-i18n-text="FIELD NOTES">FELDNOTIZEN</span><button id="patchNotesClose" class="settings-close" type="button" aria-label="Close field notes" data-i18n-aria-label="Close field notes">×</button></div>
-    <h2 id="patchNotesTitle" data-i18n-text="Field notes">Feldnotizen</h2>
-    <p id="patchNotesBuild" class="patch-notes-build"></p>
+    <div class="dialog-banner dialog-banner-notes">
+      <div class="settings-head"><span class="eyebrow" data-i18n-text="FIELD NOTES">FELDNOTIZEN</span><button id="patchNotesClose" class="settings-close" type="button" aria-label="Close field notes" data-i18n-aria-label="Close field notes">×</button></div>
+      <h2 id="patchNotesTitle" data-i18n-text="Field notes">Feldnotizen</h2>
+      <p id="patchNotesBuild" class="patch-notes-build"></p>
+    </div>
     <div class="patch-notes-tabs" role="tablist" aria-label="Field notes sections" data-i18n-aria-label="Field notes sections">
       <button type="button" id="patchNotesTabLive" role="tab" aria-selected="true" aria-controls="patchNotesReleased" data-i18n-text="RELEASED">VERÖFFENTLICHT</button>
       <button type="button" id="patchNotesTabNext" role="tab" aria-selected="false" aria-controls="patchNotesPlanned" data-i18n-text="WHAT&#39;S NEXT">WAS ALS NÄCHSTES KOMMT</button>
@@ -117,8 +151,10 @@
        choice, last run, loadout). Reached from the Command Center ENDLESS card;
        DEPLOY starts the run exactly like the old one-click flow did. -->
   <dialog id="endlessLaunch" class="settings-dialog endless-launch" tabindex="-1" aria-labelledby="endlessLaunchTitle">
-    <div class="settings-head"><span class="eyebrow" data-i18n-text="ENDLESS · FREE PLAY">ENDLESS · FREE PLAY</span><button id="endlessClose" class="settings-close" type="button" aria-label="Close endless launch" data-i18n-aria-label="Close endless launch">×</button></div>
-    <h2 id="endlessLaunchTitle" data-i18n-text="Choose your battlefield">Choose your battlefield</h2>
+    <div class="dialog-banner dialog-banner-endless">
+      <div class="settings-head"><span class="eyebrow" data-i18n-text="ENDLESS · FREE PLAY">ENDLESS · FREE PLAY</span><button id="endlessClose" class="settings-close" type="button" aria-label="Close endless launch" data-i18n-aria-label="Close endless launch">×</button></div>
+      <h2 id="endlessLaunchTitle" data-i18n-text="Choose your battlefield">Choose your battlefield</h2>
+    </div>
     <div class="endless-record" aria-label="Your endless record" data-i18n-aria-label="Your endless record">
       <div><small data-i18n-text="BEST WAVE">BEST WAVE</small><strong id="endlessBestWave">—</strong></div>
       <div><small data-i18n-text="RUNS">RUNS</small><strong id="endlessRuns">—</strong></div>
@@ -180,7 +216,7 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261118-block5</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261119-block9</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden>RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
@@ -216,7 +252,7 @@
            Soldat? Extra hervorgehoben ueber den Spiel Modi?"). The whole card is
            the button: it opens the field dossier. Scrap, equipment and skill
            points live in their own dialogs - the menu shows the person. -->
-      <section class="command-nav" aria-label="Choose your operation" data-i18n-aria-label="Choose your operation"><button type="button" id="menuSoldier" class="command-soldier"><span class="command-soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span id="menuRank" class="rank-badge rank-badge-menu" aria-hidden="true"></span></span><span class="command-soldier-info"><span class="command-kicker" data-i18n="command.soldier">YOUR SOLDIER</span><strong id="menuName"></strong><span id="menuLevel" class="soldier-level"></span><span class="command-soldier-xp"><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level" data-i18n-aria-label="Progress to next level"></progress><span id="menuXp"></span></span></span><span class="command-soldier-open" aria-hidden="true">DOSSIER →</span></button><div class="command-soldier-actions"><button type="button" id="menuArmory" data-i18n="command.armory">ARMORY</button><button type="button" id="menuSkills"><span data-i18n="command.skills">SKILLS</span><span id="menuSkillBadge" class="skill-point-badge" aria-hidden="true" hidden></span></button><button type="button" id="menuFriends" data-feature="friends"><span data-i18n="command.friends">FRIENDS</span><span id="menuFriendBadge" class="skill-point-badge" aria-hidden="true" hidden></span></button><button type="button" id="menuLeaderboard" data-feature="leaderboards" data-i18n="command.scores">HIGH SCORES</button></div><div class="command-nav-head"><span class="command-kicker" data-i18n-text="YOUR NEXT DEPLOYMENT">YOUR NEXT DEPLOYMENT</span><h3 data-i18n="command.choose">Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><button id="menuResults" class="command-resume" type="button" hidden><span data-i18n-text="VIEW LAST RESULTS">VIEW LAST RESULTS</span><span aria-hidden="true">↗</span></button><div class="mode-grid"><button type="button" id="menuCampaign" data-feature="campaign" class="mode-card mode-campaign"><span class="mode-index" data-i18n-text="01 / STORY">01 / STORY</span><strong data-i18n="command.campaign">Campaign</strong><span id="menuCampaignProgress" data-i18n-text="The Broken Signal">The Broken Signal</span></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index" data-i18n-text="02 / SOLO">02 / SOLO</span><strong data-i18n="command.endless">Endless</strong><span data-i18n="command.endless.desc">Survive wave after wave</span></button><button type="button" id="menuMultiplayer" data-feature="multiplayer" class="mode-card mode-multiplayer"><span class="mode-index" data-i18n-text="03 / ONLINE">03 / ONLINE</span><strong data-i18n="command.multiplayer">Multiplayer</strong><span data-i18n="command.multiplayer.desc">One code. Your squad.</span></button></div><section id="fieldSchool" class="field-school" aria-labelledby="fieldSchoolTitle" hidden><div class="field-school-head"><span class="command-kicker" data-i18n-text="FIELD SCHOOL">FELDSCHULE</span><h3 id="fieldSchoolTitle" data-i18n-text="Where to go next">Wohin als Nächstes</h3></div><div class="field-school-grid"><button type="button" id="fieldSchool-armory" class="field-school-card"><strong data-i18n-text="Armory &amp; Workshop">Waffenkammer &amp; Werkstatt</strong><span data-i18n-text="Craft gear from scrap, equip it, and upgrade your bunker.">Ausrüstung aus Schrott bauen, ausrüsten und den Bunker verbessern.</span></button><button type="button" id="fieldSchool-skills" class="field-school-card"><strong data-i18n-text="Skills">Fähigkeiten</strong><span data-i18n-text="Spend skill points and save a build for your next mission.">Fähigkeitspunkte ausgeben und eine Auswahl für den nächsten Einsatz speichern.</span></button><button type="button" id="fieldSchool-campaign" data-feature="campaign" class="field-school-card"><strong data-i18n-text="Campaign">Kampagne</strong><span data-i18n-text="Each mission lists its threat: tougher units, more waves, a smaller bunker.">Jede Mission nennt ihre Bedrohung: stärkere Einheiten, mehr Wellen, kleineres Bunkerleben.</span></button><button type="button" id="fieldSchool-multiplayer" data-feature="multiplayer" class="field-school-card"><strong data-i18n-text="Multiplayer">Mehrspieler</strong><span data-i18n-text="Two to four players, one party code, shared waves.">Zwei bis vier Spieler, ein Gruppencode, gemeinsame Wellen.</span></button></div></section><div class="command-utilities"><button type="button" id="menuPatchNotes"><span data-i18n-text="FIELD NOTES">FELDNOTIZEN</span> <span aria-hidden="true">✎</span></button><button type="button" id="menuSettings"><span data-i18n-text="SETTINGS">SETTINGS</span> <span aria-hidden="true">⚙</span></button><button type="button" id="menuTutorial" data-feature="tutorial"><span data-i18n-text="FIELD TUTORIAL">FIELD TUTORIAL</span> <span>↗</span></button><button type="button" id="menuDeleteCharacter" class="danger-utility"><span data-i18n-text="DELETE CHARACTER">DELETE CHARACTER</span> <span aria-hidden="true">✖</span></button><button type="button" id="menuLogout"><span data-i18n-text="SIGN OUT">SIGN OUT</span> <span>→</span></button></div></section></div>
+      <section class="command-nav" aria-label="Choose your operation" data-i18n-aria-label="Choose your operation"><button type="button" id="menuSoldier" class="command-soldier"><span class="command-soldier-portrait"><img id="menuPortrait" src="assets/soldier-female.jpg" alt=""><span id="menuRank" class="rank-badge rank-badge-menu" aria-hidden="true"></span></span><span class="command-soldier-info"><span class="command-kicker" data-i18n="command.soldier">YOUR SOLDIER</span><strong id="menuName"></strong><span id="menuLevel" class="soldier-level"></span><span class="command-soldier-xp"><progress id="menuXpBar" value="0" max="300" aria-label="Progress to next level" data-i18n-aria-label="Progress to next level"></progress><span id="menuXp"></span></span></span><span class="command-soldier-open" aria-hidden="true">DOSSIER →</span></button><div class="command-soldier-actions"><button type="button" id="menuArmory" data-i18n="command.armory">ARMORY</button><button type="button" id="menuSkills"><span data-i18n="command.skills">SKILLS</span><span id="menuSkillBadge" class="skill-point-badge" aria-hidden="true" hidden></span></button><button type="button" id="menuFriends" data-feature="friends"><span data-i18n="command.friends">FRIENDS</span><span id="menuFriendBadge" class="skill-point-badge" aria-hidden="true" hidden></span></button><button type="button" id="menuLeaderboard" data-feature="leaderboards" data-i18n="command.scores">HIGH SCORES</button></div><div class="command-nav-head"><span class="command-kicker" data-i18n-text="YOUR NEXT DEPLOYMENT">YOUR NEXT DEPLOYMENT</span><h3 data-i18n="command.choose">Choose an operation</h3></div><button id="menuResume" class="command-resume" type="button" hidden><span id="menuResumeLabel">RESUME OPERATION</span><span>→</span></button><button id="menuResults" class="command-resume" type="button" hidden><span data-i18n-text="VIEW LAST RESULTS">VIEW LAST RESULTS</span><span aria-hidden="true">↗</span></button><div class="mode-grid"><button type="button" id="menuCampaign" data-feature="campaign" class="mode-card mode-campaign"><span class="mode-index" data-i18n-text="01 / STORY">01 / STORY</span><strong data-i18n="command.campaign">Campaign</strong><span id="menuCampaignProgress" data-i18n-text="The Broken Signal">The Broken Signal</span></button><button type="button" id="menuEndless" class="mode-card mode-endless"><span class="mode-index" data-i18n-text="02 / SOLO">02 / SOLO</span><strong data-i18n="command.endless">Endless</strong><span data-i18n="command.endless.desc">Survive wave after wave</span></button><button type="button" id="menuMultiplayer" data-feature="multiplayer" class="mode-card mode-multiplayer"><span class="mode-index" data-i18n-text="03 / ONLINE">03 / ONLINE</span><strong data-i18n="command.multiplayer">Multiplayer</strong><span data-i18n="command.multiplayer.desc">One code. Your squad.</span></button></div><section id="fieldSchool" class="field-school" aria-labelledby="fieldSchoolTitle" hidden><div class="field-school-head"><span class="command-kicker" data-i18n-text="FIELD SCHOOL">FELDSCHULE</span><h3 id="fieldSchoolTitle" data-i18n-text="Where to go next">Wohin als Nächstes</h3></div><div class="field-school-grid"><button type="button" id="fieldSchool-armory" class="field-school-card"><strong data-i18n-text="Armory &amp; Workshop">Waffenkammer &amp; Werkstatt</strong><span data-i18n-text="Craft gear from scrap, equip it, and upgrade your bunker.">Ausrüstung aus Schrott bauen, ausrüsten und den Bunker verbessern.</span></button><button type="button" id="fieldSchool-skills" class="field-school-card"><strong data-i18n-text="Skills">Fähigkeiten</strong><span data-i18n-text="Spend skill points and save a build for your next mission.">Fähigkeitspunkte ausgeben und eine Auswahl für den nächsten Einsatz speichern.</span></button><button type="button" id="fieldSchool-campaign" data-feature="campaign" class="field-school-card"><strong data-i18n-text="Campaign">Kampagne</strong><span data-i18n-text="Each mission lists its threat: tougher units, more waves, a smaller bunker.">Jede Mission nennt ihre Bedrohung: stärkere Einheiten, mehr Wellen, kleineres Bunkerleben.</span></button><button type="button" id="fieldSchool-multiplayer" data-feature="multiplayer" class="field-school-card"><strong data-i18n-text="Multiplayer">Mehrspieler</strong><span data-i18n-text="Two to four players, one party code, shared waves.">Zwei bis vier Spieler, ein Gruppencode, gemeinsame Wellen.</span></button></div></section><div class="command-utilities"><button type="button" id="menuPatchNotes"><span data-i18n-text="FIELD NOTES">FELDNOTIZEN</span> <span aria-hidden="true">✎</span></button><button type="button" id="menuSettings"><span data-i18n-text="SETTINGS">SETTINGS</span> <span aria-hidden="true">⚙</span></button><button type="button" id="menuTutorial" data-feature="tutorial"><span data-i18n-text="FIELD TUTORIAL">FIELD TUTORIAL</span> <span>↗</span></button><button type="button" id="menuLogout"><span data-i18n-text="SIGN OUT">SIGN OUT</span> <span>→</span></button></div></section></div>
     </section>
     <p id="saveStatus" class="save-status" role="status"></p>
     <p id="partySignOutStatus" class="save-status" role="status" hidden></p>
@@ -299,7 +335,9 @@
     <p id="armoryStatus" class="development-status" role="status"></p>
   </dialog>
   <dialog id="leaderboardDialog" class="leaderboard-dialog" aria-labelledby="leaderboardTitle">
-    <header><div><span class="friends-kicker" data-i18n-text="COMMUNITY RECORDS">COMMUNITY RECORDS</span><h2 id="leaderboardTitle" data-i18n="scores.title">High scores</h2></div><button id="leaderboardClose" type="button" aria-label="Close high scores" data-i18n-aria-label="Close high scores">✕</button></header>
+    <div class="dialog-banner dialog-banner-leaderboard">
+      <header><div><span class="friends-kicker" data-i18n-text="COMMUNITY RECORDS">COMMUNITY RECORDS</span><h2 id="leaderboardTitle" data-i18n="scores.title">High scores</h2></div><button id="leaderboardClose" type="button" aria-label="Close high scores" data-i18n-aria-label="Close high scores">✕</button></header>
+    </div>
     <p><span data-i18n-text="Highest completed wave · all time. Scores are player-reported and">Highest completed wave · all time. Scores are player-reported and</span> <strong data-i18n-text="not verified">not verified</strong><span data-i18n-text=". No ranking rewards.">. No ranking rewards.</span></p>
     <div class="leaderboard-filters" aria-label="Score mode" data-i18n-aria-label="Score mode"><button id="leaderboardSolo" type="button" aria-pressed="true" data-i18n-text="SOLO SURVIVAL">SOLO SURVIVAL</button><button id="leaderboardCoop" type="button" aria-pressed="false" data-i18n-text="CO-OP">CO-OP</button></div>
     <div class="leaderboard-filters" aria-label="Score filter" data-i18n-aria-label="Score filter"><button id="leaderboardAll" type="button" aria-pressed="true" data-i18n-text="EVERYONE">EVERYONE</button><button id="leaderboardFriends" type="button" aria-pressed="false" data-i18n-text="FRIENDS">FRIENDS</button></div>
@@ -310,7 +348,9 @@
     <div class="social-popup-actions"><button id="socialPopupOpen" type="button" data-i18n-text="VIEW FRIENDS">VIEW FRIENDS</button><button id="socialPopupDismiss" type="button" aria-label="Dismiss notification" data-i18n-aria-label="Dismiss notification">✕</button></div>
   </aside>
   <dialog id="friendsDialog" class="friends-dialog" aria-labelledby="friendsTitle">
-    <header><div><span class="friends-kicker" data-i18n-text="YOUR SQUAD">YOUR SQUAD</span><h2 id="friendsTitle" data-i18n="friends.title">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends" data-i18n-aria-label="Close friends">✕</button></header><p id="friendIndexError" class="friend-index-error" role="status" hidden><span data-i18n-text="The player search listing could not be updated.">The player search listing could not be updated.</span> <button id="friendIndexRetry" type="button" data-i18n-text="RETRY">RETRY</button></p>
+    <div class="dialog-banner dialog-banner-friends">
+      <header><div><span class="friends-kicker" data-i18n-text="YOUR SQUAD">YOUR SQUAD</span><h2 id="friendsTitle" data-i18n="friends.title">Friends</h2></div><button id="friendsClose" type="button" aria-label="Close friends" data-i18n-aria-label="Close friends">✕</button></header>
+    </div><p id="friendIndexError" class="friend-index-error" role="status" hidden><span data-i18n-text="The player search listing could not be updated.">The player search listing could not be updated.</span> <button id="friendIndexRetry" type="button" data-i18n-text="RETRY">RETRY</button></p>
     <p data-i18n-text="Connect with your squad. To play together, share a multiplayer party code separately.">Connect with your squad. To play together, share a multiplayer party code separately.</p>
     <section class="friends-code"><label for="friendInput" data-i18n="friends.searchLabel">SEARCH EXACT SOLDIER NAME</label><div><input id="friendInput" maxlength="24" autocomplete="off" spellcheck="false" placeholder="Enter soldier name" data-i18n-placeholder="Enter soldier name"><button id="friendSearch" data-i18n="friends.search" type="button">SEARCH</button></div><small data-i18n-text="Names are searchable by signed-in players. Matches ignore letter case.">Names are searchable by signed-in players. Matches ignore letter case.</small><ul id="friendResults" class="friend-results"></ul><button id="friendMore" type="button" hidden data-i18n-text="MORE RESULTS">MORE RESULTS</button></section>
     <p id="friendStatus" role="status" aria-live="polite"></p>
@@ -319,7 +359,9 @@
     <div class="friends-sections"><section id="friendInvitesSection" hidden><h3 data-i18n="friends.invites">Party invitations</h3><p id="coopInvitesEmpty" data-i18n-text="No party invitations.">No party invitations.</p><ul id="coopInviteList"></ul></section><section id="friendRequestsSection" hidden><h3 data-i18n="friends.requests">Requests</h3><p id="requestsEmpty" data-i18n-text="No incoming requests.">No incoming requests.</p><ul id="friendRequests"></ul></section><section id="friendListSection"><h3 data-i18n="friends.list">Friends</h3><p id="friendsEmpty" data-i18n-text="No friends yet.">No friends yet.</p><ul id="friendList"></ul></section><section id="friendSentSection" hidden><h3 data-i18n="friends.sent">Sent requests</h3><p id="sentEmpty" data-i18n-text="No sent requests.">No sent requests.</p><ul id="friendSent"></ul></section></div>
   </dialog>
   <dialog id="friendStatsDialog" class="friends-dialog friend-stats-dialog" aria-labelledby="friendStatsTitle">
-    <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch8" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
+    <div class="dialog-banner dialog-banner-friends">
+      <header><div class="friend-stats-identity"><img id="friendStatsPortrait" class="friend-stats-portrait" src="assets/friend-placeholder.svg?v=20261031-patch8" alt=""><div><span class="friends-kicker" id="friendStatsKicker">SQUAD DOSSIER</span><h2 id="friendStatsTitle"></h2></div></div><button id="friendStatsClose" type="button" aria-label="Close friend stats" data-i18n-aria-label="Close friend stats">✕</button></header>
+    </div>
     <p id="friendStatsStatus" role="status" aria-live="polite"></p>
     <div id="friendStatsContent" hidden><div class="friend-stats-grid"><section><h3 id="friendStatsLevelHeading">LEVEL</h3><p id="friendStatsLevel"></p><h3 id="friendStatsAbilityHeading">ACTIVE SKILL</h3><p id="friendStatsAbility"></p></section><section><h3 id="friendStatsEquipmentHeading">EQUIPMENT</h3><p id="friendStatsEquipment"></p><h3 id="friendStatsBunkerHeading">BUNKER UPGRADES</h3><p id="friendStatsBunker"></p></section></div><section class="friend-stats-skills"><h3 id="friendStatsSkillsHeading">SKILLS</h3><p id="friendStatsSkills"></p><p id="friendStatsSpecialists"></p><p id="friendStatsMasteries"></p><p id="friendStatsOwned"></p></section><small id="friendStatsNote">Snapshot of saved progression. Stats are player-reported and not verified.</small></div>
   </dialog>
@@ -426,7 +468,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261118-block5"></script>
+  <script type="module" src="intro.mjs?v=20261119-block9"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){document.getElementById("loading").textContent="Could not load Firebase. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261118-block5"></script>
+  <script type="module" src="account-entry.mjs?v=20261119-block9"></script>
 </body></html>

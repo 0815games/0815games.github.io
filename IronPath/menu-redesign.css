@@ -1,0 +1,1249 @@
+/* Block 9: Unified Menu & Command HQ Redesign
+ *
+ * Layered last in index.html so earlier stylesheets keep every structural
+ * invariant checked by unit/layout tests, while delivering:
+ *   1. Unified tactical surface language (#101b16 / #182921, #e4ca89 gold, 6px radius)
+ *   2. Desktop (>=860px) 2-column Command HQ + wide centered operational dialogs
+ *   3. Mobile (<860px) app-shell with compact identity header & bottom 4-button dock
+ *   4. Atmospheric 3-zone dialog banners across Settings, Field Notes, Endless,
+ *      Friends, Friend Stats, High Scores, Soldier Dossier, Armory, Skills & Party
+ *   5. Endless battlefield terrain cards backed by assets/terrain3-*.jpg
+ *   6. Settings -> Account tab (email readout, password update & Danger Zone)
+ *
+ * Top-layer discipline: ALL dialog `display:` rules MUST be scoped to `[open]`
+ * so closed <dialog> elements retain native `display: none`.
+ */
+
+:root {
+  --hq-bg-deep: #0c1612;
+  --hq-surface: #12201a;
+  --hq-surface-elevated: #192b23;
+  --hq-surface-panel: rgba(18, 32, 26, 0.94);
+  --hq-border: rgba(186, 204, 173, 0.24);
+  --hq-border-strong: rgba(228, 202, 137, 0.42);
+  --hq-gold: #e4ca89;
+  --hq-gold-soft: rgba(228, 202, 137, 0.16);
+  --hq-text: #f3ecdc;
+  --hq-muted: #b8c5b1;
+  --hq-danger: #e08274;
+  --hq-danger-bg: rgba(132, 42, 34, 0.26);
+  --hq-radius: 6px;
+}
+
+/* ==========================================================================
+   1. COMMAND CENTER (BASE + SHARED CARDS)
+   ========================================================================== */
+
+#commandCenter {
+  display: grid;
+  gap: 14px;
+}
+
+#commandCenter[hidden] {
+  display: none;
+}
+
+#commandCenter .command-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 120px;
+  padding: 18px 22px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background:
+    linear-gradient(100deg, rgba(10, 18, 15, 0.92) 0%, rgba(15, 28, 22, 0.74) 55%, rgba(12, 22, 18, 0.48) 100%),
+    url("assets/command-horizon.jpg") center 42% / cover no-repeat;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42);
+  overflow: hidden;
+}
+
+#commandCenter .command-hero h2 {
+  margin: 4px 0 4px;
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(22px, 3vw, 30px);
+  line-height: 1.1;
+}
+
+#commandCenter .command-hero p {
+  margin: 0;
+  color: var(--hq-muted);
+  font-size: 14px;
+}
+
+#commandCenter .command-kicker {
+  color: var(--hq-gold);
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+#commandCenter .command-hero-label {
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(12, 22, 18, 0.72);
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+#commandCenter .command-nav {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+#commandCenter #menuSoldier.command-soldier {
+  width: 100%;
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background:
+    linear-gradient(135deg, rgba(24, 42, 33, 0.96) 0%, rgba(14, 26, 21, 0.98) 100%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(228, 202, 137, 0.22);
+  color: var(--hq-text);
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+#commandCenter #menuSoldier.command-soldier:hover {
+  border-color: #f3dfb0;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(228, 202, 137, 0.25);
+}
+
+#commandCenter .command-soldier-portrait {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: #0d1713;
+}
+
+#commandCenter .command-soldier-open {
+  padding: 6px 10px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(228, 202, 137, 0.12);
+  color: var(--hq-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+#commandCenter .command-soldier-actions button {
+  position: relative;
+  min-height: 54px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-text);
+  font-weight: 700;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+#commandCenter .command-soldier-actions button:hover {
+  border-color: var(--hq-border-strong);
+  background: #22382d;
+}
+
+#commandCenter .command-soldier-actions button.has-skill-points,
+#commandCenter .command-soldier-actions button.has-friend-requests {
+  border-color: var(--hq-gold);
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.28), 0 0 16px rgba(228, 202, 137, 0.14);
+}
+
+#commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--hq-gold);
+  color: #101914;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+#commandCenter .command-nav-head {
+  padding: 2px 0;
+}
+
+#commandCenter .command-nav-head h3 {
+  margin: 3px 0 0;
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+}
+
+#commandCenter .command-resume {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: linear-gradient(90deg, rgba(228, 202, 137, 0.18), rgba(26, 45, 36, 0.96));
+  color: var(--hq-text);
+  font-weight: 700;
+}
+
+/* Mode cards: preserve identical background-image, size, position, repeat on :hover! */
+#commandCenter .mode-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  text-align: left;
+  padding: 18px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  color: var(--hq-text);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
+  transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
+}
+
+#commandCenter .mode-card.mode-campaign,
+#commandCenter .mode-card.mode-campaign:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.72) 56%, rgba(10, 17, 14, 0.96) 100%),
+    url("assets/command-campaign.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .mode-card.mode-endless,
+#commandCenter .mode-card.mode-endless:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(12, 22, 18, 0.18) 0%, rgba(11, 20, 16, 0.74) 56%, rgba(10, 17, 14, 0.96) 100%),
+    url("assets/endless-ground.jpg") !important;
+  background-size: cover, cover !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .mode-card.mode-multiplayer,
+#commandCenter .mode-card.mode-multiplayer:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.74) 56%, rgba(10, 17, 14, 0.96) 100%),
+    url("assets/story-tower.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .mode-card:hover {
+  border-color: var(--hq-gold);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(228, 202, 137, 0.3);
+  transform: translateY(-2px);
+}
+
+#commandCenter .mode-card .mode-index {
+  color: var(--hq-gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+#commandCenter .mode-card strong {
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  line-height: 1.15;
+}
+
+#commandCenter .mode-card > span:last-child {
+  color: var(--hq-muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+#commandCenter .command-utilities {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#commandCenter .command-utilities button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#commandCenter .command-utilities button:hover {
+  border-color: var(--hq-border-strong);
+  color: var(--hq-text);
+  background: var(--hq-surface-elevated);
+}
+
+/* ==========================================================================
+   2. DESKTOP (>= 860px) 2-COLUMN COMMAND HQ
+   ========================================================================== */
+
+@media (min-width: 860px) {
+  #commandCenter {
+    gap: 18px;
+  }
+
+  #commandCenter .command-hero {
+    min-height: 146px;
+    padding: 24px 28px;
+  }
+
+  #commandCenter .command-nav {
+    display: grid;
+    grid-template-columns: 320px minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto auto;
+    column-gap: 20px;
+    row-gap: 0;
+    align-items: start;
+  }
+
+  #commandCenter #menuSoldier.command-soldier {
+    grid-column: 1;
+    grid-row: 1;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+
+  #commandCenter #menuSoldier .command-soldier-open {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  #commandCenter .command-soldier-actions {
+    grid-column: 1;
+    grid-row: 4;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  #commandCenter .command-soldier-actions button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 62px;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    letter-spacing: 0.08em;
+    text-align: left;
+  }
+
+  #commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  #commandCenter .command-utilities {
+    grid-column: 1;
+    grid-row: 5;
+    align-self: start;
+  }
+
+  #commandCenter .command-nav-head {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: 12px;
+  }
+
+  #commandCenter #menuResume {
+    grid-column: 2;
+    grid-row: 2;
+    margin-bottom: 10px;
+  }
+
+  #commandCenter #menuResults {
+    grid-column: 2;
+    grid-row: 3;
+    margin-bottom: 10px;
+  }
+
+  #commandCenter .mode-grid {
+    grid-column: 2;
+    grid-row: 4 / span 2;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    align-self: stretch;
+  }
+
+  #commandCenter .mode-card {
+    min-height: 292px;
+  }
+
+  #commandCenter #fieldSchool {
+    grid-column: 2;
+    grid-row: 6;
+    margin-top: 14px;
+  }
+}
+
+/* ==========================================================================
+   3. MOBILE (< 860px) APP SHELL & THUMB BOTTOM BAR
+   ========================================================================== */
+
+@media (max-width: 859px) {
+  #commandCenter {
+    gap: 10px;
+    padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+
+  #commandCenter .command-hero {
+    min-height: 76px;
+    padding: 12px 14px;
+  }
+
+  #commandCenter .command-hero p,
+  #commandCenter .command-hero-label {
+    display: none;
+  }
+
+  #commandCenter .command-hero h2 {
+    font-size: 21px;
+    margin: 2px 0 0;
+  }
+
+  #commandCenter .command-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  #commandCenter #menuSoldier.command-soldier {
+    display: grid;
+    grid-template-columns: 54px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  #commandCenter .command-soldier-portrait {
+    width: 54px;
+    height: 54px;
+  }
+
+  #commandCenter .command-soldier-open {
+    padding: 6px 8px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+  }
+
+  #commandCenter .mode-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  #commandCenter .mode-card {
+    min-height: 92px;
+    padding: 14px 16px;
+  }
+
+  #commandCenter .mode-card.mode-campaign,
+  #commandCenter .mode-card.mode-campaign:hover:not(:disabled) {
+    background-image:
+      linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
+      url("assets/command-campaign.jpg");
+  }
+
+  #commandCenter .mode-card.mode-endless,
+  #commandCenter .mode-card.mode-endless:hover:not(:disabled) {
+    background-image:
+      linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
+      url("assets/endless-ground.jpg") !important;
+  }
+
+  #commandCenter .mode-card.mode-multiplayer,
+  #commandCenter .mode-card.mode-multiplayer:hover:not(:disabled) {
+    background-image:
+      linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
+      url("assets/story-tower.jpg");
+  }
+
+  /* Fixed bottom thumb navigation bar inside #commandCenter (automatically hidden when #commandCenter has [hidden]) */
+  #commandCenter .command-soldier-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 4px;
+    padding: 6px max(6px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(6px, env(safe-area-inset-right, 0px));
+    background: rgba(11, 19, 15, 0.97);
+    border-top: 1px solid var(--hq-border-strong);
+    box-shadow: 0 -10px 26px rgba(0, 0, 0, 0.56);
+    backdrop-filter: blur(10px);
+  }
+
+  #commandCenter .command-soldier-actions button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    min-height: 52px;
+    padding: 6px 2px;
+    border: 1px solid rgba(186, 204, 173, 0.18);
+    background: rgba(23, 40, 32, 0.92);
+    font-size: clamp(8px, 2.25vw, 10px);
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    text-align: center;
+    overflow-wrap: break-word;
+  }
+
+  #commandCenter .command-soldier-actions button::before {
+    font-size: 14px;
+    line-height: 1;
+    color: var(--hq-gold);
+  }
+
+  #commandCenter #menuArmory::before { content: "⚔"; }
+  #commandCenter #menuSkills::before { content: "✦"; }
+  #commandCenter #menuFriends::before { content: "❖"; }
+  #commandCenter #menuLeaderboard::before { content: "★"; }
+
+  #commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    font-size: 9.5px;
+  }
+}
+
+/* ==========================================================================
+   4. UNIFIED 3-ZONE DIALOG SHELLS & BANNERS ([open] SCOPED ONLY!)
+   ========================================================================== */
+
+#settingsDialog,
+#patchNotes,
+#endlessLaunch,
+#armoryDialog,
+#friendsDialog,
+#friendStatsDialog,
+#leaderboardDialog {
+  --dlg-pad-x: 20px;
+  --dlg-pad-y: 20px;
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.68);
+  padding: var(--dlg-pad-y) var(--dlg-pad-x);
+  box-sizing: border-box;
+}
+
+#soldierDialog,
+#skillDialog {
+  background: var(--hq-surface);
+  color: var(--hq-text);
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.68);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+#settingsDialog::backdrop,
+#patchNotes::backdrop,
+#endlessLaunch::backdrop,
+#soldierDialog::backdrop,
+#armoryDialog::backdrop,
+#skillDialog::backdrop,
+#friendsDialog::backdrop,
+#friendStatsDialog::backdrop,
+#leaderboardDialog::backdrop {
+  background: rgba(6, 11, 9, 0.78);
+  backdrop-filter: blur(4px);
+}
+
+/* Consistent 44x44 square close control across all dialogs */
+#settingsClose,
+#patchNotesClose,
+#endlessClose,
+#soldierClose,
+#armoryClose,
+#skillCancel,
+#friendsClose,
+#friendStatsClose,
+#leaderboardClose {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.82);
+  color: var(--hq-text);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#settingsClose:hover,
+#patchNotesClose:hover,
+#endlessClose:hover,
+#soldierClose:hover,
+#armoryClose:hover,
+#skillCancel:hover,
+#friendsClose:hover,
+#friendStatsClose:hover,
+#leaderboardClose:hover {
+  border-color: var(--hq-gold);
+  background: rgba(34, 56, 45, 0.94);
+  color: var(--hq-gold);
+}
+
+/* Banner container bleeds edge-to-edge across the dialog top */
+.dialog-banner {
+  margin: calc(-1 * var(--dlg-pad-y)) calc(-1 * var(--dlg-pad-x)) 16px;
+  padding: 18px var(--dlg-pad-x) 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background-color: var(--hq-bg-deep);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dialog-banner-settings {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.78) 60%, rgba(12, 22, 18, 0.56) 100%),
+    url("assets/command-horizon.jpg");
+  background-position: center 40%;
+}
+
+.dialog-banner-notes {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.78) 60%, rgba(12, 22, 18, 0.56) 100%),
+    url("assets/version-dispatch.jpg");
+}
+
+.dialog-banner-endless {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.76) 60%, rgba(12, 22, 18, 0.54) 100%),
+    url("assets/endless-ground.jpg");
+}
+
+.dialog-banner-friends {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.78) 60%, rgba(12, 22, 18, 0.54) 100%),
+    url("assets/story-forest-convoy.jpg");
+}
+
+.dialog-banner-leaderboard {
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.78) 60%, rgba(12, 22, 18, 0.54) 100%),
+    url("assets/story-act1-dawn.jpg");
+}
+
+.dialog-banner .settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.dialog-banner h2 {
+  margin: 0;
+  color: var(--hq-text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(20px, 2.5vw, 24px);
+}
+
+.dialog-banner .eyebrow,
+.dialog-banner .friends-kicker {
+  color: var(--hq-gold);
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Keep <header> inside friends/leaderboard flush with its wrapper padding so
+   closeButton.right matches header.right (< 2px) for interface-smoke.cjs */
+#friendsDialog .dialog-banner > header,
+#friendStatsDialog .dialog-banner > header,
+#leaderboardDialog .dialog-banner > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+/* Existing atmospheric headers harmonized into the shared Block 9 banner rhythm */
+#soldierDialog .soldier-hero {
+  margin: 0;
+  padding: 18px 22px 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.76) 60%, rgba(12, 22, 18, 0.52) 100%),
+    url("assets/story-voss.jpg") center 28% / cover no-repeat;
+}
+
+#soldierDialog .soldier-kicker {
+  color: var(--hq-gold);
+}
+
+#soldierDialog .soldier-id,
+#soldierDialog .soldier-panel {
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-panel);
+}
+
+#armoryDialog .development-head {
+  margin: calc(-1 * var(--dlg-pad-y)) calc(-1 * var(--dlg-pad-x)) 14px;
+  padding: 18px var(--dlg-pad-x) 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background-image:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.74) 60%, rgba(12, 22, 18, 0.5) 100%),
+    url("assets/arsenal-workbench.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+#armoryDialog .eyebrow,
+#armoryDialog .armory-meta,
+#armoryDialog .armory-wallet strong {
+  color: var(--hq-gold);
+}
+
+#armoryDialog .arsenal-tabs button[aria-pressed="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-text);
+}
+
+#armoryDialog .armory-card,
+#armoryDialog .service-medal,
+#armoryDialog .armory-wallet {
+  border-color: var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+#armoryDialog .workshop-content .workshop-panel,
+#armoryDialog .workshop-content .workshop-item,
+#armoryDialog .workshop-content .workshop-slot-card,
+#armoryDialog .workshop-content .workshop-wallet {
+  border-color: var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+#skillDialog .skills-header {
+  margin: 0;
+  padding: 18px 24px 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.76) 60%, rgba(12, 22, 18, 0.52) 100%),
+    url("assets/skills-banner.jpg") center / cover no-repeat;
+}
+
+#skillDialog .skills-kicker {
+  color: var(--hq-gold);
+}
+
+#skillDialog .skills-tabs button[aria-pressed="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-text);
+}
+
+#skillDialog .skill-card,
+#skillDialog .skill-inspector,
+#skillDialog .skills-overview {
+  border-radius: var(--hq-radius);
+  border-color: var(--hq-border);
+}
+
+/* Four-player lobby & Campaign boards aligned to Command HQ palette */
+#fourPartyPanel {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  overflow: hidden;
+}
+
+#fourPartyPanel .party-heading {
+  margin: -16px -16px 14px;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--hq-border-strong);
+  background:
+    linear-gradient(100deg, rgba(11, 19, 15, 0.92) 0%, rgba(16, 29, 23, 0.74) 60%, rgba(12, 22, 18, 0.5) 100%),
+    url("assets/story-tower.jpg") center 40% / cover no-repeat;
+}
+
+#fourPartyPanel .party-heading span {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  padding: 3px 8px;
+  color: var(--hq-gold);
+  background: rgba(12, 22, 18, 0.78);
+}
+
+/* ==========================================================================
+   5. SETTINGS -> GENERAL & ACCOUNT (PASSWORD CHANGE + DANGER ZONE)
+   ========================================================================== */
+
+.settings-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.settings-tabs button {
+  min-height: 42px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  color: var(--hq-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+}
+
+.settings-tabs button[aria-selected="true"] {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold-soft);
+  color: var(--hq-text);
+}
+
+.settings-panel[hidden] {
+  display: none;
+}
+
+.settings-account-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+.settings-account-email {
+  color: var(--hq-text);
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+
+.settings-password-form {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: rgba(13, 23, 19, 0.62);
+}
+
+.settings-password-form h3 {
+  margin: 0 0 2px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 16px;
+  color: var(--hq-text);
+}
+
+.settings-password-field {
+  display: grid;
+  gap: 5px;
+}
+
+.settings-password-field label {
+  color: var(--hq-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.settings-password-field input {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: #0d1612;
+  color: var(--hq-text);
+  font-size: 14px;
+}
+
+.settings-password-field input:focus {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 1px;
+  border-color: var(--hq-gold);
+}
+
+.settings-account-status {
+  min-height: 18px;
+  margin: 4px 0 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--hq-gold);
+}
+
+.settings-account-status[data-tone="error"] {
+  color: var(--hq-danger);
+}
+
+.settings-account-status[data-tone="ok"] {
+  color: #a9db9c;
+}
+
+.settings-danger-zone {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(224, 130, 116, 0.45);
+  border-radius: var(--hq-radius);
+  background: var(--hq-danger-bg);
+}
+
+.settings-danger-zone .eyebrow {
+  color: var(--hq-danger);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+}
+
+.settings-danger-zone #menuDeleteCharacter {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(224, 130, 116, 0.65);
+  border-radius: var(--hq-radius);
+  background: rgba(132, 42, 34, 0.48);
+  color: #ffe2dc;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.settings-danger-zone #menuDeleteCharacter:hover:not(:disabled) {
+  background: rgba(164, 52, 42, 0.72);
+  border-color: #f3a69b;
+}
+
+/* ==========================================================================
+   6. ENDLESS TERRAIN ARTWORK CARDS
+   ========================================================================== */
+
+#endlessLaunch .endless-themes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 560px) {
+  #endlessLaunch .endless-themes {
+    grid-template-columns: 1fr;
+  }
+}
+
+#endlessLaunch .endless-theme {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 3px;
+  min-height: 92px;
+  padding: 12px 14px;
+  text-align: left;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background-color: var(--hq-surface-elevated);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: var(--hq-text);
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+#endlessLaunch .endless-theme strong {
+  color: var(--hq-text);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+#endlessLaunch .endless-theme small {
+  color: var(--hq-muted);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+#endlessLaunch .endless-theme[data-theme="random"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.28) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/endless-ground.jpg");
+}
+
+#endlessLaunch .endless-theme[data-theme="scrub"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/terrain3-desert.jpg");
+}
+
+#endlessLaunch .endless-theme[data-theme="forest"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/terrain3-forest.jpg");
+}
+
+#endlessLaunch .endless-theme[data-theme="urban"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/terrain3-city.jpg");
+}
+
+#endlessLaunch .endless-theme[data-theme="arctic"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/terrain3-snow.jpg");
+}
+
+#endlessLaunch .endless-theme[data-theme="marsh"] {
+  background-image:
+    linear-gradient(180deg, rgba(11, 20, 16, 0.24) 0%, rgba(10, 18, 14, 0.92) 92%),
+    url("assets/terrain3-marsh.jpg");
+}
+
+#endlessLaunch .endless-theme[aria-pressed="true"] {
+  border-color: var(--hq-gold);
+  box-shadow: inset 0 0 0 1px var(--hq-gold), 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+#endlessLaunch .endless-record {
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+}
+
+/* ==========================================================================
+   7. RESPONSIVE SIZING: DESKTOP CENTERED DIALOGS VS MOBILE FULLSCREEN SHEETS
+   ========================================================================== */
+
+@media (min-width: 860px) {
+  #settingsDialog[open] {
+    width: min(620px, 92vw);
+    max-height: min(88vh, 800px);
+    overflow-y: auto;
+  }
+
+  #patchNotes[open] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: min(740px, 92vw);
+    max-height: min(86vh, 780px);
+  }
+
+  #patchNotes[open] > :not(.patch-notes-panel) {
+    flex: 0 0 auto;
+  }
+
+  #endlessLaunch[open] {
+    width: min(760px, 94vw);
+    max-height: min(88vh, 820px);
+    overflow-y: auto;
+  }
+
+  #friendsDialog[open],
+  #friendStatsDialog[open],
+  #leaderboardDialog[open] {
+    width: min(760px, 94vw);
+    max-height: min(86vh, 780px);
+  }
+
+  #soldierDialog[open],
+  #armoryDialog[open],
+  #skillDialog[open] {
+    width: min(1020px, 94vw);
+    max-height: min(88vh, 840px);
+  }
+}
+
+@media (max-width: 859px) {
+  #settingsDialog[open],
+  #patchNotes[open],
+  #endlessLaunch[open],
+  #armoryDialog[open],
+  #friendsDialog[open],
+  #friendStatsDialog[open],
+  #leaderboardDialog[open] {
+    --dlg-pad-x: 12px;
+    --dlg-pad-y: 12px;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  #soldierDialog[open],
+  #skillDialog[open] {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  #settingsDialog[open],
+  #endlessLaunch[open],
+  #soldierDialog[open],
+  #armoryDialog[open],
+  #friendsDialog[open],
+  #friendStatsDialog[open],
+  #leaderboardDialog[open] {
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+  }
+
+  #soldierDialog[open] .soldier-hero {
+    padding: 14px 14px 12px;
+  }
+
+  #soldierDialog[open] .soldier-body {
+    padding: 12px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+
+  #armoryDialog[open] .development-head {
+    min-height: 102px;
+    margin: -12px -12px 12px;
+    padding: 14px 12px;
+  }
+
+  #patchNotes[open] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Strictly preserve single-scroll-region & non-squashed chrome in #skillDialog */
+  #skillDialog[open] {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #skillDialog[open] > :not(.skills-workspace) {
+    flex: 0 0 auto;
+  }
+
+  #skillDialog[open] .skills-header {
+    margin: 0;
+    padding: 10px 14px;
+    min-height: 62px;
+  }
+
+  #skillDialog[open] .skills-header p {
+    display: none;
+  }
+
+  #skillDialog[open] .skills-overview {
+    margin: 10px 14px 0;
+    padding: 8px 12px;
+  }
+
+  #skillDialog[open] .skills-tabs {
+    padding: 10px 14px 4px;
+  }
+
+  #skillDialog[open] .skills-filter {
+    padding: 6px 14px 0;
+  }
+
+  #skillDialog[open] .skills-workspace {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 14px;
+  }
+
+  #skillDialog[open] .skills-footnote {
+    margin: 6px 14px 4px;
+    font-size: 11px;
+  }
+
+  #skillDialog[open] .development-status {
+    margin: 2px 14px 6px;
+  }
+
+  #skillDialog[open] .skill-actions {
+    margin-top: 2px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .dialog-banner {
+    padding: 12px var(--dlg-pad-x);
+    margin-bottom: 12px;
+  }
+}
+
+/* Reduced motion respects user preference across hover & UI transitions */
+@media (prefers-reduced-motion: reduce) {
+  #commandCenter #menuSoldier.command-soldier,
+  #commandCenter .command-soldier-actions button,
+  #commandCenter .mode-card,
+  #endlessLaunch .endless-theme {
+    transition: none;
+  }
+
+  #commandCenter .mode-card:hover {
+    transform: none;
+  }
+}

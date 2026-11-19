@@ -1,0 +1,106 @@
+import { test } from 'node:test';
+import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const read = file => readFileSync(resolve(root, file), 'utf8');
+
+test('menu-redesign.css is linked last in <head> and scopes dialog display rules to [open]', () => {
+  const html = read('index.html');
+  const head = html.slice(html.indexOf('<head>'), html.indexOf('</head>'));
+  const stylesheets = [...head.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"/g)].map(m => m[1]);
+  assert.ok(stylesheets.length >= 2, 'page declares multiple layered stylesheets');
+  assert.match(stylesheets.at(-1), /^menu-redesign\.css(?:\?v=[\w-]+)?$/, 'menu-redesign.css loads last so its Block 9 layer wins');
+
+  const css = read('menu-redesign.css');
+  // Every dialog display declaration must be scoped to [open] so browser dialog:not([open]){display:none} holds.
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  for (const [, selector, body] of rules) {
+    if (!/\bdisplay\s*:/.test(body)) continue;
+    const touchesDialogShell = selector.split(',').some(part => {
+      const trimmed = part.trim();
+      return /#(?:settingsDialog|patchNotes|endlessLaunch|soldierDialog|armoryDialog|skillDialog|friendsDialog|friendStatsDialog|leaderboardDialog)(?:$|[\s,:])/.test(trimmed)
+        && !/#\w+\s+[.#>\w]/.test(trimmed);
+    });
+    if (touchesDialogShell) {
+      assert.match(selector, /\[open\]/, `dialog display rule must require [open]: ${selector.trim()}`);
+    }
+  }
+
+  // Balanced braces check in menu-redesign.css.
+  let depth = 0;
+  for (const ch of css) {
+    if (ch === '{') depth++;
+    else if (ch === '}') depth--;
+    assert.ok(depth >= 0, 'no unexpected closing brace in menu-redesign.css');
+  }
+  assert.equal(depth, 0, 'balanced braces in menu-redesign.css');
+});
+
+test('every artwork asset referenced by menu-redesign.css exists cleanly', () => {
+  const css = read('menu-redesign.css');
+  const urls = [...new Set([...css.matchAll(/url\(["']?(assets\/[^)"']+)["']?\)/g)].map(m => m[1]))];
+  assert.ok(urls.length >= 10, 'menu-redesign.css references painted terrain and banner artwork');
+  for (const rel of urls) {
+    const bytes = readFileSync(resolve(root, rel));
+    assert.ok(bytes.length > 1000, `referenced asset exists and is non-empty: ${rel}`);
+  }
+});
+
+test('Settings owns Account password-change and Danger Zone; Command utilities hold 4 actions', () => {
+  const html = read('index.html');
+  const utilitiesStart = html.indexOf('class="command-utilities"');
+  const utilitiesEnd = html.indexOf('</div>', utilitiesStart);
+  const utilities = html.slice(utilitiesStart, utilitiesEnd);
+  const utilityButtons = [...utilities.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+  assert.deepEqual(utilityButtons, ['menuPatchNotes', 'menuSettings', 'menuTutorial', 'menuLogout']);
+
+  const accountPanelStart = html.indexOf('id="settingsPanelAccount"');
+  const accountPanelEnd = html.indexOf('</dialog>', accountPanelStart);
+  const accountPanel = html.slice(accountPanelStart, accountPanelEnd);
+  for (const id of [
+    'settingsAccountEmail',
+    'settingsPasswordForm',
+    'settingsCurrentPassword',
+    'settingsNewPassword',
+    'settingsConfirmPassword',
+    'settingsPasswordSubmit',
+    'settingsPasswordResetEmail',
+    'settingsAccountStatus',
+    'menuDeleteCharacter',
+  ]) {
+    assert.match(accountPanel, new RegExp(`id="${id}"`), `Account panel contains #${id}`);
+  }
+
+  for (const [dialogId, bannerClass] of [
+    ['settingsDialog', 'dialog-banner-settings'],
+    ['patchNotes', 'dialog-banner-notes'],
+    ['endlessLaunch', 'dialog-banner-endless'],
+    ['friendsDialog', 'dialog-banner-friends'],
+    ['friendStatsDialog', 'dialog-banner-friends'],
+    ['leaderboardDialog', 'dialog-banner-leaderboard'],
+  ]) {
+    const start = html.indexOf(`id="${dialogId}"`);
+    const slice = html.slice(start, start + 600);
+    assert.match(slice, new RegExp(`class="dialog-banner ${bannerClass}"`), `#${dialogId} uses .${bannerClass}`);
+  }
+});
+
+test('account.js wires password-change, backdrop dismiss, menu dialog cleanup, and keeps pages-rollback delete hook', () => {
+  const account = read('account.js');
+  const css = read('menu-redesign.css');
+  const launcher = read('endless-launcher.mjs');
+
+  assert.ok(account.includes("$('menuDeleteCharacter').onclick=deleteCharacter;"),
+    'build-pages-site.mjs literal delete handler hook must remain intact');
+  assert.match(account, /closeMenuDialogs\(/, 'account.js closes open menu dialogs across screen resets');
+  assert.match(account, /bindDialogBackdrop\(\$\('settingsDialog'\)/);
+  assert.match(account, /bindDialogBackdrop\(\$\('endlessLaunch'\)/);
+  assert.match(account, /createPasswordChange/);
+  assert.match(launcher, /setAttribute\('data-theme',/);
+  for (const key of ['random', 'scrub', 'forest', 'urban', 'arctic', 'marsh']) {
+    assert.match(css, new RegExp(`data-theme="${key}"`), `menu-redesign.css styles endless terrain "${key}"`);
+  }
+});

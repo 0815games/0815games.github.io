@@ -99,14 +99,15 @@ async function diagnose(page){
     page.on('requestfailed',request=>{const i=requested.indexOf(request.url());if(i>=0)requested.splice(i,1);});
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    try{await page.locator('#menuDeleteCharacter').waitFor({state:'visible',timeout:45000});}
+    try{await page.locator('#menuSoldier').waitFor({state:'visible',timeout:45000});}
     catch(error){
      // A rejected dynamic import inside account-entry.mjs is caught there, so
      // Chromium reports nothing. Re-importing the same URL returns the SAME
      // rejected module, which is the only way to name the module that failed.
      const detail=await page.evaluate(async()=>{
       const probe=async url=>{try{await import(url);return 'ok';}catch(e){return String(e&&e.stack||e);}};
-      return {account:await probe('./account.js?v=20261031-patch8'),
+      const build=document.querySelector('meta[name="ironpath-build"]')?.content||'20261119-block9';
+      return {account:await probe(`./account.js?v=${build}`),
        sync:await probe('./avatar-sync.mjs?v=20261119-avatar3'),
        avatar:await probe('./avatar.mjs?v=20261119-avatar3'),
        layers:await probe('./avatar-layers.mjs?v=20261119-avatar3'),

@@ -3418,4 +3418,52 @@ Grenzen / Offen:
     in der Firebase Console; echte Mehrgeräte-Abnahme von `20261118-block5`
     bleibt offen.
 
+## IPL-0068 – Block-5-RTDB-Rules live bestätigt und Block 9 vor Block 6 eingeplant
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); GitHub-Merge-Zeitpunkt von [PR #319](https://github.com/0815games/0815games.github.io/pull/319) (`782b46fa4d521f7a07801f49301576f02a288e6a` auf `main`): `2026-11-19T05:38:35Z` (alle 13/13 PR-Checks und anschließende `main`-Workflows bestanden).
+- **Block / Ziel:** Block-5-RTDB-Rules-Abschluss protokollieren; **Block 9 (Einheitliches Menü-Layout & Kommandotafeln)** vor Block 6 (Tutorial) einschieben, damit Block 6 direkt auf der neuen Menüführung aufbaut. Block 7 bleibt unverändert der letzte Ausbau-Block.
+- **Branch / Basis:** `arena/66c63134-0815games-github-io`, Ausgangs-HEAD `782b46fa4d521f7a07801f49301576f02a288e6a`.
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) bereitgestellten Block-5-RTDB-Rules live in der Firebase Console veröffentlicht wurden.
+- **Änderungen / Dateien:**
+  - `IronPath/PATCH-BLOECKE.md` (Block-5-Rules als vom Betreiber live bestätigt markiert, Block 9 in Übersicht, Reihenfolge & Abschnitt `### 9.` vor Block 6 eingeordnet)
+  - `IronPath/patch-notes.mjs` & `IronPath/tests/patch-notes.test.mjs` (`block9` als `active` direkt vor `block6` / `next` in `PLANNED_PATCHES`, `block7` unverändert zuletzt; Block-5-Text aktualisiert)
+  - `IronPath/PATCH-LOG.md` (`IPL-0068`)
+- **Prüfungen:** Werden gemeinsam mit der lokalen Umsetzung von Block 9 (`node --test IronPath/tests/*.test.mjs`) nachgetragen.
+- **Git / PR / Release:** `lokal/uncommittet` auf `arena/66c63134-0815games-github-io`. `IronPath/release-version.json` bleibt bis zum abgestimmten Release unverändert auf `20261118-block5` (keine erfundenen `RELEASED_PATCHES`-Einträge).
+- **Offen / nächster Schritt:** Umsetzung der Block-9-Oberfläche (`menu-redesign.css`, `password-change.mjs`, `index.html`, Dialog-Banner, Mobile App-Shell / Desktop 2-Spalten-HQ, Endless-Geländekarten, Settings → Konto) inkl. Testnachweisen und anschließende CI-/Geräteabnahme.
+
+## IPL-0069 – Block 9: Einheitliches Kommando-HQ, Dialog-Banner, Endlos-Gelände & Settings → Konto (lokal umgesetzt)
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); lokale Arbeitskopie auf Branch `arena/66c63134-0815games-github-io` ab `782b46fa4d521f7a07801f49301576f02a288e6a`.
+- **Block / Ziel:** Block 9 vollständig lokal umsetzen: einheitliche Farb- und Kartensprache (`menu-redesign.css`), 2-Spalten-Desktop-HQ & mobile 4-Knopf-App-Shell, 3-Zonen-Dialog-Banner über alle Menüs, illustrierte Endlos-Geländekarten (`data-theme`) sowie Tabs *Allgemein* / *Konto* in `#settingsDialog` mit Passwortänderung (`password-change.mjs`) und umgezogener Gefahrenzone (`#menuDeleteCharacter`).
+- **Änderungen / Dateien:**
+  - `IronPath/menu-redesign.css` (neu, als letzte CSS-Ebene in `index.html` eingebunden): Tannengrün-/Gold-Palette, Desktop-2-Spalten-HQ (`>= 860px`), mobile App-Shell mit fester Daumenleiste unten (`< 860px`), strikt `[open]`-gekoppelte Dialog-Rahmen/Fullscreen-Mobile-Sheets inkl. Single-Scroll-Fix für `#skillDialog`, 3-Zonen-Banner, Endlos-Geländekarten (`assets/endless-ground.jpg` & `assets/terrain3-*.jpg`) sowie `#settingsDialog`-Tabs/Passwortformular/Gefahrenzone.
+  - `IronPath/password-change.mjs` (neu): `createPasswordChange` für E-Mail-Anzeige, Client-Validierung, Lazy-Import von `EmailAuthProvider.credential` / `reauthenticateWithCredential` / `updatePassword` (Firebase Auth `10.14.1`), Passwort-Reset-E-Mail-Auslösung, Pending-Sperre, Statusmeldungen & `retranslate()`.
+  - `IronPath/settings.mjs` (`?v=20261119-block9`): Tab-Umschaltung `general` / `account` (`setTab`, Standard `general` beim normalen `open()`) sowie `onOpen`/`onClose`-Hooks.
+  - `IronPath/endless-launcher.mjs`: `data-theme` (`random`, `scrub`, `forest`, `urban`, `arctic`, `marsh`) per `setAttribute` an den Geländekarten in `#endlessThemes`.
+  - `IronPath/index.html`: Einbindung `menu-redesign.css?v=20261119-block9`, `.dialog-banner`-Header auf `#settingsDialog`, `#patchNotes`, `#endlessLaunch`, `#friendsDialog`, `#friendStatsDialog`, `#leaderboardDialog` (unter Erhalt direkter `<header>`-Elternbeziehung zu den Close-Buttons), `Allgemein`/`Konto`-Tabs mit Passwortformular & Gefahrenzone (`#menuDeleteCharacter` aus `.command-utilities` entfernt).
+  - `IronPath/account.js`: Verdrahtung von `settings.mjs?v=20261119-block9`, `password-change.mjs?v=20261119-block9`, `bindDialogBackdrop` auf `#settingsDialog` & `#endlessLaunch`, `closeMenuDialogs()` beim Verlassen des Spielbildschirms / Auth-Wechsel / Löschen (explizite Menü-ID-Liste unter Aussparung von `afkRestDialog` / `afkSessionFailure` / `maintenanceGate` / `gameConfirm`) sowie Anzeige der Party-Sperrwarnung auch in `#settingsAccountStatus` unter Erhalt der literal geprüften Zeile `$('menuDeleteCharacter').onclick=deleteCharacter;`.
+  - `IronPath/language.mjs`, `IronPath/localization-settings-de.mjs` (`?v=20261119-block9`), `IronPath/localization-account-de.mjs`: vollständige deutsche Übersetzungen für neue Settings-/Konto- und Passwort-Texte ohne doppelte Schlüssel oder englische Füllwörter.
+  - `IronPath/tests/menu-redesign.test.mjs` (neu), `IronPath/tests/password-change.test.mjs` (neu), `IronPath/tests/settings.test.mjs`, `IronPath/browser-tests/{character-discharge,avatar-handover,command-center}.cjs`, `IronPath/firebase/rules-test/social-cleanup-browser.cjs`: Unit- und Browser-Testverträge an das neue Konto-Menü & mobile Fullscreen-Sheets angepasst.
+- **Prüfungen (verifiziert in lokaler Node-Umgebung):**
+  - `node --test IronPath/tests/*.test.mjs`: **1.150 bestanden**, **0 fehlgeschlagen**, `1` bekannter Skip (`release-pages-site.test.mjs`: gepinnte Vorgänger-Commits benötigen vollen Checkout); umfasst u. a. `menu-redesign.test.mjs`, `password-change.test.mjs` (4/4), `settings.test.mjs` (8/8), `patch-notes.test.mjs` (8/8), `translation-coverage.test.mjs`, `multiplayer-build-stamp.test.mjs`, `browser-doubles.test.mjs`, `afk-rest.test.mjs` und `release-stage-version.test.mjs`.
+  - `node IronPath/stress-tests/run.mjs`: deterministische Solo-/Koop-/Versus-/3er-/4er-/500-Karten-Stressläufe bestanden.
+  - `node --check` über sämtliche `IronPath/browser-tests/*.cjs` und `IronPath/firebase/rules-test/*.cjs` sowie `git diff --check`: fehlerfrei.
+
+## IPL-0070 – PR #320 (CI 13/13 grün) & synchronisierte Cache-/Build-Welle `20261119-block9` vor Merge auf `main`
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); PR [#320](https://github.com/0815games/0815games.github.io/pull/320) auf Branch `arena/66c63134-0815games-github-io` (`ae82722` → `4441e4e`, CI-Run `44476510057`).
+- **Block / Ziel:** Nach vollständig grünem PR-#320-CI-Nachweis (`4441e4e`) sämtliche Build-Manifeste, HTML-Stempel, `?v=`-Cache-Imports, Feldnotizen (`RELEASED_PATCHES[0]`) und Cache-Wave-Prüfungen auf den einheitlichen Release-Stempel **`20261119-block9`** heben, damit wiederkehrende Spieler beim anschließenden Merge auf `main` / GitHub Pages keine gemischten `20261118-block5`-Module aus dem HTTP-Cache laden.
+- **Änderungen / Dateien:**
+  - `IronPath/browser-tests/command-center.cjs` (`4441e4e`): Mock-User um `email: 'soldier@example.test'` für den Settings → Konto-Passworttest ergänzt und E-Mail-Anzeige mitgeprüft.
+  - `IronPath/release-version.json`, `IronPath/index.html` (`<meta name="ironpath-build">`, duale `BUILD`-Stempel, Stylesheets & Entry-Skript), `IronPath/tests/multiplayer-build-stamp.test.mjs` (inkl. `settings.mjs`, `password-change.mjs`, `localization-settings-de.mjs`) und alle 68 importierenden `.js`/`.mjs`-Dateien unter `IronPath/`: geschlossen von `?v=20261118-block5` auf `?v=20261119-block9` gehoben.
+  - `IronPath/browser-tests/{cache-wave,avatar-handover,interface-smoke}.cjs`: `20261118-block5`-Stale-URLs im synthetischen HTTP-Cache-Bypass ergänzt sowie `settings.mjs`, `password-change.mjs`, `endless-launcher.mjs`, `patch-notes.mjs`, `localization-settings-de.mjs` und `localization-account-de.mjs` unter `?v=20261119-block9` abgesichert.
+  - `IronPath/patch-notes.mjs`, `IronPath/tests/patch-notes.test.mjs` & `IronPath/PATCH-BLOECKE.md`: `block9` (`20261119-block9`, `pr: 320`) als neuesten Eintrag in `RELEASED_PATCHES[0]` dokumentiert, Block 9 in `PLANNED_PATCHES` auf `planned` (offene Geräteabnahme) gesetzt und `block6` als `active` nachgeführt.
+- **Prüfungen (belegt):**
+  - GitHub CI Run [`44476510057`](https://github.com/0815games/0815games.github.io/actions/runs/44476510057) auf `4441e4e`: **13/13 Checks bestanden** (`game-regressions`, `database-rules`, `interface-browser-smoke` inkl. aller 16 statischen Chromium-Smokes, `test:release-tabs`, `test:social-browser`, `test:multiplayer-browser`, alle 8 `party-finalization-browser`-Emulator-Jobs sowie Vercel).
+  - Lokale Nachprüfung der Build-/Patch-Notes-/Cache-Wave-Stempel vor dem finalen Push und CI-Lauf.
+- **Git / PR / Release:** Commit + Push auf `arena/66c63134-0815games-github-io` für [PR #320](https://github.com/0815games/0815games.github.io/pull/320) und abschließender CI-Check sowie Merge auf `main` laufen nach Abschluss dieses Commits.
+- **Offen:** Finalen CI-Lauf auf dem Release-Commit abwarten, PR #320 in `main` mergen (`pages-build-deployment`) und anschließend echte Desktop-/Handy-Sichtung auf `20261119-block9` durchführen.
+- **Grenzen / Offen:**
+  - Kein Chromium und kein Java in dieser Sandbox; alle Playwright-Browser-Smokes (`interface-smoke.cjs`, `command-center.cjs`, `character-discharge.cjs`, `avatar-handover.cjs`, `friends-sections.cjs`, `release-gates.cjs` usw.) und Firebase-RTDB-Emulator-Tests (`social-cleanup-browser.cjs` u. a.) sowie `IronPath/server` / `release-tools` Tests mit `npm`-Abhängigkeiten sind noch **nicht** gelaufen und werden über GitHub-CI geprüft.
+  - `IronPath/release-version.json` bleibt bis zum eigentlichen Build/Release unverändert auf `20261118-block5`; keine ungeprüfte Geräte- oder Produktionsabnahme behauptet (`patch-notes.mjs` führt Block 9 weiterhin unter `PLANNED_PATCHES` als `active`).
+- **Git / PR / Release:** `lokal/uncommittet` auf `arena/66c63134-0815games-github-io`. Kein neuer Commit, Push, PR oder Deployment.
+
 

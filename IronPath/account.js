@@ -1,74 +1,75 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261118-block5';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261118-block5';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block9';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block9';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261118-block5';
+import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block9';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261118-block5';
-import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
+import {setupFieldMenu} from './field-menu.mjs?v=20261119-block9';
+import {createSettings,readSettings} from './settings.mjs?v=20261119-block9';
+import {createPasswordChange} from './password-change.mjs?v=20261119-block9';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261118-block5';
+import {createPatchNotes} from './patch-notes.mjs?v=20261119-block9';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261118-block5';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261118-block5';
-import {setupFriends} from './friends-ui.mjs?v=20261118-block5';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261118-block5';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block9';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block9';
+import {setupFriends} from './friends-ui.mjs?v=20261119-block9';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block9';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261118-block5';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261118-block5';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261118-block5';
-import {createCommandCenter} from './command-center.mjs?v=20261118-block5';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block9';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block9';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block9';
+import {createCommandCenter} from './command-center.mjs?v=20261119-block9';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261118-block5';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block9';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261118-block5';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261118-block5';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261118-block5';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261118-block5';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261118-block5';
-import {setupAuthForm} from './auth-form.mjs?v=20261118-block5';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block9';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block9';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block9';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block9';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block9';
+import {setupAuthForm} from './auth-form.mjs?v=20261119-block9';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261118-block5';
-import {createWriteTracker} from './version-check.mjs?v=20261118-block5';
+import {createVersionUI} from './version-ui.mjs?v=20261119-block9';
+import {createWriteTracker} from './version-check.mjs?v=20261119-block9';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261118-block5';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261118-block5';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261118-block5';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261118-block5';
+import {createConfirmation} from './confirmation.mjs?v=20261119-block9';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block9';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block9';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block9';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261118-block5';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261118-block5';
-import {rewardDelta} from './run-results.mjs?v=20261118-block5';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261118-block5';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261118-block5';
-import {createPartySignOut} from './party-signout.mjs?v=20261118-block5';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block9';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block9';
+import {rewardDelta} from './run-results.mjs?v=20261119-block9';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block9';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block9';
+import {createPartySignOut} from './party-signout.mjs?v=20261119-block9';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261118-block5';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261118-block5';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block9';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block9';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261118-block5';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261118-block5';
-import { createPlayer } from './match.mjs?v=20261118-block5';
-import { bunkerStart } from './solo-deployment.mjs?v=20261118-block5';
+import { startGame } from './game.js?v=20261119-block9';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block9';
+import { createPlayer } from './match.mjs?v=20261119-block9';
+import { bunkerStart } from './solo-deployment.mjs?v=20261119-block9';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261118-block5';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261118-block5';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block9';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block9';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -161,13 +162,24 @@ const confirmation=createConfirmation(document,translateText);onLanguageChange((
 // Center menu and from the field menu. It owns no game state: language stays in
 // language.mjs, sound and effects live in game.js behind the hooks below.
 const storedSettings=readSettings(languageStorage);
+let passwordChange=null;
 const settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
  onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
  onResetFirstRun:()=>replayFirstRun(),
+ onOpen:()=>passwordChange?.refresh(),
+ onClose:()=>passwordChange?.reset(),
 });
+passwordChange=createPasswordChange({
+ document,
+ getUser:()=>user??auth.currentUser??null,
+ resetPassword:email=>accountServices.resetPassword(email),
+ translate:translateText,
+});
+bindDialogBackdrop($('settingsDialog'),()=>settings.close());
+onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();});
 let settingsSoundEnabled=false;
-const openSettings=from=>{settings.apply();settings.open(from);};
+const openSettings=(from,options)=>{settings.apply();settings.open(from,options);};
 setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
 $('menuSettings').onclick=()=>openSettings($('menuSettings'));
 // What changed and what comes next, straight from patch-notes.mjs. It opens on
@@ -298,7 +310,12 @@ function endLoadingScene(){
  if(loadingSlowTimer){clearTimeout(loadingSlowTimer);loadingSlowTimer=null;}
  $('loadingSlow')&&($('loadingSlow').hidden=true);
 }
-function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
+function closeMenuDialogs(){
+ for(const id of ['settingsDialog','patchNotes','endlessLaunch','soldierDialog','armoryDialog','skillDialog','friendsDialog','friendStatsDialog','leaderboardDialog']){
+  const dialog=$(id);if(dialog?.open)try{dialog.close();}catch{}
+ }
+}
+function display(view){if(view!=='game')closeMenuDialogs();$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
  // The recruiting office is a wide desk, not a 430px personnel card: the
  // entry panel breaks out of its dossier width while the Musterung is up.
  $('entry').classList.toggle('recruiting',view==='character');}
@@ -363,11 +380,13 @@ $('errorLogout').onclick=()=>dischargeSignOut.hasRetry()?dischargeSignOut.retry(
 const partyActivity=()=>partyPanel.isActive()||partyPanel.isBusy()||!!fourPanel?.isActive()||!!fourPanel?.isBusy();
 async function deleteCharacter(){
  if(!user||!profile||deletionPending)return;
- if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ const partyWarning='Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.';
+ if(partyActivity()){$('saveStatus').textContent=translateText(partyWarning);passwordChange?.setStatus(partyWarning,'error');return;}
  const currentUser=user,currentName=profile.name,version=sessionVersion;
  const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, progress, scores and discoverable friend links and invitations will be removed. Close other tabs and devices first. Any current solo operation ends even if deletion fails. Your account remains; older unindexed data may remain.',accept:'DELETE'});
  if(!confirmed||user!==currentUser||version!==sessionVersion||profile?.name!==currentName)return;
- if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ if(partyActivity()){$('saveStatus').textContent=translateText(partyWarning);passwordChange?.setStatus(partyWarning,'error');return;}
+ settings.close();closeMenuDialogs();
  const attempt={};deletionPending=attempt;deletingCharacter=true;$('menuDeleteCharacter').disabled=true;
  const current=()=>deletionPending===attempt&&version===sessionVersion&&user===currentUser&&auth.currentUser?.uid===currentUser.uid&&!accountServices.signal?.aborted;
  try{
@@ -476,6 +495,7 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
     if(loaded)control.setMenuOpen(false);else center.showMenu();
   },
   onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
+bindDialogBackdrop($('endlessLaunch'),()=>{try{$('endlessLaunch').close();}catch{}});
 // The rank is derived from the level on every snapshot - the combat profile
 // strip gets its own paint, the menu card and the dossier re-render themselves.
 function refreshProfileRank(value){
@@ -740,7 +760,7 @@ if(!accountTerminated)accountServices.observe(currentUser=>{
  const showDischarge=dischargeSignOut.observe(currentUser);
  afkTimer?.reset();
  cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
- deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
+ deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();closeMenuDialogs();passwordChange?.reset();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
  if(!currentUser){$('password').value='';display('auth');renderAfkText();if(showDischarge)message(DISCHARGE_MESSAGE);return;}
  afkNotice(false);display('loading');setLoadingStep('soldier');
  const activate=()=>{if(accountTerminated||version!==sessionVersion||auth.currentUser?.uid!==currentUser.uid)return;user=currentUser;notifySession();const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);loadProfile(currentUser,version);};

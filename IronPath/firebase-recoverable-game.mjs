@@ -1,20 +1,20 @@
-import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261118-block5';
+import {createWorkshopMultiplayerMatch} from './workshop-multiplayer-game.mjs?v=20261119-block9';
 import {validWorkshopMatchLock,validWorkshopMatchState} from './workshop-match-validation.mjs?v=20261112-tagless1';
 // Integration adapter for the opt-in host-recovery trial: the host opens the
 // lobby with ?recovery=1, the party is marked recoverable, and this adapter
 // rebuilds the match from the latest durable checkpoint after a reload.
 import {guardMultiplayerTab} from './multiplayer-tab-guard.mjs?v=20261103-hardening2';
 import {createFirebaseDurableChannel} from './firebase-durable-channel.mjs?v=20261103-onlinebeta1';
-import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261118-block5';
-import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261118-block5';
-import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261118-block5';
+import {createDurableClientSession} from './firebase-durable-client-session.mjs?v=20261119-block9';
+import {createDurableHostSession} from './firebase-durable-host-session.mjs?v=20261119-block9';
+import {createFirebaseRecoveryStore} from './firebase-recovery-store.mjs?v=20261119-block9';
 import {createFirebasePartyPresence} from './firebase-party-presence.mjs?v=20261103-unified1';
-import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261118-block5';
-import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261118-block5';
-import {createVersus} from './versus.mjs?v=20261118-block5';
-import {createMatch} from './simulation.mjs?v=20261118-block5';
-import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261118-block5';
-import {MAX_WAVE_MASK} from './combat.mjs?v=20261118-block5';
+import {createPartyHost,restorePartyHost} from './party-host.mjs?v=20261119-block9';
+import {createFourCoop,createTwoVsTwo,squadMapFor} from './four-modes.mjs?v=20261119-block9';
+import {createVersus} from './versus.mjs?v=20261119-block9';
+import {createMatch} from './simulation.mjs?v=20261119-block9';
+import {isMapId,DEFAULT_MAP} from './maps.mjs?v=20261119-block9';
+import {MAX_WAVE_MASK} from './combat.mjs?v=20261119-block9';
 export function createFirebaseRecoverableGame({db,auth,sdk,partyId,manifest,players,mapId=DEFAULT_MAP,workshopLock=null,resumeGeneration=null,crypto=globalThis.crypto,readFresh,lockManager=globalThis.navigator?.locks,onState=()=>{},onStatus=()=>{},onSnapshot=()=>{},onWaveRewards=()=>{}}){
  const uid=auth?.currentUser?.uid,hostId=manifest?.hostId,ids=manifest?.playerIds,mode=manifest?.mode,teams=manifest?.teamRosters,four=mode==='four-coop'||mode==='two-vs-two';
  if(!['coop','versus','four-coop','two-vs-two'].includes(mode)||!Array.isArray(ids)||!ids.includes(uid)||ids[0]!==hostId||new Set(ids).size!==ids.length||!(mode==='four-coop'?[3,4].includes(ids.length):mode==='two-vs-two'?ids.length===4:ids.length===2)||!isMapId(mapId)||typeof crypto?.getRandomValues!=='function'||![onState,onStatus,onSnapshot,onWaveRewards].every(f=>typeof f==='function'))throw Error('Invalid recoverable match');

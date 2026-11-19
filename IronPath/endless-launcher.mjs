@@ -2,7 +2,7 @@
 // play - the personal record, the battlefield choice, the last run and the
 // current loadout. Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translateText} from './language.mjs?v=20261118-block5';
+import {translateText} from './language.mjs?v=20261119-block9';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the
@@ -35,6 +35,7 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     for(const theme of ENDLESS_THEMES){
       const button=document.createElement('button');
       button.type='button';button.className='endless-theme';
+      button.setAttribute('data-theme',theme.key??'random');
       button.setAttribute('aria-pressed',String((theme.key??null)===selected));
       const name=document.createElement('strong');name.textContent=translateText(theme.label);
       const hint=document.createElement('small');hint.textContent=translateText(theme.hint);

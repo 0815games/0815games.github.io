@@ -71,11 +71,11 @@ test('the released list only claims builds that actually shipped, newest first',
   assert.ok(html.includes(`<meta name="ironpath-build" content="${manifest}">`),'the page advertises the same build the notes claim');
 });
 
-// Block 7 is the life/counter-attack/repair system: agreed as an ADDITIONAL
-// future patch, after the six original blocks, because it touches every mode.
+// Block 9 sits directly before Block 6 so the guided tutorial introduces the
+// redesigned Command HQ, while Block 7 (life/counter-attack/repair) stays last.
 test('block 7 is a planned future patch and stays last in the agreed order',()=>{
   const ids=PLANNED_PATCHES.map(entry=>entry.id);
-  assert.deepEqual(ids,['block1','block2','block3','block4','block5','block6','block7'],'the plan keeps the operator order');
+  assert.deepEqual(ids,['block1','block2','block3','block4','block5','block9','block6','block7'],'the plan keeps the operator order');
   const block7=PLANNED_PATCHES.at(-1);
   assert.equal(block7.status,'planned');
   assert.ok(block7.note,'block 7 says why it comes last');
@@ -88,10 +88,11 @@ test('block 7 is a planned future patch and stays last in the agreed order',()=>
   // The standing constraint: no permanent loss of progress or equipment.
   assert.match(block7.open.map(item=>patchText(item,'en')).join(' '),/No permanent loss/i);
   assert.match(block7.open.map(item=>patchText(item,'de')).join(' '),/kein dauerhafter verlust/i);
-  // Block 1 is the one being worked on, so the first tab the player reads
-  // starts with it and not with an untouched block.
-  assert.equal(PLANNED_PATCHES[0].status,'active');
-  assert.equal(PLANNED_PATCHES[1].status,'next');
+  // Block 9 shipped in PR #320 ahead of Block 6; Block 6 is now active next.
+  const block9=PLANNED_PATCHES.find(entry=>entry.id==='block9');
+  const block6=PLANNED_PATCHES.find(entry=>entry.id==='block6');
+  assert.equal(block9?.status,'planned');
+  assert.equal(block6?.status,'active');
 });
 
 test('the view renders both lists, marks the running build and reacts to the tab buttons',()=>{

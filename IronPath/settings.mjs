@@ -64,15 +64,33 @@ export function createSettings({
   fullscreen = null,
   onGraphicsChange = () => {},
   onResetFirstRun = null,
+  onOpen = null,
+  onClose = null,
 } = {}) {
   const $ = id => document.getElementById(id);
   const dialog = $('settingsDialog');
   const current = readSettings(storage);
   let openedFrom = null;
+  let activeTab = 'general';
 
   const volumeInput = $('soundVolume');
   const volumeStatus = $('soundVolumeStatus');
   const graphicsSelect = $('graphicsQuality');
+  const tabGeneral = $('settingsTabGeneral');
+  const tabAccount = $('settingsTabAccount');
+  const panelGeneral = $('settingsPanelGeneral');
+  const panelAccount = $('settingsPanelAccount');
+
+  function setTab(next) {
+    activeTab = next === 'account' ? 'account' : 'general';
+    if (tabGeneral) tabGeneral.setAttribute?.('aria-selected', String(activeTab === 'general'));
+    if (tabAccount) tabAccount.setAttribute?.('aria-selected', String(activeTab === 'account'));
+    if (panelGeneral) panelGeneral.hidden = activeTab !== 'general';
+    if (panelAccount) panelAccount.hidden = activeTab !== 'account';
+  }
+
+  tabGeneral?.addEventListener?.('click', () => setTab('general'));
+  tabAccount?.addEventListener?.('click', () => setTab('account'));
 
   function paint() {
     if (volumeInput) volumeInput.value = String(Math.round(current.volume * 100));
@@ -124,10 +142,12 @@ export function createSettings({
     onGraphicsChange(next);
   });
 
-  async function open(from) {
+  async function open(from, { tab = 'general' } = {}) {
     if (!dialog) return false;
     openedFrom = from ?? document.activeElement ?? null;
+    setTab(tab);
     paint();
+    try { onOpen?.(); } catch { /* hooks must never block settings */ }
     if (!dialog.open) {
       if (typeof dialog.showModal === 'function') dialog.showModal();
       else dialog.open = true;
@@ -142,6 +162,7 @@ export function createSettings({
   function close() {
     if (!dialog) return;
     if (dialog.open) dialog.close();
+    try { onClose?.(); } catch { /* hooks must never block closing */ }
     openedFrom?.focus?.();
     openedFrom = null;
   }
@@ -171,6 +192,8 @@ export function createSettings({
     open,
     close,
     paint,
+    setTab,
+    get tab() { return activeTab; },
     get volume() { return current.volume; },
     get graphics() { return current.graphics; },
     // The game asks this once at start and after every change, instead of reading

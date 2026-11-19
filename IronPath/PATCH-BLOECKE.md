@@ -50,8 +50,10 @@ Teil, einen nachgewiesenen Fehler oder eine ausstehende Abnahme. Simulatoren,
 Emulatoren und Browser-Doubles sind keine echten Geräte oder Live-Partien.
 
 **Priorität:** Zuerst Block 1 in kleinen, testbaren Schritten, dann Block 2;
-danach Oberfläche (3), Avatare (4), Skills (5) und zuletzt das große Tutorial
-(6). Das zusätzliche Lebenssystem (7/E) ist ein eigenes Vorhaben; seine genaue
+danach Oberfläche (3), Avatare (4), Skills (5), anschließend das **einheitliche
+Menü- und Command-HQ-Redesign (Block 9)** vor dem großen Tutorial (6), damit
+die spätere Tutorial-Menüführung bereits auf dem endgültigen Menü aufsetzt. Das
+zusätzliche Lebenssystem (7/E) bleibt ein eigenes Vorhaben danach; seine genaue
 zeitliche Einordnung und mögliche Folgen für das Tutorial sind gesondert
 abzustimmen. Der Betreiber wünscht nach jedem sinnvollen, geprüften Schritt eine
 Veröffentlichung und die anschließende Öffnung zum Testen; Wartung soll nur für
@@ -61,7 +63,7 @@ oder geöffnet ist, zeigen die nachgetragenen Ereignisse im Patch-Log und der
 aktuelle Status.
 Diese Bestandsaufnahme selbst ändert keine Firebase-Rules oder Produktionsdaten.
 
-## Schnellübersicht – sechs Originalblöcke
+## Schnellübersicht – sechs Originalblöcke + nachgeordnete Ausbau-Blöcke
 
 Die Statusangaben unterscheiden **bereits veröffentlichte Teilfunktionen** von
 weiteren Wünschen und fehlender Abnahme. Die ausführlichen Kriterien stehen
@@ -74,8 +76,9 @@ grünen Testsuite vollständig erledigt.
 | [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **80 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), Namensregel/Reservierung/Audit-Skript/Umbenennungsmechanismus (`A1`) + Betreiber-Tests in Browser und Handy. | Bestandsaufnahme/Migration für Alt-Namensduplikate (`CHARACTER-NAME-AUDIT.md`) vor Aktivierung von `characterNames`, Entscheidung/UI-Einstiegspunkt fürs Umbenennen sowie nächster Build-Stempel für gecachte Browser. |
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
 | [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
-| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **95 %** | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318) auf `main` gemerged, `IPL-0066`): 6. Klasse **Air Defense / Luftabwehr** (`Flak Curtain`, `Interceptor`, `Iron Dome`), exklusive Klassenwahl ab Level 2, fokussierter 14-Knoten-Klassenbaum mit 6 SVG-Klassenabzeichen, 6 Klassen-Artworks (`assets/class-*.jpg`), 12 Spezialisten-Effekte & Turm-Auren, getrennte 2-Stufen-Klassenturmwege ab Rang 2/3, einmalige `v2;none`-Migration mit lokalem Backup, Balance- & Snapshot-Verdichtung sowie kopierfertige RTDB-Rules-Datei [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) auf Basis des Live-Exports (inkl. Block-4-Regeln & `MAINTENANCE_GATE`). | Manuelle Veröffentlichung von [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) in der Firebase Console (nach Live-Backup) sowie echte Mehrgeräte-Abnahme auf `20261118-block5`. |
-| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
+| [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **97 %** | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318) auf `main` gemerged, `IPL-0066`) + [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) ([PR #319](https://github.com/0815games/0815games.github.io/pull/319), `782b46fa`): 6. Klasse **Air Defense / Luftabwehr** (`Flak Curtain`, `Interceptor`, `Iron Dome`), exklusive Klassenwahl ab Level 2, 14-Knoten-Klassenbaum mit 6 SVG-Klassenabzeichen, 6 Klassen-Artworks (`assets/class-*.jpg`), 12 Spezialisten-Effekte & Turm-Auren, getrennte 2-Stufen-Klassenturmwege ab Rang 2/3, einmalige `v2;none`-Migration + lokales Backup sowie vom Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`). | Echte Mehrgeräte-Abnahme auf `20261118-block5`. |
+| [**9 · Menü-Redesign**](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | **95 %** | Vor Block 6 eingeschoben (Betreiberentscheid) und in [PR #320](https://github.com/0815games/0815games.github.io/pull/320) (`20261119-block9`) umgesetzt: konsolidierte Command-HQ-Ansicht (Desktop 2-Spalten-HQ / Mobile App-Shell mit unterem Daumen-Dock), einheitliche 3-Zonen-Kartenbanner (`assets/*.jpg`), illustrierte Endlos-Geländekarten (`terrain3-*.jpg` / `endless-ground.jpg`), konsistente Dialoge + Settings-Account-Tab mit Passwortänderung & Entlassungsschutz. | Echte Geräteabnahme (Desktop & Handy) vor Beginn von Block 6. |
+| [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung auf dem neuen Block-9-Menü (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
 | [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **5 %** | Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte. | Komplettes Lebens-, Angriffs-, Vorwarnungs- und Reparatursystem für Soldaten, Türme und Bunker in allen Spielmodi samt Simulation, Multiplayer-Sync und Balance. |
 | [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **80 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; `20261031-patch7` via [PR #316](https://github.com/0815games/0815games.github.io/pull/316) (`a69675bb`, CI 13/13, Pages `44316906495`, Main-CI `44316907201`) live; begrenzter Max-1-Retry in `party-finalization-browser` (`IPL-0065`). | Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie echte Geräteabnahme von `20261031-patch7` / `20261031-patch8`. |
 
@@ -100,16 +103,18 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | Restpunkte: Namens-Audit/Altbestände (`A1`), Umbenennen-Einstieg, Build-Stempel (`Porträt-Rules sind veröffentlicht`). | **80 %** · In Arbeit (Browser-/Handy-Tests & Porträt-Rules abgenommen) |
 | 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
 | 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **90 %** · Live auf `20261031-patch6` (Popup bestätigt; Avatar-Abnahme offen) |
-| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318)) auf `main`/Pages live; kopierfertige RTDB-Rules-Datei [`BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) über den Live-Export erstellt; offen: manuelles Veröffentlichen in Firebase Console & echte Geräteabnahme. | **95 %** · Spielcode live (`20261118-block5`), Rules-Veröffentlichung & Geräteabnahme offen |
-| 6 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Charakter-Auftragsakte, große vertonte Mission mit Generalstimme und anschließender Menüführung. | **25 %** · Geplant |
-| 7 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (neu aufgenommen) |
-| 8 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Rules-Rollout, Namens-Audit, Altsaves & Geräteabnahme. | **80 %** · Sammelstelle |
+| 5 | [Block 5 · Skills](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | V2-Klassenbau (`20261118-block5`, PR #318) & [`BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) (PR #319) gemergt; Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`); offen: echte Geräteabnahme. | **97 %** · Spielcode & Rules live (`20261118-block5`), Geräteabnahme offen |
+| 6 | [Block 9 · Menü-Redesign](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | Einheitliche Command-HQ-Oberfläche (Desktop 2-Spalten-HQ / Mobile App-Shell mit Daumen-Leiste), 3-Zonen-Artwork-Dialoge, Terrain-Endloswahl & Settings-Account/Passwortänderung vor Block 6. | **In Arbeit** · Aktiver Schritt vor Block 6 |
+| 7 | [Block 6 · Tutorial](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | Charakter-Auftragsakte, große vertonte Mission mit Generalstimme und anschließender Menüführung auf Basis von Block 9. | **25 %** · Als Nächstes nach Block 9 |
+| 8 | [Block 7 · Leben, Gegenangriffe und Reparaturen](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | Leben für Soldaten/Türme, Angriffe mit Vorwarnung, Reparatur statt Verlustspirale, gleiche Regeln in allen Modi. | **5 %** · Geplant (bleibt zuletzt) |
+| 9 | [Block 8 · Nach den Patches](#8-was-nach-den-patches-ansteht--sammelstelle) | Sammelstelle: UI-Feinschliff (`#306`–`#315`) & `20261031-patch7` ([PR #316](https://github.com/0815games/0815games.github.io/pull/316), `a69675bb`) live; Max-1-Retry auf `party-finalization-browser` (`IPL-0065`); offen: Namens-Audit, Altsaves & Geräteabnahme. | **80 %** · Sammelstelle |
 
 **Im Spiel sichtbar:** Unter **FELDNOTIZEN** in der Kommandozentrale zeigt eine
 Ansicht dieselbe Einteilung – Reiter *Veröffentlicht* (was mit welchem Build
-live ist) und Reiter *Was als Nächstes kommt* (die Blöcke 1–7 mit bereits
-vorhandenen und offenen Punkten). Die Daten liegen in `patch-notes.mjs`; die
-ausführlichen Kriterien bleiben in diesem Blatt und im Patch-Log.
+live ist) und Reiter *Was als Nächstes kommt* (die aktiven/geplanten Blöcke
+einschließlich Block 9 vor Block 6 und Block 7 als letztem Schritt). Die Daten
+liegen in `patch-notes.mjs`; die ausführlichen Kriterien bleiben in diesem
+Blatt und im Patch-Log.
 
 ## Ursprünglicher Gameplan – vollständige Zuordnung
 
@@ -508,28 +513,30 @@ entstand, ist nicht sicher belegt.
   u. a. Unterdrückung, Flak-Kettenschaden und Veteranen-Rabatt samt Rank-UI.
   **Der PR-Titel allein und die Konzeptdatei geben den endgültigen Inhalt nicht
   vollständig wieder.** Drei konkret gefundene Ausnahmen stehen direkt unten.
-- [ ] **Entscheidung:** Luftabwehr als sechste Klasse mit eigener, auch
+- [x] **Entscheidung:** Luftabwehr als sechste Klasse mit eigener, auch
   außerhalb reiner Flugzeugwellen nützlicher Rolle. Mit dem ersten Punkt auf
   Spielerlevel 2 eine Klasse samt Hauptfähigkeit wählen; danach nur den eigenen
   übersichtlichen Spezialisierungsbaum anbieten. *(Spielcode & UI via PR #318 /
-  `20261118-block5` auf `main` live; manuelle Freigabe der Block-5-RTDB-Rules
-  und echte Geräteabnahme offen.)*
-- [ ] Alle Grundtürme bleiben für alle baubar. **Zusätzliche durch den eigenen
+  `20261118-block5` auf `main` live; Block-5-RTDB-Rules gemäß
+  Betreiberbestätigung in der Firebase Console veröffentlicht — `IPL-0068`;
+  echte Geräteabnahme weiter offen.)*
+- [x] Alle Grundtürme bleiben für alle baubar. **Zusätzliche durch den eigenen
   Skillbaum freigeschaltete** Ausbauwege, sechs Klassenbilder, klare Touchflächen
   und Kosten-/Wirkungsvorschauen sind von den bestehenden Turm-Kits zu trennen.
   *(Mit PR #318 über `tower-class-paths.mjs` & `assets/class-*.jpg` live;
   Geräteabnahme offen.)*
-- [ ] **Entscheidung:** Alte Skill-Builds einmalig vollständig zurücksetzen und
+- [x] **Entscheidung:** Alte Skill-Builds einmalig vollständig zurücksetzen und
   bereits erhaltene Punkte – ausgegebene und noch freie – zur Neuwahl
   zurückgeben; Level, XP und Ausrüstung bleiben erhalten. Migration, Backup,
   Rules, doppelte Ausführung, alte/parallele Clients und Rollback prüfen.
   *(Client-Migration via PR #318 live; vollständige kopierfertige Rules in
   [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json)
-  vorbereitet; manuelle Veröffentlichung in der Firebase Console offen.)*
+  erstellt, geprüft via PR #319 und vom Betreiber live veröffentlicht —
+  `IPL-0068`.)*
 - [ ] Solo-/Mehrspieler-Balance getrennt planen und testen; neue Skilldaten oder
   Rules nicht ohne frischen Abgleich und separate Freigabe einführen.
-  *(Balance-/Stress-Suiten in PR #318 angepasst; Live-Balance & finale
-  Rules-Veröffentlichung offen.)*
+  *(Balance-/Stress-Suiten in PR #318 angepasst & Rules veröffentlicht; finale
+  Live-Mehrgeräte-Abnahme auf `20261118-block5` offen.)*
 
 #### Konkrete Befunde zur bestehenden Turm-Spezialisierung
 
@@ -559,6 +566,37 @@ grüne Testsuite belegte nicht jede versprochene Wirkung.
    zeigte der UI-Test Preis 360 und blockierte den Kauf; danach sind Anzeige,
    Zahlung und Prestige-Rundung für eigene und fremde Türme mit Doubles geprüft.
    Das ist kein Beweis für die Ursache des gemeldeten Dreier-Turmmenüfehlers.
+
+### 9. Einheitliches Menü-Layout & Kommandotafeln (Desktop & App-Shell Mobile)
+
+**Eingeschoben vor Block 6** (Betreiberwunsch, [IPL-0068](PATCH-LOG.md#ipl-0068--block-5-rtdb-rules-live-best%C3%A4tigt-und-block-9-vor-block-6-eingeplant))
+und für den Release `20261119-block9` in
+[PR #320](https://github.com/0815games/0815games.github.io/pull/320) umgesetzt:
+Die spätere Tutorial-Menüführung (Block 6) soll direkt über dem konsolidierten
+Hauptmenü und den einheitlichen Dialogen aufbauen.
+
+- [x] **Einheitliches Kommandozentralen-Layout (Desktop & Mobile App-Shell):**
+  Desktop (`>= 860px`) mit festem 2-Spalten-HQ (Soldatenkarte + 4 Schnellzugriffe
+  + Utilities links; große Einsatz-Karten rechts). Mobile (`< 860px`) als
+  App-Shell mit kompakter Soldatenzeile oben, fokussierten Spielmodi in der
+  Mitte und fester 4-Knopf-Daumenleiste (`Waffenkammer`, `Skills`, `Freunde`,
+  `Bestenliste`) ganz unten. *(Echte Geräteabnahme offen.)*
+- [x] **Durchgängige Designsprache & 3-Zonen-Kartenbanner über alle Dialoge:**
+  Dunkles Tannengrün `#101b16` / `#182921`, ein warmer Goldakzent `#e4ca89`,
+  einheitliche Radien (`6px`), klare Close-Buttons (`44×44px`) und bestehende
+  Landschafts-Artworks (`assets/command-horizon.jpg`, `arsenal-workbench.jpg`,
+  `skills-banner.jpg`, `endless-ground.jpg`, `story-forest-convoy.jpg`,
+  `story-act1-dawn.jpg`, `version-dispatch.jpg`, `story-voss.jpg`). *(Echte Geräteabnahme offen.)*
+- [x] **Endlos-Geländewahl & Lobby-Konsistenz:**
+  Illustrierte Geländekarten in `#endlessLaunch` mit `assets/endless-ground.jpg`
+  und `assets/terrain3-*.jpg` (alle sechs Regionen) sowie einheitliches
+  Kommandotafel-Design für `#fourPartyPanel` und `#campaignPanel`. *(Echte Geräteabnahme offen.)*
+- [x] **Einstellungen → Konto (Passwortänderung & geschützte Entlassung):**
+  Angemeldete E-Mail-Adresse, In-App-Passwortänderung über `password-change.mjs`
+  (`reauthenticateWithCredential` / `updatePassword` + Passwort-Reset-Fallback)
+  sowie Gefahrenzone mit `#menuDeleteCharacter` (umgezogen aus der alten
+  Utility-Zeile, Party-Sperre direkt im Konto-Abschnitt sichtbar, sicheres
+  Schließen offener Dialoge beim Entlassen/Abmelden). *(Unit-, Browser-Smoke- & Emulator-Tests in PR #320 bestanden; echte Geräteabnahme offen.)*
 
 ### 6. Tutorial als großer zusammenhängender Einsatz – bisheriges Tutorial gebaut und Teilfix bestätigt
 
