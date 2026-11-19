@@ -77,7 +77,7 @@ grünen Testsuite vollständig erledigt.
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
 | [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
 | [**5 · Skills**](#5-skills-neu-strukturieren--bestehende-turm-spezialisierungen-bereits-implementiert) | **97 %** | V2-Klassenbau (`20261118-block5`, [PR #318](https://github.com/0815games/0815games.github.io/pull/318) auf `main` gemerged, `IPL-0066`) + [`firebase/BLOCK5-RULES-TO-PUBLISH.json`](firebase/BLOCK5-RULES-TO-PUBLISH.json) ([PR #319](https://github.com/0815games/0815games.github.io/pull/319), `782b46fa`): 6. Klasse **Air Defense / Luftabwehr** (`Flak Curtain`, `Interceptor`, `Iron Dome`), exklusive Klassenwahl ab Level 2, 14-Knoten-Klassenbaum mit 6 SVG-Klassenabzeichen, 6 Klassen-Artworks (`assets/class-*.jpg`), 12 Spezialisten-Effekte & Turm-Auren, getrennte 2-Stufen-Klassenturmwege ab Rang 2/3, einmalige `v2;none`-Migration + lokales Backup sowie vom Betreiber bestätigte Live-Veröffentlichung der Block-5-RTDB-Rules (`IPL-0068`). | Echte Mehrgeräte-Abnahme auf `20261118-block5`. |
-| [**9 · Menü-Redesign**](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | **97 %** | Vor Block 6 eingeschoben (Betreiberentscheid) und in [PR #320](https://github.com/0815games/0815games.github.io/pull/320) (`20261119-block9`) + [PR #321](https://github.com/0815games/0815games.github.io/pull/321) (`20261119-block9b`) umgesetzt: konsolidierte Command-HQ-Ansicht (Desktop 2-Spalten-HQ / Mobile App-Shell mit unterem Daumen-Dock), einheitliche 3-Zonen-Kartenbanner, Endlos-Schnellstartleiste mit durchgängigen Panorama-Gemälden (`endless-frontline.jpg` & Biom-Gemälde), einheitliche Kampagnen-Akte (`story-act1..5-title.jpg` & `story-act1..5-relic.jpg`), Musterungs-/Feldschule-Karten & Settings-Account-Tab. | Echte Geräteabnahme (Desktop & Handy) vor Beginn von Block 6. |
+| [**9 · Menü-Redesign**](#9-einheitliches-menü-layout--kommandotafeln-desktop--app-shell-mobile) | **99 %** | Vor Block 6 eingeschoben (Betreiberentscheid) und in [PR #320](https://github.com/0815games/0815games.github.io/pull/320) (`20261119-block9`), [PR #321](https://github.com/0815games/0815games.github.io/pull/321) (`20261119-block9b`) und [PR #322](https://github.com/0815games/0815games.github.io/pull/322) (`20261119-block9c`) umgesetzt: konsolidierte Command-HQ-Ansicht, einheitliche 3-Zonen-Kartenbanner & Dialoge, vereinheitlichte Einstellungs-Konsole (`settings.mjs` / `settings-command.jpg`), AFK-Bunker-Gemälde (`afk-rest.jpg`), Endlos-Schnellstartleiste & Kampagnen-Akte. | Echte Geräteabnahme (Desktop & Handy) vor Beginn von Block 6. |
 | [**6 · Tutorial**](#6-tutorial-als-großer-zusammenhängender-einsatz--bisheriges-tutorial-gebaut-und-teilfix-bestätigt) | **25 %** | Fünf-Wellen-Einführung mit Feld-Coach, Wiederholung ohne Doppelbelohnung, Abbruch-/Lifecycle-Fixes (`#196`, `#278`–`#280`, `#289`) + Betreiber-Tests in Browser und Handy. | Charakterbezogenes Annehmen/Ablehnen nach Erstellung, große zusammenhängende Mission + komplette Menüführung auf dem neuen Block-9-Menü (ohne Löschen/Abmelden), vertonte Generalstimme (DE/EN + Untertitel) sowie Schutzlogik für die neue Mission. |
 | [**7 · Leben & Gegenangriffe (E)**](#7-zusätzlich-vorgeschlagen-leben-und-gegenangriffe--offen) | **5 %** | Bunker besitzt bereits Lebenspunkte und bestehende Reparatureffekte. | Komplettes Lebens-, Angriffs-, Vorwarnungs- und Reparatursystem für Soldaten, Türme und Bunker in allen Spielmodi samt Simulation, Multiplayer-Sync und Balance. |
 | [**8 · Sammelstelle & Nacharbeiten**](#8-was-nach-den-patches-ansteht--sammelstelle) | **80 %** | Mittige Popups + `#versionNotice` mit Artwork (`#306`, `#315` bestätigt), AFK-Pausebild + Rückkehr zum Login (`#306`), Feld-Minimalismus (`#308`–`#312`), einheitliche rechte Buttonspalte, Burger-Menü unten, Map-Titelkarte (`map-intro.mjs`), starker Turm-Glow (`#306`), Rules-Datei erstellt + Betreiber-Tests; `20261031-patch7` via [PR #316](https://github.com/0815games/0815games.github.io/pull/316) (`a69675bb`, CI 13/13, Pages `44316906495`, Main-CI `44316907201`) live; begrenzter Max-1-Retry in `party-finalization-browser` (`IPL-0065`). | Block-2-Namens-Rules/Audit (`CHARACTER-NAME-AUDIT.md`), Abschluss-Altsave-Check sowie echte Geräteabnahme von `20261031-patch7` / `20261031-patch8`. |
@@ -571,7 +571,8 @@ grüne Testsuite belegte nicht jede versprochene Wirkung.
 
 **Eingeschoben vor Block 6** (Betreiberwunsch, [IPL-0068](PATCH-LOG.md#ipl-0068--block-5-rtdb-rules-live-best%C3%A4tigt-und-block-9-vor-block-6-eingeplant)),
 für `20261119-block9` in [PR #320](https://github.com/0815games/0815games.github.io/pull/320)
-umgesetzt und mit `20261119-block9b` in [PR #321](https://github.com/0815games/0815games.github.io/pull/321)
+umgesetzt, mit `20261119-block9b` in [PR #321](https://github.com/0815games/0815games.github.io/pull/321)
+und `20261119-block9c` in [PR #322](https://github.com/0815games/0815games.github.io/pull/322)
 feingeschliffen:
 Die spätere Tutorial-Menüführung (Block 6) soll direkt über dem konsolidierten
 Hauptmenü und den einheitlichen Dialogen aufbauen.
@@ -598,12 +599,31 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   und `#campaignPanel` (parallele „Bisherige Geschichte“ & illustrierte
   Akt-Relikte `story-act1..5-relic.jpg`, Akt-Banner `story-act1..5-title.jpg`).
   *(Echte Geräteabnahme offen.)*
+- [x] **Einstellungen → Allgemein, Audio/FX & In-Game-Parität:**
+  Gemeinsamer Einstellungs-Dialog (`settings.mjs`, `assets/settings-command.jpg`)
+  mit einheitlichem Schalter für Soundeffekte, Master-Lautstärke,
+  Missions-Sprachausgabe (`voiceOver`), Grafikvoreinstellung (`full`/`reduced`),
+  Kamerawackeln (`screenShake`), Wetter-/Atmosphäreneffekten (`weatherEffects`),
+  Kampfleuchtspuren (`combatTracers`), Fokus-Autopause (`autoPause`),
+  Standard-Kartenansicht (`fit`/`large`), Vollbild-Umschalter und bestätigtem
+  Zurücksetzen. Der doppelte `#soundToggle` im Feldmenü entfällt vollständig.
+  *(Unit- & Logik-Tests grün; Browser-/Geräteabnahme offen.)*
 - [x] **Einstellungen → Konto (Passwortänderung & geschützte Entlassung):**
   Angemeldete E-Mail-Adresse, In-App-Passwortänderung über `password-change.mjs`
   (`reauthenticateWithCredential` / `updatePassword` + Passwort-Reset-Fallback)
   sowie Gefahrenzone mit `#menuDeleteCharacter` (umgezogen aus der alten
   Utility-Zeile, Party-Sperre direkt im Konto-Abschnitt sichtbar, sicheres
   Schließen offener Dialoge beim Entlassen/Abmelden). *(Unit-, Browser-Smoke- & Emulator-Tests in PR #320 bestanden; echte Geräteabnahme offen.)*
+- [x] **AFK-Schutzszene, Kopie-Korrekturen & visuelle Dialog-Harmonisierung:**
+  `#afkRestDialog` nutzt die neue handgemalte Bunker-Szene (`assets/afk-rest.jpg`)
+  statt der prozeduralen Leinwand (Canvas-Fallback im Code erhalten); alle
+  verbleibenden Modale (`#languageGate`, `#tutorialDialog`, `#storyCinematic`,
+  `#skillDialog`, `#runResults`, `#patchNotes`, `#socialPopup`, `#multiplayerPrompt`,
+  `#versionNotice`) wurden auf gemeinsame `--hq-*`-Tokens, einheitliche
+  `✕`-Schließen-Symbole und `<860px`-Vollbild-Sheets ohne `#versionNotice`-Kollisionen
+  angeglichen. Fakten-/Textbereinigung (`18` → `50` Missionen, `three` → `five`
+  Akte, Entfall redundanter Endlos-Abzweige `#endlessArmory`/`#endlessSkills`,
+  lokalisierter Fallback-Hinweis). *(Unit- & Logik-Tests grün; Browser-/Geräteabnahme offen.)*
 
 ### 6. Tutorial als großer zusammenhängender Einsatz – bisheriges Tutorial gebaut und Teilfix bestätigt
 

@@ -1,75 +1,75 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block9b';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block9b';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block9c';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block9c';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block9b';
+import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block9c';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261119-block9b';
-import {createSettings,readSettings} from './settings.mjs?v=20261119-block9b';
-import {createPasswordChange} from './password-change.mjs?v=20261119-block9b';
+import {setupFieldMenu} from './field-menu.mjs?v=20261119-block9c';
+import {createSettings,readSettings} from './settings.mjs?v=20261119-block9c';
+import {createPasswordChange} from './password-change.mjs?v=20261119-block9c';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261119-block9b';
+import {createPatchNotes} from './patch-notes.mjs?v=20261119-block9c';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block9b';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block9b';
-import {setupFriends} from './friends-ui.mjs?v=20261119-block9b';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block9b';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block9c';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block9c';
+import {setupFriends} from './friends-ui.mjs?v=20261119-block9c';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block9c';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block9b';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block9b';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block9b';
-import {createCommandCenter} from './command-center.mjs?v=20261119-block9b';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block9c';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block9c';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block9c';
+import {createCommandCenter} from './command-center.mjs?v=20261119-block9c';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block9b';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block9c';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block9b';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block9b';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block9b';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block9b';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block9b';
-import {setupAuthForm} from './auth-form.mjs?v=20261119-block9b';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block9c';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block9c';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block9c';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block9c';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block9c';
+import {setupAuthForm} from './auth-form.mjs?v=20261119-block9c';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261119-block9b';
-import {createWriteTracker} from './version-check.mjs?v=20261119-block9b';
+import {createVersionUI} from './version-ui.mjs?v=20261119-block9c';
+import {createWriteTracker} from './version-check.mjs?v=20261119-block9c';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261119-block9b';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block9b';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block9b';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block9b';
+import {createConfirmation} from './confirmation.mjs?v=20261119-block9c';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block9c';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block9c';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block9c';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block9b';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block9b';
-import {rewardDelta} from './run-results.mjs?v=20261119-block9b';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block9b';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block9b';
-import {createPartySignOut} from './party-signout.mjs?v=20261119-block9b';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block9c';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block9c';
+import {rewardDelta} from './run-results.mjs?v=20261119-block9c';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block9c';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block9c';
+import {createPartySignOut} from './party-signout.mjs?v=20261119-block9c';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block9b';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block9b';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block9c';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block9c';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261119-block9b';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block9b';
-import { createPlayer } from './match.mjs?v=20261119-block9b';
-import { bunkerStart } from './solo-deployment.mjs?v=20261119-block9b';
+import { startGame } from './game.js?v=20261119-block9c';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block9c';
+import { createPlayer } from './match.mjs?v=20261119-block9c';
+import { bunkerStart } from './solo-deployment.mjs?v=20261119-block9c';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block9b';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block9b';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block9c';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block9c';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -158,16 +158,26 @@ onLanguageChange(()=>{versionUI?.refresh();maintenanceUI?.refresh();});versionUI
 const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());
 const fullscreen=setupFullscreen({document,button:$('fullscreenToggle'),status:$('fullscreenStatus'),translate:translateText,onLanguageChange});
 const confirmation=createConfirmation(document,translateText);onLanguageChange(()=>confirmation.refresh());
-// One dialog for language, sound, graphics and fullscreen, reached from the Command
-// Center menu and from the field menu. It owns no game state: language stays in
-// language.mjs, sound and effects live in game.js behind the hooks below.
+// One dialog for language, sound, graphics, effects and fullscreen, reached from
+// both the Command Center menu and the in-game field menu. It is the single shared
+// console in and out of battle: audio, voice-over, visual effects and map view flow
+// live into gameControl while language stays in language.mjs.
 const storedSettings=readSettings(languageStorage);
 let passwordChange=null;
+let settingsSoundEnabled=storedSettings.soundEnabled!==false&&Math.round(storedSettings.volume*100)>0;
 const settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
+ sound:{
+  setVolume:value=>gameControl?.setVolume?.(value)??value,
+  setEnabled:value=>{
+   settingsSoundEnabled=!!value;
+   return gameControl?.setSoundEnabled?.(settingsSoundEnabled)??settingsSoundEnabled;
+  },
+ },
  onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
+ onVisualChange:prefs=>gameControl?.applySettings?.(prefs),
  onResetFirstRun:()=>replayFirstRun(),
- onOpen:()=>passwordChange?.refresh(),
+ onOpen:()=>{passwordChange?.refresh();settings.paint();},
  onClose:()=>passwordChange?.reset(),
 });
 passwordChange=createPasswordChange({
@@ -177,8 +187,7 @@ passwordChange=createPasswordChange({
  translate:translateText,
 });
 bindDialogBackdrop($('settingsDialog'),()=>settings.close());
-onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();});
-let settingsSoundEnabled=false;
+onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();settings.paint();});
 const openSettings=(from,options)=>{settings.apply();settings.open(from,options);};
 setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
 $('menuSettings').onclick=()=>openSettings($('menuSettings'));
@@ -493,8 +502,7 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
     // A late check from a previous login must not navigate a new user's game.
     if(accountTerminated||version!==sessionVersion||user?.uid!==uid||gameControl!==control)return;
     if(loaded)control.setMenuOpen(false);else center.showMenu();
-  },
-  onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
+  }}):null;
 bindDialogBackdrop($('endlessLaunch'),()=>{try{$('endlessLaunch').close();}catch{}});
 // The rank is derived from the level on every snapshot - the combat profile
 // strip gets its own paint, the menu card and the dossier re-render themselves.
@@ -502,7 +510,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:storedSettings.graphics==='reduced',leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(value.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -639,15 +647,15 @@ function afkNotice(value){try{
 const afkText=(en,de)=>getLanguage()==='de'?de:en;
 function renderAfkText(){
  $('afkSessionStatus').textContent=afkText('Signing out after inactivity…','Abmeldung wegen Inaktivität…');
+ if($('afkFailureKicker'))$('afkFailureKicker').textContent=afkText('FIELD SECURITY','SITZUNGSSCHUTZ');
  $('afkFailureTitle').textContent=afkText('Session protection unavailable','Sitzungsschutz nicht verfügbar');
  $('afkFailureDetail').textContent=afkText('The browser could not protect the shared session. Reload the game before continuing.','Der Browser konnte die gemeinsame Sitzung nicht schützen. Lade das Spiel neu, bevor du fortfährst.');
  $('afkSessionReload').textContent=afkText('RELOAD GAME','SPIEL NEU LADEN');
 }
 // Half an hour away and the session is closed. That deserves the field's own
-// picture, not a line of text nobody reads: a soldier sitting down, the rifle
-// leaned on the crate, the lantern lit. Dismissing the card leaves the player
-// on the sign-in screen behind it - and clears the notice, so the card cannot
-// come back every time the language changes.
+// painted shelter scene instead of plain placeholder text: the soldier resting
+// beside the lit lantern. Dismissing the card leaves the player on the sign-in
+// screen behind it and clears the notice so language changes cannot reopen it.
 function paintAfkRestCard(){
  $('afkRestKicker').textContent=afkText('FIELD BREAK','PAUSE IM FELD');
  $('afkRestTitle').textContent=afkText('You were signed out','Du wurdest abgemeldet');
@@ -657,8 +665,11 @@ function paintAfkRestCard(){
 function showAfkRestCard(){
  paintAfkRestCard();
  try{
-  const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  drawAfkRestScene($('afkRestArt'),{scale:Math.min(2,window.devicePixelRatio||1),reducedMotion:reduced});
+  const art=$('afkRestArt');
+  if(art?.getContext){
+   const reduced=!!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+   drawAfkRestScene(art,{scale:Math.min(2,window.devicePixelRatio||1),reducedMotion:reduced});
+  }
  }catch{/* A card without its picture is still a card with the right words. */}
  const dialog=$('afkRestDialog');if(dialog&&!dialog.open)dialog.showModal?.();
 }

@@ -1,30 +1,43 @@
 // German for the Settings dialog.
 //
-// The dialog is the only place language, sound, graphics and fullscreen live now, so
-// its copy is read by a player who has just arrived - often on the screen where they
-// first need to switch the language. That is the worst possible place for an English
-// fallback, which is why it gets its own file instead of drifting into the generic
-// dictionaries.
-//
+// The dialog is the only place language, audio, graphics, camera defaults, and
+// fullscreen live now, so its copy is read both in the Command Center and mid-battle.
 // House style, same as the rest of the German: Du-form, short sentences, no "Sie".
 export const germanSettings = Object.freeze({
-  // Dialog chrome and row labels.
+  // Dialog chrome, sections, and controls.
   'SETTINGS': 'EINSTELLUNGEN',
   'Settings': 'Einstellungen',
   'Close settings': 'Einstellungen schließen',
   'Settings sections': 'Bereiche der Einstellungen',
   'GENERAL': 'ALLGEMEIN',
   'ACCOUNT': 'KONTO',
+  'LANGUAGE & DISPLAY': 'SPRACHE & ANZEIGE',
+  'AUDIO & COMMS': 'TON & FUNK',
+  'GRAPHICS & EFFECTS': 'GRAFIK & EFFEKTE',
+  'OPERATION & TRAINING': 'EINSATZ & TRAINING',
   'Language': 'Sprache',
-  'Sound': 'Ton',
-  'Graphics': 'Grafik',
-  'Full': 'Voll',
-  'Reduced': 'Reduziert',
+  'Default battlefield view': 'Standard-Kartenansicht',
+  'Fit whole field': 'Gesamtes Feld',
+  'Tactical zoom': 'Taktischer Zoom',
+  'Display mode': 'Anzeigemodus',
   'FULLSCREEN': 'VOLLBILD',
   'EXIT FULLSCREEN': 'VOLLBILD BEENDEN',
+  'Sound effects': 'Soundeffekte',
+  'Master volume': 'Gesamtlautstärke',
+  'Mission voice-over': 'Missions-Sprachausgabe',
+  'Graphics preset': 'Grafikqualität',
+  'Full': 'Voll',
+  'Reduced': 'Reduziert',
+  'Camera shake': 'Kamerawackeln',
+  'Weather & atmosphere': 'Wetter & Atmosphäre',
+  'Combat tracers & sparks': 'Leuchtspur & Funken',
+  'Auto-pause on tab switch': 'Pause bei Tabwechsel',
+  'ON': 'AN',
+  'OFF': 'AUS',
   'PLAY THE FIRST RUN AGAIN': 'DEN ERSTEN EINSATZ NEU SPIELEN',
-  'Sound, graphics and the first run ask for confirmation before anything changes.':
-    'Ton, Grafik und der erste Einsatz fragen nach, bevor sich etwas ändert.',
+  'RESET SETTINGS': 'EINSTELLUNGEN ZURÜCKSETZEN',
+  'Audio, graphics, and camera settings apply identically in Command Center and during battle. Quality presets and training replay ask first.':
+    'Ton-, Grafik- und Kameraoptionen gelten in der Zentrale und im Kampf identisch. Grafikqualität und Trainings-Neustart fragen vorher nach.',
   'Signed in as': 'Angemeldet als',
   'Change password': 'Passwort ändern',
   'Current password': 'Aktuelles Passwort',
@@ -48,6 +61,10 @@ export const germanSettings = Object.freeze({
   'The training contract starts from the beginning: same map, same cards, same guide. Progress you already earned stays yours, and this replay pays no second XP.':
     'Der Trainingsvertrag startet von vorn: gleiche Karte, gleiche Karten, gleicher Guide. Was du schon verdient hast, bleibt dir, und dieser Durchlauf zahlt keine zweite EP.',
   'START OVER': 'NEU STARTEN',
+  'Reset settings?': 'Einstellungen zurücksetzen?',
+  'Restore default audio, graphics, and battlefield display preferences. Language and your account stay unchanged.':
+    'Standardwerte für Ton, Grafik und Kartenansicht wiederherstellen. Sprache und Konto bleiben unverändert.',
+  'RESET': 'ZURÜCKSETZEN',
 
   // What the game says while a replay runs, so nobody wonders where the XP went.
   'Run over. This replay pays no XP - the first run already did.':

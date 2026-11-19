@@ -2,7 +2,7 @@ export const germanStatic=Object.freeze({
   "The Broken Signal": "Das gebrochene Signal",
   "A signal lost. A valley at stake.": "Ein Signal verstummt. Ein Tal in Gefahr.",
   "FIELD REPORT / 01": "FELDBERICHT / 01",
-  "A lost signal, a missing patrol, and a valley facing a flood. Follow Ada, Voss, Ivo, Sera and Nia across three acts. Complete each mission to unlock the next.": "Ein verstummtes Signal, eine vermisste Patrouille und ein Tal vor der Flut. Begleite Ada, Voss, Ivo, Sera und Nia durch drei Akte. Schließe jede Mission ab, um die nächste freizuschalten.",
+  "A lost signal, a missing patrol, and a valley facing a flood. Follow Ada, Voss, Ivo, Sera and Nia across five acts. Complete each mission to unlock the next.": "Ein verstummtes Signal, eine vermisste Patrouille und ein Tal vor der Flut. Begleite Ada, Voss, Ivo, Sera und Nia durch fünf Akte. Schließe jede Mission ab, um die nächste freizuschalten.",
   "OPEN MISSION BOARD →": "MISSIONSKARTE ÖFFNEN →",
   "CAMPAIGN DOSSIER": "KAMPAGNENAKTE",
   "Your story so far": "Deine bisherige Geschichte",

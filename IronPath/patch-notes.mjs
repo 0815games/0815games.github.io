@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9b';
+import {getLanguage} from './language.mjs?v=20261119-block9c';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9c',build:'20261119-block9c',pr:322,
+    title:{en:'Block 9c · Unified Settings Console, AFK Bunker Art & Full Dialog Harmonization',de:'Block 9c · Einheitliche Einstellungen, AFK-Bunker-Gemälde & vollständige Dialog-Harmonisierung'},
+    shipped:[
+      {en:'Upgraded Settings (`settings.mjs`, `assets/settings-command.jpg`) with Sound Effects toggle, Master Volume, Mission Voice-Over, Graphics preset (automatically disabling FX toggles when Reduced is chosen), Screen Shake, Weather FX, Combat Tracers, Focus Auto-Pause, Default Battlefield View, Fullscreen, confirmed Restore Defaults, and removed the duplicate `#soundToggle` from `#fieldOps`.',de:'Einstellungen (`settings.mjs`, `assets/settings-command.jpg`) um Soundeffekte-Schalter, Gesamtlautstärke, Missions-Sprachausgabe, Grafikvoreinstellung (sperrt FX-Schalter automatisch bei „Reduziert“), Kamerawackeln, Wetter-FX, Kampfleuchtspuren, Fokus-Autopause, Standard-Kartenansicht, Vollbild und bestätigtes Zurücksetzen ausgebaut; doppelten `#soundToggle` im Feldmenü entfernt.'},
+      {en:'Added the painted bunker scene (`assets/afk-rest.jpg`) to `#afkRestDialog` and `#afkSessionFailure`, harmonized all remaining dialogs and popups (`#languageGate`, `#tutorialDialog`, `#storyCinematic`, `#skillDialog`, `#runResults`, `#patchNotes`, `#socialPopup`, `#multiplayerPrompt`, `#versionNotice`, `#deploymentCheck`) on shared tokens and uniform `✕` close buttons, and eliminated `#versionNotice` overlaps in lobby and battle views.',de:'Handgemalte Bunker-Szene (`assets/afk-rest.jpg`) für `#afkRestDialog` und `#afkSessionFailure` ergänzt, sämtliche übrigen Modale und Popups (`#languageGate`, `#tutorialDialog`, `#storyCinematic`, `#skillDialog`, `#runResults`, `#patchNotes`, `#socialPopup`, `#multiplayerPrompt`, `#versionNotice`, `#deploymentCheck`) auf gemeinsame Tokens und einheitliche `✕`-Buttons abgestimmt sowie `#versionNotice`-Überlappungen behoben.'},
+      {en:'Fixed campaign fact mismatches (`18` to `50` missions, `three` to `five` acts), dropped redundant Endless shortcuts (`#endlessArmory`/`#endlessSkills`), localized fallback notices without naming Firebase, renamed `#towerDetailsBack` to `CANCEL`, condensed lobby hints, and removed dead CSS.',de:'Kampagnenfakten (`18` auf `50` Missionen, `drei` auf `fünf` Akte) korrigiert, doppelte Endlos-Abzweige (`#endlessArmory`/`#endlessSkills`) gestrichen, Fallback-Hinweise zweisprachig ohne Firebase-Namen formuliert, `#towerDetailsBack` in `ABBRECHEN`/`CANCEL` umbenannt, Lobby-Hinweise gestrafft und totes CSS entfernt.'},
+    ],
+    open:[
+      {en:'Real desktop and phone inspection on `20261119-block9c` before starting Block 6.',de:'Echte Desktop- und Handy-Sichtung auf `20261119-block9c` vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block9b',build:'20261119-block9b',pr:321,
     title:{en:'Block 9b · Endless Quick-Deploy, Unified Campaign Dossier & Cohesive Artwork',de:'Block 9b · Endlos-Schnellstart, einheitliche Kampagnen-Akte & durchgängige Gemälde'},

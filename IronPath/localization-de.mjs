@@ -132,8 +132,7 @@ export const germanText=Object.freeze({
 
   "FRIENDS / INVITATIONS": "FREUNDE / EINLADUNGEN",
   "RESUME AS HOST": "ALS HOST FORTSETZEN",
-  "Share one code. The host approves up to three players and chooses a mode. Two players can play co-op or 1 vs 1; three can play large-map co-op; four can play co-op or 2 vs 2. Versus is a survival race, not direct combat.": "Teilt einen Code. Der Host bestätigt bis zu drei Spieler und wählt einen Modus. Zwei Spieler können Koop oder 1 gegen 1 spielen; drei spielen Koop auf der großen Karte; vier spielen Koop oder 2 gegen 2. Im Versus-Modus gewinnt, wer länger überlebt – es gibt keinen direkten Kampf.",
-  "Create a party, open Friends, then invite an accepted friend. They can join directly; players using a party code still need approval.": "Erstelle eine Gruppe, öffne Freunde und lade einen bestätigten Freund ein. Eingeladene Freunde können direkt beitreten; Spieler mit Gruppencode brauchen weiterhin eine Bestätigung.",
+  "Share a four-digit party code or invite accepted friends. Co-op supports 2–4 players; Versus is a 1v1 or 2v2 survival race.": "Teilt einen vierstelligen Gruppencode oder ladet bestätigte Freunde ein. Koop unterstützt 2–4 Spieler; Versus ist ein 1v1- oder 2v2-Überlebensrennen.",
   "Solo combat pauses while the lobby is open. Online matches continue independently.": "Der Solo-Kampf pausiert bei geöffneter Lobby. Online-Spiele laufen unabhängig weiter.",
   "Connection & safety tips": "Verbindungs- und Sicherheitshinweise",
   "Everyone should reload the game after an update and use the same current version.": "Nach einem Update sollten alle das Spiel neu laden und dieselbe aktuelle Version verwenden.",

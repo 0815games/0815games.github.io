@@ -133,6 +133,12 @@ test('endless quick-deploy sits at the top above terrain cards and record; campa
 
   assert.doesNotMatch(css, /assets\/(?:endless-ground|terrain3-[a-z]+)\.jpg/,
     'menu-redesign.css replaces flat ground tiles with panoramic painted artwork');
+  assert.doesNotMatch(endless, /id="endlessArmory"|id="endlessSkills"/, '#endlessLaunch omits redundant Armory/Skills detour buttons');
+  assert.match(html, /id="campaignProgressBar"[^>]*max="50"/, 'campaign progress bar uses the real 50-mission count');
+  assert.match(html, /data-i18n-text="50 MISSIONS"/, 'campaign header shows 50 MISSIONS');
+  assert.match(html, /across five acts/, 'campaign intro accurately states five acts');
+  assert.match(html, /id="afkRestArt"[^>]*src="assets\/afk-rest\.jpg"/, '#afkRestDialog uses painted AFK shelter art');
+
   for (const art of [
     'assets/endless-frontline.jpg',
     'assets/story-act1-relic.jpg',
@@ -141,6 +147,8 @@ test('endless quick-deploy sits at the top above terrain cards and record; campa
     'assets/story-act4-relic.jpg',
     'assets/story-act5-relic.jpg',
     'assets/field-recruiting.jpg',
+    'assets/settings-command.jpg',
+    'assets/afk-rest.jpg',
   ]) {
     assert.ok(css.includes(art), `menu-redesign.css integrates ${art}`);
   }

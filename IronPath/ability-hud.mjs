@@ -2,7 +2,7 @@
 //
 // Owns no DOM and no simulation state. Returns `active` (`mark` alias too) so
 // both `#abilityIcon` and `#ability` callers resolve the same active class mark.
-import {abilityName} from './skills.mjs?v=20261119-block9b';
+import {abilityName} from './skills.mjs?v=20261119-block9c';
 
 // Abilities that need something to hit on the field.
 const TARGETED=Object.freeze(['assault','recon','airDefense']);
