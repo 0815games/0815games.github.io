@@ -27,10 +27,10 @@ export const BLOCK6_TUTORIAL_RULE=Object.freeze({
   '.validate':'newData.isString() && (newData.val() === \'offered\' || newData.val() === \'accepted\' || newData.val() === \'declined\' || newData.val() === \'completed\')',
  },
  rewarded:{
-  '.validate':'newData.isBoolean() && (!data.exists() || !data.val() || newData.val() === true)',
+  '.validate':'newData.isBoolean() && (!data.exists() || data.val() !== true || newData.val() === true)',
  },
  missionCompleted:{
-  '.validate':'newData.isBoolean() && (!data.exists() || !data.val() || newData.val() === true)',
+  '.validate':'newData.isBoolean() && (!data.exists() || data.val() !== true || newData.val() === true)',
  },
  phase:{
   '.validate':'newData.isString() && (newData.val() === \'dossier\' || newData.val() === \'mission\' || newData.val() === \'menu\' || newData.val() === \'done\')',

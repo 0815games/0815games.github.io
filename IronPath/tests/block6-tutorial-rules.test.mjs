@@ -16,8 +16,8 @@ test('block6-tutorial-candidate adds strict per-character tutorial persistence o
   assert.deepEqual(tut,BLOCK6_TUTORIAL_RULE);
   assert.equal(tut.$other['.validate'],false,'unknown tutorial keys rejected');
   assert.match(patched.rules.players.$uid['.validate'],new RegExp(BLOCK6_TUTORIAL_GUARD.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
-  assert.match(tut.rewarded['.validate'],/!data\.exists\(\)\s*\|\|\s*!data\.val\(\)\s*\|\|\s*newData\.val\(\)\s*===\s*true/,'rewarded flag is monotonic per character');
-  assert.match(tut.missionCompleted['.validate'],/!data\.exists\(\)\s*\|\|\s*!data\.val\(\)\s*\|\|\s*newData\.val\(\)\s*===\s*true/,'missionCompleted flag is monotonic per character');
+  assert.match(tut.rewarded['.validate'],/!data\.exists\(\)\s*\|\|\s*data\.val\(\)\s*!==\s*true\s*\|\|\s*newData\.val\(\)\s*===\s*true/,'rewarded flag is monotonic per character');
+  assert.match(tut.missionCompleted['.validate'],/!data\.exists\(\)\s*\|\|\s*data\.val\(\)\s*!==\s*true\s*\|\|\s*newData\.val\(\)\s*===\s*true/,'missionCompleted flag is monotonic per character');
 
   // Idempotent when applied twice, and rejects unexpected divergence.
   assert.deepEqual(applyBlock6TutorialRules(structuredClone(patched.rules)),patched.rules);
