@@ -153,3 +153,19 @@ test('endless quick-deploy sits at the top above terrain cards and record; campa
     assert.ok(css.includes(art), `menu-redesign.css integrates ${art}`);
   }
 });
+
+test('VIEW LAST RESULTS sits below mode cards, language select stays visible in Settings, and Endless None equipped is translated', () => {
+  const html = read('index.html');
+  const css = read('menu-redesign.css');
+  const navStart = html.indexOf('class="command-nav"');
+  const navEnd = html.indexOf('id="fieldSchool"', navStart);
+  const nav = html.slice(navStart, navEnd);
+  assert.ok(nav.indexOf('id="menuResume"') < nav.indexOf('class="mode-grid"'), '#menuResume stays above .mode-grid');
+  assert.ok(nav.indexOf('class="mode-grid"') < nav.indexOf('id="menuResults"'), '#menuResults sits below .mode-grid');
+  assert.match(css, /#settingsDialog\s+\.language-flag-control\s+select\s*\{[^}]*position:\s*static[^}]*opacity:\s*1/s,
+    'menu-redesign.css resets legacy style.css opacity:0 / position:absolute on #languageSelect');
+  assert.match(css, /#commandCenter\s+#menuResults\.command-results\s*\{/,
+    'menu-redesign.css gives #menuResults a distinct secondary results bar style');
+  const launcher = read('endless-launcher.mjs');
+  assert.doesNotMatch(launcher, /translateText\(\s*['"]command\.none['"]/, 'endless-launcher.mjs must not pass dotted message key to translateText');
+});

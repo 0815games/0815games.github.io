@@ -2,7 +2,7 @@
 // play - the personal record, the battlefield choice, the last run and the
 // current loadout. Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translateText} from './language.mjs?v=20261119-block9c';
+import {translate,translateText} from './language.mjs?v=20261119-block9d';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the
@@ -63,7 +63,7 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     $('endlessScrap').textContent=fmt(record.scrap);
     const last=getLastRun();
     $('endlessLastRun').textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet on this device.');
-    $('endlessLoadout').textContent=record.loadout||translateText('command.none');
+    $('endlessLoadout').textContent=record.loadout||translate('command.none');
     try{dialog.showModal();}catch{/* Already open or not supported. */}
   }
   const close=()=>{try{dialog.close();}catch{}};

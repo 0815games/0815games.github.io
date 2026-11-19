@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9c';
+import {getLanguage} from './language.mjs?v=20261119-block9d';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9d',build:'20261119-block9d',pr:323,
+    title:{en:'Block 9d · Single Active-Session Lock, Cropped Artwork, Settings Language Control & Complete DE Localization',de:'Block 9d · Einzelsitzungs-Schutz, randfreie Gemälde, sichtbare Sprachauswahl & vollständige DE-Lokalisierung'},
+    shipped:[
+      {en:'Added single active-session protection (`active-session.mjs`, `activeSessions/$uid` lease with 15 s heartbeat, 45 s TTL, `onDisconnect` release, sign-in conflict check, optional session-takeover checkbox `#sessionTakeoverCheck`, instant takeover notice, and Firebase RTDB rules candidate `BLOCK9D-RULES-TO-PUBLISH.json` with rollout guide).',de:'Einzelsitzungs-Schutz ergänzt (`active-session.mjs`, `activeSessions/$uid`-Lease mit 15-s-Heartbeat, 45-s-TTL, `onDisconnect`-Freigabe, Login-Konfliktprüfung, optionalem Sitzungsübernahme-Haken `#sessionTakeoverCheck`, sofortigem Übernahmehinweis sowie Firebase-RTDB-Regelkandidat `BLOCK9D-RULES-TO-PUBLISH.json` samt Rollout-Leitfaden).'},
+      {en:'Removed white outer borders/frames from seven painted artworks (`story-tower.jpg`, `story-marsh.jpg`, `story-rook.jpg`, `story-sera.jpg`, `endless-frontline.jpg`, `class-medic.jpg`, `armory-kit.jpg`), added clipping on mode/theme/field-school cards, and moved `#menuResults` below `.mode-grid` in the Command HQ.',de:'Weiße Außenränder und Zierrahmen an sieben Gemälden entfernt (`story-tower.jpg`, `story-marsh.jpg`, `story-rook.jpg`, `story-sera.jpg`, `endless-frontline.jpg`, `class-medic.jpg`, `armory-kit.jpg`), Kartenbeschnitt (`overflow: hidden`) ergänzt und `#menuResults` unter `.mode-grid` platziert.'},
+      {en:'Restored visibility and width on `#settingsDialog #languageSelect`, reset legacy entry label styling on `.session-takeover-field`, fixed `command.none` translation in `endless-launcher.mjs`, tagged remaining static HTML strings with `data-i18n-text`, refreshed `#enlistStamp` and open AFK dialogs on language changes, and translated friends/lobby error strings.',de:'Sichtbarkeit und Breite von `#languageSelect` in den Einstellungen wiederhergestellt, geerbte Label-Stile auf `.session-takeover-field` bereinigt, `command.none` in `endless-launcher.mjs` behoben, fehlende statische HTML-Texte per `data-i18n-text` ergänzt, `#enlistStamp`/AFK-Dialog beim Sprachwechsel aktualisiert sowie Freundes-/Lobby-Fehlermeldungen übersetzt.'},
+    ],
+    open:[
+      {en:'Publish `BLOCK9D-RULES-TO-PUBLISH.json` in Firebase Console (step-by-step guide in `BLOCK9D-SESSION-ROLLOUT.md`) and run real desktop/phone verification on `20261119-block9d` before starting Block 6.',de:'`BLOCK9D-RULES-TO-PUBLISH.json` in der Firebase Console veröffentlichen (Anleitung in `BLOCK9D-SESSION-ROLLOUT.md`) und echte Desktop-/Handy-Sichtung auf `20261119-block9d` vor Beginn von Block 6 durchführen.'},
+    ],
+  },
   {
     id:'block9c',build:'20261119-block9c',pr:322,
     title:{en:'Block 9c · Unified Settings Console, AFK Bunker Art & Full Dialog Harmonization',de:'Block 9c · Einheitliche Einstellungen, AFK-Bunker-Gemälde & vollständige Dialog-Harmonisierung'},

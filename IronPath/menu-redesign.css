@@ -193,6 +193,21 @@
   font-weight: 700;
 }
 
+#commandCenter #menuResults.command-results {
+  border: 1px solid var(--hq-border-strong);
+  background: linear-gradient(90deg, rgba(25, 43, 35, 0.96), rgba(16, 29, 23, 0.98));
+  color: var(--hq-text);
+}
+
+#commandCenter #menuResults.command-results > span:last-child {
+  color: var(--hq-gold);
+}
+
+#commandCenter #menuResults.command-results:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  background: linear-gradient(90deg, rgba(31, 53, 43, 0.98), rgba(20, 36, 29, 0.99));
+}
+
 /* Mode cards: preserve identical background-image, size, position, repeat on :hover! */
 #commandCenter .mode-card {
   position: relative;
@@ -204,6 +219,8 @@
   padding: 18px;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
+  overflow: hidden;
+  background-clip: padding-box;
   color: var(--hq-text);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.36);
   transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
@@ -335,7 +352,7 @@
 
   #commandCenter .command-soldier-actions {
     grid-column: 1;
-    grid-row: 4;
+    grid-row: 3;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -362,7 +379,7 @@
 
   #commandCenter .command-utilities {
     grid-column: 1;
-    grid-row: 5;
+    grid-row: 4;
     align-self: start;
   }
 
@@ -379,15 +396,9 @@
     margin-bottom: 10px;
   }
 
-  #commandCenter #menuResults {
-    grid-column: 2;
-    grid-row: 3;
-    margin-bottom: 10px;
-  }
-
   #commandCenter .mode-grid {
     grid-column: 2;
-    grid-row: 4 / span 2;
+    grid-row: 3 / span 2;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 14px;
@@ -396,6 +407,13 @@
 
   #commandCenter .mode-card {
     min-height: 292px;
+  }
+
+  #commandCenter #menuResults {
+    grid-column: 2;
+    grid-row: 5;
+    margin-top: 12px;
+    margin-bottom: 0;
   }
 
   #commandCenter #fieldSchool {
@@ -913,6 +931,9 @@
 
 #settingsDialog .settings-row label,
 #settingsDialog .settings-row .settings-label {
+  flex: 1 1 140px;
+  min-width: 0;
+  overflow-wrap: anywhere;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -923,7 +944,29 @@
 #settingsDialog .language-flag-control {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
+#settingsDialog .language-flag-control .flag-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 18px;
+  border-radius: 2px;
+}
+
+#settingsDialog .language-flag-control select {
+  position: static;
+  inset: auto;
+  opacity: 1;
+  width: auto;
+  height: auto;
 }
 
 #settingsDialog .settings-row select {
@@ -1374,6 +1417,8 @@
   text-align: left;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
+  overflow: hidden;
+  background-clip: padding-box;
   background-color: var(--hq-surface-elevated);
   background-size: cover;
   background-position: center;
@@ -1468,6 +1513,38 @@
   }
 }
 
+@media (max-width: 380px) {
+  #endlessLaunch .endless-record {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #commandCenter #menuSoldier .command-soldier-open {
+    padding: 5px 7px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+
+  #commandCenter .command-soldier-xp {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+
+  #commandCenter .command-utilities button {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    padding: 8px 10px;
+  }
+
+  #friendsDialog .friends-code > div {
+    flex-wrap: wrap;
+  }
+
+  #friendsDialog #friendInput {
+    min-width: 0;
+    flex: 1 1 160px;
+  }
+}
+
 #endlessLaunch .endless-record > div {
   display: grid;
   gap: 2px;
@@ -1478,6 +1555,7 @@
   color: var(--hq-muted);
   font-size: 9.5px;
   letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
 }
 
 #endlessLaunch .endless-record strong {
@@ -1526,6 +1604,9 @@
   #leaderboardDialog[open] {
     width: min(760px, 94vw);
     max-height: min(86vh, 780px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
   }
 
   #soldierDialog[open],
@@ -1533,6 +1614,13 @@
   #skillDialog[open] {
     width: min(1020px, 94vw);
     max-height: min(88vh, 840px);
+  }
+
+  #soldierDialog[open],
+  #armoryDialog[open] {
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
   }
 }
 
@@ -1615,6 +1703,8 @@
     margin: 0;
     padding: 10px 14px;
     min-height: 62px;
+    align-items: center;
+    gap: 12px;
   }
 
   #skillDialog[open] .skills-header p {
@@ -2162,6 +2252,8 @@
   padding: 12px 14px;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
+  overflow: hidden;
+  background-clip: padding-box;
   background-color: var(--hq-surface-elevated);
   background-size: cover;
   background-position: center;
@@ -2849,5 +2941,36 @@ body:has(:is(#socialPopup:not([hidden]), #multiplayerPrompt:not([hidden]))) #ver
   #settingsDialog .fullscreen-toggle {
     min-width: 150px;
   }
+}
+
+.session-takeover-field {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid rgba(212, 168, 79, 0.45);
+  border-radius: var(--hq-radius);
+  background: rgba(24, 34, 28, 0.9);
+  color: var(--hq-text);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1.35;
+  cursor: pointer;
+}
+
+.session-takeover-field[hidden] {
+  display: none;
+}
+
+.session-takeover-field input[type="checkbox"] {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--hq-gold);
+  cursor: pointer;
 }
 

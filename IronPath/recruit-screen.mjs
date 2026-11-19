@@ -4,7 +4,7 @@
 // readout, and a 5-dot hair & beard color bar. Zero bottom tile rows.
 import {defaultAvatar,randomAvatar,storeAvatar} from './avatar.mjs?v=20261119-avatar3';
 import {layerOptions,composePortrait,DEFAULT_COLOR_ID} from './avatar-layers.mjs?v=20261119-avatar3';
-import {translateText as tr} from './language.mjs?v=20261119-block9c';
+import {translateText as tr} from './language.mjs?v=20261119-block9d';
 
 function deviceRatio(){
   return Math.min(2,Math.max(1,(typeof window!=='undefined'&&window.devicePixelRatio)||1));
@@ -200,7 +200,7 @@ export function setupRecruitScreen({document,storage,getAccountId=()=>null,onAva
 
   return {
     getAvatar:()=>avatar,
-    refresh(){paintAvatar();renderControls();},
+    refresh(){paintAvatar();renderControls();if(stampEl)stampEl.textContent=tr('ENLISTED · IRON PATH');},
     reset(){avatar=defaultAvatar('female');storeAvatar(storage,avatar);paintAvatar();renderControls();},
     stamp(){
       const stamp=$('enlistStamp'),card=document.querySelector('#characterView .recruit-card');
