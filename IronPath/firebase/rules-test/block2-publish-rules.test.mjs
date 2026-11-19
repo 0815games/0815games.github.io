@@ -47,6 +47,13 @@ before(async()=>{
   bob=env.authenticatedContext('bob',claims()).database();
   charlie=env.authenticatedContext('charlie',claims()).database();
   anon=env.unauthenticatedContext().database();
+  // Wait for RTDB emulator rules warm-up before running tests.
+  await env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),MAINTENANCE_PATH),{format:1,mode:'open',authAfterMs:0}));
+  await env.withSecurityRulesDisabled(ctx=>set(ref(ctx.database(),'players/alice/name'),'Alex'));
+  for(let attempt=1;attempt<=30;attempt++){
+    try{await get(ref(alice,'players/alice/name'));break;}
+    catch{await new Promise(r=>setTimeout(r,200));}
+  }
 });
 
 beforeEach(async()=>{
@@ -141,13 +148,18 @@ test('BLOCK2-RULES-TO-PUBLISH runs silent login backfill, resolves legacy duplic
   // 4. Preserves Block 9D activeSessions, Block 5 skills, and Block 4 friend portraits.
   const {onValue,onDisconnect,serverTimestamp}=await import('firebase/database');
   const lease=createActiveSessionManager({db:bob,sdk:{...sdk,onValue,onDisconnect,serverTimestamp},uid:'bob',clientId:'a'.repeat(32)});
-  assert.equal((await lease.acquire()).status,'claimed');
-  assert.equal((await assertSucceeds(get(ref(alice,'players/bob/avatar')))).val(),'g:m|look:beard');
-  for(const path of SKILL_PATHS){
-    await assertSucceeds(set(ref(bob,'players/bob/skills'),encodeBuild(parseBuild(`v2;${path.id};1;0;00000000000000`,5))));
+  try{
+    assert.equal((await lease.acquire()).status,'claimed');
+    assert.equal((await assertSucceeds(get(ref(alice,'players/bob/avatar')))).val(),'g:m|look:beard');
+    for(const path of SKILL_PATHS){
+      await assertSucceeds(set(ref(bob,'players/bob/skills'),encodeBuild(parseBuild(`v2;${path.id};1;0;00000000000000`,5))));
+    }
+  }finally{
+    await lease.release();
   }
 
   // 5. Charlie backfills name, then deletes character across sessions: index entry must be freed atomically.
+  const claimA=createCharacterNameClaim({db:alice,auth:{currentUser:{uid:'alice'}},sdk});
   const claimC=createCharacterNameClaim({db:charlie,auth:{currentUser:{uid:'charlie'}},sdk});
   assert.equal((await claimC.claim('Charlie')).status,'claimed');
   const charlieKey=characterNameKey('Charlie');

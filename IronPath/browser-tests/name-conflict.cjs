@@ -124,7 +124,7 @@ const panel=`export function createFourPlayerPanel(){return {show(){},hide(){},i
      assert.equal(await page.locator('#menuName').textContent(),'AlexTwo');
      assert.equal(await page.evaluate(()=>window.__dbValues.get('players/mock-user').xp),750);
      assert.equal(await page.evaluate(()=>window.__dbValues.get('players/mock-user').armory),'1;2');
-     assert.equal(await page.evaluate(()=>window.__dbValues.get(`characterNames/${alexKey}`).uid),'other-user');
+     assert.equal(await page.evaluate(k=>window.__dbValues.get(`characterNames/${k}`).uid,alexKey),'other-user');
     }
     assert.deepEqual(errors,[],`${scenario}: no page errors`);
     console.log(`${scenario}: Block 2 backfill & conflict resolution UI verified in Chromium (build ${build})`);
