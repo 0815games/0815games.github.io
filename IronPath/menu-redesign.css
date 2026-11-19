@@ -111,45 +111,168 @@
 }
 
 #commandCenter #menuSoldier.command-soldier {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 11px;
   width: 100%;
-  border: 1px solid var(--hq-gold);
+  padding: 14px 15px 13px;
+  text-align: left;
+  border: 1px solid rgba(228, 202, 137, 0.72);
   border-radius: var(--hq-radius);
-  background:
-    linear-gradient(135deg, rgba(24, 42, 33, 0.96) 0%, rgba(14, 26, 21, 0.98) 100%);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(228, 202, 137, 0.22);
+  background-color: #101d17;
+  background-image:
+    linear-gradient(128deg, rgba(16, 29, 23, 0.94) 0%, rgba(19, 34, 27, 0.87) 56%, rgba(14, 26, 20, 0.92) 100%),
+    url("assets/soldier-workbench.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+  box-shadow: inset 0 1px 0 rgba(248, 230, 180, 0.26), inset 0 0 0 1px rgba(228, 202, 137, 0.12), 0 12px 28px rgba(0, 0, 0, 0.42);
   color: var(--hq-text);
   transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
 }
 
 #commandCenter #menuSoldier.command-soldier:hover {
   border-color: #f3dfb0;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.46), 0 0 0 1px rgba(228, 202, 137, 0.25);
+  box-shadow: inset 0 1px 0 rgba(248, 230, 180, 0.34), 0 16px 34px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(228, 202, 137, 0.28);
+  transform: translateY(-1px);
+}
+
+#commandCenter .command-soldier-top {
+  display: grid;
+  grid-template-columns: 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+}
+
+#commandCenter .command-soldier-portrait {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border: 1.5px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: #0d1713;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.52);
+  overflow: visible;
+}
+
+#commandCenter .command-soldier-portrait img {
+  border: 0;
+  border-radius: calc(var(--hq-radius) - 1px);
 }
 
 #commandCenter .command-soldier-info {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
   min-width: 0;
   width: 100%;
-  justify-items: stretch;
+}
+
+#commandCenter .command-soldier-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 8px;
+  min-width: 0;
+}
+
+#commandCenter #menuName {
+  margin: 0;
+  color: #fbf2d9;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(18px, 2.2vw, 22px);
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+
+#commandCenter #menuLevel.soldier-level {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid rgba(228, 202, 137, 0.32);
+  border-radius: 3px;
+  background: rgba(228, 202, 137, 0.12);
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.25;
 }
 
 #commandCenter .command-soldier-xp {
   display: grid;
-  grid-template-columns: minmax(48px, 1fr) auto;
-  align-items: center;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
   width: 100%;
+  min-width: 0;
+  padding: 8px 10px 9px;
+  border: 1px solid rgba(228, 202, 137, 0.28);
+  border-top-color: rgba(228, 202, 137, 0.38);
+  border-radius: 4px;
+  background: rgba(9, 17, 13, 0.82);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.52);
+  box-sizing: border-box;
+}
+
+#commandCenter .command-soldier-xp-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
 }
 
-#commandCenter .command-soldier-xp progress {
-  width: 100%;
-  min-width: 0;
-  max-width: none;
+#commandCenter .command-soldier-xp-label {
+  color: var(--hq-gold);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  line-height: 1;
 }
 
 #commandCenter #menuXp {
+  color: #ede6d1;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
+}
+
+#commandCenter .command-soldier-xp progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  border: 1px solid rgba(228, 202, 137, 0.24);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+#commandCenter .command-soldier-xp progress::-webkit-progress-bar {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+#commandCenter .command-soldier-xp progress::-webkit-progress-value {
+  background: linear-gradient(90deg, #b89242 0%, #ebd292 100%);
+  border-radius: 999px;
+}
+
+#commandCenter .command-soldier-xp progress::-moz-progress-bar {
+  background: linear-gradient(90deg, #b89242 0%, #ebd292 100%);
+  border-radius: 999px;
 }
 
 /* Move SHOW TASK pill clear of bottom-left .command-utilities while on Command Center */
@@ -167,44 +290,96 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 }
 
-#commandCenter .command-soldier-portrait {
-  border: 1px solid var(--hq-border-strong);
-  border-radius: var(--hq-radius);
-  background: #0d1713;
-}
-
 #commandCenter .command-soldier-open {
-  padding: 6px 10px;
-  border: 1px solid var(--hq-border-strong);
-  border-radius: var(--hq-radius);
-  background: rgba(228, 202, 137, 0.12);
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid rgba(228, 202, 137, 0.45);
+  border-radius: 4px;
+  background: rgba(228, 202, 137, 0.14);
   color: var(--hq-gold);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
   white-space: nowrap;
 }
 
 #commandCenter .command-soldier-actions button {
   position: relative;
-  min-height: 54px;
-  border: 1px solid var(--hq-border);
+  overflow: hidden;
+  background-clip: padding-box;
+  border: 1px solid rgba(228, 202, 137, 0.34);
   border-radius: var(--hq-radius);
-  background: var(--hq-surface-elevated);
+  background-color: #13211b;
   color: var(--hq-text);
   font-weight: 700;
-  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 18px rgba(0, 0, 0, 0.32);
+  transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+}
+
+#commandCenter .command-soldier-actions .action-card-icon {
+  flex: none;
+  color: var(--hq-gold);
+}
+
+#commandCenter .command-soldier-actions .action-card-label {
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.92);
+}
+
+/* Preserve identical background-image, size, position, repeat on hover across painted tiles */
+#commandCenter .command-soldier-actions #menuArmory,
+#commandCenter .command-soldier-actions #menuArmory:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(10, 18, 14, 0.38) 0%, rgba(9, 17, 13, 0.9) 88%),
+    url("assets/arsenal-workbench.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .command-soldier-actions #menuSkills,
+#commandCenter .command-soldier-actions #menuSkills:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(10, 18, 14, 0.38) 0%, rgba(9, 17, 13, 0.9) 88%),
+    url("assets/skills-banner.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .command-soldier-actions #menuFriends,
+#commandCenter .command-soldier-actions #menuFriends:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(10, 18, 14, 0.38) 0%, rgba(9, 17, 13, 0.9) 88%),
+    url("assets/action-friends.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
+}
+
+#commandCenter .command-soldier-actions #menuLeaderboard,
+#commandCenter .command-soldier-actions #menuLeaderboard:hover:not(:disabled) {
+  background-image:
+    linear-gradient(180deg, rgba(10, 18, 14, 0.38) 0%, rgba(9, 17, 13, 0.9) 88%),
+    url("assets/action-scores.jpg");
+  background-size: cover, cover;
+  background-position: center, center;
+  background-repeat: no-repeat, no-repeat;
 }
 
 #commandCenter .command-soldier-actions button:hover {
-  border-color: var(--hq-border-strong);
-  background: #22382d;
+  border-color: var(--hq-gold);
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.25), 0 12px 24px rgba(0, 0, 0, 0.44);
+  transform: translateY(-1px);
 }
 
 #commandCenter .command-soldier-actions button.has-skill-points,
 #commandCenter .command-soldier-actions button.has-friend-requests {
   border-color: var(--hq-gold);
-  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.28), 0 0 16px rgba(228, 202, 137, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.34), 0 0 16px rgba(228, 202, 137, 0.18);
 }
 
 #commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
@@ -371,12 +546,12 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
 
 @media (min-width: 860px) {
   #commandCenter {
-    gap: 18px;
+    gap: 14px;
   }
 
   #commandCenter .command-hero {
-    min-height: 146px;
-    padding: 24px 28px;
+    min-height: 118px;
+    padding: 18px 24px;
   }
 
   #commandCenter .command-nav {
@@ -391,23 +566,18 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   #commandCenter #menuSoldier.command-soldier {
     grid-column: 1;
     grid-row: 1;
-    display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
-    align-items: center;
-    gap: 12px 14px;
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 15px 13px;
     margin-bottom: 12px;
     text-align: left;
   }
 
-  #commandCenter #menuSoldier .command-soldier-open {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
-
   #commandCenter .command-soldier-actions {
     grid-column: 1;
-    grid-row: 3;
+    grid-row: 2 / span 2;
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -419,11 +589,23 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
-    min-height: 62px;
-    padding: 10px 12px;
-    font-size: 11.5px;
+    gap: 8px;
+    min-height: 78px;
+    padding: 10px 11px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     text-align: left;
+  }
+
+  #commandCenter .command-soldier-actions .action-card-icon {
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    border: 1px solid rgba(228, 202, 137, 0.36);
+    border-radius: 4px;
+    background: rgba(11, 20, 16, 0.78);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.48);
+    box-sizing: border-box;
   }
 
   #commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
@@ -461,7 +643,7 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 
   #commandCenter .mode-card {
-    min-height: 292px;
+    min-height: 268px;
   }
 
   #commandCenter #menuResults {
@@ -510,11 +692,16 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 
   #commandCenter #menuSoldier.command-soldier {
-    display: grid;
-    grid-template-columns: 54px minmax(0, 1fr) auto;
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+    padding: 11px 12px;
+  }
+
+  #commandCenter .command-soldier-top {
+    grid-template-columns: 54px minmax(0, 1fr);
     gap: 10px;
-    padding: 10px 12px;
   }
 
   #commandCenter .command-soldier-portrait {
@@ -523,9 +710,13 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
   }
 
   #commandCenter .command-soldier-open {
-    padding: 6px 8px;
-    font-size: 10px;
+    padding: 4px 7px;
+    font-size: 9px;
     letter-spacing: 0.08em;
+  }
+
+  #commandCenter .command-soldier-xp {
+    padding: 7px 9px 8px;
   }
 
   #commandCenter .mode-grid {
@@ -582,29 +773,23 @@ body:has(#commandCenter:not([hidden])) #guideRecall.coach-recall {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 4px;
     min-width: 0;
-    min-height: 52px;
-    padding: 6px 2px;
-    border: 1px solid rgba(186, 204, 173, 0.18);
-    background: rgba(23, 40, 32, 0.92);
+    min-height: 54px;
+    padding: 6px 3px;
+    border: 1px solid rgba(228, 202, 137, 0.24);
     font-size: clamp(8px, 2.25vw, 10px);
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     line-height: 1.15;
     text-align: center;
     overflow-wrap: break-word;
   }
 
-  #commandCenter .command-soldier-actions button::before {
-    font-size: 14px;
-    line-height: 1;
-    color: var(--hq-gold);
+  #commandCenter .command-soldier-actions .action-card-icon {
+    width: 17px;
+    height: 17px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
   }
-
-  #commandCenter #menuArmory::before { content: "⚔"; }
-  #commandCenter #menuSkills::before { content: "✦"; }
-  #commandCenter #menuFriends::before { content: "❖"; }
-  #commandCenter #menuLeaderboard::before { content: "★"; }
 
   #commandCenter .command-soldier-actions .skill-point-badge:not([hidden]) {
     position: absolute;
@@ -2172,14 +2357,14 @@ body:has(#authView:not([hidden])) main > header p {
   }
 
   #commandCenter #menuSoldier .command-soldier-open {
-    padding: 5px 7px;
-    font-size: 9px;
+    padding: 4px 6px;
+    font-size: 8.5px;
     letter-spacing: 0.04em;
   }
 
   #commandCenter .command-soldier-xp {
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: 5px;
   }
 
   #commandCenter .command-utilities button {

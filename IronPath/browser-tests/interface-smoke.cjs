@@ -65,25 +65,53 @@ const fs = require('node:fs');
       await check('#menuMultiplayer'); await check('#menuCampaign');
       const commandCardFit=await page.evaluate(()=>{
         const card=document.getElementById('menuSoldier').getBoundingClientRect();
+        const portrait=document.getElementById('menuPortrait').getBoundingClientRect();
+        const xpBox=document.querySelector('#menuSoldier .command-soldier-xp').getBoundingClientRect();
         const xp=document.getElementById('menuXp').getBoundingClientRect();
         const recall=document.getElementById('guideRecall'),wasRecallHidden=recall.hidden;
         recall.hidden=false;
         const rr=recall.getBoundingClientRect(),ur=document.querySelector('.command-utilities').getBoundingClientRect();
         const overlapsUtils=!(rr.right<=ur.left||rr.left>=ur.right||rr.bottom<=ur.top||rr.top>=ur.bottom);
         recall.hidden=wasRecallHidden;
-        return {xpRight:xp.right,cardRight:card.right,overlapsUtils};
+        return {
+          xpRight:xp.right,cardRight:card.right,
+          xpTop:xpBox.top,portraitBottom:portrait.bottom,
+          xpWidth:xpBox.width,cardWidth:card.width,
+          overlapsUtils
+        };
       });
       assert.ok(commandCardFit.xpRight<=commandCardFit.cardRight+1,`${name}: #menuXp stays inside #menuSoldier (${Math.round(commandCardFit.xpRight)} <= ${Math.round(commandCardFit.cardRight)})`);
+      assert.ok(commandCardFit.xpTop>=commandCardFit.portraitBottom-2,`${name}: EXP bar sits below soldier portrait (${Math.round(commandCardFit.xpTop)} >= ${Math.round(commandCardFit.portraitBottom)})`);
+      assert.ok(commandCardFit.xpWidth>=commandCardFit.cardWidth-40,`${name}: EXP bar spans the bottom of #menuSoldier (${Math.round(commandCardFit.xpWidth)} / ${Math.round(commandCardFit.cardWidth)})`);
       assert.equal(commandCardFit.overlapsUtils,false,`${name}: #guideRecall (SHOW TASK) does not overlap .command-utilities`);
+      for(const actionId of ['menuArmory','menuSkills','menuFriends','menuLeaderboard']){
+        const btn=page.locator('#'+actionId);
+        const snap=()=>btn.evaluate(el=>{const s=getComputedStyle(el);const icon=el.querySelector('.action-card-icon').getBoundingClientRect();return {image:s.backgroundImage,size:s.backgroundSize,position:s.backgroundPosition,repeat:s.backgroundRepeat,iconW:icon.width,iconH:icon.height};});
+        const normal=await snap();
+        assert.match(normal.image,/url\(/,`${name}: #${actionId} renders painted game artwork`);
+        assert.ok(normal.iconW>=14&&normal.iconH>=14,`${name}: #${actionId} renders vector emblem (${normal.iconW}x${normal.iconH})`);
+        await btn.hover();
+        const hovered=await snap();
+        assert.deepEqual(hovered,normal,`${name}: #${actionId} artwork crop must not shift on hover`);
+      }
+      await page.mouse.move(0,0);
       const resultsPlacement=await page.evaluate(()=>{
         const res=document.getElementById('menuResults'),wasHidden=res.hidden;
+        const resume=document.getElementById('menuResume'),wasResumeHidden=resume.hidden;
         res.hidden=false;
-        const modes=document.querySelector('.mode-grid').getBoundingClientRect(),r=res.getBoundingClientRect();
-        res.hidden=wasHidden;
-        return {modeBottom:modes.bottom,resultsTop:r.top,resultsHeight:r.height};
+        const modesOnly=document.querySelector('.mode-grid').getBoundingClientRect(),r1=res.getBoundingClientRect();
+        resume.hidden=false;
+        const modesWithResume=document.querySelector('.mode-grid').getBoundingClientRect(),r2=res.getBoundingClientRect(),resBox=resume.getBoundingClientRect();
+        res.hidden=wasHidden;resume.hidden=wasResumeHidden;
+        return {
+          modeBottom1:modesOnly.bottom,resultsTop1:r1.top,resultsHeight:r1.height,
+          resumeBottom:resBox.bottom,modeTop2:modesWithResume.top,modeBottom2:modesWithResume.bottom,resultsTop2:r2.top
+        };
       });
       assert.ok(resultsPlacement.resultsHeight>=40,`${name}: #menuResults is laid out when shown`);
-      assert.ok(resultsPlacement.resultsTop>=resultsPlacement.modeBottom-1,`${name}: #menuResults sits below .mode-grid (${Math.round(resultsPlacement.resultsTop)} < ${Math.round(resultsPlacement.modeBottom)})`);
+      assert.ok(resultsPlacement.resultsTop1>=resultsPlacement.modeBottom1-1,`${name}: #menuResults sits below .mode-grid without #menuResume (${Math.round(resultsPlacement.resultsTop1)} < ${Math.round(resultsPlacement.modeBottom1)})`);
+      assert.ok(resultsPlacement.resumeBottom<=resultsPlacement.modeTop2+1,`${name}: #menuResume stays above .mode-grid (${Math.round(resultsPlacement.resumeBottom)} > ${Math.round(resultsPlacement.modeTop2)})`);
+      assert.ok(resultsPlacement.resultsTop2>=resultsPlacement.modeBottom2-1,`${name}: #menuResults stays below .mode-grid when #menuResume is shown (${Math.round(resultsPlacement.resultsTop2)} < ${Math.round(resultsPlacement.modeBottom2)})`);
       // A global hover shorthand previously reset the art to its natural size,
       // exposing the source image border. Each card must retain its crop.
       for(const id of ['menuCampaign','menuEndless','menuMultiplayer']){
@@ -101,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9f loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9g loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
