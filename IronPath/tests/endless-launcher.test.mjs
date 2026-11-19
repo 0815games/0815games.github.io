@@ -83,7 +83,7 @@ test('open fills the record fields, zeroes as dashes',async()=>{
   bare.launcher.open();
   for(const id of ['endlessRuns','endlessWaves','endlessBosses','endlessBestSector','endlessScrap'])
     assert.equal(bare.nodes.get(id).textContent,'—',id);
-  assert.equal(bare.nodes.get('endlessLoadout').textContent,'command.none','no loadout falls back to the none label');
+  assert.equal(bare.nodes.get('endlessLoadout').textContent,'None equipped','no loadout falls back to the none label');
 });
 
 test('the best wave arrives asynchronously and survives a rejection',async()=>{

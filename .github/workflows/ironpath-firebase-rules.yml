@@ -198,6 +198,16 @@ jobs:
             python3 -c "from pathlib import Path; s=Path('block5-output.log').read_text()[-3500:]; print('::error title=Block 5 skills emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
+      - name: Run Block 9D single-session rules tests
+        shell: bash
+        run: |
+          if npm run test:block9d > block9d-output.log 2>&1; then
+            cat block9d-output.log
+          else
+            cat block9d-output.log
+            python3 -c "from pathlib import Path; s=Path('block9d-output.log').read_text()[-3500:]; print('::error title=Block 9D session emulator output::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
       - name: Run complete story rules tests
         shell: bash
         run: |
@@ -325,6 +335,19 @@ jobs:
           else
             cat /tmp/maintenance-browser.log
             python3 -c "from pathlib import Path; s=Path('/tmp/maintenance-browser.log').read_text()[-5000:]; print('::error title=Maintenance browser emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
+            exit 1
+          fi
+      - name: Test Block 9D single-session enforcement across normal and private Chromium contexts (emulators only)
+        working-directory: IronPath/firebase/rules-test
+        env:
+          NODE_PATH: ${{ runner.temp }}/ironpath-browser/node_modules
+        shell: bash
+        run: |
+          if timeout 180 npm run test:block9d-browser > /tmp/block9d-browser.log 2>&1; then
+            cat /tmp/block9d-browser.log
+          else
+            cat /tmp/block9d-browser.log
+            python3 -c "from pathlib import Path; s=Path('/tmp/block9d-browser.log').read_text()[-5000:]; print('::error title=Block 9D browser emulator::'+s.replace('%','%25').replace('\r','%0D').replace('\n','%0A'))"
             exit 1
           fi
       - name: Check static interface at phone and desktop sizes

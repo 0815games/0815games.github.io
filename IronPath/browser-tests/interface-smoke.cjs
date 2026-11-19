@@ -50,6 +50,15 @@ const fs = require('node:fs');
         document.querySelector('#menuName').textContent = 'Field Commander'; document.querySelector('#menuLevel').textContent = 'LEVEL 12';
       });
       await check('#menuMultiplayer'); await check('#menuCampaign');
+      const resultsPlacement=await page.evaluate(()=>{
+        const res=document.getElementById('menuResults'),wasHidden=res.hidden;
+        res.hidden=false;
+        const modes=document.querySelector('.mode-grid').getBoundingClientRect(),r=res.getBoundingClientRect();
+        res.hidden=wasHidden;
+        return {modeBottom:modes.bottom,resultsTop:r.top,resultsHeight:r.height};
+      });
+      assert.ok(resultsPlacement.resultsHeight>=40,`${name}: #menuResults is laid out when shown`);
+      assert.ok(resultsPlacement.resultsTop>=resultsPlacement.modeBottom-1,`${name}: #menuResults sits below .mode-grid (${Math.round(resultsPlacement.resultsTop)} < ${Math.round(resultsPlacement.modeBottom)})`);
       // A global hover shorthand previously reset the art to its natural size,
       // exposing the source image border. Each card must retain its crop.
       for(const id of ['menuCampaign','menuEndless','menuMultiplayer']){
@@ -67,7 +76,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9c loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9d loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -519,6 +528,16 @@ const fs = require('node:fs');
         if(id==='armoryDialog')await page.evaluate(()=>document.querySelectorAll('#armoryList .armory-section').forEach(section=>{section.hidden=section.dataset.section!=='equipment';}));
         await check(`#${id}`); await check(control);
         if(id==='afkRestDialog'){const img=await page.locator('#afkRestArt').evaluate(e=>e.complete&&e.naturalWidth>0);assert.equal(img,true,`${name}: #afkRestArt artwork loads cleanly`);}
+        if(id==='settingsDialog'){
+          const langControl=await page.evaluate(()=>{
+            const wrap=document.querySelector('#settingsDialog .language-flag-control'),sel=document.getElementById('languageSelect');
+            const w=wrap.getBoundingClientRect(),s=sel.getBoundingClientRect(),style=getComputedStyle(sel);
+            return {wrapWidth:w.width,selectWidth:s.width,selectHeight:s.height,opacity:style.opacity,position:style.position};
+          });
+          assert.equal(langControl.opacity,'1',`${name}: #languageSelect is visible in Settings`);
+          assert.ok(langControl.selectWidth>=60&&langControl.selectHeight>=30,`${name}: #languageSelect has tappable size (${Math.round(langControl.selectWidth)}x${Math.round(langControl.selectHeight)})`);
+          assert.ok(langControl.wrapWidth>=110,`${name}: .language-flag-control expands cleanly`);
+        }
         if(id==='friendsDialog'||id==='leaderboardDialog'){
           const layout=await page.locator(control).evaluate(el=>{const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect(),style=getComputedStyle(el);return {rightGap:h.right-r.right,textAlign:style.textAlign,width:r.width,height:r.height};});
           assert.ok(Math.abs(layout.rightGap)<2,`${name}: ${control} should align to the right edge of its header`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);

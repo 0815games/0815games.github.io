@@ -389,7 +389,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.ok(settingsFrame.close.r<=settingsFrame.dialog.r+1&&settingsFrame.close.l>=settingsFrame.dialog.l-1&&settingsFrame.close.t>=settingsFrame.dialog.t-1&&settingsFrame.close.b<=settingsFrame.dialog.b+1,'the settings X sits inside the dialog frame');
     assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-gb/);
     await page.locator('#languageSelect').selectOption('de');
-    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.equal(await page.locator('#languageSelect option[value="de"]').innerText(),'Deutsch','the German option no longer claims to be a preview');assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
+    assert.match(await page.locator('#settingsDialog .flag-icon').evaluate(e=>getComputedStyle(e).backgroundImage),/flag-de/);assert.equal(await page.locator('html').getAttribute('lang'),'de');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'FÄHIGKEITEN');assert.equal(await page.locator('#menuResults span[data-i18n-text]').innerText(),'LETZTES ERGEBNIS');assert.equal(await page.locator('#languageSelect option[value="de"]').innerText(),'Deutsch','the German option no longer claims to be a preview');assert.equal(await page.locator('#menuName').innerText(),'Test Soldier','player names are never translated');
     await page.locator('#settingsClose').click();
     assert.equal(await page.locator('#settingsDialog').evaluate(e=>e.open),false);assert.equal(await page.evaluate(()=>localStorage.getItem('ironpath:language')),'de');await page.evaluate(()=>{const select=document.querySelector('#languageSelect');select.value='en';select.dispatchEvent(new Event('change',{bubbles:true}));});assert.equal(await page.locator('html').getAttribute('lang'),'en');assert.equal(await page.locator('#menuSkills [data-i18n]').innerText(),'SKILLS');
 
@@ -416,6 +416,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.deepEqual(await page.locator('#endlessThemes .endless-theme').evaluateAll(list=>list.map(e=>e.dataset.theme)),['random','scrub','forest','urban','arctic','marsh'],'endless themes expose terrain keys');
     assert.equal(await page.locator('#endlessThemes .endless-theme').evaluateAll(list=>list.every(e=>/url\(/.test(getComputedStyle(e).backgroundImage))),true,'every endless terrain button carries painted artwork');
     assert.match(await page.locator('#endlessBestWave').innerText(),/./,'the record card renders');
+    assert.equal(await page.locator('#endlessLoadout').innerText(),'None equipped','endless launcher shows translated empty-loadout label');
     await page.locator('#endlessDeploy').click(); await page.locator('#gameWorkspace').waitFor({state:'visible'});
     assert.equal(await visible('#game'),true); assert.equal(await visible('#partyToggle'),false,'no multiplayer button in Endless');
     // Portrait starts fitted; direct zoom and orientation changes retain the run.
