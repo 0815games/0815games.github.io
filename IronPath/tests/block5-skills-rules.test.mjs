@@ -9,6 +9,9 @@ import {
   applyBlock5SkillsRules,
   buildBlock5SkillsCandidate
 } from '../firebase/block5-skills-candidate.mjs';
+import {buildFriendPortraitCandidate} from '../firebase/friend-portrait-candidate.mjs';
+import {buildMaintenanceRulesCandidate} from '../release-tools/maintenance-rules.mjs';
+import {compareRules,compareRepoDrafts} from '../scripts/rules-publish-dry-run.mjs';
 import {SKILL_PATHS,encodeBuild,parseBuild,DEFAULT_BUILD} from '../skills.mjs';
 
 test('Block 5 offline skills RTDB candidate preserves reference SHA-256 and alters only the 3 skills validators',async()=>{
@@ -56,6 +59,42 @@ test('Block 5 complete draft matches generated candidate, regex validates every 
   assert.match(emu,/block5\.complete\.draft\.rules\.json/);
   const pkg=JSON.parse(await readFile(new URL('../firebase/rules-test/package.json',import.meta.url),'utf8'));
   assert.ok(pkg.scripts['test:block5']);
+  assert.match(pkg.scripts['test:block5'],/block5-publish-rules\.test\.mjs/);
   const ci=await readFile(new URL('../../.github/workflows/ironpath-firebase-rules.yml',import.meta.url),'utf8');
   assert.match(ci,/test:block5/);
+});
+
+test('Block 5 publish rules preserve live Block 4 additions and MAINTENANCE_GATE and differ only in the 3 skills validators',async()=>{
+  const workshopBytes=await readFile(new URL('../firebase/WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));
+  const publishText=await readFile(new URL('../firebase/BLOCK5-RULES-TO-PUBLISH.json',import.meta.url),'utf8');
+  assert.equal(publishText.includes('(?:'),false,'Firebase RTDB uses RE2 and rejects non-capturing groups');
+
+  const publish=JSON.parse(publishText);
+  assert.equal(publish.rules['.read'],false);
+  assert.equal(publish.rules['.write'],false);
+
+  const adminRead=publish.rules._ironpathMaintenanceAdminAccess?.['.read']??'';
+  const match=adminRead.match(/^auth != null && auth\.uid === '([A-Za-z0-9_-]{1,128})'$/);
+  assert.ok(match,'publish rules preserve the dedicated maintenance admin access rule');
+
+  const liveBase=buildMaintenanceRulesCandidate(
+    buildFriendPortraitCandidate(workshopBytes),
+    {adminUid:match[1]}
+  ).candidate;
+  const report=compareRules(liveBase.rules,publish.rules);
+  assert.deepEqual(report.blockers,[],'no blockers against reconstructed live baseline');
+  assert.deepEqual(report.added,[],'no unexpected paths added');
+  assert.deepEqual(report.warnings.map(item=>`${item.path}:${item.mode}`).sort(),[
+    '/fourParties/$partyId/profiles/$uid/skills:.validate',
+    '/parties/$partyId/profiles/$uid/skills:.validate',
+    '/players/$uid/skills:.validate'
+  ]);
+
+  const expected=structuredClone(liveBase);
+  applyBlock5SkillsRules(expected.rules);
+  assert.deepEqual(publish,expected,'BLOCK5-RULES-TO-PUBLISH matches exact additive transform over live rules');
+
+  const drafts=await compareRepoDrafts(publish.rules);
+  assert.deepEqual(drafts.missing,[],'covers all shipped *.complete.draft.rules.json baselines');
+  assert.throws(()=>applyBlock5SkillsRules(structuredClone(publish.rules)),/re-audit/);
 });
