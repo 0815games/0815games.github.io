@@ -394,7 +394,8 @@ function renderResults(target){
         const state=earned?'earned':end>=0?'locked':'upcoming';
         const name=earned?tr(relic.name):tr(act.title);
         const detail=earned?tr(relic.effect):end>=0?tr('Complete {act} to earn this relic.',{act:tr(act.title)}):tr('This act lies ahead.');
-        return `<div class="relic-slot" data-state="${state}" role="listitem"><strong>${name}</strong><span>${detail}</span></div>`;
+        const status=earned?tr('EARNED'):end>=0?tr('LOCKED'):tr('UPCOMING');
+        return `<div class="relic-slot" data-act="${act.n}" data-relic="${act.relic}" data-state="${state}" role="listitem"><div class="relic-slot-art" aria-hidden="true"></div><div class="relic-slot-copy"><div class="relic-slot-meta"><span class="relic-slot-act">${tr(act.title)}</span><span class="relic-slot-badge">${status}</span></div><strong>${name}</strong><span>${detail}</span></div></div>`;
       }).join('');
     }
     const journal=progress?CAMPAIGN.slice(0,progress).map(m=>`${tr(m.act)} · ${tr(m.title)}\n${tr(m.success)}`).join('\n\n'):tr('No transmissions recorded yet. Start The Silent Signal to begin the story.');if($('storyJournal').textContent!==journal)$('storyJournal').textContent=journal;
@@ -463,7 +464,7 @@ function renderResults(target){
       return `<button type="button" id="missionCard${i}" class="mission-card" data-mission="${mission.id}" aria-pressed="false"><span class="mission-number" data-i18n-text="${numberText}">${tr(numberText)}</span><strong id="missionTitle${i}">CLASSIFIED</strong><span id="missionStatus${i}" class="mission-status">${tr('LOCKED')}</span><span id="missionContract${i}" class="mission-contract" hidden></span><b id="missionStamp${i}" class="mission-stamp" aria-hidden="true" hidden></b></button>`;
     }).join('');
     const detail=$('missionActs');
-    detail.innerHTML=`<header class="act-detail-head"><button type="button" id="actDetailBack" class="act-detail-back">← ${tr('BACK TO ACTS')}</button><div class="act-detail-meta"><span id="actDetailEyebrow" class="board-eyebrow">${tr(act.title)}</span><h3 id="actDetailTitle"></h3><p id="actDetailProgress"></p></div><button type="button" id="actDetailReplay" class="act-intro-replay">▸ ${tr('WATCH INTRO')}</button></header><div class="mission-grid">${cards}</div>`;
+    detail.innerHTML=`<header class="act-detail-head" data-act="${act.n}"><button type="button" id="actDetailBack" class="act-detail-back">← ${tr('BACK TO ACTS')}</button><div class="act-detail-meta"><span id="actDetailEyebrow" class="board-eyebrow">${tr(act.title)}</span><h3 id="actDetailTitle"></h3><p id="actDetailProgress"></p></div><button type="button" id="actDetailReplay" class="act-intro-replay">▸ ${tr('WATCH INTRO')}</button></header><div class="mission-grid">${cards}</div>`;
     const overview=$('actOverview');if(overview)overview.hidden=true;detail.hidden=false;
     wireMissionCards();
     const back=actDetailEl('Back');if(back)back.onclick=()=>showActOverview();

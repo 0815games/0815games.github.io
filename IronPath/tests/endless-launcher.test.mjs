@@ -78,6 +78,7 @@ test('open fills the record fields, zeroes as dashes',async()=>{
   assert.equal(nodes.get('endlessBestSector').textContent,'2');
   assert.equal(nodes.get('endlessScrap').textContent,'1200');
   assert.equal(nodes.get('endlessLoadout').textContent,'Rifle');
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Random battlefield');
   const bare=fixture({record:{runs:0,waves:0,bosses:0,bestSector:0,scrap:0}});
   bare.launcher.open();
   for(const id of ['endlessRuns','endlessWaves','endlessBosses','endlessBestSector','endlessScrap'])
@@ -98,22 +99,25 @@ test('the best wave arrives asynchronously and survives a rejection',async()=>{
 });
 
 test('theme choice is a pressed button and persists to storage',()=>{
-  const {launcher,themes,store}=fixture({savedTheme:'urban'});
+  const {launcher,themes,nodes,store}=fixture({savedTheme:'urban'});
   launcher.open();
   const buttons=()=>themes.children.slice(-6);
   assert.equal(buttons().length,6);
   const pressed=()=>buttons().filter(button=>button['aria-pressed']==='true');
   assert.equal(pressed().length,1,'exactly one battlefield is selected');
   assert.equal(pressed()[0].children[0].textContent,'Urban Ruin & Industrial Complex');
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Urban Ruin & Industrial Complex');
   // Choosing the marsh theme updates the pressed state and the storage.
   buttons()[5].onclick();
   assert.equal(store.dump[ENDLESS_THEME_KEY],'marsh');
   assert.equal(launcher.getSelectedTheme(),'marsh');
   assert.equal(pressed()[0].children[0].textContent,'Marshland & Delta Mudflats');
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Marshland & Delta Mudflats');
   // Random clears the choice back to null.
   buttons()[0].onclick();
   assert.equal(store.dump[ENDLESS_THEME_KEY],'');
   assert.equal(launcher.getSelectedTheme(),null);
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Random battlefield');
 });
 
 test('the last-run line renders the summary or the empty state',()=>{

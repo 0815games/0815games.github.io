@@ -29,6 +29,12 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
   const dialog=$('endlessLaunch');
   if(!dialog||typeof dialog.showModal!=='function')return {open:()=>{},getSelectedTheme:()=>null};
   let selected=readEndlessTheme(storage);
+  function syncSelectedSummary(){
+    const labelEl=$('endlessSelectedTheme');
+    if(!labelEl)return;
+    const active=ENDLESS_THEMES.find(t=>(t.key??null)===selected)||ENDLESS_THEMES[0];
+    labelEl.textContent=translateText(active.label);
+  }
   function buildThemes(){
     const box=$('endlessThemes');if(!box)return;
     box.innerHTML='';
@@ -43,6 +49,7 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
       button.onclick=()=>{selected=theme.key??null;try{storage?.setItem(ENDLESS_THEME_KEY,theme.key??'');}catch{}buildThemes();};
       box.append(button);
     }
+    syncSelectedSummary();
   }
   function open(){
     buildThemes();

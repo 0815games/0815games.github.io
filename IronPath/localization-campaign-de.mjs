@@ -235,6 +235,7 @@ for(const mission of CAMPAIGN){const entry=data[mission.id];if(!entry||entry[2].
 add('ACT I · THE SILENCE','AKT I · DIE STILLE');add('ACT II · THE FLOOD','AKT II · DIE FLUT');add('ACT III · THE LAST LIGHT','AKT III · DAS LETZTE LICHT');add('ACT IV · THE LONG WINTER','AKT IV · DER LANGE WINTER');add('ACT V · THE IRON PATH','AKT V · DER EISERNE WEG');
 Object.assign(entries,{
  'CLASSIFIED':'GEHEIM','LOCKED':'GESPERRT','COMPLETED':'ABGESCHLOSSEN','NEXT MISSION':'NÄCHSTE MISSION',
+ 'EARNED':'VERDIENT','UPCOMING':'BEVORSTEHEND',
  'The valley is safe. Revisit any completed mission.':'Das Tal ist sicher. Spiele abgeschlossene Missionen erneut.',
  'Your next mission awaits. {done} of {total} missions completed.':'Deine nächste Mission wartet. {done} von {total} Missionen abgeschlossen.',
  'A lost signal is only the beginning.':'Ein verlorenes Signal ist nur der Anfang.', '{done} / {total} COMPLETED':'{done} / {total} ABGESCHLOSSEN',
