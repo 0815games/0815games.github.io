@@ -2,7 +2,7 @@ import {germanWorkshop} from './localization-workshop-de.mjs?v=20261108-balance2
 // The Settings dialog is where a player switches the language in the first place, so
 // its copy cannot fall back to English. Own file, asked first, for the same reason as
 // the first-run dictionary below.
-import {germanSettings} from './localization-settings-de.mjs?v=20261112-tagless1';
+import {germanSettings} from './localization-settings-de.mjs?v=20261119-block9';
 // The first run was the last translated part of the game and the first one a new
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated

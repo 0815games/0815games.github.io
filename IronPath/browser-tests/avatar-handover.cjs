@@ -99,7 +99,7 @@ async function diagnose(page){
     page.on('requestfailed',request=>{const i=requested.indexOf(request.url());if(i>=0)requested.splice(i,1);});
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    try{await page.locator('#menuDeleteCharacter').waitFor({state:'visible',timeout:45000});}
+    try{await page.locator('#menuSoldier').waitFor({state:'visible',timeout:45000});}
     catch(error){
      // A rejected dynamic import inside account-entry.mjs is caught there, so
      // Chromium reports nothing. Re-importing the same URL returns the SAME

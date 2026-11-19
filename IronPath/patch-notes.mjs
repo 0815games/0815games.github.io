@@ -50,10 +50,10 @@ export const RELEASED_PATCHES=Object.freeze([
     shipped:[
       {en:'Added Air Defense as the sixth class (Sky Sweep active ability, aircraft/marked-target passive, two specialist branches, 14-node specialization tree and Skyburst Guidance class tower path).',de:'Luftabwehr als sechste Klasse ergänzt (Luftraumfeger, Luft-/Markierungs-Passiv, zwei Spezialfähigkeiten, 14-Knoten-Spezialisierungsbaum und Klassenturmpfad Flak-Zielsteuerung).'},
       {en:'Switched skills to exclusive level-2 class choice: pick one class at level 2 to unlock its focused 14-node tree, class tower upgrades (Tier I/II separate from level-3 tower kits) and safe Draft Reset before saving.',de:'Skillbaum auf exklusive Klassenwahl ab Stufe 2 umgestellt: Klassenwahl öffnet den fokussierten 14-Knoten-Baum, klassenexklusive Turmausbauwege (Stufe I/II unabhängig von Stufe-3-Turmkits) und sicheren Entwurf-Reset vor dem Speichern.'},
-      {en:'Added one-time V1-to-V2 skill migration archiving previous builds locally and refunding all earned points, compact multiplayer wire snapshots, six custom class artworks and branched class trees, 12 specialist battlefield effects plus class tower halos, German/English UI copy, and an additive Firebase RTDB skills validation rules candidate.',de:'Einmalige V1-zu-V2-Migration mit lokalem Altsave-Backup und vollständiger Punkterückerstattung, kompakte Mehrspieler-Snapshots, sechs Klassen-Artworks mit verzweigten Klassenbäumen, zwölf Spezialisten-Kampfeffekte samt Turm-Auren, DE/EN-Übersetzungen sowie ein additiver Firebase-RTDB-Regelkandidat ergänzt.'},
+      {en:'Added one-time V1-to-V2 skill migration archiving previous builds locally and refunding all earned points, compact multiplayer wire snapshots, six custom class artworks and branched class trees, 12 specialist battlefield effects plus class tower halos, German/English UI copy, and Block 5 RTDB skills validation rules (`BLOCK5-RULES-TO-PUBLISH.json`, published in Firebase Console per operator confirmation).',de:'Einmalige V1-zu-V2-Migration mit lokalem Altsave-Backup und vollständiger Punkterückerstattung, kompakte Mehrspieler-Snapshots, sechs Klassen-Artworks mit verzweigten Klassenbäumen, zwölf Spezialisten-Kampfeffekte samt Turm-Auren, DE/EN-Übersetzungen sowie Block-5-RTDB-Skills-Regeln (`BLOCK5-RULES-TO-PUBLISH.json`, laut Betreiber in der Firebase Console veröffentlicht).'},
     ],
     open:[
-      {en:'Publish the additive Block 5 Firebase RTDB skills validation rules after live export/backup and verify all six classes and class tower upgrades on real devices.',de:'Additiven Block-5-RTDB-Regelkandidaten nach Live-Export/Sicherung veröffentlichen sowie alle sechs Klassen und Klassenturmpfade auf echten Geräten prüfen.'},
+      {en:'Verify all six classes, specialist skills, class tower upgrades and migration notice across real phones and desktop devices.',de:'Alle sechs Klassen, Spezialisten-Skills, Klassenturmpfade und den Migrationshinweis auf echten Handys und am Desktop prüfen.'},
     ],
   },
   {
@@ -158,7 +158,7 @@ export const RELEASED_PATCHES=Object.freeze([
 // original blocks, and deliberately last - it touches every mode.
 export const PLANNED_PATCHES=Object.freeze([
   {
-    id:'block1',status:'active',
+    id:'block1',status:'planned',
     title:{en:'Block 1 · Multiplayer',de:'Block 1 · Mehrspieler'},
     shipped:[
       {en:'Modes, larger fields, request cards, party end and reports are live.',de:'Modi, größere Felder, Anfragekarten, Gruppenabschluss und Berichte sind live.'},
@@ -168,7 +168,7 @@ export const PLANNED_PATCHES=Object.freeze([
     ],
   },
   {
-    id:'block2',status:'next',
+    id:'block2',status:'planned',
     title:{en:'Block 2 · Character and friends',de:'Block 2 · Charakter und Freunde'},
     shipped:[
       {en:'Character cleanup, sign-out afterwards, friendship, invitations and further social fixes; portraits with a safe placeholder.',de:'Charakterbereinigung, Abmeldung danach, Freundschaft, Einladungen und weitere Social-Fixes; Porträts mit sicherem Platzhalter.'},
@@ -201,20 +201,34 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block5',status:'planned',
     title:{en:'Block 5 · Skills',de:'Block 5 · Fähigkeiten'},
     shipped:[
-      {en:'Implemented the sixth Air Defense class, exclusive level-2 class selection, focused 14-node specialization trees, separate Tier I/II class tower upgrade paths, six class medallions, one-time skill refund migration and additive RTDB validation candidate.',de:'Sechste Luftabwehrklasse, exklusive Klassenwahl ab Stufe 2, fokussierte 14-Knoten-Bäume, getrennte Stufe-I/II-Klassenturmpfade, sechs Klassen-Medaillons, einmalige Punkterückgabe samt Backup und additiver RTDB-Regelkandidat sind umgesetzt.'},
+      {en:'Implemented the sixth Air Defense class, exclusive level-2 class selection, focused 14-node specialization trees, separate Tier I/II class tower upgrade paths, six class medallions, one-time skill refund migration and live-published RTDB skills validation rules (per operator confirmation).',de:'Sechste Luftabwehrklasse, exklusive Klassenwahl ab Stufe 2, fokussierte 14-Knoten-Bäume, getrennte Stufe-I/II-Klassenturmpfade, sechs Klassen-Medaillons, einmalige Punkterückgabe samt Backup sowie laut Betreiber live veröffentlichte RTDB-Skills-Regeln sind umgesetzt.'},
     ],
     open:[
-      {en:'Publish the additive Block 5 RTDB skills ruleset after live export/backup and confirm all V2 class builds, upgrades and migration notice on real phones and desktop.',de:'Additiven Block-5-RTDB-Regelsatz nach Live-Export/Sicherung veröffentlichen und V2-Klassenauswahl, Klassenturmpfade sowie Migrationshinweis auf echten Handys und am Desktop prüfen.'},
+      {en:'Final confirmation across real phones and desktop devices on 20261118-block5 for all six classes, tower upgrades and migration notice.',de:'Abschließende Bestätigung auf echten Handys und am Desktop für 20261118-block5 (alle sechs Klassen, Klassenturmpfade und Migrationshinweis).'},
     ],
   },
   {
-    id:'block6',status:'planned',
+    id:'block9',status:'active',
+    title:{en:'Block 9 · Unified Menu & Command HQ Redesign',de:'Block 9 · Einheitliches Menü & Kommando-HQ'},
+    note:{
+      en:'Inserted ahead of Block 6 so the guided tutorial walkthrough introduces the finished menu layout.',
+      de:'Vor Block 6 eingeschoben, damit die künftige Tutorial-Menüführung direkt auf dem fertigen Menü aufbaut.',
+    },
+    shipped:[
+      {en:'Unified Command HQ (desktop 2-column station & mobile thumb-bar app shell), illustrated 3-zone dialog headers, terrain-illustrated Endless cards, unified party/campaign boards and Settings Account tab (password change + protected character discharge).',de:'Einheitliches Kommando-HQ (Desktop 2-Spalten-Station & Mobile App-Shell mit unterer Daumenleiste), einheitliche 3-Zonen-Dialogbanner, illustrierte Endlos-Geländekarten, angeglichene Party-/Kampagnentafeln sowie Einstellungen → Konto (Passwortänderung & geschützte Entlassung).'},
+    ],
+    open:[
+      {en:'Real desktop and mobile device inspection before moving straight into Block 6.',de:'Echte Desktop- und Handy-Sichtung vor dem direkten Start von Block 6.'},
+    ],
+  },
+  {
+    id:'block6',status:'next',
     title:{en:'Block 6 · Tutorial',de:'Block 6 · Tutorial'},
     shipped:[
       {en:'The five-wave introduction, its replay and the confirmed cancel fixes exist.',de:'Die Fünf-Wellen-Einführung, ihre Wiederholung und die bestätigten Abbruchfixes sind vorhanden.'},
     ],
     open:[
-      {en:'Character-related accept and decline, one large continuous mission, the general’s voice and the following menu guidance.',de:'Charakterbezogene Annahme und Ablehnung, eine große zusammenhängende Mission, die Generalstimme und die anschließende Menüführung.'},
+      {en:'Character-related accept and decline, one large continuous mission, the general’s voice and the following menu guidance across the Block 9 Command HQ.',de:'Charakterbezogene Annahme und Ablehnung, eine große zusammenhängende Mission, die Generalstimme und die anschließende Menüführung durch das Block-9-HQ.'},
     ],
   },
   {

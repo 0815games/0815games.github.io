@@ -6,7 +6,8 @@ import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindic
 import {setupLanguage,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261118-block5';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
 import {setupFieldMenu} from './field-menu.mjs?v=20261118-block5';
-import {createSettings,readSettings} from './settings.mjs?v=20261112-tagless1';
+import {createSettings,readSettings} from './settings.mjs?v=20261119-block9';
+import {createPasswordChange} from './password-change.mjs?v=20261119-block9';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
 import {createPatchNotes} from './patch-notes.mjs?v=20261118-block5';
@@ -161,13 +162,24 @@ const confirmation=createConfirmation(document,translateText);onLanguageChange((
 // Center menu and from the field menu. It owns no game state: language stays in
 // language.mjs, sound and effects live in game.js behind the hooks below.
 const storedSettings=readSettings(languageStorage);
+let passwordChange=null;
 const settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
  onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
  onResetFirstRun:()=>replayFirstRun(),
+ onOpen:()=>passwordChange?.refresh(),
+ onClose:()=>passwordChange?.reset(),
 });
+passwordChange=createPasswordChange({
+ document,
+ getUser:()=>user??auth.currentUser??null,
+ resetPassword:email=>accountServices.resetPassword(email),
+ translate:translateText,
+});
+bindDialogBackdrop($('settingsDialog'),()=>settings.close());
+onLanguageChange(()=>{passwordChange?.refresh();passwordChange?.retranslate();});
 let settingsSoundEnabled=false;
-const openSettings=from=>{settings.apply();settings.open(from);};
+const openSettings=(from,options)=>{settings.apply();settings.open(from,options);};
 setupFieldMenu({document,onLanguageChange,onSettings:openSettings});
 $('menuSettings').onclick=()=>openSettings($('menuSettings'));
 // What changed and what comes next, straight from patch-notes.mjs. It opens on
@@ -298,7 +310,12 @@ function endLoadingScene(){
  if(loadingSlowTimer){clearTimeout(loadingSlowTimer);loadingSlowTimer=null;}
  $('loadingSlow')&&($('loadingSlow').hidden=true);
 }
-function display(view){$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
+function closeMenuDialogs(){
+ for(const id of ['settingsDialog','patchNotes','endlessLaunch','soldierDialog','armoryDialog','skillDialog','friendsDialog','friendStatsDialog','leaderboardDialog']){
+  const dialog=$(id);if(dialog?.open)try{dialog.close();}catch{}
+ }
+}
+function display(view){if(view!=='game')closeMenuDialogs();$('loading').hidden=view!=='loading';$('authView').hidden=view!=='auth';$('connectionView').hidden=view!=='connection';$('characterView').hidden=view!=='character';$('entry').hidden=view==='game';$('gameView').hidden=view!=='game';if(view==='loading')beginLoadingScene();else endLoadingScene();
  // The recruiting office is a wide desk, not a 430px personnel card: the
  // entry panel breaks out of its dossier width while the Musterung is up.
  $('entry').classList.toggle('recruiting',view==='character');}
@@ -363,11 +380,13 @@ $('errorLogout').onclick=()=>dischargeSignOut.hasRetry()?dischargeSignOut.retry(
 const partyActivity=()=>partyPanel.isActive()||partyPanel.isBusy()||!!fourPanel?.isActive()||!!fourPanel?.isBusy();
 async function deleteCharacter(){
  if(!user||!profile||deletionPending)return;
- if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ const partyWarning='Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.';
+ if(partyActivity()){$('saveStatus').textContent=translateText(partyWarning);passwordChange?.setStatus(partyWarning,'error');return;}
  const currentUser=user,currentName=profile.name,version=sessionVersion;
  const confirmed=await confirmation.ask({title:'Delete character?',text:'Your soldier, progress, scores and discoverable friend links and invitations will be removed. Close other tabs and devices first. Any current solo operation ends even if deletion fails. Your account remains; older unindexed data may remain.',accept:'DELETE'});
  if(!confirmed||user!==currentUser||version!==sessionVersion||profile?.name!==currentName)return;
- if(partyActivity()){$('saveStatus').textContent=translateText('Leave your party and wait for its actions to finish. For a started match, ask the host to close it before deleting your soldier.');return;}
+ if(partyActivity()){$('saveStatus').textContent=translateText(partyWarning);passwordChange?.setStatus(partyWarning,'error');return;}
+ settings.close();closeMenuDialogs();
  const attempt={};deletionPending=attempt;deletingCharacter=true;$('menuDeleteCharacter').disabled=true;
  const current=()=>deletionPending===attempt&&version===sessionVersion&&user===currentUser&&auth.currentUser?.uid===currentUser.uid&&!accountServices.signal?.aborted;
  try{
@@ -476,6 +495,7 @@ const endlessLauncher=featureEnabled('endlessMenu')?createEndlessLauncher({docum
     if(loaded)control.setMenuOpen(false);else center.showMenu();
   },
   onOpenArmory:()=>$('armoryOpen').onclick(),onOpenSkills:()=>$('skillOpen').onclick()}):null;
+bindDialogBackdrop($('endlessLaunch'),()=>{try{$('endlessLaunch').close();}catch{}});
 // The rank is derived from the level on every snapshot - the combat profile
 // strip gets its own paint, the menu card and the dossier re-render themselves.
 function refreshProfileRank(value){
@@ -740,7 +760,7 @@ if(!accountTerminated)accountServices.observe(currentUser=>{
  const showDischarge=dischargeSignOut.observe(currentUser);
  afkTimer?.reset();
  cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
- deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();if($('skillDialog').open)$('skillDialog').close();if($('armoryDialog').open)$('armoryDialog').close();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
+ deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();closeMenuDialogs();passwordChange?.reset();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
  if(!currentUser){$('password').value='';display('auth');renderAfkText();if(showDischarge)message(DISCHARGE_MESSAGE);return;}
  afkNotice(false);display('loading');setLoadingStep('soldier');
  const activate=()=>{if(accountTerminated||version!==sessionVersion||auth.currentUser?.uid!==currentUser.uid)return;user=currentUser;notifySession();const uid=currentUser.uid;setTimeout(()=>{if(auth.currentUser?.uid===uid)$('password').value='';},1500);loadProfile(currentUser,version);};

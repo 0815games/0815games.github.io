@@ -35,6 +35,7 @@ export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=a
     for(const theme of ENDLESS_THEMES){
       const button=document.createElement('button');
       button.type='button';button.className='endless-theme';
+      button.setAttribute('data-theme',theme.key??'random');
       button.setAttribute('aria-pressed',String((theme.key??null)===selected));
       const name=document.createElement('strong');name.textContent=translateText(theme.label);
       const hint=document.createElement('small');hint.textContent=translateText(theme.hint);

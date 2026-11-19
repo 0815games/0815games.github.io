@@ -129,7 +129,7 @@ function guardedHtml(html){
    await adminSet(`leaderboards/solo/${uid}`,{name:'Alice',wave:7});
    await page.locator('#multiplayerPrompt').waitFor({state:'visible',timeout:20000});assert.match(await page.locator('#multiplayerPromptBody').textContent(),/Bob invited you/);
    await page.locator('#multiplayerPromptActions [data-action="later"]').click();assert.ok(await adminGet(`coopInvites/${uid}/${other}`),'putting a notice aside does not delete the invitation');
-   const confirmDelete=async()=>{await page.locator('#menuDeleteCharacter').click();await page.locator('#gameConfirm').waitFor({state:'visible'});await page.locator('#gameConfirmAccept').click();};
+   const confirmDelete=async()=>{await page.locator('#menuSettings').click();await page.locator('#settingsTabAccount').click();await page.locator('#menuDeleteCharacter').click();await page.locator('#gameConfirm').waitFor({state:'visible'});await page.locator('#gameConfirmAccept').click();};
    // The old Rules deny the entire update. The UI must not announce success or
    // offer recruitment based on an optimistic local profile removal.
    await confirmDelete();await page.locator('#connectionView').waitFor({state:'visible',timeout:20000});

@@ -12,6 +12,9 @@ export const germanSettings = Object.freeze({
   'SETTINGS': 'EINSTELLUNGEN',
   'Settings': 'Einstellungen',
   'Close settings': 'Einstellungen schließen',
+  'Settings sections': 'Bereiche der Einstellungen',
+  'GENERAL': 'ALLGEMEIN',
+  'ACCOUNT': 'KONTO',
   'Language': 'Sprache',
   'Sound': 'Ton',
   'Graphics': 'Grafik',
@@ -22,6 +25,16 @@ export const germanSettings = Object.freeze({
   'PLAY THE FIRST RUN AGAIN': 'DEN ERSTEN EINSATZ NEU SPIELEN',
   'Sound, graphics and the first run ask for confirmation before anything changes.':
     'Ton, Grafik und der erste Einsatz fragen nach, bevor sich etwas ändert.',
+  'Signed in as': 'Angemeldet als',
+  'Change password': 'Passwort ändern',
+  'Current password': 'Aktuelles Passwort',
+  'New password': 'Neues Passwort',
+  'Confirm new password': 'Neues Passwort bestätigen',
+  'UPDATE PASSWORD': 'PASSWORT ÄNDERN',
+  'SEND RESET EMAIL': 'RESET-E-MAIL SENDEN',
+  'DANGER ZONE': 'GEFAHRENZONE',
+  'Discharging your soldier permanently removes your character, progression, gear and friend links after confirmation. Leave any active multiplayer party first.':
+    'Das Entlassen entfernt Soldaten, Fortschritt, Ausrüstung und Freundesverbindungen dauerhaft nach Bestätigung. Verlasse zuerst eine aktive Mehrspielergruppe.',
 
   // Confirmations. These are the sentences that have to be unambiguous, because they
   // are the last thing between a tap and a changed setting.

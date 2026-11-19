@@ -70,7 +70,9 @@ const guardedBootstrap=`
     });
     const page=await context.newPage(),errors=[];page.on('pageerror',error=>errors.push(String(error)));page.on('console',event=>{if(event.type()==='error')errors.push('console: '+event.text());});page.on('response',response=>{if(response.status()>=400)errors.push('HTTP '+response.status()+' '+response.url());});
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    try{await page.locator('#menuDeleteCharacter').waitFor({state:'visible',timeout:20000});}catch(error){console.error('Boot state',await page.evaluate(()=>Object.fromEntries(['loading','entry','authView','connectionView','characterView','gameView','entryMessage'].map(id=>[id,{hidden:document.getElementById(id)?.hidden,text:document.getElementById(id)?.textContent?.slice(0,200)}]))),errors);throw error;}
+    try{await page.locator('#menuSettings').waitFor({state:'visible',timeout:20000});}catch(error){console.error('Boot state',await page.evaluate(()=>Object.fromEntries(['loading','entry','authView','connectionView','characterView','gameView','entryMessage'].map(id=>[id,{hidden:document.getElementById(id)?.hidden,text:document.getElementById(id)?.textContent?.slice(0,200)}]))),errors);throw error;}
+    await page.locator('#menuSettings').click();
+    await page.locator('#settingsTabAccount').click();
     await page.locator('#menuDeleteCharacter').click();
     await page.locator('#gameConfirm').waitFor({state:'visible'});await page.locator('#gameConfirmAccept').click();
     await page.waitForFunction(()=>window.__deleteQueued===true,null,{timeout:10000});
