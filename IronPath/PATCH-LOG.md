@@ -3345,7 +3345,77 @@ Grenzen / Offen:
     Playwright-Chromium-Läufe, Firebase-Emulator-CI-Läufe, die separate
     Produktionsveröffentlichung des RTDB-Rules-Kandidaten sowie echte
     Mehrgeräte-Abnahme folgen gesondert.
-- **Git / PR / Status:** Lokal auf `arena/8eb7d0fe-0815games-github-io`
-  (`e3954cd0` Basis); bereit für Commit, Push und PR-CI.
+- **Git / PR / Status:** Auf `main` via [PR #318](https://github.com/0815games/0815games.github.io/pull/318)
+  (`2f178552e33628c72a54e33f2bd0c5462944c290`, CI `44377902051` komplett grün,
+  Pages `44379946422` `success`, `main`-Rules-CI `44379948396` `success`)
+  veröffentlicht; siehe Nachtrag in `IPL-0067`.
+
+## IPL-0067 – Block 5: Merge-Nachtrag #318 & kopierfertige Firebase-RTDB-Rules (`BLOCK5-RULES-TO-PUBLISH.json`)
+
+- **Zeit / Quelle:** Vorgegebenes Sitzungsdatum `2026-10-31 UTC`;
+  GitHub-Merge von PR #318 am `2026-11-18T19:23:02Z`.
+- **Branch / Basis:** `arena/f7425bf7-0815games-github-io`, Basis
+  `2f178552e33628c72a54e33f2bd0c5462944c290` (`main`).
+- **Nachtrag zu PR #318 (`IPL-0066`):**
+  - [PR #318](https://github.com/0815games/0815games.github.io/pull/318)
+    (inkl. Korrekturen `8997786`, `4c755d4` und `abed2c9` in
+    `IronPath/browser-tests/command-center.cjs`) bestand sämtliche CI-Läufe in
+    Run `44377902051` (`database-rules`, `game-regressions`,
+    `interface-browser-smoke`, alle 8 `party-finalization-browser`-Jobs sowie
+    Vercel-Checks) und wurde am `2026-11-18T19:23:02Z` unter
+    `2f178552e33628c72a54e33f2bd0c5462944c290` auf `main` gemergt.
+  - Die anschließenden `main`-Workflows `pages-build-deployment` (`44379946422`)
+    und `Iron Path Firebase party rules` (`44379948396`) schlossen jeweils mit
+    `success` ab. Damit ist der Block-5-Spielcode (`20261118-block5`) auf
+    GitHub Pages live.
+- **Live-Rules-Abgleich & kopierfertige Block-5-Rules-Datei:**
+  - Der Betreiber wählte ausdrücklich den bisherigen manuellen Console-Ablauf
+    ohne automatische GitHub-Actions-Rules-Ausrollung und stellte dafür den
+    vollständigen Live-Export seiner Firebase-RTDB-Rules bereit.
+  - Ein struktureller Diff bestätigte ohne Abweichungen, dass der Live-Stand
+    exakt `buildMaintenanceRulesCandidate(buildFriendPortraitCandidate(WORKSHOP-RULES-TO-PUBLISH.json), ...)`
+    entspricht (inkl. `social-cleanup`, `players/$uid/gender['.read']`,
+    `players/$uid/avatar['.read']`, `MAINTENANCE_GATE` sowie `_ironpathMaintenance`
+    / `_ironpathMaintenanceAdminAccess` mit konfigurierter Betreiber-Admin-UID —
+    UID hier gemäß `AGENTS.md` nicht abgedruckt). Alle drei
+    `skills['.validate']`-Ausdrücke standen live noch auf dem alten V1-Regex.
+  - Daraus wurde über `IronPath/firebase/block5-skills-candidate.mjs` die
+    vollständige, direkt kopierbare Console-Datei
+    `IronPath/firebase/BLOCK5-RULES-TO-PUBLISH.json` erzeugt. `diff -u` und
+    `compareRules` belegen, dass **ausschließlich**
+    `/rules/players/$uid/skills/.validate`,
+    `/rules/parties/$partyId/profiles/$uid/skills/.validate` und
+    `/rules/fourParties/$partyId/profiles/$uid/skills/.validate` auf
+    `BLOCK5_SKILLS_VALIDATE` (V2 + V1) erweitert wurden und keine Block-4- oder
+    Wartungsregeln verloren gehen. `WORKSHOP-RULES-TO-PUBLISH.json` sowie
+    `block5.complete.draft.rules.json` bleiben unverändert.
+- **Änderungen / Dateien:**
+  - `IronPath/firebase/BLOCK5-RULES-TO-PUBLISH.json` (neu: vollständige
+    kopierfertige RTDB-Rules für die Firebase Console)
+  - `IronPath/firebase/BLOCK5-SKILLS-ROLLOUT.md` (Dokumentation für
+    `BLOCK5-RULES-TO-PUBLISH.json` & Hinweis gegen direktes Kopieren von
+    `block5.complete.draft.rules.json`)
+  - `IronPath/tests/block5-skills-rules.test.mjs` (Vertragsprüfung für
+    `BLOCK5-RULES-TO-PUBLISH.json`: kein RE2-inkompatibles `(?:`, `0` Blocker,
+    exakt die 3 `skills/.validate`-Änderungen, Abdeckung aller 16
+    `*.complete.draft.rules.json`)
+  - `IronPath/firebase/rules-test/block5-publish-rules.test.mjs` &
+    `IronPath/firebase/rules-test/package.json` (Emulator-Test für
+    `BLOCK5-RULES-TO-PUBLISH.json` inkl. V2-Builds aller 6 Klassen,
+    V1→V2-Migration, Block-4-Freundes-Reads/Cleanup & `MAINTENANCE_GATE`)
+  - `IronPath/PATCH-BLOECKE.md` & `IronPath/PATCH-LOG.md` (`IPL-0067`)
+- **Prüfungen & Grenzen (lokal vor Push):**
+  - `compareRules` & `compareRepoDrafts` über `BLOCK5-RULES-TO-PUBLISH.json`
+    gegen den Live-Export: `0` Blocker, `0` fehlende Pfade, `16/16` Entwürfe
+    abgedeckt, ausschließlich 3 `skills/.validate`-Warnungen.
+  - `node --test IronPath/tests/*.test.mjs`: **1.141 bestanden**, `0` fehlgeschlagen,
+    `1` bekannter übersprungener Emulator-Lauf ohne lokales Java; `git diff --check`
+    bestanden; anschließender PR-CI-Emulatorlauf (`test:block5` in
+    `Iron Path Firebase party rules`) wird nach Push geprüft.
+  - **Grenzen:** Kein lokales Java/Chromium in der Sandbox; Emulator-Beweis
+    für `BLOCK5-RULES-TO-PUBLISH.json` liefert der GitHub-CI-Lauf (`test:block5`).
+    Live-Veröffentlichung der Rules bleibt ein manueller Schritt des Betreibers
+    in der Firebase Console; echte Mehrgeräte-Abnahme von `20261118-block5`
+    bleibt offen.
 
 
