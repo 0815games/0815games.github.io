@@ -203,4 +203,6 @@ export const germanMoreStatic=Object.freeze({
   "BUNKER UPGRADES": "BUNKER-AUSBAUTEN",
   "Snapshot of saved progression. Stats are player-reported and not verified.": "Momentaufnahme des gespeicherten Fortschritts. Spielerangaben sind nicht verifiziert.",
   "Operation complete": "Einsatz abgeschlossen",
+  "Previous battlefield": "Vorheriges Gefechtsfeld",
+  "Next battlefield": "Nächstes Gefechtsfeld",
 });

@@ -16,6 +16,7 @@ export const germanSettings = Object.freeze({
   'GRAPHICS & EFFECTS': 'GRAFIK & EFFEKTE',
   'OPERATION & TRAINING': 'EINSATZ & TRAINING',
   'Language': 'Sprache',
+  'Switch language': 'Sprache wechseln',
   'Default battlefield view': 'Standard-Kartenansicht',
   'Fit whole field': 'Gesamtes Feld',
   'Tactical zoom': 'Taktischer Zoom',

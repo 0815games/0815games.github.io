@@ -2,7 +2,7 @@
 // play - the personal record, the battlefield choice, the last run and the
 // current loadout. Navigation only; the run itself starts through the same
 // chooseEndless path the one-click flow used.
-import {translate,translateText} from './language.mjs?v=20261119-block9d';
+import {translate,translateText} from './language.mjs?v=20261119-block9e';
 
 // The free-play generator themes (maps.mjs draws one of five at random); the
 // launcher offers them as a choice plus true random. Labels reuse the
@@ -27,47 +27,71 @@ const fmt=n=>Number.isFinite(n)&&n>0?String(n):'—';
 export function createEndlessLauncher({document,getRecord=()=>({}),getBestWave=async()=>0,getLastRun=()=>null,onDeploy=()=>{},storage}){
   const $=id=>document.getElementById(id);
   const dialog=$('endlessLaunch');
-  if(!dialog||typeof dialog.showModal!=='function')return {open:()=>{},getSelectedTheme:()=>null};
-  let selected=readEndlessTheme(storage);
-  function syncSelectedSummary(){
-    const labelEl=$('endlessSelectedTheme');
-    if(!labelEl)return;
-    const active=ENDLESS_THEMES.find(t=>(t.key??null)===selected)||ENDLESS_THEMES[0];
-    labelEl.textContent=translateText(active.label);
-  }
-  function buildThemes(){
-    const box=$('endlessThemes');if(!box)return;
-    box.innerHTML='';
-    for(const theme of ENDLESS_THEMES){
-      const button=document.createElement('button');
-      button.type='button';button.className='endless-theme';
-      button.setAttribute('data-theme',theme.key??'random');
-      button.setAttribute('aria-pressed',String((theme.key??null)===selected));
-      const name=document.createElement('strong');name.textContent=translateText(theme.label);
-      const hint=document.createElement('small');hint.textContent=translateText(theme.hint);
-      button.append(name,hint);
-      button.onclick=()=>{selected=theme.key??null;try{storage?.setItem(ENDLESS_THEME_KEY,theme.key??'');}catch{}buildThemes();};
-      box.append(button);
+  if(!dialog||typeof dialog.showModal!=='function')return {open:()=>{},refreshLanguage:()=>{},getSelectedTheme:()=>null};
+  let index=0;
+  let lastBestWave='—';
+  let lastRecord={};
+  const currentTheme=()=>ENDLESS_THEMES[index]||ENDLESS_THEMES[0];
+  function paintCarousel(){
+    const active=currentTheme();
+    const card=$('endlessThemeCard');
+    if(card){
+      if(card.dataset)card.dataset.theme=active.key??'random';
+      card.setAttribute?.('data-theme',active.key??'random');
+      card.setAttribute?.('aria-label',translateText(active.label));
     }
-    syncSelectedSummary();
+    const labelEl=$('endlessSelectedTheme');
+    if(labelEl)labelEl.textContent=translateText(active.label);
+  }
+  function paintDetails(){
+    const last=getLastRun();
+    const lastEl=$('endlessLastRun');
+    if(lastEl){
+      lastEl.textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet on this device.');
+    }
+    const loadoutEl=$('endlessLoadout');
+    if(loadoutEl)loadoutEl.textContent=lastRecord.loadout||translate('command.none');
+  }
+  function step(delta){
+    index=(index+delta+ENDLESS_THEMES.length)%ENDLESS_THEMES.length;
+    paintCarousel();
   }
   function open(){
-    buildThemes();
-    const record=getRecord()||{};
-    $('endlessBestWave').textContent='…';
-    void Promise.resolve(getBestWave()).then(wave=>{$('endlessBestWave').textContent=fmt(wave);}).catch(()=>{$('endlessBestWave').textContent='—';});
-    $('endlessRuns').textContent=fmt(record.runs);
-    $('endlessWaves').textContent=fmt(record.waves);
-    $('endlessBosses').textContent=fmt(record.bosses);
-    $('endlessBestSector').textContent=fmt(record.bestSector);
-    $('endlessScrap').textContent=fmt(record.scrap);
-    const last=getLastRun();
-    $('endlessLastRun').textContent=last?translateText('Last run: wave {wave} · {bosses} bosses · sector {sector}',{wave:last.waves,bosses:last.bosses,sector:last.sector}):translateText('No endless run yet on this device.');
-    $('endlessLoadout').textContent=record.loadout||translate('command.none');
+    index=0;
+    paintCarousel();
+    lastRecord=getRecord()||{};
+    lastBestWave='…';
+    if($('endlessBestWave'))$('endlessBestWave').textContent=lastBestWave;
+    void Promise.resolve(getBestWave()).then(wave=>{
+      lastBestWave=fmt(wave);
+      if($('endlessBestWave'))$('endlessBestWave').textContent=lastBestWave;
+    }).catch(()=>{
+      lastBestWave='—';
+      if($('endlessBestWave'))$('endlessBestWave').textContent=lastBestWave;
+    });
+    if($('endlessRuns'))$('endlessRuns').textContent=fmt(lastRecord.runs);
+    if($('endlessWaves'))$('endlessWaves').textContent=fmt(lastRecord.waves);
+    if($('endlessBosses'))$('endlessBosses').textContent=fmt(lastRecord.bosses);
+    if($('endlessBestSector'))$('endlessBestSector').textContent=fmt(lastRecord.bestSector);
+    if($('endlessScrap'))$('endlessScrap').textContent=fmt(lastRecord.scrap);
+    paintDetails();
     try{dialog.showModal();}catch{/* Already open or not supported. */}
   }
+  function refreshLanguage(){
+    if(!dialog.open)return;
+    lastRecord=getRecord()||{};
+    paintCarousel();
+    paintDetails();
+  }
   const close=()=>{try{dialog.close();}catch{}};
-  $('endlessClose').onclick=close;$('endlessCancel').onclick=close;
-  $('endlessDeploy').onclick=()=>{close();onDeploy(selected);};
-  return {open,getSelectedTheme:()=>selected};
+  if($('endlessPrev'))$('endlessPrev').onclick=()=>step(-1);
+  if($('endlessNext'))$('endlessNext').onclick=()=>step(1);
+  $('endlessThemeCard')?.addEventListener?.('keydown',event=>{
+    if(event.key==='ArrowLeft'){event.preventDefault?.();step(-1);}
+    else if(event.key==='ArrowRight'){event.preventDefault?.();step(1);}
+  });
+  if($('endlessClose'))$('endlessClose').onclick=close;
+  if($('endlessCancel'))$('endlessCancel').onclick=close;
+  if($('endlessDeploy'))$('endlessDeploy').onclick=()=>{close();onDeploy(currentTheme().key??null);};
+  return {open,refreshLanguage,getSelectedTheme:()=>currentTheme().key??null};
 }

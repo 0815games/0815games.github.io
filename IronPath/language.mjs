@@ -2,27 +2,27 @@ import {germanWorkshop} from './localization-workshop-de.mjs?v=20261108-balance2
 // The Settings dialog is where a player switches the language in the first place, so
 // its copy cannot fall back to English. Own file, asked first, for the same reason as
 // the first-run dictionary below.
-import {germanSettings} from './localization-settings-de.mjs?v=20261119-block9d';
+import {germanSettings} from './localization-settings-de.mjs?v=20261119-block9e';
 // The first run was the last translated part of the game and the first one a new
 // soldier sees: seven coach cards on the field, four cards after the match, four class
 // explanations. Kept in its own file so the next new card cannot ship untranslated
 // without tests/first-run-german.test.mjs noticing.
-import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261119-block9d';
+import {germanFirstRun} from './localization-firstrun-de.mjs?v=20261119-block9e';
 import {germanFinal} from './localization-final-de.mjs?v=20261128-randomends1';
-import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261119-block9d';
-import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261119-block9d';
-import {germanAccount} from './localization-account-de.mjs?v=20261119-block9d';
-import {germanTowers} from './localization-towers-de.mjs?v=20261119-block9d';
-import {germanStatic} from './localization-static-de.mjs?v=20261119-block9d';
-import {germanBattle} from './localization-battle-de.mjs?v=20261119-block9d';
-import {germanResults} from './localization-results-de.mjs?v=20261119-block9d';
-import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261119-block9d';
-import {germanCampaign} from './localization-campaign-de.mjs?v=20261119-block9d';
+import {germanMoreStatic} from './localization-more-static-de.mjs?v=20261119-block9e';
+import {germanGameErrors} from './localization-game-errors-de.mjs?v=20261119-block9e';
+import {germanAccount} from './localization-account-de.mjs?v=20261119-block9e';
+import {germanTowers} from './localization-towers-de.mjs?v=20261119-block9e';
+import {germanStatic} from './localization-static-de.mjs?v=20261119-block9e';
+import {germanBattle} from './localization-battle-de.mjs?v=20261119-block9e';
+import {germanResults} from './localization-results-de.mjs?v=20261119-block9e';
+import {germanAdvancedSkills} from './localization-advanced-skills-de.mjs?v=20261119-block9e';
+import {germanCampaign} from './localization-campaign-de.mjs?v=20261119-block9e';
 import {germanCinematics} from './localization-cinematics-de.mjs?v=20261112-pressure1';
 import {germanEvents} from './localization-events-de.mjs?v=20261206-acttwo1';
-import {germanSkills} from './localization-skills-de.mjs?v=20261119-block9d';
+import {germanSkills} from './localization-skills-de.mjs?v=20261119-block9e';
 import {germanArmory} from './localization-armory-de.mjs?v=20261107-balance1';
-import {germanText} from './localization-de.mjs?v=20261119-block9d';
+import {germanText} from './localization-de.mjs?v=20261119-block9e';
 // Localization is presentation only. Player names, IDs, party codes and game
 // state are never translated or written to the account. This is a preview: the
 // complete story, gameplay and account flows still need translated strings.
@@ -96,13 +96,41 @@ export function translate(key,values={}){
   return text.replace(/\{([A-Za-z]+)\}/g,(_,name)=>String(values[name]??''));
 }
 export function setupLanguage({document,storage,onChange=()=>{}}){
-  const selector=document.getElementById('languageSelect');let lang='en';
+  const selector=document.getElementById('languageSelect');
+  const toggleBtn=document.getElementById('languageToggle');
+  const authToggleBtn=document.getElementById('authLanguageToggle');
+  let lang='en';
   try{const saved=storage?.getItem('ironpath:language');if(SUPPORTED_LANGUAGES.includes(saved))lang=saved;}catch{}
-  function render(){active=lang;document.documentElement.lang=lang;selector.value=lang;applyDomTranslations(document);
+  function paintControls(){
+    if(selector)selector.value=lang;
+    for(const btn of [toggleBtn,authToggleBtn]){
+      if(!btn)continue;
+      if(btn.dataset)btn.dataset.lang=lang;
+      else btn.setAttribute?.('data-lang',lang);
+      const code=btn.querySelector?.('.login-lang-code');
+      if(code)code.textContent=lang.toUpperCase();
+      btn.setAttribute?.('aria-pressed',String(lang==='de'));
+    }
+  }
+  function render(){
+    active=lang;document.documentElement.lang=lang;
+    paintControls();
+    applyDomTranslations(document);
     onChange(lang);for(const listener of listeners)listener(lang);
   }
-  selector.addEventListener('change',()=>{if(!SUPPORTED_LANGUAGES.includes(selector.value)){selector.value=lang;return;}lang=selector.value;try{storage?.setItem('ironpath:language',lang);}catch{}render();});
-  render();return {getLanguage:()=>lang,translate};
+  function setLanguage(next){
+    if(!SUPPORTED_LANGUAGES.includes(next)){if(selector)selector.value=lang;return false;}
+    lang=next;
+    try{storage?.setItem('ironpath:language',lang);}catch{}
+    render();
+    return true;
+  }
+  const toggleLanguage=()=>setLanguage(lang==='de'?'en':'de');
+  selector?.addEventListener?.('change',()=>{setLanguage(selector.value);});
+  toggleBtn?.addEventListener?.('click',toggleLanguage);
+  authToggleBtn?.addEventListener?.('click',toggleLanguage);
+  render();
+  return {getLanguage:()=>lang,setLanguage,toggleLanguage,translate};
 }
 function applyDomTranslations(doc){
     for(const element of doc.querySelectorAll('[data-i18n]')){const key=element.getAttribute('data-i18n');if(Object.hasOwn(messages,key))element.textContent=translate(key);}
@@ -124,5 +152,13 @@ export function translateStaticDom({document,storage}){
   let lang='en';
   try{const saved=storage?.getItem('ironpath:language');if(SUPPORTED_LANGUAGES.includes(saved))lang=saved;}catch{}
   active=lang;document.documentElement.lang=lang;
+  for(const id of ['languageToggle','authLanguageToggle']){
+    const btn=document.getElementById?.(id);
+    if(!btn)continue;
+    if(btn.dataset)btn.dataset.lang=lang;
+    else btn.setAttribute?.('data-lang',lang);
+    const code=btn.querySelector?.('.login-lang-code');
+    if(code)code.textContent=lang.toUpperCase();
+  }
   applyDomTranslations(document);
 }

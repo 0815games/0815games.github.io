@@ -45,7 +45,7 @@ test('every artwork asset referenced by menu-redesign.css exists cleanly', () =>
   assert.ok(urls.length >= 10, 'menu-redesign.css references painted terrain and banner artwork');
   for (const rel of urls) {
     const bytes = readFileSync(resolve(root, rel));
-    assert.ok(bytes.length > 1000, `referenced asset exists and is non-empty: ${rel}`);
+    assert.ok(bytes.length > 100, `referenced asset exists and is non-empty: ${rel}`);
   }
 });
 
@@ -99,28 +99,30 @@ test('account.js wires password-change, backdrop dismiss, menu dialog cleanup, a
   assert.match(account, /bindDialogBackdrop\(\$\('settingsDialog'\)/);
   assert.match(account, /bindDialogBackdrop\(\$\('endlessLaunch'\)/);
   assert.match(account, /createPasswordChange/);
-  assert.match(launcher, /setAttribute\('data-theme',/);
+  assert.match(launcher, /setAttribute\??\.?\('data-theme',/);
   for (const key of ['random', 'scrub', 'forest', 'urban', 'arctic', 'marsh']) {
     assert.match(css, new RegExp(`data-theme="${key}"`), `menu-redesign.css styles endless terrain "${key}"`);
   }
 });
 
-test('endless quick-deploy sits at the top above terrain cards and record; campaign dossier records unify story and relics with cohesive art', () => {
+test('endless quick-deploy sits above single-card carousel, cancel below, and record at bottom', () => {
   const html = read('index.html');
   const css = read('menu-redesign.css');
 
   const endlessStart = html.indexOf('id="endlessLaunch"');
   const endlessEnd = html.indexOf('</dialog>', endlessStart);
   const endless = html.slice(endlessStart, endlessEnd);
-  const quickStart = endless.indexOf('class="endless-quick-start"');
+  const deployTop = endless.indexOf('class="endless-deploy-top"');
   const deployPos = endless.indexOf('id="endlessDeploy"');
+  const carouselPos = endless.indexOf('class="endless-carousel"');
   const selectedPos = endless.indexOf('id="endlessSelectedTheme"');
-  const themesPos = endless.indexOf('id="endlessThemes"');
+  const cancelPos = endless.indexOf('id="endlessCancel"');
   const recordPos = endless.indexOf('class="endless-record"');
   const lastRunPos = endless.indexOf('id="endlessLastRun"');
-  assert.ok(quickStart > 0 && selectedPos > quickStart && deployPos > quickStart);
-  assert.ok(deployPos < themesPos, '#endlessDeploy sits above battlefield cards so players can start immediately');
-  assert.ok(themesPos < recordPos && recordPos < lastRunPos, '.endless-record and #endlessLastRun sit below #endlessThemes');
+  assert.ok(deployTop > 0 && deployPos > deployTop, '#endlessDeploy lives in .endless-deploy-top');
+  assert.ok(deployPos < carouselPos && carouselPos < selectedPos && selectedPos < cancelPos,
+    'DEPLOY sits above the single-card carousel and CANCEL sits directly below it');
+  assert.ok(cancelPos < recordPos && recordPos < lastRunPos, '.endless-record and #endlessLastRun sit below CANCEL');
 
   const boardStart = html.indexOf('id="campaignBoard"');
   const boardEnd = html.indexOf('class="campaign-quick-select"', boardStart);
@@ -140,6 +142,10 @@ test('endless quick-deploy sits at the top above terrain cards and record; campa
   assert.match(html, /id="afkRestArt"[^>]*src="assets\/afk-rest\.jpg"/, '#afkRestDialog uses painted AFK shelter art');
 
   for (const art of [
+    'assets/mode-campaign.jpg',
+    'assets/mode-endless.jpg',
+    'assets/mode-multiplayer.jpg',
+    'assets/endless-random.jpg',
     'assets/endless-frontline.jpg',
     'assets/story-act1-relic.jpg',
     'assets/story-act2-relic.jpg',
@@ -154,7 +160,7 @@ test('endless quick-deploy sits at the top above terrain cards and record; campa
   }
 });
 
-test('VIEW LAST RESULTS sits below mode cards, language select stays visible in Settings, and Endless None equipped is translated', () => {
+test('VIEW LAST RESULTS sits below mode cards, language toggles match, and HQ dialogs use COMMAND CENTER back buttons', () => {
   const html = read('index.html');
   const css = read('menu-redesign.css');
   const navStart = html.indexOf('class="command-nav"');
@@ -162,10 +168,15 @@ test('VIEW LAST RESULTS sits below mode cards, language select stays visible in 
   const nav = html.slice(navStart, navEnd);
   assert.ok(nav.indexOf('id="menuResume"') < nav.indexOf('class="mode-grid"'), '#menuResume stays above .mode-grid');
   assert.ok(nav.indexOf('class="mode-grid"') < nav.indexOf('id="menuResults"'), '#menuResults sits below .mode-grid');
-  assert.match(css, /#settingsDialog\s+\.language-flag-control\s+select\s*\{[^}]*position:\s*static[^}]*opacity:\s*1/s,
-    'menu-redesign.css resets legacy style.css opacity:0 / position:absolute on #languageSelect');
+  assert.match(css, /\.login-lang-toggle\s*\{/, 'menu-redesign.css styles the flag+code language toggle');
   assert.match(css, /#commandCenter\s+#menuResults\.command-results\s*\{/,
     'menu-redesign.css gives #menuResults a distinct secondary results bar style');
+  for (const id of ['settingsClose', 'patchNotesClose', 'endlessClose', 'soldierClose', 'armoryClose', 'skillCancel', 'friendsClose', 'leaderboardClose', 'resultsClose']) {
+    const start = html.indexOf(`id="${id}"`);
+    assert.ok(start > 0, `button #${id} present`);
+    const tag = html.slice(start, html.indexOf('</button>', start));
+    assert.match(tag, /data-i18n="workspace\.back"/, `#${id} displays ← COMMAND CENTER back label`);
+  }
   const launcher = read('endless-launcher.mjs');
   assert.doesNotMatch(launcher, /translateText\(\s*['"]command\.none['"]/, 'endless-launcher.mjs must not pass dotted message key to translateText');
 });

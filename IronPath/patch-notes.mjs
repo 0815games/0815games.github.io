@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9d';
+import {getLanguage} from './language.mjs?v=20261119-block9e';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block9e',build:'20261119-block9e',pr:324,
+    title:{en:'Block 9e · Same-Browser Multi-Tab Session Lock, Rotating Sign-In Artwork, Unified HQ Back Navigation & Endless Carousel',de:'Block 9e · Mehrfenster-Sitzungsschutz, rotierende Login-Banner, einheitliche HQ-Navigation & Endlos-Karussell'},
+    shipped:[
+      {en:'Hardened single active-session protection (`active-session.mjs`, `account.js`): 10 s heartbeat (`45 s` RTDB lease matching published `BLOCK9D` rules), per-tab `createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`) so blocking/takeover in another browser tab leaves sibling Auth IndexedDB intact, `pagehide` release, and unchanged-UID manual re-activation.',de:'Einzelsitzungs-Schutz gehärtet (`active-session.mjs`, `account.js`): 10-s-Heartbeat (`45 s`-RTDB-Lease passend zu den veröffentlichten `BLOCK9D`-Regeln), Tab-spezifische `createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`) ohne Verlust der Auth-Sitzung im anderen Tab, `pagehide`-Freigabe sowie saubere Reaktivierung bei identischer UID.'},
+      {en:'Upgraded the sign-in dossier (`login-scene.mjs`, four rotating `1376x768` painted scenes, `#authLanguageToggle` flag/code switch matching `#languageToggle` in Settings) and unified all nine Command HQ screens (`← COMMAND CENTER` / `← KOMMANDOZENTRALE` with field `✕` fallback outside HQ).',de:'Anmeldedossier (`login-scene.mjs`, vier rotierende `1376x768`-Szenenbilder, Flaggen-/Kürzelschalter `#authLanguageToggle` passend zu `#languageToggle` in den Einstellungen) modernisiert sowie alle neun HQ-Fenster einheitlich mit `← COMMAND CENTER` / `← KOMMANDOZENTRALE` (und kontextuellem `✕` im Gefecht) versehen.'},
+      {en:'Refreshed the three Command HQ mode cards with bespoke `1376x768` artwork (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) and streamlined the Endless launcher (`endless-launcher.mjs`, `endless-random.jpg`) into a single-image terrain carousel opening on Random with `DEPLOY` above and `CANCEL` below.',de:'Drei HQ-Modus-Karten mit neuen `1376x768`-Motiven (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) ausgestattet und das Endlos-Menü (`endless-launcher.mjs`, `endless-random.jpg`) auf ein schlankes Einzelbild-Karussell (Start auf „Zufälliges Gefechtsfeld“, `EINSETZEN` darüber, `ABBRECHEN` darunter) umgebaut.'},
+    ],
+    open:[
+      {en:'Real desktop and phone inspection on `20261119-block9e` before starting Block 6.',de:'Echte Desktop- und Handy-Sichtung auf `20261119-block9e` vor Beginn von Block 6.'},
+    ],
+  },
   {
     id:'block9d',build:'20261119-block9d',pr:323,
     title:{en:'Block 9d · Single Active-Session Lock, Cropped Artwork, Settings Language Control & Complete DE Localization',de:'Block 9d · Einzelsitzungs-Schutz, randfreie Gemälde, sichtbare Sprachauswahl & vollständige DE-Lokalisierung'},

@@ -42,7 +42,9 @@ const fs = require('node:fs');
           `${name}: ${selector} is centred, not parked in a corner (off by ${Math.round(measured.dx)}/${Math.round(measured.dy)})`);
         assert.ok(measured.box.x >= -1 && measured.box.x + measured.box.width <= width + 1, `${name}: ${selector} stays inside the width`);
       };
-      await check('#authForm'); await check('#authSubmit'); await check('#adminLoginLink');
+      await check('#authForm'); await check('#authSubmit'); await check('#adminLoginLink'); await check('#authLanguageToggle');
+      const authImgOk = await page.locator('#authSceneImg').evaluate(img => img.complete && img.naturalWidth > 0);
+      assert.equal(authImgOk, true, `${name}: #authSceneImg rotating banner loads cleanly`);
       assert.equal(await page.locator('#adminLoginLink').getAttribute('href'), 'admin.html', `${name}: admin link points to admin.html`);
       await page.screenshot({ path: `browser-artifacts/${name}-signin.png`, fullPage: true });
       await page.evaluate(() => {
@@ -76,7 +78,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9d loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block9e loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -456,9 +458,11 @@ const fs = require('node:fs');
       assert.deepEqual(flags,{global:false,field:false,corner:false},`${name}: nothing from Settings floats over the field (${JSON.stringify(flags)})`);
       const settingsOnly=await page.evaluate(()=>({
         selects:document.querySelectorAll('#languageSelect').length,
-        inDialog:!!document.querySelector('#settingsDialog #languageSelect'),
+        toggles:document.querySelectorAll('#languageToggle, #authLanguageToggle').length,
+        inSettings:!!document.querySelector('#settingsDialog #languageToggle'),
+        inAuth:!!document.querySelector('#authView #authLanguageToggle'),
       }));
-      assert.deepEqual(settingsOnly,{selects:1,inDialog:true},`${name}: exactly one language control, inside Settings`);
+      assert.deepEqual(settingsOnly,{selects:0,toggles:2,inSettings:true,inAuth:true},`${name}: language toggles live only inside Sign-In and Settings`);
       const training=await page.evaluate(()=>{
         const battle=document.querySelector('.battle').getBoundingClientRect();
         const card=document.querySelector('#soloObjective').getBoundingClientRect();
@@ -528,19 +532,42 @@ const fs = require('node:fs');
         if(id==='armoryDialog')await page.evaluate(()=>document.querySelectorAll('#armoryList .armory-section').forEach(section=>{section.hidden=section.dataset.section!=='equipment';}));
         await check(`#${id}`); await check(control);
         if(id==='afkRestDialog'){const img=await page.locator('#afkRestArt').evaluate(e=>e.complete&&e.naturalWidth>0);assert.equal(img,true,`${name}: #afkRestArt artwork loads cleanly`);}
+        if(id==='endlessLaunch'){
+          await check('#endlessPrev'); await check('#endlessNext'); await check('#endlessThemeCard');
+          const carouselLayout=await page.evaluate(()=>{
+            const deploy=document.getElementById('endlessDeploy').getBoundingClientRect();
+            const card=document.getElementById('endlessThemeCard').getBoundingClientRect();
+            const cancel=document.getElementById('endlessCancel').getBoundingClientRect();
+            return {deployBottom:deploy.bottom,cardTop:card.top,cardBottom:card.bottom,cancelTop:cancel.top,art:getComputedStyle(document.getElementById('endlessThemeCard')).backgroundImage};
+          });
+          assert.ok(carouselLayout.deployBottom<=carouselLayout.cardTop+2,`${name}: #endlessDeploy sits above #endlessThemeCard`);
+          assert.ok(carouselLayout.cardBottom<=carouselLayout.cancelTop+2,`${name}: #endlessCancel sits below #endlessThemeCard`);
+          assert.match(carouselLayout.art,/endless-random/,`${name}: #endlessThemeCard opens on Random artwork`);
+        }
         if(id==='settingsDialog'){
           const langControl=await page.evaluate(()=>{
-            const wrap=document.querySelector('#settingsDialog .language-flag-control'),sel=document.getElementById('languageSelect');
-            const w=wrap.getBoundingClientRect(),s=sel.getBoundingClientRect(),style=getComputedStyle(sel);
-            return {wrapWidth:w.width,selectWidth:s.width,selectHeight:s.height,opacity:style.opacity,position:style.position};
+            const btn=document.getElementById('languageToggle');
+            const b=btn.getBoundingClientRect(),style=getComputedStyle(btn);
+            const code=btn.querySelector('.login-lang-code')?.textContent?.trim();
+            const flag=btn.querySelector('.flag-icon');
+            return {width:b.width,height:b.height,opacity:style.opacity,code,flagBg:flag?getComputedStyle(flag).backgroundImage:''};
           });
-          assert.equal(langControl.opacity,'1',`${name}: #languageSelect is visible in Settings`);
-          assert.ok(langControl.selectWidth>=60&&langControl.selectHeight>=30,`${name}: #languageSelect has tappable size (${Math.round(langControl.selectWidth)}x${Math.round(langControl.selectHeight)})`);
-          assert.ok(langControl.wrapWidth>=110,`${name}: .language-flag-control expands cleanly`);
+          assert.equal(langControl.opacity,'1',`${name}: #languageToggle is visible in Settings`);
+          assert.ok(langControl.width>=60&&langControl.height>=36,`${name}: #languageToggle has tappable size (${Math.round(langControl.width)}x${Math.round(langControl.height)})`);
+          assert.equal(langControl.code,'EN',`${name}: #languageToggle shows EN code`);
+          assert.match(langControl.flagBg,/flag-gb/,`${name}: #languageToggle shows flag icon`);
         }
         if(id==='friendsDialog'||id==='leaderboardDialog'){
           const layout=await page.locator(control).evaluate(el=>{const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect(),style=getComputedStyle(el);return {rightGap:h.right-r.right,textAlign:style.textAlign,width:r.width,height:r.height};});
-          assert.ok(Math.abs(layout.rightGap)<2,`${name}: ${control} should align to the right edge of its header`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);
+          assert.ok(Math.abs(layout.rightGap)<2,`${name}: ${control} should align to the right edge of its header (gap=${layout.rightGap})`);assert.equal(layout.textAlign,'center');assert.ok(layout.width>=44&&layout.height>=44);
+          const deGap=await page.locator(control).evaluate(el=>{
+            const label=el.querySelector('span'),prev=label?label.textContent:null;
+            if(label)label.textContent='← KOMMANDOZENTRALE';
+            const r=el.getBoundingClientRect(),h=el.parentElement.getBoundingClientRect();
+            if(label&&prev!==null)label.textContent=prev;
+            return h.right-r.right;
+          });
+          assert.ok(Math.abs(deGap)<2,`${name}: ${control} keeps header alignment in German (← KOMMANDOZENTRALE, gap=${deGap})`);
         }
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);

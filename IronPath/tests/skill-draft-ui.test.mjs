@@ -21,7 +21,7 @@ const renderSkillTree=options=>{lastRender=options;select=options.onSelect;};
 const runTransaction=async(_ref,update)=>{const next=update(structuredClone(store));if(!next)return {committed:false};store=next;return {committed:true,snapshot:{val:()=>structuredClone(store)}};};
 const init=new Function('$','profile','user','sessionVersion','partyPanel','fourPanel','gameControl','commandCenter','confirmation','skillMap','level','pointsLeft','parseBuild','encodeBuild','SKILL_PATHS','WEB_NODES','webReady','webRequirement','skillBuildSummary','localizeSkillSummary','canSaveSkillDraft','renderSkillTree','document','runTransaction','ref','db','updateSkillPrompt','bindDialogBackdrop','translateText',`
 let sandbox=null,skillMigrationSummary=null;
-const inSandbox=()=>sandbox!==null;const viewProfile=()=>profile;const assertWritable=()=>{};
+const inSandbox=()=>sandbox!==null;const viewProfile=()=>profile;const assertWritable=()=>{};const syncContextBackButtons=()=>{};
 let draftSkills=null,selectedSkill={path:'assault',rank:1},openedSkills='',savingSkills=false,closingSkills=false,skillsOpenGeneration=0;
 ${source.slice(start,end)}
 return {getDraft:()=>draftSkills};`);

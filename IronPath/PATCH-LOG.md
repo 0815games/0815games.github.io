@@ -3519,6 +3519,20 @@ Grenzen / Offen:
   - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (`IPL-0073` Merge/Deploy nachgetragen + `IPL-0074` protokolliert), `IronPath/patch-notes.mjs` (`block9d`-Eintrag aktualisiert: `BLOCK9D-RULES-TO-PUBLISH.json` als vom Betreiber veröffentlicht dokumentiert, verbleibender offener Punkt auf echte Desktop-/Handy-Sichtung vor Block 6 bereinigt).
 - **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Schutz über mehrere Fenster/Geräte) vor Beginn von Block 6.
 
+## IPL-0075 – Block 9e (`20261119-block9e`, PR #324): Mehrfenster-Sitzungsschutz, rotierende Login-Banner, HQ-Zurück-Navigation & Endlos-Karussell
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Branch `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`), PR #324 offen.
+- **Block / Ziel:** Vier Nachbesserungen aus der ersten Block-9d-Sichtung umsetzen: (1) parallele Anmeldung im selben Browser/Gerät zuverlässig über zwei Tabs sperren, ohne beim Blockieren oder Übernehmen das geteilte Auth-IndexedDB des anderen Tabs zu invalidieren, (2) Login-Dossier mit vier rotierenden Szenenbildern & identischem EN/DE-Flaggen-Schalter wie in den Einstellungen aufwerten, (3) alle neun Command-HQ-Dialoge mit einheitlichen `← COMMAND CENTER` / `← KOMMANDOZENTRALE`-Buttons (kontextuelles `✕` im laufenden Gefecht) und dedizierten `1376×768`-Moduskarten (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) versehen, (4) Endlos-Auswahl (`#endlessLaunch`) auf ein einzelnes Karussell (Standard `Random`, `DEPLOY` oben, `CANCEL` unten) mit neuem `endless-random.jpg` verschlanken.
+- **Änderungen / Dateien:**
+  - **Paket 1 (Mehrfenster-Sitzungssperre):** `IronPath/active-session.mjs`, `IronPath/account.js`, `IronPath/firebase/rules-test/active-session-browser.cjs` (Schritte `1b`–`1c`), `IronPath/tests/active-session.test.mjs`: ephemerer Pro-Tab-`createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`), Verzicht auf `accountServices.logout()` bei blockiertem/übernommenem Tab im selben Browser, `occupiedHolder`-Erfassung im RTDB-`runTransaction`, saubere Re-Aktivierung bei identischer UID, `pagehide`-Freigabe & 10-s-Heartbeat.
+  - **Paket 2–4 (Login-Szene, Sprache, HQ-Navigation & Endlos-Karussell):** `IronPath/login-scene.mjs`, `IronPath/language.mjs` (`#languageToggle` & `#authLanguageToggle` plus `#languageSelect`-Fallback für Mock-Tests), `IronPath/auth-form.mjs`, `IronPath/command-center.mjs` (`onViewChange`), `IronPath/settings.mjs`, `IronPath/endless-launcher.mjs`, `IronPath/account.js` (`syncContextBackButtons`, Sprachwechsel-Refresh für Auth-Form & Endlos-Karussell), `IronPath/localization-{settings,more-static}-de.mjs`.
+  - **Artworks (`IronPath/assets/`, alle `1376×768` text-/randfreie JPEGs):** `login-bunker-watch.jpg`, `login-radio-rain.jpg`, `login-convoy-prep.jpg`, `login-tactical-map.jpg`, `mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`, `endless-random.jpg`.
+  - **Markup, Styling & Tests:** `IronPath/index.html`, `IronPath/style.css`, `IronPath/menu-redesign.css` (inkl. `flex-wrap: nowrap` auf Freunde-/Bestenlisten-Header für 320px-EN/DE-Breite), `IronPath/tests/{login-scene,first-run-layout,settings,endless-launcher,menu-redesign,multiplayer-build-stamp,skill-draft-ui}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,multiplayer-prompt-layout,wave-consensus}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9e`, `pr: 324`) & vollständige `?v=20261119-block9e`-Cache-Welle.
+- **Prüfungen:**
+  - `node --test IronPath/tests/*.test.mjs`, `node IronPath/stress-tests/run.mjs` und Syntaxprüfung (`node --check`) vor Commit ausgeführt; Chromium/Playwright-Browsertests sowie Java/Firebase-Emulator-Tests laufen mangels lokalem Browser/Java über die GitHub-Actions-Pipeline auf PR #324.
+- **Git / PR / Release:** `lokal/uncommittet` vor Commit/Push auf `arena/f7cdd26a-0815games-github-io` (PR #324 offen).
+- **Offen:** Grüner CI-Lauf auf `20261119-block9e` sowie anschließende echte Geräteabnahme vor Block 6.
+
+
 
 
 

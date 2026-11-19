@@ -230,7 +230,7 @@
 #commandCenter .mode-card.mode-campaign:hover:not(:disabled) {
   background-image:
     linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.72) 56%, rgba(10, 17, 14, 0.96) 100%),
-    url("assets/command-campaign.jpg");
+    url("assets/mode-campaign.jpg");
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
@@ -240,7 +240,7 @@
 #commandCenter .mode-card.mode-endless:hover:not(:disabled) {
   background-image:
     linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.72) 56%, rgba(10, 17, 14, 0.96) 100%),
-    url("assets/endless-frontline.jpg") !important;
+    url("assets/mode-endless.jpg") !important;
   background-size: cover, cover !important;
   background-position: center, center !important;
   background-repeat: no-repeat, no-repeat;
@@ -250,7 +250,7 @@
 #commandCenter .mode-card.mode-multiplayer:hover:not(:disabled) {
   background-image:
     linear-gradient(180deg, rgba(12, 22, 18, 0.16) 0%, rgba(11, 20, 16, 0.74) 56%, rgba(10, 17, 14, 0.96) 100%),
-    url("assets/story-tower.jpg");
+    url("assets/mode-multiplayer.jpg");
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
@@ -488,21 +488,21 @@
   #commandCenter .mode-card.mode-campaign:hover:not(:disabled) {
     background-image:
       linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
-      url("assets/command-campaign.jpg");
+      url("assets/mode-campaign.jpg");
   }
 
   #commandCenter .mode-card.mode-endless,
   #commandCenter .mode-card.mode-endless:hover:not(:disabled) {
     background-image:
       linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
-      url("assets/endless-frontline.jpg") !important;
+      url("assets/mode-endless.jpg") !important;
   }
 
   #commandCenter .mode-card.mode-multiplayer,
   #commandCenter .mode-card.mode-multiplayer:hover:not(:disabled) {
     background-image:
       linear-gradient(96deg, rgba(10, 17, 14, 0.94) 0%, rgba(11, 20, 16, 0.78) 54%, rgba(12, 22, 18, 0.34) 100%),
-      url("assets/story-tower.jpg");
+      url("assets/mode-multiplayer.jpg");
   }
 
   /* Fixed bottom thumb navigation bar inside #commandCenter (automatically hidden when #commandCenter has [hidden]) */
@@ -608,16 +608,47 @@
   backdrop-filter: blur(4px);
 }
 
-/* Consistent 44x44 square close control across all dialogs */
+/* Consistent HQ back button ("← COMMAND CENTER" / "← KOMMANDOZENTRALE") and
+   compact 44x44 square close fallback for sub-dialogs or in-field mode. */
 #settingsClose,
 #patchNotesClose,
 #endlessClose,
-#soldierClose,
-#armoryClose,
-#skillCancel,
+#soldierDialog #soldierClose,
+#armoryDialog #armoryClose,
+#skillDialog #skillCancel,
 #friendsClose,
+#leaderboardClose,
+#runResults #resultsClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 44px;
+  height: auto;
+  min-height: 44px;
+  padding: 8px 14px;
+  margin: 0;
+  text-align: center;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.88);
+  color: var(--hq-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
 #friendStatsClose,
-#leaderboardClose {
+#settingsClose[data-context="field"],
+#armoryDialog #armoryClose[data-context="field"],
+#skillDialog #skillCancel[data-context="field"],
+#friendsClose[data-context="field"],
+#runResults #resultsClose[data-context="field"] {
   display: grid;
   place-items: center;
   flex: 0 0 44px;
@@ -633,6 +664,7 @@
   background: rgba(11, 20, 16, 0.82);
   color: var(--hq-text);
   font-size: 18px;
+  letter-spacing: 0;
   line-height: 1;
   cursor: pointer;
 }
@@ -640,15 +672,45 @@
 #settingsClose:hover,
 #patchNotesClose:hover,
 #endlessClose:hover,
-#soldierClose:hover,
-#armoryClose:hover,
-#skillCancel:hover,
+#soldierDialog #soldierClose:hover,
+#armoryDialog #armoryClose:hover,
+#skillDialog #skillCancel:hover,
 #friendsClose:hover,
 #friendStatsClose:hover,
-#leaderboardClose:hover {
+#leaderboardClose:hover,
+#runResults #resultsClose:hover {
   border-color: var(--hq-gold);
   background: rgba(34, 56, 45, 0.94);
   color: var(--hq-gold);
+}
+
+#friendsDialog .dialog-banner > header > div:first-child,
+#leaderboardDialog .dialog-banner > header > div:first-child,
+#soldierDialog .soldier-hero > div:first-child,
+#armoryDialog .development-head > div:first-child,
+#skillDialog .skills-header > div:first-child {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#runResults .debrief-hero:has(#resultsClose:not([data-context="field"])) .debrief-hero-copy {
+  padding-top: 64px;
+}
+
+@media (max-width: 480px) {
+  #settingsClose,
+  #patchNotesClose,
+  #endlessClose,
+  #soldierDialog #soldierClose,
+  #armoryDialog #armoryClose,
+  #skillDialog #skillCancel,
+  #friendsClose,
+  #leaderboardClose,
+  #runResults #resultsClose {
+    padding: 8px 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+  }
 }
 
 /* Banner container bleeds edge-to-edge across the dialog top */
@@ -727,7 +789,8 @@
 #friendStatsDialog .dialog-banner > header,
 #leaderboardDialog .dialog-banner > header {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   width: 100%;
@@ -941,32 +1004,132 @@
   color: var(--hq-text);
 }
 
-#settingsDialog .language-flag-control {
+.login-lang-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  width: auto;
-  height: auto;
-  overflow: visible;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  padding: 0;
-}
-
-#settingsDialog .language-flag-control .flag-icon {
+  justify-content: center;
+  gap: 8px;
   flex: 0 0 auto;
-  width: 28px;
-  height: 18px;
-  border-radius: 2px;
+  width: auto;
+  min-width: 78px;
+  min-height: 44px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(16, 29, 23, 0.94);
+  color: var(--hq-text);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  cursor: pointer;
 }
 
-#settingsDialog .language-flag-control select {
-  position: static;
-  inset: auto;
-  opacity: 1;
-  width: auto;
-  height: auto;
+.login-lang-toggle:hover {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+.login-lang-toggle:focus-visible {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 2px;
+}
+
+.login-lang-flag {
+  display: block;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 2px;
+  background: center / cover no-repeat url("assets/flag-gb.svg");
+}
+
+.login-lang-toggle[data-lang="de"] .login-lang-flag,
+html[lang="de"] .login-lang-toggle .login-lang-flag {
+  background-image: url("assets/flag-de.svg");
+}
+
+.login-lang-code {
+  display: inline-block;
+  min-width: 20px;
+}
+
+.entry:has(.dossier:not([hidden])) {
+  max-width: 500px;
+}
+
+#authView .dossier-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#authView .dossier-topbar .dossier-kicker {
+  margin: 0;
+}
+
+#authView .dossier-scene {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  margin: 0 0 14px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  overflow: hidden;
+  background: #0e1914;
+}
+
+#authView .dossier-scene img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#authView .dossier-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(10, 18, 14, 0.05) 35%, rgba(10, 18, 14, 0.72) 100%);
+  pointer-events: none;
+}
+
+#authView .dossier-scene-caption {
+  position: absolute;
+  right: 10px;
+  bottom: 8px;
+  z-index: 1;
+  color: var(--hq-gold);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.85);
+}
+
+#authView .dossier-heading {
+  display: block;
+}
+
+#authView .dossier-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+#authView .dossier-intro h2 {
+  margin: 0;
+}
+
+@media (max-width: 420px) {
+  #authView .dossier-scene-caption {
+    font-size: 8px;
+  }
 }
 
 #settingsDialog .settings-row select {
@@ -1271,61 +1434,39 @@
 }
 
 /* ==========================================================================
-   6. ENDLESS QUICK-DEPLOY BAR, PAINTED TERRAIN CARDS & BOTTOM STATS
+   6. ENDLESS SINGLE-CARD CAROUSEL, TOP DEPLOY, BOTTOM CANCEL & STATS
    ========================================================================== */
 
-#endlessLaunch .endless-quick-start {
+#endlessLaunch .endless-deploy-top {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 16px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
+  gap: 10px 16px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
   background: linear-gradient(120deg, rgba(25, 43, 35, 0.96), rgba(16, 29, 23, 0.98));
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(228, 202, 137, 0.14);
 }
 
-#endlessLaunch .endless-deploy-meta {
-  display: grid;
-  gap: 6px;
-  min-width: 0;
-  flex: 1 1 260px;
-}
-
-#endlessLaunch .endless-selected-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 6px 10px;
-}
-
-#endlessLaunch .endless-selected-line .eyebrow {
-  color: var(--hq-gold);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-}
-
-#endlessLaunch #endlessSelectedTheme {
-  color: var(--hq-text);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 17px;
-  line-height: 1.2;
-}
-
 #endlessLaunch .endless-loadout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 200px;
   margin: 0;
   padding: 0;
   border: 0;
   background: transparent;
+}
+
+#endlessLaunch .endless-loadout .eyebrow {
+  color: var(--hq-gold);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
 }
 
 #endlessLaunch #endlessLoadout {
@@ -1334,42 +1475,19 @@
   line-height: 1.35;
 }
 
-#endlessLaunch .endless-actions {
-  display: flex;
-  gap: 8px;
-  flex: 0 1 auto;
-  padding: 0;
-  margin: 0;
-  border: 0;
-}
-
-#endlessLaunch #endlessCancel,
 #endlessLaunch #endlessDeploy {
+  flex: 0 0 auto;
+  min-width: 150px;
   min-height: 46px;
   margin: 0;
-  padding: 10px 18px;
+  padding: 10px 20px;
+  border: 1px solid var(--hq-gold);
   border-radius: var(--hq-radius);
+  background: var(--hq-gold);
+  color: #101914;
   font-weight: 800;
   letter-spacing: 0.1em;
   white-space: nowrap;
-}
-
-#endlessLaunch #endlessCancel {
-  border: 1px solid var(--hq-border);
-  background: var(--hq-surface);
-  color: var(--hq-muted);
-}
-
-#endlessLaunch #endlessCancel:hover {
-  border-color: var(--hq-border-strong);
-  color: var(--hq-text);
-}
-
-#endlessLaunch #endlessDeploy {
-  min-width: 148px;
-  border: 1px solid var(--hq-gold);
-  background: var(--hq-gold);
-  color: #101914;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
 }
 
@@ -1378,107 +1496,156 @@
   border-color: #f3dfb0;
 }
 
-#endlessLaunch .endless-themes {
+#endlessLaunch .endless-carousel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: stretch;
   gap: 10px;
+  margin-bottom: 12px;
 }
 
-@media (max-width: 680px) {
-  #endlessLaunch .endless-quick-start {
-    align-items: stretch;
-  }
-
-  #endlessLaunch .endless-actions {
-    flex: 1 1 100%;
-    display: grid;
-    grid-template-columns: minmax(96px, 0.75fr) minmax(0, 1.45fr);
-  }
-
-  #endlessLaunch .endless-themes {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 420px) {
-  #endlessLaunch .endless-themes {
-    grid-template-columns: 1fr;
-  }
-}
-
-#endlessLaunch .endless-theme {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  gap: 3px;
-  min-height: 78px;
+#endlessLaunch .endless-arrow {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  min-width: 48px;
+  min-height: 48px;
   margin: 0;
-  padding: 10px 12px;
-  text-align: left;
-  border: 1px solid var(--hq-border);
+  padding: 0;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(16, 29, 23, 0.94);
+  color: var(--hq-gold);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#endlessLaunch .endless-arrow:hover {
+  border-color: var(--hq-gold);
+  background: rgba(34, 56, 45, 0.96);
+  color: #f7e4b2;
+}
+
+#endlessLaunch .endless-theme-card {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 200px;
+  aspect-ratio: 16 / 9;
+  padding: 18px 20px;
+  border: 1px solid var(--hq-gold);
   border-radius: var(--hq-radius);
   overflow: hidden;
-  background-clip: padding-box;
   background-color: var(--hq-surface-elevated);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(228, 202, 137, 0.25), 0 12px 28px rgba(0, 0, 0, 0.48);
+}
+
+#endlessLaunch .endless-theme-card:focus-visible {
+  outline: 2px solid var(--hq-gold);
+  outline-offset: 2px;
+}
+
+#endlessLaunch #endlessSelectedTheme {
   color: var(--hq-text);
-  cursor: pointer;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(20px, 3vw, 26px);
+  line-height: 1.15;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
 }
 
-#endlessLaunch .endless-theme strong {
-  color: var(--hq-text);
-  font-size: 13.5px;
-  line-height: 1.2;
-}
-
-#endlessLaunch .endless-theme small {
-  color: var(--hq-muted);
-  font-size: 11.5px;
-  line-height: 1.25;
-}
-
-#endlessLaunch .endless-theme[data-theme="random"] {
+#endlessLaunch .endless-theme-card[data-theme="random"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
-    url("assets/endless-frontline.jpg");
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
+    url("assets/endless-random.jpg");
 }
 
-#endlessLaunch .endless-theme[data-theme="scrub"] {
+#endlessLaunch .endless-theme-card[data-theme="scrub"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
     url("assets/story-outpost.jpg");
 }
 
-#endlessLaunch .endless-theme[data-theme="forest"] {
+#endlessLaunch .endless-theme-card[data-theme="forest"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
     url("assets/story-pinewood.jpg");
 }
 
-#endlessLaunch .endless-theme[data-theme="urban"] {
+#endlessLaunch .endless-theme-card[data-theme="urban"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
     url("assets/story-city.jpg");
 }
 
-#endlessLaunch .endless-theme[data-theme="arctic"] {
+#endlessLaunch .endless-theme-card[data-theme="arctic"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
     url("assets/story-ice.jpg");
 }
 
-#endlessLaunch .endless-theme[data-theme="marsh"] {
+#endlessLaunch .endless-theme-card[data-theme="marsh"] {
   background-image:
-    linear-gradient(180deg, rgba(11, 20, 16, 0.22) 0%, rgba(10, 18, 14, 0.92) 88%),
+    linear-gradient(180deg, rgba(11, 20, 16, 0.12) 0%, rgba(10, 18, 14, 0.88) 88%),
     url("assets/story-marsh.jpg");
 }
 
-#endlessLaunch .endless-theme[aria-pressed="true"] {
-  border-color: var(--hq-gold);
-  box-shadow: inset 0 0 0 1px var(--hq-gold), 0 8px 22px rgba(0, 0, 0, 0.45);
+#endlessLaunch .endless-cancel-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+#endlessLaunch #endlessCancel {
+  min-width: 160px;
+  min-height: 46px;
+  margin: 0;
+  padding: 10px 20px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: var(--hq-surface);
+  color: var(--hq-muted);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+#endlessLaunch #endlessCancel:hover {
+  border-color: var(--hq-border-strong);
+  color: var(--hq-text);
+}
+
+@media (max-width: 680px) {
+  #endlessLaunch .endless-deploy-top {
+    align-items: stretch;
+  }
+
+  #endlessLaunch #endlessDeploy {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  #endlessLaunch .endless-carousel {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 6px;
+  }
+
+  #endlessLaunch .endless-arrow {
+    width: 44px;
+    min-width: 44px;
+  }
+
+  #endlessLaunch .endless-theme-card {
+    min-height: 145px;
+    padding: 14px;
+  }
+
+  #endlessLaunch #endlessCancel {
+    width: 100%;
+  }
 }
 
 #endlessLaunch .endless-record-panel {
@@ -2290,14 +2457,14 @@
 #commandCenter #fieldSchool #fieldSchool-campaign:hover {
   background-image:
     linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
-    url("assets/command-campaign.jpg");
+    url("assets/mode-campaign.jpg");
 }
 
 #commandCenter #fieldSchool #fieldSchool-multiplayer,
 #commandCenter #fieldSchool #fieldSchool-multiplayer:hover {
   background-image:
     linear-gradient(180deg, rgba(11, 20, 16, 0.32) 0%, rgba(10, 18, 14, 0.94) 90%),
-    url("assets/story-tower.jpg");
+    url("assets/mode-multiplayer.jpg");
 }
 
 #commandCenter #fieldSchool .field-school-card:hover,
@@ -2377,7 +2544,9 @@
   #commandCenter #fieldSchool .field-school-card,
   #campaignPanel .campaign-dossier-records .story-journal,
   #campaignPanel .campaign-dossier-records .relic-panel,
-  #endlessLaunch .endless-theme,
+  #endlessLaunch .endless-theme-card,
+  #endlessLaunch .endless-arrow,
+  .login-lang-toggle,
   #settingsDialog .settings-switch::before {
     transition: none;
   }

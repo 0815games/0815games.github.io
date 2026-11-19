@@ -41,7 +41,7 @@ function fakeDocument(ids) {
 
 const IDS = [
   'settingsDialog', 'settingsClose', 'settingsTabGeneral', 'settingsTabAccount',
-  'settingsPanelGeneral', 'settingsPanelAccount', 'languageSelect', 'soundVolume',
+  'settingsPanelGeneral', 'settingsPanelAccount', 'languageToggle', 'soundVolume',
   'soundVolumeStatus', 'soundEnabledToggle', 'voiceOverToggle', 'graphicsQuality',
   'screenShakeToggle', 'weatherEffectsToggle', 'combatTracersToggle',
   'autoPauseToggle', 'defaultMapZoom', 'settingsTutorialReset', 'settingsRestoreDefaults',
@@ -215,7 +215,7 @@ test('the dialog opens and closes over the game without becoming a second menu',
   settings.open(opener);
   assert.equal(document.nodes.get('settingsDialog').open, true);
   assert.equal(document.nodes.get('settingsDialog').focused, true, 'the dialog takes the focus');
-  assert.notEqual(document.nodes.get('languageSelect').focused, true, 'the language picker must not open by itself');
+  assert.notEqual(document.nodes.get('languageToggle').focused, true, 'the language toggle must not take focus by itself');
   settings.close();
   assert.equal(document.nodes.get('settingsDialog').open, false);
   assert.equal(opener.focused, true, 'closing returns the player where they were');
@@ -267,7 +267,7 @@ test('the dialog that switches the language is German itself', async () => {
   const { germanSettings } = await import('../localization-settings-de.mjs');
   const html = readFileSync(resolve(root, 'index.html'), 'utf8');
   const settingsMarkup = html.slice(html.indexOf('id="settingsDialog"'), html.indexOf('</dialog>', html.indexOf('id="settingsDialog"')));
-  const fromMarkup = [...settingsMarkup.matchAll(/data-i18n(?:-aria-label|-text)?="([^"]+)"/g)].map(match => match[1].replace(/&amp;/g, '&'));
+  const fromMarkup = [...settingsMarkup.matchAll(/data-i18n-(?:aria-label|text)="([^"]+)"/g)].map(match => match[1].replace(/&amp;/g, '&'));
   assert.ok(fromMarkup.length >= 16, 'the dialog has complete translated copy');
 
   const source = readFileSync(resolve(root, 'settings.mjs'), 'utf8');
@@ -293,6 +293,7 @@ test('the dialog that switches the language is German itself', async () => {
         assert.ok(!german.toLowerCase().includes(word), `still English ("${word.trim()}"): ${german}`);
       }
     }
+    assert.equal(language.translate('workspace.back'), '← KOMMANDOZENTRALE');
   } finally {
     globalThis.document = saved;
   }

@@ -122,9 +122,9 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
     assert.equal(await host.locator('#start').innerText(),'WELLE BESTÄTIGEN');assert.equal(await guest.locator('#start').innerText(),'CANCEL REQUEST');assert.equal(await guest.locator('#waveDecline').isHidden(),true);
     for(const {page} of pages.slice(0,-1)){await waitPrompt(page);await checkPrompt(page);}
     // Language changes repaint the same decision; no approval or focus steal.
-    await host.evaluate(()=>{const s=document.getElementById('languageSelect');s.value='en';s.dispatchEvent(new Event('change'));window.__waveGame.refreshLanguage();});
+    await host.evaluate(()=>{if(document.documentElement.lang!=='en')document.getElementById('languageToggle').click();window.__waveGame.refreshLanguage();});
     assert.match(await host.locator('#multiplayerPromptBody').innerText(),/requests wave 1/);
-    await host.evaluate(()=>{const s=document.getElementById('languageSelect');s.value='de';s.dispatchEvent(new Event('change'));window.__waveGame.refreshLanguage();window.__staleAccept=document.querySelector('#multiplayerPromptActions [data-action="approve"]');});
+    await host.evaluate(()=>{if(document.documentElement.lang!=='de')document.getElementById('languageToggle').click();window.__waveGame.refreshLanguage();window.__staleAccept=document.querySelector('#multiplayerPromptActions [data-action="approve"]');});
     await tapOrClick(host,later,true);await host.waitForFunction(()=>!document.getElementById('waveRequest').hidden);await host.evaluate(()=>window.__staleAccept.click());
     const pending=()=>{const s=core.checkpoint().match;return mode==='four-coop'||mode==='two-vs-two'?s.pending:s.waveRequest;};
     assert.ok(pending()&&!pending().approved.includes('alice'),'Later and a detached old button do not approve');

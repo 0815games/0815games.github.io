@@ -133,6 +133,32 @@ function replaceOnce(source,pattern,replacement,label){
   const lease1=await adminSession();
   assert.ok(lease1?.clientId,'normal window claimed activeSessions/$uid');
 
+  // 1b. Second tab in the SAME browser context is blocked cleanly without kicking Tab 1 or wiping Auth IndexedDB
+  const sameTab=await normal.context.newPage();
+  sameTab.setDefaultTimeout(20000);
+  sameTab.on('pageerror',err=>normal.errors.push(err.stack||String(err)));
+  await sameTab.goto(base+'/IronPath/',{waitUntil:'domcontentloaded'});
+  await sameTab.evaluate(()=>{const o=document.getElementById('introOverlay');if(o)o.hidden=true;});
+  await sameTab.waitForFunction(()=>document.getElementById('entryMessage')?.textContent.includes('already active'));
+  assert.equal(await sameTab.locator('#authView').isVisible(),true,'same-browser second tab is blocked on auth view');
+  assert.equal(await sameTab.locator('#sessionTakeoverField').isVisible(),true,'same-browser second tab offers takeover');
+  assert.equal(await normal.page.locator('#commandCenter').isVisible(),true,'original Tab 1 stays active in Command Center');
+  assert.ok(await normal.page.evaluate(()=>globalThis.__testAuth?.currentUser),'shared Firebase Auth remains intact for Tab 1');
+  assert.equal((await adminSession())?.clientId,lease1.clientId,'lease remains with Tab 1');
+
+  // 1c. Same-browser second tab takes over explicitly; Tab 1 is kicked while Tab 2 stays logged in cleanly
+  await sameTab.locator('#sessionTakeoverCheck').check();
+  await sameTab.locator('#password').fill(password);
+  await sameTab.locator('#authSubmit').click();
+  await sameTab.locator('#menuMultiplayer').waitFor({state:'visible'});
+  await normal.page.waitForFunction(()=>document.getElementById('entryMessage')?.textContent.includes('signed in on another browser window'));
+  assert.equal(await normal.page.locator('#commandCenter').isVisible(),false,'Tab 1 left Command Center after same-browser takeover');
+  const lease1b=await adminSession();
+  assert.ok(lease1b?.clientId&&lease1b.clientId!==lease1.clientId,'same-browser Tab 2 owns fresh active session');
+  assert.ok(await sameTab.evaluate(()=>globalThis.__testAuth?.currentUser),'Tab 2 stays signed in after Tab 1 is kicked');
+  await normal.page.close();
+  assert.equal((await adminSession())?.clientId,lease1b.clientId,'closing kicked Tab 1 does not delete Tab 2 lease');
+
   // 2. Private/incognito browser context cannot log in concurrently with the same account
   const priv=await openIsolatedContext({lang:'en'});
   await priv.page.locator('#email').fill(email);
@@ -142,8 +168,8 @@ function replaceOnce(source,pattern,replacement,label){
   assert.equal(await priv.page.locator('#authView').isVisible(),true,'private window remains at login');
   assert.equal(await priv.page.locator('#sessionTakeoverField').isVisible(),true,'explicit takeover option is offered after block');
   assert.equal(await priv.page.evaluate(()=>globalThis.__testAuth?.currentUser),null,'private window was signed out immediately');
-  assert.equal(await normal.page.locator('#commandCenter').isVisible(),true,'original normal window stays logged in untouched');
-  assert.equal((await adminSession())?.clientId,lease1.clientId,'lease remains owned by original normal window');
+  assert.equal(await sameTab.locator('#commandCenter').isVisible(),true,'active Tab 2 stays logged in untouched');
+  assert.equal((await adminSession())?.clientId,lease1b.clientId,'lease remains owned by active Tab 2');
 
   // 3. Closing the normal window fires onDisconnect().remove(), allowing clean login in the private window
   await normal.context.close();
@@ -153,7 +179,7 @@ function replaceOnce(source,pattern,replacement,label){
   await priv.page.locator('#authSubmit').click();
   await priv.page.locator('#menuMultiplayer').waitFor({state:'visible'});
   const lease2=await adminSession();
-  assert.ok(lease2?.clientId&&lease2.clientId!==lease1.clientId,'private window owns fresh active session');
+  assert.ok(lease2?.clientId&&lease2.clientId!==lease1b.clientId,'private window owns fresh active session');
 
   // 4. Explicit takeover from a third window kicks the active private window immediately
   const third=await openIsolatedContext({lang:'de'});

@@ -1,10 +1,10 @@
-import {translate,translateText} from './language.mjs?v=20261119-block9d';
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block9d';
+import {translate,translateText} from './language.mjs?v=20261119-block9e';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block9e';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 // Navigation only: online matches and account mutations remain with their existing owners.
-export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut,endlessLauncher=null,getPortrait=null}){
+export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut,endlessLauncher=null,getPortrait=null,onViewChange=()=>{}}){
  const $=id=>document.getElementById(id);
  function render(){const profile=getProfile();if(!profile)return;const p=characterProgress(profile.xp),progress=campaignProgress(profile),game=getGame();
   // The highlighted SOLDIER card above the game modes carries the person:
@@ -17,7 +17,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // The screen label decides how the battle is framed (see field-command.css), so a
  // first run must say `training`: it used to be labelled `endless`, which put the
  // shortened contract on the scrolling page frame instead of a fixed field.
- function showBattle(pauseSolo=false,mode=null){const game=getGame(),workspace=$('gameWorkspace');workspace.dataset.screen=mode||(game?.isOnlineMatch?.()?'online':game?.getSoloMode?.()||'endless');workspace.dataset.online=String(!!game?.isOnlineMatch?.());$('commandCenter').hidden=true;workspace.hidden=false;game?.setMenuOpen(pauseSolo===true);}
+ function showBattle(pauseSolo=false,mode=null){const game=getGame(),workspace=$('gameWorkspace');workspace.dataset.screen=mode||(game?.isOnlineMatch?.()?'online':game?.getSoloMode?.()||'endless');workspace.dataset.online=String(!!game?.isOnlineMatch?.());$('commandCenter').hidden=true;workspace.hidden=false;onViewChange('workspace');game?.setMenuOpen(pauseSolo===true);}
  function showLobby(){showBattle(true,'lobby');}
  function navigateToMenu(allowParty=false){if(isPartyActive()&&!allowParty){$('saveStatus').textContent=translateText('Leave your multiplayer party before returning to the Command Center.');return false;}closeParty();getGame()?.setMenuOpen(true);
  // The coach overlay (card, yellow ring, dashed arrow, recall pill) sits
@@ -27,7 +27,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // Hauptmenue aktiv"). Parking is a pause: back on the field the pill
  // recalls the card at its current step.
  getGame()?.parkCoach?.();
- $('gameWorkspace').hidden=true;$('commandCenter').hidden=false;render();return true;}
+ $('gameWorkspace').hidden=true;$('commandCenter').hidden=false;onViewChange('menu');render();return true;}
  $('menuResume').onclick=()=>{if(isPartyActive()&&!getGame()?.isOnlineMatch?.()){showLobby();openParty();}else showBattle();};
  $('menuCampaign').onclick=()=>{if(!featureEnabled('campaign'))return;if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}showBattle(false,'campaign');getGame()?.chooseStory();};
  $('menuEndless').onclick=async()=>{if(!featureEnabled('endless'))return;if(isPartyActive()){$('saveStatus').textContent=translateText('Leave your multiplayer party before choosing a solo operation.');return;}if(endlessLauncher){endlessLauncher.open();return;}showBattle(true,'endless');const loaded=await getGame()?.chooseEndless();if(loaded) getGame()?.setMenuOpen(false);else showMenu();};
