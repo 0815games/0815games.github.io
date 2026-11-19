@@ -180,20 +180,20 @@ test('the measured header is the one the field really uses', () => {
   assert.match(field, /#gameView \.map-frame \.dashboard\{position:absolute/, 'and it is positioned in the field');
 });
 
-test('there is exactly one language control, and it is not in the page corner', () => {
+test('language controls live inside Sign-In and Settings, never floating over the field', () => {
   // History: the page carried a fixed flag in the top-right corner, the field carried a
   // second one beside its menu, and the training screen showed both at once. The fix
-  // then was CSS that hid one per screen. The fix now is that neither exists: language
-  // is a setting, and settings live in one dialog. A second control is the bug, so this
-  // counts controls in the markup instead of trusting a hide-list.
+  // now keeps language controls inside the entry dossier (#authLanguageToggle) and
+  // inside Settings (#languageToggle) — never floating over gameplay.
   const html = readFileSync(resolve(root, 'index.html'), 'utf8');
-  const selects = html.match(/<select[^>]*id="languageSelect"/g) ?? [];
-  assert.equal(selects.length, 1, 'one language select in the document');
+  const toggles = html.match(/class="login-lang-toggle"/g) ?? [];
+  assert.equal(toggles.length, 2, 'two clean flag/code toggle buttons (sign-in and settings)');
   assert.doesNotMatch(html, /id="fieldLanguage"/, 'no second flag beside the field menu');
   assert.doesNotMatch(html, /class="language-picker"/, 'no fixed picker in the page corner');
-  // It sits inside the Settings dialog, which is what the menu opens.
+  const auth = html.slice(html.indexOf('id="authView"'), html.indexOf('id="characterView"'));
+  assert.match(auth, /id="authLanguageToggle"/, 'sign-in header carries the flag/code toggle');
   const settings = html.slice(html.indexOf('id="settingsDialog"'), html.indexOf('</dialog>', html.indexOf('id="settingsDialog"')));
-  assert.match(settings, /id="languageSelect"/, 'the one language control lives in Settings');
+  assert.match(settings, /id="languageToggle"/, 'the settings dialog carries the matching toggle');
   // And there is no per-screen hide list left to drift out of date.
   for (const file of ['style.css', 'field-command.css', 'interface-redesign.css']) {
     const css = readFileSync(resolve(root, file), 'utf8');

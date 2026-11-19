@@ -51,8 +51,9 @@ test('writing the last run is best effort',()=>{
 
 function fixture({record={},bestWave=0,lastRun=null,deployed=[],savedTheme=null}={}){
   const nodes=new Map();
-  const make=kind=>({kind,hidden:false,textContent:'',value:'',children:[],type:'',className:'',
+  const make=kind=>({kind,hidden:false,textContent:'',value:'',children:[],type:'',className:'',dataset:{},listeners:{},
     append(...els){this.children.push(...els);},
+    addEventListener(type,fn){this.listeners[type]=fn;},
     setAttribute(name,v){this[name]=String(v);},
     get innerHTML(){return '';},set innerHTML(_){this.children=[];},
     showModal(){this.open=true;},close(){this.open=false;}});
@@ -61,12 +62,11 @@ function fixture({record={},bestWave=0,lastRun=null,deployed=[],savedTheme=null}
     createElement:()=>make('button'),
   };
   const dialog=make('dialog');nodes.set('endlessLaunch',dialog);
-  const themes=make('div');nodes.set('endlessThemes',themes);
   const store=memory(savedTheme===null?{}:{[ENDLESS_THEME_KEY]:savedTheme});
   const launcher=createEndlessLauncher({document,storage:store,
     getRecord:()=>record,getBestWave:async()=>bestWave,getLastRun:()=>lastRun,
     onDeploy:theme=>deployed.push(theme)});
-  return {launcher,nodes,themes,store,dialog,document};
+  return {launcher,nodes,store,dialog,document};
 }
 
 test('open fills the record fields, zeroes as dashes',async()=>{
@@ -79,6 +79,7 @@ test('open fills the record fields, zeroes as dashes',async()=>{
   assert.equal(nodes.get('endlessScrap').textContent,'1200');
   assert.equal(nodes.get('endlessLoadout').textContent,'Rifle');
   assert.equal(nodes.get('endlessSelectedTheme').textContent,'Random battlefield');
+  assert.equal(nodes.get('endlessThemeCard').dataset.theme,'random');
   const bare=fixture({record:{runs:0,waves:0,bosses:0,bestSector:0,scrap:0}});
   bare.launcher.open();
   for(const id of ['endlessRuns','endlessWaves','endlessBosses','endlessBestSector','endlessScrap'])
@@ -98,26 +99,31 @@ test('the best wave arrives asynchronously and survives a rejection',async()=>{
   assert.equal(fail.nodes.get('endlessBestWave').textContent,'—');
 });
 
-test('theme choice is a pressed button and persists to storage',()=>{
-  const {launcher,themes,nodes,store}=fixture({savedTheme:'urban'});
+test('carousel opens on Random and arrows wrap cleanly across all 6 battlefields',()=>{
+  const deployed=[];
+  const {launcher,nodes}=fixture({savedTheme:'urban',deployed});
   launcher.open();
-  const buttons=()=>themes.children.slice(-6);
-  assert.equal(buttons().length,6);
-  const pressed=()=>buttons().filter(button=>button['aria-pressed']==='true');
-  assert.equal(pressed().length,1,'exactly one battlefield is selected');
-  assert.equal(pressed()[0].children[0].textContent,'Urban Ruin & Industrial Complex');
-  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Urban Ruin & Industrial Complex');
-  // Choosing the marsh theme updates the pressed state and the storage.
-  buttons()[5].onclick();
-  assert.equal(store.dump[ENDLESS_THEME_KEY],'marsh');
-  assert.equal(launcher.getSelectedTheme(),'marsh');
-  assert.equal(pressed()[0].children[0].textContent,'Marshland & Delta Mudflats');
-  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Marshland & Delta Mudflats');
-  // Random clears the choice back to null.
-  buttons()[0].onclick();
-  assert.equal(store.dump[ENDLESS_THEME_KEY],'');
-  assert.equal(launcher.getSelectedTheme(),null);
+  assert.equal(launcher.getSelectedTheme(),null,'always starts on Random when opened');
+  assert.equal(nodes.get('endlessThemeCard').dataset.theme,'random');
   assert.equal(nodes.get('endlessSelectedTheme').textContent,'Random battlefield');
+
+  nodes.get('endlessNext').onclick();
+  assert.equal(launcher.getSelectedTheme(),'scrub');
+  assert.equal(nodes.get('endlessThemeCard').dataset.theme,'scrub');
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Scorched Scrubland');
+
+  nodes.get('endlessPrev').onclick();
+  nodes.get('endlessPrev').onclick();
+  assert.equal(launcher.getSelectedTheme(),'marsh','previous from random wraps around to marsh');
+  assert.equal(nodes.get('endlessThemeCard').dataset.theme,'marsh');
+  assert.equal(nodes.get('endlessSelectedTheme').textContent,'Marshland & Delta Mudflats');
+
+  nodes.get('endlessThemeCard').listeners.keydown({key:'ArrowRight',preventDefault(){}});
+  assert.equal(launcher.getSelectedTheme(),null,'arrow right wraps back to random');
+  nodes.get('endlessThemeCard').listeners.keydown({key:'ArrowLeft',preventDefault(){}});
+  assert.equal(launcher.getSelectedTheme(),'marsh');
+  nodes.get('endlessDeploy').onclick();
+  assert.deepEqual(deployed,['marsh']);
 });
 
 test('the last-run line renders the summary or the empty state',()=>{

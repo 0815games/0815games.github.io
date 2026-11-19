@@ -1,16 +1,20 @@
 // Cross-window / cross-device single-session lease over Firebase RTDB.
-// Normal same-browser cooperating tabs share one persistent clientId via
-// localStorage (and coordinate automatic AFK logout via afk-session.mjs); a
-// private/incognito window, separate browser, or second device receives a
-// distinct clientId and cannot hold the same account simultaneously.
+// Every tab/window receives an ephemeral in-memory clientId so concurrent tabs
+// in the same browser also coordinate against the shared single-session lease,
+// while createSameBrowserSessionMonitor distinguishes same-browser siblings from
+// separate/private windows so blocking or taking over a sibling tab never wipes
+// shared Firebase Auth IndexedDB persistence.
 export const ACTIVE_SESSIONS_PATH='activeSessions';
 export const ACTIVE_SESSION_LEASE_MS=45_000;
-export const ACTIVE_SESSION_HEARTBEAT_MS=15_000;
+export const ACTIVE_SESSION_HEARTBEAT_MS=10_000;
 export const CLIENT_SESSION_STORAGE_KEY='ironpath:client-session-id';
 export const CLIENT_ID_PATTERN=/^[a-f0-9]{32}$/;
+export const SAME_BROWSER_LOCK_PREFIX='ironpath:session-holder:';
+export const SAME_BROWSER_CHANNEL_NAME='ironpath:active-session';
 
 const REMOTE_CLEANUP_TIMEOUT_MS=2500;
 const RECLAIM_DELAY_MS=150;
+const SAME_BROWSER_PING_MS=80;
 
 export function isActiveSessionPermissionError(error){
  const code=String(error?.code||'').toLowerCase();
@@ -25,6 +29,10 @@ export function generateClientSessionId(crypto=globalThis.crypto){
  return Array.from(bytes,byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 
+export function createWindowSessionId({crypto=globalThis.crypto}={}){
+ return generateClientSessionId(crypto);
+}
+
 export function getOrCreateClientSessionId({storage=null,crypto=globalThis.crypto}={}){
  try{
   const stored=storage?.getItem?.(CLIENT_SESSION_STORAGE_KEY);
@@ -33,6 +41,104 @@ export function getOrCreateClientSessionId({storage=null,crypto=globalThis.crypt
  const created=generateClientSessionId(crypto);
  try{storage?.setItem?.(CLIENT_SESSION_STORAGE_KEY,created);}catch{/* In-memory ID works for this window. */}
  return created;
+}
+
+export function createSameBrowserSessionMonitor({
+ clientId,
+ locks=globalThis.navigator?.locks,
+ BroadcastChannelCtor=globalThis.BroadcastChannel,
+ channelName=SAME_BROWSER_CHANNEL_NAME,
+ setTimeout=globalThis.setTimeout,
+ clearTimeout=globalThis.clearTimeout
+}={}){
+ if(typeof clientId!=='string'||!CLIENT_ID_PATTERN.test(clientId)){
+  throw Error('Invalid same-browser session clientId');
+ }
+ const lockName=`${SAME_BROWSER_LOCK_PREFIX}${clientId}`;
+ let claimed=false;
+ let releaseLock=null;
+ let listenerChannel=null;
+ let lockOpId=0;
+
+ function release(){
+  claimed=false;
+  lockOpId++;
+  const unlock=releaseLock;
+  releaseLock=null;
+  if(unlock)try{unlock();}catch{}
+  const ch=listenerChannel;
+  listenerChannel=null;
+  if(ch)try{ch.close();}catch{}
+ }
+
+ function claim(){
+  if(claimed)return;
+  claimed=true;
+  const opId=++lockOpId;
+  if(typeof locks?.request==='function'){
+   try{
+    void locks.request(lockName,{mode:'shared'},()=>new Promise(resolve=>{
+     if(!claimed||opId!==lockOpId){resolve();return;}
+     releaseLock=resolve;
+    })).catch(()=>{});
+   }catch{/* Web Locks unavailable in restricted contexts. */}
+  }
+  if(typeof BroadcastChannelCtor==='function'){
+   try{
+    const ch=new BroadcastChannelCtor(channelName);
+    listenerChannel=ch;
+    ch.addEventListener?.('message',event=>{
+     const data=event?.data;
+     if(!claimed||!data||data.type!=='holder-ping'||data.targetClientId!==clientId)return;
+     try{ch.postMessage({type:'holder-pong',clientId,nonce:data.nonce});}catch{}
+    });
+   }catch{/* BroadcastChannel unavailable in restricted contexts. */}
+  }
+ }
+
+ async function hasHolder(targetClientId){
+  if(typeof targetClientId!=='string'||!CLIENT_ID_PATTERN.test(targetClientId)||targetClientId===clientId){
+   return false;
+  }
+  const targetLock=`${SAME_BROWSER_LOCK_PREFIX}${targetClientId}`;
+  if(typeof locks?.query==='function'){
+   try{
+    const snapshot=await locks.query();
+    const held=Array.isArray(snapshot?.held)?snapshot.held:[];
+    if(held.some(entry=>entry?.name===targetLock))return true;
+   }catch{/* Fall through to BroadcastChannel probe. */}
+  }
+  if(typeof BroadcastChannelCtor==='function'){
+   try{
+    return await new Promise(resolve=>{
+     const ch=new BroadcastChannelCtor(channelName);
+     const nonce=Math.random().toString(36).slice(2);
+     let settled=false;
+     let timer=null;
+     const finish=result=>{
+      if(settled)return;
+      settled=true;
+      if(timer!==null)try{clearTimeout(timer);}catch{}
+      try{ch.close();}catch{}
+      resolve(result);
+     };
+     ch.addEventListener?.('message',event=>{
+      const data=event?.data;
+      if(data?.type==='holder-pong'&&data.clientId===targetClientId&&data.nonce===nonce){
+       finish(true);
+      }
+     });
+     timer=setTimeout(()=>finish(false),SAME_BROWSER_PING_MS);
+     try{ch.postMessage({type:'holder-ping',targetClientId,nonce});}catch{finish(false);}
+    });
+   }catch{
+    return false;
+   }
+  }
+  return false;
+ }
+
+ return Object.freeze({claim,release,hasHolder});
 }
 
 export function createActiveSessionManager({
@@ -234,6 +340,7 @@ export function createActiveSessionManager({
   }
   let reducerCalled=false;
   let sawOccupied=false;
+  let occupiedHolder=null;
   const ts=timestampValue();
   try{
    const result=await sdk.runTransaction(sessionRef,current=>{
@@ -242,6 +349,7 @@ export function createActiveSessionManager({
     if(current&&typeof current==='object'&&current.clientId&&current.clientId!==clientId){
      if(!takeover&&isFreshForeign(current)){
       sawOccupied=true;
+      occupiedHolder=current;
       return undefined;
      }
     }
@@ -249,8 +357,8 @@ export function createActiveSessionManager({
     return {clientId,claimedAt,heartbeatAt:ts};
    },{applyLocally:false});
    if(stopped)return {status:'stopped'};
-   if(sawOccupied)return {status:'occupied'};
    const snapVal=result?.snapshot?.val?.();
+   if(sawOccupied)return {status:'occupied',holder:occupiedHolder||snapVal||null};
    if(result?.committed===true){
     if(snapVal&&typeof snapVal==='object'&&snapVal.clientId&&snapVal.clientId!==clientId){
      return {status:'occupied',holder:snapVal};

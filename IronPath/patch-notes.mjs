@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block9d';
+import {getLanguage} from './language.mjs?v=20261119-block9e';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -45,15 +45,27 @@ export const PATCH_LABELS=Object.freeze({
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
   {
+    id:'block9e',build:'20261119-block9e',pr:324,
+    title:{en:'Block 9e · Same-Browser Multi-Tab Session Lock, Rotating Sign-In Artwork, Unified HQ Back Navigation & Endless Carousel',de:'Block 9e · Mehrfenster-Sitzungsschutz, rotierende Login-Banner, einheitliche HQ-Navigation & Endlos-Karussell'},
+    shipped:[
+      {en:'Hardened single active-session protection (`active-session.mjs`, `account.js`): 10 s heartbeat (`45 s` RTDB lease matching published `BLOCK9D` rules), per-tab `createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`) so blocking/takeover in another browser tab leaves sibling Auth IndexedDB intact, `pagehide` release, and unchanged-UID manual re-activation.',de:'Einzelsitzungs-Schutz gehärtet (`active-session.mjs`, `account.js`): 10-s-Heartbeat (`45 s`-RTDB-Lease passend zu den veröffentlichten `BLOCK9D`-Regeln), Tab-spezifische `createWindowSessionId()` + `createSameBrowserSessionMonitor()` (Web Locks + `BroadcastChannel`) ohne Verlust der Auth-Sitzung im anderen Tab, `pagehide`-Freigabe sowie saubere Reaktivierung bei identischer UID.'},
+      {en:'Upgraded the sign-in dossier (`login-scene.mjs`, four rotating `1376x768` painted scenes, `#authLanguageToggle` flag/code switch matching `#languageToggle` in Settings) and unified all nine Command HQ screens (`← COMMAND CENTER` / `← KOMMANDOZENTRALE` with field `✕` fallback outside HQ).',de:'Anmeldedossier (`login-scene.mjs`, vier rotierende `1376x768`-Szenenbilder, Flaggen-/Kürzelschalter `#authLanguageToggle` passend zu `#languageToggle` in den Einstellungen) modernisiert sowie alle neun HQ-Fenster einheitlich mit `← COMMAND CENTER` / `← KOMMANDOZENTRALE` (und kontextuellem `✕` im Gefecht) versehen.'},
+      {en:'Refreshed the three Command HQ mode cards with bespoke `1376x768` artwork (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) and streamlined the Endless launcher (`endless-launcher.mjs`, `endless-random.jpg`) into a single-image terrain carousel opening on Random with `DEPLOY` above and `CANCEL` below.',de:'Drei HQ-Modus-Karten mit neuen `1376x768`-Motiven (`mode-campaign.jpg`, `mode-endless.jpg`, `mode-multiplayer.jpg`) ausgestattet und das Endlos-Menü (`endless-launcher.mjs`, `endless-random.jpg`) auf ein schlankes Einzelbild-Karussell (Start auf „Zufälliges Gefechtsfeld“, `EINSETZEN` darüber, `ABBRECHEN` darunter) umgebaut.'},
+    ],
+    open:[
+      {en:'Real desktop and phone inspection on `20261119-block9e` before starting Block 6.',de:'Echte Desktop- und Handy-Sichtung auf `20261119-block9e` vor Beginn von Block 6.'},
+    ],
+  },
+  {
     id:'block9d',build:'20261119-block9d',pr:323,
     title:{en:'Block 9d · Single Active-Session Lock, Cropped Artwork, Settings Language Control & Complete DE Localization',de:'Block 9d · Einzelsitzungs-Schutz, randfreie Gemälde, sichtbare Sprachauswahl & vollständige DE-Lokalisierung'},
     shipped:[
-      {en:'Added single active-session protection (`active-session.mjs`, `activeSessions/$uid` lease with 15 s heartbeat, 45 s TTL, `onDisconnect` release, sign-in conflict check, optional session-takeover checkbox `#sessionTakeoverCheck`, instant takeover notice, and Firebase RTDB rules candidate `BLOCK9D-RULES-TO-PUBLISH.json` with rollout guide).',de:'Einzelsitzungs-Schutz ergänzt (`active-session.mjs`, `activeSessions/$uid`-Lease mit 15-s-Heartbeat, 45-s-TTL, `onDisconnect`-Freigabe, Login-Konfliktprüfung, optionalem Sitzungsübernahme-Haken `#sessionTakeoverCheck`, sofortigem Übernahmehinweis sowie Firebase-RTDB-Regelkandidat `BLOCK9D-RULES-TO-PUBLISH.json` samt Rollout-Leitfaden).'},
+      {en:'Added single active-session protection (`active-session.mjs`, `activeSessions/$uid` lease with 15 s heartbeat, 45 s TTL, `onDisconnect` release, sign-in conflict check, optional session-takeover checkbox `#sessionTakeoverCheck`, instant takeover notice, and Firebase RTDB rules `BLOCK9D-RULES-TO-PUBLISH.json`, live-published in Firebase Console per operator confirmation).',de:'Einzelsitzungs-Schutz ergänzt (`active-session.mjs`, `activeSessions/$uid`-Lease mit 15-s-Heartbeat, 45-s-TTL, `onDisconnect`-Freigabe, Login-Konfliktprüfung, optionalem Sitzungsübernahme-Haken `#sessionTakeoverCheck`, sofortigem Übernahmehinweis sowie laut Betreiber live in der Firebase Console veröffentlichten RTDB-Regeln `BLOCK9D-RULES-TO-PUBLISH.json`).'},
       {en:'Removed white outer borders/frames from seven painted artworks (`story-tower.jpg`, `story-marsh.jpg`, `story-rook.jpg`, `story-sera.jpg`, `endless-frontline.jpg`, `class-medic.jpg`, `armory-kit.jpg`), added clipping on mode/theme/field-school cards, and moved `#menuResults` below `.mode-grid` in the Command HQ.',de:'Weiße Außenränder und Zierrahmen an sieben Gemälden entfernt (`story-tower.jpg`, `story-marsh.jpg`, `story-rook.jpg`, `story-sera.jpg`, `endless-frontline.jpg`, `class-medic.jpg`, `armory-kit.jpg`), Kartenbeschnitt (`overflow: hidden`) ergänzt und `#menuResults` unter `.mode-grid` platziert.'},
       {en:'Restored visibility and width on `#settingsDialog #languageSelect`, reset legacy entry label styling on `.session-takeover-field`, fixed `command.none` translation in `endless-launcher.mjs`, tagged remaining static HTML strings with `data-i18n-text`, refreshed `#enlistStamp` and open AFK dialogs on language changes, and translated friends/lobby error strings.',de:'Sichtbarkeit und Breite von `#languageSelect` in den Einstellungen wiederhergestellt, geerbte Label-Stile auf `.session-takeover-field` bereinigt, `command.none` in `endless-launcher.mjs` behoben, fehlende statische HTML-Texte per `data-i18n-text` ergänzt, `#enlistStamp`/AFK-Dialog beim Sprachwechsel aktualisiert sowie Freundes-/Lobby-Fehlermeldungen übersetzt.'},
     ],
     open:[
-      {en:'Publish `BLOCK9D-RULES-TO-PUBLISH.json` in Firebase Console (step-by-step guide in `BLOCK9D-SESSION-ROLLOUT.md`) and run real desktop/phone verification on `20261119-block9d` before starting Block 6.',de:'`BLOCK9D-RULES-TO-PUBLISH.json` in der Firebase Console veröffentlichen (Anleitung in `BLOCK9D-SESSION-ROLLOUT.md`) und echte Desktop-/Handy-Sichtung auf `20261119-block9d` vor Beginn von Block 6 durchführen.'},
+      {en:'Real desktop and phone inspection on `20261119-block9d` (including cross-window/device single-session behavior) before starting Block 6.',de:'Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Verhalten über mehrere Fenster/Geräte) vor Beginn von Block 6.'},
     ],
   },
   {

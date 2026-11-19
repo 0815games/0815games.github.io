@@ -1,8 +1,8 @@
-import {nodeMatches} from './skill-planner.mjs?v=20261119-block9d';
+import {nodeMatches} from './skill-planner.mjs?v=20261119-block9e';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from './skills.mjs?v=20261119-block9d';
-import {CAPSTONES} from './skill-combos.mjs?v=20261119-block9d';
-import {TOWER_CLASS_PATHS} from './tower-class-paths.mjs?v=20261119-block9d';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from './skills.mjs?v=20261119-block9e';
+import {CAPSTONES} from './skill-combos.mjs?v=20261119-block9e';
+import {TOWER_CLASS_PATHS} from './tower-class-paths.mjs?v=20261119-block9e';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',
@@ -40,7 +40,7 @@ function classArtElement(document,classId,cls='class-art-img'){
   const src=CLASS_ARTWORKS[classId];
   if(!src)return null;
   const img=document.createElement('img');
-  img.src=`${src}?v=20261119-block9d`;
+  img.src=`${src}?v=20261119-block9e`;
   img.alt='';
   img.className=cls;
   img.setAttribute('aria-hidden','true');

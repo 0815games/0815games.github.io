@@ -3,9 +3,13 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {
  ACTIVE_SESSIONS_PATH,
+ ACTIVE_SESSION_HEARTBEAT_MS,
  CLIENT_ID_PATTERN,
  CLIENT_SESSION_STORAGE_KEY,
+ SAME_BROWSER_LOCK_PREFIX,
  createActiveSessionManager,
+ createSameBrowserSessionMonitor,
+ createWindowSessionId,
  getOrCreateClientSessionId
 } from '../active-session.mjs';
 import {applyBlock9dSessionRules,buildBlock9dSessionCandidate} from '../firebase/block9d-session-candidate.mjs';
@@ -234,16 +238,62 @@ test('block9d-session-candidate builds cleanly over BLOCK5-RULES-TO-PUBLISH.json
  assert.throws(()=>applyBlock9dSessionRules(structuredClone(generated.rules)),/already exists/);
 });
 
+test('createWindowSessionId creates ephemeral per-tab IDs and createSameBrowserSessionMonitor detects sibling tabs cleanly',async()=>{
+ assert.equal(ACTIVE_SESSION_HEARTBEAT_MS,10_000);
+ const id1=createWindowSessionId(),id2=createWindowSessionId();
+ assert.match(id1,CLIENT_ID_PATTERN);
+ assert.match(id2,CLIENT_ID_PATTERN);
+ assert.notEqual(id1,id2);
+
+ // Simulated Web Locks registry shared within one browser profile
+ const held=new Set();
+ const locks={
+  async request(name,_opts,cb){
+   held.add(name);
+   try{await cb();}finally{held.delete(name);}
+  },
+  async query(){return {held:[...held].map(name=>({name}))};}
+ };
+ const monA=createSameBrowserSessionMonitor({clientId:id1,locks,BroadcastChannelCtor:null});
+ const monB=createSameBrowserSessionMonitor({clientId:id2,locks,BroadcastChannelCtor:null});
+ assert.equal(await monB.hasHolder(id1),false);
+ monA.claim();
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(await monB.hasHolder(id1),true);
+ assert.equal(await monA.hasHolder(id1),false,'never flags own clientId');
+ monA.release();
+ await new Promise(resolve=>setTimeout(resolve,0));
+ assert.equal(await monB.hasHolder(id1),false);
+
+ // Simulated BroadcastChannel fallback when Web Locks are absent
+ const channels=new Set();
+ class FakeChannel{
+  constructor(name){this.name=name;this.listeners=[];channels.add(this);}
+  addEventListener(type,fn){if(type==='message')this.listeners.push(fn);}
+  postMessage(data){for(const ch of channels)if(ch!==this&&ch.name===this.name)queueMicrotask(()=>ch.listeners.forEach(fn=>fn({data})));}
+  close(){channels.delete(this);}
+ }
+ const bcA=createSameBrowserSessionMonitor({clientId:id1,locks:null,BroadcastChannelCtor:FakeChannel});
+ const bcB=createSameBrowserSessionMonitor({clientId:id2,locks:null,BroadcastChannelCtor:FakeChannel});
+ bcA.claim();
+ assert.equal(await bcB.hasHolder(id1),true);
+ bcA.release();
+ assert.equal(await bcB.hasHolder(id1),false);
+ assert.ok(SAME_BROWSER_LOCK_PREFIX.startsWith('ironpath:'));
+});
+
 test('account.js, index.html, and localization-account-de.mjs wire single-session lock and takeover UI consistently',async()=>{
  const [account,html,deModule]=await Promise.all([
   readFile(new URL('../account.js',import.meta.url),'utf8'),
   readFile(new URL('../index.html',import.meta.url),'utf8'),
   import('../localization-account-de.mjs')
  ]);
- assert.match(account,/getOrCreateClientSessionId/);
+ assert.match(account,/createWindowSessionId/);
+ assert.match(account,/createSameBrowserSessionMonitor/);
  assert.match(account,/createActiveSessionManager/);
  assert.match(account,/handleSessionTakenOver/);
  assert.match(account,/releaseActiveSession/);
+ assert.match(account,/addEventListener\('pagehide'/);
  assert.match(html,/id="sessionTakeoverField"/);
  assert.match(html,/id="sessionTakeoverCheck"/);
  for(const key of [

@@ -45,7 +45,7 @@ const build=JSON.parse(readFileSync(path.join(__dirname,'../release-version.json
     assert.ok(Math.abs((box.left+box.right)/2-box.viewportWidth/2)<2&&Math.abs((box.top+box.bottom)/2-box.viewportHeight/2)<2,JSON.stringify({viewport,box}));
     assert.ok(box.buttons.every(button=>button.width>=44&&button.height>=44),JSON.stringify({viewport,box}));assert.equal(box.animation,'none');
     assert.equal(await page.evaluate(()=>document.getElementById('multiplayerPrompt').contains(document.elementFromPoint(2,2))),false,'there is no full-screen click-catching backdrop');
-    await page.evaluate(()=>{const select=document.getElementById('languageSelect');select.value='en';select.dispatchEvent(new Event('change'));});
+    await page.evaluate(()=>{if(document.documentElement.lang!=='en')document.getElementById('languageToggle').click();});
     assert.equal(await page.getByRole('region',{name:'SPEED REQUEST'}).getAttribute('id'),'multiplayerPrompt');assert.match(await root.locator('#multiplayerPromptNote').textContent(),/Battle continues/);
     const approve=root.locator('[data-action="approve"]'),decline=root.locator('[data-action="decline"]'),later=root.locator('[data-action="later"]');
     await approve.focus();await page.keyboard.press('Tab');assert.equal(await decline.evaluate(element=>element===document.activeElement),true);
@@ -57,7 +57,7 @@ const build=JSON.parse(readFileSync(path.join(__dirname,'../release-version.json
     await page.evaluate(()=>window.__center.update('battle',[window.__item('two')]));await root.waitFor({state:'visible'});
     await approve.focus();await page.keyboard.press('Enter');await root.waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__runs),1,'keyboard approval is an explicit action');
     await page.evaluate(async build=>{
-     const select=document.getElementById('languageSelect');select.value='de';select.dispatchEvent(new Event('change'));
+     if(document.documentElement.lang!=='de')document.getElementById('languageToggle').click();
      const [{createConfirmation},{translateText}]=await Promise.all([import(`./confirmation.mjs?v=${build}`),import(`./language.mjs?v=${build}`)]);
      window.__confirmation=createConfirmation(document,translateText);window.__decision=null;
      window.__confirmation.ask({title:'Sign out?',text:'Waiting ends the shared match and signs you out only after every report and reward is confirmed. Keep this page open. Signing out now can leave the party open and rewards unconfirmed.',accept:'END AND WAIT',alternate:'SIGN OUT NOW'}).then(value=>window.__decision=value);

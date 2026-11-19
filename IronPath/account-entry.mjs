@@ -7,7 +7,7 @@ const databaseUrl=document.querySelector('meta[name="ironpath-maintenance-databa
 const boot=startMaintenanceBoot({document,window,databaseUrl});
 window.ironPathLoaded=true;
 await boot.first;
-try{await import('./account.js?v=20261119-block9d');}
+try{await import('./account.js?v=20261119-block9e');}
 catch{
  // A failed SDK or game module load is not a successful login. Keep the
  // document blocked and offer a full reload rather than an uncaught rejection.
