@@ -34,34 +34,66 @@ function ground(ctx,theme='road',width=960,height=540){
   for(let i=0;i<75;i++){const x=(i*163+47)%width,y=(i*113+31)%height;oval(ctx,x,y,14+(i%4)*6,4+(i%3)*3,i%2?'#182a23':'#d7d3b1',null);}
   ctx.restore();
 }
-// V2 field art: the road is ground, not a ribbon - a soft earthen berm, a
-// compacted surface, wheel ruts that follow the actual bends, and wear
-// scattered ALONG the geometry instead of at nine hard-coded spots.
-// Act V: in the junction the roads are rails - a ballast bed, timber
-// sleepers and twin steel lines, with the odd signal mast along the way.
-// Painted along the exact geometry the enemies drive on, purely cosmetic:
-// the simulation path and every hit target stay untouched.
-function drawRail(ctx,path){
+// V3 road & rail architecture: high-contrast, unmistakable road corridors
+// tailored to each territory so every path reads instantaneously over busy
+// illustrated ground plates while keeping simulation path geometry untouched.
+function drawRail(ctx,path,texture=null){
+  if(!Array.isArray(path)||path.length<2)return;
   const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
-  trace(88,'rgba(20,24,22,.34)');
-  trace(78,'#3f4440');
-  trace(66,'#4c524d');
-  trace(54,'#5a5f58');
+  trace(94,'rgba(8,11,10,.55)');
+  trace(84,'#111514');
+  trace(78,'#6a7268');
+  trace(68,'#858d82');
+  trace(56,'#99a196');
+  if(texture&&ctx.createPattern){
+    const pattern=ctx.createPattern(texture,'repeat');
+    if(pattern){
+      ctx.save();
+      ctx.globalAlpha=.22;
+      ctx.strokeStyle=pattern;
+      ctx.lineWidth=56;
+      ctx.lineCap='round';
+      ctx.lineJoin='round';
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
   const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
-  // Sleepers: dark timber ties set across the ballast, following every bend.
-  ctx.lineCap='butt';ctx.strokeStyle='#2c2922';ctx.lineWidth=7;
+  // Crushed limestone ballast stones along both shoulders.
+  let rk=0;
+  for(let i=1;i<path.length;i++){
+    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+    for(let s=14;s<len-8;s+=20){
+      const j=hash(++rk),side=rk%2?1:-1,off=(28+j*7)*side;
+      const x=a.x+ux*s+px*off,y=a.y+uy*s+py*off;
+      oval(ctx,x,y,2.3+j*1.5,1.5+j,j<.5?'#a9b0a4':'#767d74','#161a19',.9);
+    }
+  }
+  // Sleepers: warm oak timber ties with crisp ink outlines, sunlit top bevels,
+  // and iron tie-plates beneath both steel rails.
   let k=0;
   for(let i=1;i<path.length;i++){
     const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
     const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-    for(let s=9;s<len-4;s+=17){
+    for(let s=9;s<len-4;s+=16){
       const x=a.x+ux*s,y=a.y+uy*s;
-      ctx.beginPath();ctx.moveTo(x-px*22,y-py*22);ctx.lineTo(x+px*22,y+py*22);ctx.stroke();
+      ctx.lineCap='butt';
+      ctx.strokeStyle='#14120e';ctx.lineWidth=9;
+      ctx.beginPath();ctx.moveTo(x-px*23,y-py*23);ctx.lineTo(x+px*23,y+py*23);ctx.stroke();
+      ctx.strokeStyle='#6e5237';ctx.lineWidth=6.8;
+      ctx.beginPath();ctx.moveTo(x-px*21.8,y-py*21.8);ctx.lineTo(x+px*21.8,y+py*21.8);ctx.stroke();
+      ctx.strokeStyle='#9b7954';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(x-px*20,y-py*20-1);ctx.lineTo(x+px*20,y+py*20-1);ctx.stroke();
+      for(const railSide of [-1,1]){
+        const rx=x+px*13*railSide,ry=y+py*13*railSide;
+        ctx.fillStyle='#202423';ctx.fillRect(rx-3.2,ry-3.2,6.4,6.4);
+      }
     }
   }
-  // Twin steel rails, each with its own shadow line - readable at a glance.
+  // High-contrast gleaming steel rails over crisp rail-shadow ink.
   ctx.lineCap='round';
-  for(const side of [-1,1])for(const [w,style] of [[3.4,'rgba(16,18,16,.5)'],[1.8,'#b6bab0']]){
+  for(const side of [-1,1])for(const [w,style] of [[4.4,'rgba(10,13,12,.85)'],[2.4,'#eff4ed']]){
     ctx.beginPath();let first=true;
     for(let i=1;i<path.length;i++){
       const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
@@ -76,7 +108,7 @@ function drawRail(ctx,path){
     const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
     const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
     for(let s=60;s<len-30;s+=190){
-      const j=hash(++k),side=j<.5?-1:1,off=36+j*8;
+      const j=hash(++k),side=j<.5?-1:1,off=39+j*7;
       const x=a.x+ux*s+px*off*side,y=a.y+uy*s+py*off*side;
       line(ctx,[[x,y+10],[x,y-14]],'#3a3f3a',3);
       ctx.fillStyle='#22261f';ctx.fillRect(x-4,y-22,8,10);
@@ -86,55 +118,227 @@ function drawRail(ctx,path){
   }
   ctx.lineCap='round';
 }
-export function drawRoad(ctx,path,theme,texture=null){
-  if(theme==='junction'){drawRail(ctx,path);return;}
-  const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:theme==='talwald'?['#48563a','#65734c','#828e5e']:['#544a34','#716244','#8d7c5b'];
-  // One helper, one stroke: a polyline stroked in a single operation never
-  // blends with itself, so no bend can grow a seam.
+const ROAD_THEMES=Object.freeze({
+  urban:{kind:'paved',rim:'rgba(8,11,12,.52)',ink:'#121617',shoulder:'#d2d7cd',shoulderHi:'rgba(248,252,244,.60)',gutter:'#161b1c',surface:'#31373a',dash:'rgba(244,222,138,.78)',edgeLine:'rgba(224,228,216,.38)',rut:'rgba(14,16,18,.32)',cleat:'rgba(16,18,20,.30)',boot:'rgba(16,18,20,.28)',textureScale:.20,textureAlpha:.46},
+  outpost:{kind:'outpost',rim:'rgba(10,10,8,.50)',ink:'#171511',shoulder:'#cbbda0',shoulderHi:'rgba(244,232,202,.52)',gutter:'#1d1b16',surface:'#3a362e',dash:'rgba(232,206,126,.64)',edgeLine:'rgba(216,204,174,.30)',rut:'rgba(18,15,12,.34)',cleat:'rgba(18,15,12,.34)',boot:'rgba(20,17,13,.32)',textureScale:.20,textureAlpha:.46},
+  arctic:{kind:'arctic',rim:'rgba(8,18,26,.48)',ink:'#0f2029',shoulder:'#f5fafc',shoulderHi:'#ffffff',gutter:'#15252f',surface:'#3a4449',crown:'rgba(120,140,150,.28)',rut:'rgba(18,26,32,.55)',cleat:'rgba(14,22,28,.60)',boot:'rgba(18,26,32,.52)',textureScale:.22,textureAlpha:.52},
+  marsh:{kind:'marsh',rim:'rgba(6,10,6,.58)',ink:'#0e0b07',shoulder:'#24180e',shoulderHi:'#4d3520',gutter:'#120b07',surface:'#4a321c',crown:'rgba(160,120,75,.28)',planks:true,rut:'rgba(20,14,8,.44)',cleat:'rgba(16,10,6,.52)',boot:'rgba(20,14,8,.46)',textureScale:.20,textureAlpha:.28},
+  scrub:{kind:'scrub',rim:'rgba(26,14,6,.48)',ink:'#1c1007',shoulder:'#492914',shoulderHi:'rgba(144,90,48,.58)',gutter:'#24140a',surface:'#e4c792',crown:'rgba(255,245,220,.38)',rut:'rgba(72,42,18,.34)',cleat:'rgba(62,36,14,.42)',boot:'rgba(66,38,16,.38)',textureScale:.22,textureAlpha:.46},
+  forest:{kind:'forest',rim:'rgba(10,16,10,.48)',ink:'#131a11',shoulder:'#32281a',shoulderHi:'#e2cc98',surface:'#c4a670',crown:'rgba(246,232,196,.30)',rut:'rgba(62,46,24,.34)',cleat:'rgba(54,40,20,.42)',boot:'rgba(58,42,22,.38)',textureScale:.22,textureAlpha:.45},
+  talwald:{kind:'talwald',rim:'rgba(8,14,8,.50)',ink:'#111910',shoulder:'#2c2418',shoulderHi:'#dfc996',surface:'#bfa26c',crown:'rgba(244,230,192,.28)',rut:'rgba(58,44,24,.34)',cleat:'rgba(50,38,20,.42)',boot:'rgba(54,40,22,.38)',textureScale:.22,textureAlpha:.45},
+  road:{kind:'road',rim:'rgba(12,18,10,.46)',ink:'#151910',shoulder:'#3a301f',shoulderHi:'#e6d2a0',surface:'#caa972',crown:'rgba(248,236,202,.32)',rut:'rgba(66,50,26,.32)',cleat:'rgba(56,42,20,.40)',boot:'rgba(60,44,22,.36)',textureScale:.22,textureAlpha:.45}
+});
+function drawBootStamp(ctx,x,y,angle,side,scale,markColor,edgeColor){
+  const s=Math.max(.5,scale||1);
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+  if(edgeColor){
+    ctx.fillStyle=edgeColor;
+    ctx.beginPath();ctx.ellipse(2.3*s,.4*s,3.1*s,1.8*s,side*.08,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle=markColor;
+  ctx.fillRect(-4.1*s,-1.5*s,2.6*s,3.0*s);
+  ctx.beginPath();ctx.ellipse(1.9*s,0,2.9*s,1.75*s,side*.08,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function drawTankTreadStamp(ctx,x,y,angle,scale,markColor,edgeColor,baseAlpha=1){
+  const s=Math.max(.6,scale||1),gauge=11.5*s,cleatHalf=3.3*s;
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+  for(const side of [-1,1]){
+    const cy=side*gauge;
+    ctx.globalAlpha=baseAlpha*.45;
+    ctx.fillStyle=markColor;
+    ctx.fillRect(-3.8*s,cy-cleatHalf*.85,7.6*s,cleatHalf*1.7);
+    ctx.globalAlpha=baseAlpha;
+    if(edgeColor){
+      ctx.fillStyle=edgeColor;
+      ctx.fillRect(-.8*s,cy-cleatHalf,2.6*s,cleatHalf*2);
+    }
+    ctx.fillStyle=markColor;
+    ctx.fillRect(-1.3*s,cy-cleatHalf,2.4*s,cleatHalf*2);
+  }
+  ctx.restore();
+}
+export function drawRoad(ctx,path,theme='road',texture=null,roadTexture=null){
+  if(!Array.isArray(path)||path.length<2)return;
+  if(theme==='junction'){drawRail(ctx,path,texture);return;}
+  const spec=ROAD_THEMES[theme]||ROAD_THEMES.road;
   const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
-  // The road wears four deliberate layers. The old nested 78/68/58 tone
-  // strokes stacked three hard-edged bands that read as painted contour
-  // lines across every bend (reported: "Strassen-Design neu").
-  // 1. a soft dark rim where the road meets the ground,
-  trace(86,'rgba(26,30,24,.3)');
-  // 2. the dark aggregate shoulder, peeking five pixels out on each side,
-  trace(76,tones[0]);
-  // 3. the driving surface itself, and
-  trace(66,tones[1]);
-  // 4. ONE translucent wash of the lightest tone - a worn, sun-bleached
-  //    centre that fades into the surface instead of stepping.
-  ctx.save();ctx.globalAlpha=.42;trace(46,tones[2]);ctx.restore();
-  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.24;ctx.strokeStyle=pattern;ctx.lineWidth=60;ctx.stroke();ctx.restore();}}
-  // Wheel ruts on both sides of the lane, following every actual bend. One
-  // stroke per side: the old code stroked every segment separately, and the
-  // round caps stacked their alpha at each vertex - dark beads along the
-  // whole road. A single stroke of many subpaths is composited once, so the
-  // beads cannot come back.
-  ctx.strokeStyle='rgba(28,24,16,.26)';ctx.lineWidth=5;
+  // 1. Wide calm ground-clearing halo separating road from noisy terrain foliage/cracks.
+  trace(94,spec.rim);
+  // 2. Bold comic-ink road silhouette outline matching IronPath sprite ink weight.
+  trace(82,spec.ink);
+  // 3. Biome-distinct high-contrast curb, snowbank, rock embankment or ditch.
+  trace(76,spec.shoulder);
+  if(spec.gutter){
+    trace(66,spec.gutter);
+  }else if(spec.shoulderHi){
+    trace(68,spec.shoulderHi);
+  }
+  // 4. Driving road surface calibrated for instant figure-ground separation.
+  trace(60,spec.surface);
+  // 5. Seamless comic-ink road texture scaled crisp without washing out contrast.
+  const tex=roadTexture||texture;
+  if(tex&&ctx.createPattern){
+    const pattern=ctx.createPattern(tex,'repeat');
+    if(pattern){
+      if(roadTexture&&typeof pattern.setTransform==='function'&&typeof DOMMatrix==='function'){
+        try{pattern.setTransform(new DOMMatrix().scale(spec.textureScale,spec.textureScale));}catch{}
+      }
+      ctx.save();
+      ctx.globalAlpha=roadTexture?(spec.textureAlpha||.46):0.20;
+      trace(58,pattern);
+      ctx.restore();
+    }
+  }
+  if(spec.crown){
+    ctx.save();ctx.globalAlpha=.34;trace(38,spec.crown);ctx.restore();
+  }
+  if(spec.shoulderHi&&spec.gutter){
+    ctx.save();ctx.globalAlpha=.8;
+    ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+    ctx.strokeStyle=spec.shoulderHi;ctx.lineWidth=1.6;ctx.stroke();
+    ctx.restore();
+  }
+  // Crisp tactical lane markings on paved urban & outpost avenues.
+  if(spec.edgeLine){
+    ctx.save();
+    ctx.strokeStyle=spec.edgeLine;ctx.lineWidth=1.8;ctx.lineCap='round';ctx.lineJoin='round';
+    for(const side of [-1,1]){
+      ctx.beginPath();
+      for(let i=1;i<path.length;i++){
+        const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(!l)continue;
+        const px=-dy/l*23*side,py=dx/l*23*side;
+        ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if(spec.dash){
+    ctx.save();
+    ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+    ctx.strokeStyle=spec.dash;ctx.lineWidth=3.0;ctx.lineCap='butt';ctx.setLineDash([16,14]);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
+  }
+  // Marsh continuous corduroy timber causeway planks + twin timber guardrails.
+  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
+  let k=0;
+  if(spec.planks){
+    for(let i=1;i<path.length;i++){
+      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+      const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
+      for(let s=6;s<len-3;s+=11){
+        const j=hash(++k),x=a.x+ux*s,y=a.y+uy*s;
+        ctx.save();ctx.lineCap='butt';
+        line(ctx,[[x-px*24.5,y-py*24.5],[x+px*24.5,y+py*24.5]],'#18120a',9.2);
+        line(ctx,[[x-px*23.5,y-py*23.5],[x+px*23.5,y+py*23.5]],j<.35?'#b9925c':j<.7?'#a8824e':'#9b7645',7.0);
+        line(ctx,[[x-px*21,y-py*21-1.2],[x+px*21,y+py*21-1.2]],'rgba(235,208,162,.34)',1.5);
+        oval(ctx,x-px*18,y-py*18,1.1,1.1,'#221f1a',null);
+        oval(ctx,x+px*18,y+py*18,1.1,1.1,'#221f1a',null);
+        ctx.restore();
+      }
+    }
+    ctx.save();
+    for(const [w,style] of [[7.2,'#19120a'],[4.4,'#8f6b3e'],[1.4,'rgba(232,202,150,.55)']])for(const side of [-1,1]){
+      ctx.beginPath();
+      for(let i=1;i<path.length;i++){
+        const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(!l)continue;
+        const px=-dy/l*25*side,py=dx/l*25*side;
+        ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);
+      }
+      ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+    }
+    ctx.restore();
+  }else{
+    for(let i=1;i<path.length;i++){
+      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+      const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux,ang=Math.atan2(uy,ux);
+      if(spec.kind==='paved'||spec.kind==='outpost'){
+        ctx.save();ctx.lineCap='butt';ctx.strokeStyle='#151a19';ctx.lineWidth=2.0;
+        for(let s=14;s<len-10;s+=22){
+          const j=hash(++k);
+          if(spec.kind==='outpost'&&j<.22)continue;
+          for(const side of [-1,1]){
+            const cx=a.x+ux*s+px*35*side,cy=a.y+uy*s+py*35*side;
+            ctx.beginPath();ctx.moveTo(cx-px*3.5,cy-py*3.5);ctx.lineTo(cx+px*3.5,cy+py*3.5);ctx.stroke();
+          }
+          if(spec.kind==='outpost'&&j>.68){
+            const side=j>.84?1:-1,rx=a.x+ux*s+px*(26+j*12)*side,ry=a.y+uy*s+py*(26+j*12)*side;
+            oval(ctx,rx,ry,2.5,1.6,'#8a785f','#1d1812',.9);
+          }
+        }
+        ctx.restore();
+      }else if(spec.kind==='arctic'){
+        for(let s=18;s<len-12;s+=26){
+          const j=hash(++k),side=k%2?1:-1;
+          const dx=a.x+ux*s+px*(35+j*3)*side,dy=a.y+uy*s+py*(35+j*3)*side;
+          ctx.save();ctx.translate(dx,dy);ctx.rotate(ang);
+          oval(ctx,0,side*1.2,9.5+j*4,4.4+j*1.6,'#5b7c8e',null);
+          oval(ctx,0,0,9+j*3.8,3.8+j*1.4,'#f6fbfd','#1e3846',1.2);
+          ctx.restore();
+          if(j<.44){
+            const cx=a.x+ux*s+px*(j-.5)*20,cy=a.y+uy*s+py*(j-.5)*20;
+            line(ctx,[[cx,cy],[cx+ux*6+px*4,cy+uy*6+py*4],[cx+ux*11-px*2,cy+uy*11-py*2]],'#203440',1.2);
+          }
+        }
+      }else if(spec.kind==='scrub'){
+        for(let s=20;s<len-12;s+=26){
+          const j=hash(++k),side=k%2?1:-1;
+          const bx=a.x+ux*s+px*(34+j*4)*side,by=a.y+uy*s+py*(34+j*4)*side;
+          oval(ctx,bx,by,4.5+j*3,2.4+j*1.2,'#62371c','#1f1007',1.0);
+          if(j<.55){
+            const sx=a.x+ux*s+px*(j-.3)*24,sy=a.y+uy*s+py*(j-.3)*24;
+            oval(ctx,sx,sy,7+j*4,2.4,'rgba(255,244,218,.38)',null);
+          }
+        }
+      }else{
+        for(let s=20;s<len-12;s+=26){
+          const j=hash(++k),side=k%2?1:-1;
+          if(spec.kind==='talwald'&&k%3===0){
+            const x=a.x+ux*s,y=a.y+uy*s;
+            ctx.save();ctx.lineCap='butt';
+            line(ctx,[[x-px*32,y-py*32],[x-px*20,y-py*20]],'#231b11',4.6);
+            line(ctx,[[x+px*20,y+py*20],[x+px*32,y+py*32]],'#231b11',4.6);
+            ctx.restore();
+          }
+          const bx=a.x+ux*s+px*(33+j*5)*side,by=a.y+uy*s+py*(33+j*5)*side;
+          oval(ctx,bx,by,2.8+j*2,1.9+j,spec.kind==='road'?'#968464':'#6e6045',spec.ink,1.0);
+        }
+      }
+    }
+  }
+  // Static road wear: continuous twin track ruts (zero corner-cap beads) +
+  // perpendicular tank cleats + alternating boot stamps.
+  ctx.save();
+  ctx.strokeStyle=spec.rut;ctx.lineWidth=5;ctx.lineCap='round';ctx.lineJoin='round';
   for(const side of [-1,1]){
     ctx.beginPath();
     for(let i=1;i<path.length;i++){
-      const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
-      if(!l)continue;
-      const px=-dy/l*15*side,py=dx/l*15*side;
+      const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);if(!l)continue;
+      const px=-dy/l*14.5*side,py=dx/l*14.5*side;
       ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);
     }
     ctx.stroke();
   }
-  // Pebbles and track marks along the real arclength - deterministic, so the
-  // cached terrain layer stays reproducible.
-  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
-  let k=0;
+  ctx.restore();
+  let m=0;
   for(let i=1;i<path.length;i++){
-    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
-    if(!len)continue;
-    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-    for(let s=26;s<len-12;s+=44){
-      const j1=hash(++k),j2=hash(k+57.3),off=(j1-.5)*44;
-      const x=a.x+ux*s+px*off,y=a.y+uy*s+py*off;
-      if(j2<.45)oval(ctx,x,y,2+j1*2.5,1.4+j2*1.4,j2<.2?'#6d5c42':'#a6906c',null);
-      else if(j2<.7){const d=3+j1*4;line(ctx,[[x-px*d,y-py*d],[x+px*d,y+py*d]],'rgba(30,26,18,.22)',2);}
-      else oval(ctx,x,y,1.6,1.1,'#c9b992',null);
+    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
+    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux,ang=Math.atan2(uy,ux);
+    ctx.save();ctx.lineCap='butt';ctx.strokeStyle=spec.cleat;ctx.lineWidth=2.1;
+    for(let s=14;s<len-8;s+=12){
+      const x=a.x+ux*s,y=a.y+uy*s;
+      for(const side of [-1,1]){
+        const cx=x+px*14.5*side,cy=y+py*14.5*side;
+        ctx.beginPath();ctx.moveTo(cx-px*3.2,cy-py*3.2);ctx.lineTo(cx+px*3.2,cy+py*3.2);ctx.stroke();
+      }
+    }
+    ctx.restore();
+    for(let s=20;s<len-10;s+=26){
+      const jm=hash(++m);
+      if(jm<.18)continue;
+      const side=m%2?1:-1,flank=(jm<.55?-5:2)+side*3.2;
+      drawBootStamp(ctx,a.x+ux*s+px*flank,a.y+uy*s+py*flank,ang,side,.85,spec.boot,null);
     }
   }
 }
@@ -386,6 +590,52 @@ function getGroundImage(doc,theme,variant=0){
   const name=base?base+'.jpg':'endless-ground3.jpg';
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
+}
+const roadImages=new Map();
+function getRoadImage(doc,theme,notify=null){
+  const base=({forest:'road3-forest',talwald:'road3-forest',urban:'road3-city',outpost:'road3-city',scrub:'road3-desert',arctic:'road3-snow',marsh:'road3-marsh',road:'road3-road'})[theme];
+  if(!base||!doc?.createElement)return null;
+  const name=base+'.jpg';
+  if(!roadImages.has(name)){
+    const image=doc.createElement('img'),entry={image,ready:false};
+    roadImages.set(name,entry);
+    image.onload=()=>{entry.ready=true;try{notify?.();}catch{}};
+    image.onerror=()=>{entry.failed=true;};
+    image.src=`assets/${name}`;
+  }
+  const entry=roadImages.get(name);
+  return entry?.ready?entry.image:null;
+}
+export function drawGroundTracks(ctx,tracks,theme='road'){
+  if(!Array.isArray(tracks)||!tracks.length)return;
+  const palette=({
+    arctic:{mark:'#1d2b34',edge:'rgba(240,248,252,.55)',boost:1.0},
+    marsh:{mark:'#1f160c',edge:'rgba(220,188,136,.38)',boost:1.05},
+    scrub:{mark:'#4e2d15',edge:'rgba(255,244,218,.44)',boost:.98},
+    urban:{mark:'#141718',edge:'rgba(182,190,186,.32)',boost:.78},
+    outpost:{mark:'#191612',edge:'rgba(186,176,158,.32)',boost:.80},
+    junction:{mark:'#191d1b',edge:'rgba(228,236,226,.34)',boost:.85},
+  })[theme]||{mark:'#3a2b18',edge:'rgba(232,212,172,.36)',boost:.94};
+  for(const m of tracks){
+    if(!m||!Number.isFinite(m.x)||!Number.isFinite(m.y)||!Number.isFinite(m.angle)||!(m.alpha>0))continue;
+    const baseAlpha=Math.min(.72,m.alpha*palette.boost);
+    if(m.kind==='tread'){
+      const alpha=Math.min(.68,baseAlpha*.52);
+      drawTankTreadStamp(ctx,m.x,m.y,m.angle,m.scale||1,palette.mark,palette.edge,alpha);
+    }else if(m.kind==='rail'){
+      ctx.save();
+      ctx.globalAlpha=Math.min(.52,baseAlpha*.38);
+      ctx.translate(m.x,m.y);ctx.rotate(m.angle);
+      ctx.fillStyle=palette.mark;
+      for(const side of [-1,1])ctx.fillRect(-5,side*13-1.4,10,2.8);
+      ctx.restore();
+    }else{
+      ctx.save();
+      ctx.globalAlpha=Math.min(.72,baseAlpha*.56);
+      drawBootStamp(ctx,m.x,m.y,m.angle,m.side||1,m.scale||1,palette.mark,palette.edge);
+      ctx.restore();
+    }
+  }
 }
 // Marked terrain patches: a tinted ellipse on the road with its field label.
 // The state overlays (broken ice, rubble remaining) are drawn per frame in
@@ -670,7 +920,7 @@ function paintTileMosaic(target,img,width,height,rng,doc){
   }
 }
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
-  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
+  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null,roadImg=doc?getRoadImage(doc,theme,notify):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
@@ -694,7 +944,7 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
       target.save();target.globalAlpha=.05+tr()*.04;target.fillStyle=GROUND_TINTS[Math.floor(tr()*GROUND_TINTS.length)];target.fillRect(0,0,width,height);target.restore();
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
-    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
+    for(const road of paths)drawRoad(target,road,theme,img,roadImg);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
     // Field dressing grows with the map (capped: it must not swallow the road
     // it was placed clear of).
     drawDeco(target,deco,theme,notify,Math.max(1,Math.min(1.45,width/1100)));
@@ -714,12 +964,12 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   // sector map) and the game hung while zooming (reported: 'Game haengt beim
   // Zoomen'). The layer is scaled by the ctx transform instead; painted ground
   // stays crisp to 2x and only softens gently beyond.
-  const resolution=Math.max(1,Math.min(2,Math.sqrt(6000000/(width*height)))),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
+  const resolution=Math.max(1,Math.min(2,Math.sqrt(6000000/(width*height)))),key=`${storyMission?.id||'free'}:${theme}:${width}:${height}`,revision=`${img?'art':'fallback'}:${roadImg?'road':'plain'}:${storyArt?.version||0}:${getLanguage()}:${resolution}:${artVersion}`;let cached=variants.get(key);
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
   const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');
@@ -750,7 +1000,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   // before the first deploy (the simulation walks him there), the hero moved
   // invisibly: the newest player tapped the ground, got "Hero moving to position",
   // and watched nothing happen. A hero you cannot see is a hero you cannot command.
-  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],undefined,onSpritesReady);}
+  for(const p of Object.values(state.players))if(p.active!==false){if(state.wave>0&&p.mobileSupply?.remaining>0){ctx.save();ctx.beginPath();ctx.arc(p.x,p.y,22,0,Math.PI*2);ctx.strokeStyle='#89d9ed';ctx.lineWidth=3;ctx.stroke();ctx.restore();}soldier(ctx,p,p.id===me,soldierPoses[p.id],onSpritesReady);}
   if(theme==='scrub'&&path.length===10)for(const cloud of state.dustClouds||[]){
     ctx.save();ctx.beginPath();ctx.arc(cloud.x,cloud.y,75,0,Math.PI*2);ctx.fillStyle='rgba(210,168,119,.12)';ctx.fill();ctx.strokeStyle='rgba(133,88,57,.45)';ctx.lineWidth=2;ctx.setLineDash(reducedMotion?[]:[4,9]);ctx.stroke();ctx.restore();
   }
