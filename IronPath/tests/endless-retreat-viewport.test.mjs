@@ -272,15 +272,29 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
 
   // Tapping on an empty Sector 2 build pad via battleViewport opens the radial build menu.
   const map2 = getMap(control.getMapId());
-  const scaleIdx = h.calls.findIndex(c => c[0] === 'scale');
-  const trAfterScale = scaleIdx >= 0 ? h.calls[scaleIdx + 1] : null;
-  const viewX = -(trAfterScale?.[1] || 0), viewY = -(trAfterScale?.[2] || 0);
+  const readViewOrigin = () => {
+    const scaleIdx = h.calls.findIndex(c => c[0] === 'scale');
+    const trAfterScale = scaleIdx >= 0 ? h.calls[scaleIdx + 1] : null;
+    return { viewX: -(trAfterScale?.[1] || 0), viewY: -(trAfterScale?.[2] || 0) };
+  };
+  let { viewX, viewY } = readViewOrigin();
   const viewCenterX = viewX + 480 / rezoomedScale;
   const viewCenterY = viewY + 1039 / rezoomedScale;
   const tap2Pad = map2.pads.slice().sort((a, b) => Math.hypot(a.x - viewCenterX, a.y - viewCenterY) - Math.hypot(b.x - viewCenterX, b.y - viewCenterY))[0];
   h.el('radialClose').click();
-  const sx = (tap2Pad.x - viewX) * rezoomedScale * (390 / 960);
-  const sy = (tap2Pad.y - viewY) * rezoomedScale * (844 / 2078);
+  let sx = (tap2Pad.x - viewX) * rezoomedScale * (390 / 960);
+  let sy = (tap2Pad.y - viewY) * rezoomedScale * (844 / 2078);
+  if (sx < 24 || sx > 366) {
+    const panCssX = 195 - sx;
+    canvas.dispatch('pointerdown', { pointerId: 2, pointerType: 'touch', clientX: 195, clientY: 422, preventDefault() {} });
+    canvas.dispatch('pointermove', { pointerId: 2, pointerType: 'touch', clientX: 195 + panCssX, clientY: 422, preventDefault() {} });
+    canvas.dispatch('pointerup', { pointerId: 2, pointerType: 'touch', clientX: 195 + panCssX, clientY: 422, preventDefault() {} });
+    h.stepFrame(16, true);
+    ({ viewX, viewY } = readViewOrigin());
+    sx = (tap2Pad.x - viewX) * rezoomedScale * (390 / 960);
+    sy = (tap2Pad.y - viewY) * rezoomedScale * (844 / 2078);
+  }
+  assert.ok(sx >= 0 && sx <= 390 && sy >= 0 && sy <= 844, `Sector 2 pad tap (${sx.toFixed(1)},${sy.toFixed(1)}) lies inside 390x844 viewport`);
   canvas.dispatch('pointerdown', { pointerId: 1, pointerType: 'touch', clientX: sx, clientY: sy, preventDefault() {} });
   canvas.dispatch('pointerup', { pointerId: 1, pointerType: 'touch', clientX: sx, clientY: sy, preventDefault() {} });
   assert.equal(h.el('radialMenu').hidden, false, `tapping a Sector 2 pad (${sx.toFixed(1)},${sy.toFixed(1)}) opens radial menu through battleViewport`);

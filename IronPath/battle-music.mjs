@@ -256,6 +256,16 @@ function makeWeatherNoise(context, seconds = 4.0) {
     data[i] = s;
     if (Math.abs(s) > peak) peak = Math.abs(s);
   }
+  // Smooth the final wrap sample pair over a short 16-sample bridge so loop wrap has zero step discontinuity.
+  const bridge = Math.min(16, Math.floor(xfade / 4));
+  const halfStep = (data[0] - data[length - 1]) * 0.5;
+  for (let k = 0; k < bridge; k++) {
+    const rightIdx = k;
+    const leftIdx = length - bridge + k;
+    data[leftIdx] += halfStep * ((k + 1) / bridge);
+    data[rightIdx] -= halfStep * ((bridge - k) / bridge);
+    peak = Math.max(peak, Math.abs(data[leftIdx]), Math.abs(data[rightIdx]));
+  }
   const scale = 0.7 / peak;
   for (let i = 0; i < length; i++) data[i] *= scale;
   return buffer;
