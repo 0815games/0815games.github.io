@@ -1768,6 +1768,410 @@ body:has(#authView:not([hidden])) main > header p {
   outline-offset: 2px;
 }
 
+/* --- Block 6: General Vance Mission Dossier Dialog (#tutorialDossier) --- */
+dialog#tutorialDossier[open] {
+  display: grid;
+  gap: 0;
+  box-sizing: border-box;
+  width: min(680px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  margin: auto;
+  overflow: auto;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: linear-gradient(180deg, #162820 0%, #101d17 100%);
+  color: var(--hq-text);
+  box-shadow: 0 26px 70px rgba(0, 0, 0, 0.72);
+}
+
+dialog#tutorialDossier::backdrop {
+  background: rgba(6, 12, 9, 0.78);
+  backdrop-filter: blur(2px);
+}
+
+#tutorialDossier .dossier-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--hq-border);
+  background: rgba(15, 29, 23, 0.94);
+}
+
+#tutorialDossier .dossier-officer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+#dossierPortrait {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: none;
+  border: 2px solid var(--hq-gold);
+  background: #0c1712;
+}
+
+#tutorialDossier .dossier-officer-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+#tutorialDossier .dossier-officer-copy .eyebrow {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hq-gold);
+}
+
+#tutorialDossier .dossier-officer-copy h2 {
+  margin: 0;
+  font: 700 20px Georgia, serif;
+  color: #f6e9ca;
+  line-height: 1.2;
+}
+
+#dossierClose[hidden] {
+  display: none;
+}
+
+#tutorialDossier .dossier-body {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+#tutorialDossier .dossier-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(170px, 220px) 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+#tutorialDossier .dossier-art-wrap {
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  overflow: hidden;
+  background: #0c1712;
+  aspect-ratio: 16 / 10;
+}
+
+#dossierMapArt {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+#tutorialDossier .dossier-brief {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+#tutorialDossier .dossier-lead {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--hq-text);
+}
+
+#tutorialDossier .dossier-reward-note {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--hq-gold);
+  border-radius: 2px;
+  background: rgba(228, 202, 137, 0.11);
+  color: #f3e2b6;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+#tutorialDossier .dossier-overview-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+#tutorialDossier .dossier-card {
+  padding: 10px 12px;
+  border: 1px solid var(--hq-border);
+  border-radius: var(--hq-radius);
+  background: rgba(14, 26, 21, 0.72);
+}
+
+#tutorialDossier .dossier-card h3 {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--hq-gold);
+}
+
+#tutorialDossier .dossier-card p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.42;
+  color: var(--hq-muted);
+}
+
+#tutorialDossier .dossier-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hq-border);
+}
+
+#tutorialDossier .dossier-actions button {
+  width: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border-radius: var(--hq-radius);
+  font-weight: 700;
+}
+
+#tutorialDossier .dossier-actions button[hidden] {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  #tutorialDossier .dossier-hero-grid,
+  #tutorialDossier .dossier-overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  #tutorialDossier .dossier-art-wrap {
+    max-height: 150px;
+  }
+
+  #tutorialDossier .dossier-actions {
+    flex-direction: column;
+  }
+
+  #tutorialDossier .dossier-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-height: 520px) {
+  #tutorialDossier .dossier-art-wrap {
+    display: none;
+  }
+
+  #tutorialDossier .dossier-hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Block 6: Interactive Command HQ Tour (#menuTour) --- */
+#menuTour.menu-tour {
+  position: fixed;
+  z-index: 68;
+  inset: auto;
+  right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: auto;
+  top: auto;
+  margin: 0;
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 24px));
+  max-height: min(68dvh, 520px);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--hq-gold);
+  border-radius: var(--hq-radius);
+  background: linear-gradient(180deg, #172b22 0%, #101e18 100%);
+  color: var(--hq-text);
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
+  overflow: auto;
+}
+
+#menuTour.menu-tour[hidden] {
+  display: none;
+}
+
+#menuTour .menu-tour-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--hq-border);
+}
+
+#menuTour .menu-tour-step {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hq-gold);
+}
+
+#menuTour .menu-tour-caption {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hq-muted);
+}
+
+#menuTour .menu-tour-close {
+  width: auto;
+  min-width: 40px;
+  min-height: 40px;
+  margin: 0;
+  padding: 0 10px;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: transparent;
+  color: var(--hq-text);
+  font-size: 15px;
+}
+
+#menuTour .menu-tour-main {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px;
+  align-items: start;
+}
+
+#menuTour .menu-tour-art {
+  width: 92px;
+  height: 76px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid rgba(228, 202, 137, 0.28);
+  display: block;
+}
+
+#menuTour .menu-tour-art[hidden] {
+  display: none;
+}
+
+#menuTour .menu-tour-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+#menuTour .menu-tour-title {
+  margin: 0;
+  font: 700 17px Georgia, serif;
+  color: var(--hq-gold);
+}
+
+#menuTour .menu-tour-text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.44;
+  color: var(--hq-text);
+}
+
+#menuTour .menu-tour-detail {
+  margin: 0;
+  padding: 5px 8px;
+  border-left: 3px solid var(--hq-gold);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f3e2b4;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+#menuTour .menu-tour-detail[hidden] {
+  display: none;
+}
+
+#menuTour .menu-tour-inspect-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+#menuTour .menu-tour-inspect-row button {
+  width: auto;
+  min-height: 38px;
+  margin: 0;
+  padding: 0 12px;
+  border-radius: var(--hq-radius);
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+#menuTour .menu-tour-inspect-row button[hidden] {
+  display: none;
+}
+
+#menuTour .menu-tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+#menuTour .menu-tour-actions button {
+  width: auto;
+  min-height: 44px;
+  min-width: 84px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: var(--hq-radius);
+  font-weight: 700;
+}
+
+#menuTour .menu-tour-actions button[hidden] {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  #menuTour.menu-tour {
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    width: auto;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    max-height: min(64dvh, 450px);
+    padding: 12px;
+  }
+
+  #menuTour .menu-tour-main {
+    grid-template-columns: 72px 1fr;
+  }
+
+  #menuTour .menu-tour-art {
+    width: 72px;
+    height: 60px;
+  }
+}
+
+@media (max-height: 520px) {
+  #menuTour .menu-tour-main {
+    grid-template-columns: 1fr;
+  }
+
+  #menuTour .menu-tour-art {
+    display: none;
+  }
+}
+
 #settingsDialog .settings-volume {
   display: flex;
   align-items: center;

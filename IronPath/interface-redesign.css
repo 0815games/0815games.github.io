@@ -896,3 +896,84 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 @keyframes transmission-pulse{0%,100%{opacity:.25}45%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.transmission-emblem i{animation:none;opacity:.8}}
 @media(max-width:520px){.transmission{padding:22px 18px 16px}.transmission h2{font-size:20px}}
+
+/* --- Block 6: Coach step artwork & General Vance field radio strip --------- */
+.coach-media{
+  display:grid;grid-template-columns:72px 1fr;gap:8px;align-items:start;min-width:0;
+}
+.coach-media>div{min-width:0}
+.coach-art{
+  width:72px;height:54px;object-fit:cover;display:block;
+  border-radius:3px;border:1px solid #e4ca8948;background:#0e1b15;flex:none;
+}
+.coach-art[hidden]{display:none}
+@media(max-width:600px){
+  .coach-media{grid-template-columns:56px 1fr;gap:7px}
+  .coach-art{width:56px;height:44px}
+}
+@media(max-height:520px){
+  .coach-media{grid-template-columns:1fr}
+  .coach-art{display:none}
+}
+
+.general-radio-bar{
+  display:flex;flex-direction:column;gap:4px;
+  padding:6px 8px;border:1px solid #e4ca8938;border-radius:3px;
+  background:#0f1d17;color:#efe5c4;min-width:0;
+}
+.general-radio-bar[hidden]{display:none}
+.general-radio-head{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;min-width:0;
+}
+.general-radio-head strong{
+  font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#f6e9ca;
+}
+.general-radio-status{
+  margin-right:auto;padding:2px 6px;border-radius:2px;
+  background:#ffffff10;border:1px solid #596f5d66;
+  font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#a9c6b5;
+}
+.general-radio-status[data-audible="true"]{
+  background:#e4ca8922;border-color:#e4ca8988;color:#e4ca89;
+}
+.general-radio-controls{display:flex;align-items:center;gap:4px;flex:none}
+.general-radio-btn{
+  min-width:34px;min-height:30px;width:auto;margin:0;padding:0 8px;
+  background:#182a22;border:1px solid #596f5d;border-radius:3px;
+  color:#efe5c4;font-size:10px;font-weight:700;letter-spacing:.06em;line-height:1;
+}
+.general-radio-btn:hover{border-color:#e4ca89;color:#fff}
+.general-radio-btn[aria-pressed="true"]{
+  background:#2d261a;border-color:#d8b365;color:#f3db9a;
+}
+.general-radio-sub{
+  margin:0;font-size:11.5px;line-height:1.35;color:#dbe4cf;
+  max-height:46px;overflow:auto;
+}
+.general-radio-sub[hidden]{display:none}
+@media(max-width:600px){
+  .first-run-coach{
+    padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));
+    gap:2px;
+    max-height:min(30dvh,174px);
+  }
+  .first-run-coach .coach-head{padding-bottom:2px}
+  .first-run-coach .coach-close{margin:-13px -10px -13px 0}
+  .first-run-coach .coach-media{
+    grid-template-columns:38px 1fr;gap:6px;align-items:center;
+    flex:1 1 auto;min-height:0;overflow:hidden;
+  }
+  .first-run-coach .coach-media>div{min-height:0;max-height:100%;overflow:auto}
+  .first-run-coach .coach-art{width:38px;height:32px}
+  .first-run-coach h2{font-size:14px;line-height:1.15}
+  .first-run-coach .coach-text{font-size:11px;line-height:1.25}
+  .first-run-coach .general-radio-bar{padding:3px 6px;gap:0;flex-shrink:0}
+  .first-run-coach .general-radio-btn{min-height:24px;padding:0 7px;font-size:9.5px}
+  .first-run-coach .general-radio-sub{display:none}
+  .first-run-coach .coach-ask{padding:2px 6px;font-size:10.5px;line-height:1.2;flex-shrink:0}
+  .first-run-coach .coach-pips{margin-top:0;flex-shrink:0}
+  .first-run-coach .coach-foot{padding-top:2px;flex-shrink:0}
+  .first-run-coach .coach-next{min-height:40px}
+  .general-radio-bar{padding:5px 6px;gap:3px}
+  .general-radio-sub{font-size:11px;max-height:36px}
+}

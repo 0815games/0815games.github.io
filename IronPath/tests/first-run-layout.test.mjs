@@ -142,6 +142,8 @@ test('the coach card and its pointer cannot be dragged by an ancestor containing
   assert.match(coach.bottom, /^calc\(var\(--action-bar,calc\(66px \+ env\(safe-area-inset-bottom,0px\)\)\) \+ 8px\)$/,
     'and sits above the measured action bar, never on it');
   assert.ok(declares(redesign, '.first-run-coach', 'max-height', /^45dvh$/), 'it keeps the 45dvh cap the user asked for');
+  // Portrait phones keep the card compact below the battlefield canvas so build pads stay tappable.
+  assert.ok(declares(redesign, '.first-run-coach', 'max-height', /174px/), 'portrait phones cap coach height below the field pads');
   // Landscape phones get a side column instead - still never the whole screen height.
   assert.ok(declares(redesign, '.first-run-coach', 'right', /^calc\(8px/), 'landscape moves it to a column');
   // In landscape it is still above the bar, and it never assumes the full height.
@@ -213,10 +215,10 @@ test('FULLSCREEN is a setting, not a permanent chip in the corner', () => {
   assert.doesNotMatch(fieldMenu, /fieldFullscreen/, 'and no second fullscreen button');
 });
 
-test('the coach caption counts five waves, like the contract it describes', () => {
+test('the coach caption counts seven waves, like the contract it describes', () => {
   const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
-  assert.match(coach, /caption:'WAVE 1 OF 5'/, 'the card says five waves');
-  assert.doesNotMatch(coach, /OF 6|of 6'/, 'and nothing still says six');
+  assert.match(coach, /caption:'WAVE 1 OF 7'/, 'the card says seven waves');
+  assert.doesNotMatch(coach, /OF 5|OF 6|of 6'/, 'and nothing still says five or six');
 });
 
 test('an open field menu paints above the contract card', () => {

@@ -1,10 +1,10 @@
-import {translate,translateText} from './language.mjs?v=20261119-block2';
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block2';
+import {translate,translateText} from './language.mjs?v=20261119-block6';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block6';
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
 import {campaignProgress,CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
 // Navigation only: online matches and account mutations remain with their existing owners.
-export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut,endlessLauncher=null,getPortrait=null,onViewChange=()=>{}}){
+export function createCommandCenter({document,getProfile,getGame,isPartyActive,openParty,closeParty=()=>{},signOut,endlessLauncher=null,getPortrait=null,onViewChange=()=>{},onTutorial=null}){
  const $=id=>document.getElementById(id);
  function render(){const profile=getProfile();if(!profile)return;const p=characterProgress(profile.xp),progress=campaignProgress(profile),game=getGame();
   // The highlighted SOLDIER card above the game modes carries the person:
@@ -38,7 +38,7 @@ export function createCommandCenter({document,getProfile,getGame,isPartyActive,o
  // old pop-up tour, because `showTutorial` prefers the live coach only when a match is
  // running and otherwise falls back to the modal briefing. `replayFirstRun` deploys the
  // training contract again - map, cards, guide - and pays nothing for the second run.
- $('menuTutorial').onclick=()=>{const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuResults').onclick=()=>getGame()?.showResults?.();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
+ $('menuTutorial').onclick=()=>{if(typeof onTutorial==='function'){onTutorial();return;}const game=getGame();if(game?.replayFirstRun?.())return;game?.showTutorial();};$('menuArmory').onclick=()=>$('armoryOpen').onclick();$('menuSkills').onclick=()=>$('skillOpen').onclick();$('menuResults').onclick=()=>getGame()?.showResults?.();$('menuLogout').onclick=()=>signOut();$('backToCommand').onclick=showMenu;
  function showMenu(){return navigateToMenu();}
  function showAfterEnd(){return navigateToMenu(true);}
  return {render,showBattle,showLobby,showMenu,showAfterEnd};

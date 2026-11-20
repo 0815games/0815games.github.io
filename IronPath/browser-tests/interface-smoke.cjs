@@ -129,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block2 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block6 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -577,11 +577,27 @@ const fs = require('node:fs');
         document.querySelector('#gameWorkspace').dataset.screen='endless';
       });
       await page.evaluate(()=>document.querySelector('#fourPartyPanel').hidden=false);
-      for (const [id, control] of [['settingsDialog', '#settingsRestoreDefaults'], ['afkRestDialog', '#afkRestAccept'], ['endlessLaunch', '#endlessDeploy'], ['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['friendStatsDialog', '#friendStatsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
+      for (const [id, control] of [['settingsDialog', '#settingsRestoreDefaults'], ['afkRestDialog', '#afkRestAccept'], ['endlessLaunch', '#endlessDeploy'], ['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDossier', '#dossierAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['friendStatsDialog', '#friendStatsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
+        if(id==='tutorialDossier')await page.evaluate(()=>{
+          document.getElementById('dossierLead').textContent='Recruit, step up to the tactical table. Seven guided training waves and an HQ inspection await.';
+          document.getElementById('dossierRewardNote').textContent='One-time completion rewards up to 450 XP.';
+          document.getElementById('dossierRadioStatus').textContent='RADIO READY';
+          document.getElementById('dossierRadioSubtitle').textContent='General Vance standing by on channel one.';
+          document.getElementById('dossierRadioSubtitle').hidden=false;
+        });
         await page.evaluate(id => document.getElementById(id).showModal(), id);
         // The armory now opens on its item list; its workshop tab is checked separately.
         if(id==='armoryDialog')await page.evaluate(()=>document.querySelectorAll('#armoryList .armory-section').forEach(section=>{section.hidden=section.dataset.section!=='equipment';}));
         await check(`#${id}`); await check(control);
+        if(id==='tutorialDossier'){
+          const dossierImgs=await page.evaluate(()=>{
+            const d=document.getElementById('tutorialDossier');
+            const p=document.getElementById('dossierPortrait'),m=document.getElementById('dossierMapArt');
+            return {overflow:d.scrollWidth>d.clientWidth+1,portrait:p.complete&&p.naturalWidth>0,map:m.complete&&m.naturalWidth>0};
+          });
+          assert.equal(dossierImgs.overflow,false,`${name}: #tutorialDossier fits without horizontal overflow`);
+          assert.equal(dossierImgs.portrait&&dossierImgs.map,true,`${name}: #tutorialDossier portrait and map artworks load cleanly`);
+        }
         if(id==='afkRestDialog'){const img=await page.locator('#afkRestArt').evaluate(e=>e.complete&&e.naturalWidth>0);assert.equal(img,true,`${name}: #afkRestArt artwork loads cleanly`);}
         if(id==='endlessLaunch'){
           await check('#endlessPrev'); await check('#endlessNext'); await check('#endlessThemeCard');
@@ -637,6 +653,32 @@ const fs = require('node:fs');
         await page.screenshot({ path: `browser-artifacts/${name}-${id}.png` });
         await page.evaluate(id => document.getElementById(id).close(), id);
       }
+      await page.evaluate(()=>{
+        const tour=document.getElementById('menuTour');
+        document.getElementById('menuTourStep').textContent='HQ TOUR · 1 / 8';
+        document.getElementById('menuTourCaption').textContent='COMMAND HQ';
+        document.getElementById('menuTourTitle').textContent='Soldier Dossier & Profile';
+        document.getElementById('menuTourText').textContent='Open your Dossier to review soldier XP, rank insignia, service record, and safe avatar styling.';
+        document.getElementById('menuTourDetail').textContent='Account deletion & sign-out stay protected outside the tour.';
+        document.getElementById('menuTourRadioStatus').textContent='AUDIO READY';
+        document.getElementById('menuTourRadioSubtitle').textContent='Welcome to Command HQ. Let us inspect every station.';
+        document.getElementById('menuTourRadioSubtitle').hidden=false;
+        tour.hidden=false;
+        tour.showPopover?.();
+      });
+      await check('#menuTour'); await check('#menuTourNext');
+      const tourMetrics=await page.evaluate(()=>{
+        const tour=document.getElementById('menuTour'),art=document.getElementById('menuTourArt');
+        return {overflow:tour.scrollWidth>tour.clientWidth+1,art:art.complete&&art.naturalWidth>0};
+      });
+      assert.equal(tourMetrics.overflow,false,`${name}: #menuTour fits without horizontal overflow`);
+      assert.equal(tourMetrics.art,true,`${name}: #menuTourArt artwork loads cleanly`);
+      await page.screenshot({ path: `browser-artifacts/${name}-menu-tour.png` });
+      await page.evaluate(()=>{
+        const tour=document.getElementById('menuTour');
+        tour.hidePopover?.();
+        tour.hidden=true;
+      });
       if(width>=860){
         const opWidths=await page.evaluate(()=>{
           const ws=document.getElementById('gameWorkspace');
