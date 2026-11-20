@@ -367,7 +367,7 @@ function renderResults(target){
   mapViewport.addEventListener('scroll',remarkCoach,{passive:true});
   function wantsBattleViewport(map,versus,fullBattle=false){
     const oversized=(map.width||960)>960||(map.height||540)>540;
-    return fullBattle||(versus?oversized:((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer)));
+    return !!(fullBattle||(versus?oversized:((oversized&&!map.fourPlayer)||(experimentalFourViewport&&map.fourPlayer))));
   }
   function syncBattleViewport(map,versus,fullBattle){
     // A 1v1 view contains two equal map-sized lanes and a 20px divider.
@@ -787,7 +787,7 @@ function renderResults(target){
     if(announcedMap!==state.mapId){announcedMap=state.mapId;mapIntro.show(state.mapId,{label:$('battleLabel').textContent,name:mapTitle});}
     const workspace=$('gameWorkspace'),screen=workspace?.dataset?.screen,campaignBoardOpen=$('campaignPanel')?.dataset?.boardOpen==='true';
     const inBattleFrame=!workspace?.hidden&&((!!coop&&screen==='online'&&workspace.dataset.onlineReady==='true')||(!coop&&(screen==='endless'||screen==='training'||(screen==='campaign'&&!campaignBoardOpen))));
-    const fullBattle=!!inBattleFrame&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0&&(!!coop||wantsBattleViewport(map,versus,false));
+    const fullBattle=Boolean(inBattleFrame&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0&&(coop||wantsBattleViewport(map,versus,false)));
     const canvasHeight=fullBattle?Math.max(1,Math.round(logicalWidth*mapViewport.clientHeight/mapViewport.clientWidth)):versus?Math.round(logicalWidth*((map.height||540)*2+20)/(map.width||960)):540;
     canvas.dataset.fullBattle=String(fullBattle);
     if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight,versus);if(touchZoom&&!battleViewport&&!fullBattle)touchZoom.resize(touchZoom.getFactor());}else canvas.dataset.lanes=versus?'versus':'single';

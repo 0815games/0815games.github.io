@@ -300,11 +300,26 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
   assert.equal(s3Rect?.[3], 1680);
   assert.equal(s3Rect?.[4], 960);
 
-  // 6. Returning to Sector 1 / standard map cleanly restores non-fullBattle touchZoom layout.
+  // Returning to Sector 1 / standard map cleanly restores non-fullBattle touchZoom layout.
   draws[0] = 'g3-0dfdd99a1';
   assert.equal(await control.chooseEndless(null), true);
   assert.equal(canvas.dataset.fullBattle, 'false', 'Sector 1 restores touchZoom');
   assert.equal(canvas.style.touchAction, '', 'battleViewport destroyed on Sector 1');
+  control.stopForRelease();
+});
+
+test('classic map without dimensions emits boolean "false" for dataset.fullBattle even when experimentalFourViewport is true', async t => {
+  const h = createHarness({ screen: 'endless', width: 390, height: 844, coarse: true });
+  t.after(() => h.restore());
+  const src = await loadGameSource();
+  const { startGame } = await import(`data:text/javascript;base64,${Buffer.from(src).toString('base64')}`);
+  const control = startGame(ACCOUNT, {
+    experimentalFourViewport: true,
+    deferTutorial: true,
+    confirmAction: async () => true,
+    nextMapId: () => 'road',
+  });
+  assert.equal(h.el('game').dataset.fullBattle, 'false', 'classic road map sets dataset.fullBattle strictly to "false"');
   control.stopForRelease();
 });
 
