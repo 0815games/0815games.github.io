@@ -3584,5 +3584,17 @@ Grenzen / Offen:
   - `node --test IronPath/tests/*.test.mjs`: **1.173 bestanden, 0 fehlgeschlagen, 1 erwarteter Ancestor-Skip** (`release-pages-site.test.mjs`), inkl. neuem `tests/party-end-force-close.test.mjs` sowie erweiterten `coop-balance`, `four-game-view`, `squad-maps`, `balance-suite`, `party-end-*`, `translation-coverage`, `patch-notes`, `menu-redesign` und `multiplayer-build-stamp`.
   - `node IronPath/stress-tests/run.mjs`: **grün** über alle Modi (`solo` W30, `coop` W18, `versus` W30, `three-coop` W30, `four-coop` W30, `two-vs-two` W30; maximale View-Größe `16.383` B / `30.966` B weit unter RTDB-`262.144`-B-Grenze).
   - `node IronPath/scripts/rules-publish-dry-run.mjs IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json --candidate IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`: **0 Blocker** (`BLOCK2-RULES-TO-PUBLISH.json` unverändert mit SHA-256 `914981b62198dbbff3651ab294834ff453d4eaf46450c062a9239149303915ee`).
-  - `IronPath/server` & `IronPath/release-tools` (`node_modules` lokal nicht vorinstalliert) sowie alle 8 Emulator-/Chromium-Jobs laufen im Push-CI auf PR #327.
-- **Offen:** Push-CI auf PR #327 abwarten, anschließend `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` einmalig in Firebase veröffentlichen und echte Mehrgeräte-Abnahme durchführen.
+  - `IronPath/server` & `IronPath/release-tools` (`node_modules` lokal nicht vorinstalliert) sowie alle 8 Emulator-/Chromium-Jobs liefen im Push-CI auf PR #327 (`37a2103`, GitHub Actions Run [`44645842343`](https://github.com/0815games/0815games.github.io/actions/runs/44645842343)): **13/13 Checks bestanden** (`database-rules`, `game-regressions` inkl. `server` & `release-tools`, `interface-browser-smoke`, alle 8 `party-finalization-browser`-Jobs sowie Vercel).
+- **Git / PR / Release:** Committet als `37a2103` und auf `arena/ef607625-0815games-github-io` (PR #327, `pr_open`) gepusht.
+
+## IPL-0080 – Block-2- & vorgezogene Block-6-RTDB-Rules live bestätigt (`BLOCK2-RULES-TO-PUBLISH.json`)
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); auf PR #327 (`arena/ef607625-0815games-github-io`, nach `37a2103`).
+- **Branch / Basis:** `arena/ef607625-0815games-github-io`, Ausgangs-HEAD `37a2103` (`25b8c3323` auf `main`).
+- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json`](firebase/BLOCK2-RULES-TO-PUBLISH.json) (SHA-256 `914981b62198dbbff3651ab294834ff453d4eaf46450c062a9239149303915ee`) bereitgestellten Block-2-RTDB-Rules (`characterNames/$key` mit `MAINTENANCE_GATE`, ungelistetes Umbenennungsrecht auf `players/$uid/name`) inklusive des vorgezogenen Block-6-Schemas (`players/$uid/tutorial`) live in der Firebase Console veröffentlicht wurden.
+- **Änderungen / Dateien:**
+  - `IronPath/PATCH-BLOECKE.md` (Block-2-Rules-Veröffentlichung inkl. vorgezogenem Block-6-`players/$uid/tutorial`-Schema als vom Betreiber live bestätigt markiert, offene Punkte auf Screenreader & echte Mehrgeräte-Abnahme aktualisiert)
+  - `IronPath/patch-notes.mjs` (`RELEASED_PATCHES[0]` `block2` sowie `PLANNED_PATCHES` `block2`/`block6`: `BLOCK2-RULES-TO-PUBLISH.json` als vom Betreiber live bestätigt eingetragen, offene Hinweise auf Geräteabnahme bereinigt)
+  - `IronPath/DATENBLATT.md` (`Rollout-Protokoll` um `37a2103` / CI `44645842343` & `IPL-0080` ergänzt)
+  - `IronPath/PATCH-LOG.md` (`IPL-0079` CI-Ergebnis nachgetragen + `IPL-0080` protokolliert)
+- **Git / PR / Release:** `lokal/uncommittet` auf `arena/ef607625-0815games-github-io` (PR #327).
+- **Offen:** Finaler CI-Durchlauf des Dokumentations-/Feldnotizen-Nachtrags, Merge von PR #327 auf `main` (nach Freigabe bzw. Geräte-Sichtung auf `20261119-block2`) sowie echte Mehrgeräte-Abnahme (Namenskonflikt-Migration, Host-Notabschluss `FORCE CLOSE PARTY` & Einsteigerbalance C) vor Start der Block-6-Client-Umsetzung.
