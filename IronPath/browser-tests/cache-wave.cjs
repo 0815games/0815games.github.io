@@ -9,6 +9,10 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261120-audio1','account.js?v=20261120-audio1','command-center.mjs?v=20261120-audio1','game.js?v=20261120-audio1',
+ 'battle-sound.mjs?v=20261120-audio1','battle-sound-recipes.mjs?v=20261120-audio1','general-radio.mjs?v=20261120-audio1',
+ 'first-run-guide.mjs?v=20261120-audio1','menu-tour.mjs?v=20261120-audio1','settings.mjs?v=20261120-audio1',
+ 'language.mjs?v=20261120-audio1','patch-notes.mjs?v=20261120-audio1','localization-settings-de.mjs?v=20261120-audio1','localization-firstrun-de.mjs?v=20261120-audio1',
  'account-entry.mjs?v=20261119-block6b','account.js?v=20261119-block6b','command-center.mjs?v=20261119-block6b','game.js?v=20261119-block6b',
  'battle-sound.mjs?v=20261118-settings1','simulation.mjs?v=20261119-block6b','tower-specialization.mjs?v=20261119-block6b','general-radio.mjs?v=20261119-block6b',
  'language.mjs?v=20261119-block6b','patch-notes.mjs?v=20261119-block6b',
@@ -121,7 +125,8 @@ const oldUrls=[
     import(`/IronPath/tutorial-sync.mjs?v=${build}`),import(`/IronPath/general-radio.mjs?v=${build}`),
     import(`/IronPath/tutorial-dossier.mjs?v=${build}`),import(`/IronPath/menu-tour.mjs?v=${build}`),
     import(`/IronPath/training-run.mjs?v=${build}`),import(`/IronPath/command-center.mjs?v=${build}`),
-    import(`/IronPath/first-run-guide.mjs?v=${build}`),import(`/IronPath/battle-sound.mjs?v=${build}`)
+    import(`/IronPath/first-run-guide.mjs?v=${build}`),import(`/IronPath/battle-sound.mjs?v=${build}`),
+    import(`/IronPath/battle-music.mjs?v=${build}`),import(`/IronPath/popover-host.mjs?v=${build}`)
    ]);
    language.setupLanguage({document,storage:{getItem:()=> 'de',setItem(){}}});
    const text=language.translateText('{name} requests wave {wave}. {count} approval still needed.',{name:'Bob',wave:1,count:1});
@@ -133,7 +138,7 @@ const oldUrls=[
   },build);
   assert.equal(result.queued.status,'queued');assert.equal(result.applied.ok,true);assert.equal(result.request.requester,'bob');
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
-  for(const name of ['game.js','battle-sound.mjs','battle-sound-recipes.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
+  for(const name of ['game.js','battle-sound.mjs','battle-sound-recipes.mjs','battle-music.mjs','popover-host.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
   assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
   assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');

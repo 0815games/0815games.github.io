@@ -1,82 +1,83 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261120-audio1';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261120-audio1';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261120-audio2';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261120-audio2';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261120-audio1';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261120-audio2';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261120-audio1';
-import {createSettings,readSettings} from './settings.mjs?v=20261120-audio1';
-import {createPasswordChange} from './password-change.mjs?v=20261120-audio1';
+import {setupFieldMenu} from './field-menu.mjs?v=20261120-audio2';
+import {createSettings,readSettings} from './settings.mjs?v=20261120-audio2';
+import {createPasswordChange} from './password-change.mjs?v=20261120-audio2';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261120-audio1';
+import {createPatchNotes} from './patch-notes.mjs?v=20261120-audio2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261120-audio1';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261120-audio1';
-import {setupFriends} from './friends-ui.mjs?v=20261120-audio1';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261120-audio1';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261120-audio2';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261120-audio2';
+import {setupFriends} from './friends-ui.mjs?v=20261120-audio2';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261120-audio2';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261120-audio1';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261120-audio1';
-import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261120-audio1';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261120-audio1';
-import {createCommandCenter} from './command-center.mjs?v=20261120-audio1';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261120-audio2';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261120-audio2';
+import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261120-audio2';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261120-audio2';
+import {createCommandCenter} from './command-center.mjs?v=20261120-audio2';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261120-audio1';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261120-audio2';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261120-audio1';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261120-audio1';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261120-audio1';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261120-audio1';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261120-audio1';
-import {setupAuthForm} from './auth-form.mjs?v=20261120-audio1';
-import {applyLoginScene} from './login-scene.mjs?v=20261120-audio1';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261120-audio2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261120-audio2';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261120-audio2';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261120-audio2';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261120-audio2';
+import {setupAuthForm} from './auth-form.mjs?v=20261120-audio2';
+import {applyLoginScene} from './login-scene.mjs?v=20261120-audio2';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261120-audio1';
-import {createWriteTracker} from './version-check.mjs?v=20261120-audio1';
+import {createVersionUI} from './version-ui.mjs?v=20261120-audio2';
+import {createWriteTracker} from './version-check.mjs?v=20261120-audio2';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261120-audio1';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261120-audio2';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261120-audio1';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261120-audio1';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261120-audio1';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261120-audio1';
-import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './tutorial-sync.mjs?v=20261120-audio1';
-import {createGeneralRadio} from './general-radio.mjs?v=20261120-audio1';
-import {createTutorialDossier} from './tutorial-dossier.mjs?v=20261120-audio1';
-import {createMenuTour} from './menu-tour.mjs?v=20261120-audio1';
+import {createConfirmation} from './confirmation.mjs?v=20261120-audio2';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261120-audio2';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261120-audio2';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261120-audio2';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './tutorial-sync.mjs?v=20261120-audio2';
+import {createGeneralRadio} from './general-radio.mjs?v=20261120-audio2';
+import {createTutorialDossier} from './tutorial-dossier.mjs?v=20261120-audio2';
+import {createMenuTour} from './menu-tour.mjs?v=20261120-audio2';
+import {mountOverlayPopover} from './popover-host.mjs?v=20261120-audio2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261120-audio1';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261120-audio1';
-import {rewardDelta} from './run-results.mjs?v=20261120-audio1';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261120-audio1';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261120-audio1';
-import {createPartySignOut} from './party-signout.mjs?v=20261120-audio1';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261120-audio2';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261120-audio2';
+import {rewardDelta} from './run-results.mjs?v=20261120-audio2';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261120-audio2';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261120-audio2';
+import {createPartySignOut} from './party-signout.mjs?v=20261120-audio2';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261120-audio1';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261120-audio1';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261120-audio2';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261120-audio2';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261120-audio1';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261120-audio1';
-import { createPlayer } from './match.mjs?v=20261120-audio1';
-import { bunkerStart } from './solo-deployment.mjs?v=20261120-audio1';
+import { startGame } from './game.js?v=20261120-audio2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261120-audio2';
+import { createPlayer } from './match.mjs?v=20261120-audio2';
+import { bunkerStart } from './solo-deployment.mjs?v=20261120-audio2';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261120-audio1';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261120-audio1';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261120-audio2';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261120-audio2';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -222,6 +223,9 @@ settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
  sound:{
   setVolume:value=>{const v=gameControl?.setVolume?.(value)??value;generalRadio?.setPrefs?.({volume:v});return v;},
+  setSfxVolume:value=>gameControl?.setSfxVolume?.(value)??value,
+  setMusicVolume:value=>gameControl?.setMusicVolume?.(value)??value,
+  setMusicEnabled:value=>gameControl?.setMusicEnabled?.(value)??!!value,
   setEnabled:value=>{
    settingsSoundEnabled=!!value;
    const enabled=gameControl?.setSoundEnabled?.(settingsSoundEnabled)??settingsSoundEnabled;
@@ -658,7 +662,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,generalRadio,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onTutorial:openTutorialDossierDialog,onViewChange:view=>{syncContextBackButtons();if(view==='workspace'){menuTour?.dismiss?.();generalRadio?.stop?.();}},openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,generalRadio,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onTutorial:openTutorialDossierDialog,onViewChange:view=>{syncContextBackButtons();const screen=$('gameWorkspace')?.dataset?.screen;const audioView=view==='workspace'?(screen==='lobby'?'menu':(screen==='online'?'online':'battle')):'menu';gameControl?.setView?.(audioView);if(view==='workspace'){menuTour?.dismiss?.();generalRadio?.stop?.();}},openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -1434,6 +1438,7 @@ function syncGuideRecall(){
  const pill=document.getElementById('guideRecall');if(!pill)return;
  const show=!!firstRunGuide?.dismissed?.()||!!menuTour?.dismissed?.();
  pill.hidden=!show;
+ mountOverlayPopover(document,pill,{visible:show});
  try{show?pill.showPopover?.():pill.hidePopover?.();}catch{/* fixed pill stands */}
 }
 const tutorialSync=createTutorialSync({
@@ -1516,8 +1521,9 @@ function openTutorialDossierDialog(){
 }
 function guide(){
  if(!firstRunGuide){
-  firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector),onVisibilityChange:()=>syncGuideRecall(),onStepChange:step=>{if(step?.voiceClip)generalRadio?.play?.(step.voiceClip);}});
+  firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector),onVisibilityChange:visible=>{syncGuideRecall();if(!visible)generalRadio?.silence?.();},onStepChange:step=>{if(step?.voiceClip)generalRadio?.play?.(step.voiceClip);}});
   const next=document.getElementById('guideNext');if(next)next.onclick=()=>{firstRunGuide?.next?.();};
+  const minimize=document.getElementById('guideMinimize');if(minimize)minimize.onclick=()=>{firstRunGuide?.dismiss?.();};
   const close=document.getElementById('guideClose');
   if(close)close.onclick=()=>{
    const midLesson=dialogOpen('armoryDialog')||dialogOpen('skillDialog');
@@ -1579,11 +1585,15 @@ function offerFirstRunEnding(){
 function openFieldSchool(){
  const fieldSchool=document.getElementById('fieldSchool');
  if(!fieldSchool)return;
- fieldSchool.hidden=false;
  for(const entry of FIELD_SCHOOL_ENTRIES){
   const button=document.getElementById(`fieldSchool-${entry.id}`);
   if(button)button.onclick=()=>document.getElementById(entry.action)?.click?.();
  }
+ if(window?.matchMedia?.('(max-width: 859px)')?.matches){
+  fieldSchool.hidden=true;
+  return;
+ }
+ fieldSchool.hidden=false;
  fieldSchool.scrollIntoView?.({block:'nearest',behavior:'smooth'});
  document.getElementById('fieldSchool-armory')?.focus?.();
 }

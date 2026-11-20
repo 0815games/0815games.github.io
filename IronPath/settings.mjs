@@ -28,7 +28,10 @@ export const MAP_VIEWS = Object.freeze(['fit', 'large']);
 
 const DEFAULTS = Object.freeze({
   volume: 0.7,
+  sfxVolume: 0.85,
+  musicVolume: 0.65,
   soundEnabled: true,
+  musicEnabled: true,
   voiceOver: true,
   graphics: 'full',
   screenShake: true,
@@ -51,7 +54,10 @@ export function readSettings(storage) {
       // Out of range means the blob was not written by this module: a volume of 9 is
       // not "maximum", it is corrupt, and guessing hides the bug. Ignore it.
       if (Number.isFinite(parsed?.volume) && parsed.volume >= 0 && parsed.volume <= 1) value.volume = parsed.volume;
+      if (Number.isFinite(parsed?.sfxVolume) && parsed.sfxVolume >= 0 && parsed.sfxVolume <= 1) value.sfxVolume = parsed.sfxVolume;
+      if (Number.isFinite(parsed?.musicVolume) && parsed.musicVolume >= 0 && parsed.musicVolume <= 1) value.musicVolume = parsed.musicVolume;
       if (typeof parsed?.soundEnabled === 'boolean') value.soundEnabled = parsed.soundEnabled;
+      if (typeof parsed?.musicEnabled === 'boolean') value.musicEnabled = parsed.musicEnabled;
       if (typeof parsed?.voiceOver === 'boolean') value.voiceOver = parsed.voiceOver;
       if (GRAPHICS.includes(parsed?.graphics)) value.graphics = parsed.graphics;
       if (typeof parsed?.screenShake === 'boolean') value.screenShake = parsed.screenShake;
@@ -67,7 +73,10 @@ export function readSettings(storage) {
 export function writeSettings(storage, next) {
   const value = {
     volume: Number.isFinite(next?.volume) ? Math.max(0, Math.min(1, next.volume)) : DEFAULTS.volume,
+    sfxVolume: Number.isFinite(next?.sfxVolume) ? Math.max(0, Math.min(1, next.sfxVolume)) : DEFAULTS.sfxVolume,
+    musicVolume: Number.isFinite(next?.musicVolume) ? Math.max(0, Math.min(1, next.musicVolume)) : DEFAULTS.musicVolume,
     soundEnabled: typeof next?.soundEnabled === 'boolean' ? next.soundEnabled : DEFAULTS.soundEnabled,
+    musicEnabled: typeof next?.musicEnabled === 'boolean' ? next.musicEnabled : DEFAULTS.musicEnabled,
     voiceOver: typeof next?.voiceOver === 'boolean' ? next.voiceOver : DEFAULTS.voiceOver,
     graphics: GRAPHICS.includes(next?.graphics) ? next.graphics : DEFAULTS.graphics,
     screenShake: typeof next?.screenShake === 'boolean' ? next.screenShake : DEFAULTS.screenShake,
@@ -102,7 +111,12 @@ export function createSettings({
 
   const volumeInput = $('soundVolume');
   const volumeStatus = $('soundVolumeStatus');
+  const sfxVolumeInput = $('sfxVolume');
+  const sfxVolumeStatus = $('sfxVolumeStatus');
+  const musicVolumeInput = $('musicVolume');
+  const musicVolumeStatus = $('musicVolumeStatus');
   const soundEnabledToggle = $('soundEnabledToggle');
+  const musicEnabledToggle = $('musicEnabledToggle');
   const voiceOverToggle = $('voiceOverToggle');
   const graphicsSelect = $('graphicsQuality');
   const screenShakeToggle = $('screenShakeToggle');
@@ -140,19 +154,28 @@ export function createSettings({
     node.textContent = translate(on ? 'ON' : 'OFF');
   }
 
-  function paint() {
-    const pct = Math.round(current.volume * 100);
-    const audioActive = current.soundEnabled && pct > 0;
-    const reduced = current.graphics === 'reduced';
-    if (volumeInput) {
-      volumeInput.value = String(pct);
-      volumeInput.setAttribute?.('aria-valuetext', `${pct} %`);
-      volumeInput.style?.setProperty?.('--vol', `${pct}%`);
+  function paintSlider(input, status, ratio) {
+    const pct = Math.round(ratio * 100);
+    if (input) {
+      input.value = String(pct);
+      input.setAttribute?.('aria-valuetext', `${pct} %`);
+      input.style?.setProperty?.('--vol', `${pct}%`);
     }
-    if (volumeStatus) volumeStatus.textContent = `${pct} %`;
+    if (status) status.textContent = `${pct} %`;
+    return pct;
+  }
+
+  function paint() {
+    const pct = paintSlider(volumeInput, volumeStatus, current.volume);
+    paintSlider(sfxVolumeInput, sfxVolumeStatus, current.sfxVolume);
+    const musicPct = paintSlider(musicVolumeInput, musicVolumeStatus, current.musicVolume);
+    const audioActive = current.soundEnabled && pct > 0;
+    const musicActive = audioActive && current.musicEnabled && musicPct > 0;
+    const reduced = current.graphics === 'reduced';
     if (graphicsSelect) graphicsSelect.value = current.graphics;
     if (mapZoomSelect) mapZoomSelect.value = current.mapZoom;
     paintSwitch(soundEnabledToggle, audioActive);
+    paintSwitch(musicEnabledToggle, musicActive, { disabled: !audioActive });
     paintSwitch(voiceOverToggle, current.voiceOver);
     paintSwitch(screenShakeToggle, !reduced && current.screenShake, { disabled: reduced });
     paintSwitch(weatherEffectsToggle, !reduced && current.weatherEffects, { disabled: reduced });
@@ -168,7 +191,13 @@ export function createSettings({
 
   function applyAudio() {
     const level = Math.round(current.volume * 100);
+    const musicLevel = Math.round(current.musicVolume * 100);
     if (sound && typeof sound.setVolume === 'function') sound.setVolume(current.volume);
+    if (sound && typeof sound.setSfxVolume === 'function') sound.setSfxVolume(current.sfxVolume);
+    if (sound && typeof sound.setMusicVolume === 'function') sound.setMusicVolume(current.musicVolume);
+    if (sound && typeof sound.setMusicEnabled === 'function') {
+      sound.setMusicEnabled(!!current.musicEnabled && musicLevel > 0);
+    }
     if (sound && typeof sound.setEnabled === 'function') {
       void sound.setEnabled(!!current.soundEnabled && level > 0);
     }
@@ -192,6 +221,20 @@ export function createSettings({
     applyAudio();
   });
 
+  sfxVolumeInput?.addEventListener('input', () => {
+    current.sfxVolume = Math.max(0, Math.min(1, Number(sfxVolumeInput.value) / 100));
+    save();
+    applyAudio();
+  });
+
+  musicVolumeInput?.addEventListener('input', () => {
+    const next = Math.max(0, Math.min(1, Number(musicVolumeInput.value) / 100));
+    current.musicVolume = next;
+    current.musicEnabled = Math.round(next * 100) > 0;
+    save();
+    applyAudio();
+  });
+
   soundEnabledToggle?.addEventListener('click', () => {
     const currentlyActive = current.soundEnabled && Math.round(current.volume * 100) > 0;
     if (currentlyActive) {
@@ -199,6 +242,18 @@ export function createSettings({
     } else {
       current.soundEnabled = true;
       if (Math.round(current.volume * 100) <= 0) current.volume = 0.5;
+    }
+    save();
+    applyAudio();
+  });
+
+  musicEnabledToggle?.addEventListener('click', () => {
+    const currentlyActive = current.musicEnabled && Math.round(current.musicVolume * 100) > 0;
+    if (currentlyActive) {
+      current.musicEnabled = false;
+    } else {
+      current.musicEnabled = true;
+      if (Math.round(current.musicVolume * 100) <= 0) current.musicVolume = 0.5;
     }
     save();
     applyAudio();
@@ -301,7 +356,10 @@ export function createSettings({
     setTab,
     get tab() { return activeTab; },
     get volume() { return current.volume; },
+    get sfxVolume() { return current.sfxVolume; },
+    get musicVolume() { return current.musicVolume; },
     get soundEnabled() { return current.soundEnabled && Math.round(current.volume * 100) > 0; },
+    get musicEnabled() { return current.musicEnabled && Math.round(current.musicVolume * 100) > 0; },
     get voiceOver() { return current.voiceOver; },
     get graphics() { return current.graphics; },
     get mapZoom() { return current.mapZoom; },

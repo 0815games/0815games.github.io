@@ -9,9 +9,9 @@
 //     a blocking modal dialog prompts the affected legacy player to choose a
 //     unique new soldier name via `createCharacterRename`, preserving all XP,
 //     equipment, skills, and campaign progress.
-import {validateCharacterName,characterNameKey,sameCharacterName} from './character-name.mjs?v=20261120-audio1';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261120-audio1';
-import {createCharacterRename} from './character-rename.mjs?v=20261120-audio1';
+import {validateCharacterName,characterNameKey,sameCharacterName} from './character-name.mjs?v=20261120-audio2';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261120-audio2';
+import {createCharacterRename} from './character-rename.mjs?v=20261120-audio2';
 
 export function createCharacterNameConflictHandler({
   document,

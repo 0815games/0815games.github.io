@@ -1,8 +1,8 @@
-import {nodeMatches} from './skill-planner.mjs?v=20261120-audio1';
+import {nodeMatches} from './skill-planner.mjs?v=20261120-audio2';
 // Presentation only: all progression and transactions remain in the existing models.
-import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from './skills.mjs?v=20261120-audio1';
-import {CAPSTONES} from './skill-combos.mjs?v=20261120-audio1';
-import {TOWER_CLASS_PATHS} from './tower-class-paths.mjs?v=20261120-audio1';
+import {SKILL_PATHS,SKILL_PATH_MAP,pointsLeft,classNodes,webReady,webRequirement} from './skills.mjs?v=20261120-audio2';
+import {CAPSTONES} from './skill-combos.mjs?v=20261120-audio2';
+import {TOWER_CLASS_PATHS} from './tower-class-paths.mjs?v=20261120-audio2';
 const NS='http://www.w3.org/2000/svg';
 export const CLASS_COLORS={
   assault:'#d89970',
@@ -40,7 +40,7 @@ function classArtElement(document,classId,cls='class-art-img'){
   const src=CLASS_ARTWORKS[classId];
   if(!src)return null;
   const img=document.createElement('img');
-  img.src=`${src}?v=20261120-audio1`;
+  img.src=`${src}?v=20261120-audio2`;
   img.alt='';
   img.className=cls;
   img.setAttribute('aria-hidden','true');

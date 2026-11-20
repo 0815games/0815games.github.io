@@ -1,7 +1,8 @@
 // The guide that walks the player through the real post-match progression
 // dialogs (Armory Equip -> 6-Class Skills -> Workshop) before the full HQ
 // Menu Tour begins.
-import {translateText as tr} from './language.mjs?v=20261120-audio1';
+import {translateText as tr} from './language.mjs?v=20261120-audio2';
+import {mountOverlayPopover} from './popover-host.mjs?v=20261120-audio2';
 
 export const STEPS = Object.freeze([
   Object.freeze({
@@ -82,9 +83,14 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     $('guideTitle').textContent = tr(current.title);
     $('guideText').textContent = tr(current.text);
     $('guideCaption').textContent = tr(current.caption);
+    const minLabel = $('guideMinimize')?.querySelector?.('[data-i18n-text]');
+    if (minLabel) minLabel.textContent = tr('Minimize');
     $('guideNext').hidden = current.advance !== 'button';
     card.hidden = false;
+    mountOverlayPopover(document, card, { visible: true });
     try { card.showPopover?.(); } catch {}
+    const body = card.querySelector?.('.guide-body');
+    if (body) body.scrollTop = 0;
     card.dataset.step = current.id;
     ringTarget(current);
     if (notify) { try { onStepChange(current, index); } catch {} }
@@ -111,6 +117,7 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
   function hide() {
     try { card.hidePopover?.(); } catch {}
     if (card) card.hidden = true;
+    mountOverlayPopover(document, card, { visible: false });
     const layer = document.getElementById('coachHighlight');
     if (layer) layer.hidden = true;
     onVisibilityChange(false);
@@ -128,6 +135,7 @@ export function createGuide({ document, storage, resolve = () => null, onVisibil
     steps: STEPS,
     raise() {
       if (!open()) return false;
+      mountOverlayPopover(document, card, { visible: true });
       try { if (card.matches?.(':popover-open')) card.hidePopover?.(); } catch {}
       try { card.showPopover?.(); } catch {}
       return true;

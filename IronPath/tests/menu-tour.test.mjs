@@ -51,10 +51,19 @@ test('menuTour supports step navigation, pause/reopen, safe inspect dialogs, and
   };
   let completedUid = null;
   const steps = [];
+  const radioCalls = [];
   const tour = createMenuTour({
     document: doc,
     resolve,
-    radio: { snapshot: () => ({ voiceOver: true }), play() {}, stop() {}, toggleMute() {}, replay() {}, refreshLanguage() {} },
+    radio: {
+      snapshot: () => ({ voiceOver: true }),
+      play() {},
+      stop() {},
+      silence() { radioCalls.push('silence'); },
+      toggleMute() {},
+      replay() {},
+      refreshLanguage() {},
+    },
     onStepChange: (st, idx) => steps.push([st.id, idx]),
     onComplete: uid => { completedUid = uid; },
   });
@@ -63,6 +72,7 @@ test('menuTour supports step navigation, pause/reopen, safe inspect dialogs, and
   assert.equal(tour.isOpen(), true);
   assert.equal(tour.step().id, 'soldier');
   assert.equal(doc.nodes.get('menuTourBack').disabled, true);
+  assert.equal(doc.nodes.get('menuTourFinish').hidden, false, 'End tour is available on steps 1–7');
   assert.equal(doc.nodes.get('menuTourRadioReplay').hidden, false);
 
   // Simulate user scrolling within station 1 before stepping to station 2
@@ -78,15 +88,16 @@ test('menuTour supports step navigation, pause/reopen, safe inspect dialogs, and
   assert.deepEqual(openedDialogs, ['open:#soldierDialog', 'close:#soldierDialog']);
   assert.equal(tour.step().id, 'armory');
 
-  // Minimize & reopen preserves exact index and resets scroll
+  // Minimize & reopen preserves exact index, resets scroll, and silences active radio cleanly
   doc.bodyEl.scrollTop = 120;
   assert.equal(tour.dismiss(), true);
+  assert.deepEqual(radioCalls, ['silence']);
   assert.equal(tour.dismissed(), true);
   assert.equal(tour.reopen(), true);
   assert.equal(doc.bodyEl.scrollTop, 0);
   assert.equal(tour.step().id, 'armory');
 
-  // Walk to the last station and complete cleanly
+  // Walk to the last station and verify Finish takes over cleanly
   while (tour.next()) {}
   assert.equal(completedUid, 'rookie-1');
   assert.equal(tour.isOpen(), false);
@@ -96,6 +107,7 @@ test('menuTour supports step navigation, pause/reopen, safe inspect dialogs, and
   const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const tourHtml = html.slice(html.indexOf('id="menuTour"'), html.indexOf('</aside>', html.indexOf('id="menuTour"')));
   assert.match(tourHtml, /class="menu-tour-head"[\s\S]*class="menu-tour-body"[\s\S]*class="menu-tour-actions"/);
+  assert.match(tourHtml, /class="tour-min-label"[^>]*data-i18n-text="Minimize"/);
   const menuCss = readFileSync(new URL('../menu-redesign.css', import.meta.url), 'utf8');
   assert.match(menuCss, /#menuTour\.menu-tour\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*overflow:\s*hidden;/);
   assert.match(menuCss, /#menuTour\s+\.menu-tour-body\s*\{[^}]*flex:\s*1\s+1\s+auto;[^}]*min-height:\s*0;[^}]*overflow-y:\s*auto;/);

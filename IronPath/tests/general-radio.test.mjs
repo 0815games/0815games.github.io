@@ -73,6 +73,17 @@ test('General Vance audio works gracefully offline/muted, updates subtitle/DOM a
   assert.equal(radio.snapshot().speaking, false);
   assert.equal(doc.nodes.get('coachRadioMute').attrs['aria-pressed'], 'true');
 
+  // Calling silence() pauses and mutes audio immediately while keeping activeClip & subtitles intact
+  assert.equal(radio.toggleMute(), true);
+  assert.equal(radio.snapshot().audible, true);
+  assert.equal(radio.snapshot().speaking, true);
+  radio.silence();
+  assert.equal(createdAudio.at(-1).paused, true);
+  assert.equal(createdAudio.at(-1).muted, true);
+  assert.equal(createdAudio.at(-1).volume, 0);
+  assert.equal(radio.snapshot().clipId, 'mission-welcome');
+  assert.equal(radio.snapshot().speaking, false);
+
   // Calling stop() clears subtitle cleanly and hides all bound <p> subtitle nodes
   radio.stop();
   assert.equal(radio.snapshot().speaking, false);

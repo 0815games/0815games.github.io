@@ -186,6 +186,20 @@ class RichAudioContext {
     this.shapers.push(node);
     return node;
   }
+  createConvolver() {
+    return {
+      kind: 'convolver',
+      buffer: null,
+      targets: [],
+      incoming: [],
+      connect(dest) {
+        this.targets.push(dest);
+        dest?.incoming?.push?.(this);
+        return dest;
+      },
+      disconnect() {},
+    };
+  }
   createBuffer(channels, length, sampleRate) {
     const data = new Float32Array(length);
     const buf = {
@@ -478,4 +492,66 @@ test('Packages 2, 3 & 4 cues (construction, economy, class abilities, bosses, wa
   assert.equal(ctx.noiseStarts.length + ctx.oscStarts.length, afterFirst, 'duplicate uiCraft within 0.09s throttled');
   assert.equal(ctx.panners.reduce((sum, p) => sum + p.incoming.length, 0), pannersBefore, 'UI cues stay centered (bypass spatial panners)');
 });
+
+test('Package 5 & 6: adaptive music, weather bed routing, split SFX/Music gains, pause context & lifecycle resume/dispose', async () => {
+  const { createBattleSound } = await import('../battle-sound.mjs');
+  const { weatherForScene } = await import('../battle-music.mjs');
+
+  assert.equal(weatherForScene({ storyWeather: 'rain' }), 'rain');
+  assert.equal(weatherForScene({ storyWeather: 'snow' }), 'arctic');
+  assert.equal(weatherForScene({ theme: 'marsh' }), 'rain');
+  assert.equal(weatherForScene({ theme: 'arctic' }), 'arctic');
+  assert.equal(weatherForScene({ theme: 'forest' }), 'wind');
+
+  let ctx = null;
+  class MusicTestAudio extends RichAudioContext {
+    constructor() {
+      super();
+      this.state = 'running';
+      ctx = this;
+    }
+  }
+  const sound = createBattleSound(MusicTestAudio);
+
+  await sound.setEnabled(true);
+  // Lazily keeps bare SFX init at 2 buffers until music/weather actually activates.
+  assert.equal(ctx.buffers.length, 2, 'noise buffers remain lazy until music/weather plays');
+  assert.equal(sound.setSfxVolume(0.75), 0.75);
+  assert.equal(sound.setMusicVolume(0.45), 0.45);
+  assert.equal(sound.setMusicEnabled(true), true);
+
+  sound.setScene({
+    phase: 'prep',
+    storyMissionId: 'bridge',
+    weatherEffects: true,
+    paused: false,
+  });
+  assert.equal(sound.getMusicState().phase, 'prep');
+  assert.equal(sound.getMusicState().weather, 'rain');
+  assert.equal(sound.getMusicState().hasReverb, true, 'lazy stereo room convolver initialized');
+  assert.equal(sound.getMusicState().hasWeatherBed, true, 'lazy weather noise bed initialized');
+  assert.ok(ctx.buffers.length >= 3, 'lazy stereo room convolver impulse allocates when battle music starts while reusing pink buffer');
+  assert.equal(sound.getMusicState().scheduling, true, 'adaptive scheduler starts');
+
+  sound.setScene({ phase: 'boss', paused: false });
+  assert.equal(sound.getMusicState().phase, 'boss');
+  assert.equal(sound.getMusicState().weather, 'rain', 'weather persists across wave/boss scene updates');
+
+  sound.setScene({ paused: true });
+  assert.equal(sound.getMusicState().paused, true);
+  assert.equal(sound.getMusicState().weather, 'rain', 'partial paused scene keeps active mission weather');
+
+  sound.setMusicEnabled(false);
+  assert.equal(sound.getMusicState().enabled, false);
+  assert.equal(sound.getMusicState().scheduling, false);
+
+  assert.equal(sound.needsResume(), false);
+  ctx.state = 'suspended';
+  assert.equal(sound.needsResume(), true);
+  assert.equal(await sound.resume(), true);
+
+  sound.dispose();
+  assert.equal(sound.getMusicState().scheduling, false, 'dispose cancels music timers cleanly');
+});
+
 

@@ -129,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261120-audio1 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261120-audio2 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -731,6 +731,43 @@ const fs = require('node:fs');
         tour.hidePopover?.();
         tour.hidden=true;
       });
+      if(width<860){
+        const fieldSchoolHidden=await page.evaluate(()=>{
+          const fs=document.getElementById('fieldSchool'),was=fs.hidden;
+          fs.hidden=false;
+          const display=getComputedStyle(fs).display;
+          fs.hidden=was;
+          return display;
+        });
+        assert.equal(fieldSchoolHidden,'none',`${name}: mobile HQ keeps #fieldSchool hidden beneath the 4 bottom thumb actions`);
+        const guideDialogCheck=await page.evaluate(()=>{
+          const dlg=document.getElementById('skillDialog'),guide=document.getElementById('firstRunGuide'),recall=document.getElementById('guideRecall'),cancel=document.getElementById('skillCancel');
+          const gText=document.getElementById('guideText'),rSub=document.getElementById('guideRadioSubtitle'),minBtn=document.getElementById('guideMinimize'),muteBtn=document.getElementById('guideRadioMute');
+          document.getElementById('guideStep').textContent='2 / 3 · FÄHIGKEITEN';
+          document.getElementById('guideTitle').textContent='Klasse wählen und Punkt vergeben';
+          gText.textContent='Wähle zuerst eine Soldatenklasse, wähle dann unten eine Fähigkeit für Stufe 1 aus und speichere.';
+          rSub.textContent=gText.textContent;rSub.hidden=false;
+          dlg.showModal();
+          dlg.appendChild(guide);
+          guide.hidden=false;
+          guide.showPopover?.();
+          const gb=guide.getBoundingClientRect(),cb=cancel.getBoundingClientRect(),mb=minBtn.getBoundingClientRect(),mub=muteBtn.getBoundingClientRect(),subDisplay=getComputedStyle(rSub).display;
+          const overlapsCancel=!(gb.right<=cb.left||gb.left>=cb.right||gb.bottom<=cb.top||gb.top>=cb.bottom);
+          guide.hidePopover?.();guide.hidden=true;
+          dlg.appendChild(recall);recall.hidden=false;recall.showPopover?.();
+          const rb=recall.getBoundingClientRect();
+          const recallOverlapsCancel=!(rb.right<=cb.left||rb.left>=cb.right||rb.bottom<=cb.top||rb.top>=cb.bottom);
+          recall.hidePopover?.();recall.hidden=true;
+          document.body.appendChild(guide);document.body.appendChild(recall);
+          dlg.close();
+          return {overlapsCancel,guideH:gb.height,minW:mb.width,muteW:mub.width,subDisplay,recallOverlapsCancel};
+        });
+        assert.equal(guideDialogCheck.overlapsCancel,false,`${name}: #firstRunGuide never covers #skillCancel`);
+        assert.ok(guideDialogCheck.guideH<=230,`${name}: mobile #firstRunGuide stays compact (${Math.round(guideDialogCheck.guideH)}px)`);
+        assert.equal(guideDialogCheck.subDisplay,'none',`${name}: mobile #firstRunGuide hides duplicate subtitle`);
+        assert.ok(guideDialogCheck.minW>=44&&guideDialogCheck.muteW>=44,`${name}: #guideMinimize and #guideRadioMute keep full tap width`);
+        assert.equal(guideDialogCheck.recallOverlapsCancel,false,`${name}: minimized #guideRecall sits opposite #skillCancel without overlap`);
+      }
       if(width>=860){
         const opWidths=await page.evaluate(()=>{
           const ws=document.getElementById('gameWorkspace');

@@ -46,14 +46,14 @@ test('changed browser modules and their importers share one cache wave without s
  // This includes transitive importers, not only the files with gameplay edits:
  // cached JS is not re-evaluated just because its own dependency has changed.
  const names=new Set([
-  'ability-hud.mjs','account-entry.mjs','account.js','active-session.mjs','auth-form.mjs','battle-sound-recipes.mjs','battle-sound.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','cartoon-art.mjs','character-name-claim.mjs','character-name-conflict.mjs','character-name.mjs','character-rename.mjs','combat-fx.mjs','combat.mjs','command-center.mjs','confirmation.mjs',
+  'ability-hud.mjs','account-entry.mjs','account.js','active-session.mjs','auth-form.mjs','battle-music.mjs','battle-sound-recipes.mjs','battle-sound.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','cartoon-art.mjs','character-name-claim.mjs','character-name-conflict.mjs','character-name.mjs','character-rename.mjs','combat-fx.mjs','combat.mjs','command-center.mjs','confirmation.mjs',
   'coop-input.mjs','coop-invites.mjs','coop-rewards.mjs','development-ui.mjs','discharge-notice.mjs','endless-launcher.mjs','field-menu.mjs',
   'firebase-durable-client-session.mjs','firebase-durable-host-session.mjs','firebase-four-digit-panel.mjs','firebase-four-lobby.mjs','firebase-four-panel.mjs',
   'firebase-party-game.mjs','firebase-party-lobby.mjs','firebase-party-session.mjs','firebase-recoverable-game.mjs','firebase-recovery-store.mjs',
   'first-run-coach.mjs','first-run-ending.mjs','first-run-guide.mjs','four-game-view.mjs','four-lobby.mjs','four-modes.mjs',
   'friend-portrait.mjs','friend-stats.mjs','friends-ui.mjs','friends.mjs','game-localization.mjs','game.js','general-radio.mjs','intro.mjs','language.mjs','leaderboards-ui.mjs','leaderboards.mjs',
   'localization-account-de.mjs','localization-advanced-skills-de.mjs','localization-battle-de.mjs','localization-campaign-de.mjs','localization-de.mjs','localization-firstrun-de.mjs','localization-game-errors-de.mjs','localization-more-static-de.mjs','localization-results-de.mjs','localization-settings-de.mjs','localization-skills-de.mjs','localization-static-de.mjs','localization-towers-de.mjs',
-  'login-scene.mjs','maps.mjs','match.mjs','menu-tour.mjs','multiplayer-prompts.mjs','multiplayer-speed.mjs','party-end-coordinator.mjs','party-signout.mjs','party-host.mjs','password-change.mjs','patch-notes.mjs','protocol.mjs','rank-insignia.mjs','recruit-screen.mjs','settings.mjs','simulation.mjs',
+  'login-scene.mjs','maps.mjs','match.mjs','menu-tour.mjs','multiplayer-prompts.mjs','multiplayer-speed.mjs','party-end-coordinator.mjs','party-signout.mjs','party-host.mjs','password-change.mjs','patch-notes.mjs','popover-host.mjs','protocol.mjs','rank-insignia.mjs','recruit-screen.mjs','settings.mjs','simulation.mjs',
   'skill-combos.mjs','skill-planner.mjs','skill-summary-localization.mjs','skills-migration.mjs','skills.mjs',
   'social-notifications.mjs','soldier-profile.mjs','soldier-screen.mjs','solo-deployment.mjs','story-map-art.mjs','tower-class-paths.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','training-run.mjs','tutorial-dossier.mjs','tutorial-sync.mjs','tutorial.mjs',
   'version-check.mjs','version-ui.mjs','versus.mjs','wave-consensus.mjs','workshop-multiplayer-game.mjs','workshop-solo.mjs'

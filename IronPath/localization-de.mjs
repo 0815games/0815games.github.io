@@ -630,5 +630,8 @@ export const germanText=Object.freeze({
   "FINISH TOUR ✓": "RUNDGANG ABSCHLIESSEN ✓",
   "OPEN & INSPECT": "ÖFFNEN & ANSEHEN",
   "End tour": "Rundgang beenden",
+  "Minimize": "Minimieren",
+  "Minimize guide": "Hinweis minimieren",
+  "Minimize tour": "Rundgang minimieren",
   "Training contract: seven waves, boss in the last one. Enemies are weakened and your bunker is reinforced.": "Ausbildungsauftrag: sieben Wellen, Boss in der letzten. Gegner sind hier geschwächt und dein Bunker ist verstärkt."
 });

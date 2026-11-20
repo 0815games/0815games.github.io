@@ -116,6 +116,8 @@ test('the Field School points at existing controls, not a second way in',()=>{
   assert.ok(entry.title&&entry.text,`${entry.id} needs a title and one line of help`);
  }
  assert.match(html,/id="fieldSchool"[^>]*hidden/,'the Field School is hidden until the ending runs');
+ const css=readFileSync(new URL('../menu-redesign.css',import.meta.url),'utf8');
+ assert.match(css,/@media\s*\(max-width:\s*859px\)[\s\S]*#commandCenter\s+#fieldSchool\s*\{\s*display:\s*none;\s*\}/,'mobile HQ hides #fieldSchool because the 4 bottom thumb actions already expose the same destinations');
 });
 
 test('the ending uses the real dialogs, behind the sandbox write guard',()=>{
