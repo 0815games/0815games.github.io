@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block6';
+import {getLanguage} from './language.mjs?v=20261119-block6b';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block6b',build:'20261119-block6b',pr:329,
+    title:{en:'Block 6b · Tutorial Dossier, HQ Tour, Field Guide & General Vance Radio Polish',de:'Block 6b · Einsatz-Dossier, HQ-Tour, Nachgefechtshilfe & Funkleisten-Feinschliff'},
+    shipped:[
+      {en:'Rebuilt `#tutorialDossier` into a fixed 3-zone flex-column sheet (`100vw × 100dvh` full-screen on phones/tablets `< 860px`) with pinned header banner & footer actions, `tabindex="-1"` + `scrollTop = 0` reset on open, full-width responsive map artwork, side-by-side landscape actions, and unified HQ dark-pine/gold button styling.',de:'`#tutorialDossier` auf einen festen 3-Zonen-Aufbau (`100vw × 100dvh` Vollbild unter `860 px`) umgestellt: angepinnter General-Vance-Kopf und Fußzeile mit Aktionsknöpfen, `tabindex="-1"` samt `scrollTop = 0`-Zurücksetzung beim Öffnen, bildfüllende Einsatzkarte auf Mobilgeräten, nebeneinanderliegende Querformat-Knöpfe und abgestimmte Tannengrün-/Gold-Schaltflächen.'},
+      {en:'Fixed `.general-radio-bar` CSS specificity (`Replay radio` / `Mute`), removed tight `36px`/`46px` transcript clipping in `#tutorialDossier`, `#menuTour`, and `#firstRunGuide`, added clean 2-column mobile radio buttons, and prevented `.coach-close` / `.coach-recall` / `#guideClose` from inheriting gray combat slab styling.',de:'CSS-Spezifität der Funkleiste (`.general-radio-bar`, `Funk wiederholen` / `Stumm`) korrigiert, das Abschneiden längerer Funksprüche in `#tutorialDossier`, `#menuTour` und `#firstRunGuide` beseitigt, mobile Funkknöpfe zweispaltig ausgerichtet sowie `.coach-close`, `.coach-recall` und `#guideClose` vom grauen Gefechts-Button-Stil befreit.'},
+      {en:'Pinned headers and footers with dedicated scrollable middle bodies in `#menuTour` (`.menu-tour-body`) and `#firstRunGuide` (`.guide-body`) plus `scrollTop = 0` resets on station switches.',de:'Kopf- und Fußzeilen in `#menuTour` (`.menu-tour-body`) und `#firstRunGuide` (`.guide-body`) mit eigenem mittlerem Scrollbereich fixiert sowie die Scroll-Position bei Stationswechseln sauber auf `0` zurückgesetzt.'},
+    ],
+    open:[
+      {en:'Real iPhone, tablet, and desktop verification of `#tutorialDossier`, General Vance transcripts, `#menuTour`, and `#firstRunGuide` on `20261119-block6b`.',de:'Echte iPhone-, Tablet- und Desktop-Abnahme von `#tutorialDossier`, General-Vance-Funkuntertiteln, `#menuTour` und `#firstRunGuide` auf `20261119-block6b`.'},
+    ],
+  },
   {
     id:'block6',build:'20261119-block6',pr:328,
     title:{en:'Block 6 · Full Voiced General Vance Briefing, 7-Wave Field Drill & Command HQ Tour',de:'Block 6 · Vertontes General-Vance-Briefing, 7-Wellen-Ausbildung & HQ-Menüführung'},

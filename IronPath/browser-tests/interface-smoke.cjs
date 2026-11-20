@@ -129,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block6 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261119-block6b loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -579,11 +579,18 @@ const fs = require('node:fs');
       await page.evaluate(()=>document.querySelector('#fourPartyPanel').hidden=false);
       for (const [id, control] of [['settingsDialog', '#settingsRestoreDefaults'], ['afkRestDialog', '#afkRestAccept'], ['endlessLaunch', '#endlessDeploy'], ['skillDialog', '#skillSave'], ['armoryDialog', '#armoryClose'], ['runResults', '#resultsDone'], ['gameConfirm', '#gameConfirmAccept'], ['tutorialDossier', '#dossierAccept'], ['tutorialDialog', '#tutorialNext'], ['friendsDialog', '#friendsClose'], ['friendStatsDialog', '#friendStatsClose'], ['leaderboardDialog', '#leaderboardClose']]) {
         if(id==='tutorialDossier')await page.evaluate(()=>{
-          document.getElementById('dossierLead').textContent='Recruit, step up to the tactical table. Seven guided training waves and an HQ inspection await.';
-          document.getElementById('dossierRewardNote').textContent='One-time completion rewards up to 450 XP.';
-          document.getElementById('dossierRadioStatus').textContent='RADIO READY';
-          document.getElementById('dossierRadioSubtitle').textContent='General Vance standing by on channel one.';
+          document.getElementById('dossierClose').hidden=true;
+          document.getElementById('dossierKicker').textContent='KOMMANDOZENTRALE · EINSATZAUFTRAG';
+          document.getElementById('dossierTitle').textContent="Einsatz-Dossier von General Vance";
+          document.getElementById('dossierLead').textContent='Rekrut, tritt an den Taktiktisch. Dich erwarten sieben geführte Ausbildungswellen samt anschließender Kommando-Tour durch die neue Zentrale.';
+          document.getElementById('dossierRewardNote').textContent='Der erfolgreiche Erstabschluss bringt bis zu 450 EP (sofort einsetzbares Rüstungs- & Skillbudget).';
+          document.getElementById('dossierRadioStatus').textContent='TON AUS';
+          document.getElementById('dossierRadioReplay').textContent='Funk wiederholen';
+          document.getElementById('dossierRadioMute').textContent='Stumm';
+          document.getElementById('dossierRadioSubtitle').textContent='General Vance: Rekrut, das ist mein Gefechtsstand. Ich leite dich durch sieben kurze Gefechtswellen bis zum Konvoi-Boss und danach durch die Kommandozentrale. Bereit für den Einsatz?';
           document.getElementById('dossierRadioSubtitle').hidden=false;
+          document.getElementById('dossierAccept').textContent='AUFTRAG ANNEHMEN';
+          document.getElementById('dossierDecline').textContent='VORERST ABLEHNEN';
         });
         await page.evaluate(id => document.getElementById(id).showModal(), id);
         // The armory now opens on its item list; its workshop tab is checked separately.
@@ -592,10 +599,40 @@ const fs = require('node:fs');
         if(id==='tutorialDossier'){
           const dossierImgs=await page.evaluate(()=>{
             const d=document.getElementById('tutorialDossier');
+            const banner=d.querySelector('.dossier-banner').getBoundingClientRect();
+            const body=d.querySelector('.dossier-body');
+            const bodyRect=body.getBoundingClientRect();
+            const actions=d.querySelector('.dossier-actions').getBoundingClientRect();
+            const sub=document.getElementById('dossierRadioSubtitle');
+            const replay=document.getElementById('dossierRadioReplay').getBoundingClientRect();
+            const mute=document.getElementById('dossierRadioMute').getBoundingClientRect();
             const p=document.getElementById('dossierPortrait'),m=document.getElementById('dossierMapArt');
-            return {overflow:d.scrollWidth>d.clientWidth+1,portrait:p.complete&&p.naturalWidth>0,map:m.complete&&m.naturalWidth>0};
+            const mapRect=m.getBoundingClientRect();
+            return {
+              overflow:d.scrollWidth>d.clientWidth+1,
+              dialogScrollTop:d.scrollTop,
+              bodyScrollTop:body.scrollTop,
+              bannerTop:banner.top,
+              bannerBottom:banner.bottom,
+              actionsBottom:actions.bottom,
+              vh:innerHeight,
+              subScrollH:sub.scrollHeight,
+              subClientH:sub.clientHeight,
+              controlsOverlap:!(replay.right<=mute.left+1||mute.right<=replay.left+1||replay.bottom<=mute.top+1||mute.bottom<=replay.top+1),
+              mapW:mapRect.width,
+              bodyW:bodyRect.width,
+              portrait:p.complete&&p.naturalWidth>0,
+              map:m.complete&&m.naturalWidth>0
+            };
           });
           assert.equal(dossierImgs.overflow,false,`${name}: #tutorialDossier fits without horizontal overflow`);
+          assert.equal(dossierImgs.dialogScrollTop,0,`${name}: #tutorialDossier opens scrolled to top`);
+          assert.equal(dossierImgs.bodyScrollTop,0,`${name}: #tutorialDossier .dossier-body opens scrolled to top`);
+          assert.ok(dossierImgs.bannerTop>=-1&&dossierImgs.bannerBottom>dossierImgs.bannerTop,`${name}: #tutorialDossier banner stays pinned at top`);
+          assert.ok(dossierImgs.actionsBottom<=dossierImgs.vh+1,`${name}: #tutorialDossier footer actions stay pinned inside viewport (${Math.round(dossierImgs.actionsBottom)} <= ${dossierImgs.vh})`);
+          assert.ok(dossierImgs.subScrollH<=dossierImgs.subClientH+2,`${name}: #dossierRadioSubtitle is fully visible without internal clipping (${dossierImgs.subScrollH} vs ${dossierImgs.subClientH})`);
+          assert.equal(dossierImgs.controlsOverlap,false,`${name}: #dossierRadioReplay and #dossierRadioMute do not collide`);
+          if(width<=600)assert.ok(dossierImgs.mapW>=dossierImgs.bodyW-48,`${name}: #dossierMapArt stretches full width on narrow phone (${Math.round(dossierImgs.mapW)} vs ${Math.round(dossierImgs.bodyW)})`);
           assert.equal(dossierImgs.portrait&&dossierImgs.map,true,`${name}: #tutorialDossier portrait and map artworks load cleanly`);
         }
         if(id==='afkRestDialog'){const img=await page.locator('#afkRestArt').evaluate(e=>e.complete&&e.naturalWidth>0);assert.equal(img,true,`${name}: #afkRestArt artwork loads cleanly`);}
@@ -661,7 +698,9 @@ const fs = require('node:fs');
         document.getElementById('menuTourText').textContent='Open your Dossier to review soldier XP, rank insignia, service record, and safe avatar styling.';
         document.getElementById('menuTourDetail').textContent='Account deletion & sign-out stay protected outside the tour.';
         document.getElementById('menuTourRadioStatus').textContent='AUDIO READY';
-        document.getElementById('menuTourRadioSubtitle').textContent='Welcome to Command HQ. Let us inspect every station.';
+        document.getElementById('menuTourRadioReplay').textContent='Funk wiederholen';
+        document.getElementById('menuTourRadioMute').textContent='Stumm';
+        document.getElementById('menuTourRadioSubtitle').textContent='General Vance: Willkommen in der Kommandozentrale. Lass uns jede Station sicher überprüfen, bevor du loslegst.';
         document.getElementById('menuTourRadioSubtitle').hidden=false;
         tour.hidden=false;
         tour.showPopover?.();
@@ -669,9 +708,22 @@ const fs = require('node:fs');
       await check('#menuTour'); await check('#menuTourNext');
       const tourMetrics=await page.evaluate(()=>{
         const tour=document.getElementById('menuTour'),art=document.getElementById('menuTourArt');
-        return {overflow:tour.scrollWidth>tour.clientWidth+1,art:art.complete&&art.naturalWidth>0};
+        const head=tour.querySelector('.menu-tour-head').getBoundingClientRect();
+        const actions=tour.querySelector('.menu-tour-actions').getBoundingClientRect();
+        const sub=document.getElementById('menuTourRadioSubtitle');
+        return {
+          overflow:tour.scrollWidth>tour.clientWidth+1,
+          headTop:head.top,
+          actionsBottom:actions.bottom,
+          tourBottom:tour.getBoundingClientRect().bottom,
+          subScrollH:sub.scrollHeight,
+          subClientH:sub.clientHeight,
+          art:art.complete&&art.naturalWidth>0
+        };
       });
       assert.equal(tourMetrics.overflow,false,`${name}: #menuTour fits without horizontal overflow`);
+      assert.ok(tourMetrics.headTop>=0&&tourMetrics.actionsBottom<=tourMetrics.tourBottom+2,`${name}: #menuTour pins header & footer actions`);
+      assert.ok(tourMetrics.subScrollH<=tourMetrics.subClientH+2,`${name}: #menuTourRadioSubtitle renders unclipped`);
       assert.equal(tourMetrics.art,true,`${name}: #menuTourArt artwork loads cleanly`);
       await page.screenshot({ path: `browser-artifacts/${name}-menu-tour.png` });
       await page.evaluate(()=>{
@@ -737,6 +789,70 @@ const fs = require('node:fs');
       assert.ok(lastTile.y+lastTile.height<=height+1,`${name}: the gate fits ${height}px without scrolling`);
       await page.screenshot({path:`browser-artifacts/${name}-language-gate.png`});
       console.log(`${name}: sign-in, command, lobby, dialogs and the language gate fit the viewport`);
+      await context.close();
+    }
+    // Dedicated mobile-landscape (844x390) check for #tutorialDossier + #menuTour pinned footers/headers
+    {
+      const context = await browser.newContext({ viewport: { width: 844, height: 390 }, reducedMotion: 'reduce' });
+      await context.addInitScript(() => { try { localStorage.setItem('ironpath:language', 'de'); } catch {} });
+      await context.route('**/*', route => {
+        const url = new URL(route.request().url());
+        if (url.hostname !== '127.0.0.1' || route.request().resourceType() === 'script') return route.abort();
+        return route.continue();
+      });
+      const page = await context.newPage();
+      await page.goto('http://127.0.0.1:8765/IronPath/', { waitUntil: 'load' });
+      await page.evaluate(() => {
+        document.querySelector('#introOverlay').hidden = true;
+        document.querySelector('#loading').hidden = true;
+        document.querySelector('#entry').hidden = true;
+        document.querySelector('#gameView').hidden = false;
+        document.getElementById('dossierClose').hidden = true;
+        document.getElementById('dossierTitle').textContent = "Einsatz-Dossier von General Vance";
+        document.getElementById('dossierLead').textContent = 'Rekrut, tritt an den Taktiktisch. Dich erwarten sieben geführte Ausbildungswellen.';
+        document.getElementById('dossierRewardNote').textContent = 'Der erfolgreiche Erstabschluss bringt bis zu 450 EP.';
+        document.getElementById('dossierRadioStatus').textContent = 'TON AUS';
+        document.getElementById('dossierRadioReplay').textContent = 'Funk wiederholen';
+        document.getElementById('dossierRadioMute').textContent = 'Stumm';
+        document.getElementById('dossierRadioSubtitle').textContent = 'General Vance: Rekrut, das ist mein Gefechtsstand. Bereit für den Einsatz?';
+        document.getElementById('dossierRadioSubtitle').hidden = false;
+        document.getElementById('dossierAccept').textContent = 'AUFTRAG ANNEHMEN';
+        document.getElementById('dossierDecline').textContent = 'VORERST ABLEHNEN';
+        document.getElementById('tutorialDossier').showModal();
+      });
+      const lsDossier = await page.evaluate(() => {
+        const d = document.getElementById('tutorialDossier');
+        const banner = d.querySelector('.dossier-banner').getBoundingClientRect();
+        const actions = d.querySelector('.dossier-actions').getBoundingClientRect();
+        const accept = document.getElementById('dossierAccept').getBoundingClientRect();
+        const decline = document.getElementById('dossierDecline').getBoundingClientRect();
+        return {
+          overflow: d.scrollWidth > d.clientWidth + 1,
+          bannerTop: banner.top,
+          actionsBottom: actions.bottom,
+          sideBySide: Math.abs(accept.top - decline.top) <= 4,
+          vh: innerHeight,
+        };
+      });
+      assert.equal(lsDossier.overflow, false, 'phone-landscape: #tutorialDossier has zero horizontal overflow');
+      assert.ok(lsDossier.bannerTop >= 0 && lsDossier.actionsBottom <= lsDossier.vh + 1, 'phone-landscape: banner and pinned footer stay inside 390px viewport');
+      assert.equal(lsDossier.sideBySide, true, 'phone-landscape: action buttons sit cleanly side by side');
+      await page.screenshot({ path: 'browser-artifacts/phone-landscape-tutorialDossier.png' });
+      await page.evaluate(() => {
+        document.getElementById('tutorialDossier').close();
+        const tour = document.getElementById('menuTour');
+        document.getElementById('menuTourStep').textContent = 'HQ-TOUR · 1 / 8';
+        document.getElementById('menuTourCaption').textContent = 'KOMMANDO-HQ';
+        document.getElementById('menuTourTitle').textContent = 'Soldaten-Akte & Profil';
+        document.getElementById('menuTourText').textContent = 'Prüfe Dienstgrad, Erfahrungspunkte und dein sicheres Porträt.';
+        document.getElementById('menuTourDetail').textContent = 'Löschen & Abmelden bleiben geschützt.';
+        document.getElementById('menuTourRadioStatus').textContent = 'TON AUS';
+        document.getElementById('menuTourRadioSubtitle').textContent = 'Willkommen in der Kommandozentrale.';
+        document.getElementById('menuTourRadioSubtitle').hidden = false;
+        tour.hidden = false;
+        tour.showPopover?.();
+      });
+      await page.screenshot({ path: 'browser-artifacts/phone-landscape-menu-tour.png' });
       await context.close();
     }
   } finally { await browser.close(); }

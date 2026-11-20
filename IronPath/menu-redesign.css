@@ -1770,14 +1770,16 @@ body:has(#authView:not([hidden])) main > header p {
 
 /* --- Block 6: General Vance Mission Dossier Dialog (#tutorialDossier) --- */
 dialog#tutorialDossier[open] {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0;
   box-sizing: border-box;
-  width: min(680px, calc(100vw - 24px));
-  max-height: calc(100dvh - 24px);
+  width: min(760px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  max-height: min(90dvh, 840px);
   padding: 0;
   margin: auto;
-  overflow: auto;
+  overflow: hidden;
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
   background: linear-gradient(180deg, #162820 0%, #101d17 100%);
@@ -1791,13 +1793,14 @@ dialog#tutorialDossier::backdrop {
 }
 
 #tutorialDossier .dossier-banner {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 16px;
+  padding: 12px 20px;
   border-bottom: 1px solid var(--hq-border);
-  background: rgba(15, 29, 23, 0.94);
+  background: rgba(15, 29, 23, 0.96);
 }
 
 #tutorialDossier .dossier-officer {
@@ -1805,6 +1808,7 @@ dialog#tutorialDossier::backdrop {
   align-items: center;
   gap: 12px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 #dossierPortrait {
@@ -1838,24 +1842,58 @@ dialog#tutorialDossier::backdrop {
   line-height: 1.2;
 }
 
+#tutorialDossier .dossier-banner #dossierClose {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  border: 1px solid var(--hq-border-strong);
+  border-radius: var(--hq-radius);
+  background: rgba(11, 20, 16, 0.88);
+  box-shadow: none;
+  color: var(--hq-text);
+  font-size: 18px;
+  line-height: 1;
+}
+
+#tutorialDossier .dossier-banner #dossierClose:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  background: rgba(34, 56, 45, 0.94);
+  color: var(--hq-gold);
+}
+
+#tutorialDossier .dossier-banner #dossierClose[hidden],
 #dossierClose[hidden] {
   display: none;
 }
 
 #tutorialDossier .dossier-body {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 20px;
 }
 
 #tutorialDossier .dossier-hero-grid {
   display: grid;
-  grid-template-columns: minmax(170px, 220px) 1fr;
-  gap: 14px;
+  grid-template-columns: minmax(210px, 250px) minmax(0, 1fr);
+  gap: 16px;
   align-items: start;
 }
 
 #tutorialDossier .dossier-art-wrap {
+  width: 100%;
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
   overflow: hidden;
@@ -1867,12 +1905,14 @@ dialog#tutorialDossier::backdrop {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 45%;
   display: block;
 }
 
 #tutorialDossier .dossier-brief {
-  display: grid;
-  gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   min-width: 0;
 }
 
@@ -1887,22 +1927,29 @@ dialog#tutorialDossier::backdrop {
   margin: 0;
   padding: 8px 10px;
   border-left: 3px solid var(--hq-gold);
-  border-radius: 2px;
+  border-radius: 3px;
   background: rgba(228, 202, 137, 0.11);
   color: #f3e2b6;
   font-size: 12px;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.42;
+}
+
+#tutorialDossier .dossier-radio .general-radio-sub {
+  font-size: 13px;
+  line-height: 1.5;
+  max-height: none;
+  overflow: visible;
 }
 
 #tutorialDossier .dossier-overview-cards {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
 #tutorialDossier .dossier-card {
-  padding: 10px 12px;
+  padding: 11px 12px;
   border: 1px solid var(--hq-border);
   border-radius: var(--hq-radius);
   background: rgba(14, 26, 21, 0.72);
@@ -1920,26 +1967,53 @@ dialog#tutorialDossier::backdrop {
 #tutorialDossier .dossier-card p {
   margin: 0;
   font-size: 12.5px;
-  line-height: 1.42;
+  line-height: 1.44;
   color: var(--hq-muted);
 }
 
 #tutorialDossier .dossier-actions {
+  flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
-  padding-top: 8px;
+  padding: 12px 20px;
   border-top: 1px solid var(--hq-border);
+  background: rgba(12, 22, 18, 0.96);
 }
 
 #tutorialDossier .dossier-actions button {
   width: auto;
   min-height: 44px;
   margin: 0;
-  padding: 0 16px;
+  padding: 0 18px;
+  border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  box-shadow: none;
+  color: var(--hq-text);
   font-weight: 700;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+#tutorialDossier .dossier-actions button:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  background: #22382d;
+  color: var(--hq-gold);
+}
+
+#tutorialDossier .dossier-actions button.primary {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#tutorialDossier .dossier-actions button.primary:hover:not(:disabled) {
+  border-color: #f3dfb0;
+  background: #f3dfb0;
+  color: #101914;
 }
 
 #tutorialDossier .dossier-actions button[hidden] {
@@ -1953,7 +2027,17 @@ dialog#tutorialDossier::backdrop {
   }
 
   #tutorialDossier .dossier-art-wrap {
-    max-height: 150px;
+    width: 100%;
+    height: clamp(108px, 21dvh, 148px);
+    max-height: 148px;
+    aspect-ratio: auto;
+  }
+
+  #tutorialDossier .dossier-radio .general-radio-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
   }
 
   #tutorialDossier .dossier-actions {
@@ -1962,6 +2046,8 @@ dialog#tutorialDossier::backdrop {
 
   #tutorialDossier .dossier-actions button {
     width: 100%;
+    padding: 8px 14px;
+    line-height: 1.2;
   }
 }
 
@@ -1972,6 +2058,37 @@ dialog#tutorialDossier::backdrop {
 
   #tutorialDossier .dossier-hero-grid {
     grid-template-columns: 1fr;
+  }
+
+  #tutorialDossier .dossier-overview-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #tutorialDossier .dossier-banner {
+    padding: 8px max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px));
+  }
+
+  #dossierPortrait {
+    width: 38px;
+    height: 38px;
+  }
+
+  #tutorialDossier .dossier-officer-copy h2 {
+    font-size: 16px;
+  }
+
+  #tutorialDossier .dossier-actions {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    padding: 8px max(14px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
+  }
+
+  #tutorialDossier .dossier-actions button {
+    flex: 1 1 0;
+    width: auto;
+    min-height: 42px;
+    padding: 0 10px;
+    font-size: 10.5px;
   }
 }
 
@@ -1987,7 +2104,7 @@ dialog#tutorialDossier::backdrop {
   margin: 0;
   box-sizing: border-box;
   width: min(460px, calc(100vw - 24px));
-  max-height: min(68dvh, 520px);
+  max-height: min(74dvh, 560px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -1997,7 +2114,7 @@ dialog#tutorialDossier::backdrop {
   background: linear-gradient(180deg, #172b22 0%, #101e18 100%);
   color: var(--hq-text);
   box-shadow: 0 18px 46px rgba(0, 0, 0, 0.72);
-  overflow: auto;
+  overflow: hidden;
 }
 
 #menuTour.menu-tour[hidden] {
@@ -2005,12 +2122,25 @@ dialog#tutorialDossier::backdrop {
 }
 
 #menuTour .menu-tour-head {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--hq-border);
+}
+
+#menuTour .menu-tour-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 2px;
 }
 
 #menuTour .menu-tour-step {
@@ -2031,7 +2161,7 @@ dialog#tutorialDossier::backdrop {
   color: var(--hq-muted);
 }
 
-#menuTour .menu-tour-close {
+#menuTour .menu-tour-head .menu-tour-close {
   width: auto;
   min-width: 40px;
   min-height: 40px;
@@ -2039,9 +2169,15 @@ dialog#tutorialDossier::backdrop {
   padding: 0 10px;
   border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
-  background: transparent;
+  background: rgba(11, 20, 16, 0.85);
+  box-shadow: none;
   color: var(--hq-text);
   font-size: 15px;
+}
+
+#menuTour .menu-tour-head .menu-tour-close:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
 }
 
 #menuTour .menu-tour-main {
@@ -2098,6 +2234,13 @@ dialog#tutorialDossier::backdrop {
   display: none;
 }
 
+#menuTour .menu-tour-radio .general-radio-sub {
+  font-size: 12.5px;
+  line-height: 1.48;
+  max-height: none;
+  overflow: visible;
+}
+
 #menuTour .menu-tour-inspect-row {
   display: flex;
   flex-wrap: wrap;
@@ -2106,12 +2249,21 @@ dialog#tutorialDossier::backdrop {
 
 #menuTour .menu-tour-inspect-row button {
   width: auto;
-  min-height: 38px;
+  min-height: 40px;
   margin: 0;
   padding: 0 12px;
+  border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  box-shadow: none;
+  color: var(--hq-text);
   font-size: 11.5px;
   font-weight: 700;
+}
+
+#menuTour .menu-tour-inspect-row button:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
 }
 
 #menuTour .menu-tour-inspect-row button[hidden] {
@@ -2119,13 +2271,14 @@ dialog#tutorialDossier::backdrop {
 }
 
 #menuTour .menu-tour-actions {
+  flex: 0 0 auto;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  margin-top: auto;
-  padding-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--hq-border);
 }
 
 #menuTour .menu-tour-actions button {
@@ -2134,8 +2287,37 @@ dialog#tutorialDossier::backdrop {
   min-width: 84px;
   margin: 0;
   padding: 0 14px;
+  border: 1px solid var(--hq-border-strong);
   border-radius: var(--hq-radius);
+  background: var(--hq-surface-elevated);
+  box-shadow: none;
+  color: var(--hq-text);
   font-weight: 700;
+  text-align: center;
+}
+
+#menuTour .menu-tour-actions button:hover:not(:disabled) {
+  border-color: var(--hq-gold);
+  color: var(--hq-gold);
+}
+
+#menuTour .menu-tour-actions button.primary {
+  border-color: var(--hq-gold);
+  background: var(--hq-gold);
+  color: #101914;
+  font-weight: 800;
+}
+
+#menuTour .menu-tour-actions button.primary:hover:not(:disabled) {
+  border-color: #f3dfb0;
+  background: #f3dfb0;
+  color: #101914;
+}
+
+#menuTour .menu-tour-inspect-row button:disabled,
+#menuTour .menu-tour-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 #menuTour .menu-tour-actions button[hidden] {
@@ -2144,11 +2326,11 @@ dialog#tutorialDossier::backdrop {
 
 @media (max-width: 600px) {
   #menuTour.menu-tour {
-    left: max(10px, env(safe-area-inset-left, 0px));
-    right: max(10px, env(safe-area-inset-right, 0px));
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
     width: auto;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    max-height: min(64dvh, 450px);
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+    max-height: min(72dvh, 500px);
     padding: 12px;
   }
 
@@ -2159,6 +2341,13 @@ dialog#tutorialDossier::backdrop {
   #menuTour .menu-tour-art {
     width: 72px;
     height: 60px;
+  }
+
+  #menuTour .menu-tour-radio .general-radio-controls {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
   }
 }
 
@@ -4163,7 +4352,8 @@ body:has(:is(#socialPopup:not([hidden]), #multiplayerPrompt:not([hidden]))) #ver
     box-sizing: border-box;
   }
 
-  #skillDialog[open] {
+  #skillDialog[open],
+  dialog#tutorialDossier[open] {
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4184,6 +4374,28 @@ body:has(:is(#socialPopup:not([hidden]), #multiplayerPrompt:not([hidden]))) #ver
     flex: 1 1 0;
     min-height: 0;
     overflow-y: auto;
+  }
+
+  dialog#tutorialDossier[open] .dossier-banner {
+    padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  dialog#tutorialDossier[open] .dossier-body {
+    padding: 14px max(16px, env(safe-area-inset-right, 0px)) 14px max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  dialog#tutorialDossier[open] .dossier-actions {
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  }
+
+  @media (max-height: 520px) {
+    dialog#tutorialDossier[open] .dossier-banner {
+      padding: calc(8px + env(safe-area-inset-top, 0px)) max(14px, env(safe-area-inset-right, 0px)) 8px max(14px, env(safe-area-inset-left, 0px));
+    }
+
+    dialog#tutorialDossier[open] .dossier-actions {
+      padding: 8px max(14px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(14px, env(safe-area-inset-left, 0px));
+    }
   }
 
   #settingsDialog .settings-row select,

@@ -1,10 +1,12 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
 import { createTutorialDossier } from '../tutorial-dossier.mjs';
 import { createCommandCenter } from '../command-center.mjs';
 
-function makeDossierDocument() {
+function makeDossierDocument({ mutateScrollOnOpen = false } = {}) {
   const nodes = new Map();
+  const focusCalls = [];
   const ids = [
     'tutorialDossier', 'dossierKicker', 'dossierTitle', 'dossierLead', 'dossierRewardNote',
     'dossierAccept', 'dossierMenuTourOnly', 'dossierDecline', 'dossierClose',
@@ -14,13 +16,21 @@ function makeDossierDocument() {
   for (const id of ids) {
     nodes.set(id, {
       id, hidden: false, disabled: false, open: false, textContent: '', dataset: {}, listeners: {},
-      showModal() { this.open = true; },
+      scrollTop: 0,
+      showModal() {
+        this.open = true;
+        if (mutateScrollOnOpen && id === 'tutorialDossier') this.scrollTop = 360;
+      },
       close() { this.open = false; },
+      focus(opts) { focusCalls.push(opts ?? null); },
       setAttribute() {},
       addEventListener(evt, fn) { this.listeners[evt] = fn; },
     });
   }
-  return { getElementById: id => nodes.get(id) ?? null, nodes };
+  const bodyEl = { className: 'dossier-body', scrollTop: 0 };
+  const dialog = nodes.get('tutorialDossier');
+  dialog.querySelector = sel => (sel === '.dossier-body' ? bodyEl : null);
+  return { getElementById: id => nodes.get(id) ?? null, nodes, bodyEl, focusCalls };
 }
 
 test('tutorialDossier supports offer, resume, and replay modes with proper buttons & rewards notice', async () => {
@@ -73,6 +83,44 @@ test('tutorialDossier supports offer, resume, and replay modes with proper butto
   await new Promise(r => setTimeout(r, 10));
   assert.deepEqual(calls.at(-1), ['menuOnly']);
   assert.equal(dossier.isOpen(), false);
+});
+
+test('tutorialDossier resets scrollTop to top across dialog and .dossier-body and pins banner/actions in markup & CSS', () => {
+  const doc = makeDossierDocument({ mutateScrollOnOpen: true });
+  doc.nodes.get('tutorialDossier').scrollTop = 280;
+  doc.bodyEl.scrollTop = 420;
+  const radio = {
+    snapshot: () => ({ voiceOver: true }),
+    play: () => {
+      doc.nodes.get('tutorialDossier').scrollTop = 190;
+      doc.bodyEl.scrollTop = 140;
+      return true;
+    },
+    stop() {},
+    replay() { return true; },
+    toggleMute() { return false; },
+  };
+  const dossier = createTutorialDossier({ document: doc, radio });
+  dossier.open({ mode: 'offer', rewarded: false });
+
+  assert.equal(doc.nodes.get('tutorialDossier').scrollTop, 0, 'dialog scrollTop stays at 0 after open/radio');
+  assert.equal(doc.bodyEl.scrollTop, 0, '.dossier-body scrollTop resets to 0 on open');
+  assert.deepEqual(doc.focusCalls.at(-1), { preventScroll: true }, 'focus uses preventScroll so mobile browsers never jump down');
+
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const dossierHtml = html.slice(html.indexOf('id="tutorialDossier"'), html.indexOf('</dialog>', html.indexOf('id="tutorialDossier"')));
+  assert.match(dossierHtml, /id="tutorialDossier"[^>]*tabindex="-1"/);
+  const bodyIdx = dossierHtml.indexOf('class="dossier-body"');
+  const actionsIdx = dossierHtml.indexOf('class="dossier-actions"');
+  const bodyCloseIdx = dossierHtml.lastIndexOf('</div>', actionsIdx);
+  assert.ok(bodyIdx > 0 && actionsIdx > bodyCloseIdx, '.dossier-actions is pinned as a sibling footer outside .dossier-body');
+
+  const menuCss = readFileSync(new URL('../menu-redesign.css', import.meta.url), 'utf8');
+  assert.match(menuCss, /dialog#tutorialDossier\[open\]\s*\{[^}]*display:\s*flex;[^}]*flex-direction:\s*column;[^}]*overflow:\s*hidden;/);
+  assert.match(menuCss, /#tutorialDossier\s+\.dossier-body\s*\{[^}]*flex:\s*1\s+1\s+auto;[^}]*min-height:\s*0;[^}]*overflow-y:\s*auto;/);
+  assert.match(menuCss, /#tutorialDossier\s+\.dossier-actions\s*\{[^}]*flex:\s*0\s+0\s+auto;/);
+  assert.match(menuCss, /#tutorialDossier\s+\.dossier-radio\s+\.general-radio-sub\s*\{[^}]*max-height:\s*none;[^}]*overflow:\s*visible;/);
+  assert.match(menuCss, /@media\s*\(max-width:\s*859px\)[\s\S]*dialog#tutorialDossier\[open\]\s*\{[^}]*height:\s*100dvh;/);
 });
 
 test('commandCenter routes #menuTutorial through onTutorial dossier hook when provided', () => {

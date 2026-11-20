@@ -9,7 +9,7 @@ import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../four-modes.mjs'
 import {projectFourGameView} from '../four-game-view.mjs';
 import {createVersus} from '../versus.mjs';
 import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
-import {setupLanguage} from '../language.mjs?v=20261119-block6';
+import {setupLanguage} from '../language.mjs?v=20261119-block6b';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
