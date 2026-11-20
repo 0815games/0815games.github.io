@@ -1,78 +1,82 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block2';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block2';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block6';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block6';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block2';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block6';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261119-block2';
-import {createSettings,readSettings} from './settings.mjs?v=20261119-block2';
-import {createPasswordChange} from './password-change.mjs?v=20261119-block2';
+import {setupFieldMenu} from './field-menu.mjs?v=20261119-block6';
+import {createSettings,readSettings} from './settings.mjs?v=20261119-block6';
+import {createPasswordChange} from './password-change.mjs?v=20261119-block6';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261119-block2';
+import {createPatchNotes} from './patch-notes.mjs?v=20261119-block6';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block2';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block2';
-import {setupFriends} from './friends-ui.mjs?v=20261119-block2';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block2';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block6';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block6';
+import {setupFriends} from './friends-ui.mjs?v=20261119-block6';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block6';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block2';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block2';
-import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261119-block2';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block2';
-import {createCommandCenter} from './command-center.mjs?v=20261119-block2';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block6';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block6';
+import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261119-block6';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block6';
+import {createCommandCenter} from './command-center.mjs?v=20261119-block6';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block2';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block6';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block2';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block2';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block2';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block2';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block2';
-import {setupAuthForm} from './auth-form.mjs?v=20261119-block2';
-import {applyLoginScene} from './login-scene.mjs?v=20261119-block2';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block6';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block6';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block6';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block6';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block6';
+import {setupAuthForm} from './auth-form.mjs?v=20261119-block6';
+import {applyLoginScene} from './login-scene.mjs?v=20261119-block6';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261119-block2';
-import {createWriteTracker} from './version-check.mjs?v=20261119-block2';
+import {createVersionUI} from './version-ui.mjs?v=20261119-block6';
+import {createWriteTracker} from './version-check.mjs?v=20261119-block6';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261119-block2';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261119-block6';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261119-block2';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block2';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block2';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block2';
+import {createConfirmation} from './confirmation.mjs?v=20261119-block6';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block6';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block6';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block6';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './tutorial-sync.mjs?v=20261119-block6';
+import {createGeneralRadio} from './general-radio.mjs?v=20261119-block6';
+import {createTutorialDossier} from './tutorial-dossier.mjs?v=20261119-block6';
+import {createMenuTour} from './menu-tour.mjs?v=20261119-block6';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block2';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block2';
-import {rewardDelta} from './run-results.mjs?v=20261119-block2';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block2';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block2';
-import {createPartySignOut} from './party-signout.mjs?v=20261119-block2';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block6';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block6';
+import {rewardDelta} from './run-results.mjs?v=20261119-block6';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block6';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block6';
+import {createPartySignOut} from './party-signout.mjs?v=20261119-block6';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block2';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block2';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block6';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block6';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261119-block2';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block2';
-import { createPlayer } from './match.mjs?v=20261119-block2';
-import { bunkerStart } from './solo-deployment.mjs?v=20261119-block2';
+import { startGame } from './game.js?v=20261119-block6';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block6';
+import { createPlayer } from './match.mjs?v=20261119-block6';
+import { bunkerStart } from './solo-deployment.mjs?v=20261119-block6';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block2';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block2';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block6';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block6';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -141,7 +145,7 @@ const SESSION_OCCUPIED_MESSAGE='This account is already active in another browse
 const SESSION_TAKEN_OVER_MESSAGE='You were signed out because this account signed in on another browser window or device.';
 let dischargeStorage=null;try{dischargeStorage=window.sessionStorage;}catch{/* In-memory notice works for this document. */}
 const dischargeNotice=createDischargeNotice(dischargeStorage);
-let endingRunning=false,endingAborted=false,endingRun=null,firstRunGuide=null;
+let endingRunning=false,endingAborted=false,endingRun=null,firstRunGuide=null,menuTour=null,tutorialDossier=null;
 const endingHandoffs=createEndingHandoffs({setTimer:(fn,ms)=>window.setTimeout(fn,ms),
  isCurrent:({version,id})=>!accountTerminated&&!!id&&version===sessionVersion&&user?.uid===id,
  offer:()=>offerFirstRunEnding()});
@@ -205,21 +209,36 @@ const confirmation=createConfirmation(document,translateText);onLanguageChange((
 const storedSettings=readSettings(languageStorage);
 let passwordChange=null;
 let settingsSoundEnabled=storedSettings.soundEnabled!==false&&Math.round(storedSettings.volume*100)>0;
-const settings=createSettings({
+let settings=null;
+const generalRadio=createGeneralRadio({
+ AudioCtor:globalThis.Audio,
+ document,
+ initialPrefs:storedSettings,
+ onToggleVoiceOver:voiceOver=>{
+  if(settings&&settings.voiceOver!==!!voiceOver){$('voiceOverToggle')?.click?.();}
+ }
+});
+settings=createSettings({
  document,window,storage:languageStorage,translate:translateText,confirm:confirmation,fullscreen,
  sound:{
-  setVolume:value=>gameControl?.setVolume?.(value)??value,
+  setVolume:value=>{const v=gameControl?.setVolume?.(value)??value;generalRadio?.setPrefs?.({volume:v});return v;},
   setEnabled:value=>{
    settingsSoundEnabled=!!value;
-   return gameControl?.setSoundEnabled?.(settingsSoundEnabled)??settingsSoundEnabled;
+   const enabled=gameControl?.setSoundEnabled?.(settingsSoundEnabled)??settingsSoundEnabled;
+   generalRadio?.setPrefs?.({soundEnabled:settingsSoundEnabled});
+   return enabled;
   },
  },
  onGraphicsChange:reduced=>gameControl?.setReducedGraphics?.(reduced),
- onVisualChange:prefs=>gameControl?.applySettings?.(prefs),
+ onVisualChange:prefs=>{gameControl?.applySettings?.(prefs);generalRadio?.setPrefs?.({voiceOver:prefs.voiceOver!==false,soundEnabled:prefs.soundEnabled!==false,volume:prefs.volume});},
  onResetFirstRun:()=>replayFirstRun(),
  onOpen:()=>{syncContextBackButtons();passwordChange?.refresh();settings.paint();},
  onClose:()=>passwordChange?.reset(),
 });
+for(const muteId of ['coachRadioMute','guideRadioMute']){
+ const btn=$(muteId);if(btn)btn.onclick=()=>generalRadio?.toggleMute?.();
+}
+onLanguageChange(()=>{generalRadio?.refreshLanguage?.();tutorialDossier?.refreshLanguage?.();menuTour?.refreshLanguage?.();});
 passwordChange=createPasswordChange({
  document,
  getUser:()=>user??auth.currentUser??null,
@@ -566,7 +585,7 @@ $('characterForm').addEventListener('submit',e=>{e.preventDefault();const typed=
  if(version!==sessionVersion)return;
  if(reserved.status==='taken'){message(translateText('That soldier name is already taken. Choose another one.'));return;}
  nameReserved=reserved.status==='claimed';
- const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate()}:undefined,{applyLocally:false});
+ const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate(),tutorial:initialOfferedTutorial()}:undefined,{applyLocally:false});
  // The reservation is only kept when the profile really exists; otherwise the
  // name would stay blocked for everyone after a failed enlistment.
  if(!result.committed&&!result.snapshot.exists()&&nameReserved){nameReserved=false;void claim.release(name).catch(()=>{});}
@@ -625,7 +644,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onViewChange:syncContextBackButtons,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,generalRadio,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onTutorial:openTutorialDossierDialog,onViewChange:view=>{syncContextBackButtons();if(view==='workspace'){menuTour?.dismiss?.();generalRadio?.stop?.();}},openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -717,7 +736,21 @@ const account={...(versionUI?{beforeNewGame}:{}),recordScore:(mode,wave)=>scoreR
    if(applied==='timeout')return version===sessionVersion?{committed:false,reason:'timeout'}:{committed:false};
    if(version!==sessionVersion)return {committed:false};
    profile=next;commandCenter?.render();
-   return {committed:true,profile:next};}catch(e){return {committed:false,reason:String(e?.code||e?.message||'').includes('permission')?'rejected':'error'};}},awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
+   return {committed:true,profile:next};}catch(e){return {committed:false,reason:String(e?.code||e?.message||'').includes('permission')?'rejected':'error'};}},
+ recordTutorialWave:wave=>{if(!inSandbox()&&user?.uid&&profile?.tutorial&&!profile.tutorial.missionCompleted)void tutorialSync.recordMissionStep(wave);},
+ claimTutorialOutcome:async({victory=false,rewards=true,waves=1}={})=>{
+  if(inSandbox()||!user?.uid||!profile)return {committed:false};
+  if(rewards&&shouldPayTutorialReward(profile,rewards)){
+   return await tutorialSync.claimReward({
+    amount:0,
+    wave:Math.max(1,waves|0),
+    armoryRewardFn:armory=>armory,
+    markMissionCompleted:true,
+   });
+  }
+  return await tutorialSync.beginMenuTour(0);
+ },
+ awardXP:async (amount,wave,runId=null)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile||!Number.isInteger(wave)||wave<1||!Number.isSafeInteger(wave))return;$('saveStatus').textContent=translateText('Saving +{amount} XP and loot…',{amount});try{
   // Free tier: no paid backend. Campaign and every report without a run receipt
   // keep the legacy additive save. Endless solo with a receipt credits legacy
   // XP/loot, workshop rewards and the receipt in one transaction. If the
@@ -752,7 +785,7 @@ function normalReleaseSafety(){
  // comes back on its own after one, because the notice lives in sessionStorage.
  // Blocking the reload on it would leave the player on an old build until they
  // happened to dismiss the picture.
- if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||nameConflictHandler.isActive()||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
+ if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||tutorialDossier?.isOpen?.()||nameConflictHandler.isActive()||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
  return 'ready';
 }
 releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
@@ -1369,39 +1402,107 @@ function replayFirstRun(){
  if(!id)return false;
  firstRunGuide?.stop?.();
  firstRunGuide=null;
+ menuTour?.stop?.();
+ tutorialDossier?.close?.();
  const storage=firstRunStorageFor();
  try{
   forgetGuideSeen(id,storage);
   for(const key of ['equip','skills','workshop'])storage?.removeItem?.(`ironpath:guide:v1:${key}`);
  }catch{/* memory only: the session still replays */}
  const started=gameControl?.replayFirstRun?.();
- if(started&&typeof started.then==='function')return started.then(ok=>{const current=ok&&version===sessionVersion&&user?.uid===id;if(current)commandCenter?.showBattle?.();return !!current;});
+ if(started&&typeof started.then==='function')return started.then(ok=>{const current=ok&&version===sessionVersion&&user?.uid===id;if(current)commandCenter?.showBattle?.(false,'training');return !!current;});
  if(!started)return false;
- commandCenter?.showBattle?.();
+ commandCenter?.showBattle?.(false,'training');
  return true;
 }
 function syncGuideRecall(){
  const pill=document.getElementById('guideRecall');if(!pill)return;
- // The pill has to live ABOVE the modal dialogs the guide explains, so it is a
- // popover itself - the only layer above a dialog. Older browsers keep the
- // fixed-position pill, which still works outside dialogs.
- const show=!!firstRunGuide?.dismissed?.();
+ const show=!!firstRunGuide?.dismissed?.()||!!menuTour?.dismissed?.();
  pill.hidden=!show;
  try{show?pill.showPopover?.():pill.hidePopover?.();}catch{/* fixed pill stands */}
 }
+const tutorialSync=createTutorialSync({
+ db,sdk:{ref,runTransaction},
+ getUid:()=>user?.uid,
+ isCurrent:()=>!accountTerminated&&!releaseFrozen&&!!user,
+ onProfile:updated=>{if(updated){profile=updated;commandCenter?.render();soldierUI?.refresh();}}
+});
+function ensureMenuTour(){
+ if(!menuTour){
+  menuTour=createMenuTour({
+   document,radio:generalRadio,
+   resolve:selector=>document.querySelector(selector),
+   onVisibilityChange:()=>syncGuideRecall(),
+   onStepChange:(_station,index)=>{
+    if(user?.uid&&profile?.tutorial&&profile.tutorial.status!=='completed'){
+     void tutorialSync.recordMenuStep(index);
+    }
+   },
+   onComplete:uid=>{
+    syncGuideRecall();
+    if(uid&&profile?.tutorial){
+     void tutorialSync.completeTour(menuTour?.stations?.length||8);
+    }
+    openFieldSchool();
+   },
+  });
+ }
+ return menuTour;
+}
+function ensureTutorialDossier(){
+ if(!tutorialDossier){
+  tutorialDossier=createTutorialDossier({
+   document,radio:generalRadio,
+   onAccept:async mode=>{
+    const id=user?.uid,version=sessionVersion;
+    if(!id)return false;
+    if(mode==='replay'){
+     await tutorialSync.restartForReplay('mission',profile);
+     return replayFirstRun();
+    }
+    await tutorialSync.acceptMission();
+    if(accountTerminated||version!==sessionVersion||user?.uid!==id)return false;
+    const pay=shouldPayTutorialReward(profile,true);
+    const floor=pay?Math.max(0,profile?.tutorial?.step||0):0;
+    const started=gameControl?.startTrainingRun?.({rewards:pay,restart:true,waveFloor:floor});
+    const ok=started&&typeof started.then==='function'?await started:!!started;
+    if(ok&&version===sessionVersion&&user?.uid===id)commandCenter?.showBattle?.(false,'training');
+    return !!ok;
+   },
+   onDecline:async()=>{
+    await tutorialSync.declineMission();
+    return true;
+   },
+   onReplayMenuOnly:async()=>{
+    const id=user?.uid;
+    if(!id)return false;
+    if(profile?.tutorial)await tutorialSync.restartForReplay('menu',profile);
+    commandCenter?.showMenu?.();
+    ensureMenuTour().start(id,{startStep:0,speak:true});
+    return true;
+   },
+  });
+ }
+ return tutorialDossier;
+}
+function openTutorialDossierDialog(){
+ if(!profile)return false;
+ if(!featureEnabled('tutorial')){
+  const game=gameControl;
+  if(game?.replayFirstRun?.())return true;
+  game?.showTutorial?.();
+  return true;
+ }
+ const tut=profile?.tutorial;
+ const rewarded=!shouldPayTutorialReward(profile,true);
+ const mode=tut?.status==='accepted'&&!tut?.missionCompleted?'resume':(!tut||tut.status==='offered'||tut.status==='declined')&&!rewarded?'offer':'replay';
+ ensureTutorialDossier().open({mode,rewarded,speak:true});
+ return true;
+}
 function guide(){
  if(!firstRunGuide){
-  firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector),onVisibilityChange:()=>syncGuideRecall()});
-  // The card's own buttons: NEXT advances a read card, ✕ puts the guide away
-  // (a pause, not an end - the recall pill brings it back), the pill recalls it.
+  firstRunGuide=createGuide({document,storage:firstRunStorageFor(),resolve:selector=>document.querySelector(selector),onVisibilityChange:()=>syncGuideRecall(),onStepChange:step=>{if(step?.voiceClip)generalRadio?.play?.(step.voiceClip);}});
   const next=document.getElementById('guideNext');if(next)next.onclick=()=>{firstRunGuide?.next?.();};
-  // Closing the guide card means two different things. Mid-lesson - one of the
-  // walkthrough's dialogs is open - it is a pause: the recall pill sits above
-  // dialogs and brings the lesson back. In the Command Center, with no step
-  // screen open, there is nothing left to recall: closing ENDS the walkthrough.
-  // Reported: after the tutorial the guide card and its SHOW TASK pill kept
-  // floating over the main menu, and closing them only paused - the pill came
-  // back every time.
   const close=document.getElementById('guideClose');
   if(close)close.onclick=()=>{
    const midLesson=dialogOpen('armoryDialog')||dialogOpen('skillDialog');
@@ -1413,33 +1514,50 @@ function guide(){
    syncGuideRecall();
    openFieldSchool();
   };
-  const pill=document.getElementById('guideRecall');if(pill)pill.onclick=()=>{firstRunGuide?.reopen?.();};
+  const pill=document.getElementById('guideRecall');if(pill)pill.onclick=()=>{if(menuTour?.dismissed?.()){menuTour.reopen();return;}firstRunGuide?.reopen?.();};
  }
  return firstRunGuide;
 }
 function cancelFirstRunEnding(){
  endingAborted=true;endingRun=null;endingRunning=false;
- try{firstRunGuide?.stop?.();}catch{}syncGuideRecall();
+ try{firstRunGuide?.stop?.();}catch{}
+ try{menuTour?.stop?.();}catch{}
+ try{tutorialDossier?.close?.();}catch{}
+ try{generalRadio?.stop?.();}catch{}
+ syncGuideRecall();
 }
 function offerFirstRunEnding(){
  const id=user?.uid,version=sessionVersion;
  if(!id||endingRunning)return;
- if(endingDone(id,firstRunStorage()))return;
+ if(endingDone(id,firstRunStorage())){
+  const currentSession=()=>!accountTerminated&&version===sessionVersion&&user?.uid===id;
+  void waitFor(()=>!dialogOpen('runResults'),{timeout:180000,current:currentSession}).then(ready=>{
+   if(!ready||!currentSession())return;
+   if(!$('commandCenter').hidden)ensureMenuTour().start(id,{startStep:0,speak:true});
+  });
+  return;
+ }
  const attempt={};endingRun=attempt;endingRunning=true;endingAborted=false;
- // Each real-dialog step is tied to this exact account session. An older
- // asynchronous step can neither touch a replacement session nor clear a newer
- // walkthrough, including after a logout/login with the same UID.
  const current=()=>!accountTerminated&&!endingAborted&&endingRun===attempt&&version===sessionVersion&&user?.uid===id;
  const guarded=name=>async()=>current()&&await ({equip:equipFirstRewards,skills:practiceSkills,workshop:openWorkshopFirstTime})[name](current);
  const stopped=()=>{if(endingRun!==attempt)return;endingRun=null;endingRunning=false;firstRunGuide?.stop?.();syncGuideRecall();};
- void runFirstRunEnding({
-  id,storage:firstRunStorage(),
-  steps:{equip:guarded('equip'),skills:guarded('skills'),workshop:guarded('workshop')},
-  shouldStop:()=>!current(),
-  onDone:()=>{if(!current())return;endingRun=null;endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();openFieldSchool();},
-  // A declined or unavailable step stops the guide and its recall pill.
-  onStopped:stopped,
- }).catch(stopped);
+ void (async()=>{
+  const settled=await waitFor(()=>!dialogOpen('runResults'),{timeout:180000,current});
+  if(!settled||!current())return stopped();
+  await runFirstRunEnding({
+   id,storage:firstRunStorage(),
+   steps:{equip:guarded('equip'),skills:guarded('skills'),workshop:guarded('workshop')},
+   shouldStop:()=>!current(),
+   onDone:()=>{
+    if(!current())return;
+    endingRun=null;endingRunning=false;firstRunGuide?.event?.('workshop');firstRunGuide?.stop?.();
+    if(profile?.tutorial)void tutorialSync.beginMenuTour(0);
+    openFieldSchool();
+    ensureMenuTour().start(id,{startStep:0,speak:true});
+   },
+   onStopped:stopped,
+  });
+ })().catch(stopped);
 }
 // The Field School lists where the new soldier can go next. Each entry clicks an
 // existing control rather than opening a second path into a screen.
@@ -1459,14 +1577,29 @@ function openFieldSchool(){
 // and hide itself from every existing account; use tutorial.completed() instead of
 // reading the key again.
 function startFirstRunTutorial(){
-  // Let the Command Center paint first. On a first login this builds the training
-  // field and starts the coach cards on top of it; the modal tour is only the
-  // fallback for an account that played the contract before the cards existed.
   const attempt={},version=sessionVersion,id=user?.uid;pendingFirstRuns.add(attempt);
   requestAnimationFrame(()=>{
     if(accountTerminated||version!==sessionVersion||!id||user?.uid!==id||!profile){pendingFirstRuns.delete(attempt);return;}
-    try{const started=gameControl?.startFirstRun?.()??gameControl?.startTutorialIfNeeded?.();void Promise.resolve(started).catch(()=>{}).finally(()=>pendingFirstRuns.delete(attempt));}
-    catch{pendingFirstRuns.delete(attempt);}
+    try{
+      if(!shouldAutoPresentTutorial(profile)){pendingFirstRuns.delete(attempt);return;}
+      const target=tutorialResumeTarget(profile);
+      if(target==='dossier'||target==='mission-resume'){
+        ensureTutorialDossier().open({
+          mode:target==='mission-resume'?'resume':'offer',
+          rewarded:!shouldPayTutorialReward(profile,true),
+          speak:true,
+        });
+        pendingFirstRuns.delete(attempt);
+        return;
+      }
+      if(target==='menu'){
+        if(!endingDone(id,firstRunStorage()))offerFirstRunEnding();
+        else ensureMenuTour().start(id,{startStep:Math.max(0,profile?.tutorial?.step||0),speak:true});
+        pendingFirstRuns.delete(attempt);
+        return;
+      }
+      pendingFirstRuns.delete(attempt);
+    }catch{pendingFirstRuns.delete(attempt);}
   });
 }
 function chooseArmoryCategory(category){

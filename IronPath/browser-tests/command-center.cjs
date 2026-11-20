@@ -44,7 +44,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     const mocks = {
       'firebase-app.js': `export function initializeApp(){return {}}`,
       'firebase-auth.js': `const user={uid:'mock-user',email:'soldier@example.test',getIdToken:async()=> 'mock'}; const auth={currentUser:user}; export function getAuth(){return auth} export function onAuthStateChanged(a,cb){globalThis.__mockAuth=next=>{a.currentUser=next;cb(next)};setTimeout(()=>cb(user),0);return ()=>{}} export async function signOut(a){a.currentUser=null} export async function signInWithEmailAndPassword(){} export async function createUserWithEmailAndPassword(){} export async function sendPasswordResetEmail(){}`,
-      'firebase-database.js': `const profile={name:'Test Soldier',gender:'female',xp:750}; let profileCb;globalThis.__profileUpdate=value=>{Object.assign(profile,value);profileCb?.({val:()=>profile})};globalThis.__profileGet=()=>({...profile}); let invite={alice:{name:'Alice',code:'0123',partyId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',createdAt:Date.now()}},inviteCb,friendRequests={},friendListeners=new Set();globalThis.__friendUpdate=value=>{friendRequests=value;for(const cb of friendListeners)cb({val:()=>friendRequests})};globalThis.__friendListenerCount=()=>friendListeners.size; export function getDatabase(){return {}}export function goOffline(){} export function ref(db,path){return {path}} export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user'){profileCb=cb;queueMicrotask(()=>cb({val:()=>profile}));}if(r.path==='coopInvites/mock-user'){inviteCb=cb;queueMicrotask(()=>cb({val:()=>invite}));}if(r.path==='coopInvites/mock-user/alice')queueMicrotask(()=>cb({val:()=>invite.alice??null}));if(r.path==='friendships/mock-user'){friendListeners.add(cb);queueMicrotask(()=>{if(friendListeners.has(cb))cb({val:()=>friendRequests})});return ()=>friendListeners.delete(cb);}return ()=>{}} export async function runTransaction(r,change){if(r.path==='coopInvites/mock-user/alice'){const current=invite.alice??null,next=change(current);if(next===undefined)return {committed:false,snapshot:{val:()=>current}};invite={...invite};if(next===null)delete invite.alice;else invite.alice=next;inviteCb?.({val:()=>invite});return {committed:true,snapshot:{val:()=>next}};}return {committed:false}} export async function get(r){(globalThis.__readPaths??=[]).push(r.path);const values={'players/bob/xp':750,'players/bob/skills':'v2;assault;2;0;00000000000000','players/bob/armory':{scrap:10,fortify:1,plating:2,owned:1,equipped:1}};return {val:()=>values[r.path]??null,exists:()=>false,forEach(){}}} export async function remove(r){if(r.path==='coopInvites/mock-user/alice'){invite={};inviteCb?.({val:()=>invite});}} export async function set(r,v){(globalThis.__firebaseWrites??=[]).push(r.path);if(r.path==='friendships/mock-user/alice/status'){globalThis.__friendUpdate({...friendRequests,alice:{...friendRequests.alice,status:v}})}} export async function update(){} export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}} export function serverTimestamp(){return 0} export function query(r,...args){return r} export function orderByKey(){return {}} export function startAfter(v){return {}} export function limitToFirst(v){return {}} export function orderByChild(v){return {}} export function limitToLast(v){return {}}`
+      'firebase-database.js': `let profile={name:'Test Soldier',gender:'female',xp:750,tutorial:{edition:3,status:'offered',rewarded:false,missionCompleted:false,phase:'dossier',step:0}}; let profileCb;globalThis.__profileUpdate=value=>{profile={...profile,...value};profileCb?.({val:()=>profile})};globalThis.__profileGet=()=>({...profile}); let invite={alice:{name:'Alice',code:'0123',partyId:'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',createdAt:Date.now()}},inviteCb,friendRequests={},friendListeners=new Set();globalThis.__friendUpdate=value=>{friendRequests=value;for(const cb of friendListeners)cb({val:()=>friendRequests})};globalThis.__friendListenerCount=()=>friendListeners.size; export function getDatabase(){return {}}export function goOffline(){} export function ref(db,path){return {path}} export function onValue(r,cb){if(r.path==='_ironpathMaintenance')queueMicrotask(()=>cb({val:()=>({format:1,mode:'open',authAfterMs:0})}));if(r.path==='players/mock-user'){profileCb=cb;queueMicrotask(()=>cb({val:()=>profile}));}if(r.path==='coopInvites/mock-user'){inviteCb=cb;queueMicrotask(()=>cb({val:()=>invite}));}if(r.path==='coopInvites/mock-user/alice')queueMicrotask(()=>cb({val:()=>invite.alice??null}));if(r.path==='friendships/mock-user'){friendListeners.add(cb);queueMicrotask(()=>{if(friendListeners.has(cb))cb({val:()=>friendRequests})});return ()=>friendListeners.delete(cb);}return ()=>{}} export async function runTransaction(r,change){if(r.path==='coopInvites/mock-user/alice'){const current=invite.alice??null,next=change(current);if(next===undefined)return {committed:false,snapshot:{val:()=>current}};invite={...invite};if(next===null)delete invite.alice;else invite.alice=next;inviteCb?.({val:()=>invite});return {committed:true,snapshot:{val:()=>next}};}if(r.path==='players/mock-user'){const next=change(profile);if(next===undefined)return {committed:false,snapshot:{val:()=>profile}};profile=next;profileCb?.({val:()=>profile});return {committed:true,snapshot:{val:()=>profile}};}return {committed:false}} export async function get(r){(globalThis.__readPaths??=[]).push(r.path);const values={'players/bob/xp':750,'players/bob/skills':'v2;assault;2;0;00000000000000','players/bob/armory':{scrap:10,fortify:1,plating:2,owned:1,equipped:1}};return {val:()=>values[r.path]??null,exists:()=>false,forEach(){}}} export async function remove(r){if(r.path==='coopInvites/mock-user/alice'){invite={};inviteCb?.({val:()=>invite});}} export async function set(r,v){(globalThis.__firebaseWrites??=[]).push(r.path);if(r.path==='friendships/mock-user/alice/status'){globalThis.__friendUpdate({...friendRequests,alice:{...friendRequests.alice,status:v}})}} export async function update(){} export function onDisconnect(){return {cancel:async()=>{},remove:async()=>{}}} export function serverTimestamp(){return 0} export function query(r,...args){return r} export function orderByKey(){return {}} export function startAfter(v){return {}} export function limitToFirst(v){return {}} export function orderByChild(v){return {}} export function limitToLast(v){return {}}`
     };
     await context.route('**/*',route=>{
       const url=new URL(route.request().url());
@@ -56,34 +56,31 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     });
     mark('load');
     await page.goto('http://127.0.0.1:8765/IronPath/',{waitUntil:'load'});
-    // A first login now opens on the training FIELD, not on the Command Center:
-    // that move is the fix under test below. Wait for the field, then for its board.
-    mark('first-run field');
-    await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
-    await page.waitForFunction(()=>window.__firebaseWrites?.some(p=>p.startsWith('friendNames/')&&p.endsWith('/mock-user'))); // indexed without opening Friends
-    assert.equal(await page.locator('#friendIndexError').isHidden(),true);
-    const artwork=['login-bunker-watch.jpg','login-radio-rain.jpg','login-convoy-prep.jpg','login-tactical-map.jpg','mode-campaign.jpg','mode-endless.jpg','mode-multiplayer.jpg','endless-random.jpg','soldier-workbench.jpg','debrief-battlefield.jpg','terrain-forest.jpg','terrain-city.jpg','terrain-desert.jpg','terrain-snow.jpg','terrain-marsh.jpg','tutorial-defend.jpg','tutorial-build.jpg','tutorial-soldier.jpg','armory-kit.jpg','armory-optics.jpg','bunker-sprite.png','hero-sprite.png','tank-sprite.png','boss-heavy-sprite.png','boss-plane-sprite.png','landmark-radio-sprite.png','landmark-transformer-sprite.png','landmark-bridge-sprite.png','landmark-truck-sprite.png','landmark-wreck-sprite.png','landmark-shelter-sprite.png','landmark-prison-sprite.png','landmark-dam-sprite.png'];
-    const missing=await page.evaluate(async files=>{const results=await Promise.all(files.map(file=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(null);image.onerror=()=>resolve(file);image.src='assets/'+file;})));return results.filter(Boolean);},artwork);
-    assert.deepEqual(missing,[],'artwork must load and decode in the browser');
-
-    assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
+    mark('tutorial dossier');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
-    // A first login now builds the training field FIRST and briefs on top of it,
-    // without a modal and without pausing. This is the phone bug: a modal brief
-    // over a paused field meant the first run could not be played at all.
-    await page.locator('#firstRunCoach').waitFor({state:'visible'});
-    // The centered invitation is nonmodal but can cover a particular pad. Put
-    // it aside explicitly before the tutorial tap; LATER must not decline it.
+    await page.locator('#tutorialDossier[open]').waitFor({state:'visible',timeout:15000});
+    // The centered invitation is nonmodal; dismiss with LATER before accepting the dossier.
     await page.locator('#multiplayerPrompt').waitFor({state:'visible'});
     assert.match(await page.locator('#multiplayerPromptBody').innerText(),/Alice invited you/);
     await page.locator('#multiplayerPromptActions [data-action="later"]').click();
     assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true);
     assert.match(await page.locator('#inviteNotification').textContent(),/1/,'putting the card aside keeps the invitation');
+    await page.locator('#dossierAccept').click();
+    mark('first-run field');
+    await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
+    await page.waitForFunction(()=>window.__firebaseWrites?.some(p=>p.startsWith('friendNames/')&&p.endsWith('/mock-user'))); // indexed without opening Friends
+    assert.equal(await page.locator('#friendIndexError').isHidden(),true);
+    const artwork=['login-bunker-watch.jpg','login-radio-rain.jpg','login-convoy-prep.jpg','login-tactical-map.jpg','mode-campaign.jpg','mode-endless.jpg','mode-multiplayer.jpg','endless-random.jpg','soldier-workbench.jpg','debrief-battlefield.jpg','terrain-forest.jpg','terrain-city.jpg','terrain-desert.jpg','terrain-snow.jpg','terrain-marsh.jpg','tutorial-defend.jpg','tutorial-build.jpg','tutorial-soldier.jpg','tutorial-dossier-map.jpg','tutorial-hq-briefing.jpg','tutorial-airstrike.jpg','general-vance-portrait.jpg','armory-kit.jpg','armory-optics.jpg','bunker-sprite.png','hero-sprite.png','tank-sprite.png','boss-heavy-sprite.png','boss-plane-sprite.png','landmark-radio-sprite.png','landmark-transformer-sprite.png','landmark-bridge-sprite.png','landmark-truck-sprite.png','landmark-wreck-sprite.png','landmark-shelter-sprite.png','landmark-prison-sprite.png','landmark-dam-sprite.png'];
+    const missing=await page.evaluate(async files=>{const results=await Promise.all(files.map(file=>new Promise(resolve=>{const image=new Image();image.onload=()=>resolve(null);image.onerror=()=>resolve(file);image.src='assets/'+file;})));return results.filter(Boolean);},artwork);
+    assert.deepEqual(missing,[],'artwork must load and decode in the browser');
+
+    assert.equal(await page.locator('.brand-logo').evaluate(e=>e.complete && e.naturalWidth>0),true,'new logo loads');
+    await page.locator('#firstRunCoach').waitFor({state:'visible'});
     assert.equal(await page.locator('#tutorialDialog').evaluate(e=>e.open),false,'no modal briefing on the first run');
     assert.equal(await page.locator('#gameWorkspace').isVisible(),true,'the field is up before the first card');
     assert.equal(await page.locator('#game').isVisible(),true);
     assert.match(await page.locator('#coachTitle').innerText(),/Welcome, soldier/);
-    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 7/);
+    assert.match(await page.locator('#coachStep').innerText(),/1 \/ 8/);
     // The soldier's own level is on the field HUD now: the specialization ring
     // locks two of its four choices behind soldier levels 5 and 10, and without
     // the number on screen "Lv 5" has nothing to compare against.
@@ -94,7 +91,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     // less than half the viewport, unlike the 450px modal it replaced.
     // The dossier dressing is real styling, not decoration in a dead file: the
     // card must paint its own plate and draw one tick per step.
-    assert.equal(await page.locator('#coachPips i').count(),7,'a tick per coach card');
+    assert.equal(await page.locator('#coachPips i').count(),8,'a tick per coach card');
     assert.equal(await page.locator('#coachPips i[data-done]').count(),1,'one tick marked on the first card');
     const plate=await page.locator('#firstRunCoach').evaluate(e=>{const s=getComputedStyle(e);return `${s.backgroundImage} ${s.borderTopWidth} ${s.borderTopColor}`;});
     assert.match(plate,/gradient/,'the card paints its own plate, not bare text over the field');
@@ -283,7 +280,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     // The card follows the walk while put away, and comes back on its own.
     await page.waitForFunction(() => /Supplies/.test(document.getElementById('coachTitle').textContent), null, {timeout: 10000});
     await page.locator('#firstRunCoach').waitFor({state:'visible',timeout:5000});
-    assert.match(await page.locator('#coachStep').innerText(),/5 \/ 7/,'it returns at the NEXT step, not the one it left');
+    assert.match(await page.locator('#coachStep').innerText(),/5 \/ 8/,'it returns at the NEXT step, not the one it left');
     assert.equal(await page.locator('#coachRecall').isHidden(),true,'no recall pill once the card is back');
     assert.equal(await page.locator('#coachNext').isDisabled(),false,'an announcement card owes nothing');
     assert.equal(await page.locator('#coachAsk').isHidden(),true,'the gate is quiet while nothing is owed');
@@ -668,7 +665,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
       await page.waitForFunction(() => { const card = document.getElementById('firstRunCoach'); return card && !card.hidden; }, null, { timeout: 15000 });
       // The step line reads "FIRST RUN · 1 / 7" (German: "ERSTER EINSATZ · 1 / 7"),
       // so the card number has to be found inside it, not at the start of it.
-      assert.match(await page.locator('#coachStep').innerText(), /\b1 \/ 7\b/, `${label}: the coaching starts at the first card again`);
+      assert.match(await page.locator('#coachStep').innerText(), /\b1 \/ 8\b/, `${label}: the coaching starts at the first card again`);
       assert.match(await page.locator('#wave').innerText(), /^0 /, `${label}: on a fresh training field`);
       await page.locator('#coachClose').click();
       await page.locator('#endRun').click(); await page.locator('#gameConfirmAccept').click();

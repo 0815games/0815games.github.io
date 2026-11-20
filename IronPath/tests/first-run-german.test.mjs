@@ -177,9 +177,9 @@ test('the open card re-renders when the language is switched under it', async ()
     coach.refreshLanguage();
     assert.equal(nodes.get('coachTitle').textContent, 'Willkommen, Soldat', 'the open card follows the switch');
     assert.equal(nodes.get('coachText').textContent,
-      'Fünf Wellen, und der Boss der letzten beendet die Übung. Das hier ist ein echter Einsatz: Was du jetzt baust, kämpft auch.',
+      'Sieben Wellen, und der Boss der letzten beendet die Übung. Das hier ist ein echter Einsatz: Was du jetzt baust, kämpft auch.',
       'and the body follows, not just the title');
-    assert.equal(nodes.get('coachCaption').textContent, 'WELLE 1 VON 5', 'the caption follows too');
+    assert.equal(nodes.get('coachCaption').textContent, 'WELLE 1 VON 7', 'the caption follows too');
   }, 'en');
 });
 

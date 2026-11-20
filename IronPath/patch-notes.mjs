@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block2';
+import {getLanguage} from './language.mjs?v=20261119-block6';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,19 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'block6',build:'20261119-block6',pr:328,
+    title:{en:'Block 6 · Full Voiced General Vance Briefing, 7-Wave Field Drill & Command HQ Tour',de:'Block 6 · Vertontes General-Vance-Briefing, 7-Wellen-Ausbildung & HQ-Menüführung'},
+    shipped:[
+      {en:'Added General Vance’s character-scoped Field Dossier (`#tutorialDossier`, `tutorial-dossier.mjs`) and per-character RTDB tutorial state sync (`tutorial-sync.mjs`, using live `players/$uid/tutorial` schema): new or re-enlisted soldiers get one non-pushy offer to Accept Commission, Tour HQ Only, or Decline for Now, while mid-mission exits resume right back at the field briefing or HQ tour.',de:'Charakterbezogenes Einsatz-Dossier von General Vance (`#tutorialDossier`, `tutorial-dossier.mjs`) und Pro-Charakter-Synchronisierung (`tutorial-sync.mjs` auf Basis der live geschalteten `players/$uid/tutorial`-Regeln) eingeführt: Neue oder neu eingestellte Soldaten erhalten einmalig ein faires Angebot (Auftrag annehmen, nur HQ-Tour oder ablehnen); ein Abbruch zwischendurch setzt sauber wieder am Gefecht oder an der HQ-Tour an.'},
+      {en:'Expanded the training deployment (`training-run.mjs`, `first-run-coach.mjs`, `game.js`) into one continuous 7-wave drill (`180` starting supplies, `450` guaranteed total XP on completion / `330` on retreat) covering tower build locks, Rank 2/3 specialization & 6-class preview, hero movement, active battle skill, incoming supply crates, Flak air cover, and the Wave-7 convoy boss.',de:'Übungseinsatz (`training-run.mjs`, `first-run-coach.mjs`, `game.js`) zu einem zusammenhängenden 7-Wellen-Gefecht ausgebaut (`180` Startvorräte, garantierte `450` Gesamt-EP bei Sieg / `330` bei Niederlage) – inklusive Bausperre bis zur Wellenanweisung, Rang-2/3-Ausbau samt 6-Klassen-Überblick, Soldatenbewegung, aktiver Kampffähigkeit, Nachschubkisten, Flak-Luftabwehr und Welle-7-Konvoi-Boss.'},
+      {en:'Wired full bilingual studio radio narration (`general-radio.mjs`, 36 pre-generated MP3 voiceovers across 18 EN and 18 DE cues by General Vance) with live captions, audible/subtitled status chip, Replay radio & Mute sync with Settings (`voiceOverToggle`), plus an interactive 8-station Command HQ Menu Tour (`#menuTour`, `menu-tour.mjs`) with safe inspection cards and strict guardrails forbidding character deletion or sign-out actions.',de:'Vollständige zweisprachige General-Vance-Funkvertonung integriert (`general-radio.mjs`, 36 fertige MP3-Sprachclips in 18 EN- und 18 DE-Funksprüchen) samt Live-Untertiteln, Statusanzeige, Wiederholen/Stumm-Schaltern und Synchronisierung mit den Einstellungen (`voiceOverToggle`), ergänzt durch eine interaktive 8-Stationen-HQ-Führung (`#menuTour`, `menu-tour.mjs`) mit sicherer Inspektion und striktem Schutz vor Löschen oder Abmelden.'},
+      {en:'Delivered custom tutorial field artwork (`general-vance-portrait.jpg`, `tutorial-dossier-map.jpg`, `tutorial-hq-briefing.jpg`, `tutorial-airstrike.jpg`), safe Settings reset & non-reward replay entry (`menuTutorial`), and full German localization across dossier, radio captions, 8 coach cues, and HQ walkthrough.',de:'Maßgeschneiderte Tutorial-Artworks (`general-vance-portrait.jpg`, `tutorial-dossier-map.jpg`, `tutorial-hq-briefing.jpg`, `tutorial-airstrike.jpg`), Zurücksetzen in den Einstellungen, belohnungsfreie Wiederholung (`menuTutorial`) sowie vollständige deutsche Übersetzung aller Dossier-, Funk-, Coach- und Tourtexte ergänzt.'},
+    ],
+    open:[
+      {en:'Real multi-device manual playtesting of General Vance’s voiceover pacing, captions, 7-wave field cadence, and 8-station HQ tour on phones, tablets, desktops, and screen readers (`20261119-block6`).',de:'Echte Mehrgeräte-Abnahme von General-Vance-Vertonung, Untertiteln, 7-Wellen-Gefechtstempo und 8-Stationen-HQ-Tour auf Handy, Tablet, Desktop und Screenreader (`20261119-block6`).'},
+    ],
+  },
   {
     id:'block2',build:'20261119-block2',pr:327,
     title:{en:'Block 2 · Global Soldier-Name Uniqueness & Block 1 · Force-Close / Beginner Balance',de:'Block 2 · Eindeutige Soldatennamen & Block 1 · Gruppen-Notabschluss / Einsteigerbalance'},
@@ -320,17 +333,21 @@ export const PLANNED_PATCHES=Object.freeze([
     ],
   },
   {
-    id:'block6',status:'active',
+    id:'block6',status:'planned',
     title:{en:'Block 6 · Tutorial',de:'Block 6 · Tutorial'},
+    note:{
+      en:'Implemented in build 20261119-block6 (#328); real multi-device playtesting remains open.',
+      de:'In Build 20261119-block6 (#328) umgesetzt; echte Mehrgeräte-Abnahme steht noch aus.',
+    },
     shipped:[
-      {en:'The five-wave introduction, its replay and the confirmed cancel fixes exist, and the server-side per-character `players/$uid/tutorial` schema is already live-published (`BLOCK2-RULES-TO-PUBLISH.json`, per operator confirmation).',de:'Die Fünf-Wellen-Einführung, ihre Wiederholung und die bestätigten Abbruchfixes sind vorhanden; das charakterbezogene `players/$uid/tutorial`-Schema ist zudem über `BLOCK2-RULES-TO-PUBLISH.json` bereits live geschaltet (laut Betreiber bestätigt).'},
+      {en:'General Vance Field Dossier (`tutorial-dossier.mjs`), per-character `players/$uid/tutorial` RTDB state sync (`tutorial-sync.mjs`), 7-wave field drill (`training-run.mjs`, `first-run-coach.mjs`), bilingual 36-clip EN/DE General Vance radio voiceover (`general-radio.mjs`), 8-station safe Command HQ Menu Tour (`menu-tour.mjs`), Settings reset & non-reward replay (`#328`, `20261119-block6`).',de:'General-Vance-Dossier (`tutorial-dossier.mjs`), charakterbezogener RTDB-Abgleich `players/$uid/tutorial` (`tutorial-sync.mjs`), 7-Wellen-Übungseinsatz (`training-run.mjs`, `first-run-coach.mjs`), zweisprachige 36-Clip-Funkvertonung (`general-radio.mjs`), sichere 8-Stationen-HQ-Führung (`menu-tour.mjs`), Zurücksetzen & belohnungsfreie Wiederholung (`#328`, `20261119-block6`).'},
     ],
     open:[
-      {en:'Character-related accept and decline, one large continuous mission, the general’s voice and the following menu guidance across the Block 9 Command HQ.',de:'Charakterbezogene Annahme und Ablehnung, eine große zusammenhängende Mission, die Generalstimme und die anschließende Menüführung durch das Block-9-HQ.'},
+      {en:'Real multi-device manual playtesting of audio pacing, captions, 7-wave mission flow, and HQ tour on phones, tablets, laptops, and screen readers on `20261119-block6`.',de:'Echte Mehrgeräte-Abnahme von Audiotaktung, Untertiteln, 7-Wellen-Mission und HQ-Tour auf Handys, Tablets, Laptops und Screenreadern auf `20261119-block6`.'},
     ],
   },
   {
-    id:'block7',status:'planned',
+    id:'block7',status:'next',
     title:{en:'Block 7 · Life, counter-attacks and repairs',de:'Block 7 · Leben, Gegenangriffe und Reparaturen'},
     note:{
       en:'Added as an additional future patch; it comes after the six original blocks because it changes every mode.',

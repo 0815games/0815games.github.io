@@ -77,7 +77,7 @@ test('block 7 is a planned future patch and stays last in the agreed order',()=>
   const ids=PLANNED_PATCHES.map(entry=>entry.id);
   assert.deepEqual(ids,['block1','block2','block3','block4','block5','block9','block6','block7'],'the plan keeps the operator order');
   const block7=PLANNED_PATCHES.at(-1);
-  assert.equal(block7.status,'planned');
+  assert.equal(block7.status,'next');
   assert.ok(block7.note,'block 7 says why it comes last');
   const text=`${patchText(block7.title,'en')} ${block7.open.map(item=>patchText(item,'en')).join(' ')}`.toLowerCase();
   for(const word of ['life','soldiers','towers','repair','warning'])
@@ -88,11 +88,11 @@ test('block 7 is a planned future patch and stays last in the agreed order',()=>
   // The standing constraint: no permanent loss of progress or equipment.
   assert.match(block7.open.map(item=>patchText(item,'en')).join(' '),/No permanent loss/i);
   assert.match(block7.open.map(item=>patchText(item,'de')).join(' '),/kein dauerhafter verlust/i);
-  // Block 9 shipped in PR #320 ahead of Block 6; Block 6 is now active next.
+  // Blocks 9 and 6 shipped ahead of Block 7; Block 7 is now next in line.
   const block9=PLANNED_PATCHES.find(entry=>entry.id==='block9');
   const block6=PLANNED_PATCHES.find(entry=>entry.id==='block6');
   assert.equal(block9?.status,'planned');
-  assert.equal(block6?.status,'active');
+  assert.equal(block6?.status,'planned');
 });
 
 test('the view renders both lists, marks the running build and reacts to the tab buttons',()=>{

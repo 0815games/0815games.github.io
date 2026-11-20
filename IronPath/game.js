@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261119-block2';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261119-block6';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261119-block2';
+import {localizeGameMessage} from './game-localization.mjs?v=20261119-block6';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block2';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block6';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -14,41 +14,41 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen} from './training-run.mjs?v=20261112-tagless1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261119-block2';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261119-block2';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261119-block2';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261119-block2';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261119-block6';
+import {projectFourGameView} from './four-game-view.mjs?v=20261119-block6';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261119-block6';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261119-block6';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261119-block6';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block2';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261119-block2';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261119-block6';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261119-block6';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
 import {createBattleSound} from './battle-sound.mjs?v=20261118-settings1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261119-block2';
-import {createCombatEffects} from './combat-fx.mjs?v=20261119-block2';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261119-block2';
-import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261119-block2';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261119-block2';
-import {towerClassIcon} from './development-ui.mjs?v=20261119-block2';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261119-block6';
+import {createCombatEffects} from './combat-fx.mjs?v=20261119-block6';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261119-block6';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261119-block6';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261119-block6';
+import {towerClassIcon} from './development-ui.mjs?v=20261119-block6';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261119-block2';
-import { createTutorial } from './tutorial.mjs?v=20261119-block2';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261119-block2';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261119-block2';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261119-block2';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261119-block2';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261119-block2';
+import { createCoopInput } from './coop-input.mjs?v=20261119-block6';
+import { createTutorial } from './tutorial.mjs?v=20261119-block6';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261119-block6';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261119-block6';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261119-block6';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261119-block6';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261119-block6';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261119-block2';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261119-block6';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261119-block2';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261119-block6';
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
   let releaseStopped=false,frameHandle=null;
@@ -92,7 +92,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
   ];
   for(const variants of branches){variants.push({name:'Veteran Kit',damage:1.4,interval:.85,range:1.15,description:'Upgrader must be level 5 · 40% more damage, 15% faster fire and 15% more range',rank2:'Commanded crew: fires 10% faster while your soldier stands near',rank3:'This tower\'s upgrades cost 15% less'});variants.push({name:'Boss Hunter',damage:1,interval:1.25,range:1,description:'Upgrader must be level 10 · fires 20% slower but deals 50% more damage to bosses.',rank2:'Trophy gun: 25% more damage while a boss shield is up',rank3:'A boss finished by this gun pays +25 supplies'});}
   const keys = new Set();
-  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false,rosterGeneration=0,focusGeneration=0,promptEpoch=0;
+  let state, selectedMap=nextMapId(), activeMission=null, activeStory=null, activeTraining=false, trainingDone=false, trainingBonusPaid=false, trainingRewards=true, trainingWaveFloor=0, accumulator=0, menuPad=null, coop=null, coopInput=null, coopReady=false, lastDirection='0,0', needStop=false,seenCoopWaves=0,seenCoopCaches=0,coopHasBaseline=false,bossSignal=null,hostFocusPaused=false,rosterGeneration=0,focusGeneration=0,promptEpoch=0;
   // Online UI normally repaints on snapshots, not animation frames. The
   // fallback controls must reappear immediately when a card is put aside.
   const stopPromptWatch=promptCenter?.onChange?.(()=>{if(state&&!releaseStopped)updateUI();});
@@ -718,7 +718,7 @@ function renderResults(target){
     // failure, bunker loss) or leaving the story closes it.
     if(!$('storyDecision').hidden&&(!activeStory.decision?.pending||state.ended))hideDecisionPanel();
     $('soloObjectiveTitle').textContent=`${tr(activeMission.act)} · ${tr(activeMission.title)}`;$('soloObjectiveProgress').textContent=tr('OBJECTIVE {current} / {total}: {label}',{current:Math.min(activeStory.stage+1,activeMission.stages.length),total:activeMission.stages.length,label:tr(status.label)});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=`${translateStoryDetail(status.detail,tr)} ${tr(status.dialogue||'')}`;}
-    if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(state.endReason==='training-complete'&&typeof onTrainingComplete==='function')onTrainingComplete();}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
+    if(state.ended&&(!coop||hasCoopSnapshot)&&report&&!report.finished){finishReport(report,state,me());if(state.endReason!=='retired')onReturnToCommand();if(activeTraining&&state.endReason!=='retired'&&typeof onTrainingComplete==='function')onTrainingComplete({victory:state.endReason==='training-complete',rewards:trainingRewards});}else if(state.ended&&report?.finished&&report.snapshot!==state){report.snapshot=state;if(lastReport===report&&$('runResults').open)renderResults(report);}
     const map=getMap(state.mapId),terrain=terrainFor(map),versus=state.mode==='versus',teamMatch=state.fourInfo?.mode==='two-vs-two';$('battleLabel').textContent=coop?tr('MULTIPLAYER'):activeMission?tr('STORY MISSION {number}',{number:CAMPAIGN.indexOf(activeMission)+1}):tr('FREE PLAY');const sector=sectorOf(state.mapId);
     // The title the field writes and the title the card shows are the SAME text:
     // the corner is gone, so this node is the only place the map is named, and
@@ -760,7 +760,8 @@ function renderResults(target){
       }
     }
     if($('bossAlert')){
-      const boss=state.enemies.find(e=>e.boss&&e.hp>0),incoming=state.running&&state.wave%5===0&&state.spawnLeft>0?bossForWave(state.wave):null,info=boss?BOSSES.find(b=>b.kind===boss.boss):incoming;
+      const bossInterval=activeTraining&&!coop?TRAINING_BOSS_EVERY:5;
+      const boss=state.enemies.find(e=>e.boss&&e.hp>0),incoming=state.running&&state.wave%bossInterval===0&&state.spawnLeft>0?bossForWave(state.wave,bossInterval):null,info=boss?BOSSES.find(b=>b.kind===boss.boss):incoming;
       $('bossAlert').hidden=!info||state.ended;
       if(info){const signal=boss?bossTelegraph(boss):null,key=boss?`${boss.boss}:${signal?.key||'normal'}`:null;if(signal?.warning&&bossSignal?.startsWith(`${boss.boss}:`)&&bossSignal!==key){sound.play('warning');$('bossAnnouncement').textContent=`${tr(info.label)}: ${localizedBossSignal(signal)}`;}bossSignal=key;$('bossAlert').classList.toggle('is-warning',!!signal?.warning);$('bossAlertTitle').textContent=tr(boss?'BOSS · {name}':'BOSS INCOMING · {name}',{name:tr(info.label)});$('bossAlertInfo').textContent=signal?localizedBossSignal(signal):tr((boss&&bossPhaseLabel(boss))||info.description);$('bossHealth').hidden=!boss;if(boss)$('bossHealthFill').style.width=`${Math.max(0,Math.min(100,100*boss.hp/boss.maxHp))}%`;}else bossSignal=null;
     }
@@ -794,7 +795,7 @@ function renderResults(target){
     const coachRecall=$('coachRecall');if(coachRecall)coachRecall.hidden=!coach?.dismissed();
   }
   function localizedBossSignal(signal){const labels={'shield-warning':'SHIELD RAISING · {seconds}s',shield:'SHIELD UP · DAMAGE REDUCED · {seconds}s','bomb-warning':'BOMB STRIKE IN · {seconds}s','repair-warning':'REPAIR IN · {seconds}s','rally-warning':'RALLY IN · {seconds}s',rally:'RALLY ACTIVE · {seconds}s','jam-warning':'JAM FIELD RISING · {seconds}s',jam:'JAM FIELD ACTIVE · {seconds}s','flood-warning':'FLOOD PULSE IN · {seconds}s',flood:'FLOOD PULSE ACTIVE · {seconds}s','rail-warning':'RAIL GUNS LOADING · {seconds}s',wire:'SIGNAL WIRE ACTIVE · WEAPON DAMAGE HALVED · {seconds}s',guns:'RAIL GUNS ACCELERATING · HOLD THE BUNKER · {seconds}s'};return labels[signal.key]?tr(labels[signal.key],{seconds:signal.seconds}):signal.text;}
-  function waveSummary(wave){const counts={};for(const kind of waveFormation(wave)) counts[kind]=(counts[kind]||0)+1;return tr('Wave {wave}',{wave})+(wave%5===0?tr(' · BOSS WAVE'):'')+' · '+Object.entries(counts).map(([kind,n])=>`${n} ${tr(ENEMY_TYPES[kind].label)}`).join(' · ')+(bossForWave(wave)?` · ${tr(bossForWave(wave).description)}`:'');}
+  function waveSummary(wave){const counts={},interval=activeTraining&&!coop?TRAINING_BOSS_EVERY:5;for(const kind of waveFormation(wave,interval)) counts[kind]=(counts[kind]||0)+1;return tr('Wave {wave}',{wave})+(wave%interval===0?tr(' · BOSS WAVE'):'')+' · '+Object.entries(counts).map(([kind,n])=>`${n} ${tr(ENEMY_TYPES[kind].label)}`).join(' · ')+(bossForWave(wave,interval)?` · ${tr(bossForWave(wave,interval).description)}`:'');}
   $('speed').onclick=()=>{if(coop){const vote=state.speedRequest,command=state.speed===2?{type:'slowSpeed'}:vote?{type:'cancelSpeed',requestId:vote.id}:{type:'requestSpeed'},context=requestFeedbackContext();dispatch(command,result=>{if(!result.ok)warn(result.reason);else if(command.type==='requestSpeed')requestReceipt('speed',result,context);else notice(command.type==='cancelSpeed'?'Speed request cancelled.':'Speed returned to 1×.');updateUI();});return;}state.speed=state.speed===1?2:state.speed===2?3:1;updateUI();};
   for(const [id,type] of [['speedApprove','approveSpeed'],['speedDecline','declineSpeed']])$(id).onclick=()=>{const vote=state.speedRequest;if(!coop||!vote)return;dispatch({type,requestId:vote.id},result=>{notice(result.ok?(type==='approveSpeed'?'Speed approved.':'Speed request declined.'):result.reason);updateUI();});};
   function startFromButton(versionChecked=false){
@@ -811,7 +812,7 @@ function renderResults(target){
     const vote=coop?currentWaveRequest():null;
     if(vote&&vote.requester!==me()&&(!vote.required.includes(me())||vote.approved.includes(me())))return;
     const command=vote?(vote.requester===me()?'cancelWave':'approveWave'):'startWave',context=coop?requestFeedbackContext():null;
-    dispatch(command==='startWave'?{type:command}:{type:command,requestId:vote.id},result=>{if(!result.ok){warn(result.reason);return;}if(!coop)soloDeployed=true;coach.event('deploy');if(!coop)sound.play(state.wave%5===0?'boss':'wave');if(coop&&command==='startWave'&&(result.waitingForGuest||result.waitingForPlayers))requestReceipt('wave',result,context);else notice(!coop?tr('Wave {wave} incoming: {summary}.',{wave:state.wave,summary:waveSummary(state.wave)}):command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest||result.waitingForPlayers?'Waiting for player approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
+    dispatch(command==='startWave'?{type:command}:{type:command,requestId:vote.id},result=>{if(!result.ok){warn(result.reason);return;}if(!coop)soloDeployed=true;coach.event('deploy');if(!coop){const interval=activeTraining?TRAINING_BOSS_EVERY:5;sound.play(state.wave%interval===0?'boss':'wave');if(activeTraining){const cue=trainingWaveRadioCue(state.wave);if(cue)generalRadio?.play?.(cue);}}if(coop&&command==='startWave'&&(result.waitingForGuest||result.waitingForPlayers))requestReceipt('wave',result,context);else notice(!coop?tr('Wave {wave} incoming: {summary}.',{wave:state.wave,summary:waveSummary(state.wave)}):command==='cancelWave'?'Wave request cancelled.':result.waitingForGuest||result.waitingForPlayers?'Waiting for player approval.':command==='approveWave'?'Wave approved.':'Wave started.');updateUI();});
   }
   $('start').onclick=()=>{ensureAudioGesture();startFromButton();};
   $('waveDecline').onclick=()=>{const vote=coop?currentWaveRequest():null;if(!vote||!vote.required.includes(me()))return;dispatch({type:'declineWave',requestId:vote.id},result=>{notice(result.ok?'Wave postponed. Anyone can request again when ready.':result.reason);updateUI();});};
@@ -914,6 +915,9 @@ function renderResults(target){
    if(!state)return null;
    const player=state.players?.[me()]||null;
    return {towers:state.towers,localId:me(),players:state.players,wave:state.wave,running:!!state.running,playerTarget:player?.target||null,x:player?.x,y:player?.y};
+  },
+  onStepChange:step=>{
+   if(step?.voiceClip)generalRadio?.play?.(step.voiceClip);
   }}):null;
   // The account reports practice as it happens and drops the sample soldier when the
   // dialog closes; this hands the result to the tour, which waits on the step.
@@ -1209,23 +1213,12 @@ function renderResults(target){
         else if(event.type==='rubbleCleared'){sound.play('impact');warn('Rubble cleared! Long-range shots are no longer weakened in that zone.');}
         else if(event.type==='iceBroken'){sound.play('ice');warn('Thin ice broke! Tanks slow down and take more damage.');}
         else if(event.type==='defeat'){sound.play('defeat');warn('Bunker lost. The operation has failed.');}
-        else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');const target=report;trackReportSave(target,account.awardXP(event.xp,event.wave,!experimentalWorkshop?null:runReceipt()),{reward:true});notice(event.wave%5===0?tr('Boss wave {wave} cleared! Choose a field upgrade. +{xp} XP.',{wave:event.wave,xp:event.xp}):tr('Wave cleared! +20 supplies and +{xp} XP. Prepare for the next wave.',{xp:event.xp}));}
+        else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');const target=report;if(!activeTraining||(trainingRewards&&event.wave>trainingWaveFloor)){trackReportSave(target,account.awardXP(event.xp,event.wave,!experimentalWorkshop?null:runReceipt()),{reward:true});if(activeTraining)account.recordTutorialWave?.(event.wave);}const interval=activeTraining?TRAINING_BOSS_EVERY:5;notice(event.wave%interval===0?tr('Boss wave {wave} cleared! Choose a field upgrade. +{xp} XP.',{wave:event.wave,xp:event.xp}):tr('Wave cleared! +20 supplies and +{xp} XP. Prepare for the next wave.',{xp:event.xp}));}
       }
-      // The boss of wave 5 ends the training contract: five cleared waves and the
-      // debrief. `trainingWon` waits for the boss to actually die, so the run
-      // cannot end with the boss still standing.
-      // The first run ends in the reward screen either way. Winning tops the run up
-      // to FIRST_RUN_XP; losing still pays FIRST_RUN_DEFEAT_XP, and both reach
-      // level 2 - the screens that follow teach equipment and skills, and a player
-      // who bounced off wave five still has to be given something to equip and a
-      // point to spend. This used to fire on `trainingWon` only, so a defeat ended
-      // the run with the debrief and no reward at all.
-      // However the training contract ends - abandoned, bunker lost, or the boss
-      // down - the field coaching ends with it. Reported: the SHOW TASK pill
-      // outlived a lost or abandoned tutorial and floated over the Command
-      // Center (Game, Skills and Armory alike) with nothing left to recall.
+      // The boss of wave 7 ends the training contract: seven cleared waves and
+      // the debrief (with defeat fallback also granting Level 2 once).
       if(activeTraining&&state.ended&&!trainingDone&&state.endReason==='retired'){
-       trainingDone=true;coach.stop();
+       trainingDone=true;coach.stop();generalRadio?.stop?.();
       }
       if(activeTraining&&state.ended&&!trainingDone&&!state.endReason?.startsWith('training')){
        trainingDone=true;trainingBonusPaid=true;coach.complete();
@@ -1233,16 +1226,20 @@ function renderResults(target){
        // A replay pays nothing: the first run can be restarted from Settings, and a
        // reward that can be farmed by restarting the tutorial is not a reward.
        if(trainingRewards)trackReportSave(report,account.awardXP(xp,Math.max(1,state.completedWave||1)),{reward:true});
+       if(typeof account.claimTutorialOutcome==='function')void account.claimTutorialOutcome({victory:false,rewards:trainingRewards,waves:Math.max(1,state.completedWave||1)});
+       generalRadio?.play?.('mission-complete');
        notice(()=>tr(trainingRewards?'Run over. {xp} XP for the attempt - time to gear up.':'Run over. This replay pays no XP - the first run already did.',{xp}));
       }
       if(activeTraining&&!state.ended&&trainingWon(state)&&!trainingDone){
        trainingDone=true;state.ended=true;state.running=false;state.endReason='training-complete';
        coach.complete();
-       // The five waves pay 250 XP; the contract tops that up to 450 so the first
-       // skill point is guaranteed with headroom. Credited once, with the last wave.
+       // The seven waves + bonus pay 450 XP total so the first skill point is
+       // guaranteed with headroom. Credited once per character.
        const bonus=trainingBonusXP();
        if(trainingRewards&&bonus>0&&state.completedWave>=TRAINING_WAVES&&!trainingBonusPaid)trackReportSave(report,account.awardXP(bonus,state.completedWave),{reward:true});
        trainingBonusPaid=true;
+       if(typeof account.claimTutorialOutcome==='function')void account.claimTutorialOutcome({victory:true,rewards:trainingRewards,waves:state.completedWave||TRAINING_WAVES});
+       generalRadio?.play?.('mission-complete');
        notice(()=>tr('Training contract complete! {xp} XP earned. Welcome to the Iron Path, soldier.',{xp:trainingXP()}));
       }
       if(activeStory&&!state.ended){const outcome=stepStory(activeStory,state,STEP);
@@ -1466,18 +1463,20 @@ function renderResults(target){
   // training contract. Without it the second tap on "play the first run again" did
   // nothing, because `activeTraining` was still true from the first replay.
   function startTrainingRun({rewards=true,restart=false}={}){
+   const waveFloor=Math.max(0,(Number(arguments[0]?.waveFloor)||0)|0);
    if(releaseStopped)return false;
    if(activeTraining&&!restart)return false;
    trainingRewards=rewards!==false;
+   trainingWaveFloor=waveFloor;
    closeMenu();keys.clear();sendDirection();soloDeployed=true;activeMission=null;activeStory=null;activeTraining=true;trainingDone=false;trainingBonusPaid=false;selectedMap=TRAINING_MAP;reset();onResumeBattle();
-   notice(()=>tr('Training contract: five waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
+   notice(()=>tr('Training contract: seven waves, boss in the last one. Enemies are weakened and your bunker is reinforced.'));
    // The welcome card waits for a field that is actually drawn: the card has no
    // meaning over an empty canvas, and the player must see the pads it points at.
    const id=account.getUserId(),session=account.getSessionVersion?.(),trainingState=state;
-   if(id&&!coachSeen(id,tutorialStorage)){
+   if(id&&(!coachSeen(id,tutorialStorage)||restart)){
     // Two frames can elapse after a run is abandoned or the account changes.
     // Never start an old soldier's lesson over a replacement battlefield.
-    const start=()=>{if(!releaseStopped&&!coop&&activeTraining&&state===trainingState&&!state.ended&&account.getUserId()===id&&account.getSessionVersion?.()===session)coach?.start(id);};
+    const start=()=>{if(!releaseStopped&&!coop&&activeTraining&&state===trainingState&&!state.ended&&account.getUserId()===id&&account.getSessionVersion?.()===session){if(restart)coach?.replay(id);else coach?.start(id);}};
     if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(start));
     else start();
    }
@@ -1494,7 +1493,7 @@ function renderResults(target){
    if(!state.ended&&(soloDeployed||state.running||state.wave>0||state.towers.length||activeMission||activeTraining))return 'game';
    return 'ready';
   }
-  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,setPartyFinalizationState,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();generalRadio?.refreshLanguage?.();renderViewportLabels();if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,setPartyFinalizationState,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.
@@ -1526,9 +1525,9 @@ function renderResults(target){
   },
   // The Settings dialog owns the controls, the game owns the effects. These hooks
   // keep Audio, Graphics, Voice-Over, Effects, Auto-Pause, and Map View synced.
-  setSoundEnabled:async value=>{desiredSoundEnabled=!!value;soundEnabled=await sound.setEnabled(desiredSoundEnabled);return soundEnabled;},
+  setSoundEnabled:async value=>{desiredSoundEnabled=!!value;soundEnabled=await sound.setEnabled(desiredSoundEnabled);generalRadio?.setPrefs?.({soundEnabled:desiredSoundEnabled});return soundEnabled;},
   isSoundEnabled:()=>soundEnabled,
-  setVolume:value=>{sound.setVolume(value);return sound.getVolume();},
+  setVolume:value=>{const v=sound.setVolume(value);generalRadio?.setPrefs?.({volume:v});return v;},
   setReducedGraphics:applyGraphics,
   isReducedGraphics:()=>reducedMotion,
   applySettings:prefs=>{
@@ -1542,22 +1541,16 @@ function renderResults(target){
     visualPrefs.autoPause=prefs.autoPause!==false;
     visualPrefs.mapZoom=prefs.mapZoom==='large'?'large':'fit';
     if(!visualPrefs.voiceOver)stopMissionVoice();
+    generalRadio?.setPrefs?.({voiceOver:visualPrefs.voiceOver,soundEnabled:prefs.soundEnabled!==false,volume:prefs.volume});
     if(prevZoom!==visualPrefs.mapZoom&&!battleViewport&&!touchZoom)setMapZoom(visualPrefs.mapZoom==='large');
   },
-   // The training contract is a real deployment, not a mock: six weakened waves
+   // The training contract is a real deployment, not a mock: seven weakened waves
    // that pay level 2. Called once by the account after the first-run tutorial.
    startTrainingRun:options=>requestTrainingStart(()=>startTrainingRun(options)),
   // The coach owns its own card; these let other modules (account.js) drive it.
   startCoach:id=>coach.start(id),stopCoach:()=>coach.stop(),isCoachOpen:()=>coach.isOpen(),replayCoach:()=>coach.replay(account.getUserId()),
-  // The coach card, its ring and its recall pill are battlefield optics:
-  // they live OUTSIDE #gameView, so nothing hid them when the Command Center
-  // opened - after a finished tutorial run the yellow ring and its dashed
-  // arrow kept floating over the menu's mission cards (reported: "bleibt die
-  // aktive Field Karte mit dem Ziel mit dem gelben Kreis und den Strichen
-  // auch im Hauptmenue aktiv"). Parking pauses the card like its own close
-  // button (the step survives) and force-hides every layer; back on the
-  // field the pill recalls the card at its current step.
   parkCoach(){try{coach?.dismiss?.();}catch{/* never block the menu */}
+   generalRadio?.stop?.();
    for(const id of ['firstRunCoach','coachRecall']){const node=$(id);if(node)node.hidden=true;}
    for(const id of ['coachHighlight','coachRing','coachArrow']){const node=$(id);if(node)node.setAttribute('hidden','');}},
    isTrainingRun:()=>activeTraining,getTrainingXP:trainingXP,

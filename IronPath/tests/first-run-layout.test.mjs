@@ -213,10 +213,10 @@ test('FULLSCREEN is a setting, not a permanent chip in the corner', () => {
   assert.doesNotMatch(fieldMenu, /fieldFullscreen/, 'and no second fullscreen button');
 });
 
-test('the coach caption counts five waves, like the contract it describes', () => {
+test('the coach caption counts seven waves, like the contract it describes', () => {
   const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
-  assert.match(coach, /caption:'WAVE 1 OF 5'/, 'the card says five waves');
-  assert.doesNotMatch(coach, /OF 6|of 6'/, 'and nothing still says six');
+  assert.match(coach, /caption:'WAVE 1 OF 7'/, 'the card says seven waves');
+  assert.doesNotMatch(coach, /OF 5|OF 6|of 6'/, 'and nothing still says five or six');
 });
 
 test('an open field menu paints above the contract card', () => {

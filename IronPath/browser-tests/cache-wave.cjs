@@ -9,6 +9,9 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261119-block6','account.js?v=20261119-block6','command-center.mjs?v=20261119-block6','character-name.mjs?v=20261119-block6','character-name-claim.mjs?v=20261119-block6','character-name-conflict.mjs?v=20261119-block6','character-rename.mjs?v=20261119-block6',
+ 'first-run-coach.mjs?v=20261119-block6','first-run-guide.mjs?v=20261119-block6','first-run-ending.mjs?v=20261119-block6','game.js?v=20261119-block6','solo-deployment.mjs?v=20261119-block6','training-run.mjs?v=20261112-tagless1',
+ 'language.mjs?v=20261119-block6','localization-de.mjs?v=20261119-block6','localization-firstrun-de.mjs?v=20261119-block6','patch-notes.mjs?v=20261119-block6','tutorial.mjs?v=20261119-block6','settings.mjs?v=20261119-block6',
  'account-entry.mjs?v=20261119-block9g','account.js?v=20261119-block9g','character-name.mjs?v=20261119-block9g','character-name-claim.mjs?v=20261119-block9g',
  'game.js?v=20261119-block9g','friends-ui.mjs?v=20261119-block9g','friends.mjs?v=20261119-block9g','language.mjs?v=20261119-block9g','patch-notes.mjs?v=20261119-block9g','localization-account-de.mjs?v=20261119-block9g',
  'account-entry.mjs?v=20261119-block9c','account.js?v=20261119-block9c','active-session.mjs?v=20261119-block9c',
@@ -108,7 +111,10 @@ const oldUrls=[
     import(`/IronPath/multiplayer-prompts.mjs?v=${build}`),import(`/IronPath/field-menu.mjs?v=${build}`),
     import(`/IronPath/combat.mjs?v=${build}`),import(`/IronPath/tower-specialization.mjs?v=${build}`),
     import(`/IronPath/settings.mjs?v=${build}`),import(`/IronPath/password-change.mjs?v=${build}`),
-    import(`/IronPath/endless-launcher.mjs?v=${build}`),import(`/IronPath/patch-notes.mjs?v=${build}`)
+    import(`/IronPath/endless-launcher.mjs?v=${build}`),import(`/IronPath/patch-notes.mjs?v=${build}`),
+    import(`/IronPath/tutorial-sync.mjs?v=${build}`),import(`/IronPath/general-radio.mjs?v=${build}`),
+    import(`/IronPath/tutorial-dossier.mjs?v=${build}`),import(`/IronPath/menu-tour.mjs?v=${build}`),
+    import(`/IronPath/training-run.mjs?v=${build}`),import(`/IronPath/command-center.mjs?v=${build}`)
    ]);
    language.setupLanguage({document,storage:{getItem:()=> 'de',setItem(){}}});
    const text=language.translateText('{name} requests wave {wave}. {count} approval still needed.',{name:'Bob',wave:1,count:1});
@@ -120,7 +126,7 @@ const oldUrls=[
   },build);
   assert.equal(result.queued.status,'queued');assert.equal(result.applied.ok,true);assert.equal(result.request.requester,'bob');
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
-  for(const name of ['game.js','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
+  for(const name of ['game.js','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
   assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
   assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');
