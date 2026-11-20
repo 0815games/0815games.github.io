@@ -5,8 +5,8 @@
 // bilingual copy, radio voice controls, and clear Accept / Decline / Resume /
 // Replay-HQ-Only paths without ever triggering destructive account actions.
 
-import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block6';
-import {FIRST_RUN_XP} from './training-run.mjs?v=20261119-block6';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261119-block6b';
+import {FIRST_RUN_XP} from './training-run.mjs?v=20261119-block6b';
 
 export const DOSSIER_MODES=Object.freeze(['offer','resume','replay']);
 
@@ -140,11 +140,22 @@ export function createTutorialDossier({
     activeMode=DOSSIER_MODES.includes(mode)?mode:'offer';
     alreadyRewarded=!!rewarded;
     render();
+    const resetScroll=()=>{
+      dialog.scrollTop=0;
+      const body=dialog.querySelector?.('.dossier-body');
+      if(body)body.scrollTop=0;
+    };
+    resetScroll();
     if(!dialog.open){
       if(typeof dialog.showModal==='function')dialog.showModal();
       else dialog.open=true;
     }
+    resetScroll();
+    if(typeof dialog.focus==='function'){
+      try{dialog.focus({preventScroll:true});}catch{try{dialog.focus();}catch{}}
+    }
     radio?.play?.('dossier-offer',{speak});
+    resetScroll();
     return true;
   }
 

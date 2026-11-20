@@ -88,6 +88,16 @@ test('the guide never becomes a modal', () => {
   // It must not cover the thing it explains: on a laptop the dialog is centred.
   assert.match(guide, /top:calc\(8px/, 'it sits at the top, clear of the dialog body');
   assert.match(block, /@media\(max-height:460px\)/);
+
+  // Structural & CSS layout guards: .guide-body scrolls between pinned header & footer,
+  // and secondary #guideClose / .general-radio-btn / .coach-close outrank the (0,4,1) iron-slab rule.
+  const guideHtml = html.slice(html.indexOf('id="firstRunGuide"'), html.indexOf('</aside>', html.indexOf('id="firstRunGuide"')));
+  assert.match(guideHtml, /class="guide-head"[\s\S]*class="guide-body"[\s\S]*class="guide-foot"/);
+  assert.match(block, /\.guide-body\{flex:1 1 auto;min-height:0;overflow-y:auto;/);
+  assert.match(block, /#firstRunGuide \.guide-foot button\.guide-close:not\(\.primary\):not\(\[disabled\]\)\{/);
+  assert.match(block, /\.general-radio-bar button\.general-radio-btn:not\(\.primary\):not\(\[disabled\]\)\{/);
+  assert.match(block, /\.first-run-coach \.coach-head button\.coach-close:not\(\.primary\):not\(\[disabled\]\)\{/);
+  assert.doesNotMatch(block, /\.general-radio-sub\{[^}]*max-height:\s*(?:36|46)px/);
 });
 
 test('the card outranks the modal dialogs it explains, and re-raises above them',()=>{

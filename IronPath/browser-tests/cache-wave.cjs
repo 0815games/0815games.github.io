@@ -9,6 +9,9 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261119-block6','account.js?v=20261119-block6','command-center.mjs?v=20261119-block6','game.js?v=20261119-block6',
+ 'tutorial-dossier.mjs?v=20261119-block6','menu-tour.mjs?v=20261119-block6','general-radio.mjs?v=20261119-block6','first-run-guide.mjs?v=20261119-block6','first-run-coach.mjs?v=20261119-block6',
+ 'training-run.mjs?v=20261119-block6','tutorial-sync.mjs?v=20261119-block6','language.mjs?v=20261119-block6','patch-notes.mjs?v=20261119-block6','localization-firstrun-de.mjs?v=20261119-block6',
  'account-entry.mjs?v=20261119-block2','account.js?v=20261119-block2','command-center.mjs?v=20261119-block2','character-name.mjs?v=20261119-block2','character-name-claim.mjs?v=20261119-block2','character-name-conflict.mjs?v=20261119-block2','character-rename.mjs?v=20261119-block2',
  'first-run-coach.mjs?v=20261119-block2','first-run-guide.mjs?v=20261119-block2','first-run-ending.mjs?v=20261119-block2','game.js?v=20261119-block2','solo-deployment.mjs?v=20261119-block2','training-run.mjs?v=20261112-tagless1',
  'language.mjs?v=20261119-block2','localization-de.mjs?v=20261119-block2','localization-firstrun-de.mjs?v=20261119-block2','patch-notes.mjs?v=20261119-block2','tutorial.mjs?v=20261119-block2','settings.mjs?v=20261119-block2',
