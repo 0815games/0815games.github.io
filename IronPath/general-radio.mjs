@@ -5,7 +5,7 @@
 // volume synchronization with Settings, and safe audio cleanup on view/account
 // transitions.
 
-import {getLanguage} from './language.mjs?v=20261119-block6b';
+import {getLanguage} from './language.mjs?v=20261120-audio1';
 
 export const GENERAL_NAME=Object.freeze({
   en:'GENERAL VANCE · SECTOR COMMAND',
@@ -166,6 +166,7 @@ export function createGeneralRadio({AudioCtor=typeof Audio==='function'?Audio:nu
       soundEnabled,
       volume,
       audible:isAudible(),
+      speaking:!!activeAudio,
       lang,
     };
   }
@@ -175,19 +176,23 @@ export function createGeneralRadio({AudioCtor=typeof Audio==='function'?Audio:nu
     activeClip=clipId||null;
     activeText=subtitle||tutorialRadioSubtitle(clipId,lang)||'';
     stopAudio();
-    notify();
-    if(!speak||!clipId||!isAudible()||typeof AudioCtor!=='function')return false;
+    if(!speak||!clipId||!isAudible()||typeof AudioCtor!=='function'){notify();return false;}
     const src=tutorialVoicePath(clipId,lang);
-    if(!src)return false;
+    if(!src){notify();return false;}
     try{
       const audio=new AudioCtor(src);
       audio.volume=effectiveVolume();
-      audio.onerror=()=>{};
-      const promise=audio.play?.();
-      if(promise&&typeof promise.catch==='function')promise.catch(()=>{});
+      const clearIfCurrent=()=>{if(activeAudio===audio){activeAudio=null;notify();}};
+      audio.onerror=clearIfCurrent;
+      audio.onended=clearIfCurrent;
       activeAudio=audio;
+      const promise=audio.play?.();
+      if(promise&&typeof promise.catch==='function')promise.catch(clearIfCurrent);
+      notify();
       return true;
     }catch{
+      activeAudio=null;
+      notify();
       return false;
     }
   }

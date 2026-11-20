@@ -61,6 +61,7 @@ test('General Vance audio works gracefully offline/muted, updates subtitle/DOM a
   assert.equal(radio.play('mission-welcome', { speak: true }), true);
   assert.equal(createdAudio.length, 1);
   assert.equal(createdAudio[0].volume, 0.6);
+  assert.equal(radio.snapshot().speaking, true);
   assert.equal(doc.nodes.get('coachRadioSubtitle').hidden, false);
   assert.ok(doc.nodes.get('coachRadioSubtitle').textContent.length > 20);
 
@@ -69,10 +70,12 @@ test('General Vance audio works gracefully offline/muted, updates subtitle/DOM a
   assert.equal(toggled, false);
   assert.equal(createdAudio[0].paused, true);
   assert.equal(radio.snapshot().audible, false);
+  assert.equal(radio.snapshot().speaking, false);
   assert.equal(doc.nodes.get('coachRadioMute').attrs['aria-pressed'], 'true');
 
   // Calling stop() clears subtitle cleanly and hides all bound <p> subtitle nodes
   radio.stop();
+  assert.equal(radio.snapshot().speaking, false);
   assert.equal(doc.nodes.get('coachRadioSubtitle').textContent, '');
   assert.equal(doc.nodes.get('coachRadioSubtitle').hidden, true);
 });

@@ -111,7 +111,7 @@ export function applyHitEffects(state,tower,target,dealt,events,rewardTeam){
   // Twin Flak II: barrage chain - one nearby enemy takes 20% of the hit.
   if(isKit(tower,2,0,2)){
     const other=state.enemies.find(e=>e!==target&&e.hp>0&&Math.hypot(e.x-target.x,e.y-target.y)<=85);
-    if(other){other.hp-=dealt*.2;state.shots?.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:.22,duration:.22,kind:2,color:'#8cc0a6'});}
+    if(other){other.hp-=dealt*.2;state.shots?.push({x:target.x,y:target.y,tx:other.x,ty:other.y,life:.22,duration:.22,kind:2,color:'#8cc0a6',id:(state._shotSeq=(state._shotSeq||0)+1),fx:'chain'});}
   }
   // Rapid Cannon III: every sixth shot splashes 25% onto enemies within 40px.
   if(isKit(tower,1,0,3)&&tower.shotCount%6===0){

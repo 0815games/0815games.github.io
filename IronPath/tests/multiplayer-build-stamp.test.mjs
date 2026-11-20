@@ -46,7 +46,7 @@ test('changed browser modules and their importers share one cache wave without s
  // This includes transitive importers, not only the files with gameplay edits:
  // cached JS is not re-evaluated just because its own dependency has changed.
  const names=new Set([
-  'ability-hud.mjs','account-entry.mjs','account.js','active-session.mjs','auth-form.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','cartoon-art.mjs','character-name-claim.mjs','character-name-conflict.mjs','character-name.mjs','character-rename.mjs','combat-fx.mjs','combat.mjs','command-center.mjs','confirmation.mjs',
+  'ability-hud.mjs','account-entry.mjs','account.js','active-session.mjs','auth-form.mjs','battle-sound-recipes.mjs','battle-sound.mjs','battle-viewport-controller.mjs','battle-viewport.mjs','cartoon-art.mjs','character-name-claim.mjs','character-name-conflict.mjs','character-name.mjs','character-rename.mjs','combat-fx.mjs','combat.mjs','command-center.mjs','confirmation.mjs',
   'coop-input.mjs','coop-invites.mjs','coop-rewards.mjs','development-ui.mjs','discharge-notice.mjs','endless-launcher.mjs','field-menu.mjs',
   'firebase-durable-client-session.mjs','firebase-durable-host-session.mjs','firebase-four-digit-panel.mjs','firebase-four-lobby.mjs','firebase-four-panel.mjs',
   'firebase-party-game.mjs','firebase-party-lobby.mjs','firebase-party-session.mjs','firebase-recoverable-game.mjs','firebase-recovery-store.mjs',

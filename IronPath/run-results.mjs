@@ -1,7 +1,7 @@
 import {characterProgress,waveXP} from './progression.mjs?v=20261105-prestige1';
 import {ITEMS,readArmory} from './armory.mjs?v=20261112-tagless1';
-import {parseBuild,pointsLeft} from './skills.mjs?v=20261119-block6b';
-import {WAVE_COUNT} from './combat.mjs?v=20261119-block6b';
+import {parseBuild,pointsLeft} from './skills.mjs?v=20261120-audio1';
+import {WAVE_COUNT} from './combat.mjs?v=20261120-audio1';
 
 // This is presentation/telemetry, not a source of reward authorization.
 export function rewardDelta(before,after){

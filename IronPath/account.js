@@ -1,82 +1,82 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block6b';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block6b';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261120-audio1';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261120-audio1';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block6b';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261120-audio1';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261119-block6b';
-import {createSettings,readSettings} from './settings.mjs?v=20261119-block6b';
-import {createPasswordChange} from './password-change.mjs?v=20261119-block6b';
+import {setupFieldMenu} from './field-menu.mjs?v=20261120-audio1';
+import {createSettings,readSettings} from './settings.mjs?v=20261120-audio1';
+import {createPasswordChange} from './password-change.mjs?v=20261120-audio1';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261119-block6b';
+import {createPatchNotes} from './patch-notes.mjs?v=20261120-audio1';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block6b';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block6b';
-import {setupFriends} from './friends-ui.mjs?v=20261119-block6b';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block6b';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261120-audio1';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261120-audio1';
+import {setupFriends} from './friends-ui.mjs?v=20261120-audio1';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261120-audio1';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block6b';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block6b';
-import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261119-block6b';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block6b';
-import {createCommandCenter} from './command-center.mjs?v=20261119-block6b';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261120-audio1';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261120-audio1';
+import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261120-audio1';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261120-audio1';
+import {createCommandCenter} from './command-center.mjs?v=20261120-audio1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block6b';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261120-audio1';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block6b';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block6b';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block6b';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block6b';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block6b';
-import {setupAuthForm} from './auth-form.mjs?v=20261119-block6b';
-import {applyLoginScene} from './login-scene.mjs?v=20261119-block6b';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261120-audio1';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261120-audio1';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261120-audio1';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261120-audio1';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261120-audio1';
+import {setupAuthForm} from './auth-form.mjs?v=20261120-audio1';
+import {applyLoginScene} from './login-scene.mjs?v=20261120-audio1';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261119-block6b';
-import {createWriteTracker} from './version-check.mjs?v=20261119-block6b';
+import {createVersionUI} from './version-ui.mjs?v=20261120-audio1';
+import {createWriteTracker} from './version-check.mjs?v=20261120-audio1';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261119-block6b';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261120-audio1';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261119-block6b';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block6b';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block6b';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block6b';
-import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './tutorial-sync.mjs?v=20261119-block6b';
-import {createGeneralRadio} from './general-radio.mjs?v=20261119-block6b';
-import {createTutorialDossier} from './tutorial-dossier.mjs?v=20261119-block6b';
-import {createMenuTour} from './menu-tour.mjs?v=20261119-block6b';
+import {createConfirmation} from './confirmation.mjs?v=20261120-audio1';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261120-audio1';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261120-audio1';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261120-audio1';
+import {initialOfferedTutorial,shouldAutoPresentTutorial,tutorialResumeTarget,shouldPayTutorialReward,createTutorialSync} from './tutorial-sync.mjs?v=20261120-audio1';
+import {createGeneralRadio} from './general-radio.mjs?v=20261120-audio1';
+import {createTutorialDossier} from './tutorial-dossier.mjs?v=20261120-audio1';
+import {createMenuTour} from './menu-tour.mjs?v=20261120-audio1';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block6b';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block6b';
-import {rewardDelta} from './run-results.mjs?v=20261119-block6b';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block6b';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block6b';
-import {createPartySignOut} from './party-signout.mjs?v=20261119-block6b';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261120-audio1';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261120-audio1';
+import {rewardDelta} from './run-results.mjs?v=20261120-audio1';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261120-audio1';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261120-audio1';
+import {createPartySignOut} from './party-signout.mjs?v=20261120-audio1';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block6b';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block6b';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261120-audio1';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261120-audio1';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261119-block6b';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block6b';
-import { createPlayer } from './match.mjs?v=20261119-block6b';
-import { bunkerStart } from './solo-deployment.mjs?v=20261119-block6b';
+import { startGame } from './game.js?v=20261120-audio1';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261120-audio1';
+import { createPlayer } from './match.mjs?v=20261120-audio1';
+import { bunkerStart } from './solo-deployment.mjs?v=20261120-audio1';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block6b';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block6b';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261120-audio1';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261120-audio1';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -292,7 +292,12 @@ function applySandboxWorkshop(reduce,command=null){
 }
 const workshopService={
   initialize:()=>inSandbox()?sandboxWorkshop.initialize():workshopAccount.initialize(),
-  command:command=>inSandbox()?sandboxWorkshop.command(command):workshopAccount.command(command),
+  command:async command=>{
+    const result=await (inSandbox()?sandboxWorkshop.command(command):workshopAccount.command(command));
+    if(result?.status==='saved')gameControl?.playCue?.(command?.type==='equip'?'uiEquip':'uiCraft');
+    else if(result?.status&&result.status!=='cancelled')gameControl?.playCue?.('uiError');
+    return result;
+  },
   sync:()=>inSandbox()?sandboxWorkshop.sync():workshopAccount.sync(),
   hasPending:()=>inSandbox()?false:!!workshopAccount.hasPending?.(),
   isBusy:()=>workshopAccount.isBusy(),
@@ -1152,11 +1157,12 @@ $('skillSave').onclick=async()=>{
     const build=encodeBuild(draftSkills);
     sandboxAPI.apply({...viewProfile(),skills:build});
     sandboxAPI.markSkill({upgraded:build!=='v2;none'&&pointsLeft(draftSkills,level(viewProfile().xp))===0,saved:true});
+    gameControl?.playCue?.('uiConfirm');
     $('skillStatus').textContent=translateText('Sample data: your real build is unchanged.');
     $('skillDialog').close();
     return;
   }
-  if(!canEditSkills()){$('skillStatus').textContent=translateText('Leave the party and finish the match before changing skills.');return;}
+  if(!canEditSkills()){gameControl?.playCue?.('uiError');$('skillStatus').textContent=translateText('Leave the party and finish the match before changing skills.');return;}
   if(savingSkills)return;const currentUser=user,version=sessionVersion,build=encodeBuild(draftSkills),expected=openedSkills;savingSkills=true;$('skillSave').disabled=true;$('skillReset').disabled=true;$('skillDetailAction').disabled=true;$('skillStatus').textContent=translateText('Saving…');
   try{
     const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{
@@ -1164,9 +1170,9 @@ $('skillSave').onclick=async()=>{
       return {...current,skills:build};
     },{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
-    if(!result.committed){$('skillStatus').textContent=translateText('Could not save: your saved build may have changed elsewhere, or this draft is no longer valid. Close and reopen Skills to reload it.');return;}
-    profile=result.snapshot.val();skillMigrationSummary=null;commandCenter?.render();$('skillDialog').close();if(gameControl?.canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);$('saveStatus').textContent=translateText('Skill build saved for the next match.');
-  }catch(error){if(version===sessionVersion)$('skillStatus').textContent=translateText('Could not save skills. Check your connection and Firebase rules.');}
+    if(!result.committed){gameControl?.playCue?.('uiError');$('skillStatus').textContent=translateText('Could not save: your saved build may have changed elsewhere, or this draft is no longer valid. Close and reopen Skills to reload it.');return;}
+    profile=result.snapshot.val();skillMigrationSummary=null;commandCenter?.render();$('skillDialog').close();if(gameControl?.canEditSkills())gameControl.resetSkills();updateSkillPrompt(profile);gameControl?.playCue?.('uiConfirm');$('saveStatus').textContent=translateText('Skill build saved for the next match.');
+  }catch(error){if(version===sessionVersion){gameControl?.playCue?.('uiError');$('skillStatus').textContent=translateText('Could not save skills. Check your connection and Firebase rules.');}}
   finally{if(version===sessionVersion){savingSkills=false;$('skillSave').disabled=false;$('skillReset').disabled=false;if($('skillDialog').open){const message=$('skillStatus').textContent;renderSkills();$('skillStatus').textContent=message;}}}
 };
 
@@ -1653,21 +1659,22 @@ async function saveArmory(change){
   // real. Nothing is sent anywhere; the record is thrown away on `leave`.
   if(inSandbox()){
     const next=change(viewProfile()?.armory);
-    if(!next){$('armoryStatus').textContent=translateText('Not enough scrap for that in the sample.');return;}
+    if(!next){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Not enough scrap for that in the sample.');return;}
     const a=readArmory(next);
     sandboxAPI.apply({...viewProfile(),armory:next});
     sandboxAPI.markArmory({equipped:a.equipped>0,upgraded:['fortify','plating','repair','gun','supply','safeguard'].some(k=>a[k]>(readArmory(sandbox.profile.armory)[k]||0))});
+    gameControl?.playCue?.('uiEquip');
     $('armoryStatus').textContent=translateText('Sample data: nothing is saved.');
     renderArmory();
     return;
   }
-  if(!canEditSkills()){$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
+  if(!canEditSkills()){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Finish the match and leave the party before changing your armory.');return;}
   savingArmory=true;const currentUser=user,version=sessionVersion;$('armoryStatus').textContent=translateText('Saving…');
   try{const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>{if(!current||!Number.isInteger(current.xp))return;const armory=change(current.armory);if(!armory)return;const old=readArmory(current.armory);if(characterProgress(current.xp).level<5&&(armory.supply>old.supply||armory.safeguard>old.safeguard))return;return {...current,armory};},{applyLocally:false});
     if(version!==sessionVersion||user?.uid!==currentUser.uid)return;
-    if(!result.committed){$('armoryStatus').textContent=translateText('Not enough scrap or the armory changed. Please try again.');return;}
-    profile=result.snapshot.val();commandCenter?.render();if(gameControl?.canEditSkills())gameControl.resetSkills();$('armoryStatus').textContent=translateText('Saved for your next match.');renderArmory();
-  }catch(error){if(version===sessionVersion)$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}
+    if(!result.committed){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Not enough scrap or the armory changed. Please try again.');return;}
+    profile=result.snapshot.val();commandCenter?.render();if(gameControl?.canEditSkills())gameControl.resetSkills();gameControl?.playCue?.('uiEquip');$('armoryStatus').textContent=translateText('Saved for your next match.');renderArmory();
+  }catch(error){if(version===sessionVersion){gameControl?.playCue?.('uiError');$('armoryStatus').textContent=translateText('Could not save. Check your connection and database rules.');}}
   finally{if(version===sessionVersion)savingArmory=false;}
 }
 $('armoryOpen').onclick=()=>{if(!inSandbox()&&!canEditSkills()){$('saveStatus').textContent=translateText('Return to the Command Center to open the armory, or leave your party first.');return;}syncContextBackButtons();$('armoryStatus').textContent='';renderArmory();$('armoryDialog').showModal();};

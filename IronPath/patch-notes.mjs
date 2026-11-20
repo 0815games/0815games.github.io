@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261119-block6b';
+import {getLanguage} from './language.mjs?v=20261120-audio1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'audio1',build:'20261120-audio1',pr:330,
+    title:{en:'Audio Update 1–4 · Tactical Web Audio Engine, Weapons, Construction, Abilities, Bosses & HQ Feedback',de:'Audio-Update 1–4 · Taktische Web-Audio-Engine, Waffen, Bau, Fähigkeiten, Bosse & HQ-Feedback'},
+    shipped:[
+      {en:'Upgraded `battle-sound.mjs` into a multi-bus tactical Web Audio synthesizer (`sfx`, `explosion`, `ui`, `music` buses, master limiter, 7-bucket stereo field panning, per-weapon polyphony & density throttling, plus automatic voice-over/cinematic ducking synced with `general-radio.mjs`).',de:'`battle-sound.mjs` zur taktischen Multi-Bus-Web-Audio-Engine ausgebaut (`sfx`-, `explosion`-, `ui`- und `music`-Bus, Master-Limiter, 7-stufiges Stereo-Panning über das Spielfeld, Pro-Waffe-Polyphonie-/Dichte-Drosselung sowie automatisches Ducking bei Funksprüchen über `general-radio.mjs`).'},
+      {en:'Added dry realistic synthesis (`battle-sound-recipes.mjs`, `simulation.mjs`, `tower-specialization.mjs`) across all 5 weapon classes, level-3 specializations, class paths, soldier rifle/bunker fire, infantry/tank/plane/boss deaths, and solo/co-op shot & kill observation (excluding the 1v1 rival lane).',de:'Trocken-realistische Waffensynthese (`battle-sound-recipes.mjs`, `simulation.mjs`, `tower-specialization.mjs`) für alle 5 Turmtypen, Stufe-3-Zweige, Klassenpfade, Soldaten-Gewehr/Bunkergeschütz, Infanterie-/Panzer-/Flugzeug-/Boss-Tode sowie Solo-/Co-op-Gefechtsbeobachtung (ohne die 1-gegen-1-Rivalenspur) ergänzt.'},
+      {en:'Wired bespoke tactical audio across Packages 2–4: tower build/upgrade/branch/prestige/class-path/sell, supply crates, boss bounties, field perks, sector retreat, bunker impacts, all 6 soldier abilities, combos, ice/rubble hazards, boss spawns/telegraphs/abilities, wave/victory/defeat cadences, co-op VHF radio pings, and restrained Armory/Workshop/Skills UI cues.',de:'Eigene taktische Sounds für die Pakete 2–4 integriert: Turmbau, Upgrade, Spezialisierung, Prestige, Klassenpfad, Verkauf, Versorgungskisten, Boss-Kopfgeld, Field Perks, Sektor-Rückzug, Bunker-Treffer, alle 6 Klassen-Fähigkeiten, Kombos, Eis-/Geröll-Gefahren, Boss-Spawns/Telegraphen/Fähigkeiten, Wellen-/Sieg-/Niederlage-Signale, Co-op-VHF-Funk sowie dezentes UI-Feedback in Waffenkammer und Skills.'},
+    ],
+    open:[
+      {en:'Package 5 (adaptive ambient music & weather soundscape) and Package 6 (Settings split audio sliders & mobile audio unlock polish), followed by real phone/desktop listening verification on `20261120-audio1`.',de:'Paket 5 (dezente adaptive Hintergrundmusik & Wetter-Ambience), Paket 6 (getrennte Audio-Regler in den Einstellungen & Mobil-Unlock-Feinschliff) sowie echte Hörprobe auf Handy und Desktop auf `20261120-audio1`.'},
+    ],
+  },
   {
     id:'block6b',build:'20261119-block6b',pr:329,
     title:{en:'Block 6b · Tutorial Dossier, HQ Tour, Field Guide & General Vance Radio Polish',de:'Block 6b · Einsatz-Dossier, HQ-Tour, Nachgefechtshilfe & Funkleisten-Feinschliff'},

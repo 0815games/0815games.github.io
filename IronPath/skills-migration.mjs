@@ -1,5 +1,5 @@
 import {characterProgress} from './progression.mjs?v=20261105-prestige1';
-import {DEFAULT_BUILD,isV2BuildString,isLegacyBuildString,parseBuild,pointsLeft} from './skills.mjs?v=20261119-block6b';
+import {DEFAULT_BUILD,isV2BuildString,isLegacyBuildString,parseBuild,pointsLeft} from './skills.mjs?v=20261120-audio1';
 
 export const LEGACY_SKILL_BACKUP_PREFIX='ironpath:skills-legacy-backup:';
 
