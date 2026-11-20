@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-audio3';
+import {getLanguage} from './language.mjs?v=20261120-sellicon1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'sellicon1',build:'20261120-sellicon1',pr:333,
+    title:{en:'Tower Radial Menu · Confirm Sale & Cancel Icons, Contrast Discs & Refund Readout',de:'Turm-Radialmenü · Symbole, kontrastreiche Ringe & Erstattungsanzeige für Verkauf bestätigen'},
+    shipped:[
+      {en:'Added bespoke `icon-confirm-sell.svg` (gold supply coin with confirmation checkmark) and `icon-cancel.svg` artwork to `confirmSell` and `cancel` in `IronPath/game.js`, separating the refund `+amount` into `.sheet-price` on both `Sell tower` and `Confirm sale` so labels and supply totals never truncate.',de:'Eigene SVG-Symbole `icon-confirm-sell.svg` (Vorratsmünze mit grünem Bestätigungshaken) und `icon-cancel.svg` für `Verkauf bestätigen` und `Abbrechen` in `IronPath/game.js` ergänzt sowie die Erstattung `+Betrag` sauber in `.sheet-price` ausgegeben, damit Text und Betrag im Ring nicht mehr abgeschnitten werden.'},
+      {en:'Styled dedicated brass-gold (`confirmSell`) and slate-iron (`cancel`) radial ring discs with `#radialMenu` specificity after the generic V3 stamped-iron button rule in `IronPath/interface-redesign.css`, plus 2-line German label wrapping on desktop and phone viewports.',de:'Dedizierte Messing-/Gold- (`confirmSell`) und Schiefer-Eisen-Kreisschaltflächen (`cancel`) in `IronPath/interface-redesign.css` mit `#radialMenu`-Spezifität hinter der allgemeinen V3-Button-Regel angelegt und zweizeiligen Umbruch für lange deutsche Beschriftungen ergänzt.'},
+    ],
+    open:[
+      {en:'Real phone Safari and desktop visual inspection on `20261120-sellicon1`.',de:'Echte Sichtprüfung am Handy (Safari) und Desktop auf `20261120-sellicon1`.'},
+    ],
+  },
   {
     id:'audio3',build:'20261120-audio3',pr:332,
     title:{en:'Audio Update 7 · Warm Tactical Score, Seamless Weather Beds & Click-Free Synthesis',de:'Audio-Update 7 · Warmer Taktik-Soundtrack, nahtlose Wetter-Ambience & knackfreie Synthese'},

@@ -317,6 +317,44 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.deepEqual(branches.map(branch => branch.price), ['120', '120', 'Lv 5', 'Lv 10'], 'locked specializations name the level they need');
     assert.deepEqual(branches.map(branch => branch.locked), [false, false, true, true], 'exactly the level-locked two carry the lock');
     await page.keyboard.press('Escape');
+    // Tap the built tower again -> Sell -> verify Confirm sale / Cancel icons & refund visually, then Cancel.
+    await page.mouse.click(tower.x, tower.y);
+    await page.waitForFunction(() => {
+      const sheet = document.getElementById('radialMenu');
+      return sheet && !sheet.hidden && sheet.dataset.mode === 'actions';
+    }, null, {timeout: 10000});
+    assert.equal(await page.locator('#radial1').getAttribute('data-icon'), 'sell', 'sell action exposes sell icon');
+    await page.locator('#radial1').click();
+    await page.waitForFunction(() => document.getElementById('sheetTitle')?.textContent === 'Sell tower?', null, {timeout: 10000});
+    const confirmSell = await page.evaluate(() => [0, 1].map(index => {
+      const btn = document.getElementById('radial' + index);
+      const art = document.getElementById('menuArt' + index);
+      const artBox = art.getBoundingClientRect();
+      return {
+        hidden: btn.hidden,
+        icon: btn.dataset.icon || '',
+        name: document.getElementById('menuName' + index)?.textContent ?? '',
+        price: document.getElementById('menuPrice' + index)?.textContent ?? '',
+        artImage: getComputedStyle(art).backgroundImage,
+        artW: artBox.width,
+        artH: artBox.height,
+        bg: getComputedStyle(btn).backgroundImage || getComputedStyle(btn).backgroundColor,
+      };
+    }));
+    assert.equal(confirmSell[0].hidden, false);
+    assert.equal(confirmSell[0].icon, 'confirmSell', 'confirmSell carries confirmSell data-icon');
+    assert.match(confirmSell[0].artImage, /icon-confirm-sell\.svg/, 'confirmSell shows confirmation SVG');
+    assert.ok(confirmSell[0].artW >= 24 && confirmSell[0].artH >= 24, 'confirmSell art is rendered visibly');
+    assert.equal(confirmSell[0].name, 'Confirm sale', 'confirmSell shows clean label');
+    assert.equal(confirmSell[0].price, '+60', 'confirmSell shows gold refund');
+    assert.equal(confirmSell[1].hidden, false);
+    assert.equal(confirmSell[1].icon, 'cancel', 'cancel carries cancel data-icon');
+    assert.match(confirmSell[1].artImage, /icon-cancel\.svg/, 'cancel shows cancel SVG');
+    assert.ok(confirmSell[1].artW >= 24 && confirmSell[1].artH >= 24, 'cancel art is rendered visibly');
+    assert.notEqual(confirmSell[0].bg, confirmSell[1].bg, 'confirmSell and cancel discs differ visually');
+    await page.locator('#radial1').click();
+    await page.waitForFunction(() => document.getElementById('radial0')?.dataset.icon === 'upgrade', null, {timeout: 10000});
+    await page.keyboard.press('Escape');
     await page.locator('#coachClose').click();
     assert.equal(await page.locator('#firstRunCoach').isHidden(),true,'a dismissed card stays dismissed');
     // Reported: "wenn man die Aufgabe wegklickt, hat man keine Möglichkeit, sie

@@ -73,10 +73,28 @@ assert.match(element('towerDetailsCost').textContent,/Not enough/);
 assert.equal(element('money').textContent,5);
 element('towerDetailsBack').onclick();
 element('radialClose').onclick();
-// Sale still requires confirmation.
+// Sale still requires confirmation and equips both ring buttons with dedicated icons and refund value.
 element('game').onclick({clientX:105,clientY:210});
+assert.equal(element('radial1').dataset.icon,'sell');
+assert.equal(element('menuPrice1').textContent,'+60');
 element('radial1').onclick();
-assert.match(element('menuName0').textContent,/Confirm/);
+assert.equal(element('radial0').dataset.icon,'confirmSell');
+assert.equal(element('radial1').dataset.icon,'cancel');
+assert.equal(element('menuName0').textContent,'Confirm sale');
+assert.equal(element('menuPrice0').textContent,'+60');
+assert.equal(element('menuName1').textContent,'Cancel');
+{
+  const {setupLanguage}=await import('../language.mjs');
+  const selector={value:'',addEventListener(_type,fn){this.change=fn;}},langDoc={documentElement:{},getElementById:id=>id==='languageSelect'?selector:{},querySelectorAll:()=>[]};
+  setupLanguage({document:langDoc});
+  selector.value='de';selector.change();gameControl.refreshLanguage();
+  assert.equal(element('radial0').dataset.icon,'confirmSell');
+  assert.equal(element('radial1').dataset.icon,'cancel');
+  assert.equal(element('menuName0').textContent,'Verkauf bestätigen');
+  assert.equal(element('menuPrice0').textContent,'+60');
+  assert.equal(element('menuName1').textContent,'Abbrechen');
+  selector.value='en';selector.change();gameControl.refreshLanguage();
+}
 element('radial1').onclick();
 assert.match(element('menuName0').textContent,/specialization/i);
 element('radial1').onclick();element('radial0').onclick();
