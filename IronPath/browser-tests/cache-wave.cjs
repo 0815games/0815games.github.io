@@ -9,9 +9,9 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
- 'account-entry.mjs?v=20261119-block6','account.js?v=20261119-block6','command-center.mjs?v=20261119-block6','character-name.mjs?v=20261119-block6','character-name-claim.mjs?v=20261119-block6','character-name-conflict.mjs?v=20261119-block6','character-rename.mjs?v=20261119-block6',
- 'first-run-coach.mjs?v=20261119-block6','first-run-guide.mjs?v=20261119-block6','first-run-ending.mjs?v=20261119-block6','game.js?v=20261119-block6','solo-deployment.mjs?v=20261119-block6','training-run.mjs?v=20261112-tagless1',
- 'language.mjs?v=20261119-block6','localization-de.mjs?v=20261119-block6','localization-firstrun-de.mjs?v=20261119-block6','patch-notes.mjs?v=20261119-block6','tutorial.mjs?v=20261119-block6','settings.mjs?v=20261119-block6',
+ 'account-entry.mjs?v=20261119-block2','account.js?v=20261119-block2','command-center.mjs?v=20261119-block2','character-name.mjs?v=20261119-block2','character-name-claim.mjs?v=20261119-block2','character-name-conflict.mjs?v=20261119-block2','character-rename.mjs?v=20261119-block2',
+ 'first-run-coach.mjs?v=20261119-block2','first-run-guide.mjs?v=20261119-block2','first-run-ending.mjs?v=20261119-block2','game.js?v=20261119-block2','solo-deployment.mjs?v=20261119-block2','training-run.mjs?v=20261112-tagless1',
+ 'language.mjs?v=20261119-block2','localization-de.mjs?v=20261119-block2','localization-firstrun-de.mjs?v=20261119-block2','patch-notes.mjs?v=20261119-block2','tutorial.mjs?v=20261119-block2','settings.mjs?v=20261119-block2',
  'account-entry.mjs?v=20261119-block9g','account.js?v=20261119-block9g','character-name.mjs?v=20261119-block9g','character-name-claim.mjs?v=20261119-block9g',
  'game.js?v=20261119-block9g','friends-ui.mjs?v=20261119-block9g','friends.mjs?v=20261119-block9g','language.mjs?v=20261119-block9g','patch-notes.mjs?v=20261119-block9g','localization-account-de.mjs?v=20261119-block9g',
  'account-entry.mjs?v=20261119-block9c','account.js?v=20261119-block9c','active-session.mjs?v=20261119-block9c',
@@ -114,7 +114,8 @@ const oldUrls=[
     import(`/IronPath/endless-launcher.mjs?v=${build}`),import(`/IronPath/patch-notes.mjs?v=${build}`),
     import(`/IronPath/tutorial-sync.mjs?v=${build}`),import(`/IronPath/general-radio.mjs?v=${build}`),
     import(`/IronPath/tutorial-dossier.mjs?v=${build}`),import(`/IronPath/menu-tour.mjs?v=${build}`),
-    import(`/IronPath/training-run.mjs?v=${build}`),import(`/IronPath/command-center.mjs?v=${build}`)
+    import(`/IronPath/training-run.mjs?v=${build}`),import(`/IronPath/command-center.mjs?v=${build}`),
+    import(`/IronPath/first-run-guide.mjs?v=${build}`)
    ]);
    language.setupLanguage({document,storage:{getItem:()=> 'de',setItem(){}}});
    const text=language.translateText('{name} requests wave {wave}. {count} approval still needed.',{name:'Bob',wave:1,count:1});
