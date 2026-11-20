@@ -525,7 +525,7 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     assert.equal(guideClearsX.coveredByCard,false,`the guide card leaves the armory X tappable (hit: ${guideClearsX.hit})`);
     await page.waitForTimeout(150);
     await page.locator('#armoryWorkshopTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),true); assert.equal(await page.locator('#armoryList').isVisible(),false);
-    assert.match(await page.locator('#armoryWorkshop').innerText(),/PREPARE WORKSHOP|Field Scope/,'the workshop renders inside the armory');
+    assert.match(await page.locator('#armoryWorkshop').innerText(),/PREPARE WORKSHOP|Marksman Rifle|Field Scope/,'the workshop renders inside the armory');
     await page.locator('#armoryEquipmentTab').click(); assert.equal(await page.locator('#armoryWorkshop').isVisible(),false); assert.equal(await page.locator('#armoryList').isVisible(),true,'the equipment list comes back'); assert.match(await page.locator('#armoryDialog .development-head').evaluate(e=>getComputedStyle(e).backgroundImage),/arsenal-workbench/);
     assert.equal(await page.locator('.armory-section[data-section="equipment"]').isVisible(),true);
     assert.equal(await page.locator('.armory-section[data-section="defenses"]').isVisible(),false);
