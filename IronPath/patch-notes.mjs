@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-audio1';
+import {getLanguage} from './language.mjs?v=20261120-audio2';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,18 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'audio2',build:'20261120-audio2',pr:331,
+    title:{en:'Audio Update 5–6 & Mobile HQ/Guide Polish · Adaptive Music, Weather Beds, Split Mixer & Dialog Popovers',de:'Audio-Update 5–6 & Mobil-Guide-Feinschliff · Adaptive Musik, Wetter-Ambience, Mixer & Dialog-Overlays'},
+    shipped:[
+      {en:'Added `battle-music.mjs` (Option C Hybrid procedural Web Audio music engine + pink-noise `rain`, `arctic`, and `wind` weather beds + lazy 2.0 s stereo `ConvolverNode` room reverb) hosted by `battle-sound.mjs` with automatic menu/prep/wave/boss/pause/mute scene transitions.',de:'`battle-music.mjs` ergänzt (Option-C-Hybrid-Musiksynthese plus prozedurale Regen-, Arktis- und Wind-Wetterambience sowie trägem 2,0-s-Stereo-Raumhall-Bus) über `battle-sound.mjs` mit automatischen Übergängen zwischen Menü, Vorbereitung, Welle, Boss, Pause und Stummschaltung.'},
+      {en:'Split the Settings audio controls into separate Effects Volume (`sfxVolume`), Music Volume (`musicVolume`), Sound toggle (`soundEnabled`), Music toggle (`musicEnabled`), and Voice-over toggle (`voiceOver`) with instant Safari/iOS Web Audio gesture unlock and complete teardown.',de:'Audio-Regler in den Einstellungen in getrennte Lautstärken für Effekte (`sfxVolume`) und Musik (`musicVolume`), Sound-/Musik-/Sprachausgabe-Schalter sowie verzögerungsfreien Safari-/iOS-Audio-Unlock und sauberes Freigeben getrennt.'},
+      {en:'Fixed modal `<dialog>.showModal()` inertness via `popover-host.mjs` (`#firstRunGuide`, `#menuTour`, `#guideRecall` now lift into the active open dialog and return cleanly on close), added a visible `#guideMinimize` button and tour `#menuTourFinish` (`End tour`), muted General Vance immediately on minimize/mute, compacted mobile `#firstRunGuide` beneath `← COMMAND CENTER`, and hid redundant mobile `#fieldSchool` cards beneath the 4 bottom HQ thumb actions.',de:'Modal-Blockade unter `<dialog>.showModal()` über `popover-host.mjs` behoben (`#firstRunGuide`, `#menuTour` und `#guideRecall` hängen während offener Dialoge sauber im aktiven Dialog und kehren beim Schließen zurück), klaren `#guideMinimize`-Button sowie `#menuTourFinish` (`Tour beenden`) ergänzt, General Vance beim Minimieren/Stummschalten sofort stummgestellt, das mobile `#firstRunGuide` unterhalb von `← KOMMANDOZENTRALE` kompakter gemacht und doppelte mobile `#fieldSchool`-Karten unterhalb der 4 HQ-Funktionsbuttons ausgeblendet.'},
+    ],
+    open:[
+      {en:'Real iPhone Safari and desktop listening + tutorial verification on `20261120-audio2`.',de:'Echte Hör- und Tutorial-Abnahme auf iPhone Safari und Desktop auf `20261120-audio2`.'},
+    ],
+  },
   {
     id:'audio1',build:'20261120-audio1',pr:330,
     title:{en:'Audio Update 1–4 · Tactical Web Audio Engine, Weapons, Construction, Abilities, Bosses & HQ Feedback',de:'Audio-Update 1–4 · Taktische Web-Audio-Engine, Waffen, Bau, Fähigkeiten, Bosse & HQ-Feedback'},

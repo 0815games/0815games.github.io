@@ -1,6 +1,6 @@
 // Pure four-player lobby state machine. A Firebase transaction/rules adapter
 // must authenticate actors and verify requests; this is not authorization.
-import {parseBuild,encodeBuild,isLegacyBuildString} from './skills.mjs?v=20261120-audio1';
+import {parseBuild,encodeBuild,isLegacyBuildString} from './skills.mjs?v=20261120-audio2';
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 const validProfile=p=>p&&typeof p.name==='string'&&p.name.length>=2&&p.name.length<=24&&['male','female'].includes(p.gender)&&Number.isInteger(p.level)&&p.level>=1&&p.level<=1000&&(p.loadout===undefined||/^([0-3],){2}(10|[0-9])(;[0-3],[0-3](;[0-3],[0-3])?)?$/.test(p.loadout))&&(p.skills===undefined||typeof p.skills==='string'&&(isLegacyBuildString(p.skills)||encodeBuild(parseBuild(p.skills,p.level))===p.skills));
 const clone=value=>JSON.parse(JSON.stringify(value));

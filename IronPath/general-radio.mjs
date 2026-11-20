@@ -5,7 +5,7 @@
 // volume synchronization with Settings, and safe audio cleanup on view/account
 // transitions.
 
-import {getLanguage} from './language.mjs?v=20261120-audio1';
+import {getLanguage} from './language.mjs?v=20261120-audio2';
 
 export const GENERAL_NAME=Object.freeze({
   en:'GENERAL VANCE · SECTOR COMMAND',
@@ -117,6 +117,8 @@ export function createGeneralRadio({AudioCtor=typeof Audio==='function'?Audio:nu
 
   function stopAudio(){
     if(activeAudio){
+      try{activeAudio.muted=true;}catch{}
+      try{activeAudio.volume=0;}catch{}
       try{activeAudio.pause?.();}catch{}
       try{activeAudio.currentTime=0;}catch{}
       activeAudio=null;
@@ -202,6 +204,11 @@ export function createGeneralRadio({AudioCtor=typeof Audio==='function'?Audio:nu
     return play(activeClip,{subtitle:activeText,speak:true});
   }
 
+  function silence(){
+    stopAudio();
+    notify();
+  }
+
   function stop(){
     stopAudio();
     activeClip=null;
@@ -240,6 +247,7 @@ export function createGeneralRadio({AudioCtor=typeof Audio==='function'?Audio:nu
   return Object.freeze({
     play,
     replay,
+    silence,
     stop,
     setPrefs,
     toggleMute,

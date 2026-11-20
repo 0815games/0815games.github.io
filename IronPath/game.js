@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261120-audio1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261120-audio2';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261120-audio1';
+import {localizeGameMessage} from './game-localization.mjs?v=20261120-audio2';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261120-audio1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261120-audio2';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -14,40 +14,40 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261120-audio1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261120-audio1';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261120-audio1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261120-audio1';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261120-audio1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261120-audio2';
+import {projectFourGameView} from './four-game-view.mjs?v=20261120-audio2';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261120-audio2';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261120-audio2';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261120-audio2';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261120-audio1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261120-audio1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261120-audio2';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261120-audio2';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle-sound.mjs?v=20261120-audio1';
+import {createBattleSound} from './battle-sound.mjs?v=20261120-audio2';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261120-audio1';
-import {createCombatEffects} from './combat-fx.mjs?v=20261120-audio1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261120-audio1';
-import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261120-audio1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261120-audio1';
-import {towerClassIcon} from './development-ui.mjs?v=20261120-audio1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261120-audio2';
+import {createCombatEffects} from './combat-fx.mjs?v=20261120-audio2';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261120-audio2';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261120-audio2';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261120-audio2';
+import {towerClassIcon} from './development-ui.mjs?v=20261120-audio2';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261120-audio1';
-import { createTutorial } from './tutorial.mjs?v=20261120-audio1';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261120-audio1';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261120-audio1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261120-audio1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261120-audio1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261120-audio1';
+import { createCoopInput } from './coop-input.mjs?v=20261120-audio2';
+import { createTutorial } from './tutorial.mjs?v=20261120-audio2';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261120-audio2';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261120-audio2';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261120-audio2';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261120-audio2';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261120-audio2';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261120-audio1';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261120-audio2';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261120-audio1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261120-audio2';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -71,15 +71,58 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     autoPause:initialSettings?.autoPause!==false,
     mapZoom:initialSettings?.mapZoom==='large'?'large':'fit',
   };
-  function applyGraphics(reduced){graphicsReduced=!!reduced;reducedMotion=systemReducedMotion||graphicsReduced;}
+  function applyGraphics(reduced){graphicsReduced=!!reduced;reducedMotion=systemReducedMotion||graphicsReduced;syncAudioScene();}
   const sound=createBattleSound(window.AudioContext||window.webkitAudioContext);
   if(Number.isFinite(initialSettings?.volume))sound.setVolume(initialSettings.volume);
+  if(Number.isFinite(initialSettings?.sfxVolume))sound.setSfxVolume?.(initialSettings.sfxVolume);
+  if(Number.isFinite(initialSettings?.musicVolume))sound.setMusicVolume?.(initialSettings.musicVolume);
+  if(typeof initialSettings?.musicEnabled==='boolean')sound.setMusicEnabled?.(initialSettings.musicEnabled);
   let soundEnabled=false;
   let desiredSoundEnabled=initialSettings?.soundEnabled!==false&&Math.round((initialSettings?.volume??0.7)*100)>0;
   let missionVoiceActive=false,actIntroActive=false,radioSpeaking=false;
+  let currentAudioView='menu';
+  let focusPause=null;
   function syncVoiceDucking(){sound.setVoiceDucking?.(missionVoiceActive||actIntroActive||radioSpeaking);}
   const stopRadioWatch=generalRadio?.subscribe?.(snap=>{const next=!!snap?.speaking;if(next!==radioSpeaking){radioSpeaking=next;syncVoiceDucking();}});
-  function ensureAudioGesture(){if(desiredSoundEnabled&&!soundEnabled)void sound.setEnabled(true).then(ok=>{soundEnabled=ok;}).catch(()=>{});}
+  function syncAudioScene(){
+    if(releaseStopped)return;
+    const isMenuView=currentAudioView!=='battle'&&currentAudioView!=='online';
+    const ready=account?.isReady?.()!==false;
+    const paused=!!(!ready||$('gameConfirm')?.open||$('settingsDialog')?.open||(visualPrefs.autoPause&&focusPause?.isSoloPaused?.()));
+    if(!ready){
+      sound.setScene?.({phase:'silent',paused:true,weatherEffects:visualPrefs.weatherEffects});
+      return;
+    }
+    if(isMenuView){
+      sound.setScene?.({phase:'menu',paused,weatherEffects:visualPrefs.weatherEffects});
+      return;
+    }
+    const activeMap=state?.mapId?getMap(state.mapId):null;
+    const bossAlive=!!state?.enemies?.some?.(e=>e.boss&&e.hp>0);
+    const interval=activeTraining&&!coop?TRAINING_BOSS_EVERY:5;
+    const bossWave=!!(state?.running&&state?.wave>0&&state.wave%interval===0);
+    const phase=state?.ended?'menu':(bossAlive||bossWave)?'boss':state?.running?'wave':'prep';
+    sound.setScene?.({
+      phase,
+      storyMissionId:!coop&&activeMission?activeMission.id:null,
+      theme:activeMap?.theme||null,
+      weatherEffects:visualPrefs.weatherEffects,
+      paused:paused||!!cinematic,
+    });
+  }
+  function ensureAudioGesture(){
+    if(!desiredSoundEnabled)return;
+    if(!soundEnabled){
+      void sound.setEnabled(true).then(ok=>{soundEnabled=ok;if(ok)syncAudioScene();}).catch(()=>{});
+    }else if(sound.needsResume?.()){
+      void sound.resume().then(ok=>{if(ok)syncAudioScene();}).catch(()=>{});
+    }
+  }
+  const onAudioGestureUnlock=()=>ensureAudioGesture();
+  try{
+    document.addEventListener('pointerdown',onAudioGestureUnlock,true);
+    document.addEventListener('keydown',onAudioGestureUnlock,true);
+  }catch{/* minimal DOM */}
   const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion();let lastSnapshotAt=0;
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
@@ -504,7 +547,7 @@ function renderResults(target){
     select.innerHTML=`<option value="free" data-i18n-text="Free play · random battlefield">${tr('Free play · random battlefield')}</option>`+CAMPAIGN.map((mission,i)=>`<option id="campaignOption${i}" value="${mission.id}"></option>`).join('');
     showActOverview();
   }
-  function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();}
+  function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();syncAudioScene();}
   buildMissionBoard();
   $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
   $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
@@ -710,6 +753,7 @@ function renderResults(target){
   }
   function updateUI(){
     renderCampaign();
+    syncAudioScene();
     const showObjective=(!!activeMission||activeTraining)&&!coop;$('soloObjective').hidden=!showObjective;
     measureActionBar();
     if(showObjective&&activeTraining){const status=trainingStatus(state,tr);$('soloObjectiveTitle').textContent=tr('TRAINING CONTRACT · HANDLE WITH CARE');$('soloObjectiveProgress').textContent=tr('WAVE {wave} / {total}',{wave:status.progress,total:status.max});$('soloObjectiveBar').max=status.max;$('soloObjectiveBar').value=status.progress;$('soloObjectiveHint').textContent=tr(status.detail);}
@@ -854,7 +898,7 @@ function renderResults(target){
       }}else applyCommand(state,'local',{type:'direction',x,y});}
   window.addEventListener('keydown', e=>{if(cinematic)return;if(!menu.hidden){if(e.key==='Escape'){closeMenu();state.selectedPad=null;updateUI();}return;}if(['INPUT','SELECT','TEXTAREA','BUTTON'].includes(document.activeElement.tagName))return;const key=e.key.toLowerCase();if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(key)){e.preventDefault();keys.add(key);sendDirection();}});
   window.addEventListener('keyup', e=>{keys.delete(e.key.toLowerCase());sendDirection();});
-  const focusPause=createFocusPause({window,document,onBlur:()=>{keys.clear();sendDirection();accumulator=0;},onChange:paused=>coop?.setFocusPaused?.(paused)});
+  focusPause=createFocusPause({window,document,onBlur:()=>{keys.clear();sendDirection();accumulator=0;},onChange:paused=>{coop?.setFocusPaused?.(paused);syncAudioScene();}});
   let tutorialStorage;try{tutorialStorage=window.localStorage;}catch{tutorialStorage=null;}
   // Practice steps drive the real dialogs. The sandbox comes from the account app,
   // which owns the write guard; without it the tutorial stays on mock screens.
@@ -1330,7 +1374,7 @@ function renderResults(target){
   }
   $('coopControls').hidden=!coopUrl;
   function leaveCoop({preserveReport=false,hostClosed=false}={}){
-    $('gameWorkspace').dataset.onlineReady='false';promptEpoch++;clearRequestFeedback();promptCenter?.reset('battle');sound.resetCombat?.();if(!coop)return Promise.resolve();
+    $('gameWorkspace').dataset.onlineReady='false';promptEpoch++;clearRequestFeedback();promptCenter?.reset('battle');sound.resetCombat?.();if(!coop){syncAudioScene();return Promise.resolve();}
     const old=coop,input=coopInput,finished=preserveReport&&report?.finished?report:null;
     if(finished&&hostClosed){finished.partyClosed=true;delete finished.partyWaitDetail;}
     coop=null;coopInput=null;coopReady=false;coopHasBaseline=false;currentPartyEnd=null;partyFinalizationEnabled=false;soloDeployed=false;needStop=false;orphanReleases.clear();
@@ -1377,8 +1421,9 @@ function renderResults(target){
     const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
     stop(()=>{if(frameHandle!==null&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(frameHandle);});
     frameHandle=null;keys.clear();
-    stop(()=>stopPromptWatch?.());stop(()=>stopRadioWatch?.());stop(()=>focusPause.dispose());stop(()=>closeCinematic(false));stop(()=>tutorial.stop());stop(()=>coach.stop());
-    stop(()=>sound.setEnabled(false));stop(()=>leaveCoop());
+    stop(()=>{document.removeEventListener('pointerdown',onAudioGestureUnlock,true);document.removeEventListener('keydown',onAudioGestureUnlock,true);});
+    stop(()=>stopPromptWatch?.());stop(()=>stopRadioWatch?.());stop(()=>focusPause?.dispose?.());stop(()=>closeCinematic(false));stop(()=>tutorial.stop());stop(()=>coach.stop());
+    stop(()=>sound.dispose?.());stop(()=>sound.setEnabled(false));stop(()=>leaveCoop());
   }
   function confirmParty(){return !(state.wave>0||state.towers.length)||confirmAction({title:'Leave solo operation?',text:'Joining co-op will end the current solo run.',accept:'JOIN CO-OP'});}
   function beginCoop(factory,onUpdate=()=>{},reportId=null,mode=null,onFinalSnapshot=null){
@@ -1433,7 +1478,7 @@ function renderResults(target){
     if(releaseStopped)return;draw();if(!releaseStopped)frameHandle=requestAnimationFrame(frame);
   }
   frameHandle=requestAnimationFrame(frame);
-  function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;}
+  function setMenuOpen(open){commandMenuOpen=!!open;keys.clear();sendDirection();accumulator=0;syncAudioScene();}
   function chooseStory(){const progress=campaignProgress(account.getProfile()),mission=CAMPAIGN[Math.min(progress,CAMPAIGN.length-1)];$('campaignSelect').value=mission.id;setMissionBoard(true);$('campaignContinue').focus?.();}
   // What a first login does now: the field first, the briefing *on* the field.
   // The 11-step modal tour used to run here, which meant a new soldier read about
@@ -1542,9 +1587,13 @@ function renderResults(target){
   },
   // The Settings dialog owns the controls, the game owns the effects. These hooks
   // keep Audio, Graphics, Voice-Over, Effects, Auto-Pause, and Map View synced.
-  setSoundEnabled:async value=>{desiredSoundEnabled=!!value;soundEnabled=await sound.setEnabled(desiredSoundEnabled);generalRadio?.setPrefs?.({soundEnabled:desiredSoundEnabled});return soundEnabled;},
+  setSoundEnabled:async value=>{desiredSoundEnabled=!!value;soundEnabled=await sound.setEnabled(desiredSoundEnabled);if(soundEnabled)syncAudioScene();generalRadio?.setPrefs?.({soundEnabled:desiredSoundEnabled});return soundEnabled;},
   isSoundEnabled:()=>soundEnabled,
   setVolume:value=>{const v=sound.setVolume(value);generalRadio?.setPrefs?.({volume:v});return v;},
+  setSfxVolume:value=>sound.setSfxVolume?.(value),
+  setMusicVolume:value=>sound.setMusicVolume?.(value),
+  setMusicEnabled:value=>sound.setMusicEnabled?.(value),
+  setView:view=>{currentAudioView=view||'menu';syncAudioScene();},
   playCue:(kind,detail)=>{ensureAudioGesture();sound.play(kind,detail);},
   setReducedGraphics:applyGraphics,
   isReducedGraphics:()=>reducedMotion,
@@ -1558,8 +1607,12 @@ function renderResults(target){
     visualPrefs.combatTracers=prefs.combatTracers!==false;
     visualPrefs.autoPause=prefs.autoPause!==false;
     visualPrefs.mapZoom=prefs.mapZoom==='large'?'large':'fit';
+    if(Number.isFinite(prefs.sfxVolume))sound.setSfxVolume?.(prefs.sfxVolume);
+    if(Number.isFinite(prefs.musicVolume))sound.setMusicVolume?.(prefs.musicVolume);
+    if(typeof prefs.musicEnabled==='boolean')sound.setMusicEnabled?.(prefs.musicEnabled);
     if(!visualPrefs.voiceOver)stopMissionVoice();
     generalRadio?.setPrefs?.({voiceOver:visualPrefs.voiceOver,soundEnabled:prefs.soundEnabled!==false,volume:prefs.volume});
+    syncAudioScene();
     if(prevZoom!==visualPrefs.mapZoom&&!battleViewport&&!touchZoom)setMapZoom(visualPrefs.mapZoom==='large');
   },
    // The training contract is a real deployment, not a mock: seven weakened waves

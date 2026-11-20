@@ -42,7 +42,8 @@ function fakeDocument(ids) {
 const IDS = [
   'settingsDialog', 'settingsClose', 'settingsTabGeneral', 'settingsTabAccount',
   'settingsPanelGeneral', 'settingsPanelAccount', 'languageToggle', 'soundVolume',
-  'soundVolumeStatus', 'soundEnabledToggle', 'voiceOverToggle', 'graphicsQuality',
+  'soundVolumeStatus', 'sfxVolume', 'sfxVolumeStatus', 'musicVolume', 'musicVolumeStatus',
+  'soundEnabledToggle', 'musicEnabledToggle', 'voiceOverToggle', 'graphicsQuality',
   'screenShakeToggle', 'weatherEffectsToggle', 'combatTracersToggle',
   'autoPauseToggle', 'defaultMapZoom', 'settingsTutorialReset', 'settingsRestoreDefaults',
   'fullscreenToggle',
@@ -305,3 +306,37 @@ test('the dialog that switches the language is German itself', async () => {
   const orphans = Object.keys(germanSettings).filter(key => !live.has(key));
   assert.deepEqual(orphans, [], `Settings entries nothing asks for: ${orphans.join(' / ')}`);
 });
+
+test('split SFX and Music sliders and Music toggle persist independently and avoid mute deadlock', () => {
+  const storage = memory();
+  const document = fakeDocument(IDS);
+  const events = { sfx: [], music: [], musicEnabled: [] };
+  const settings = createSettings({
+    document,
+    storage,
+    sound: {
+      setSfxVolume: v => events.sfx.push(v),
+      setMusicVolume: v => events.music.push(v),
+      setMusicEnabled: v => events.musicEnabled.push(v),
+    },
+  });
+
+  document.nodes.get('sfxVolume').value = '30';
+  document.nodes.get('sfxVolume').listeners.input();
+  document.nodes.get('musicVolume').value = '0';
+  document.nodes.get('musicVolume').listeners.input();
+  assert.equal(readSettings(storage).sfxVolume, 0.3);
+  assert.equal(readSettings(storage).musicVolume, 0);
+  assert.equal(document.nodes.get('musicEnabledToggle')['aria-checked'], 'false');
+
+  // Re-enabling Music from zero volume raises it back cleanly to 50% instead of staying muted.
+  document.nodes.get('musicEnabledToggle').listeners.click();
+  assert.equal(readSettings(storage).musicEnabled, true);
+  assert.equal(readSettings(storage).musicVolume, 0.5);
+  assert.equal(settings.sfxVolume, 0.3);
+  assert.equal(settings.musicVolume, 0.5);
+  assert.equal(events.sfx.at(-1), 0.3);
+  assert.equal(events.music.at(-1), 0.5);
+  assert.equal(events.musicEnabled.at(-1), true);
+});
+

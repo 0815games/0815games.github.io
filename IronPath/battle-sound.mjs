@@ -17,7 +17,11 @@ import {
   synthesizeShot,
   synthesizeStrike,
   synthesizeUpgrade,
-} from './battle-sound-recipes.mjs?v=20261120-audio1';
+} from './battle-sound-recipes.mjs?v=20261120-audio2';
+import { createBattleMusic, weatherForScene } from './battle-music.mjs?v=20261120-audio2';
+import { storyMapStyle } from './story-map-art.mjs?v=20261120-audio2';
+
+export { weatherForScene };
 
 const LEGACY_FREQUENCIES = Object.freeze({
   boss: [180, 130],
@@ -40,7 +44,7 @@ const BUS_DEFAULTS = Object.freeze({
   sfx: 1,
   explosion: 1,
   ui: 0.85,
-  music: 0.5,
+  music: 0.55,
 });
 
 const PAN_BUCKETS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];
@@ -75,8 +79,13 @@ export function createBattleSound(AudioContextClass) {
   let context = null;
   let enabled = false;
   let mixer = null;
+  let music = null;
   let resources = null;
   let voiceDucking = false;
+  let musicEnabled = true;
+  let sfxVolume = 1;
+  let musicVolume = 1;
+  let lastScene = { phase: 'silent', storyMissionId: null, theme: null, weatherEffects: true, paused: false };
   let lastPlayed = new Map();
   let lastCuePlayed = new Map();
   let recentCombatTimes = [];
@@ -94,6 +103,36 @@ export function createBattleSound(AudioContextClass) {
   const busVolumes = { ...BUS_DEFAULTS };
   const clamp = value => (Number.isFinite(value) ? Math.max(0.05, Math.min(1, value)) : 1);
   const clampBus = value => (Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 1);
+
+  function effectiveBusGain(busName) {
+    if (busName === 'music') return busVolumes.music * musicVolume;
+    return busVolumes[busName] * sfxVolume;
+  }
+
+  function applyBusGains() {
+    if (!mixer?.buses || !context) return;
+    const now = context.currentTime || 0;
+    for (const busName of Object.keys(mixer.buses)) {
+      setGain(mixer.buses[busName].gain, effectiveBusGain(busName), now);
+    }
+  }
+
+  function resolveSceneWeather({ storyMissionId = null, theme = null } = {}) {
+    const storyWeather = storyMissionId ? storyMapStyle(storyMissionId)?.weather || null : null;
+    return weatherForScene({ storyWeather, theme });
+  }
+
+  function syncMusicState() {
+    if (!music) return;
+    const weather = resolveSceneWeather(lastScene);
+    music.setEnabled(enabled && musicEnabled && musicVolume > 0.01);
+    music.setPaused(!!lastScene.paused);
+    music.setScene({
+      phase: lastScene.phase,
+      weather,
+      weatherEffects: lastScene.weatherEffects !== false,
+    });
+  }
 
   function ensureMixer() {
     if (mixer || !context) return mixer;
@@ -136,10 +175,10 @@ export function createBattleSound(AudioContextClass) {
         music: context.createGain(),
       };
       const now = context.currentTime || 0;
-      setGain(buses.sfx.gain, busVolumes.sfx, now);
-      setGain(buses.explosion.gain, busVolumes.explosion, now);
-      setGain(buses.ui.gain, busVolumes.ui, now);
-      setGain(buses.music.gain, busVolumes.music, now);
+      setGain(buses.sfx.gain, effectiveBusGain('sfx'), now);
+      setGain(buses.explosion.gain, effectiveBusGain('explosion'), now);
+      setGain(buses.ui.gain, effectiveBusGain('ui'), now);
+      setGain(buses.music.gain, effectiveBusGain('music'), now);
 
       buses.sfx.connect(combatDuck);
       buses.explosion.connect(combatDuck);
@@ -163,7 +202,13 @@ export function createBattleSound(AudioContextClass) {
       }
 
       resources = getAudioResources(context);
+      music = createBattleMusic({
+        context,
+        destination: buses.music,
+        getResources: () => resources,
+      });
       mixer = { masterGain, masterInput, limiter, combatDuck, musicDuck, buses, panPools };
+      syncMusicState();
     } catch {
       mixer = null;
     }
@@ -430,6 +475,7 @@ export function createBattleSound(AudioContextClass) {
         enabled = false;
         lastPlayed.clear();
         resetCombat();
+        syncMusicState();
         if (mixer?.masterGain && context) setGain(mixer.masterGain.gain, 0.0001, context.currentTime || 0);
         return false;
       }
@@ -441,11 +487,32 @@ export function createBattleSound(AudioContextClass) {
         if (enabled) {
           ensureMixer();
           if (mixer?.masterGain) setGain(mixer.masterGain.gain, volume, context.currentTime || 0);
+          syncMusicState();
         }
       } catch {
         enabled = false;
       }
       return enabled;
+    },
+
+    needsResume() {
+      return !!enabled && !!context && context.state !== 'running';
+    },
+
+    async resume() {
+      if (!enabled || !context) return false;
+      try {
+        if (context.state !== 'running') await context.resume();
+        const running = context.state === 'running';
+        if (running) {
+          ensureMixer();
+          music?.syncContextState?.();
+          syncMusicState();
+        }
+        return running;
+      } catch {
+        return false;
+      }
     },
 
     isEnabled() {
@@ -464,12 +531,72 @@ export function createBattleSound(AudioContextClass) {
       return volume;
     },
 
+    setSfxVolume(value) {
+      sfxVolume = clampBus(value);
+      applyBusGains();
+      return sfxVolume;
+    },
+
+    getSfxVolume() {
+      return sfxVolume;
+    },
+
+    setMusicVolume(value) {
+      musicVolume = clampBus(value);
+      applyBusGains();
+      syncMusicState();
+      return musicVolume;
+    },
+
+    getMusicVolume() {
+      return musicVolume;
+    },
+
+    setMusicEnabled(value) {
+      musicEnabled = !!value;
+      syncMusicState();
+      return musicEnabled;
+    },
+
+    getMusicEnabled() {
+      return musicEnabled;
+    },
+
+    setScene(next = {}) {
+      if (!next || typeof next !== 'object') return null;
+      const changedWeatherSource = Object.hasOwn(next, 'storyMissionId') || Object.hasOwn(next, 'theme');
+      const nextScene = {
+        ...lastScene,
+        ...next,
+      };
+      if (Object.hasOwn(next, 'phase') && next.phase === 'menu' && !changedWeatherSource) {
+        nextScene.storyMissionId = null;
+        nextScene.theme = null;
+      }
+      lastScene = nextScene;
+      syncMusicState();
+      return music?.getState?.() || null;
+    },
+
+    getMusicState() {
+      return music?.getState?.() || {
+        enabled: enabled && musicEnabled && musicVolume > 0.01,
+        paused: !!lastScene.paused,
+        phase: lastScene.phase,
+        weather: resolveSceneWeather(lastScene),
+        weatherEffects: lastScene.weatherEffects !== false,
+        hasReverb: false,
+        hasWeatherBed: false,
+        scheduling: false,
+      };
+    },
+
     setBusVolume(busName, value) {
       if (!Object.hasOwn(busVolumes, busName)) return null;
       const clamped = clampBus(value);
       busVolumes[busName] = clamped;
       if (mixer?.buses?.[busName] && context) {
-        setGain(mixer.buses[busName].gain, clamped, context.currentTime || 0);
+        setGain(mixer.buses[busName].gain, effectiveBusGain(busName), context.currentTime || 0);
       }
       return clamped;
     },
@@ -632,6 +759,15 @@ export function createBattleSound(AudioContextClass) {
         return;
       }
       playExtendedCue(kind, detail);
+    },
+
+    dispose() {
+      enabled = false;
+      lastPlayed.clear();
+      resetCombat();
+      try { music?.dispose?.(); } catch {}
+      music = null;
+      if (mixer?.masterGain && context) setGain(mixer.masterGain.gain, 0.0001, context.currentTime || 0);
     },
   };
 }

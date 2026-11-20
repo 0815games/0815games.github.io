@@ -166,3 +166,12 @@ test('a dismissed guide keeps its place, still counts the screen, and returns at
   assert.equal(guide.dismissed(), false, 'a finished guide has no recall state');
   assert.equal(storage.getItem('ironpath:guide:v1:soldier-d'), 'done');
 });
+
+test('first-run guide DOM includes a dedicated Minimize button alongside mobile header controls', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const guideHtml = html.slice(html.indexOf('id="firstRunGuide"'), html.indexOf('</aside>', html.indexOf('id="firstRunGuide"')));
+  assert.match(guideHtml, /id="guideMinimize"[\s\S]{0,140}data-i18n-text="Minimize"/);
+  const css = readFileSync(new URL('../interface-redesign.css', import.meta.url), 'utf8');
+  assert.match(css, /\.first-run-guide\s+\.general-radio-sub\s*\{\s*display:\s*none\s*\}/);
+});
+

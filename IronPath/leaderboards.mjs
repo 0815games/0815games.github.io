@@ -1,4 +1,4 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261120-audio1';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261120-audio2';
 const validMode=mode=>mode==='solo'||mode==='coop';
 export function waveFromMask(mask,block=0){if(!Number.isInteger(mask)||mask<=0||mask>MAX_WAVE_MASK||!Number.isSafeInteger(block)||block<0)return 0;const wave=block*WAVE_COUNT+32-Math.clz32(mask);return Number.isSafeInteger(wave)&&wave<=10000?wave:0;}
 export function createLeaderboardService({db,auth,sdk}){

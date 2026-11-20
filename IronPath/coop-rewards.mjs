@@ -1,7 +1,7 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261120-audio1';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261120-audio2';
 import {rewardWave} from './armory.mjs?v=20261112-tagless1';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
-import {rewardDelta} from './run-results.mjs?v=20261120-audio1';
+import {rewardDelta} from './run-results.mjs?v=20261120-audio2';
 import {applyWorkshopWaveCredit} from './workshop-wave-credit.mjs?v=20261112-tagless1';
 import {initializeWireWorkshop,decodeWorkshop} from './workshop-wire.mjs?v=20261112-tagless1';
 
