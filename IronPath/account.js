@@ -1,77 +1,78 @@
 import {createWorkshopAccount} from './workshop-account.mjs?v=20261112-tagless1';
 import {createWorkshopView} from './workshop-view.mjs?v=20261112-tagless1';
-import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block9g';
-import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block9g';
+import {createSoldierScreen} from './soldier-screen.mjs?v=20261119-block2';
+import {localizeSkillSummary} from './skill-summary-localization.mjs?v=20261119-block2';
 import {renderSkillIndicators} from './skill-indicator.mjs?v=20261104-skillindicator1';
-import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block9g';
+import {setupLanguage,translate,translateText,onLanguageChange,getLanguage} from './language.mjs?v=20261119-block2';
 import {setupFullscreen} from './fullscreen.mjs?v=20261104-fullscreen1';
-import {setupFieldMenu} from './field-menu.mjs?v=20261119-block9g';
-import {createSettings,readSettings} from './settings.mjs?v=20261119-block9g';
-import {createPasswordChange} from './password-change.mjs?v=20261119-block9g';
+import {setupFieldMenu} from './field-menu.mjs?v=20261119-block2';
+import {createSettings,readSettings} from './settings.mjs?v=20261119-block2';
+import {createPasswordChange} from './password-change.mjs?v=20261119-block2';
 // Field notes: the patch log as a screen. Read-only, so it is wired next to the
 // settings dialog and nothing else in the account has to know about it.
-import {createPatchNotes} from './patch-notes.mjs?v=20261119-block9g';
+import {createPatchNotes} from './patch-notes.mjs?v=20261119-block2';
 import {bindDisclosureDismiss} from './disclosure-dismiss.mjs?v=20261104-dismissall1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
-import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block9g';
-import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block9g';
-import {setupFriends} from './friends-ui.mjs?v=20261119-block9g';
-import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block9g';
+import {setupLeaderboard} from './leaderboards-ui.mjs?v=20261119-block2';
+import {createLeaderboardService,createScoreReporter,waveFromMask} from './leaderboards.mjs?v=20261119-block2';
+import {setupFriends} from './friends-ui.mjs?v=20261119-block2';
+import {createMultiplayerPrompts} from './multiplayer-prompts.mjs?v=20261119-block2';
 import {createCharacterDeletion} from './character-deletion.mjs?v=20261031-patch8';
-import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block9g';
-import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block9g';
-import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block9g';
-import {createCommandCenter} from './command-center.mjs?v=20261119-block9g';
+import {validateCharacterName,characterNameKey} from './character-name.mjs?v=20261119-block2';
+import {createCharacterNameClaim} from './character-name-claim.mjs?v=20261119-block2';
+import {createCharacterNameConflictHandler} from './character-name-conflict.mjs?v=20261119-block2';
+import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from './discharge-notice.mjs?v=20261119-block2';
+import {createCommandCenter} from './command-center.mjs?v=20261119-block2';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block9g';
+import {createEndlessLauncher,readLastEndlessRun,writeLastEndlessRun,ENDLESS_LAST_RUN_KEY} from './endless-launcher.mjs?v=20261119-block2';
 import {initializeWireWorkshop,applyWireWorkshopCommand} from './workshop-wire.mjs?v=20261112-tagless1';
 // Story completion writes progress and the mission's prestige trophy together.
 import {completeStoryMission,meltPrestige,decodeWorkshop as decodeWorkshopSafe} from './workshop-wire.mjs?v=20261112-tagless1';
 import {missingPrestige} from './prestige.mjs?v=20261112-pressure1';
-import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block9g';
-import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block9g';
-import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block9g';
-import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block9g';
-import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block9g';
-import {setupAuthForm} from './auth-form.mjs?v=20261119-block9g';
-import {applyLoginScene} from './login-scene.mjs?v=20261119-block9g';
+import {createFirebaseRecoverableGame} from './firebase-recoverable-game.mjs?v=20261119-block2';
+import {createFourPlayerPanel} from './firebase-four-panel.mjs?v=20261119-block2';
+import {watchFriendPortrait} from './friend-portrait.mjs?v=20261119-block2';
+import {createFirebaseFourLobby} from './firebase-four-lobby.mjs?v=20261119-block2';
+import {skillBuildSummary,canSaveSkillDraft} from './skill-planner.mjs?v=20261119-block2';
+import {setupAuthForm} from './auth-form.mjs?v=20261119-block2';
+import {applyLoginScene} from './login-scene.mjs?v=20261119-block2';
 import {createAccountServices,requiresAccountGuard} from './account-services.mjs?v=20261031-releaseguard1';
-import {createVersionUI} from './version-ui.mjs?v=20261119-block9g';
-import {createWriteTracker} from './version-check.mjs?v=20261119-block9g';
+import {createVersionUI} from './version-ui.mjs?v=20261119-block2';
+import {createWriteTracker} from './version-check.mjs?v=20261119-block2';
 import {createAfkTimer,createSessionTabLock} from './afk-session.mjs?v=20261031-update3';
-import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261119-block9g';
+import {createActiveSessionManager,createSameBrowserSessionMonitor,createWindowSessionId} from './active-session.mjs?v=20261119-block2';
 import {drawAfkRestScene} from './afk-rest-scene.mjs?v=20261117-afkart1';
 import {createMaintenanceUI} from './maintenance-ui.mjs?v=20261031-update3';
 import {getMaintenanceBoot} from './maintenance-bootstrap.mjs?v=20261031-update3';
 import {MAINTENANCE_PATH,createMaintenanceMonitor,isSessionAfterCutoff} from './maintenance-check.mjs?v=20261031-update3';
 import {serviceMedals} from './service-record.mjs?v=20261112-tagless1';
-import {createConfirmation} from './confirmation.mjs?v=20261119-block9g';
-import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block9g';
-import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block9g';
-import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block9g';
+import {createConfirmation} from './confirmation.mjs?v=20261119-block2';
+import {renderSkillTree,armoryIcon} from './development-ui.mjs?v=20261119-block2';
+import {runFirstRunEnding,endingDone,markEndingDone,createEndingHandoffs,FIELD_SCHOOL_ENTRIES} from './first-run-ending.mjs?v=20261119-block2';
+import {createGuide,forgetGuideSeen} from './first-run-guide.mjs?v=20261119-block2';
 import {ITEMS,readArmory,rewardWave,upgradeArmory,equipArmory,encodeLoadout} from './armory.mjs?v=20261112-tagless1';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block9g';
-import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block9g';
-import {rewardDelta} from './run-results.mjs?v=20261119-block9g';
-import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block9g';
-import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block9g';
-import {createPartySignOut} from './party-signout.mjs?v=20261119-block9g';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement,webBonuses} from './skills.mjs?v=20261119-block2';
+import {migrateSkillsProfile,needsSkillMigration,readLegacySkillBackup,summarizeSkillMigration} from './skills-migration.mjs?v=20261119-block2';
+import {rewardDelta} from './run-results.mjs?v=20261119-block2';
+import {createCoopRewardQueue} from './coop-rewards.mjs?v=20261119-block2';
+import {createPartyEndCoordinator} from './party-end-coordinator.mjs?v=20261119-block2';
+import {createPartySignOut} from './party-signout.mjs?v=20261119-block2';
 import {creditSoloWave} from './workshop-solo-credit.mjs?v=20261112-tagless1';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getDatabase, ref, onValue, runTransaction as firebaseRunTransaction, get, remove as firebaseRemove, set as firebaseSet, update as firebaseUpdate, goOffline, onDisconnect, serverTimestamp, query, orderByKey, startAfter, limitToFirst, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
-import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block9g';
-import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block9g';
+import { createFirebasePartyLobby } from './firebase-party-lobby.mjs?v=20261119-block2';
+import { createFourDigitPanel } from './firebase-four-digit-panel.mjs?v=20261119-block2';
 import { createFourDigitLobby } from './firebase-four-digit-lobby.mjs?v=20261101-fourstage1';
-import { startGame } from './game.js?v=20261119-block9g';
-import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block9g';
-import { createPlayer } from './match.mjs?v=20261119-block9g';
-import { bunkerStart } from './solo-deployment.mjs?v=20261119-block9g';
+import { startGame } from './game.js?v=20261119-block2';
+import { createFirebasePartyGame } from './firebase-party-game.mjs?v=20261119-block2';
+import { createPlayer } from './match.mjs?v=20261119-block2';
+import { bunkerStart } from './solo-deployment.mjs?v=20261119-block2';
 import { resolveAvatar,encodeAvatar,AVATAR_STORAGE_KEY } from './avatar.mjs?v=20261119-avatar3';
 import { composePortrait,facePortrait } from './avatar-layers.mjs?v=20261119-avatar3';
 import { createAvatarSync } from './avatar-sync.mjs?v=20261119-avatar3';
-import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block9g';
-import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block9g';
+import { setupRecruitScreen } from './recruit-screen.mjs?v=20261119-block2';
+import { renderRankInsignia } from './rank-insignia.mjs?v=20261119-block2';
 import { characterProgress } from './progression.mjs?v=20261105-prestige1';
 
 // Firebase's actual write promises remain pending while offline, including when
@@ -281,6 +282,25 @@ armoryView=createWorkshopView({document,root:$('armoryWorkshop'),getProfile:view
 soldierUI=createSoldierScreen({document,getProfile:viewProfile,translate:translateText,getPortrait:recruitPortraitUrl,onArmory:()=>$('armoryOpen').onclick(),onSkills:()=>$('skillOpen').onclick()});$('menuSoldier').onclick=()=>soldierUI.open();
 const leaderboardUI=setupLeaderboard({document,db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}});
 const friendsUI=setupFriends({document,db,auth,sdk:{ref,get,set,remove,runTransaction,onValue,onDisconnect,query,orderByKey,startAfter,limitToFirst,serverTimestamp},getProfile:()=>profile,getHostInvite:()=>fourPanel?.hostInvite(),joinInvite:async invite=>{if(!fourPanel||fourPanel.isActive()||partyPanel.isActive())return false;const joined=await fourPanel.joinInvite(invite);if(joined){commandCenter?.showLobby();fourPanel.show();$('partyToggle').setAttribute('aria-expanded','true');}return !!joined;},promptCenter});
+let nameReserved=false;
+const nameConflictHandler=createCharacterNameConflictHandler({
+ document,db,auth,
+ sdk:{ref,get,set,remove,update,runTransaction,query,orderByKey,limitToFirst},
+ translate:translateText,
+ isCurrent:()=>!accountTerminated&&!!user&&auth.currentUser?.uid===user?.uid,
+ beforeOpen:()=>{closeMenuDialogs();},
+ onReserved:()=>{nameReserved=true;},
+ onRenamed:newName=>{
+  nameReserved=true;
+  if(profile)profile={...profile,name:newName};
+  $('profileName').textContent=newName;
+  commandCenter?.render();soldierUI?.refresh();
+  if(featureEnabled('friends'))friendsUI.start();
+  $('saveStatus').textContent=translateText('Soldier name updated. All progress and gear remain intact.');
+ },
+ onSignOut:()=>logout()
+});
+onLanguageChange(()=>nameConflictHandler.refreshLanguage());
 for(const trigger of ['menuFriends','lobbyFriends','inviteNotification','menuResults','viewResults'])$(trigger)?.addEventListener?.('click',syncContextBackButtons,{capture:true});
 // Limited live alpha test: publicly accessible; not a security boundary.
 const partySdk={ref,onValue,runTransaction,get,remove,set,update,onDisconnect,serverTimestamp};
@@ -310,18 +330,40 @@ if(fourPlayerTest){
       if(id===auth.currentUser?.uid){onChange(recruitPortraitUrl());return ()=>{};}
       return watchFriendPortrait({db,auth,sdk:partySdk,id,document,onChange});
     },
-    confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
+    confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),
+    confirmForceClose:({entries=[]}={})=>confirmation.ask({
+      title:'Force close party?',
+      text:()=>{
+        const names=entries.map(entry=>entry.state==='departed'?translateText('{name} (left early)',{name:entry.name}):entry.state==='offline'?translateText('{name} (offline)',{name:entry.name}):entry.name).join(', ');
+        return names
+          ?translateText('These players have not confirmed yet: {names}. Their already-saved completed waves stay safe, and any unconfirmed offline rewards will not be delivered if you close the party now.',{names})
+          :translateText('Not all players have confirmed their final report and rewards yet. Their already-saved completed waves stay safe, and any unconfirmed offline rewards will not be delivered if you close the party now.');
+      },
+      accept:'FORCE CLOSE PARTY'
+    }),
+    promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
     onRequestHostEnd:id=>gameControl?.requestHostPartyEnd(id)??false,
     canCompleteEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canClose(tick),
-    onLeaveMatch:async(options={})=>{const version=sessionVersion;activePartyEnd?.coordinator.stop();activePartyEnd=null;await gameControl?.leaveCoop(options);if(version===sessionVersion&&!fourPanel?.isActive()&&user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
+    canForceCloseEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canForceClose(tick),
+    onLeaveMatch:async(options={})=>{const version=sessionVersion,finishedScope=activePartyEnd;activePartyEnd?.coordinator.stop();activePartyEnd=null;await gameControl?.leaveCoop(options);if(options.forced&&finishedScope)void hostPartySignOut?.completed(finishedScope);if(version===sessionVersion&&!fourPanel?.isActive()&&user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
     onMatch:async (party,{isCurrent=()=>true}={})=>{
       const uid=auth.currentUser?.uid,version=sessionVersion;if(versionUI&&party.hostId!==uid&&!await beforeNewGame())return false;if(uid!==auth.currentUser?.uid||version!==sessionVersion||!isCurrent())return false;
       const rewardQueues=new Map();let scope;
+      const nameFor=id=>{const idx=party.playerIds.indexOf(id);return fourPanel?.profileNameFor?.(id)||party.profiles?.[idx]?.name||id;};
       const coordinator=createPartyEndCoordinator({uid,hostId:party.hostId,playerIds:party.playerIds,getQueues:()=>rewardQueues,
         isCurrent:()=>activePartyEnd===scope&&version===sessionVersion&&auth.currentUser?.uid===uid&&isCurrent(),
         send:tick=>gameControl?.acknowledgePartyEnd(party.partyId,tick)??{ok:false},
         onClose:async tick=>{const closed=await (fourPanel?.completeParty(party.partyId,tick)??false);if(closed===true)void hostPartySignOut?.completed(scope);return closed;},
-        onStatus:(value,tick)=>{if(value!=='saving')gameControl?.markPartyRewardsConfirmed(party.partyId,tick);fourPanel?.completionStatus(party.partyId,value);}
+        onStatus:(value,tick,detail)=>{
+          const departedSet=new Set(detail?.departedIds||[]),offlineSet=new Set(detail?.offlineIds||[]);
+          const missingEntries=(detail?.missingIds||[]).map(id=>({name:nameFor(id),state:departedSet.has(id)?'departed':offlineSet.has(id)?'offline':'confirming'}));
+          const uiDetail=detail?{endTick:tick,canForceClose:!!detail.canForceClose,missingEntries}:null;
+          if(value!=='saving'){
+            gameControl?.markPartyRewardsConfirmed(party.partyId,tick);
+            gameControl?.setPartyFinalizationState?.(party.partyId,tick,uiDetail);
+          }
+          fourPanel?.completionStatus(party.partyId,value,uiDetail);
+        }
       });
       scope={partyId:party.partyId,hostId:party.hostId,uid,version,user,authUser:auth.currentUser,coordinator};activePartyEnd?.coordinator.stop();activePartyEnd=scope;
       const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,trackedRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onChange:()=>queueMicrotask(()=>coordinator.refresh()),onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
@@ -480,6 +522,14 @@ async function deleteCharacter(){
   // whole atomic deletion fail.
   let releaseNameKey=null;
   if(nameReserved)try{releaseNameKey=characterNameKey(currentName);}catch{releaseNameKey=null;}
+  if(!releaseNameKey){
+   try{
+    const candidateKey=characterNameKey(currentName);
+    const snap=await get(ref(db,`characterNames/${candidateKey}`));
+    if(snap?.val?.()?.uid===currentUser.uid)releaseNameKey=candidateKey;
+   }catch{releaseNameKey=null;}
+  }
+  if(!current())return;
   const deletion=createCharacterDeletion({db,auth,sdk:{ref,get,update},isCurrent:current,releaseNameKey});
   await deletion.remove(currentName);if(!current())return;
   // update() is locally optimistic; only sign out after the server has
@@ -510,7 +560,6 @@ const enlistmentDate=()=>{const now=new Date(),pad=n=>String(n).padStart(2,'0');
 // reservation is refused by the server; then this stays a best-effort check
 // against the existing friend search index and CHARACTER CREATION KEEPS
 // WORKING - an unsupported index must never block a new player.
-let nameReserved=false;
 $('characterForm').addEventListener('submit',e=>{e.preventDefault();const typed=$('soldierName').value;const check=validateCharacterName(typed);if(!check.ok){message(check.reason==='length'?'Soldier name must be 2–24 characters.':'That soldier name cannot be used. Choose another one.');return;}const name=check.name;const avatar=recruitScreen.getAvatar();const currentUser=user, version=sessionVersion;recruitScreen.stamp();busy(e.submitter,async()=>{
  const claim=createCharacterNameClaim({db,auth:{currentUser},sdk:{ref,get,remove,runTransaction,query,orderByKey,limitToFirst},isCurrent:()=>version===sessionVersion});
  const reserved=await claim.claim(name).catch(()=>({status:'unsupported'}));
@@ -576,7 +625,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onViewChange:syncContextBackButtons,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onViewChange:syncContextBackButtons,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){
@@ -613,7 +662,7 @@ async function loadProfile(currentUser,version){
  const avatarSync=createAvatarSync({
   write:values=>update(ref(db,`players/${currentUser.uid}`),values),
   storage:languageStorage,session:()=>sessionVersion});
- if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
+ if(unsubscribe)unsubscribe();unsubscribe=onValue(ref(db,`players/${currentUser.uid}`),snap=>{if(version!==sessionVersion)return;const value=snap.val();if(!value){nameConflictHandler.reset();nameReserved=false;profile=null;display('character');return;}if(typeof value.name!=='string'||!['male','female'].includes(value.gender)||!Number.isInteger(value.xp)||value.xp<0){profile=null;display('connection');message('Your soldier data is invalid. Please contact support.');return;}const first=!profile;profile=value;updateSkillPrompt(value);
  // Accounts from before the service-date rework carry none; stamp one once.
  // If the rules are not live yet this fails silently and retries on the
  // next load - the service record shows the placeholder until then.
@@ -631,8 +680,9 @@ async function loadProfile(currentUser,version){
  // next reload. refreshSoldierPortrait recomposes only when the encoded face
  // really changed, and it runs before the menu repaints so the command center
  // shows the new face, not the previous one.
- if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {void refreshSoldierPortrait();commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
-const account={...(versionUI?{beforeNewGame}:{}),recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getSessionVersion:()=>sessionVersion,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user&&!deletingCharacter,onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
+ if(first){showProfile(value);void backfillPrestige(value);if(featureEnabled('tutorial'))void startFirstRunTutorial();}else {void refreshSoldierPortrait();commandCenter?.render();soldierUI?.refresh();if(armoryCategory==='workshop')renderWorkshop();}
+ if(first)void nameConflictHandler.reconcile(value.name,{alreadyReserved:nameReserved});},error=>{if(version!==sessionVersion)return;profile=null;display('connection');message(errorText(error));});}
+const account={...(versionUI?{beforeNewGame}:{}),recordScore:(mode,wave)=>scoreReporter?.observe(mode,wave),recordEndlessRun,getProfile:()=>({...profile,loadout:encodeLoadout(profile?.armory)}),getUserId:()=>user?.uid,getSessionVersion:()=>sessionVersion,getToken:()=>{if(!user)throw new Error('Sign in required');return user.getIdToken();},getLevel:()=>level(profile?.xp||0),isReady:()=>!!profile&&!!user&&!deletingCharacter&&!nameConflictHandler.isActive(),onSessionChange:callback=>{notifySession=callback;},canChooseSolo:()=>!partyPanel.isActive()&&!fourPanel?.isActive(),saveCampaign:async(id)=>{if(inSandbox())return {committed:false};const currentUser=user,version=sessionVersion;if(!currentUser||!profile)return {committed:false};
   // A realtime-database transaction only settles once the server answers; while
   // offline it stays pending forever, and the results screen would sit on
   // "Saving mission progress…" with every button locked and no retry offered.
@@ -702,7 +752,7 @@ function normalReleaseSafety(){
  // comes back on its own after one, because the notice lives in sessionStorage.
  // Blocking the reload on it would leave the player on an old build until they
  // happened to dismiss the picture.
- if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
+ if(pendingFirstRuns.size||endingHandoffs.isPending()||endingRunning||nameConflictHandler.isActive()||document.querySelector('dialog[open]:not(#afkRestDialog)'))return 'dialog';
  return 'ready';
 }
 releaseSafety=()=>afkTransition?'saving':normalReleaseSafety();
@@ -810,7 +860,7 @@ function stopAccountForRelease(){
  stop(()=>oldWatch?.());stop(()=>scoreReporter?.close());scoreReporter=null;
  stop(()=>gameControl?.stopForRelease());stop(()=>notifySession());
  stop(()=>cancelFirstRunEnding());
- stop(()=>leaderboardUI.reset());stop(()=>friendsUI.signOut());stop(()=>confirmation.cancel());stop(()=>soldierUI?.close());
+ stop(()=>leaderboardUI.reset());stop(()=>friendsUI.signOut());stop(()=>nameConflictHandler.reset());nameReserved=false;stop(()=>confirmation.cancel());stop(()=>soldierUI?.close());
  stop(()=>partyPanel.reset());stop(()=>partyPanel.collapse());stop(()=>fourPanel?.leaveForLogout(0));
  stop(()=>{for(const dialog of document.querySelectorAll('dialog[open]'))try{dialog.close();}catch{}});
  stop(()=>{$('password').value='';$('gameView').hidden=true;$('entry').hidden=true;});
@@ -856,7 +906,7 @@ async function handleSessionTakenOver(takenUser,version,newHolder){
  const stop=fn=>{try{const result=fn();if(result&&typeof result.then==='function')void Promise.resolve(result).catch(()=>{});}catch{}};
  const oldWatch=unsubscribe;unsubscribe=null;
  stop(()=>oldWatch?.());stop(()=>scoreReporter?.close());scoreReporter=null;
- stop(()=>notifySession());stop(()=>leaderboardUI.reset());stop(()=>friendsUI.signOut());stop(()=>confirmation.cancel());stop(()=>soldierUI?.close());
+ stop(()=>notifySession());stop(()=>leaderboardUI.reset());stop(()=>friendsUI.signOut());stop(()=>nameConflictHandler.reset());nameReserved=false;stop(()=>confirmation.cancel());stop(()=>soldierUI?.close());
  stop(()=>partyPanel.reset());stop(()=>partyPanel.collapse());stop(()=>fourPanel?.leaveForLogout(0));
  stop(()=>{for(const dialog of document.querySelectorAll('dialog[open]'))try{dialog.close();}catch{}});
  stop(()=>{$('password').value='';});
@@ -948,7 +998,7 @@ if(!accountTerminated)accountServices.observe(currentUser=>{
  const showDischarge=dischargeSignOut.observe(currentUser);
  afkTimer?.reset();
  cancelStartChecks();cancelFirstRunEnding();const fieldSchool=$('fieldSchool');if(fieldSchool)fieldSchool.hidden=true;
- deletingCharacter=false;scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();closeMenuDialogs();passwordChange?.reset();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
+ deletingCharacter=false;nameReserved=false;nameConflictHandler.reset();scoreReporter?.close();scoreReporter=null;$('scoreSaveStatus').textContent='';leaderboardUI.reset();friendsUI.signOut();savingSkills=false;savingArmory=false;closingSkills=false;skillsOpenGeneration++;$('skillSave').disabled=false;$('skillReset').disabled=false;confirmation.cancel();closeMenuDialogs();passwordChange?.reset();soldierUI.close();workshopPrepareFailed=false;partyPanel.reset();partyPanel.collapse();if(fourPanel?.isActive()||fourPanel?.isBusy())void fourPanel.leaveForLogout();sessionVersion++;const version=sessionVersion;if(unsubscribe){unsubscribe();unsubscribe=null;}profile=null;user=null;notifySession();message('');
  if(!currentUser){
   releaseFrozen=false;pendingSessionTakeover=false;
   void releaseActiveSession({removeRemote:false});

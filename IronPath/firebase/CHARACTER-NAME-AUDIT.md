@@ -24,40 +24,37 @@ vergebene Reservierungen, zusätzliche Datenquellen und spätere Änderungen
 werden nicht geprüft. Ein autorisierter vollständiger, konsistenter Bestand
 muss unter Wartung gesichert und getrennt auf Vollständigkeit geprüft werden.
 
-## Vergleichsregel: im Spiel entschieden, im Audit strenger
+## Vergleichsregel: im Spiel und im Audit vereinheitlicht (`NFC_CASEFOLD_V2`)
 
-Das Spiel hat jetzt eine feste Regel (`IronPath/character-name.mjs`,
-`NFC_LOWERCASE_V1`): äußere ECMAScript-Leerzeichen entfernen, Unicode-NFC,
-Kleinschreibung, erneut NFC. Sie gilt für die Freundessuche **und** für die
-Reservierung neuer Namen – ein Name kann also nicht unter einem Schlüssel
-gefunden und unter einem anderen reserviert werden.
+Das Spiel verwendet jetzt dieselbe strenge Vergleichsregel wie dieses Audit
+(`IronPath/character-name.mjs`, `NFC_CASEFOLD_V2`): äußere ECMAScript-Leerzeichen
+entfernen, Unicode-NFC, Unicode Default Case Folding, erneut NFC. Sie gilt
+einheitlich für Registrierung, Umbenennung und Freundessuche – ein Name kann
+also nicht unter einem Schlüssel gefunden und unter einem anderen reserviert
+werden.
 
-Dieses Offline-Audit vergleicht **strenger** (Unicode Default Case Folding).
-Die praktische Folge: `Straße` und `STRASSE` sind hier ein gemeldeter Konflikt,
-im Spiel zwei erlaubte Namen. `Ａ`/`A` bleibt in beiden verschieden. Diese
-Abweichung ist gewollt, in `firebase/name-policy-fixtures.json` festgehalten und
-wird von beiden Seiten durch Tests behauptet – sie darf nicht stillschweigend in
-nur einer der beiden Prüfmaschinen geändert werden. Vor einer Migration ist zu
-entscheiden, welche der beiden Regeln für Altbestände gilt.
+Damit kollidieren beispielsweise `Straße`, `STRASSE` und `STRAẞE`, `ΜΑΡΚΟΣ` und
+`μαρκοσ`, Ligaturen (`ﬁn`/`FIN`) sowie zusammengesetzte/zerlegte Akzente; eine
+rein visuelle Ähnlichkeit zwischen Schriften oder Kompatibilitätszeichen wie
+`Ａ`/`A` bleibt dagegen verschieden. Die gemeinsame Test-Fixture
+`firebase/name-policy-fixtures.json` (Version 2) hält diese Übereinstimmung
+zwischen Spiel-Client und Audit-Skript verbindlich fest.
 
-Die Regel garantiert keine Vollständigkeit: Sie wird im Client angewendet. Die
-begleitenden Rules-Kandidaten erzwingen nur, dass pro Schlüssel höchstens ein
-Eintrag existiert und nur dessen Inhaber ihn löscht; sie können nicht prüfen, ob
-ein Schlüssel wirklich die Normalisierung des gespeicherten Namens ist
-(`firebase/character-name-candidate.mjs`).
+Die Regel garantiert keine serverseitige Normalisierung allein durch Firebase
+Rules: sie wird im Client angewendet. Die begleitenden Rules-Kandidaten
+erzwingen nur, dass pro Schlüssel höchstens ein Eintrag existiert und nur dessen
+Inhaber ihn löscht; sie können nicht prüfen, ob ein Schlüssel wirklich die
+Normalisierung des gespeicherten Namens ist (`firebase/character-name-candidate.mjs`).
 
-## Wie dieses Audit vergleicht (strenger als das Spiel)
+## Wie dieses Audit vergleicht (entspricht dem Spiel)
 
 Für diese Diagnose werden äußere ECMAScript-Leerzeichen entfernt, dann Unicode
-NFC, Unicode Default Case Folding und erneut NFC angewendet. Damit kollidieren
-beispielsweise `Straße`/`STRASSE` und zusammengesetzte/zerlegte Akzente; eine
-rein visuelle Ähnlichkeit zwischen Schriften oder Kompatibilitätszeichen wie
-`Ａ`/`A` wird dagegen nicht gleichgesetzt. Das Werkzeug nennt die Unicode-
-Tabellenversion der verwendeten Python-Laufzeit. Eine produktive Vergabe muss
-nach abgestimmter Namensregel dieselbe, versionierte Transformation auf der
-vertrauenswürdigen Seite verwenden und alte wie manipulierte Clients absichern;
-dieses Skript setzt das nicht um. Die bestehende Freundessuche verwendet derzeit
-`trim().toLowerCase()` und ist **kein** eindeutiges Namensregister.
+NFC, Unicode Default Case Folding und erneut NFC angewendet. Das Werkzeug nennt
+die Unicode-Tabellenversion der verwendeten Python-Laufzeit. Bei bestehendem
+Altbestand ohne `characterNames`-Eintrag reserviert der Client den Namen still
+beim Login und öffnet im Konfliktfall einen dedizierten Namenskonflikt-Dialog,
+über den genau der betroffene Soldat ohne Fortschrittsverlust einen freien
+neuen Namen wählt.
 
 ## Nur nach Freigabe eines sicheren Exports
 

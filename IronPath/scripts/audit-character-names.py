@@ -3,8 +3,8 @@
 
 The JSON input must be a full database export containing ``players``. A file
 alone cannot prove completeness, so even a clean result is NOT permission to
-publish rules or assign names. The comparison is a proposal, not an agreed
-registration policy: ECMAScript-style outer whitespace, NFC, Unicode default
+publish rules or assign names. The comparison matches the game client's
+``NFC_CASEFOLD_V2`` rule: ECMAScript-style outer whitespace, NFC, Unicode default
 casefold and NFC again, using the Unicode tables of this Python interpreter.
 It does not conflate visually similar characters or apply compatibility folding.
 

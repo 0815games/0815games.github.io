@@ -9,13 +9,14 @@
 // that wrote it, removable only by that account. The comparison itself happens
 // in character-name.mjs, the same code for every current client. Old or
 // manipulated clients are therefore NOT fully covered by this alone; see
-// CHARACTER-NAME-AUDIT.md. Legacy duplicates are not split by this candidate.
-import {createHash} from 'node:crypto';
+// CHARACTER-NAME-AUDIT.md.
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {buildSocialCleanupCandidate} from './social-cleanup-candidate.mjs';
 import {CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
+import {MAINTENANCE_GATE} from '../release-tools/maintenance-rules.mjs';
+import {MAINTENANCE_PATH} from '../maintenance-check.mjs';
 
 // The same regex style the published rules use for `friendNames`. Firebase
 // evaluates these with RE2; a non-capturing group made every read AND write
@@ -36,7 +37,9 @@ const ABANDONED=`data.exists() && newData.exists() && data.child('uid').isString
 // The index rules themselves, kept in ONE place: the offline candidate below
 // and the composed Block 2 candidate share them, so what the emulator tests is
 // what a publication would actually deploy.
-export function characterNameIndexRules(){
+export function characterNameIndexRules({withMaintenanceGate=false}={}){
+ const readExpr=`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN})`;
+ const writeExpr=`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN}) && ((!data.exists() && newData.exists()) || (data.exists() && data.child('uid').val() === auth.uid) || (${ABANDONED}))`;
  return {
     // No read at the root: the whole index at once would hand any signed-in
     // account the complete roster of names. A read of ONE key is granted by
@@ -45,8 +48,8 @@ export function characterNameIndexRules(){
     // asserts both halves of that.
     '.read':false,
     '$key':{
-      '.read':`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN})`,
-      '.write':`auth != null && $key.matches(${CHARACTER_NAME_KEY_PATTERN}) && ((!data.exists() && newData.exists()) || (data.exists() && data.child('uid').val() === auth.uid) || (${ABANDONED}))`,
+      '.read':withMaintenanceGate?`(${MAINTENANCE_GATE}) && (${readExpr})`:readExpr,
+      '.write':withMaintenanceGate?`(${MAINTENANCE_GATE}) && (${writeExpr})`:writeExpr,
       '.validate':"newData.hasChildren(['uid','name','at'])",
       // uid and name need their own named nodes BEFORE `$other` may say no:
       // `$other` matches every child not named here, so listing it while uid
@@ -68,7 +71,8 @@ export function characterNameIndexRules(){
 // whole ruleset, so this has to be additive on whatever base is handed in.
 export function applyCharacterNameRules(rules){
  if(rules.characterNames)throw Error('Character name rules already present; rebase the candidate before rebuilding');
- rules.characterNames=characterNameIndexRules();
+ const withMaintenanceGate=Object.hasOwn(rules,MAINTENANCE_PATH);
+ rules.characterNames=characterNameIndexRules({withMaintenanceGate});
  return rules;
 }
 

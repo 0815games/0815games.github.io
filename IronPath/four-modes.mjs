@@ -1,15 +1,15 @@
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
 // Transport-independent four-player rules, live through the Firebase party
 // game: three- and four-player squads and 2v2 teams play on the squad fields.
-import {createMatch,stepMatch} from './simulation.mjs?v=20261119-block9g';
-import {applyCommand} from './match.mjs?v=20261119-block9g';
-import {getMap} from './maps.mjs?v=20261119-block9g';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block9g';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261119-block2';
+import {applyCommand} from './match.mjs?v=20261119-block2';
+import {getMap} from './maps.mjs?v=20261119-block2';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block2';
 export const FOUR_PLAYER_MAP='four-front';
 // Squad fields mix the hand-built frontier with vetted generated retreat
 // sectors: every entry carries two roads and enough pads for four wallets,
 // and every entry is balanced by the headless harness (tests/balance-suite).
-export const SQUAD_MAP_POOL=Object.freeze([FOUR_PLAYER_MAP,'g3-29e3779b1','g3-3f1bbcd88','g3-3cc623a9b']);
+export const SQUAD_MAP_POOL=Object.freeze([FOUR_PLAYER_MAP,'g3-29e3779b1','g3-2f1bbcd88','g3-3cc623a9b']);
 // The field is drawn from the party id, not the host's choice: host and every
 // client compute the same map from the same party id, so the snapshot needs
 // no extra wiring and a reloaded host restores the same field.
@@ -63,7 +63,8 @@ function finishTeam(s,winner,reason){s.ended=true;s.winnerTeam=winner;s.endReaso
 export function setFourPresence(s,id,active){
   if(!Object.hasOwn(s.members,id)||typeof active!=='boolean')return false;
   s.members[id].active=active;
-  for(const lane of lanes(s)){const p=lane.players[id];if(p){p.active=active;if(!active){releaseBuildReservations(lane,id);p.direction={x:0,y:0};p.target=null;}}}
+  if(active)delete s.members[id].departed;
+  for(const lane of lanes(s)){const p=lane.players[id];if(p){p.active=active;if(active)delete p.departed;else{releaseBuildReservations(lane,id);p.direction={x:0,y:0};p.target=null;}}}
   if(!active)stopPending(s);
   if(!active&&id===s.hostId)for(const lane of lanes(s))for(const p of Object.values(lane.players)){p.direction={x:0,y:0};p.target=null;}
   return true;
@@ -80,8 +81,11 @@ export function applyFourCommand(s,id,command){
   switch(command.type){
     case 'leaveRun':
       if(id===s.hostId)return {ok:false,reason:'Host must end the operation.'};
-      if(s.mode==='two-vs-two'){finishTeam(s,1-team,'forfeit');return {ok:true};}
-      setFourPresence(s,id,false);return {ok:true};
+      if(s.mode==='two-vs-two'){
+        s.members[id].departed=true;for(const l of lanes(s))if(l.players[id])l.players[id].departed=true;
+        finishTeam(s,1-team,'forfeit');return {ok:true};
+      }
+      setFourPresence(s,id,false);s.members[id].departed=true;for(const l of lanes(s))if(l.players[id])l.players[id].departed=true;return {ok:true};
     case 'endRun':
       if(id!==s.hostId)return {ok:false,reason:'Only the host can end the operation.'};
       if(s.mode==='two-vs-two')finishTeam(s,null,'retired');else{stopPending(s);lane.ended=true;lane.running=false;lane.endReason='retired';}

@@ -1,18 +1,18 @@
-import {translateText as tr,onLanguageChange} from './language.mjs?v=20261119-block9g';
+import {translateText as tr,onLanguageChange} from './language.mjs?v=20261119-block2';
 // Unified online party panel. The server rules remain the authority for roster changes.
 import {availablePartyModes} from './multiplayer-lobby.mjs?v=20261103-unified1';
-import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261119-block9g';
-import {rankForLevel,rankInsigniaSvg} from './rank-insignia.mjs?v=20261119-block9g';
-import {FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261119-block9g';
-export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,promptCenter=null,onViewRequests=()=>{},portraitFor=null}={}){
-  if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
+import {fourTeamRosters} from './firebase-four-lobby.mjs?v=20261119-block2';
+import {rankForLevel,rankInsigniaSvg} from './rank-insignia.mjs?v=20261119-block2';
+import {FRIEND_PORTRAIT_PLACEHOLDER} from './friend-portrait.mjs?v=20261119-block2';
+export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,confirmStart=async()=>true,confirmClose=async()=>false,confirmForceClose=async()=>false,onLeaveMatch=async()=>{},onRequestHostEnd=async()=>false,canCompleteEnd=()=>false,canForceCloseEnd=()=>false,promptCenter=null,onViewRequests=()=>{},portraitFor=null}={}){
+  if(!document||![createLobby,getProfile,onMatch,confirmStart,confirmClose,confirmForceClose,onLeaveMatch,onRequestHostEnd,canCompleteEnd,canForceCloseEnd,onViewRequests].every(fn=>typeof fn==='function'))throw Error('Invalid panel configuration');
   // Optional, and deliberately the caller's decision: WHOSE face may be shown
   // and where it comes from is not this panel's business. Without it every card
   // keeps the neutral placeholder.
   if(portraitFor!==null&&typeof portraitFor!=='function')throw Error('Invalid panel configuration');
   const $=id=>document.getElementById(id),root=$('fourPartyPanel'),requests=$('fourPartyRequests'),roster=$('fourPartyRoster');
   const teams=[[0,0,1,1],[0,1,0,1],[0,1,1,0]];
-  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,generation=0,unwatch=[],profileWatches=new Map(),portraitWatches=new Map(),cardImages=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus='',lastRequests={},requestSerial=0,requestTokens=new Map(),closingParty=null;
+  let lobby=null,party=null,slots={},profiles={},config=null,started=false,joinFailed=false,busy=false,forceConfirming=false,generation=0,unwatch=[],profileWatches=new Map(),portraitWatches=new Map(),cardImages=new Map(),joining=false,selectedMode=null,selectedTeams=0,renderedModes='',lastStatus={text:'',values:{}},lastRequests={},requestSerial=0,requestTokens=new Map(),closingParty=null,endState=null;
   const retainedParties=new Map();
   function clearRetained(){for(const marker of retainedParties.values())marker.stop?.();retainedParties.clear();}
   function rememberLockedGuest(active,current){
@@ -24,8 +24,20 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     // before allowing character deletion in this document.
     try{marker.stop=active.watchHost(current.partyId,value=>{if(value!==current.hostId)forget();},()=>{});if(retainedParties.get(current.partyId)!==marker)marker.stop?.();}catch{/* Unknown state stays blocked until logout. */}
   }
-  function status(message){lastStatus=message;$('fourPartyStatus').textContent=tr(message);}
-  function clear(){generation++;promptCenter?.reset('party-joins');for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();for(const entry of portraitWatches.values())entry.stop?.();portraitWatches.clear();cardImages.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requestTokens.clear();requests.replaceChildren();roster.replaceChildren();render();}
+  function formatMissing(entries){
+    return entries.map(entry=>{
+      if(entry.state==='departed')return tr('{name} (left early)',{name:entry.name});
+      if(entry.state==='offline')return tr('{name} (offline)',{name:entry.name});
+      return entry.name;
+    }).join(', ');
+  }
+  function paintStatus(){
+    if(!lastStatus.text){$('fourPartyStatus').textContent='';return;}
+    const values=Array.isArray(lastStatus.entries)?{...lastStatus.values,names:formatMissing(lastStatus.entries)}:lastStatus.values;
+    $('fourPartyStatus').textContent=tr(lastStatus.text,values);
+  }
+  function status(message,values={},entries=null){lastStatus={text:message||'',values:values||{},entries};paintStatus();}
+  function clear(){generation++;promptCenter?.reset('party-joins');for(const stop of unwatch)stop();unwatch=[];for(const entry of profileWatches.values())entry.stop?.();profileWatches.clear();for(const entry of portraitWatches.values())entry.stop?.();portraitWatches.clear();cardImages.clear();lobby=null;party=null;slots={};profiles={};config=null;started=false;joinFailed=false;busy=false;forceConfirming=false;joining=false;selectedMode=null;selectedTeams=0;renderedModes='';lastRequests={};requestTokens.clear();endState=null;requests.replaceChildren();roster.replaceChildren();render();}
   function render(){
     $('fourPartyEntry').hidden=!!party;$('fourPartyActive').hidden=!party;
     const host=party?.role==='host',pending=party?.role==='pending';
@@ -36,6 +48,10 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     $('fourPartyStart').disabled=busy||!host||started||!ready();
     $('fourPartyLeave').hidden=started&&!host&&!joinFailed;
     $('fourPartyLeave').textContent=tr(host?'CLOSE PARTY':pending?'CANCEL REQUEST':started?'LEAVE MATCH':'LEAVE PARTY');
+    $('fourPartyForceClose').textContent=tr('FORCE CLOSE PARTY');
+    const showForceClose=!!(host&&started&&endState?.partyId===party.partyId&&endState.canForceClose&&canForceCloseEnd(party.partyId,endState.endTick));
+    $('fourPartyForceClose').hidden=!showForceClose;
+    $('fourPartyForceClose').disabled=busy||!showForceClose;
     for(const id of ['fourPartyCreate','fourPartyJoin','fourPartyResume','fourPartyLeave','fourPartyMode','fourPartyTeams'])$(id).disabled=busy;
     if(joining)$('fourPartyLeave').disabled=true;
     const modes=availablePartyModes(party?1+Object.values(slots).filter(Boolean).length:0),signature=modes.join(',');
@@ -221,7 +237,37 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
       return true;
     }finally{if(closingParty===current)closingParty=null;}
   });
+  const forceCompleteParty=async(partyId,endTick)=>{
+    const current=party,genAtAsk=generation;
+    if(busy||forceConfirming||!current||current.role!=='host'||!started||current.partyId!==partyId||!canForceCloseEnd(partyId,endTick))return false;
+    const detail=endState&&endState.partyId===partyId&&endState.endTick===endTick?endState:null;
+    const entries=detail?.missingEntries||[];
+    forceConfirming=true;
+    let confirmed=false;
+    try{
+      confirmed=await confirmForceClose({
+        partyId,endTick,entries,
+        missingNames:entries.map(e=>e.name),
+        departedNames:entries.filter(e=>e.state==='departed').map(e=>e.name),
+        offlineNames:entries.filter(e=>e.state==='offline').map(e=>e.name),
+      });
+    }finally{forceConfirming=false;}
+    if(!confirmed||genAtAsk!==generation||party!==current||!canForceCloseEnd(partyId,endTick))return false;
+    return run(async gen=>{
+      const active=lobby;
+      if(gen!==genAtAsk||gen!==generation||party!==current||!started||!canForceCloseEnd(partyId,endTick))return false;
+      closingParty=current;
+      try{
+        await active.close(current.partyId,current.inviteCode);
+        if(gen!==generation||party!==current)return false;
+        clear();status('Party closed.');
+        try{void Promise.resolve(onLeaveMatch({preserveReport:true,hostClosed:true,forced:true})).catch(()=>{});}catch{/* The confirmed deletion still stands. */}
+        return true;
+      }finally{if(closingParty===current)closingParty=null;}
+    });
+  };
   $('fourPartyLeave').onclick=leaveParty;
+  $('fourPartyForceClose').onclick=()=>{if(endState)void forceCompleteParty(endState.partyId,endState.endTick);};
   async function leaveForLogout(timeoutMs=2000){
     const old=party,active=lobby,wasStarted=started;clear();clearRetained();root.hidden=true;
     // Signing out or an enforced teardown cannot prove delivery to the other
@@ -229,11 +275,15 @@ export function createFourPlayerPanel({document,createLobby,getProfile,onMatch,c
     const cleanup=(async()=>{if(wasStarted)await onLeaveMatch();if(!old)return;if(old.role==='host'&&!wasStarted)await active.close(old.partyId,old.inviteCode);else if(!wasStarted&&old.role==='guest')await active.leave(old.partyId);else if(!wasStarted&&old.role!=='host')await active.cancel(old.inviteCode);})().catch(()=>{});
     let timer;await Promise.race([cleanup,new Promise(resolve=>{timer=setTimeout(resolve,timeoutMs);})]);clearTimeout(timer);
   }
-  function completionStatus(partyId,value){
+  function completionStatus(partyId,value,detail=null){
     if(!party||party.partyId!==partyId||!started)return;
-    const text=value==='saving'?'Saving rewards before closing the party…':value==='closing'?'Closing the party…':'Waiting for all reports and saved rewards before closing the party.';
-    status(text);
+    endState=detail?{partyId,endTick:detail.endTick,canForceClose:!!detail.canForceClose,missingEntries:detail.missingEntries||[]}:null;
+    render();
+    if(value==='saving')status('Saving rewards before closing the party…');
+    else if(value==='closing')status('Closing the party…');
+    else if(detail?.missingEntries?.length)status('Waiting for reports and saved rewards from: {names}.',{},detail.missingEntries);
+    else status('Waiting for all reports and saved rewards before closing the party.');
   }
-  onLanguageChange(()=>{renderedModes='';render();status(lastStatus);if(party?.role==='host'&&!started)showRequests(generation,lastRequests);});
-  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,isBusy:()=>busy||joining||retainedParties.size>0,startedHostPartyId:()=>started&&party?.role==='host'?party.partyId:null,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,completeParty,completionStatus,leaveForLogout};
+  onLanguageChange(()=>{renderedModes='';render();paintStatus();if(party?.role==='host'&&!started)showRequests(generation,lastRequests);});
+  root.hidden=true;render();return {show(){root.hidden=false;},hide(){root.hidden=true;},isActive:()=>!!party,isBusy:()=>busy||joining||retainedParties.size>0,startedHostPartyId:()=>started&&party?.role==='host'?party.partyId:null,profileNameFor:id=>profiles[id]?.name||null,hostInvite:()=>party?.role==='host'&&!started&&Object.values(slots).filter(Boolean).length<3?{partyId:party.partyId,code:party.inviteCode}:null,joinInvite:invite=>join(invite.code,invite.partyId),leaveParty,completeParty,forceCompleteParty,completionStatus,leaveForLogout};
 }

@@ -1,8 +1,8 @@
-import {createMatch,stepMatch} from './simulation.mjs?v=20261119-block9g';
-import {applyCommand} from './match.mjs?v=20261119-block9g';
-import {WAVE_COUNT} from './combat.mjs?v=20261119-block9g';
-import {bunkerStart} from './solo-deployment.mjs?v=20261119-block9g';
-import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block9g';
+import {createMatch,stepMatch} from './simulation.mjs?v=20261119-block2';
+import {applyCommand} from './match.mjs?v=20261119-block2';
+import {WAVE_COUNT} from './combat.mjs?v=20261119-block2';
+import {bunkerStart} from './solo-deployment.mjs?v=20261119-block2';
+import {waveRosterPresent,waveFieldsReady,makeWaveRequest,replyToWaveRequest} from './wave-consensus.mjs?v=20261119-block2';
 
 // Two isolated, identically generated battlefields, advanced on the host's
 // fixed clock. Only the authenticated player can command their own lane.
@@ -25,7 +25,7 @@ export function applyVersus(s,id,command){
   if(s.ended)return {ok:false,reason:'The match is over.'};
   if(player.active===false)return {ok:false,reason:'Player is offline.'};
   switch(command.type){
-    case 'leaveRun': if(id===s.hostId)return {ok:false,reason:'Only the guest can leave individually.'};finish(s,other,'forfeit');return {ok:true};
+    case 'leaveRun': if(id===s.hostId)return {ok:false,reason:'Only the guest can leave individually.'};player.departed=true;if(lane.players[id])lane.players[id].departed=true;finish(s,other,'forfeit');return {ok:true};
     case 'endRun': if(id!==s.hostId)return {ok:false,reason:'Only the host can end the match.'};finish(s,null,'retired');return {ok:true};
     case 'startWave': {
       if(s.pendingWave||s.waveRequest)return {ok:false,reason:'A wave request is already pending.'};
@@ -66,5 +66,5 @@ export function stepVersus(s){
 export function versusView(s,id){
   const rivalId=Object.keys(s.players).find(key=>key!==id),lane=s.lanes[id],rival=s.lanes[rivalId];
   function viewFor(key,other){const own=s.lanes[key],players={};for(const uid of [key,other])players[uid]={...s.players[uid],...(uid===key?own.players[uid]:s.lanes[uid].players[uid]),money:s.lanes[uid].money,active:uid===key&&s.players[uid].active!==false,completedWaveMask:s.players[uid].completedWaveMask,...(s.players[uid].completedWaveBlocks?{completedWaveBlocks:s.players[uid].completedWaveBlocks}:{})};return {...own,individualSupplies:true,players,hostId:s.hostId,mode:'versus',pendingWave:s.pendingWave,waveRequestId:s.waveRequestId,waveRequest:s.waveRequest,waveRosterReady:waveRosterPresent(s.players),ended:s.ended,endReason:s.endReason,winnerId:s.winnerId};}
-  return {...viewFor(id,rivalId),rival:viewFor(rivalId,id),rivalId,waitingForRival:!!(rival.running||rival.pendingPerk)};
+  return {...viewFor(id,rivalId),rival:viewFor(rivalId,id),rivalId,waitingForRival:!!(rival.running||rival.pendingPerk),memberStates:Object.fromEntries(Object.entries(s.players).map(([uid,player])=>[uid,{active:player?.active!==false,departed:player?.departed===true}]))};
 }

@@ -1,12 +1,12 @@
-import {createSpeedControl} from './multiplayer-speed.mjs?v=20261119-block9g';
+import {createSpeedControl} from './multiplayer-speed.mjs?v=20261119-block2';
 import {releaseBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261119-block9g';
-import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261119-block9g';
+import {applyFourCommand,stepFour,setFourPresence} from './four-modes.mjs?v=20261119-block2';
+import {applyVersus,stepVersus,versusView} from './versus.mjs?v=20261119-block2';
 // Server-side protocol core, independent of transport and Firebase. The adapter
 // MUST authenticate the connection and pass its trusted player ID to these APIs.
 // Neither clients nor this in-memory module can be considered authoritative.
-import { applyCommand } from './match.mjs?v=20261119-block9g';
-import { stepMatch } from './simulation.mjs?v=20261119-block9g';
+import { applyCommand } from './match.mjs?v=20261119-block2';
+import { stepMatch } from './simulation.mjs?v=20261119-block2';
 export const PROTOCOL_VERSION=1;
 // Snapshots carry only the newest receipts. A client may have exactly ONE
 // command in flight (it sends sequence nextSeq and stays locked until that
@@ -132,7 +132,7 @@ function makeHost(data){
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
     if(!active)speedControl.reset();
-    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active){match.pendingWave=0;match.waveRequest=null;}return true;
+    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(active)delete match.players[playerId].departed;if(!active){match.pendingWave=0;match.waveRequest=null;}return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint(),...(partyEnd?{partyEnd}:{})});}

@@ -1,16 +1,16 @@
 import {equipmentForPlayer} from './workshop-combat.mjs?v=20261112-tagless1';
 import {legacyEquipmentEffects} from './equipment-effects.mjs?v=20261107-balance1';
 import {advanceBuildReservations} from './build-reservations.mjs?v=20261104-buildreservation1';
-import {comboTier,comboCue} from './skill-combos.mjs?v=20261119-block9g';
-import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261119-block9g';
-import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261119-block9g';
+import {comboTier,comboCue} from './skill-combos.mjs?v=20261119-block2';
+import {webBonuses,specialistUnlocked,hasCapstone} from './skills.mjs?v=20261119-block2';
+import {classTowerRangeFactor,classTowerIntervalFactor,classTowerIgnoresClouds,classTowerDamageFactor,applyClassTowerHitEffects} from './tower-class-paths.mjs?v=20261119-block2';
 import {bossPhase,bossWeaponFactor,crossedCycle} from './boss-mechanics.mjs?v=20261031-finale1';
 import {terrainFor,soldierSpeedFactor,enemySpeedFactor,iceDamage,targetingRange,weaponDamageFactor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261119-block9g';
-import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261119-block9g';
+import {getMap,isMapId,DEFAULT_MAP,sectorOf,zoneAt,mapPlayerCap} from './maps.mjs?v=20261119-block2';
+import { WAVE_COUNT,waveFormation,missionFormation,makeEnemy,towerDamage } from './combat.mjs?v=20261119-block2';
 import { waveXP } from './progression.mjs?v=20261105-prestige1';
-import {addSupplies} from './match.mjs?v=20261119-block9g';
-import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261119-block9g';
+import {addSupplies} from './match.mjs?v=20261119-block2';
+import {towerIntervalFactor,towerRangeFactor,towerIgnoresClouds,towerDamageBonus,applyHitEffects} from './tower-specialization.mjs?v=20261119-block2';
 export const STEP = 1/30;
 export const PATH=getMap(DEFAULT_MAP).path, PADS=getMap(DEFAULT_MAP).pads;
 const towerStats=[{range:125,interval:.55,color:'#d9d884'},{range:145,interval:1.4,color:'#e49b67'},{range:155,interval:.8,color:'#8cc0a6'},{range:210,interval:1.8,color:'#a9a4d4'}];
@@ -31,6 +31,11 @@ export function createMatch(players,mapId=DEFAULT_MAP){
 }
 export const COOP_REWARD_RATE=.7;
 export const COOP_ENEMY_HEALTH=1.5;
+export const COOP_THREE_REWARD_RATE=.6;
+export const COOP_THREE_ENEMY_HEALTH=1.75;
+export const COOP_FOUR_REWARD_RATE=.55;
+export const COOP_FOUR_ENEMY_HEALTH=2;
+export const MULTIPLAYER_SECTOR_START_WAVE=11;
 function activePlayers(state){return Object.keys(state.players).sort().filter(id=>state.players[id].active!==false);}
 function assaultRankDamage(wave){return 2+(wave>=6?Math.min(3,1+Math.floor((wave-6)/6)):0);}
 function airDefenseDamageMultiplier(skills,bonus,target){
@@ -47,7 +52,7 @@ function airDefenseDamageMultiplier(skills,bonus,target){
   return factor;
 }
 function rewardTeam(state,amount,enemyKill=false){
-  const active=activePlayers(state),salvage=enemyKill?(state.runPerks?.salvage||0):0,base=state.individualSupplies&&active.length>1?Math.floor(amount*(active.length>2?(active.length>3?.45:.5):COOP_REWARD_RATE)):amount;
+  const active=activePlayers(state),salvage=enemyKill?(state.runPerks?.salvage||0):0,rate=active.length>3?COOP_FOUR_REWARD_RATE:active.length>2?COOP_THREE_REWARD_RATE:COOP_REWARD_RATE,base=state.individualSupplies&&active.length>1?Math.floor(amount*rate):amount;
   const killBonus=p=>(p.skills?.logistics||0)+(specialistUnlocked(p.skills,'logistics',0)?1:0)+webBonuses(p.skills).supplies;
   if(state.individualSupplies){for(const id of active)addSupplies(state,id,base+salvage+(enemyKill?killBonus(state.players[id]):0));}
   else state.money+=base+salvage+(enemyKill?killBonus(Object.values(state.players)[0]):0);
@@ -68,8 +73,8 @@ export function stepMatch(state){
     p.x=Math.max(12,Math.min((map.width||960)-12,p.x));p.y=Math.max(12,Math.min((map.height||540)-12,p.y));
     if(!jamField)p.cooldown=Math.max(0,p.cooldown-dt);
   }
-  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=missionFormation(state.wave,state.campaignContract),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road];
-      if(sector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(sector-1))));enemy.speed*=1+.05*(sector-1);}if(state.individualSupplies&&count>1){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*(count>2?2:COOP_ENEMY_HEALTH));}
+  if(state.running&&state.spawnLeft>0){state.spawnTimer-=dt;if(state.spawnTimer<=0){const spawnIndex=state.spawnIndex++,formation=missionFormation(state.wave,state.campaignContract),kind=formation[spawnIndex%formation.length],enemy=makeEnemy(kind,state.wave),count=activePlayers(state).length,road=spawnIndex%paths.length,path=paths[road],effectiveSector=(state.individualSupplies||state.hostId)&&state.wave<MULTIPLAYER_SECTOR_START_WAVE?1:sector;
+      if(effectiveSector>1){enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*(1+.12*(effectiveSector-1))));enemy.speed*=1+.05*(effectiveSector-1);}if(state.individualSupplies&&count>1){const healthMult=count>3?COOP_FOUR_ENEMY_HEALTH:count>2?COOP_THREE_ENEMY_HEALTH:COOP_ENEMY_HEALTH;enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*healthMult);}
       if(state.campaignContract){enemy.hp=enemy.maxHp=Math.round(enemy.maxHp*state.campaignContract.unit);enemy.campaign=true;}
       if(state.campaignContract?.bossUnit&&enemy.boss)enemy.hp=enemy.maxHp=Math.max(1,Math.round(enemy.maxHp*state.campaignContract.bossUnit));
       state.enemies.push({...enemy,...(paths.length>1?{road}:{}),x:path[0].x,y:path[0].y,segment:1});

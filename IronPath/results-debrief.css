@@ -49,7 +49,7 @@
 #runResults .debrief-details summary{cursor:pointer;color:#e9d8a4;font-size:.73rem;letter-spacing:.08em;font-weight:800}
 #runResults .results-grid{margin-top:12px}
 #runResults .results-next{margin-top:14px;background:#20362a;border-color:#54674f}
-#runResults .results-actions{display:flex;gap:8px;margin-top:20px}
+#runResults .results-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
 #runResults .results-actions #resultsDone{flex:1 1 100%;min-height:48px;background:#dbbe76;color:#16241b;border-color:#e9d094}
 #runResults .results-actions button[hidden],#runResults [hidden]{display:none!important}
 @keyframes debrief-reveal{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}

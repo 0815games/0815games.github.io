@@ -41,13 +41,11 @@ test('a deliberately requested private report is outside the repository, mode 06
  assert.notEqual(run(source,'--private-report',join(repoLink,'__forbidden-private-report.json')).status,0,'a symlinked path into the checkout is also refused');
 });
 
-// The audit and the game must decide "same name" from the same cases. The
-// shared fixture says where they agree and where the audit is deliberately
-// stricter; both engines assert their own side of it.
-test('the offline audit agrees with the shared fixture, including the documented divergence',async t=>{
+test('the offline audit agrees with the shared fixture without divergence',async t=>{
  const fixture=JSON.parse(await readFile(new URL('../firebase/name-policy-fixtures.json',import.meta.url),'utf8'));
- assert.equal(fixture.version,1);
+ assert.equal(fixture.version,2);
  for(const entry of fixture.cases){
+  assert.equal(entry.same,entry.casefoldSame,`NFC_CASEFOLD_V2 eliminates engine divergence for ${JSON.stringify(entry.names)}`);
   const players={};
   entry.names.forEach((name,index)=>{players[`uid${index}`]={name};});
   const {source}=await fixture_(t,JSON.stringify({players})),r=run(source);
@@ -59,10 +57,8 @@ test('the offline audit agrees with the shared fixture, including the documented
   assert.equal(summary.completeExportVerified,false);
   assert.ok(!r.stdout.includes('Alex')&&!r.stdout.includes('Straße'),'stdout stays aggregated');
  }
- // Where the game and the audit differ, the difference is the one we wrote down.
  const game=await readFile(new URL('../character-name.mjs',import.meta.url),'utf8');
- assert.match(game,/CHARACTER_NAME_POLICY='NFC_LOWERCASE_V1'/);
- assert.match(game,/the audit script is stricter|stricter \(Unicode default case folding\)/i,'the divergence is documented in the module');
+ assert.match(game,/CHARACTER_NAME_POLICY='NFC_CASEFOLD_V2'/);
 });
 
 test('invalid or incomplete-looking input fails closed without echoing data',async t=>{

@@ -4,23 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261119-block9g">
+  <meta name="ironpath-build" content="20261119-block2">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261119-block9g">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261119-block9g">
-  <link rel="stylesheet" href="skill-menu.css?v=20261119-block9g">
-  <link rel="stylesheet" href="field-command.css?v=20261119-block9g">
+  <link rel="stylesheet" href="style.css?v=20261119-block2">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261119-block2">
+  <link rel="stylesheet" href="skill-menu.css?v=20261119-block2">
+  <link rel="stylesheet" href="field-command.css?v=20261119-block2">
   <link rel="stylesheet" href="multiplayer-prompts.css?v=20261031-prompt1">
-  <link rel="stylesheet" href="results-debrief.css?v=20261105-debrief1">
+  <link rel="stylesheet" href="results-debrief.css?v=20261119-block2">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
   <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter2">
   <link rel="stylesheet" href="patch-notes.css?v=20261031-notes1">
-  <link rel="stylesheet" href="menu-redesign.css?v=20261119-block9g">
+  <link rel="stylesheet" href="menu-redesign.css?v=20261119-block2">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -36,6 +36,28 @@
       <p id="afkFailureDetail" data-i18n-text="The browser could not protect the shared session. Reload the game before continuing.">The browser could not protect the shared session. Reload the game before continuing.</p>
       <button id="afkSessionReload" class="primary" type="button" data-i18n-text="RELOAD GAME">RELOAD GAME</button>
     </div>
+  </dialog>
+  <dialog id="nameConflictDialog" class="settings-dialog name-conflict-dialog" tabindex="-1" aria-labelledby="nameConflictTitle" aria-describedby="nameConflictDescription">
+    <div class="dialog-banner dialog-banner-name-conflict">
+      <div class="settings-head"><span class="eyebrow" data-i18n-text="PERSONNEL CONFLICT">PERSONNEL CONFLICT</span></div>
+      <h2 id="nameConflictTitle" data-i18n-text="Soldier name already in use">Soldier name already in use</h2>
+    </div>
+    <form id="nameConflictForm" class="name-conflict-form" method="post" novalidate>
+      <p id="nameConflictDescription" class="name-conflict-copy" data-i18n-text="Another account already holds this soldier name. All of your progress, XP, gear, skills, and campaign missions stay intact — choose a unique name to continue.">Another account already holds this soldier name. All of your progress, XP, gear, skills, and campaign missions stay intact — choose a unique name to continue.</p>
+      <div class="name-conflict-current">
+        <span data-i18n-text="CURRENT NAME">CURRENT NAME</span>
+        <strong id="nameConflictCurrentName"></strong>
+      </div>
+      <div class="name-conflict-field">
+        <label for="nameConflictInput" data-i18n-text="NEW SOLDIER NAME">NEW SOLDIER NAME</label>
+        <input id="nameConflictInput" maxlength="24" minlength="2" required autocomplete="off" spellcheck="false" placeholder="Enter a new name" data-i18n-placeholder="Enter a new name">
+      </div>
+      <p id="nameConflictStatus" class="name-conflict-status" role="status" aria-live="polite"></p>
+      <div class="name-conflict-actions">
+        <button id="nameConflictSubmit" class="primary" type="submit" data-i18n-text="CLAIM NEW NAME">CLAIM NEW NAME</button>
+        <button id="nameConflictLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button>
+      </div>
+    </form>
   </dialog>
   <!-- Half an hour away and the session is closed. Painted shelter scene over
        command-grade typography; dismissing leaves the player on sign-in. -->
@@ -176,7 +198,7 @@
         <button type="button" id="menuDeleteCharacter" class="danger-utility"><span data-i18n-text="DELETE CHARACTER">DELETE CHARACTER</span> <span aria-hidden="true">✖</span></button>
       </div>
     </div>
-    <p class="build-stamp" aria-hidden="true">BUILD 20261119-block9g</p>
+    <p class="build-stamp" aria-hidden="true">BUILD 20261119-block2</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
@@ -289,13 +311,13 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261119-block9g</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261119-block2</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle" data-i18n-text="Checking the game version…">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden data-i18n-text="RETRY CHECK">RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
         <div class="dossier-hero-stage">
           <div class="dossier-scene" aria-hidden="true">
-            <img id="authSceneImg" src="assets/login-bunker-watch.jpg?v=20261119-block9g" width="1376" height="768" alt="" decoding="async">
+            <img id="authSceneImg" src="assets/login-bunker-watch.jpg?v=20261119-block2" width="1376" height="768" alt="" decoding="async">
           </div>
           <div class="dossier-topbar">
             <span class="dossier-kicker" data-i18n-text="0815 GAMES · PERSONNEL">0815 GAMES · PERSONNEL</span>
@@ -377,7 +399,7 @@
         <div id="fourPartySettings" class="party-mode"><label for="fourPartyMode" data-i18n-text="GAME MODE">GAME MODE</label><select id="fourPartyMode"></select>
           <label id="fourPartyTeamsLabel" for="fourPartyTeams" data-i18n-text="TEAM A: HOST AND">TEAM A: HOST AND</label><select id="fourPartyTeams" hidden><option value="0" data-i18n-text="Player in slot 2">Player in slot 2</option><option value="1" data-i18n-text="Player in slot 3">Player in slot 3</option><option value="2" data-i18n-text="Player in slot 4">Player in slot 4</option></select>
           <p class="hint" data-i18n-text="2 vs 2 is a survival race: each team protects its own bunker. No enemy sending or ranked rewards.">2 vs 2 is a survival race: each team protects its own bunker. No enemy sending or ranked rewards.</p></div>
-        <div class="party-actions"><button id="fourPartyStart" class="primary" type="button" data-i18n-text="START MATCH">START MATCH</button><button id="fourPartyLeave" type="button" data-i18n-text="LEAVE PARTY">LEAVE PARTY</button></div>
+        <div class="party-actions"><button id="fourPartyStart" class="primary" type="button" data-i18n-text="START MATCH">START MATCH</button><button id="fourPartyLeave" type="button" data-i18n-text="LEAVE PARTY">LEAVE PARTY</button><button id="fourPartyForceClose" class="danger-utility" type="button" hidden data-i18n-text="FORCE CLOSE PARTY">FORCE CLOSE PARTY</button></div>
       </div><p id="fourPartyStatus" role="status" aria-live="polite"></p>
     </section>
     <section id="campaignPanel" class="campaign panel" data-feature="campaign" aria-labelledby="campaignTitle">
@@ -528,7 +550,7 @@
       <p id="resultsSave" class="debrief-save" role="status"></p><p id="resultsVersionStatus" class="debrief-save" role="status" aria-live="polite" hidden></p><button id="campaignRetry" type="button" hidden data-i18n-text="RETRY CAMPAIGN SAVE">RETRY CAMPAIGN SAVE</button><p id="resultsCampaign" role="status" hidden></p>
       <section id="resultsProgressSection" class="debrief-progress"><div id="resultsPromotion" class="debrief-promotion" hidden><span class="debrief-promotion-kicker" data-i18n-text="PROMOTED">PROMOTED</span><span id="resultsPromotionInsignia" class="debrief-rank-insignia" aria-hidden="true"></span><strong id="resultsPromotionRank"></strong><span id="resultsPromotionFrom" class="debrief-promotion-from"></span></div><div class="debrief-progress-heading"><strong data-i18n-text="SOLDIER PROGRESS">SOLDIER PROGRESS</strong><span class="debrief-progress-standing"><span id="resultsProgressLevel"></span><span id="resultsRank" class="debrief-rank"><span id="resultsRankInsignia" class="debrief-rank-insignia" aria-hidden="true"></span><span id="resultsRankName"></span></span></span></div><progress id="resultsProgressBar" value="0" max="1" aria-label="Progress to next level" data-i18n-aria-label="Progress to next level"></progress><p id="resultsProgressText"></p></section>
       <details class="debrief-details"><summary data-i18n-text="VIEW REPORT DETAILS">VIEW REPORT DETAILS</summary><div class="results-grid"><section><h3 data-i18n-text="THE RUN">THE RUN</h3><p id="resultsWaves"></p></section><section><h3 data-i18n-text="YOUR CONTRIBUTIONS">YOUR CONTRIBUTIONS</h3><p id="resultsDamage"></p><p id="resultsCombos"></p></section></div><section class="results-next"><h3 data-i18n-text="WHAT&#39;S NEXT">WHAT'S NEXT</h3><p id="resultsNext"></p></section><p class="development-hint" data-i18n-text="Tower damage counts effective health removed, including tower splash and chain damage. Combo counts show activations, not a damage ranking. Rewards are credited per completed wave; unfinished waves earn no XP or loot. Leave the party before editing Skills or Armory.">Tower damage counts effective health removed, including tower splash and chain damage. Combo counts show activations, not a damage ranking. Rewards are credited per completed wave; unfinished waves earn no XP or loot. Leave the party before editing Skills or Armory.</p></details>
-      <div class="results-actions"><button id="resultsReplayMission" type="button" hidden data-i18n-text="REPLAY OPERATION">REPLAY OPERATION</button><button id="resultsNextMission" type="button" hidden data-i18n-text="NEXT OPERATION">NEXT OPERATION</button><button id="resultsDone" type="button" class="primary" data-i18n-text="RETURN TO COMMAND CENTER">RETURN TO COMMAND CENTER</button></div>
+      <div class="results-actions"><button id="resultsReplayMission" type="button" hidden data-i18n-text="REPLAY OPERATION">REPLAY OPERATION</button><button id="resultsNextMission" type="button" hidden data-i18n-text="NEXT OPERATION">NEXT OPERATION</button><button id="resultsForceCloseParty" class="danger-utility" type="button" hidden data-i18n-text="FORCE CLOSE PARTY">FORCE CLOSE PARTY</button><button id="resultsDone" type="button" class="primary" data-i18n-text="RETURN TO COMMAND CENTER">RETURN TO COMMAND CENTER</button></div>
     </div>
   </dialog>
   <dialog id="gameConfirm" class="tower-details game-confirm" aria-labelledby="gameConfirmTitle" aria-describedby="gameConfirmText">
@@ -554,7 +576,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="intro.mjs?v=20261119-block9g"></script>
+  <script type="module" src="intro.mjs?v=20261119-block2"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){var el=document.getElementById("loading");if(el)el.textContent=(navigator.language||"").toLowerCase().indexOf("de")===0?"Verbindung zu Iron Path konnte nicht hergestellt werden. Prüfe deine Verbindung und lade die Seite neu.":"Could not connect to Iron Path. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261119-block9g"></script>
+  <script type="module" src="account-entry.mjs?v=20261119-block2"></script>
 </body></html>

@@ -24,3 +24,24 @@ test('2v2 speed requests show the requester across teams without exposing the ot
  const missing=projectFourGameView({...snapshot,speedControl:{speed:1,request:null}},'a').match;
  assert.equal(missing.speedRequesterName,null);
 });
+test('fourInfo.memberStates exposes active and departed status for four-coop and two-vs-two',()=>{
+ const coop=createFourCoop(players(),'a');
+ coop.members.b.active=false;
+ assert.equal(applyFourCommand(coop,'c',{type:'leaveRun'}).ok,true);
+ const coopView=projectFourGameView({match:coop,tick:2},'a').match;
+ assert.deepEqual(coopView.fourInfo.memberStates,{
+  a:{active:true,departed:false},
+  b:{active:false,departed:false},
+  c:{active:false,departed:true},
+  d:{active:true,departed:false}
+ });
+ const duel=createTwoVsTwo(players(),'a',[['a','b'],['c','d']]);
+ assert.equal(applyFourCommand(duel,'d',{type:'leaveRun'}).ok,true);
+ const duelView=projectFourGameView({match:duel,tick:4},'b').match;
+ assert.deepEqual(duelView.fourInfo.memberStates,{
+  a:{active:true,departed:false},
+  b:{active:true,departed:false},
+  c:{active:true,departed:false},
+  d:{active:true,departed:true}
+ });
+});

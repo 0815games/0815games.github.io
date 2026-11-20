@@ -16,6 +16,7 @@
     "test:doctrines": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-doctrines.emulator.json 'node --test doctrines.test.mjs'",
     "test:block5": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-block5.emulator.json 'node --test block5-skills.test.mjs && node --test block5-publish-rules.test.mjs'",
     "test:block9d": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-block9d.emulator.json 'node --test active-session.test.mjs && node --test block5-publish-rules.test.mjs'",
+    "test:block2": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-block2.emulator.json 'node --test block2-publish-rules.test.mjs && node --test active-session.test.mjs && node --test block5-publish-rules.test.mjs'",
     "test:block9d-browser": "firebase emulators:exec --only auth,database --project demo-ironpath --config ../firebase-release.emulator.json 'node active-session-browser.cjs'",
     "test:friends": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friends.emulator.json 'node --test friends.test.mjs'",
     "test:friend-search": "firebase emulators:exec --only database --project demo-ironpath --config ../firebase-friend-search.emulator.json 'node --test friend-search.test.mjs && FRIEND_SEARCH_RULES=1 node --test friends.test.mjs'",

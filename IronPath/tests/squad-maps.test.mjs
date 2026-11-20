@@ -6,7 +6,9 @@ import {strict as assert} from 'node:assert';
 import {getMap,mapPlayerCap} from '../maps.mjs';
 import {SQUAD_MAP_POOL,squadMapFor,createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
 import {createPlayer} from '../match.mjs';
-import {runFourCoop,GEARS} from './balance-harness.mjs';
+import {runFourCoop,runCoop,runVersus,runTwoVsTwo,GEARS} from './balance-harness.mjs';
+import {createMatch,stepMatch} from '../simulation.mjs';
+import {applyCommand} from '../match.mjs';
 
 test('every squad field exists, carries two roads and the V2 roadside look',()=>{
   assert.ok(SQUAD_MAP_POOL.includes('four-front'),'the classic frontier stays in the pool');
@@ -72,4 +74,21 @@ test('the squad pool keeps its measured balance profile',()=>{
   }
   const rookie=runFourCoop(3,GEARS.rookie,26,SQUAD_MAP_POOL[1]);
   assert.ok(rookie.wave<26,'a rookie trio does not survive the squad bill forever');
+});
+
+test('Einsteigerbalance: no-gear beginners clear through wave 10 across duo, squad and versus pools',()=>{
+  assert.ok(SQUAD_MAP_POOL.includes('g3-2f1bbcd88'),'replaced g3-3f1bbcd88 with balanced g3-2f1bbcd88');
+  assert.ok(!SQUAD_MAP_POOL.includes('g3-3f1bbcd88'));
+  for(const id of SQUAD_MAP_POOL){
+    const trio=runFourCoop(3,GEARS.rookie,12,id);
+    assert.ok(trio.wave>=10,`${id}: rookie trio clears through Boss 1 (got wave ${trio.wave})`);
+    const quad=runFourCoop(4,GEARS.rookie,12,id);
+    assert.ok(quad.wave>=10,`${id}: rookie quad clears through Boss 1 (got wave ${quad.wave})`);
+    const duel2v2=runTwoVsTwo(GEARS.rookie,12,id);
+    assert.ok(duel2v2.waves[0]>=10&&duel2v2.waves[1]>=10,`${id}: rookie 2v2 clears through Boss 1 (got waves ${duel2v2.waves})`);
+  }
+  const duo=runCoop('g3-0b9f45231',2,GEARS.rookie,12);
+  assert.ok(duo.wave>=10,`g3-0b9f45231: rookie duo clears through Boss 1 (got wave ${duo.wave})`);
+  const duel=runVersus('g3-0b9f45231',GEARS.rookie,12);
+  assert.ok(duel.waves[0]>=10&&duel.waves[1]>=10,`g3-0b9f45231: rookie 1v1 clears through Boss 1 (got waves ${duel.waves})`);
 });

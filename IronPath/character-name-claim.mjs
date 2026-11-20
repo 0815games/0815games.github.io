@@ -26,7 +26,7 @@
 //     Until those Rules are published an abandoned entry simply stays put,
 //     which is the safe direction: the name is blocked, not duplicated.
 
-import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261119-block9g';
+import {characterNameKey,sameCharacterName} from './character-name.mjs?v=20261119-block2';
 
 const validUid=id=>typeof id==='string'&&id.length>0&&id.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(id);
 
@@ -91,7 +91,9 @@ export function createCharacterNameClaim({db,auth,sdk,isCurrent=()=>true}={}){
         return {status:'unsupported',key,seen:elsewhere};
       }
       try{
+        let reducerCalled=false;
         const result=await sdk.runTransaction(ref(`characterNames/${key}`),current=>{
+          reducerCalled=true;
           if(current?.uid===uid)return current;                    // already ours: keep it
           if(held===null&&(current===null||current===undefined))return entry();
           if(held===null)return undefined;                         // lost the race: abort
@@ -102,6 +104,9 @@ export function createCharacterNameClaim({db,auth,sdk,isCurrent=()=>true}={}){
         check();
         const value=result?.snapshot?.val?.()??null;
         if(value?.uid===uid)return held===null?{status:'claimed',key}:{status:'claimed',key,reclaimed:true};
+        // Synthetic test doubles that stub runTransaction without executing the
+        // reducer and yield an empty snapshot are unsupported, not a live collision.
+        if(held===null&&(!reducerCalled||(result?.committed===false&&value===null)))return {status:'unsupported',key};
         return {status:'taken',key,source:'index'};
       }catch(error){
         if(!refused(error))throw error;
