@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-audio2';
+import {getLanguage} from './language.mjs?v=20261120-audio3';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'audio3',build:'20261120-audio3',pr:332,
+    title:{en:'Audio Update 7 · Warm Tactical Score, Seamless Weather Beds & Click-Free Synthesis',de:'Audio-Update 7 · Warmer Taktik-Soundtrack, nahtlose Wetter-Ambience & knackfreie Synthese'},
+    shipped:[
+      {en:'Rebuilt `battle-music.mjs` around warm D Natural Minor / Dorian 32-step progressions across `menu`, `prep`, `wave`, and `boss` (eliminating harsh raw sawtooth waves, chromatic clashes, phase-canceling detune beats on mono phone speakers, and metallic reverb tails in favor of sine/triangle voicings, subtle octave chimes, damped echo delay, and a dark 1.6 s hall impulse).',de:'`battle-music.mjs` grundlegend auf harmonische d-Moll-/dorische 32-Takt-Folgen für `menu`, `prep`, `wave` und `boss` umgebaut (ohne raue Sägezahnwellen, chromatische Reibungen, Phasen-Auslöschung auf Mono-Handylautsprechern und metallischen Hall – stattdessen warme Sinus-/Dreieckstimmen, dezente Glockenakzente, gedämpftes Echo und ein dunkler 1,6-s-Raumhall).'},
+      {en:'Fixed envelope clicks (`initZeroGain` before scheduled ramps), separated weapon noise from a dedicated 4.0 s crossfaded weather noise buffer (`Q <= 0.55`, muted in Command HQ `menu`), preserved beat phase on minor scheduler jitter, and tuned `BUS_DEFAULTS.music` to `0.38` beneath SFX and General Vance radio.',de:'Hüllkurven-Knackser vor Rampenbeginn behoben (`initZeroGain`), ein nahtlos überblendetes 4,0-s-Wetter-Rauschen ohne Loop-Sprung und ohne Resonanz-Pfeifen (`Q <= 0,55`, im HQ-Menü stumm) von den Waffensamples getrennt, den Takt-Scheduler phasenstabil gehalten und `BUS_DEFAULTS.music` auf `0.38` unter Effekten und General-Vance-Funk eingepegelt.'},
+    ],
+    open:[
+      {en:'Real iPhone Safari and desktop listening verification on `20261120-audio3`.',de:'Echte Hörprobe auf iPhone Safari und Desktop auf `20261120-audio3`.'},
+    ],
+  },
   {
     id:'audio2',build:'20261120-audio2',pr:331,
     title:{en:'Audio Update 5–6 & Mobile HQ/Guide Polish · Adaptive Music, Weather Beds, Split Mixer & Dialog Popovers',de:'Audio-Update 5–6 & Mobil-Guide-Feinschliff · Adaptive Musik, Wetter-Ambience, Mixer & Dialog-Overlays'},

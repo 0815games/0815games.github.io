@@ -1,8 +1,8 @@
-import {translateText as tr,getLanguage} from './language.mjs?v=20261120-audio2';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261120-audio3';
 import {towerDisplay} from './progression.mjs?v=20261105-prestige1';
-import {specializationRank} from './tower-specialization.mjs?v=20261120-audio2';
-import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261120-audio2';
-import {ENEMY_INTEL} from './combat.mjs?v=20261120-audio2';
+import {specializationRank} from './tower-specialization.mjs?v=20261120-audio3';
+import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt} from './story-map-art.mjs?v=20261120-audio3';
+import {ENEMY_INTEL} from './combat.mjs?v=20261120-audio3';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.

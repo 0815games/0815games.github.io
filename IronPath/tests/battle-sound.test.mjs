@@ -514,11 +514,34 @@ test('Package 5 & 6: adaptive music, weather bed routing, split SFX/Music gains,
   const sound = createBattleSound(MusicTestAudio);
 
   await sound.setEnabled(true);
+  // Music default bus stays restrained under combat SFX & General Vance radio.
+  assert.equal(sound.getBusVolume('music'), 0.38);
   // Lazily keeps bare SFX init at 2 buffers until music/weather actually activates.
   assert.equal(ctx.buffers.length, 2, 'noise buffers remain lazy until music/weather plays');
   assert.equal(sound.setSfxVolume(0.75), 0.75);
   assert.equal(sound.setMusicVolume(0.45), 0.45);
   assert.equal(sound.setMusicEnabled(true), true);
+
+  sound.setScene({
+    phase: 'menu',
+    weatherEffects: true,
+    paused: false,
+  });
+  assert.equal(sound.getMusicState().phase, 'menu');
+  // Weather noise bed stays silent in Command HQ menu, and uses gentle Q <= 0.75.
+  const weatherFilters = ctx.filters.filter(f => f.Q.value <= 0.75 && f.Q.value > 0 && [2100, 260, 680].includes(f.frequency.value));
+  assert.equal(weatherFilters.length, 3, 'three low-Q weather bed filters initialized without resonant whistling');
+  for (const wf of weatherFilters) {
+    const wfGain = wf.targets[0];
+    assert.ok(wfGain.gain.value <= 0.0002, 'weather bed remains muted on menu phase');
+  }
+  const weatherBuffer = ctx.buffers.find(b => b.length >= 4 * ctx.sampleRate);
+  assert.ok(weatherBuffer, 'allocates dedicated 4s crossfaded weather noise loop buffer');
+  const weatherSamples = weatherBuffer.getChannelData(0);
+  assert.ok(
+    Math.abs(weatherSamples[0] - weatherSamples[weatherSamples.length - 1]) < 0.08,
+    'weather loop buffer crossfades smoothly across loop wrap without clicking'
+  );
 
   sound.setScene({
     phase: 'prep',
@@ -530,12 +553,18 @@ test('Package 5 & 6: adaptive music, weather bed routing, split SFX/Music gains,
   assert.equal(sound.getMusicState().weather, 'rain');
   assert.equal(sound.getMusicState().hasReverb, true, 'lazy stereo room convolver initialized');
   assert.equal(sound.getMusicState().hasWeatherBed, true, 'lazy weather noise bed initialized');
-  assert.ok(ctx.buffers.length >= 3, 'lazy stereo room convolver impulse allocates when battle music starts while reusing pink buffer');
+  assert.ok(ctx.buffers.length >= 3, 'lazy stereo room convolver impulse allocates when battle music starts');
   assert.equal(sound.getMusicState().scheduling, true, 'adaptive scheduler starts');
 
+  sound.setScene({ phase: 'wave', paused: false });
   sound.setScene({ phase: 'boss', paused: false });
   assert.equal(sound.getMusicState().phase, 'boss');
   assert.equal(sound.getMusicState().weather, 'rain', 'weather persists across wave/boss scene updates');
+  assert.ok(ctx.oscStarts.length >= 8, 'scheduled melodic/harmonic/bass oscillators across phases');
+  assert.ok(
+    ctx.oscStarts.every(osc => osc.type === 'sine' || osc.type === 'triangle'),
+    'music engine never emits harsh unmodulated sawtooth/square oscillators'
+  );
 
   sound.setScene({ paused: true });
   assert.equal(sound.getMusicState().paused, true);

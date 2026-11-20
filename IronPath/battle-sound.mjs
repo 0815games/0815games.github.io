@@ -17,9 +17,9 @@ import {
   synthesizeShot,
   synthesizeStrike,
   synthesizeUpgrade,
-} from './battle-sound-recipes.mjs?v=20261120-audio2';
-import { createBattleMusic, weatherForScene } from './battle-music.mjs?v=20261120-audio2';
-import { storyMapStyle } from './story-map-art.mjs?v=20261120-audio2';
+} from './battle-sound-recipes.mjs?v=20261120-audio3';
+import { createBattleMusic, weatherForScene } from './battle-music.mjs?v=20261120-audio3';
+import { storyMapStyle } from './story-map-art.mjs?v=20261120-audio3';
 
 export { weatherForScene };
 
@@ -44,7 +44,7 @@ const BUS_DEFAULTS = Object.freeze({
   sfx: 1,
   explosion: 1,
   ui: 0.85,
-  music: 0.55,
+  music: 0.38,
 });
 
 const PAN_BUCKETS = [-0.6, -0.4, -0.2, 0, 0.2, 0.4, 0.6];

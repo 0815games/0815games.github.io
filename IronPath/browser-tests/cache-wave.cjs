@@ -9,6 +9,10 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261120-audio2','account.js?v=20261120-audio2','command-center.mjs?v=20261120-audio2','game.js?v=20261120-audio2',
+ 'battle-sound.mjs?v=20261120-audio2','battle-music.mjs?v=20261120-audio2','battle-sound-recipes.mjs?v=20261120-audio2','general-radio.mjs?v=20261120-audio2',
+ 'first-run-guide.mjs?v=20261120-audio2','menu-tour.mjs?v=20261120-audio2','popover-host.mjs?v=20261120-audio2','settings.mjs?v=20261120-audio2',
+ 'language.mjs?v=20261120-audio2','patch-notes.mjs?v=20261120-audio2','localization-settings-de.mjs?v=20261120-audio2','localization-firstrun-de.mjs?v=20261120-audio2',
  'account-entry.mjs?v=20261120-audio1','account.js?v=20261120-audio1','command-center.mjs?v=20261120-audio1','game.js?v=20261120-audio1',
  'battle-sound.mjs?v=20261120-audio1','battle-sound-recipes.mjs?v=20261120-audio1','general-radio.mjs?v=20261120-audio1',
  'first-run-guide.mjs?v=20261120-audio1','menu-tour.mjs?v=20261120-audio1','settings.mjs?v=20261120-audio1',
