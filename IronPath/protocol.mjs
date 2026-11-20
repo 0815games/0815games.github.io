@@ -132,7 +132,7 @@ function makeHost(data){
   function setPlayerActive(playerId,active){
     if(!Object.hasOwn(players,playerId)||typeof active!=='boolean')return false;
     if(!active)speedControl.reset();
-    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(!active){match.pendingWave=0;match.waveRequest=null;}return true;
+    if(isFour(match))return setFourPresence(match,playerId,active);if(!active)releaseBuildReservations(match.mode==='versus'?match.lanes[playerId]:match,playerId);match.players[playerId].active=active;if(active)delete match.players[playerId].departed;if(!active){match.pendingWave=0;match.waveRequest=null;}return true;
   }
   // This is a trusted server checkpoint, not a client-provided snapshot.
   function checkpoint(){return clone({version:PROTOCOL_VERSION,tick,match,players,queue,speedControl:speedControl.checkpoint(),...(partyEnd?{partyEnd}:{})});}

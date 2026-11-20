@@ -48,7 +48,7 @@ import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261119-block2';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
 import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261119-block2';
-export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
+export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
   let releaseStopped=false,frameHandle=null;
@@ -230,7 +230,7 @@ function renderResults(target){
     $('storyReplayEnding').hidden=!target.campaign||snapshot.endReason!=='campaign-victory';$('resultsStory').hidden=!target.storyMessage;if(target.storyMessage)$('resultsStory').textContent=translateStoryDetail(target.storyMessage,tr);
     $('resultsCampaign').hidden=!target.campaign;$('campaignRetry').hidden=!target.campaign||target.campaignSaved!==false;
     if(target.campaign)$('resultsCampaign').textContent=tr(target.campaignSaved===true?'Mission progress saved.':target.campaignSaved===false?campaignSaveProblem(target.campaignReason):'Saving mission progress…');
-    $('resultsSave').textContent=tr(target.failed?'Some rewards could not be confirmed. Check your connection and save status.':target.pending?'Saving rewards…':target.disconnected?'This uses the last received snapshot. Reconnect to confirm any missing rewards.':target.partyRewardsConfirmed?'All completed-wave rewards are confirmed.':target.confirmedEarlier?'Some earlier rewards were already saved before this report; they are not counted twice.':target.mode==='coop'?'Rewards may still be saving or may have been saved before reconnecting.':'Only confirmed saves are counted above.')+(target.partyRewardsConfirmed&&target.confirmedEarlier?'\n'+tr('Some earlier rewards were already saved before this report; they are not counted twice.'):'')+(coopUnconfirmed&&target.confirmedEarlier&&!target.failed&&!target.pending&&!target.disconnected?'\n'+tr('Rewards may still be saving or may have been saved before reconnecting.'):'')+(target.partyClosed?'\n'+tr('The host closed the party.'):'');
+    $('resultsSave').textContent=tr(target.failed?'Some rewards could not be confirmed. Check your connection and save status.':target.pending?'Saving rewards…':target.disconnected?'This uses the last received snapshot. Reconnect to confirm any missing rewards.':target.partyRewardsConfirmed?'All completed-wave rewards are confirmed.':target.confirmedEarlier?'Some earlier rewards were already saved before this report; they are not counted twice.':target.mode==='coop'?'Rewards may still be saving or may have been saved before reconnecting.':'Only confirmed saves are counted above.')+(target.partyRewardsConfirmed&&target.confirmedEarlier?'\n'+tr('Some earlier rewards were already saved before this report; they are not counted twice.'):'')+(coopUnconfirmed&&target.confirmedEarlier&&!target.failed&&!target.pending&&!target.disconnected?'\n'+tr('Rewards may still be saving or may have been saved before reconnecting.'):'')+(target.partyFinalizationRequired&&!target.partyClosed&&target.partyWaitDetail?.missingEntries?.length?'\n'+tr('Waiting for reports and saved rewards from: {names}.',{names:target.partyWaitDetail.missingEntries.map(entry=>entry.state==='departed'?tr('{name} (left early)',{name:entry.name}):entry.state==='offline'?tr('{name} (offline)',{name:entry.name}):entry.name).join(', ')}):'')+(target.partyClosed?'\n'+tr('The host closed the party.'):'');
     $('resultsDamage').textContent=damage.some(n=>n>0)?damage.map((n,i)=>`${tr(types[i].name)}: ${Math.round(n||0)}`).join(' · '):tr('No tower damage recorded.');
     $('resultsCombos').textContent=combos.length?tr('Skill activity: {items}',{items:combos.map(([name,n])=>`${tr(name)} ×${n}`).join(' · ')}):tr('No skill combos or capstones activated.');
     $('resultsUnlocks').textContent=(target.levels?tr(target.levels===1?'{count} level gained · {count} new skill point.':'{count} levels gained · {count} new skill points.',{count:target.levels}):tr('No new level confirmed during this session.'))+(target.unlocks.length?'\n'+tr('New upgrades: {items}',{items:target.unlocks.map(x=>tr(x)).join(' · ')}):'');
@@ -240,6 +240,7 @@ function renderResults(target){
     $('resultsReplayMission').hidden=!eligible;$('resultsReplayMission').disabled=!safe;
     $('resultsNextMission').hidden=!eligible||!next||!target.campaign;$('resultsNextMission').disabled=!safe||!next||!campaignAvailable(storyProfile(target),next.id);
     if(next)$('resultsNextMission').textContent=tr('NEXT: {title}',{title:tr(next.title).toUpperCase()});
+    $('resultsForceCloseParty').hidden=!(target===lastReport&&target.partyFinalizationRequired&&!target.partyClosed&&target.partyWaitDetail?.canForceClose&&typeof onForceCloseParty==='function'&&(!coop||(state?.hostId===me()&&report?.id===target.id)));
 
   }
   function finishReport(target,snapshot,id,open=true){if(!target||!snapshot)return;fieldNotice.clear();const first=!target.finished;target.finished=true;closeMenu();keys.clear();if($('towerDetails').open)$('towerDetails').close();target.snapshot=snapshot;target.playerId=id;lastReport=target;$('viewResults').hidden=false;renderResults(target);if(open&&!$('runResults').open)$('runResults').showModal();
@@ -264,7 +265,7 @@ function renderResults(target){
   $('storyChoice0').onclick=()=>pickDecision(0);$('storyChoice1').onclick=()=>pickDecision(1);
   function hasResults(){return !!lastReport&&lastReport.accountId===account.getUserId();}
   function showResults(){if(!hasResults())return false;renderResults(lastReport);if(!$('runResults').open)$('runResults').showModal();return true;}
-  $('resultsClose').onclick=()=>$('runResults').close();$('resultsDone').onclick=()=>{const go=canReturnFromResults(lastReport);$('runResults').close();if(go)onReturnToCommand();};bindDialogBackdrop($('runResults'),()=>$('runResults').close());$('viewResults').onclick=showResults;
+  $('resultsClose').onclick=()=>$('runResults').close();$('resultsDone').onclick=()=>{const go=canReturnFromResults(lastReport);$('runResults').close();if(go)onReturnToCommand();};$('resultsForceCloseParty').onclick=()=>{const target=lastReport;if(!target||!target.partyFinalizationRequired||target.partyClosed||!target.partyWaitDetail?.canForceClose||typeof onForceCloseParty!=='function')return;void onForceCloseParty(target.id,target.partyWaitDetail.endTick);};bindDialogBackdrop($('runResults'),()=>$('runResults').close());$('viewResults').onclick=showResults;
 
   const supplies=()=>getSupplies(state,me());
   // A large, horizontally scrollable map is the default in portrait on phones.
@@ -1321,7 +1322,7 @@ function renderResults(target){
   function leaveCoop({preserveReport=false,hostClosed=false}={}){
     $('gameWorkspace').dataset.onlineReady='false';promptEpoch++;clearRequestFeedback();promptCenter?.reset('battle');if(!coop)return Promise.resolve();
     const old=coop,input=coopInput,finished=preserveReport&&report?.finished?report:null;
-    if(finished&&hostClosed)finished.partyClosed=true;
+    if(finished&&hostClosed){finished.partyClosed=true;delete finished.partyWaitDetail;}
     coop=null;coopInput=null;coopReady=false;coopHasBaseline=false;currentPartyEnd=null;partyFinalizationEnabled=false;soloDeployed=false;needStop=false;orphanReleases.clear();
     // A broken input adapter must not prevent the transport itself from stopping.
     try{input?.setEnabled(false);}catch{}
@@ -1352,6 +1353,11 @@ function renderResults(target){
   function markPartyRewardsConfirmed(id,endTick){
     if(!coop||report?.id!==id||!state.ended||!report.finished||currentPartyEnd?.tick!==endTick)return false;
     report.partyRewardsConfirmed=true;if(lastReport===report&&$('runResults').open)renderResults(report);return true;
+  }
+  function setPartyFinalizationState(id,endTick,detail){
+    if(!coop||report?.id!==id||!state.ended||!report.finished||currentPartyEnd?.tick!==endTick)return false;
+    report.partyWaitDetail=detail?{endTick,canForceClose:!!detail.canForceClose,missingEntries:detail.missingEntries||[]}:null;
+    if(lastReport===report&&$('runResults').open)renderResults(report);return true;
   }
   function stopForRelease(){
     if(releaseStopped)return;
@@ -1394,7 +1400,8 @@ function renderResults(target){
       if(state.ended&&!wasEnded&&state.endReason==='retired'){keys.clear();closeMenu();state.selectedPad=null;if($('towerDetails').open)$('towerDetails').close();notice(partyFinalizationEnabled?'Waiting for all reports and saved rewards before closing the party.':'Shared run ended. Completed-wave rewards are kept. Close the party to start a new run.');}const completed=state.players[me()]?.completedWaveMask||0,caches=state.players[me()]?.lootCaches||0;if(caches>seenCoopCaches)notice('Supply cache found! Supplies added to your balance.');seenCoopCaches=caches;if(completed&~seenCoopWaves)notice('Wave completed! Saving co-op XP and loot…');seenCoopWaves|=completed;refreshRequestFeedback();refreshTowerMenu();reconcileOrphanReservations();updateUI();
       if(onFinalSnapshot&&currentPartyEnd){
         const player=state.players?.[me()];
-        try{onFinalSnapshot({partyEnd:currentPartyEnd,snapshotTick:snapshot.tick,ended:state.ended===true,reportReady:!!report?.finished&&report.snapshot===state&&report.playerId===me(),masks:{0:player?.completedWaveMask,...player?.completedWaveBlocks}});}catch{/* A failed coordinator must not break the report or battle UI. */}
+        const members=state.fourInfo?.memberStates||state.memberStates||Object.fromEntries(Object.entries(state.players||{}).map(([id,pl])=>[id,{active:pl?.active!==false,departed:pl?.departed===true}]));
+        try{onFinalSnapshot({partyEnd:currentPartyEnd,snapshotTick:snapshot.tick,ended:state.ended===true,reportReady:!!report?.finished&&report.snapshot===state&&report.playerId===me(),members,masks:{0:player?.completedWaveMask,...player?.completedWaveBlocks}});}catch{/* A failed coordinator must not break the report or battle UI. */}
       }
     },onEvents:events=>{if(coop!==client)return;for(const event of events){if(event.type==='bunkerHit')warn(()=>tr('{enemy} reached the bunker! −{damage} health.',{enemy:tr(ENEMY_TYPES[event.kind].label),damage:Math.round(event.damage*10)/10}));
         else if(event.type==='lootDrop')notice(()=>tr('Supply cache found! +{count} supplies.',{count:event.supplies}));else if(event.type==='iceBroken'){sound.play('ice');warn('Thin ice broke! Tanks slow down and take more damage.');}else if(event.type==='defeat'){sound.play('defeat');notice('Bunker lost.');}else if(event.type==='waveCleared'){if(!activeMission)account.recordScore?.('solo',event.wave);sound.play('clear');notice(event.wave%5===0?'Boss wave cleared! Choose a shared field upgrade.':'Wave cleared. Prepare for the next wave.');}}}});
@@ -1487,7 +1494,7 @@ function renderResults(target){
    if(!state.ended&&(soloDeployed||state.running||state.wave>0||state.towers.length||activeMission||activeTraining))return 'game';
    return 'ready';
   }
-  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
+  return {releaseSafety,refreshLanguage:()=>{if(state)updateUI();if(lastNotice)$('message').textContent=lastNotice();fieldNotice.refresh();tutorial.refreshLanguage?.();coach.refreshLanguage?.();renderViewportLabels();if(!menu.hidden&&menuPad!==null&&towerKey(state.towers.find(t=>t.pad===menuPad))===menuTowerKey){showMenu(menuPad,menuMode,true);refreshDetails();}if(cinematic)renderCinematic();if(radioTime>0&&storyRadioSource)storyRadio(storyRadioSource,true,storyRadioCard);if(lastReport&&$('runResults').open)renderResults(lastReport);},recordCoopReward,requestHostPartyEnd,acknowledgePartyEnd,markPartyRewardsConfirmed,setPartyFinalizationState,hasResults,showResults,getMapId:()=>selectedMap,canEditSkills:()=>!coop&&((state.wave===0&&state.towers.length===0)||state.ended),resetSkills:reset,confirmParty,beginCoop,leaveCoop,stopForRelease,setMenuOpen,chooseStory,chooseEndless,// "Field tutorial" from the Command Center and "Replay coaching" from the field
    // menu both need the SAME thing: the seven cards on the live field. They used to
    // get the retired 11-step modal tour instead, so an account that dismissed the
    // coach had no way back to it at all - the cards are a "seen it" marker.

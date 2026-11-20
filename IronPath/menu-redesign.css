@@ -2033,7 +2033,9 @@ body:has(#authView:not([hidden])) main > header p {
   font-size: 11px;
 }
 
-.settings-danger-zone #menuDeleteCharacter {
+.settings-danger-zone #menuDeleteCharacter,
+#fourPartyForceClose,
+#resultsForceCloseParty {
   width: 100%;
   min-height: 44px;
   border: 1px solid rgba(224, 130, 116, 0.65);
@@ -2045,7 +2047,9 @@ body:has(#authView:not([hidden])) main > header p {
   cursor: pointer;
 }
 
-.settings-danger-zone #menuDeleteCharacter:hover:not(:disabled) {
+.settings-danger-zone #menuDeleteCharacter:hover:not(:disabled),
+#fourPartyForceClose:hover:not(:disabled),
+#resultsForceCloseParty:hover:not(:disabled) {
   background: rgba(164, 52, 42, 0.72);
   border-color: #f3a69b;
 }

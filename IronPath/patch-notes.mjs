@@ -46,14 +46,16 @@ export const PATCH_LABELS=Object.freeze({
 export const RELEASED_PATCHES=Object.freeze([
   {
     id:'block2',build:'20261119-block2',pr:327,
-    title:{en:'Block 2 · Strict Global Soldier-Name Uniqueness & Legacy Duplicate Conflict Resolution',de:'Block 2 · Weltweit eindeutige Soldatennamen & konfliktfreie Altbestands-Auflösung'},
+    title:{en:'Block 2 · Global Soldier-Name Uniqueness & Block 1 · Force-Close / Beginner Balance',de:'Block 2 · Eindeutige Soldatennamen & Block 1 · Gruppen-Notabschluss / Einsteigerbalance'},
     shipped:[
       {en:'Upgraded soldier-name normalization across client (`character-name.mjs`, `NFC_CASEFOLD_V2`) and audit (`audit-character-names.py`) to full Unicode case folding (`0` discrepancies across all 282,230 Unicode characters: `Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`) with 2–24 UTF-16 character limits and 96-byte normalized keys.',de:'Soldatennamen-Normalisierung in Client (`character-name.mjs`, `NFC_CASEFOLD_V2`) und Audit (`audit-character-names.py`) auf vollständiges Unicode-Case-Folding umgestellt (`0` Abweichungen über alle 282.230 Unicode-Zeichen: `Straße` == `STRASSE` == `STRAẞE`, `ﬁn` == `FIN`, `ΜΑΡΚΟΣ` == `μαρκοσ`) bei 2–24 Zeichen Anzeigelänge und 96-Byte-Indexschlüsseln.'},
       {en:'Wired silent login reservation backfill (`character-name-conflict.mjs`) + cross-session deletion release fallback (`account.js`) and a blocking duplicate conflict modal (`#nameConflictDialog`) with no public general rename control, letting affected legacy accounts rename atomically (`createCharacterRename`) without losing XP, gear, skills, or campaign progress.',de:'Stille Hintergrund-Reservierung beim Login (`character-name-conflict.mjs`), sitzungsübergreifende Löschfreigabe (`account.js`) sowie einen blockierenden Konflikt-Dialog (`#nameConflictDialog`) ohne allgemeine Umbenennungs-Schaltfläche integriert, sodass betroffene Alt-Konten sich per `createCharacterRename` umbenennen können – bei vollem Erhalt von EP, Ausrüstung, Fähigkeiten und Kampagne.'},
+      {en:'Block 1 (`Grenzen des Abschlusses`): automatic party closing stays strictly gated on every roster member’s confirmation, while the host now sees named `(offline)` and `(left early)` waiting teammates and unlocks an explicit confirmed `FORCE CLOSE PARTY` path (`#fourPartyForceClose` & `#resultsForceCloseParty`) once local rewards and host receipt are verified.',de:'Block 1 (`Grenzen des Abschlusses`): Das automatische Schließen wartet weiterhin streng auf die Quittung aller Mitglieder; der Host sieht nun namentlich ausstehende Spieler mit Status `(offline)` bzw. `(frühzeitig verlassen)` und kann nach eigener Bestätigung eine ausdrücklich gewarnte Option `GRUPPE JETZT SCHLIESSEN` nutzen.'},
+      {en:'Block 1 (`Einsteigerbalance C`): tuned 3-/4-player income & HP scaling (`60% / 1.75×` for 3 players, `55% / 2.0×` for 4 players), eased waves 1–10 sector pressure to Sector 1 in multiplayer (`MULTIPLAYER_SECTOR_START_WAVE = 11`, keeping solo endless and campaign unchanged), and replaced `g3-3f1bbcd88` with Sector-3 `g3-2f1bbcd88` in `SQUAD_MAP_POOL` so no-gear beginners clear Wave 10+ cleanly.',de:'Block 1 (`Einsteigerbalance C`): 3-/4-Spieler-Skalierung angepasst (`60 % / 1,75×` für 3 Spieler, `55 % / 2,0×` für 4 Spieler), Mehrspieler-Wellen 1–10 auf Sektor-1-Grundstärke angeglichen (`MULTIPLAYER_SECTOR_START_WAVE = 11`, Solo-Endlos und Kampagne unverändert) und `g3-3f1bbcd88` im Squad-Pool durch Sektor-3-Feld `g3-2f1bbcd88` ersetzt, damit frische Charaktere Welle 10+ bestehen.'},
       {en:'Built `BLOCK2-RULES-TO-PUBLISH.json` strictly additively on the live `BLOCK9D` RTDB ruleset (`MAINTENANCE_GATE`-protected `characterNames/$key` index + unlisted `players/$uid/name` rename permission, and pre-wired Block 6 per-character `players/$uid/tutorial` persistence so only one console publish is needed across the remaining roadmap), plus emulator and Chromium verification.',de:'`BLOCK2-RULES-TO-PUBLISH.json` streng additiv auf dem live laufenden `BLOCK9D`-Regelwerk aufgebaut (`characterNames/$key` mit `MAINTENANCE_GATE`-Schutz, Umbenennungsrecht für ungelistete Spieler sowie vorgezogenes Block-6-Schema `players/$uid/tutorial` für einmalige Konsolen-Veröffentlichung) samt Emulator- und Chromium-Tests.'},
     ],
     open:[
-      {en:'Publish `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in Firebase RTDB Console to enforce server-side uniqueness live, followed by real-device checks.',de:'Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole zur serverseitigen Aktivierung sowie echte Geräteprüfung.'},
+      {en:'Publish `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in Firebase RTDB Console, followed by real-device multi-player balance and network-switch checks.',de:'Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase-RTDB-Konsole sowie echte Mehrgeräte-Abnahme für Einsteigerbalance und Netzwechsel.'},
     ],
   },
   {
@@ -257,10 +259,10 @@ export const PLANNED_PATCHES=Object.freeze([
     id:'block1',status:'planned',
     title:{en:'Block 1 · Multiplayer',de:'Block 1 · Mehrspieler'},
     shipped:[
-      {en:'Modes, larger fields, request cards, party end and reports are live.',de:'Modi, größere Felder, Anfragekarten, Gruppenabschluss und Berichte sind live.'},
+      {en:'Modes, larger fields, request cards, party end, host force-close with offline/departed player reporting (`Grenzen des Abschlusses`), and 2–4p beginner balance (`Einsteigerbalance C`) are implemented.',de:'Modi, größere Felder, Anfragekarten, Gruppenabschluss, Host-Notabschluss mit Statusanzeige fehlender Spieler sowie Einsteigerbalance C für 2–4 Spieler sind umgesetzt.'},
     ],
     open:[
-      {en:'Device and network-change tests, longer matches, beginner balance, and what happens with members who never return.',de:'Geräte- und Netzwechseltests, längere Partien, Einsteigerbalance sowie der Umgang mit dauerhaft abwesenden Mitgliedern.'},
+      {en:'Real multi-device tests under network changes and operator playtesting of force-close and beginner balance across 2–4 players.',de:'Echte Mehrgeräte-Tests unter Netzwechseln sowie Betreiber-Spieltests zu Notabschluss und Einsteigerbalance über 2–4 Spieler.'},
     ],
   },
   {

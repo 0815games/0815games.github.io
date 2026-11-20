@@ -330,18 +330,40 @@ if(fourPlayerTest){
       if(id===auth.currentUser?.uid){onChange(recruitPortraitUrl());return ()=>{};}
       return watchFriendPortrait({db,auth,sdk:partySdk,id,document,onChange});
     },
-    confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
+    confirmStart:confirmNewParty,confirmClose:({started}={})=>confirmation.ask({title:'Close multiplayer party?',text:started?'This ends the shared match. The party closes after every player has received their report and saved their completed-wave rewards.':'This closes the multiplayer party.',accept:'CLOSE PARTY'}),
+    confirmForceClose:({entries=[]}={})=>confirmation.ask({
+      title:'Force close party?',
+      text:()=>{
+        const names=entries.map(entry=>entry.state==='departed'?translateText('{name} (left early)',{name:entry.name}):entry.state==='offline'?translateText('{name} (offline)',{name:entry.name}):entry.name).join(', ');
+        return names
+          ?translateText('These players have not confirmed yet: {names}. Their already-saved completed waves stay safe, and any unconfirmed offline rewards will not be delivered if you close the party now.',{names})
+          :translateText('Not all players have confirmed their final report and rewards yet. Their already-saved completed waves stay safe, and any unconfirmed offline rewards will not be delivered if you close the party now.');
+      },
+      accept:'FORCE CLOSE PARTY'
+    }),
+    promptCenter,onViewRequests:()=>{commandCenter?.showLobby();fourPanel?.show();$('partyToggle').setAttribute('aria-expanded','true');},
     onRequestHostEnd:id=>gameControl?.requestHostPartyEnd(id)??false,
     canCompleteEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canClose(tick),
-    onLeaveMatch:async(options={})=>{const version=sessionVersion;activePartyEnd?.coordinator.stop();activePartyEnd=null;await gameControl?.leaveCoop(options);if(version===sessionVersion&&!fourPanel?.isActive()&&user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
+    canForceCloseEnd:(id,tick)=>activePartyEnd?.partyId===id&&activePartyEnd.coordinator.canForceClose(tick),
+    onLeaveMatch:async(options={})=>{const version=sessionVersion,finishedScope=activePartyEnd;activePartyEnd?.coordinator.stop();activePartyEnd=null;await gameControl?.leaveCoop(options);if(options.forced&&finishedScope)void hostPartySignOut?.completed(finishedScope);if(version===sessionVersion&&!fourPanel?.isActive()&&user&&!$('gameView').hidden&&!$('gameWorkspace').hidden){commandCenter?.showLobby();fourPanel?.show();}},
     onMatch:async (party,{isCurrent=()=>true}={})=>{
       const uid=auth.currentUser?.uid,version=sessionVersion;if(versionUI&&party.hostId!==uid&&!await beforeNewGame())return false;if(uid!==auth.currentUser?.uid||version!==sessionVersion||!isCurrent())return false;
       const rewardQueues=new Map();let scope;
+      const nameFor=id=>{const idx=party.playerIds.indexOf(id);return fourPanel?.profileNameFor?.(id)||party.profiles?.[idx]?.name||id;};
       const coordinator=createPartyEndCoordinator({uid,hostId:party.hostId,playerIds:party.playerIds,getQueues:()=>rewardQueues,
         isCurrent:()=>activePartyEnd===scope&&version===sessionVersion&&auth.currentUser?.uid===uid&&isCurrent(),
         send:tick=>gameControl?.acknowledgePartyEnd(party.partyId,tick)??{ok:false},
         onClose:async tick=>{const closed=await (fourPanel?.completeParty(party.partyId,tick)??false);if(closed===true)void hostPartySignOut?.completed(scope);return closed;},
-        onStatus:(value,tick)=>{if(value!=='saving')gameControl?.markPartyRewardsConfirmed(party.partyId,tick);fourPanel?.completionStatus(party.partyId,value);}
+        onStatus:(value,tick,detail)=>{
+          const departedSet=new Set(detail?.departedIds||[]),offlineSet=new Set(detail?.offlineIds||[]);
+          const missingEntries=(detail?.missingIds||[]).map(id=>({name:nameFor(id),state:departedSet.has(id)?'departed':offlineSet.has(id)?'offline':'confirming'}));
+          const uiDetail=detail?{endTick:tick,canForceClose:!!detail.canForceClose,missingEntries}:null;
+          if(value!=='saving'){
+            gameControl?.markPartyRewardsConfirmed(party.partyId,tick);
+            gameControl?.setPartyFinalizationState?.(party.partyId,tick,uiDetail);
+          }
+          fourPanel?.completionStatus(party.partyId,value,uiDetail);
+        }
       });
       scope={partyId:party.partyId,hostId:party.hostId,uid,version,user,authUser:auth.currentUser,coordinator};activePartyEnd?.coordinator.stop();activePartyEnd=scope;
       const getRewards=block=>{if(!rewardQueues.has(block))rewardQueues.set(block,trackedRewardQueue({db,auth,sdk:partySdk,partyId:party.partyId,block,onChange:()=>queueMicrotask(()=>coordinator.refresh()),onStatus:(status,detail)=>{if(version!==sessionVersion||auth.currentUser?.uid!==uid)return;$('saveStatus').textContent=status==='error'?translateText('Wave rewards could not be saved yet.'):translateText('Wave rewards saved.');gameControl?.recordCoopReward(party.partyId,status,detail,block);}}));return rewardQueues.get(block);};
@@ -603,7 +625,7 @@ function refreshProfileRank(value){
  const lvl=level((value??profile)?.xp||0);
  renderRankInsignia(document,document.getElementById('profileRank'),{level:lvl},{size:22});
 }
-function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onViewChange:syncContextBackButtons,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
+function showProfile(value){updateSkillPrompt(value);profile=value;void refreshSoldierPortrait();$('profileName').textContent=value.name;$('profileLevel').textContent=levelText(value.xp);$('profileStats').textContent=translateText('HERO DAMAGE: {damage} / SHOT',{damage:10+Math.min(level(value.xp)-1,20)+2*parseBuild(value.skills,level(value.xp)).assault+(readArmory(value.armory).equipped===1?3:0)+webBonuses(parseBuild(profile.skills,level(value.xp))).damage});$('saveStatus').textContent='';display('game');if(featureEnabled('friends'))friendsUI.start();scoreReporter?.close();scoreReporter=featureEnabled('leaderboards')?createScoreReporter({service:createLeaderboardService({db,auth,sdk:{ref,get,onValue,runTransaction,query,orderByChild,limitToLast}}),getName:()=>profile?.name,onSuccess:()=>{$('scoreSaveStatus').textContent='';},onError:()=>{$('scoreSaveStatus').textContent=translateText('High score could not be saved yet; retrying.');}}):null;if(scoreReporter)releaseScoreReporters.add(scoreReporter);if(!gameStarted){gameStarted=true;gameControl=startGame(account,{confirmAction:confirmation.ask,reducedGraphics:settings.isReduced(),initialSettings:settings.snapshot(),leaveParty:()=>fourPanel?.isActive()?fourPanel.leaveParty():partyPanel.leaveParty(),onForceCloseParty:(id,tick)=>fourPanel?.forceCompleteParty(id,tick)??false,experimentalFourViewport:fourPlayerTest,experimentalWorkshop:featureEnabled('workshop'),deferTutorial:true,promptCenter,onReturnToCommand:()=>commandCenter?.showAfterEnd(),onResumeBattle:()=>commandCenter?.showBattle(),onRunFinished:()=>versionUI?.afterGame(),onTrainingComplete:()=>endingHandoffs.schedule({version:sessionVersion,id:user?.uid})});settings.apply();commandCenter=createCommandCenter({document,getProfile:()=>profile,getGame:()=>gameControl,isPartyActive:()=>partyPanel.isActive()||!!fourPanel?.isActive(),endlessLauncher,getPortrait:recruitPortraitUrl,onViewChange:syncContextBackButtons,openParty:()=>{if($('fourPartyPanel').hidden)$('partyToggle').onclick();},closeParty:()=>{fourPanel?.hide();$('partyToggle').setAttribute('aria-expanded','false');},signOut:requestLogout});}else notifySession();commandCenter.showMenu();}
 const attemptedSkillMigrations=new Set();
 let skillMigrationSummary=null;
 async function runSkillMigration(currentUser,version,snapshotValue){

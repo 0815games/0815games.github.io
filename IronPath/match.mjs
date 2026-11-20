@@ -60,7 +60,7 @@ export function applyCommand(state, playerId, command) {
   switch(command.type){
     case 'leaveRun': {
       if(!state.individualSupplies||!state.hostId||playerId===state.hostId)return {ok:false,reason:'Only the guest can leave individually.'};
-      player.active=false;player.direction={x:0,y:0};player.target=null;clearWaveRequest(state);releaseBuildReservations(state,playerId);return {ok:true};
+      player.active=false;player.departed=true;player.direction={x:0,y:0};player.target=null;clearWaveRequest(state);releaseBuildReservations(state,playerId);return {ok:true};
     }
     case 'endRun': {
       if(state.individualSupplies&&state.hostId&&playerId!==state.hostId)return {ok:false,reason:'Only the host can end the shared run. Leave the party to exit.'};

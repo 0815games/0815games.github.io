@@ -6,10 +6,20 @@ import {MAX_WAVE_MASK} from './combat.mjs?v=20261119-block2';
 // acknowledgement in the same terminal snapshot generation.
 export function createPartyEndCoordinator({uid,hostId,playerIds,getQueues,send,onClose,isCurrent=()=>true,onStatus=()=>{},retryMs=2000,setTimer=setTimeout,clearTimer=clearTimeout}){
   if(typeof uid!=='string'||typeof hostId!=='string'||!Array.isArray(playerIds)||![2,3,4].includes(playerIds.length)||new Set(playerIds).size!==playerIds.length||!playerIds.includes(uid)||!playerIds.includes(hostId)||![getQueues,send,onClose,isCurrent,onStatus,setTimer,clearTimer].every(fn=>typeof fn==='function')||!Number.isFinite(retryMs)||retryMs<=0)throw Error('Invalid party finalization coordinator');
-  const roster=[...playerIds],known=new Map();
-  let stopped=false,invalid=false,finalTick=null,finalMasks=null,frame=null,sending=false,closing=false,timer=null,lastStatus=null;
+  const roster=[...playerIds],known=new Map(),offline=new Set(),departed=new Set();
+  let stopped=false,invalid=false,finalTick=null,finalMasks=null,frame=null,sending=false,closing=false,timer=null,lastStatus=null,lastDetailSig='';
   const active=()=>{try{return !stopped&&!invalid&&isCurrent()===true;}catch{return false;}};
-  function status(value){if(value===lastStatus)return;lastStatus=value;try{onStatus(value,finalTick);}catch{/* Feedback must not change the safety gate. */}}
+  const missingIds=()=>frame?roster.filter(id=>!frame.acknowledged.includes(id)):[];
+  const departedIds=()=>frame?roster.filter(id=>!frame.acknowledged.includes(id)&&departed.has(id)):[];
+  const offlineIds=()=>frame?roster.filter(id=>!frame.acknowledged.includes(id)&&offline.has(id)&&!departed.has(id)):[];
+  const canForceClose=tick=>active()&&uid===hostId&&tick===finalTick&&localConfirmed()&&!!frame?.acknowledged.includes(uid)&&!roster.every(id=>frame.acknowledged.includes(id));
+  function status(value){
+    const missing=missingIds(),dep=departedIds(),off=offlineIds(),force=finalTick!==null&&canForceClose(finalTick);
+    const sig=finalTick===null?'':`${finalTick}:${missing.join(',')}:${dep.join(',')}:${off.join(',')}:${force}`;
+    if(value===lastStatus&&sig===lastDetailSig)return;
+    lastStatus=value;lastDetailSig=sig;
+    try{onStatus(value,finalTick,{endTick:finalTick,missingIds:missing,departedIds:dep,offlineIds:off,canForceClose:force});}catch{/* Feedback must not change the safety gate. */}
+  }
   function cancelTimer(){if(timer!==null)clearTimer(timer);timer=null;}
   function stop(){stopped=true;cancelTimer();}
   function schedule(){if(!active()||timer!==null)return;timer=setTimer(()=>{timer=null;refresh();},retryMs);timer?.unref?.();}
@@ -68,9 +78,18 @@ export function createPartyEndCoordinator({uid,hostId,playerIds,getQueues,send,o
         invalid=true;cancelTimer();return;
       }
       if(finalTick!==null&&(end.tick!==finalTick||maskSignature(masks)!==maskSignature(finalMasks))){invalid=true;cancelTimer();return;}
+      if(value.members&&typeof value.members==='object'&&!Array.isArray(value.members)){
+        for(const id of roster){
+          const member=value.members[id];
+          if(!member||typeof member!=='object')continue;
+          if(member.active===false)offline.add(id);else offline.delete(id);
+          if(member.departed===true)departed.add(id);else departed.delete(id);
+        }
+      }
       finalTick=end.tick;finalMasks=masks;frame={ended:value.ended===true,reportReady:value.reportReady===true,acknowledged:[...end.acknowledged]};refresh();
     },
     canClose(tick){return active()&&uid===hostId&&tick===finalTick&&localConfirmed()&&roster.every(id=>frame.acknowledged.includes(id));},
+    canForceClose,missingIds,departedIds,offlineIds,
     refresh,stop
   };
 }

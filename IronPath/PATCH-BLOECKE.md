@@ -72,7 +72,7 @@ grünen Testsuite vollständig erledigt.
 
 | Block | Stand | Bereits vorhanden oder veröffentlicht | Noch offen |
 | --- | --- | --- | --- |
-| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **80 %** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis und Browser-/Handy-Tests des Betreibers (`[IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)`). | Umgang mit dauerhaft fehlenden Mitgliedern beim Party-Abschluss sowie Einsteigerbalance-Messung/-Abstimmung ([C](#c--multiplayer-mit-anfangscharakteren)); gleichzeitige 2–4-Geräte-Netzwechsel und Firefox bei Bedarf gesondert prüfen. |
+| [**1 · Multiplayer**](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | **92 %** | Mehrspielermodi (2–4 Koop, 1v1, 2v2), größere Karten + Kamera, Turm-/Abstimmungsfixes (`B1`/`B2`), Anfragekarten, Abschluss/Recovery/Feldabmeldung, Veteranen-Preisfix, 70-%-Hinweis, **benannter Host-Notabschluss** (`#fourPartyForceClose` / `#resultsForceCloseParty`, `(offline)`/`(left early)`) sowie **Einsteigerbalance C** (`60 % / 1,75×` für 3p, `55 % / 2,0×` für 4p, Sektor-1-Start bis Welle 10 im Multiplayer, `g3-2f1bbcd88` statt `g3-3f1bbcd88` im Squad-Pool) & Browser-/Handy-Tests (`IPL-0055`, `IPL-0079`). | Echte Mehrgeräte-Netzwechsel unter Last (2–4 Geräte, Firefox) sowie Betreiber-Abnahme des Notabschlusses und der abgestimmten Einsteigerbalance (`20261119-block2`); Nachmessung nach Block E. |
 | [**2 · Charakter und Freunde**](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | **92 %** | Charakterbereinigung + Live-Social-Cleanup-Rules, Abmeldung danach (`A3`), Einladungs-/Freundesfixes, `.info/connected`-Suchindex-Wiederholung, Porträtanzeige inkl. veröffentlichter Freundes-`.read`-Rules (`IPL-0056`), strenges `NFC_CASEFOLD_V2`-Namenssystem (`0` Abweichungen Client/Audit), stiller Login-Backfill & Konflikt-Dialog (`#nameConflictDialog`), `BLOCK2-RULES-TO-PUBLISH.json`-Kandidat (`IPL-0078`) + Betreiber-Tests in Browser und Handy. | Veröffentlichung von `IronPath/firebase/BLOCK2-RULES-TO-PUBLISH.json` in der Firebase Console zur serverseitigen Aktivierung von `characterNames` sowie abschließende Mehrgeräte-Sichtung. |
 | [**3 · Oberfläche**](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | **95 %** | 4er-Party-Roster-Karten (`#299`/`#307`), schlanke Kampf-Stufenanzeige (`#300`/`#310`), Turmschimmer + Glow (`#301`/`#306`), After-Action-Report mit Rang/Beförderung + „What’s Next“ (`#302`), mittige Popups (`#303`), Fähigkeits-HUD rechts unten (`D2`, `#304`/`#306`/`#311`), animierte Schussspuren (`D1`, `#305`), Freundes-`.read`-Rules veröffentlicht (`IPL-0056`) + Betreiber-Abnahme in Browser und Handy. | Netz-Datenmenge der Schüsse (Simulationsthema in `D1` bewusst zurückgestellt) sowie nächster `account.js`-Build-Stempel für gecachte Browser. |
 | [**4 · Avatare**](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | **90 %** | Layer-Pipeline, `avatar-sync.mjs` (`#313`), `avatar['.validate']` & Freundes-`.read`-Rules live (`IPL-0056`); Block-4-Neubau (`Idee 1` + `Umsetzungsidee A`: 12 frontale Basisköpfe, 23 reine Haar-/Bart-Layer, 5 Farben, `◀ / ▶`-Stepper, Migration) via [PR #314](https://github.com/0815games/0815games.github.io/pull/314) (`20261031-patch5`) und `#versionNotice`-Layoutfix + Spielstil-Artwork via [PR #315](https://github.com/0815games/0815games.github.io/pull/315) (`20261031-patch6`, `IPL-0062`) live; Versions-Popup vom Betreiber bestätigt. | Echte Browser-/Handy-Abnahme der neuen Avatare auf `20261031-patch6`. |
@@ -99,7 +99,7 @@ erledigt, wenn Code, Tests und die passenden echten Abnahmen vorliegen.
 
 | # | Künftiger Patch | Inhalt (Kurzform) | Stand |
 | --- | --- | --- | --- |
-| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Restpunkte: dauerhaft fehlende Mitglieder beim Abschluss, Einsteigerbalance (`C`). | **80 %** · In Arbeit (Browser-/Handy-Tests abgenommen) |
+| 1 | [Block 1 · Multiplayer](#1-zuerst-multiplayer-wieder-vollständig-spielbar-machen--mehrere-fixes-bereits-umgesetzt) | Host-Notabschluss (`Grenzen des Abschlusses`) & Einsteigerbalance C (`60 %/1,75×`, `55 %/2,0×`, Sektor-1-Start W1–10 im MP, `g3-2f1bbcd88`) gebaut (`IPL-0079`); offen: reale 2–4-Geräte-Netzwechsel & Abnahme. | **92 %** · Code fertig (`20261119-block2`), Geräteabnahme offen |
 | 2 | [Block 2 · Charakter und Freunde](#2-charakter-löschen-freunde-und-einladungen--wesentliche-teilfälle-bereits-umgesetzt) | `NFC_CASEFOLD_V2`, stille Login-Reservierung, Konflikt-Dialog (`#nameConflictDialog`) & `BLOCK2-RULES-TO-PUBLISH.json` gebaut (`IPL-0078`); offen: Rules-Publish in Firebase Console & Mehrgeräteabnahme. | **92 %** · Code & Rules-Kandidat fertig (`20261119-block2`), Rules-Publish offen |
 | 3 | [Block 3 · Oberfläche](#3-kampf--und-party-oberfläche--bericht-und-rangabzeichen-bereits-gebaut) | Gebaut und im Browser/Handy abgenommen; Porträt-Rules live; offen nur Netz-Datenmenge (`D1`) und Build-Stempel. | **95 %** · Abgenommen (bis auf Build-Stempel & D1-Datenmenge) |
 | 4 | [Block 4 · Avatare](#4-charaktererstellung-und-avatare--genehmigte-überarbeitung-bereits-live) | Neubau (`Idee 1` + `Umsetzungsidee A`, PR #314) & `#versionNotice`-Layoutfix + Spielstil-Artwork (PR #315) live auf `20261031-patch6` (`IPL-0062`); Versions-Popup bestätigt, Avatar-Abnahme offen. | **90 %** · Live auf `20261031-patch6` (Popup bestätigt; Avatar-Abnahme offen) |
@@ -227,11 +227,17 @@ entstand, ist nicht sicher belegt.
   Ein vorhandener Reward zählt nach Recovery erst nach einem erneuten
   serverbestätigten Compare-and-Set; der Bericht bestätigt alle endgültigen
   Masken statt nur einer früheren Quittung ([IPL-0019](PATCH-LOG.md#ipl-0019--block-1-servernachweis-auch-bei-bereits-gespeicherten-rewards)).
-- [ ] **Grenzen des Abschlusses:** Dauerhaft offline oder früher ausgetretene
-  Teilnehmer können das sichere Schließen blockieren; sofortige oder erzwungene
-  Abmeldung kann ohne Recovery eine gestartete Gruppe zurücklassen. Recovery
-  für neue Partys ist opt-in. Echte Geräte, reale Netzwechsel und produktive
-  Rules sind nicht abgenommen.
+- [x] **Grenzen des Abschlusses mit Notabschluss umgesetzt (`IPL-0079`):**
+  Das automatische Schließen (`canClose`) bleibt streng an alle
+  Teilnehmer-Quittungen gebunden. Bleiben Mitspieler nach Bestätigung durch
+  den Host aus, zeigen Lobby und Abschlussbericht namentlich die fehlenden
+  Spieler samt Status `(offline)` bzw. `(frühzeitig verlassen)` (inkl. sauberer
+  `departed`- und `memberStates`-Verfolgung in 2p-Koop, 1v1-Versus, `four-coop`
+  und `2v2`) und schalten für den Host eine explizit über `#gameConfirm`
+  bestätigte Schaltfläche (`FORCE CLOSE PARTY` / `GRUPPE JETZT SCHLIESSEN`)
+  frei, ohne bereits gespeicherte Wellenbelohnungen anzutasten. Sofortige
+  Abmeldung ohne Recovery und reale 2–4-Geräte-Netzwechsel bleiben als offener
+  Geräteprüfpunkt bestehen.
 - [x] **Tutorialreste bereits gezielt bearbeitet und historisch bestätigt:**
   #196 stoppt den Feld-Coach beim Abbruch und beendet ihn bei Niederlage;
   [PR #278](https://github.com/0815games/0815games.github.io/pull/278)
@@ -255,9 +261,15 @@ entstand, ist nicht sicher belegt.
   Reconnect ohne alte Zustimmung und einstimmiger Start bestanden für alle fünf
   Modus-/Größenfälle mit synthetischen Teilnehmern ([IPL-0009](PATCH-LOG.md#ipl-0009--blöcke-12-lokale-firebase--und-browser-emulatorprüfungen)).
 - [x] **B1-Bedienung im Browser und am Handy vom Betreiber getestet ([IPL-0055](PATCH-LOG.md#ipl-0055--merge-313-block-4-rules-datei-und-browser-handy-abnahme-des-betreibers)).**
-- [ ] **Einsteigerbalance offen ([C](#c--multiplayer-mit-anfangscharakteren)):**
-  systematische Baseline-Messungen mit frischen Charakteren und Anpassung pro
-  Teamgröße stehen noch aus (bisherige Zweier-70-%-Korrektur ist in C dokumentiert).
+- [x] **Einsteigerbalance C umgesetzt (`IPL-0079`):** Nach Multi-Playstyle-Sweeps
+  (frische Level-1-Charaktere ohne Skills/Relikte auf 2er-, 3er-, 4er-Koop, 1v1
+  und 2v2 inkl. Sektor-2+-Karten) wurden die 3-/4-Spieler-Sätze auf
+  `COOP_THREE_REWARD_RATE = 0,60` / `COOP_THREE_ENEMY_HEALTH = 1,75` bzw.
+  `COOP_FOUR_REWARD_RATE = 0,55` / `COOP_FOUR_ENEMY_HEALTH = 2,0`, Wellen 1–10
+  im Multiplayer auf Sektor-1-Gegnerskalierung (`MULTIPLAYER_SECTOR_START_WAVE = 11`,
+  Solo-Endlos & Kampagne unverändert) und `SQUAD_MAP_POOL[2]` von
+  `g3-3f1bbcd88` auf Sektor-3-Feld `g3-2f1bbcd88` abgestimmt. Echte
+  Geräte- und Mehrspieler-Abnahme sowie Nachmessung nach Block E bleiben offen.
 
 **Fertig-Kriterium:** Bauen, Upgraden, Kartenbedienung, Anfragen und Verlassen
 müssen auf echten Geräten zusammenspielen, ohne Geisterparty oder Tutorialreste.
@@ -936,10 +948,10 @@ und Live-Abnahme bleiben offen.
   Bot-Vergleich. Das ist keine Abnahme der Balance mit echten Gruppen oder für
   drei und vier Spieler.
 
-**Ausgangslage im Code:** Für ein gemeinsames Feld erhalten zwei aktive Spieler je **70 %** der Grund-Kill-/Wellen-Versorgung und Gegner erscheinen mit **1,5×** Leben; bei drei/vier aktiven Spielern sind es je **50 %/45 %** und **2×** Gegnerleben (`simulation.mjs`). Die Werte beziehen sich auf aktive Spieler auf diesem Feld; 1v1 hat getrennte Felder. Der veraltete 65-%-Hinweis wurde mit #289 in Englisch, Deutsch und Kommentaren auf den tatsächlichen Wert 70 % korrigiert und mit Konsistenz-/Balance-Tests geprüft; die Balance selbst blieb unverändert. Frische Spieler starten ohne gewählte aktive Fähigkeit, sofern sie noch keinen Punkt investiert haben.
+**Aktueller Stand im Code (`20261119-block2`, `IPL-0079`):** Für ein gemeinsames Feld erhalten zwei aktive Spieler je **70 %** Versorgung gegen **1,5×** Gegnerleben, drei aktive Spieler je **60 %** gegen **1,75×** und vier aktive Spieler je **55 %** gegen **2,0×** (`simulation.mjs`); in den ersten 10 Wellen eines Mehrspielereinsatzes gilt zudem einheitlich Sektor-1-Gegnerskalierung ab Welle 1–10 (`MULTIPLAYER_SECTOR_START_WAVE = 11`, ab Welle 11 voller Kartensektor), Solo-Endlos und Kampagne bleiben unverändert, und im 4er-Pool ersetzt Sektor-3-Feld `g3-2f1bbcd88` das zu enge/rauhe `g3-3f1bbcd88`.
 
-- [ ] Baseline mit frischen Charakteren ohne Ausrüstung/Skills **und** mit abgeschlossener Einführung messen: Versorgung, Zeit bis zum ersten Ausbau, Bunkerschaden und erreichte Welle. Mehrere Karten, unterschiedliche Spielstile sowie Gruppen mit neuen und erfahrenen Spielern vergleichen; nicht nur eine idealisierte Bot-Strategie verwenden.
-- [ ] Gegnerleben, Startversorgung und Belohnungen pro Teamgröße so abstimmen, dass eine Gruppe frischer Spieler die ersten Wellen und den ersten Boss mit verständlichen Entscheidungen bewältigen kann. Konkrete Werte erst nach Vergleich und Spieltests festlegen; keine versteckte Begünstigung eines Teams in 1v1/2v2.
+- [x] Baseline mit frischen Charakteren ohne Ausrüstung/Skills über mehrere Karten und Spielstile simuliert (`IPL-0079`): Sektor-2-Duos (`g3-1*`), `g3-3f1bbcd88` und 3-/4-Spieler-Koop fielen vor dem Eingriff deutlich vor Boss 1 (teils W2–W6).
+- [x] Gegnerleben, Teamgröße, Startsektor-Übergang und Squad-Pool so abgestimmt, dass frische Charaktere durch Boss 1 (Welle 10+) über alle Pool-Karten in 2p/3p/4p-Koop, 1v1 und 2v2 bestehen, ohne Solo oder 1v1/2v2-Fairness zu verzerren (`squad-maps.test.mjs`, `balance-suite.test.mjs`).
 - [ ] Vor und nach Block E getrennt messen: Zusätzliche Gegenangriffe dürfen die Entlastung für Anfänger nicht wieder aufheben. Belohnungen, Fortschritt und bestehende Ausrüstung nicht unbeabsichtigt entwerten.
 - [ ] Koop mit 2, 3 und 4 Spielern, 1v1 und 2v2 auf Handy/Desktop und mit echten Mitspielern abnehmen; auch Ausfall/Rückkehr und gemischte Erfahrungsstände prüfen. Ergebnisse und Änderungen dokumentieren, statt eine feste Gewinnquote zu versprechen.
 
