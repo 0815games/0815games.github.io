@@ -585,7 +585,16 @@ $('characterForm').addEventListener('submit',e=>{e.preventDefault();const typed=
  if(version!==sessionVersion)return;
  if(reserved.status==='taken'){message(translateText('That soldier name is already taken. Choose another one.'));return;}
  nameReserved=reserved.status==='claimed';
- const result=await runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate(),tutorial:initialOfferedTutorial()}:undefined,{applyLocally:false});
+ const isRulesRefusal=err=>/permission[_ -]?denied|doesn'?t have permission to access/i.test(`${err?.code||''} ${err?.message||''}`);
+ const runEnlist=(includeTutorial)=>runTransaction(ref(db,`players/${currentUser.uid}`),current=>current===null?{name,gender:avatar.gender,xp:0,enlisted:enlistmentDate(),...(includeTutorial?{tutorial:initialOfferedTutorial()}:{})}:undefined,{applyLocally:false});
+ let result;
+ try{
+  try{result=await runEnlist(true);}
+  catch(err){if(!isRulesRefusal(err)||version!==sessionVersion)throw err;result=await runEnlist(false);}
+ }catch(err){
+  if(version===sessionVersion&&nameReserved){nameReserved=false;void claim.release(name).catch(()=>{});}
+  throw err;
+ }
  // The reservation is only kept when the profile really exists; otherwise the
  // name would stay blocked for everyone after a failed enlistment.
  if(!result.committed&&!result.snapshot.exists()&&nameReserved){nameReserved=false;void claim.release(name).catch(()=>{});}

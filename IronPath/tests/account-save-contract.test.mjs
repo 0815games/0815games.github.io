@@ -69,3 +69,18 @@ test('renderResults names the campaign save failure reason', async () => {
     'Your saved story progress is behind this mission. Reload the page to sync, then replay it.',
   ]) assert.ok(german.includes(english), `German translation ships for: ${english}`);
 });
+
+test('enlistment tries atomic tutorial creation first and falls back when rules reject players/$uid/tutorial', async () => {
+  const source = await readFile(new URL('../account.js', import.meta.url), 'utf8');
+  const start = source.indexOf("$('characterForm').addEventListener('submit'");
+  const end = source.indexOf('function updateSkillPrompt', start);
+  assert.ok(start >= 0 && end > start, 'characterForm submit handler found in account.js');
+  const body = source.slice(start, end);
+  assert.match(body, /runEnlist=\(includeTutorial\)=>runTransaction/,
+    'enlistment parameterizes tutorial inclusion');
+  assert.match(body, /initialOfferedTutorial\(\)/,
+    'enlistment attempts atomic initialOfferedTutorial on updated rules');
+  assert.match(body, /isRulesRefusal\(err\).*runEnlist\(false\)/s,
+    'enlistment falls back cleanly without tutorial when rules reject the optional child');
+});
+
