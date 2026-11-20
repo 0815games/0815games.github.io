@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261120-sellicon1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261120-endlessview1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261120-sellicon1';
+import {localizeGameMessage} from './game-localization.mjs?v=20261120-endlessview1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261120-sellicon1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261120-endlessview1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -14,40 +14,40 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261120-sellicon1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261120-sellicon1';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261120-sellicon1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261120-sellicon1';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261120-sellicon1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261120-endlessview1';
+import {projectFourGameView} from './four-game-view.mjs?v=20261120-endlessview1';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261120-endlessview1';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261120-endlessview1';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261120-endlessview1';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261120-sellicon1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261120-sellicon1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261120-endlessview1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261120-endlessview1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle-sound.mjs?v=20261120-sellicon1';
+import {createBattleSound} from './battle-sound.mjs?v=20261120-endlessview1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261120-sellicon1';
-import {createCombatEffects} from './combat-fx.mjs?v=20261120-sellicon1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261120-sellicon1';
-import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261120-sellicon1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261120-sellicon1';
-import {towerClassIcon} from './development-ui.mjs?v=20261120-sellicon1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261120-endlessview1';
+import {createCombatEffects} from './combat-fx.mjs?v=20261120-endlessview1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261120-endlessview1';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261120-endlessview1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261120-endlessview1';
+import {towerClassIcon} from './development-ui.mjs?v=20261120-endlessview1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261120-sellicon1';
-import { createTutorial } from './tutorial.mjs?v=20261120-sellicon1';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261120-sellicon1';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261120-sellicon1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261120-sellicon1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261120-sellicon1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261120-sellicon1';
+import { createCoopInput } from './coop-input.mjs?v=20261120-endlessview1';
+import { createTutorial } from './tutorial.mjs?v=20261120-endlessview1';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261120-endlessview1';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261120-endlessview1';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261120-endlessview1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261120-endlessview1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261120-endlessview1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261120-sellicon1';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261120-endlessview1';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261120-sellicon1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261120-endlessview1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -326,7 +326,7 @@ function renderResults(target){
   // V3 impact tracking: the bunker-hit camera shake is presentation only -
   // the seq comes from the authoritative state, the wobble is local.
   let lastImpactSeq=0, shakeStart=-1e9;
-  function renderViewportLabels(){if(touchZoom&&!battleViewport){const zoomed=touchZoom.getFactor()>1.01;zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);zoomButton.textContent=tr(v.scale>fit+1e-8?'MAP: FIT':'MAP: ZOOM');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');}else{zoomButton.textContent=tr(largeMap?'MAP: LARGE':'MAP: FIT');$('mapHint').textContent=tr(largeMap?'Swipe the map left or right to see the battlefield. Tap to build or move.':'Full map view. Tap MAP: FIT to enlarge it.');}}
+  function renderViewportLabels(){if(touchZoom&&!battleViewport){const zoomed=touchZoom.getFactor()>1.01;zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');$('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');}else{zoomButton.textContent=tr(largeMap?'MAP: LARGE':'MAP: FIT');$('mapHint').textContent=tr(largeMap?'Swipe the map left or right to see the battlefield. Tap to build or move.':'Full map view. Tap MAP: FIT to enlarge it.');}}
   function setMapZoom(large){largeMap=large;mapViewport.classList.toggle('map-large',large);zoomButton.setAttribute('aria-pressed',String(large));renderViewportLabels();}
   setMapZoom(largeMap);
   // Touch devices start with the complete map; pinch and native scroll provide
@@ -337,12 +337,12 @@ function renderResults(target){
   // showed the desktop hint until the first zoom. One repaint fixes that.
   renderViewportLabels();
   $('mapQuickZoom').addEventListener('click',()=>zoomButton.click());
-  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(state&&coop)updateUI();else if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
+  if(typeof ResizeObserver!=='undefined')new ResizeObserver(()=>{if(state&&(coop||battleViewport||fullBattleView||wantsBattleViewport(getMap(state.mapId),state.mode==='versus',false)))updateUI();else if(touchZoom&&!battleViewport)touchZoom.resize(touchZoom.getFactor());}).observe(mapViewport);
   // The pointer is anchored to a world position, not to a pixel: whenever the field
   // moves under it, re-mark. Cheap, and the ring must never point at where the pad
   // used to be.
   const remarkCoach=()=>{try{coach.remark();}catch{}};
-  zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else{const fill=Math.max(v.width/v.worldWidth,v.height/v.worldHeight);battleViewport.zoom(fullBattleView?Math.max(2,fill/fit):2);}return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
+  zoomButton.addEventListener('click',()=>{remarkCoach();if(touchZoom&&!battleViewport){touchZoom.toggle();return;}if(battleViewport){const v=battleViewport.getViewport(),fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale>fit+1e-8)battleViewport.reset();else{const fill=Math.max(v.width/v.worldWidth,v.height/v.worldHeight),map=getMap(state?.mapId),soloScale=!coop&&!map?.fourPlayer?1/fit:0;battleViewport.zoom(fullBattleView?Math.max(2,fill/fit,soloScale):Math.max(2,soloScale));}return;}const middle=(mapViewport.scrollLeft+mapViewport.clientWidth/2)/mapViewport.scrollWidth;setMapZoom(!largeMap);mapViewport.scrollLeft=middle*mapViewport.scrollWidth-mapViewport.clientWidth/2;});
   // Reported: "Bunker und Straßen Endpunkte passen nicht" - the quick-jump
   // buttons pinned to the left and right rim. Start and bunker sit wherever
   // the generated map puts them, so both buttons now aim at the real world
@@ -377,30 +377,36 @@ function renderResults(target){
     // A new sector or mode must not keep the previous world's clipping bounds.
     const stale=!!current&&(current.worldWidth!==worldWidth||current.worldHeight!==worldHeight);
     if(wanted&&stale){battleViewport.destroy();battleViewport=null;}
-    const fill=()=>{const v=battleViewport.getViewport(),scale=Math.max(v.width/v.worldWidth,v.height/v.worldHeight);if(v.scale<scale)battleViewport.zoom(scale/v.scale);};
+    const openZoom=()=>{
+      const v=battleViewport.getViewport(),fillScale=Math.max(v.width/v.worldWidth,v.height/v.worldHeight);
+      // Co-op opens at exact fill scale; solo single-road sectors also open at >=1× reading scale on desktops while filling portrait phones edge-to-edge.
+      const target=fullBattle?(!coop&&!map.fourPlayer?Math.max(fillScale,1):fillScale):(!map.fourPlayer?Math.max(1,v.scale):v.scale);
+      if(v.scale<target)battleViewport.zoom(target/v.scale);
+    };
     // On a tall phone the filled view can show only a slice of a wide map.
     // Start at this soldier rather than an arbitrary map centre. In a duel,
     // the local soldier is always in the upper lane of the projected view.
     const focusPlayer=()=>{const player=state.players?.[me()];if(Number.isFinite(player?.x)&&Number.isFinite(player?.y))aimViewport({x:player.x,y:player.y});};
     if(wanted&&!battleViewport){
       if(touchZoom){touchZoom.reset();canvas.style.width='';canvas.style.height='';}
-      savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;
+      savedLargeMap=largeMap;setMapZoom(false);mapViewport.scrollLeft=0;mapViewport.scrollTop=0;
       battleViewport=createBattleViewportController({canvas,worldWidth,worldHeight,screenWidth:logicalWidth,screenHeight:logicalHeight,
         onTap:(point,event)=>{viewportTap={id:event.pointerId,x:event.clientX,y:event.clientY,time:Date.now()};void selectBattlePoint(point.x,point.y);},
         onChange:v=>{closeMenu();if(state)state.selectedPad=null;const fit=Math.min(v.width/v.worldWidth,v.height/v.worldHeight),zoomed=v.scale>fit+1e-8;zoomButton.setAttribute('aria-pressed',String(zoomed));zoomButton.textContent=tr(zoomed?'MAP: FIT':'MAP: ZOOM');$('mapQuickZoom').textContent=tr(zoomed?'FIT MAP':'ZOOM MAP');}});
-      $('mapHint').textContent=tr('Drag to pan, pinch or use the mouse wheel to zoom. Tap to build or move.');zoomButton.textContent=tr('MAP: ZOOM');$('mapQuickZoom').textContent=tr('ZOOM MAP');
-      // Multiplayer starts large and undistorted on phones, tablets and
-      // desktops. FIT shows the complete map; panning reaches the edges.
-      if(fullBattle){fill();focusPlayer();}
+      // Multiplayer and oversized solo sectors start large and undistorted on
+      // phones, tablets and desktops. FIT shows the complete map; panning reaches the edges.
+      if(fullBattle){openZoom();focusPlayer();}
       else if(!map.fourPlayer){const fit=Math.min(logicalWidth/worldWidth,logicalHeight/worldHeight);if(fit<1)battleViewport.zoom(1/fit);}
+      renderViewportLabels();
     }else if(wanted&&battleViewport){
       const resized=current.width!==logicalWidth||current.height!==logicalHeight;
       const wasFilled=current.scale>=Math.max(current.width/current.worldWidth,current.height/current.worldHeight)-1e-8;
       if(resized)battleViewport.resize(logicalWidth,logicalHeight);
-      if(fullBattle&&!fullBattleView){battleViewport.reset();fill();focusPlayer();}
-      else if(fullBattle&&resized&&wasFilled)fill();
+      if(fullBattle&&!fullBattleView){battleViewport.reset();openZoom();focusPlayer();}
+      else if(fullBattle&&resized&&wasFilled){const next=battleViewport.getViewport(),fillScale=Math.max(next.width/next.worldWidth,next.height/next.worldHeight);if(next.scale<fillScale)battleViewport.zoom(fillScale/next.scale);}
+      renderViewportLabels();
     }else if(!wanted&&battleViewport){
-      battleViewport.destroy();battleViewport=null;setMapZoom(savedLargeMap);if(touchZoom)touchZoom.resize(touchZoom.getFactor());
+      battleViewport.destroy();battleViewport=null;setMapZoom(touchZoom?false:savedLargeMap);if(touchZoom)touchZoom.resize(1);
     }
     fullBattleView=!!(wanted&&fullBattle);
   }
@@ -547,7 +553,7 @@ function renderResults(target){
     select.innerHTML=`<option value="free" data-i18n-text="Free play · random battlefield">${tr('Free play · random battlefield')}</option>`+CAMPAIGN.map((mission,i)=>`<option id="campaignOption${i}" value="${mission.id}"></option>`).join('');
     showActOverview();
   }
-  function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();syncAudioScene();}
+  function setMissionBoard(open){missionBoardOpen=!!open;if(open)showActOverview();keys.clear();sendDirection();accumulator=0;renderCampaign();syncAudioScene();if(state)updateUI();}
   buildMissionBoard();
   $('campaignSelect').onchange=()=>setMissionBoard(!!campaignMission($('campaignSelect').value));
   $('campaignShowBoard').onclick=()=>setMissionBoard(true);$('campaignCloseBoard').onclick=()=>setMissionBoard(false);
@@ -719,7 +725,7 @@ function renderResults(target){
   // never a modal dialog that could cover anything.
   $('sectorAdvance').onclick=()=>dispatch({type:'advanceSector'},result=>{
     if(!result.ok){warn(result.reason);return;}
-    state.selectedPad=null;closeMenu();combatFx.clear();sound.play('sector');
+    selectedMap=state.mapId;state.selectedPad=null;closeMenu();combatFx.clear();sound.play('sector');
     notice(tr('Sector {number}: a longer road, a meaner enemy. Demolition refund: {refund} supplies.',{number:result.sector,refund:result.refund}));
     updateUI();
   });
@@ -779,8 +785,9 @@ function renderResults(target){
     // One announcement per loaded map. `reset()` clears `announcedMap`, so a new
     // run on the same ground is announced again - it is a new battle.
     if(announcedMap!==state.mapId){announcedMap=state.mapId;mapIntro.show(state.mapId,{label:$('battleLabel').textContent,name:mapTitle});}
-    const workspace=$('gameWorkspace');
-    const fullBattle=!!coop&&!workspace.hidden&&workspace.dataset.screen==='online'&&workspace.dataset.onlineReady==='true'&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0;
+    const workspace=$('gameWorkspace'),screen=workspace?.dataset?.screen,campaignBoardOpen=$('campaignPanel')?.dataset?.boardOpen==='true';
+    const inBattleFrame=!workspace?.hidden&&((!!coop&&screen==='online'&&workspace.dataset.onlineReady==='true')||(!coop&&(screen==='endless'||screen==='training'||(screen==='campaign'&&!campaignBoardOpen))));
+    const fullBattle=!!inBattleFrame&&mapViewport.clientWidth>0&&mapViewport.clientHeight>0&&(!!coop||wantsBattleViewport(map,versus,false));
     const canvasHeight=fullBattle?Math.max(1,Math.round(logicalWidth*mapViewport.clientHeight/mapViewport.clientWidth)):versus?Math.round(logicalWidth*((map.height||540)*2+20)/(map.width||960)):540;
     canvas.dataset.fullBattle=String(fullBattle);
     if(logicalHeight!==canvasHeight){setLogicalHeight(canvasHeight,versus);if(touchZoom&&!battleViewport&&!fullBattle)touchZoom.resize(touchZoom.getFactor());}else canvas.dataset.lanes=versus?'versus':'single';
