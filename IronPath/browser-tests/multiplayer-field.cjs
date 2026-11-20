@@ -176,10 +176,12 @@ mark('pad 4 tapped in landscape');
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='false')b.click();});
     await setView(true);await tapPad(4,true);await page.evaluate(()=>document.getElementById('radialClose').click());
 
-    // Leaving multiplayer must restore the non-fullscreen solo layout and its
-    // input; the stub deliberately returns the same large map.
+    // Leaving multiplayer exits co-op cleanly and hands input back to solo; an
+    // oversized field in endless mode also fills the portrait viewport rather
+    // than shrinking into a horizontal strip, while classic maps restore the
+    // non-fullscreen layout and scroll jumps.
     await page.evaluate(async()=>{await window.__control.leaveCoop();document.getElementById('gameWorkspace').dataset.screen='endless';});
-    await page.waitForFunction(()=>document.getElementById('game').dataset.fullBattle==='false');
+    await page.waitForFunction(()=>!window.__control.isOnlineMatch()&&document.getElementById('gameWorkspace').dataset.onlineReady==='false'&&document.getElementById('game').dataset.fullBattle==='true');
     await page.locator('#game').scrollIntoViewIfNeeded();
     await page.evaluate(()=>{const b=document.getElementById('mapZoom');if(b.getAttribute('aria-pressed')==='true')b.click();});await setView(false);
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/Build defense/,'solo field still accepts tower input');
@@ -189,6 +191,7 @@ mark('solo field accepted a tap after leaving multiplayer');
     const jumps=await page.evaluate(async()=>{
       document.getElementById('radialClose').click();window.__nextMap='road';
       if(!await window.__control.chooseEndless(null))throw Error('could not load classic solo map');
+      if(document.getElementById('game').dataset.fullBattle!=='false')throw Error('classic solo map must restore standard non-fullBattle layout');
       const viewport=document.getElementById('mapViewport'),calls=[];viewport.scrollTo=options=>calls.push(options);
       document.getElementById('mapBunker').click();document.getElementById('mapEntry').click();
       return {map:window.__control.getMapId(),calls};

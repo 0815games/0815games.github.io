@@ -82,12 +82,16 @@ const ACCOUNT = `(() => {
       const rect = canvas.getBoundingClientRect();
       return {
         mapName: document.getElementById('mapName').textContent,
+        fullBattle: canvas.dataset.fullBattle,
         touchAction: canvas.style.touchAction,
         computedTouchAction: getComputedStyle(canvas).touchAction,
         hint: document.getElementById('mapHint').textContent,
         zoomLabel: document.getElementById('mapZoom').textContent,
-        width: Math.round(rect.width), left: Math.round(rect.left),
-        viewportWidth: viewport.clientWidth,
+        quickZoomLabel: document.getElementById('mapQuickZoom').textContent,
+        width: Math.round(rect.width), height: Math.round(rect.height),
+        bufferWidth: canvas.width, bufferHeight: canvas.height,
+        left: Math.round(rect.left), top: Math.round(rect.top),
+        viewportWidth: viewport.clientWidth, viewportHeight: viewport.clientHeight,
       };
     });
 
@@ -96,33 +100,56 @@ const ACCOUNT = `(() => {
     await deploy();
     let s = await probe();
     assert.match(s.mapName, /SECTOR 1|Marshland|Scorched|Urban|Scrub|Arctic/i);
+    assert.equal(s.fullBattle, 'false', 'small field: keeps standard touch-zoom sizing');
     assert.equal(s.touchAction, '', 'small field: no battle viewport');
     assert.match(s.hint, /pinch/i, 'a phone opens with the touch hint, not the desktop text');
     await page.evaluate(() => document.getElementById('mapZoom').click());
     await page.waitForTimeout(250);
     s = await probe();
     assert.ok(s.width > 390 * 1.5, `phone zoom enlarges the canvas (${s.width}px)`);
+    assert.ok(s.height > 390, `phone zoom also expands vertically (${s.height}px)`);
 
-    // 2. The fallback: mid-run switch to the big sector field.
+    // 2. The fallback: mid-run switch to the big sector field must fill the full
+    //    portrait screen instead of shrinking to a 1/3 horizontal strip.
     await deploy();
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     s = await probe();
+    assert.equal(s.fullBattle, 'true', 'retreated sector fills the mobile viewport');
     assert.equal(s.touchAction, 'none', 'the battle viewport owns the canvas');
     assert.doesNotMatch(s.computedTouchAction, /pinch-zoom/, 'the browser pinch no longer competes for the gesture');
-    assert.ok(s.width <= s.viewportWidth + 1, `the canvas fits the viewport (${s.width} of ${s.viewportWidth})`);
+    assert.ok(s.width <= s.viewportWidth + 1 && s.width >= s.viewportWidth - 2, `the canvas spans the viewport width (${s.width} of ${s.viewportWidth})`);
+    assert.ok(s.height >= s.viewportHeight - 2, `portrait fallback fills full phone height (${s.height} of ${s.viewportHeight})`);
+    assert.ok(Math.abs(s.width / s.height - s.bufferWidth / s.bufferHeight) < 0.01, 'canvas buffer matches portrait screen aspect without stretching');
     assert.ok(s.left >= -1, `the canvas is not parked half off-screen (left ${s.left})`);
     assert.match(s.hint, /pinch/i, 'the big field explains pan and zoom');
+    const corners = await page.evaluate(() => {
+      const c = document.getElementById('game'), ctx = c.getContext('2d');
+      return [[4, 4], [c.width - 5, 4], [4, c.height - 5], [c.width - 5, c.height - 5]].map(([x, y]) => ctx.getImageData(x, y, 1, 1).data[3]);
+    });
+    assert.ok(corners.every(alpha => alpha === 255), `retreat sector paints the entire portrait screen (${corners})`);
 
-    // 3. Zoom must do something on the big field: the button toggles, and the
-    //    label follows the view.
+    // 3. Zoom must use the full portrait canvas: FIT shows the whole map,
+    //    ZOOM/wheel/pinch expand across the full screen (never trapped in a 1/3 strip).
     const before = s.zoomLabel;
-    await page.evaluate(() => document.getElementById('mapZoom').click());
+    assert.equal(before, 'MAP: FIT', 'big sector starts zoomed in on the portrait battlefield');
+    assert.equal(s.quickZoomLabel, 'FIT MAP', 'quick-zoom button matches initial state');
+    await page.locator('#mapQuickZoom').click();
     await page.waitForTimeout(300);
-    let after = (await probe()).zoomLabel;
-    assert.notEqual(after, before, 'the MAP button changes the zoom state');
+    s = await probe();
+    assert.equal(s.zoomLabel, 'MAP: ZOOM', 'FIT MAP returns to full-map overview');
+    assert.equal(s.quickZoomLabel, 'ZOOM MAP', 'quick-zoom label updates on overview');
+    assert.ok(s.height >= s.viewportHeight - 2, `canvas remains full portrait height in overview (${s.height} of ${s.viewportHeight})`);
+    await page.locator('#mapQuickZoom').click();
+    await page.waitForTimeout(300);
+    s = await probe();
+    assert.equal(s.zoomLabel, 'MAP: FIT', 'ZOOM MAP returns to edge-to-edge portrait play view');
+    assert.ok(s.height >= s.viewportHeight - 2, `canvas fills full portrait height after zooming back in (${s.height})`);
+    await page.evaluate(() => document.getElementById('mapZoom').click());
+    await page.waitForTimeout(250);
     await page.mouse.move(195, 420);
     await page.mouse.wheel(0, -400);
     await page.waitForTimeout(300);
-    after = (await probe()).zoomLabel;
+    const after = (await probe()).zoomLabel;
     assert.notEqual(after, 'MAP: ZOOM', `wheel zoom moves the view (label ${after})`);
 
     assert.deepEqual(errors, [], 'no page errors during the fallback flow');
@@ -185,15 +212,17 @@ const ACCOUNT = `(() => {
       const rect = canvas.getBoundingClientRect();
       return {
         mapName: document.getElementById('mapName').textContent,
+        fullBattle: canvas.dataset.fullBattle,
         zoomLabel: document.getElementById('mapZoom').textContent,
-        width: Math.round(rect.width), scrollWidth: viewport.scrollWidth,
-        viewportWidth: viewport.clientWidth,
+        width: Math.round(rect.width), height: Math.round(rect.height), scrollWidth: viewport.scrollWidth,
+        viewportWidth: viewport.clientWidth, viewportHeight: viewport.clientHeight,
       };
     });
 
     // 1. A small field at desktop size: MAP must actually enlarge the canvas.
     await deploy();
     let s = await probe();
+    assert.equal(s.fullBattle, 'false', 'small desktop field uses classic responsive canvas sizing');
     assert.ok(s.width <= s.viewportWidth + 1, `the fitted canvas fills the viewport (${s.width})`);
     await page.evaluate(() => document.getElementById('mapZoom').click());
     await page.waitForTimeout(250);
@@ -204,10 +233,12 @@ const ACCOUNT = `(() => {
     await page.waitForTimeout(250);
 
     // 2. The fallback: the big sector field opens at the first round's reading
-    //    scale, not as a shrunken whole-field overview.
+    //    scale, not as a shrunken whole-field overview, and fills the viewport.
     await deploy();
     s = await probe();
     assert.match(s.mapName, /SECTOR 3/, 'the big sector field is loaded');
+    assert.equal(s.fullBattle, 'true', 'big desktop sector also fills the viewport cleanly');
+    assert.ok(s.width >= s.viewportWidth - 2 && s.height >= s.viewportHeight - 2, `desktop sector fills the viewport (${s.width}x${s.height})`);
     assert.equal(s.zoomLabel, 'MAP: FIT', 'the fallback opens zoomed to reading scale (MAP: FIT offers the overview)');
 
     // 3. The second fallback (wave 20) must rebuild the viewport for the new
@@ -215,6 +246,7 @@ const ACCOUNT = `(() => {
     await deploy();
     s = await probe();
     assert.match(s.mapName, /SECTOR 4/, 'the even bigger sector field is loaded');
+    assert.equal(s.fullBattle, 'true', 'sector 4 continues filling the desktop viewport');
     assert.equal(s.zoomLabel, 'MAP: FIT', 'the rebuilt viewport also opens at reading scale');
 
     // 4. Reading scale is reachable again after asking for the overview.

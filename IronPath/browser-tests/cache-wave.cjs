@@ -9,6 +9,8 @@ const root=path.resolve(__dirname,'..');
 // Synthetic stale modules export only a marker: any accidental old import
 // fails visibly, rather than pretending mixed builds are compatible.
 const oldUrls=[
+ 'account-entry.mjs?v=20261120-sellicon1','account.js?v=20261120-sellicon1','command-center.mjs?v=20261120-sellicon1','game.js?v=20261120-sellicon1',
+ 'battle-viewport.mjs?v=20261120-sellicon1','battle-viewport-controller.mjs?v=20261120-sellicon1','language.mjs?v=20261120-sellicon1','patch-notes.mjs?v=20261120-sellicon1',
  'account-entry.mjs?v=20261120-audio3','account.js?v=20261120-audio3','command-center.mjs?v=20261120-audio3','game.js?v=20261120-audio3',
  'battle-sound.mjs?v=20261120-audio3','language.mjs?v=20261120-audio3','patch-notes.mjs?v=20261120-audio3',
  'account-entry.mjs?v=20261120-audio2','account.js?v=20261120-audio2','command-center.mjs?v=20261120-audio2','game.js?v=20261120-audio2',
@@ -144,7 +146,7 @@ const oldUrls=[
   },build);
   assert.equal(result.queued.status,'queued');assert.equal(result.applied.ok,true);assert.equal(result.request.requester,'bob');
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
-  for(const name of ['game.js','battle-sound.mjs','battle-sound-recipes.mjs','battle-music.mjs','popover-host.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
+  for(const name of ['game.js','battle-viewport.mjs','battle-viewport-controller.mjs','battle-sound.mjs','battle-sound-recipes.mjs','battle-music.mjs','popover-host.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
   assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
   assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');

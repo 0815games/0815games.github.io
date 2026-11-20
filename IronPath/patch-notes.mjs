@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-sellicon1';
+import {getLanguage} from './language.mjs?v=20261120-endlessview1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,17 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'endlessview1',build:'20261120-endlessview1',pr:334,
+    title:{en:'Endless Sector Retreat · Full-Screen Portrait Battlefield & Smooth Zoom Transition',de:'Endlos-Sektorrückzug · Vollbild-Gefechtsfeld im Hochformat & nahtloser Zoom-Übergang'},
+    shipped:[
+      {en:'Enabled `fullBattle` full-viewport framing across solo `endless`, `training`, and active `campaign` battles whenever an oversized sector map (Sector 2/3/4 from wave 10 onward) uses `battleViewport`, eliminating the 1/3 horizontal portrait strip on phones while preserving `touchZoom` pinch/toggle zoom during waves 1–10.',de:'`fullBattle`-Vollbilddarstellung in `IronPath/game.js` für Solo-Endlos-, Trainings- und aktive Kampagnengefechte ab großen Sektorenkarten (Sektor 2/3/4 ab Welle 10) aktiviert: Nach dem Welle-10-Rückzug nutzt das Gefechtsfeld nun den gesamten Hochformat-Bildschirm statt auf ein Drittel der Höhe zu schrumpfen, während Wellen 1–10 weiterhin frei über `touchZoom` zoombar bleiben.'},
+      {en:'Synced `#mapQuickZoom` (`FIT MAP` / `ZOOM MAP`) and `#mapZoom` in `IronPath/game.js`, added `ResizeObserver` portrait/landscape re-framing (`wasFilled` fill-scale preservation + `scrollTop = 0`), fixed `openZoom()` for desktop (`>=1×`) vs phone (`fillScale`), updated `selectedMap` on `#sectorAdvance`, and guarded `campaignPanel[data-board-open]` transitions.',de:'`#mapQuickZoom` (`GESAMT` / `ZOOM`) und `#mapZoom` synchronisiert, `ResizeObserver`-Neurahmung samt Hoch-/Querformat-Erhalt (`wasFilled` + `scrollTop = 0`) ergänzt, `openZoom()` sauber zwischen Desktop (`>=1×`) und Mobil-Vollbild getrennt, `selectedMap` beim `#sectorAdvance`-Rückzug aktualisiert und `#campaignPanel[data-board-open]` abgesichert.'},
+    ],
+    open:[
+      {en:'Real phone Safari and desktop visual inspection on `20261120-endlessview1`.',de:'Echte Sichtprüfung am Handy (Safari) und Desktop auf `20261120-endlessview1`.'},
+    ],
+  },
   {
     id:'sellicon1',build:'20261120-sellicon1',pr:333,
     title:{en:'Tower Radial Menu · Confirm Sale & Cancel Icons, Contrast Discs & Refund Readout',de:'Turm-Radialmenü · Symbole, kontrastreiche Ringe & Erstattungsanzeige für Verkauf bestätigen'},
