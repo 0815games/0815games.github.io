@@ -1473,12 +1473,15 @@ function renderResults(target){
    // The welcome card waits for a field that is actually drawn: the card has no
    // meaning over an empty canvas, and the player must see the pads it points at.
    const id=account.getUserId(),session=account.getSessionVersion?.(),trainingState=state;
-   if(id&&(!coachSeen(id,tutorialStorage)||restart)){
+   if(id){
+    markTrainingSeen(id,tutorialStorage);
+    if(!coachSeen(id,tutorialStorage)||restart){
     // Two frames can elapse after a run is abandoned or the account changes.
     // Never start an old soldier's lesson over a replacement battlefield.
     const start=()=>{if(!releaseStopped&&!coop&&activeTraining&&state===trainingState&&!state.ended&&account.getUserId()===id&&account.getSessionVersion?.()===session){if(restart)coach?.replay(id);else coach?.start(id);}};
     if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>requestAnimationFrame(start));
     else start();
+    }
    }
    return true;
   }

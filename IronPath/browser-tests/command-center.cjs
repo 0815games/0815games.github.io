@@ -59,12 +59,19 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     mark('tutorial dossier');
     await page.evaluate(()=>document.getElementById('introOverlay').hidden=true);
     await page.locator('#tutorialDossier[open]').waitFor({state:'visible',timeout:15000});
-    // The centered invitation is nonmodal; dismiss with LATER before accepting the dossier.
+    // Non-modal multiplayer invitations intentionally defer behind an open modal dialog.
+    assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true,'non-modal invites stay hidden behind the open tutorial dossier');
+    assert.match(await page.locator('#inviteNotification').textContent(),/1/,'deferred invitation keeps the menu badge active');
+    await page.locator('#dossierDecline').click();
+    await page.locator('#tutorialDossier').waitFor({state:'hidden'});
+    // Closing the dossier surfaces the queued invitation card; dismiss with LATER before accepting the commission.
     await page.locator('#multiplayerPrompt').waitFor({state:'visible'});
     assert.match(await page.locator('#multiplayerPromptBody').innerText(),/Alice invited you/);
     await page.locator('#multiplayerPromptActions [data-action="later"]').click();
     assert.equal(await page.locator('#multiplayerPrompt').isHidden(),true);
     assert.match(await page.locator('#inviteNotification').textContent(),/1/,'putting the card aside keeps the invitation');
+    await page.locator('#menuTutorial').click();
+    await page.locator('#tutorialDossier[open]').waitFor({state:'visible',timeout:15000});
     await page.locator('#dossierAccept').click();
     mark('first-run field');
     await page.locator('#gameWorkspace').waitFor({state:'visible',timeout:15000});
@@ -678,8 +685,12 @@ if (!commandCenterToken) throw new Error('account.js does not import command-cen
     // needs to trigger the same handler a tap would.
     await page.locator('#backToCommand').evaluate(button=>button.click());
     await page.waitForSelector('#menuTutorial',{state:'visible'});
-    // (a) FIELD TUTORIAL in the Command Center: the whole first run, map and all.
-    await restartOnce('field tutorial', async () => page.locator('#menuTutorial').click());
+    // (a) FIELD TUTORIAL in the Command Center opens the dossier, then launches the first run.
+    await restartOnce('field tutorial', async () => {
+      await page.locator('#menuTutorial').click();
+      await page.locator('#tutorialDossier[open]').waitFor({state: 'visible', timeout: 10000});
+      await page.locator('#dossierAccept').click();
+    });
     // (b) The same thing from Settings, which also owns language, sound and graphics.
     await restartOnce('settings', async () => {
       await page.locator('#menuSettings').click();
