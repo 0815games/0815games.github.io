@@ -788,12 +788,25 @@ body:has(#runResults[open]) .first-run-coach{display:none}
 .tower-sheet.tower-radial .sheet-option[data-icon="upgrade"] .sheet-art{background-image:url('assets/icon-upgrade.svg')}
 .tower-sheet.tower-radial .sheet-option[data-icon="sell"] .sheet-art{background-image:url('assets/icon-sell.svg')}
 .tower-sheet.tower-radial .sheet-option[data-icon="branch"] .sheet-art{background-image:url('assets/icon-branch.svg')}
+.tower-sheet.tower-radial .sheet-option[data-icon="confirmSell"] .sheet-art{background-image:url('assets/icon-confirm-sell.svg')}
+.tower-sheet.tower-radial .sheet-option[data-icon="cancel"] .sheet-art{background-image:url('assets/icon-cancel.svg')}
 .tower-sheet.tower-radial .sheet-option[data-icon="classUpgrade"] .sheet-art{background-image:none;display:grid;place-items:center}
 .tower-sheet.tower-radial .sheet-option[data-icon="classUpgrade"] .sheet-art svg{width:100%;height:100%;display:block}
+.tower-sheet.tower-radial .sheet-option[data-icon="confirmSell"] .sheet-name,
+.tower-sheet.tower-radial .sheet-option[data-icon="sell"] .sheet-name{
+  font-size:8.5px;
+  line-height:1.06;
+  letter-spacing:0;
+  white-space:normal;
+}
 @media(max-width:600px){
   .tower-sheet.tower-radial{--ring-size:72px}
   .tower-sheet.tower-radial .sheet-name{font-size:8px}
   .tower-sheet.tower-radial .sheet-art{width:30px;height:30px}
+  .tower-sheet.tower-radial .sheet-option[data-icon="confirmSell"] .sheet-art,
+  .tower-sheet.tower-radial .sheet-option[data-icon="sell"] .sheet-art{width:28px;height:28px}
+  .tower-sheet.tower-radial .sheet-option[data-icon="confirmSell"] .sheet-name,
+  .tower-sheet.tower-radial .sheet-option[data-icon="sell"] .sheet-name{font-size:7.5px}
 }
 
 @media(max-width:700px){
@@ -854,6 +867,29 @@ button:not(.primary):not([disabled]):not(.mode-card):not(.act-node):active{trans
 /* The map toolbar sits on the iron band. */
 .map-toolbar{background:linear-gradient(180deg,#232a24,var(--iron-deep));border-bottom:1px solid #39433c}
 .map-toolbar button{background:var(--iron-mid)}
+/* Dedicated radial sale-confirmation discs beat the generic stamped-iron rule above. */
+#radialMenu.tower-radial .sheet-option[data-icon="confirmSell"]{
+  background:linear-gradient(180deg,#473c22,#2c2414);
+  border:1px solid #d9b877;
+  border-top-color:#f0d68a;
+  box-shadow:0 4px 14px #000a,inset 0 1px 0 rgba(240,214,138,.24);
+}
+#radialMenu.tower-radial .sheet-option[data-icon="confirmSell"]:hover{
+  background:linear-gradient(180deg,#594b2a,#382e19);
+  border-color:#f5df9c;
+  border-top-color:#fff0be;
+}
+#radialMenu.tower-radial .sheet-option[data-icon="cancel"]{
+  background:linear-gradient(180deg,#2c3631,#1e2622);
+  border:1px solid #75857c;
+  border-top-color:#98a89f;
+  box-shadow:0 4px 14px #000a,inset 0 1px 0 rgba(217,221,225,.14);
+}
+#radialMenu.tower-radial .sheet-option[data-icon="cancel"]:hover{
+  background:linear-gradient(180deg,#39453f,#27312c);
+  border-color:#c9d6bf;
+  border-top-color:#e5ece0;
+}
 
 /* Endless launch dialog: personal record, battlefield choice, last run. */
 .endless-launch{max-width:560px}

@@ -129,7 +129,7 @@ const fs = require('node:fs');
       // The new-build notice carries RETRY CHECK and DISMISS, so it is an
       // interruption and belongs in the middle - it sat in the top-right corner
       // on the strength of its name alone. Measured like any other popup.
-      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261120-audio3 loaded.';document.querySelector('#versionNotice').hidden=false;});
+      await page.evaluate(()=>{document.querySelector('#versionNoticeText').textContent='New version 20261120-sellicon1 loaded.';document.querySelector('#versionNotice').hidden=false;});
       await centredPopup('#versionNotice');await check('#versionNoticeDismiss');
       const noticeLayout=await page.evaluate(()=>{
         const box=document.querySelector('#versionNotice'),text=document.querySelector('#versionNoticeText'),
@@ -227,7 +227,62 @@ const fs = require('node:fs');
       const coversCentre=ring.buttons.some(button=>centreX>=button.x&&centreX<=button.x+button.w&&centreY>=button.y&&centreY<=button.y+button.h);
       assert.equal(coversCentre,false,`${name}: the pad in the middle stays visible and tappable`);
       await page.screenshot({path:`browser-artifacts/${name}-tower-ring.png`,fullPage:false});
-      await page.evaluate(()=>{document.querySelector('#radialMenu').hidden=true;});
+      // Confirm-sale mode must paint real SVG icons and legible German labels on both ring discs.
+      await page.evaluate(()=>{
+        const menu=document.getElementById('radialMenu');
+        menu.dataset.mode='actions';
+        const defs=[
+          {icon:'confirmSell',name:'Verkauf bestätigen',price:'+60'},
+          {icon:'cancel',name:'Abbrechen',price:''},
+        ];
+        menu.querySelectorAll('.sheet-option').forEach((button,index)=>{
+          const def=defs[index];
+          button.hidden=!def;button.disabled=!def;
+          button.classList.remove('unaffordable','locked');
+          if(def)button.dataset.icon=def.icon;else delete button.dataset.icon;
+          const nameEl=document.getElementById('menuName'+index);
+          if(nameEl)nameEl.textContent=def?def.name:'';
+          const priceEl=document.getElementById('menuPrice'+index);
+          if(priceEl)priceEl.textContent=def?def.price:'';
+          const artEl=document.getElementById('menuArt'+index);
+          if(artEl)artEl.replaceChildren();
+        });
+      });
+      const confirmSellRing=await page.evaluate(()=>[0,1].map(index=>{
+        const button=document.getElementById('radial'+index);
+        const art=button.querySelector('.sheet-art');
+        const box=button.getBoundingClientRect();
+        const artBox=art.getBoundingClientRect();
+        const btnStyle=getComputedStyle(button);
+        const artStyle=getComputedStyle(art);
+        return {
+          icon:button.dataset.icon||'',
+          w:box.width,h:box.height,
+          scrollH:button.scrollHeight,clientH:button.clientHeight,
+          artW:artBox.width,artH:artBox.height,
+          artImage:artStyle.backgroundImage,
+          bg:btnStyle.backgroundImage||btnStyle.backgroundColor,
+          border:btnStyle.borderTopColor,
+          price:document.getElementById('menuPrice'+index)?.textContent??'',
+          name:document.getElementById('menuName'+index)?.textContent??'',
+        };
+      }));
+      assert.equal(confirmSellRing[0].icon,'confirmSell',`${name}: confirmSell button carries data-icon`);
+      assert.equal(confirmSellRing[1].icon,'cancel',`${name}: cancel button carries data-icon`);
+      assert.match(confirmSellRing[0].artImage,/icon-confirm-sell\.svg/,`${name}: confirmSell paints icon-confirm-sell.svg`);
+      assert.match(confirmSellRing[1].artImage,/icon-cancel\.svg/,`${name}: cancel paints icon-cancel.svg`);
+      assert.ok(confirmSellRing[0].artW>=24&&confirmSellRing[0].artH>=24,`${name}: confirmSell art has visible size`);
+      assert.ok(confirmSellRing[1].artW>=24&&confirmSellRing[1].artH>=24,`${name}: cancel art has visible size`);
+      assert.equal(confirmSellRing[0].price,'+60',`${name}: confirmSell shows refund amount`);
+      assert.ok(confirmSellRing[0].scrollH<=confirmSellRing[0].clientH+1,`${name}: German confirmSell label + refund fits inside ring disc (${confirmSellRing[0].scrollH}/${confirmSellRing[0].clientH})`);
+      assert.notEqual(confirmSellRing[0].bg,confirmSellRing[1].bg,`${name}: confirmSell and cancel buttons read as distinct surfaces`);
+      assert.notEqual(confirmSellRing[0].border,confirmSellRing[1].border,`${name}: confirmSell border stands out from cancel`);
+      await page.screenshot({path:`browser-artifacts/${name}-confirm-sell-ring.png`,fullPage:false});
+      await page.evaluate(()=>{
+        const menu=document.getElementById('radialMenu');
+        menu.querySelectorAll('.sheet-option').forEach(button=>{delete button.dataset.icon;button.hidden=false;button.disabled=false;});
+        menu.hidden=true;
+      });
       await check('#mapViewport');await check('.dashboard');await check('#start');await check('#speed');await check('#ability');await check('#endRun');
       // The radio line is no longer painted: what the game says is spoken into a
       // live region for a screen reader and is not on the field at all. A box

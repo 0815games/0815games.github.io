@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -89,6 +89,16 @@ test('a button shows a picture and a name, nothing to read', () => {
   for (const icon of ['upgrade', 'sell', 'branch']) {
     assert.match(css, new RegExp(`\\[data-icon="${icon}"\\] \\.sheet-art\\{background-image:url\\('assets/icon-${icon}\\.svg'\\)`));
   }
+  // Confirm-sale and cancel also show dedicated icon artwork and contrasted rings,
+  // using #radialMenu id specificity so the V3 iron-button bevel rule cannot flatten them.
+  for (const [icon, asset] of [['confirmSell', 'assets/icon-confirm-sell.svg'], ['cancel', 'assets/icon-cancel.svg']]) {
+    assert.match(css, new RegExp(`\\[data-icon="${icon}"\\] \\.sheet-art\\{background-image:url\\('${asset.replace('.', '\\.')}'\\)`));
+    assert.ok(existsSync(resolve(root, asset)), `missing ${asset}`);
+    const disc = declarations(css, `#radialMenu.tower-radial .sheet-option[data-icon="${icon}"]`);
+    assert.ok(disc.background && disc.border, `${icon} ring disc defines dedicated button surface`);
+  }
+  assert.ok(css.lastIndexOf('#radialMenu.tower-radial .sheet-option[data-icon="confirmSell"]') > css.indexOf('button:not(.primary):not([disabled]):not(.mode-card):not(.act-node)'),
+    'confirmSell disc appears after generic stamped-iron button styling');
 });
 
 test('the ring is centred on the pad, and clamped so no button leaves the field', () => {

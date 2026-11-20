@@ -18,7 +18,7 @@
 // The mark is an invitation, so the one tower whose sheet is already open
 // stays quiet: that sheet states the price in full.
 import {upgradeCost} from './progression.mjs?v=20261105-prestige1';
-import {upgradeCostFor,anyBranchUnlocked} from './tower-specialization.mjs?v=20261120-audio3';
+import {upgradeCostFor,anyBranchUnlocked} from './tower-specialization.mjs?v=20261120-sellicon1';
 
 // `supplies` is what the soldier can spend right now; `level` their soldier
 // level, which gates the two later specializations.

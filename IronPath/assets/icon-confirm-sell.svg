@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Confirm sale">
+  <circle cx="13" cy="14" r="8.5" fill="#e4ca89" stroke="#223227" stroke-width="1.6"/>
+  <path d="M13 8.8v10.4M9.9 11.4h4.7a1.9 1.9 0 0 1 0 3.8h-3.2a1.9 1.9 0 0 0 0 3.8h4.7" fill="none" stroke="#223227" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="22.5" cy="22.5" r="7" fill="#13231a" stroke="#e4ca89" stroke-width="1.5"/>
+  <path d="M19.2 22.7 21.6 25l4.4-4.8" fill="none" stroke="#6fe082" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
