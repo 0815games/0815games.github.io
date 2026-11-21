@@ -5,6 +5,7 @@ import {drawStoryTerrain,drawStoryAtmosphere,drawStoryObjective,prepareStoryArt}
 import {ENEMY_INTEL} from './combat.mjs?v=20261121-rollback1';
 import {bossPhase} from './boss-mechanics.mjs?v=20261031-finale1';
 import {shotTrace,shotsToDraw} from './shot-tracers.mjs?v=20261117-shots1';
+import {buildRoadPath} from './road-geometry.mjs?v=20261121-rollback1';
 // Drawing only: the simulation, coordinates and hit areas stay unchanged.
 const ink='#1d3028',paper='#f1e7c4';
 function line(ctx,points,color=ink,width=3){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();}
@@ -37,106 +38,314 @@ function ground(ctx,theme='road',width=960,height=540){
 // V2 field art: the road is ground, not a ribbon - a soft earthen berm, a
 // compacted surface, wheel ruts that follow the actual bends, and wear
 // scattered ALONG the geometry instead of at nine hard-coded spots.
-// Act V: in the junction the roads are rails - a ballast bed, timber
-// sleepers and twin steel lines, with the odd signal mast along the way.
-// Painted along the exact geometry the enemies drive on, purely cosmetic:
-// the simulation path and every hit target stay untouched.
-function drawRail(ctx,path){
-  const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
-  trace(88,'rgba(20,24,22,.34)');
-  trace(78,'#3f4440');
-  trace(66,'#4c524d');
-  trace(54,'#5a5f58');
-  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
-  // Sleepers: dark timber ties set across the ballast, following every bend.
-  ctx.lineCap='butt';ctx.strokeStyle='#2c2922';ctx.lineWidth=7;
-  let k=0;
-  for(let i=1;i<path.length;i++){
-    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
-    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-    for(let s=9;s<len-4;s+=17){
-      const x=a.x+ux*s,y=a.y+uy*s;
-      ctx.beginPath();ctx.moveTo(x-px*22,y-py*22);ctx.lineTo(x+px*22,y+py*22);ctx.stroke();
-    }
-  }
-  // Twin steel rails, each with its own shadow line - readable at a glance.
-  ctx.lineCap='round';
-  for(const side of [-1,1])for(const [w,style] of [[3.4,'rgba(16,18,16,.5)'],[1.8,'#b6bab0']]){
-    ctx.beginPath();let first=true;
-    for(let i=1;i<path.length;i++){
-      const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
-      const px=-(b.y-a.y)/len*13*side,py=(b.x-a.x)/len*13*side;
-      if(first){ctx.moveTo(a.x+px,a.y+py);first=false;}
-      ctx.lineTo(b.x+px,b.y+py);
-    }
-    ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineJoin='round';ctx.stroke();
-  }
-  // Signal masts at readable intervals, deterministic per path.
-  for(let i=1;i<path.length;i++){
-    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);if(!len)continue;
-    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-    for(let s=60;s<len-30;s+=190){
-      const j=hash(++k),side=j<.5?-1:1,off=36+j*8;
-      const x=a.x+ux*s+px*off*side,y=a.y+uy*s+py*off*side;
-      line(ctx,[[x,y+10],[x,y-14]],'#3a3f3a',3);
-      ctx.fillStyle='#22261f';ctx.fillRect(x-4,y-22,8,10);
-      oval(ctx,x,y-19.5,1.7,1.7,j<.35?'#e05a4e':'#7ec97a',null);
-      oval(ctx,x,y-16,1.7,1.7,j<.35?'#5a6f57':'#c9c05a',null);
-    }
-  }
-  ctx.lineCap='round';
+// ---------------------------------------------------------------------------
+// Road and rail painting.
+//
+// Everything below is derived from ONE geometric description of the road
+// (`road-geometry.mjs`): a tangent-continuous ribbon of straight runs and
+// circular fillet arcs. Whole layers are stroked along that ribbon in a single
+// path operation, parallel layers come from its exact offset curve, and
+// discrete marks - sleepers, planks, kerb notches, cleats, boot stamps - are
+// placed by true arclength and oriented by the true tangent.
+//
+// That is what makes a bend look like a bend. The previous painter offset and
+// decorated every straight segment on its own, which measured on the shipped
+// maps as: wheel ruts torn apart by 21.2 px at each corner (255 px of gap on
+// `road`, 339 px on `forest`), twin rails cutting each corner by 13.0 px,
+// sleepers leaving 13 px and pebbles 38 px across every bend, and a 43 px
+// round-join bulge that swallowed `forest`'s 30 px stub completely. None of
+// those is a margin problem; all of them are consequences of not having a
+// curve to work with.
+//
+// Cost, measured: building the ribbon plus seven offsets plus three decoration
+// walks is 29 us on the longest shipped map, and `drawTerrain` caches the
+// painted layer per battlefield - so this is paid once per map, not per frame.
+// ---------------------------------------------------------------------------
+
+// One stroke for one whole layer. A single path operation never blends with
+// itself, so no bend can grow a seam and no round cap can stack its alpha into
+// the dark beads the segment-wise strokes used to leave at every vertex.
+function traceRoad(ctx,road,w,style){
+  ctx.beginPath();road.emit(ctx);
+  ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
 }
-export function drawRoad(ctx,path,theme,texture=null){
-  if(theme==='junction'){drawRail(ctx,path);return;}
-  const tones=theme==='arctic'?['#7e9a98','#9fb9b4','#c2d5cf']:theme==='urban'?['#45453f','#5d5c54','#787670']:theme==='marsh'?['#453d2e','#61533f','#7d6c54']:theme==='scrub'?['#6f533a','#8a6a4f','#a58463']:theme==='talwald'?['#48563a','#65734c','#828e5e']:['#544a34','#716244','#8d7c5b'];
-  // One helper, one stroke: a polyline stroked in a single operation never
-  // blends with itself, so no bend can grow a seam.
-  const trace=(w,style)=>{ctx.beginPath();path.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
-  // The road wears four deliberate layers. The old nested 78/68/58 tone
-  // strokes stacked three hard-edged bands that read as painted contour
-  // lines across every bend (reported: "Strassen-Design neu").
-  // 1. a soft dark rim where the road meets the ground,
-  trace(86,'rgba(26,30,24,.3)');
-  // 2. the dark aggregate shoulder, peeking five pixels out on each side,
-  trace(76,tones[0]);
-  // 3. the driving surface itself, and
-  trace(66,tones[1]);
-  // 4. ONE translucent wash of the lightest tone - a worn, sun-bleached
-  //    centre that fades into the surface instead of stepping.
-  ctx.save();ctx.globalAlpha=.42;trace(46,tones[2]);ctx.restore();
-  if(texture&&ctx.createPattern){const pattern=ctx.createPattern(texture,'repeat');if(pattern){ctx.save();ctx.globalAlpha=.24;ctx.strokeStyle=pattern;ctx.lineWidth=60;ctx.stroke();ctx.restore();}}
-  // Wheel ruts on both sides of the lane, following every actual bend. One
-  // stroke per side: the old code stroked every segment separately, and the
-  // round caps stacked their alpha at each vertex - dark beads along the
-  // whole road. A single stroke of many subpaths is composited once, so the
-  // beads cannot come back.
-  ctx.strokeStyle='rgba(28,24,16,.26)';ctx.lineWidth=5;
-  for(const side of [-1,1]){
-    ctx.beginPath();
-    for(let i=1;i<path.length;i++){
-      const a=path[i-1],b=path[i],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy);
-      if(!l)continue;
-      const px=-dy/l*15*side,py=dx/l*15*side;
-      ctx.moveTo(a.x+px,a.y+py);ctx.lineTo(b.x+px,b.y+py);
-    }
-    ctx.stroke();
-  }
-  // Pebbles and track marks along the real arclength - deterministic, so the
-  // cached terrain layer stays reproducible.
-  const hash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
+// A layer running beside the centreline: ruts, rails, kerb lines, guardrails.
+// The offset of a straight run is the parallel line and the offset of an arc is
+// the concentric arc, so the two meet exactly at the tangent point and the
+// layer cannot tear, kink or gap at a bend whatever distance it keeps.
+function traceBeside(ctx,road,d,w,style){
+  const off=road.offset(d);
+  if(!off.length)return;
+  ctx.beginPath();off.emit(ctx);
+  ctx.strokeStyle=style;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+}
+// Discrete marks at even distance along the road. `visit` gets the position,
+// the unit normal (px,py; a positive distance is to the LEFT of travel) and the
+// heading, so a sleeper lies across the ROAD on a bend instead of across the
+// segment it was computed from, and marks fan through a corner instead of
+// stopping short of it. Lateral placement is `centreline + normal*d`, which
+// equals the offset curve while d stays inside the bend radius and stays
+// well-defined beyond it: a kerb notch on the tight side of a bend simply
+// follows the road around, as a real kerb does.
+function marksAlong(road,step,inset,outset,visit){
   let k=0;
-  for(let i=1;i<path.length;i++){
-    const a=path[i-1],b=path[i],len=Math.hypot(b.x-a.x,b.y-a.y);
-    if(!len)continue;
-    const ux=(b.x-a.x)/len,uy=(b.y-a.y)/len,px=-uy,py=ux;
-    for(let s=26;s<len-12;s+=44){
-      const j1=hash(++k),j2=hash(k+57.3),off=(j1-.5)*44;
-      const x=a.x+ux*s+px*off,y=a.y+uy*s+py*off;
-      if(j2<.45)oval(ctx,x,y,2+j1*2.5,1.4+j2*1.4,j2<.2?'#6d5c42':'#a6906c',null);
-      else if(j2<.7){const d=3+j1*4;line(ctx,[[x-px*d,y-py*d],[x+px*d,y+py*d]],'rgba(30,26,18,.22)',2);}
-      else oval(ctx,x,y,1.6,1.1,'#c9b992',null);
+  road.walk(step,s=>{
+    const px=-Math.sin(s.angle),py=Math.cos(s.angle);
+    visit(s.x,s.y,px,py,s.angle,++k);
+  },{inset,outset});
+}
+// Deterministic variation, seeded by the mark's index along the road so the
+// cached terrain layer paints identically on every load.
+const roadHash=n=>{const x=Math.sin(n*127.1+13.7)*43758.5453;return x-Math.floor(x);};
+
+// One road per biome, in the layer vocabulary the artwork settled on: a calm
+// halo that clears the noisy ground around it, a comic-ink silhouette at the
+// sprite's ink weight, a high-contrast shoulder (kerb, snowbank, embankment or
+// ditch), the driving surface, and optional crown, lane lines and texture.
+// The surface is 60 px wide, which is the number `road-geometry.mjs` guards
+// against: a soldier walking the sharp simulation polygon strays at most
+// 14.1 px from the smoothed centreline, so it always stands on asphalt.
+const ROAD_THEMES=Object.freeze({
+  urban:{kind:'paved',rim:'rgba(8,11,12,.52)',ink:'#121617',shoulder:'#d2d7cd',shoulderHi:'rgba(248,252,244,.60)',gutter:'#161b1c',surface:'#31373a',dash:'rgba(244,222,138,.78)',edgeLine:'rgba(224,228,216,.38)',rut:'rgba(14,16,18,.32)',cleat:'rgba(16,18,20,.30)',boot:'rgba(16,18,20,.28)',textureScale:.20,textureAlpha:.46},
+  outpost:{kind:'outpost',rim:'rgba(10,10,8,.50)',ink:'#171511',shoulder:'#cbbda0',shoulderHi:'rgba(244,232,202,.52)',gutter:'#1d1b16',surface:'#3a362e',dash:'rgba(232,206,126,.64)',edgeLine:'rgba(216,204,174,.30)',rut:'rgba(18,15,12,.34)',cleat:'rgba(18,15,12,.34)',boot:'rgba(20,17,13,.32)',textureScale:.20,textureAlpha:.46},
+  arctic:{kind:'arctic',rim:'rgba(8,18,26,.48)',ink:'#0f2029',shoulder:'#f5fafc',shoulderHi:'#ffffff',gutter:'#15252f',surface:'#3a4449',crown:'rgba(120,140,150,.28)',rut:'rgba(18,26,32,.55)',cleat:'rgba(14,22,28,.60)',boot:'rgba(18,26,32,.52)',textureScale:.22,textureAlpha:.52},
+  marsh:{kind:'marsh',rim:'rgba(6,10,6,.58)',ink:'#0e0b07',shoulder:'#24180e',shoulderHi:'#4d3520',gutter:'#120b07',surface:'#4a321c',crown:'rgba(160,120,75,.28)',planks:true,rut:'rgba(20,14,8,.44)',cleat:'rgba(16,10,6,.52)',boot:'rgba(20,14,8,.46)',textureScale:.20,textureAlpha:.28},
+  scrub:{kind:'scrub',rim:'rgba(26,14,6,.48)',ink:'#1c1007',shoulder:'#492914',shoulderHi:'rgba(144,90,48,.58)',gutter:'#24140a',surface:'#e4c792',crown:'rgba(255,245,220,.38)',rut:'rgba(72,42,18,.34)',cleat:'rgba(62,36,14,.42)',boot:'rgba(66,38,16,.38)',textureScale:.22,textureAlpha:.46},
+  forest:{kind:'forest',rim:'rgba(10,16,10,.48)',ink:'#131a11',shoulder:'#32281a',shoulderHi:'#e2cc98',surface:'#c4a670',crown:'rgba(246,232,196,.30)',rut:'rgba(62,46,24,.34)',cleat:'rgba(54,40,20,.42)',boot:'rgba(58,42,22,.38)',textureScale:.22,textureAlpha:.45},
+  talwald:{kind:'talwald',rim:'rgba(8,14,8,.50)',ink:'#111910',shoulder:'#2c2418',shoulderHi:'#dfc996',surface:'#bfa26c',crown:'rgba(244,230,192,.28)',rut:'rgba(58,44,24,.34)',cleat:'rgba(50,38,20,.42)',boot:'rgba(54,40,22,.38)',textureScale:.22,textureAlpha:.45},
+  road:{kind:'road',rim:'rgba(12,18,10,.46)',ink:'#151910',shoulder:'#3a301f',shoulderHi:'#e6d2a0',surface:'#caa972',crown:'rgba(248,236,202,.32)',rut:'rgba(66,50,26,.32)',cleat:'rgba(56,42,20,.40)',boot:'rgba(60,44,22,.36)',textureScale:.22,textureAlpha:.45}
+});
+
+// A boot print: heel block plus sole ellipse, tilted slightly outwards on the
+// side it belongs to. Used both by the road dressing and by the ground tracks.
+function drawBootStamp(ctx,x,y,angle,side,scale,markColor,edgeColor){
+  const s=Math.max(.5,scale||1);
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+  if(edgeColor){
+    ctx.fillStyle=edgeColor;
+    ctx.beginPath();ctx.ellipse(2.3*s,.4*s,3.1*s,1.8*s,side*.08,0,Math.PI*2);ctx.fill();
+  }
+  ctx.fillStyle=markColor;
+  ctx.fillRect(-4.1*s,-1.5*s,2.6*s,3*s);
+  ctx.beginPath();ctx.ellipse(1.9*s,0,2.9*s,1.75*s,side*.08,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+// A tank cleat pair: the dark tread band with the lighter grouser on top, at
+// the gauge the vehicle sprites actually stand on.
+function drawTankTreadStamp(ctx,x,y,angle,scale,markColor,edgeColor,baseAlpha=1){
+  const s=Math.max(.6,scale||1),gauge=11.5*s,cleatHalf=3.3*s;
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+  for(const side of [-1,1]){
+    const cy=side*gauge;
+    ctx.globalAlpha=baseAlpha*.45;
+    ctx.fillStyle=markColor;
+    ctx.fillRect(-3.8*s,cy-cleatHalf*.85,7.6*s,cleatHalf*1.7);
+    ctx.globalAlpha=baseAlpha;
+    if(edgeColor){
+      ctx.fillStyle=edgeColor;
+      ctx.fillRect(-.8*s,cy-cleatHalf,2.6*s,cleatHalf*2);
+    }
+    ctx.fillStyle=markColor;
+    ctx.fillRect(-1.3*s,cy-cleatHalf,2.4*s,cleatHalf*2);
+  }
+  ctx.restore();
+}
+
+// Act V: in the junction the roads are rails - a ballast bed, timber sleepers
+// and twin steel lines, with the odd signal mast along the way. Painted along
+// the same smoothed ribbon the road uses, purely cosmetic: the simulation path
+// and every hit target stay untouched.
+function drawRail(ctx,path,texture=null){
+  if(!Array.isArray(path)||path.length<2)return;
+  const road=buildRoadPath(path);
+  if(!road.length)return;
+  // Ballast bed, from the ground-clearing halo inwards to the running surface.
+  traceRoad(ctx,road,94,'rgba(8,11,10,.55)');
+  traceRoad(ctx,road,84,'#111514');
+  traceRoad(ctx,road,78,'#6a7268');
+  traceRoad(ctx,road,68,'#858d82');
+  traceRoad(ctx,road,56,'#99a196');
+  if(texture&&ctx.createPattern){
+    const pattern=ctx.createPattern(texture,'repeat');
+    if(pattern){ctx.save();ctx.globalAlpha=.22;traceRoad(ctx,road,56,pattern);ctx.restore();}
+  }
+  // Crushed limestone along both shoulders, spaced by distance along the track
+  // so the stones keep their rhythm straight through a bend.
+  marksAlong(road,20,14,8,(x,y,px,py,angle,k)=>{
+    const j=roadHash(k*1.7),side=k%2?1:-1,off=(28+j*7)*side;
+    oval(ctx,x+px*off,y+py*off,2.3+j*1.5,1.5+j,j<.5?'#a9b0a4':'#767d74','#161a19',.9);
+  });
+  // Sleepers: warm oak ties with a crisp ink outline, a sunlit top bevel and
+  // iron tie-plates under both rails. Each one is drawn across the TANGENT of
+  // the ribbon, so the ties fan around a curve the way they do on real track
+  // instead of stopping four pixels before the vertex and restarting after it.
+  ctx.save();ctx.lineCap='butt';
+  marksAlong(road,16,9,4,(x,y,px,py)=>{
+    ctx.strokeStyle='#14120e';ctx.lineWidth=9;
+    ctx.beginPath();ctx.moveTo(x-px*23,y-py*23);ctx.lineTo(x+px*23,y+py*23);ctx.stroke();
+    ctx.strokeStyle='#6e5237';ctx.lineWidth=6.8;
+    ctx.beginPath();ctx.moveTo(x-px*21.8,y-py*21.8);ctx.lineTo(x+px*21.8,y+py*21.8);ctx.stroke();
+    ctx.strokeStyle='#9b7954';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x-px*20,y-py*20-1);ctx.lineTo(x+px*20,y+py*20-1);ctx.stroke();
+    for(const railSide of [-1,1]){
+      const rx=x+px*13*railSide,ry=y+py*13*railSide;
+      ctx.fillStyle='#202423';ctx.fillRect(rx-3.2,ry-3.2,6.4,6.4);
+    }
+  });
+  ctx.restore();
+  // High-contrast steel over rail-shadow ink, each rail one exact offset curve.
+  // This is the 13.0 px corner cut, gone: the old polyline ran through
+  // `vertex + n1*13`, which is not on the parallel curve - the miter point is.
+  for(const side of [-1,1])for(const [w,style] of [[4.4,'rgba(10,13,12,.85)'],[2.4,'#eff4ed']])
+    traceBeside(ctx,road,13*side,w,style);
+  // Signal masts at readable intervals, deterministic per track.
+  ctx.lineCap='round';
+  marksAlong(road,190,60,30,(x,y,px,py,angle,k)=>{
+    const j=roadHash(k*3.1),side=j<.5?-1:1,off=39+j*7;
+    const mx=x+px*off*side,my=y+py*off*side;
+    line(ctx,[[mx,my+10],[mx,my-14]],'#3a3f3a',3);
+    ctx.fillStyle='#22261f';ctx.fillRect(mx-4,my-22,8,10);
+    oval(ctx,mx,my-19.5,1.7,1.7,j<.35?'#e05a4e':'#7ec97a',null);
+    oval(ctx,mx,my-16,1.7,1.7,j<.35?'#5a6f57':'#c9c05a',null);
+  });
+}
+export function drawRoad(ctx,path,theme='road',texture=null,roadTexture=null){
+  if(!Array.isArray(path)||path.length<2)return;
+  if(theme==='junction'){drawRail(ctx,path,texture);return;}
+  const spec=ROAD_THEMES[theme]||ROAD_THEMES.road;
+  const road=buildRoadPath(path);
+  if(!road.length)return;
+  // 1. A wide calm halo that clears the noisy ground around the road.
+  traceRoad(ctx,road,94,spec.rim);
+  // 2. The comic-ink silhouette, at the same ink weight as the sprites.
+  traceRoad(ctx,road,82,spec.ink);
+  // 3. The biome's shoulder: kerb, snowbank, rock embankment or ditch.
+  traceRoad(ctx,road,76,spec.shoulder);
+  if(spec.gutter)traceRoad(ctx,road,66,spec.gutter);
+  else if(spec.shoulderHi)traceRoad(ctx,road,68,spec.shoulderHi);
+  // 4. The driving surface. Sixty pixels wide, so its half width is 30 px -
+  //    comfortably more than the 14.1 px a unit on the sharp polygon strays
+  //    from the smoothed centreline at the shipped corner radius.
+  traceRoad(ctx,road,60,spec.surface);
+  // 5. The seamless road texture, scaled crisp without washing out contrast.
+  const tex=roadTexture||texture;
+  if(tex&&ctx.createPattern){
+    const pattern=ctx.createPattern(tex,'repeat');
+    if(pattern){
+      if(roadTexture&&typeof pattern.setTransform==='function'&&typeof DOMMatrix==='function'){
+        try{pattern.setTransform(new DOMMatrix().scale(spec.textureScale,spec.textureScale));}catch{}
+      }
+      ctx.save();ctx.globalAlpha=roadTexture?(spec.textureAlpha||.46):.20;
+      traceRoad(ctx,road,58,pattern);
+      ctx.restore();
     }
   }
+  // 6. A worn crown down the middle, and a hairline where gutter meets kerb.
+  if(spec.crown){ctx.save();ctx.globalAlpha=.34;traceRoad(ctx,road,38,spec.crown);ctx.restore();}
+  if(spec.shoulderHi&&spec.gutter){ctx.save();ctx.globalAlpha=.8;traceRoad(ctx,road,1.6,spec.shoulderHi);ctx.restore();}
+  // Crisp tactical lane markings on paved urban and outpost avenues - one exact
+  // offset curve per side, so the line follows the bend instead of jumping the
+  // corner the way two separately offset segments did.
+  if(spec.edgeLine)for(const side of [-1,1])traceBeside(ctx,road,23*side,1.8,spec.edgeLine);
+  if(spec.dash){
+    ctx.save();
+    ctx.beginPath();road.emit(ctx);
+    ctx.strokeStyle=spec.dash;ctx.lineWidth=3;ctx.lineCap='butt';ctx.lineJoin='round';
+    ctx.setLineDash([16,14]);ctx.stroke();ctx.setLineDash([]);
+    ctx.restore();
+  }
+  if(spec.planks){
+    // Marsh: a continuous corduroy causeway. Planks by arclength, each laid
+    // across the tangent, so the timber fans through the bends.
+    ctx.save();ctx.lineCap='butt';
+    marksAlong(road,11,6,3,(x,y,px,py,angle,k)=>{
+      const j=roadHash(k*1.3);
+      line(ctx,[[x-px*24.5,y-py*24.5],[x+px*24.5,y+py*24.5]],'#18120a',9.2);
+      line(ctx,[[x-px*23.5,y-py*23.5],[x+px*23.5,y+py*23.5]],j<.35?'#b9925c':j<.7?'#a8824e':'#9b7645',7);
+      line(ctx,[[x-px*21,y-py*21-1.2],[x+px*21,y+py*21-1.2]],'rgba(235,208,162,.34)',1.5);
+      oval(ctx,x-px*18,y-py*18,1.1,1.1,'#221f1a',null);
+      oval(ctx,x+px*18,y+py*18,1.1,1.1,'#221f1a',null);
+    });
+    ctx.restore();
+    // Twin timber guardrails: three stacked offset curves per side.
+    for(const [w,style] of [[7.2,'#19120a'],[4.4,'#8f6b3e'],[1.4,'rgba(232,202,150,.55)']])
+      for(const side of [-1,1])traceBeside(ctx,road,25*side,w,style);
+  }else if(spec.kind==='paved'||spec.kind==='outpost'){
+    // Kerb joints every 22 px, and the odd loose slab on outpost avenues.
+    ctx.save();ctx.lineCap='butt';ctx.strokeStyle='#151a19';ctx.lineWidth=2;
+    marksAlong(road,22,14,10,(x,y,px,py,angle,k)=>{
+      const j=roadHash(k*2.9);
+      if(spec.kind==='outpost'&&j<.22)return;
+      for(const side of [-1,1]){
+        const cx=x+px*35*side,cy=y+py*35*side;
+        ctx.beginPath();ctx.moveTo(cx-px*3.5,cy-py*3.5);ctx.lineTo(cx+px*3.5,cy+py*3.5);ctx.stroke();
+      }
+      if(spec.kind==='outpost'&&j>.68){
+        const side=j>.84?1:-1,d=26+j*12;
+        oval(ctx,x+px*d*side,y+py*d*side,2.5,1.6,'#8a785f','#1d1812',.9);
+      }
+    });
+    ctx.restore();
+  }else if(spec.kind==='arctic'){
+    // Snowdrifts heaped along both edges, with the occasional crack in the ice.
+    marksAlong(road,26,18,12,(x,y,px,py,angle,k)=>{
+      const j=roadHash(k*4.3),side=k%2?1:-1,d=(35+j*3)*side;
+      ctx.save();ctx.translate(x+px*d,y+py*d);ctx.rotate(angle);
+      oval(ctx,0,side*1.2,9.5+j*4,4.4+j*1.6,'#5b7c8e',null);
+      oval(ctx,0,0,9+j*3.8,3.8+j*1.4,'#f6fbfd','#1e3846',1.2);
+      ctx.restore();
+      if(j<.44){
+        const ux=Math.cos(angle),uy=Math.sin(angle),cx=x+px*(j-.5)*20,cy=y+py*(j-.5)*20;
+        line(ctx,[[cx,cy],[cx+ux*6+px*4,cy+uy*6+py*4],[cx+ux*11-px*2,cy+uy*11-py*2]],'#203440',1.2);
+      }
+    });
+  }else if(spec.kind==='scrub'){
+    // Desert: rock and gravel scattered clear of the wheels, plus sand sheen.
+    marksAlong(road,26,20,12,(x,y,px,py,angle,k)=>{
+      const j=roadHash(k*5.7),side=k%2?1:-1,d=(34+j*4)*side;
+      oval(ctx,x+px*d,y+py*d,4.5+j*3,2.4+j*1.2,'#62371c','#1f1007',1);
+      if(j<.55){
+        const s=(j-.3)*24;
+        oval(ctx,x+px*s,y+py*s,7+j*4,2.4,'rgba(255,244,218,.38)',null);
+      }
+    });
+  }else{
+    // Woodland and open track: undergrowth at the verge, broken branches in
+    // the valley forest, loose stones on the last road.
+    marksAlong(road,26,20,12,(x,y,px,py,angle,k)=>{
+      const j=roadHash(k*6.1),side=k%2?1:-1;
+      if(spec.kind==='talwald'&&k%3===0){
+        ctx.save();ctx.lineCap='butt';
+        line(ctx,[[x-px*32,y-py*32],[x-px*20,y-py*20]],'#231b11',4.6);
+        line(ctx,[[x+px*20,y+py*20],[x+px*32,y+py*32]],'#231b11',4.6);
+        ctx.restore();
+      }
+      const d=(33+j*5)*side;
+      oval(ctx,x+px*d,y+py*d,2.8+j*2,1.9+j,spec.kind==='road'?'#968464':'#6e6045',spec.ink,1);
+    });
+  }
+  // Static road wear. Twin track ruts, ONE stroke per side on the exact offset
+  // curve: the segment-wise version tore these apart by 21.2 px at every corner
+  // and stacked round caps into dark beads along the whole road.
+  ctx.save();
+  for(const side of [-1,1])traceBeside(ctx,road,14.5*side,5,spec.rut);
+  ctx.restore();
+  // Tank cleats across both ruts, every 12 px of true distance - through bends.
+  ctx.save();ctx.lineCap='butt';ctx.strokeStyle=spec.cleat;ctx.lineWidth=2.1;
+  marksAlong(road,12,14,8,(x,y,px,py)=>{
+    for(const side of [-1,1]){
+      const cx=x+px*14.5*side,cy=y+py*14.5*side;
+      ctx.beginPath();ctx.moveTo(cx-px*3.2,cy-py*3.2);ctx.lineTo(cx+px*3.2,cy+py*3.2);ctx.stroke();
+    }
+  });
+  ctx.restore();
+  // Boot stamps alternating left and right of the lane, turned to the heading.
+  marksAlong(road,26,20,10,(x,y,px,py,angle,k)=>{
+    const jm=roadHash(k*7.3);
+    if(jm<.18)return;
+    const side=k%2?1:-1,flank=(jm<.55?-5:2)+side*3.2;
+    drawBootStamp(ctx,x+px*flank,y+py*flank,angle,side,.85,spec.boot,null);
+  });
 }
 // Presentation only: the marked segment retains the simulation's exact endpoints.
 function roadZone(ctx,a,b,{color,edge,label,detail}){
