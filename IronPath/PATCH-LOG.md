@@ -4007,3 +4007,27 @@ Grenzen / Offen:
   `#336` komplett neu implementiert (dickerer pulsierender Auswahlring auf Bauplätzen + Hover-Vorschau
   mit Wellennummer und Anzahl nächster Gegner) **einschließlich** der fehlenden deutschen Einträge der
   4 Literale, als eigener PR, ohne die Log-Zerstörung aus `#336` zu wiederholen.
+
+### Ereignis-Nachtrag zu IPL-0091 – Veröffentlichung belegt (nachträglich, 2026-11-21 UTC)
+
+- **CI auf dem Endstand `bde6a7e1d7d69aad378c57664a8651083093e45d`:** Run `44962270748`,
+  **alle Prüfungen `success`**, darunter `game-regressions` — derselbe Check, der in `#335`, `#336`,
+  `#337`, `#338` und `#339` jeweils rot war und trotzdem gemergt wurde. Der vorangegangene Push
+  (`e83454c`, vor der Cache-Welle) lief als Run `44962265422` ebenfalls vollständig `success`.
+  `gh pr checks 341`: **13/13 pass**.
+- **Merge:** PR `#341` `state=MERGED`, `mergedAt=2026-11-21T23:42:42Z`,
+  Merge-Commit `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95`. `main` steht auf genau diesem Commit
+  (`gh api …/commits/main` → `b056ca3c…`).
+- **Pages:** Build aus `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95`, `status=built`,
+  `duration=44626 ms`, kein Fehler. `build_type=legacy`, Quelle `main`/`/` — Auslieferung ist also
+  der Repo-Stand ohne Build-Schritt.
+- **Auslieferung geprüft** über `gh api …/contents/<pfad>?ref=main`: `road-geometry.mjs` 16041 Byte,
+  `ground-tracks.mjs` 5032 Byte, `assets/road3-forest.jpg` 499339 Byte, `release-version.json`
+  47 Byte; `index.html` trägt `<meta name="ironpath-build" content="20261121-road1">`.
+  **Ehrliche Grenze:** die live URL `https://0815games.github.io/IronPath/` wurde aus diesem
+  Arbeitsraum **nicht** abgerufen (kein ausgehender Zugriff auf diesen Host); der Nachweis führt über
+  den Repo-Inhalt auf `main` und den Pages-Build-Status, nicht über eine HTTP-Antwort der Seite.
+- **Weiter offen:** echte Geräteabnahme durch den Betreiber (iPhone/iPad Safari) — Optik der Kurven,
+  Lesbarkeit der Straße, Bodenspuren, und Sichtprüfung des Stempels **BUILD 20261121-road1** in
+  Ladeszene und Einstellungen. Der gemeldete Einfrier-Fehler bleibt durch diesen Stand weder
+  bestätigt noch widerlegt.
