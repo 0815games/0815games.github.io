@@ -165,16 +165,6 @@ und die Karten-Interaktivität verbessern.
   Die Gruppe soll farbig codiert sein und visuell klar sein.
 - Priorität: Mittel
 
-**4.2 Mini-Map während des Spiels**
-- Status: Geplant
-- Betroffene Dateien: `IronPath/game.js`, `IronPath/cartoon-art.mjs`
-- Beschreibung: Eine kleine Mini-Map in der Ecke des Bildschirms, die zeigt:
-  - wo die Turms sind
-  - wo die Enemies auftauchen werden (Vorschau)
-  - wo der Spieler ist
-  - welche Wellen schon abgeschlossen sind
-- Priorität: Niedrig
-
 **4.3 Post-Game Stats erweitern**
 - Status: Geplant
 - Betroffene Dateien: `IronPath/run-results.mjs`, `IronPath/report-promotion.mjs`
