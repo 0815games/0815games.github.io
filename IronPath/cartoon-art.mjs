@@ -978,6 +978,70 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   ctx.save();ctx.translate(bunkerPosition.x+fx,bunkerPosition.y+fy);bunker(ctx,state,onSpritesReady,approach);ctx.restore();
   drawTorches(ctx,torches,theme,storyTime,reducedMotion,onSpritesReady);
   if(!reducedMotion&&weatherEffects&&state.hp>0&&state.hp/Math.max(1,state.maxHp||100)<.35){const t=Number.isFinite(storyTime)?storyTime:0;ctx.save();ctx.globalAlpha=.28;for(let i=0;i<3;i++){const phase=((t*.3+i/3)%1+1)%1;oval(ctx,bunkerPosition.x+20+Math.sin(t+i)*3,bunkerPosition.y-18-phase*25,3+phase*5,2+phase*3,'#465447',null);}ctx.restore();}
+  // Spawn-Point-Visualisierer am Eingang der Karte
+  // Zeigt einen prominenten Marker am ersten Punkt des Weges mit
+  // Informationen über die aktuelle/nächste Welle
+  if(!state.ended&&!reducedMotion){
+    for(const road of paths){
+      const spawn=road[0];
+      // Großer roter Warn-Kreis am Spawn-Punkt
+      const pulse=Math.sin(performance.now()/500)*.15+.85;
+      ctx.save();
+      // Äußerer glow
+      ctx.globalAlpha=pulse*.4;
+      ctx.beginPath();ctx.arc(spawn.x,spawn.y,32,0,Math.PI*2);
+      ctx.fillStyle='#ff4444';ctx.fill();
+      ctx.restore();
+      // Innener Kreis
+      ctx.save();
+      ctx.globalAlpha=pulse;
+      ctx.beginPath();ctx.arc(spawn.x,spawn.y,18,0,Math.PI*2);
+      ctx.fillStyle='#cc0000';ctx.fill();
+      ctx.strokeStyle='#ff6666';ctx.lineWidth=3;ctx.stroke();
+      ctx.restore();
+      // Warn-Symbol (Dreieck) in der Mitte
+      ctx.save();
+      ctx.globalAlpha=pulse;
+      ctx.fillStyle='#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(spawn.x,spawn.y-10);
+      ctx.lineTo(spawn.x+9,spawn.y+8);
+      ctx.lineTo(spawn.x-9,spawn.y+8);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      // Beschriftung "SPAWN" darunter
+      ctx.save();
+      ctx.fillStyle='rgba(0,0,0,.7)';
+      const textW=80,textH=20;
+      let tx=spawn.x-textW/2,ty=spawn.y+22;
+      if(tx<8)tx=8;if(tx+textW>width-8)tx=width-textW-8;
+      ctx.fillRect(tx,ty,textW,textH);
+      ctx.strokeStyle='#ff6666';ctx.lineWidth=1.5;
+      ctx.strokeRect(tx,ty,textW,textH);
+      ctx.fillStyle='#ffffff';
+      ctx.font='bold 11px sans-serif';
+      ctx.textAlign='center';
+      ctx.fillText(tr('SPAWN-PUNKT'),spawn.x,ty+14);
+      ctx.restore();
+      // Wave-Info daneben
+      if(state.wave>0){
+        ctx.save();
+        ctx.fillStyle='rgba(0,0,0,.6)';
+        const infoW=120,infoH=18;
+        let ix=spawn.x-infoW/2,iy=ty+infoH+4;
+        if(ix<8)ix=8;if(ix+infoW>width-8)ix=width-infoW-8;
+        ctx.fillRect(ix,iy,infoW,infoH);
+        ctx.strokeStyle='#ffaa00';ctx.lineWidth=1;
+        ctx.strokeRect(ix,iy,infoW,infoH);
+        ctx.fillStyle='#ffcc00';
+        ctx.font='bold 10px sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText(tr('WELLE {wave} · {count} FEINDLICHE',{wave:state.wave,count:state.enemies?.length||0}),spawn.x,iy+13);
+        ctx.restore();
+      }
+    }
+  }
   // Enemy entries live where the roads actually cross the border - any of
   // the four edges - instead of two fixed labels on the left rim.
   ctx.font='bold 12px Georgia';
