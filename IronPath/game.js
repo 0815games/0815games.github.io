@@ -1246,6 +1246,22 @@ function renderResults(target){
     return radius;
   }
   canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();return selectBattlePoint((e.clientX-rect.left)*logicalWidth/rect.width,(e.clientY-rect.top)*logicalHeight/rect.height);});
+  let mouseX=0,mouseY=0,hoveredPadIndex=null;
+  canvas.addEventListener('mousemove',e=>{
+    const rect=canvas.getBoundingClientRect();
+    mouseX=(e.clientX-rect.left)*logicalWidth/rect.width;
+    mouseY=(e.clientY-rect.top)*logicalHeight/rect.height;
+    // Prüfe, ob die Maus über einem Pad ist
+    const map=getMap(state.mapId);
+    hoveredPadIndex=null;
+    if(map&&!state.ended){
+      for(let i=0;i<map.pads.length;i++){
+        const p=map.pads[i];
+        if(Math.hypot(mouseX-p.x,mouseY-p.y)<25){hoveredPadIndex=i;break;}
+      }
+    }
+  });
+  canvas.addEventListener('mouseleave',()=>{hoveredPadIndex=null;});
   let uiElapsed=0;
   // Bumped when a sprite PNG finishes loading. It is part of the terrain cache key
   // (`artVersion`), because the ground layer bakes its own "art or fallback" decision
@@ -1347,6 +1363,8 @@ function renderResults(target){
 
     if(activeStory&&!coop&&!state.ended&&activeStory.mission.stages[activeStory.stage]?.type==='escort'){const hero=visual.players.local;if(hero){ctx.save();for(const offset of [-14,14]){ctx.beginPath();ctx.arc(hero.x+offset,hero.y+25,7,0,Math.PI*2);ctx.fillStyle='#bce6f1';ctx.fill();ctx.strokeStyle='#263c35';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}}
 
+    // Wave-Vorschau beim Hovern über ein Pad
+    if(hoveredPadIndex!==null&&!state.ended&&!coop){const p=pads[hoveredPadIndex];ctx.save();ctx.fillStyle='rgba(20,30,25,.85)';ctx.strokeStyle='#d4eee0';ctx.lineWidth=2;const labelW=130,labelH=36;let labelX=p.x-labelW/2,labelY=p.y-labelH-8;if(labelY<8)labelY=p.y+8;if(labelX<8)labelX=8;if(labelX+labelW>logicalWidth-8)labelX=logicalWidth-labelW-8;ctx.fillRect(labelX,labelY,labelW,labelH);ctx.strokeRect(labelX,labelY,labelW,labelH);ctx.fillStyle='#f1e7c4';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(tr('WELLE {wave}',{wave:state.wave}),p.x,labelY+14);ctx.font='10px sans-serif';ctx.fillStyle='#b8d6c8';const nextWave=state.wave+1;const formation=waveFormation(nextWave,state.campaignContract?.bossEvery);ctx.fillText(tr('NÄCHSTE: {count} ENEMIES',{count:formation.length}),p.x,labelY+28);ctx.textAlign='start';ctx.restore();}
     // Subtle corner brackets keep the selected pad visible over any terrain.
     const markerPad=menuPad??state.selectedPad;
     if(markerPad!==null&&!state.ended){const p=pads[markerPad];if(p){
