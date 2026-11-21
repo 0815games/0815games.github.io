@@ -418,7 +418,7 @@ function bunker(ctx,state,notify,approach=0){
   line(ctx,[[p1.x,p1.y-17],[p2.x,p2.y-17]],'#6b563c',4);
   ctx.fillStyle='#344231';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText('BUNKER',0,-44);ctx.textAlign='start';
 }
-function pad(ctx,p,tower,selected,types,notify){
+function pad(ctx,p,tower,selected,types,notify,state,reducedMotion){
   const x=p.x,y=p.y;
   // Animation-Status: prüft, ob der Turm gerade schießt und berechnet
   // Rotation, Atem-Skalierung und Leucht-Effekt
@@ -512,7 +512,7 @@ function pad(ctx,p,tower,selected,types,notify){
       ctx.drawImage(artwork,x-w/2,y+11-h,w,h);
     }
   }
-  else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
+  else drawTowerVectorFallback(ctx,x,y,tower,types,towerRotation,towerBreath,isShooting,muzzleFlash);
   if(tower.classPath&&tower.classTier>=1){
     const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
     const mx=x-18,my=y-13;
@@ -1132,7 +1132,7 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
   }
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];const range=getTowerRange(selected);ctx.save();ctx.fillStyle='rgba(139,190,173,.14)';ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.fill();if(!reducedMotion){const pulse=Math.sin(performance.now()/420)*.12+.88;ctx.globalAlpha=pulse;}ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
-  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
+  pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady,state,reducedMotion));
   // The soldier is drawn from the first frame, not from wave one. He used to appear
   // only while `state.wave>0`, and since the movement order itself was accepted
   // before the first deploy (the simulation walks him there), the hero moved
@@ -1192,6 +1192,135 @@ function burst(ctx,x,y,r,fill){
 }
 // The gold field star - the emblem's heart - as an FX flash shape.
 function star(ctx,x,y,r){ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,d=i%2?r*.45:r;const px=x+Math.cos(a)*d,py=y+Math.sin(a)*d;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();}
+function drawTowerVectorFallback(ctx,x,y,tower,types,towerRotation,towerBreath,isShooting,muzzleFlash){
+  // Vector-basierter Turm-Fallback: zeichnet Turm-Struktur ohne Sprites
+  const type=tower.type;
+  // tower.type ist eine Zahl (0=MG, 1=Kanone, 2=Flak, 3=Sniper)
+  // Die Farben sind nach Typ-Name organisiert - Mapping erforderlich
+  const typeNames=['mg','cannon','flak','sniper'];
+  const typeName=typeNames[type]||'mg';
+  const colors={
+    mg:['#d9d884','#1d3028','#4a5a48'],
+    cannon:['#e49b67','#1d3028','#6b3a2a'],
+    flak:['#8cc0a6','#1d3028','#3a5a4a'],
+    sniper:['#a9a4d4','#1d3028','#5a5a7a']
+  }[typeName]||['#d9d884','#1d3028','#4a5a48'];
+  const baseColor=colors[0],inkColor=colors[1],detailColor=colors[2];
+  ctx.save();
+  // Turm-Basis (Plattform)
+  ctx.fillStyle=baseColor;
+  ctx.strokeStyle=inkColor;
+  ctx.lineWidth=2;
+  // Plattform
+  ctx.beginPath();
+  ctx.ellipse(x,y+15,28,10,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+  // Turm-Körper
+  ctx.fillStyle=detailColor;
+  ctx.strokeStyle=inkColor;
+  ctx.lineWidth=2;
+  // Unterschiedliche Turm-Formen je nach Typ
+  if(type===0){ // MG
+    ctx.beginPath();
+    ctx.moveTo(x-18,y+15);
+    ctx.lineTo(x-14,y-5);
+    ctx.lineTo(x+14,y-5);
+    ctx.lineTo(x+18,y+15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // Doppel-MG
+    ctx.fillStyle=inkColor;
+    ctx.fillRect(x-10,y-8,4,6);
+    ctx.fillRect(x+6,y-8,4,6);
+  }else if(type===1){ // Cannon
+    ctx.beginPath();
+    ctx.arc(x,y+5,15,0,Math.PI*2);
+    ctx.fill();
+    ctx.stroke();
+    // Kanne
+    ctx.fillStyle=inkColor;
+    ctx.fillRect(x-3,y-15,6,10);
+    ctx.beginPath();
+    ctx.arc(x,y-15,4,0,Math.PI*2);
+    ctx.fill();
+  }else if(type===2){ // Flak
+    ctx.beginPath();
+    ctx.moveTo(x-20,y+15);
+    ctx.lineTo(x-15,y-10);
+    ctx.lineTo(x+15,y-10);
+    ctx.lineTo(x+20,y+15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // Plattform oben
+    ctx.fillStyle=baseColor;
+    ctx.fillRect(x-18,y-12,36,4);
+    // Kanne
+    ctx.fillStyle=inkColor;
+    ctx.fillRect(x-2,y-18,4,8);
+  }else { // Sniper
+    ctx.beginPath();
+    ctx.moveTo(x-15,y+15);
+    ctx.lineTo(x-12,y-8);
+    ctx.lineTo(x+12,y-8);
+    ctx.lineTo(x+15,y+15);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    // Turm-Dach
+    ctx.fillStyle=baseColor;
+    ctx.beginPath();
+    ctx.moveTo(x-16,y-8);
+    ctx.lineTo(x,y-18);
+    ctx.lineTo(x+16,y-8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+  // Rotation und Atem-Skalierung anwenden
+  if(isShooting){
+    ctx.save();
+    ctx.translate(x,y+11);
+    ctx.rotate(towerRotation);
+    ctx.scale(towerBreath,towerBreath);
+    // Kanne zeichnen
+    if(type===0){
+      ctx.fillStyle=inkColor;
+      ctx.fillRect(-3,-22,6,12);
+      ctx.beginPath();
+      ctx.arc(0,-22,3,0,Math.PI*2);
+      ctx.fill();
+    }else if(type===1){
+      ctx.fillStyle=inkColor;
+      ctx.fillRect(-3,-28,6,14);
+      ctx.beginPath();
+      ctx.arc(0,-28,4,0,Math.PI*2);
+      ctx.fill();
+    }else if(type===2){
+      ctx.fillStyle=inkColor;
+      ctx.fillRect(-2,-25,4,10);
+    }else{
+      ctx.fillStyle=inkColor;
+      ctx.fillRect(-2,-22,4,10);
+    }
+    ctx.restore();
+    // Leucht-Effekt beim Schuss
+    if(muzzleFlash>0){
+      ctx.save();
+      ctx.globalAlpha=muzzleFlash*.8;
+      ctx.fillStyle='#ffffaa';
+      ctx.shadowColor='#ffffaa';
+      ctx.shadowBlur=20;
+      ctx.beginPath();
+      ctx.arc(x,y+6,8+muzzleFlash*12,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
 function drawShot(ctx,s,age,reduced,renderScale=1){
   // A short streak that RUNS from the barrel to the target, a flash where it
   // leaves, a mark where it lands. The whole line at once is what buried the
