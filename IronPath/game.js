@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261121-rollback1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261121-road1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261121-rollback1';
+import {localizeGameMessage} from './game-localization.mjs?v=20261121-road1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261121-rollback1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261121-road1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -14,40 +14,41 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261121-rollback1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261121-rollback1';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261121-rollback1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261121-rollback1';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261121-rollback1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261121-road1';
+import {projectFourGameView} from './four-game-view.mjs?v=20261121-road1';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261121-road1';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261121-road1';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261121-road1';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261121-rollback1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261121-rollback1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261121-road1';
+import {createGroundTracks} from './ground-tracks.mjs?v=20261121-road1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261121-road1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle-sound.mjs?v=20261121-rollback1';
+import {createBattleSound} from './battle-sound.mjs?v=20261121-road1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261121-rollback1';
-import {createCombatEffects} from './combat-fx.mjs?v=20261121-rollback1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261121-rollback1';
-import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261121-rollback1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261121-rollback1';
-import {towerClassIcon} from './development-ui.mjs?v=20261121-rollback1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261121-road1';
+import {createCombatEffects} from './combat-fx.mjs?v=20261121-road1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261121-road1';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261121-road1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261121-road1';
+import {towerClassIcon} from './development-ui.mjs?v=20261121-road1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261121-rollback1';
-import { createTutorial } from './tutorial.mjs?v=20261121-rollback1';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261121-rollback1';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261121-rollback1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261121-rollback1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261121-rollback1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261121-rollback1';
+import { createCoopInput } from './coop-input.mjs?v=20261121-road1';
+import { createTutorial } from './tutorial.mjs?v=20261121-road1';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261121-road1';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261121-road1';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261121-road1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261121-road1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261121-road1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261121-rollback1';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261121-road1';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261121-rollback1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261121-road1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -123,7 +124,12 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     document.addEventListener('pointerdown',onAudioGestureUnlock,true);
     document.addEventListener('keydown',onAudioGestureUnlock,true);
   }catch{/* minimal DOM */}
-  const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion();let lastSnapshotAt=0;
+  // Two independent track recorders: one for the local battlefield, one for the
+  // opponent's. Sharing a single recorder (as the first version of this did)
+  // makes each view delete the other's player trackers every frame, because a
+  // tracker for a player the other state does not contain is dropped as stale -
+  // so in versus play no footprint was ever laid at all.
+  const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion(),groundTracks=createGroundTracks(),rivalGroundTracks=createGroundTracks();let lastSnapshotAt=0;
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
     {name:'Cannon',cost:TOWER_COSTS[1],range:145,damage:34,interval:1.4,color:'#e49b67',description:'Heavy damage · strong vs tanks; weak vs aircraft'},
@@ -572,7 +578,7 @@ function renderResults(target){
     // Only replace the old run after the version check and confirmation succeed.
     soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();groundTracks.reset();rivalGroundTracks.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -1335,7 +1341,10 @@ function renderResults(target){
     // over a live battlefield, and adding it here is what made the first run
     // unplayable on a phone.
     const paused=!!coop&&!coopReady||!coop&&(visualPrefs.autoPause&&focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||$('settingsDialog')?.open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});
-    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
+    // Footprints and tread marks: sampled from the same interpolated state the
+    // painter draws, in seconds, and paused together with the field.
+    const tracks=groundTracks.sample(visual,performance.now()/1000,{paused,theme});
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,groundTracks:tracks,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
 
     if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);
       // The label plate never leaves the canvas: field markers can sit near
@@ -1375,7 +1384,7 @@ function renderResults(target){
         ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?3.5:3;ctx.shadowColor='#f2d891';
         ctx.shadowBlur=reducedMotion?14:10+4*breath;ctx.globalAlpha=reducedMotion?.82:.58+.2*breath;ctx.stroke();ctx.restore();
       }
-      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
+      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;const rivalTracks=rivalGroundTracks.sample(rival,performance.now()/1000,{paused:!coopReady||state.ended,theme});drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),groundTracks:rivalTracks,renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
     };
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();
   }
@@ -1441,7 +1450,7 @@ function renderResults(target){
     // The host's snapshot carries its seed to the guest; recovery retains the
     // checkpoint's original map, including a previously started classic duel.
     soloDeployed=false;activeMission=null;activeStory=null;activeTraining=false;trainingDone=false;trainingBonusPaid=false;selectedMap=(mode==='coop'||mode==='versus')?nextMapId(selectedMap,globalThis.crypto,2):nextMapId(selectedMap);hasCoopSnapshot=false;currentPartyEnd=null;partyFinalizationEnabled=!!onFinalSnapshot;report=newReport(reportId||'test');report.accountId=account.getUserId();report.partyFinalizationRequired=partyFinalizationEnabled;coopReports.set(report.id,report);
-    closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;let client;
+    closeMenu();keys.clear();lastDirection='0,0';seenCoopWaves=0;seenCoopCaches=0;coopHasBaseline=false;combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();groundTracks.reset();rivalGroundTracks.reset();lastSnapshotAt=0;let client;
     try{
       client=factory({onState:value=>{if(coop!==client)return;$('coopStatus').textContent=value.toUpperCase();onUpdate(value);if(value==='error'||value==='duplicate')$('onlineConnecting').textContent=tr(value==='error'?'Multiplayer connection failed. Open Party to leave or retry.':'This party is already open in another tab. Close it and retry.');if(value==='error')notice('Multiplayer connection failed. If the host reloaded, use Resume as Host in a recovery trial; otherwise create a new party.');if(value==='duplicate')notice('This party is already open in another tab. Close it before joining here.');},onStatus:ready=>{if(coop!==client)return;coopReady=ready;coopInput.setEnabled(ready);if(!ready){promptEpoch++;clearRequestFeedback();closeMenu();state.selectedPad=null;if($('towerDetails').open)$('towerDetails').close();combatFx.clear();sound.resetCombat?.();bossSignal=null;coopHasBaseline=false;needStop=true;keys.clear();lastDirection='0,0';if(!state.ended)notice(state.mode==='versus'?'1 vs 1 paused. Waiting for both players to reconnect.':state.mode==='two-vs-two'?'2 vs 2 paused. Waiting for all players to reconnect.':'Co-op connection interrupted. Waiting to reconnect.');}else if(needStop){needStop=false;sound.play('reconnect');coopInput.direction({type:'direction',x:0,y:0});}if(ready)reconcileOrphanReservations();updateUI();},onSnapshot:snapshot=>{if(coop!==client)return;rosterGeneration=Number.isSafeInteger(snapshot?.rosterGeneration)?snapshot.rosterGeneration:0;focusGeneration=Number.isSafeInteger(snapshot?.focusGeneration)?snapshot.focusGeneration:0;if(snapshot?.match?.mode==='four-coop'||snapshot?.match?.mode==='two-vs-two'){try{snapshot=projectFourGameView(snapshot,me());}catch{notice('Invalid four-player match snapshot.');return;}}currentPartyEnd=snapshot?.partyEnd||null;const wasHostPaused=hostFocusPaused;hostFocusPaused=snapshot.hostPaused===true;if(hostFocusPaused&&!wasHostPaused)notice('Match paused: the host left the game window.');else if(wasHostPaused&&!hostFocusPaused)notice(coopReady?'Host returned. The match has resumed.':'Host returned. Waiting for players to reconnect.');hasCoopSnapshot=true;$('gameWorkspace').dataset.onlineReady='true';const wasEnded=state.ended,oldWave=state.wave,wasRunning=state.running,oldSpeedVote=state.speedRequest,oldPendingWave=state.pendingWave||0,oldWaveRequestId=state.waveRequestId||0,wasIceBroken=!!state.iceBroken,wasRubbleCleared=!!state.rubbleCleared,oldZonesBroken=state.zoneBroken||{},oldZonesCleared=state.zoneCleared||{},oldTowers=state.towers||[],oldPlayers=state.players||{},oldMapId=state.mapId,oldBoss=state.enemies.find(e=>e.boss&&e.hp>0),oldImpact=state.bunkerImpact?.seq||0,hadSnapshot=coopReady&&coopHasBaseline,selectedPad=state.selectedPad;if(coopReady){const snapMap=getMap(snapshot.match.mapId);for(const cue of combatFx.observe(snapshot.match,snapMap.pads)){if(cue==='ability'){let caster=null;for(const [pid,p] of Object.entries(snapshot.match.players||{})){if((p?.cooldown||0)>(oldPlayers[pid]?.cooldown||0)+1){caster=p;break;}}sound.play('ability',{classId:caster?.skills?.active||'assault',variant:caster?.skills?.variant||0,x:caster?.x,mapWidth:snapMap.width});}else if(cue==='build'||cue==='upgrade'||cue==='classUpgrade'){const nextT=(snapshot.match.towers||[]).find(t=>{const prevT=oldTowers.find(o=>o.id===t.id&&o.pad===t.pad);return cue==='build'?!prevT:cue==='classUpgrade'?(prevT&&(t.classTier||0)>(prevT.classTier||0)):(prevT&&t.level>prevT.level);});const padPt=nextT?snapMap.pads[nextT.pad]:null,prevT=nextT?oldTowers.find(o=>o.id===nextT.id&&o.pad===nextT.pad):null;const resolvedCue=cue==='upgrade'&&prevT?(prevT.level===2?'branch':nextT.level>prevT.level&&towerDisplay(nextT.level).level===1&&towerDisplay(nextT.level).prestige>0?'prestige':'upgrade'):cue;sound.play(resolvedCue,{towerType:nextT?.type??0,classId:nextT?.classPath,x:padPt?.x,mapWidth:snapMap.width});}else sound.play(cue,{x:cue==='impact'?(snapMap.bunker?.x??900):null,mapWidth:snapMap.width});}if(hadSnapshot&&oldMapId===snapshot.match.mapId){for(const prevT of oldTowers)if(!(snapshot.match.towers||[]).some(t=>t.id===prevT.id&&t.pad===prevT.pad))sound.play('sell',{x:snapMap.pads[prevT.pad]?.x,mapWidth:snapMap.width});for(const zId of Object.keys(snapshot.match.zoneBroken||{}))if(snapshot.match.zoneBroken[zId]&&!oldZonesBroken[zId])sound.play('ice');for(const zId of Object.keys(snapshot.match.zoneCleared||{}))if(snapshot.match.zoneCleared[zId]&&!oldZonesCleared[zId])sound.play('rubble');}if(!snapshot.match.ended)sound.observeCombat?.(snapshot.match,{pads:snapMap.pads,mapWidth:snapMap.width,baselineOnly:!hadSnapshot});}else{combatFx.clear();sound.resetCombat?.();}lastSnapshotAt=performance.now();state={...snapshot.match,selectedPad,speed:snapshot.speedControl?.speed===2?2:1,speedRequest:snapshot.speedControl?.request||null,speedRequestId:Number.isSafeInteger(snapshot.speedControl?.lastRequestId)?snapshot.speedControl.lastRequestId:null};if(coopReady)coopHasBaseline=true;if(hadSnapshot&&state.running&&state.wave!==oldWave)sound.play(state.wave%5===0?'boss':'wave');
       if(hadSnapshot&&(state.bunkerImpact?.seq||0)>oldImpact){const hit=state.bunkerImpact;warn(()=>tr('{enemy} hit the bunker! −{damage} health.',{enemy:tr(ENEMY_TYPES[hit.kind]?.label||'Enemy'),damage:Math.round(hit.damage*10)/10}));}
