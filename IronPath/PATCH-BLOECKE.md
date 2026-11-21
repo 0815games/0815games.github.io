@@ -1102,6 +1102,66 @@ Dieser Block ist **kein eigener Patch** und hat keine Reihenfolge. Er sammelt,
 was erst sinnvoll wird, wenn die Blöcke 1–7 stehen – und alles, was beim
 Arbeiten auffiel, aber nicht in einen laufenden Block gehört.
 
+### Zurückgenommen und neu zu landen: visuelle Arbeiten aus `#335`–`#339`
+
+Am 2026-11-21 wurde `IronPath/` auf den Stand von PR `#334` (`494ad8bb`)
+zurückgebaut, weil das Gefechtsfeld auf iPhone/iPad Safari direkt ab Spielstart
+einfriert (Nutzermeldung: erster Turmbau oder Wellenstart) und die
+Regressionssuite auf `main` mit **25 von 1198** Tests rot stand, während
+`game-regressions` in allen fünf PRs rot war und trotzdem gemergt wurde. Details
+und Belege: `PATCH-LOG.md`, `IPL-0090`. **Die folgenden Arbeiten waren gebaut und
+sind inhaltlich weiterhin gewollt** – sie stehen hier, damit nichts verloren
+geht. Sie wurden zurückgenommen, nicht abgelehnt. Jede muss einzeln, mit grüner
+Suite und eigener Cache-Welle neu landen.
+
+- [ ] **Bodenspuren und Straßen-/Schienen-Optik (PR `#335`, `ground-tracks.mjs`,
+  6 neue `road3-*.jpg`, 2,3 MB).** Beim Neu-Landen zwingend `ground-tracks.mjs`
+  in die **13 Ersetzungslisten** der Test-Harnesses aufnehmen
+  (`ability-hud-ui`, `party-end-ui`, `tower-shimmer`, `map-name-title`,
+  `solo-wave-receipt-ui`, `campaign-ui`, `coop-ui`, `endless-launcher`,
+  `four-viewport-integration`, `party-end-force-close`, `release-game-teardown`,
+  `report-rank`, `solo-smoke`). Ohne diesen Eintrag löst der Spezifizierer in
+  Node nicht auf (`ERR_UNSUPPORTED_RESOLVE_REQUEST`, 22 rote Tests), und es prüft
+  **kein** Test mehr, ob `game.js` als Ganzes lädt. Gemessene Kosten: erstes
+  Frame mit Vektor-Fallback 970 → 1911 Canvas-Operationen (+97 %), im Kampf +12
+  bis +16 %.
+- [ ] **Pad-Selektion: dickere Ringe und Puls (PR `#336`).** Beim Neu-Landen die
+  Literale `WELLE {wave}` und `NÄCHSTE: {count} ENEMIES` deutsch hinterlegen,
+  sonst bleibt `translation-coverage` rot.
+- [ ] **Spawn-Punkt-Marker am Karteneingang (PR `#337`).** Beim Neu-Landen
+  `SPAWN-PUNKT` und `WELLE {wave} · {count} FEINDLICHE` deutsch hinterlegen.
+- [ ] **Boss-Ankündigung (PR `#338`) – nur mit Import.** `bossPhaseLabel` muss
+  aus `boss-mechanics.mjs` (Export Zeile 41) importiert werden; in der
+  zurückgenommenen Fassung stand der Aufruf in `cartoon-art.mjs:1101` ohne Import
+  und **vor** der Auswertung, was mit echtem Boss (`makeEnemy(bossForWave(5).kind,
+  5)`) zu `ReferenceError` führte und über `frame()` ohne Fang die
+  `requestAnimationFrame`-Kette tötete. Zusätzlich empfohlen: Fang um `draw()` in
+  `IronPath/game.js:1501–1506`, damit ein Zeichenfehler das Feld nicht mehr
+  einfriert, und ein Test mit echtem Boss statt Stub.
+- [ ] **Mündungsblitz erst nach Reparatur der Auslösebedingung neu einführen.**
+  In der zurückgenommenen Fassung war er toter Code und latent absturzgefährdet:
+  `pad()` suchte `s.tx===x&&s.ty===y` (Zielposition des Gegners) statt der
+  Pad-Position `s.x`/`s.y`, und `performance.now()-(shot.time||0)` mischte
+  Seiten-Millisekunden mit einem Schussobjekt ohne `time` – bei einem Treffer
+  wäre `muzzleFlash` groß negativ geworden und `ctx.arc()` mit negativem Radius
+  hätte `IndexSizeError` geworfen.
+- [ ] **Vektor-Fallback-Farben (PR `#339`).** Beim Neu-Landen die
+  `tower-glow`-Literalprüfung mitziehen: der Test sucht
+  `fallbackMarker(ctx,x,y-6,['MG','C','AA','S']`, das `#339` in
+  `drawTowerVectorFallback(...)` umbenannt hat. Der Code war korrekt, nur der
+  Test war veraltet.
+- [ ] **`game-regressions` zum Pflicht-Check machen.** Der Job war in `#335`,
+  `#336`, `#337`, `#338` und `#339` rot; alle fünf wurden gemergt. `#334` war der
+  letzte grüne Lauf (Run `44761316601`). Ohne diese Lücke wäre der Rückbau nicht
+  nötig geworden. Der Schutzstatus von `main` ist aus dem Arbeitsraum nicht
+  lesbar (`branches/main/protection` → `403`), die Umstellung muss der Betreiber
+  in den Repository-Einstellungen vornehmen.
+- [x] **`IronPath/PATCH-LOG.md` wiederhergestellt (3711 statt 257 Zeilen).**
+  `#336` hatte das Log ersetzt statt fortgeschrieben und die Zählung auf
+  `IPL-0001` zurückgesetzt; `IPL-0001`…`IPL-0089` waren damit verloren und
+  `#337`–`#339` nie protokolliert. Mit dem Rückbau ist die Historie zurück, die
+  Zählung läuft als `IPL-0090` korrekt weiter.
+
 ### Prüfstand: gelegentlich rote Browser-Tests
 
 - [ ] **`test:party-recovery-browser` einmal rot, zweimal grün mit demselben

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-endlessview1';
+import {getLanguage} from './language.mjs?v=20261121-rollback1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
