@@ -2,7 +2,7 @@
 // the SAME account transaction that commits the completed-wave receipt. This function does not verify that a
 // client actually finished a wave, and must not be connected until migration,
 // rules and mixed-client protection have been reviewed.
-import {WAVE_COUNT,MAX_WAVE_MASK,bossForWave} from './combat.mjs?v=20261120-endlessview1';
+import {WAVE_COUNT,MAX_WAVE_MASK,bossForWave} from './combat.mjs?v=20261121-rollback1';
 import {readArmory} from './armory.mjs?v=20261112-tagless1';
 import {validLegacy,validateWorkshop} from './workshop-model.mjs?v=20261112-tagless1';
 

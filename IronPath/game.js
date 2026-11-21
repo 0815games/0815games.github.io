@@ -1,11 +1,11 @@
-import {createSoloDeployment} from './solo-deployment.mjs?v=20261120-endlessview1';
+import {createSoloDeployment} from './solo-deployment.mjs?v=20261121-rollback1';
 import {newRunReceiptId} from './workshop-run-receipt.mjs?v=20261031-finale1';
 import {canvasResolution} from './canvas-resolution.mjs?v=20261105-sharp1';
 import {createMapZoom} from './map-zoom.mjs?v=20261105-sharp1';
 import {featureEnabled} from './features.mjs?v=20261112-endless1';
-import {localizeGameMessage} from './game-localization.mjs?v=20261120-endlessview1';
+import {localizeGameMessage} from './game-localization.mjs?v=20261121-rollback1';
 import {translateStoryDetail} from './story-localization.mjs?v=20261110-storyde1';
-import {translateText as tr,getLanguage} from './language.mjs?v=20261120-endlessview1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261121-rollback1';
 import {createSoldierMotion} from './soldier-motion.mjs?v=20261104-movement1';
 import {bindDialogBackdrop} from './dialog-dismiss.mjs?v=20261104-dismiss1';
 import {createFocusPause} from './focus-pause.mjs?v=20261104-hostpause1';
@@ -14,41 +14,40 @@ import {CAMPAIGN,campaignProgress,campaignMission,campaignAvailable,campaignDiff
 import {RELICS,earnedRelicIds} from './relics.mjs?v=20261112-tagless1';
 import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from './story-mission.mjs?v=20261111-events1';
 import {STAGE_CAPTIONS,EVENT_TEMPLATES} from './story-events.mjs?v=20261206-acttwo1';
-import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261120-endlessview1';
-import {projectFourGameView} from './four-game-view.mjs?v=20261120-endlessview1';
-import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261120-endlessview1';
-import {drawInBattleViewport} from './battle-viewport.mjs?v=20261120-endlessview1';
-import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261120-endlessview1';
+import {TRAINING_MISSION_ID,TRAINING_MAP,TRAINING_WAVES,TRAINING_BOSS_EVERY,FIRST_RUN_DEFEAT_XP,trainingContract,trainingStatus,trainingWon,trainingXP,trainingBonusXP,trainingSeen,markTrainingSeen,forgetTrainingSeen,trainingWaveRadioCue} from './training-run.mjs?v=20261121-rollback1';
+import {projectFourGameView} from './four-game-view.mjs?v=20261121-rollback1';
+import {createBattleViewportController} from './battle-viewport-controller.mjs?v=20261121-rollback1';
+import {drawInBattleViewport} from './battle-viewport.mjs?v=20261121-rollback1';
+import {waveRewardSummary,nextSteps} from './run-results.mjs?v=20261121-rollback1';
 import {reportRank} from './report-promotion.mjs?v=20261117-rank1';
 // The rank mark is painted by the kit that owns ranks; the report only asks which one.
-import {renderRankInsignia} from './rank-insignia.mjs?v=20261120-endlessview1';
-import {projectCoopMotion} from './coop-motion.mjs?v=20261120-endlessview1';
+import {renderRankInsignia} from './rank-insignia.mjs?v=20261121-rollback1';
+import {projectCoopMotion} from './coop-motion.mjs?v=20261121-rollback1';
 import {bossPhaseLabel,bossTelegraph} from './boss-mechanics.mjs?v=20261031-finale1';
-import {createBattleSound} from './battle-sound.mjs?v=20261120-endlessview1';
-import {createGroundTracks} from './ground-tracks.mjs?v=20261120-endlessview1';
+import {createBattleSound} from './battle-sound.mjs?v=20261121-rollback1';
 import {RUN_PERKS,perkOffers} from './run-perks.mjs?v=20261102-terrain4';
 import {TERRAIN_BRIEFINGS,ZONE_BRIEFINGS,terrainFor} from './terrain.mjs?v=20261124-zones1';
-import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261120-endlessview1';
-import {createCombatEffects} from './combat-fx.mjs?v=20261120-endlessview1';
-import {drawCartoonBattle} from './cartoon-art.mjs?v=20261120-endlessview1';
-import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261120-endlessview1';
-import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261120-endlessview1';
-import {towerClassIcon} from './development-ui.mjs?v=20261120-endlessview1';
+import {getMap,createRandomMapId,sectorOf} from './maps.mjs?v=20261121-rollback1';
+import {createCombatEffects} from './combat-fx.mjs?v=20261121-rollback1';
+import {drawCartoonBattle} from './cartoon-art.mjs?v=20261121-rollback1';
+import {abilityName,SKILL_PATH_MAP} from './skills.mjs?v=20261121-rollback1';
+import {classUpgradeState,classPathConfig,classPathInvested} from './tower-class-paths.mjs?v=20261121-rollback1';
+import {towerClassIcon} from './development-ui.mjs?v=20261121-rollback1';
 import { COOP_SERVER_URL } from './coop-config.mjs?v=20261031-coopui1';
 import { createCoopClient } from './coop-client.mjs?v=20261031-coopui1';
-import { createCoopInput } from './coop-input.mjs?v=20261120-endlessview1';
-import { createTutorial } from './tutorial.mjs?v=20261120-endlessview1';
-import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261120-endlessview1';
-import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261120-endlessview1';
-import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261120-endlessview1';
-import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261120-endlessview1';
-import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261120-endlessview1';
+import { createCoopInput } from './coop-input.mjs?v=20261121-rollback1';
+import { createTutorial } from './tutorial.mjs?v=20261121-rollback1';
+import { createCoach, coachSeen, markCoachSeen } from './first-run-coach.mjs?v=20261121-rollback1';
+import { abilityHud, abilityHudSvg } from './ability-hud.mjs?v=20261121-rollback1';
+import { stepMatch, getTowerRange, STEP } from './simulation.mjs?v=20261121-rollback1';
+import { createPlayer, applyCommand, towerRefund, getSupplies, TOWER_COSTS, trainingBuildLocked } from './match.mjs?v=20261121-rollback1';
+import { ENEMY_TYPES, BOSSES,waveFormation,bossForWave,countFieldThreats } from './combat.mjs?v=20261121-rollback1';
 import { MAX_TOWER_LEVEL, upgradeCost, towerDisplay, characterProgress, towerUpgradeInvestment } from './progression.mjs?v=20261105-prestige1';
 import { createBattleXpHud } from './battle-xp-hud.mjs?v=20261117-hudxp1';
-import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261120-endlessview1';
+import { towerUpgradeCues } from './tower-upgrade-cue.mjs?v=20261121-rollback1';
 import { createFieldNotice } from './field-notice.mjs?v=20261117-fieldnotice1';
 import { createMapIntro } from './map-intro.mjs?v=20261117-mapintro1';
-import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261120-endlessview1';
+import { specializationRank, upgradeCostFor, branchUnlockLevel } from './tower-specialization.mjs?v=20261121-rollback1';
 export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=createCoopClient, confirmAction=async()=>false, leaveParty=null, onForceCloseParty=null, nextMapId=createRandomMapId, experimentalFourViewport=false,experimentalWorkshop=false,deferTutorial=false,reducedGraphics=false,initialSettings=null,onReturnToCommand=()=>{},onResumeBattle=()=>{},onTrainingComplete=null,onRunFinished=()=>{},promptCenter=null,generalRadio=null}={}) {
   // One-way release teardown; the guarded caller still has to replace the
   // whole document, because the rest of this UI is not a reusable SPA.
@@ -124,7 +123,7 @@ export function startGame(account, {coopUrl=COOP_SERVER_URL, clientFactory=creat
     document.addEventListener('pointerdown',onAudioGestureUnlock,true);
     document.addEventListener('keydown',onAudioGestureUnlock,true);
   }catch{/* minimal DOM */}
-  const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion(),groundTracks=createGroundTracks();let lastSnapshotAt=0;
+  const combatFx=createCombatEffects({reducedMotion}),soldierMotion=createSoldierMotion(),rivalMotion=createSoldierMotion();let lastSnapshotAt=0;
   const types = [
     {name:'MG Nest',cost:TOWER_COSTS[0],range:125,damage:10,interval:.55,color:'#d9d884',description:'Fast fire · strong vs infantry and scouts; weak vs armor and aircraft'},
     {name:'Cannon',cost:TOWER_COSTS[1],range:145,damage:34,interval:1.4,color:'#e49b67',description:'Heavy damage · strong vs tanks; weak vs aircraft'},
@@ -573,7 +572,7 @@ function renderResults(target){
     // Only replace the old run after the version check and confirmation succeed.
     soloDeployed=true;activeTraining=false;activeMission=mission;selectedMap=mission?mission.mapId:drawFreeMapId(selectedMap);missionBoardOpen=false;reset();notice(()=>tr(mission?mission.stages[0].dialogue:'Free play ready.'));if(mission)showCinematic(mission,'intro');return true;
   };
-  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();groundTracks.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
+  function reset(freshMap=false,{preserveResults=false}={}){fieldNotice.clear();wasAbilityReady=false;abilityReadyNotified=false;mapIntro.clear();announcedMap=null;closeCinematic(false);radioTime=0;$('storyRadio').hidden=true;hideDecisionPanel();$('soloBonus').hidden=true;if(!preserveResults&&$('runResults').open)$('runResults').close();report=newReport();report.soloMission=activeMission;report.training=activeTraining;report.accountId=account.getUserId();report.receiptId=activeMission||!experimentalWorkshop?null:newRunReceiptId();activeStory=activeMission?createStoryMission(activeMission):null;setLogicalHeight(540);if(freshMap&&!activeMission)selectedMap=drawFreeMapId(selectedMap);combatFx.clear();sound.resetCombat?.();soldierMotion.reset();rivalMotion.reset();lastSnapshotAt=0;bossSignal=null;const deploymentProfile=account.getProfile();state=createSoloDeployment({player:createPlayer('local',{...deploymentProfile,level:account.getLevel()}),mapId:selectedMap,profile:deploymentProfile,workshopEnabled:experimentalWorkshop,campaign:activeTraining?trainingContract():activeMission&&{id:activeMission.id,threat:activeMission.threat,spawn:{x:activeMission.stages[0]?.x,y:activeMission.stages[0]?.y}}});Object.assign(state,{speed:1,selectedPad:null});accumulator=0;keys.clear();closeMenu();updateUI();}
   const voteCommands=new Set(['startWave','approveWave','declineWave','cancelWave','requestSpeed','approveSpeed','declineSpeed','cancelSpeed','slowSpeed']);
   function dispatch(command,done){
     if(!coop){done(applyCommand(state,'local',command));return;}
@@ -1246,22 +1245,6 @@ function renderResults(target){
     return radius;
   }
   canvas.addEventListener('click',e=>{if(battleViewport)return;const rect=canvas.getBoundingClientRect();return selectBattlePoint((e.clientX-rect.left)*logicalWidth/rect.width,(e.clientY-rect.top)*logicalHeight/rect.height);});
-  let mouseX=0,mouseY=0,hoveredPadIndex=null;
-  canvas.addEventListener('mousemove',e=>{
-    const rect=canvas.getBoundingClientRect();
-    mouseX=(e.clientX-rect.left)*logicalWidth/rect.width;
-    mouseY=(e.clientY-rect.top)*logicalHeight/rect.height;
-    // Prüfe, ob die Maus über einem Pad ist
-    const map=getMap(state.mapId);
-    hoveredPadIndex=null;
-    if(map&&!state.ended){
-      for(let i=0;i<map.pads.length;i++){
-        const p=map.pads[i];
-        if(Math.hypot(mouseX-p.x,mouseY-p.y)<25){hoveredPadIndex=i;break;}
-      }
-    }
-  });
-  canvas.addEventListener('mouseleave',()=>{hoveredPadIndex=null;});
   let uiElapsed=0;
   // Bumped when a sprite PNG finishes loading. It is part of the terrain cache key
   // (`artVersion`), because the ground layer bakes its own "art or fallback" decision
@@ -1351,8 +1334,8 @@ function renderResults(target){
     // The first-run coach is NOT part of this list, by design: its card is a hint
     // over a live battlefield, and adding it here is what made the first run
     // unplayable on a phone.
-    const paused=!!coop&&!coopReady||!coop&&(visualPrefs.autoPause&&focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||$('settingsDialog')?.open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});const tracks=groundTracks.sample(visual,performance.now()/1000,{paused,theme});
-    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId),groundTracks:tracks});
+    const paused=!!coop&&!coopReady||!coop&&(visualPrefs.autoPause&&focusPause.isSoloPaused()||commandMenuOpen||missionBoardOpen||!!cinematic||!menu.hidden||tutorial.isOpen()||$('gameConfirm').open||$('settingsDialog')?.open||!account.isReady())||state.ended;const poses=soldierMotion.sample(visual.players,performance.now()/1000,{reducedMotion,paused});
+    function drawOwn(){drawCartoonBattle(ctx,visual,{path,pads,theme,types,me:me(),getTowerRange,effects:visualPrefs.combatTracers?combatFx.active():[],reducedMotion,weatherEffects:visualPrefs.weatherEffects,combatTracers:visualPrefs.combatTracers,soldierPoses:poses,storyMission:!coop?activeMission:null,storyStage:!coop&&!state.ended?activeMission?.stages[activeStory?.stage]:null,renderScale:renderScale*(battleViewport?.getViewport().scale||1),storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,artVersion,onSpritesReady,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});
 
     if(activeStory&&!coop&&!state.ended){const objective=storyStatus(activeStory,state),point=objective.marker;if(point){ctx.save();ctx.beginPath();ctx.arc(point.x,point.y,36+(reducedMotion?0:2*Math.sin(performance.now()/400)),0,Math.PI*2);ctx.strokeStyle='#152118';ctx.lineWidth=8;ctx.stroke();ctx.strokeStyle='#b8d6c8';ctx.lineWidth=4;ctx.setLineDash([8,5]);ctx.lineDashOffset=reducedMotion?0:-performance.now()/120;ctx.stroke();ctx.setLineDash([]);
       // The label plate never leaves the canvas: field markers can sit near
@@ -1363,8 +1346,6 @@ function renderResults(target){
 
     if(activeStory&&!coop&&!state.ended&&activeStory.mission.stages[activeStory.stage]?.type==='escort'){const hero=visual.players.local;if(hero){ctx.save();for(const offset of [-14,14]){ctx.beginPath();ctx.arc(hero.x+offset,hero.y+25,7,0,Math.PI*2);ctx.fillStyle='#bce6f1';ctx.fill();ctx.strokeStyle='#263c35';ctx.lineWidth=2;ctx.stroke();}ctx.restore();}}
 
-    // Wave-Vorschau beim Hovern über ein Pad
-    if(hoveredPadIndex!==null&&!state.ended&&!coop){const p=pads[hoveredPadIndex];ctx.save();ctx.fillStyle='rgba(20,30,25,.85)';ctx.strokeStyle='#d4eee0';ctx.lineWidth=2;const labelW=130,labelH=36;let labelX=p.x-labelW/2,labelY=p.y-labelH-8;if(labelY<8)labelY=p.y+8;if(labelX<8)labelX=8;if(labelX+labelW>logicalWidth-8)labelX=logicalWidth-labelW-8;ctx.fillRect(labelX,labelY,labelW,labelH);ctx.strokeRect(labelX,labelY,labelW,labelH);ctx.fillStyle='#f1e7c4';ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillText(tr('WELLE {wave}',{wave:state.wave}),p.x,labelY+14);ctx.font='10px sans-serif';ctx.fillStyle='#b8d6c8';const nextWave=state.wave+1;const formation=waveFormation(nextWave,state.campaignContract?.bossEvery);ctx.fillText(tr('NÄCHSTE: {count} ENEMIES',{count:formation.length}),p.x,labelY+28);ctx.textAlign='start';ctx.restore();}
     // Subtle corner brackets keep the selected pad visible over any terrain.
     const markerPad=menuPad??state.selectedPad;
     if(markerPad!==null&&!state.ended){const p=pads[markerPad];if(p){
@@ -1394,7 +1375,7 @@ function renderResults(target){
         ctx.strokeStyle='#f2d891';ctx.lineWidth=reducedMotion?3.5:3;ctx.shadowColor='#f2d891';
         ctx.shadowBlur=reducedMotion?14:10+4*breath;ctx.globalAlpha=reducedMotion?.82:.58+.2*breath;ctx.stroke();ctx.restore();
       }
-      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;const rivalTracks=groundTracks.sample(rival,performance.now()/1000,{paused:!coopReady||state.ended,theme});drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId),groundTracks:rivalTracks});ctx.restore();}
+      if(state.mode==='versus'&&state.rival){const width=map.width||960,height=map.height||540;ctx.save();ctx.fillStyle='#344b36';ctx.fillRect(0,height,width,20);ctx.fillStyle='#f1e7c4';ctx.font='bold 13px Georgia';ctx.textAlign='center';ctx.fillText(tr('{name} · OPPONENT BATTLEFIELD',{name:state.players[state.rivalId]?.name||tr('OPPONENT')}),width/2,height+15);ctx.translate(0,height+20);const rival=coopReady&&lastSnapshotAt?projectCoopMotion(state.rival,(performance.now()-lastSnapshotAt)/1000*(state.speed===2?2:1)):state.rival;drawCartoonBattle(ctx,rival,{path,pads,theme,types,me:state.rivalId,getTowerRange,effects:[],reducedMotion,soldierPoses:rivalMotion.sample(rival.players,performance.now()/1000,{reducedMotion,paused:!coopReady||state.ended}),renderScale,storyTime:performance.now()/1000,shotAge:coop&&lastSnapshotAt?Math.max(0,(performance.now()-lastSnapshotAt)/1000):0,deco:map.deco,zones:map.zones,paths:map.paths,width:map.width,height:map.height,bunkerPosition:map.bunker,torches:map.torches,groundSeed:groundSeedOf(state.mapId)});ctx.restore();}
     };
     if(battleViewport)drawInBattleViewport(ctx,battleViewport.getViewport(),drawBattle);else drawBattle();
   }

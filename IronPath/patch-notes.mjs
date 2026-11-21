@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261120-endlessview1';
+import {getLanguage} from './language.mjs?v=20261121-rollback1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,23 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'rollback1',build:'20261121-rollback1',pr:340,
+    title:{en:'Rollback to the Last Green Build · Battlefield Freeze Investigated',de:'Rückbau auf den letzten grünen Stand · Einfrieren des Gefechtsfelds untersucht'},
+    shipped:[
+      {en:'Rolled the whole game back to the state of pull request #334, the last build whose regression suite was green. Nothing else moved: the difference against that state is only the new cache wave, so gameplay, balance and saved progress stay untouched.',de:'Das gesamte Spiel auf den Stand von Pull-Request #334 zurückgesetzt — den letzten Build, dessen Regressionssuite grün war. Sonst ändert sich nichts: Die Differenz zu diesem Stand ist ausschließlich die neue Cache-Welle, Spiellogik, Balance und gespeicherter Fortschritt bleiben unberührt.'},
+      {en:'Removed a crash that arrived afterwards: the boss announcement called a phase label that was never imported, which killed the frame loop and froze the battlefield from wave 5 onward. Reproduced against a real boss unit before the fix.',de:'Ein danach entstandener Absturz entfernt: Die Boss-Ankündigung rief eine Phasenbezeichnung auf, die nie importiert war. Das beendete die Bildschleife und ließ das Gefechtsfeld ab Welle 5 einfrieren. Vor dem Rückbau gegen eine echte Boss-Einheit nachgestellt.'},
+      {en:'Also removed 22 broken test harnesses caused by a new ground module that was never registered in them: since that release no test checked whether the game script loads at all.',de:'Ebenfalls entfernt: 22 kaputte Test-Harnesses, weil ein neues Bodenmodul dort nie eingetragen war. Seit dieser Veröffentlichung prüfte kein Test mehr, ob das Spiel-Skript überhaupt lädt.'},
+      {en:'Restored the project journal a later change had overwritten instead of extended: 3711 lines instead of 257, entries IPL-0001 through IPL-0089 are back and the numbering continues correctly.',de:'Das Projektjournal wiederhergestellt, das eine spätere Änderung ersetzt statt fortgeschrieben hatte: 3711 statt 257 Zeilen, die Einträge IPL-0001 bis IPL-0089 sind zurück und die Zählung läuft korrekt weiter.'},
+      {en:'Raised the cache wave to 20261121-rollback1 across 79 files, because the five previous releases had kept the old stamp: a phone would otherwise keep serving the faulty modules from its cache under an unchanged address.',de:'Die Cache-Welle in 79 Dateien auf 20261121-rollback1 erhöht, weil die fünf vorherigen Veröffentlichungen den alten Stempel behalten hatten: Ein Handy liefert die fehlerhaften Module sonst unter unveränderter Adresse weiter aus dem Cache.'},
+    ],
+    open:[
+      {en:'The reported freeze on iPhone/iPad Safari right at game start (first tower built or first wave started) could NOT be reproduced in any automated run, so this rollback is an unproven remedy, not a verified fix. Real device acceptance is outstanding.',de:'Das gemeldete Einfrieren auf iPhone/iPad Safari direkt ab Spielstart (erster Turmbau oder erste Welle) ließ sich in keinem automatisierten Lauf nachstellen. Dieser Rückbau ist deshalb eine unbewiesene Abhilfe, kein belegter Fix. Die echte Geräteabnahme steht aus.'},
+      {en:'Visual check after loading: the stamp must read BUILD 20261121-rollback1 in the loading scene and in settings. An older stamp means cache, not code.',de:'Sichtprüfung nach dem Laden: Der Stempel muss in der Ladeszene und in den Einstellungen BUILD 20261121-rollback1 zeigen. Ein älterer Stempel bedeutet Cache, nicht Code.'},
+      {en:'The rolled-back visual work is still wanted and returns one piece at a time, each with a green suite: ground tracks and road/rail layers, build-pad pulse, spawn-point marker, boss announcement, tower fallback colours.',de:'Die zurückgenommene Optik ist weiterhin gewollt und kommt Stück für Stück zurück, jeweils mit grüner Suite: Bodenspuren und Straßen-/Schienen-Ebenen, Puls der Bauplätze, Spawn-Punkt-Marker, Boss-Ankündigung, Turm-Ersatzfarben.'},
+      {en:'Roads and rails lose their fresh ground tracks, build pads their thicker pulsing selection ring, and the map entrance its spawn-point marker with this rollback. That is intended, not a new bug.',de:'Straßen und Schienen verlieren mit diesem Rückbau ihre neuen Bodenspuren, Bauplätze ihren dickeren pulsierenden Auswahlring und der Karteneingang seinen Spawn-Punkt-Marker. Das ist Absicht, kein neuer Fehler.'},
+    ],
+  },
   {
     id:'endlessview1',build:'20261120-endlessview1',pr:334,
     title:{en:'Endless Sector Retreat · Full-Screen Portrait Battlefield & Smooth Zoom Transition',de:'Endlos-Sektorrückzug · Vollbild-Gefechtsfeld im Hochformat & nahtloser Zoom-Übergang'},
