@@ -596,6 +596,59 @@ function getGroundImage(doc,theme,variant=0){
   if(!groundImages.has(name)&&doc?.createElement){const image=doc.createElement('img'),entry={image,ready:false};groundImages.set(name,entry);image.onload=()=>{entry.ready=true;};image.src=`assets/${name}`;}
   const entry=groundImages.get(name);return entry?.ready?entry.image:null;
 }
+// The road wears its own seamless texture plate per biome, over the ground
+// plate below it. Same rules as the ground: cosmetic only, one image per name,
+// painted from the moment it has decoded and never blocking on it.
+const roadImages=new Map();
+function getRoadImage(doc,theme,notify=null){
+  const base=({forest:'road3-forest',talwald:'road3-forest',urban:'road3-city',outpost:'road3-city',
+    scrub:'road3-desert',arctic:'road3-snow',marsh:'road3-marsh',road:'road3-road'})[theme];
+  if(!base||!doc?.createElement)return null;
+  const name=base+'.jpg';
+  if(!roadImages.has(name)){
+    const image=doc.createElement('img'),entry={image,ready:false};
+    roadImages.set(name,entry);
+    image.onload=()=>{entry.ready=true;try{notify?.();}catch{}};
+    image.onerror=()=>{entry.failed=true;};
+    image.src=`assets/${name}`;
+  }
+  const entry=roadImages.get(name);
+  return entry?.ready?entry.image:null;
+}
+// Footprints, tank cleats and rail wheel wear left behind by moving units, read
+// from the presentation recorder in `ground-tracks.mjs`. Painted per frame ON
+// TOP of the cached terrain layer - the marks fade within seconds, so they can
+// never be baked into a cache that outlives them.
+export function drawGroundTracks(ctx,tracks,theme='road'){
+  if(!Array.isArray(tracks)||!tracks.length)return;
+  const palette=({
+    arctic:{mark:'#1d2b34',edge:'rgba(240,248,252,.55)',boost:1},
+    marsh:{mark:'#1f160c',edge:'rgba(220,188,136,.38)',boost:1.05},
+    scrub:{mark:'#4e2d15',edge:'rgba(255,244,218,.44)',boost:.98},
+    urban:{mark:'#141718',edge:'rgba(182,190,186,.32)',boost:.78},
+    outpost:{mark:'#191612',edge:'rgba(186,176,158,.32)',boost:.80},
+    junction:{mark:'#191d1b',edge:'rgba(228,236,226,.34)',boost:.85}
+  })[theme]||{mark:'#3a2b18',edge:'rgba(232,212,172,.36)',boost:.94};
+  for(const m of tracks){
+    if(!m||!Number.isFinite(m.x)||!Number.isFinite(m.y)||!Number.isFinite(m.angle)||!(m.alpha>0))continue;
+    const baseAlpha=Math.min(.72,m.alpha*palette.boost);
+    if(m.kind==='tread'){
+      drawTankTreadStamp(ctx,m.x,m.y,m.angle,m.scale||1,palette.mark,palette.edge,Math.min(.68,baseAlpha*.52));
+    }else if(m.kind==='rail'){
+      ctx.save();
+      ctx.globalAlpha=Math.min(.52,baseAlpha*.38);
+      ctx.translate(m.x,m.y);ctx.rotate(m.angle);
+      ctx.fillStyle=palette.mark;
+      for(const side of [-1,1])ctx.fillRect(-5,side*13-1.4,10,2.8);
+      ctx.restore();
+    }else{
+      ctx.save();
+      ctx.globalAlpha=Math.min(.72,baseAlpha*.56);
+      drawBootStamp(ctx,m.x,m.y,m.angle,m.side||1,m.scale||1,palette.mark,palette.edge);
+      ctx.restore();
+    }
+  }
+}
 // Marked terrain patches: a tinted ellipse on the road with its field label.
 // The state overlays (broken ice, rubble remaining) are drawn per frame in
 // drawZoneStates, so the cached layer below stays valid for the whole run.
@@ -879,7 +932,7 @@ function paintTileMosaic(target,img,width,height,rng,doc){
   }
 }
 function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMission=null,pads=[],storyArt=null,renderScale=1,artVersion=0,deco=[],zones=[],notify=null,groundSeed=0}={}){
-  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null;
+  const doc=ctx.canvas?.ownerDocument,img=doc?getGroundImage(doc,theme,detailRng((groundSeed^0xc2b2ae35)>>>0)()<.5?1:0):null,roadImg=doc?getRoadImage(doc,theme,notify):null;
   function paint(target){
     if(!storyMission||!drawStoryTerrain(target,storyMission,path,pads,width,height,img,storyArt)){
       ground(target,theme,width,height);
@@ -903,7 +956,7 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
       target.save();target.globalAlpha=.05+tr()*.04;target.fillStyle=GROUND_TINTS[Math.floor(tr()*GROUND_TINTS.length)];target.fillRect(0,0,width,height);target.restore();
       drawGroundDetails(target,theme,width,height,groundSeed);
     }
-    for(const road of paths)drawRoad(target,road,theme,img);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
+    for(const road of paths)drawRoad(target,road,theme,img,roadImg);thinIce(target,path,theme);bog(target,path,theme);for(const zone of zones)drawZone(target,zone);
     // Field dressing grows with the map (capped: it must not swallow the road
     // it was placed clear of).
     drawDeco(target,deco,theme,notify,Math.max(1,Math.min(1.45,width/1100)));
@@ -927,8 +980,8 @@ function drawTerrain(ctx,path,theme,{paths=[path],width=960,height=540,storyMiss
   if(!cached||cached.revision!==revision){const canvas=doc.createElement('canvas');canvas.width=Math.round(width*resolution);canvas.height=Math.round(height*resolution);const off=canvas.getContext('2d');if(!off){paint(ctx);return;}off.scale(resolution,resolution);off.lineCap='round';off.lineJoin='round';paint(off);cached={canvas,revision};variants.set(key,cached);}
   ctx.drawImage(cached.canvas,0,0,width,height);
 }
-export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
-  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
+export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,theme='road',shotAge=0,effects=[],reducedMotion=false,weatherEffects=true,combatTracers=true,soldierPoses={},groundTracks=[],paths=[path],width=960,height=540,bunkerPosition={x:900,y:400},storyMission=null,storyStage=null,storyTime=0,renderScale=1,artVersion=0,deco=[],zones=[],torches=[],onSpritesReady=null,groundSeed=0}){
+  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';const storyArt=storyMission?prepareStoryArt(ctx.canvas?.ownerDocument):null;drawTerrain(ctx,path,theme,{paths,width,height,storyMission,pads,storyArt,renderScale,artVersion,deco,zones,notify:onSpritesReady,groundSeed});drawZoneStates(ctx,zones,state);fieldZone(ctx,path,state,theme);brokenIce(ctx,path,state,theme);drawGroundTracks(ctx,groundTracks,theme);if(storyMission){if(weatherEffects)drawStoryAtmosphere(ctx,storyMission,storyTime,reducedMotion,width,height,path,pads);drawStoryObjective(ctx,storyMission,storyStage,storyTime,reducedMotion,storyArt);}else if(!reducedMotion&&weatherEffects)ambient(ctx,theme,storyTime,width,height);const approach=path.length>1?Math.atan2(bunkerPosition.y-path[path.length-2].y,bunkerPosition.x-path[path.length-2].x):0;
   // The bunker flinches when it takes a hit - the impact effect carries the
   // timing, the shake is a decaying wobble around the flinch.
   const hit=!reducedMotion&&(effects||[]).find(f=>f&&f.kind==='bunkerHit');
