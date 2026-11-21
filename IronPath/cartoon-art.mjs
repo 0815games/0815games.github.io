@@ -420,6 +420,17 @@ function bunker(ctx,state,notify,approach=0){
 }
 function pad(ctx,p,tower,selected,types,notify){
   const x=p.x,y=p.y;
+  // Animation-Status: prüft, ob der Turm gerade schießt und berechnet
+  // Rotation, Atem-Skalierung und Leucht-Effekt
+  let isShooting=false,towerRotation=0,towerBreath=1,muzzleFlash=0;
+  if(tower&&state.shots&&!reducedMotion){
+    const shot=state.shots.find(s=>s&&s.tx===x&&s.ty===y);
+    if(shot){isShooting=true;const age=performance.now()-(shot.time||0);const life=shot.life||1;muzzleFlash=1-age/life;}
+    // Atem-Skalierung: subtile Ein-/Ausatmung
+    towerBreath=1+Math.sin(performance.now()/1200)*.015;
+    // Rotation: langsame Drehung während des Schießens, sonst sehr langsam
+    towerRotation=isShooting?performance.now()/800:Math.sin(performance.now()/3000)*0.05;
+  }
   // V2 field art: the build plate is a painted concrete weapons emplacement -
   // part of the ground, in the same rendered look as the buildings. The
   // vector plate below stays as the asset-loading fallback; letter chips stay
@@ -475,7 +486,32 @@ function pad(ctx,p,tower,selected,types,notify){
     if(!tier2)ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
     ctx.restore();
   }
-  if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
+  if(artwork){
+    const w=58,h=w*artwork.height/artwork.width;
+    // Rotation und Atem-Skalierung anwenden
+    if(tower&&isShooting){
+      ctx.save();
+      ctx.translate(x,y+11);
+      ctx.rotate(towerRotation);
+      ctx.scale(towerBreath,towerBreath);
+      ctx.drawImage(artwork,-w/2,-h,w,h);
+      ctx.restore();
+      // Leucht-Effekt beim Schuss: kurzer Blitz aus der Kanone
+      if(muzzleFlash>0){
+        ctx.save();
+        ctx.globalAlpha=muzzleFlash*.8;
+        ctx.fillStyle='#ffffaa';
+        ctx.shadowColor='#ffffaa';
+        ctx.shadowBlur=20;
+        ctx.beginPath();
+        ctx.arc(x,y+6,8+muzzleFlash*12,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }else{
+      ctx.drawImage(artwork,x-w/2,y+11-h,w,h);
+    }
+  }
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
   if(tower.classPath&&tower.classTier>=1){
     const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
@@ -1055,6 +1091,44 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     // it stays readable on every ground.
     const lx=a.x+ux*88-uy*34,ly=a.y+uy*88+ux*34;
     ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle=paper;ctx.strokeText(tr('ENEMY ENTRY'),lx,ly);ctx.fillStyle='#344231';ctx.fillText(tr('ENEMY ENTRY'),lx,ly);ctx.textAlign='start';
+  }
+  // Boss-Announcement-Visualisierung
+  // Zeigt eine große Warn-Anzeige, wenn ein Boss in einer speziellen Phase ist
+  if(!state.ended&&!reducedMotion&&weatherEffects){
+    const boss=state.enemies?.find(e=>e?.boss);
+    if(boss&&boss.hp>0){
+      const phase=bossPhase(boss);
+      const label=bossPhaseLabel(boss);
+      if(label&&phase!=='normal'){
+        const pulse=Math.sin(performance.now()/300)*.15+.85;
+        ctx.save();
+        // Großer roter Warn-Hintergrund
+        ctx.globalAlpha=pulse*.3;
+        ctx.fillStyle='#cc0000';
+        ctx.fillRect(20,20,300,40);
+        ctx.restore();
+        // Warn-Label
+        ctx.save();
+        ctx.globalAlpha=pulse;
+        ctx.fillStyle='rgba(0,0,0,.8)';
+        ctx.fillRect(20,20,300,40);
+        ctx.strokeStyle='#ff4444';
+        ctx.lineWidth=3;
+        ctx.strokeRect(20,20,300,40);
+        ctx.fillStyle='#ffffff';
+        ctx.font='bold 14px sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText(label,170,42);
+        ctx.restore();
+        // Bodenwelliges Effect
+        ctx.save();
+        ctx.globalAlpha=pulse*.15;
+        const waveOffset=Math.sin(performance.now()/200)*5;
+        ctx.fillStyle='#cc0000';
+        ctx.fillRect(0,540-20,960,20+waveOffset);
+        ctx.restore();
+      }
+    }
   }
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];const range=getTowerRange(selected);ctx.save();ctx.fillStyle='rgba(139,190,173,.14)';ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.fill();if(!reducedMotion){const pulse=Math.sin(performance.now()/420)*.12+.88;ctx.globalAlpha=pulse;}ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
