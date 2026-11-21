@@ -1114,17 +1114,44 @@ sind inhaltlich weiterhin gewollt** – sie stehen hier, damit nichts verloren
 geht. Sie wurden zurückgenommen, nicht abgelehnt. Jede muss einzeln, mit grüner
 Suite und eigener Cache-Welle neu landen.
 
-- [ ] **Bodenspuren und Straßen-/Schienen-Optik (PR `#335`, `ground-tracks.mjs`,
-  6 neue `road3-*.jpg`, 2,3 MB).** Beim Neu-Landen zwingend `ground-tracks.mjs`
-  in die **13 Ersetzungslisten** der Test-Harnesses aufnehmen
-  (`ability-hud-ui`, `party-end-ui`, `tower-shimmer`, `map-name-title`,
-  `solo-wave-receipt-ui`, `campaign-ui`, `coop-ui`, `endless-launcher`,
-  `four-viewport-integration`, `party-end-force-close`, `release-game-teardown`,
-  `report-rank`, `solo-smoke`). Ohne diesen Eintrag löst der Spezifizierer in
-  Node nicht auf (`ERR_UNSUPPORTED_RESOLVE_REQUEST`, 22 rote Tests), und es prüft
-  **kein** Test mehr, ob `game.js` als Ganzes lädt. Gemessene Kosten: erstes
-  Frame mit Vektor-Fallback 970 → 1911 Canvas-Operationen (+97 %), im Kampf +12
-  bis +16 %.
+- [x] **Bodenspuren und Straßen-/Schienen-Optik (PR `#335`) – neu gelandet als
+  PR `#341`, Cache-Welle `20261121-road1`.** Nicht wiedereingeschoben, sondern
+  auf einer neuen Geometrie neu gebaut, weil die Kurven der Grund für die
+  Rücknahme waren: `IronPath/road-geometry.mjs` beschreibt die Straße einmal als
+  tangentenstetige Folge aus Geraden und Kreis-Fillets (Radius 34, geklemmt auf
+  die Hälfte des kürzeren Nachbarsegments), und `drawRoad`/`drawRail` leiten
+  **jede** Lage davon ab – ganze Lagen als ein Stroke, parallele Lagen
+  (Spurrillen, Schienen, Spurlinien, Guardrails) als exakte Offsetkurve,
+  diskrete Deko (Schwellen, Planken, Kerben, Cleats, Abdrücke) nach echter
+  Bogenlänge und echter Tangente. Damit sind die gemessenen Fehler weg: 21,2 px
+  Riss in den Spurrillen je Ecke, 13,0 px Eckversatz der Schienen, 13/38 px
+  Dekolücken, 43-px-Rundstoß-Wulst, und der 30-px-Stummel in `forest` bleibt als
+  S-Bogen erhalten. `ground-tracks.mjs` und die 8 Platten (`road3-*.jpg`,
+  `endless-ground3.jpg`, `terrain3-city.jpg`) sind zurück; die Spuren werden
+  **über** der gecachten Terrain-Ebene gemalt, weil sie in Sekunden verblassen.
+  - Die **13 Ersetzungslisten** der Test-Harnesses waren, wie vorhergesagt, die
+    Bedingung fürs Neu-Landen (`ability-hud-ui`, `party-end-ui`, `tower-shimmer`,
+    `map-name-title`, `solo-wave-receipt-ui`, `campaign-ui`, `coop-ui`,
+    `endless-launcher`, `four-viewport-integration`, `party-end-force-close`,
+    `release-game-teardown`, `report-rank`, `solo-smoke`): ohne den Eintrag
+    **22** rote Tests mit `ERR_UNSUPPORTED_RESOLVE_REQUEST`. Alle 13 sind
+    gepflegt, die Suite steht bei **1235 Tests, 0 fail**.
+  - Zwei Verdrahtungsfehler aus `#335` sind korrigiert statt kopiert: ein
+    **gemeinsamer** Rekorder für beide Gefechtsfelder (jede Ansicht löschte der
+    anderen jeden Frame die Tracker – im Versus-Spiel entstand nie eine Spur) und
+    nur **eine** von zwei Reset-Stellen (Spuren bluteten über eine
+    Koop-Neuverbindung).
+  - Kosten: Pfadaufbau plus 7 Offsets plus 3 Deko-Durchläufe = **29 µs** auf der
+    längsten Karte (0,17 % eines 16,7-ms-Frames), und `drawTerrain` cachet je
+    Karte – die alte Messung „970 → 1911 Canvas-Operationen (+97 %)" bezog sich
+    auf den Erstbau der Ebene, nicht auf jedes Frame.
+  - **Grenze, die bleibt:** die Simulation läuft weiter exakt auf dem eckigen
+    Polygon (`PATH[e.segment]`). Bei 90° und Radius 34 weicht die Polygon-Ecke um
+    **14,08 px** von der geglätteten Mittellinie ab; die Fahrbahn ist 60 px breit
+    (Halbbreite 30 px), also steht ein Gegner immer auf Asphalt. Dieser Abstand
+    ist per Test gepinnt (`cornerDeviation(34,90°) < 60/2` in
+    `tests/road-design.test.mjs`), damit ein späterer größerer Radius nicht
+    stillschweigend Einheiten von der Straße schiebt.
 - [ ] **Pad-Selektion: dickere Ringe und Puls (PR `#336`).** Beim Neu-Landen die
   Literale `WELLE {wave}` und `NÄCHSTE: {count} ENEMIES` deutsch hinterlegen,
   sonst bleibt `translation-coverage` rot.

@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-rollback1';
+import {getLanguage} from './language.mjs?v=20261121-road1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,24 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'road1',build:'20261121-road1',pr:341,
+    title:{en:'Road and Rail Rebuilt on Real Curves · Ground Tracks Return',de:'Straße und Schiene auf echten Kurven neu gebaut · Bodenspuren zurück'},
+    shipped:[
+      {en:'Roads and rails are now painted from one smooth ribbon with genuinely rounded bends instead of straight bars butting into sharp corners. Wheel ruts no longer tear apart at every corner, the rails no longer cut across the bend, and sleepers, planks and kerb details run through the curve instead of stopping short of it.',de:'Straßen und Schienen werden jetzt aus einem durchgehenden glatten Band mit echten Rundungen gemalt statt aus geraden Balken, die an scharfen Ecken zusammenstoßen. Spurrillen reißen an keiner Ecke mehr auseinander, die Schienen schneiden nicht mehr über die Kurve, und Schwellen, Planken und Bordsteindetails laufen durch die Kurve statt davor zu enden.'},
+      {en:'A short 30-pixel stretch in Pinewood Crossing used to vanish completely inside the bulges around it. It is now a clean S-bend you can actually see.',de:'Ein kurzes 30-Pixel-Stück in Pinewood Crossing verschwand vollständig in den Wülsten um es herum. Es ist jetzt ein sauberer S-Bogen, den man wirklich sieht.'},
+      {en:'The road design comes back for eight biomes: kerb and gutter in the city, corduroy planks with twin guardrails in the marsh, drifts and ice cracks in the arctic, rock in the scrubland, undergrowth in the forest, lane markings and a dashed centre line on paved ground, plus a seamless road texture per biome.',de:'Das Straßendesign kommt für acht Biome zurück: Bordstein und Rinne in der Stadt, Bohlenweg mit zwei Guardrails im Marsch, Schneewehen und Eisrisse in der Arktis, Gestein in der Steppe, Unterholz im Wald, Fahrbahnmarkierungen und gestrichelte Mittellinie auf befestigtem Grund, dazu eine nahtlose Straßentextur je Biom.'},
+      {en:'Ground tracks are back: boot prints behind soldiers, cleat marks behind tanks, wheel wear on rails. They fade within seconds and are painted over the cached battlefield, so they never bake into the map.',de:'Bodenspuren sind zurück: Stiefelabdrücke hinter Soldaten, Kettenabdrücke hinter Panzern, Spurverschleiß auf Schienen. Sie verblassen innerhalb weniger Sekunden und werden über das zwischengespeicherte Gefechtsfeld gemalt, backen also nie in die Karte ein.'},
+      {en:'Fixed two faults the first version of the tracks had: in versus play both battlefields shared one recorder and cancelled each other out, so no footprint ever appeared, and tracks could survive a co-op reconnect into the next battle.',de:'Zwei Fehler der ersten Spur-Fassung behoben: Im Versus-Spiel teilten sich beide Gefechtsfelder einen Rekorder und hoben einander auf, sodass nie ein Abdruck erschien; außerdem konnten Spuren eine Koop-Neuverbindung in das nächste Gefecht überstehen.'},
+      {en:'Raised the cache wave to 20261121-road1 across 79 files, so a phone cannot keep serving the previous modules from its cache under an unchanged address.',de:'Die Cache-Welle in 79 Dateien auf 20261121-road1 erhöht, damit ein Handy die vorherigen Module nicht unter unveränderter Adresse weiter aus dem Cache liefert.'},
+    ],
+    open:[
+      {en:'Units still walk the exact angular path the simulation uses; only the picture is rounded. At a 90-degree bend the corner sits 14.1 pixels off the smoothed centre line, well inside the 30-pixel half-width of the driving surface, so a unit never leaves the asphalt - but it can look as though it clips the corner slightly. That bound is pinned by a test so a later change cannot quietly push units off the road.',de:'Einheiten laufen weiter exakt den eckigen Pfad der Simulation; gerundet ist nur das Bild. Bei einer 90-Grad-Ecke liegt die Ecke 14,1 Pixel neben der geglätteten Mittellinie, deutlich innerhalb der 30 Pixel Halbbreite der Fahrbahn - eine Einheit verlässt den Asphalt also nie, kann aber optisch die Kurve leicht schneiden. Diese Grenze ist per Test festgeschrieben, damit eine spätere Änderung nicht stillschweigend Einheiten von der Straße schiebt.'},
+      {en:'No device acceptance yet: the new look has not been checked on an iPhone or iPad. The freeze reported earlier is neither confirmed nor ruled out by this patch - the one proven cause of it stays removed and is not reintroduced here.',de:'Noch keine Geräteabnahme: Die neue Optik ist nicht auf einem iPhone oder iPad geprüft. Das früher gemeldete Einfrieren ist durch diesen Patch weder bestätigt noch ausgeschlossen - die einzige belegte Ursache bleibt entfernt und wird hier nicht wieder eingeführt.'},
+      {en:'Visual check after loading: the stamp must read BUILD 20261121-road1 in the loading scene and in settings. An older stamp means cache, not code.',de:'Sichtprüfung nach dem Laden: Der Stempel muss in der Ladeszene und in den Einstellungen BUILD 20261121-road1 zeigen. Ein älterer Stempel bedeutet Cache, nicht Code.'},
+      {en:'Still to come, as its own release: the build-pad selection ring, thicker and pulsing, with a hover preview that names the wave and how many enemies are next - including the missing German entries for four literals.',de:'Kommt noch, als eigene Veröffentlichung: der Auswahlring auf Bauplätzen, dicker und pulsierend, mit Hover-Vorschau, die die Welle und die Anzahl der nächsten Gegner nennt - einschließlich der fehlenden deutschen Einträge für vier Literale.'},
+    ],
+  },
   {
     id:'rollback1',build:'20261121-rollback1',pr:340,
     title:{en:'Rollback to the Last Green Build · Battlefield Freeze Investigated',de:'Rückbau auf den letzten grünen Stand · Einfrieren des Gefechtsfelds untersucht'},
