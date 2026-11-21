@@ -3816,20 +3816,32 @@ Grenzen / Offen:
     **1190 pass, 7 fail**. Alle 7 waren Artefakte des Extrakts — `.github/workflows/` fehlte (`ENOENT`)
     und `.git` fehlte (`git rev-parse HEAD` scheitert). Nach Ergänzung beider Verzeichnisse: **0 echte
     Fehler**. Der Zielstand ist also nachweislich grün.
-  - Gesamtsuite nach Rückbau: **wird als eigenes Ereignis nachgetragen** (Lauf dauerte beim Schreiben
-    dieses Eintrags noch an; kein Ergebnis wird vorweggenommen).
-- **Git / PR / Release:** zum Zeitpunkt dieses Eintrags **nichts ausgeführt**. Commit, Push,
-  PR-Eröffnung, CI-Ergebnis, Merge und Pages-Build werden nach dem tatsächlichen Ereignis mit belegbarer
-  Kennung nachgetragen.
+  - **Gesamtsuite nach Rückbau, CI-identisch von der Repo-Wurzel:**
+    `node --test-reporter=tap --test IronPath/tests/*.test.mjs` → **1198 Tests, 1198 pass, 0 fail,
+    0 skipped, exit 0** (324 s). Zum Vergleich: `main`/`7c2dba65` stand bei **1172 pass / 25 fail,
+    exit 1**. Ein Zwischenlauf vor dem Feldnotiz-Eintrag zeigte 1196 pass / 2 fail — beide
+    `patch-notes.test.mjs`, weil der Test den Eintrag zur laufenden Welle verlangt (siehe Punkt 3
+    unter „Offen").
+- **Git / PR / Release:** Commit `0338c5814a0001b6405c93bd79a4689a08b142af` auf
+  `arena/d4bf56ea-0815games-github-io`, gepusht auf `origin`; PR
+  [`#340`](https://github.com/0815games/0815games.github.io/pull/340) gegen `main` eröffnet.
+  **Merge, CI-Ergebnis und Pages-Build stehen aus** und werden nach dem tatsächlichen Ereignis mit
+  Kennung nachgetragen — nichts davon wird hier vorweggenommen.
 - **Offen / nächster Schritt:**
   1. Commit → Push → PR. Merge **erst nach Freigabe des Betreibers**. Danach den Pages-Build abwarten
      und `https://0815games.github.io/IronPath/` prüfen: der sichtbare Stempel muss
      `BUILD 20261121-rollback1` zeigen — das trennt Cache von Code.
   2. **Geräteabnahme fehlt:** iPhone/iPad Safari mit angemeldetem Konto, exakt der gemeldete Pfad
      (Spielstart → erster Turm → Welle starten). Ein grüner Node-Testlauf ist keine Geräteabnahme.
-  3. Erst **nach** belegtem Merge und Pages-Lauf: `RELEASED_PATCHES` in `IronPath/patch-notes.mjs` um
-     den Eintrag `rollback1` ergänzen (jede Zeile DE + EN) und die Git-/CI-/Release-Ereignisse hier
-     nachtragen.
+  3. **Abweichung von der ursprünglich geplanten Reihenfolge, begründet:** Der Feldnotiz-Eintrag
+     `rollback1` in `IronPath/patch-notes.mjs` konnte **nicht** bis nach dem Merge warten.
+     `IronPath/tests/patch-notes.test.mjs` verlangt `RELEASED_PATCHES[0].build === release-version.json`
+     (`the newest note is the build the site is running`) sowie genau eine als laufend markierte Karte;
+     ohne den Eintrag blieben genau 2 Tests rot. Er liegt deshalb in diesem PR, mit `pr:340`, vier
+     `shipped`- und vier `open`-Zeilen in DE **und** EN, und führt die ausstehende Geräteabnahme sowie
+     den Status „unbewiesene Abhilfe, kein belegter Fix" ausdrücklich als offenen Punkt — entsprechend
+     handelte schon `IPL-0089` für `#334`. Nach belegtem Merge und Pages-Lauf sind nur noch die
+     Git-/CI-/Release-Ereignisse im Punkt darüber nachzutragen.
   4. `game-regressions` zum **Pflicht-Check** machen. Ohne diese Lücke wären `#335`–`#339` nicht
      gemergt worden.
   5. Die zurückgenommenen Arbeiten bleiben inhaltlich gewollt und müssen **einzeln** neu landen, jeweils
