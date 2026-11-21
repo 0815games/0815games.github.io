@@ -1056,6 +1056,44 @@ export function drawCartoonBattle(ctx,state,{path,pads,types,me,getTowerRange,th
     const lx=a.x+ux*88-uy*34,ly=a.y+uy*88+ux*34;
     ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle=paper;ctx.strokeText(tr('ENEMY ENTRY'),lx,ly);ctx.fillStyle='#344231';ctx.fillText(tr('ENEMY ENTRY'),lx,ly);ctx.textAlign='start';
   }
+  // Boss-Announcement-Visualisierung
+  // Zeigt eine große Warn-Anzeige, wenn ein Boss in einer speziellen Phase ist
+  if(!state.ended&&!reducedMotion&&weatherEffects){
+    const boss=state.enemies?.find(e=>e?.boss);
+    if(boss&&boss.hp>0){
+      const phase=bossPhase(boss);
+      const label=bossPhaseLabel(boss);
+      if(label&&phase!=='normal'){
+        const pulse=Math.sin(performance.now()/300)*.15+.85;
+        ctx.save();
+        // Großer roter Warn-Hintergrund
+        ctx.globalAlpha=pulse*.3;
+        ctx.fillStyle='#cc0000';
+        ctx.fillRect(20,20,300,40);
+        ctx.restore();
+        // Warn-Label
+        ctx.save();
+        ctx.globalAlpha=pulse;
+        ctx.fillStyle='rgba(0,0,0,.8)';
+        ctx.fillRect(20,20,300,40);
+        ctx.strokeStyle='#ff4444';
+        ctx.lineWidth=3;
+        ctx.strokeRect(20,20,300,40);
+        ctx.fillStyle='#ffffff';
+        ctx.font='bold 14px sans-serif';
+        ctx.textAlign='center';
+        ctx.fillText(label,170,42);
+        ctx.restore();
+        // Bodenwelliges Effect
+        ctx.save();
+        ctx.globalAlpha=pulse*.15;
+        const waveOffset=Math.sin(performance.now()/200)*5;
+        ctx.fillStyle='#cc0000';
+        ctx.fillRect(0,540-20,960,20+waveOffset);
+        ctx.restore();
+      }
+    }
+  }
   const selected=state.towers.find(t=>t.pad===state.selectedPad);if(selected&&!state.ended){const p=pads[selected.pad];const range=getTowerRange(selected);ctx.save();ctx.fillStyle='rgba(139,190,173,.14)';ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.fill();if(!reducedMotion){const pulse=Math.sin(performance.now()/420)*.12+.88;ctx.globalAlpha=pulse;}ctx.strokeStyle='#c2dfd2';ctx.lineWidth=2.2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(p.x,p.y,range,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
   if(!reducedMotion)for(const tower of state.towers){const owner=state.players[tower.ownerId],p=pads[tower.pad];if(p&&owner?.active!==false&&owner?.overdrive>0){ctx.beginPath();ctx.ellipse(p.x,p.y,31,27,0,0,Math.PI*2);ctx.strokeStyle='#fff1a3';ctx.lineWidth=3;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);}}
   pads.forEach((p,i)=>pad(ctx,p,state.towers.find(t=>t.pad===i),state.selectedPad===i,types,onSpritesReady));
