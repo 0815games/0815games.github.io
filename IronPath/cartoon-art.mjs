@@ -420,6 +420,17 @@ function bunker(ctx,state,notify,approach=0){
 }
 function pad(ctx,p,tower,selected,types,notify){
   const x=p.x,y=p.y;
+  // Animation-Status: prüft, ob der Turm gerade schießt und berechnet
+  // Rotation, Atem-Skalierung und Leucht-Effekt
+  let isShooting=false,towerRotation=0,towerBreath=1,muzzleFlash=0;
+  if(tower&&state.shots&&!reducedMotion){
+    const shot=state.shots.find(s=>s&&s.tx===x&&s.ty===y);
+    if(shot){isShooting=true;const age=performance.now()-(shot.time||0);const life=shot.life||1;muzzleFlash=1-age/life;}
+    // Atem-Skalierung: subtile Ein-/Ausatmung
+    towerBreath=1+Math.sin(performance.now()/1200)*.015;
+    // Rotation: langsame Drehung während des Schießens, sonst sehr langsam
+    towerRotation=isShooting?performance.now()/800:Math.sin(performance.now()/3000)*0.05;
+  }
   // V2 field art: the build plate is a painted concrete weapons emplacement -
   // part of the ground, in the same rendered look as the buildings. The
   // vector plate below stays as the asset-loading fallback; letter chips stay
@@ -475,7 +486,32 @@ function pad(ctx,p,tower,selected,types,notify){
     if(!tier2)ctx.setLineDash([5,4]);ctx.stroke();ctx.setLineDash([]);
     ctx.restore();
   }
-  if(artwork){const w=58,h=w*artwork.height/artwork.width;ctx.drawImage(artwork,x-w/2,y+11-h,w,h);}
+  if(artwork){
+    const w=58,h=w*artwork.height/artwork.width;
+    // Rotation und Atem-Skalierung anwenden
+    if(tower&&isShooting){
+      ctx.save();
+      ctx.translate(x,y+11);
+      ctx.rotate(towerRotation);
+      ctx.scale(towerBreath,towerBreath);
+      ctx.drawImage(artwork,-w/2,-h,w,h);
+      ctx.restore();
+      // Leucht-Effekt beim Schuss: kurzer Blitz aus der Kanone
+      if(muzzleFlash>0){
+        ctx.save();
+        ctx.globalAlpha=muzzleFlash*.8;
+        ctx.fillStyle='#ffffaa';
+        ctx.shadowColor='#ffffaa';
+        ctx.shadowBlur=20;
+        ctx.beginPath();
+        ctx.arc(x,y+6,8+muzzleFlash*12,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }else{
+      ctx.drawImage(artwork,x-w/2,y+11-h,w,h);
+    }
+  }
   else fallbackMarker(ctx,x,y-6,['MG','C','AA','S'][tower.type],types[tower.type].color,18,15);
   if(tower.classPath&&tower.classTier>=1){
     const badgeColor=({assault:'#d89970',engineer:'#d7bd71',logistics:'#b4c682',medic:'#8ac7b1',recon:'#8eafcf',airDefense:'#d9849e'})[tower.classPath]||'#d8c596';
