@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0072. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0073. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3456,3 +3456,18 @@ Grenzen / Offen:
   - GitHub CI Run `44499916298` auf PR #322 (`dffbd20`, vor Cache-Stamp-Welle): **13/13 Checks bestanden** (`database-rules`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `interface-smoke.cjs` & `command-center.cjs`, alle 8 `party-finalization-browser`-Jobs, Vercel). Finaler Release-Lauf auf PR #322 (`583a1c7a`) gemergt und über Pages (`44504375079`) live gestellt.
 - **Offen:** Echte Desktop- und Handy-Sichtung; im Folgeschritt `20261119-block9d` (PR #323) erweitert.
 - **Git / PR / Release:** PR #322 gemergt (`583a1c7a`) auf `main`.
+
+## IPL-0073 – Block 9d (`20261119-block9d`, PR #323): Einzelsitzungs-Schutz (`activeSessions`), randfreie Gemälde, UI-/Sprachauswahl-Fixes & DE-Lokalisierung
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/92c6a81f-0815games-github-io` ab `583a1c7a53e499d5d2e7effb81906f607762b7a1` (`main`), PR #323.
+- **Block / Ziel:** Vier Arbeitspakete auf Block-9-Basis umsetzen: (1) verhindern, dass derselbe Account in zwei Browser-Fenstern/Geräten gleichzeitig aktiv bleibt (`activeSessions/$uid`-Lease + Übernahme-Option & RTDB-Regelkandidat), (2) weiße Außenränder/Zierrahmen an Gemälden sauber beschneiden und `#menuResults` unter den Spielmodi anordnen, (3) unsichtbares `#languageSelect` in den Einstellungen, `.session-takeover-field`-Vererbung, Desktop-Dialog-Scroll & Mobile-`<380px`-Layouts beheben, (4) verbleibende unübersetzte Texte (`endless-launcher.mjs` `command.none`, statische HTML-Knoten, `#enlistStamp`, offener AFK-Dialog, Freundes-/Lobby-Fehler) zweisprachig schließen.
+- **Änderungen / Dateien:**
+  - **Paket 1 (Single-Session & Rules):** `IronPath/active-session.mjs`, `IronPath/account.js`, `IronPath/index.html` (`#sessionTakeoverField`/`#sessionTakeoverCheck`), `IronPath/localization-account-de.mjs`, `IronPath/firebase/{block9d-session-candidate.mjs,firebase-block9d.emulator.json,BLOCK9D-SESSION-ROLLOUT.md,BLOCK9D-RULES-TO-PUBLISH.json}`, `IronPath/tests/active-session.test.mjs`, `IronPath/firebase/rules-test/{active-session.test.mjs,active-session-browser.cjs,package.json}`, `.github/workflows/ironpath-firebase-rules.yml`.
+  - **Paket 2 (Artwork & Command-Layout):** `IronPath/assets/{story-tower,story-marsh,story-rook,story-sera,endless-frontline,class-medic,armory-kit}.jpg` rand-/rahmenfrei beschnitten und per Lanczos auf Zielmaß skaliert; `IronPath/index.html` (`#menuResults` nach `.mode-grid`); `IronPath/menu-redesign.css` (Desktop-Grid-Zeilen, `.command-results`-Balken, `overflow: hidden; background-clip: padding-box` auf Modus-/Endlos-/Feldschule-Karten).
+  - **Paket 3 (UI- & Layout-Fixes):** `IronPath/menu-redesign.css` (`#settingsDialog .language-flag-control`/`.flag-icon`/`select`-Reset auf `position: static; opacity: 1`, `.session-takeover-field`-Reset, Desktop-Dialog-`overflow-y: auto`, Mobile `#skillDialog[open] .skills-header` & `@media (max-width: 380px)`).
+  - **Paket 4 (DE-Lokalisierung):** `IronPath/endless-launcher.mjs` (`translate('command.none')`), `IronPath/tests/endless-launcher.test.mjs`, `IronPath/recruit-screen.mjs` (`refresh()` aktualisiert `#enlistStamp`), `IronPath/account.js` (`recruitScreen.refresh()` & `paintAfkRestCard()` bei Sprachwechsel), `IronPath/index.html` (`data-i18n-text`-Attribute ergänzt), `IronPath/localization-more-static-de.mjs` & `IronPath/localization-account-de.mjs` vervollständigt.
+  - **Cache-Welle & Tests:** `IronPath/tests/{menu-redesign,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{interface-smoke,command-center,cache-wave,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9d`, `pr: 323`) & gesamte `?v=20261119-block9d`-Cache-Welle.
+- **Prüfungen:**
+  - `node --test IronPath/tests/*.test.mjs` (über alle 258 Dateien: **1.159 bestanden, 0 fehlgeschlagen, 1 übersprungen**), `node IronPath/stress-tests/run.mjs` sowie GitHub CI Run `44518821803` (**13/13 Checks bestanden**, inkl. `database-rules` mit `test:block9d` und `interface-browser-smoke` mit `active-session-browser.cjs`).
+  - Nach Merge auf `main` (`6e634551`, `2026-11-19T12:06:00Z`): `pages-build-deployment` (`44520734267`) und `Iron Path Firebase party rules` (`44520735878`, **11/11 Jobs**) komplett **grün**.
+- **Git / PR / Release:** PR #323 gemergt (`6e634551`) auf `main`; `20261119-block9d` auf GitHub Pages live.
+
