@@ -81,7 +81,7 @@ const assert=require('node:assert/strict');
      // The first filled view follows the player's spawn, even when the bunker
      // is far from map centre. Select a nearby free pad before touching zoom.
      const nearSpawn=await page.evaluate(async()=>{
-      const {getMap}=await import('./maps.mjs'),{createBattleViewport,zoomBattleViewport,panBattleViewport}=await import('./battle-viewport.mjs');
+      const {getMap}=await import('./maps.mjs'),{createBattleViewport,zoomBattleViewport,panBattleViewport}=await import('./battle/battle-viewport.mjs');
       const m=getMap(window.__mapId),r=document.getElementById('game').getBoundingClientRect(),height=Math.round(960*r.height/r.width),player=window.__player;
       let v=createBattleViewport(m.width,m.height,960,height);
       v=zoomBattleViewport(v,Math.max(v.width/v.worldWidth,v.height/v.worldHeight)/v.scale,{x:v.width/2,y:v.height/2});
@@ -100,7 +100,7 @@ const assert=require('node:assert/strict');
     // on an existing tower must select it with the correct world coordinates.
     await page.evaluate(()=>{const button=document.getElementById('mapZoom');if(button.getAttribute('aria-pressed')==='true')button.click();});
     const point=await page.evaluate(async()=>{
-     const {getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle-viewport.mjs');
+     const {getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
      const map=getMap(window.__mapId),canvas=document.getElementById('game'),r=canvas.getBoundingClientRect();
      const worldWidth=map.width||960,laneHeight=map.height||540,worldHeight=window.__mode==='versus'?laneHeight*2+20:laneHeight;
      const v=createBattleViewport(worldWidth,worldHeight,960,Math.round(960*r.height/r.width));

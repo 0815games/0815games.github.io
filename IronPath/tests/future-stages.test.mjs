@@ -5,7 +5,7 @@ import {createMatch,stepMatch,STEP} from '../simulation.mjs';
 import {getMap} from '../maps.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {serviceMedals} from '../service-record.mjs';
-import {createBattleSound} from '../battle-sound.mjs';
+import {createBattleSound} from '../battle/battle-sound.mjs';
 const player=id=>createPlayer(id,{name:id,gender:'female'});
 let rares=0;for(let i=0;i<1000;i++){const id=`g2-${i.toString(16).padStart(8,'0')}`,offers=perkOffers(id,5);assert.equal(new Set(offers).size,3);assert.deepEqual(offers,perkOffers(id,5));const n=offers.filter(i=>RUN_PERKS[i].rare).length;assert.ok(n<=1);rares+=n;}
 assert.ok(rares>100&&rares<400,`rare offer frequency ${rares}`);

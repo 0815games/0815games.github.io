@@ -73,7 +73,7 @@ const assert=require('node:assert/strict');
     // Reference the same documented camera geometry, not the old 960x540
     // projection: the logical height changes with the portrait canvas.
     const setView=async(fill)=>page.evaluate(async fill=>{
-      const {getMap}=await import('./maps.mjs');const {createBattleViewport,zoomBattleViewport}=await import('./battle-viewport.mjs');
+      const {getMap}=await import('./maps.mjs');const {createBattleViewport,zoomBattleViewport}=await import('./battle/battle-viewport.mjs');
       const map=getMap('four-front'),r=document.getElementById('game').getBoundingClientRect();
       const height=document.getElementById('game').dataset.fullBattle==='true'?Math.round(960*r.height/r.width):540;
       let v=createBattleViewport(map.width,map.height,960,height);
@@ -144,12 +144,12 @@ mark('pad 11 tapped with touch');
     assert.equal(await page.evaluate(()=>window.__match.match.players.bob.money),ownerBefore,'shared upgrade does not charge the tower owner');
     // Pan with a physical drag, then select a previously off-screen spot.
     await page.mouse.move(200,400);await page.mouse.down();await page.mouse.move(80,400,{steps:8});await page.mouse.up();
-    await page.evaluate(async()=>{const {panBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect();window.__view=panBattleViewport(window.__view,-120*960/r.width,0);});
+    await page.evaluate(async()=>{const {panBattleViewport}=await import('./battle/battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect();window.__view=panBattleViewport(window.__view,-120*960/r.width,0);});
     await tapPad(5);assert.match(await page.locator('#sheetTitle').textContent(),/Build defense/,'pan retains correct touch projection');await closeOutside();
 mark('pad 5 tapped after a pan');
     await page.waitForFunction(()=>!window.__match.match.buildReservations[5]);
     await page.mouse.move(200,400);await page.mouse.wheel(0,-200);
-    await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,Math.exp(.3),{x:(200-r.left)*v.width/r.width,y:(400-r.top)*v.height/r.height});});
+    await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle/battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,Math.exp(.3),{x:(200-r.left)*v.width/r.width,y:(400-r.top)*v.height/r.height});});
     await tapPad(4);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'wheel zoom retains world coordinates');await closeOutside();
 mark('pad 4 tapped after a wheel zoom');
 
@@ -159,7 +159,7 @@ mark('pad 4 tapped after a wheel zoom');
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:125,y:420,id:1},{x:265,y:420,id:2}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:90,y:420,id:1},{x:300,y:420,id:2}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
-    await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,1.5,{x:(195-r.left)*v.width/r.width,y:(420-r.top)*v.height/r.height});});
+    await page.evaluate(async()=>{const {zoomBattleViewport}=await import('./battle/battle-viewport.mjs');const r=document.getElementById('game').getBoundingClientRect(),v=window.__view;window.__view=zoomBattleViewport(v,1.5,{x:(195-r.left)*v.width/r.width,y:(420-r.top)*v.height/r.height});});
     assert.equal(await page.locator('#radialMenu').isHidden(),true,'pinching is not interpreted as a tap');
     await tapPad(4,true);assert.match(await page.locator('#sheetTitle').textContent(),/MG Nest/,'pinch zoom retains world coordinates');await closeOutside();
 mark('pad 4 tapped after a pinch');
