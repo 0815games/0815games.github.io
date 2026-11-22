@@ -271,6 +271,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Fast patch gate (stamp, log, secrets, contracts)
+        # patch.mjs check --fast is the quick front door: it fails in seconds
+        # on a broken build stamp, a gapped patch log or a credential shape
+        # in the diff, before the full suite below spends minutes. origin/main
+        # is fetched first so the base comparison and secret scan have a base.
+        run: |
+          git fetch --no-tags origin main
+          node IronPath/scripts/patch.mjs check --fast
       - name: Run game tests
         run: node --test IronPath/tests/*.test.mjs
       - name: Run deterministic local stress workloads

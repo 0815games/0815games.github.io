@@ -91,7 +91,7 @@ Jede Veröffentlichung trägt ein Token der Form `20YYMMDD-name`
 (`release-version.json`). Es steht in `index.html` (Meta-Tag und zwei
 `build-stamp`-Elemente), in `login-scene.mjs`, in `release-version.json`, in
 zwei `browser-tests` und als `?v=`-Suffix an praktisch jedem Import.
-[`scripts/patch-bump.mjs`](scripts/patch-bump.mjs) ersetzt es im ganzen Baum, lässt die historischen
+[`scripts/patch.mjs`](scripts/patch.mjs) (Unterbefehl `bump`) ersetzt es im ganzen Baum, lässt die historischen
 `build:`-Felder und Protokollsätze in `patch-notes.mjs` stehen und meldet jede
 geänderte Zeile, die **kein** `?v=`-Import ist — das müssen genau die sieben
 bekannten Stellen sein.

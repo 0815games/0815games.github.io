@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0080. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0081. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3562,3 +3562,19 @@ Grenzen / Offen:
   - `IronPath/PATCH-LOG.md` (`IPL-0079` CI-Ergebnis nachgetragen + `IPL-0080` protokolliert)
 - **Git / PR / Release:** `lokal/uncommittet` auf `arena/ef607625-0815games-github-io` (PR #327).
 - **Offen:** Finaler CI-Durchlauf des Dokumentations-/Feldnotizen-Nachtrags, Merge von PR #327 auf `main` (nach Freigabe bzw. Geräte-Sichtung auf `20261119-block2`) sowie echte Mehrgeräte-Abnahme (Namenskonflikt-Migration, Host-Notabschluss `FORCE CLOSE PARTY` & Einsteigerbalance C) vor Start der Block-6-Client-Umsetzung.
+
+## IPL-0081 – Block 6 (`Tutorial`): Charakter-Dossier, 7-Wellen-Vertrag, General-Vance-Funk & 8-Stationen-HQ-Führung (Code & Tests lokal gebaut; Audio-Rest ausstehend)
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d37b266d74f243dcb08f83321775515b38` (`main`), Status: `lokal/uncommittet`.
+- **Block / Ziel:** Block 6 auf Basis des Block-9-Menüs (`new_characters_only`, großer 7-Wellen-Einsatz, komplette interaktive HQ-Führung ohne Auslösen von Löschen/Abmelden, General Vances Funkstimme DE/EN mit Untertiteln/Stummschaltung sowie charakterbezogener RTDB-Speicherung und Anti-Farm-Schutz in `players/$uid/tutorial`) umsetzen.
+- **Änderungen / Dateien:**
+  - **Charakter-Sync & Anti-Farm-Transaktion:** `IronPath/tutorial-sync.mjs` (`initialOfferedTutorial`, `shouldAutoPresentTutorial`, `tutorialResumeTarget`, `shouldPayTutorialReward`, `applyTutorialRewardProfile`, `createTutorialSync`), `IronPath/account.js` (`startFirstRunTutorial`, `openTutorialDossierDialog`, `ensureTutorialDossier`, `ensureMenuTour`, `replayFirstRun` mit `data-screen="training"`).
+  - **Dossier, 8-Stationen-HQ-Rundgang & Funk:** `IronPath/tutorial-dossier.mjs`, `IronPath/menu-tour.mjs` (8 HQ-Stationen, sichere Inspect-Aktionen, `FORBIDDEN_TOUR_TARGETS` für Account-Löschen/Abmelden), `IronPath/general-radio.mjs` (`GENERAL_RADIO_CLIPS` für 18 Szenen DE/EN, Untertitel, `voiceOver`-Stummschaltung, Lautstärkekopplung an `settings.mjs`), `IronPath/command-center.mjs` (optionaler `onTutorial`-Hook für `#menuTutorial`), `IronPath/index.html`, `IronPath/interface-redesign.css`, `IronPath/menu-redesign.css`.
+  - **7-Wellen-Vertrag, 8-Schritt-Coach & DE-Texte:** `IronPath/training-run.mjs` (`TRAINING_WAVES = 7`, `TRAINING_BOSS_EVERY = 7`, `TRAINING_SUPPLIES = 180`, `FIRST_RUN_XP = 450` / `330`, `trainingWaveRadioCue`), `IronPath/solo-deployment.mjs`, `IronPath/first-run-coach.mjs` (8 Karten inkl. `specialize`, `#coachArt`, `voiceClip`, `onStepChange`), `IronPath/first-run-guide.mjs`, `IronPath/game.js` (`arguments[0]?.waveFloor`, `trainingWaveRadioCue`, Anti-Farm-XP-Gate), `IronPath/localization-firstrun-de.mjs`, `IronPath/localization-de.mjs`.
+  - **Artworks & Tests:** `IronPath/assets/{general-vance-portrait,tutorial-dossier-map,tutorial-hq-briefing,tutorial-airstrike}.jpg`, 10 erste EN-MP3-Dateien unter `IronPath/assets/voice/en/tutorial/`, neue Testdateien `IronPath/tests/{tutorial-sync,general-radio,tutorial-dossier,menu-tour}.test.mjs`, aktualisierte Suiten `IronPath/tests/{training-run,first-run-coach,first-run-german,first-run-layout,first-run-device-test}.test.mjs`, `IronPath/FIRST-RUN-DEVICE-TEST.md`, `IronPath/browser-tests/command-center.cjs`, `IronPath/PATCH-BLOECKE.md`.
+- **Prüfungen:**
+  - Gesamtlauf über alle **265** Testdateien (`IronPath/tests/[a-b]`, `[c-f]`, `[g-m]`, `[n-r]`, `[s-z]`): **1.185 bestanden, 0 fehlgeschlagen, 1 erwarteter Ancestor-Skip** (`release-pages-site.test.mjs`).
+  - `node --check` über alle **576** `.js`/`.mjs`/`.cjs`-Dateien: **0 Fehler**.
+  - `node IronPath/stress-tests/run.mjs`: **bestanden** über alle Modi; `rules-publish-dry-run.mjs`: **0 Blocker**.
+  - `browser-tests/command-center.cjs` lokal nicht ausgeführt (kein Chromium/Playwright in der Sandbox vorinstalliert).
+- **Git / PR / Release:** `lokal/uncommittet` auf `arena/0b12995a-0815games-github-io`; Build-Stempel (`release-version.json` / `<meta name="ironpath-build">` / `patch-notes.mjs`) bewusst noch auf `20261119-block2` belassen, bis die Vertonung vollständig ist.
+- **Offen:** (1) In den folgenden Zügen restliche 8 EN-Clips + einheitliche Neuerzeugung aller 18 EN-Clips mit `voice-11` unter `IronPath/assets/voice/en/tutorial/` sowie alle 18 DE-Clips mit `voice-10` unter `IronPath/assets/voice/de/tutorial/` synthetisieren (pro Runde maximal 10 `generate_speech`-Clips), (2) `general-radio.test.mjs` anschließend auf alle 18 EN + 18 DE-Audiodateien ausweiten, (3) Cache-Stempel auf `20261119-block6` heben, committen/pushen & CI-Browser-Tests sowie echte Mehrgeräte-Abnahme durchführen.
