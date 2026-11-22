@@ -36,7 +36,7 @@ const guardedBootstrap=`
  import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
  import {getAuth,onAuthStateChanged,signOut,signInWithEmailAndPassword,createUserWithEmailAndPassword,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
  import {getDatabase} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
- import {installGuardedAccountSession} from './account-services.mjs?v=20261031-releaseguard1';
+ import {installGuardedAccountSession} from './core/account-services.mjs?v=20261031-releaseguard1';
  const app=initializeApp({}),auth=getAuth(app),db=getDatabase(app),controller=new AbortController();
  const session={auth,db,onAuthStateChanged:cb=>onAuthStateChanged(auth,cb),signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p),register:(e,p)=>createUserWithEmailAndPassword(auth,e,p),resetPassword:e=>sendPasswordResetEmail(auth,e),
   logout(){controller.abort();sessionStorage.setItem('synthetic-guard-logout','1');void signOut(auth);location.replace('/IronPath/?guarded-return=1');}};

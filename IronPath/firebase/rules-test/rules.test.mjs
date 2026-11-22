@@ -93,9 +93,9 @@ test('two Firebase clients run a shared hosted match, pause, and resume', {timeo
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
   const {createFirebasePartyPresence}=await import('../../net/firebase-party-presence.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
-  const {createPartyHost}=await import('../../party-host.mjs');
-  const {createMatch}=await import('../../simulation.mjs');
-  const {createPlayer}=await import('../../match.mjs');
+  const {createPartyHost}=await import('../../core/party-host.mjs');
+  const {createMatch}=await import('../../core/simulation.mjs');
+  const {createPlayer}=await import('../../core/match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
   const authA={currentUser:{uid:'alice'}},authB={currentUser:{uid:'bob'}};
   const opts={sdk,partyId:party,hostId:'alice',playerIds:['alice','bob']};
@@ -146,7 +146,7 @@ test('only the host can delete an entire party, without gaining parent write acc
 test('game-facing Firebase adapter connects, plays and pauses without a game server', {timeout:20000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
   const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');
-  const {createPlayer}=await import('../../match.mjs');
+  const {createPlayer}=await import('../../core/match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
   const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
   const hostLobby=createFirebasePartyLobby({db:alice,auth:{currentUser:{uid:'alice'}},sdk,crypto});
@@ -214,7 +214,7 @@ test('party profiles and one-time start handoff are member-bound',async()=>{
 
 test('versus adapters isolate lanes, synchronize waves and pause on reconnect', {timeout:30000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
-  const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');const {createPlayer}=await import('../../match.mjs');
+  const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');const {createPlayer}=await import('../../core/match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
   await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
   const ids=['alice','bob'],common={sdk,partyId:party,hostId:'alice',playerIds:ids};let readyA=false,readyB=false,viewA,viewB,stateA,stateB;

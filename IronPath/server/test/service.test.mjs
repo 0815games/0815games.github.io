@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { once } from 'node:events';
 import { WebSocket } from 'ws';
-import { createPlayer } from '../../match.mjs';
+import { createPlayer } from '../../core/match.mjs';
 import { createMatchService } from '../service.mjs';
 const profile={name:'Soldier',gender:'female',level:1};
 function client(url,origin='https://allowed.example'){

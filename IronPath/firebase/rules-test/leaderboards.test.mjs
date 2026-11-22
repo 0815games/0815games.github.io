@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,onValue,runTransaction,query,orderByChild,limitToLast} from 'firebase/database';
-import {createLeaderboardService} from '../../leaderboards.mjs';
+import {createLeaderboardService} from '../../core/leaderboards.mjs';
 let env,alice,bob,eve,anon;const sdk={ref,set,get,remove,onValue,runTransaction,query,orderByChild,limitToLast};
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.DIRECT_INVITES_RULES?'../direct-invites.complete.draft.rules.json':'../leaderboards.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();anon=env.unauthenticatedContext().database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();for(const [id,name] of [['alice','Alice'],['bob','Bob'],['eve','Eve']])await set(ref(db,`players/${id}`),{name,gender:'female',xp:0});await set(ref(db,'friendships/bob/alice'),{status:'accepted',senderName:'Alice',receiverName:'Bob',code:'a'.repeat(32)});await set(ref(db,'friendOutgoing/alice/bob'),{name:'Bob',code:'a'.repeat(32)});});});after(async()=>env.cleanup());

@@ -7,10 +7,10 @@ import {ref,get,set,update,remove,onValue,runTransaction,serverTimestamp,query,o
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
-import {createFriendService,friendNameKey} from '../../friends.mjs';
-import {createCoopInvites} from '../../coop-invites.mjs';
-import {createCharacterDeletion} from '../../character-deletion.mjs';
+import {MAINTENANCE_PATH} from '../../core/maintenance-check.mjs';
+import {createFriendService,friendNameKey} from '../../core/friends.mjs';
+import {createCoopInvites} from '../../core/coop-invites.mjs';
+import {createCharacterDeletion} from '../../core/character-deletion.mjs';
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 
 // The baseline is the checked-in owner reference, not a live Rules export.

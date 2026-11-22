@@ -5,8 +5,8 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,update,onValue,runTransaction,serverTimestamp} from 'firebase/database';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../../maintenance-check.mjs';
-import {transitionMaintenance} from '../../admin-maintenance.mjs';
+import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../../core/maintenance-check.mjs';
+import {transitionMaintenance} from '../../core/admin-maintenance.mjs';
 
 // Synthetic identities against the local emulator only. The real operator must
 // supply and independently verify their separate Firebase Auth UID at rollout.

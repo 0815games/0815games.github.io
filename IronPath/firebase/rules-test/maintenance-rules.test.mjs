@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/ru
 import {ref,get,set,update,goOffline,goOnline,onValue} from 'firebase/database';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH,createMaintenanceProbe} from '../../maintenance-check.mjs';
+import {MAINTENANCE_PATH,createMaintenanceProbe} from '../../core/maintenance-check.mjs';
 
 // Synthetic data and tokens against a local emulator only, never production.
 const bytes=await readFile(new URL('../WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));

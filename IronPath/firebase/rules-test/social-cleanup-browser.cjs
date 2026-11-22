@@ -33,7 +33,7 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase
 import {initializeAuth,inMemoryPersistence,connectAuthEmulator,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {getDatabase,connectDatabaseEmulator,goOffline,goOnline,ref,set} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {createGuardedGameBootstrap} from './release-tools/guarded-game-bootstrap.mjs';
-import {installGuardedAccountSession} from './account-services.mjs?v=20261031-releaseguard1';
+import {installGuardedAccountSession} from './core/account-services.mjs?v=20261031-releaseguard1';
 const game=document.getElementById('guardedTestGame'),hold=document.getElementById('guardedTestHold');let instances;
 const sdk={initializeApp,initializeAuth,inMemoryPersistence,getDatabase,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail,goOffline};
 const runtime=createGuardedGameBootstrap({config:{apiKey:'fake',authDomain:'demo-ironpath.firebaseapp.com',projectId:'demo-ironpath',databaseURL:'https://demo-ironpath.firebaseio.com'},sdk,

@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';
 import {ref,get,set,runTransaction,onValue,update,goOffline,goOnline} from 'firebase/database';
-import {createCoopRewardQueue} from '../../coop-rewards.mjs';
+import {createCoopRewardQueue} from '../../core/coop-rewards.mjs';
 const party='abcdef0123456789abcdef0123456789';let env,alice,bob;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.IRONPATH_COMBINED_RULES?'../four-player.complete.draft.rules.json':'../long-term-progression.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>env.clearDatabase());after(async()=>env.cleanup());
@@ -25,7 +25,7 @@ test('atomic wave receipts protect both profiles from duplicate credits and othe
 test('host snapshots credit both participants once and preserve progress on reconnect',async t=>{
   const {createFirebasePartyChannel}=await import('../../net/firebase-party-channel.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
-  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');
+  const {createPartyHost}=await import('../../core/party-host.mjs');const {createMatch}=await import('../../core/simulation.mjs');const {createPlayer}=await import('../../core/match.mjs');
   await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});await set(ref(bob,'players/bob'),{name:'Bob',gender:'female',xp:0});
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   const fullSdk={...sdk,set,onValue,update},ids=['alice','bob'],opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
@@ -46,8 +46,8 @@ test('host snapshots credit both participants once and preserve progress on reco
 test('actual game adapters show each balance and credit both players for a completed wave', {timeout:20000}, async t=>{
   const {onDisconnect,remove,serverTimestamp}=await import('firebase/database');
   const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');
-  const {createPlayer}=await import('../../match.mjs');
-  const {STEP}=await import('../../simulation.mjs');
+  const {createPlayer}=await import('../../core/match.mjs');
+  const {STEP}=await import('../../core/simulation.mjs');
   const fullSdk={ref,get,set,onValue,update,runTransaction,onDisconnect,remove,serverTimestamp};
   await set(ref(alice,'players/alice'),{name:'Alice',gender:'female',xp:0});await set(ref(bob,'players/bob'),{name:'Bob',gender:'female',xp:0});
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
@@ -167,7 +167,7 @@ test('endless wave receipts award both players once under published rules',async
 test('shared rare upgrades and broken ice survive Firebase snapshots and reconnect',async t=>{
   const {createFirebasePartyChannel}=await import('../../net/firebase-party-channel.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
-  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');
+  const {createPartyHost}=await import('../../core/party-host.mjs');const {createMatch}=await import('../../core/simulation.mjs');const {createPlayer}=await import('../../core/match.mjs');
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
   const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'})),'g2-12345678');state.pendingPerk=5;state.iceBroken=true;
@@ -183,7 +183,7 @@ test('shared rare upgrades and broken ice survive Firebase snapshots and reconne
 test('boss warning timing and bunker strike synchronize through Firebase',async t=>{
   const {createFirebasePartyChannel}=await import('../../net/firebase-party-channel.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
-  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch,STEP}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');const {makeEnemy}=await import('../../combat.mjs');
+  const {createPartyHost}=await import('../../core/party-host.mjs');const {createMatch,STEP}=await import('../../core/simulation.mjs');const {createPlayer}=await import('../../core/match.mjs');const {makeEnemy}=await import('../../core/combat.mjs');
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};
   const state=createMatch(ids.map(id=>createPlayer(id,{name:id,gender:'female'})),'g2-12345678');state.wave=10;state.running=true;state.spawnLeft=1;state.spawnTimer=100;
@@ -198,7 +198,7 @@ test('boss warning timing and bunker strike synchronize through Firebase',async 
 test('destroyed urban cover synchronizes across Firebase and reconnect',async t=>{
   const {createFirebasePartyChannel}=await import('../../net/firebase-party-channel.mjs');
   const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
-  const {createPartyHost}=await import('../../party-host.mjs');const {createMatch}=await import('../../simulation.mjs');const {createPlayer}=await import('../../match.mjs');const {getMap}=await import('../../maps.mjs');
+  const {createPartyHost}=await import('../../core/party-host.mjs');const {createMatch}=await import('../../core/simulation.mjs');const {createPlayer}=await import('../../core/match.mjs');const {getMap}=await import('../../core/maps.mjs');
   await env.withSecurityRulesDisabled(async ctx=>{await set(ref(ctx.database(),`parties/${party}`),{hostId:'alice',guestId:'bob'});});
   const ids=['alice','bob'],fullSdk={...sdk,set,onValue,update},opts={sdk:fullSdk,partyId:party,hostId:'alice',playerIds:ids};let map;
   for(let i=0;i<1000&&!map;i++){const m=getMap(`g2-${(Math.imul(i,2654435761)>>>0).toString(16).padStart(8,'0')}`);if(m.theme==='urban')map=m;}

@@ -12,10 +12,10 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,runTransaction,query,orderByKey,limitToFirst} from 'firebase/database';
-import {createCharacterNameClaim} from '../../character-name-claim.mjs';
-import {createCharacterRename} from '../../character-rename.mjs';
-import {createFriendService} from '../../friends.mjs';
-import {characterNameKey,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../../character-name.mjs';
+import {createCharacterNameClaim} from '../../core/character-name-claim.mjs';
+import {createCharacterRename} from '../../core/character-rename.mjs';
+import {createFriendService} from '../../core/friends.mjs';
+import {characterNameKey,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../../core/character-name.mjs';
 import {buildBlock2RulesCandidate} from '../block2-rules-candidate.mjs';
 
 // Two runs against the same base ruleset:

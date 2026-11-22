@@ -1,4 +1,4 @@
-import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';import {ref,get,set,update,remove,onValue,runTransaction} from 'firebase/database';import {CAMPAIGN,completeStory,STORY_FORMAT} from '../../campaign.mjs';
+import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';import {ref,get,set,update,remove,onValue,runTransaction} from 'firebase/database';import {CAMPAIGN,completeStory,STORY_FORMAT} from '../../core/campaign.mjs';
 // The file that gets pasted into the Firebase console is
 // ../WORKSHOP-RULES-TO-PUBLISH.json - not the draft files the other suites
 // load. Reported live: "Nach Sieg in Kampagnen-Mission 1 bleiben 'Mission

@@ -6,7 +6,7 @@ import {ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTime
 import {webcrypto} from 'node:crypto';
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 import {createFirebasePartyGame} from '../../net/firebase-party-game.mjs';
-import {createPlayer} from '../../match.mjs';
+import {createPlayer} from '../../core/match.mjs';
 const ids=['alice','bob','cara','dan'],sdk={ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTimestamp},profiles=Object.fromEntries(ids.map(id=>[id,{name:id,gender:'female',level:1}]));let env,db;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.IRONPATH_STORY_RULES?'../story.complete.draft.rules.json':process.env.IRONPATH_ONLINE_RULES?'../online-recovery.complete.draft.rules.json':process.env.IRONPATH_CAMPAIGN_RULES?'../campaign.complete.draft.rules.json':'../unified.complete.draft.rules.json',import.meta.url),'utf8')}});db=Object.fromEntries(ids.map(id=>[id,env.authenticatedContext(id).database()]));});
 beforeEach(async()=>{await env.clearDatabase();for(const id of ids)await set(ref(db[id],`players/${id}`),{name:id,gender:'female',xp:0});});after(async()=>env.cleanup());
