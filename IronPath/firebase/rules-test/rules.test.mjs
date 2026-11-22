@@ -3,8 +3,8 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,get,set,update,runTransaction,serverTimestamp} from 'firebase/database';
-import {createFirebasePartyLobby} from '../../firebase-party-lobby.mjs';
-import {createFirebasePartyChannel} from '../../firebase-party-channel.mjs';
+import {createFirebasePartyLobby} from '../../net/firebase-party-lobby.mjs';
+import {createFirebasePartyChannel} from '../../net/firebase-party-channel.mjs';
 const projectId='demo-ironpath',party='0123456789abcdef0123000000000000';
 let env,alice,bob,eve,anonymous;
 const at=(db,path)=>ref(db,`parties/${party}/${path}`);
@@ -91,8 +91,8 @@ test('slot contention has one winner and departed guests lose party access',asyn
 
 test('two Firebase clients run a shared hosted match, pause, and resume', {timeout:20000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
-  const {createFirebasePartyPresence}=await import('../../firebase-party-presence.mjs');
-  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../firebase-party-session.mjs');
+  const {createFirebasePartyPresence}=await import('../../net/firebase-party-presence.mjs');
+  const {createFirebasePartyHostSession,createFirebasePartyClientSession}=await import('../../net/firebase-party-session.mjs');
   const {createPartyHost}=await import('../../party-host.mjs');
   const {createMatch}=await import('../../simulation.mjs');
   const {createPlayer}=await import('../../match.mjs');
@@ -145,7 +145,7 @@ test('only the host can delete an entire party, without gaining parent write acc
 
 test('game-facing Firebase adapter connects, plays and pauses without a game server', {timeout:20000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
-  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');
+  const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');
   const {createPlayer}=await import('../../match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
   const crypto={getRandomValues(bytes){bytes.set(Buffer.from(party,'hex').subarray(0,bytes.length));return bytes;}};
@@ -214,7 +214,7 @@ test('party profiles and one-time start handoff are member-bound',async()=>{
 
 test('versus adapters isolate lanes, synchronize waves and pause on reconnect', {timeout:30000}, async t=>{
   const {onValue,onDisconnect,remove,goOffline,goOnline}=await import('firebase/database');
-  const {createFirebasePartyGame}=await import('../../firebase-party-game.mjs');const {createPlayer}=await import('../../match.mjs');
+  const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');const {createPlayer}=await import('../../match.mjs');
   const sdk={ref,get,set,update,runTransaction,onValue,onDisconnect,remove,serverTimestamp};
   await assertSucceeds(set(at(alice,'hostId'),'alice'));await assertSucceeds(set(at(bob,'guestId'),'bob'));
   const ids=['alice','bob'],common={sdk,partyId:party,hostId:'alice',playerIds:ids};let readyA=false,readyB=false,viewA,viewB,stateA,stateB;

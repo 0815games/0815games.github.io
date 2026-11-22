@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0076 stehen im
+Die Einträge IPL-0001 bis IPL-0077 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,18 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0077 – Block 9g (`20261119-block9g`): Command-Center-Soldatenkarte (EXP unten), gestaltete HQ-Aktionskarten & Ergebnis-Positionierung
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe nach iPad-Safari-Screenshot von `20261119-block9f`); Branch `arena/5073637d-0815games-github-io` ab `55037d704bc82cc51ed760503deb7cbcbb83263e` (`main`).
-- **Block / Ziel:** Vier Rückmeldungen am Command Center beheben: (1) `EXP`-Balken und Anzeige (`#menuXpBar` / `#menuXp`) neben dem Porträt weg und ganz nach unten innerhalb der `YOUR SOLDIER`-Karte (`#menuSoldier`) verlegen, (2) die `YOUR SOLDIER`-Karte grafisch und strukturell klar neu aufbauen, (3) die vier Aktionsbuttons `ARMORY`, `SKILLS`, `FRIENDS` und `HIGH SCORES` (`.command-soldier-actions`) von leeren grünen Rechtecken in stimmige gestaltete Iron-Path-Karten mit Artwork & Vektor-Symbolen umwandeln, (4) sicherstellen, dass `VIEW LAST RESULTS` (`#menuResults`) auf Desktop, iPad und Handy sichtbar **unterhalb** der 3 Spielmodi (`Campaign`, `Endless`, `Multiplayer`) sitzt und niemals darüber.
-- **Änderungen / Dateien:**
-  - **Artworks (`IronPath/assets/`):** Zwei neue text-/randfreie `16:9`-Öl-/Taktik-Gemälde `action-friends.jpg` und `action-scores.jpg` passend zu `arsenal-workbench.jpg` (`ARMORY`) und `skills-banner.jpg` (`SKILLS`).
-  - **Markup (`IronPath/index.html`):** `#menuSoldier` klar in `.command-soldier-main` (Porträt + Rank-Abzeichen, Header-Zeile mit Kicker & `OPEN DOSSIER →`-Chip, Soldatenname, Level-Badge) und vollbreite untere `.command-soldier-xp`-Leiste (`EXP` + `#menuXp` über golden gestyltem `#menuXpBar`) gegliedert; `#menuArmory`, `#menuSkills`, `#menuFriends`, `#menuLeaderboard` mit maßgeschneiderten SVG-Symbolen (`.action-card-icon`) und geschütztem `<span class="action-card-label" data-i18n="...">` versehen.
-  - **Stylesheet (`IronPath/menu-redesign.css`):** `#menuSoldier` mit atmosphärischem `soldier-workbench.jpg`-Hintergrund, vertieftem goldenem Bottom-EXP-Dock (`::-webkit-progress-value` / `::-moz-progress-bar` im Messingverlauf) und voller responsiver Struktur `< 860px` / `>= 860px`; gemalte Hintergründe + SVG-Rahmen auf `.command-soldier-actions` ohne Hover-Verschiebung; optimierte iPad-/Desktop-Proportionen (`min-height: 118px` `.command-hero`, `min-height: 268px` `.mode-card`) mit `grid-row: 5` für `#menuResults` strikt unter `.mode-grid`.
-  - **Tests & Cache-Welle (`20261119-block9g`):** `IronPath/tests/menu-redesign.test.mjs`, `IronPath/browser-tests/interface-smoke.cjs` (DOM-, Hover-Crop-, Portrait-vs-EXP-Vertikalcheck und `#menuResults`-Position mit/ohne `#menuResume`), `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9g`, `pr: 326`) & Cache-Welle `?v=20261119-block9g`.
-- **Prüfungen:** Lokal verifiziert via `node --test`, `node IronPath/stress-tests/run.mjs` und `node --check`; vollständiger Playwright-Desktop-/Mobile-Check nach Push via GitHub CI.
-- **Git / PR / Release:** Commit `4108f8d` auf `arena/5073637d-0815games-github-io` gepusht; **PR #326 gemergt** (`25b8c332358889e5694a425672f83ac7b023ee15`, Pages `44579416364` & Main-CI `44579419185` 11/11 grün). `20261119-block9g` auf GitHub Pages live.
-- **Offen:** Echte Geräteabnahme führte anschließend zur Block-2-Fertigstellung (`IPL-0078`).
 
 ## IPL-0078 – Block 2 (`20261119-block2`): Strenges `NFC_CASEFOLD_V2`, stiller Login-Backfill, Konflikt-Dialog & `BLOCK2`-Rules-Kandidat
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/ef607625-0815games-github-io` ab `25b8c332358889e5694a425672f83ac7b023ee15` (`main`), Status: `lokal/uncommittet`.
@@ -800,3 +788,23 @@ sie geprüft wurde.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. **Keine Geräteabnahme:** Stempel `BUILD 20261122-workshop1` und die unverändert öffnende Werkstatt (Gegenstände, Schrott, ausgerüstete Teile) sind Sache der Betreiber-Sichtprüfung.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#350`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text.
 
+
+## IPL-0097 – Phase 2, Scheibe 3: Die 15 Firebase-Clientmodule ziehen nach `net/` (eigene Cache-Welle folgt im selben PR)
+
+- **Zeit / Quelle:** Betreiber: „top, ging und weiter“ — Freigabe und Fortsetzung nach der `workshop/`-Scheibe (`IPL-0096`). Grundlage bleiben die vier Entscheidungen aus `IPL-0094`.
+- **Block / Ziel:** Kein Spiel-Block. Alle 15 `firebase-*.mjs` der Spielwurzel (Party-Kanal und -Sitzungen, Four-Lobby, Durable-/Recovery-Sitzungen) liegen künftig in `IronPath/net/`. Spielverhalten, Mehrspieler-Protokoll, Speicherstände und die Firebase-Regeln im Ordner `firebase/` bleiben unverändert; nur die Modul-Adressen ändern sich, deshalb trägt derselbe PR wieder eine eigene Cache-Welle (zweiter Commit, sobald die PR-Nummer existiert).
+- **Branch / Basis:** `arena/c1f67000-0815games-github-io` ab `af8241a4fb566bed112fa95bc403960163dc4adf` (`main`, Merge von PR `#351`).
+- **Änderungen / Dateien:**
+  - 15 Dateien per `git mv` nach `IronPath/net/` verschoben. 6 davon sind inhaltlich bytegleich; in 9 Dateien zeigen Importe auf Wurzel-Module jetzt eine Ebene hoch; Geschwister-Importe innerhalb von `net/` bleiben `./`.
+  - Einziger Wurzel-Importeur ist `IronPath/account.js` (7 Importe auf `./net/firebase-…` umgestellt).
+  - Mitgezogen: 22 Testdateien (`../net/firebase-…`), 13 Dateien in `IronPath/firebase/rules-test/` (`../../net/firebase-…`), der Lesepfad `net/firebase-party-game.mjs` in `language.test` und fünf Abhängigkeits-Schlüssel in `multiplayer-build-stamp` (`net/firebase-…`, weil diese Karte die Dateien unter ihrem Pfad liest).
+  - `IronPath/browser-tests/cache-wave.cjs`: Die zwei absoluten Importe zeigen auf `/IronPath/net/firebase-party-game.mjs` bzw. `net/firebase-recoverable-game.mjs`, und die Erwartungsliste führt die drei Netz-Module mit `net/`-Präfix. Der Test-Server kannte den Ordner bereits aus dem Wegbereiter (`IPL-0094`).
+  - **Korrektur am eigenen Codemod, vom Struktur-Wächter gefunden:** Zwei bereits umgezogene Querverweise (`./workshop/workshop-multiplayer-game.mjs` und `./workshop/workshop-match-validation.mjs` in `firebase-party-game` und `firebase-recoverable-game`) zeigten nach dem Umzug auf `net/workshop/…` ins Leere — der erste Codemod-Lauf erkannte nur einfache Dateinamen, keine Ordnerpfade. Der Wächter meldete beide Module als verwaist; die vier Importe zeigen jetzt auf `../workshop/…`. Merksatz für die restlichen Scheiben: Importe, die bereits in einen Fach-Ordner zeigen, brauchen beim Umzug des Importeurs ebenfalls ein `../` davor.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0077` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0077` nachgezogen; das Log führt die neuesten 20 (`IPL-0078` bis `IPL-0097`).
+- **Prüfungen:**
+  - Betroffene Tests gezielt: 44 Vertrags-/Strukturtests (ein Fund: die oben genannten verwaisten Querverweise) und **263 Netz-Tests** (`durable-*`, `firebase-*`, `four-*`, `party-*`, `coop-*`, `friends*`, `social-*`, `multiplayer-*`, Konto-Suiten) — alle bestanden.
+  - Staging-Vergleich gegen den `main`-Stand (Baseline per `git worktree` auf `af8241a4`): **711 gestagte Dateien vorher und nachher**; 15 neue `net/`-Adressen, 6 Module mit identischem SHA-256, `account.js` als einzige Datei mit gleicher Adresse und neuem Inhalt.
+  - Gesamtsuite im vollständigen Klon: `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0**. `patch-check` vor dem Log-Eintrag: **0 Fehler**.
+  - Noch offen zum Zeitpunkt dieses Eintrags: Cache-Welle mit Feldnotizen-Eintrag DE+EN (zweiter Commit, braucht die PR-Nummer), danach Verträge und volle Suite auf der neuen Welle. Keine Geräteabnahme bisher.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/c1f67000-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR öffnen, Wellen-Commit nachschieben, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach `battle/`, `ui/`, `core/` je eigenem PR. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt, bis die Struktur steht.

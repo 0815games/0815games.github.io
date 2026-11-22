@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {createFirebaseFourLobby} from '../firebase-four-lobby.mjs';
+import {createFirebaseFourLobby} from '../net/firebase-four-lobby.mjs';
 // In-memory SDK validates client flows and transaction races, not Firebase rules.
 const root={},listeners=new Map();let tx=Promise.resolve(),counter=0;
 const clone=x=>x==null?null:structuredClone(x);

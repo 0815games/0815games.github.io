@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,update,onValue,serverTimestamp,runTransaction} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
-import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
+import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 import {createCoopInvites} from '../../coop-invites.mjs';
 let env,alice,bob,eve;const sdk={ref,set,get,remove,update,onValue,serverTimestamp,runTransaction};
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../direct-invites.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();});

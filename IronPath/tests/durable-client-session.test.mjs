@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createDurableClientSession} from '../firebase-durable-client-session.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createDurableClientSession} from '../net/firebase-durable-client-session.mjs';
 const a='a'.repeat(32),b='b'.repeat(32);const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function setup(){let lease,view;const sent=[],states=[],snapshots=[],channel={watchLease(fn){lease=fn;return()=>{};},watchView(fn){view=fn;return()=>{};},async writeInput(x){sent.push(x);},async close(){}};const client=createDurableClientSession({channel,onState:s=>states.push(s),onView:s=>snapshots.push(s),timeoutMs:1000});client.start();return {client,sent,states,snapshots,lease:v=>lease(v),view:v=>view(v)};}
 const v=(generation,owner,tick,nextSeq=1,receipts=[])=>({generation,owner,ready:true,snapshot:{tick,nextSeq,receipts}});

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createFirebasePartyGame} from '../firebase-party-game.mjs';
+import {createFirebasePartyGame} from '../net/firebase-party-game.mjs';
 import {createPlayer} from '../match.mjs';
 
 test('the four-player adapter runs a whole match on the in-memory Firebase SDK',async()=>{

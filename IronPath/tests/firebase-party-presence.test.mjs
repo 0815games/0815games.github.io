@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {createFirebasePartyPresence} from '../firebase-party-presence.mjs';
+import {createFirebasePartyPresence} from '../net/firebase-party-presence.mjs';
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));let now=100000;
 const values=new Map(),listeners=new Map(),disconnects=new Set(),events=[];let allowRegistration=null;
 function read(path){if(values.has(path))return values.get(path);const children={};for(const [key,value] of values){if(key.startsWith(path+'/'))children[key.slice(path.length+1)]=value;}return Object.keys(children).length?children:null;}
@@ -36,7 +36,7 @@ changed.start();await sleep(5);assert.equal(authConnection,true);changingAuth.cu
 assert.equal(authConnection,false);assert.deepEqual(authErrors,['Party identity changed']);await changed.stop();
 // Wire the presence events into the real player-hosted session.
 const {createPartyHost}=await import('../party-host.mjs');
-const {createFirebasePartyHostSession}=await import('../firebase-party-session.mjs');
+const {createFirebasePartyHostSession}=await import('../net/firebase-party-session.mjs');
 const {createMatch}=await import('../simulation.mjs');
 const {createPlayer}=await import('../match.mjs');
 const gameHost=createPartyHost(createMatch(['alice','bob'].map(id=>createPlayer(id,{name:id,gender:'female'}))));

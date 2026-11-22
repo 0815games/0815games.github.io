@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {getMap,createRandomMapId} from '../maps.mjs';
 import {bunkerStart} from '../solo-deployment.mjs';
 import {createPlayer} from '../match.mjs';
-import {createFirebasePartyGame} from '../firebase-party-game.mjs';
+import {createFirebasePartyGame} from '../net/firebase-party-game.mjs';
 import {runCoop,GEARS} from './balance-harness.mjs';
 
 const seed=value=>({getRandomValues(array){array.fill(value);return array;}});

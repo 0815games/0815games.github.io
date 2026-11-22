@@ -8,7 +8,7 @@ import {createPlayer,applyCommand} from '../match.mjs';
 import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../four-modes.mjs';
 import {projectFourGameView} from '../four-game-view.mjs';
 import {createVersus} from '../versus.mjs';
-import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
+import {createFourPlayerPanel} from '../net/firebase-four-panel.mjs';
 import {setupLanguage} from '../language.mjs?v=20261122-workshop1';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));

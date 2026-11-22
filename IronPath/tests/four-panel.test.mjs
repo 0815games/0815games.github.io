@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {productionModuleUrl} from './production-module.mjs';
-import {createFourPlayerPanel} from '../firebase-four-panel.mjs';
+import {createFourPlayerPanel} from '../net/firebase-four-panel.mjs';
 import {FRIEND_PORTRAIT_PLACEHOLDER} from '../friend-portrait.mjs';
 const profiles={alice:{name:'Alice',gender:'female',level:1},bob:{name:'Bob',gender:'male',level:1},cara:{name:'Cara',gender:'female',level:1},dan:{name:'Dan',gender:'male',level:1}};
 const manifest={hostId:'alice',playerIds:['alice','bob','cara','dan'],mode:'two-vs-two',teams:[0,1,0,1]};

@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,runTransaction,update} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
-import {createFirebaseFourLobby} from '../../firebase-four-lobby.mjs';
+import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 import {encodeBuild,parseBuild,SKILL_PATHS,DEFAULT_BUILD} from '../../skills.mjs';
 import {migrateSkillsProfile} from '../../skills-migration.mjs';
 

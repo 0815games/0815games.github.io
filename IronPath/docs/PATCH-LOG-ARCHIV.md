@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0076. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0077. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3509,4 +3509,17 @@ Grenzen / Offen:
   - `node IronPath/stress-tests/run.mjs` & `node --check` über alle **561** `.js`/`.mjs`/`.cjs`-Dateien bestanden; `menu-redesign.css` nach Final-Edit zusätzlich gegen `tests/menu-redesign.test.mjs` geprüft.
 - **Git / PR / Release:** Commit `63bd0064d4fd4c1f948104436559c11deb9112e6` auf `arena/21544492-0815games-github-io` gepusht; **PR #325 gemergt** (`55037d704bc82cc51ed760503deb7cbcbb83263e`, PR-CI `44568037203` 13/13 grün; Pages Deploy `44569992725` & main CI `44569994188` 11/11 grün). `20261119-block9f` auf GitHub Pages live.
 - **Offen:** iPad-Gerätesichtung führte direkt zur Command-Center-Überarbeitung **Block 9g (`IPL-0077`)**.
+
+
+## IPL-0077 – Block 9g (`20261119-block9g`): Command-Center-Soldatenkarte (EXP unten), gestaltete HQ-Aktionskarten & Ergebnis-Positionierung
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe nach iPad-Safari-Screenshot von `20261119-block9f`); Branch `arena/5073637d-0815games-github-io` ab `55037d704bc82cc51ed760503deb7cbcbb83263e` (`main`).
+- **Block / Ziel:** Vier Rückmeldungen am Command Center beheben: (1) `EXP`-Balken und Anzeige (`#menuXpBar` / `#menuXp`) neben dem Porträt weg und ganz nach unten innerhalb der `YOUR SOLDIER`-Karte (`#menuSoldier`) verlegen, (2) die `YOUR SOLDIER`-Karte grafisch und strukturell klar neu aufbauen, (3) die vier Aktionsbuttons `ARMORY`, `SKILLS`, `FRIENDS` und `HIGH SCORES` (`.command-soldier-actions`) von leeren grünen Rechtecken in stimmige gestaltete Iron-Path-Karten mit Artwork & Vektor-Symbolen umwandeln, (4) sicherstellen, dass `VIEW LAST RESULTS` (`#menuResults`) auf Desktop, iPad und Handy sichtbar **unterhalb** der 3 Spielmodi (`Campaign`, `Endless`, `Multiplayer`) sitzt und niemals darüber.
+- **Änderungen / Dateien:**
+  - **Artworks (`IronPath/assets/`):** Zwei neue text-/randfreie `16:9`-Öl-/Taktik-Gemälde `action-friends.jpg` und `action-scores.jpg` passend zu `arsenal-workbench.jpg` (`ARMORY`) und `skills-banner.jpg` (`SKILLS`).
+  - **Markup (`IronPath/index.html`):** `#menuSoldier` klar in `.command-soldier-main` (Porträt + Rank-Abzeichen, Header-Zeile mit Kicker & `OPEN DOSSIER →`-Chip, Soldatenname, Level-Badge) und vollbreite untere `.command-soldier-xp`-Leiste (`EXP` + `#menuXp` über golden gestyltem `#menuXpBar`) gegliedert; `#menuArmory`, `#menuSkills`, `#menuFriends`, `#menuLeaderboard` mit maßgeschneiderten SVG-Symbolen (`.action-card-icon`) und geschütztem `<span class="action-card-label" data-i18n="...">` versehen.
+  - **Stylesheet (`IronPath/menu-redesign.css`):** `#menuSoldier` mit atmosphärischem `soldier-workbench.jpg`-Hintergrund, vertieftem goldenem Bottom-EXP-Dock (`::-webkit-progress-value` / `::-moz-progress-bar` im Messingverlauf) und voller responsiver Struktur `< 860px` / `>= 860px`; gemalte Hintergründe + SVG-Rahmen auf `.command-soldier-actions` ohne Hover-Verschiebung; optimierte iPad-/Desktop-Proportionen (`min-height: 118px` `.command-hero`, `min-height: 268px` `.mode-card`) mit `grid-row: 5` für `#menuResults` strikt unter `.mode-grid`.
+  - **Tests & Cache-Welle (`20261119-block9g`):** `IronPath/tests/menu-redesign.test.mjs`, `IronPath/browser-tests/interface-smoke.cjs` (DOM-, Hover-Crop-, Portrait-vs-EXP-Vertikalcheck und `#menuResults`-Position mit/ohne `#menuResume`), `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9g`, `pr: 326`) & Cache-Welle `?v=20261119-block9g`.
+- **Prüfungen:** Lokal verifiziert via `node --test`, `node IronPath/stress-tests/run.mjs` und `node --check`; vollständiger Playwright-Desktop-/Mobile-Check nach Push via GitHub CI.
+- **Git / PR / Release:** Commit `4108f8d` auf `arena/5073637d-0815games-github-io` gepusht; **PR #326 gemergt** (`25b8c332358889e5694a425672f83ac7b023ee15`, Pages `44579416364` & Main-CI `44579419185` 11/11 grün). `20261119-block9g` auf GitHub Pages live.
+- **Offen:** Echte Geräteabnahme führte anschließend zur Block-2-Fertigstellung (`IPL-0078`).
 

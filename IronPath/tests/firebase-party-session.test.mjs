@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createFirebasePartyHostSession,createFirebasePartyClientSession} from '../firebase-party-session.mjs';
+import {createFirebasePartyHostSession,createFirebasePartyClientSession} from '../net/firebase-party-session.mjs';
 import {createPartyHost} from '../party-host.mjs';
 import {createMatch} from '../simulation.mjs';
 import {createVersus} from '../versus.mjs';

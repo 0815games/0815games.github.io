@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createFirebaseRecoverableGame} from '../firebase-recoverable-game.mjs';
+import {createFirebaseRecoverableGame} from '../net/firebase-recoverable-game.mjs';
 const wait=async fn=>{for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,5));}throw Error('Timed out');};
 test('recoverable guest removes presence and listeners after an invalid packet',async()=>{
  const party='a'.repeat(32),owner='b'.repeat(32),values=new Map([['.info/connected',true],['.info/serverTimeOffset',0],[`fourParties/${party}/recovery/lease`,{generation:1,owner}]]),listeners=new Map(),states=[];

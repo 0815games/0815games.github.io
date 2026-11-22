@@ -15,7 +15,7 @@ test('unsupported or denied Web Locks fall back to normal play',async()=>{
 });
 
 test('game adapter refuses a second same-browser session before registering presence',async()=>{
- const {createFirebasePartyGame}=await import('../firebase-party-game.mjs');const locks=fakeLocks(),events=[],paths=[];
+ const {createFirebasePartyGame}=await import('../net/firebase-party-game.mjs');const locks=fakeLocks(),events=[],paths=[];
  const sdk={ref:(_db,p)=>p,onValue(p,cb){paths.push(p);cb({val:()=>p==='.info/connected'?false:null});return()=>{};},async set(){},async update(){},async remove(){},onDisconnect(){return {async remove(){}};},serverTimestamp(){return 0;}};
  const create=(label)=>createFirebasePartyGame({db:{},auth:{currentUser:{uid:'bob'}},sdk,crypto:{getRandomValues(a){a.fill(1);}},partyId:'party',partyRoot:'fourParties',hostId:'alice',playerIds:['alice','bob'],mode:'coop',lockManager:locks,onState:state=>events.push([label,state])});
  const a=create('a'),b=create('b');a.start();await flush();const firstCount=paths.length;assert.ok(firstCount>0);b.start();await flush();assert.deepEqual(events.filter(([label,state])=>label==='b'&&state==='duplicate'),[['b','duplicate']]);assert.equal(paths.length,firstCount,'duplicate must not attach channels or presence');await b.stop();await a.stop();await flush();const c=create('c');c.start();await flush();assert.ok(paths.length>firstCount);await c.stop();
