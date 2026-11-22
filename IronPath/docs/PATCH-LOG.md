@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0071 stehen im
+Die Einträge IPL-0001 bis IPL-0072 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,23 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0072 – Block 9c (`20261119-block9c`, PR #322): Einheitliche Einstellungen, AFK-Artwork, Kopie-Korrekturen & vollständige Dialog-Harmonisierung
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/cd3317c7-0815games-github-io` ab `0e26018634033c37b9baf5a1c4fae07c668345ba` (`main`), PR #322.
-- **Block / Ziel:** Verbleibende UI-/Einstellungs- und Textlücken in Block 9 schließen: Einstellungs-Konsole (`#settingsDialog`) mit vollständigen Audio-, Grafik-, FX-, Kamera- und Autopause-Reglern für Kommandozentrale und Gefecht vereinheitlichen, doppelten Feldmenü-Sound-Schalter entfernen, `#afkRestDialog` / `#afkSessionFailure` mit handgemalter Bunker-Szene aufwerten, sämtliche Rest-Modale/Popups auf gemeinsame Tokens, einheitliche `✕`-Schließsymbole und kollisionsfreie `#versionNotice`-Positionierung abstimmen sowie veraltete Fakten (`18` → `50` Missionen, `three` → `five` Akte, redundante Endlos-Links) bereinigen.
-- **Änderungen / Dateien:**
-  - `IronPath/assets/{afk-rest,settings-command}.jpg`: zwei neue text- und randlose `1376×768`-Gemälde erzeugt und beschnitten.
-  - `IronPath/settings.mjs`, `IronPath/localization-settings-de.mjs`, `IronPath/tests/settings.test.mjs`: `soundEnabled`, `voiceOver`, `screenShake`, `weatherEffects`, `combatTracers`, `autoPause`, `mapZoom`, `snapshot()`, bestätigter Reset (`#settingsRestoreDefaults`) und automatische Sub-Toggle-Sperre bei `reduced`-Grafik ergänzt; DE-Schlüssel & Unit-Tests vervollständigt.
-  - `IronPath/game.js`, `IronPath/cartoon-art.mjs`, `IronPath/account.js`: `initialSettings` / `applySettings` live verdrahtet (`voiceOver`, `screenShake`, `weatherEffects`, `combatTracers`, `autoPause`, `mapZoom`, Audio-Gesten-Entsperrung), Solo-Pause während `#settingsDialog.open`, `#soundToggle` entfernt und `#afkRestArt` auf `assets/afk-rest.jpg` (mit `<canvas>`-Fallback-Schutz) umgestellt.
-  - `IronPath/endless-launcher.mjs`, `IronPath/tests/endless-launcher.test.mjs`, `IronPath/index.html`: `#endlessArmory` / `#endlessSkills` entfernt, `50 MISSIONS` / `five acts` korrigiert, `OPEN DOSSIER →` & Lade-Fallback zweisprachig gemacht, Lobby-Hinweise gestrafft, einheitliche `✕`-Close-Buttons gesetzt und `#towerDetailsBack` auf `CANCEL` vereinheitlicht.
-  - `IronPath/localization-{static,more-static,}-de.mjs`, `IronPath/language.mjs`: deutsche Übersetzungen (`50 MISSIONEN`, `fünf Akte`, `AKTE ÖFFNEN →`, gestraffte Lobby-Hilfe) synchronisiert und Cache-Import `localization-static-de.mjs` nachgezogen.
-  - `IronPath/menu-redesign.css`, `IronPath/style.css`, `IronPath/interface-redesign.css`: `#settingsDialog`-Banner/Karten/Schalter/Slider, `#afkRestDialog` / `#afkSessionFailure`, Harmonisierung von `#languageGate`/`#tutorialDialog`/`#storyCinematic`/`#runResults`/`#patchNotes`/`#skillDialog`/`#socialPopup`/`#multiplayerPrompt`/`#versionNotice`/`#deploymentCheck`, `<860px`-Vollbild-Sheets, `#versionNotice`-Lobby-/Kampf-Kollisionsschutz, tote CSS-Regeln entfernt (`#soundToggle`, `.danger-utility`, `.endless-loadout-links`).
-  - `IronPath/tests/{menu-redesign,endless-launcher,multiplayer-build-stamp}.test.mjs`, `IronPath/browser-tests/{command-center,interface-smoke,cache-wave,avatar-handover}.cjs`, `IronPath/release-version.json`, `IronPath/patch-notes.mjs` (`block9c`, `pr: 322`) & gesamte `?v=20261119-block9c`-Cache-Welle.
-- **Prüfungen:**
-  - `node --test IronPath/tests/*.test.mjs` & `node IronPath/stress-tests/run.mjs`: alle Unit-Suiten (inkl. `multiplayer-build-stamp`, `patch-notes`, `settings`, `afk-rest`, `menu-redesign`, `endless-launcher`, `campaign-ui`, `translation-coverage`, `dom-contract`) und Stressläufe **grün** (`release-pages-site` erwarteter Checkout-Skip).
-  - GitHub CI Run `44499916298` auf PR #322 (`dffbd20`, vor Cache-Stamp-Welle): **13/13 Checks bestanden** (`database-rules`, `game-regressions`, `interface-browser-smoke` inkl. Chromium `interface-smoke.cjs` & `command-center.cjs`, alle 8 `party-finalization-browser`-Jobs, Vercel). Finaler Release-Lauf auf PR #322 (`583a1c7a`) gemergt und über Pages (`44504375079`) live gestellt.
-- **Offen:** Echte Desktop- und Handy-Sichtung; im Folgeschritt `20261119-block9d` (PR #323) erweitert.
-- **Git / PR / Release:** PR #322 gemergt (`583a1c7a`) auf `main`.
 
 ## IPL-0073 – Block 9d (`20261119-block9d`, PR #323): Einzelsitzungs-Schutz (`activeSessions`), randfreie Gemälde, UI-/Sprachauswahl-Fixes & DE-Lokalisierung
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/92c6a81f-0815games-github-io` ab `583a1c7a53e499d5d2e7effb81906f607762b7a1` (`main`), PR #323.
@@ -601,3 +584,92 @@ jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderl
   Merge-Commit, Pages-Build) sind dieselben. Die Übernahme läuft als eigener
   Commit dieses Zweigs; dessen Kennung kann ein Commit nicht selbst enthalten,
   sie steht im Eintrag `IPL-0092`.
+## IPL-0092 – Ordnung im Repository: Spielwurzel von Arbeitsmaterial getrennt, Patch-Ablauf als Werkzeug, Patch-Log geteilt (`20261121-order1`, PR `#342`)
+
+- **Zeit / Quelle:** 2026-11-21 UTC. Auftrag des Betreibers, wörtlich: „Lass uns das repo mal
+  anschauen und Ordnung reinbringen. Saubere Struktur für jedes neues Update / patch inkl Handhabung
+  für getane Arbeiten im patchlog und Prüfungen vor und nach den patches. Struktur der Ordner und
+  alles. Sauber was zum Arbeiten benutzt wird trennen von Game Dateien." Vier abgefragte
+  Entscheidungen, bindend: Trennung = **A, Spielwurzel entrümpeln** (kein Umbau der CI-Pfade, kein
+  Wechsel des Pages-Builds); Prozess = **Doku + Skripte** (kein CI-Job, der es erzwingt); Patch-Log =
+  **neueste 20 Einträge + Archiv**; Ballast = **nichts löschen, nur umräumen**.
+- **Block / Ziel:** kein Spiel-Block. Ziel ist die Arbeitsfähigkeit des Repositorys selbst: was der
+  Browser lädt von dem trennen, womit gearbeitet wird, und den Patch-Ablauf wiederholbar machen. Am
+  Spiel ändert sich nichts - Grafik, Simulation, Balance, Speicherstände und Mehrspieler sind
+  unverändert.
+- **Branch / Basis:** `arena/f49da0c2-0815games-github-io` ab
+  `b056ca3c68b9ddfdb675e1b80a5e7c975d7f0f95` (`main`, Merge von PR `#341`).
+- **Änderungen / Dateien:** neun Commits, je ein logischer Schritt.
+  1. `e895087e` - 26 Markdown-Dateien aus der Spielwurzel nach `docs/` (34 relative Links
+     umgeschrieben, 8 externe Referenzstellen nachgezogen: `../../AGENTS.md`, `patch-notes.mjs`, zwei
+     Tests, `tower-specialization.mjs`, zwei READMEs); neu `README.md` als Strukturkarte; neu
+     `tests/repo-structure.test.mjs`.
+  2. `f88a4c53` - drei Module ohne Importeur nach `scripts/`: `map-review-render.mjs`,
+     `workshop-server-account.mjs`, `workshop-service-config.mjs`. **Release-Inventar der Spielwurzel
+     204 → 201 Dateien**, weil `release-tools/stage-version.mjs` jede `.mjs/.js/.css` der Wurzel in
+     jeden gestagten Build kopiert. Drei Pfade im Skript korrigiert, darunter der Ausgabeordner, der
+     nach dem Umzug sonst ins Repository geschrieben hätte. Struktur-Test um drei Wächter erweitert.
+  3. `da58f519` - `tests/production-cors-probe.test.mjs` startet seinen Unterprozess mit `cwd` =
+     Repo-Root; vorher lief die Suite nur vom Repo-Root grün.
+  4. `7216229a` - neu `scripts/patch-lib.mjs`, `scripts/patch-check.mjs` (Vor-/Nachprüfung),
+     `scripts/patch-bump.mjs` (Cache-Welle, Trockenlauf als Standard), `tests/patch-tooling.test.mjs`
+     (11 Tests gegen ein Miniatur-Repository mit echtem `git init`).
+  5. `4662afbe` - der PEM-Kopf in der Fixture wird zur Laufzeit zusammengesetzt, damit die eigene
+     Geheimnis-Prüfung nicht die Testdatei selbst flaggt.
+  6. `5b8f3a68` - Ereignis-Nachtrag zu `IPL-0091` übernommen. Das ist der Commit, dessen Kennung der
+     Nachtrag selbst nicht nennen kann; sie steht hier.
+  7. `ca38e70f` - Log geteilt: `docs/PATCH-LOG.md` 4040 → 610 Zeilen (neueste 20), neu
+     `docs/PATCH-LOG-ARCHIV.md` 3441 Zeilen (`IPL-0001`…`IPL-0071`), neu
+     `tests/patch-log-archive.test.mjs`.
+  8. `e6d6c4ff` - neu `docs/PATCH-ABLAUF.md` und `docs/patch-log-vorlage.md`; die Vorlage im Log wird
+     zum Verweis, damit sie nicht an zwei Stellen auseinanderläuft.
+  9. dieser Commit - Cache-Welle `20261121-road1` → `20261121-order1` über 79 Dateien per
+     `scripts/patch-bump.mjs --apply`, Feldnotizen-Eintrag `order1` in `patch-notes.mjs`, dieser
+     Log-Eintrag, `IPL-0072` ins Archiv verschoben.
+- **Prüfungen:** volle Suite vom Repo-Root im Serienlauf, genau wie CI, über dem gepushten Stand
+  `e6d6c4ff`: **1258 tests / 1258 pass / 0 fail / 0 skipped, EXIT=0** (Log `/tmp/suite-docs-tools.log`
+  des Arbeitsraums, nicht Teil des Repositorys). Nochmals über dem kompletten Endbaum **einschließlich
+  dieses Eintrags, der Cache-Welle und der Feldnotizen**: **1258 / 1258 / 0 fail / 0 skipped, EXIT=0**
+  (`/tmp/suite-final.log`). Zwischenstände: 1253/1253/0 nach Schritt 5,
+  1242/1241/0 mit **1 skipped** nach Schritt 2. Vor diesem Auftrag: 1242 tests / 1241 pass / 1 fail /
+  1 skipped. Isoliert: `repo-structure` 7/7, `patch-tooling` 11/11, `patch-log-archive` 5/5,
+  Verträge 7 Dateien / 28 Tests, Feldnotizen- und Stempelverträge zusammen 44/44.
+  Link-Prüfung über alle Markdown-Dateien unter `IronPath/`: 52 Dateien, 0 tote Links. Scan auf CJK-,
+  kyrillische und Fullwidth-Zeichen über alle neuen und geänderten Dateien: 0 Treffer.
+  Bissfestigkeit der Wächter geprüft, nicht angenommen: ein absichtlich in die Spielwurzel gelegtes
+  Modul ohne Importeur ließ Wächter 4 und 5 anschlagen (Probe angelegt und wieder gelöscht, 0 Reste).
+  Die Cache-Welle wurde zuerst als Trockenlauf gefahren und gegen die Handarbeit aus `IPL-0091`
+  gerechnet: identisch 79 Dateien, 276 Token-Vorkommen, 7 Anker-Zeilen, 3 geschützte Historien-Zeilen
+  in `patch-notes.mjs`. Im Diff der Welle stehen exakt 14 Nicht-`?v=`-Zeilen = die 7 Anker alt/neu.
+- **Git / PR / Release:** PR `#342`, geöffnet aus diesem Zweig gegen `main`. Zum Zeitpunkt dieses
+  Eintrags **offen**: kein CI-Ergebnis, kein Merge, kein Pages-Build, keine Auslieferung. Der Stempel
+  `20261121-order1` ist im Arbeitszweig gesetzt, nicht veröffentlicht.
+- **Grenzen, ehrlich:**
+  - **Kein Spieler sieht eine Änderung.** Nur die Cache-Welle macht sich bemerkbar: ein Gerät lädt die
+    Module einmal neu.
+  - Pages baut weiter mit `build_type: legacy` aus `main`, Pfad `/`: der ganze Baum bleibt öffentlich
+    erreichbar. Dieser Auftrag trennt Arbeitsmaterial **strukturell**, er nimmt nichts aus der
+    Auslieferung heraus. Die alten Doku-Adressen `/IronPath/*.md` gelten nicht mehr, sie liegen unter
+    `/IronPath/docs/*.md`. Wer Doku und Tests wirklich nicht ausliefern will, bräuchte einen
+    Actions-Build (Variante C, bewusst nicht gewählt).
+  - Gelöscht wurde nichts, wie entschieden. Die drei umgeräumten Module sind weiter unreferenziert
+    (`workshop-server-account.mjs` hat einen Test, die anderen beiden nicht), und die 1-Byte-Datei
+    `IronPath/empty` liegt weiter in der Spielwurzel.
+  - Kein CI-Job erzwingt den neuen Ablauf. `patch-check.mjs` meldet, es verhindert nichts.
+  - **Keine Geräteabnahme** und kein Abruf der live URL. `--verify-main` belegt Repo-Inhalt auf `main`
+    plus Pages-Baustatus, nicht die Auslieferung im Browser.
+- **Nebenfund, nicht angefasst:** `docs/PATCH-BLOECKE.md` endet mit einem **doppelt angehängten
+  Schlussblock** (23 Zeilen, 2132 Zeichen, ab Zeichen 128141): `## Gemeinsame Freigabe` steht zweimal,
+  ebenso der Admin-Login-Absatz, und die Wiederholung beginnt mit dem abgeschnittenen Wortfragment
+  `twerden sowie nach Abklingzeit.`. Gemessen gegen `main` (`b056ca3c`): beide Fassungen sind dort
+  identisch 1392 Zeilen, also **ist der Fehler älter als dieser Auftrag** und nicht durch das Umräumen
+  entstanden. Der Diff `main` → dieser Stand zeigt 27 geänderte Zeilen, und alle 27 sind reine
+  Link-Umschriebe (`firebase/…` → `../firebase/…`); keine Unicode-Schädigung. Inhaltlich ist der Block
+  einmal vorhanden, deshalb wurde nichts gelöscht - die Entscheidung liegt beim Betreiber.
+- **Offen / nächster Schritt:** CI-Ergebnis, Merge und Pages-Build zu PR `#342` prüfen und als
+  Ereignis nachtragen, sobald sie tatsächlich eingetreten sind. Vom Betreiber zu stellen:
+  `game-regressions` als Pflicht-Check (dieser Arbeitsraum bekommt auf `branches/main/protection` ein
+  `403`), die Geräteabnahme der Straße aus `#341` auf iPhone/iPad Safari, und die Entscheidung über den
+  doppelten Schlussblock in `PATCH-BLOECKE.md`. Danach Teil 2 des Auftrags aus `IPL-0091`: `#336`
+  komplett neu implementiert (dickerer pulsierender Auswahlring, Hover-Vorschau mit Welle und Anzahl
+  nächster Gegner, einschließlich der fehlenden deutschen Einträge für vier Literale).

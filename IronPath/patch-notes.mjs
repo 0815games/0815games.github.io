@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-road1';
+import {getLanguage} from './language.mjs?v=20261121-order1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,27 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'order1',build:'20261121-order1',pr:342,
+    title:{en:'Repository Housekeeping · Game Folder Separated from Working Material',de:'Ordnung im Repository · Spielordner von Arbeitsmaterial getrennt'},
+    shipped:[
+      {en:'This release changes nothing in the game: art, simulation, balance, saved progress and multiplayer are untouched. What was tidied is the repository, not the battlefield.',de:'Dieser Stand ändert am Spiel nichts: Grafik, Simulation, Balance, Speicherstände und Mehrspieler sind unverändert. Geräumt wurde das Repository, nicht das Gefechtsfeld.'},
+      {en:'Documentation and development scripts no longer sit among the game files. They live in IronPath/docs/ and IronPath/scripts/, and the game folder itself now holds only what a browser actually loads.',de:'Dokumente und Entwicklungsskripte liegen nicht mehr zwischen den Spieldateien. Sie liegen in IronPath/docs/ und IronPath/scripts/, und im Spielordner selbst liegt nur noch, was ein Browser tatsächlich lädt.'},
+      {en:'Three modules that nothing imported are out of the shipped package: they used to be copied into every release build without ever running.',de:'Drei Module, die nichts importierte, sind aus dem Auslieferungspaket heraus: sie wurden bisher in jeden Release-Build kopiert, ohne je zu laufen.'},
+      {en:'New tools check the build stamp, the folder structure and the patch log before and after every patch, and they raise the stamp across all files in one pass. That used to be hand work over 79 files.',de:'Neue Werkzeuge prüfen die Baukennung, die Ordnerstruktur und das Patch-Log vor und nach jedem Patch und ziehen die Kennung in einem Zug über alle Dateien. Das war bisher Handarbeit über 79 Dateien.'},
+      {en:'The patch log keeps the newest 20 entries and 71 older ones moved to an archive. A test proves both together are gapless and free of duplicates, so nothing was lost in the split.',de:'Das Patch-Log führt die neuesten 20 Einträge, 71 ältere wanderten in ein Archiv. Ein Test belegt, dass beide zusammen lückenlos und doppelfrei sind - beim Teilen ging also nichts verloren.'},
+      {en:'A missing record was added: the proven events for #341 (CI runs, merge commit, Pages build, delivery check) existed only on a working branch and were absent from the log on main.',de:'Ein fehlender Beleg ist nachgetragen: die geprüften Ereignisse zu #341 (CI-Läufe, Merge-Commit, Pages-Build, Auslieferungsprüfung) standen nur in einem Arbeitszweig und fehlten im Log auf main.'},
+      {en:'Raised the cache wave to 20261121-order1 across 79 files, so no device keeps serving the previous modules from its cache under an unchanged address.',de:'Die Cache-Welle in 79 Dateien auf 20261121-order1 erhöht, damit kein Gerät die vorherigen Module unter unveränderter Adresse weiter aus dem Zwischenspeicher liefert.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261121-order1 in the loading scene and in settings. An older stamp means cache, not code.',de:'Sichtprüfung nach dem Laden: Der Stempel muss in der Ladeszene und in den Einstellungen BUILD 20261121-order1 zeigen. Ein älterer Stempel bedeutet Zwischenspeicher, nicht Code.'},
+      {en:'No device acceptance: this release has not been checked on an iPhone or iPad. Because nothing in the game changed, the freeze reported earlier is neither confirmed nor ruled out by it.',de:'Keine Geräteabnahme: Dieser Stand ist nicht auf einem iPhone oder iPad geprüft. Weil sich am Spiel nichts änderte, ist das früher gemeldete Einfrieren damit weder bestätigt noch widerlegt.'},
+      {en:'Still open from earlier releases: accepting the road on real curves (#341) on a device, and part 2 - the thicker pulsing selection ring on build pads with a hover preview naming the wave and the next enemies, including the missing German entries for four literals.',de:'Weiter offen aus früheren Ständen: die Straße auf echten Kurven (#341) auf einem Gerät abzunehmen, und Teil 2 - der dickere pulsierende Auswahlring auf Bauplätzen mit Hover-Vorschau, die Welle und nächste Gegner nennt, einschließlich der fehlenden deutschen Einträge für vier Literale.'},
+      {en:'GitHub Pages still publishes the whole tree: documentation and tests stay publicly reachable under /IronPath/docs/ and /IronPath/tests/, and the old addresses /IronPath/*.md no longer work. Keeping working material out of the delivery would need an Actions build - deliberately not chosen.',de:'GitHub Pages veröffentlicht weiterhin den ganzen Baum: Doku und Tests bleiben unter /IronPath/docs/ und /IronPath/tests/ öffentlich erreichbar, die alten Adressen /IronPath/*.md gelten nicht mehr. Arbeitsmaterial wirklich nicht auszuliefern bräuchte einen Actions-Build - bewusst nicht gewählt.'},
+      {en:'game-regressions is still not a required check, and it was red for #335 through #339 while those were merged anyway. Only the repository owner can change that setting.',de:'game-regressions ist weiter kein Pflicht-Check und war bei #335 bis #339 jeweils rot, während diese trotzdem gemergt wurden. Nur der Betreiber kann das im Repository umstellen.'},
+      {en:'Nothing was deleted, as decided: the three relocated modules and the one-byte file IronPath/empty stay in the tree, documented as unreferenced.',de:'Gelöscht wurde nichts, wie entschieden: die drei umgeräumten Module und die 1-Byte-Datei IronPath/empty bleiben im Baum und sind als unreferenziert dokumentiert.'},
+    ],
+  },
   {
     id:'road1',build:'20261121-road1',pr:341,
     title:{en:'Road and Rail Rebuilt on Real Curves · Ground Tracks Return',de:'Straße und Schiene auf echten Kurven neu gebaut · Bodenspuren zurück'},

@@ -147,6 +147,15 @@ Log. `patch-check.mjs` meldet Lücken, Doppelte, Überlappung und Überlauf;
 `tests/patch-log-archive.test.mjs` lässt ein Aufteilen nicht durch, bei dem
 Einträge verloren gehen.
 
+**Verschieben ist Handarbeit, ein Eintrag wandert immer vollständig.** Kommt ein
+neuer Eintrag dazu, wird der älteste des Logs ans **Ende** des Archivs gehängt
+und in beiden Köpfen die Kennungsgrenze nachgezogen (`IPL-0001 bis IPL-00xx`).
+Ereignis-Nachträge bleiben bei ihrem Eintrag. Ein Teiler-Skript darf nur auf
+einem Log laufen, das **alle** Einträge enthält: auf einem bereits geteilten Log
+würde es das Archiv aus den 20 Einträgen neu schreiben und 72 Einträge
+zerstören. Deshalb steht hier kein Werkzeug dafür, und `patch-check.mjs` meldet
+den Überlauf, statt ihn selbst zu beheben.
+
 Nicht ins Log: Passwörter, Token, UIDs, Freundes- oder Partycodes, private
 Profile, Firebase-Schlüssel. `patch-check.mjs` prüft neue Zeilen auf
 Schlüsselmuster.
