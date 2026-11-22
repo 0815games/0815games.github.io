@@ -150,8 +150,8 @@ const oldUrls=[
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
   for(const name of ['game.js','battle/battle-viewport.mjs','battle/battle-viewport-controller.mjs','battle/battle-sound.mjs','battle/battle-sound-recipes.mjs','battle/battle-music.mjs','ui/popover-host.mjs','ui/field-menu.mjs','core/settings.mjs','core/password-change.mjs','core/endless-launcher.mjs','patch-notes.mjs','core/command-center.mjs','core/training-run.mjs','core/tutorial-sync.mjs','core/general-radio.mjs','core/tutorial-dossier.mjs','ui/menu-tour.mjs','ui/first-run-coach.mjs','ui/first-run-guide.mjs','i18n/localization-firstrun-de.mjs','i18n/localization-settings-de.mjs','i18n/localization-account-de.mjs','core/coop-input.mjs','core/coop-invites.mjs','ui/friends-ui.mjs','core/friends.mjs','core/friend-portrait.mjs','core/social-notifications.mjs','core/multiplayer-prompts.mjs','language.mjs','core/party-host.mjs','core/protocol.mjs','core/simulation.mjs','core/match.mjs','core/combat.mjs','core/tower-specialization.mjs','core/tower-upgrade-cue.mjs','core/multiplayer-speed.mjs','core/wave-consensus.mjs','net/firebase-party-game.mjs','net/firebase-recoverable-game.mjs','net/firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
-  assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
-  assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');
+  assert.ok(requests.includes('core/avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
+  assert.ok(requests.includes('core/avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');
   assert.ok(requests.includes('assets/layers/manifest.mjs?v=20261119-avatar3'),'the real layer manifest is available');
   assert.deepEqual(external,[]);assert.deepEqual(errors,[]);
   console.log('New game, social prompts, invitations, language and online/recovery paths bypassed a populated synthetic stale HTTP cache; guest wave request passed.');
