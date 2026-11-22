@@ -694,10 +694,10 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   Kommandozentralen-Tutorial-Button erlauben jederzeit einen späteren Start.
 - [x] **Großer 7-Wellen-Einsatz + 8-Stationen-HQ-Führung (`lokal/uncommittet`, `IPL-0081`):**
   [`training-run.mjs`](../training-run.mjs),
-  [`first-run-coach.mjs`](../first-run-coach.mjs),
-  [`first-run-guide.mjs`](../first-run-guide.mjs),
+  [`first-run-coach.mjs`](../ui/first-run-coach.mjs),
+  [`first-run-guide.mjs`](../ui/first-run-guide.mjs),
   [`solo-deployment.mjs`](../solo-deployment.mjs) und
-  [`menu-tour.mjs`](../menu-tour.mjs) (ergänzt durch
+  [`menu-tour.mjs`](../ui/menu-tour.mjs) (ergänzt durch
   [`localization-firstrun-de.mjs`](../i18n/localization-firstrun-de.mjs) &
   [`localization-de.mjs`](../i18n/localization-de.mjs) sowie die Artworks
   `general-vance-portrait.jpg`, `tutorial-dossier-map.jpg`,

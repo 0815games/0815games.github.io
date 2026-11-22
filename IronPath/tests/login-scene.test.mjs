@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {LOGIN_SCENES,LOGIN_SCENE_STORAGE_KEY,nextLoginSceneIndex,applyLoginScene} from '../login-scene.mjs';
+import {LOGIN_SCENES,LOGIN_SCENE_STORAGE_KEY,nextLoginSceneIndex,applyLoginScene} from '../ui/login-scene.mjs';
 
 const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 

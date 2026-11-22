@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {setupFieldMenu} from '../field-menu.mjs';
+import {setupFieldMenu} from '../ui/field-menu.mjs';
 
 function extractDetailsElement(html, idAttr) {
  const start = html.indexOf(idAttr);

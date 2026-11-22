@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {setupFriends} from '../friends-ui.mjs';
+import {setupFriends} from '../ui/friends-ui.mjs';
 
 // A2 asks for the account/character switch and signing in again to be
 // INVESTIGATED, not assumed. The service level already refuses a write that

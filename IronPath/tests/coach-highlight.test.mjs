@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {padRing, elementRing, arrowBetween, createCoachHighlight} from '../coach-highlight.mjs';
-import {COACH_STEPS} from '../first-run-coach.mjs';
+import {COACH_STEPS} from '../ui/first-run-coach.mjs';
 
 const css = readFileSync(new URL('../interface-redesign.css', import.meta.url), 'utf8');
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');

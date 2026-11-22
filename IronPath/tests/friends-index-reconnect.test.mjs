@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {setupFriends} from '../friends-ui.mjs';
+import {setupFriends} from '../ui/friends-ui.mjs';
 
 // The search listing is a background sync: it publishes the player under their
 // name so friends can find them. When it fails, the friends dialog retries

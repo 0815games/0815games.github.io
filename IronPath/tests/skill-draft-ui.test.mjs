@@ -3,7 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement} from '../skills.mjs';
 import {skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
 import {localizeSkillSummary} from '../skill-summary-localization.mjs';
-import {bindDialogBackdrop} from '../dialog-dismiss.mjs';
+import {bindDialogBackdrop} from '../ui/dialog-dismiss.mjs';
 import {characterProgress} from '../progression.mjs';
 
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');

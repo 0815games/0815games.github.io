@@ -22,7 +22,7 @@ import {
 // else is a finding: it means the token leaked into a new place, or an anchor
 // moved and this list is out of date.
 const ANCHOR_FILES=new Set([
-  'release-version.json','index.html','login-scene.mjs',
+  'release-version.json','index.html','ui/login-scene.mjs',
   'browser-tests/avatar-handover.cjs','browser-tests/interface-smoke.cjs',
 ]);
 

@@ -47,7 +47,7 @@ const FILES={
   'game.js':`import './match.mjs?v=${OLD}';\n`,
   'match.mjs':`export const value=1;\n`,
   'language.mjs':`export const getLanguage=()=>'de';\n`,
-  'login-scene.mjs':`import './language.mjs?v=${OLD}';\nexport const LOGIN_SCENE_VERSION='${OLD}';\n`,
+  'ui/login-scene.mjs':`import '../language.mjs?v=${OLD}';\nexport const LOGIN_SCENE_VERSION='${OLD}';\n`,
   'patch-notes.mjs':`// Field notes. The protocol lives in docs/PATCH-LOG.md and the plan in
 // docs/PATCH-BLOECKE.md.
 import {getLanguage} from './language.mjs?v=${OLD}';
@@ -120,7 +120,7 @@ test('a bump plan names exactly the known anchors and keeps the notes history',a
   assert.deepEqual(plan.problems,[],'keine unbekannte Stelle ohne ?v=');
   assert.deepEqual(plan.anchorFilesTouched,
     ['browser-tests/avatar-handover.cjs','browser-tests/interface-smoke.cjs','index.html',
-     'login-scene.mjs','release-version.json'].sort(),
+     'release-version.json','ui/login-scene.mjs'].sort(),
     'genau die fünf Anker-Dateien ändern Zeilen ohne ?v=');
   assert.ok(plan.nonVersion.length>=6,'index.html trägt die Welle an mehreren Stellen');
   assert.ok(plan.kept.length>=3,'patch-notes.mjs behält build:-Felder und Protokollsätze');
@@ -173,7 +173,7 @@ test('after the notes entry exists the check is green again',async t=>{
 
 test('a forgotten anchor and stray documentation are reported by name',async t=>{
   const {root,read,write}=await fixture(t);
-  await write('login-scene.mjs',(await read('login-scene.mjs')).split(OLD).join('20251130-stale1'));
+  await write('ui/login-scene.mjs',(await read('ui/login-scene.mjs')).split(OLD).join('20251130-stale1'));
   await write('PLAN-LEICHE.md','# vergessen\n');
   const result=await runPatchCheck({root,contracts:false});
   assert.equal(result.failed,true);

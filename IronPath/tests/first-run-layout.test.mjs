@@ -210,13 +210,13 @@ test('FULLSCREEN is a setting, not a permanent chip in the corner', () => {
   assert.match(settings, /id="fullscreenToggle"/, 'fullscreen lives in Settings');
   assert.doesNotMatch(html, /class="language-picker"/, 'and nothing puts it back in the corner');
   // The field menu opens the same dialog instead of carrying its own copy of the button.
-  const fieldMenu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  const fieldMenu = readFileSync(resolve(root, 'ui/field-menu.mjs'), 'utf8');
   assert.match(fieldMenu, /fieldSettings/, 'the field menu has a settings entry');
   assert.doesNotMatch(fieldMenu, /fieldFullscreen/, 'and no second fullscreen button');
 });
 
 test('the coach caption counts seven waves, like the contract it describes', () => {
-  const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
+  const coach = readFileSync(resolve(root, 'ui/first-run-coach.mjs'), 'utf8');
   assert.match(coach, /caption:'WAVE 1 OF 7'/, 'the card says seven waves');
   assert.doesNotMatch(coach, /OF 5|OF 6|of 6'/, 'and nothing still says five or six');
 });
@@ -265,7 +265,7 @@ test('the contract card is a row in the training frame, not an overlay on the fi
 });
 
 test('the coach can be reopened after it was dismissed', () => {
-  const coach = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
+  const coach = readFileSync(resolve(root, 'ui/first-run-coach.mjs'), 'utf8');
   // `start()` refuses a seen soldier on purpose. Dismissing a hint must not be a
   // one-way door, so the replay path exists and ignores the marker.
   assert.match(coach, /replay\(id\)\{/, 'the coach exposes a replay');
@@ -283,7 +283,7 @@ test('the coach can be reopened after it was dismissed', () => {
   assert.match(show, /coach\?\.replay/, 'the field tutorial action replays the coach');
   const commandCenter = readFileSync(resolve(root, 'command-center.mjs'), 'utf8');
   assert.match(commandCenter, /menuTutorial[\s\S]*showTutorial/, 'the Command Center routes tutorial replay into showTutorial');
-  const fieldMenu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  const fieldMenu = readFileSync(resolve(root, 'ui/field-menu.mjs'), 'utf8');
   assert.doesNotMatch(fieldMenu, /fieldCoachReplay|fieldBack/, 'field menu no longer wires redundant replay/back buttons');
   assert.doesNotMatch(html, /id="fieldCoachReplay"|id="fieldBack"/, 'field menu no longer renders redundant replay/back buttons');
 });

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createMapIntro,paintMapPreview} from '../map-intro.mjs';
+import {createMapIntro,paintMapPreview} from '../ui/map-intro.mjs';
 
 // The map announces itself once.
 //

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {abilityHud,abilityTargets,abilityHudSvg,ABILITY_ICON_KINDS} from '../ability-hud.mjs';
+import {abilityHud,abilityTargets,abilityHudSvg,ABILITY_ICON_KINDS} from '../ui/ability-hud.mjs';
 import {SKILL_PATHS} from '../skills.mjs';
 
 // The ability HUD: what the button says, and why it is grey.

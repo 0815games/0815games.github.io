@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createSoldierScreen} from '../soldier-screen.mjs';
+import {createSoldierScreen} from '../ui/soldier-screen.mjs';
 import {soldierProfile} from '../soldier-profile.mjs';
 import {characterProgress} from '../progression.mjs';
 

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {existsSync, readFileSync} from 'node:fs';
-import {createVersionUI} from '../version-ui.mjs';
+import {createVersionUI} from '../ui/version-ui.mjs';
 
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({build='old',published='old',url='https://example.test/IronPath/',previous=null,language='en',fetcherOverride=null}={}){

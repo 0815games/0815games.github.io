@@ -65,7 +65,7 @@ test('a missing gate is a harmless no-op',()=>{
 
 test('the page gates first, plays the intro only after a choice, and offers both languages',async()=>{
  const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
- const intro=await readFile(new URL('../intro.mjs',import.meta.url),'utf8');
+ const intro=await readFile(new URL('../ui/intro.mjs',import.meta.url),'utf8');
  // The bootstrap must run inline before any module so English text never flashes.
  const bootstrapAt=html.indexOf("document.documentElement.dataset.langGate");
  const gateAt=html.indexOf('id="languageGate"'),introAt=html.indexOf('id="introOverlay"');

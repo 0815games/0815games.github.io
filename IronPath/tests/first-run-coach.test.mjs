@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {COACH_STEPS,createCoach,coachSeen,markCoachSeen} from '../first-run-coach.mjs';
+import {COACH_STEPS,createCoach,coachSeen,markCoachSeen} from '../ui/first-run-coach.mjs';
 
 // A DOM small enough to be honest: only the elements the coach touches.
 function makeDocument(){
@@ -173,7 +173,7 @@ test('closing the card puts the task away without ending the coaching',()=>{
 
 test('the coach never pauses the field and is not a modal dialog',()=>{
  // Comments explain the old modal design, so strip them before looking for code.
- const coach=readFileSync(new URL('../first-run-coach.mjs',import.meta.url),'utf8').replace(/^\s*\/\/.*$/gm,'');
+ const coach=readFileSync(new URL('../ui/first-run-coach.mjs',import.meta.url),'utf8').replace(/^\s*\/\/.*$/gm,'');
  assert.equal(/showModal|createElement\(['"]dialog/.test(coach),false,'a modal would swallow every tap on the field');
  const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
  assert.match(html,/id="firstRunCoach"[^>]*role="dialog"/);

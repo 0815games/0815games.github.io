@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {runFirstRunEnding,endingDone,markEndingDone,endingKey,createEndingHandoffs,ENDING_STEPS,ENDING_KEY,ENDING_EDITION,FIELD_SCHOOL_ENTRIES} from '../first-run-ending.mjs';
+import {runFirstRunEnding,endingDone,markEndingDone,endingKey,createEndingHandoffs,ENDING_STEPS,ENDING_KEY,ENDING_EDITION,FIELD_SCHOOL_ENTRIES} from '../ui/first-run-ending.mjs';
 
 const storage=()=>{const store=new Map();return {store,getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)};};
 

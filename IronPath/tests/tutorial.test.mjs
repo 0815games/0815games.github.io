@@ -122,7 +122,7 @@ test('only tutorial.mjs spells out the briefing marker',()=>{
  // The bug was a second copy of the key that did not move when the tour changed,
  // so the invariant worth pinning is that there is no second copy at all.
  assert.match(readFileSync(new URL('../tutorial.mjs',import.meta.url),'utf8'),/const TUTORIAL_EDITION=\d+;/);
- for(const name of ['account.js','game.js','first-run-ending.mjs','training-run.mjs','command-center.mjs']){
+ for(const name of ['account.js','game.js','ui/first-run-ending.mjs','training-run.mjs','command-center.mjs']){
   const source=readFileSync(new URL('../'+name,import.meta.url),'utf8');
   assert.ok(!/ironpath:tutorial:v/.test(source),`${name} must not hard-code the briefing key`);
  }

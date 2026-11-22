@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createGuide, STEPS, CLASSES} from '../first-run-guide.mjs';
+import {createGuide, STEPS, CLASSES} from '../ui/first-run-guide.mjs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 

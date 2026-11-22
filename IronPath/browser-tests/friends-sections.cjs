@@ -20,7 +20,7 @@ const assert=require('node:assert/strict');
   await page.evaluate(async()=>{
    for(const id of ['languageGate','introOverlay','loading','authView','entry'])document.getElementById(id)?.setAttribute('hidden','');
    document.getElementById('gameView').hidden=false;
-   const {setupFriends}=await import('./friends-ui.mjs');
+   const {setupFriends}=await import('./ui/friends-ui.mjs');
    const listeners=new Map(),values=new Map(),uid='alice',auth={currentUser:{uid}};let rejectFriendFor=null;
    const snapshot=value=>({val:()=>value??null,forEach(callback){for(const [key,child] of Object.entries(value||{}))if(callback({key,val:()=>child}))break;}});
    const sdk={ref:(_db,path)=>path,onValue(path,cb,onError){const list=listeners.get(path)||[];const entry={cb,onError};list.push(entry);listeners.set(path,list);queueMicrotask(()=>{if(list.includes(entry))cb(snapshot(values.get(path)));});return()=>{const at=list.indexOf(entry);if(at>=0)list.splice(at,1);};},
