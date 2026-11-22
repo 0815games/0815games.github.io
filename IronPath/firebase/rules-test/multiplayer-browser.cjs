@@ -195,7 +195,7 @@ function guardedHtml(html){
   const [host,bob,cara]=pages;
   stage=`create and join ${count}-player party`;
   await host.locator('#menuMultiplayer').click();
-  const {squadMapFor}=await import(pathToFileURL(path.join(root,'four-modes.mjs')).href);
+  const {squadMapFor}=await import(pathToFileURL(path.join(root,'core/four-modes.mjs')).href);
   let code,partyId;
   // For a reproducible longer battle, choose the hand-built field by creating
   // ordinary parties until its random party ID selects that map. The ordinary
@@ -295,7 +295,7 @@ function guardedHtml(html){
   if(lastWave>1){
    // Prefer pads covering a lot of both roads. This is only the test's normal
    // play strategy: all construction still happens through actual UI input.
-   const {getMap}=await import(pathToFileURL(path.join(root,'maps.mjs')).href),map=getMap(squadMapFor(partyId)),samples=[];
+   const {getMap}=await import(pathToFileURL(path.join(root,'core/maps.mjs')).href),map=getMap(squadMapFor(partyId)),samples=[];
    for(const road of map.paths||[map.path])for(let i=1;i<road.length;i++){
     const a=road[i-1],b=road[i],steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/20));
     for(let j=0;j<steps;j++)samples.push({x:a.x+(b.x-a.x)*j/steps,y:a.y+(b.y-a.y)*j/steps});

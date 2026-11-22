@@ -56,7 +56,7 @@ function replaceOnce(source,pattern,replacement,label){
   });
   const [htmlOriginal,accountOriginal,afkOriginal,manifest]=await Promise.all([
    fs.readFile(path.join(root,'index.html'),'utf8'),fs.readFile(path.join(root,'account.js'),'utf8'),
-   fs.readFile(path.join(root,'afk-session.mjs'),'utf8'),fs.readFile(path.join(root,'release-version.json'),'utf8')
+   fs.readFile(path.join(root,'core/afk-session.mjs'),'utf8'),fs.readFile(path.join(root,'release-version.json'),'utf8')
   ]);
   const build=JSON.parse(manifest).build;
   const html=replaceOnce(htmlOriginal,/<meta name="ironpath-maintenance-database" content="[^"]+">/g,
