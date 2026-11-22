@@ -3,6 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFileSync,readdirSync,existsSync,statSync} from 'node:fs';
 import {dirname,join,normalize} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 
 // Structure guard for IronPath.
 //
@@ -10,7 +11,8 @@ import {fileURLToPath} from 'node:url';
 // tree is reachable and nothing is filtered at build time. The separation below
 // is therefore about working, not about hiding files: the game root must contain
 // only what a browser loads, because `release-tools/stage-version.mjs` copies
-// every root-level `.mjs`, `.js` and `.css` into each staged release build.
+// every root-level `.mjs`, `.js` and `.css` - plus the approved game module
+// folders in GAME_MODULE_FOLDERS - into each staged release build.
 // Documentation and development tooling live in `docs/` and `scripts/`.
 
 const ironpath=fileURLToPath(new URL('..',import.meta.url));
@@ -44,45 +46,81 @@ test('the working instruction points at the moved protocol documents',()=>{
 // comment, which must not make a development file look shipped.
 const IMPORT=/\bfrom\s*["']([\w./?=-]+)["']|\bimport\s*\(\s*["']([\w./?=-]+)["']|^\s*import\s+["']([\w./?=-]+)["']/gm;
 const ATTRIBUTE=/(?:src|href)\s*=\s*["']((?:\.\/)?[\w.\/-]+\.(?:mjs|js|css))(?:\?[\w=-]*)?["']/g;
-const codeFiles=()=>readdirSync(ironpath).filter(name=>/\.(?:mjs|js|html|css)$/.test(name)).sort();
-function shippedSpecifiers(){
-  const specs=new Set();
-  for(const name of codeFiles()){
-    const source=readFileSync(join(ironpath,name),'utf8');
+// The release inventory: root code files plus, recursively, the approved game
+// module folders. Relative paths (never bare names) so two modules in
+// different folders can never be confused with each other.
+function codeFiles(){
+  const found=[];
+  const walk=(dir,prefix)=>{
+    for(const entry of readdirSync(dir,{withFileTypes:true})){
+      const rel=prefix?`${prefix}/${entry.name}`:entry.name;
+      if(entry.isDirectory()) walk(join(dir,entry.name),rel);
+      else if(entry.isFile()&&/\.(?:mjs|js|html|css)$/.test(entry.name)) found.push(rel);
+    }
+  };
+  for(const name of readdirSync(ironpath))
+    if(/\.(?:mjs|js|html|css)$/.test(name)&&statSync(join(ironpath,name)).isFile()) found.push(name);
+  for(const folder of GAME_MODULE_FOLDERS)
+    if(existsSync(join(ironpath,folder))) walk(join(ironpath,folder),folder);
+  return found.sort();
+}
+// Every import / src / href target, resolved against the file that names it.
+// A module in i18n/ importing ../core/x.mjs is thereby the same target as a
+// root file importing ./core/x.mjs - and a target outside IronPath is visible
+// as one instead of looking like a folder.
+function shippedTargets(){
+  const targets=new Set();
+  for(const rel of codeFiles()){
+    const source=readFileSync(join(ironpath,rel),'utf8');
+    const dir=rel.includes('/')?rel.slice(0,rel.lastIndexOf('/')):'.';
     for(const style of [IMPORT,ATTRIBUTE])
       for(const match of source.matchAll(style))
-        for(const target of match.slice(1)) if(target) specs.add(target.split('?')[0]);
+        for(const spec of match.slice(1)){
+          if(!spec||/^[a-z][a-z0-9+.-]*:\/\//i.test(spec)) continue;
+          targets.add(normalize(join(dir,spec.split('?')[0])).split('\\').join('/'));
+        }
   }
-  return specs;
+  return targets;
 }
 
 test('every module in the release inventory is loaded by the game',()=>{
-  // stage-version.mjs copies each root-level .mjs/.js/.css into every staged
-  // build, so an orphan here is dead weight published to every player.
-  const specs=shippedSpecifiers();
-  const bases=new Set([...specs].map(spec=>spec.split('/').pop()));
+  // stage-version.mjs copies each root-level .mjs/.js/.css and every approved
+  // module folder into every staged build, so an orphan here is dead weight
+  // published to every player.
+  const targets=shippedTargets();
   const inventory=codeFiles().filter(name=>/\.(?:mjs|js)$/.test(name));
-  const orphans=inventory.filter(name=>!bases.has(name));
+  const orphans=inventory.filter(name=>!targets.has(name));
   assert.ok(inventory.length>150,`the scan still sees the game (found ${inventory.length} modules)`);
   assert.deepEqual(orphans,[],
-    'Module ohne Importeur in der Spielwurzel werden mit jedem Release-Build '+
+    'Module ohne Importeur im Release-Inventar werden mit jedem Release-Build '+
     'ausgeliefert. Sie gehören nach IronPath/scripts/ (oder weg).');
 });
 
-test('the shipped graph reaches only into assets/ and release-tools/',()=>{
-  const allowed=new Set(['assets','release-tools']);
+test('the shipped graph reaches only into approved game folders',()=>{
+  const allowed=new Set(['assets','release-tools',...GAME_MODULE_FOLDERS]);
   const offenders=[];
-  for(const spec of shippedSpecifiers()){
-    if(/^[a-z][a-z0-9+.-]*:\/\//i.test(spec)) continue;   // absolute URL, not a folder
-    const path=spec.replace(/^\.\//,'');
-    if(!path.includes('/')) continue;                     // a plain root-level file
-    const folder=path.split('/')[0];
-    if(!allowed.has(folder)) offenders.push(spec);
+  for(const target of shippedTargets()){
+    if(target.startsWith('..')){ offenders.push(target); continue; }
+    if(!target.includes('/')) continue;                     // a plain root-level file
+    if(!allowed.has(target.split('/')[0])) offenders.push(target);
   }
   assert.deepEqual(offenders.sort(),[],
-    'Ein ausgeliefertes Modul greift in einen Arbeitsordner. docs/, tests/, '+
-    'scripts/, browser-tests/, stress-tests/, server/, firebase/ und '+
-    'browser-artifacts/ sind nicht Teil des Spiels.');
+    'Ein ausgeliefertes Modul greift in einen Arbeitsordner oder aus IronPath '+
+    'heraus. docs/, tests/, scripts/, browser-tests/, stress-tests/, server/, '+
+    'firebase/ und browser-artifacts/ sind nicht Teil des Spiels.');
+});
+
+test('the game module folder list is unambiguous and disjoint from the work folders',()=>{
+  assert.deepEqual([...GAME_MODULE_FOLDERS].sort(),GAME_MODULE_FOLDERS,
+    'GAME_MODULE_FOLDERS in release-tools/stage-version.mjs ist sortiert und damit eindeutig prüfbar');
+  assert.equal(new Set(GAME_MODULE_FOLDERS).size,GAME_MODULE_FOLDERS.length,
+    'GAME_MODULE_FOLDERS nennt keinen Ordner doppelt');
+  for(const folder of GAME_MODULE_FOLDERS){
+    assert.ok(!['docs','tests','browser-tests','stress-tests','firebase','release-tools','server','scripts','assets','browser-artifacts'].includes(folder),
+      `${folder}/ ist ein Arbeitsordner und darf kein Spielmodul-Ordner sein`);
+    const path=join(ironpath,folder);
+    if(existsSync(path)) assert.ok(statSync(path).isDirectory(),`IronPath/${folder} muss ein Ordner sein`);
+  }
 });
 
 test('no development file is part of the critical release inventory',()=>{

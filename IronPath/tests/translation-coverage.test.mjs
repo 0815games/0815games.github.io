@@ -1,6 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {readFileSync, readdirSync} from 'node:fs';
+import {readFileSync, readdirSync, existsSync} from 'node:fs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 
 // The translation coverage guard.
 //
@@ -24,14 +27,35 @@ import {readFileSync, readdirSync} from 'node:fs';
 //     itself, "0815 GAMES").
 
 const root = new URL('..', import.meta.url);
+const rootDir = fileURLToPath(root);
 const isModule = name => /\.(mjs|js)$/.test(name);
-const rootModules = readdirSync(root).filter(name => isModule(name)
-  && name !== 'language.mjs' && !name.startsWith('localization-') && !name.startsWith('sw.'));
+// Every shipped module, wherever the structure puts it: the game root plus the
+// approved module folders, recursively, as root-relative paths. A scan that
+// only reads the root would silently stop seeing modules the day a group moves
+// into i18n/ or battle/ - and report full coverage over half the game.
+function allModuleFiles() {
+  const found = [];
+  const walk = (dir, prefix) => {
+    for (const entry of readdirSync(dir, {withFileTypes: true})) {
+      const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) walk(join(dir, entry.name), rel);
+      else if (entry.isFile() && isModule(entry.name)) found.push(rel);
+    }
+  };
+  for (const name of readdirSync(rootDir)) if (isModule(name)) found.push(name);
+  for (const folder of GAME_MODULE_FOLDERS)
+    if (existsSync(join(rootDir, folder))) walk(join(rootDir, folder), folder);
+  return found.sort();
+}
+const baseName = rel => rel.split('/').pop();
+const rootModules = allModuleFiles().filter(rel => baseName(rel) !== 'language.mjs'
+  && !baseName(rel).startsWith('localization-') && !baseName(rel).startsWith('sw.'));
+const dictionaryFiles = () => allModuleFiles().filter(rel =>
+  baseName(rel).startsWith('localization') && baseName(rel).endsWith('-de.mjs'));
 
 function dictionaryKeys() {
   const keys = new Set();
-  for (const name of readdirSync(root)) {
-    if (!name.startsWith('localization') || !name.endsWith('-de.mjs')) continue;
+  for (const name of dictionaryFiles()) {
     const source = readFileSync(new URL(name, root), 'utf8');
     for (const match of source.matchAll(/'((?:[^'\\]|\\.)+)'\s*:/g)) keys.add(match[1]);
     for (const match of source.matchAll(/"((?:[^"\\]|\\.)+)"\s*:/g)) keys.add(match[1]);
@@ -74,8 +98,7 @@ test('every string a surface can show has a German entry',()=>{
 test('no dictionary key is defined twice in the same file',()=>{
  // A duplicate silently wins by position, which is how a stale entry can
  // shadow a correction. Found twice in localization-de.mjs during the audit.
- for (const name of readdirSync(root)) {
-  if (!name.startsWith('localization') || !name.endsWith('-de.mjs')) continue;
+ for (const name of dictionaryFiles()) {
   const source = readFileSync(new URL(name, root), 'utf8');
   const seen = new Map();
   for (const style of [/'((?:[^'\\]|\\.)+)'\s*:/g, /"((?:[^"\\]|\\.)+)"\s*:/g]) {

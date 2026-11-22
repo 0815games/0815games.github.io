@@ -18,6 +18,15 @@ function retargetAccount(source,config){
   }
   return source.replace(accountConfigLine,formatGuardedAccountConfig(config));
 }
+// Game modules may live in these domain folders below the game root instead of
+// flat in the root. The list is the single source of truth for what the packager
+// copies: a module folder that is not named here is not staged, and the
+// structure guard (tests/repo-structure.test.mjs) reads this same list so the
+// two can never drift apart. Folders that do not exist yet are skipped, so a
+// group can move in only after this packager already understands it.
+export const GAME_MODULE_FOLDERS=Object.freeze([
+  'battle','core','i18n','net','ui','workshop',
+]);
 // Only browser-safe dependencies of the candidate guard are copied. Never copy
 // the server/API, deployment configuration, node_modules or possible secrets.
 const browserGuardFiles=Object.freeze([
@@ -55,8 +64,9 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
       else throw Error(`Unsupported release source: ${rel}`);
     }
   }
-  // Everything the present browser game can reference lives at its top level
-  // or below assets/, including runtime-built image, sound and video URLs.
+  // Everything the present browser game can reference lives at its top level,
+  // in one of the GAME_MODULE_FOLDERS, or below assets/, including
+  // runtime-built image, sound and video URLs.
   // Only index.html is staged below. In particular, do not copy admin.html:
   // its public Firebase configuration targets the ordinary production project,
   // and this legacy packager may be used to build an isolated guarded site.
@@ -68,6 +78,27 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
     let bytes=await readFile(join(source,name));
     if(config && name==='account.js')bytes=Buffer.from(retargetAccount(new TextDecoder('utf-8',{fatal:true}).decode(bytes),config));
     await save(name,bytes);
+  }
+  // Domain folders carry the same runtime code one level down, under their
+  // relative paths, so an import of ./i18n/... resolves in the staged build
+  // exactly as in the source. Only code belongs in these folders: anything
+  // else (documentation, data, a stray file) fails loudly instead of being
+  // silently dropped from - or silently added to - the release inventory.
+  async function copyModuleTree(dir, prefix) {
+    for (const name of (await readdir(dir)).sort()) {
+      const from=join(dir,name), rel=join(prefix,name), info=await lstat(from);
+      if (info.isSymbolicLink()) throw Error(`Symbolic link in release source: ${rel}`);
+      if (info.isDirectory()) await copyModuleTree(from,rel);
+      else if (info.isFile() && /\.(?:mjs|js|css)$/.test(name)) await save(rel,await readFile(from));
+      else throw Error(`Unsupported file in game module folder: ${rel}`);
+    }
+  }
+  for (const folder of GAME_MODULE_FOLDERS) {
+    const dir=join(source,folder);
+    let info;
+    try { info=await lstat(dir); } catch(error) { if(error.code==='ENOENT') continue; throw error; }
+    if (info.isSymbolicLink() || !info.isDirectory()) throw Error(`Invalid game module folder: ${folder}`);
+    await copyModuleTree(dir,folder);
   }
   const assetInfo=await lstat(join(source,'assets'));
   if (!assetInfo.isDirectory() || assetInfo.isSymbolicLink()) throw Error('Missing real assets directory');

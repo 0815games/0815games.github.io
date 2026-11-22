@@ -60,6 +60,16 @@ gh pr list --state open                        # liegt schon etwas in der Luft?
 - **Nichts in die Spielwurzel**, was der Browser nicht lädt: keine `.md`, keine
   Skripte, keine Module ohne Importeur. `tests/repo-structure.test.mjs` prüft
   das und nennt den Fund beim Namen.
+- **Neues Spielmodul ⇒ Fach-Ordner statt Wurzel.** Neue Module gehören in den
+  passenden Ordner aus `GAME_MODULE_FOLDERS`
+  (`release-tools/stage-version.mjs`): `battle/`, `core/`, `i18n/`, `net/`,
+  `ui/`, `workshop/`. Dort liegt nur Code (`.mjs`/`.js`/`.css`) — der Packager
+  kopiert diese Ordner rekursiv und lässt alles andere laut scheitern.
+  Eintrittspunkte (`index.html`, `account.js`, `game.js`, `*-entry.mjs`) und
+  CSS bleiben in der Wurzel. Ein Modul in einen dieser Ordner zu verschieben
+  heißt: Importe im Spiel, in Tests und in Browser-Tests nachziehen,
+  Staging-Inventar vorher/nachher vergleichen und eine eigene Cache-Welle
+  fahren, weil sich die Modul-Adressen ändern.
 - **Neue Datei ⇒ Harness-Listen prüfen.** 13 Testdateien ersetzen Modulnamen in
   einer festen Liste; fehlt ein neues Modul dort, fällt die Suite mit
   `ERR_UNSUPPORTED_RESOLVE_REQUEST` — 22 rote Tests, die nichts mit der Änderung

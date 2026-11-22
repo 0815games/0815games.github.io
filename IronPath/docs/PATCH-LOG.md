@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0073 stehen im
+Die Einträge IPL-0001 bis IPL-0074 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,14 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0074 – Block-9d-RTDB-Rules live bestätigt (`BLOCK9D-RULES-TO-PUBLISH.json`)
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); nach Merge von [PR #323](https://github.com/0815games/0815games.github.io/pull/323) (`6e634551830de16ab6fcd690144b4c0a929e5f08`).
-- **Branch / Basis:** `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`).
-- **Betreiberbestätigung (ohne unabhängigen Serverabruf aus der Sandbox):** Der Betreiber bestätigte, dass die in [`IronPath/firebase/BLOCK9D-RULES-TO-PUBLISH.json`](../firebase/BLOCK9D-RULES-TO-PUBLISH.json) bereitgestellten Block-9d-RTDB-Rules (inkl. `/rules/activeSessions/$uid`) live in der Firebase Console veröffentlicht wurden.
-- **Änderungen / Dateien:**
-  - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (`IPL-0073` Merge/Deploy nachgetragen + `IPL-0074` protokolliert), `IronPath/patch-notes.mjs` (`block9d`-Eintrag aktualisiert: `BLOCK9D-RULES-TO-PUBLISH.json` als vom Betreiber veröffentlicht dokumentiert, verbleibender offener Punkt auf echte Desktop-/Handy-Sichtung vor Block 6 bereinigt).
-- **Offen:** Echte Desktop- und Handy-Sichtung auf `20261119-block9d` (inkl. Einzelsitzungs-Schutz über mehrere Fenster/Geräte) vor Beginn von Block 6.
 
 ## IPL-0075 – Block 9e (`20261119-block9e`, PR #324): Mehrfenster-Sitzungsschutz, rotierende Login-Banner, HQ-Zurück-Navigation & Endlos-Karussell
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Branch `arena/f7cdd26a-0815games-github-io` ab `6e634551830de16ab6fcd690144b4c0a929e5f08` (`main`), PR #324 offen.
@@ -739,3 +731,26 @@ sie geprüft wurde.
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Repository-Inhalt auf `main` und der fertige Pages-Build, nicht eine Sichtprüfung im Browser. Eine Geräteabnahme war für diese Änderung nicht vorgesehen, weil keine browsergeladene Datei geändert wurde. Ob `game-regressions` inzwischen Pflicht-Check ist, wurde für diesen Nachtrag nicht erneut geprüft.
 - **Herkunft dieses Nachtrags:** Er steht als eigener Commit auf demselben Arbeitszweig nach dem Merge von `#344`; Commit- und PR-Kennung dieses Nachtrags selbst stehen deshalb nicht hier, sondern in Git und im PR-Text.
 
+
+## IPL-0094 – Wegbereiter für Modul-Ordner: Packager und Wächter lernen `GAME_MODULE_FOLDERS` (keine Datei verschoben, keine Cache-Welle)
+
+- **Zeit / Quelle:** Betreiberauftrag in dieser Sitzung: „Schlag mir was gutes vor mit Verbesserungen zu allem.“ Vier abgefragte Entscheidungen, alle bindend: Struktur = **Gruppen in Unterordner** (Eintrittspunkte, HTML und CSS bleiben in der Wurzel); Gruppierung = **nach Fachgebiet**; Tempo = **scheibenweise, ein PR pro Gruppe**; Patch-Skripte = später **ein Befehl `patch.mjs`**. Dieser Eintrag ist Phase 1 (Wegbereiter); es wandert noch keine einzige Spieldatei.
+- **Block / Ziel:** Kein Spiel-Block. Ziel ist, den späteren Umzug der 187 flach liegenden `.mjs`-Module sicher zu machen, bevor er beginnt: `release-tools/stage-version.mjs` kopierte bisher nur Wurzel-`.mjs`/`.js`/`.css` in gestagte Builds — ein Modul in einem Unterordner wäre dort still verschwunden. Jetzt versteht der Packager die künftigen Fach-Ordner, und die Wächter schauen in dieselben Ordner.
+- **Branch / Basis:** `arena/5ae9c8c6-0815games-github-io` ab `8b9ee57b89eb154b8585b7aa14336f4763e909f9` (`main`, Merge von PR `#345`).
+- **Änderungen / Dateien:**
+  - `IronPath/release-tools/stage-version.mjs`: Neue exportierte Liste `GAME_MODULE_FOLDERS` (`battle`, `core`, `i18n`, `net`, `ui`, `workshop`) als einzige Quelle der Wahrheit. Der Packager kopiert diese Ordner — wo sie existieren — rekursiv unter ihren relativen Pfaden und nur Code (`.mjs`/`.js`/`.css`); Symlinks und Nicht-Code-Dateien in einem Modul-Ordner lassen das Staging laut scheitern, statt still verloren zu gehen oder still mitzufahren. Fehlende Ordner werden übersprungen, damit eine Gruppe erst umziehen kann, nachdem der Packager sie versteht.
+  - `IronPath/tests/release-stage-version.test.mjs`: Fixture um `i18n/demo.mjs`, `i18n/nested/deep.mjs` und `ui/panel.css` erweitert (Dateizahl und Inventar geprüft); neuer Test, dass Nicht-Code und Symlinks in Modul-Ordnern abgelehnt werden; der Echtbaum-Test prüft jetzt für jeden vorhandenen Modul-Ordner, dass jede Code-Datei gestagt wird.
+  - `IronPath/tests/repo-structure.test.mjs`: Der Spielgraph wird jetzt pfadgenau aufgelöst (ein `../core/x.mjs` aus `i18n/` ist dasselbe Ziel wie `./core/x.mjs` aus der Wurzel) statt nur Dateinamen zu vergleichen; das Release-Inventar umfasst Wurzel plus Modul-Ordner rekursiv; erlaubte Ordner sind `assets/`, `release-tools/` und die `GAME_MODULE_FOLDERS`; neuer Wächter, dass die Liste sortiert, doppelfrei und disjunkt zu allen Arbeitsordnern ist. Importiert wird dieselbe Liste aus `stage-version.mjs`, damit Packager und Wächter nicht auseinanderlaufen können.
+  - `IronPath/tests/translation-coverage.test.mjs`: Modul- und Wörterbuch-Scan laufen rekursiv über Wurzel plus Modul-Ordner (vorher nur `readdirSync(root)` — nach einem Umzug hätte der Test die Hälfte des Spiels still nicht mehr gesehen und trotzdem volle Abdeckung gemeldet).
+  - `IronPath/tests/multiplayer-build-stamp.test.mjs`: Der Importeur-Scan läuft rekursiv, und das Import-Muster erkennt jetzt auch Ordnerpfade (`./i18n/x.mjs?v=…`) statt nur `./x.mjs`.
+  - `IronPath/README.md` und `IronPath/docs/PATCH-ABLAUF.md`: Die sechs Fach-Ordner mit Inhaltstabelle bzw. Arbeitsregel dokumentiert (neues Modul ⇒ Fach-Ordner; Umzug heißt Importe nachziehen, Staging-Inventar vergleichen, eigene Cache-Welle).
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0074` vollständig ans Ende des Archivs verschoben, Kennungsgrenzen auf `IPL-0001` bis `IPL-0074` nachgezogen; das Log führt die neuesten 20 (`IPL-0075` bis `IPL-0094`).
+- **Prüfungen:**
+  - Staging-Vergleich vorher/nachher mit identischem Build-Namen: `node IronPath/release-tools/stage-version.mjs IronPath /tmp/stage-before 20990101-baseline1` (vor der Änderung) und danach in `/tmp/stage-after` — **711 gestagte Dateien, Inventar inklusive aller SHA-256-Hashes identisch**. Am ausgelieferten Spiel ändert sich also nichts.
+  - Bissprobe: Eine verwaiste Probe-Datei `IronPath/i18n/zz-probe.mjs` ließ `repo-structure` wie vorgesehen rot werden (7 bestanden, 1 fehlgeschlagen, Fund beim Namen genannt); Probe und Ordner danach entfernt, Test wieder 8/8 grün. Die Probe ist nicht Teil des Baums.
+  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.260 Tests, 1.260 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.258; +2 neue Tests aus dieser Phase).
+  - `node IronPath/scripts/patch-check.mjs` vor dem Log-Eintrag: **0 Fehler**; die sieben Vertragsdateien liefen mit **30 Tests, 30 grün** (vorher 28; die zwei neuen Tests zählen mit).
+  - Nach der Log-Rotation: `node --test IronPath/tests/patch-log-archive.test.mjs IronPath/tests/repo-structure.test.mjs` = **13 Tests, 13 bestanden, 0 fehlgeschlagen**; `patch-check` danach **0 Fehler, 1 Hinweis** (die noch uncommitteten Änderungen dieser Phase selbst).
+  - Keine Geräte- oder Browserabnahme: Es wurde keine Datei geändert, die der Browser lädt. Der Build-Stempel bleibt unverändert `20261121-order1`; eine Cache-Welle ist für diesen Wegbereiter nicht nötig.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags `lokal/uncommittet` auf `arena/5ae9c8c6-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen.
+- **Offen / nächster Schritt:** PR für Phase 1 öffnen und erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen. Danach Phase 2 scheibenweise, je ein eigener PR: zuerst `i18n/` (18 `localization-*`-Module), dann `workshop/`, `net/`, `battle/`, `ui/`, `core/`; jede Scheibe mit Import-Codemod, Staging-Vergleich, voller Suite, eigener Cache-Welle und Feldnotizen DE+EN. Phase 3 danach: die drei Patch-Skripte zu einem `patch.mjs` mit Unterbefehlen zusammenführen. Der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau) bleibt geparkt und kommt als eigener Spiel-PR nach der Struktur, damit er nicht zweimal angefasst wird.
