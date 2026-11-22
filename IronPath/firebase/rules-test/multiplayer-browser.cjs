@@ -91,7 +91,7 @@ function guardedHtml(html){
   if(testRecovery){
    // Expose only the redacted error message from the temporary test copy;
    // recovery failures are normally swallowed into the user-facing ERROR state.
-   const file=path.join(out,'mp-browser-1','firebase-recoverable-game.mjs'),original=await fs.readFile(file,'utf8');
+   const file=path.join(out,'mp-browser-1','net','firebase-recoverable-game.mjs'),original=await fs.readFile(file,'utf8');
    const patched=original.replaceAll('catch{fail();}',"catch(error){window.__recoveryTestError=String(error?.message||'error');fail();}").replaceAll('onError:fail',"onError:error=>{window.__recoveryTestError=String(error?.message||'error');fail();}");
    assert.notEqual(patched,original);await fs.writeFile(file,patched);
   }
