@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-net1';
+import {getLanguage} from './language.mjs?v=20261122-battle1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,22 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'battle1',build:'20261122-battle1',pr:354,
+    title:{en:'Structure Move 4 · The Battle Modules Now Live in battle/',de:'Struktur-Umzug 4 · Die Kampf-Module liegen jetzt in battle/'},
+    shipped:[
+      {en:'Nothing changes in the game itself: battles, sound and camera behave exactly as before. Only the addresses of the battle files moved.',de:'Am Spiel selbst ändert sich nichts: Gefechte, Klang und Kamera verhalten sich genau wie vorher. Nur die Adressen der Kampf-Dateien sind umgezogen.'},
+      {en:'All 6 battle modules (battle-*.mjs: battle sound and music, the viewport camera and the XP heads-up display) moved from the flat game folder into IronPath/battle/.',de:'Alle 6 Kampf-Module (battle-*.mjs: Kampf-Klang und -Musik, die Viewport-Kamera und die XP-Anzeige) sind aus dem flachen Spielordner nach IronPath/battle/ gezogen.'},
+      {en:'4 of the 6 modules are byte-identical to before; in the other 2 only a single import path points one folder up.',de:'4 der 6 Module sind bytegleich zu vorher; in den anderen 2 zeigt nur je ein Import-Pfad einen Ordner höher.'},
+      {en:'Raised the cache wave to 20261122-battle1, because the module addresses changed: no device should keep loading the battle code from its old place out of cache.',de:'Die Cache-Welle auf 20261122-battle1 erhöht, weil sich die Modul-Adressen geändert haben: Kein Gerät soll den Kampf-Code weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-battle1. The honest test for this move is a battle: sound, camera movement and the XP display must work exactly as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-battle1 zeigen. Der ehrliche Test für diesen Umzug ist ein Gefecht: Klang, Kamera-Bewegung und XP-Anzeige müssen genau wie vorher funktionieren.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Next structure moves, one folder per release: ui/ and core/. The dictionaries live in i18n/, the workshop in workshop/, the multiplayer client in net/.',de:'Die nächsten Struktur-Umzüge, je ein Ordner pro Stand: ui/ und core/. Die Wörterbücher liegen in i18n/, die Werkstatt in workshop/, der Mehrspieler-Client in net/.'},
+      {en:'Still parked until the structure is done: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Bis die Struktur steht, bleibt geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ]
+  },
   {
     id:'net1',build:'20261122-net1',pr:352,
     title:{en:'Structure Move 3 · The Multiplayer Client Modules Now Live in net/',de:'Struktur-Umzug 3 · Die Mehrspieler-Clientmodule liegen jetzt in net/'},
