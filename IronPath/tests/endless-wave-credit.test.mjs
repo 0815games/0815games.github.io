@@ -1,6 +1,6 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
 import {createEndlessCreditService,endlessReceiptId} from '../server/endless-wave-credit.mjs';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 const runId='1'.repeat(32),event={uid:'alice',mode:'coop',runId,block:0,mask:31};
 function fixture(){let profile=initializeWireWorkshop({name:'Alice',xp:0,armory:{scrap:0},coopRewards:{legacy:7},soloWorkshopReceipts:{legacy:3}});const service=createEndlessCreditService({transact:async(uid,fn)=>{assert.equal(uid,'alice');const next=fn(structuredClone(profile));if(next)profile=next;return {committed:!!next,snapshot:{val:()=>structuredClone(profile)}};}});return {service,get:()=>profile};}
 test('receipt identity separates modes and blocks, including old additive collision',()=>{assert.notEqual(endlessReceiptId(event),endlessReceiptId({...event,mode:'solo'}));assert.notEqual(endlessReceiptId({...event,block:1}),endlessReceiptId({...event,runId:'1'.repeat(31)+'2'}));assert.equal(endlessReceiptId({...event,runId:'bad'}),null);});

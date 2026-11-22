@@ -2,7 +2,7 @@
 // migrate any real account. Checkpoints must be stored in trusted, access-
 // controlled storage and applied by an authenticated server-side transaction.
 import {createHash} from 'node:crypto';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
 const validUid=value=>typeof value==='string'&&value.length>0&&value.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(value);
 function canonical(value,ancestors=new Set(),depth=0){
  if(depth>50)throw Error('Nested profile too deep');

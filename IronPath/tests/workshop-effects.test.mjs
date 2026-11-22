@@ -1,6 +1,6 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {migrateWorkshop,equipWorkshop} from '../workshop-model.mjs';
-import {captureWorkshopLoadout,workshopEffects} from '../workshop-effects.mjs';
+import {migrateWorkshop,equipWorkshop} from '../workshop/workshop-model.mjs';
+import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs';
 const effect=(w,wave=6,mode='solo')=>workshopEffects(captureWorkshopLoadout(w,mode),wave);
 const baseline=effect(migrateWorkshop(null));
 test('each migrated legacy item keeps its old effect with neutral other slots',()=>{

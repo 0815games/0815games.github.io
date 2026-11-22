@@ -1,5 +1,5 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {createWorkshopView} from '../workshop-view.mjs';import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop-wire.mjs';
+import {createWorkshopView} from '../workshop/workshop-view.mjs';import {initializeWireWorkshop,applyWireWorkshopCommand} from '../workshop/workshop-wire.mjs';
 class Element{constructor(tag){this.tag=tag;this.children=[];this.textContent='';this.disabled=false;}append(...items){this.children.push(...items);}replaceChildren(...items){this.children=[...items];}setAttribute(name,value){this[name]=value;}}
 const document={createElement:tag=>new Element(tag)};const nodes=root=>[root,...root.children.flatMap(nodes)];
 const button=(root,label)=>nodes(root).find(x=>x.tag==='button'&&x.textContent===label);

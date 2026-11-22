@@ -93,7 +93,7 @@ test('trial protocol is locked into the started manifest and shared with reconne
 
 test('experimental workshop lock travels through recoverable coop and host restart',{timeout:45000},async()=>{
  const f=await setup(),{createFirebaseRecoverableGame}=await import('../../firebase-recoverable-game.mjs');
- const {initializeWireWorkshop}=await import('../../workshop-wire.mjs'),{makeWorkshopOffer,lockWorkshopRoster}=await import('../../workshop-multiplayer.mjs');
+ const {initializeWireWorkshop}=await import('../../workshop/workshop-wire.mjs'),{makeWorkshopOffer,lockWorkshopRoster}=await import('../../workshop/workshop-multiplayer.mjs');
  const ids=['alice','bob'],profile=initializeWireWorkshop({xp:0,armory:{owned:1,equipped:1}}),offers=Object.fromEntries(ids.map(id=>[id,makeWorkshopOffer(profile,'coop')])),lock=lockWorkshopRoster({matchId:f.party.partyId,mode:'coop',playerIds:ids,offers}),players=ids.map(id=>createPlayer(id,{name:id,gender:'female',loadout:'0,0,1'}));
  const statuses={},views={},errors=[],make=(id,extra={})=>createFirebaseRecoverableGame({db:db[id],auth:{currentUser:{uid:id}},sdk,partyId:f.party.partyId,manifest:f.manifest,crypto:webcrypto,readFresh,workshopLock:lock,...extra,onStatus:v=>statuses[id]=v,onState:v=>{if(v==='error')errors.push(id);},onSnapshot:v=>{views[id]=v;}});
  const wait=async(fn)=>{const until=Date.now()+20000;while(!fn()){if(errors.length)throw Error(`Clients failed: ${errors}`);if(Date.now()>until)throw Error('Timed out');await new Promise(r=>setTimeout(r,50));}};

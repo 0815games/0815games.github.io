@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createProgressionService} from '../server/progression-service.mjs';import {decodeWorkshop} from '../workshop-wire.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {createProgressionService} from '../server/progression-service.mjs';import {decodeWorkshop} from '../workshop/workshop-wire.mjs';
 const rid=n=>n.toString(16).padStart(32,'0');
 function fixture(){const profiles={alice:{name:'Alice',gender:'female',xp:750,armory:{scrap:150,fortify:1,plating:0,owned:1,equipped:1},skills:'v2;none',storyProgress:2,coopRewards:{abc:7}},bob:{name:'Bob',gender:'male',xp:0}};let locked=false;
  const service=createProgressionService({verifyToken:async token=>token==='bad'?null:{uid:token},transact:async(uid,fn)=>{const next=fn(structuredClone(profiles[uid]??null));if(next)profiles[uid]=next;return {committed:!!next,snapshot:{val:()=>structuredClone(profiles[uid]??null)}};},isUnlocked:()=>!locked});return {profiles,service,lock:v=>locked=v};}

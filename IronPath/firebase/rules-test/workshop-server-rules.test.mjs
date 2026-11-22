@@ -1,7 +1,7 @@
 // Candidate trusted-server boundary only. No production rules or server changed.
 import {test,before,after,beforeEach} from 'node:test';import {strict as assert} from 'node:assert';import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertFails,assertSucceeds} from '@firebase/rules-unit-testing';import {ref,set,get,update,runTransaction,onValue} from 'firebase/database';
-import {initializeWireWorkshop,applyWireWorkshopCommand} from '../../workshop-wire.mjs';import {applyWorkshopWaveCredit} from '../../workshop-wave-credit.mjs';
+import {initializeWireWorkshop,applyWireWorkshopCommand} from '../../workshop/workshop-wire.mjs';import {applyWorkshopWaveCredit} from '../../workshop/workshop-wave-credit.mjs';
 const id='0123456789abcdef0123456789abcdef';let env,alice,bob;
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL('../workshop-server-only.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const admin=ctx.database();await set(ref(admin,'players/alice'),{name:'Alice',gender:'female',xp:750,armory:{scrap:100,fortify:3,plating:1,owned:1,equipped:1},storyProgress:2,coopRewards:{[id]:3}});});});after(()=>env.cleanup());

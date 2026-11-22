@@ -1,9 +1,9 @@
-import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261122-i18n1';
+import {WAVE_COUNT,MAX_WAVE_MASK} from './combat.mjs?v=20261122-workshop1';
 import {rewardWave} from './armory.mjs?v=20261112-tagless1';
 import {waveXP} from './progression.mjs?v=20261105-prestige1';
-import {rewardDelta} from './run-results.mjs?v=20261122-i18n1';
-import {applyWorkshopWaveCredit} from './workshop-wave-credit.mjs?v=20261112-tagless1';
-import {initializeWireWorkshop,decodeWorkshop} from './workshop-wire.mjs?v=20261112-tagless1';
+import {rewardDelta} from './run-results.mjs?v=20261122-workshop1';
+import {applyWorkshopWaveCredit} from './workshop/workshop-wave-credit.mjs?v=20261112-tagless1';
+import {initializeWireWorkshop,decodeWorkshop} from './workshop/workshop-wire.mjs?v=20261112-tagless1';
 
 // Idempotent, per-account credits. One transaction changes XP and the match's
 // wave receipt together; the player-host is not trusted or cheat-proof.

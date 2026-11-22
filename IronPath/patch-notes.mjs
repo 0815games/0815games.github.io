@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261122-i18n1';
+import {getLanguage} from './language.mjs?v=20261122-workshop1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,22 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'workshop1',build:'20261122-workshop1',pr:350,
+    title:{en:'Structure Move 2 · The Workshop Modules Now Live in workshop/',de:'Struktur-Umzug 2 · Die Werkstatt-Module liegen jetzt in workshop/'},
+    shipped:[
+      {en:'Nothing changes in the game itself: the workshop opens, builds and saves exactly as before. Only the addresses of its files moved.',de:'Am Spiel selbst ändert sich nichts: Die Werkstatt öffnet, baut und speichert genau wie vorher. Nur die Adressen ihrer Dateien sind umgezogen.'},
+      {en:'All 17 workshop modules (workshop-*.mjs) moved from the flat game folder into IronPath/workshop/. The workshop stylesheet stays in the game folder, like every stylesheet.',de:'Alle 17 Werkstatt-Module (workshop-*.mjs) sind aus dem flachen Spielordner nach IronPath/workshop/ gezogen. Das Werkstatt-Stylesheet bleibt wie jedes Stylesheet im Spielordner.'},
+      {en:'7 of the 17 modules are byte-identical to before; in the other 10 only the import paths point one folder up.',de:'7 der 17 Module sind bytegleich zu vorher; in den anderen 10 zeigen nur die Import-Pfade einen Ordner höher.'},
+      {en:'Raised the cache wave to 20261122-workshop1, because the module addresses changed: no device should keep loading the workshop from its old place out of cache.',de:'Die Cache-Welle auf 20261122-workshop1 erhöht, weil sich die Modul-Adressen geändert haben: Kein Gerät soll die Werkstatt weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-workshop1, and the workshop must open with your items, scrap and equipped parts exactly as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss BUILD 20261122-workshop1 zeigen, und die Werkstatt muss mit deinen Gegenständen, Schrott und ausgerüsteten Teilen genau wie vorher öffnen.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'Next structure moves, one folder per release: net/ (multiplayer client modules), battle/, ui/ and core/. The dictionaries already live in i18n/.',de:'Die nächsten Struktur-Umzüge, je ein Ordner pro Stand: net/ (Mehrspieler-Clientmodule), battle/, ui/ und core/. Die Wörterbücher liegen bereits in i18n/.'},
+      {en:'Still parked until the structure is done: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Bis die Struktur steht, bleibt geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ],
+  },
   {
     id:'i18n1',build:'20261122-i18n1',pr:348,
     title:{en:'Structure Move 1 · The German Dictionaries Now Live in i18n/',de:'Struktur-Umzug 1 · Die deutschen Wörterbücher liegen jetzt in i18n/'},

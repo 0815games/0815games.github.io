@@ -1,5 +1,5 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {createWorkshopAccount} from '../workshop-account.mjs';import {decodeWorkshop} from '../workshop-wire.mjs';
+import {createWorkshopAccount} from '../workshop/workshop-account.mjs';import {decodeWorkshop} from '../workshop/workshop-wire.mjs';
 function fixture(){let profile={name:'Alice',xp:1,armory:{scrap:100,owned:1,equipped:1}},watches=0,allow=true;const auth={currentUser:{uid:'alice'}};
  const sdk={ref:(_,path)=>path,onValue:(_ref,cb)=>{watches++;queueMicrotask(()=>cb({val:()=>profile}));return()=>watches--;},runTransaction:async(_ref,update)=>{const next=update(profile);if(next===undefined)return {committed:false,snapshot:{val:()=>profile}};profile=next;return {committed:true,snapshot:{val:()=>profile}};}};
  const service=createWorkshopAccount({db:{},auth,sdk,canEdit:()=>allow});return {auth,sdk,service,get:()=>profile,setAllow:v=>allow=v,watches:()=>watches};}

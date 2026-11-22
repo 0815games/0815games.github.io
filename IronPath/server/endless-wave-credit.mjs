@@ -2,7 +2,7 @@
 // Never expose credit() directly to clients. The producer must persist and
 // replay authenticated, authoritative completion events with stable run IDs.
 import {createHash} from 'node:crypto';
-import {applyWorkshopWaveCredit} from '../workshop-wave-credit.mjs';
+import {applyWorkshopWaveCredit} from '../workshop/workshop-wave-credit.mjs';
 import {MAX_WAVE_MASK,WAVE_COUNT} from '../combat.mjs?v=20261208-kolt1';
 
 const validUid=v=>typeof v==='string'&&v.length>0&&v.length<=128&&!/[.#$\[\]/\u0000-\u001f\u007f]/.test(v);

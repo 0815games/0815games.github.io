@@ -6,8 +6,8 @@
 // navigation, and strict protection against destructive actions (Delete
 // Character and Sign Out are never clickable or auto-triggered by the tour).
 
-import {translateText as tr,getLanguage} from './language.mjs?v=20261122-i18n1';
-import {mountOverlayPopover} from './popover-host.mjs?v=20261122-i18n1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261122-workshop1';
+import {mountOverlayPopover} from './popover-host.mjs?v=20261122-workshop1';
 
 export const FORBIDDEN_TOUR_TARGETS=Object.freeze([
   'menuDeleteCharacter',
@@ -37,7 +37,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Your highlighted Soldier card opens the Field Dossier: rank insignia, portrait, active skill, equipped item, and combat stats. Leveling up promotes your soldier automatically.',
     detail:'Tap Open & Inspect to examine your Dossier safely, or review the card highlighted behind this guide.',
     target:'#menuSoldier',
-    art:'assets/tutorial-soldier.jpg?v=20261122-i18n1',
+    art:'assets/tutorial-soldier.jpg?v=20261122-workshop1',
     voiceClip:'hq-dossier',
     inspect:'soldier',
   }),
@@ -48,7 +48,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Equipment boosts hero stats when equipped. Salvage duplicates or spend wave scrap in the Workshop to forge new gear, upgrade Bunker armor, and review Service Medals.',
     detail:'Nothing here forces a purchase — switch freely between Equipment, Workshop, Bunker, and Service Record tabs.',
     target:'#menuArmory',
-    art:'assets/arsenal-workbench.jpg?v=20261122-i18n1',
+    art:'assets/arsenal-workbench.jpg?v=20261122-workshop1',
     voiceClip:'hq-workshop',
     inspect:'armory',
   }),
@@ -59,7 +59,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Choose one of six classes from Level 2: Assault, Engineer, Logistics, Medic, Recon, or Air Defense. Each grants an active battle ability and specialized class upgrades on your turrets.',
     detail:'Changes stay a reversible draft until you press Save Build.',
     target:'#menuSkills',
-    art:'assets/skills-banner.jpg?v=20261122-i18n1',
+    art:'assets/skills-banner.jpg?v=20261122-workshop1',
     voiceClip:'hq-skills',
     inspect:'skills',
   }),
@@ -70,7 +70,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Follow Ada, Voss, Ivo, Sera, and Nia across 50 missions in five acts. Clear missions to earn Act Relics, face Boss phases and tactical decisions, and unlock Prestige tiers.',
     detail:'Every operation lists its threat rating before deployment — tougher enemies, extra waves, or tightened bunker limits.',
     target:'#menuCampaign',
-    art:'assets/tutorial-dossier-map.jpg?v=20261122-i18n1',
+    art:'assets/tutorial-dossier-map.jpg?v=20261122-workshop1',
     voiceClip:'hq-operations',
     inspect:null,
   }),
@@ -81,7 +81,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Pick Random or a specific valley battlefield in Endless. Every 10 waves clears a Sector, carrying a demolition refund into higher-threat terrain while logging your best wave and scrap.',
     detail:'Tap Open & Inspect to browse the battlefield carousel without starting a match.',
     target:'#menuEndless',
-    art:'assets/tutorial-airstrike.jpg?v=20261122-i18n1',
+    art:'assets/tutorial-airstrike.jpg?v=20261122-workshop1',
     voiceClip:null,
     inspect:'endless',
   }),
@@ -92,7 +92,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Play 2–4 player Co-op or 1v1 / 2v2 survival races using a private 4-digit party code or friend invite. Waves and 2× speed advance by squad vote, with confirmed wave-by-wave saving.',
     detail:'Use Leave Party cleanly when finished, or Emergency Force-Close if a teammate drops offline during wrap-up.',
     target:'#menuMultiplayer',
-    art:'assets/action-friends.jpg?v=20261122-i18n1',
+    art:'assets/action-friends.jpg?v=20261122-workshop1',
     voiceClip:'hq-online',
     inspect:null,
   }),
@@ -103,7 +103,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Search exact soldier names to add friends, view squad dossiers, and send party invites. High Scores tracks all-time solo and co-op waves plus a Friends-only filter.',
     detail:'Inspect Friends or open High Scores anytime without affecting active missions.',
     target:'#menuLeaderboard',
-    art:'assets/action-scores.jpg?v=20261122-i18n1',
+    art:'assets/action-scores.jpg?v=20261122-workshop1',
     voiceClip:null,
     inspect:'scores',
     secondaryInspect:'friends',
@@ -115,7 +115,7 @@ export const TOUR_STATIONS=Object.freeze([
     text:'Read Released & Upcoming updates in Field Notes. In Settings, adjust volume, mute General Vance radio voice, choose Reduced Graphics, or replay this tutorial anytime.',
     detail:'Safety notice: Account deletion and Sign Out inside Settings remain strictly manual — no briefing ever triggers them.',
     target:'#menuSettings',
-    art:'assets/tutorial-hq-briefing.jpg?v=20261122-i18n1',
+    art:'assets/tutorial-hq-briefing.jpg?v=20261122-workshop1',
     voiceClip:'hq-settings-done',
     inspect:'settings',
     secondaryInspect:'notes',

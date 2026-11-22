@@ -1,5 +1,5 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {initializeWireWorkshop,decodeWorkshop} from '../workshop-wire.mjs';import {applyWorkshopWaveCredit} from '../workshop-wave-credit.mjs';
+import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';import {applyWorkshopWaveCredit} from '../workshop/workshop-wave-credit.mjs';
 const id='0123456789abcdef0123456789abcdef',mask=(...waves)=>waves.reduce((v,w)=>v|(1<<(w-1)),0);
 const initial=()=>initializeWireWorkshop({name:'Alice',xp:0,armory:{scrap:0,owned:0,equipped:0,fortify:2},other:{keep:true}});
 test('completed solo boss wave credits regular rewards, bonus and receipt together',()=>{

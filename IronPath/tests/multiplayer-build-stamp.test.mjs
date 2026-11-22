@@ -28,7 +28,7 @@ test('multiplayer camera, CSS and account entry use the current build wave',()=>
   'game.js':['match.mjs','simulation.mjs','four-game-view.mjs'],
   'firebase-party-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs','party-host.mjs','firebase-party-session.mjs','workshop-multiplayer-game.mjs'],
   'firebase-recoverable-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs','party-host.mjs','firebase-recovery-store.mjs','firebase-durable-client-session.mjs','workshop-multiplayer-game.mjs'],
-  'workshop-multiplayer-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs'],
+  'workshop/workshop-multiplayer-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs'],
   'firebase-recovery-store.mjs':['party-host.mjs'],
   'party-host.mjs':['protocol.mjs'],
   'firebase-party-session.mjs':['protocol.mjs'],
