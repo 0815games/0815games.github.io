@@ -35,10 +35,10 @@ const changed=createFirebasePartyPresence({...shared,auth:changingAuth,onConnect
 changed.start();await sleep(5);assert.equal(authConnection,true);changingAuth.currentUser={uid:'eve'};await sleep(110);
 assert.equal(authConnection,false);assert.deepEqual(authErrors,['Party identity changed']);await changed.stop();
 // Wire the presence events into the real player-hosted session.
-const {createPartyHost}=await import('../party-host.mjs');
+const {createPartyHost}=await import('../core/party-host.mjs');
 const {createFirebasePartyHostSession}=await import('../net/firebase-party-session.mjs');
-const {createMatch}=await import('../simulation.mjs');
-const {createPlayer}=await import('../match.mjs');
+const {createMatch}=await import('../core/simulation.mjs');
+const {createPlayer}=await import('../core/match.mjs');
 const gameHost=createPartyHost(createMatch(['alice','bob'].map(id=>createPlayer(id,{name:id,gender:'female'}))));
 const hostSession=createFirebasePartyHostSession({host:gameHost,playerIds:['alice','bob'],epoch:'test-epoch',channel:{watchInputs(){return()=>{};},async publishViews(){},async close(){}}});
 hostSession.start();

@@ -1,14 +1,14 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync,existsSync} from 'node:fs';
-import {RANKS,rankForLevel,rankProgress,rankInsigniaSvg,rankTooltip,renderRankInsignia} from '../rank-insignia.mjs';
+import {RANKS,rankForLevel,rankProgress,rankInsigniaSvg,rankTooltip,renderRankInsignia} from '../core/rank-insignia.mjs';
 
 // rank-insignia translates through its own tokenized language.mjs instance -
 // the same module with a different ?v= is a second instance with its own
 // state, so the dictionary is configured on exactly the URL the module uses
 // (same lesson as tests/production-module.mjs, read from the source so a wave
 // bump cannot silently split them again).
-const rankSource=readFileSync(new URL('../rank-insignia.mjs',import.meta.url),'utf8');
+const rankSource=readFileSync(new URL('../core/rank-insignia.mjs',import.meta.url),'utf8');
 const languageToken=(rankSource.match(/language\.mjs\?v=([\w-]+)/)||[])[1];
 const {setupLanguage,translateText}=await import(`../language.mjs${languageToken?`?v=${languageToken}`:''}`);
 
@@ -82,7 +82,7 @@ test('the rank names and the next-rank line exist in German',()=>{
 });
 
 test('the module derives everything and stores nothing',()=>{
-  const source=readFileSync(new URL('../rank-insignia.mjs',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../core/rank-insignia.mjs',import.meta.url),'utf8');
   assert.equal(/localStorage|sessionStorage|setItem|runTransaction|\.set\(/.test(source),false,'a rank is never written anywhere');
   assert.ok(!existsSync(new URL('../assets/rank-insignia',import.meta.url)),'no asset: the mark is procedural');
 });
@@ -103,7 +103,7 @@ test('the rank is worn in all three places the concept promised',()=>{
   assert.match(account,/function refreshProfileRank\(value\)\{[\s\S]{0,400}renderRankInsignia\(document,document\.getElementById\('profileRank'\)/);
   assert.match(account,/refreshProfileRank\(value\);/,'the snapshot callback paints it');
   assert.match(account,/refreshProfileRank\(profile\);/,'the language change repaints it');
-  const menuCard=readFileSync(new URL('../command-center.mjs',import.meta.url),'utf8');
+  const menuCard=readFileSync(new URL('../core/command-center.mjs',import.meta.url),'utf8');
   assert.match(menuCard,/renderRankInsignia\(document,\$\('menuRank'\),\{level:p\.level\},\{size:22\}\)/);
   const dossier=readFileSync(new URL('../ui/soldier-screen.mjs',import.meta.url),'utf8');
   assert.match(dossier,/renderRankInsignia\(document,\$\('soldierRank'\),\{level:data\.level\},\{size:30\}\)/);

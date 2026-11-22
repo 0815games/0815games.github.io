@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createVersus,applyVersus,stepVersus,versusView} from '../versus.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createVersus,applyVersus,stepVersus,versusView} from '../core/versus.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 const players=['a','b'].map(id=>createPlayer(id,{name:id,gender:'female',level:1}));
 const direct=createVersus(players,'road','a');assert.deepEqual(direct.lanes.a.players.a.x,direct.lanes.b.players.b.x);assert.equal(applyVersus(direct,'a',{type:'build',pad:0,towerType:0}).ok,true);assert.equal(direct.lanes.b.towers.length,0,'tower placement is isolated');
 assert.equal(applyVersus(direct,'b',{type:'build',pad:0,towerType:1}).ok,true);assert.equal(direct.lanes.a.towers[0].type,0);assert.equal(direct.lanes.b.towers[0].type,1);assert.equal(direct.lanes.a.money,75);assert.equal(direct.lanes.b.money,45);

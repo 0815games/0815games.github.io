@@ -1,11 +1,11 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {towerDisplay,upgradeCost,towerUpgradeInvestment} from '../progression.mjs';
-import {createPlayer,applyCommand,towerRefund} from '../match.mjs';
-import {createMatch,getTowerRange} from '../simulation.mjs';
-import {towerDamage} from '../combat.mjs';
-import {createPartyHost,restorePartyHost} from '../party-host.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../four-modes.mjs';
+import {towerDisplay,upgradeCost,towerUpgradeInvestment} from '../core/progression.mjs';
+import {createPlayer,applyCommand,towerRefund} from '../core/match.mjs';
+import {createMatch,getTowerRange} from '../core/simulation.mjs';
+import {towerDamage} from '../core/combat.mjs';
+import {createPartyHost,restorePartyHost} from '../core/party-host.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand} from '../core/four-modes.mjs';
 const profile={name:'Test',gender:'female',level:10};
 const p=id=>createPlayer(id,profile);
 test('prestige cycles keep growing and investment is accurately refundable',()=>{

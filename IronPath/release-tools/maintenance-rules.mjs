@@ -5,7 +5,7 @@
 // An auth_time cutoff invalidates old ordinary Firebase logins after reopening;
 // it does not attest the executing build, or stop a manipulated client from
 // signing in again. Rules and actual live state must be independently reviewed.
-import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../maintenance-check.mjs';
+import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../core/maintenance-check.mjs';
 
 export const MAINTENANCE_GATE=`auth != null && root.child('${MAINTENANCE_PATH}').child('format').val() === 1 && root.child('${MAINTENANCE_PATH}').child('mode').val() === 'open' && root.child('${MAINTENANCE_PATH}').child('authAfterMs').isNumber() && root.child('${MAINTENANCE_PATH}').child('authAfterMs').val() >= 0 && root.child('${MAINTENANCE_PATH}').child('authAfterMs').val() % 1 === 0 && auth.token.auth_time * 1000 > root.child('${MAINTENANCE_PATH}').child('authAfterMs').val()`;
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value);

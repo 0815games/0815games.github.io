@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {createCombatEffects} from '../combat-fx.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
+import {createCombatEffects} from '../core/combat-fx.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
 let now=100;const fx=createCombatEffects({clock:()=>now});
 const view=(cooldown,active='assault')=>({players:{alice:{x:150,y:180,cooldown,skills:{active}}},enemies:[{x:70,y:130,hp:20}]});
 fx.observe(view(0));assert.equal(fx.active().length,0);fx.observe(view(29.8));assert.equal(fx.active().length,1);assert.equal(fx.active()[0].kind,'assault');assert.deepEqual(fx.active()[0].targets,[{x:70,y:130,air:false}]);

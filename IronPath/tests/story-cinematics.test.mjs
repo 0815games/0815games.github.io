@@ -1,5 +1,5 @@
 import {readFile} from 'node:fs/promises';
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {CAMPAIGN,actOf,actEndIndex} from '../campaign.mjs';import {cinematicFrames,cinematicScene,relicHandover} from '../story-cinematics.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {CAMPAIGN,actOf,actEndIndex} from '../core/campaign.mjs';import {cinematicFrames,cinematicScene,relicHandover} from '../core/story-cinematics.mjs';
 test('every mission has authored briefing and debrief scenes with complete readable dialogue',()=>{for(const mission of CAMPAIGN){for(const kind of ['intro','ending']){const frames=cinematicFrames(mission,kind);assert.ok(frames.length>=3,`${mission.id} ${kind}`);for(const frame of frames){assert.ok(frame.speaker);assert.ok(frame.text.length>5);assert.doesNotMatch(frame.text,/^(VOSS|ADA|IVO|SERA|NIA|ROOK):/);}}assert.equal(cinematicFrames(mission,'intro')[0].text,mission.briefing);}assert.match(cinematicFrames(CAMPAIGN.filter(m=>m.finale).at(-1),'ending').at(-1).text,/signing off/);assert.deepEqual(cinematicFrames(null,'intro'),[]);});
 
 const POOL=['signal','pinewood','outpost','marsh','ice','city','tower','valley'];

@@ -173,7 +173,7 @@ test('the caller names the title - the card does not shorten the name',()=>{
 test('every map in the game paints a picture of itself',async()=>{
   // Not one theme: the title card has to survive all of them, and the generated
   // battlefields too - the grid maps with two roads and the four-player front.
-  const {MAPS,SQUAD_MAPS,getMap}=await import('../maps.mjs');
+  const {MAPS,SQUAD_MAPS,getMap}=await import('../core/maps.mjs');
   const ids=[...Object.keys(MAPS),...Object.keys(SQUAD_MAPS),'g3-0e9c6f21d','g2-1a2b3c4d5'];
   assert.ok(ids.length>=3,'the fixture exercises the fixed and the generated maps');
   for(const id of ids){

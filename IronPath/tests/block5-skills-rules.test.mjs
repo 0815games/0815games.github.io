@@ -12,7 +12,7 @@ import {
 import {buildFriendPortraitCandidate} from '../firebase/friend-portrait-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../release-tools/maintenance-rules.mjs';
 import {compareRules,compareRepoDrafts} from '../scripts/rules-publish-dry-run.mjs';
-import {SKILL_PATHS,encodeBuild,parseBuild,DEFAULT_BUILD} from '../skills.mjs';
+import {SKILL_PATHS,encodeBuild,parseBuild,DEFAULT_BUILD} from '../core/skills.mjs';
 
 test('Block 5 offline skills RTDB candidate preserves reference SHA-256 and alters only the 3 skills validators',async()=>{
   const bytes=await readFile(new URL('../firebase/WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));

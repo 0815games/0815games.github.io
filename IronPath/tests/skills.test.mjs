@@ -1,7 +1,7 @@
 import {test} from 'node:test';
-import {applyCommand, createPlayer} from '../match.mjs';
-import {createMatch, stepMatch} from '../simulation.mjs';
-import {DEFAULT_BUILD, MAX_CLASS_POINTS, SKILL_PATHS, encodeBuild, parseBuild, pointsLeft} from '../skills.mjs';
+import {applyCommand, createPlayer} from '../core/match.mjs';
+import {createMatch, stepMatch} from '../core/simulation.mjs';
+import {DEFAULT_BUILD, MAX_CLASS_POINTS, SKILL_PATHS, encodeBuild, parseBuild, pointsLeft} from '../core/skills.mjs';
 import {strict as assert} from 'node:assert';
 
 test('V2 exclusive 6-class builds validate, abilities fire, and passives reach solo and co-op',async()=>{

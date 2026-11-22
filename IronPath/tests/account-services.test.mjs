@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createAccountServicesRegistry,requiresAccountGuard} from '../account-services.mjs';
+import {createAccountServicesRegistry,requiresAccountGuard} from '../core/account-services.mjs';
 
 function fakeSdk(){
  const calls=[],auth={},db={},app={};

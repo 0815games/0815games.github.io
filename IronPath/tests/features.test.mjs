@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {FEATURES,resolveFeatures,featureEnabled,applyFeatureVisibility} from '../features.mjs';
+import {FEATURES,resolveFeatures,featureEnabled,applyFeatureVisibility} from '../core/features.mjs';
 
 test('the switch surface is exactly the Stufe-1 feature list',()=>{
   assert.deepEqual(Object.keys(FEATURES).sort(),['actVideos','campaign','coach','endless','endlessMenu','friends','leaderboards','multiplayer','tutorial','voiceOver','workshop']);

@@ -43,9 +43,9 @@ const FILES={
 `,
   'style.css':`/* unchanged */\n`,
   'account-entry.mjs':`import './account.js?v=${OLD}';\n`,
-  'account.js':`import './game.js?v=${OLD}';\nimport './match.mjs?v=${OLD}';\n`,
-  'game.js':`import './match.mjs?v=${OLD}';\n`,
-  'match.mjs':`export const value=1;\n`,
+  'account.js':`import './game.js?v=${OLD}';\nimport './core/match.mjs?v=${OLD}';\n`,
+  'game.js':`import './core/match.mjs?v=${OLD}';\n`,
+  'core/match.mjs':`export const value=1;\n`,
   'language.mjs':`export const getLanguage=()=>'de';\n`,
   'ui/login-scene.mjs':`import '../language.mjs?v=${OLD}';\nexport const LOGIN_SCENE_VERSION='${OLD}';\n`,
   'patch-notes.mjs':`// Field notes. The protocol lives in docs/PATCH-LOG.md and the plan in

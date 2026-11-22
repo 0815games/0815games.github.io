@@ -5,10 +5,10 @@ import {
   COOP_THREE_ENEMY_HEALTH,COOP_THREE_REWARD_RATE,
   COOP_FOUR_ENEMY_HEALTH,COOP_FOUR_REWARD_RATE,
   MULTIPLAYER_SECTOR_START_WAVE
-} from '../simulation.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {makeEnemy} from '../combat.mjs';
-import {createPartyHost} from '../party-host.mjs';
+} from '../core/simulation.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {makeEnemy} from '../core/combat.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 const p=id=>createPlayer(id,{name:id,gender:'female',level:1});
 const solo=createMatch([p('solo')]),coop=createMatch([p('host'),p('guest')]);
 assert.equal(COOP_REWARD_RATE,.7);assert.equal(COOP_ENEMY_HEALTH,1.5);

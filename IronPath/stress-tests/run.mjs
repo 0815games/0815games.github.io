@@ -3,14 +3,14 @@
 // are explicitly separated from those playthroughs.
 import {strict as assert} from 'node:assert';
 import {performance} from 'node:perf_hooks';
-import {createPlayer,applyCommand,getSupplies} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createVersus,applyVersus,stepVersus} from '../versus.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour,setFourPresence} from '../four-modes.mjs';
-import {getMap} from '../maps.mjs';
-import {makeEnemy} from '../combat.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {MAX_PENDING} from '../protocol.mjs';
+import {createPlayer,applyCommand,getSupplies} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createVersus,applyVersus,stepVersus} from '../core/versus.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour,setFourPresence} from '../core/four-modes.mjs';
+import {getMap} from '../core/maps.mjs';
+import {makeEnemy} from '../core/combat.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {MAX_PENDING} from '../core/protocol.mjs';
 const ids=['a','b','c','d'];
 const players=n=>ids.slice(0,n).map((id,i)=>createPlayer(id,{name:`Stress ${id}`,gender:'female',level:3,skills:'v2;assault;2;0;00000000000000'},n>2?1220:850,n>2?270+i*60:450));
 const seed=i=>`g2-${(i*2654435761>>>0).toString(16).padStart(8,'0')}`;

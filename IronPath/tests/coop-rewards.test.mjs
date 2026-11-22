@@ -1,9 +1,9 @@
 import {strict as assert} from 'node:assert';
 import {test} from 'node:test';
-import {createCoopRewardQueue} from '../coop-rewards.mjs';
+import {createCoopRewardQueue} from '../core/coop-rewards.mjs';
 import {initializeWireWorkshop,decodeWorkshop} from '../workshop/workshop-wire.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
 const party='ab'.repeat(16),profile={name:'Alice',gender:'female',level:1};
 const match=createMatch([createPlayer('a',profile),createPlayer('b',profile)]);
 match.wave=1;match.running=true;stepMatch(match);assert.equal(match.players.a.completedWaveMask,1);assert.equal(match.players.b.completedWaveMask,1);

@@ -2,9 +2,9 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readRecoveryFromServer} from '../net/firebase-recovery-server-read.mjs';
 import {createFirebaseRecoveryStore} from '../net/firebase-recovery-store.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
 import {webcrypto} from 'node:crypto';
 
 const reference={toString:()=> 'https://test-default-rtdb.europe-west1.firebasedatabase.app/path/to/session'};

@@ -13,7 +13,7 @@ const panel=`export function createFourPlayerPanel({document,onMatch}){
  globalThis.__testParty=mode=>{active=true;return onMatch({partyId:'0123456789abcdef0123456789abcdef',hostId:'mock-user',playerIds:['mock-user','bob'],profiles:[{name:'Test Soldier',gender:'female',level:3},{name:'Bob',gender:'male',level:3}],mode,teamRosters:[['mock-user','bob'],[]]});};
  return {show(){root.hidden=false},hide(){root.hidden=true},isActive:()=>active,isBusy:()=>false,hostInvite:()=>null,joinInvite:async()=>false,leaveParty:async()=>{active=false;return true},leaveForLogout:async()=>{active=false}};
 }`;
-const partyGame=`import {createMatch} from '../simulation.mjs';import {applyCommand} from '../match.mjs';import {createVersus,versusView,applyVersus} from '../versus.mjs';
+const partyGame=`import {createMatch} from '../core/simulation.mjs';import {applyCommand} from '../core/match.mjs';import {createVersus,versusView,applyVersus} from '../core/versus.mjs';
  export function createFirebasePartyGame({players,mapId,mode,hostId,onSnapshot,onStatus}){
   globalThis.__selected={mapId,players:structuredClone(players),mode};const match=mode==='versus'?createVersus(players,mapId,hostId):createMatch(players,mapId);if(mode==='coop')match.hostId=hostId;
   if(mode==='versus')globalThis.__laneStarts=Object.entries(match.lanes).map(([id,lane])=>({x:lane.players[id].x,y:lane.players[id].y}));
@@ -45,7 +45,7 @@ const partyGame=`import {createMatch} from '../simulation.mjs';import {applyComm
     await page.locator('#menuMultiplayer').click();await page.locator('#fourPartyPanel').waitFor({state:'visible'});
     assert.equal(await page.evaluate(mode=>window.__testParty(mode),mode),true,'account accepts the lobby handoff');
     await page.waitForFunction(()=>document.getElementById('game').dataset.fullBattle==='true');
-    const selected=await page.evaluate(async()=>{const {getMap}=await import('./maps.mjs'),{bunkerStart}=await import('./solo-deployment.mjs');const s=window.__selected,m=getMap(s.mapId);return {mapId:s.mapId,mode:s.mode,width:m.width,height:m.height,pads:m.pads.length,players:s.players.map(p=>({x:p.x,y:p.y})),spawns:s.players.map((_,i)=>bunkerStart(s.mapId,i)),laneStarts:window.__laneStarts};});
+    const selected=await page.evaluate(async()=>{const {getMap}=await import('./core/maps.mjs'),{bunkerStart}=await import('./core/solo-deployment.mjs');const s=window.__selected,m=getMap(s.mapId);return {mapId:s.mapId,mode:s.mode,width:m.width,height:m.height,pads:m.pads.length,players:s.players.map(p=>({x:p.x,y:p.y})),spawns:s.players.map((_,i)=>bunkerStart(s.mapId,i)),laneStarts:window.__laneStarts};});
     assert.equal(selected.mode,mode);
     assert.match(selected.mapId,/^g4-1[0-9a-f]{8}$/,`real account passes ${mode} to the large-map selector`);
     assert.equal(selected.width,1320);assert.equal(selected.height,720);assert.ok(selected.pads>=14);

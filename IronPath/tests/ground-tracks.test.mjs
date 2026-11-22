@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createGroundTracks} from '../ground-tracks.mjs';
-import {drawGroundTracks} from '../cartoon-art.mjs';
+import {createGroundTracks} from '../core/ground-tracks.mjs';
+import {drawGroundTracks} from '../core/cartoon-art.mjs';
 
 // Ground tracks: fading boot prints, tank cleats and rail wheel marks behind
 // moving units. Re-landed from #335, which shipped the recorder without a

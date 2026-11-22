@@ -183,7 +183,7 @@ test('portrait endless waves 1-10 zoom cleanly and real wave-10 #sectorAdvance r
   t.after(() => h.restore());
   const src = await loadGameSource();
   const { startGame } = await import(`data:text/javascript;base64,${Buffer.from(src).toString('base64')}`);
-  const { getMap } = await import('../maps.mjs');
+  const { getMap } = await import('../core/maps.mjs');
   const draws = ['g3-0dfdd99a1', 'g3-0dfdd99a1', 'g3-2f1bbcd88'];
   const control = startGame(ACCOUNT, {
     deferTutorial: true,

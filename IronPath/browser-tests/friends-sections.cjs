@@ -52,7 +52,7 @@ const assert=require('node:assert/strict');
   // turn into the success message. This uses a synthetic SDK in a real UI.
   await page.evaluate(async()=>{
    const build=document.querySelector('meta[name="ironpath-build"]').content;
-   const {friendNameKey}=await import(`./friends.mjs?v=${build}`),code='f'.repeat(32);
+   const {friendNameKey}=await import(`./core/friends.mjs?v=${build}`),code='f'.repeat(32);
    window.__emit(`friendNames/${friendNameKey('Cara')}`,{cara:{name:'Cara',code}});
    window.__emit(`friendCodes/${code}`,{uid:'cara',name:'Cara'});window.__rejectFriendFor('cara');
   });

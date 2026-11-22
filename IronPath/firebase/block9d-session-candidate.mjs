@@ -22,7 +22,7 @@ import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {MAINTENANCE_GATE} from '../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH} from '../maintenance-check.mjs';
+import {MAINTENANCE_PATH} from '../core/maintenance-check.mjs';
 
 export const BLOCK5_RULES_SHA256='ab8421e7e3ae2070b96f831f5963251c363d1520ce3bd2374d1e4ace068dd72d';
 export const ACTIVE_SESSION_LEASE_MS=45_000;

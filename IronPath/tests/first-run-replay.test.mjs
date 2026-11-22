@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 import { createCoach, coachSeen, markCoachSeen } from '../ui/first-run-coach.mjs';
-import { trainingSeen, markTrainingSeen, forgetTrainingSeen, TRAINING_KEY } from '../training-run.mjs';
+import { trainingSeen, markTrainingSeen, forgetTrainingSeen, TRAINING_KEY } from '../core/training-run.mjs';
 import { forgetGuideSeen, guideSeen, markGuideSeen } from '../ui/first-run-guide.mjs';
 
 // "FIELD TUTORIAL" in the Command Center used to mean "show me the cards again", and

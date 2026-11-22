@@ -30,14 +30,14 @@ test('multiplayer camera, CSS and account entry use the current build wave',()=>
   'net/firebase-recoverable-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs','party-host.mjs','firebase-recovery-store.mjs','firebase-durable-client-session.mjs','workshop-multiplayer-game.mjs'],
   'workshop/workshop-multiplayer-game.mjs':['versus.mjs','four-modes.mjs','simulation.mjs'],
   'net/firebase-recovery-store.mjs':['party-host.mjs'],
-  'party-host.mjs':['protocol.mjs'],
+  'core/party-host.mjs':['protocol.mjs'],
   'net/firebase-party-session.mjs':['protocol.mjs'],
   'net/firebase-durable-client-session.mjs':['protocol.mjs'],
-  'protocol.mjs':['versus.mjs','four-modes.mjs','match.mjs','simulation.mjs','multiplayer-speed.mjs'],
-  'versus.mjs':['match.mjs','simulation.mjs','wave-consensus.mjs'],
-  'four-modes.mjs':['match.mjs','simulation.mjs','wave-consensus.mjs'],
-  'simulation.mjs':['match.mjs'],
-  'match.mjs':['wave-consensus.mjs'],
+  'core/protocol.mjs':['versus.mjs','four-modes.mjs','match.mjs','simulation.mjs','multiplayer-speed.mjs'],
+  'core/versus.mjs':['match.mjs','simulation.mjs','wave-consensus.mjs'],
+  'core/four-modes.mjs':['match.mjs','simulation.mjs','wave-consensus.mjs'],
+  'core/simulation.mjs':['match.mjs'],
+  'core/match.mjs':['wave-consensus.mjs'],
  };
  for(const [file,modules] of Object.entries(dependencies))for(const module of modules)
   assert.ok(read(file).includes(`${module}?v=${stamp}`),`${file} must import the current ${module}`);

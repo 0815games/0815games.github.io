@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {drawRoad} from '../cartoon-art.mjs';
-import {buildRoadPath,cornerDeviation,DEFAULT_CORNER_RADIUS} from '../road-geometry.mjs';
-import {MAPS,getMap} from '../maps.mjs';
+import {drawRoad} from '../core/cartoon-art.mjs';
+import {buildRoadPath,cornerDeviation,DEFAULT_CORNER_RADIUS} from '../core/road-geometry.mjs';
+import {MAPS,getMap} from '../core/maps.mjs';
 
 // Point 2 of the list: "Strassen-Design neu", re-landed with the curves fixed.
 //

@@ -6,12 +6,12 @@ import {ref,set,get,update,onValue,runTransaction,remove,serverTimestamp,onDisco
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 import {createFirebasePartyGame} from '../../net/firebase-party-game.mjs';
 import {createFourPlayerPanel} from '../../net/firebase-four-panel.mjs';
-import {projectFourGameView} from '../../four-game-view.mjs';
-import {createPlayer} from '../../match.mjs';
+import {projectFourGameView} from '../../core/four-game-view.mjs';
+import {createPlayer} from '../../core/match.mjs';
 import {webcrypto} from 'node:crypto';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
+import {MAINTENANCE_PATH} from '../../core/maintenance-check.mjs';
 // Both modes use synthetic accounts and a local emulator, never a live project.
 const maintenance=process.env.IRONPATH_MAINTENANCE_GUARD==='1',adminUid='local-four-maintenance-admin';
 const tokenTime=Math.floor(Date.now()/1000);

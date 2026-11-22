@@ -1,5 +1,5 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {createPlayer,applyCommand} from '../match.mjs';import {stepMatch} from '../simulation.mjs';import {applyVersus,stepVersus} from '../versus.mjs';import {setFourPresence,stepFour} from '../four-modes.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';import {stepMatch} from '../core/simulation.mjs';import {applyVersus,stepVersus} from '../core/versus.mjs';import {setFourPresence,stepFour} from '../core/four-modes.mjs';
 import {initializeWireWorkshop} from '../workshop/workshop-wire.mjs';import {makeWorkshopOffer,lockWorkshopRoster} from '../workshop/workshop-multiplayer.mjs';import {createWorkshopMultiplayerMatch} from '../workshop/workshop-multiplayer-game.mjs';
 const matchId='0123456789abcdef0123456789abcdef';
 function setup(mode,ids){const players=ids.map((id,i)=>createPlayer(id,{name:id,gender:'male',level:2,skills:'v2;assault;1;0;00000000000000',loadout:`0,0,${i?3:1}`},100,130));const offers=Object.fromEntries(ids.map((id,i)=>[id,makeWorkshopOffer(initializeWireWorkshop({armory:{owned:1<<(i?2:0),equipped:i?3:1}}),mode)]));return {players,lock:lockWorkshopRoster({matchId,mode,playerIds:ids,offers})};}

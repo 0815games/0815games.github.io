@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {setupFullscreen} from '../fullscreen.mjs';
+import {setupFullscreen} from '../core/fullscreen.mjs';
 function fixture({unsupported=false,fail=false}={}){
  const handlers={},events={},button={hidden:true,disabled:false,textContent:'',attrs:{},addEventListener(k,f){handlers[k]=f},removeEventListener(k){delete handlers[k]},setAttribute(k,v){this.attrs[k]=v}},status={},doc={fullscreenEnabled:!unsupported,fullscreenElement:null,addEventListener(k,f){events[k]=f},removeEventListener(k){delete events[k]}},root=doc.documentElement={async requestFullscreen(){if(fail)throw Error('not allowed');doc.fullscreenElement=root;events.fullscreenchange()}},language={fn:null};doc.exitFullscreen=async()=>{doc.fullscreenElement=null;events.fullscreenchange()};const control=setupFullscreen({document:doc,button,status,translate:s=>language.fn?'DE '+s:s,onLanguageChange:fn=>{language.change=fn;return ()=>{language.change=null}}});return {doc,root,button,status,handlers,events,language,control};
 }

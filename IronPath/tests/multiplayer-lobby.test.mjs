@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {availablePartyModes,canStartParty} from '../multiplayer-lobby.mjs';
+import {availablePartyModes,canStartParty} from '../core/multiplayer-lobby.mjs';
 test('one lobby offers modes based on the number of ready participants',()=>{
  assert.deepEqual(availablePartyModes(1),[]);assert.deepEqual(availablePartyModes(2),['coop','versus']);assert.deepEqual(availablePartyModes(3),['four-coop']);assert.deepEqual(availablePartyModes(4),['four-coop','two-vs-two']);assert.deepEqual(availablePartyModes(5),[]);
  const profiles={a:{},b:{},c:{},d:{}};const check=(playerIds,mode,teams)=>canStartParty({playerIds,profiles,mode,teams});

@@ -5,8 +5,8 @@
 // and the legacy path keeps working.
 import {validateWorkshop} from './workshop-model.mjs?v=20261112-tagless1';
 import {initializeWorkshop,applyWorkshopCommand} from './workshop-transactions.mjs?v=20261112-tagless1';
-import {isPrestige} from '../prestige.mjs?v=20261112-pressure1';
-import {completeStory} from '../campaign.mjs?v=20261112-pressure1';
+import {isPrestige} from '../core/prestige.mjs?v=20261112-pressure1';
+import {completeStory} from '../core/campaign.mjs?v=20261112-pressure1';
 const LIMIT=2048;
 const exactKeys=(value,keys)=>value && typeof value==='object' && !Array.isArray(value) && Object.keys(value).length===keys.length && keys.every(k=>Object.hasOwn(value,k));
 

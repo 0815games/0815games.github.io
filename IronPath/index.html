@@ -4,23 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Iron Path — Hold the Line</title>
-  <meta name="ironpath-build" content="20261122-ui1">
+  <meta name="ironpath-build" content="20261122-core1">
   <meta name="ironpath-maintenance-database" content="https://iron-path-dc727-default-rtdb.europe-west1.firebasedatabase.app">
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg?v=20261031-loading1">
   <link rel="alternate icon" href="assets/favicon.ico?v=20261031-loading1">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png?v=20261031-loading1">
   <link rel="manifest" href="assets/manifest.webmanifest?v=20261031-loading1">
-  <link rel="stylesheet" href="style.css?v=20261122-ui1">
-  <link rel="stylesheet" href="interface-redesign.css?v=20261122-ui1">
-  <link rel="stylesheet" href="skill-menu.css?v=20261122-ui1">
-  <link rel="stylesheet" href="field-command.css?v=20261122-ui1">
+  <link rel="stylesheet" href="style.css?v=20261122-core1">
+  <link rel="stylesheet" href="interface-redesign.css?v=20261122-core1">
+  <link rel="stylesheet" href="skill-menu.css?v=20261122-core1">
+  <link rel="stylesheet" href="field-command.css?v=20261122-core1">
   <link rel="stylesheet" href="multiplayer-prompts.css?v=20261031-prompt1">
-  <link rel="stylesheet" href="results-debrief.css?v=20261122-ui1">
+  <link rel="stylesheet" href="results-debrief.css?v=20261122-core1">
   <link rel="stylesheet" href="soldier-screen.css?v=20261112-tagless1">
   <link rel="stylesheet" href="workshop-view.css?v=20261112-firstrun5">
   <link rel="stylesheet" href="popup-center.css?v=20261117-popupcenter2">
   <link rel="stylesheet" href="patch-notes.css?v=20261031-notes1">
-  <link rel="stylesheet" href="menu-redesign.css?v=20261122-ui1">
+  <link rel="stylesheet" href="menu-redesign.css?v=20261122-core1">
 </head>
 <body>
   <!-- First paint: decide whether this device must choose a language before any
@@ -210,7 +210,7 @@
         <button type="button" id="menuDeleteCharacter" class="danger-utility"><span data-i18n-text="DELETE CHARACTER">DELETE CHARACTER</span> <span aria-hidden="true">✖</span></button>
       </div>
     </div>
-    <p class="build-stamp" aria-hidden="true">BUILD 20261122-ui1</p>
+    <p class="build-stamp" aria-hidden="true">BUILD 20261122-core1</p>
   </dialog>
   <!-- Field notes: what the last patches changed and which blocks come next. The
        list itself is data (patch-notes.mjs), so the page only carries the frame:
@@ -323,13 +323,13 @@
            says what is actually happening: first the field link, then the
            soldier. Skipping the intro lands here, so this is the first screen
            of the game a returning player sees - it must not be a bare spinner. -->
-      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261122-ui1</p></div>
+      <div id="loading" class="transmission" role="status"><span class="transmission-topline"><span>0815 GAMES <i>/</i> <span data-i18n-text="FIELD TRANSMISSION">FIELD TRANSMISSION</span></span></span><span class="transmission-emblem" aria-hidden="true"><i></i><i></i><i></i></span><h2 id="loadingTitle" data-i18n-text="Establishing field connection…">Establishing field connection…</h2><p class="hint" id="loadingStep" data-i18n-text="The valley is waiting.">The valley is waiting.</p><p class="hint transmission-slow" id="loadingSlow" hidden data-i18n-text="This is taking longer than usual. Check your connection.">This is taking longer than usual. Check your connection.</p><p class="build-stamp" aria-hidden="true">BUILD 20261122-core1</p></div>
       <div id="releaseCheck" class="transmission" role="status" aria-live="polite" hidden><h2 id="releaseCheckTitle" data-i18n-text="Checking the game version…">Checking the game version…</h2><p id="releaseCheckDetail" class="hint"></p><button id="releaseCheckRetry" type="button" hidden data-i18n-text="RETRY CHECK">RETRY CHECK</button></div>
       <div id="connectionView" class="transmission" hidden><h2 data-i18n-text="Could not load soldier">Could not load soldier</h2><p class="hint" data-i18n-text="Check your connection and Firebase database rules, then retry.">Check your connection and Firebase database rules, then retry.</p><button id="retryProfile" type="button" data-i18n-text="RETRY">RETRY</button><button id="errorLogout" type="button" data-i18n-text="SIGN OUT">SIGN OUT</button></div>
       <div id="authView" class="dossier" hidden>
         <div class="dossier-hero-stage">
           <div class="dossier-scene" aria-hidden="true">
-            <img id="authSceneImg" src="assets/login-bunker-watch.jpg?v=20261122-ui1" width="1376" height="768" alt="" decoding="async">
+            <img id="authSceneImg" src="assets/login-bunker-watch.jpg?v=20261122-core1" width="1376" height="768" alt="" decoding="async">
           </div>
           <div class="dossier-topbar">
             <span class="dossier-kicker" data-i18n-text="0815 GAMES · PERSONNEL">0815 GAMES · PERSONNEL</span>
@@ -509,7 +509,7 @@
   </div>
   <aside id="firstRunCoach" class="first-run-coach" role="dialog" aria-modal="false" aria-labelledby="coachTitle" aria-describedby="coachText" hidden>
     <div class="coach-head"><span class="coach-step" id="coachStep"></span><button id="coachClose" class="coach-close" type="button" aria-label="Dismiss hint" data-i18n-aria-label="Dismiss hint">✕</button></div>
-    <div class="coach-media"><img id="coachArt" class="coach-art" src="assets/tutorial-soldier.jpg?v=20261122-ui1" alt=""><div><h2 id="coachTitle"></h2><p id="coachText" class="coach-text"></p></div></div>
+    <div class="coach-media"><img id="coachArt" class="coach-art" src="assets/tutorial-soldier.jpg?v=20261122-core1" alt=""><div><h2 id="coachTitle"></h2><p id="coachText" class="coach-text"></p></div></div>
     <div class="general-radio-bar coach-radio"><div class="general-radio-head"><strong id="coachRadioSpeaker" data-i18n-text="General Vance">General Vance</strong><span id="coachRadioStatus" class="general-radio-status"></span><button id="coachRadioMute" class="general-radio-btn" type="button" data-i18n-text="Mute">Mute</button></div><p id="coachRadioSubtitle" class="general-radio-sub" hidden></p></div>
     <p id="coachAsk" class="coach-ask" role="status" hidden></p>
     <div class="coach-pips" id="coachPips" aria-hidden="true"></div>
@@ -537,12 +537,12 @@
        resume point after mid-training exit/reload, and zero-reward replay entry. -->
   <dialog id="tutorialDossier" class="tutorial-dossier" tabindex="-1" aria-labelledby="dossierTitle" aria-describedby="dossierLead">
     <div class="dossier-banner">
-      <div class="dossier-officer"><img id="dossierPortrait" src="assets/general-vance-portrait.jpg?v=20261122-ui1" alt=""><div class="dossier-officer-copy"><span id="dossierKicker" class="eyebrow" data-i18n-text="COMMAND HQ · FIELD COMMISSION">COMMAND HQ · FIELD COMMISSION</span><h2 id="dossierTitle" data-i18n-text="General Vance's Field Dossier">General Vance's Field Dossier</h2></div></div>
+      <div class="dossier-officer"><img id="dossierPortrait" src="assets/general-vance-portrait.jpg?v=20261122-core1" alt=""><div class="dossier-officer-copy"><span id="dossierKicker" class="eyebrow" data-i18n-text="COMMAND HQ · FIELD COMMISSION">COMMAND HQ · FIELD COMMISSION</span><h2 id="dossierTitle" data-i18n-text="General Vance's Field Dossier">General Vance's Field Dossier</h2></div></div>
       <button id="dossierClose" type="button" class="dialog-back-btn" aria-label="Close dossier" data-i18n-aria-label="Close dossier">✕</button>
     </div>
     <div class="dossier-body">
       <div class="dossier-hero-grid">
-        <div class="dossier-art-wrap"><img id="dossierMapArt" src="assets/tutorial-dossier-map.jpg?v=20261122-ui1" alt=""></div>
+        <div class="dossier-art-wrap"><img id="dossierMapArt" src="assets/tutorial-dossier-map.jpg?v=20261122-core1" alt=""></div>
         <div class="dossier-brief">
           <p id="dossierLead" class="dossier-lead"></p>
           <p id="dossierRewardNote" class="dossier-reward-note"></p>
@@ -565,7 +565,7 @@
   <aside id="menuTour" class="menu-tour" popover="manual" role="dialog" aria-modal="false" aria-labelledby="menuTourTitle" aria-describedby="menuTourText" hidden>
     <div class="menu-tour-head"><span id="menuTourStep" class="menu-tour-step"></span><span id="menuTourCaption" class="menu-tour-caption"></span><button id="menuTourClose" type="button" class="menu-tour-close" aria-label="Minimize tour" data-i18n-aria-label="Minimize tour"><span class="tour-min-label" data-i18n-text="Minimize">Minimize</span> <span aria-hidden="true">✕</span></button></div>
     <div class="menu-tour-body">
-      <div class="menu-tour-main"><img id="menuTourArt" class="menu-tour-art" src="assets/tutorial-hq-briefing.jpg?v=20261122-ui1" alt=""><div class="menu-tour-copy"><h2 id="menuTourTitle"></h2><p id="menuTourText" class="menu-tour-text"></p><p id="menuTourDetail" class="menu-tour-detail"></p></div></div>
+      <div class="menu-tour-main"><img id="menuTourArt" class="menu-tour-art" src="assets/tutorial-hq-briefing.jpg?v=20261122-core1" alt=""><div class="menu-tour-copy"><h2 id="menuTourTitle"></h2><p id="menuTourText" class="menu-tour-text"></p><p id="menuTourDetail" class="menu-tour-detail"></p></div></div>
       <div class="general-radio-bar menu-tour-radio"><div class="general-radio-head"><strong id="menuTourRadioSpeaker" data-i18n-text="General Vance">General Vance</strong><span id="menuTourRadioStatus" class="general-radio-status"></span><div class="general-radio-controls"><button id="menuTourRadioReplay" class="general-radio-btn" type="button" data-i18n-text="Replay radio">Replay radio</button><button id="menuTourRadioMute" class="general-radio-btn" type="button" data-i18n-text="Mute">Mute</button></div></div><p id="menuTourRadioSubtitle" class="general-radio-sub" hidden></p></div>
       <div class="menu-tour-inspect-row"><button id="menuTourInspect" type="button" hidden></button><button id="menuTourInspectAlt" type="button" hidden></button></div>
     </div>
@@ -629,7 +629,7 @@
   </section>
   <script>setTimeout(function(){var intro=document.getElementById("introOverlay");if(intro)intro.hidden=true;},6500);</script>
   <script type="module" src="language-gate.mjs?v=20261112-firstrun5"></script>
-  <script type="module" src="ui/intro.mjs?v=20261122-ui1"></script>
+  <script type="module" src="ui/intro.mjs?v=20261122-core1"></script>
   <script>setTimeout(function(){if(!window.ironPathLoaded){var el=document.getElementById("loading");if(el)el.textContent=(navigator.language||"").toLowerCase().indexOf("de")===0?"Verbindung zu Iron Path konnte nicht hergestellt werden. Prüfe deine Verbindung und lade die Seite neu.":"Could not connect to Iron Path. Check your connection and reload the page.";}},15000);</script>
-  <script type="module" src="account-entry.mjs?v=20261122-ui1"></script>
+  <script type="module" src="account-entry.mjs?v=20261122-core1"></script>
 </body></html>

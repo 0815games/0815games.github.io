@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createScoreReporter} from '../leaderboards.mjs';
-import {createCoopRewardQueue} from '../coop-rewards.mjs';
+import {createScoreReporter} from '../core/leaderboards.mjs';
+import {createCoopRewardQueue} from '../core/coop-rewards.mjs';
 
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const deferred=()=>{let resolve;const promise=new Promise(done=>{resolve=done;});return {promise,resolve};};

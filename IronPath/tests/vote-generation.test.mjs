@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPartyHost} from '../party-host.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
-import {createVersus} from '../versus.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';
+import {createVersus} from '../core/versus.mjs';
 
 const cases=[['coop',2],['four-coop',3],['four-coop',4],['versus',2],['two-vs-two',4]];
 function fixture(mode,count,{running=false}={}){

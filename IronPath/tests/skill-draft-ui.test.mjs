@@ -1,10 +1,10 @@
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement} from '../skills.mjs';
-import {skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
-import {localizeSkillSummary} from '../skill-summary-localization.mjs';
+import {SKILL_PATHS,parseBuild,encodeBuild,pointsLeft,WEB_NODES,webReady,webRequirement} from '../core/skills.mjs';
+import {skillBuildSummary,canSaveSkillDraft} from '../core/skill-planner.mjs';
+import {localizeSkillSummary} from '../core/skill-summary-localization.mjs';
 import {bindDialogBackdrop} from '../ui/dialog-dismiss.mjs';
-import {characterProgress} from '../progression.mjs';
+import {characterProgress} from '../core/progression.mjs';
 
 const source=await readFile(new URL('../account.js',import.meta.url),'utf8');
 const start=source.indexOf('function canEditSkills()'),end=source.indexOf('\nconst armoryTabs=[',start);

@@ -2,8 +2,8 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {createSoldierScreen} from '../ui/soldier-screen.mjs';
-import {soldierProfile} from '../soldier-profile.mjs';
-import {characterProgress} from '../progression.mjs';
+import {soldierProfile} from '../core/soldier-profile.mjs';
+import {characterProgress} from '../core/progression.mjs';
 
 function element(tag){
   return {tag,width:0,height:0,clientWidth:220,hidden:false,open:false,type:'',className:'',value:'',textContent:'',

@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {SKILL_PATHS,parseBuild,encodeBuild,WEB_NODES,webReady,webBonuses,pointsLeft,webRequirement} from '../skills.mjs';
-import {prerequisites,nodeMatches} from '../skill-planner.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
+import {SKILL_PATHS,parseBuild,encodeBuild,WEB_NODES,webReady,webBonuses,pointsLeft,webRequirement} from '../core/skills.mjs';
+import {prerequisites,nodeMatches} from '../core/skill-planner.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
 
 test('twenty-four specialist doctrines require matching class, specialist, and preceding tier',()=>{
   assert.equal(WEB_NODES.filter(n=>n.kind==='doctrine').length,24);

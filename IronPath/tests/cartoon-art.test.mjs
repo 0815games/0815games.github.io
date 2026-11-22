@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {drawCartoonBattle,drawGroundDetails} from '../cartoon-art.mjs';
-import {getMap} from '../maps.mjs';
-import {createPlayer} from '../match.mjs';
-import {createMatch,PATH,PADS,getTowerRange} from '../simulation.mjs';
+import {drawCartoonBattle,drawGroundDetails} from '../core/cartoon-art.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch,PATH,PADS,getTowerRange} from '../core/simulation.mjs';
 const p=createPlayer('a',{name:'Alice',gender:'female'}),q=createPlayer('b',{name:'Bob',gender:'male'});
 const state=createMatch([p,q]);state.wave=1;state.hp=20;state.plating=3;state.selectedPad=0;
 state.towers=[0,1,2,3].map((type,pad)=>({type,pad,level:1,ownerId:'a'}));

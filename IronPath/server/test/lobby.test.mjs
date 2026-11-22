@@ -45,8 +45,8 @@ test('membership snapshots cannot mutate registry and active matches do not expi
 
 test('trusted lobby roster can provision an isolated real match service',async t=>{
   const {createMatchService}=await import('../service.mjs');
-  const {createPlayer}=await import('../../match.mjs');
-  const {createCoopClient}=await import('../../coop-client.mjs');
+  const {createPlayer}=await import('../../core/match.mjs');
+  const {createCoopClient}=await import('../../core/coop-client.mjs');
   const {WebSocket}=await import('ws');
   const r=createLobbyRegistry();r.create('alice');r.join('bob',r.invite('alice').secret);
   const match=r.start('alice');

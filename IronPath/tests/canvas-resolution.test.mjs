@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {canvasResolution} from '../canvas-resolution.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {canvasResolution} from '../core/canvas-resolution.mjs';
 test('backing buffer follows CSS size and pixel density with bounded memory',()=>{
  assert.deepEqual(canvasResolution(960,540,{width:1600},1),{width:1600,height:900});
  assert.deepEqual(canvasResolution(960,540,{width:700},2),{width:1400,height:788});

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {upgradeCue,towerUpgradeCues} from '../tower-upgrade-cue.mjs';
+import {upgradeCue,towerUpgradeCues} from '../core/tower-upgrade-cue.mjs';
 
 // The field shimmer's decision: mark a tower only when its next step is BOTH
 // unlocked and paid for. Two ways to lie to the soldier, and both are covered:

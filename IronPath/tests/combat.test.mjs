@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { ENEMY_TYPES, WAVES, makeEnemy, towerDamage } from '../combat.mjs';
+import { ENEMY_TYPES, WAVES, makeEnemy, towerDamage } from '../core/combat.mjs';
 assert.equal(WAVES.length, 20);
 assert.deepEqual([...new Set(WAVES[0])], ['infantry']);
 assert.ok(WAVES[1].includes('runner') && WAVES[1].includes('tank'));

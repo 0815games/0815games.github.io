@@ -5,7 +5,7 @@ import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/ru
 import {ref,set,get,remove,update,onValue,serverTimestamp,runTransaction} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
-import {createCoopInvites} from '../../coop-invites.mjs';
+import {createCoopInvites} from '../../core/coop-invites.mjs';
 let env,alice,bob,eve,anon;const sdk={ref,set,get,remove,update,onValue,serverTimestamp,runTransaction},party='a'.repeat(32),other='b'.repeat(32),code='1234';
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.DIRECT_INVITES_RULES?'../direct-invites.complete.draft.rules.json':process.env.LEADERBOARD_RULES?'../leaderboards.complete.draft.rules.json':'../coop-invites.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();anon=env.unauthenticatedContext().database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();for(const [id,name] of [['alice','Alice'],['bob','Bob'],['eve','Eve']])await set(ref(db,`players/${id}`),{name,gender:'female',xp:0});await set(ref(db,'friendships/bob/alice'),{status:'accepted',senderName:'Alice',receiverName:'Bob',code:'a'.repeat(32)});await set(ref(db,`fourParties/${party}`),{hostId:'alice',inviteCode:code,config:{mode:'four-coop',teams:[0,0,1,1]}});await set(ref(db,`fourCodes/${code}`),{hostId:'alice',partyId:party});});});after(async()=>env.cleanup());

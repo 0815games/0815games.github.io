@@ -56,7 +56,7 @@ function replaceOnce(source,pattern,replacement,label){
   });
   const [htmlOriginal,accountOriginal,afkOriginal,manifest]=await Promise.all([
    fs.readFile(path.join(root,'index.html'),'utf8'),fs.readFile(path.join(root,'account.js'),'utf8'),
-   fs.readFile(path.join(root,'afk-session.mjs'),'utf8'),fs.readFile(path.join(root,'release-version.json'),'utf8')
+   fs.readFile(path.join(root,'core/afk-session.mjs'),'utf8'),fs.readFile(path.join(root,'release-version.json'),'utf8')
   ]);
   const build=JSON.parse(manifest).build;
   const html=replaceOnce(htmlOriginal,/<meta name="ironpath-maintenance-database" content="[^"]+">/g,
@@ -81,7 +81,7 @@ function replaceOnce(source,pattern,replacement,label){
      if(!activeState)throw Error('No active test fixture');
      activeState.documents++;res.writeHead(200,{'content-type':'text/html','cache-control':'no-store'}).end(html.replaceAll(build,activeState.served));return;
     }
-    if(pathname==='/IronPath/account.js'||pathname==='/IronPath/afk-session.mjs'){
+    if(pathname==='/IronPath/account.js'||pathname==='/IronPath/core/afk-session.mjs'){
      res.writeHead(200,{'content-type':'text/javascript','cache-control':'no-store'}).end(pathname.endsWith('/account.js')?account:afk);return;
     }
     const file=path.resolve(root,pathname.slice('/IronPath/'.length));if(!file.startsWith(root+path.sep))throw Error('Invalid path');

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {guardMultiplayerTab} from '../multiplayer-tab-guard.mjs';
+import {guardMultiplayerTab} from '../core/multiplayer-tab-guard.mjs';
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 function fakeLocks(){const held=new Set();return {held,async request(key,options,callback){assert.equal(options.ifAvailable,true);if(held.has(key))return callback(null);held.add(key);try{return await callback({name:key});}finally{held.delete(key);}}};}
 const open=(locks,partyId,uid,events)=>guardMultiplayerTab({locks,partyId,uid,onAcquired:()=>events.push('open'),onConflict:()=>events.push('duplicate')});

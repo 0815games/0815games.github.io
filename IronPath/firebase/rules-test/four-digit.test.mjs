@@ -71,7 +71,7 @@ test('host approves four-digit request and two clients play and rejoin', {timeou
   const {createFourDigitLobby}=await import('../../net/firebase-four-digit-lobby.mjs');
   const {createFourDigitPanel}=await import('../../net/firebase-four-digit-panel.mjs');
   const {createFirebasePartyGame}=await import('../../net/firebase-party-game.mjs');
-  const {createPlayer}=await import('../../match.mjs');
+  const {createPlayer}=await import('../../core/match.mjs');
   const sdk={ref,get,set,onValue,runTransaction,remove,update,onDisconnect,serverTimestamp};
   for(const [db,uid,name] of [[host,'alice','Alice'],[guest,'bob','Bob']])await set(at(db,`players/${uid}`),{name,gender:'female',xp:0});
   let seed=1;const crypto={getRandomValues(bytes){bytes.fill(seed++);return bytes;}};

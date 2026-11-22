@@ -7,11 +7,11 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {createFirebasePartyHostSession,createFirebasePartyClientSession} from '../net/firebase-party-session.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createTwoVsTwo} from '../four-modes.mjs';
-import {createPlayer} from '../match.mjs';
-import {SNAPSHOT_RECEIPTS} from '../protocol.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {SNAPSHOT_RECEIPTS} from '../core/protocol.mjs';
 
 const twoPlayerMatch=()=>createMatch(['alice','bob'].map(id=>createPlayer(id,{name:id,gender:'female'})));
 const flush=()=>new Promise(resolve=>setTimeout(resolve,0));

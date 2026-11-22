@@ -1,7 +1,7 @@
 import {strict as assert} from 'node:assert';
-import {createPlayer,applyCommand,getSupplies} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {createPlayer,applyCommand,getSupplies} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 const profile={name:'Soldier',gender:'female',level:1};
 const state=createMatch([createPlayer('host',profile),createPlayer('guest',profile)]);
 assert.equal(getSupplies(state,'host'),125);assert.equal(getSupplies(state,'guest'),125);

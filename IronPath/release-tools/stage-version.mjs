@@ -111,15 +111,15 @@ export async function stageVersion({sourceDir, outputDir, build, guardedConfig} 
     await save(join('release-tools',name),await readFile(file));
   }
   if(config){
-    for(const name of ['account.js','account-services.mjs','game.js']){
+    for(const name of ['account.js','core\/account-services.mjs','game.js']){
       if(!Object.hasOwn(files,name))throw Error(`Missing guarded runtime file: ${name}`);
     }
     // The session registry is module-instance scoped. A mismatched query would
     // make the game import a different registry than the one the guard installs.
     const account=await readFile(join(target,'account.js'),'utf8');
     const entry=await readFile(join(target,'release-tools','guarded-game-entry.mjs'),'utf8');
-    const accountImports=[...account.matchAll(/from\s+['"]\.\/account-services\.mjs(\?[^'"]*)['"]/g)];
-    const entryImports=[...entry.matchAll(/from\s+['"]\.\.\/account-services\.mjs(\?[^'"]*)['"]/g)];
+    const accountImports=[...account.matchAll(/from\s+['"]\.\/core\/account-services\.mjs(\?[^'"]*)['"]/g)];
+    const entryImports=[...entry.matchAll(/from\s+['"]\.\.\/core\/account-services\.mjs(\?[^'"]*)['"]/g)];
     if(accountImports.length!==1 || entryImports.length!==1 || accountImports[0][1]!==entryImports[0][1]) {
       throw Error('Guarded account registry module URLs must match');
     }

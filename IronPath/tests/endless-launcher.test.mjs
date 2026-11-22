@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {ENDLESS_THEMES,ENDLESS_THEME_KEY,ENDLESS_LAST_RUN_KEY,readEndlessTheme,readLastEndlessRun,writeLastEndlessRun,createEndlessLauncher} from '../endless-launcher.mjs';
+import {ENDLESS_THEMES,ENDLESS_THEME_KEY,ENDLESS_LAST_RUN_KEY,readEndlessTheme,readLastEndlessRun,writeLastEndlessRun,createEndlessLauncher} from '../core/endless-launcher.mjs';
 
 function memory(saved={}){
   const store={...saved};
@@ -161,7 +161,7 @@ test('without a dialog element the launcher degrades to a no-op',()=>{
 // other game tests use) with a deterministic map queue, so the theme pipeline
 // is pinned without waiting on the random generator.
 test('chooseEndless redraws free maps until the chosen battlefield comes up',async()=>{
-  const {getMap}=await import('../maps.mjs');
+  const {getMap}=await import('../core/maps.mjs');
   // Real generated ids, one per theme (verified via getMap above).
   const urban='g3-002875330',scrub='g3-01c02eda4',forest='g3-00cf01250',arctic='g3-00ac4443d',marsh='g3-009b716fe';
   for(const id of [urban,scrub,forest,arctic,marsh])assert.ok(getMap(id),`known id ${id}`);
@@ -175,8 +175,8 @@ test('chooseEndless redraws free maps until the chosen battlefield comes up',asy
   globalThis.requestAnimationFrame=()=>{};
   const {readFile}=await import('node:fs/promises');
   let source=await readFile(new URL('../game.js',import.meta.url),'utf8');
-  for(const file of ['features.mjs','solo-deployment.mjs','workshop/workshop-run-receipt.mjs','canvas-resolution.mjs','language.mjs','map-zoom.mjs','game-localization.mjs','story-localization.mjs','soldier-motion.mjs','ui/dialog-dismiss.mjs','focus-pause.mjs','story-cinematics.mjs','campaign.mjs','relics.mjs','story-mission.mjs','story-events.mjs','training-run.mjs','ui/first-run-coach.mjs','four-game-view.mjs','battle/battle-viewport-controller.mjs','battle/battle-viewport.mjs','run-results.mjs','coop-motion.mjs','boss-mechanics.mjs','battle/battle-sound.mjs','run-perks.mjs','terrain.mjs','maps.mjs','combat-fx.mjs','cartoon-art.mjs','match.mjs','combat.mjs','progression.mjs','battle/battle-xp-hud.mjs','tower-upgrade-cue.mjs','tower-specialization.mjs','tower-class-paths.mjs','ui/development-ui.mjs','report-promotion.mjs','rank-insignia.mjs','ground-tracks.mjs','ui/ability-hud.mjs','simulation.mjs','tutorial.mjs','coop-config.mjs','coop-client.mjs','coop-input.mjs','ui/field-notice.mjs','ui/map-intro.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
-  source=source.replace(/'\.\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../skills.mjs',import.meta.url).href));
+  for(const file of ['core/features.mjs','core/solo-deployment.mjs','workshop/workshop-run-receipt.mjs','core/canvas-resolution.mjs','language.mjs','core/map-zoom.mjs','core/game-localization.mjs','core/story-localization.mjs','core/soldier-motion.mjs','ui/dialog-dismiss.mjs','core/focus-pause.mjs','core/story-cinematics.mjs','core/campaign.mjs','core/relics.mjs','core/story-mission.mjs','core/story-events.mjs','core/training-run.mjs','ui/first-run-coach.mjs','core/four-game-view.mjs','battle/battle-viewport-controller.mjs','battle/battle-viewport.mjs','core/run-results.mjs','core/coop-motion.mjs','core/boss-mechanics.mjs','battle/battle-sound.mjs','core/run-perks.mjs','core/terrain.mjs','core/maps.mjs','core/combat-fx.mjs','core/cartoon-art.mjs','core/match.mjs','core/combat.mjs','core/progression.mjs','battle/battle-xp-hud.mjs','core/tower-upgrade-cue.mjs','core/tower-specialization.mjs','core/tower-class-paths.mjs','ui/development-ui.mjs','core/report-promotion.mjs','core/rank-insignia.mjs','core/ground-tracks.mjs','ui/ability-hud.mjs','core/simulation.mjs','core/tutorial.mjs','core/coop-config.mjs','core/coop-client.mjs','core/coop-input.mjs','ui/field-notice.mjs','ui/map-intro.mjs'])source=source.replace(new RegExp(`'\\./${file.replace('.','\\.')}\\?[^']+'`),JSON.stringify(new URL('../'+file,import.meta.url).href));
+  source=source.replace(/'\.\/core\/skills\.mjs(?:\?[^']*)?'/,JSON.stringify(new URL('../core/skills.mjs',import.meta.url).href));
   const {startGame}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
   const gameControl=startGame({getProfile:()=>({name:'Test',gender:'female'}),getUserId:()=>'theme-user',isReady:()=>true,getLevel:()=>1,onSessionChange(){},awardXP(){},canChooseSolo:()=>true},{nextMapId,confirmAction:async()=>true});
   element('tutorialSkip').onclick();

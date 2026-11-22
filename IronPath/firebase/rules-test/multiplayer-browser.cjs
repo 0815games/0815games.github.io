@@ -64,7 +64,7 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase
 import {initializeAuth,inMemoryPersistence,connectAuthEmulator,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import {getDatabase,connectDatabaseEmulator,goOffline,goOnline} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js';
 import {createGuardedGameBootstrap} from './release-tools/guarded-game-bootstrap.mjs';
-import {installGuardedAccountSession} from './account-services.mjs?v=20261031-releaseguard1';
+import {installGuardedAccountSession} from './core/account-services.mjs?v=20261031-releaseguard1';
 const game=document.getElementById('guardedTestGame'),hold=document.getElementById('guardedTestHold');let instances;
 const sdk={initializeApp,initializeAuth,inMemoryPersistence,getDatabase,beforeAuthStateChanged,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signInWithCustomToken,signOut,sendPasswordResetEmail,goOffline};
 const runtime=createGuardedGameBootstrap({config:{apiKey:'fake',authDomain:'demo-ironpath.firebaseapp.com',projectId:'demo-ironpath',databaseURL:'https://demo-ironpath.firebaseio.com'},sdk,
@@ -195,7 +195,7 @@ function guardedHtml(html){
   const [host,bob,cara]=pages;
   stage=`create and join ${count}-player party`;
   await host.locator('#menuMultiplayer').click();
-  const {squadMapFor}=await import(pathToFileURL(path.join(root,'four-modes.mjs')).href);
+  const {squadMapFor}=await import(pathToFileURL(path.join(root,'core/four-modes.mjs')).href);
   let code,partyId;
   // For a reproducible longer battle, choose the hand-built field by creating
   // ordinary parties until its random party ID selects that map. The ordinary
@@ -284,7 +284,7 @@ function guardedHtml(html){
    await page.evaluate(()=>{const button=document.getElementById('mapZoom');if(button.getAttribute('aria-pressed')==='true')button.click();});
   }
   const points=await Promise.all(pages.map(page=>page.evaluate(async partyId=>{
-   const {squadMapFor}=await import('./four-modes.mjs'),{getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
+   const {squadMapFor}=await import('./core/four-modes.mjs'),{getMap}=await import('./core/maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
    const map=getMap(squadMapFor(partyId)),canvas=document.getElementById('game'),r=canvas.getBoundingClientRect(),h=Math.round(960*r.height/r.width);
    const view=createBattleViewport(map.width,map.height,960,h);
    return map.pads.map((pad,index)=>{const x=r.left+(pad.x-view.x)*view.scale*r.width/view.width,y=r.top+(pad.y-view.y)*view.scale*r.height/view.height;
@@ -295,7 +295,7 @@ function guardedHtml(html){
   if(lastWave>1){
    // Prefer pads covering a lot of both roads. This is only the test's normal
    // play strategy: all construction still happens through actual UI input.
-   const {getMap}=await import(pathToFileURL(path.join(root,'maps.mjs')).href),map=getMap(squadMapFor(partyId)),samples=[];
+   const {getMap}=await import(pathToFileURL(path.join(root,'core/maps.mjs')).href),map=getMap(squadMapFor(partyId)),samples=[];
    for(const road of map.paths||[map.path])for(let i=1;i<road.length;i++){
     const a=road[i-1],b=road[i],steps=Math.max(1,Math.ceil(Math.hypot(b.x-a.x,b.y-a.y)/20));
     for(let j=0;j<steps;j++)samples.push({x:a.x+(b.x-a.x)*j/steps,y:a.y+(b.y-a.y)*j/steps});

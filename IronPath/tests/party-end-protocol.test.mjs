@@ -1,11 +1,11 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createMatch} from '../simulation.mjs';
-import {createVersus} from '../versus.mjs';
-import {createFourCoop,createTwoVsTwo} from '../four-modes.mjs';
-import {createPartyHost,restorePartyHost} from '../party-host.mjs';
-import {normalizeCommand} from '../protocol.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createMatch} from '../core/simulation.mjs';
+import {createVersus} from '../core/versus.mjs';
+import {createFourCoop,createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPartyHost,restorePartyHost} from '../core/party-host.mjs';
+import {normalizeCommand} from '../core/protocol.mjs';
 
 const profile=id=>createPlayer(id,{name:id,gender:'female'});
 const make=(mode,count)=>{

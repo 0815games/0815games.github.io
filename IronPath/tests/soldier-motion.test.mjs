@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createSoldierMotion} from '../soldier-motion.mjs';
-import {drawCartoonBattle} from '../cartoon-art.mjs';
-import {createMatch,getTowerRange} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
-import {getMap} from '../maps.mjs';
+import {createSoldierMotion} from '../core/soldier-motion.mjs';
+import {drawCartoonBattle} from '../core/cartoon-art.mjs';
+import {createMatch,getTowerRange} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {getMap} from '../core/maps.mjs';
 test('motion follows observed movement rather than movement intent or wave state',()=>{
  const motion=createSoldierMotion(),players={a:{x:50,y:50,direction:{x:1,y:0}}};
  assert.equal(motion.sample(players,0).a.moving,false);assert.equal(motion.sample(players,.1).a.moving,false,'blocked character does not walk in place');players.a.x+=6;let pose=motion.sample(players,.2).a;assert.equal(pose.moving,true);assert.equal(pose.facing,1);assert.notEqual(pose.bob,0);players.a.x-=4;pose=motion.sample(players,.3).a;assert.equal(pose.facing,-1);assert.equal(pose.moving,true);assert.equal(motion.sample(players,.32).a.moving,true,'animation holds between fixed simulation ticks');assert.equal(motion.sample(players,.43).a.moving,false,'animation settles after stopping');

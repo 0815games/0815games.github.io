@@ -19,7 +19,7 @@ test('localized accessible attributes and parameterized names retain their origi
 });
 
 test('armory translations cover equipment and medals without changing source data or placeholders',async()=>{
- const {ITEMS}=await import('../armory.mjs'),{serviceMedals}=await import('../service-record.mjs');const before=structuredClone(ITEMS),f=fixture('de');
+ const {ITEMS}=await import('../core/armory.mjs'),{serviceMedals}=await import('../core/service-record.mjs');const before=structuredClone(ITEMS),f=fixture('de');
  for(const item of ITEMS){assert.notEqual(translateText(item.name),item.name,item.name);assert.notEqual(translateText(item.description),item.description,item.name);}
  for(const medal of serviceMedals({xp:0})){assert.notEqual(translateText(medal.name),medal.name,medal.name);assert.notEqual(translateText(medal.description),medal.description,medal.description);}
  assert.equal(translateText('UPGRADE · {cost} SCRAP',{cost:90}),'VERBESSERN · 90 SCHROTT');assert.equal(translateText('UNLOCKS ON WAVE {wave}',{wave:12}),'FREI IN WELLE 12');assert.deepEqual(ITEMS,before);
@@ -27,29 +27,29 @@ test('armory translations cover equipment and medals without changing source dat
 });
 
 test('German core skill names, effects and specialist effects are translated without changing builds',async()=>{
- const {SKILL_PATHS,parseBuild,encodeBuild}=await import('../skills.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),before=encodeBuild(build);
+ const {SKILL_PATHS,parseBuild,encodeBuild}=await import('../core/skills.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),before=encodeBuild(build);
  for(const path of SKILL_PATHS){assert.notEqual(translateText(path.name),path.name);assert.notEqual(translateText(path.passive),path.passive);assert.notEqual(translateText(path.description),path.description);for(const branch of path.branches){assert.notEqual(translateText(branch.abilityDescription),branch.abilityDescription);assert.notEqual(translateText(branch.description),branch.description);}}
  assert.equal(translateText('Requires {name} rank {rank}',{name:translateText('Recon'),rank:2}),'Benötigt Aufklärung Rang 2');assert.equal(encodeBuild(build),before);f.selector.value='en';f.selector.change();assert.equal(translateText('Suppression'),'Suppression');
 });
 
 test('campaign and cinematics have complete authored German text without altering mission data',async()=>{
- const {CAMPAIGN}=await import('../campaign.mjs'),{cinematicFrames,cinematicScene}=await import('../story-cinematics.mjs'),{germanCampaign}=await import('../i18n/localization-campaign-de.mjs'),{germanCinematics}=await import('../i18n/localization-cinematics-de.mjs');const before=structuredClone(CAMPAIGN),f=fixture('de');
+ const {CAMPAIGN}=await import('../core/campaign.mjs'),{cinematicFrames,cinematicScene}=await import('../core/story-cinematics.mjs'),{germanCampaign}=await import('../i18n/localization-campaign-de.mjs'),{germanCinematics}=await import('../i18n/localization-cinematics-de.mjs');const before=structuredClone(CAMPAIGN),f=fixture('de');
  for(const m of CAMPAIGN){for(const text of [m.act,m.title,m.briefing,m.success,...m.stages.flatMap(s=>[s.label,s.dialogue])])assert.ok(Object.hasOwn(germanCampaign,text),`${m.id}: ${text}`);for(const kind of ['intro','ending']){const scene=cinematicScene(m,kind);assert.ok(Object.hasOwn(germanCinematics,scene.place),scene.place);for(const frame of cinematicFrames(m,kind))assert.ok(Object.hasOwn(germanCinematics,frame.text)||Object.hasOwn(germanCampaign,frame.text),`${m.id}: ${frame.text}`);}}
  assert.equal(translateText('OBJECTIVE {current} / {total}: {label}',{current:2,total:4,label:'Test'}),'ZIEL 2 / 4: Test');assert.deepEqual(CAMPAIGN,before);f.selector.value='en';f.selector.change();assert.equal(translateText(CAMPAIGN[0].briefing),CAMPAIGN[0].briefing);
 });
 
 test('advanced skills include German names, descriptions and prerequisites without changing builds',async()=>{
- const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../skills.mjs'),{germanAdvancedSkills}=await import('../i18n/localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),code=encodeBuild(build);
+ const {WEB_NODES,webRequirement,parseBuild,encodeBuild}=await import('../core/skills.mjs'),{germanAdvancedSkills}=await import('../i18n/localization-advanced-skills-de.mjs');const before=structuredClone(WEB_NODES),f=fixture('de'),build=parseBuild('v2;assault;2;0;00000000000000',3),code=encodeBuild(build);
  for(const n of WEB_NODES){for(const text of [n.name,n.description,webRequirement(n)])assert.ok(Object.hasOwn(germanAdvancedSkills,text),`${n.id}: ${text}`);assert.notEqual(translateText(n.description),n.description);}
  assert.equal(encodeBuild(build),code);assert.deepEqual(WEB_NODES,before);f.selector.value='en';f.selector.change();assert.equal(translateText(WEB_NODES[0].description),WEB_NODES[0].description);
 });
 
 test('story status templates translate numbers and retain unknown text',async()=>{
- const {translateStoryDetail}=await import('../story-localization.mjs');const f=fixture('de');assert.equal(translateStoryDetail('15s remaining. Protect the bunker. Mission time: 45s (runs during waves).',translateText),'Noch 15 s. Schütze den Bunker. Missionszeit: 45 s (läuft während Wellen).');assert.equal(translateStoryDetail('Player <Name>',translateText),'Player <Name>');f.selector.value='en';f.selector.change();assert.equal(translateStoryDetail('15s remaining. Protect the bunker.',translateText),'15s remaining. Protect the bunker.');
+ const {translateStoryDetail}=await import('../core/story-localization.mjs');const f=fixture('de');assert.equal(translateStoryDetail('15s remaining. Protect the bunker. Mission time: 45s (runs during waves).',translateText),'Noch 15 s. Schütze den Bunker. Missionszeit: 45 s (läuft während Wellen).');assert.equal(translateStoryDetail('Player <Name>',translateText),'Player <Name>');f.selector.value='en';f.selector.change();assert.equal(translateStoryDetail('15s remaining. Protect the bunker.',translateText),'15s remaining. Protect the bunker.');
 });
 
 test('skill summary and next-step localization preserve numeric values and source data',async()=>{
- const {parseBuild}=await import('../skills.mjs'),{skillBuildSummary}=await import('../skill-planner.mjs'),{localizeSkillSummary}=await import('../skill-summary-localization.mjs'),{nextSteps}=await import('../run-results.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;10000000000000',5),original=structuredClone(build),raw=skillBuildSummary(build,5),summary=localizeSkillSummary(raw,translateText);
+ const {parseBuild}=await import('../core/skills.mjs'),{skillBuildSummary}=await import('../core/skill-planner.mjs'),{localizeSkillSummary}=await import('../core/skill-summary-localization.mjs'),{nextSteps}=await import('../core/run-results.mjs');const f=fixture('de'),build=parseBuild('v2;assault;2;0;10000000000000',5),original=structuredClone(build),raw=skillBuildSummary(build,5),summary=localizeSkillSummary(raw,translateText);
  assert.ok(summary.values.every((v,i)=>v!==raw.values[i]),summary.values.join('\n'));assert.match(summary.values[1],/\+4/);assert.match(summary.active,/AKTIV/);assert.match(nextSteps({xp:0},translateText),/Stufe 1:/);assert.deepEqual(build,original);f.selector.value='en';f.selector.change();const english=localizeSkillSummary(raw,translateText);assert.deepEqual(english.values,raw.values);assert.equal(nextSteps({xp:0},translateText),nextSteps({xp:0}));
 });
 
@@ -69,7 +69,7 @@ test('battle templates preserve player names and tower values',()=>{
 
 test('known command errors translate without changing simulation errors',async()=>{
  const {readFile}=await import('node:fs/promises'),{germanGameErrors}=await import('../i18n/localization-game-errors-de.mjs'),f=fixture('de');
- for(const file of ['match.mjs','coop-input.mjs','net/firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
+ for(const file of ['core/match.mjs','core/coop-input.mjs','net/firebase-party-game.mjs']){const source=await readFile(new URL('../'+file,import.meta.url),'utf8');for(const match of source.matchAll(/reason:'([^']+)'/g)){assert.ok(Object.hasOwn(germanGameErrors,match[1]),`${file}: ${match[1]}`);assert.notEqual(translateText(match[1]),match[1]);}}
  assert.equal(translateText('unrecognized remote error'),'unrecognized remote error');f.selector.value='en';f.selector.change();assert.equal(translateText('Tower not found.'),'Tower not found.');
 });
 
@@ -87,7 +87,7 @@ test('unconfirmed or duplicate friend requests have clear German and English fee
 });
 
 test('generated map names, accessibility titles and dynamic engine errors translate reversibly',async()=>{
- const {MAPS}=await import('../maps.mjs');const {localizeGameMessage}=await import('../game-localization.mjs');const f=fixture('de');
+ const {MAPS}=await import('../core/maps.mjs');const {localizeGameMessage}=await import('../core/game-localization.mjs');const f=fixture('de');
  for(const map of Object.values(MAPS))assert.notEqual(translateText(map.name),map.name,map.name);
  assert.equal(translateText('BUILD'),'BAUEN');assert.equal(translateText('No skill'),'Keine Fähigkeit');assert.equal(translateText('Scrollable battlefield'),'Verschiebbares Schlachtfeld');
  assert.equal(localizeGameMessage('Not enough supplies. This tower costs 130.',translateText),'Nicht genügend Vorräte. Dieser Turm kostet 130.');assert.equal(localizeGameMessage('Airstrike is recharging.',translateText),'Luftschlag lädt sich noch auf.');assert.equal(localizeGameMessage('Player <BUILD>',translateText),'Player <BUILD>');
@@ -100,7 +100,7 @@ test('generated map names, accessibility titles and dynamic engine errors transl
 // and caption are plain data. This walks them through the real lookup instead.
 test('the whole first-run briefing is translated',async()=>{
  const f=fixture('de');
- const {TUTORIAL_STEPS}=await import('../tutorial.mjs');
+ const {TUTORIAL_STEPS}=await import('../core/tutorial.mjs');
  assert.ok(TUTORIAL_STEPS.length>=11);
  // The ending's Field School is the last thing a new soldier reads, so it counts.
  const {readFileSync}=await import('node:fs');

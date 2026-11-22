@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {COOP_ENEMY_HEALTH,COOP_REWARD_RATE} from '../simulation.mjs';
+import {COOP_ENEMY_HEALTH,COOP_REWARD_RATE} from '../core/simulation.mjs';
 import {germanMoreStatic} from '../i18n/localization-more-static-de.mjs';
 
 test('the two-player supply explanation matches the simulation in both languages',()=>{

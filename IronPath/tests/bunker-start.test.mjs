@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createSoloDeployment,bunkerStart} from '../solo-deployment.mjs';
-import {createPlayer,advanceSector} from '../match.mjs';
-import {getMap,createRandomMapId} from '../maps.mjs';
+import {createSoloDeployment,bunkerStart} from '../core/solo-deployment.mjs';
+import {createPlayer,advanceSector} from '../core/match.mjs';
+import {getMap,createRandomMapId} from '../core/maps.mjs';
 
 // The report: "the soldier does not always start at the bunker in every mode."
 // The start position used to be a hard-coded (850,450) that only matched the

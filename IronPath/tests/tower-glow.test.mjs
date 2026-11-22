@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {drawCartoonBattle} from '../cartoon-art.mjs';
-import {createMatch,PATH,PADS,getTowerRange} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
+import {drawCartoonBattle} from '../core/cartoon-art.mjs';
+import {createMatch,PATH,PADS,getTowerRange} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
 import {readFileSync} from 'node:fs';
 
 // The prestige glow, measured.
@@ -63,7 +63,7 @@ test('the glow is painted under the tower, not over it',()=>{
   // light goes down BEFORE the tower does - a glow over the tower hides the
   // thing it is meant to point at, and that is the one way of making a glow
   // "stronger" that makes the field worse.
-  const source=readFileSync(new URL('../cartoon-art.mjs',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../core/cartoon-art.mjs',import.meta.url),'utf8');
   const glow=source.indexOf('if(display.prestige){');
   const artwork=source.indexOf("sprite(ctx,['mg2','cannon2','flak2','sniper2']");
   const fallback=source.indexOf("fallbackMarker(ctx,x,y-6,['MG','C','AA','S']");

@@ -17,9 +17,9 @@ import {
   synthesizeShot,
   synthesizeStrike,
   synthesizeUpgrade,
-} from './battle-sound-recipes.mjs?v=20261122-ui1';
-import { createBattleMusic, weatherForScene } from './battle-music.mjs?v=20261122-ui1';
-import { storyMapStyle } from '../story-map-art.mjs?v=20261122-ui1';
+} from './battle-sound-recipes.mjs?v=20261122-core1';
+import { createBattleMusic, weatherForScene } from './battle-music.mjs?v=20261122-core1';
+import { storyMapStyle } from '../core/story-map-art.mjs?v=20261122-core1';
 
 export { weatherForScene };
 

@@ -1,9 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createPlayer} from '../match.mjs';
-import {createVersus} from '../versus.mjs';
-import {createTwoVsTwo} from '../four-modes.mjs';
-import {createPartyHost} from '../party-host.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createVersus} from '../core/versus.mjs';
+import {createTwoVsTwo} from '../core/four-modes.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
 
 for(const mode of ['versus','two-vs-two'])test(`${mode}: the host can end a paused match without simulating or skipping the absent player's receipt`,()=>{
  const ids=mode==='versus'?['host','bob']:['host','bob','cara','dan'];

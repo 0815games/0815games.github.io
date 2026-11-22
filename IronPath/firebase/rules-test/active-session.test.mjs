@@ -3,8 +3,8 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,update,remove,runTransaction,serverTimestamp} from 'firebase/database';
-import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
-import {DEFAULT_BUILD,SKILL_PATHS,encodeBuild,parseBuild} from '../../skills.mjs';
+import {MAINTENANCE_PATH} from '../../core/maintenance-check.mjs';
+import {DEFAULT_BUILD,SKILL_PATHS,encodeBuild,parseBuild} from '../../core/skills.mjs';
 
 let env,alice,bob,anon;
 const now=Math.floor(Date.now()/1000);

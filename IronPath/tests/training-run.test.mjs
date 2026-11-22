@@ -5,13 +5,13 @@ import {
  TRAINING_WAVES,TRAINING_BOSS_EVERY,TRAINING_UNIT,TRAINING_BUNKER,TRAINING_BOSS_UNIT,TRAINING_KEY,FIRST_RUN_XP,FIRST_RUN_DEFEAT_XP,trainingWaveXP,trainingBonusXP,
  trainingContract,trainingUnitScale,trainingXP,trainingProgress,trainingWon,trainingStatus,
  trainingSeen,markTrainingSeen,
-} from '../training-run.mjs';
-import {characterProgress} from '../progression.mjs';
-import {bossForWave,BOSS_EVERY} from '../combat.mjs';
-import {createSoloDeployment} from '../solo-deployment.mjs';
-import {createPlayer,applyCommand,TOWER_COSTS} from '../match.mjs';
-import {upgradeCost} from '../progression.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
+} from '../core/training-run.mjs';
+import {characterProgress} from '../core/progression.mjs';
+import {bossForWave,BOSS_EVERY} from '../core/combat.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';
+import {createPlayer,applyCommand,TOWER_COSTS} from '../core/match.mjs';
+import {upgradeCost} from '../core/progression.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
 
 const profile=()=>({name:'Rook',gender:'male',xp:0,armory:{scrap:0,owned:0,equipped:0}});
 const player=()=>createPlayer('local',{name:'Rook',gender:'male',level:1,loadout:'0,0,0'});
@@ -169,7 +169,7 @@ test('nothing offers a field upgrade between the last two waves of the contract'
  // `startWave` refuses to deploy while an upgrade is pending, so an offer on the
  // second-to-last wave of a fixed-length contract stops the run one wave short of
  // the boss. The offer must follow the contract's own rhythm.
- const sim = readFileSync(new URL('../simulation.mjs', import.meta.url), 'utf8');
+ const sim = readFileSync(new URL('../core/simulation.mjs', import.meta.url), 'utf8');
  assert.match(sim, /const perkEvery=state\.campaignContract\?\.bossEvery\|\|5;/);
  assert.match(sim, /state\.wave%perkEvery===0&&state\.wave!==state\.campaignContract\?\.waves/);
  // Five and six are the interesting cases: endless keeps its perk at 5, the

@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {existsSync,readdirSync} from 'node:fs';
-import {layerOptions,composePortrait,layerTransform,facePortrait,tintTone,stopsForColor} from '../avatar-layers.mjs';
+import {layerOptions,composePortrait,layerTransform,facePortrait,tintTone,stopsForColor} from '../core/avatar-layers.mjs';
 import {FACES,HAIRS,BEARDS,HAIR_COLORS} from '../assets/layers/manifest.mjs';
 
 function recorder(){

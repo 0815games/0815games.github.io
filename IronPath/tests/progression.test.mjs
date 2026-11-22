@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { characterProgress, upgradeCost, MAX_TOWER_LEVEL, waveXP } from '../progression.mjs';
+import { characterProgress, upgradeCost, MAX_TOWER_LEVEL, waveXP } from '../core/progression.mjs';
 assert.deepEqual(characterProgress(0),{level:1,current:0,required:300});
 assert.deepEqual(characterProgress(299),{level:1,current:299,required:300});
 assert.deepEqual(characterProgress(300),{level:2,current:0,required:450});

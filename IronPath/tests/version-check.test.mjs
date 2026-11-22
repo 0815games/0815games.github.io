@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createVersionProbe,parsePublishedVersion,createVersionCoordinator,createWriteTracker} from '../version-check.mjs';
+import {createVersionProbe,parsePublishedVersion,createVersionCoordinator,createWriteTracker} from '../core/version-check.mjs';
 
 const pause=()=>new Promise(resolve=>setImmediate(resolve));
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject};};

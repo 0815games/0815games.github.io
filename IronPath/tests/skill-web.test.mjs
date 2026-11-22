@@ -1,8 +1,8 @@
 import {strict as assert} from 'node:assert';
-import {WEB_NODES,NODES_PER_CLASS,webReady,webBonuses,parseBuild,encodeBuild,pointsLeft} from '../skills.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createVersus} from '../versus.mjs';
+import {WEB_NODES,NODES_PER_CLASS,webReady,webBonuses,parseBuild,encodeBuild,pointsLeft} from '../core/skills.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createVersus} from '../core/versus.mjs';
 
 assert.equal(WEB_NODES.length,84);
 assert.equal(NODES_PER_CLASS,14);

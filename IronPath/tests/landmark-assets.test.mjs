@@ -1,12 +1,12 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {existsSync} from 'node:fs';
-import {drawStoryTerrain,drawStoryObjective,prepareStoryArt} from '../story-map-art.mjs?asset-test';
-import {drawCartoonBattle} from '../cartoon-art.mjs';
-import {CAMPAIGN} from '../campaign.mjs';
-import {getMap} from '../maps.mjs';
-import {createMatch,getTowerRange} from '../simulation.mjs';
-import {createPlayer} from '../match.mjs';
+import {drawStoryTerrain,drawStoryObjective,prepareStoryArt} from '../core/story-map-art.mjs?asset-test';
+import {drawCartoonBattle} from '../core/cartoon-art.mjs';
+import {CAMPAIGN} from '../core/campaign.mjs';
+import {getMap} from '../core/maps.mjs';
+import {createMatch,getTowerRange} from '../core/simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
 
 function context(calls=[]){return new Proxy({}, {get(o,k){if(k in o)return o[k];return (...args)=>calls.push([k,...args]);},set(o,k,v){o[k]=v;return true;}});}
 test('landmark sprites map to every story feature and protected objective',()=>{

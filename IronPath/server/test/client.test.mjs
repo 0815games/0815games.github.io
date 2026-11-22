@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { WebSocket } from 'ws';
 import { createMatchService } from '../service.mjs';
-import { createPlayer } from '../../match.mjs';
-import { createCoopClient } from '../../coop-client.mjs';
+import { createPlayer } from '../../core/match.mjs';
+import { createCoopClient } from '../../core/coop-client.mjs';
 const profile={name:'Soldier',gender:'female',level:1};
 function until(predicate,timeout=3000){return new Promise((resolve,reject)=>{const start=Date.now();function check(){if(predicate())resolve();else if(Date.now()-start>timeout)reject(new Error('Timed out'));else setTimeout(check,10);}check();});}
 test('two network clients join, issue commands and reconnect without moving while disconnected',async t=>{

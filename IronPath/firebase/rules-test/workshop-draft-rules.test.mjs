@@ -38,7 +38,7 @@ test('free-tier solo path initializes once and credits a run receipt under candi
 });
 test('legacy tier never writes workshop fields and keeps the wave payable',async()=>{
  const {creditSoloWave}=await import('../../workshop/workshop-solo-credit.mjs');
- const {rewardWave}=await import('../../armory.mjs');
+ const {rewardWave}=await import('../../core/armory.mjs');
  const r=ref(alice,'players/alice'),runId='ef'.repeat(16);
  const outcome=await creditSoloWave({sdk:{runTransaction},profileRef:r,amount:30,wave:5,runId,rewardWave,subscribe:()=>new Promise((resolve,reject)=>{let stop;stop=onValue(r,()=>resolve(stop||(()=>{})),reject);}),mode:'legacy'});
  assert.equal(outcome.status,'legacy');const p=(await get(r)).val();

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { createPasswordChange } from '../password-change.mjs';
+import { createPasswordChange } from '../core/password-change.mjs';
 
 function makeDom() {
   const nodes = new Map();

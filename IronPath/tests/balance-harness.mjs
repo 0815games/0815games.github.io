@@ -2,15 +2,15 @@
 // network) with a deterministic "competent soldier" policy and reports how
 // far each map/mode/gear combination survives. Used to tune difficulty:
 //   node tests/balance-harness.mjs solo|coop|versus|twovtwo|campaign|all
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand,advanceSector,getSupplies,TOWER_COSTS} from '../match.mjs';
-import {getMap} from '../maps.mjs';
-import {RUN_PERKS,perkOffers} from '../run-perks.mjs';
-import {upgradeCost} from '../progression.mjs';
-import {createVersus,applyVersus,stepVersus} from '../versus.mjs';
-import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour} from '../four-modes.mjs';
-import {createSoloDeployment} from '../solo-deployment.mjs';
-import {CAMPAIGN} from '../campaign.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand,advanceSector,getSupplies,TOWER_COSTS} from '../core/match.mjs';
+import {getMap} from '../core/maps.mjs';
+import {RUN_PERKS,perkOffers} from '../core/run-perks.mjs';
+import {upgradeCost} from '../core/progression.mjs';
+import {createVersus,applyVersus,stepVersus} from '../core/versus.mjs';
+import {createFourCoop,createTwoVsTwo,applyFourCommand,stepFour} from '../core/four-modes.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';
+import {CAMPAIGN} from '../core/campaign.mjs';
 
 // ---------------------------------------------------------------- policy ----
 const PERK_PRIORITY=['damage','speed','tankhunter','hero','critical','pinning','chain','bunker','salvage','repair','supplies','laststand'];

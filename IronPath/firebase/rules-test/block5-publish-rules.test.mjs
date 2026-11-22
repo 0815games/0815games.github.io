@@ -5,9 +5,9 @@ import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/ru
 import {ref,set,get,remove,runTransaction} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
-import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../../maintenance-check.mjs';
-import {encodeBuild,parseBuild,SKILL_PATHS,DEFAULT_BUILD} from '../../skills.mjs';
-import {migrateSkillsProfile} from '../../skills-migration.mjs';
+import {MAINTENANCE_PATH,MAINTENANCE_ADMIN_ACCESS_PATH} from '../../core/maintenance-check.mjs';
+import {encodeBuild,parseBuild,SKILL_PATHS,DEFAULT_BUILD} from '../../core/skills.mjs';
+import {migrateSkillsProfile} from '../../core/skills-migration.mjs';
 
 let env,alice,bob,eve,anon;
 const sdk={ref,set,get,remove,update:undefined,onValue:undefined,runTransaction,onDisconnect:undefined,serverTimestamp:undefined};

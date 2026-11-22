@@ -2,9 +2,9 @@ import {test} from 'node:test';
 // The party host loop: roster, commands and the wave-approval round trip that
 // decides when a shared match may start the next wave.
 
-import {createPlayer} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {createMatch} from '../simulation.mjs';
+import {createPlayer} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {createMatch} from '../core/simulation.mjs';
 import {strict as assert} from 'node:assert';
 
 test('the party host owns the roster, the commands and the shared match state',async()=>{

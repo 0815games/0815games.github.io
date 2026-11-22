@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {soldierProfile} from '../soldier-profile.mjs';import {createPlayer} from '../match.mjs';import {createMatch,stepMatch} from '../simulation.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {soldierProfile} from '../core/soldier-profile.mjs';import {createPlayer} from '../core/match.mjs';import {createMatch,stepMatch} from '../core/simulation.mjs';
 test('soldier dossier shows real base loadout stats without modifying progression',()=>{
  const profile={name:'<Alice>',gender:'female',xp:750,skills:'v2;assault;2;0;00000000000000',armory:{scrap:80,owned:1,equipped:1}},before=structuredClone(profile),s=soldierProfile(profile);
  assert.equal(s.name,'<Alice>');assert.equal(s.level,3);assert.equal(s.damage,19);assert.equal(s.range,150);assert.equal(s.movement,150);assert.equal(s.cooldown,30);assert.equal(s.equipment.name,'Field Scope');assert.equal(s.inventory.filter(i=>i.owned).length,1);assert.deepEqual(profile,before);

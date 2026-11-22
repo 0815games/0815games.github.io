@@ -7,11 +7,11 @@ const {readFileSync}=require('node:fs');
 const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js'),'utf8').match(/language\.mjs\?v=([\w-]+)/)[1];
 
 (async()=>{
- const {createPlayer}=await import('../match.mjs');
- const {createMatch}=await import('../simulation.mjs');
- const {createFourCoop,createTwoVsTwo}=await import('../four-modes.mjs');
- const {createVersus}=await import('../versus.mjs');
- const {createPartyHost}=await import('../party-host.mjs');
+ const {createPlayer}=await import('../core/match.mjs');
+ const {createMatch}=await import('../core/simulation.mjs');
+ const {createFourCoop,createTwoVsTwo}=await import('../core/four-modes.mjs');
+ const {createVersus}=await import('../core/versus.mjs');
+ const {createPartyHost}=await import('../core/party-host.mjs');
  const cases=[['coop',2],['four-coop',3],['four-coop',4],['versus',2],['two-vs-two',4]],only=process.env.IRONPATH_BROWSER_CASE;
  if(only&&!cases.some(([mode,count])=>`${mode}/${count}`===only))throw Error(`Unknown browser case: ${only}`);
  const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH});
@@ -65,7 +65,7 @@ const languageToken=readFileSync(require('node:path').join(__dirname,'../game.js
       const workspace=document.getElementById('gameWorkspace');workspace.hidden=false;workspace.dataset.screen='online';
       const {setupLanguage,translateText,onLanguageChange}=await import(`./language.mjs?v=${languageToken}`);
       setupLanguage({document,storage:{getItem:()=>language,setItem(){}}});
-      const {createMultiplayerPrompts}=await import(`./multiplayer-prompts.mjs?v=${languageToken}`);
+      const {createMultiplayerPrompts}=await import(`./core/multiplayer-prompts.mjs?v=${languageToken}`);
       const promptCenter=createMultiplayerPrompts({document,translate:translateText});onLanguageChange(()=>promptCenter.refresh());window.__promptCenter=promptCenter;
       const {startGame}=await import('./game.js');
       const profile={name,gender:'female',xp:0,armory:'',skills:''};

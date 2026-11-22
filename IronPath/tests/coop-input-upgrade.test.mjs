@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createCoopInput} from '../coop-input.mjs';
+import {createCoopInput} from '../core/coop-input.mjs';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const upgrade={type:'upgrade',pad:0,branch:0,expectedTowerId:7,expectedLevel:1};

@@ -1,7 +1,7 @@
 // Balance sweep driver: prints one line per mode/map/gear combination.
 // Usage: node tests/balance-sweep.mjs [gear] [maxWave]
 import {runSolo,runCoop,runVersus,runTwoVsTwo,runFourCoop,runCampaign,GEARS} from './balance-harness.mjs';
-import {CAMPAIGN} from '../campaign.mjs';
+import {CAMPAIGN} from '../core/campaign.mjs';
 const gearName=process.argv[2]||'rookie',maxWave=Number(process.argv[3]||40);
 const gear=GEARS[gearName]||GEARS.rookie;
 const line=(tag,r)=>console.log(tag.padEnd(28),

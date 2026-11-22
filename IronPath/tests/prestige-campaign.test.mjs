@@ -1,12 +1,12 @@
 import {test} from 'node:test';import {strict as assert} from 'node:assert';
-import {CAMPAIGN,campaignWaveContract,campaignDifficulty} from '../campaign.mjs';
-import {THREATS,campaignUnitScale,campaignBunker,campaignSurge} from '../campaign-pressure.mjs';
-import {PRESTIGE,PRESTIGE_IDS,prestigeEarned,missingPrestige,isPrestige} from '../prestige.mjs';
+import {CAMPAIGN,campaignWaveContract,campaignDifficulty} from '../core/campaign.mjs';
+import {THREATS,campaignUnitScale,campaignBunker,campaignSurge} from '../core/campaign-pressure.mjs';
+import {PRESTIGE,PRESTIGE_IDS,prestigeEarned,missingPrestige,isPrestige} from '../core/prestige.mjs';
 import {validateWorkshop,unlockPrestige,craftWorkshop,equipWorkshop,modifyWorkshop,modsOf} from '../workshop/workshop-model.mjs';
 import {initializeWireWorkshop,applyWireWorkshopCommand,decodeWorkshop,encodeWorkshop,completeStoryMission,meltPrestige} from '../workshop/workshop-wire.mjs';
 import {captureWorkshopLoadout,workshopEffects} from '../workshop/workshop-effects.mjs';
-import {createSoloDeployment} from '../solo-deployment.mjs';
-import {createPlayer} from '../match.mjs';
+import {createSoloDeployment} from '../core/solo-deployment.mjs';
+import {createPlayer} from '../core/match.mjs';
 
 const empty=()=>({version:1,components:0,owned:[],equipped:{weapon:'standard',gear:'none',gadget:'none'},mods:{}});
 const profileWith=(storyProgress,workshop)=>({name:'A',gender:'female',xp:0,storyProgress,workshop:encodeWorkshop(workshop||empty())});

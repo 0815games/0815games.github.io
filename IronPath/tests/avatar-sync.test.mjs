@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createAvatarSync} from '../avatar-sync.mjs';
-import {encodeAvatar,decodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
+import {createAvatarSync} from '../core/avatar-sync.mjs';
+import {encodeAvatar,decodeAvatar,AVATAR_STORAGE_KEY} from '../core/avatar.mjs';
 
 function harness({profile=null,mirror=null,writes=true}={}){
   const calls=[],storage=new Map([[AVATAR_STORAGE_KEY,mirror]]);
@@ -117,7 +117,7 @@ test('account.js hands the face over on every profile load',async()=>{
   assert.match(body,/void avatarSync\.sync\(value\);/);
   assert.doesNotMatch(body,/if\(!value\.avatar\)void avatarSync\.sync/);
   assert.match(source,/const avatarSync=createAvatarSync\(\{[\s\S]*?session:\(\)=>sessionVersion\}\);/);
-  assert.match(source,/import \{ createAvatarSync \} from '\.\/avatar-sync\.mjs\?v=[^']+';/);
+  assert.match(source,/import \{ createAvatarSync \} from '\.\/core\/avatar-sync\.mjs\?v=[^']+';/);
 });
 
 test('the hand-over never blocks a profile load',async()=>{

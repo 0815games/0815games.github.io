@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { createBattleSound, panForX } from '../battle/battle-sound.mjs';
-import { createPlayer, applyCommand } from '../match.mjs';
-import { createSoloDeployment } from '../solo-deployment.mjs';
-import { stepMatch } from '../simulation.mjs';
-import { getMap } from '../maps.mjs';
+import { createPlayer, applyCommand } from '../core/match.mjs';
+import { createSoloDeployment } from '../core/solo-deployment.mjs';
+import { stepMatch } from '../core/simulation.mjs';
+import { getMap } from '../core/maps.mjs';
 
 // 1. Preserve minimal Web Audio mock compatibility (legacy contract)
 let created = 0;

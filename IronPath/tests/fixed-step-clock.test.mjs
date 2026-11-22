@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {createFixedStepClock} from '../fixed-step-clock.mjs';
+import {createFixedStepClock} from '../core/fixed-step-clock.mjs';
 let now=0,steps=0,paused=false;const c=createFixedStepClock({step:1/30,now:()=>now,advance:()=>{if(paused)return null;steps++;return {};}});
 now=50;c.tick();now=100;c.tick();assert.equal(steps,3,'slow timers catch up to real time');
 now=1100;c.tick();assert.equal(steps,10,'background stalls are bounded');

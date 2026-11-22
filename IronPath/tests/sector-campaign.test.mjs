@@ -2,9 +2,9 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 // The sector campaign: endless solo runs retreat to a bigger, meaner field
 // every tenth wave. Multiplayer, missions and legacy maps never retreat.
-import {getMap,sectorOf,SECTOR_SPECS} from '../maps.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand,advanceSector} from '../match.mjs';
+import {getMap,sectorOf,SECTOR_SPECS} from '../core/maps.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand,advanceSector} from '../core/match.mjs';
 
 const player=(id='local')=>createPlayer(id,{name:id,gender:'female',level:1},850,450);
 const clearWave10=state=>{state.wave=10;state.running=true;state.spawnLeft=0;state.enemies=[];state.pendingPerk=0;stepMatch(state);};

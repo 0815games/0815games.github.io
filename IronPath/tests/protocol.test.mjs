@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import { strict as assert } from 'node:assert';
-import { createPlayer } from '../match.mjs';
-import { createMatch } from '../simulation.mjs';
-import { createHost, restoreHost, PROTOCOL_VERSION, MAX_PENDING, RECEIPT_HISTORY } from '../protocol.mjs';
+import { createPlayer } from '../core/match.mjs';
+import { createMatch } from '../core/simulation.mjs';
+import { createHost, restoreHost, PROTOCOL_VERSION, MAX_PENDING, RECEIPT_HISTORY } from '../core/protocol.mjs';
 
 test('the protocol orders commands, retries them, checkpoints and replays without drift',async()=>{
 const profile={name:'Soldier',gender:'female',level:2};

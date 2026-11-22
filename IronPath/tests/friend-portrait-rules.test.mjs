@@ -3,7 +3,7 @@ import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
 import {buildSocialCleanupCandidate} from '../firebase/social-cleanup-candidate.mjs';
 import {buildFriendPortraitCandidate,applyFriendPortraitRules,AVATAR_VALIDATE,FRIEND_READ} from '../firebase/friend-portrait-candidate.mjs';
-import {encodeAvatar,defaultAvatar,randomAvatar} from '../avatar.mjs';
+import {encodeAvatar,defaultAvatar,randomAvatar} from '../core/avatar.mjs';
 
 const reference=()=>readFile(new URL('../firebase/WORKSHOP-RULES-TO-PUBLISH.json',import.meta.url));
 const playerOf=rules=>rules.players.$uid;

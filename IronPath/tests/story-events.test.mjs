@@ -1,4 +1,4 @@
-import {test} from 'node:test';import {strict as assert} from 'node:assert';import {CAMPAIGN} from '../campaign.mjs';import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from '../story-mission.mjs';import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from '../story-events.mjs';
+import {test} from 'node:test';import {strict as assert} from 'node:assert';import {CAMPAIGN} from '../core/campaign.mjs';import {createStoryMission,storyStatus,stepStory,resolveStoryDecision,drainStoryNotifications} from '../core/story-mission.mjs';import {MISSION_DECISIONS,MISSION_EVENTS,STAGE_CAPTIONS,EVENT_TEMPLATES} from '../core/story-events.mjs';
 const battle=()=>({wave:0,running:false,ended:false,players:{local:{x:0,y:0}},enemies:[],money:100,spawnLeft:0});
 const find=id=>CAMPAIGN.find(m=>m.id===id);
 const drainTypes=story=>drainStoryNotifications(story).map(entry=>entry.type);

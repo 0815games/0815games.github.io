@@ -8,7 +8,7 @@ import {ref,get,set,remove} from 'firebase/database';
 import {buildFriendPortraitCandidate,applyFriendPortraitRules} from '../friend-portrait-candidate.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
-import {encodeAvatar,defaultAvatar,randomAvatar} from '../../avatar.mjs';
+import {encodeAvatar,defaultAvatar,randomAvatar} from '../../core/avatar.mjs';
 
 // Four bases, because the rules that are TESTED must be the rules that a
 // publication would DEPLOY:

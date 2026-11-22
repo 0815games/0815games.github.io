@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../character-name.mjs';
-import {createCharacterNameClaim} from '../character-name-claim.mjs';
-import {createCharacterNameConflictHandler} from '../character-name-conflict.mjs';
-import {friendNameKey} from '../friends.mjs';
+import {characterNameKey,normalizeCharacterName,validateCharacterName,sameCharacterName,CHARACTER_NAME_POLICY,CHARACTER_NAME_RESERVATION_GRACE_MS} from '../core/character-name.mjs';
+import {createCharacterNameClaim} from '../core/character-name-claim.mjs';
+import {createCharacterNameConflictHandler} from '../core/character-name-conflict.mjs';
+import {friendNameKey} from '../core/friends.mjs';
 import {buildCharacterNameCandidate,characterNameIndexRules} from '../firebase/character-name-candidate.mjs';
 import {buildBlock2PublishCandidate,BLOCK9D_RULES_SHA256} from '../firebase/block2-publish-candidate.mjs';
 
@@ -68,7 +68,7 @@ const claim=(fire,uid)=>{player.uid=uid;return createCharacterNameClaim({db:{},a
 
 test('the policy is versioned, so a stored key can always be traced to a rule',()=>{
   assert.match(CHARACTER_NAME_POLICY,/^[A-Z0-9_]+_V\d+$/);
-  assert.equal(read('character-name.mjs').includes(CHARACTER_NAME_POLICY),true);
+  assert.equal(read('core/character-name.mjs').includes(CHARACTER_NAME_POLICY),true);
 });
 
 // The two engines that decide "same name" must agree. The shared fixture is the
@@ -247,7 +247,7 @@ test('an account switch mid-flight is refused rather than reserving for the wron
 });
 
 test('the reservation is wired into enlistment and released when the character is deleted',()=>{
-  const account=read('account.js'),deletion=read('character-deletion.mjs'),candidate=read('firebase/character-name-candidate.mjs');
+  const account=read('account.js'),deletion=read('core/character-deletion.mjs'),candidate=read('firebase/character-name-candidate.mjs');
   // Claim BEFORE the profile, release when the profile never appears.
   const claimed=account.indexOf('claim.claim(name)'),profile=account.indexOf('runTransaction(ref(db,`players/${currentUser.uid}`)');
   assert.ok(claimed>0&&claimed<profile,'the name is reserved before the profile is written');

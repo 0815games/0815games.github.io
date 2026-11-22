@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createCoopInvites} from '../coop-invites.mjs';
+import {createCoopInvites} from '../core/coop-invites.mjs';
 
 const original={partyId:'a'.repeat(32),code:'1234',name:'Alice',createdAt:1000};
 const replacement={...original,partyId:'b'.repeat(32),code:'5678',createdAt:2000};

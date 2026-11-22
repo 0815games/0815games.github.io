@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {createMaintenanceProbe,createMaintenanceMonitor,parseMaintenanceControl,isSessionAfterCutoff,MAINTENANCE_PATH} from '../maintenance-check.mjs';
+import {createMaintenanceProbe,createMaintenanceMonitor,parseMaintenanceControl,isSessionAfterCutoff,MAINTENANCE_PATH} from '../core/maintenance-check.mjs';
 import {buildMaintenanceRulesCandidate,MAINTENANCE_GATE} from '../release-tools/maintenance-rules.mjs';
 import {buildSocialCleanupCandidate} from '../firebase/social-cleanup-candidate.mjs';
 

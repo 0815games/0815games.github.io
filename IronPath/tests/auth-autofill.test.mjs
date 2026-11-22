@@ -1,6 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {setupAuthForm} from '../auth-form.mjs';
+import {setupAuthForm} from '../core/auth-form.mjs';
 const html=await readFile(new URL('../index.html',import.meta.url),'utf8');
 assert.match(html,/<form id="authForm"[^>]*method="post"/);
 assert.match(html,/<input id="email"[^>]*name="username"[^>]*type="email"[^>]*autocomplete="username"/);

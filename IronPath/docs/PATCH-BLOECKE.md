@@ -561,13 +561,13 @@ grüne Testsuite belegte nicht jede versprochene Wirkung.
 
 1. [x] **Bossjäger III (`20261031-patch8`):** Der versprochene Bonus von 25 Vorräten
    für einen vom Turm erledigten Boss wird nun vor der `hp <= 0`-Rückkehr in
-   `applyHitEffects` ([Code](../tower-specialization.mjs)) mit `rewardTeam?.(state, 25, false)`
+   `applyHitEffects` ([Code](../core/tower-specialization.mjs)) mit `rewardTeam?.(state, 25, false)`
    ausgezahlt, sodass weder normale Wellen-/Plünderboni doppelt gezählt noch
    das `{type:'bounty'}`-Ereignis verschluckt werden. Der [Test](../tests/tower-specialization.test.mjs)
    vergleicht jetzt Rang II (Stufe 4: +70, kein `bounty`-Event) strikt gegen
    Rang III (Stufe 5 mit `logistics: 3`: +98 inklusive exakt einem `bounty`-Event
    und `bountyPaid === true`).
-2. [x] **Doppel-MG III (`20261031-patch8`):** `towerDamage` in [`combat.mjs`](../combat.mjs)
+2. [x] **Doppel-MG III (`20261031-patch8`):** `towerDamage` in [`combat.mjs`](../core/combat.mjs)
    setzt für `type === 0 && branch === 0 && level >= 5 && baseKind === 'plane'`
    den Flugzeug-Faktor auf `1`, sodass Doppel-MG III gegen Flugzeuge und Luft-Bosse
    volle **22** (Stufe 6 Prestige **25**) Grundschaden statt 13,2 erzielt, während
@@ -684,8 +684,8 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   Wiederaufnahme, atomare Löschung bei Charakterentlassung), sodass vor dem
   eigentlichen Block-6-Clientbau kein weiterer Firebase-Rules-Deploy nötig ist.
 - [x] **Charakterbezogenes Dossier & RTDB-Status (`lokal/uncommittet`, `IPL-0081`):**
-  [`tutorial-sync.mjs`](../tutorial-sync.mjs) und
-  [`tutorial-dossier.mjs`](../tutorial-dossier.mjs) zeigen nach jeder neuen
+  [`tutorial-sync.mjs`](../core/tutorial-sync.mjs) und
+  [`tutorial-dossier.mjs`](../core/tutorial-dossier.mjs) zeigen nach jeder neuen
   Charaktererstellung zuerst das Block-9-Hauptmenü plus General Vances
   Einsatzdossier (`Annehmen` / `Später / Ablehnen` / `Fortsetzen` /
   `Wiederholen`), speichern Fortschritt/Abbruch pro Charakter in
@@ -693,10 +693,10 @@ Hauptmenü und den einheitlichen Dialogen aufbauen.
   Transaktion (inkl. Altsave-Schutz bei bestehender XP). Einstellungen & der
   Kommandozentralen-Tutorial-Button erlauben jederzeit einen späteren Start.
 - [x] **Großer 7-Wellen-Einsatz + 8-Stationen-HQ-Führung (`lokal/uncommittet`, `IPL-0081`):**
-  [`training-run.mjs`](../training-run.mjs),
+  [`training-run.mjs`](../core/training-run.mjs),
   [`first-run-coach.mjs`](../ui/first-run-coach.mjs),
   [`first-run-guide.mjs`](../ui/first-run-guide.mjs),
-  [`solo-deployment.mjs`](../solo-deployment.mjs) und
+  [`solo-deployment.mjs`](../core/solo-deployment.mjs) und
   [`menu-tour.mjs`](../ui/menu-tour.mjs) (ergänzt durch
   [`localization-firstrun-de.mjs`](../i18n/localization-firstrun-de.mjs) &
   [`localization-de.mjs`](../i18n/localization-de.mjs) sowie die Artworks

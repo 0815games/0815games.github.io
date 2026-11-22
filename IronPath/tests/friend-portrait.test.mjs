@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from '../friend-portrait.mjs';
-import {decodeAvatar,encodeAvatar,looksFor} from '../avatar.mjs';
-import {layerOptions} from '../avatar-layers.mjs';
+import {watchFriendPortrait,FRIEND_PORTRAIT_PLACEHOLDER} from '../core/friend-portrait.mjs';
+import {decodeAvatar,encodeAvatar,looksFor} from '../core/avatar.mjs';
+import {layerOptions} from '../core/avatar-layers.mjs';
 
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 const image=id=>`data:image/png;base64,${id}`;

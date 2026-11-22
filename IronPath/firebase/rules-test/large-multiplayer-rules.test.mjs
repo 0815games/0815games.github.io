@@ -6,13 +6,13 @@ import {ref,get,set,update,onValue,runTransaction,remove,onDisconnect,serverTime
 import {webcrypto} from 'node:crypto';
 import {createFirebaseFourLobby} from '../../net/firebase-four-lobby.mjs';
 import {createFirebasePartyGame} from '../../net/firebase-party-game.mjs';
-import {createPlayer} from '../../match.mjs';
-import {bunkerStart} from '../../solo-deployment.mjs';
+import {createPlayer} from '../../core/match.mjs';
+import {bunkerStart} from '../../core/solo-deployment.mjs';
 import {buildRulesCandidate} from '../../release-tools/rules-candidate.mjs';
 import {CONTROL_PATH} from '../../release-tools/release-control.mjs';
 import {buildSocialCleanupCandidate} from '../social-cleanup-candidate.mjs';
 import {buildMaintenanceRulesCandidate} from '../../release-tools/maintenance-rules.mjs';
-import {MAINTENANCE_PATH} from '../../maintenance-check.mjs';
+import {MAINTENANCE_PATH} from '../../core/maintenance-check.mjs';
 
 // Uses Firebase's SDK and a local database emulator with checked-in rules.
 // The optional guarded runs test generated candidates, not deployed rules.

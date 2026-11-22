@@ -1,9 +1,9 @@
 import {strict as assert} from 'node:assert';
-import {waveFormation,bossForWave,makeEnemy,ENEMY_TYPES} from '../combat.mjs';
-import {createMatch,stepMatch} from '../simulation.mjs';
-import {createPlayer,applyCommand} from '../match.mjs';
-import {createPartyHost} from '../party-host.mjs';
-import {perkOffers,RUN_PERKS} from '../run-perks.mjs';
+import {waveFormation,bossForWave,makeEnemy,ENEMY_TYPES} from '../core/combat.mjs';
+import {createMatch,stepMatch} from '../core/simulation.mjs';
+import {createPlayer,applyCommand} from '../core/match.mjs';
+import {createPartyHost} from '../core/party-host.mjs';
+import {perkOffers,RUN_PERKS} from '../core/run-perks.mjs';
 const player=id=>createPlayer(id,{name:id,gender:'female',level:1});
 for(const wave of [5,10,15,20,25,100,1000]){
  const f=waveFormation(wave),boss=bossForWave(wave);assert.equal(f.at(-1),boss.kind);assert.ok(ENEMY_TYPES[boss.kind]);const e=makeEnemy(boss.kind,wave);assert.equal(e.boss,boss.kind);assert.ok(e.hp>makeEnemy(boss.base,wave).hp);assert.ok(f.length<=73);

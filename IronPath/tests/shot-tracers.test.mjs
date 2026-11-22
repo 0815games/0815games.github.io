@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {shotTrace,shotStyle,shotZoomFix,shotsToDraw,SHOT_STYLES,SHOT_LIMIT} from '../shot-tracers.mjs';
+import {shotTrace,shotStyle,shotZoomFix,shotsToDraw,SHOT_STYLES,SHOT_LIMIT} from '../core/shot-tracers.mjs';
 
 // The picture of a shot is a rule, and rules can be checked without a browser.
 // What follows is the whole argument for the redesign: a streak that runs
@@ -100,9 +100,9 @@ test('reading a shot never writes to it',()=>{
 });
 
 test('the painter leaves the surplus out and never hands the canvas a NaN',async()=>{
-  const {drawCartoonBattle}=await import('../cartoon-art.mjs');
-  const {createPlayer}=await import('../match.mjs');
-  const {createMatch,PATH,PADS,getTowerRange}=await import('../simulation.mjs');
+  const {drawCartoonBattle}=await import('../core/cartoon-art.mjs');
+  const {createPlayer}=await import('../core/match.mjs');
+  const {createMatch,PATH,PADS,getTowerRange}=await import('../core/simulation.mjs');
   const player=createPlayer('a',{name:'Alice',gender:'female'});
   const state=createMatch([player]);state.wave=1;
   const opts={path:PATH,pads:PADS,types:[{color:'#a'},{color:'#b'},{color:'#c'},{color:'#d'}],me:'a',getTowerRange};

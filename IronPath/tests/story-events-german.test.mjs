@@ -17,7 +17,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // game.js reads the dictionaries through language.mjs with a cache token; the
 // harness must switch the language on the very same module instance.
 const languageUrl = (() => {
-  const source = readFileSync(resolve(root, 'story-mission.mjs'), 'utf8');
+  const source = readFileSync(resolve(root, 'core/story-mission.mjs'), 'utf8');
   const match = source.match(/from '\.\/story-events\.mjs(\?v=[^']+)'/);
   assert.ok(match, 'story-mission.mjs imports story-events.mjs');
   return `../language.mjs${readFileSync(resolve(root, 'game.js'), 'utf8').match(/from '\.\/language\.mjs(\?v=[^']+)'/)[1]}`;
@@ -53,7 +53,7 @@ const accompanimentStrings = events => [
 ];
 
 test('every accompaniment string is German on a German screen, with no dead keys', async () => {
-  const events = await import('../story-events.mjs');
+  const events = await import('../core/story-events.mjs');
   const { germanEvents } = await import('../i18n/localization-events-de.mjs');
   const strings = accompanimentStrings(events);
   assert.ok(strings.length >= 50, 'the accompaniment still has its strings');

@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { createCoopInput } from '../coop-input.mjs';
+import { createCoopInput } from '../core/coop-input.mjs';
 const calls=[],resolvers=[];
 const client={command(c){calls.push(c);return new Promise(resolve=>resolvers.push(resolve));}};
 const input=createCoopInput(client);input.setEnabled(true);

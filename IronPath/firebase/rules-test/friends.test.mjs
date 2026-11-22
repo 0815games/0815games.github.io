@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
 import {ref,set,get,remove,onValue} from 'firebase/database';
 import {webcrypto} from 'node:crypto';
-import {createFriendService} from '../../friends.mjs';
+import {createFriendService} from '../../core/friends.mjs';
 let env,alice,bob,eve,anon;const sdk={ref,set,get,remove,onValue};
 before(async()=>{env=await initializeTestEnvironment({projectId:'demo-ironpath',database:{host:'127.0.0.1',port:9000,rules:await readFile(new URL(process.env.DIRECT_INVITES_RULES?'../direct-invites.complete.draft.rules.json':process.env.LEADERBOARD_RULES?'../leaderboards.complete.draft.rules.json':process.env.COOP_INVITES_RULES?'../coop-invites.complete.draft.rules.json':process.env.FRIEND_SEARCH_RULES?'../friend-search.complete.draft.rules.json':'../friends.complete.draft.rules.json',import.meta.url),'utf8')}});alice=env.authenticatedContext('alice').database();bob=env.authenticatedContext('bob').database();eve=env.authenticatedContext('eve').database();anon=env.unauthenticatedContext().database();});
 beforeEach(async()=>{await env.clearDatabase();await env.withSecurityRulesDisabled(async ctx=>{const db=ctx.database();for(const [id,name] of [['alice','Alice'],['bob','Bob'],['eve','Eve']])await set(ref(db,`players/${id}`),{name,gender:'female',xp:0});});});after(async()=>env.cleanup());

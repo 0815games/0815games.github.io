@@ -57,7 +57,7 @@ test('the offline audit agrees with the shared fixture without divergence',async
   assert.equal(summary.completeExportVerified,false);
   assert.ok(!r.stdout.includes('Alex')&&!r.stdout.includes('Straße'),'stdout stays aggregated');
  }
- const game=await readFile(new URL('../character-name.mjs',import.meta.url),'utf8');
+ const game=await readFile(new URL('../core/character-name.mjs',import.meta.url),'utf8');
  assert.match(game,/CHARACTER_NAME_POLICY='NFC_CASEFOLD_V2'/);
 });
 
