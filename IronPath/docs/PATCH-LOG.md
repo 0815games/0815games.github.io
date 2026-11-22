@@ -6,7 +6,7 @@ aber ersetzt weder Git noch die GitHub-PR-Historie. Die dazugehörige
 [Arbeitsanweisung](../../AGENTS.md) verlangt, dieses Log vor der Arbeit zu lesen
 und nach jedem in sich abgeschlossenen Schritt fortzuschreiben.
 
-Die Einträge IPL-0001 bis IPL-0081 stehen im
+Die Einträge IPL-0001 bis IPL-0082 stehen im
 [Archiv](PATCH-LOG-ARCHIV.md); hier stehen die neuesten 20. Beide Dateien
 zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `check`) und
 `../tests/patch-log-archive.test.mjs` prüfen das.
@@ -42,19 +42,6 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch.mjs` (Unterbefehl `c
 Die Vorlage steht als einzige Quelle in
 [patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
 jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
-
-## IPL-0082 – Block 6 (`Tutorial`): Vollständige zweisprachige General-Vance-Funkvertonung (18 EN + 18 DE MP3s) & Gesamtprüfung
-- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d37b266d74f243dcb08f83321775515b38` (`main`), Status: `lokal/uncommittet`.
-- **Block / Ziel:** Sämtliche **36** zweisprachigen General-Vance-Sprachdateien für Dossier, 7-Wellen-Feldmission und 8-Stationen-HQ-Führung fertigstellen und automatisiert gegen `GENERAL_RADIO_SCRIPTS` absichern.
-- **Änderungen / Dateien:**
-  - `IronPath/assets/voice/en/tutorial/` (alle **18** EN-MP3-Dateien einheitlich mit General Vance EN-Stimme `voice-11` neu bzw. vollständig erzeugt: `dossier-{offer,decline}.mp3`, `mission-{welcome,build,upgrade,hero,supplies,specialize,air,boss,complete}.mp3`, `hq-{dossier,armory,skills,workshop,operations,online,settings-done}.mp3`).
-  - `IronPath/assets/voice/de/tutorial/` (alle **18** DE-MP3-Dateien einheitlich mit General Vance DE-Stimme `voice-10` erzeugt: identische 18 Clip-IDs wortgleich zu `GENERAL_RADIO_SCRIPTS`).
-  - `IronPath/tests/general-radio.test.mjs` (Prüfung auf alle **18 EN + 18 DE = 36** MP3-Dateien mit `size > 2000` ausgeweitet).
-  - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (Block 6 auf **95 %** aktualisiert: Implementierung & Vertonung lokal komplett; Release-Build-Stempel, CI & echte Geräteabnahme offen).
-- **Prüfungen:**
-  - Schwerpunktlauf über 20 relevante Testsuiten (`general-radio`, `tutorial-sync`, `tutorial-dossier`, `menu-tour`, `command-center`, `tutorial`, `first-run-*`, `training-run`, `patch-notes`, `menu-redesign`, `version-check`, `multiplayer-build-stamp`, `translation-coverage`, `language`, `settings`): **139 bestanden, 0 fehlgeschlagen** (nach vollständigem 265-Dateien-/1.185-Tests-Gesamtlauf sowie `node --check` über **576** Dateien & `stress-tests/run.mjs`).
-- **Git / PR / Release:** `lokal/uncommittet` auf `arena/0b12995a-0815games-github-io`.
-- **Offen:** Finaler Release-Build-Stempel (`20261119-block6` in `release-version.json`, `index.html`, `patch-notes.mjs` & Modul-Importen), Commit/Push/PR-CI-Durchlauf (inkl. Chromium `interface-smoke` & `command-center`) sowie echte Browser-/Handy-Abnahme durch den Betreiber.
 
 ## IPL-0083 – Block 6 (`Release 20261119-block6`, PR `#328`): Cache-Welle, Feldnotizen & Chromium-Smoke vorbereitet
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d3` (`main`), Ziel-PR `#328`.
@@ -897,3 +884,23 @@ sie geprüft wurde.
 - **Auslieferung auf `main` belegt:** `IronPath/scripts/patch.mjs` ist per Contents-API vorhanden (HTTP 200); die drei alten Dateien `patch-check.mjs`, `patch-bump.mjs` und `patch-lib.mjs` liefern **404**. `release-version.json` auf `main` trägt unverändert `"build": "20261122-core1"` — keine neue Welle, weil `scripts/` nicht ins Spiel gestagt wird (Staging-Beweis im Haupteintrag: 712 = 712 Dateien, null Unterschiede).
 - **Ehrliche Grenzen:** Die Live-URL wurde nicht abgerufen; belegt sind Inhalt auf `main` und der fertige Pages-Build. Keine Geräteabnahme, weil keine browsergeladene Datei geändert wurde. Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.
 - **Herkunft dieses Nachtrags:** Er steht als eigener PR auf einem neuen Arbeitszweig nach dem Merge von `#360`; seine eigene Commit- und PR-Kennung steht deshalb nicht hier, sondern in Git und im PR-Text. Mit `IPL-0101` samt Nachtrag ist das Strukturprogramm aus `IPL-0094` (Phasen 1–3) vollständig abgeschlossen.
+
+## IPL-0102 – Referenz-Wächter für die Harness-Ordner und ein npm-Einstieg an der Wurzel (keine Cache-Welle)
+
+- **Zeit / Quelle:** Nach Abschluss des Strukturprogramms zeigte die Übersicht der offen gebliebenen Verbesserungspunkte vier Kandidaten; der Betreiber gab mit „Go“ die empfohlene Klein-Scheibe frei (Punkt 1 Referenz-Wächter, Punkt 2 npm-Einstieg). Die Punkte 3 (gemeinsamer Harness-Helfer für 15 Testdateien) und 4 (gemeinsamer Test-Server für 11 Browser-/Emulator-Fahrten) bleiben dokumentierte Kandidaten für spätere Scheiben.
+- **Block / Ziel:** Kein Spiel-Block, kein ausgelieferter Spielcode. Der Build-Stempel bleibt `20261122-core1`; `tests/`, `scripts/` und die neue Wurzel-`package.json` fahren nicht ins gestagte Spiel (Staging-Beweis unten: 712 = 712, null Unterschiede).
+- **Branch / Basis:** `arena/aae695cf-0815games-github-io` ab `275ea1de0ed45d85fe8df929472903c4d637c73a` (`main`, Merge von PR `#361`).
+- **Änderungen / Dateien:**
+  - `IronPath/tests/reference-resolution.test.mjs` (neu): statischer Wächter, der in den Node-ausgeführten Harness-Ordnern (`browser-tests/`, `firebase/`, `server/`, `stress-tests/`) drei Verweis-Formen auflöst: relative Import-/Require-Literale (eine wie zwei Ebenen), dynamische Importe über `path.join(root,'…')` und `/IronPath/…`-Pfade, die Test-Server abfangen. Browser-seitige Modul-Texte werden unter `/IronPath/` bedient, deshalb gilt ein `./`-Verweis als aufgelöst, wenn er neben der Harness-Datei **oder** gegen die IronPath-Wurzel aufgeht — beides sind in diesen Dateien reale Auflösungs-Kontexte, und ein Umbenennen bricht beide. Synthetische Routen und zur Laufzeit kopierte SDK-Module (sieben Stellen) stehen mit Begründung in einer offenen Ausnahmeliste, statt den Scan zu verwässern; ein Biss-Test mit Fixture beweist, dass der Wächter alle drei Formen findet.
+  - `IronPath/scripts/patch.mjs`: `reference-resolution` ist achte Vertragsdatei in `CONTRACT_TESTS` — der Wächter läuft damit im Schnelltor (`check --fast`, CI-Schritt 4 von `game-regressions`) wie lokal mit.
+  - `package.json` an der Repo-Wurzel (neu, ohne Abhängigkeiten und ohne `type`-Feld, damit sich an der Modul-Deutung des Baums nichts ändert): `schnelltor`, `pruefung`, `test:suite`, `test:stress`, `test:server`, `test:release`, `setup` (npm-ci der zwei Unterpakete) und `ci-lokal` als Spiegel der `game-regressions`-Schritte. Emulator- und Browser-Fahrten bleiben bewusst draußen (Java/Chromium) und CI-Sache.
+  - `IronPath/docs/PATCH-ABLAUF.md`: Die Kurzformen sind in §1 dokumentiert.
+  - `IronPath/docs/PATCH-LOG.md` und `IronPath/docs/PATCH-LOG-ARCHIV.md`: `IPL-0082` vollständig ins Archiv, Grenzen auf `IPL-0001` bis `IPL-0082`; das Log führt die neuesten 20 (`IPL-0083` bis `IPL-0102`).
+- **Prüfungen:**
+  - `reference-resolution.test.mjs`: **2/2** — echter Baum ohne einen Fund, Biss-Fixture findet genau die drei absichtlich gebrochenen Formen (vor der Ausnahmelisten-Schärfung meldete der Scan nur die zwei Query-String-Schlüssel falsch; auf die bereinigte Form normalisiert).
+  - `npm run schnelltor` (neuer Einstieg, echter Baum): **0 Fehler** — 8 Vertragsdateien, 32 Tests grün (vorher 7 Dateien/30 Tests); die zwei Hinweise betreffen den uncommitteten Baum und den anfangs flachen Klon.
+  - Gesamtsuite im vollständigen Klon (nach `git fetch --unshallow origin`): `node --test IronPath/tests/*.test.mjs` = **1.263 Tests, 1.263 bestanden, 0 fehlgeschlagen, 0 übersprungen, Exit 0** (vorher 1.261; +2 Wächter-Tests). Im flachen Anfangszustand meldete dieselbe Suite 1 übersprungenen Test — wieder der bekannte Klon-Effekt, kein Befund.
+  - Staging gegen Basis `275ea1de` (gleiche Build-ID `20990101-baseline1`): **712 = 712 Dateien, `diff -rq` ohne eine Zeile**.
+  - Keine Geräteabnahme vorgesehen oder nötig: Es wurde keine Datei geändert, die der Browser lädt.
+- **Git / PR / Release:** Zum Zeitpunkt dieses Eintrags uncommittet auf `arena/aae695cf-0815games-github-io`. Commit, Push, PR, CI, Merge und Pages-Auslieferung sind noch nicht erfolgt und werden erst nach dem tatsächlichen Ereignis mit Kennung nachgetragen. Zu beobachten im CI-Lauf: die zwei Vercel-Checks an der neuen Wurzel-`package.json` (bewusst ohne Abhängigkeiten und Build-Skript angelegt).
+- **Offen / nächster Schritt:** PR öffnen, CI abwarten, erst nach belegtem Merge/Pages-Stand als ausgeliefert bezeichnen; Ereignis-Nachtrag danach als eigener PR. Kandidaten Punkt 3 und 4 (Harness-Helfer, Test-Server) bleiben zurückgestellt; als nächstes größeres Stück steht der Bauplatz-Auswahlring aus PR `#336` (ohne Hover-Vorschau). Die Betreiber-Sichtprüfungen (`BUILD 20261122-core1`, Anmeldung, Solo-/Mehrspieler-Gefecht, `ui1`- bis `workshop1`-Punkte, Deutsch-Texte) stehen weiterhin aus.

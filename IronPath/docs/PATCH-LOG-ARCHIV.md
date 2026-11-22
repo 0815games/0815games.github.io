@@ -1,6 +1,6 @@
 # Iron Path – Patch-Log: Archiv
 
-Ältere Einträge IPL-0001 bis IPL-0081. Die neuesten 20 stehen in
+Ältere Einträge IPL-0001 bis IPL-0082. Die neuesten 20 stehen in
 [PATCH-LOG.md](PATCH-LOG.md); die Regeln für beide Dateien dort und in
 [`../../AGENTS.md`](../../AGENTS.md). Beim Verschieben wandert ein Eintrag immer
 vollständig einschließlich seiner Ereignis-Nachträge.
@@ -3578,3 +3578,16 @@ Grenzen / Offen:
   - `browser-tests/command-center.cjs` lokal nicht ausgeführt (kein Chromium/Playwright in der Sandbox vorinstalliert).
 - **Git / PR / Release:** `lokal/uncommittet` auf `arena/0b12995a-0815games-github-io`; Build-Stempel (`release-version.json` / `<meta name="ironpath-build">` / `patch-notes.mjs`) bewusst noch auf `20261119-block2` belassen, bis die Vertonung vollständig ist.
 - **Offen:** (1) In den folgenden Zügen restliche 8 EN-Clips + einheitliche Neuerzeugung aller 18 EN-Clips mit `voice-11` unter `IronPath/assets/voice/en/tutorial/` sowie alle 18 DE-Clips mit `voice-10` unter `IronPath/assets/voice/de/tutorial/` synthetisieren (pro Runde maximal 10 `generate_speech`-Clips), (2) `general-radio.test.mjs` anschließend auf alle 18 EN + 18 DE-Audiodateien ausweiten, (3) Cache-Stempel auf `20261119-block6` heben, committen/pushen & CI-Browser-Tests sowie echte Mehrgeräte-Abnahme durchführen.
+
+## IPL-0082 – Block 6 (`Tutorial`): Vollständige zweisprachige General-Vance-Funkvertonung (18 EN + 18 DE MP3s) & Gesamtprüfung
+- **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/0b12995a-0815games-github-io` ab `61de91d37b266d74f243dcb08f83321775515b38` (`main`), Status: `lokal/uncommittet`.
+- **Block / Ziel:** Sämtliche **36** zweisprachigen General-Vance-Sprachdateien für Dossier, 7-Wellen-Feldmission und 8-Stationen-HQ-Führung fertigstellen und automatisiert gegen `GENERAL_RADIO_SCRIPTS` absichern.
+- **Änderungen / Dateien:**
+  - `IronPath/assets/voice/en/tutorial/` (alle **18** EN-MP3-Dateien einheitlich mit General Vance EN-Stimme `voice-11` neu bzw. vollständig erzeugt: `dossier-{offer,decline}.mp3`, `mission-{welcome,build,upgrade,hero,supplies,specialize,air,boss,complete}.mp3`, `hq-{dossier,armory,skills,workshop,operations,online,settings-done}.mp3`).
+  - `IronPath/assets/voice/de/tutorial/` (alle **18** DE-MP3-Dateien einheitlich mit General Vance DE-Stimme `voice-10` erzeugt: identische 18 Clip-IDs wortgleich zu `GENERAL_RADIO_SCRIPTS`).
+  - `IronPath/tests/general-radio.test.mjs` (Prüfung auf alle **18 EN + 18 DE = 36** MP3-Dateien mit `size > 2000` ausgeweitet).
+  - `IronPath/PATCH-BLOECKE.md`, `IronPath/PATCH-LOG.md` (Block 6 auf **95 %** aktualisiert: Implementierung & Vertonung lokal komplett; Release-Build-Stempel, CI & echte Geräteabnahme offen).
+- **Prüfungen:**
+  - Schwerpunktlauf über 20 relevante Testsuiten (`general-radio`, `tutorial-sync`, `tutorial-dossier`, `menu-tour`, `command-center`, `tutorial`, `first-run-*`, `training-run`, `patch-notes`, `menu-redesign`, `version-check`, `multiplayer-build-stamp`, `translation-coverage`, `language`, `settings`): **139 bestanden, 0 fehlgeschlagen** (nach vollständigem 265-Dateien-/1.185-Tests-Gesamtlauf sowie `node --check` über **576** Dateien & `stress-tests/run.mjs`).
+- **Git / PR / Release:** `lokal/uncommittet` auf `arena/0b12995a-0815games-github-io`.
+- **Offen:** Finaler Release-Build-Stempel (`20261119-block6` in `release-version.json`, `index.html`, `patch-notes.mjs` & Modul-Importen), Commit/Push/PR-CI-Durchlauf (inkl. Chromium `interface-smoke` & `command-center`) sowie echte Browser-/Handy-Abnahme durch den Betreiber.

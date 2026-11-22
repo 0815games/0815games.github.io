@@ -39,6 +39,12 @@ node IronPath/scripts/patch.mjs check --fast   # Vorprüfung, wenige Sekunden
 gh pr list --state open                        # liegt schon etwas in der Luft?
 ```
 
+Kurzformen stehen in der Wurzel-`package.json`: `npm run schnelltor` ist
+dieselbe Vorprüfung, `npm run ci-lokal` spiegelt die `game-regressions`-Schritte
+(Schnelltor, volle Suite, Stress, Server- und Release-Tests; einmalig vorher
+`npm run setup` für die zwei Unterpakete). Emulator- und Browser-Fahrten
+bleiben CI-Sache — sie brauchen Java und Chromium.
+
 1. [`PATCH-LOG.md`](PATCH-LOG.md) lesen — die neuesten 20 Einträge; für ältere
    [`PATCH-LOG-ARCHIV.md`](PATCH-LOG-ARCHIV.md). Danach bei Bedarf
    [`PATCH-BLOECKE.md`](PATCH-BLOECKE.md) und [`DATENBLATT.md`](DATENBLATT.md).
