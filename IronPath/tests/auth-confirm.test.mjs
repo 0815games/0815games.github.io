@@ -92,6 +92,6 @@ test('the account wires the confirm field and shows string errors',()=>{
   const source=readFileSync(new URL('../account.js',import.meta.url),'utf8');
   assert.match(source,/confirm:\$\('passwordConfirm'\),confirmField:\$\('passwordConfirmField'\)/,'both elements are handed to the form');
   assert.match(source,/onError:error=>message\(typeof error==='string'\?error:error\?errorText\(error\):''\)/,'a plain message string reaches the player untranslated by errorText');
-  const de=readFileSync(new URL('../localization-more-static-de.mjs',import.meta.url),'utf8');
+  const de=readFileSync(new URL('../i18n/localization-more-static-de.mjs',import.meta.url),'utf8');
   assert.match(de,/"The passwords do not match\. Please type them again\.": "Die Passwörter stimmen nicht überein\. Bitte gib sie erneut ein\."/);
 });

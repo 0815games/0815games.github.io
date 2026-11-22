@@ -1,6 +1,9 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync,readdirSync,existsSync} from 'node:fs';
+import {join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 import {setupRecruitScreen} from '../recruit-screen.mjs';
 import {defaultAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
 import {layerOptions} from '../avatar-layers.mjs';
@@ -170,11 +173,23 @@ test('the markup and css carry Umsetzungsidee A stage, steppers, readout, and co
 });
 
 test('German labels exist for every UI control, face, hairstyle, beard, and color',()=>{
-  const root=new URL('..',import.meta.url);
-  const deText=readdirSync(root)
-    .filter(n=>n.startsWith('localization')&&n.endsWith('-de.mjs'))
-    .map(n=>readFileSync(new URL(n,root),'utf8'))
-    .join('\n');
+  const root=new URL('..',import.meta.url),rootDir=fileURLToPath(root);
+  // The dictionaries live in i18n/ since the structure move; scan the approved
+  // module folders as well as the root, or this test reads an empty set and
+  // reports every label missing (or, worse, would pass over nothing).
+  const dictionaryFiles=[];
+  const collect=(dir,prefix)=>{
+    for(const entry of readdirSync(dir,{withFileTypes:true})){
+      const rel=prefix?`${prefix}/${entry.name}`:entry.name;
+      if(entry.isDirectory())collect(join(dir,entry.name),rel);
+      else if(entry.isFile()&&entry.name.startsWith('localization')&&entry.name.endsWith('-de.mjs'))dictionaryFiles.push(rel);
+    }
+  };
+  for(const folder of GAME_MODULE_FOLDERS)if(existsSync(join(rootDir,folder)))collect(join(rootDir,folder),folder);
+  for(const name of readdirSync(rootDir))
+    if(name.startsWith('localization')&&name.endsWith('-de.mjs'))dictionaryFiles.push(name);
+  assert.ok(dictionaryFiles.length>=18,`the scan still sees the dictionaries (found ${dictionaryFiles.length})`);
+  const deText=dictionaryFiles.map(n=>readFileSync(new URL(n,root),'utf8')).join('\n');
   const labels=[
     'CHARACTER','FACE','HAIR','BEARD','HAIR COLOR','HAIR & BEARD COLOR',
     'Bald','Clean-shaven','Female soldier','Male soldier',

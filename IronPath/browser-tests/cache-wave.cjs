@@ -96,9 +96,11 @@ const oldUrls=[
  const server=http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://test.invalid');
   if(url.pathname==='/fixture'){res.writeHead(200,{'content-type':'text/html','cache-control':'no-store'}).end('<!doctype html><html><body><select id="languageSelect"><option value="de">Deutsch</option><option value="en">English</option></select></body></html>');return;}
-  // Root runtime modules plus the real layer manifest needed by avatar and
-  // friend portraits. No arbitrary nested paths or external fetches are served.
-  if(!/^\/IronPath\/(?:[\w.-]+|assets\/layers\/manifest)\.(?:mjs|js)$/.test(url.pathname)){res.writeHead(404).end();return;}
+  // Root runtime modules, the approved game module folders (GAME_MODULE_FOLDERS
+  // in release-tools/stage-version.mjs - keep this list in step with it), plus
+  // the real layer manifest needed by avatar and friend portraits. No arbitrary
+  // nested paths or external fetches are served.
+  if(!/^\/IronPath\/(?:(?:battle|core|i18n|net|ui|workshop)\/)?(?:[\w.-]+|assets\/layers\/manifest)\.(?:mjs|js)$/.test(url.pathname)){res.writeHead(404).end();return;}
   const key=url.pathname.slice('/IronPath/'.length)+url.search;requests.push(key);
   try{
    const body=stale.has(key)?'export const syntheticOldCache=true;':await readFile(path.join(root,url.pathname.slice('/IronPath/'.length)));
@@ -146,7 +148,7 @@ const oldUrls=[
   },build);
   assert.equal(result.queued.status,'queued');assert.equal(result.applied.ok,true);assert.equal(result.request.requester,'bob');
   assert.match(result.text,/Bob fragt Welle 1 an\. 1 Zustimmung/);
-  for(const name of ['game.js','battle-viewport.mjs','battle-viewport-controller.mjs','battle-sound.mjs','battle-sound-recipes.mjs','battle-music.mjs','popover-host.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','localization-firstrun-de.mjs','localization-settings-de.mjs','localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
+  for(const name of ['game.js','battle-viewport.mjs','battle-viewport-controller.mjs','battle-sound.mjs','battle-sound-recipes.mjs','battle-music.mjs','popover-host.mjs','field-menu.mjs','settings.mjs','password-change.mjs','endless-launcher.mjs','patch-notes.mjs','command-center.mjs','training-run.mjs','tutorial-sync.mjs','general-radio.mjs','tutorial-dossier.mjs','menu-tour.mjs','first-run-coach.mjs','first-run-guide.mjs','i18n/localization-firstrun-de.mjs','i18n/localization-settings-de.mjs','i18n/localization-account-de.mjs','coop-input.mjs','coop-invites.mjs','friends-ui.mjs','friends.mjs','friend-portrait.mjs','social-notifications.mjs','multiplayer-prompts.mjs','language.mjs','party-host.mjs','protocol.mjs','simulation.mjs','match.mjs','combat.mjs','tower-specialization.mjs','tower-upgrade-cue.mjs','multiplayer-speed.mjs','wave-consensus.mjs','firebase-party-game.mjs','firebase-recoverable-game.mjs','firebase-durable-host-session.mjs'])
    assert.ok(requests.includes(`${name}?v=${build}`),`${name} is fetched with the new cache key`);
   assert.ok(requests.includes('avatar.mjs?v=20261119-avatar3'),'the portrait reuses the existing avatar decoder');
   assert.ok(requests.includes('avatar-layers.mjs?v=20261119-avatar3'),'the portrait reuses the existing renderer');

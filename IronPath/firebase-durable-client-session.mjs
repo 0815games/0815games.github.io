@@ -1,4 +1,4 @@
-import {normalizeCommand} from './protocol.mjs?v=20261121-order1';
+import {normalizeCommand} from './protocol.mjs?v=20261122-i18n1';
 // Generation-aware client for the opt-in host-recovery trial. The channel
 // must derive each view's owner/generation from a rules-protected lease and
 // owner-scoped view path, and hosts must reject input envelopes from old

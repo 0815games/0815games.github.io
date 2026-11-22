@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {germanMoreStatic} from '../localization-more-static-de.mjs';
+import {germanMoreStatic} from '../i18n/localization-more-static-de.mjs';
 
 // Reported: after skipping the intro, the game dropped the player on a bare
 // bright \"Connecting…\" card while Firebase resolved. The connecting scene is

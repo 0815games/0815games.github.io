@@ -20,7 +20,7 @@
 //     generated from Git, so an entry is only true once the matching commit,
 //     merge and Pages run are proven - see docs/PATCH-LOG.md.
 
-import {getLanguage} from './language.mjs?v=20261121-order1';
+import {getLanguage} from './language.mjs?v=20261122-i18n1';
 
 // Status chips for the planned list. `active` is the block being worked on,
 // `next` is the one after it, `planned` is agreed but not started.
@@ -44,6 +44,23 @@ export const PATCH_LABELS=Object.freeze({
 // value that shipped in release-version.json, or null when no manifest existed
 // yet at that time (PR #286 predates it - verified against the repository).
 export const RELEASED_PATCHES=Object.freeze([
+  {
+    id:'i18n1',build:'20261122-i18n1',pr:348,
+    title:{en:'Structure Move 1 · The German Dictionaries Now Live in i18n/',de:'Struktur-Umzug 1 · Die deutschen Wörterbücher liegen jetzt in i18n/'},
+    shipped:[
+      {en:'This release changes nothing you can see in the game: every text, every translation and every screen is exactly as before. What moved is where the files live.',de:'Dieser Stand ändert am sichtbaren Spiel nichts: Jeder Text, jede Übersetzung und jeder Bildschirm ist genau wie vorher. Geändert hat sich nur, wo die Dateien liegen.'},
+      {en:'All 18 German dictionary files (localization-*-de.mjs) moved from the flat game folder into IronPath/i18n/, so the game folder stops being one long list of almost 200 modules.',de:'Alle 18 deutschen Wörterbuch-Dateien (localization-*-de.mjs) sind aus dem flachen Spielordner nach IronPath/i18n/ gezogen, damit der Spielordner nicht länger eine einzige Liste aus fast 200 Modulen ist.'},
+      {en:'14 of the 18 dictionaries are byte-identical to before; in the other 4 only the import paths point one folder up. The language module in the game folder now loads its dictionaries from i18n/.',de:'14 der 18 Wörterbücher sind bytegleich zu vorher; in den anderen 4 zeigen nur die Import-Pfade einen Ordner höher. Das Sprachmodul im Spielordner lädt seine Wörterbücher jetzt aus i18n/.'},
+      {en:'The release packager and the structure guards learned the new folder first (previous release), so the moved files are staged and checked exactly like the ones still in the game folder.',de:'Packager und Struktur-Wächter haben den neuen Ordner vorher gelernt (letzter Stand), sodass die umgezogenen Dateien genauso gestagt und geprüft werden wie die übrigen im Spielordner.'},
+      {en:'Raised the cache wave to 20261122-i18n1, because the dictionary addresses changed: no device should keep loading them from the old place out of its cache.',de:'Die Cache-Welle auf 20261122-i18n1 erhöht, weil sich die Wörterbuch-Adressen geändert haben: Kein Gerät soll sie weiter unter der alten Adresse aus dem Zwischenspeicher laden.'},
+    ],
+    open:[
+      {en:'Visual check after loading: the stamp must read BUILD 20261122-i18n1 in the loading scene and in settings, and switching the language to German must show German texts everywhere as before.',de:'Sichtprüfung nach dem Laden: Der Stempel muss in der Ladeszene und in den Einstellungen BUILD 20261122-i18n1 zeigen, und nach dem Umstellen auf Deutsch müssen überall wie bisher deutsche Texte stehen.'},
+      {en:'No device acceptance yet: this move has not been checked on an iPhone or iPad.',de:'Noch keine Geräteabnahme: Dieser Umzug ist nicht auf einem iPhone oder iPad geprüft.'},
+      {en:'The next structure moves follow one folder per release: workshop/, net/, battle/, ui/ and core/. Entry points, HTML and stylesheets stay in the game folder.',de:'Die nächsten Struktur-Umzüge folgen mit je einem Ordner pro Stand: workshop/, net/, battle/, ui/ und core/. Eintrittspunkte, HTML und Stylesheets bleiben im Spielordner.'},
+      {en:'Still parked until the structure is done: the thicker pulsing selection ring on build pads (without any hover preview), as its own game release.',de:'Bis die Struktur steht, bleibt geparkt: der dickere pulsierende Auswahlring auf Bauplätzen (ohne jede Hover-Vorschau), als eigener Spiel-Stand.'},
+    ],
+  },
   {
     id:'order1',build:'20261121-order1',pr:342,
     title:{en:'Repository Housekeeping · Game Folder Separated from Working Material',de:'Ordnung im Repository · Spielordner von Arbeitsmaterial getrennt'},

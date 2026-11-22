@@ -200,7 +200,7 @@ test('the kit data, UI and wiring are pinned',()=>{
   assert.match(game,/branchUnlockLevel\(i\)/,'the branch menu asks it too');
   const art=readFileSync(new URL('../cartoon-art.mjs',import.meta.url),'utf8');
   assert.match(art,/specializationRank\(tower\)/,'the canvas draws rank chevrons');
-  const de=readFileSync(new URL('../localization-towers-de.mjs',import.meta.url),'utf8');
+  const de=readFileSync(new URL('../i18n/localization-towers-de.mjs',import.meta.url),'utf8');
   assert.match(de,/RANG II ab Stufe 4/,'the rank track is German');
 });
 

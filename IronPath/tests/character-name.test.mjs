@@ -316,7 +316,7 @@ test('the reservation is wired into enlistment and released when the character i
 // Every one of these reaches the player through message(), which runs
 // translateText. A missing entry means a German player reads raw English.
 test('the German client never sees an untranslated name error',()=>{
-  const dictionaries=['localization-de.mjs','localization-account-de.mjs'].map(read).join('\n');
+  const dictionaries=['i18n/localization-de.mjs','i18n/localization-account-de.mjs'].map(read).join('\n');
   // Dictionaries use single or double quotes depending on the string.
   const quoted=text=>`['"]${text.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}['"]\s*:`;
   for(const text of [

@@ -62,7 +62,7 @@ test('renderResults names the campaign save failure reason', async () => {
     'the results banner picks its message from that reason');
   assert.match(source, /reason==='rejected'\)return 'The database rejected the mission save\. The Iron Path database rules may need to be deployed\.'/,
     'a rejected write points at the database rules');
-  const german = await readFile(new URL('../localization-results-de.mjs', import.meta.url), 'utf8');
+  const german = await readFile(new URL('../i18n/localization-results-de.mjs', import.meta.url), 'utf8');
   for (const english of [
     'The database rejected the mission save. The Iron Path database rules may need to be deployed.',
     'Saving mission progress timed out. Check your connection and retry.',

@@ -265,7 +265,7 @@ test('the field menu opens this dialog instead of carrying its own copies', () =
 });
 
 test('the dialog that switches the language is German itself', async () => {
-  const { germanSettings } = await import('../localization-settings-de.mjs');
+  const { germanSettings } = await import('../i18n/localization-settings-de.mjs');
   const html = readFileSync(resolve(root, 'index.html'), 'utf8');
   const settingsMarkup = html.slice(html.indexOf('id="settingsDialog"'), html.indexOf('</dialog>', html.indexOf('id="settingsDialog"')));
   const fromMarkup = [...settingsMarkup.matchAll(/data-i18n-(?:aria-label|text)="([^"]+)"/g)].map(match => match[1].replace(/&amp;/g, '&'));

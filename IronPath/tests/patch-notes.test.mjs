@@ -194,7 +194,7 @@ test('the dialog and its menu entry exist in the real page and are wired',()=>{
   assert.ok(html.includes('patch-notes.css?v='),'the stylesheet is linked and versioned');
   // The tab labels are translated like every other surface string, so the
   // German client is not left with English chips.
-  const german=read('localization-de.mjs');
+  const german=read('i18n/localization-de.mjs');
   for(const key of ['"FIELD NOTES"','"Field notes"','"Close field notes"','"RELEASED"','"Field notes sections"'])
     assert.ok(german.includes(key),'German entry for '+key);
 });

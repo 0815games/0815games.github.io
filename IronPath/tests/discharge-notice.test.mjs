@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
 import {createDischargeNotice,createDischargeSignOut,DISCHARGE_MESSAGE} from '../discharge-notice.mjs';
-import {germanMoreStatic} from '../localization-more-static-de.mjs';
+import {germanMoreStatic} from '../i18n/localization-more-static-de.mjs';
 
 function store(){const data=new Map();return {data,getItem:key=>data.get(key)??null,setItem:(key,value)=>data.set(key,value),removeItem:key=>data.delete(key)};}
 

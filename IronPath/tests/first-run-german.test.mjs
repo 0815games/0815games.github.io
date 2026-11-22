@@ -118,7 +118,7 @@ test('the German text is really German, not an English copy', async () => {
 test('no German entry points at a string that no longer exists', async () => {
   // An English sentence that gets edited keeps its old German entry, which then never
   // matches - the card silently falls back to English. Both directions are checked.
-  const { germanFirstRun } = await import('../localization-firstrun-de.mjs');
+  const { germanFirstRun } = await import('../i18n/localization-firstrun-de.mjs');
   const coach = await import('../first-run-coach.mjs');
   const guide = await import('../first-run-guide.mjs');
   const live = new Set(cardStrings(coach, guide).map(([, text]) => text));
@@ -130,7 +130,7 @@ test('the dictionary is registered before the other German files can shadow it',
   // Lookup order matters: if a generic file happened to hold "Assault", the class name
   // would come from there and the first-run entries would quietly never be used.
   const language = readFileSync(resolve(root, 'language.mjs'), 'utf8');
-  assert.match(language, /import \{germanFirstRun\} from '\.\/localization-firstrun-de\.mjs\?v=/,
+  assert.match(language, /import \{germanFirstRun\} from '\.\/i18n\/localization-firstrun-de\.mjs\?v=/,
     'the first-run dictionary is imported');
   const chain = language.slice(language.indexOf("active==='de'?"), language.indexOf("active==='de'?") + 400);
   // The Settings dictionary sits in front of it: the dialog that switches the language
@@ -140,7 +140,7 @@ test('the dictionary is registered before the other German files can shadow it',
 });
 
 test('the German strings keep the house style', async () => {
-  const { germanFirstRun } = await import('../localization-firstrun-de.mjs');
+  const { germanFirstRun } = await import('../i18n/localization-firstrun-de.mjs');
   const values = Object.values(germanFirstRun);
   // The rest of the German UI uses the Du-form; a stray "Sie" reads like a different
   // product. Case-insensitive, word-bounded, and "Sie" as a pronoun only - the same
