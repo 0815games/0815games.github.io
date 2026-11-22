@@ -19,6 +19,11 @@ import {runPatchCheck,tapSummary,patchLogState,LOG_KEEP,CONTRACT_TESTS} from '..
 // tested by running a release.
 
 const IRONPATH=fileURLToPath(new URL('..',import.meta.url));
+// Assembled at runtime on purpose. The secret scan reads added lines of the real
+// diff, so a literal credential header inside this test file would flag the test
+// itself and force an allowlist entry for it. The fixture still receives the real
+// shape, so the scan and its allowlist are both exercised end to end.
+const pemHeader=['-----BEGIN','PRIVATE KEY-----'].join(' ');
 const OLD='20260101-fixture0';
 const NEW='20260102-fixture1';
 const ANCIENT='20251201-ancient1';
@@ -241,7 +246,7 @@ test('the secret scan sees a new private key and skips known validation code',as
   assert.ok(clean.findings.some(finding=>finding.check==='geheimnisse'&&finding.level==='ok'));
 
   await write('docs/PATCH-LOG.md',
-    `${await read('docs/PATCH-LOG.md')}\n## IPL-0004 – Nachtrag\n- Schlüssel: -----BEGIN PRIVATE KEY-----\n`);
+    `${await read('docs/PATCH-LOG.md')}\n## IPL-0004 – Nachtrag\n- Schlüssel: ${pemHeader}\n`);
   const leaked=await runPatchCheck({root,contracts:false,base:'HEAD'});
   assert.equal(leaked.failed,true);
   assert.ok(leaked.findings.some(finding=>finding.check==='geheimnisse'&&finding.level==='fail'&&
@@ -251,7 +256,7 @@ test('the secret scan sees a new private key and skips known validation code',as
   await write('docs/PATCH-LOG.md',(await read('docs/PATCH-LOG.md')).replace(/\n## IPL-0004[\s\S]*$/,'\n'));
   await mkdir(join(root,'release-tools','api'),{recursive:true});
   await writeFile(join(root,'release-tools','api','session.mjs'),
-    `if(!key.startsWith('-----BEGIN PRIVATE KEY-----'))throw Error('invalid');\n`);
+    `if(!key.startsWith('${pemHeader}'))throw Error('invalid');\n`);
   git('add','-A');   // git diff HEAD sieht nur tracked Inhalt
   const allowlisted=await runPatchCheck({root,contracts:false,base:'HEAD'});
   assert.deepEqual(allowlisted.findings.filter(finding=>finding.check==='geheimnisse'&&finding.level==='fail'),[],
