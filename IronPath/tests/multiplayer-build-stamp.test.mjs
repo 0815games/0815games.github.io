@@ -7,7 +7,7 @@ import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
 
 test('multiplayer camera, CSS and account entry use the current build wave',()=>{
  const read=name=>readFileSync(new URL(`../${name}`,import.meta.url),'utf8');
- const html=read('index.html'),account=read('account.js'),game=read('game.js'),controller=read('battle-viewport-controller.mjs');
+ const html=read('index.html'),account=read('account.js'),game=read('game.js'),controller=read('battle/battle-viewport-controller.mjs');
  const stamp=/class="build-stamp"[^>]*>BUILD ([^<]+)/.exec(html)?.[1];
  assert.ok(stamp,'the client advertises a build wave');
  assert.ok(html.includes(`account-entry.mjs?v=${stamp}`));

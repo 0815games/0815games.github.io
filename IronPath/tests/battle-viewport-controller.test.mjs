@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createBattleViewportController} from '../battle-viewport-controller.mjs';
+import {createBattleViewportController} from '../battle/battle-viewport-controller.mjs';
 function setup(){
   const listeners=new Map(),canvas={width:960,height:540,style:{touchAction:'pan-y'},addEventListener(t,f){listeners.set(t,f);},removeEventListener(t){listeners.delete(t);},getBoundingClientRect(){return {left:10,top:20,width:480,height:270};},setPointerCapture(){}};
   const taps=[],changes=[];const controller=createBattleViewportController({canvas,worldWidth:1440,worldHeight:720,onTap:p=>taps.push(p),onChange:v=>changes.push(v)});

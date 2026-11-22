@@ -5,8 +5,8 @@
 // bilingual copy, radio voice controls, and clear Accept / Decline / Resume /
 // Replay-HQ-Only paths without ever triggering destructive account actions.
 
-import {translateText as tr,getLanguage} from './language.mjs?v=20261122-net1';
-import {FIRST_RUN_XP} from './training-run.mjs?v=20261122-net1';
+import {translateText as tr,getLanguage} from './language.mjs?v=20261122-battle1';
+import {FIRST_RUN_XP} from './training-run.mjs?v=20261122-battle1';
 
 export const DOSSIER_MODES=Object.freeze(['offer','resume','replay']);
 

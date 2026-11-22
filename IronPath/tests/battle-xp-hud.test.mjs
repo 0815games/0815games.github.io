@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createBattleXpHud} from '../battle-xp-hud.mjs';
+import {createBattleXpHud} from '../battle/battle-xp-hud.mjs';
 
 // The soldier tile on the battlefield. The rule under test is the one the block
 // asked for: unconfirmed saves must not fake a level-up. The module therefore

@@ -284,7 +284,7 @@ function guardedHtml(html){
    await page.evaluate(()=>{const button=document.getElementById('mapZoom');if(button.getAttribute('aria-pressed')==='true')button.click();});
   }
   const points=await Promise.all(pages.map(page=>page.evaluate(async partyId=>{
-   const {squadMapFor}=await import('./four-modes.mjs'),{getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle-viewport.mjs');
+   const {squadMapFor}=await import('./four-modes.mjs'),{getMap}=await import('./maps.mjs'),{createBattleViewport}=await import('./battle/battle-viewport.mjs');
    const map=getMap(squadMapFor(partyId)),canvas=document.getElementById('game'),r=canvas.getBoundingClientRect(),h=Math.round(960*r.height/r.width);
    const view=createBattleViewport(map.width,map.height,960,h);
    return map.pads.map((pad,index)=>{const x=r.left+(pad.x-view.x)*view.scale*r.width/view.width,y=r.top+(pad.y-view.y)*view.scale*r.height/view.height;

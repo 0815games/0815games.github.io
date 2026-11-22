@@ -13,7 +13,7 @@
 // cannot lift the level. That is exactly what "unconfirmed saves must not fake a
 // level-up" means - a soldier who reads STUFE 4 on the field and STUFE 3 in the
 // report has been lied to, and no retry queue can take that back.
-import {characterProgress} from './progression.mjs?v=20261105-prestige1';
+import {characterProgress} from '../progression.mjs?v=20261105-prestige1';
 
 export function createBattleXpHud(options){
   const {document,getProfile,tr}=options||{};

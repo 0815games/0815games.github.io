@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { createBattleSound, panForX } from '../battle-sound.mjs';
+import { createBattleSound, panForX } from '../battle/battle-sound.mjs';
 import { createPlayer, applyCommand } from '../match.mjs';
 import { createSoloDeployment } from '../solo-deployment.mjs';
 import { stepMatch } from '../simulation.mjs';
@@ -494,8 +494,8 @@ test('Packages 2, 3 & 4 cues (construction, economy, class abilities, bosses, wa
 });
 
 test('Package 5 & 6: adaptive music, weather bed routing, split SFX/Music gains, pause context & lifecycle resume/dispose', async () => {
-  const { createBattleSound } = await import('../battle-sound.mjs');
-  const { weatherForScene } = await import('../battle-music.mjs');
+  const { createBattleSound } = await import('../battle/battle-sound.mjs');
+  const { weatherForScene } = await import('../battle/battle-music.mjs');
 
   assert.equal(weatherForScene({ storyWeather: 'rain' }), 'rain');
   assert.equal(weatherForScene({ storyWeather: 'snow' }), 'arctic');

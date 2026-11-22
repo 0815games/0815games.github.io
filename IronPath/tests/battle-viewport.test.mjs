@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen,drawInBattleViewport} from '../battle-viewport.mjs';
+import {createBattleViewport,panBattleViewport,zoomBattleViewport,battleScreenToWorld,battleClientToScreen,drawInBattleViewport} from '../battle/battle-viewport.mjs';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('large battlefield fits and CSS-scaled taps map to world coordinates',()=>{
   const v=createBattleViewport(1440,720,960,540);
@@ -33,7 +33,7 @@ test('draw transform clips the world and restores canvas state on failure',()=>{
 });
 
 test('portrait camera can fill the screen and resizing retains its focus',async()=>{
-  const {resizeBattleViewport}=await import('../battle-viewport.mjs');
+  const {resizeBattleViewport}=await import('../battle/battle-viewport.mjs');
   const overview=createBattleViewport(1440,720,960,2070);
   const full=zoomBattleViewport(overview,100,{x:480,y:1035});
   assert.ok(full.scale>=2070/720,'portrait can zoom far enough to fill its height');
