@@ -58,7 +58,7 @@ const build=JSON.parse(readFileSync(path.join(__dirname,'../release-version.json
     await approve.focus();await page.keyboard.press('Enter');await root.waitFor({state:'hidden'});assert.equal(await page.evaluate(()=>window.__runs),1,'keyboard approval is an explicit action');
     await page.evaluate(async build=>{
      if(document.documentElement.lang!=='de')document.getElementById('languageToggle').click();
-     const [{createConfirmation},{translateText}]=await Promise.all([import(`./confirmation.mjs?v=${build}`),import(`./language.mjs?v=${build}`)]);
+     const [{createConfirmation},{translateText}]=await Promise.all([import(`./ui/confirmation.mjs?v=${build}`),import(`./language.mjs?v=${build}`)]);
      window.__confirmation=createConfirmation(document,translateText);window.__decision=null;
      window.__confirmation.ask({title:'Sign out?',text:'Waiting ends the shared match and signs you out only after every report and reward is confirmed. Keep this page open. Signing out now can leave the party open and rewards unconfirmed.',accept:'END AND WAIT',alternate:'SIGN OUT NOW'}).then(value=>window.__decision=value);
     },build);
@@ -73,7 +73,7 @@ const build=JSON.parse(readFileSync(path.join(__dirname,'../release-version.json
     await page.evaluate(async build=>{
      document.getElementById('commandCenter').hidden=true;const field=document.getElementById('gameWorkspace');field.hidden=false;field.dataset.screen='online';field.dataset.onlineReady='true';
      window.__fieldSignOut=0;document.getElementById('menuLogout').onclick=()=>window.__fieldSignOut++;
-     const {setupFieldMenu}=await import(`./field-menu.mjs?v=${build}`);setupFieldMenu({document});
+     const {setupFieldMenu}=await import(`./ui/field-menu.mjs?v=${build}`);setupFieldMenu({document});
     },build);
     await page.locator('#fieldOps > summary').click();const fieldLogout=page.locator('#fieldLogout');await fieldLogout.scrollIntoViewIfNeeded();
     const actionBox=await fieldLogout.evaluate(element=>{const r=element.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,hit:document.elementFromPoint((r.left+r.right)/2,(r.top+r.bottom)/2)===element};});

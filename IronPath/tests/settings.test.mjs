@@ -255,7 +255,7 @@ test('General and Account tabs switch cleanly and open() notifies lifecycle hook
 });
 
 test('the field menu opens this dialog instead of carrying its own copies', () => {
-  const menu = readFileSync(resolve(root, 'field-menu.mjs'), 'utf8');
+  const menu = readFileSync(resolve(root, 'ui/field-menu.mjs'), 'utf8');
   assert.match(menu, /onSettings/, 'the menu requests the shared dialog');
   assert.doesNotMatch(menu, /fieldLanguage/, 'no second language select');
   assert.doesNotMatch(menu, /fieldFullscreen/, 'no second fullscreen button');

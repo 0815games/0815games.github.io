@@ -18,7 +18,7 @@ test('the search-listing notice lives inside the friends dialog, not over the ga
 });
 
 test('a failed listing update retries quietly before anything is shown',()=>{
-  const source=readFileSync(new URL('../friends-ui.mjs',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../ui/friends-ui.mjs',import.meta.url),'utf8');
   assert.match(source,/let indexRetries=0,indexTimer=null,indexFailed=false,connectionStop=null;/,'retry state exists');
   assert.match(source,/if\(indexRetries>=3\)return false;/,'at most three quiet retries');
   assert.match(source,/const delay=30000\*\(indexRetries\+1\);/,'growing delays: 30s, 60s, 120s');

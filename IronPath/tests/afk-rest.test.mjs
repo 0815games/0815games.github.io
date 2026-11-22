@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {drawAfkRestScene,AFK_SCENE} from '../afk-rest-scene.mjs';
+import {drawAfkRestScene,AFK_SCENE} from '../ui/afk-rest-scene.mjs';
 
 // Half an hour away, the session closes, and the player comes back to a card.
 // The card is the whole message, so it is worth checking: the picture is drawn

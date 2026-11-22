@@ -66,7 +66,7 @@ export const STAMP_ANCHORS=Object.freeze([
    find:source=>one(source,/<meta name="ironpath-build" content="([^"]+)"/)},
   {label:'index.html → class="build-stamp"',file:'index.html',expect:2,
    find:source=>every(source,/class="build-stamp"[^>]*>BUILD ([^<]+)/g)},
-  {label:'login-scene.mjs → LOGIN_SCENE_VERSION',file:'login-scene.mjs',
+  {label:'ui/login-scene.mjs → LOGIN_SCENE_VERSION',file:'ui/login-scene.mjs',
    find:source=>one(source,/LOGIN_SCENE_VERSION\s*=\s*'([^']+)'/)},
   {label:'patch-notes.mjs → RELEASED_PATCHES[0].build',file:'patch-notes.mjs',
    find:source=>one(source,/RELEASED_PATCHES[\s\S]*?build:'([^']+)'/)},

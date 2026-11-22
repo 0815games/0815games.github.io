@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {createSocialNotifications} from '../social-notifications.mjs';
-import {setupFriends} from '../friends-ui.mjs';
+import {setupFriends} from '../ui/friends-ui.mjs';
 function fixture(){
  const nodes=new Map(),listeners=new Map(),failures=new Map(),dialogs=[];function el(id){if(!nodes.has(id)){const classes=new Set(),attrs={};nodes.set(id,{id,classes,attrs,classList:{toggle:(key,on)=>on?classes.add(key):classes.delete(key)},setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],hidden:true,open:false,textContent:'',value:'',children:[],contains(target){return target===this},addEventListener(name,cb){this['on'+name]=cb;},showModal(){this.open=true;},close(){this.open=false;this.onclose?.();},replaceChildren(){this.children=[];},append(...items){this.children.push(...items);}});}return nodes.get(id);}
  const friends=el('friendsDialog'),other=el('otherDialog');dialogs.push(friends,other);

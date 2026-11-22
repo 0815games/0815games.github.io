@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
 import {readFileSync} from 'node:fs';
-import {createFieldNotice} from '../field-notice.mjs';
+import {createFieldNotice} from '../ui/field-notice.mjs';
 
 // The one message the field still shows.
 //

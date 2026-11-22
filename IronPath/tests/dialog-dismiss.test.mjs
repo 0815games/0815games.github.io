@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {bindDialogBackdrop} from '../dialog-dismiss.mjs';
+import {bindDialogBackdrop} from '../ui/dialog-dismiss.mjs';
 test('only an outside-to-outside primary pointer gesture dismisses the dialog',()=>{
  const handlers={},dialog={open:true,addEventListener(type,fn){handlers[type]=fn;},getBoundingClientRect(){return {left:10,right:110,top:10,bottom:110};}};let closed=0;bindDialogBackdrop(dialog,()=>closed++);
  const event=(target,x,y,button=0)=>({target,clientX:x,clientY:y,button,preventDefault(){}}),outside=()=>event(dialog,1,1),inside=()=>event(dialog,20,20),child=()=>event({},1,1);

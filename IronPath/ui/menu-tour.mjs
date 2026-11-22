@@ -6,7 +6,7 @@
 // navigation, and strict protection against destructive actions (Delete
 // Character and Sign Out are never clickable or auto-triggered by the tour).
 
-import {translateText as tr,getLanguage} from './language.mjs?v=20261122-battle1';
+import {translateText as tr,getLanguage} from '../language.mjs?v=20261122-battle1';
 import {mountOverlayPopover} from './popover-host.mjs?v=20261122-battle1';
 
 export const FORBIDDEN_TOUR_TARGETS=Object.freeze([

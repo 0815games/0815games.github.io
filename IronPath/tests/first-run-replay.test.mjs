@@ -3,9 +3,9 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { createCoach, coachSeen, markCoachSeen } from '../first-run-coach.mjs';
+import { createCoach, coachSeen, markCoachSeen } from '../ui/first-run-coach.mjs';
 import { trainingSeen, markTrainingSeen, forgetTrainingSeen, TRAINING_KEY } from '../training-run.mjs';
-import { forgetGuideSeen, guideSeen, markGuideSeen } from '../first-run-guide.mjs';
+import { forgetGuideSeen, guideSeen, markGuideSeen } from '../ui/first-run-guide.mjs';
 
 // "FIELD TUTORIAL" in the Command Center used to mean "show me the cards again", and
 // even that only worked on a live field. The player who asked for the tutorial wanted

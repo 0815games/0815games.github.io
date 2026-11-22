@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
-import { mountOverlayPopover } from '../popover-host.mjs';
+import { mountOverlayPopover } from '../ui/popover-host.mjs';
 
 function makeTree() {
   const createNode = (tagName, id = '') => {

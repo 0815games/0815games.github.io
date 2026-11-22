@@ -22,8 +22,8 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 // `active` language. The harness must therefore import the very same URL the game code
 // imports, or it would switch the language on a copy nobody is reading from.
 const languageUrl = (() => {
-  const source = readFileSync(resolve(root, 'first-run-coach.mjs'), 'utf8');
-  const match = source.match(/from '\.\/language\.mjs(\?v=[^']+)?'/);
+  const source = readFileSync(resolve(root, 'ui/first-run-coach.mjs'), 'utf8');
+  const match = source.match(/from '\.\.\/language\.mjs(\?v=[^']+)?'/);
   assert.ok(match, 'first-run-coach.mjs imports language.mjs');
   return `../language.mjs${match[1] ?? ''}`;
 })();
@@ -85,8 +85,8 @@ const cardStrings = (coach, guide) => [
 ];
 
 test('every first-run card is German, not the English fallback', async () => {
-  const coach = await import('../first-run-coach.mjs');
-  const guide = await import('../first-run-guide.mjs');
+  const coach = await import('../ui/first-run-coach.mjs');
+  const guide = await import('../ui/first-run-guide.mjs');
   const strings = cardStrings(coach, guide);
   assert.ok(strings.length >= 45, 'the first run still has its strings');
   await withGerman(language => {
@@ -96,8 +96,8 @@ test('every first-run card is German, not the English fallback', async () => {
 });
 
 test('the German text is really German, not an English copy', async () => {
-  const coach = await import('../first-run-coach.mjs');
-  const guide = await import('../first-run-guide.mjs');
+  const coach = await import('../ui/first-run-coach.mjs');
+  const guide = await import('../ui/first-run-guide.mjs');
   await withGerman(language => {
     // A word-level check: these sentences must not survive translation as English.
     const englishOnly = [
@@ -119,8 +119,8 @@ test('no German entry points at a string that no longer exists', async () => {
   // An English sentence that gets edited keeps its old German entry, which then never
   // matches - the card silently falls back to English. Both directions are checked.
   const { germanFirstRun } = await import('../i18n/localization-firstrun-de.mjs');
-  const coach = await import('../first-run-coach.mjs');
-  const guide = await import('../first-run-guide.mjs');
+  const coach = await import('../ui/first-run-coach.mjs');
+  const guide = await import('../ui/first-run-guide.mjs');
   const live = new Set(cardStrings(coach, guide).map(([, text]) => text));
   const orphans = Object.keys(germanFirstRun).filter(key => !live.has(key));
   assert.deepEqual(orphans, [], `German entries nothing asks for: ${orphans.join(' / ')}`);
@@ -169,7 +169,7 @@ test('the open card re-renders when the language is switched under it', async ()
   for (const id of ['firstRunCoach', 'coachStep', 'coachTitle', 'coachText', 'coachCaption', 'coachAsk', 'coachNext', 'coachClose']) nodes.set(id, make(id));
   const fakeDocument = { getElementById: id => nodes.get(id) ?? null, createElement: () => make('i') };
   await withLanguage(async (language, switchTo) => {
-    const { createCoach } = await import('../first-run-coach.mjs?test=refresh');
+    const { createCoach } = await import('../ui/first-run-coach.mjs?test=refresh');
     const coach = createCoach({ document: fakeDocument, storage: { getItem: () => null, setItem() {} } });
     coach.start('soldier-a');
     assert.equal(nodes.get('coachTitle').textContent, 'Welcome, soldier', 'the card opens in English');
@@ -192,7 +192,7 @@ test('the guide cards are translated on screen, not just in the dictionary', asy
   for (const id of ['firstRunGuide', 'guideStep', 'guideTitle', 'guideText', 'guideCaption', 'guideNext', 'coachHighlight', 'coachRing']) nodes.set(id, make(id));
   const fakeDocument = { getElementById: id => nodes.get(id) ?? null, querySelector: () => null, querySelectorAll: () => [] };
   await withGerman(async language => {
-    const { createGuide, STEPS } = await import('../first-run-guide.mjs?test=screen');
+    const { createGuide, STEPS } = await import('../ui/first-run-guide.mjs?test=screen');
     const guide = createGuide({ document: fakeDocument, storage: { getItem: () => null, setItem() {} } });
     guide.start('soldier-a');
     for (const [index, step] of STEPS.entries()) {

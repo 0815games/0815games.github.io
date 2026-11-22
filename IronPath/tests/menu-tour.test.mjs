@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
-import { TOUR_STATIONS, FORBIDDEN_TOUR_TARGETS, SAFE_INSPECT_ACTIONS, createMenuTour } from '../menu-tour.mjs';
+import { TOUR_STATIONS, FORBIDDEN_TOUR_TARGETS, SAFE_INSPECT_ACTIONS, createMenuTour } from '../ui/menu-tour.mjs';
 
 function makeTourDocument() {
   const nodes = new Map();

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import {strict as assert} from 'node:assert';
-import {createMaintenanceUI} from '../maintenance-ui.mjs';
+import {createMaintenanceUI} from '../ui/maintenance-ui.mjs';
 
 const turn=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture(initial='open'){

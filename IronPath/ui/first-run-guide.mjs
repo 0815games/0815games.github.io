@@ -1,7 +1,7 @@
 // The guide that walks the player through the real post-match progression
 // dialogs (Armory Equip -> 6-Class Skills -> Workshop) before the full HQ
 // Menu Tour begins.
-import {translateText as tr} from './language.mjs?v=20261122-battle1';
+import {translateText as tr} from '../language.mjs?v=20261122-battle1';
 import {mountOverlayPopover} from './popover-host.mjs?v=20261122-battle1';
 
 export const STEPS = Object.freeze([

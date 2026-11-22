@@ -4,7 +4,7 @@ import {readFileSync,readdirSync,existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {GAME_MODULE_FOLDERS} from '../release-tools/stage-version.mjs';
-import {setupRecruitScreen} from '../recruit-screen.mjs';
+import {setupRecruitScreen} from '../ui/recruit-screen.mjs';
 import {defaultAvatar,encodeAvatar,AVATAR_STORAGE_KEY} from '../avatar.mjs';
 import {layerOptions} from '../avatar-layers.mjs';
 

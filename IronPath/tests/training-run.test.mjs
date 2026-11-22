@@ -159,7 +159,7 @@ test('an account from the previous edition plays the new field, not the old tour
  assert.equal((start.match(/tutorial\./g) ?? []).length, 1, 'the tour is only the fallback after the field');
  // Versioned markers, so "played it once" means "played THIS one once".
  assert.equal(TRAINING_KEY, 'ironpath:training:v2', 'a new contract edition is new content');
- const coach = readFileSync(new URL('../first-run-coach.mjs', import.meta.url), 'utf8')
+ const coach = readFileSync(new URL('../ui/first-run-coach.mjs', import.meta.url), 'utf8')
   .split('\n').filter(line => !line.trimStart().startsWith('//')).join('\n');
  assert.match(coach, /const EDITION=2;/, 'a dismissed card cannot suppress the new explanations');
  assert.match(coach, /ironpath:coach:v\$\{EDITION\}/);

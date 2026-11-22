@@ -2,7 +2,7 @@ import {strict as assert} from 'node:assert';
 import {prerequisites,relatedNodes,nodeMatches,skillBuildSummary,canSaveSkillDraft} from '../skill-planner.mjs';
 import {parseBuild,encodeBuild,webRequirement,WEB_NODES} from '../skills.mjs';
 import {characterProgress} from '../progression.mjs';
-import {renderSkillTree} from '../development-ui.mjs';
+import {renderSkillTree} from '../ui/development-ui.mjs';
 
 // Assault build: rank 3, Quick Trigger (slot 0), Mastery 1 (slot 2), Doctrine A1 (slot 7)
 const build=parseBuild('v2;assault;3;0;10100001000000',20);

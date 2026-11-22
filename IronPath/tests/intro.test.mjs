@@ -1,6 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {readFile} from 'node:fs/promises';
-import {startIntro} from '../intro.mjs';
+import {startIntro} from '../ui/intro.mjs';
 function fixture(reduced=false){
   const overlay={hidden:false},events=new Map(),skip={addEventListener:(type,fn)=>events.set(type,fn),removeEventListener:(type,fn)=>{if(events.get(type)===fn)events.delete(type);}},docEvents=new Map();
   const document={getElementById:id=>id==='introOverlay'?overlay:id==='introSkip'?skip:null,addEventListener:(type,fn)=>docEvents.set(type,fn),removeEventListener:(type,fn)=>{if(docEvents.get(type)===fn)docEvents.delete(type);}};

@@ -149,7 +149,7 @@ export async function runPatchCheck({root=IRONPATH,contracts=true,suite=false,on
   add('ok','wellen',`${token} in ${histogram.find(entry=>entry.token===token)?.files.size??0} Dateien; `+
     `${older.length} ältere Token sind bewusst stehen geblieben (Art und Multiplayer-Assets behalten ihre eigene Revision)`);
   for(const entry of older) for(const file of entry.files)
-    if(['release-version.json','login-scene.mjs'].includes(file))
+    if(['release-version.json','ui/login-scene.mjs'].includes(file))
       add('fail','wellen',`${file} trägt noch ${entry.token} und darf genau eine Welle nennen`);
 
   // 3. Struktur der Spielwurzel (billig und ohne Subprozess).
