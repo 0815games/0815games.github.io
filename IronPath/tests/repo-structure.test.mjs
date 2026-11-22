@@ -38,6 +38,61 @@ test('the working instruction points at the moved protocol documents',()=>{
     'AGENTS.md zeigt noch auf einen alten Pfad in der Spielwurzel');
 });
 
+// The shipped graph: what the browser actually loads, read from real import
+// statements and from the src/href attributes of the root HTML files. Prose and
+// code comments do not count - road-geometry.mjs names its own tests in a
+// comment, which must not make a development file look shipped.
+const IMPORT=/\bfrom\s*["']([\w./?=-]+)["']|\bimport\s*\(\s*["']([\w./?=-]+)["']|^\s*import\s+["']([\w./?=-]+)["']/gm;
+const ATTRIBUTE=/(?:src|href)\s*=\s*["']((?:\.\/)?[\w.\/-]+\.(?:mjs|js|css))(?:\?[\w=-]*)?["']/g;
+const codeFiles=()=>readdirSync(ironpath).filter(name=>/\.(?:mjs|js|html|css)$/.test(name)).sort();
+function shippedSpecifiers(){
+  const specs=new Set();
+  for(const name of codeFiles()){
+    const source=readFileSync(join(ironpath,name),'utf8');
+    for(const style of [IMPORT,ATTRIBUTE])
+      for(const match of source.matchAll(style))
+        for(const target of match.slice(1)) if(target) specs.add(target.split('?')[0]);
+  }
+  return specs;
+}
+
+test('every module in the release inventory is loaded by the game',()=>{
+  // stage-version.mjs copies each root-level .mjs/.js/.css into every staged
+  // build, so an orphan here is dead weight published to every player.
+  const specs=shippedSpecifiers();
+  const bases=new Set([...specs].map(spec=>spec.split('/').pop()));
+  const inventory=codeFiles().filter(name=>/\.(?:mjs|js)$/.test(name));
+  const orphans=inventory.filter(name=>!bases.has(name));
+  assert.ok(inventory.length>150,`the scan still sees the game (found ${inventory.length} modules)`);
+  assert.deepEqual(orphans,[],
+    'Module ohne Importeur in der Spielwurzel werden mit jedem Release-Build '+
+    'ausgeliefert. Sie gehören nach IronPath/scripts/ (oder weg).');
+});
+
+test('the shipped graph reaches only into assets/ and release-tools/',()=>{
+  const allowed=new Set(['assets','release-tools']);
+  const offenders=[];
+  for(const spec of shippedSpecifiers()){
+    if(/^[a-z][a-z0-9+.-]*:\/\//i.test(spec)) continue;   // absolute URL, not a folder
+    const path=spec.replace(/^\.\//,'');
+    if(!path.includes('/')) continue;                     // a plain root-level file
+    const folder=path.split('/')[0];
+    if(!allowed.has(folder)) offenders.push(spec);
+  }
+  assert.deepEqual(offenders.sort(),[],
+    'Ein ausgeliefertes Modul greift in einen Arbeitsordner. docs/, tests/, '+
+    'scripts/, browser-tests/, stress-tests/, server/, firebase/ und '+
+    'browser-artifacts/ sind nicht Teil des Spiels.');
+});
+
+test('no development file is part of the critical release inventory',()=>{
+  const critical=readFileSync(join(ironpath,'release-tools','verify-staged-build.mjs'),'utf8');
+  const block=/CRITICAL_RELEASE_FILES=Object\.freeze\(\[([\s\S]*?)\]\)/.exec(critical);
+  assert.ok(block,'verify-staged-build.mjs lists the critical release files');
+  for(const folder of ['docs/','scripts/','tests/','browser-tests/','stress-tests/','server/','firebase/'])
+    assert.ok(!block[1].includes(folder),`CRITICAL_RELEASE_FILES nennt ${folder}`);
+});
+
 test('every relative markdown link below IronPath resolves',()=>{
   const link=/\[[^\]]*\]\(([^)\s]+)\)/g;
   const queue=[ironpath],broken=[];

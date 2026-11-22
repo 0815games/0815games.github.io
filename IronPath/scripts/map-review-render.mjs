@@ -12,8 +12,8 @@
 // opponent's name in the real game).
 import {deflateSync} from 'node:zlib';
 import {mkdirSync,writeFileSync} from 'node:fs';
-import {getMap} from './maps.mjs?v=20261121-road1';
-import {CAMPAIGN} from './campaign.mjs?v=20261112-pressure1';
+import {getMap} from '../maps.mjs?v=20261121-road1';
+import {CAMPAIGN} from '../campaign.mjs?v=20261112-pressure1';
 
 // ------------------------------------------------------------------ png ----
 const CRC_TABLE= (()=>{const t=new Int32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c;}return t;})();
@@ -83,7 +83,7 @@ function save(file,canvas){writeFileSync(file,encodePNG(canvas.w,canvas.h,canvas
 // Output directory: --out flag, or a folder outside the repository by default
 // so review sheets never end up in a commit.
 const flag=name=>{const i=process.argv.indexOf(name);return i>=0?process.argv.splice(i,2)[1]:null;};
-const outDir=(flag('--out')||new URL('../../map-review/',import.meta.url).pathname).replace(/\/$/,'');
+const outDir=(flag('--out')||new URL('../../../map-review/',import.meta.url).pathname).replace(/\/$/,'');
 mkdirSync(outDir,{recursive:true});
 const versusMap=flag('--versus');
 if(versusMap){
