@@ -39,16 +39,9 @@ zusammen sind lückenlos und doppelfrei - `../scripts/patch-check.mjs` und
 
 ### Vorlage für einen neuen Eintrag
 
-```text
-## IPL-NNNN – kurzer Titel
-- Zeit / Quelle: … (oder nicht sicher)
-- Block / Ziel: …
-- Branch / Basis: …
-- Änderungen / Dateien: …
-- Prüfungen: Befehl oder CI-Link, Ergebnis, Art des Tests und Grenzen …
-- Git / PR / Release: exakte belegte Kennungen und tatsächlicher Status …
-- Offen / nächster Schritt: …
-```
+Die Vorlage steht als einzige Quelle in
+[patch-log-vorlage.md](patch-log-vorlage.md), zusammen mit der Erklärung, was in
+jedes Feld gehört und was nicht hineindarf. Eine Kopie hier würde auseinanderlaufen.
 
 ## IPL-0072 – Block 9c (`20261119-block9c`, PR #322): Einheitliche Einstellungen, AFK-Artwork, Kopie-Korrekturen & vollständige Dialog-Harmonisierung
 - **Zeit / Quelle:** 2026-10-31 UTC (Sitzungsvorgabe); Arbeitsbranch `arena/cd3317c7-0815games-github-io` ab `0e26018634033c37b9baf5a1c4fae07c668345ba` (`main`), PR #322.
